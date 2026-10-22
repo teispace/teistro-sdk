@@ -212,6 +212,17 @@ export declare function returnsRequest(
   grahas?: readonly GrahaName[],
 ): HitRequest;
 
+/**
+ * A period already running, as an ashauch request's `during` reads it:
+ * the parts of an earlier `almanac.ashauch` answer's value the overlap
+ * rules need, and nothing else.
+ *
+ * @example
+ * const first = ctx.almanac.ashauch({ place, utcOffsetSeconds, request: grandfather }).value;
+ * ctx.almanac.ashauch({ place, utcOffsetSeconds, request: { ...uncle, during: [ashauchRunning(first)] } });
+ */
+export declare function ashauchRunning(answer: Ashauch): AshauchRunning;
+
 /** A zone of the embedded database, by its IANA name. */
 export declare function ianaZone(name: string): ZoneSpec;
 
@@ -8361,6 +8372,23 @@ export declare class AlmanacArea {
    */
   sankalpa(request: SankalpaRequest): SankalpaAnswer;
   /**
+   * **The period of impurity after a birth or a death** at a place
+   * (`03-design/ashauch.md`): from when, until when, and by which clause,
+   * counted in sunrise days under the table (the *Dharmasindhu*'s when
+   * left out). A period already running goes in `request.during`, each
+   * one `ashauchRunning(earlier.value)`.
+   *
+   * @example
+   * const { value } = sdk.almanac.ashauch({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+   *   utcOffsetSeconds: 20700,
+   *   request: { key: 'grandfather', relation: 'SAPINDA', event: { event: 'DEATH', at: 2461051.677083 } },
+   * });
+   * value.clause.clause; // 'RELATION'
+   * value.days; // 10
+   */
+  ashauch(query: AshauchQuery): AshauchAnswer;
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the days on which some limb's
    * member at sunrise differs, with the instant the two members meet
@@ -8479,6 +8507,330 @@ export interface Sankalpa {
   /** Jupiter's sidereal sign at the rite. */
   readonly jupiter: Rashi;
 }
+
+/** A place, a clock, a table and a request, as `almanac.ashauch` reads them. */
+export interface AshauchQuery {
+  /** Where, in degrees and metres: the place whose sunrises count the days. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The tradition's table, every row data; the *Dharmasindhu*'s when left out. */
+  readonly table?: AshauchTable;
+  /** The event, the observer and the periods already running. */
+  readonly request: AshauchRequest;
+}
+
+/** One request: one event, one observer. */
+export interface AshauchRequest {
+  /** The consumer's own key, which the answer repeats. */
+  readonly key: string;
+  /** What happened. */
+  readonly event: AshauchEvent;
+  /** Who the observer is to it. */
+  readonly relation: AshauchRelation;
+  /** When the news reached the observer, a UTC Julian day; the event's own instant when left out. */
+  readonly heardAt?: number;
+  /** Whether the observer was abroad: a fact the family gives, never derived. */
+  readonly abroad?: boolean;
+  /** Where the death was, to the observer; `'SAME_VILLAGE'` when left out. */
+  readonly nearness?: Nearness;
+  /** The family's full period, 1 to 60 days; 10 when left out. */
+  readonly fullDays?: number;
+  /** The periods already running for this observer, each `ashauchRunning` of an earlier answer. */
+  readonly during?: readonly AshauchRunning[];
+}
+
+/** What happened, by its `event`; every instant a UTC Julian day. */
+export type AshauchEvent =
+  /** A birth from the 7th month on, live or still; `child` sets the mother's further bar. */
+  | { readonly event: 'BIRTH'; readonly at: number; readonly child?: AshauchSex }
+  /** A loss before the 7th month, `month` of the pregnancy 1 to 6. */
+  | { readonly event: 'LOSS'; readonly at: number; readonly month: number }
+  /** A death; an *āhitāgni*'s count starts at the cremation. */
+  | {
+      readonly event: 'DEATH';
+      readonly at: number;
+      readonly crematedAt?: number;
+      readonly ahitagni?: boolean;
+      readonly deceased?: Deceased;
+    };
+
+/**
+ * The deceased, by the facts the age bands read. Left out with no `born`,
+ * an adult who had every rite; with a `born`, a fact a band needs is asked
+ * for by a refusal rather than guessed.
+ */
+export interface Deceased {
+  /** When the deceased was born, a UTC Julian day. */
+  readonly born?: number;
+  /** The deceased's sex. */
+  readonly sex?: AshauchSex;
+  /** Whether the *cūḍākaraṇa* was done; read from the age when left out. */
+  readonly chudakarana?: boolean;
+  /** The upanayana. */
+  readonly upanayana?: Upanayana;
+  /** A daughter's betrothal (*vāgdāna*). */
+  readonly betrothed?: boolean;
+  /** Whether the deceased was married. */
+  readonly married?: boolean;
+  /** Buried rather than cremated, as an infant may be. */
+  readonly buried?: boolean;
+}
+
+/** A son or a daughter, which the bands and the mother's further bar read. */
+export type AshauchSex = 'MALE' | 'FEMALE';
+
+/** Whether the deceased had the upanayana, or it is not a rite of their community. */
+export type Upanayana = 'DONE' | 'NOT_DONE' | 'NOT_PERFORMED';
+
+/** A birth's impurity (*sūtaka*, a loss's too) or a death's. */
+export type AshauchKind = 'BIRTH' | 'DEATH';
+
+/** Who the observer is to the one born or deceased, as the app resolves it. */
+export type AshauchRelation =
+  | 'MOTHER'
+  | 'FATHER'
+  | 'CHILD'
+  | 'SPOUSE'
+  | 'CO_WIFE'
+  | 'STEP_CHILD'
+  | 'SAPINDA'
+  | 'SAMANODAKA'
+  | 'SAGOTRA'
+  | 'MARRIED_DAUGHTER'
+  | 'MARRIED_SIBLING'
+  | 'MATERNAL_GRANDFATHER'
+  | 'MATERNAL_GRANDMOTHER'
+  | 'MATERNAL_UNCLE'
+  | 'SON_IN_LAW'
+  | 'PARENT_IN_LAW'
+  | 'PUPIL'
+  | 'ACHARYAS_FAMILY'
+  | 'ADOPTION'
+  | 'BANDHU'
+  | 'SUBJECT'
+  | 'OF_ASCETIC';
+
+/** Where the death was, to the observer. */
+export type Nearness = 'OBSERVERS_HOUSE' | 'SAME_VILLAGE' | 'OTHER_VILLAGE';
+
+/** Which day an event at night belongs to (the Mitākṣarā on Yājñavalkya III.20). */
+export type NightRule = 'THIRDS' | 'HALF_NIGHT' | 'CIVIL_MIDNIGHT' | 'SUNRISE';
+
+/** Where a *pakṣiṇī* begun at night ends. */
+export type PakshiniNight = 'SECOND_SUNRISE' | 'NEXT_NIGHTFALL';
+
+/** A span the texts name, by its `length`. */
+export type AshauchLength =
+  /** Pure by a bath, at once. */
+  | { readonly length: 'BATH' }
+  /** By day, to nightfall; at night, to daybreak. */
+  | { readonly length: 'SAJYOTIH' }
+  /** That day, its night and the next day to nightfall. */
+  | { readonly length: 'PAKSHINI' }
+  /** A count of sunrise days, 1 to 60. */
+  | { readonly length: 'DAYS'; readonly days: number }
+  /** The request's full period. */
+  | { readonly length: 'FULL' };
+
+/** A period already running, as the overlap rules read it: `ashauchRunning` of an earlier answer. */
+export interface AshauchRunning {
+  /** The earlier answer's key, which an overlap names. */
+  readonly key: string;
+  /** A birth's or a death's. */
+  readonly kind: AshauchKind;
+  /** The earlier request's relation. */
+  readonly relation: AshauchRelation;
+  /** The deceased's sex, or the child's. */
+  readonly sex?: AshauchSex;
+  /** When it began, a UTC Julian day. */
+  readonly start: number;
+  /** When it ends, a UTC Julian day. */
+  readonly end: number;
+  /** Its length. */
+  readonly length: AshauchLength;
+  /** Its days, when the length is a count. */
+  readonly days?: number;
+}
+
+/** A tradition, as data: every row with its clause and source. */
+export interface AshauchTable {
+  /** Its name, which every answer repeats. */
+  readonly name: string;
+  /** Which day a night event belongs to. */
+  readonly night: NightRule;
+  /** Where a pakṣiṇī begun at night ends. */
+  readonly pakshiniAtNight: PakshiniNight;
+  /** The lengths by relation, the first row that matches answering. */
+  readonly relations: readonly AshauchRelationRow[];
+  /** The bands of a death before the last rite, in order of age. */
+  readonly bands: readonly AshauchBand[];
+  /** A loss's rows, in order of month. */
+  readonly losses: readonly AshauchLossRow[];
+  /** News of a full period past it, by days since the event, in order; a bath past the last row. */
+  readonly late: readonly AshauchLateRow[];
+  /** The same, for an observer abroad. */
+  readonly lateAbroad: readonly AshauchLateRow[];
+  /** The overlap rules. */
+  readonly overlap: AshauchOverlap;
+  /** The mother's further bar after a birth, to the `son`th or `daughter`th day; none reported when left out. */
+  readonly motherRites?: { readonly son: number; readonly daughter: number };
+}
+
+/** One relation's length, under its conditions. */
+export interface AshauchRelationRow {
+  /** Whose. */
+  readonly relation: AshauchRelation;
+  /** A birth's or a death's. */
+  readonly kind: AshauchKind;
+  /** Only where the death was, to the observer; any when left out. */
+  readonly nearness?: Nearness;
+  /** Only for a married daughter's death (true), or only for any other (false); either when left out. */
+  readonly marriedDaughter?: boolean;
+  /** Its length. */
+  readonly length: AshauchLength;
+  /** What news past the period takes, from the hearing; the late tables' when left out. */
+  readonly heardLate?: AshauchLength;
+  /** The clause, with its source. */
+  readonly clause: string;
+}
+
+/** A mark of the deceased's age a band ends before, by its `mark`. */
+export type AshauchMark =
+  | { readonly mark: 'DAY'; readonly day: number }
+  | { readonly mark: 'MONTH'; readonly month: number }
+  | { readonly mark: 'YEAR'; readonly year: number }
+  | { readonly mark: 'CHUDAKARANA' }
+  | { readonly mark: 'UPANAYANA' }
+  | { readonly mark: 'BETROTHAL' }
+  | { readonly mark: 'MARRIAGE' };
+
+/** What a death before a mark takes. */
+export interface AshauchBand {
+  /** A son's band or a daughter's. */
+  readonly sex: AshauchSex;
+  /** The band holds while this mark is not yet reached. */
+  readonly before: AshauchMark;
+  /** Only for a burial (true), or only for a cremation (false); either when left out. */
+  readonly buried?: boolean;
+  /** The parents' length, a step-child's too. */
+  readonly parents: AshauchLength;
+  /** The sapiṇḍas'. */
+  readonly sapindas: AshauchLength;
+  /** The samānodakas', when the band names one; a bath otherwise. */
+  readonly samanodakas?: AshauchLength;
+  /** The clause, with its source. */
+  readonly clause: string;
+}
+
+/** A loss before the 7th month, by the month. */
+export interface AshauchLossRow {
+  /** The row holds to this month of the pregnancy. */
+  readonly toMonth: number;
+  /** The mother's length. */
+  readonly mother: AshauchLength;
+  /** The father's and the sapiṇḍas'; a bath for any other relation. */
+  readonly others: AshauchLength;
+  /** The clause, with its source. */
+  readonly clause: string;
+}
+
+/** Late news, past the period, within some days of the event. */
+export interface AshauchLateRow {
+  /** Heard within this many days of the event. */
+  readonly withinDays: number;
+  /** The length from the hearing. */
+  readonly length: AshauchLength;
+}
+
+/** What a period known during another does (*āśauca-saṃpāta*). */
+export interface AshauchOverlap {
+  /** The days a period known in an equal period's last night adds past its end, and in its last quarter. */
+  readonly lastNight: readonly [number, number];
+  /** Whether a birth known during a shorter death ends with it. */
+  readonly deathAbsorbsLongerBirth: boolean;
+}
+
+/** What `almanac.ashauch` answers, frozen to its leaves. */
+export interface AshauchAnswer {
+  /** The span of impurity. */
+  readonly value: Ashauch;
+  /** What computed it, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** The span of impurity, and the clause that set it (`03-design/ashauch.md`). */
+export interface Ashauch {
+  /** The request's key. */
+  readonly key: string;
+  /** A birth's or a death's. */
+  readonly kind: AshauchKind;
+  /** The request's relation. */
+  readonly relation: AshauchRelation;
+  /** The deceased's sex, or the child's, as the request gave it. */
+  readonly sex?: AshauchSex;
+  /** When it began: the event, the cremation, or the hearing, a UTC Julian day. */
+  readonly start: number;
+  /** The day it counts from. */
+  readonly dayOne: CalendarDate;
+  /** Why that day. */
+  readonly dayOneBy: AshauchDayOneBy;
+  /** When it ends: a sunrise, a nightfall, or `start` itself for a bath, a UTC Julian day. */
+  readonly end: number;
+  /** The last day it touches, for a calendar to shade; none for a bath. */
+  readonly lastDay?: CalendarDate;
+  /** The length its clause named. */
+  readonly length: AshauchLength;
+  /** The days, when the length is a count. */
+  readonly days?: number;
+  /** The clause. */
+  readonly clause: AshauchClause;
+  /** What an overlap did, when it did. */
+  readonly overlap?: AshauchOverlapped;
+  /** When the mother of a birth may take part in rites again, a UTC Julian day, under a table that reports it. */
+  readonly ritesFrom?: number;
+  /** The table's name. */
+  readonly table: string;
+}
+
+/** Why the first day is the day it is, by its `by`. */
+export type AshauchDayOneBy =
+  /** The instant fell in the day's daylight. */
+  | { readonly by: 'DAYLIGHT' }
+  /** It fell in the night, and the rule gave the day. */
+  | { readonly by: 'NIGHT'; readonly rule: NightRule };
+
+/** The clause that set the span, by its `clause`; `row` indexes the table's rows. */
+export type AshauchClause =
+  /** A relation's row of the table. */
+  | { readonly clause: 'RELATION'; readonly row: number; readonly said: string }
+  /** An age band's row. */
+  | { readonly clause: 'BAND'; readonly row: number; readonly said: string }
+  /** A loss's row. */
+  | { readonly clause: 'LOSS'; readonly row: number; readonly said: string }
+  /** A child dying inside the birth period: the birth period runs to its own end. */
+  | { readonly clause: 'BIRTH_PERIOD_RUNS' }
+  /** Heard inside the period: the days left. */
+  | { readonly clause: 'REMAINDER' }
+  /** Heard past the full period: the late table's row, within `within_days` of the event. */
+  | { readonly clause: 'LATE'; readonly within_days: number; readonly abroad: boolean }
+  /** Heard past the late table: a bath. */
+  | { readonly clause: 'LATE_BATH' }
+  /** Heard past the period, by the relation row's own late length. */
+  | { readonly clause: 'ROW_HEARD_LATE'; readonly row: number; readonly said: string }
+  /** A shorter period heard past its end: a bath. */
+  | { readonly clause: 'SHORT_HEARD_LATE' }
+  /** A birth heard past its period: none, the father a bath. */
+  | { readonly clause: 'BIRTH_HEARD_LATE' };
+
+/** What an overlap did, by its `overlap`; `earlier` the earlier answer's key. */
+export type AshauchOverlapped =
+  /** It ends with the earlier period, which is no shorter. */
+  | { readonly overlap: 'ENDS_WITH_EARLIER'; readonly earlier: string }
+  /** Known in the earlier equal period's last night: its end and `days` more. */
+  | { readonly overlap: 'LAST_NIGHT'; readonly earlier: string; readonly days: number }
+  /** A mother's death in the father's period: the father's end and a pakṣiṇī. */
+  | { readonly overlap: 'MOTHER_AFTER_FATHER'; readonly earlier: string };
 
 /** Two reckonings of one range at one place, as `almanac.disagreements` compares them. */
 export interface DisagreementRequest {

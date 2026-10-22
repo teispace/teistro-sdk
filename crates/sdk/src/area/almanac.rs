@@ -17,6 +17,7 @@ use teistro_core::time::UtcOffset;
 #[cfg(feature = "muhurta")]
 use teistro_muhurta::Answer;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
+use teistro_panchanga::ashauch::{Ashauch, AshauchRequest, AshauchTable};
 use teistro_panchanga::festival::{
     DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, Observances, Origin,
     anniversaries, dated, ekadashis, following, observances,
@@ -724,6 +725,57 @@ impl<'a> AlmanacArea<'a> {
     ) -> Result<Envelope<Sankalpa>, Error> {
         let found = self.with_almanac(Calendar::Gregorian, offset, |almanac| {
             almanac.sankalpa(at, place, ayana)
+        })?;
+        Ok(Envelope::sealing(found.value, found.provenance))
+    }
+
+    /// The period of impurity after a birth or a death
+    /// (`03-design/ashauch.md`): from when, until when, and by which
+    /// clause of `table`, counted in the place's sunrise days.
+    ///
+    /// The event's day is day 1, a night event belongs to the day before
+    /// or after by the table's night rule, and `n` days end at the sunrise
+    /// beginning day `n + 1`. The full period is the request's number
+    /// (ten when left out); nothing asks a caste.
+    ///
+    /// ```no_run
+    /// use teistro::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation};
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{Context, UtcOffset};
+    ///
+    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1337.0)?);
+    /// // A grandfather's death at 10:00 Nepal time on 11 January 2026.
+    /// let request = AshauchRequest {
+    ///     key: "grandfather".to_owned(),
+    ///     event: AshauchEvent::Death { at: JulianDay::try_new(2_461_051.677_083)?, cremated_at: None, ahitagni: false, deceased: Deceased::default() },
+    ///     relation: Relation::Sapinda,
+    ///     heard_at: None,
+    ///     abroad: false,
+    ///     nearness: Nearness::SameVillage,
+    ///     full_days: None,
+    ///     during: Vec::new(),
+    /// };
+    /// let found = sdk.almanac().ashauch(&AshauchTable::dharmasindhu(), &request, &kathmandu, UtcOffset::literal(5, 45, 0))?;
+    /// println!("{:?} to {:?}: {:?}", found.value.day_one, found.value.last_day, found.value.clause);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::of`]; a table or request that cannot be counted;
+    /// a relation the table names no row for (`UNSUPPORTED`); a fact of
+    /// the deceased a band needs and the request leaves out
+    /// (`INVALID_ARG`, named by its field); an instant on a polar day.
+    pub fn ashauch(
+        self,
+        table: &AshauchTable,
+        request: &AshauchRequest,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<Envelope<Ashauch>, Error> {
+        let found = self.with_almanac(Calendar::Gregorian, offset, |almanac| {
+            almanac.ashauch(table, request, place)
         })?;
         Ok(Envelope::sealing(found.value, found.provenance))
     }

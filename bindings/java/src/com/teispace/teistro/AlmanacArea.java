@@ -271,6 +271,49 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>The period of impurity after a birth or a death</b> at a place ({@code 03-design/ashauch.md}):
+     * from when, until when, and by which clause. The span is a count of sunrise days, the day the
+     * event falls in the first and an event at night given to a day by the table's night rule; {@code n}
+     * days end at the sunrise that begins day {@code n + 1}. A period already running goes in the
+     * request's {@code during}, each one an earlier answer's {@link Ashauch#running()}.
+     *
+     * <pre>{@code
+     * AshauchAnswer found = sdk.almanac().ashauch(AshauchRequest.builder()
+     *         .key("grandfather").relation(AshauchRelation.SAPINDA)
+     *         .event(AshauchEventDeath.builder().at(2_461_051.677_083).build()) // 2026-01-11 10:00 NPT
+     *         .build(), kathmandu, 20_700, null);
+     * Integer days = found.value().days(); // 10
+     * }</pre>
+     *
+     * @param request the event, the observer and the periods already running, its instants UTC Julian
+     *     days
+     * @param place where the days are counted
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param table the tradition's table, every row data; null for the <i>Dharmasindhu</i>'s
+     * @return the period, sealed
+     */
+    public AshauchAnswer ashauch(com.teispace.teistro.request.AshauchRequest request, Observer place,
+            int utcOffsetSeconds, com.teispace.teistro.request.AshauchTable table) {
+        if (request == null) {
+            throw Reads.invalid("request is an AshauchRequest", "request");
+        }
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (table != null) {
+            asked.put("table", table);
+        }
+        asked.put("request", request);
+        String json = Json.write(asked);
+        return AlmanacReads.ashauchAnswer(context.locked((lib, raw) -> Calls.almanacAshauch(lib, raw, json)));
+    }
+
+    /**
      * <b>Where this context's reckoning and {@code other}'s disagree</b>, and why
      * ({@code 03-design/setup-disagreements.md}): the official day an app shows beside the modern one.
      * {@link Disagreements#days()} holds only the days on which some limb's member at sunrise differs,

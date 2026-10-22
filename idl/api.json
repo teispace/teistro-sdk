@@ -16022,6 +16022,57 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_ashauch",
+      "doc": "The period of impurity after a birth or a death at a place\n(`03-design/ashauch.md`), answered with `{value, provenance}` as\ncanonical JSON.\n\n`value` is `{key, kind, relation, sex, start, dayOne, dayOneBy, end,\nlastDay, length, days, clause, overlap, ritesFrom, table}`: `start`\nthe instant counted from (the event, the cremation, or the hearing),\n`dayOne` the civil day counted as the first and `dayOneBy` why\n(daylight, or the night rule that gave it), `end` the instant it ends\n(a sunrise, a nightfall, or `start` for a bath), `lastDay` the last\nday it touches, `clause` the table's row or the rule (`REMAINDER`,\n`LATE`, `ROW_HEARD_LATE`, `BIRTH_PERIOD_RUNS` and the rest) with its\ntext, `overlap` what a period already running did, and `ritesFrom`\nwhen the mother of a birth may take part in rites again.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"table\", \"request\"}`: `table` the\n*Dharmasindhu*'s when left out, every row data; `request` `{key,\nevent, relation, heardAt, abroad, at, fullDays, during}`, its\ninstants UTC Julian days and `fullDays` ten when left out. A key it\ndoes not read, or a table or request that cannot be counted, is\n`INVALID_ARG` named under `ashauch`, as is a fact of the deceased a\nband needs and the request leaves out; a relation the table names no\nrow for is `UNSUPPORTED`; a context without an ephemeris is\n`CAPABILITY`, and a polar day `OUT_OF_RANGE`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_almanac_festival_calendar",
       "doc": "A range's observances and Ekadashi fasts at one place as an iCalendar\nfeed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,\nordered by day and then rule, its `SUMMARY` the festival's name in the\ncontext's locale, its `DESCRIPTION` the rule's source and the answer's\nprovenance, and its `UID` stable for the rule, the day and the place.\n\n`request_json` is `{\"calendar\", \"first\", \"last\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\", \"festivals\",\n\"stampUnixSeconds\", \"name\", \"product\", \"refreshMinutes\"}`: the days as\n`{\"year\", \"month\", \"day\"}`, `festivals` a festival request,\n`stampUnixSeconds` every event's `DTSTAMP`, and `calendar`, `last`,\n`altitudeM`, `name`, `product` and `refreshMinutes` optional\n(`refreshMinutes` a day when left out, none when zero). A key it does\nnot read or one it needs left out, a place or offset out of range, or a\nfestival request its reader refuses is `INVALID_ARG`, named under\n`festivalCalendar`. A range of more than a year and a day, or a day\noutside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without\nan ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_text` valid for a write.",

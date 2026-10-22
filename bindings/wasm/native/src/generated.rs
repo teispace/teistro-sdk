@@ -4612,6 +4612,50 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// The period of impurity after a birth or a death at a place
+    /// (`03-design/ashauch.md`), answered with `{value, provenance}` as
+    /// canonical JSON.
+    ///
+    /// `value` is `{key, kind, relation, sex, start, dayOne, dayOneBy, end,
+    /// lastDay, length, days, clause, overlap, ritesFrom, table}`: `start`
+    /// the instant counted from (the event, the cremation, or the hearing),
+    /// `dayOne` the civil day counted as the first and `dayOneBy` why
+    /// (daylight, or the night rule that gave it), `end` the instant it ends
+    /// (a sunrise, a nightfall, or `start` for a bath), `lastDay` the last
+    /// day it touches, `clause` the table's row or the rule (`REMAINDER`,
+    /// `LATE`, `ROW_HEARD_LATE`, `BIRTH_PERIOD_RUNS` and the rest) with its
+    /// text, `overlap` what a period already running did, and `ritesFrom`
+    /// when the mother of a birth may take part in rites again.
+    ///
+    /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+    /// "utcOffsetSeconds", "table", "request"}`: `table` the
+    /// *Dharmasindhu*'s when left out, every row data; `request` `{key,
+    /// event, relation, heardAt, abroad, at, fullDays, during}`, its
+    /// instants UTC Julian days and `fullDays` ten when left out. A key it
+    /// does not read, or a table or request that cannot be counted, is
+    /// `INVALID_ARG` named under `ashauch`, as is a fact of the deceased a
+    /// band needs and the request leaves out; a relation the table names no
+    /// row for is `UNSUPPORTED`; a context without an ephemeris is
+    /// `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
+    #[wasm_bindgen(js_name = almanacAshauch)]
+    pub fn almanac_ashauch(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_ashauch(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// A range's observances and Ekadashi fasts at one place as an iCalendar
     /// feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
     /// ordered by day and then rule, its `SUMMARY` the festival's name in the

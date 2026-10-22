@@ -73,6 +73,7 @@ pub use area::{
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, Plans};
 #[cfg(feature = "western")]
 mod antiscia;
+mod ashauch_request;
 #[cfg(feature = "chart")]
 mod compose;
 #[cfg(feature = "western")]
@@ -225,6 +226,9 @@ pub use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
 // A Tibetan year's rabjung place and element-animal name: what
 // `sdk.calendar().tibetan_year` answers.
 pub use teistro_calendar::tibetan::TibetanYear;
+// The period of impurity after a birth or a death: what
+// `sdk.almanac().ashauch` asks and answers with, every table row data.
+pub use teistro_panchanga::ashauch;
 // A day's Nepal Sambat date, which `Panchanga::nepal_sambat` reads and
 // `AlmanacRequest::with_nepal_sambat` answers beside the days.
 pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
@@ -514,6 +518,7 @@ pub use teistro_rectification as rectification;
 pub use teistro_lalkitab as lalkitab;
 // Pancha Pakshi: the five birds' activities by yama and sub-period, the
 // death birds and the relations (`03-design/pakshi.md`).
+pub use crate::ashauch_request::AshauchQuery;
 #[cfg(feature = "pakshi")]
 pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};
 #[cfg(feature = "research")]

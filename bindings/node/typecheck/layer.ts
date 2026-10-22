@@ -188,6 +188,11 @@ import type {
   Sankalpa,
   SankalpaAnswer,
   SankalpaRequest,
+  Ashauch,
+  AshauchAnswer,
+  AshauchClause,
+  AshauchQuery,
+  AshauchRunning,
   TibetanYear,
   Disagreements,
   DayDisagreement,
@@ -245,7 +250,7 @@ import type {
   Tithi,
 } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
-import { decodeProvenance, returnsRequest } from '../lib/index.js';
+import { ashauchRunning, decodeProvenance, returnsRequest } from '../lib/index.js';
 
 declare const build: BuildInfo;
 declare function refuse(info: BuildInfo, named: boolean): string | null;
@@ -1346,6 +1351,31 @@ function theSankalpa(ctx: Context): string {
   return `${tithi} ${masa} ${sun} ${vara} ${date.year} ${value.year.samvatsara} ${answer.provenance.inputHash}`;
 }
 void theSankalpa;
+
+// An ashauch's request by its tagged event, its answer's clause narrowed
+// by its tag, and a period already running read back from an answer.
+function theAshauch(ctx: Context): string {
+  const asked: AshauchQuery = {
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+    utcOffsetSeconds: 20700,
+    request: { key: 'grandfather', relation: 'SAPINDA', event: { event: 'DEATH', at: 2461051.677083 } },
+  };
+  const answer: AshauchAnswer = ctx.almanac.ashauch(asked);
+  const value: Ashauch = answer.value;
+  const clause: AshauchClause = value.clause;
+  const said = clause.clause === 'RELATION' ? clause.said : '';
+  const within = clause.clause === 'LATE' ? clause.within_days : 0;
+  const days: number | undefined = value.length.length === 'DAYS' ? value.length.days : value.days;
+  const date: CalendarDate = value.dayOne;
+  const running: AshauchRunning = ashauchRunning(value);
+  ctx.almanac.ashauch({ ...asked, request: { ...asked.request, key: 'uncle', during: [running] } });
+  // @ts-expect-error a death names no child; a birth does
+  ctx.almanac.ashauch({ ...asked, request: { ...asked.request, event: { event: 'DEATH', at: 1, child: 'MALE' } } });
+  // @ts-expect-error a relation is the table's, not a free word
+  ctx.almanac.ashauch({ ...asked, request: { ...asked.request, relation: 'COUSIN' } });
+  return `${said} ${within} ${days} ${date.year} ${value.overlap?.earlier} ${answer.provenance.inputHash}`;
+}
+void theAshauch;
 
 // A Tibetan year's names by their catalogue types.
 function theTibetanYear(ctx: Context): string {

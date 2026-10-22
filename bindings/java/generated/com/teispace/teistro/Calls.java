@@ -666,6 +666,45 @@ final class Calls {
     }
 
     /**
+     * `ts_almanac_ashauch`: The period of impurity after a birth or a death at a place
+     * (`03-design/ashauch.md`), answered with `{value, provenance}` as
+     * canonical JSON.
+     *
+     * `value` is `{key, kind, relation, sex, start, dayOne, dayOneBy, end,
+     * lastDay, length, days, clause, overlap, ritesFrom, table}`: `start`
+     * the instant counted from (the event, the cremation, or the hearing),
+     * `dayOne` the civil day counted as the first and `dayOneBy` why
+     * (daylight, or the night rule that gave it), `end` the instant it ends
+     * (a sunrise, a nightfall, or `start` for a bath), `lastDay` the last
+     * day it touches, `clause` the table's row or the rule (`REMAINDER`,
+     * `LATE`, `ROW_HEARD_LATE`, `BIRTH_PERIOD_RUNS` and the rest) with its
+     * text, `overlap` what a period already running did, and `ritesFrom`
+     * when the mother of a birth may take part in rites again.
+     *
+     * `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+     * "utcOffsetSeconds", "table", "request"}`: `table` the
+     * *Dharmasindhu*'s when left out, every row data; `request` `{key,
+     * event, relation, heardAt, abroad, at, fullDays, during}`, its
+     * instants UTC Julian days and `fullDays` ten when left out. A key it
+     * does not read, or a table or request that cannot be counted, is
+     * `INVALID_ARG` named under `ashauch`, as is a fact of the deceased a
+     * band needs and the request leaves out; a relation the table names no
+     * row for is `UNSUPPORTED`; a context without an ephemeris is
+     * `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
+     */
+    static String almanacAshauch(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_ashauch.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_almanac_festival_calendar`: A range's observances and Ekadashi fasts at one place as an iCalendar
      * feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
      * ordered by day and then rule, its `SUMMARY` the festival's name in the

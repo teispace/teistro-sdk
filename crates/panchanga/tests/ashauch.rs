@@ -20,7 +20,8 @@ use teistro_core::settings::LunarMonth as Convention;
 use teistro_core::time::UtcOffset;
 use teistro_panchanga::ashauch::{
     Ashauch, AshauchEvent, AshauchKind, AshauchRequest, AshauchTable, Clause, DayOneBy, Deceased,
-    Length, NightRule, Overlapped, PakshiniNight, Placement, Relation, Sex, Upanayana, ashauch,
+    Length, Nearness, NightRule, Overlapped, PakshiniNight, Relation, Running, Sex, Upanayana,
+    ashauch,
 };
 use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
 use teistro_panchanga::month;
@@ -109,14 +110,14 @@ fn asked(key: &str, event: AshauchEvent, relation: Relation) -> AshauchRequest {
         relation,
         heard_at: None,
         abroad: false,
-        at: Placement::SameVillage,
+        nearness: Nearness::SameVillage,
         full_days: None,
         during: Vec::new(),
     }
 }
 
 fn under(table: &AshauchTable, request: &AshauchRequest) -> Ashauch {
-    ashauch(table, request, &days(), UtcOffset::UTC).unwrap()
+    ashauch(table, request, &days(), &UtcOffset::UTC).unwrap()
 }
 
 fn answer(request: &AshauchRequest) -> Ashauch {
@@ -128,8 +129,8 @@ fn heard(mut request: AshauchRequest, at: f64) -> AshauchRequest {
     request
 }
 
-fn during(mut request: AshauchRequest, earlier: Vec<Ashauch>) -> AshauchRequest {
-    request.during = earlier;
+fn during(mut request: AshauchRequest, earlier: &[Ashauch]) -> AshauchRequest {
+    request.during = earlier.iter().map(Running::from).collect();
     request
 }
 
@@ -183,7 +184,7 @@ fn each_night_rule_gives_a_night_death_its_day() {
             &table(night),
             &asked("k", death(at), Relation::Sapinda),
             &days(),
-            offset,
+            &offset,
         )
         .unwrap();
         (found.day_one.clone(), ends(&found))
@@ -240,12 +241,12 @@ fn a_sajyotih_ends_at_nightfall_or_daybreak_and_a_pakshini_on_the_next_day() {
 fn a_relation_row_reads_the_placement() {
     let at = |placement| {
         let mut request = asked("p", death(1.2), Relation::MarriedSibling);
-        request.at = placement;
+        request.nearness = placement;
         answer(&request).length
     };
-    assert_eq!(at(Placement::ObserversHouse), Length::Days { days: 3 });
-    assert_eq!(at(Placement::SameVillage), Length::Pakshini);
-    assert_eq!(at(Placement::OtherVillage), Length::Days { days: 1 });
+    assert_eq!(at(Nearness::ObserversHouse), Length::Days { days: 3 });
+    assert_eq!(at(Nearness::SameVillage), Length::Pakshini);
+    assert_eq!(at(Nearness::OtherVillage), Length::Days { days: 1 });
 }
 
 #[test]
@@ -364,7 +365,7 @@ fn a_fact_a_band_turns_on_is_asked_for_not_guessed() {
             &AshauchTable::dharmasindhu(),
             &asked("q", of(50.2, deceased), Relation::Sapinda),
             &days(),
-            UtcOffset::UTC,
+            &UtcOffset::UTC,
         )
         .unwrap_err();
         assert_eq!(error.status, Status::InvalidArg, "{error}");
@@ -490,7 +491,7 @@ fn t18_to_t21_a_death_during_another() {
     let second = |at, relation| {
         answer(&during(
             asked("second", death(at), relation),
-            vec![earlier.clone()],
+            std::slice::from_ref(&earlier),
         ))
     };
     let t18 = second(4.2, Relation::Sapinda);
@@ -526,10 +527,7 @@ fn t18_to_t21_a_death_during_another() {
         },
         ..AshauchTable::dharmasindhu()
     };
-    let request = during(
-        asked("second", death(10.9), Relation::Sapinda),
-        vec![earlier],
-    );
+    let request = during(asked("second", death(10.9), Relation::Sapinda), &[earlier]);
     assert_eq!(ends(&under(&two, &request)), 13.0);
 }
 
@@ -538,19 +536,19 @@ fn t22_t23_a_birth_never_takes_in_a_death_but_a_death_takes_in_a_birth() {
     let born = answer(&asked("born", birth(1.2, None), Relation::Sapinda));
     let t22 = answer(&during(
         asked("t22", death(4.2), Relation::Sapinda),
-        vec![born],
+        &[born],
     ));
     assert_eq!((ends(&t22), t22.overlap), (14.0, None));
     let died = first(Relation::Sapinda, Deceased::default());
     let t23 = answer(&during(
         asked("t23", birth(4.2, None), Relation::Sapinda),
-        vec![died.clone()],
+        std::slice::from_ref(&died),
     ));
     assert_eq!(ends(&t23), 11.0);
     // T27: the birthing mother's own period is never taken in.
     let t27 = answer(&during(
         asked("t27", birth(4.2, None), Relation::Mother),
-        vec![died],
+        &[died],
     ));
     assert_eq!((ends(&t27), t27.overlap), (14.0, None));
 }
@@ -566,7 +564,7 @@ fn t24_to_t26_a_son_for_his_father_and_his_mother() {
     let then = |at, sex, earlier: &Ashauch| {
         answer(&during(
             asked("then", of(at, parent(sex)), Relation::Child),
-            vec![earlier.clone()],
+            std::slice::from_ref(earlier),
         ))
     };
     let t24 = then(4.2, Sex::Male, &mother);
@@ -611,15 +609,15 @@ fn t28_a_married_daughter_for_her_parent() {
         ),
         Relation::Father,
     );
-    request.at = Placement::ObserversHouse;
+    request.nearness = Nearness::ObserversHouse;
     assert_eq!(answer(&request).length, Length::Days { days: 3 });
     // Elsewhere the table names no length, and says so.
-    request.at = Placement::OtherVillage;
+    request.nearness = Nearness::OtherVillage;
     let error = ashauch(
         &AshauchTable::dharmasindhu(),
         &request,
         &days(),
-        UtcOffset::UTC,
+        &UtcOffset::UTC,
     )
     .unwrap_err();
     assert_eq!(error.status, Status::Unsupported);
@@ -685,7 +683,7 @@ fn every_part_of_the_table_is_data_a_consumer_can_change() {
     assert_eq!(under(&changed, &sapinda), under(&table, &sapinda));
     let request = during(
         heard(asked("r", death(1.2), Relation::Sapinda), 3.0),
-        vec![answer(&sapinda)],
+        &[answer(&sapinda)],
     );
     let json = serde_json::to_string(&request).unwrap();
     assert_eq!(
@@ -702,7 +700,7 @@ fn a_table_or_a_request_that_cannot_be_counted_is_refused() {
         &table,
         &asked("x", death(1.2), Relation::Sapinda),
         &days(),
-        UtcOffset::UTC,
+        &UtcOffset::UTC,
     )
     .unwrap_err();
     assert_eq!(error.field(), Some("relations[0].length"));
@@ -711,7 +709,7 @@ fn a_table_or_a_request_that_cannot_be_counted_is_refused() {
             &AshauchTable::dharmasindhu(),
             &request,
             &days(),
-            UtcOffset::UTC,
+            &UtcOffset::UTC,
         )
         .unwrap_err();
         assert_eq!(error.field(), Some(field), "{error}");
@@ -754,7 +752,7 @@ fn a_table_or_a_request_that_cannot_be_counted_is_refused() {
         &AshauchTable::dharmasindhu(),
         &asked("x", death(1.2), Relation::Sapinda),
         &gapped,
-        UtcOffset::UTC,
+        &UtcOffset::UTC,
     )
     .unwrap_err();
     assert_eq!(error.status, Status::Internal);
@@ -767,7 +765,7 @@ fn a_request_names_the_instants_its_run_must_hold() {
             asked("a", of(50.2, child(Sex::Male, 7.0)), Relation::Sapinda),
             52.0,
         ),
-        vec![first(Relation::Sapinda, Deceased::default())],
+        &[first(Relation::Sapinda, Deceased::default())],
     );
     let anchors: Vec<f64> = request.anchors().into_iter().map(JulianDay::get).collect();
     assert_eq!(anchors, vec![11.0, 43.2, 50.2, 52.0]);

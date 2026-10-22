@@ -19,6 +19,7 @@ from teistro import (
     Context,
     nepal_official,
     Altitude,
+    AshauchRequest,
     decode_provenance,
     AvasthaSayanadi,
     DashaDefinition,
@@ -823,6 +824,51 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as clock:
                 ctx.almanac.sankalpa(at=between, place=kathmandu, utc_offset_seconds=999_999)
             self.assertEqual(clock.exception.field, "sankalpa.utcOffsetSeconds")
+
+    def test_an_almanac_says_the_period_of_impurity_after_a_death(self) -> None:
+        """A sapinda's death at 10:00 on 11 January 2026 in Kathmandu: the
+        *Dharmasindhu*'s ten days by the relation's row, the 11th the
+        first; heard 50 days on, three days from the hearing by the late
+        table's first row (within 90 days); and a second sapinda's death
+        three days in ends with the first (Manu V.79,
+        `03-design/ashauch.md`)."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1337))
+        died = 2461051.677083
+        grandfather: AshauchRequest = {"key": "grandfather", "relation": "SAPINDA", "event": {"event": "DEATH", "at": died}}
+        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=grandfather)
+            value = found.value
+            self.assertTrue(found.provenance.input_hash)
+            self.assertEqual((value.key, value.kind, value.relation), ("grandfather", "DEATH", "SAPINDA"))
+            self.assertEqual(value.clause["clause"], "RELATION")
+            self.assertEqual(value.days, 10)
+            self.assertEqual(value.length, {"length": "FULL"})
+            self.assertEqual((value.day_one.year, value.day_one.month, value.day_one.day), (2026, 1, 11))
+            self.assertEqual(value.day_one_by["by"], "DAYLIGHT")
+            self.assertLess(value.start, value.end)
+            self.assertEqual(value.table, "DHARMASINDHU")
+
+            heard: AshauchRequest = {**grandfather, "heardAt": died + 50}
+            late = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=heard).value
+            self.assertEqual(late.clause["clause"], "LATE")
+            self.assertEqual(late.clause.get("within_days"), 90)
+            self.assertEqual(late.length, {"length": "DAYS", "days": 3})
+
+            uncle: AshauchRequest = {
+                "key": "uncle",
+                "relation": "SAPINDA",
+                "event": {"event": "DEATH", "at": died + 3},
+                "during": [value.running()],
+            }
+            during = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=uncle).value
+            assert during.overlap is not None
+            self.assertEqual((during.overlap["overlap"], during.overlap["earlier"]), ("ENDS_WITH_EARLIER", "grandfather"))
+            self.assertAlmostEqual(during.end, value.end, places=9)
+
+            caste: Any = {**grandfather, "caste": "any"}
+            with self.assertRaises(TeistroError) as unread:
+                ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=caste)
+            self.assertEqual(unread.exception.field, "ashauch.request.caste")
 
     def test_an_almanac_writes_its_festivals_as_an_icalendar_feed(self) -> None:
         """Dashain 2025 at Kathmandu: one event for each observance and fast

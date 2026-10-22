@@ -905,6 +905,78 @@ void _engineTests() {
     );
   });
 
+  // A sapinda's death at 10:00 on 11 January 2026 in Kathmandu: ten days
+  // by the relation's row, from the 11th; heard fifty days on, three days
+  // by the late table's row within ninety; a second death three days later,
+  // during the first, ends with it (`03-design/ashauch.md`).
+  test('an almanac says the period of impurity after a death', () {
+    final sky = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1337),
+    );
+    const at = 2461051.677083;
+    AshauchAnswer ask(AshauchRequest request) => sky.almanac.ashauch(
+      request: request,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+    );
+    final found = ask(
+      const AshauchRequest(
+        key: 'grandfather',
+        event: AshauchDeath(at: at),
+        relation: AshauchRelation.sapinda,
+      ),
+    );
+    final value = found.value;
+    expect(found.provenance.inputHash, isNotEmpty);
+    expect(value.key, 'grandfather');
+    expect(value.kind, AshauchKind.death);
+    expect(value.relation, AshauchRelation.sapinda);
+    expect(value.clause.clause, 'RELATION');
+    expect(value.clause.said, isNotEmpty);
+    expect(value.days, 10);
+    expect(value.length, AshauchLength.full);
+    final dayOne = value.dayOne;
+    expect([dayOne.year, dayOne.month, dayOne.day], [2026, 1, 11]);
+    expect(value.dayOneBy.by, 'DAYLIGHT');
+    expect(value.end > value.start, isTrue);
+    expect(value.overlap, isNull);
+    expect(value.table, 'DHARMASINDHU');
+
+    final heard =
+        ask(
+          const AshauchRequest(
+            key: 'heard',
+            event: AshauchDeath(at: at),
+            relation: AshauchRelation.sapinda,
+            heardAt: at + 50,
+          ),
+        ).value;
+    expect(heard.clause.clause, 'LATE');
+    expect(heard.clause.withinDays, 90);
+    expect(heard.clause.abroad, isFalse);
+    expect(heard.length, const AshauchLength.count(3));
+
+    final second =
+        ask(
+          AshauchRequest(
+            key: 'second',
+            event: const AshauchDeath(at: at + 3),
+            relation: AshauchRelation.sapinda,
+            during: [value.running],
+          ),
+        ).value;
+    expect(second.overlap?.overlap, 'ENDS_WITH_EARLIER');
+    expect(second.overlap?.earlier, 'grandfather');
+    expect(second.end, value.end);
+  });
+
   test('two reckonings say where they disagree and why', () {
     final official = teistro.nepalOfficial();
     addTearDown(official.dispose);

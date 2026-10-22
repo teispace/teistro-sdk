@@ -7181,6 +7181,70 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **The period of impurity after a birth or a death** at a place
+   * (`03-design/ashauch.md`): from when, until when, and by which clause.
+   * The span is a count of sunrise days, the day the event falls in the
+   * first and an event at night given to a day by the table's night rule;
+   * `n` days end at the sunrise that begins day `n + 1`. `dayOne` is the
+   * day counted as the first and `dayOneBy` why, `end` the instant it
+   * ends, `lastDay` the last day it touches, `clause` the table's row or
+   * the rule that set it, and `overlap` what a period already running
+   * did. `request` and `table` (the *Dharmasindhu*'s when left out) cross
+   * as written; a period already running goes in `request.during`, each
+   * one `ashauchRunning(earlier.value)`.
+   *
+   * @example
+   * const sdk = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const { value } = sdk.almanac.ashauch({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+   *   utcOffsetSeconds: 20700,
+   *   request: {
+   *     key: 'grandfather',
+   *     relation: 'SAPINDA',
+   *     event: { event: 'DEATH', at: 2461051.677083 }, // 2026-01-11 10:00 in Kathmandu
+   *   },
+   * });
+   * value.clause.clause; // 'RELATION'
+   * value.days; // 10
+   *
+   * @param {object} query
+   * @param {object} query.place `{ latitude, longitude, altitude }`
+   * @param {number} query.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {object} query.request `{ key, event, relation, heardAt, abroad, nearness, fullDays, during }`,
+   *   its instants UTC Julian days
+   * @param {object} [query.table] the tradition's table, every row data
+   * @returns {{ value: object, provenance: object }}
+   */
+  ashauch(query) {
+    if (typeof query !== 'object' || query === null || Array.isArray(query)) {
+      throw new TypeError('ashauch: expected a query, e.g. { place, utcOffsetSeconds, request }');
+    }
+    // The request, the table and anything else cross as written, so a key
+    // the SDK does not read is refused by name there rather than dropped
+    // here.
+    const { place: where, utcOffsetSeconds, ...rest } = query;
+    const place = where ?? {};
+    const asked = {
+      ...rest,
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacAshauch(JSON.stringify(asked))),
+    );
+    return deepFreeze({
+      value: {
+        ...value,
+        dayOne: dateFrom(value.dayOne),
+        ...(value.lastDay == null ? {} : { lastDay: dateFrom(value.lastDay) }),
+      },
+      provenance: decodeProvenance(provenance),
+    });
+  }
+
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the official day an app shows
    * beside the modern one. `days` holds only the days on which some
@@ -7935,6 +7999,34 @@ export const returnsRequest = (from, to, grahas = ['MOON']) => ({
   kinds: ['ASPECT'],
   points: grahas,
   aspects: [0],
+});
+
+/**
+ * A period already running, as an ashauch request's `during` reads it:
+ * the parts of an earlier `almanac.ashauch` answer's value the overlap
+ * rules need (`03-design/ashauch.md`), and nothing else, since the record
+ * refuses a key it does not read.
+ *
+ * @example
+ * const first = ctx.almanac.ashauch({ place, utcOffsetSeconds, request: grandfather }).value;
+ * const second = ctx.almanac.ashauch({
+ *   place,
+ *   utcOffsetSeconds,
+ *   request: { ...uncle, during: [ashauchRunning(first)] },
+ * });
+ *
+ * @param {object} answer an `almanac.ashauch` answer's `value`
+ * @returns {object}
+ */
+export const ashauchRunning = (answer) => ({
+  key: answer.key,
+  kind: answer.kind,
+  relation: answer.relation,
+  ...(answer.sex == null ? {} : { sex: answer.sex }),
+  start: answer.start,
+  end: answer.end,
+  length: answer.length,
+  ...(answer.days == null ? {} : { days: answer.days }),
 });
 
 export { decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';

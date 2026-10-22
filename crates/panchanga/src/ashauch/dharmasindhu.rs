@@ -3,13 +3,13 @@
 //! page (`03-design/ashauch.md` §§2.2–2.7).
 
 use super::{
-    AshauchKind, AshauchTable, Band, LateRow, Length, LossRow, Mark, MotherRites, NightRule,
-    Overlap, PakshiniNight, Placement, Relation, RelationRow, Sex,
+    AshauchKind, AshauchTable, Band, LateRow, Length, LossRow, Mark, MotherRites, Nearness,
+    NightRule, Overlap, PakshiniNight, Relation, RelationRow, Sex,
 };
 
 use AshauchKind::{Birth, Death};
 use Length::{Bath, Full, Pakshini, Sajyotih};
-use Placement::{ObserversHouse, OtherVillage, SameVillage};
+use Nearness::{ObserversHouse, OtherVillage, SameVillage};
 
 const fn days(days: u8) -> Length {
     Length::Days { days }
@@ -20,7 +20,7 @@ fn row(relation: Relation, kind: AshauchKind, length: Length, clause: &str) -> R
     RelationRow {
         relation,
         kind,
-        at: None,
+        nearness: None,
         married_daughter: None,
         length,
         heard_late: None,
@@ -29,9 +29,9 @@ fn row(relation: Relation, kind: AshauchKind, length: Length, clause: &str) -> R
 }
 
 impl RelationRow {
-    fn at(self, at: Placement) -> RelationRow {
+    fn at(self, nearness: Nearness) -> RelationRow {
         RelationRow {
-            at: Some(at),
+            nearness: Some(nearness),
             ..self
         }
     }

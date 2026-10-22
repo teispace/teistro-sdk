@@ -20,9 +20,10 @@ mod dharmasindhu;
 
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
+use teistro_core::catalogue::{Kind, write_in_full};
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Utc};
-use teistro_core::time::UtcOffset;
+use teistro_core::time::LocalClock;
 
 use crate::festival::FestivalDay;
 
@@ -38,9 +39,6 @@ const MONTH_DAYS: f64 = 30.0;
 
 /// A year of the age bands, in days.
 const YEAR_DAYS: f64 = 365.2425;
-
-/// Seconds in a day.
-const DAY_SECONDS: f64 = 86_400.0;
 
 /// Two sunrises a gapless run joins differ by less than this, in days:
 /// the run's days are built one after the other, so its sunrises are the
@@ -70,6 +68,7 @@ pub enum NightRule {
 /// A span the texts name.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchLength"))]
 #[serde(tag = "length", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Length {
     /// *Sadyaḥ-śauca*: pure by a bath, at once.
@@ -131,6 +130,7 @@ pub enum PakshiniNight {
 /// bar read.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchSex"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Sex {
     /// Male.
@@ -292,6 +292,7 @@ pub enum AshauchKind {
 /// it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchRelation"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Relation {
     /// The mother of the born or the deceased.
@@ -341,11 +342,11 @@ pub enum Relation {
     OfAscetic,
 }
 
-/// Where the death was, to the observer.
+/// Where the death was, to the observer: the rows that turn on it.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Placement {
+pub enum Nearness {
     /// In the observer's house.
     ObserversHouse,
     /// In the observer's village or town.
@@ -358,15 +359,16 @@ pub enum Placement {
 /// One relation's length, under its conditions.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchRelationRow"))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RelationRow {
     /// Whose.
     pub relation: Relation,
     /// A birth's or a death's.
     pub kind: AshauchKind,
-    /// Only where the death was; any when left out.
+    /// Only where the death was, to the observer; any when left out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub at: Option<Placement>,
+    pub nearness: Option<Nearness>,
     /// Only for a married daughter's death (true), or only for any other
     /// (false); either when left out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -384,6 +386,7 @@ pub struct RelationRow {
 /// A mark of the deceased's age a band ends before.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchMark"))]
 #[serde(tag = "mark", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Mark {
     /// The `day`th day of life, the birth's day the first: the naming's
@@ -416,6 +419,7 @@ pub enum Mark {
 /// What a death before a mark takes (*Dharmasindhu* pp. 300–301).
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchBand"))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Band {
     /// A son's band or a daughter's.
@@ -441,6 +445,7 @@ pub struct Band {
 /// A loss before the 7th month, by the month (*Dharmasindhu* p. 299).
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchLossRow"))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LossRow {
     /// The row holds to this month of the pregnancy, the first row whose
@@ -457,6 +462,7 @@ pub struct LossRow {
 /// Late news, past the period, within some days of the event.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchLateRow"))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LateRow {
     /// Heard within this many days of the event: the texts' months are
@@ -469,6 +475,7 @@ pub struct LateRow {
 /// What a period known during another does (*āśauca-saṃpāta*).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchOverlap"))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Overlap {
     /// The days a period known in an equal period's last night adds past
@@ -547,20 +554,63 @@ pub struct AshauchRequest {
     pub abroad: bool,
     /// Where the death was, to the observer.
     #[serde(default)]
-    pub at: Placement,
+    pub nearness: Nearness,
     /// The family's full period, 1 to [`MOST_DAYS`]; [`FULL_DAYS`] when
     /// left out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub full_days: Option<u8>,
-    /// The periods already running for this observer, as earlier answers:
-    /// the overlap rules read them.
+    /// The periods already running for this observer, each from an
+    /// earlier answer ([`Running::from`]): the overlap rules read them.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub during: Vec<Ashauch>,
+    pub during: Vec<Running>,
+}
+
+/// A period already running, as the overlap rules read it: the parts of
+/// an earlier [`Ashauch`] they need.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchRunning"))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Running {
+    /// The earlier answer's key, which an overlap names.
+    pub key: String,
+    /// A birth's or a death's.
+    pub kind: AshauchKind,
+    /// The earlier request's relation.
+    pub relation: Relation,
+    /// The deceased's sex, or the child's.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sex: Option<Sex>,
+    /// When it began.
+    pub start: JulianDay<Utc>,
+    /// When it ends.
+    pub end: JulianDay<Utc>,
+    /// Its length.
+    pub length: Length,
+    /// Its days, when the length is a count.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub days: Option<u8>,
+}
+
+impl From<&Ashauch> for Running {
+    fn from(found: &Ashauch) -> Running {
+        Running {
+            key: found.key.clone(),
+            kind: found.kind,
+            relation: found.relation,
+            sex: found.sex,
+            start: found.start,
+            end: found.end,
+            length: found.length,
+            days: found.days,
+        }
+    }
 }
 
 /// Why the first day is the day it is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchDayOneBy"))]
 #[serde(tag = "by", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DayOneBy {
     /// The instant fell in the day's daylight.
@@ -575,6 +625,7 @@ pub enum DayOneBy {
 /// The clause that set the span.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchClause"))]
 #[serde(tag = "clause", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Clause {
     /// A relation's row of the table.
@@ -633,6 +684,7 @@ pub enum Clause {
 /// What an overlap did.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AshauchOverlapped"))]
 #[serde(tag = "overlap", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Overlapped {
     /// It ends with the earlier period, which is no shorter (Manu V.79).
@@ -698,6 +750,34 @@ pub struct Ashauch {
     pub rites_from: Option<JulianDay<Utc>>,
     /// The table's name.
     pub table: String,
+}
+
+impl Ashauch {
+    /// Where an answer names catalogue members, and of which kind: its
+    /// days' calendars and eras. What the boundary writes in full; the
+    /// SDK's tests hold it to serde, both ways.
+    pub const MEMBERS: [(&'static str, Kind); 4] = [
+        ("dayOne.calendar", Kind::Calendar),
+        ("dayOne.era.era", Kind::Era),
+        ("lastDay.calendar", Kind::Calendar),
+        ("lastDay.era.era", Kind::Era),
+    ];
+
+    /// The answer as JSON, every catalogue member written as its full
+    /// key: what the boundary carries and seals.
+    ///
+    /// # Errors
+    ///
+    /// `INTERNAL` if it does not serialise, which a value this crate
+    /// built cannot do.
+    pub fn in_full(&self) -> Result<serde_json::Value, Error> {
+        let mut value = serde_json::to_value(self)
+            .map_err(|error| Error::internal(format!("the ashauch did not serialise: {error}")))?;
+        for (path, kind) in Self::MEMBERS {
+            write_in_full(&mut value, path, kind);
+        }
+        Ok(value)
+    }
 }
 
 impl AshauchTable {
@@ -954,6 +1034,21 @@ impl<'d> Run<'d> {
         self.day(index + after)
     }
 
+    /// The day an end falls in or closes: the one whose sunrise is
+    /// before it and whose next sunrise is not.
+    fn ending(&self, end: JulianDay<Utc>) -> Result<&'d FestivalDay, Error> {
+        let index = self
+            .days
+            .partition_point(|day| day.sunrise.get() < end.get())
+            .checked_sub(1)
+            .ok_or_else(|| short("an end before the run"))?;
+        let day = self.day(index)?;
+        if end.get() > day.next_sunrise.get() {
+            return Err(short("an end past the run"));
+        }
+        Ok(day)
+    }
+
     fn holding(&self, instant: JulianDay<Utc>) -> Result<Held, Error> {
         let index = self
             .days
@@ -984,7 +1079,7 @@ impl<'d> Run<'d> {
         &self,
         instant: JulianDay<Utc>,
         rule: NightRule,
-        offset: UtcOffset,
+        clock: &dyn LocalClock,
     ) -> Result<(usize, DayOneBy), Error> {
         let held = self.holding(instant)?;
         if !held.at_night {
@@ -998,7 +1093,7 @@ impl<'d> Run<'d> {
             NightRule::CivilMidnight => {
                 // The Julian day turns at noon, so the local clock's
                 // midnight is where its fraction is a half.
-                let shift = f64::from(offset.seconds()) / DAY_SECONDS;
+                let shift = clock.offset_at(day.sunset).days();
                 (sunset + shift - 0.5).floor() + 1.5 - shift
             }
             NightRule::Sunrise => sunrise,
@@ -1036,9 +1131,9 @@ fn count(
     start: JulianDay<Utc>,
     length: Length,
     full: u8,
-    offset: UtcOffset,
+    clock: &dyn LocalClock,
 ) -> Result<Counted, Error> {
-    let (first, day_one_by) = run.day_one(start, table.night, offset)?;
+    let (first, day_one_by) = run.day_one(start, table.night, clock)?;
     let held = run.holding(start)?;
     let here = run.day(held.index)?;
     let (end, last) = match length {
@@ -1200,7 +1295,9 @@ fn choose(table: &AshauchTable, request: &AshauchRequest) -> Result<Chosen, Erro
         .find(|(_, row)| {
             row.relation == relation
                 && row.kind == kind
-                && row.at.is_none_or(|at| at == request.at)
+                && row
+                    .nearness
+                    .is_none_or(|nearness| nearness == request.nearness)
                 && row
                     .married_daughter
                     .is_none_or(|wanted| wanted == married_daughter)
@@ -1224,7 +1321,7 @@ fn no_row(table: &AshauchTable, request: &AshauchRequest) -> Error {
             table.name,
             request.relation,
             request.event.kind(),
-            request.at
+            request.nearness
         ),
     )
     .with_field("relation")
@@ -1233,7 +1330,7 @@ fn no_row(table: &AshauchTable, request: &AshauchRequest) -> Error {
 
 /// The ashauch `request` asks under `table`, over `days`: sorted sunrise
 /// days holding each of [`AshauchRequest::anchors`] with the day before
-/// it and [`AshauchRequest::reach`] days after, `offset` the place's
+/// it and [`AshauchRequest::reach`] days after, `clock` the place's
 /// clock for [`NightRule::CivilMidnight`].
 ///
 /// # Errors
@@ -1245,14 +1342,14 @@ pub fn ashauch(
     table: &AshauchTable,
     request: &AshauchRequest,
     days: &[FestivalDay],
-    offset: UtcOffset,
+    clock: &dyn LocalClock,
 ) -> Result<Ashauch, Error> {
     table.check()?;
     request.check()?;
     let run = Run { days };
     let full = request.full();
     let known = request.known();
-    if let Some(found) = birth_period_runs(&run, table, request, full, offset)? {
+    if let Some(found) = birth_period_runs(&run, table, request, full, clock)? {
         return Ok(found);
     }
     let answer = |counted: Counted, length: Length, clause: Clause| Ashauch {
@@ -1279,10 +1376,10 @@ pub fn ashauch(
         request.event.counted_from(),
         chosen.length,
         full,
-        offset,
+        clock,
     )?;
     let mut found = if known.get() < own.end.get() || chosen.length == Length::Bath {
-        let (heard, _) = run.day_one(known, table.night, offset)?;
+        let (heard, _) = run.day_one(known, table.night, clock)?;
         if heard > own.first {
             Ashauch {
                 start: known,
@@ -1298,12 +1395,12 @@ pub fn ashauch(
     } else {
         let (length, clause) = late(table, request, &chosen, known);
         answer(
-            count(&run, table, known, length, full, offset)?,
+            count(&run, table, known, length, full, clock)?,
             length,
             clause,
         )
     };
-    overlap(&run, table, request, known, &mut found, offset)?;
+    overlap(&run, table, request, known, &mut found, clock)?;
     Ok(found)
 }
 
@@ -1314,7 +1411,7 @@ fn birth_period_runs(
     table: &AshauchTable,
     request: &AshauchRequest,
     full: u8,
-    offset: UtcOffset,
+    clock: &dyn LocalClock,
 ) -> Result<Option<Ashauch>, Error> {
     let (AshauchEvent::Death { at, deceased, .. }, Some(born)) =
         (request.event, request.born_lately())
@@ -1327,7 +1424,7 @@ fn birth_period_runs(
     ) {
         return Ok(None);
     }
-    let birth = count(run, table, born, Length::Full, full, offset)?;
+    let birth = count(run, table, born, Length::Full, full, clock)?;
     if at.get() >= birth.end.get() {
         return Ok(None);
     }
@@ -1427,7 +1524,7 @@ fn overlap(
     request: &AshauchRequest,
     known: JulianDay<Utc>,
     found: &mut Ashauch,
-    offset: UtcOffset,
+    clock: &dyn LocalClock,
 ) -> Result<(), Error> {
     // The birthing mother's own period is never taken in (DS p. 306).
     if found.length == Length::Bath
@@ -1485,7 +1582,7 @@ fn overlap(
                 },
             )
         } else if mother_after_father {
-            let after = count(run, table, earlier.end, Length::Pakshini, full, offset)?;
+            let after = count(run, table, earlier.end, Length::Pakshini, full, clock)?;
             (
                 after.end,
                 after.last_day,
@@ -1496,7 +1593,7 @@ fn overlap(
         } else {
             (
                 earlier.end,
-                earlier.last_day.clone(),
+                Some(run.ending(earlier.end)?.date.clone()),
                 Overlapped::EndsWithEarlier {
                     earlier: earlier.key.clone(),
                 },
@@ -1524,7 +1621,7 @@ fn overlap(
 fn last_night(
     run: &Run<'_>,
     table: &AshauchTable,
-    earlier: &Ashauch,
+    earlier: &Running,
     found: &Ashauch,
     known: JulianDay<Utc>,
 ) -> Result<Option<u8>, Error> {

@@ -11220,3 +11220,62 @@ fn a_festival_feed_crosses_as_the_facade_writes_it() {
         Status::OutOfRange
     );
 }
+
+fn ashauch_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_ashauch(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// An ashauch crosses as the façade answers it, and a relation the table
+/// names no row for is refused as unsupported (`03-design/ashauch.md`).
+#[test]
+fn an_ashauch_crosses_as_the_facade_answers_it() {
+    let death = r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337,
+        "utcOffsetSeconds": 20700,
+        "request": {"key": "grandfather", "relation": "SAPINDA",
+                    "event": {"event": "DEATH", "at": 2461051.677083}}}"#;
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+    let crossed: serde_json::Value =
+        serde_json::from_str(&ashauch_json(&ctx, death).unwrap()).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-default")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .almanac()
+        .ashauch_query(&teistro::AshauchQuery::from_json(death).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    assert_eq!(crossed["value"]["days"], 10);
+    assert_eq!(crossed["value"]["clause"]["clause"], "RELATION");
+    assert_eq!(crossed["value"]["dayOne"]["day"], 11);
+
+    let married = r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+        "request": {"key": "daughter", "relation": "FATHER", "nearness": "OTHER_VILLAGE",
+                    "event": {"event": "DEATH", "at": 2461051.677083,
+                              "deceased": {"sex": "FEMALE", "married": true}}}}"#;
+    assert_eq!(
+        ashauch_json(&ctx, married).unwrap_err(),
+        Status::Unsupported
+    );
+    let unread = r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+        "request": {"key": "k", "relation": "SAPINDA", "caste": "any",
+                    "event": {"event": "DEATH", "at": 2461051.677083}}}"#;
+    assert_eq!(ashauch_json(&ctx, unread).unwrap_err(), Status::InvalidArg);
+}
