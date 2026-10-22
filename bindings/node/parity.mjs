@@ -1846,6 +1846,13 @@ for (const [name, rules] of [
         fast.excess,
         fast.choice,
         number(fast.tithis[1].from),
+        fast.parana === undefined
+          ? '-'
+          : `${fast.parana.day.month}-${fast.parana.day.day} ${fast.parana.tithi} ${
+              fast.parana.kept === null
+                ? '-'
+                : `${number(fast.parana.kept.span.from)} ${number(fast.parana.kept.span.to)} ${fast.parana.kept.fromBy} ${fast.parana.kept.toBy}`
+            }`,
       ].join(' '),
     );
   });

@@ -548,6 +548,14 @@ void putFestivals(String prefix, FestivalAnswer answer) {
         fast.excess,
         fast.choice,
         number(fast.tithis.$2.from),
+        switch (fast.parana) {
+          null => '-',
+          final p =>
+            '${p.day.month}-${p.day.day} ${p.tithi.fullKey} ${switch (p.kept) {
+              null => '-',
+              final kept => '${number(kept.span.from)} ${number(kept.span.to)} ${kept.fromBy} ${kept.toBy}',
+            }}',
+        },
       ].join(' '),
     );
   }

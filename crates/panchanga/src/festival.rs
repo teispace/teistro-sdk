@@ -37,7 +37,8 @@ mod nepal_panchanga;
 
 pub use dated::{Dated, DatedObservance, DatedRule, dated};
 pub use ekadashi::{
-    EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, Vedha, ekadashis,
+    EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, Parana, ParanaEdge,
+    ParanaKept, ParanaRule, Vedha, ekadashis,
 };
 pub use following::{FollowingRule, following};
 
@@ -708,7 +709,7 @@ impl FestivalRule {
             ))
             .with_field("decide"));
         }
-        self.check_window(self.at, "at")?;
+        check_window(&self.key, self.at, "at")?;
         for guard in &self.decide {
             for predicate in &guard.when {
                 match *predicate {
@@ -727,7 +728,7 @@ impl FestivalRule {
                         .with_field("decide.when.is"));
                     }
                     Predicate::Joined { at: Some(at), .. } | Predicate::Stands { at, .. } => {
-                        self.check_window(at, "decide.when.at")?;
+                        check_window(&self.key, at, "decide.when.at")?;
                     }
                     _ => {}
                 }
@@ -735,40 +736,37 @@ impl FestivalRule {
         }
         Ok(())
     }
+}
 
-    /// Refuses a night muhurta outside the night's fifteen, and a range
-    /// of day muhurtas outside the daylight's fifteen or running
-    /// backwards; `at` is the window's own field.
-    fn check_window(&self, window: Window, at: &str) -> Result<(), Error> {
-        if let Some(muhurta) = window.muhurta()
-            && !(1..=15).contains(&muhurta)
-        {
-            return Err(Error::invalid_arg(format!(
-                "{}: a night has fifteen muhurtas, counted from 1 after sunset, not {muhurta}",
-                self.key
-            ))
-            .with_field(format!("{at}.muhurta")));
-        }
-        if let Window::DayMuhurta { from, to } = window {
-            for (name, muhurta) in [("from", from), ("to", to)] {
-                if !(1..=15).contains(&muhurta) {
-                    return Err(Error::invalid_arg(format!(
-                        "{}: a daylight has fifteen muhurtas, counted from 1 after sunrise, not {muhurta}",
-                        self.key
-                    ))
-                    .with_field(format!("{at}.{name}")));
-                }
-            }
-            if from > to {
-                return Err(Error::invalid_arg(format!(
-                    "{}: day muhurtas {from} to {to} run backwards; give the first as `from`",
-                    self.key
-                ))
-                .with_field(format!("{at}.to")));
-            }
-        }
-        Ok(())
+/// Refuses a night muhurta outside the night's fifteen, and a range
+/// of day muhurtas outside the daylight's fifteen or running
+/// backwards; `key` names the rule and `at` is the window's own field.
+fn check_window(key: &str, window: Window, at: &str) -> Result<(), Error> {
+    if let Some(muhurta) = window.muhurta()
+        && !(1..=15).contains(&muhurta)
+    {
+        return Err(Error::invalid_arg(format!(
+            "{key}: a night has fifteen muhurtas, counted from 1 after sunset, not {muhurta}"
+        ))
+        .with_field(format!("{at}.muhurta")));
     }
+    if let Window::DayMuhurta { from, to } = window {
+        for (name, muhurta) in [("from", from), ("to", to)] {
+            if !(1..=15).contains(&muhurta) {
+                return Err(Error::invalid_arg(format!(
+                    "{key}: a daylight has fifteen muhurtas, counted from 1 after sunrise, not {muhurta}"
+                ))
+                .with_field(format!("{at}.{name}")));
+            }
+        }
+        if from > to {
+            return Err(Error::invalid_arg(format!(
+                "{key}: day muhurtas {from} to {to} run backwards; give the first as `from`"
+            ))
+            .with_field(format!("{at}.to")));
+        }
+    }
+    Ok(())
 }
 
 /// What the evaluator reads of one sunrise day.
@@ -1025,7 +1023,7 @@ impl Observances {
     /// of [`Observances`], then a dotted path through each item. What a
     /// boundary section writes in full; the crate's tests hold it to
     /// serde, both ways.
-    pub const MEMBERS: [(&'static str, &'static str, Kind); 15] = [
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 18] = [
         ("observances", "month", Kind::Masa),
         ("observances", "day.calendar", Kind::Calendar),
         ("observances", "day.era.era", Kind::Era),
@@ -1037,6 +1035,9 @@ impl Observances {
         ("ekadashis", "days.era.era", Kind::Era),
         ("ekadashis", "day.calendar", Kind::Calendar),
         ("ekadashis", "day.era.era", Kind::Era),
+        ("ekadashis", "parana.day.calendar", Kind::Calendar),
+        ("ekadashis", "parana.day.era.era", Kind::Era),
+        ("ekadashis", "parana.tithi", Kind::Tithi),
         ("dated", "day.calendar", Kind::Calendar),
         ("dated", "day.era.era", Kind::Era),
         ("dated", "on.calendar", Kind::Calendar),

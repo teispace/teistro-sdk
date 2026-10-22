@@ -6420,6 +6420,33 @@ const OWN_FOLLOWING: &str =
 /// last Sunday, a weekday counted back from a Gregorian month's end.
 const OWN_DATED: &str = r#"{"key":"KARTIK_FIRST","source":"the first of Kartik","civilDate":{"calendar":"calendar.BIKRAM_SAMBAT","month":7,"day":1}},{"key":"LAST_SUNDAY","source":"October's last Sunday","civilWeekday":{"calendar":"calendar.GREGORIAN","month":10,"weekday":"vara.RAVIVARA","nth":-1}}"#;
 
+/// An Ekadashi fast's parana as one parity column, "-" for none.
+fn parana(parana: Option<&teistro::festival::Parana>) -> String {
+    parana.map_or_else(
+        || "-".to_owned(),
+        |parana| {
+            let kept = parana.kept.map_or_else(
+                || "-".to_owned(),
+                |kept| {
+                    format!(
+                        "{} {} {} {}",
+                        number(kept.span.from.get()),
+                        number(kept.span.to.get()),
+                        tag(&kept.from_by),
+                        tag(&kept.to_by)
+                    )
+                },
+            );
+            format!(
+                "{}-{} {} {kept}",
+                parana.day.month,
+                parana.day.day,
+                parana.tithi.full_key()
+            )
+        },
+    )
+}
+
 /// The festivals a panchanga request carries, the shipped pack, the pack
 /// amended by a rule of the consumer's own and the Nepal pack with a
 /// following rule of the consumer's own, as the report prints them.
@@ -6489,7 +6516,7 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
                 report,
                 &key(&format!("-ekadashi-{k}")),
                 format!(
-                    "{} {} {} {} {}-{} {} {} {} {} {}",
+                    "{} {} {} {} {}-{} {} {} {} {} {} {}",
                     fast.rule,
                     fast.tithi.full_key(),
                     fast.month.full_key(),
@@ -6501,6 +6528,7 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
                     tag(&fast.excess),
                     tag(&fast.choice),
                     number(fast.tithis[1].from.get()),
+                    parana(fast.parana.as_ref()),
                 ),
             );
         }

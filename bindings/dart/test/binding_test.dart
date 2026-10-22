@@ -2769,6 +2769,12 @@ void _engineTests() {
     expect(answer.observances.every((o) => o.marginSeconds >= 0), isTrue);
     expect(answer.ekadashis, isNotEmpty);
     expect(answer.ekadashis.every((f) => f.marginSeconds > 0), isTrue);
+    // Each fast's parana: a window kept inside the daylight's fifths.
+    for (final fast in answer.ekadashis) {
+      final kept = fast.parana!.kept!;
+      expect(kept.at.window, 'PART');
+      expect(kept.span.from < kept.span.to, isTrue);
+    }
     expect(
       [for (final observance in answer.observances) observance.rule],
       [

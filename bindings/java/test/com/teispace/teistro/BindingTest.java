@@ -1317,6 +1317,11 @@ public final class BindingTest {
                 check(!lean.ekadashis().isEmpty()
                         && lean.ekadashis().stream().allMatch(f -> f.marginSeconds() > 0),
                         "each Ekadashi fast says how far the place can move");
+                check(lean.ekadashis().stream().allMatch(f -> f.parana() != null
+                        && f.parana().kept() != null
+                        && f.parana().kept().span().fromJd() < f.parana().kept().span().toJd()
+                        && f.parana().kept().at().window().equals("PART")),
+                        "each Ekadashi fast says when it is broken");
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
                 int varjyam = 0;
                 for (AlmanacDay day : week) {

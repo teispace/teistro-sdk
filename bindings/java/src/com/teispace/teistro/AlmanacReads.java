@@ -208,7 +208,30 @@ final class AlmanacReads {
                 Reads.string(f, "excess"),
                 Reads.string(f, "choice"),
                 Reads.serdeDate(Reads.field(f, "day")),
-                Reads.number(f, "marginSeconds"));
+                Reads.number(f, "marginSeconds"),
+                f.get("parana") == null ? null : parana(Reads.object(f, "parana")));
+    }
+
+    /** A fast's parana as a festival answer writes it. */
+    private static Parana parana(Map<?, ?> p) {
+        Map<?, ?> kept = p.get("kept") == null ? null : Reads.object(p, "kept");
+        return new Parana(
+                Reads.serdeDate(Reads.field(p, "day")),
+                member(p, "tithi", "Tithi", Tithi::byKey),
+                Reads.optionalNumber(p, "hariVasaraEnds"),
+                kept == null ? null : new ParanaKept(
+                        Reads.interval(Reads.field(kept, "span")),
+                        paranaWindow(Reads.object(kept, "at")),
+                        Reads.string(kept, "fromBy"),
+                        Reads.string(kept, "toBy")));
+    }
+
+    private static ParanaWindow paranaWindow(Map<?, ?> at) {
+        return new ParanaWindow(
+                Reads.string(at, "window"),
+                Reads.optionalString(at, "part"),
+                Reads.optionalInteger(at, "from"),
+                Reads.optionalInteger(at, "to"));
     }
 
     /** The {@code years} section: the envelope's years, with the provenance beside them. */

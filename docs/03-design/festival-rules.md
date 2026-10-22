@@ -554,6 +554,96 @@ The façade now founds two days before a range, not one: an 11th
 beginning the day before is judged at an arunodaya in the night
 before that.
 
+### 8.5 Parana: when the fast is broken (P1-7)
+
+Derived from *Dharmasindhu* p. 19 (1888 Nirnaya-sagara edition) and
+*Hari Bhakti Vilasa* 13.238–259 and 13.264–287 (Haridas Shastri's
+edition, vol. 2, pp. 855–857), read off the texts, then held to a
+published reference (§8.6).
+
+**What the texts say.** Both put the meal on the day after the fast and
+inside the 12th: passing the 12th over is "a great fault" (DS; HBV
+vv. 238–244 collect six Puranas to the same end). Where the fast itself
+was kept on the 12th, the vaishnava's moved fast, the meal is on the 13th
+(HBV vv. 264–287, "उपोष्या द्वादशी शुद्धा त्रयोदश्यां तु पारणम्"), and
+DS gives the 13th too when "not even a kala" of the 12th is left. The
+12th's first quarter is the **hari vasara**, which is passed over before
+eating (HBV vv. 257–258, after the *Vishnudharmottara*: "द्वादश्याः
+प्रथमः पादो हरिवासरसंज्ञकः । तमतिक्रम्य कुर्वीत पारणम्"; DS: "द्वादशीभूयस्त्वे
+द्वादशीप्रथमपादं हरिवासरसंज्ञकमुल्लङ्घ्य पारणं कार्यम्"). Sanatana's
+commentary gives it as arithmetic: when the 12th lasts 45 + x ghatis
+past sunrise, x ghatis are passed over, which on a tithi of sixty is its
+first quarter. A short 12th moves the morning rites earlier, to
+arunodaya or past midnight, so that the meal still falls inside it (HBV
+vv. 245–250; DS "स्वल्पद्वादशीसत्त्वे रात्रिशेषे आमाध्याह्नान्ताः क्रियाः
+सर्वा अपकृष्य कार्याः"), and in extremity the fast is broken with water,
+which counts as neither eating nor not (HBV vv. 251–256; DS).
+
+**The window.** Only DS names one: with the 12th lasting past midday,
+"the meal within the first three muhurtas of the morning, not at midday,
+say many; in the afternoon only, say some, since otherwise many rites'
+times are obstructed" (प्रातर्मुहूर्तत्रयमध्ये एव पारणं न मध्याह्ने इति
+बहवः । बहूनां कर्मकालानां बाधापत्तेरपराह्ण एवेति केचित्). Three muhurtas of
+fifteen are the daylight's first fifth, pratah. The many's reading has
+no answer when the hari vasara outlasts pratah; the some's answers it.
+
+**The rule.** A `ParanaRule` on an `EkadashiRule` carries:
+
+- `at`: the daylight windows the meal is kept in, in order of
+  preference, each a span of the daylight (`Part` or `DayMuhurta`); the
+  first that leaves time past the hari vasara and before the tithi
+  ends is kept.
+- `hariVasara`: whether the 12th's first quarter is passed over.
+
+The answer, `EkadashiFast.parana`, is the parana day (the day after the
+fast), the tithi the meal is kept in (the 12th when it stands past that
+day's sunrise, else the tithi at sunrise), the hari vasara's end when it
+falls after that sunrise, and the window kept, `{span, at, fromBy, toBy}`: the span, the
+rule's window it lies in, and each edge's clause (`WINDOW`,
+`HARI_VASARA`, `TITHI_START`, `TITHI_END`). `kept` is null when no window leaves time, which the
+many's reading gives when the hari vasara outlasts the morning.
+
+**The default** (`EkadashiRule::dharmasindhu()`, each observer):
+`[Part(PRATAH), Part(APARAHNA)]` with `hariVasara`: the many's morning,
+and the some's afternoon when the morning is lost to the hari vasara.
+This is the reading the published reference prints (§8.6). A consumer
+keeping the many alone gives `[Part(PRATAH)]`; one following the Gaudiya
+calendar's third of the daylight gives `DayMuhurta {1, 5}`, which no
+rank-1 text in hand states. The default is the maintainer's to confirm
+(brief §4, QUESTIONS.md Q41).
+
+**Not built.** The short-12th rites before sunrise are the rites', not
+the meal's: the window still opens at sunrise. The Gaudiya
+mahadvadashis (HBV vv. 265 ff., unmilani, vyanjuli and the rest) are
+not computed. Other vratas' parana (Janmashtami at the tithi's and the
+nakshatra's end, DS p. 87) is a later step.
+
+### 8.6 What is measured of the parana
+
+- **The rule's cases** as synthetic sixty-ghati days
+  (`crates/panchanga/tests/ekadashi.rs`): the morning kept past the
+  hari vasara, the afternoon when the hari vasara outlasts the morning,
+  the 12th's start barring the meal when the 11th stands past the
+  parana day's sunrise, no window when the morning alone is asked and
+  lost, and a parana rule refused by its field.
+- **Drik Panchang's printed parana times** (`crates/sdk/tests/parana.rs`):
+  55 rows at New Delhi (2025 and 2026) and 38 at Kathmandu (2025, and
+  2026 January to April), every Ekadashi of each list, against
+  `FestivalPack::Dharmasindhu`. All 93 fall on the printed day with the
+  printed window. Proved red: with the hari vasara not passed over, 19
+  rows miss.
+
+**Two conventions the measuring found.** The reference's sunrise is
+the refracted upper limb, about four minutes before the SDK's default
+root sunrise (the centre, unrefracted); the test asks for the
+reference's (`{"day": {"sunrise": {"kind": "NAMED", "which":
+"UPPER_LIMB_REFRACTION"}}}`), and a window edge is held to a minute.
+The reference's tithi ends stand 1.0 to 1.5 minutes before Swiss
+Ephemeris's, to which the SDK agrees within 0.1 minute (C698); an edge
+set by a tithi is held to between 0.5 and 2 minutes late. Neither
+moves a day, and the parana default is the maintainer's to confirm
+(QUESTIONS.md Q41).
+
 ## 9. Nepal
 
 Roadmap Phase 7, step 4: the observances Nepal's national panchanga

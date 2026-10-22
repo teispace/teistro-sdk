@@ -4224,6 +4224,13 @@ class AnEngine(WithLibrary):
             self.assertTrue(all(o.margin_seconds >= 0 for o in answer.observances))
             self.assertTrue(answer.ekadashis)
             self.assertTrue(all(f.margin_seconds > 0 for f in answer.ekadashis))
+            # Each fast's parana: the day after it, a window kept inside it.
+            for fast in answer.ekadashis:
+                parana = fast.parana
+                assert parana is not None and parana.kept is not None
+                self.assertIn(parana.kept.at.part, ("PRATAH", "APARAHNA"))
+                self.assertLess(parana.kept.span.from_jd, parana.kept.span.to_jd)
+                self.assertIn(parana.kept.from_by, ("WINDOW", "HARI_VASARA", "TITHI_START"))
 
             sunrise = {
                 "key": "LAKSHMI_PUJA",

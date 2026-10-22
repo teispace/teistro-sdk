@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**When an Ekadashi fast is broken** (P1-7, `festival-rules.md` §8.5).
+**Numbers:** no day moves. Each Ekadashi fast under the shipped rules
+gains `parana`: the day after the fast, the tithi the meal is kept in,
+when the hari vasara (the 12th's first quarter) ends, and the window
+kept, with what set each edge (`WINDOW`, `HARI_VASARA`, `TITHI_START`,
+`TITHI_END`). A festival answer's JSON gains the field, so its content
+hash changes. `EkadashiRule` gains `parana`, a `ParanaRule { at,
+hariVasara }`, so a tradition can change the window. The default keeps
+pratah, then aparahna when the hari vasara outlasts the morning. All 93 of
+a published reference's parana times at Delhi and Kathmandu agree with it,
+2025 to 2026. The default is provisional until the maintainer confirms it
+(QUESTIONS.md Q41). Every binding's `EkadashiFast` carries `parana`.
+
 **An Ekadashi fast says how far the place can move** (P1-2,
 `festival-rules.md` §7.5). **Numbers:** no day moves. Each Ekadashi fast
 gains `marginSeconds`, as each observance has: the least time between an

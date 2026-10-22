@@ -14488,6 +14488,7 @@ final class EkadashiFast extends _Value {
     required this.choice,
     required this.day,
     required this.marginSeconds,
+    required this.parana,
   });
 
   /// The rule's key.
@@ -14527,6 +14528,10 @@ final class EkadashiFast extends _Value {
   /// after) may move, as another place moves them, before the day can change.
   final double marginSeconds;
 
+  /// When it is broken, under the rule's parana; null for a rule without
+  /// one.
+  final Parana? parana;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -14542,6 +14547,84 @@ final class EkadashiFast extends _Value {
     choice,
     ..._dateFields(day),
     marginSeconds,
+    parana,
+  ];
+}
+
+/// A daylight window a parana is kept in, as a rule spells it: `PART`
+/// with its [part] (`PRATAH`, `APARAHNA`, ...), or `DAY_MUHURTA` with the
+/// muhurtas [fromMuhurta] to [toMuhurta], 1 to 15.
+final class ParanaWindow extends _Value {
+  const ParanaWindow({
+    required this.window,
+    required this.part,
+    required this.fromMuhurta,
+    required this.toMuhurta,
+  });
+
+  final String window;
+  final String? part;
+  final int? fromMuhurta;
+  final int? toMuhurta;
+
+  @override
+  List<Object?> get _fields => [window, part, fromMuhurta, toMuhurta];
+}
+
+/// The window a parana was kept in, and the clause that set each edge:
+/// `WINDOW`, `HARI_VASARA` (the 12th's first quarter ends), `TITHI_START`
+/// or `TITHI_END`.
+final class ParanaKept extends _Value {
+  const ParanaKept({
+    required this.span,
+    required this.at,
+    required this.fromBy,
+    required this.toBy,
+  });
+
+  /// When the meal may be taken.
+  final Interval span;
+
+  /// The rule's window it lies in.
+  final ParanaWindow at;
+  final String fromBy;
+  final String toBy;
+
+  @override
+  List<Object?> get _fields => [span.from, span.to, at, fromBy, toBy];
+}
+
+/// When an Ekadashi fast is broken (`03-design/festival-rules.md` §8.5):
+/// the day after the fast, inside the 12th and past its first quarter,
+/// the hari vasara.
+final class Parana extends _Value {
+  const Parana({
+    required this.day,
+    required this.tithi,
+    required this.hariVasaraEnds,
+    required this.kept,
+  });
+
+  /// The day after the fast.
+  final CalendarDate day;
+
+  /// The tithi the meal is kept in: the 12th when it stands past that
+  /// day's sunrise, and otherwise the tithi at the sunrise.
+  final Tithi tithi;
+
+  /// When the hari vasara ends, a UTC Julian day, if after that day's
+  /// sunrise.
+  final double? hariVasaraEnds;
+
+  /// The window kept; null when none of the rule's leaves time.
+  final ParanaKept? kept;
+
+  @override
+  List<Object?> get _fields => [
+    ..._dateFields(day),
+    tithi,
+    hariVasaraEnds,
+    kept,
   ];
 }
 
@@ -14944,7 +15027,36 @@ EkadashiFast _ekadashiFast(Map<String, Object?> raw) => EkadashiFast(
   choice: raw['choice']! as String,
   day: _serdeDate(_festivalAt(raw['day'])),
   marginSeconds: (raw['marginSeconds']! as num).toDouble(),
+  parana: switch (raw['parana']) {
+    null => null,
+    final parana => _parana(_festivalAt(parana)),
+  },
 );
+
+Parana _parana(Map<String, Object?> raw) => Parana(
+  day: _serdeDate(_festivalAt(raw['day'])),
+  tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
+  hariVasaraEnds: (raw['hariVasaraEnds'] as num?)?.toDouble(),
+  kept: switch (raw['kept']) {
+    null => null,
+    final kept => _paranaKept(_festivalAt(kept)),
+  },
+);
+
+ParanaKept _paranaKept(Map<String, Object?> raw) {
+  final at = _festivalAt(raw['at']);
+  return ParanaKept(
+    span: _festivalInterval(raw['span']),
+    at: ParanaWindow(
+      window: at['window']! as String,
+      part: at['part'] as String?,
+      fromMuhurta: at['from'] as int?,
+      toMuhurta: at['to'] as int?,
+    ),
+    fromBy: raw['fromBy']! as String,
+    toBy: raw['toBy']! as String,
+  );
+}
 
 /// The `festivals` section: the envelope's value, its dates in this
 /// binding's shape, with the provenance beside it.

@@ -1721,7 +1721,7 @@ fn string_paths(
 #[test]
 fn an_answer_names_its_catalogue_members_where_its_table_says() {
     // Every string an answer holds that is not a catalogue member.
-    const NOT_MEMBERS: [&str; 18] = [
+    const NOT_MEMBERS: [&str; 23] = [
         "observances.rule",
         "observances.decidedBy.rule",
         "observances.day.resolution.kind",
@@ -1735,6 +1735,11 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
         "ekadashis.piercedAt",
         "ekadashis.excess",
         "ekadashis.choice",
+        "ekadashis.parana.day.resolution.kind",
+        "ekadashis.parana.kept.at.window",
+        "ekadashis.parana.kept.at.part",
+        "ekadashis.parana.kept.fromBy",
+        "ekadashis.parana.kept.toBy",
         "unjudged.rule",
         "unjudged.why",
         "dated.rule",
@@ -1786,6 +1791,7 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
     for day in &mut fast.days {
         day.era = era;
     }
+    fast.parana.as_mut().unwrap().day.era = era;
     // A dated observance, its day named in both calendars.
     let day = fast.day.clone();
     answer.dated.push(DatedObservance {

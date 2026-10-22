@@ -394,6 +394,10 @@ name = "printed_day"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "parana"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "western_houses"
 required-features = ["builtin-ephemeris"]
 

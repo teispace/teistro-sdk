@@ -4202,6 +4202,12 @@ test('an almanac carries the festivals it was asked for', () => {
   assert.ok(answer.observances.every((o) => o.marginSeconds >= 0));
   assert.ok(answer.ekadashis.length > 0);
   assert.ok(answer.ekadashis.every((f) => f.marginSeconds > 0));
+  // Each fast's parana: the day after it, as a date, and a window kept.
+  for (const fast of answer.ekadashis) {
+    assert.equal(fast.parana.kept.at.window, 'PART');
+    assert.ok(fast.parana.kept.span.from < fast.parana.kept.span.to);
+    assert.equal(typeof fast.parana.day.day, 'number');
+  }
   assert.throws(() => ctx.almanac.festivals(days), /festivals: expected a festivals request/);
   assert.deepEqual(
     answer.observances.map((o) => o.rule),

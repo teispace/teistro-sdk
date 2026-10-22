@@ -681,6 +681,9 @@ __all__ = [
     "FestivalDecided",
     "FestivalUnjudged",
     "EkadashiFast",
+    "Parana",
+    "ParanaKept",
+    "ParanaWindow",
     "LunarYears",
     "Sankalpa",
     "SankalpaAnswer",
@@ -7234,7 +7237,8 @@ class FestivalRequest(TypedDict):
     (`03-design/festival-rules.md` §7): `rules`, a :data:`FestivalPack` the
     SDK ships, or a list whose items each name a pack or spell a rule out as
     a mapping in its record's spelling (an Ekadashi rule when it has a
-    `vedha`, a following rule when it has an `after`, which counts `days`
+    `vedha`, with its `parana` `{at, hariVasara}` if it says when the fast
+    is broken, a following rule when it has an `after`, which counts `days`
     civil days from that festival rule's day, a dated rule when it has a
     `civilDate` or a `civilWeekday`, kept on a date of a calendar, or a
     `sunEnters`, kept on the civil day the Sun enters a `nakshatra`; a
@@ -7358,6 +7362,59 @@ class EkadashiFast:
 
     day: CalendarDate
     """The fast."""
+
+    parana: Optional["Parana"]
+    """When it is broken, under the rule's parana; None for a rule without
+    one."""
+
+
+@dataclass(frozen=True)
+class ParanaWindow:
+    """A daylight window a parana is kept in, as a rule spells it:
+    `PART` with its `part` (`PRATAH`, `APARAHNA`, ...), or `DAY_MUHURTA`
+    with the muhurtas `from_muhurta` to `to_muhurta`, 1 to 15."""
+
+    window: Literal["PART", "DAY_MUHURTA"]
+    part: Optional[str]
+    from_muhurta: Optional[int]
+    to_muhurta: Optional[int]
+
+
+@dataclass(frozen=True)
+class ParanaKept:
+    """The window a parana was kept in, and the clause that set each edge:
+    `WINDOW`, `HARI_VASARA` (the 12th's first quarter ends), `TITHI_START`
+    or `TITHI_END`."""
+
+    span: Interval
+    """When the meal may be taken."""
+
+    at: ParanaWindow
+    """The rule's window it lies in."""
+
+    from_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END"]
+    to_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END"]
+
+
+@dataclass(frozen=True)
+class Parana:
+    """When an Ekadashi fast is broken (`03-design/festival-rules.md`
+    §8.5): the day after the fast, inside the 12th and past its first
+    quarter, the hari vasara."""
+
+    day: CalendarDate
+    """The day after the fast."""
+
+    tithi: Tithi
+    """The tithi the meal is kept in: the 12th when it stands past that
+    day's sunrise, and otherwise the tithi at the sunrise."""
+
+    hari_vasara_ends: Optional[float]
+    """When the hari vasara ends, a UTC Julian day, if after that day's
+    sunrise."""
+
+    kept: Optional[ParanaKept]
+    """The window kept; None when none of the rule's leaves time."""
 
 
 @dataclass(frozen=True)
@@ -14229,6 +14286,30 @@ def _ekadashi_fast(raw: Mapping[str, Any]) -> EkadashiFast:
         choice=raw["choice"],
         day=_serde_date(raw["day"]),
         margin_seconds=float(raw["marginSeconds"]),
+        parana=_parana(raw["parana"]) if raw.get("parana") is not None else None,
+    )
+
+
+def _parana(raw: Mapping[str, Any]) -> Parana:
+    """A fast's parana as a festival answer writes it."""
+    kept = raw["kept"]
+    return Parana(
+        day=_serde_date(raw["day"]),
+        tithi=_member(Tithi, raw["tithi"]),
+        hari_vasara_ends=raw["hariVasaraEnds"],
+        kept=None
+        if kept is None
+        else ParanaKept(
+            span=_interval(kept["span"]),
+            at=ParanaWindow(
+                window=kept["at"]["window"],
+                part=kept["at"].get("part"),
+                from_muhurta=kept["at"].get("from"),
+                to_muhurta=kept["at"].get("to"),
+            ),
+            from_by=kept["fromBy"],
+            to_by=kept["toBy"],
+        ),
     )
 
 

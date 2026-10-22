@@ -462,6 +462,30 @@ are conditions of the day rather than limbs of it. The section table on
 `03-design/interpret-measured.md` carries that as what is left, so the
 line is measured rather than remembered.
 
+## Q41. Which window an Ekadashi fast's parana keeps by default: `open`
+
+Raised 2026-10-22 by P1-7 ([`03-design/festival-rules.md`](03-design/festival-rules.md)
+§8.5). The brief asks that a tradition's choice ship as a parameter and
+its default be the maintainer's (§4). The parameter is built:
+`ParanaRule { at, hariVasara }` on every `EkadashiRule`. The texts agree
+that the meal falls on the day after the fast, inside the 12th and past
+its first quarter (*Dharmasindhu* p. 19; *Hari Bhakti Vilasa*
+13.238–259). Only *Dharmasindhu* names a window, and it names two: "the
+first three muhurtas of the morning, say many; the afternoon, say some".
+
+- **A. Pratah, then aparahna** (the shipped provisional default): the
+  many's morning, and the some's afternoon when the hari vasara outlasts
+  the morning. Drik Panchang prints this reading, and all 93 of its
+  Delhi and Kathmandu rows for 2025–2026 agree (§8.6).
+- **B. Pratah alone:** the many's reading. It gives no window (`kept:
+  null`) on the days when the hari vasara outlasts the morning.
+- **C. The first third of the daylight** (`DAY_MUHURTA {1, 5}`): the
+  Gaudiya calendar's reading. No rank-1 text in hand states it.
+
+**Recommendation:** A. It is the only option that answers every day, it
+follows the text's two readings in the text's order, and a published
+reference prints it. B and C stay one request field away.
+
 ## Decisions log
 
 Decisions are recorded in the table above with the date; the reasoning is

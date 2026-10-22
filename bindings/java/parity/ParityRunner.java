@@ -254,6 +254,17 @@ public final class ParityRunner {
         return value ? "1" : "0";
     }
 
+    /** A fast's parana as the parity line writes it, "-" for none. */
+    private static String parana(Parana p) {
+        if (p == null) {
+            return "-";
+        }
+        ParanaKept kept = p.kept();
+        String tail = kept == null ? "-" : number(kept.span().fromJd()) + " " + number(kept.span().toJd()) + " "
+                + kept.fromBy() + " " + kept.toBy();
+        return p.day().month() + "-" + p.day().day() + " " + p.tithi().fullKey() + " " + tail;
+    }
+
     /** Python's {@code str(flag).lower()}. */
     private static String lower(boolean value) {
         return value ? "true" : "false";
@@ -687,7 +698,8 @@ public final class ParityRunner {
                     lower(fast.pierced()),
                     fast.excess(),
                     fast.choice(),
-                    number(fast.tithis().get(1).fromJd())));
+                    number(fast.tithis().get(1).fromJd()),
+                    parana(fast.parana())));
         }
         for (int k = 0; k < answer.dated().size(); k += 1) {
             DatedObservance kept = answer.dated().get(k);

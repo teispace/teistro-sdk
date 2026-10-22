@@ -6751,6 +6751,50 @@ export interface EkadashiRule {
   readonly vedha: EkadashiVedha;
   /** The day each kind takes, the 11th pure and pierced. */
   readonly table: { readonly pure: EkadashiKinds; readonly pierced: EkadashiKinds };
+  /** When the fast is broken (§8.5); a rule without one answers no parana. */
+  readonly parana?: ParanaRule;
+}
+
+/** A daylight window a parana is kept in: a fifth of the daylight, or a run of its muhurtas. */
+export type ParanaWindow = Extract<FestivalWindow, { readonly window: 'PART' | 'DAY_MUHURTA' }>;
+
+/**
+ * When an Ekadashi fast is broken (`03-design/festival-rules.md` §8.5): on the day after the
+ * fast, inside the 12th, in the first of `at` that leaves time once the 12th's first quarter,
+ * the hari vasara, is past (when `hariVasara`). The shipped rules carry *Dharmasindhu*'s:
+ * `[{ window: 'PART', part: 'PRATAH' }, { window: 'PART', part: 'APARAHNA' }]`, past the
+ * hari vasara.
+ */
+export interface ParanaRule {
+  /** The daylight windows the meal is kept in, in order of preference. */
+  readonly at: readonly ParanaWindow[];
+  /** Whether the 12th's first quarter is passed over before eating. */
+  readonly hariVasara: boolean;
+}
+
+/** What set an edge of the window a parana was kept in. */
+export type ParanaEdge = 'WINDOW' | 'HARI_VASARA' | 'TITHI_START' | 'TITHI_END';
+
+/** The window a parana was kept in, and the clause that set each edge. */
+export interface ParanaKept {
+  /** When the meal may be taken. */
+  readonly span: Interval;
+  /** The rule's window it lies in. */
+  readonly at: ParanaWindow;
+  readonly fromBy: ParanaEdge;
+  readonly toBy: ParanaEdge;
+}
+
+/** When an Ekadashi fast is broken, under its rule's parana. */
+export interface Parana {
+  /** The day after the fast. */
+  readonly day: CalendarDate;
+  /** The tithi the meal is kept in: the 12th when it stands past that day's sunrise, and otherwise the tithi at the sunrise. */
+  readonly tithi: Tithi;
+  /** When the hari vasara ends, a UTC Julian day, if after that day's sunrise; otherwise `null`. */
+  readonly hariVasaraEnds: number | null;
+  /** The window kept; `null` when none of the rule's leaves time. */
+  readonly kept: ParanaKept | null;
 }
 
 /** An Ekadashi's fast under one rule: the day, and the facts that gave it. */
@@ -6778,6 +6822,8 @@ export interface EkadashiFast {
   readonly day: CalendarDate;
   /** How far the place can move: the seconds of time every instant the fast was decided from (the sunsets that give the 11th its own day, that day's sunrise and, under a Vaishnava vedha, its arunodaya, and the two sunrises after) may move, as another place moves them, before the day can change. */
   readonly marginSeconds: number;
+  /** When it is broken, under the rule's parana; absent for a rule without one. */
+  readonly parana?: Parana;
 }
 
 /** A day's window for the rite, and the fraction of it the tithi held. */

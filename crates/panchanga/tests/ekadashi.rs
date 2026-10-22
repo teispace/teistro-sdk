@@ -19,7 +19,10 @@ mod common;
 use common::{days_over, ghati};
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Masa, Tithi};
-use teistro_panchanga::festival::{EkadashiFast, EkadashiRule, Excess, Vedha, Which, ekadashis};
+use teistro_panchanga::festival::{
+    DayPart, EkadashiFast, EkadashiRule, Excess, Parana, ParanaEdge, ParanaRule, Vedha, Which,
+    Window, ekadashis,
+};
 
 use Which::{Earlier, Later};
 
@@ -40,6 +43,11 @@ struct Example {
 /// The 9th ends on day 0; the 10th, the 11th and the 12th where the
 /// example puts them.
 fn fasts(ends: [End; 3]) -> Vec<EkadashiFast> {
+    fasts_under(ends, &EkadashiRule::dharmasindhu())
+}
+
+/// [`fasts`] under the given rules.
+fn fasts_under(ends: [End; 3], rules: &[EkadashiRule]) -> Vec<EkadashiFast> {
     let at = |(day, ghatis): End| ghati(day, ghatis);
     let tithis = [
         (Tithi::KrishnaNavami, ghati(0, 50.0)),
@@ -50,7 +58,7 @@ fn fasts(ends: [End; 3]) -> Vec<EkadashiFast> {
         (Tithi::KrishnaChaturdashi, ghati(6, 30.0)),
     ];
     let days = days_over(6, &tithis, &[], Masa::Kartika, MonthKind::Nija);
-    let answer = ekadashis(&EkadashiRule::dharmasindhu(), &days).unwrap();
+    let answer = ekadashis(rules, &days).unwrap();
     assert!(answer.unjudged.is_empty(), "{:?}", answer.unjudged);
     answer.ekadashis
 }
@@ -258,4 +266,147 @@ fn each_rule_s_margin_is_its_own_nearest_instant() {
         );
     }
     assert_eq!(found.len(), KEYS.len());
+}
+
+/// A fast's parana under a rule, by key.
+fn parana<'a>(found: &'a [EkadashiFast], key: &str) -> &'a Parana {
+    found
+        .iter()
+        .find(|fast| fast.rule == key)
+        .and_then(|fast| fast.parana.as_ref())
+        .unwrap()
+}
+
+/// The window kept: its day (D1 is the 3rd), its start and end as
+/// `(day, ghati)` and the clause that set each, and the rule's window.
+fn kept(parana: &Parana) -> (u8, End, End, ParanaEdge, ParanaEdge, Window) {
+    let kept = parana.kept.unwrap();
+    let end = |jd: f64| {
+        #[allow(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "a few days"
+        )]
+        let day = jd.floor() as usize;
+        (day, ((jd - jd.floor()) * 60.0 * 1e6).round() / 1e6)
+    };
+    (
+        parana.day.day,
+        end(kept.span.from.get()),
+        end(kept.span.to.get()),
+        kept.from_by,
+        kept.to_by,
+        kept.at,
+    )
+}
+
+const PRATAH: Window = Window::Part {
+    part: DayPart::Pratah,
+};
+const APARAHNA: Window = Window::Part {
+    part: DayPart::Aparahna,
+};
+
+/// *Dharmasindhu* p. 19 over the twelve examples' kinds of day: the meal
+/// the day after the fast, inside the 12th and past its first quarter, in
+/// the morning's fifth (ghatis 0 to 6 of a daylight of thirty), else the
+/// afternoon's (18 to 24).
+#[test]
+fn the_meal_is_kept_in_the_morning_past_the_hari_vasara_else_the_afternoon() {
+    use ParanaEdge::{HariVasara, TithiEnd, Window as Edge};
+    // V1: the 12th from day 3's ghati 1 to its 58th, so its first quarter
+    // ends at ghati 15¼, past the morning: the Smarta's meal is the
+    // afternoon's. The Vaishnava fasts day 3, and the 12th is gone by
+    // day 4's sunrise: the meal is the 13th's morning.
+    let found = fasts([(1, 55.0), (3, 1.0), (3, 58.0)]);
+    let smarta = parana(&found, "EKADASHI_SMARTA");
+    assert_eq!(smarta.tithi, Tithi::KrishnaDwadashi);
+    assert_eq!(
+        kept(smarta),
+        (4, (3, 18.0), (3, 24.0), Edge, Edge, APARAHNA)
+    );
+    assert!((smarta.hari_vasara_ends.unwrap().get() - ghati(3, 15.25)).abs() < 1e-9);
+    let vaishnava = parana(&found, "EKADASHI_VAISHNAVA");
+    assert_eq!(vaishnava.tithi, Tithi::KrishnaTrayodashi);
+    assert_eq!(vaishnava.hari_vasara_ends, None);
+    assert_eq!(kept(vaishnava), (5, (4, 0.0), (4, 6.0), Edge, Edge, PRATAH));
+    // The 12th ends 3 ghatis into the parana day's morning: the meal
+    // before it does.
+    let found = fasts([(1, 40.0), (2, 30.0), (3, 3.0)]);
+    let smarta = parana(&found, "EKADASHI_SMARTA");
+    assert_eq!(
+        kept(smarta),
+        (4, (3, 0.0), (3, 3.0), Edge, TithiEnd, PRATAH)
+    );
+    // The 12th from day 2's ghati 50 for fifty ghatis: its quarter ends
+    // 2½ ghatis into day 3's morning, which opens the meal.
+    let found = fasts([(1, 40.0), (2, 50.0), (3, 40.0)]);
+    let smarta = parana(&found, "EKADASHI_SMARTA");
+    assert_eq!(
+        kept(smarta),
+        (4, (3, 2.5), (3, 6.0), HariVasara, Edge, PRATAH)
+    );
+    // The 11th stands past day 3's sunrise and the 12th's quarter ends at
+    // ghati 22¼, inside the afternoon.
+    let found = fasts([(1, 40.0), (3, 10.0), (3, 59.0)]);
+    let smarta = parana(&found, "EKADASHI_SMARTA");
+    assert_eq!(
+        kept(smarta),
+        (4, (3, 22.25), (3, 24.0), HariVasara, Edge, APARAHNA)
+    );
+}
+
+/// A rule passing no hari vasara still keeps the meal inside the 12th,
+/// from its start; one keeping the morning alone has no window when the
+/// hari vasara outlasts it, and says so.
+#[test]
+fn the_12th_s_start_bars_the_meal_and_a_lost_morning_is_no_window() {
+    let rule = |at: Vec<Window>, hari_vasara: bool| {
+        let mut smarta = EkadashiRule::dharmasindhu().swap_remove(1);
+        smarta.parana = Some(ParanaRule { at, hari_vasara });
+        vec![smarta]
+    };
+    let all_day = Window::DayMuhurta { from: 1, to: 15 };
+    let found = fasts_under(
+        [(1, 40.0), (3, 10.0), (3, 59.0)],
+        &rule(vec![all_day], false),
+    );
+    assert_eq!(
+        kept(parana(&found, "EKADASHI_SMARTA")),
+        (
+            4,
+            (3, 10.0),
+            (3, 30.0),
+            ParanaEdge::TithiStart,
+            ParanaEdge::Window,
+            all_day
+        )
+    );
+    let found = fasts_under([(1, 55.0), (3, 1.0), (3, 58.0)], &rule(vec![PRATAH], true));
+    let lost = parana(&found, "EKADASHI_SMARTA");
+    assert_eq!(lost.kept, None);
+    assert!(lost.hari_vasara_ends.is_some());
+}
+
+/// A parana with no window, or with one outside the daylight, is refused
+/// by the field that holds it.
+#[test]
+fn a_parana_without_a_daylight_window_is_refused_by_its_field() {
+    let refused = |at: Vec<Window>| {
+        let mut rule = EkadashiRule::dharmasindhu().swap_remove(0);
+        rule.parana = Some(ParanaRule {
+            at,
+            hari_vasara: true,
+        });
+        rule.check().unwrap_err()
+    };
+    assert_eq!(refused(vec![]).field(), Some("parana.at"));
+    assert_eq!(
+        refused(vec![PRATAH, Window::Pradosha]).field(),
+        Some("parana.at[1]")
+    );
+    assert_eq!(
+        refused(vec![Window::DayMuhurta { from: 4, to: 2 }]).field(),
+        Some("parana.at[0].to")
+    );
 }

@@ -110,6 +110,10 @@ import type {
   EkadashiKinds,
   EkadashiRule,
   EkadashiVedha,
+  Parana,
+  ParanaEdge,
+  ParanaKept,
+  ParanaWindow,
   DatedObservance,
   DatedRule,
   FestivalAnswer,
@@ -2171,11 +2175,19 @@ function theFestivals(almanac: Almanac): string {
     const adhika: boolean = o.adhika;
     return `${o.rule} ${month} ${adhika} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from}`;
   });
+  const parana = (p: Parana | undefined): string => {
+    if (p === undefined) return '-';
+    const kept: ParanaKept | null = p.kept;
+    const at: ParanaWindow | undefined = kept?.at;
+    const edge: ParanaEdge | undefined = kept?.fromBy;
+    const ends: number | null = p.hariVasaraEnds;
+    return `${p.day.day} ${p.tithi} ${ends} ${kept?.span.from} ${at?.window} ${edge}`;
+  };
   const fasts = answer.ekadashis.map((fast) => {
     const [first, second] = fast.days;
     const [, eleventh] = fast.tithis;
     const at: EkadashiVedha | null = fast.piercedAt;
-    return `${fast.rule} ${fast.tithi} ${fast.month} ${fast.adhika} ${eleventh.from} ${first.day} ${second.day} ${at} ${fast.pierced} ${fast.excess} ${fast.choice} ${fast.day.day} ${fast.marginSeconds}`;
+    return `${fast.rule} ${fast.tithi} ${fast.month} ${fast.adhika} ${eleventh.from} ${first.day} ${second.day} ${at} ${fast.pierced} ${fast.excess} ${fast.choice} ${fast.day.day} ${fast.marginSeconds} ${parana(fast.parana)}`;
   });
   const unjudged = answer.unjudged.map((u) => `${u.rule} ${u.tithi.from} ${u.why}`);
   const madhava: EkadashiRule = {
@@ -2189,6 +2201,13 @@ function theFestivals(almanac: Almanac): string {
   };
   // @ts-expect-error a table's day is the earlier or the later, not a yugma
   const yugma: EkadashiKinds = { eleventh: 'BY_YUGMA', twelfth: 'LATER', both: 'LATER', neither: 'EARLIER' };
+  const morningOnly: EkadashiRule = {
+    ...madhava,
+    key: 'EKADASHI_SMARTA_MORNING',
+    parana: { at: [{ window: 'PART', part: 'PRATAH' }, { window: 'DAY_MUHURTA', from: 1, to: 5 }], hariVasara: true },
+  };
+  // @ts-expect-error a parana is kept in the daylight, not at pradosha
+  const atNight: ParanaWindow = { window: 'PRADOSHA' };
   const rule: FestivalRule = {
     key: 'LAKSHMI_PUJA',
     source: 'Dharmasindhu p. 77',
@@ -2327,7 +2346,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

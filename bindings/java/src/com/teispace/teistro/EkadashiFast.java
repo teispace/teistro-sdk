@@ -24,11 +24,13 @@ import java.util.List;
  *     that day's sunrise and, under a Vaishnava vedha, its arunodaya, and
  *     the two sunrises after) may move, as another place moves them,
  *     before the day can change
+ * @param parana when it is broken, under the rule's parana; null for a rule
+ *     without one
  */
 public record EkadashiFast(
         String rule, Tithi tithi, Masa month, boolean adhika, List<Interval> tithis, List<CalendarDate> days,
         String piercedAt, boolean pierced, String excess, String choice, CalendarDate day,
-        double marginSeconds) {
+        double marginSeconds, Parana parana) {
     /** Keeps the lists unmodifiable. */
     public EkadashiFast {
         tithis = List.copyOf(tithis);

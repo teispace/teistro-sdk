@@ -9,6 +9,9 @@
 //! the 11th and the 12th stand **in excess** (*adhikya*), holding the
 //! sunrise after their own? The text answers each of the eight kinds for
 //! each observer, so a rule carries its answers as a table.
+//!
+//! The fast is broken the day after, inside the 12th and past its first
+//! quarter, in the windows a [`ParanaRule`] names (§8.5).
 
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
@@ -18,7 +21,7 @@ use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 
-use super::{FestivalDay, Observances, Unjudged, Which, occurrences};
+use super::{FestivalDay, Observances, Unjudged, Which, Window, check_window, occurrences};
 
 /// Where the 10th pierces the 11th's day (p. 11).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -137,14 +140,19 @@ pub struct EkadashiRule {
     pub vedha: Vedha,
     /// The day each kind takes.
     pub table: EkadashiTable,
+    /// When the fast is broken (§8.5); a rule without one answers no
+    /// parana.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parana: Option<ParanaRule>,
 }
 
 impl EkadashiRule {
-    /// Refuses what could not name an answer: an empty key.
+    /// Refuses what could not name an answer: an empty key, and a
+    /// parana with no window or one outside the daylight.
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` on `key`.
+    /// `INVALID_ARG` on `key` or on the parana's `at`.
     pub fn check(&self) -> Result<(), Error> {
         if self.key.trim().is_empty() {
             return Err(Error::invalid_arg(
@@ -152,7 +160,9 @@ impl EkadashiRule {
             )
             .with_field("key"));
         }
-        Ok(())
+        self.parana
+            .as_ref()
+            .map_or(Ok(()), |parana| parana.check(&self.key))
     }
 
     /// *Dharmasindhu*'s three observers (§8.3), each citing its rows.
@@ -171,6 +181,7 @@ impl EkadashiRule {
                     },
                     pierced: EkadashiKinds::all(Later),
                 },
+                parana: Some(ParanaRule::dharmasindhu()),
             },
             EkadashiRule {
                 key: "EKADASHI_SMARTA".to_owned(),
@@ -190,6 +201,7 @@ impl EkadashiRule {
                         neither: Earlier,
                     },
                 },
+                parana: Some(ParanaRule::dharmasindhu()),
             },
             EkadashiRule {
                 key: "EKADASHI_SMARTA_RENUNCIANT".to_owned(),
@@ -204,9 +216,129 @@ impl EkadashiRule {
                     },
                     pierced: EkadashiKinds::all(Later),
                 },
+                parana: Some(ParanaRule::dharmasindhu()),
             },
         ]
     }
+}
+
+/// When an Ekadashi fast is broken (*parana*, §8.5): on the day after
+/// the fast, inside the 12th, in the first of these daylight windows that
+/// leaves time once the 12th's first quarter, the *hari vasara*, is past.
+///
+/// *Dharmasindhu* p. 19 and *Hari Bhakti Vilasa* 13.238–259 put the meal
+/// inside the 12th and past its first quarter, and on the 13th when the
+/// 12th is gone by the parana day's sunrise (HBV 13.264–287, a fast kept
+/// on the 12th). The windows are a reading of p. 19's "the first three
+/// muhurtas of the morning, say many; the afternoon, say some", which is
+/// the consumer's to change: [`ParanaRule::dharmasindhu`] keeps the
+/// many's morning and the some's afternoon when the morning is lost.
+///
+/// ```
+/// use teistro_panchanga::festival::{DayPart, ParanaRule, Window};
+///
+/// let rule = ParanaRule::dharmasindhu();
+/// assert_eq!(rule.at[0], Window::Part { part: DayPart::Pratah });
+/// assert!(rule.hari_vasara);
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ParanaRule {
+    /// The daylight windows the meal is kept in, in order of preference:
+    /// each a span of the daylight (`PART` or `DAY_MUHURTA`).
+    pub at: Vec<Window>,
+    /// Whether the 12th's first quarter is passed over before eating.
+    pub hari_vasara: bool,
+}
+
+impl ParanaRule {
+    /// *Dharmasindhu* p. 19: pratah, the daylight's first fifth ("the
+    /// first three muhurtas of the morning, not at midday, say many"),
+    /// then aparahna, its fourth, when the hari vasara outlasts the
+    /// morning ("the afternoon, say some"); past the hari vasara.
+    #[must_use]
+    pub fn dharmasindhu() -> ParanaRule {
+        use super::DayPart::{Aparahna, Pratah};
+        ParanaRule {
+            at: vec![
+                Window::Part { part: Pratah },
+                Window::Part { part: Aparahna },
+            ],
+            hari_vasara: true,
+        }
+    }
+
+    /// Refuses a parana with no window, or one that is not a span of the
+    /// daylight.
+    fn check(&self, key: &str) -> Result<(), Error> {
+        if self.at.is_empty() {
+            return Err(Error::invalid_arg(format!(
+                "{key}: a parana needs a window to keep the meal in"
+            ))
+            .with_field("parana.at"));
+        }
+        for (index, &window) in self.at.iter().enumerate() {
+            let at = format!("parana.at[{index}]");
+            if !matches!(window, Window::Part { .. } | Window::DayMuhurta { .. }) {
+                return Err(Error::invalid_arg(format!(
+                    "{key}: a parana is kept in a span of the daylight, PART or DAY_MUHURTA, not {window:?}"
+                ))
+                .with_field(at));
+            }
+            check_window(key, window, &at)?;
+        }
+        Ok(())
+    }
+}
+
+/// What set an edge of the window a parana was kept in.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ParanaEdge {
+    /// The rule's window's own edge.
+    Window,
+    /// The end of the hari vasara, the 12th's first quarter.
+    HariVasara,
+    /// The start of the tithi the meal is kept in: the 12th, when the
+    /// 11th stands past the parana day's sunrise.
+    TithiStart,
+    /// The end of the tithi the meal is kept in.
+    TithiEnd,
+}
+
+/// The window a parana was kept in.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct ParanaKept {
+    /// When the meal may be taken.
+    pub span: Interval,
+    /// The rule's window it lies in.
+    pub at: Window,
+    /// What set its start.
+    pub from_by: ParanaEdge,
+    /// What set its end.
+    pub to_by: ParanaEdge,
+}
+
+/// When a fast is broken, under its rule's [`ParanaRule`].
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct Parana {
+    /// The day after the fast.
+    pub day: CalendarDate,
+    /// The tithi the meal is kept in: the 12th when it stands past that
+    /// day's sunrise, and otherwise the tithi at the sunrise.
+    pub tithi: Tithi,
+    /// When the hari vasara ends, if after that day's sunrise, whether or
+    /// not the rule passes it over.
+    pub hari_vasara_ends: Option<JulianDay<Utc>>,
+    /// The window kept; null when none of the rule's leaves time, as the
+    /// morning alone does when the hari vasara outlasts it.
+    pub kept: Option<ParanaKept>,
 }
 
 /// An Ekadashi's fast: the day a rule gives it, and the facts that gave
@@ -246,6 +378,10 @@ pub struct EkadashiFast {
     /// arunodaya, for a rule pierced there), and the two sunrises after
     /// it, which say what stands in excess.
     pub margin_seconds: f64,
+    /// When it is broken, under the rule's parana; left out for a rule
+    /// without one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parana: Option<Parana>,
 }
 
 /// Every Ekadashi over consecutive sunrise days, under each rule.
@@ -278,14 +414,24 @@ pub fn ekadashis(rules: &[EkadashiRule], days: &[FestivalDay]) -> Result<Observa
             .and_then(|before| run.get(before))
             .zip(run.get(at + 1))
             .ok_or("the days do not hold the 10th and the 12th beside it")
-            .and_then(|(tenth, twelfth)| facts(days, [tenth.whole, eleventh.whole, twelfth.whole]));
+            .and_then(|(tenth, twelfth)| {
+                facts(
+                    days,
+                    [tenth.whole, eleventh.whole, twelfth.whole],
+                    twelfth.member,
+                )
+            });
         for rule in rules {
-            match &found {
-                Ok(facts) => answer.ekadashis.push(facts.fast(rule, eleventh.member)),
+            match found
+                .as_ref()
+                .map_err(|why| (*why).to_owned())
+                .and_then(|facts| facts.fast(rule, eleventh.member))
+            {
+                Ok(fast) => answer.ekadashis.push(fast),
                 Err(why) => answer.unjudged.push(Unjudged {
                     rule: rule.key.clone(),
                     tithi: eleventh.whole,
-                    why: (*why).to_owned(),
+                    why,
                 }),
             }
         }
@@ -300,13 +446,17 @@ struct Facts<'d> {
     /// was chosen by.
     before: &'d FestivalDay,
     days: [&'d FestivalDay; 2],
+    /// The day after the later, a parana's when the fast is the later's.
+    after: Option<&'d FestivalDay>,
+    /// The 12th's member, bright or dark.
+    twelfth: Tithi,
     arunodaya: JulianDay<Utc>,
     pierced_at: Option<Vedha>,
     excess: Excess,
 }
 
 impl Facts<'_> {
-    fn fast(&self, rule: &EkadashiRule, tithi: Tithi) -> EkadashiFast {
+    fn fast(&self, rule: &EkadashiRule, tithi: Tithi) -> Result<EkadashiFast, String> {
         // Pierced at sunrise is pierced at arunodaya, the earlier instant.
         let pierced = self.pierced_at.is_some_and(|at| at >= rule.vedha);
         let kinds = if pierced {
@@ -320,7 +470,12 @@ impl Facts<'_> {
             Which::Earlier => first,
             Which::Later => second,
         };
-        EkadashiFast {
+        let parana = rule
+            .parana
+            .as_ref()
+            .map(|parana| self.parana(parana, choice))
+            .transpose()?;
+        Ok(EkadashiFast {
             rule: rule.key.clone(),
             tithi,
             month: first.month.amanta,
@@ -333,7 +488,74 @@ impl Facts<'_> {
             choice,
             day: chosen.date.clone(),
             margin_seconds: self.margin(rule.vedha) * SECONDS_PER_DAY,
+            parana,
+        })
+    }
+
+    /// The parana of a fast kept on `choice`'s day (§8.5).
+    fn parana(&self, rule: &ParanaRule, choice: Which) -> Result<Parana, String> {
+        let day = match choice {
+            Which::Earlier => self.days[1],
+            Which::Later => self
+                .after
+                .ok_or("the days do not hold the day after the fast, its parana")?,
+        };
+        if !day.normal {
+            return Err(format!("{} is a polar day, which has no windows", day.date));
         }
+        let twelfth = self.tithis[2];
+        let (tithi, held) = if twelfth.to.get() > day.sunrise.get() {
+            (self.twelfth, twelfth)
+        } else {
+            let at = day
+                .tithi
+                .iter()
+                .find(|span| span.whole.contains(day.sunrise))
+                .ok_or_else(|| format!("no tithi holds {}'s sunrise", day.date))?;
+            (at.member, at.whole)
+        };
+        let quarter = (twelfth.to.get() - twelfth.from.get()).mul_add(0.25, twelfth.from.get());
+        let hari_vasara_ends = (quarter > day.sunrise.get()).then(|| JulianDay::literal(quarter));
+        // What bars the start: the tithi's own, and the hari vasara's end
+        // when the rule passes it over; the latest past the window's
+        // start sets it.
+        let mut bars = vec![(held.from, ParanaEdge::TithiStart)];
+        if let Some(end) = hari_vasara_ends.filter(|_| rule.hari_vasara) {
+            bars.push((end, ParanaEdge::HariVasara));
+        }
+        for &at in &rule.at {
+            let span = day.window(at).map_err(|error| error.to_string())?;
+            let (from, from_by) = bars
+                .iter()
+                .copied()
+                .filter(|(bar, _)| bar.get() > span.from.get())
+                .max_by(|a, b| a.0.get().total_cmp(&b.0.get()))
+                .unwrap_or((span.from, ParanaEdge::Window));
+            let (to, to_by) = if held.to.get() < span.to.get() {
+                (held.to, ParanaEdge::TithiEnd)
+            } else {
+                (span.to, ParanaEdge::Window)
+            };
+            if from.get() < to.get() {
+                return Ok(Parana {
+                    day: day.date.clone(),
+                    tithi,
+                    hari_vasara_ends,
+                    kept: Some(ParanaKept {
+                        span: Interval::literal(from.get(), to.get()),
+                        at,
+                        from_by,
+                        to_by,
+                    }),
+                });
+            }
+        }
+        Ok(Parana {
+            day: day.date.clone(),
+            tithi,
+            hari_vasara_ends,
+            kept: None,
+        })
     }
 
     /// The least time, in days, between an edge of the three tithis and
@@ -362,7 +584,11 @@ impl Facts<'_> {
 const SECONDS_PER_DAY: f64 = 86_400.0;
 
 /// The 11th's two days and what stands on them (§8.2, C181).
-fn facts(days: &[FestivalDay], tithis: [Interval; 3]) -> Result<Facts<'_>, &'static str> {
+fn facts(
+    days: &[FestivalDay],
+    tithis: [Interval; 3],
+    member: Tithi,
+) -> Result<Facts<'_>, &'static str> {
     let [tenth, eleventh, twelfth] = tithis;
     // The day in whose daylight the 11th begins; one beginning at night
     // is the next day's. A kshaya 11th always begins in daylight, so this
@@ -395,6 +621,8 @@ fn facts(days: &[FestivalDay], tithis: [Interval; 3]) -> Result<Facts<'_>, &'sta
         tithis,
         before,
         days: [first, second],
+        after: days.get(own + 2),
+        twelfth: member,
         arunodaya,
         pierced_at,
         excess,

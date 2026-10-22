@@ -5965,15 +5965,24 @@ function festivalsFrom(json) {
       day: dateFrom(observance.day),
       extents: observance.extents.map((extent) => ({ ...extent, day: dateFrom(extent.day) })),
     })),
-    ekadashis: value.ekadashis.map((fast) => ({
-      ...fast,
-      days: fast.days.map(dateFrom),
-      day: dateFrom(fast.day),
-    })),
+    ekadashis: value.ekadashis.map(fastFrom),
     unjudged: value.unjudged,
     dated: (value.dated ?? []).map((kept) => ({ ...kept, day: dateFrom(kept.day), on: dateFrom(kept.on) })),
     provenance: decodeProvenance(provenance),
   });
+}
+
+/**
+ * An Ekadashi fast as a festival answer writes it, its dates and its
+ * parana's in the shape every other date here has.
+ *
+ * @param {object} fast
+ * @returns {object}
+ */
+function fastFrom(fast) {
+  const shaped = { ...fast, days: fast.days.map(dateFrom), day: dateFrom(fast.day) };
+  if (fast.parana) shaped.parana = { ...fast.parana, day: dateFrom(fast.parana.day) };
+  return shaped;
 }
 
 /**
@@ -7320,7 +7329,7 @@ function festivalDisagreementsFrom({ value, provenance }) {
           day: dateFrom(one.day),
           extents: one.extents.map((extent) => ({ ...extent, day: dateFrom(extent.day) })),
         };
-  const fast = (one) => (one === null ? null : { ...one, days: one.days.map(dateFrom), day: dateFrom(one.day) });
+  const fast = (one) => (one === null ? null : fastFrom(one));
   return {
     ...value,
     observances: value.observances.map((one) => ({

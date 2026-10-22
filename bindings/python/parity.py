@@ -22,6 +22,7 @@ import json
 
 from teistro import (
     AshtaKoota,
+    Parana,
     ResearchBirth,
     ResearchCountRow,
     ResearchCounts,
@@ -624,6 +625,17 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
                 )
             ),
         )
+    def parana(p: Optional[Parana]) -> str:
+        if p is None:
+            return "-"
+        kept = p.kept
+        tail = (
+            "-"
+            if kept is None
+            else f"{number(kept.span.from_jd)} {number(kept.span.to_jd)} {kept.from_by} {kept.to_by}"
+        )
+        return f"{p.day.month}-{p.day.day} {p.tithi.full_key} {tail}"
+
     for k, fast in enumerate(answer.ekadashis):
         put(
             f"{prefix}-ekadashi-{k}",
@@ -639,6 +651,7 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
                     fast.excess,
                     fast.choice,
                     number(fast.tithis[1].from_jd),
+                    parana(fast.parana),
                 )
             ),
         )
