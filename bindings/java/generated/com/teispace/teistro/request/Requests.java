@@ -13,6 +13,7 @@ public final class Requests {
             Map.entry("almanac.ashauch", AshauchQuery::of),
             Map.entry("almanac.days", AlmanacDaysRequest::of),
             Map.entry("almanac.festival_calendar", FestivalCalendarRequest::of),
+            Map.entry("almanac.firstYear", FirstYearQuery::of),
             Map.entry("almanac.pakshi", PakshiRequest::of),
             Map.entry("almanac.sankalpa", SankalpaRequest::of),
             Map.entry("calendar.convert", CalendarAsked::of),

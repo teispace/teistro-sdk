@@ -9663,6 +9663,33 @@ ts_status ts_almanac_sankalpa(const ts_context * context, const char * request_j
 ts_status ts_almanac_ashauch(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
+ * A death's first year at a place (`03-design/shraddha.md` §3.3),
+ * answered with `{value, provenance}` as canonical JSON.
+ *
+ * `value` is `{key, origin, dayOne, dayOneBy, eleventhDay, sapindana,
+ * rites}`: `origin` the death's lunar date, `dayOne` the ashauch's first
+ * day and `dayOneBy` why, and `rites` each of the *Dharmasindhu*'s
+ * sixteen, the first abdika and the sapindana as `{rite, place, month,
+ * year, adhika, day, form, drawnTo, bars, observance, clause}`, in the
+ * order of their days: `place` its place among the sixteen, `month` the
+ * month a monthly closes, `year` which yearly shraddha, `form`
+ * `EKODDISHTA` or `PARVANA`, `drawnTo` the sapindana's day when it is
+ * first done there, and `bars` what the text bars an *ūna* rite's day
+ * for.
+ *
+ * `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+ * "utcOffsetSeconds", "request"}`: `request` `{key, at, night,
+ * firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death
+ * as a UTC Julian day and every reading the *Dharmasindhu*'s when left
+ * out. A key it does not read or an empty `key` is `INVALID_ARG` named
+ * under `firstYear`; a context without an ephemeris is `CAPABILITY`, and
+ * a polar day `OUT_OF_RANGE`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_almanac_first_year(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
  * A range's observances and Ekadashi fasts at one place as an iCalendar
  * feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
  * ordered by day and then rule, its `SUMMARY` the festival's name in the

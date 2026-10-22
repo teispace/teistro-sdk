@@ -14,7 +14,7 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 | every area holds an operation that reaches the boundary | **holds** | 0 of 11 disagree |
 | no operation's name repeats its own area's | **holds** | 0 of 48 disagree; which is what the namespace is for |
 | every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 19 disagree; unreached: `blob`, `lib`, `provider`, `string` |
-| an entry point's name already carries its own module | falsified | 12 of 58 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_festival_calendar`, `ts_context_new_with_provider` |
+| an entry point's name already carries its own module | falsified | 13 of 59 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_context_new_with_provider` |
 | every operation the layer declares is listed by every parity runner | falsified | 12 of 219 disagree; unlisted: `calendar.tibetan_year by parity.mjs`, `almanac.sankalpa by parity.mjs`, `almanac.ashauch by parity.mjs`, `calendar.tibetan_year by parity.dart`, `almanac.sankalpa by parity.dart`, `almanac.ashauch by parity.dart`, `calendar.tibetan_year by parity.py`, `almanac.sankalpa by parity.py`, `almanac.ashauch by parity.py`, `calendar.tibetan_year by parity.rs`, `almanac.sankalpa by parity.rs`, `almanac.ashauch by parity.rs` |
 | every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 11 disagree; site/content/docs/surface.mdx names all 11 and nothing else |
 
@@ -28,7 +28,7 @@ The unreached modules are `blob`, `lib`, `provider`, `string`. 4 of them are the
 
 1 is an exception **declared in [`surface-areas.md`](surface-areas.md)** and still counted here for the same reason: `ts_context_new_with_provider`. It belongs to `context`'s family by the name a consumer calls and to `provider`'s by what it depends on, and the name that should read well is the one a consumer calls.
 
-The remaining 5 are not accounted for: `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_festival_calendar`.
+The remaining 6 are not accounted for: `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`.
 
 ## The areas the layer wires
 
@@ -165,7 +165,7 @@ The remaining 5 are not accounted for: `ts_error_free`, `ts_almanac_disagreement
 | `naam` | 1 | `matching` |
 | `numerology` | 1 | `numerology` |
 | `pakshi` | 1 | `almanac` |
-| `panchanga` | 5 | `almanac` |
+| `panchanga` | 6 | `almanac` |
 | `positions` | 1 | `(root)` |
 | `provider` | 3 | — |
 | `rashifal` | 1 | `chart` |

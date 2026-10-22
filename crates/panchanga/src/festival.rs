@@ -53,9 +53,12 @@ pub use following::{FollowingRule, following};
 use vrata::RiteAt;
 pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
 
-/// A fifth of the daylight (*Dharmasindhu*, p. 6).
+/// A fifth of the daylight (*Dharmasindhu*, p. 6). Its schema name is
+/// `DayFifth`, the chart's daylight or night being the boundary's
+/// `DayPart`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "DayFifth"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DayPart {
     /// The first fifth.

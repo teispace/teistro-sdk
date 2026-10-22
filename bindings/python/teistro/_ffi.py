@@ -4141,6 +4141,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_ashauch.restype = ctypes.c_int32
+        self.ts_almanac_first_year: Any = library.ts_almanac_first_year
+        self.ts_almanac_first_year.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_first_year.restype = ctypes.c_int32
         self.ts_almanac_festival_calendar: Any = library.ts_almanac_festival_calendar
         self.ts_almanac_festival_calendar.argtypes = [
             ctypes.POINTER(_Context),
@@ -5002,6 +5009,44 @@ class TeistroContext:
         owned.append(_request_json)
         _out_json = _StringStruct()
         status = Status(self._lib.ts_almanac_ashauch(
+            self._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
+
+    def almanac_first_year(self, request_json: str) -> str:
+        """A death's first year at a place (`03-design/shraddha.md` §3.3),
+        answered with `{value, provenance}` as canonical JSON.
+
+        `value` is `{key, origin, dayOne, dayOneBy, eleventhDay, sapindana,
+        rites}`: `origin` the death's lunar date, `dayOne` the ashauch's first
+        day and `dayOneBy` why, and `rites` each of the *Dharmasindhu*'s
+        sixteen, the first abdika and the sapindana as `{rite, place, month,
+        year, adhika, day, form, drawnTo, bars, observance, clause}`, in the
+        order of their days: `place` its place among the sixteen, `month` the
+        month a monthly closes, `year` which yearly shraddha, `form`
+        `EKODDISHTA` or `PARVANA`, `drawnTo` the sapindana's day when it is
+        first done there, and `bars` what the text bars an *ūna* rite's day
+        for.
+
+        `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+        "utcOffsetSeconds", "request"}`: `request` `{key, at, night,
+        firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death
+        as a UTC Julian day and every reading the *Dharmasindhu*'s when left
+        out. A key it does not read or an empty `key` is `INVALID_ARG` named
+        under `firstYear`; a context without an ephemeris is `CAPABILITY`, and
+        a polar day `OUT_OF_RANGE`.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_almanac_first_year(
             self._raw,
             _request_json,
             ctypes.byref(_out_json),

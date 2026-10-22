@@ -79,6 +79,7 @@ mod compose;
 #[cfg(feature = "western")]
 mod declinations;
 mod festival_request;
+mod first_year_request;
 #[cfg(feature = "chart")]
 mod found_request;
 #[cfg(feature = "chart")]
@@ -229,6 +230,9 @@ pub use teistro_calendar::tibetan::TibetanYear;
 // The period of impurity after a birth or a death: what
 // `sdk.almanac().ashauch` asks and answers with, every table row data.
 pub use teistro_panchanga::ashauch;
+// A death's first year: the sixteen shraddhas, the sapindana and the
+// first abdika, what `sdk.almanac().first_year` asks and answers with.
+pub use teistro_panchanga::first_year;
 // A day's Nepal Sambat date, which `Panchanga::nepal_sambat` reads and
 // `AlmanacRequest::with_nepal_sambat` answers beside the days.
 pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
@@ -519,6 +523,7 @@ pub use teistro_lalkitab as lalkitab;
 // Pancha Pakshi: the five birds' activities by yama and sub-period, the
 // death birds and the relations (`03-design/pakshi.md`).
 pub use crate::ashauch_request::AshauchQuery;
+pub use crate::first_year_request::FirstYearQuery;
 #[cfg(feature = "pakshi")]
 pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};
 #[cfg(feature = "research")]
