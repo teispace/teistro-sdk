@@ -529,6 +529,23 @@ fn a_chart_s_maraka_windows_lie_in_the_ages_its_class_of_life_runs_to() {
     );
 }
 
+/// Holds the charts read, the rules present over them on the tier the
+/// build uses (the highest it names) and the set's size. The corpus places some charts on a boundary on
+/// purpose (its `search`): the Moon 0.03″ past 280° in c049, the Sun half a
+/// second either side of 0° in c051 and c052, a new moon in c055. Which
+/// side a body falls is below a tier's accuracy, so the count is the
+/// tier's own; the comparison with the kernel holds on every tier.
+fn present_on_the_tier(charts: usize, present: usize, rules: usize) {
+    let on_the_tier = if cfg!(feature = "builtin-full") {
+        17_092
+    } else if cfg!(feature = "builtin-standard") {
+        17_090
+    } else {
+        17_088
+    };
+    assert_eq!((charts, present, rules), (53, on_the_tier, 4605));
+}
+
 /// A reading asked to answer rules, over every corpus chart: each chart's
 /// present rules are the ones the same set answers on a chart read and
 /// evaluated the other way round, through `RuleInputs`; a birth with no
@@ -612,7 +629,7 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
         .iter()
         .map(|(name, status)| (name.as_str(), *status))
         .collect();
-    assert_eq!((charts, present, set.rules().len()), (53, 17090, 4605));
+    present_on_the_tier(charts, present, set.rules().len());
     // Every chart names one span, over all eight, and the SDK computes
     // each.
     let named: Vec<(&str, u32)> = named.iter().map(|(ayus, n)| (ayus.as_str(), *n)).collect();
