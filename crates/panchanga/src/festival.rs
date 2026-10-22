@@ -1038,6 +1038,7 @@ pub struct Extent {
 /// What decided an observance's day.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FestivalDecided"))]
 #[serde(tag = "by", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Decided {
     /// The guard at this place in the rule's list.
