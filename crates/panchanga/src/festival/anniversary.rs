@@ -34,6 +34,7 @@ const SIDEREAL_YEAR_DAYS: f64 = 365.256_363;
 /// equal arc of the Moon's gain on the Sun each.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "TithiHalf"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Half {
     /// The first.
