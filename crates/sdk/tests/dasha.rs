@@ -222,9 +222,14 @@ fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
 }
 
 /// The sign-based rows the corpus does not record: the Sthira dasa (C129),
-/// which a chart with no Brahma graha refuses, and the Yogardha (C131).
-/// Named so a recording of either, or another unrecorded row, fails.
-const UNRECORDED: [DashaSystem; 2] = [DashaSystem::Sthira, DashaSystem::Yogardha];
+/// which a chart with no Brahma graha refuses, the Yogardha (C131) and the
+/// Sudarshana chakra (C734). Named so a recording of any, or another
+/// unrecorded row, fails.
+const UNRECORDED: [DashaSystem; 3] = [
+    DashaSystem::Sthira,
+    DashaSystem::Yogardha,
+    DashaSystem::SudarshanaChakra,
+];
 
 /// Every sign-based system on the corpus's first chart, founded here with the
 /// built-in ephemeris: the arudha and navamsa lagnas and the dignities the
@@ -278,6 +283,41 @@ fn a_reading_carries_every_sign_based_system_and_each_agrees_with_the_corpus() {
         assert_eq!(first.sign, dasha.periods[0].sign, "{key}");
         assert!(cursor.rashi().is_some() && cursor.nakshatra().is_none());
     }
+}
+
+/// The Sudarshana chakra through the façade (BPHS ch. 74 vv. 21–26, C734):
+/// a year a house forward from the lagna, and the twelve again after them
+/// although the default settings end every other cycle.
+#[test]
+fn a_reading_carries_the_sudarshana_chakra_and_its_houses_recur() {
+    let (sdk, document) = reading("{}", &[DashaSystem::SudarshanaChakra]);
+    let dasha = &document.dashas[0];
+    let signs: Vec<u16> = dasha
+        .periods
+        .iter()
+        .filter(|period| period.level() == 1)
+        .map(|period| period.sign.unwrap().id())
+        .collect();
+    assert_eq!(signs.len(), 12);
+    assert!(
+        signs.windows(2).all(|pair| pair[1] == (pair[0] + 1) % 12),
+        "{signs:?}"
+    );
+    let cursor = sdk
+        .chart()
+        .dasha(&document, DashaSystem::SudarshanaChakra)
+        .unwrap();
+    let first = cursor.mahadashas().next().unwrap();
+    let year = first.interval.days();
+    let later = cursor.at(
+        JulianDay::literal(first.interval.from.get() + 13.5 * year),
+        Depth::try_new(1).unwrap(),
+    );
+    let second = later.deepest().unwrap();
+    assert_eq!(
+        second.sign.map(teistro::catalogue::Rashi::id),
+        Some(signs[1])
+    );
 }
 
 /// The Kalachakra on the corpus's first chart, founded here with the built-in
@@ -361,11 +401,11 @@ fn a_dasha_not_built_yet_is_refused_by_its_place_and_a_stored_document_reads_bac
 
     let place = document.foundation.place;
     let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700).unwrap())
-        .with_dashas([DashaSystem::Vimshottari, DashaSystem::SudarshanaChakra]);
+        .with_dashas([DashaSystem::Vimshottari, DashaSystem::Panchaswara]);
     let error = sdk
         .chart()
         .reading(document.foundation.instant, &request)
-        .expect_err("Sudarshana Chakra is not built");
+        .expect_err("Panchaswara is not built");
     assert_eq!(error.field(), Some("dashas[1]"));
     assert!(
         error

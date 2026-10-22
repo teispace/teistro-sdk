@@ -87,10 +87,12 @@ impl Blocker {
                  are listed"
             }
             Blocker::Kernel => {
-                "a change to the kernel, which is the decision ADR-0017 set a kill \
-                 criterion for: a third chart-query field serves three of these at \
-                 once, or the kernel is redesigned as an interpreter and serves them \
-                 all. They are taken together for that reason, never one at a time"
+                "a third kernel, a graha dasha whose lords and years a chart \
+                 query gives, with no seed and no balance: `KARAKA` and \
+                 `ASHTAKAVARGA` are that shape as the verses state them, and `TARA` \
+                 is Vimshottari begun from a lord the chart names. A field on K-udu \
+                 would be the chart-query escape hatch ADR-0017 set a kill \
+                 criterion for, so they wait on the kernel, not on a field"
             }
             Blocker::Module => {
                 "the module itself. Each is the **last** step of one, so scheduling \
@@ -109,7 +111,7 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 14] = [
+const NOT_BUILT: [(&str, Blocker, &str); 13] = [
     (
         "TITHI_ASHTOTTARI",
         Blocker::Text,
@@ -159,27 +161,27 @@ const NOT_BUILT: [(&str, Blocker, &str); 14] = [
     (
         "TARA",
         Blocker::Kernel,
-        "its periods come from the chart's tara counts, and the row schema states \
-         its periods. A row that asks the chart is a field K-udu has not got",
+        "Vimshottari's years and order, begun from the strongest graha in a \
+         kendra (BPHS ch. 46 vv. 207 to 209): its periods are the table's, and \
+         what the chart gives is the first lord, which K-udu's nakshatra map \
+         cannot say. No verse names the strength or a balance at birth",
     ),
     (
         "KARAKA",
         Blocker::Kernel,
-        "its lord **order** comes from chara-karaka strength, which is a second \
-         thing a row would have to ask the chart for",
+        "the chara karakas in their order, each running the count of signs \
+         from the lagna to its own (BPHS ch. 46 v. 178): a graha dasha whose \
+         lords **and** years the chart gives, with no seed and no balance, \
+         which is neither kernel's shape",
     ),
     (
         "ASHTAKAVARGA",
         Blocker::Kernel,
-        "its periods come from the bindu counts. The three above are one \
-         mechanism asked for three ways, and the kernel takes them together or \
-         not at all",
-    ),
-    (
-        "SUDARSHANA_CHAKRA",
-        Blocker::Kernel,
-        "three rashi progressions running at once, from the lagna, the Sun and the \
-         Moon. A composition over kernels, and the reason it is a combinator",
+        "the name BPHS ch. 46 v. 203 gives the Paindi, Amshi and Naisargika \
+         dashas: each body's ayurdaya years, from the strongest of the lagna, \
+         the Sun and the Moon and then the kendras, panapharas and apoklimas \
+         from it (vv. 201 and 202), the same graha-dasha shape as `KARAKA`. No \
+         verse read gives it periods from bindu counts",
     ),
     (
         "AAYU",
@@ -237,8 +239,7 @@ const NOT_BUILT: [(&str, Blocker, &str); 14] = [
 /// not for want of an arm: `SUDASA` starts from the karakamsha and
 /// `VARNADA` from the Varnada lagna, places `Start` does not name; the
 /// tithi, yoga and karana seeds want a reference that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA`
-/// ask the chart for their periods; `SUDARSHANA_CHAKRA` is a composition of
-/// systems rather than a system.
+/// ask the chart for their lords.
 const REGISTRABLE: [(&str, Kernel); 0] = [];
 
 /// Which kernel a definition names.
@@ -646,9 +647,8 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
          the karakamsha and `VARNADA` from the Varnada lagna, which are \
          places `Start` does not name; the tithi, \
          yoga and karana seeds want a reference that is not a nakshatra; \
-         `TARA`, `KARAKA` and `ASHTAKAVARGA` ask the chart for their periods; \
-         `SUDARSHANA_CHAKRA` is a composition of systems rather than a \
-         system. Those are rows the kernels do not express, which is a \
+         `TARA`, `KARAKA` and `ASHTAKAVARGA` ask the chart for their lords. \
+         Those are rows the kernels do not express, which is a \
          different thing from a row nobody has written down — and the \
          difference is what this section exists to keep visible.\n\n",
         if REGISTRABLE.is_empty() {

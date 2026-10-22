@@ -1514,7 +1514,7 @@ pub struct ContextOptions {
     /// `count`, `span`, `offset`, `repeats`, `scale`, `year_length`, `depth`
     /// and `sources`. `"kernel": "RASHI"` is the sign-based kind: a key, and
     /// optionally `start`, `order`, `length`, `named_lord`, `stronger_of`,
-    /// `year_length`, `depth` and `sources` (the document schema's
+    /// `recurs`, `year_length`, `depth` and `sources` (the document schema's
     /// `DashaDefinition`). The kernel is **stated** and never inferred from
     /// which fields are present, so a typo is refused by the field the
     /// caller wrote rather than by one they did not. Every one is checked

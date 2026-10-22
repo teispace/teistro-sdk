@@ -360,6 +360,48 @@ reads it:
 
 A consumer's definition may state both, in every binding.
 
+## The four the kernels could not express, read (2026-10-22)
+
+The coverage page held Tara, Karaka, Ashtakavarga and the Sudarshana
+chakra together as "one mechanism asked three ways" and a composition.
+BPHS read whole on them (the Sanskrit e-text, with Santhanam's numbering,
+which is the same) says otherwise, and the design follows the text:
+
+| system | verses | lords | years | sub-periods | kernel |
+|---|---|---|---|---|---|
+| Sudarshana chakra | ch. 74 vv. 4–7, 19–26 | a house a year from the lagna, forward | one, the twelve again for life (v. 26) | twelve, forward from the period's own house, at every level | **K-rashi, built**: `SUDARSHANA_CHAKRA`, `Order::Forward`, `Length::Fixed(1)`, `recurs` |
+| Tara | ch. 46 vv. 11, 207–209 | Vimshottari's cycle from the strongest graha in a kendra | Vimshottari's | Vimshottari's, by inference | K-udu begun from a lord the chart names |
+| Karaka | ch. 46 vv. 7, 178 | the chara karakas in their order | the count of signs from the lagna to the karaka's, forward, the same sign twelve | not stated | a graha dasha |
+| Ashtakavarga | ch. 46 vv. 10–11, 201–203; ch. 51 vv. 13–16 | the strongest of the lagna, Sun and Moon, then the kendras, panapharas and apoklimas from it by strength | each body's ayurdaya years (Paindi, Amshi or Naisargika) | ch. 51 vv. 13–16's shares | a graha dasha |
+
+**The Sudarshana chakra is no composition.** Its three rings turn
+together: the year of house *h* is house *h* from the lagna, from the Moon
+and from the Sun at once, so the timing is one forward progression from
+the lagna, a year a house, and a period names the house the other two
+rings read by the same count. What the verses add, that the three rings
+are read together only when the lagna, the Sun and the Moon stand in three
+signs (vv. 19 and 20), changes the reading, never the dates, so the row
+has no applicability to refuse. The one thing the kernel lacked was a
+cycle that recurs whatever the settings' `after_cycle` says, because v. 26
+states it for this system while the texts of the others are silent: a
+row's `recurs`, which a consumer's `RashiDefinition` can state too (C734).
+
+**Tara's periods are not the chart's.** v. 207 gives it "like
+Vimshottari", and Santhanam's worked sequence is Vimshottari's years from
+Jupiter. What the chart gives is the first lord. Karaka and Ashtakavarga
+(Paindi, Amshi, Naisargika, which v. 203 names the ashtavarga dashas) are
+one shape: an ordered list of bodies and their years, both from the
+chart, with no seed and no balance. That is a third kernel, `K-graha`,
+not a `FromChart` field on K-udu, which is the escape hatch ADR-0017's
+kill criterion names; it also serves the Kendradi graha dashas
+(vv. 175–176). No verse read gives the Ashtakavarga dasha periods from
+bindu counts.
+
+What the verses leave open, each a crux before anything is built: the
+strength that ranks grahas (vv. 202, 208 name none, C735), Tara's balance
+at birth (C736), Karaka's antardashas (C737) and whether the Ashtakavarga
+dasha's years are the ayurdaya spans or ch. 71's rekha spans (C738).
+
 ## Kernels
 
 | kernel | family | shape |
@@ -369,7 +411,7 @@ A consumer's definition may state both, in every binding.
 | K-kalachakra | Kalachakra | navamsa-path driven, deha and jeeva, paramayush variants; its own kernel, parameterised for the known variants |
 | scale decorator | Tribhagi, Varsha Narayana | a `CycleScale { factor, rounds }` over another definition: Tribhagi is a Vimshottari definition scaled by 2/3 and run twice. Varsha Narayana's place here is unconfirmed: no book read gives it |
 | year | Mudda, Varsha Yogini, Patyayini | a ring of lords with weights that opens part-way through its first lord's share and closes on the rest, every boundary a share turned into an instant through the year's clock (`YearDasha`, [`annual-dashas.md`](annual-dashas.md)). The first draft put the two nakshatra years under the scale decorator; a scaled row cannot show its first lord twice |
-| composition | Sudarshana Chakra (three simultaneous rashi progressions), Yogardha if it is the mean of two systems | a combinator over kernels, not an algorithm |
+| composition | Yogardha if it is the mean of two systems | a combinator over kernels, not an algorithm. The Sudarshana chakra was listed here as three progressions at once; its rings turn together, and it is a K-rashi row (2026-10-22) |
 | tree layer | every system | lazy cursor, `dasha_at`, range iteration, search; written once against `roots` and `children` |
 
 ## K-udu: schema
@@ -452,11 +494,11 @@ Abbreviations: Su Mo Ma Me Ju Ve Sa Ra Ke. All rows below use
 | Yoga-Vimshottari | yoga | to confirm | | 1 | | as Vimshottari | 120 | T |
 | Karana-Chaturashiti | karana | to confirm | | 1 | | as Chaturashiti-sama | 84 | T |
 | Naisargika | fixed | | | | | natural order, lifespan periods | | S (lord order and years) |
-| Tara | nakshatra | | | | | `periods: FromChart` (tara counts) | | S |
+| Tara | | | | | | Vimshottari's table begun from the strongest kendra graha (ch. 46 vv. 207–209); the periods are the table's, the first lord the chart's (§ The four) | | S |
 | Kaala, Rashmi, Buddhi-Gathi, Moola, Saptarishi | nakshatra | | | | | udu-shaped | | S |
-| Karaka | | | | | | lord order from chara-karaka strength: a third chart-query field, the kernel's watch item | | S |
+| Karaka | | | | | | K-graha: the chara karakas, each the count from the lagna to its sign (ch. 46 v. 178) | | S |
 | Aayu | | | | | | linked to the longevity module | | S |
-| Ashtakavarga dasha | | | | | | `periods: FromChart` (bindu counts) | | S |
+| Ashtakavarga dasha | | | | | | K-graha: the Paindi, Amshi and Naisargika dashas (ch. 46 vv. 201–203); not bindu counts | | S |
 | Panchaswara | | | | | | shape not established | | S |
 
 Two observations from normalising the rows: Yogini and Shattrimsha-sama
@@ -529,7 +571,7 @@ default until a primary text decides.
 | Brahma, Chakra, Nirayana, Paryaya, Raashiyanka, Sandhya, Tara Lagna, Chathurvidha Utthara, Moola (rashi) | to confirm | | | | S |
 | Yogardha | | | mean of two systems, if confirmed a composition | | S |
 | Kalachakra | | own kernel; the baseline engine has it with its constants and tests | | | V (baseline) |
-| Sudarshana Chakra | lagna, Sun, Moon | three simultaneous rashi progressions | | | T |
+| Sudarshana Chakra | lagna | Forward | Fixed(1), recurring for life | twelve, forward from each period's own house | T (BPHS ch. 74 vv. 21–26) |
 | Mudda, Varsha Yogini | birth nakshatra | the natal row's lords from its seat, one further each completed year | natal years as weights, through the year's clock | the ring from each lord | V (`YearDasha`, [`annual-dashas.md`](annual-dashas.md)) |
 | Varsha Narayana | | scale decorator over the base definition, unconfirmed | | | T |
 | Patyayini | annual lagna and the seven | by longitude within the sign, strength breaking a tie | the gaps between them | the ring from each lord | V (`YearDasha`) |
@@ -688,7 +730,7 @@ period levels as an ordinal message with the profile's level names.
   written down: a start that is the karakamsha (`Sudasa`), a seed that is
   not a nakshatra (the tithi, yoga and karana variants), periods the chart
   supplies (`Tara`, `Karaka`, `Ashtakavarga`), and compositions of systems
-  (`Yogardha`, `Sudarshana Chakra`). Seventeen of the twenty-two, each
+  (`Yogardha`; the Sudarshana chakra is a K-rashi row, 2026-10-22). Seventeen of the twenty-two, each
   named with its reason on
   [`dasha-coverage-measured.md`](dasha-coverage-measured.md).
 

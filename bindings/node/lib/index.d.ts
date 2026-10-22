@@ -5238,9 +5238,9 @@ export interface RashiDashaDefinition {
   /** Where the row comes from. */
   readonly sources?: readonly string[];
   /** Where it starts; the lagna by default. */
-  readonly start?: 'LAGNA' | 'ARUDHA_LAGNA' | 'NAVAMSA_LAGNA';
-  /** The order it visits the signs in; every sign in turn by default. */
-  readonly order?: 'CONSECUTIVE' | 'TRINE_GROUPS' | 'DRISHTI_CHAIN' | 'LEAP';
+  readonly start?: 'LAGNA' | 'ARUDHA_LAGNA' | 'NAVAMSA_LAGNA' | 'BRAHMA';
+  /** The order it visits the signs in; every sign in turn by default. `FORWARD` is every sign in turn forward whatever the start's parity. */
+  readonly order?: 'CONSECUTIVE' | 'TRINE_GROUPS' | 'DRISHTI_CHAIN' | 'LEAP' | 'FORWARD';
   /** How long a sign's period runs; the count to its stronger lord by default. */
   readonly length?: RashiLength;
   /** Which lord a mahadasha names; the stronger of a dual-lorded sign's two by default. */
@@ -5251,6 +5251,8 @@ export interface RashiDashaDefinition {
   readonly year_length?: 'JULIAN_365_25' | 'SAVANA_360' | 'SIDEREAL' | 'TROPICAL' | 'LUNAR' | 'NAKSHATRA_324';
   /** How many levels of periods a reading carries, 1 to 6; three by default. */
   readonly depth?: number;
+  /** Whether the cycle runs again for life whatever the settings' `after_cycle` says, as the Sudarshana chakra's does; false by default. */
+  readonly recurs?: boolean;
 }
 
 /** What a grid cell always carries: a sign, or a house 1 to 12. */

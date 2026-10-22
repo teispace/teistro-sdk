@@ -469,6 +469,10 @@ pub struct RashiRow {
     /// The houses from the lagna BPHS starts the system from the strongest of,
     /// under [`RashiStart::Stronger`]; empty when it names no such start.
     pub stronger_of: Cow<'static, [u8]>,
+    /// Whether the text itself runs the cycle again for life, as BPHS
+    /// ch. 74 v. 26 does the Sudarshana chakra's twelve years, whatever
+    /// the settings' `after_cycle` says for a system whose text is silent.
+    pub recurs: bool,
 }
 
 impl RashiRow {
@@ -722,6 +726,7 @@ const fn row(
         length,
         named_lord,
         stronger_of: Cow::Borrowed(stronger_of),
+        recurs: false,
     }
 }
 
@@ -870,6 +875,10 @@ pub struct RashiDefinition {
     /// How many levels of periods a reading carries; three by default.
     #[serde(default = "three")]
     pub depth: Depth,
+    /// Whether the cycle runs again for life whatever the settings say;
+    /// the settings' `after_cycle` decides by default.
+    #[serde(default, skip_serializing_if = "core::ops::Not::not")]
+    pub recurs: bool,
 }
 
 const fn lagna() -> Start {
@@ -903,6 +912,7 @@ impl RashiDefinition {
             stronger_of: Vec::new(),
             year_length: julian(),
             depth: three(),
+            recurs: false,
         }
     }
 
@@ -916,6 +926,7 @@ impl RashiDefinition {
             length: self.length,
             named_lord: self.named_lord,
             stronger_of: Cow::Owned(self.stronger_of.clone()),
+            recurs: self.recurs,
         }
     }
 }
@@ -968,6 +979,26 @@ pub const YOGARDHA: RashiRow = row(
     &[1, 7],
 );
 
+/// The Sudarshana chakra's dasha (BPHS ch. 74 vv. 21 to 26): a year a
+/// house from the lagna, every house in turn forward, its twelve months,
+/// their twelve parts of two and a half days and theirs of twelve and a
+/// half ghatikas each from its own house forward, the twelve years again
+/// for life. The chakra's three rings turn together, so the house from the
+/// Moon and from the Sun a year names is the same count from each: one
+/// progression, not three (C734). The verses read a year's results from
+/// all three rings when the lagna, the Sun and the Moon stand in three
+/// signs and from the lagna alone otherwise (vv. 19 and 20), which changes
+/// what is read, never when.
+pub const SUDARSHANA_CHAKRA: RashiRow = RashiRow {
+    system: DashaName::Catalogued(DashaSystem::SudarshanaChakra),
+    start: Start::Lagna,
+    order: Order::Forward,
+    length: Length::Fixed(1),
+    named_lord: NamedLord::First,
+    stronger_of: Cow::Borrowed(&[]),
+    recurs: true,
+};
+
 /// Every sign-based row this build implements.
 pub const RASHI_ROWS: &[RashiRow] = &[
     CHARA,
@@ -980,6 +1011,7 @@ pub const RASHI_ROWS: &[RashiRow] = &[
     MANDOOKA,
     STHIRA,
     YOGARDHA,
+    SUDARSHANA_CHAKRA,
 ];
 
 /// The sign-based row of a system, when this build implements one.
@@ -1022,6 +1054,11 @@ impl RashiDasha {
             return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
         }
         let signs = row.sequence(chart, rules)?;
+        let after_cycle = if row.recurs {
+            AfterCycle::Repeat
+        } else {
+            after_cycle
+        };
         let mut lords = [Graha::Sun; SIGNS];
         let mut offsets = [0.0; SIGNS + 1];
         let mut total = 0.0;
