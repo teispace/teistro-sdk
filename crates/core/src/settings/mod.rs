@@ -32,19 +32,20 @@ use crate::envelope::{CALCULATION_VERSION, Hash, Provenance, Version};
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
-    AfterCycle, AmritKalam, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance,
-    Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre,
-    CharaKarakas, Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras,
-    Drekkana, Drik, DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha,
-    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning,
-    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
-    LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
-    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
-    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
-    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
-    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
-    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    AfterCycle, AmritKalam, AntardashaPlace, AshtakavargaGoodFrom, AshtottariGrouping,
+    AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaDig, BhavaDrishti,
+    BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta, DayBoundary,
+    DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap,
+    DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
+    GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords,
+    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
+    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
+    NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy,
+    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
+    ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
+    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
+    Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn,
+    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -691,6 +692,14 @@ group!(
         /// What makes a graha the strongest where a dasha begins from the
         /// strongest and names no measure (crux C735).
         strongest_graha: StrongestGraha,
+        /// Which of several bodies in one place takes the share in an
+        /// ayurdaya dasha's antardashas (crux C741).
+        ayurdaya_place: AntardashaPlace,
+        /// Which span's years an ayurdaya dasha runs (crux C742).
+        ayurdaya_span: AyurdayaSpan,
+        /// Whose readings of the reductions give the ayurdaya dashas'
+        /// years (crux C742).
+        ayurdaya_readings: AyurdayaReadings,
     }
 );
 

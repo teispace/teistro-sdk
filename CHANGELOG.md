@@ -12,6 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The ayurdaya dasha** (`dasha-kernels.md`, C738, C740 to C742).
+**Numbers:** a Karaka or Tara sub-period's ends may move in their last
+bits, both ends now read from one running sum so that each meets the
+next exactly; nothing else computed moves, and two systems that refused
+now answer. Every settings hash moved with the three new knobs and the new
+`year_length` defaults. `AAYU` and `ASHTAKAVARGA`, one dasha under BPHS
+ch. 46's two names for it (vv. 201 and 203), run the native's span of
+life giver by giver. The span is the one the strongest of the lagna, Sun
+and Moon names (ch. 43 vv. 30 to 32). The dasha begins from that one, then
+runs the kendras, panapharas and apoklimas from it by strength (v. 202).
+Its years are the longevity module's net years, in 360-day years. Its
+antardashas take ch. 51 vv. 13 to 16's shares, the lagna included, on a
+share table `GrahaDasha::with_shares` now takes. The dasha group gains
+`ayurdaya_span`, `ayurdaya_readings` and `ayurdaya_place`, and a reading
+always stores its second level, which it is rebuilt from. The coverage
+page reads 36 computed and 9 left.
+
 **The Tara dasha** (`dasha-kernels.md`, C735, C736). **Numbers:** none
 computed move; a system that refused now answers. Every settings hash
 moved with the new knob. `TARA` runs on K-graha: Vimshottari's lords and

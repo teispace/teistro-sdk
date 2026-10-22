@@ -77,6 +77,9 @@ every shipped profile. The v1 inventory:
 | dasha | `decennial_division` | enum | `PROPORTIONAL` (the default, Valens VI.6: every level below the first in proportion to the minimum years), `CYCLES` (VI.5's worked count: 129-day cycles at the third level, the minimum years as days at the fourth; crux C228) |
 | dasha | `karaka_division` | enum | `PROPORTIONAL` (the default, BPHS ch. 51 vv. 1 and 2: each karaka's years against their total, from the period's own karaka), `EQUAL` (vv. 3 and 4: equal parts, one a karaka); how the Karaka dasha divides a period, which ch. 46 v. 178 leaves unstated (crux C737) |
 | dasha | `strongest_graha` | enum | `SHADBALA_TOTAL` (the default: the six strengths together in virupas), `SHADBALA_RATIO` (the shadbala against the rupas the graha must reach, ch. 27 vv. 32 and 33); what "the strongest" means where a dasha begins from it and names no measure, as the Tara dasha does (BPHS ch. 46 v. 208, crux C735) |
+| dasha | `ayurdaya_span` | enum | `STRONGEST` (the default: the span of the strongest of the lagna, Sun and Moon, BPHS ch. 43 vv. 30 to 32), `PINDAYU`, `AMSAYU`, `NISARGAYU` (that span, the Paindi, Amshi or Naisargi dasha); which span's years the ayurdaya dasha runs (ch. 46 v. 201, crux C742) |
+| dasha | `ayurdaya_readings` | enum | `BPHS` (the default), `JATAKA_PARIJATA` (ch. 5's reductions); whose readings of the reductions give the ayurdaya dasha's years (crux C742) |
+| dasha | `ayurdaya_place` | enum | `SHARE` (the default: one body per share the verse names, the two trikonas one place and the fourth and eighth another), `HOUSE` (one per house); which of several in one place takes a share of an ayurdaya dasha's antardashas (BPHS ch. 51 v. 14, crux C741) |
 | dasha | `shanta_sign` | enum | `FRIENDLY` (the default, a friend's or great friend's sign), `FRIEND` (crux C79) |
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |

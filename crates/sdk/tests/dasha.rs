@@ -782,3 +782,193 @@ fn a_reading_says_the_depth_it_carries_for_every_system() {
     }
     assert_eq!(shallow, SHALLOW, "the systems that stop above five levels");
 }
+
+/// The ayurdaya dasha through the façade (BPHS ch. 46 vv. 201 to 203,
+/// ch. 43 vv. 30 to 32, ch. 51 vv. 13 to 16), read back against the
+/// chart's own strengths and spans over a year of births: it begins from
+/// the strongest of the lagna, the Sun and the Moon by the document's
+/// shadbala and Bhava bala in rupas, runs that one's span (the lagna's
+/// Amsayu, the Sun's Pindayu, the Moon's Nisargayu) giver by giver, runs
+/// the rest by kendras, panapharas and apoklimas from it by strength, and
+/// is the same under its two names. It is rebuilt from the document, and a
+/// chosen span gives that span's years. Births begun from two or more of
+/// the three are required, so the choice is tested at all.
+#[test]
+fn a_reading_carries_the_ayurdaya_dasha_from_the_strongest_of_the_three() {
+    let sdk = Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let nisargayu = Context::builder()
+        .profile("conformance-baseline")
+        .settings_json(r#"{"dasha": {"ayurdaya_span": "NISARGAYU"}}"#)
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let mut firsts = std::collections::BTreeSet::new();
+    for step in 0..12 {
+        let birth = JulianDay::literal(2_447_995.49 + f64::from(step) * 31.3);
+        firsts.insert(ayurdaya_at(&sdk, &nisargayu, birth));
+    }
+    assert!(firsts.len() >= 2, "begun only from {firsts:?}");
+}
+
+/// One birth's ayurdaya dasha checked as the test above says, naming which
+/// of the three it began from.
+fn ayurdaya_at(
+    sdk: &Context,
+    nisargayu: &Context,
+    birth: JulianDay<teistro::quantity::Utc>,
+) -> &'static str {
+    use teistro::catalogue::Rashi;
+    use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    use teistro::rules::longevity::{AyurdayaRules, Giver, Span};
+    use teistro::rules::{Body, Readings};
+    use teistro::{House, RuleInputs};
+
+    let place = Place::new(
+        Latitude::try_new(27.7172).unwrap(),
+        Longitude::try_new(85.324).unwrap(),
+        Altitude::try_new(1400.0).unwrap(),
+    );
+    let offset = UtcOffset::try_from_seconds(20_700).unwrap();
+    let request = ChartRequest::at(place, offset)
+        .with_dashas([DashaSystem::Aayu, DashaSystem::Ashtakavarga])
+        .with_state()
+        .with_shadbala()
+        .with_bhava_bala();
+    let document = sdk.chart().reading(birth, &request).unwrap().value;
+    let [aayu, ashtakavarga] = [DashaSystem::Aayu, DashaSystem::Ashtakavarga].map(|system| {
+        document
+            .dashas
+            .iter()
+            .find(|reading| reading.system == teistro::dasha::DashaName::Catalogued(system))
+            .unwrap()
+    });
+    assert_eq!(aayu.periods, ashtakavarga.periods, "one dasha, two names");
+
+    // The other road: the chart's strengths and spans, read directly.
+    let inputs = RuleInputs::of(&document).unwrap();
+    let evaluator = inputs.evaluator(Readings::default());
+    let spans = evaluator.ayurdaya(AyurdayaRules::default());
+    let strengths = evaluator.strengths();
+    let lagna = document.bhava_bala.as_ref().unwrap().bhavas[0].virupas / 60.0;
+    let strength = |giver: Giver| match giver {
+        Giver::Graha(graha) => strengths.of[Body::Graha(graha).index()].unwrap(),
+        Giver::Lagna => lagna,
+    };
+    let body = |giver: Giver| match giver {
+        Giver::Graha(graha) => Body::Graha(graha),
+        Giver::Lagna => Body::Lagna,
+    };
+    let sign = |giver: Giver| inputs.chart.placement(body(giver)).sign;
+    let (first, span, name): (Giver, &Span, &str) = [
+        (Giver::Lagna, &spans.amsayu, "lagna"),
+        (Giver::Graha(Graha::Sun), &spans.pindayu, "Sun"),
+        (Giver::Graha(Graha::Moon), &spans.nisargayu, "Moon"),
+    ]
+    .into_iter()
+    .max_by(|a, b| strength(a.0).total_cmp(&strength(b.0)))
+    .unwrap();
+    // A row is a giver's: the lagna's carries its sign under its lord.
+    let giver_of = |row: &teistro::dasha::PeriodRow| match row.sign {
+        Some(_) => Giver::Lagna,
+        None => Giver::Graha(row.lord),
+    };
+    let year_days = aayu.rules.year_length.days();
+    let mahadashas: Vec<&teistro::dasha::PeriodRow> =
+        aayu.periods.iter().filter(|row| row.level() == 1).collect();
+    assert_eq!(giver_of(mahadashas[0]), first);
+    for row in &mahadashas {
+        let giver = giver_of(row);
+        let years = span
+            .contributions
+            .iter()
+            .find(|contribution| contribution.giver == giver)
+            .unwrap()
+            .net;
+        assert!(
+            (row.interval.days() / year_days - years).abs() < 1e-6,
+            "{giver:?}"
+        );
+        if giver == Giver::Lagna {
+            assert_eq!(row.sign, Some(sign(Giver::Lagna)));
+            assert_eq!(row.lord, Rashi::attributes(sign(Giver::Lagna)).lord);
+        }
+    }
+    let total: f64 = mahadashas.iter().map(|row| row.interval.days()).sum();
+    assert!((total / year_days - span.years).abs() < 1e-6);
+    // After the first, kendras, panapharas, apoklimas from it, each by
+    // strength.
+    let group = |giver: Giver| {
+        let house = House::between(sign(first), sign(giver));
+        if house.is_kendra() {
+            0
+        } else if house.is_panaphara() {
+            1
+        } else {
+            2
+        }
+    };
+    for pair in mahadashas[1..].windows(2) {
+        let (a, b) = (giver_of(pair[0]), giver_of(pair[1]));
+        assert!(
+            group(a) < group(b) || (group(a) == group(b) && strength(a) >= strength(b)),
+            "{a:?} before {b:?}"
+        );
+    }
+
+    rebuilds_as_stored(sdk, &document, aayu);
+
+    // A chosen span runs its own years from the same first.
+    let (years, opening) = first_and_years(nisargayu, birth, &request);
+    assert!((years - spans.nisargayu.years).abs() < 1e-6);
+    assert_eq!(giver_of(&opening), first);
+    name
+}
+
+/// A stored ayurdaya dasha rebuilt from its document gives its two stored
+/// levels back and reads a level deeper.
+fn rebuilds_as_stored(sdk: &Context, document: &Document, aayu: &teistro::dasha::DashaReading) {
+    let mahadashas: Vec<&teistro::dasha::PeriodRow> =
+        aayu.periods.iter().filter(|row| row.level() == 1).collect();
+    let cursor = sdk.chart().dasha(document, DashaSystem::Aayu).unwrap();
+    let rebuilt: Vec<teistro::dasha::Period> = cursor.mahadashas().collect();
+    assert_eq!(rebuilt.len(), mahadashas.len());
+    for (period, row) in rebuilt.iter().zip(&mahadashas) {
+        assert_eq!((period.lord, period.sign), (row.lord, row.sign));
+        assert!((period.interval.days() - row.interval.days()).abs() < 1e-6);
+        let children: Vec<teistro::dasha::Period> = cursor.children(period).collect();
+        let stored: Vec<&teistro::dasha::PeriodRow> = aayu
+            .periods
+            .iter()
+            .filter(|child| child.level() == 2 && child.path.starts_with(&format!("{}/", row.path)))
+            .collect();
+        assert_eq!(children.len(), stored.len());
+        for (child, kept) in children.iter().zip(stored) {
+            assert_eq!((child.lord, child.sign), (kept.lord, kept.sign));
+            assert!((child.interval.days() - kept.interval.days()).abs() < 1e-6);
+        }
+        assert!(cursor.children(&children[0]).next().is_some());
+    }
+}
+
+/// The years an ayurdaya dasha's mahadashas run in all under `sdk`'s
+/// settings, and its first mahadasha.
+fn first_and_years(
+    sdk: &Context,
+    birth: JulianDay<teistro::quantity::Utc>,
+    request: &ChartRequest,
+) -> (f64, teistro::dasha::PeriodRow) {
+    let document = sdk.chart().reading(birth, request).unwrap().value;
+    let reading = &document.dashas[0];
+    let year_days = reading.rules.year_length.days();
+    let years = reading
+        .periods
+        .iter()
+        .filter(|row| row.level() == 1)
+        .map(|row| row.interval.days() / year_days)
+        .sum();
+    (years, reading.periods[0].clone())
+}

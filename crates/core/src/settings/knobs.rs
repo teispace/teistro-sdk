@@ -194,6 +194,38 @@ knob!(
         ShadbalaRatio = "SHADBALA_RATIO" }
 );
 knob!(
+    /// Which of several bodies in one place takes the share in an ayurdaya
+    /// dasha's antardashas, where BPHS ch. 51 v. 14 says "of many, one, the
+    /// strong graha" (crux C741).
+    AntardashaPlace { /// One for each share the verse names: with the lord, in a trikona, in
+        /// the fourth or the eighth, and in the seventh. The verse gives
+        /// the share by its place's name, so the two trikonas are one
+        /// place, and the fourth and the eighth another.
+        Share = "SHARE", /// One for each house, so a body in the fifth and one in the ninth
+        /// both take a third.
+        House = "HOUSE" }
+);
+knob!(
+    /// Which span's years an ayurdaya dasha runs (BPHS ch. 46 v. 201): the
+    /// one the chart names, or one chosen (crux C742).
+    AyurdayaSpan { /// The span of the strongest of the lagna, the Sun and the Moon: Amsayu,
+        /// Pindayu or Nisargayu (ch. 43 vv. 30 to 32), so the Amshi, Paindi
+        /// or Naisargi dasha as v. 201 names them.
+        Strongest = "STRONGEST", /// Pindayu's, the Paindi dasha.
+        Pindayu = "PINDAYU", /// Amsayu's, the Amshi dasha.
+        Amsayu = "AMSAYU", /// Nisargayu's, the Naisargi dasha.
+        Nisargayu = "NISARGAYU" }
+);
+knob!(
+    /// Whose readings of the reductions give the ayurdaya dashas' years
+    /// (BPHS ch. 46 v. 201), as the longevity spans read them (crux C742).
+    AyurdayaReadings { /// BPHS's own, the dashas' source.
+        Bphs = "BPHS", /// *Jataka Parijata* ch. 5's: Mars keeps his years in an enemy's
+        /// sign, enmity is compound, and a rising malefic takes from every
+        /// giver.
+        JatakaParijata = "JATAKA_PARIJATA" }
+);
+knob!(
     /// Which friendly signs make a dasha favourable, BPHS ch. 47 vv. 5 and 6
     /// naming a "Shant" sign against an "inimical" one (crux C79).
     ShantaSign { /// A friend's or a great friend's sign, the friendly signs set against

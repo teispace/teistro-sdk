@@ -26,7 +26,8 @@ use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::Balance;
 use teistro_core::settings::{
-    CharaKarakas, DecennialDivision, GrahaDivision, ReleasingSharedSign, StrongestGraha,
+    AyurdayaReadings, AyurdayaSpan, CharaKarakas, DecennialDivision, GrahaDivision,
+    ReleasingSharedSign, StrongestGraha,
 };
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
@@ -833,6 +834,13 @@ impl<'a> ChartArea<'a> {
             let dasha = self.tara_dasha_of(foundation, rules, &shadbala()?)?;
             return Ok(DashaReading::of_time_lord(system, &dasha, rules, depth));
         }
+        if matches!(system, DashaSystem::Aayu | DashaSystem::Ashtakavarga) {
+            // Its antardashas are the chart's, not a rule of its years, so
+            // a reading always stores them, to be rebuilt from.
+            let dasha = self.ayurdaya_dasha_of(chart, rules, &shadbala()?)?;
+            let depth = Depth::try_new(2).map_or(depth, |two| depth.max(two));
+            return Ok(DashaReading::of_time_lord(system, &dasha, rules, depth));
+        }
         if let Some(cursor) = self.time_lord_of(chart, system, rules, lots)? {
             // A year is not divided, so a profection carries one level; a
             // firdar is divided once, into sevenths.
@@ -981,6 +989,117 @@ impl<'a> ChartArea<'a> {
             foundation.instant,
             rules.year_length,
             GrahaDivision::Proportional,
+            rules.after_cycle,
+        )
+    }
+
+    /// The ayurdaya dasha of a chart (BPHS ch. 46 vv. 201 to 203,
+    /// `03-design/dasha-kernels.md`), which v. 201 names by its span and
+    /// v. 203 the ashtavarga dasha: each giver's years of the span the
+    /// settings' `dasha.ayurdaya_span` names, the strongest of the lagna,
+    /// the Sun and the Moon's by default (ch. 43 vv. 30 to 32), under the
+    /// reductions `dasha.ayurdaya_readings` reads (crux C742); from that
+    /// strongest, then the kendras, panapharas and apoklimas from it by
+    /// strength (v. 202); the antardashas ch. 51 vv. 13 to 16's shares,
+    /// several in one place as `dasha.ayurdaya_place` reads it (C741). The
+    /// strengths are C308's, the grahas' shadbala and the lagna's Bhava
+    /// bala in rupas, as `longevity.choice` weighs them.
+    ///
+    /// # Errors
+    ///
+    /// The lagna, the Sun and the Moon equally strong, `UNSUPPORTED`: v.
+    /// 202 begins from the one strongest.
+    fn ayurdaya_dasha_of(
+        self,
+        chart: &Document,
+        rules: DashaRules,
+        shadbala: &ShadbalaReading,
+    ) -> Result<GrahaDasha, Error> {
+        use teistro_rules::longevity::{AyurdayaRules, Giver as Contributor};
+        let settings = self.context.settings();
+        let foundation = &chart.foundation;
+        let bhava_bala = match &chart.bhava_bala {
+            Some(reading) => reading.clone(),
+            None => Self::bhava_bala_of(foundation, settings, shadbala)?,
+        };
+        let mut whole = chart.clone().with_shadbala(shadbala.clone());
+        if whole.state.is_none() {
+            whole = whole.with_state(state(foundation, settings)?);
+        }
+        let inputs = crate::rules_bridge::RuleInputs::of(&whole)?;
+        let evaluator = inputs.evaluator(teistro_rules::Readings::default());
+        let readings = match settings.dasha.ayurdaya_readings {
+            AyurdayaReadings::JatakaParijata => AyurdayaRules::PARIJATA,
+            _ => AyurdayaRules::default(),
+        };
+        let spans = evaluator.ayurdaya(readings);
+        let strengths = evaluator.strengths();
+        let lagna_strength = bhava_bala
+            .bhavas
+            .first()
+            .map(|first| first.virupas / 60.0)
+            .ok_or_else(|| Error::internal("a Bhava bala reads the first bhava"))?;
+        let strength_of = |giver: Contributor| match giver {
+            Contributor::Graha(graha) => strengths
+                .of
+                .get(teistro_rules::Body::Graha(graha).index())
+                .copied()
+                .flatten(),
+            Contributor::Lagna => Some(lagna_strength),
+        };
+        // v. 202's first, and ch. 43 vv. 30 to 32's span with it.
+        let three = [
+            (Contributor::Lagna, &spans.amsayu),
+            (Contributor::Graha(Graha::Sun), &spans.pindayu),
+            (Contributor::Graha(Graha::Moon), &spans.nisargayu),
+        ];
+        let mut weighed = three.map(|(giver, span)| (giver, span, strength_of(giver)));
+        weighed.sort_by(|a, b| b.2.unwrap_or(f64::MIN).total_cmp(&a.2.unwrap_or(f64::MIN)));
+        let [(first, named, best), (_, _, second), _] = weighed;
+        if best.is_none() || best == second {
+            return Err(Error::unsupported(
+                "the ayurdaya dasha begins from the strongest of the lagna, the Sun and the \
+                 Moon (BPHS ch. 46 v. 202), and two of them are equally strong",
+            )
+            .with_field("system"));
+        }
+        let span = match settings.dasha.ayurdaya_span {
+            AyurdayaSpan::Pindayu => &spans.pindayu,
+            AyurdayaSpan::Amsayu => &spans.amsayu,
+            AyurdayaSpan::Nisargayu => &spans.nisargayu,
+            _ => named,
+        };
+        let chart_of = evaluator.chart();
+        let givers: Vec<teistro_dasha::Giver> = span
+            .contributions
+            .iter()
+            .map(|contribution| {
+                let body = match contribution.giver {
+                    Contributor::Graha(graha) => teistro_rules::Body::Graha(graha),
+                    Contributor::Lagna => teistro_rules::Body::Lagna,
+                };
+                teistro_dasha::Giver {
+                    graha: match contribution.giver {
+                        Contributor::Graha(graha) => Some(graha),
+                        Contributor::Lagna => None,
+                    },
+                    sign: chart_of.placement(body).sign,
+                    years: contribution.net,
+                    strength: strength_of(contribution.giver).unwrap_or(0.0),
+                }
+            })
+            .collect();
+        let at = span
+            .contributions
+            .iter()
+            .position(|contribution| contribution.giver == first)
+            .ok_or_else(|| Error::internal("a span counts the lagna, the Sun and the Moon"))?;
+        GrahaDasha::ayurdaya(
+            &givers,
+            at,
+            settings.dasha.ayurdaya_place,
+            foundation.instant,
+            rules.year_length,
             rules.after_cycle,
         )
     }
@@ -2545,13 +2664,33 @@ impl<'a> ChartArea<'a> {
     /// mahadashas store and the division its second level shows, or its
     /// own when it stores one level (the settings' for Karaka, Vimshottari's
     /// for Tara), so a change of the karaka scheme or the strength measure
-    /// since does not move it.
+    /// since does not move it; an ayurdaya dasha from its seats and the
+    /// shares its second level stores.
     fn graha_dasha_from(
         self,
         document: &Document,
         reading: &DashaReading,
         system: DashaSystem,
     ) -> Result<GrahaDasha, Error> {
+        if matches!(system, DashaSystem::Aayu | DashaSystem::Ashtakavarga) {
+            // From the seats and shares its two levels store, which every
+            // reading of it holds.
+            let stored = reading.graha_shares().ok_or_else(|| {
+                Error::invalid_arg(format!(
+                    "the document's {} dasha stores fewer than its two levels, which hold \
+                     the shares it is rebuilt from",
+                    system.key()
+                ))
+                .with_field("system")
+            })?;
+            return GrahaDasha::with_shares(
+                stored.seats,
+                stored.shares,
+                document.foundation.instant,
+                reading.rules.year_length,
+                reading.rules.after_cycle,
+            );
+        }
         let lords = reading.graha_lords(true).ok_or_else(|| {
             Error::invalid_arg(format!(
                 "the document's {} dasha stores no period",
@@ -2630,7 +2769,10 @@ impl<'a> ChartArea<'a> {
             ))
             .with_field("system"));
         };
-        if system == DashaSystem::Karaka || system == DashaSystem::Tara {
+        if matches!(
+            system,
+            DashaSystem::Karaka | DashaSystem::Tara | DashaSystem::Aayu | DashaSystem::Ashtakavarga
+        ) {
             return self
                 .graha_dasha_from(document, reading, system)
                 .map(DashaCursor::Graha);
