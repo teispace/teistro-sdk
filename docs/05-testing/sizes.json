@@ -299,8 +299,8 @@
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 11430000,
-      "gzip": 2660000
+      "raw": 11680000,
+      "gzip": 2720000
     },
     {
       "subject": "panchanga",
@@ -426,6 +426,15 @@
       "raw": 3918508,
       "gzip": 1234473,
       "why": "the day's lagna table (a sign-edge walk over each day's arc, read on the modern sphere in a chosen ayanamsha) and the amrit kalam; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-22",
+      "subject": "full",
+      "artefact": "module",
+      "raw": 11446558,
+      "gzip": 2665078,
+      "why": "the parana of the Ekadashi fasts and of Janmashtami, Shivaratri and Rama Navami, the margin of each fast and the parana's timed events in the iCalendar feed, with their names in two locales; measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused"
     }
   ]
 }
