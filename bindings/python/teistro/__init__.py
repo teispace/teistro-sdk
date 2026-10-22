@@ -7353,25 +7353,32 @@ class VrataReading:
     """One reading of when a vrata's fast is broken (§8.7): `TITHI_END`
     (after the tithi's end, and the `nakshatra`'s when it joins it; in
     the morning past `yamas`), `WITHIN` (inside the tithi, within `yamas`
-    of the daylight), `SUNRISE`, or `AFTER_WINDOW` (after `at` on the
-    fast day)."""
+    of the daylight), `SUNRISE`, `AFTER_WINDOW` (after `at` on the
+    fast day), `NEXT_TITHI` (the first daylight of the tithi after the
+    fast's), or `AFTER_RITE` (after the rule `rite`'s closing rite; with
+    `remnant` ghatis, inside the fast's tithi left at the next sunrise
+    when the rite falls a day later)."""
 
-    kind: Literal["TITHI_END", "WITHIN", "SUNRISE", "AFTER_WINDOW"]
+    kind: Literal["TITHI_END", "WITHIN", "SUNRISE", "AFTER_WINDOW", "NEXT_TITHI", "AFTER_RITE"]
     nakshatra: Optional[Nakshatra] = None
     yamas: Optional[int] = None
     at: Optional[FestivalWindow] = None
+    rite: Optional[str] = None
+    remnant: Optional[int] = None
 
 
 @dataclass(frozen=True)
 class VrataParanaTime:
     """When a vrata's fast is broken under one reading: from `from_jd`,
-    set by `from_by` (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END` or
-    `WINDOW_END`), to `to_jd` for a reading with a window, set by `to_by`
+    set by `from_by` (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END`,
+    `WINDOW_END` or `RITE`), to `to_jd` for a reading with a window, set by `to_by`
     (`TITHI_END` or `YAMAS`)."""
 
     reading: VrataReading
     day: CalendarDate
-    """The day after the observance."""
+    """The day the meal falls on: the day after the observance for most
+    readings, the fast day for one ending on it, the rite's day after a
+    rite."""
 
     from_jd: float
     """When the meal may begin, a UTC Julian day."""
@@ -14434,6 +14441,8 @@ def _vrata_parana(raw: Mapping[str, Any]) -> VrataParanaTime:
             nakshatra=_member(Nakshatra, reading["nakshatra"]) if "nakshatra" in reading else None,
             yamas=reading.get("yamas"),
             at=_festival_window(reading["at"]) if "at" in reading else None,
+            rite=reading.get("rite"),
+            remnant=reading.get("remnant"),
         ),
         day=_serde_date(raw["day"]),
         from_jd=raw["from"],

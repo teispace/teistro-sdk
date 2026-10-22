@@ -2237,6 +2237,11 @@ function theFestivals(almanac: Almanac): string {
   const modern: VrataParana = { kind: 'AFTER_WINDOW', at: { window: 'NIGHT_MUHURTA', muhurta: 8 } };
   // @ts-expect-error a WITHIN reading counts its yamas
   const yamaless: VrataParana = { kind: 'WITHIN' };
+  const afterRite: VrataParana = { kind: 'AFTER_RITE', rite: 'DEVI_VISARJAN', remnant: 0 };
+  const onTheTenth: VrataParana = { kind: 'NEXT_TITHI' };
+  // @ts-expect-error an AFTER_RITE names the rite it follows
+  const riteless: VrataParana = { kind: 'AFTER_RITE' };
+  const byRite: VrataEdge = 'RITE';
   const rule: FestivalRule = {
     key: 'LAKSHMI_PUJA',
     source: 'Dharmasindhu p. 77',
@@ -2375,7 +2380,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), ...vrata, modern.kind, String(yamaless), barredRule.key, String(twelfthBar), barkhi.key, born.key, String(nowhere), ...remembered, String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), ...vrata, modern.kind, String(yamaless), afterRite.kind, onTheTenth.kind, String(riteless), byRite, barredRule.key, String(twelfthBar), barkhi.key, born.key, String(nowhere), ...remembered, String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

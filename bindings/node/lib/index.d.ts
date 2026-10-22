@@ -6976,10 +6976,14 @@ export type VrataParana =
   /** From the parana day's sunrise, for one who cannot wait (p. 52). */
   | { readonly kind: 'SUNRISE' }
   /** From the end of `at` on the fast day, as after the nishitha muhurta; no shipped rule carries it. */
-  | { readonly kind: 'AFTER_WINDOW'; readonly at: FestivalWindow };
+  | { readonly kind: 'AFTER_WINDOW'; readonly at: FestivalWindow }
+  /** In the tithi after the fast's, from its first daylight: the fast tithi's end by day, else the sunrise after it (*Nirnayasindhu* p. 139). */
+  | { readonly kind: 'NEXT_TITHI' }
+  /** After the closing rite the rule `rite` keeps, on its next day, from its first instant; with `remnant` (0 to 60 ghatis), inside the fast's tithi left at the next sunrise when the rite falls a day later (*Dharmasindhu* pp. 70–71). */
+  | { readonly kind: 'AFTER_RITE'; readonly rite: string; readonly remnant?: number };
 
 /** What set an edge of a vrata's parana. */
-export type VrataEdge = 'SUNRISE' | 'TITHI_END' | 'NAKSHATRA_END' | 'YAMAS' | 'WINDOW_END';
+export type VrataEdge = 'SUNRISE' | 'TITHI_END' | 'NAKSHATRA_END' | 'YAMAS' | 'WINDOW_END' | 'RITE';
 
 /** When a vrata's fast is broken under one reading. */
 export interface VrataParanaTime {

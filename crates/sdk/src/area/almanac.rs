@@ -250,7 +250,8 @@ impl<'a> AlmanacArea<'a> {
             })?;
         }
         let mut arcs = Vec::new();
-        for arc in request.ekadashis().iter().flat_map(EkadashiRule::moon_arcs) {
+        let rules = request.rules().iter().flat_map(FestivalRule::moon_arcs);
+        for arc in rules.chain(request.ekadashis().iter().flat_map(EkadashiRule::moon_arcs)) {
             if !arcs.contains(&arc) {
                 arcs.push(arc);
             }

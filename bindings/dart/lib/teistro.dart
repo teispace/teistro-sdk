@@ -14472,22 +14472,39 @@ final class FestivalWindow extends _Value {
 /// One reading of when a vrata's fast is broken (§8.7): `TITHI_END`
 /// (after the tithi's end, and the [nakshatra]'s when it joins it; in the
 /// morning past [yamas]), `WITHIN` (inside the tithi, within [yamas] of
-/// the daylight), `SUNRISE`, or `AFTER_WINDOW` (after [at] on the fast
-/// day).
+/// the daylight), `SUNRISE`, `AFTER_WINDOW` (after [at] on the fast
+/// day), `NEXT_TITHI` (the first daylight of the tithi after the fast's),
+/// or `AFTER_RITE` (after the rule [rite]'s closing rite; with [remnant]
+/// ghatis, inside the fast's tithi left at the next sunrise when the rite
+/// falls a day later).
 final class VrataReading extends _Value {
-  const VrataReading({required this.kind, this.nakshatra, this.yamas, this.at});
+  const VrataReading({
+    required this.kind,
+    this.nakshatra,
+    this.yamas,
+    this.at,
+    this.rite,
+    this.remnant,
+  });
 
   final String kind;
   final Nakshatra? nakshatra;
   final int? yamas;
   final FestivalWindow? at;
 
+  /// The rule key an `AFTER_RITE` follows.
+  final String? rite;
+
+  /// The ghatis of an `AFTER_RITE`'s remnant, 0 to 60.
+  final int? remnant;
+
   @override
-  List<Object?> get _fields => [kind, nakshatra, yamas, at];
+  List<Object?> get _fields => [kind, nakshatra, yamas, at, rite, remnant];
 }
 
 /// When a vrata's fast is broken under one reading: from [from], set by
-/// [fromBy] (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END` or `WINDOW_END`), to
+/// [fromBy] (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END`, `WINDOW_END` or
+/// `RITE`), to
 /// [to] for a reading with a window, set by [toBy] (`TITHI_END` or
 /// `YAMAS`).
 final class VrataParanaTime extends _Value {
@@ -14502,7 +14519,9 @@ final class VrataParanaTime extends _Value {
 
   final VrataReading reading;
 
-  /// The day after the observance.
+  /// The day the meal falls on: the day after the observance for most
+  /// readings, the fast day for one ending on it, the rite's day after a
+  /// rite.
   final CalendarDate day;
 
   /// When the meal may begin, a UTC Julian day.
@@ -15261,6 +15280,8 @@ VrataParanaTime _vrataParana(Map<String, Object?> raw) {
         null => null,
         final at => _festivalWindow(_festivalAt(at)),
       },
+      rite: reading['rite'] as String?,
+      remnant: reading['remnant'] as int?,
     ),
     day: _serdeDate(_festivalAt(raw['day'])),
     from: (raw['from']! as num).toDouble(),

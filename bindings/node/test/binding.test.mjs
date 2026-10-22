@@ -4266,10 +4266,10 @@ test('an almanac carries the festivals it was asked for', () => {
   assert.throws(() => ctx.almanac.festivals(days), /festivals: expected a festivals request/);
   assert.deepEqual(
     answer.observances.map((o) => o.rule),
-    ['VIJAYA_DASHAMI', 'SANKASHTA_CHATURTHI', 'KARAKA_CHATURTHI', 'LAKSHMI_PUJA', 'BALI_PRATIPADA'],
+    ['MAHA_NAVAMI', 'VIJAYA_DASHAMI', 'DEVI_VISARJAN', 'SANKASHTA_CHATURTHI', 'KARAKA_CHATURTHI', 'LAKSHMI_PUJA', 'BALI_PRATIPADA'],
   );
   assert.ok(Object.isFrozen(answer.observances[0].extents[0].window), 'frozen to its leaves');
-  const [dashami] = answer.observances;
+  const [, dashami] = answer.observances;
   assert.equal(dashami.day.calendar, 'calendar.GREGORIAN');
   assert.equal(dashami.day.month, 10);
   assert.equal(dashami.extents[0].day.calendar, 'calendar.GREGORIAN');

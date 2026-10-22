@@ -198,9 +198,9 @@ impl AlmanacArea<'_> {
     /// end down, since a calendar app shows minutes, so the shown window
     /// lies inside the computed one; a window under a minute writes no
     /// event. A rule without `parana` writes none. A vrata's parana
-    /// (Shivaratri's) is written the same way from its rule's first
-    /// reading, when that reading ends the window; an open one writes
-    /// none.
+    /// (Shivaratri's, and the Navaratri's when it is kept inside the 9th
+    /// left) is written the same way from its rule's first reading, when
+    /// that reading ends the window; an open one writes none.
     ///
     /// - `SUMMARY` is the festival's name in the context's locale, or its
     ///   rule's key when the locale and its fallbacks name it not.

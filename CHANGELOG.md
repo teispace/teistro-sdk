@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Navaratri's close** (P1-7, `festival-rules.md` §8.7, C701–C706).
+**Numbers:** `DHARMASINDHU` answers two more rules, `MAHA_NAVAMI` and
+`DEVI_VISARJAN`, so its answers' content hashes change; no other day
+moves. A vrata's parana gains `NEXT_TITHI` and `AFTER_RITE { rite,
+remnant }` (an edge `RITE`), and a parana's `day` is now the day the meal
+falls on, which for `AFTER_WINDOW` is the fast day (it said the day
+after). `Predicate::Joined` gains `portion`, a share of the nakshatra
+searched at its own arc. Every binding reads the new readings.
+
 **The fortnight of the ancestors** (P1-8, `shraddha.md` §3.2).
 **Numbers:** none move; a new pack. `PITRI_PAKSHA` names *Dharmasindhu*'s
 mahalayas (pp. 61–62) on each death tithi of Bhadrapada's dark half, the

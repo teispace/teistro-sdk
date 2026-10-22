@@ -772,17 +772,50 @@ both, as the reference prints them. A reading is one of:
 - `AFTER_WINDOW { at }`: from the end of a window on the fast day,
   as after nishitha. No rank-1 text in hand states it, so no shipped
   rule carries it; a consumer may.
+- `NEXT_TITHI`: in the tithi after the fast's, from its first
+  daylight: the fast tithi's end when it falls by day, on the fast day
+  or after, else the next sunrise (NS p. 139, the Navaratri's parana
+  "on the 10th").
+- `AFTER_RITE { rite, remnant? }`: after the closing rite another rule
+  of the request keeps, on that rule's next day from the fast's, from
+  the rite's first instant (its day's sunrise, its tithi's start, and the
+  start of the share of a nakshatra its deciding guard joined, the
+  last). With `remnant`, when the rite falls later than the day after
+  the fast and the fast's tithi stands at that day's sunrise for at
+  least so many ghatis, the meal is kept inside the tithi that day,
+  sunrise to its end (DS p. 71). A rite no rule of the request keeps is
+  refused as `parana[i].rite`. Such a rule is judged after every other,
+  so the rite's day is known.
 
-Each answer says its reading, the parana day, the instant the meal may
-begin with what set it (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END`,
-`WINDOW_END`), and, for a window, its end with what set that (`TITHI_END`
-or `YAMAS`). `Observance.parana` lists them; it is left out when the
-rule has none.
+Each answer says its reading, the day the meal falls on (the day after
+the fast for most, the fast day itself for a reading that ends on it,
+the rite's day after a rite), the instant the meal may begin with what
+set it (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END`, `WINDOW_END`, `RITE`),
+and, for a window, its end with what set that (`TITHI_END` or `YAMAS`).
+`Observance.parana` lists them; it is left out when the rule has none.
+
+**The Navaratri** (DS pp. 69–71, NS pp. 136, 139–140). DS p. 69 takes
+the 9th of the puja and the fast joined with the 8th when it stands the
+evening's last three muhurtas. P. 70 puts the visarjana on the 10th: of
+two, on the earlier when Shravana's last quarter joins it
+("श्रवणान्त्यपादयोगे"), by the aparahna, since a visarjana kept for the
+nakshatra may fall then; else on the later. P. 71 gives up the vow on
+the visarjana's day, after it, and reconciles "the others'" 9th-verse:
+when the visarjana falls a day later and the 9th is left at the next
+sunrise, the meal is kept inside that 9th. NS p. 139 keeps the parana on
+the 10th and calls the 9th-verses baseless. A share of a nakshatra is
+`Predicate::Joined`'s `portion`, the Moon's stay in the arc searched at
+its own bounds (the bar's search, C700).
 
 **The shipped readings** (`DHARMASINDHU`):
 
 - `JANMASHTAMI`: `TITHI_END { ROHINI }`, then `SUNRISE`.
 - `SHIVARATRI`: `WITHIN { 3 }`, then `TITHI_END` (DS's exception).
+- `MAHA_NAVAMI`: `AFTER_RITE { DEVI_VISARJAN, remnant: 0 }` (DS), then
+  `NEXT_TITHI` (NS), with `DEVI_VISARJAN` the 10th's rule above. Both
+  keys are the ones `NEPAL_PANCHANGA` prints these days under; the
+  Nepal packs keep their own udaya days and no parana, as the committee
+  prints none (C706).
 - `RAMA_NAVAMI`: `TITHI_END`. The general rule's morning clause cannot
   arise for it. A 9th that held the chosen day's madhyahna ends before
   the next day's madhyahna, or within a few ghatis of its sunrise when
@@ -795,9 +828,11 @@ carries.
 
 ### 8.8 What is measured of the vratas' parana
 
-`crates/sdk/tests/vrata_parana.rs` holds 13 rows the reference (rank 3)
+`crates/sdk/tests/vrata_parana.rs` holds 20 rows the reference (rank 3)
 prints for Delhi: Janmashtami 2023–2026 under both its readings (2026
-the main one only) and Shivaratri 2023–2028. A `TITHI_END` edge stands
+the main one only), Shivaratri 2023–2028, and the Navaratri 2021–2027
+under NS's reading, which the reference keeps (2023's 9th ends a minute
+after its sunset, so the meal is the next morning's). A `TITHI_END` edge stands
 0.5 to 2 minutes after the reference's, as its tithi ends stand early
 (C698); every other edge, the nakshatra's end among them (Rohini on
 2024-08-27 is 0.1 minute off), is within a minute. 2027's Janmashtami
@@ -809,9 +844,21 @@ Rohini from the main reading and by counting one yama more.
 a nakshatra that does not join the tithi, a yamas cap on a rule of the
 consumer's own, an `AFTER_WINDOW` reading, and the refusals.
 
-**Not built.** Navaratri's parana, which DS (pp. 70–71) ties to the
-visarjana on a 10th joined with Shravana, and keeps on the 9th for the
-south; the readings above cannot state it.
+DS's own Navaratri reading is printed by no almanac in hand, so five
+Delhi rows recomputed with pyswisseph hold it (the same file): 2022
+waits for the visarjana on the later 10th, 2024 and 2027 keep the meal
+inside the 9th left (the visarjana a day later), and 2026's visarjana is
+on the earlier 10th, Shravana's last quarter joining it. It was proved
+red twice: without the remnant 2024 and 2027 move to the visarjana's
+day, and joining the whole of Shravana moves their visarjana a day
+early. `crates/panchanga/tests/vrata.rs` adds the remaining 9th, the
+visarjana on the next day, `NEXT_TITHI` on the fast day itself, and the
+refusals.
+
+**Not built.** The southern custom (DS p. 71: both rites on the 9th when
+the 8th, the 9th and the 10th each stand whole), and Chaitra's
+navaratri, which DS pp. 31 and 34 decide as the Sharada's: the same
+rules in Chaitra, waiting on a vetted name for their keys.
 
 ## 9. Nepal
 

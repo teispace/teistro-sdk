@@ -10,7 +10,7 @@
 )]
 
 use teistro::catalogue::Calendar;
-use teistro::festival::{Edge, FestivalRule, FollowingRule, Guard, Predicate, Which, Window};
+use teistro::festival::{Edge, FestivalRule, FollowingRule, Guard, Predicate, Which};
 use teistro::muhurta::ActivityRules;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
@@ -59,12 +59,11 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
         found.value.unjudged
     );
     // Each in the Gregorian months its lunar month reaches.
-    // The text's rules less the chaturthis at moonrise, which Nepal's
-    // pack leaves out as its panchanga does.
+    // The pack's rules of one month, less the monthly full-moon fast.
     let (shipped, counted) = (
-        FestivalRule::dharmasindhu()
+        FestivalRule::nepal()
             .into_iter()
-            .filter(|rule| rule.at != Window::Moonrise)
+            .filter(|rule| rule.month.is_some())
             .collect::<Vec<_>>(),
         FollowingRule::nepal(),
     );
@@ -197,7 +196,9 @@ fn the_answer_alone_and_beside_its_days_agree_and_the_days_are_the_almanacs() {
     assert_eq!(
         rules,
         [
+            "MAHA_NAVAMI",
             "VIJAYA_DASHAMI",
+            "DEVI_VISARJAN",
             "SANKASHTA_CHATURTHI",
             "KARAKA_CHATURTHI",
             "LAKSHMI_PUJA",

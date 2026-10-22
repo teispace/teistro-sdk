@@ -48,6 +48,7 @@ pub use ekadashi::{
     ParanaBarred, ParanaEdge, ParanaKept, ParanaRule, Portion, Vedha, ekadashis,
 };
 pub use following::{FollowingRule, following};
+use vrata::RiteAt;
 pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
 
 /// A fifth of the daylight (*Dharmasindhu*, p. 6).
@@ -209,7 +210,8 @@ pub enum Predicate {
         case: Case,
     },
     /// The tithi and a nakshatra stand together on a day: within a
-    /// window when one is named, anywhere in the sunrise day otherwise.
+    /// window when one is named, anywhere in the sunrise day otherwise;
+    /// and only a share of the nakshatra when `portion` names one.
     Joined {
         /// Which day.
         day: Which,
@@ -218,6 +220,12 @@ pub enum Predicate {
         /// Where they must meet; the whole day when absent.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         at: Option<Window>,
+        /// The share of the nakshatra's arc that must meet the tithi, as
+        /// Shravana's last quarter (*Dharmasindhu* p. 70); the whole when
+        /// absent. A share is the Moon's stay in its arc, searched at the
+        /// arc's own bounds ([`FestivalDay::moon_arcs`]).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        portion: Option<Portion>,
     },
     /// The nakshatra stands in a window of a day, whatever the tithi: the
     /// Nirnaya-sindhu's condition that *Dharmasindhu* p. 71 endorses,
@@ -679,6 +687,24 @@ pub fn yugma(tithi: Tithi) -> Option<Which> {
 }
 
 impl FestivalRule {
+    /// The shares of nakshatras its guards join, as each arc in sidereal
+    /// degrees, which the days must carry ([`FestivalDay::moon_arcs`]).
+    #[must_use]
+    pub fn moon_arcs(&self) -> Vec<(Nakshatra, (f64, f64))> {
+        self.decide
+            .iter()
+            .flat_map(|guard| &guard.when)
+            .filter_map(|predicate| match *predicate {
+                Predicate::Joined {
+                    nakshatra,
+                    portion: Some(portion),
+                    ..
+                } => Some((nakshatra, portion.arc_deg(nakshatra))),
+                _ => None,
+            })
+            .collect()
+    }
+
     /// Whether the rule reads a moonrise, at its rite or in a guard: the
     /// days it is judged over must have theirs searched.
     ///
@@ -758,7 +784,15 @@ impl FestivalRule {
                         ))
                         .with_field("decide.when.is"));
                     }
-                    Predicate::Joined { at: Some(at), .. } | Predicate::Stands { at, .. } => {
+                    Predicate::Joined { at, portion, .. } => {
+                        if let Some(at) = at {
+                            check_window(&self.key, at, "decide.when.at")?;
+                        }
+                        if let Some(portion) = portion {
+                            portion.check(&self.key, "decide.when.portion")?;
+                        }
+                    }
+                    Predicate::Stands { at, .. } => {
                         check_window(&self.key, at, "decide.when.at")?;
                     }
                     _ => {}
@@ -1194,6 +1228,17 @@ impl Observances {
 pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Observances, Error> {
     for rule in rules {
         rule.check()?;
+        for (index, reading) in rule.parana.iter().enumerate() {
+            if let VrataParana::AfterRite { rite, .. } = reading
+                && !rules.iter().any(|other| other.key == *rite)
+            {
+                return Err(Error::invalid_arg(format!(
+                    "{}: its parana follows {rite}, which no rule asked for keeps; ask for that rule too",
+                    rule.key
+                ))
+                .with_field(format!("parana[{index}].rite")));
+            }
+        }
     }
     let tithis = occurrences(days);
     let nakshatras = distinct(days.iter().flat_map(|day| day.nakshatra.iter()));
@@ -1223,23 +1268,91 @@ pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Obser
         }
     }
     kept.sort_by(|a, b| a.1.from.get().total_cmp(&b.1.from.get()));
+    // A rule whose parana follows another's rite is judged once every
+    // rite's day is known (`VrataParana::AfterRite`).
+    let (first, after): (Vec<_>, Vec<_>) = kept
+        .into_iter()
+        .partition(|(rule, ..)| !rule.parana.iter().any(VrataParana::follows_a_rite));
     let mut answer = Observances::default();
-    for (rule, whole, month) in kept {
-        let judged = match month {
-            Ok(month) => judge(rule, whole, month, days)?,
-            Err(why) => Err(why),
+    for pass in [first, after] {
+        let rites = Rites {
+            rules,
+            days,
+            kept: answer.observances.clone(),
         };
-        match judged {
-            Ok(Some(observance)) => answer.observances.push(observance),
-            Ok(None) => {}
-            Err(why) => answer.unjudged.push(Unjudged {
-                rule: rule.key.clone(),
-                tithi: whole,
-                why,
-            }),
+        for (rule, whole, month) in pass {
+            let judged = match month {
+                Ok(month) => judge(rule, whole, month, days, &rites)?,
+                Err(why) => Err(why),
+            };
+            match judged {
+                Ok(Some(observance)) => answer.observances.push(observance),
+                Ok(None) => {}
+                Err(why) => answer.unjudged.push(Unjudged {
+                    rule: rule.key.clone(),
+                    tithi: whole,
+                    why,
+                }),
+            }
         }
     }
+    answer
+        .observances
+        .sort_by(|a, b| a.tithi.from.get().total_cmp(&b.tithi.from.get()));
+    answer
+        .unjudged
+        .sort_by(|a, b| a.tithi.from.get().total_cmp(&b.tithi.from.get()));
     Ok(answer)
+}
+
+/// The closing rites judged so far, which a parana after a rite reads.
+struct Rites<'a> {
+    rules: &'a [FestivalRule],
+    days: &'a [FestivalDay],
+    kept: Vec<Observance>,
+}
+
+impl<'a> Rites<'a> {
+    /// The first day of `key`'s rite from the fast day on, and its first
+    /// instant: the day's sunrise, the rite's tithi's start, and the start
+    /// of the share of a nakshatra its deciding guard joined, the last.
+    fn after(&self, key: &str, fast: &FestivalDay) -> Option<RiteAt<'a>> {
+        let rule = self.rules.iter().find(|rule| rule.key == key)?;
+        self.kept
+            .iter()
+            .filter(|kept| kept.rule == key)
+            .find_map(|kept| {
+                let day = self.days.iter().find(|day| day.date == kept.day)?;
+                (day.sunrise.get() >= fast.sunrise.get()).then_some((kept, day))
+            })
+            .map(|(kept, day)| {
+                let mut at = day.sunrise.get().max(kept.tithi.from.get());
+                if let Decided::Guard { index } = kept.decided_by {
+                    let joined = rule
+                        .decide
+                        .get(index)
+                        .into_iter()
+                        .flat_map(|guard| &guard.when)
+                        .filter_map(|predicate| match *predicate {
+                            Predicate::Joined {
+                                nakshatra,
+                                portion: Some(portion),
+                                ..
+                            } => joined_arcs(day, nakshatra, portion).ok(),
+                            _ => None,
+                        })
+                        .flatten()
+                        .filter(|arc| {
+                            arc.span.to.get() > day.sunrise.get()
+                                && arc.span.from.get() < day.next_sunrise.get()
+                        })
+                        .map(|arc| arc.span.from.get())
+                        .fold(f64::NEG_INFINITY, f64::max);
+                    at = at.max(joined);
+                }
+                RiteAt { day, at }
+            })
+    }
 }
 
 /// Every tithi the days hold, once each, in order.
@@ -1386,6 +1499,7 @@ fn judge(
     tithi: Interval,
     month: LunarMonth,
     days: &[FestivalDay],
+    rites: &Rites<'_>,
 ) -> Result<Judged, Error> {
     let Some((earlier, later)) = pair(tithi, days) else {
         return Ok(Err(
@@ -1450,16 +1564,13 @@ fn judge(
     let parana = if rule.parana.is_empty() {
         Vec::new()
     } else {
-        let next = days
+        let from = days
             .iter()
             .position(|held| std::ptr::eq(held, kept))
-            .and_then(|at| days.get(at + 1));
-        let Some(next) = next else {
-            return Ok(Err(
-                "the days do not hold the day after the observance, its parana".to_owned(),
-            ));
-        };
-        match vrata::paranas(&rule.parana, tithi, kept, next) {
+            .and_then(|at| days.get(at..))
+            .unwrap_or_default();
+        let rite = |key: &str| rites.after(key, kept);
+        match vrata::paranas(&rule.parana, tithi, from, &rite) {
             Ok(parana) => parana,
             Err(why) => return Ok(Err(why)),
         }
@@ -1531,9 +1642,20 @@ fn margin(
             _ => continue,
         };
         match *predicate {
-            Predicate::Joined { nakshatra, at, .. } => {
+            Predicate::Joined {
+                nakshatra,
+                at,
+                portion,
+                ..
+            } => {
                 window(at.map_or_else(|| Ok(day.sunrise_day()), |at| day.window(at))?);
-                named.push((day, nakshatra));
+                match portion {
+                    None => named.push((day, nakshatra)),
+                    Some(portion) => edges.extend(
+                        joined_arcs(day, nakshatra, portion)?
+                            .flat_map(|arc| [arc.span.from.get(), arc.span.to.get()]),
+                    ),
+                }
             }
             Predicate::Stands { nakshatra, at, .. } => {
                 window(day.window(at)?);
@@ -1577,6 +1699,33 @@ fn margin(
     })
 }
 
+/// The tithi and the whole of a nakshatra together on a day.
+const fn joined(day: Which, nakshatra: Nakshatra, at: Option<Window>) -> Predicate {
+    Predicate::Joined {
+        day,
+        nakshatra,
+        at,
+        portion: None,
+    }
+}
+
+/// The Moon's stays in `portion` of `nakshatra`'s arc that meet `day`,
+/// refused when no search filled the day's arcs.
+fn joined_arcs(
+    day: &FestivalDay,
+    nakshatra: Nakshatra,
+    portion: Portion,
+) -> Result<impl Iterator<Item = &MoonArc>, Error> {
+    let MoonArcs::Found(arcs) = &day.moon_arcs else {
+        return Err(Error::invalid_arg(format!(
+            "a rule joins a share of a nakshatra on {}, whose Moon arcs no search found; fill them first (`Almanac::moon_arcs`)",
+            day.date
+        )));
+    };
+    let arc = portion.arc_deg(nakshatra);
+    Ok(arcs.iter().filter(move |found| found.is_of(arc)))
+}
+
 struct Facts<'a> {
     tithi: Interval,
     case: Case,
@@ -1599,16 +1748,26 @@ impl Facts<'_> {
     fn holds(&self, predicate: Predicate) -> Result<bool, Error> {
         Ok(match predicate {
             Predicate::Case { case } => self.case == case,
-            Predicate::Joined { day, nakshatra, at } => {
+            Predicate::Joined {
+                day,
+                nakshatra,
+                at,
+                portion,
+            } => {
                 let day = self.day(day);
                 let span = match at {
                     Some(window) => day.window(window)?,
                     None => day.sunrise_day(),
                 };
-                day.nakshatra
-                    .iter()
-                    .filter(|held| held.member == nakshatra)
-                    .any(|held| meet(&[self.tithi, held.whole], span))
+                match portion {
+                    None => day
+                        .nakshatra
+                        .iter()
+                        .filter(|held| held.member == nakshatra)
+                        .any(|held| meet(&[self.tithi, held.whole], span)),
+                    Some(portion) => joined_arcs(day, nakshatra, portion)?
+                        .any(|arc| meet(&[self.tithi, arc.span], span)),
+                }
             }
             Predicate::Stands { day, nakshatra, at } => {
                 let day = self.day(day);
@@ -1681,12 +1840,68 @@ impl FestivalRule {
     /// each citing its page in the 1888 Nirnaya-sagara edition: the four
     /// of `festival-rules.md` §1, then the seven Nepal's panchanga prints
     /// (§9), then three schools' upakarma (§9.5, §9.7), then the two
-    /// chaturthis kept at moonrise (`festival-rule-language.md` §3.1).
+    /// chaturthis kept at moonrise (`festival-rule-language.md` §3.1),
+    /// then the Navaratri's Mahanavami and visarjana (§8.7).
     #[must_use]
     pub fn dharmasindhu() -> Vec<FestivalRule> {
         let mut rules = FestivalRule::printed_in_nepal();
         rules.extend(FestivalRule::at_moonrise());
+        rules.extend(FestivalRule::navaratri());
         rules
+    }
+
+    /// The Sharada Navaratri's close (*Dharmasindhu* pp. 69–71): the 9th
+    /// of the puja and the fast, and the Devi's visarjana on the 10th,
+    /// after which the fast is broken; with *Nirnayasindhu* p. 139's
+    /// reading second, the first daylight of the 10th. The keys are the
+    /// ones `NEPAL_PANCHANGA` prints these days under.
+    fn navaratri() -> Vec<FestivalRule> {
+        use Choice::{Earlier, Later};
+        use Which::Earlier as E;
+        let morning_to_aparahna = Window::DayMuhurta { from: 1, to: 12 };
+        vec![
+            FestivalRule {
+                key: "MAHA_NAVAMI".to_owned(),
+                source: "Dharmasindhu p. 69: the 9th of the puja and the fast is taken joined with the 8th when it stands three muhurtas in that evening (सायं त्रिमुहूर्ता), the later day otherwise; the fast is broken on the visarjana's day after it, or inside the 9th left at the next sunrise when the visarjana falls a day later (pp. 70–71); Nirnayasindhu p. 139 breaks it on the 10th, at its first daylight".to_owned(),
+                month: Some(Masa::Ashwina),
+                convention: Convention::Amanta,
+                occurs: Tithi::ShuklaNavami.into(),
+                in_adhika: InAdhika::Nija,
+                at: Window::DayMuhurta { from: 13, to: 15 },
+                decide: vec![Guard::new([Predicate::Wholly { day: E }], Earlier)],
+                otherwise: Later,
+                parana: vec![
+                    VrataParana::AfterRite {
+                        rite: "DEVI_VISARJAN".to_owned(),
+                        remnant: Some(0),
+                    },
+                    VrataParana::NextTithi,
+                ],
+            },
+            FestivalRule {
+                key: "DEVI_VISARJAN".to_owned(),
+                source: "Dharmasindhu p. 70: the visarjana is on the 10th; of two, on the earlier when Shravana's last quarter joins it (श्रवणान्त्यपादयोगे), by the aparahna since a visarjana kept for the nakshatra may fall then, and on the later otherwise; on the earlier when the later holds no 10th".to_owned(),
+                month: Some(Masa::Ashwina),
+                convention: Convention::Amanta,
+                occurs: Tithi::ShuklaDashami.into(),
+                in_adhika: InAdhika::Nija,
+                at: morning_to_aparahna,
+                decide: vec![
+                    Guard::new(
+                        [Predicate::Joined {
+                            day: E,
+                            nakshatra: Nakshatra::Shravana,
+                            at: Some(morning_to_aparahna),
+                            portion: Some(Portion { parts: 4, which: 4 }),
+                        }],
+                        Earlier,
+                    ),
+                    Guard::new([case(Case::EarlierOnly)], Earlier),
+                ],
+                otherwise: Later,
+                parana: Vec::new(),
+            },
+        ]
     }
 
     /// The text's rules Nepal's national panchanga keeps: all but the two
@@ -1816,7 +2031,6 @@ impl FestivalRule {
     fn first_four() -> Vec<FestivalRule> {
         use Choice::{Earlier, Later};
         use Which::{Earlier as E, Later as L};
-        let joined = |day, nakshatra, at| Predicate::Joined { day, nakshatra, at };
         let shravana = |day| joined(day, Nakshatra::Shravana, None);
         vec![
             FestivalRule {

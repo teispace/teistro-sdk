@@ -228,7 +228,9 @@ final class AlmanacReads {
                         reading.get("nakshatra") == null ? null
                                 : member(reading, "nakshatra", "Nakshatra", Nakshatra::byKey),
                         Reads.optionalInteger(reading, "yamas"),
-                        reading.get("at") == null ? null : festivalWindow(Reads.object(reading, "at"))),
+                        reading.get("at") == null ? null : festivalWindow(Reads.object(reading, "at")),
+                        Reads.optionalString(reading, "rite"),
+                        Reads.optionalInteger(reading, "remnant")),
                 Reads.serdeDate(Reads.field(p, "day")),
                 Reads.number(p, "from"),
                 Reads.string(p, "fromBy"),

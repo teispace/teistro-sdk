@@ -2800,6 +2800,33 @@ void _engineTests() {
       (within.fromBy, atEnd.reading.kind, atEnd.to),
       ('SUNRISE', 'TITHI_END', null),
     );
+    // The Navaratri's close (§8.7): October 2025, the meal after the Devi's
+    // visarjana by the text, at the 10th's first daylight by the
+    // Nirnayasindhu.
+    final october = ctx.almanac.festivals(
+      from: gregorian(2025, 9, 26),
+      to: gregorian(2025, 10, 6),
+      place: place,
+      utcOffsetSeconds: 20700,
+      festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu),
+    );
+    final navami = october.observances.firstWhere(
+      (o) => o.rule == 'MAHA_NAVAMI',
+    );
+    final visarjana = october.observances.firstWhere(
+      (o) => o.rule == 'DEVI_VISARJAN',
+    );
+    final [afterRite, onTheTenth] = navami.parana;
+    expect(
+      (
+        afterRite.reading.kind,
+        afterRite.reading.rite,
+        afterRite.reading.remnant,
+        onTheTenth.reading.kind,
+      ),
+      ('AFTER_RITE', 'DEVI_VISARJAN', 0, 'NEXT_TITHI'),
+    );
+    expect((afterRite.day, afterRite.fromBy), (visarjana.day, 'RITE'));
     // The parana's nakshatra bar (C700): Kathmandu, 7 July 2025, the meal
     // held past Anuradha's first quarter, which ends at 05:36.
     final smarta = <String, Object?>{
@@ -2898,14 +2925,16 @@ void _engineTests() {
     expect(
       [for (final observance in answer.observances) observance.rule],
       [
+        'MAHA_NAVAMI',
         'VIJAYA_DASHAMI',
+        'DEVI_VISARJAN',
         'SANKASHTA_CHATURTHI',
         'KARAKA_CHATURTHI',
         'LAKSHMI_PUJA',
         'BALI_PRATIPADA',
       ],
     );
-    final dashami = answer.observances.first;
+    final dashami = answer.observances[1];
     expect(dashami.day.calendar, Calendar.gregorian);
     expect(dashami.day.month, 10);
     expect(dashami.extents.$1.day.calendar, Calendar.gregorian);
