@@ -44,8 +44,10 @@ pub use anniversary::{
 };
 pub use dated::{Dated, DatedObservance, DatedRule, dated};
 pub use ekadashi::{
-    EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, NakshatraBar, Parana,
-    ParanaBarred, ParanaEdge, ParanaKept, ParanaRule, Portion, Vedha, ekadashis,
+    EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, JoinedNakshatra,
+    Mahadvadashi, MahadvadashiKind, MahadvadashiRule, NakshatraBar, NakshatraJoining, Parana,
+    ParanaBarred, ParanaEdge, ParanaKept, ParanaRule, Portion, TrisprishaAt, Vedha, VyanjuliPast,
+    ekadashis,
 };
 pub use following::{FollowingRule, following};
 use vrata::RiteAt;

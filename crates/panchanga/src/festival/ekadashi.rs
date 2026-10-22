@@ -25,6 +25,13 @@ use super::{
     FestivalDay, MoonArcs, Observances, Unjudged, Which, Window, check_window, occurrences,
 };
 
+mod mahadvadashi;
+
+pub use mahadvadashi::{
+    JoinedNakshatra, Mahadvadashi, MahadvadashiKind, MahadvadashiRule, NakshatraJoining,
+    TrisprishaAt, VyanjuliPast,
+};
+
 /// Where the 10th pierces the 11th's day (p. 11).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -146,15 +153,21 @@ pub struct EkadashiRule {
     /// parana.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub parana: Option<ParanaRule>,
+    /// The mahadvadashis that name its fast or move it onto the 12th's
+    /// day (§8.9); a rule without one keeps its table's day.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mahadvadashi: Option<MahadvadashiRule>,
 }
 
 impl EkadashiRule {
-    /// Refuses what could not name an answer: an empty key, and a
-    /// parana with no window or one outside the daylight.
+    /// Refuses what could not name an answer: an empty key, a parana
+    /// with no window or one outside the daylight, and a mahadvadashi
+    /// rule keeping no kind or one kind twice.
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` on `key` or on the parana's `at`.
+    /// `INVALID_ARG` on `key`, on the parana's `at`, or on
+    /// `mahadvadashi.kinds`.
     pub fn check(&self) -> Result<(), Error> {
         if self.key.trim().is_empty() {
             return Err(Error::invalid_arg(
@@ -162,9 +175,45 @@ impl EkadashiRule {
             )
             .with_field("key"));
         }
-        self.parana
+        if let Some(parana) = &self.parana {
+            parana.check(&self.key)?;
+        }
+        self.mahadvadashi
             .as_ref()
-            .map_or(Ok(()), |parana| parana.check(&self.key))
+            .map_or(Ok(()), |mahadvadashi| mahadvadashi.check(&self.key))
+    }
+
+    /// How many days past the 11th's own the rule reads: the fortnight's
+    /// end and the sunrise after it, for a rule keeping mahadvadashis.
+    #[must_use]
+    pub const fn reach(&self) -> u8 {
+        if self.mahadvadashi.is_some() { 6 } else { 0 }
+    }
+
+    /// The Gaudiya Vaishnavas' Ekadashi, after *Hari Bhakti Vilasa*: the
+    /// 10th pierces at arunodaya (12.352–357), the pure 11th is left for
+    /// growth ahead as the Vaishnava's table has it (12.359's
+    /// commentary), and the eight mahadvadashis name the fast or move it
+    /// (13.265–292). The parana keeps *Dharmasindhu*'s windows (Q41).
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::{EkadashiRule, MahadvadashiKind};
+    ///
+    /// let gaudiya = EkadashiRule::hari_bhakti_vilasa();
+    /// assert_eq!(gaudiya.key, "EKADASHI_GAUDIYA");
+    /// let kinds = &gaudiya.mahadvadashi.unwrap().kinds;
+    /// assert_eq!(kinds.len(), MahadvadashiKind::ALL.len());
+    /// ```
+    #[must_use]
+    pub fn hari_bhakti_vilasa() -> EkadashiRule {
+        EkadashiRule {
+            key: "EKADASHI_GAUDIYA".to_owned(),
+            source: "Hari Bhakti Vilasa 12.352–394, 13.265–292: pierced at arunodaya the 11th is left; pure, it is left for growth ahead, the 12th's day fasted unless neither stands in excess; and the eight mahadvadashis, Unmilani, Vyanjuli, Trisprisha, Pakshavardhini, Jaya, Vijaya, Jayanti and Papanashini, name the fast or move it onto the 12th's day (C707 to C711)".to_owned(),
+            vedha: Vedha::Arunodaya,
+            table: VAISHNAVA,
+            parana: Some(ParanaRule::dharmasindhu()),
+            mahadvadashi: Some(MahadvadashiRule::hari_bhakti_vilasa()),
+        }
     }
 
     /// The arcs of the Moon its parana's bars read, in sidereal degrees,
@@ -187,14 +236,9 @@ impl EkadashiRule {
                 key: "EKADASHI_VAISHNAVA".to_owned(),
                 source: "Dharmasindhu pp. 11–12: pierced at arunodaya, the 11th is left and the 12th's day fasted, in every kind (S1 to S8); pure, the later day unless neither stands in excess (V1 to V4)".to_owned(),
                 vedha: Vedha::Arunodaya,
-                table: EkadashiTable {
-                    pure: EkadashiKinds {
-                        neither: Earlier,
-                        ..EkadashiKinds::all(Later)
-                    },
-                    pierced: EkadashiKinds::all(Later),
-                },
+                table: VAISHNAVA,
                 parana: Some(ParanaRule::dharmasindhu()),
+                mahadvadashi: None,
             },
             EkadashiRule {
                 key: "EKADASHI_SMARTA".to_owned(),
@@ -215,6 +259,7 @@ impl EkadashiRule {
                     },
                 },
                 parana: Some(ParanaRule::dharmasindhu()),
+                mahadvadashi: None,
             },
             EkadashiRule {
                 key: "EKADASHI_SMARTA_RENUNCIANT".to_owned(),
@@ -230,10 +275,23 @@ impl EkadashiRule {
                     pierced: EkadashiKinds::all(Later),
                 },
                 parana: Some(ParanaRule::dharmasindhu()),
+                mahadvadashi: None,
             },
         ]
     }
 }
+
+/// The Vaishnava's table (*Dharmasindhu* pp. 11–12): pierced at
+/// arunodaya, the 11th is left and the 12th's day fasted in every kind
+/// (S1 to S8); pure, the later day unless neither stands in excess (V1 to
+/// V4). *Hari Bhakti Vilasa* 12.359's commentary gives the same cells.
+const VAISHNAVA: EkadashiTable = EkadashiTable {
+    pure: EkadashiKinds {
+        neither: Which::Earlier,
+        ..EkadashiKinds::all(Which::Later)
+    },
+    pierced: EkadashiKinds::all(Which::Later),
+};
 
 /// When an Ekadashi fast is broken (*parana*, §8.5): on the day after
 /// the fast, inside the 12th, in the first of these daylight windows that
@@ -490,6 +548,9 @@ pub enum ParanaEdge {
     TithiEnd,
     /// An edge of the barred share of a nakshatra (C700).
     Nakshatra,
+    /// The end of a mahadvadashi's joined nakshatra (HBV 13.290–291): the
+    /// meal kept after it, or inside it.
+    JoinedNakshatra,
 }
 
 /// A barred share of a nakshatra met on the parana day (C700).
@@ -570,7 +631,9 @@ pub struct EkadashiFast {
     pub excess: Excess,
     /// The day the rule's table gives.
     pub choice: Which,
-    /// The fast.
+    /// The fast: `choice`'s day, or the day a mahadvadashi sets, which
+    /// may be the day after both (the 12th's, when the 11th holds two
+    /// sunrises).
     pub day: CalendarDate,
     /// **How far the place can move**, in seconds of time, as an
     /// observance's [`margin_seconds`](super::Observance::margin_seconds):
@@ -584,6 +647,11 @@ pub struct EkadashiFast {
     /// without one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub parana: Option<Parana>,
+    /// The mahadvadashi that set `day`, when the rule keeps them and one
+    /// held; `choice` stays the table's, so a reader sees what the table
+    /// alone gave.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mahadvadashi: Option<Mahadvadashi>,
 }
 
 /// Every Ekadashi over consecutive sunrise days, under each rule.
@@ -617,10 +685,23 @@ pub fn ekadashis(rules: &[EkadashiRule], days: &[FestivalDay]) -> Result<Observa
             .zip(run.get(at + 1))
             .ok_or("the days do not hold the 10th and the 12th beside it")
             .and_then(|(tenth, twelfth)| {
+                // The fortnight's end, which a Pakshavardhini reads.
+                let end = if eleventh.member == Tithi::ShuklaEkadashi {
+                    Tithi::Purnima
+                } else {
+                    Tithi::Amavasya
+                };
+                let paksha_end = run
+                    .iter()
+                    .skip(at + 1)
+                    .take(5)
+                    .find(|held| held.member == end)
+                    .map(|held| held.whole);
                 facts(
                     days,
                     [tenth.whole, eleventh.whole, twelfth.whole],
                     twelfth.member,
+                    paksha_end,
                 )
             });
         for rule in rules {
@@ -648,8 +729,11 @@ struct Facts<'d> {
     /// was chosen by.
     before: &'d FestivalDay,
     days: [&'d FestivalDay; 2],
-    /// The day after the later, a parana's when the fast is the later's.
-    after: Option<&'d FestivalDay>,
+    /// The days from the 11th's own on, as far as they were founded: the
+    /// parana's is the one after the fast's.
+    run: &'d [FestivalDay],
+    /// The fortnight's new or full moon, whole, when the days hold it.
+    paksha_end: Option<Interval>,
     /// The 12th's member, bright or dark.
     twelfth: Tithi,
     arunodaya: JulianDay<Utc>,
@@ -657,7 +741,51 @@ struct Facts<'d> {
     excess: Excess,
 }
 
-impl Facts<'_> {
+impl<'d> Facts<'d> {
+    /// The day `at` past the 11th's own.
+    fn day(&self, at: usize) -> Result<&'d FestivalDay, String> {
+        self.run.get(at).ok_or_else(|| {
+            format!("the days do not reach the {at}th past the 11th's own, which the rule reads")
+        })
+    }
+
+    /// The 12th's day, as an index past the 11th's own: the first whose
+    /// sunrise the 12th holds; none for a 12th holding no sunrise.
+    fn twelfth_day(&self) -> Result<Option<usize>, String> {
+        let [_, eleventh, twelfth] = self.tithis;
+        let second = self.days[1];
+        if twelfth.contains(second.sunrise) {
+            return Ok(Some(1));
+        }
+        if !eleventh.contains(second.sunrise) {
+            return Ok(None);
+        }
+        Ok(twelfth.contains(self.day(2)?.sunrise).then_some(2))
+    }
+
+    /// Whether the fortnight's end holds two sunrises (HBV 13.270).
+    fn paksha_end_doubled(&self) -> Result<bool, String> {
+        let end = self
+            .paksha_end
+            .ok_or("the days do not hold the fortnight's end, which a Pakshavardhini reads")?;
+        if self
+            .run
+            .iter()
+            .any(|day| end.contains(day.sunrise) && end.contains(day.next_sunrise))
+        {
+            return Ok(true);
+        }
+        if self
+            .run
+            .last()
+            .is_some_and(|last| last.next_sunrise.get() >= end.to.get())
+        {
+            Ok(false)
+        } else {
+            Err("the days do not reach the sunrise after the fortnight's end".to_owned())
+        }
+    }
+
     fn fast(&self, rule: &EkadashiRule, tithi: Tithi) -> Result<EkadashiFast, String> {
         // Pierced at sunrise is pierced at arunodaya, the earlier instant.
         let pierced = self.pierced_at.is_some_and(|at| at >= rule.vedha);
@@ -668,15 +796,33 @@ impl Facts<'_> {
         };
         let choice = kinds.of(self.excess);
         let [first, second] = self.days;
-        let chosen = match choice {
-            Which::Earlier => first,
-            Which::Later => second,
-        };
+        let held = rule
+            .mahadvadashi
+            .as_ref()
+            .map(|mahadvadashi| mahadvadashi.judge(self))
+            .transpose()?
+            .flatten();
+        let at = held.as_ref().map_or(
+            match choice {
+                Which::Earlier => 0,
+                Which::Later => 1,
+            },
+            |held| held.at,
+        );
+        let chosen = self.day(at)?;
+        let joined = held
+            .as_ref()
+            .and_then(|held| held.mahadvadashi.joined.as_ref());
         let parana = rule
             .parana
             .as_ref()
-            .map(|parana| self.parana(parana, choice, tithi))
+            .map(|parana| self.parana(parana, at, tithi, joined))
             .transpose()?;
+        let margin = rule
+            .mahadvadashi
+            .as_ref()
+            .map_or(f64::INFINITY, |mahadvadashi| mahadvadashi.margin(self))
+            .min(self.margin(rule.vedha));
         Ok(EkadashiFast {
             rule: rule.key.clone(),
             tithi,
@@ -689,19 +835,26 @@ impl Facts<'_> {
             excess: self.excess,
             choice,
             day: chosen.date.clone(),
-            margin_seconds: self.margin(rule.vedha) * SECONDS_PER_DAY,
+            margin_seconds: margin * SECONDS_PER_DAY,
             parana,
+            mahadvadashi: held.map(|held| held.mahadvadashi),
         })
     }
 
-    /// The parana of a fast on `eleventh`, kept on `choice`'s day (§8.5).
-    fn parana(&self, rule: &ParanaRule, choice: Which, eleventh: Tithi) -> Result<Parana, String> {
-        let day = match choice {
-            Which::Earlier => self.days[1],
-            Which::Later => self
-                .after
-                .ok_or("the days do not hold the day after the fast, its parana")?,
-        };
+    /// The parana of a fast on `eleventh`, kept on the day `at` past the
+    /// 11th's own (§8.5), after or inside a mahadvadashi's `joined`
+    /// nakshatra (HBV 13.290–291).
+    fn parana(
+        &self,
+        rule: &ParanaRule,
+        at: usize,
+        eleventh: Tithi,
+        joined: Option<&JoinedNakshatra>,
+    ) -> Result<Parana, String> {
+        let day = self
+            .run
+            .get(at + 1)
+            .ok_or("the days do not hold the day after the fast, its parana")?;
         if !day.normal {
             return Err(format!("{} is a polar day, which has no windows", day.date));
         }
@@ -725,8 +878,26 @@ impl Facts<'_> {
         if let Some(end) = hari_vasara_ends.filter(|_| rule.hari_vasara) {
             bars.push((end, ParanaEdge::HariVasara));
         }
+        let mut closes = vec![(held.to, ParanaEdge::TithiEnd)];
+        // 13.290–291, a nakshatra that grows into the parana day: with the
+        // 12th standing, after it when the 12th outlasts it ("पारणं ततः")
+        // and inside the 12th otherwise ("तिथिमध्ये"); with the 12th gone,
+        // inside Rohini or Shravana ("तन्मध्ये") and after the other two
+        // ("तदतिक्रमे").
+        if let Some(joined) = joined.filter(|joined| joined.span.to.get() > day.sunrise.get()) {
+            let end = (joined.span.to, ParanaEdge::JoinedNakshatra);
+            if twelfth.to.get() > day.sunrise.get() {
+                if twelfth.to.get() > joined.span.to.get() {
+                    bars.push(end);
+                }
+            } else if matches!(joined.nakshatra, Nakshatra::Rohini | Nakshatra::Shravana) {
+                closes.push(end);
+            } else {
+                bars.push(end);
+            }
+        }
         let mut barred = self.barred(rule, eleventh, day)?;
-        let mut kept = kept_in(rule, day, held, &bars, barred.map(|barred| barred.span))?;
+        let mut kept = kept_in(rule, day, &bars, &closes, barred.map(|barred| barred.span))?;
         // Kept, a bar whose share outlasts the tithi would leave no meal
         // inside it: the bar is set aside and the meal kept as though
         // there were none (*Dharmasindhu* p. 42, after the *Kaustubha*).
@@ -736,7 +907,7 @@ impl Facts<'_> {
                 .filter(|barred| barred.span.to.get() >= held.to.get())
             {
                 barred.set_aside = true;
-                kept = kept_in(rule, day, held, &bars, None)?;
+                kept = kept_in(rule, day, &bars, &closes, None)?;
             }
         }
         Ok(Parana {
@@ -810,17 +981,17 @@ impl Facts<'_> {
 
 const SECONDS_PER_DAY: f64 = 86_400.0;
 
-/// The 11th's two days and what stands on them (§8.2, C181).
-/// The first of the rule's windows on `day` that leaves time in `held`,
-/// the tithi the meal is kept in, past `bars` (the latest after a
-/// window's start sets it) and outside `barred`, a barred share of a
-/// nakshatra: the meal waits past that share when it holds the start, and
-/// is kept before it when it falls later in the window.
+/// The first of the rule's windows on `day` that leaves time past `bars`
+/// (the latest after a window's start sets it) and before `closes` (the
+/// earliest before its end, the end of the tithi the meal is kept in
+/// among them), outside `barred`, a barred share of a nakshatra: the meal
+/// waits past that share when it holds the start, and is kept before it
+/// when it falls later in the window.
 fn kept_in(
     rule: &ParanaRule,
     day: &FestivalDay,
-    held: Interval,
     bars: &[(JulianDay<Utc>, ParanaEdge)],
+    closes: &[(JulianDay<Utc>, ParanaEdge)],
     barred: Option<Interval>,
 ) -> Result<Option<ParanaKept>, String> {
     for &at in &rule.at {
@@ -831,11 +1002,12 @@ fn kept_in(
             .filter(|(bar, _)| bar.get() > span.from.get())
             .max_by(|a, b| a.0.get().total_cmp(&b.0.get()))
             .unwrap_or((span.from, ParanaEdge::Window));
-        let (mut to, mut to_by) = if held.to.get() < span.to.get() {
-            (held.to, ParanaEdge::TithiEnd)
-        } else {
-            (span.to, ParanaEdge::Window)
-        };
+        let (mut to, mut to_by) = closes
+            .iter()
+            .copied()
+            .filter(|(close, _)| close.get() < span.to.get())
+            .min_by(|a, b| a.0.get().total_cmp(&b.0.get()))
+            .unwrap_or((span.to, ParanaEdge::Window));
         if let Some(bar) = barred {
             if bar.from.get() <= from.get() && from.get() < bar.to.get() {
                 (from, from_by) = (bar.to, ParanaEdge::Nakshatra);
@@ -855,10 +1027,12 @@ fn kept_in(
     Ok(None)
 }
 
+/// The 11th's two days and what stands on them (§8.2, C181).
 fn facts(
     days: &[FestivalDay],
     tithis: [Interval; 3],
     member: Tithi,
+    paksha_end: Option<Interval>,
 ) -> Result<Facts<'_>, &'static str> {
     let [tenth, eleventh, twelfth] = tithis;
     // The day in whose daylight the 11th begins; one beginning at night
@@ -892,7 +1066,8 @@ fn facts(
         tithis,
         before,
         days: [first, second],
-        after: days.get(own + 2),
+        run: days.get(own..).unwrap_or_default(),
+        paksha_end,
         twelfth: member,
         arunodaya,
         pierced_at,

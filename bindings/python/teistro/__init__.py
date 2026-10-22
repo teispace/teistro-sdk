@@ -683,6 +683,9 @@ __all__ = [
     "FestivalDecided",
     "FestivalUnjudged",
     "EkadashiFast",
+    "JoinedNakshatra",
+    "Mahadvadashi",
+    "MahadvadashiKind",
     "NakshatraBar",
     "Parana",
     "ParanaBarred",
@@ -7230,7 +7233,7 @@ class MuhurtaAnswer:
     instant among the applied conventions, and the hash of the value."""
 
 
-FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA"]
+FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA", "GAUDIYA"]
 """A pack of festival rules the SDK ships: *Dharmasindhu*'s; those as
 Nepal's national panchanga keeps them (a rite of the daylight on the day
 whose sunrise holds its tithi) with the days it counts from them
@@ -7439,6 +7442,44 @@ class EkadashiFast:
     """When it is broken, under the rule's parana; None for a rule without
     one."""
 
+    mahadvadashi: Optional["Mahadvadashi"] = None
+    """The mahadvadashi that set `day`, when the rule keeps them and one
+    held (`GAUDIYA`'s rule); `choice` stays the table's."""
+
+
+MahadvadashiKind = Literal[
+    "UNMILANI", "VYANJULI", "TRISPRISHA", "PAKSHAVARDHINI", "JAYA", "VIJAYA", "JAYANTI", "PAPANASHINI"
+]
+"""One of the eight mahadvadashis of *Hari Bhakti Vilasa* 13.265
+(`03-design/festival-rules.md` §8.9). An Ekadashi rule keeps them as
+`mahadvadashi: {kinds, trisprisha, joining, vyanjuli, sampurna}`, each
+field defaulting to the text's reading, so `{}` keeps all eight."""
+
+
+@dataclass(frozen=True)
+class JoinedNakshatra:
+    """The nakshatra a bright 12th is joined with, and its whole stay."""
+
+    nakshatra: Nakshatra
+    span: Interval
+
+
+@dataclass(frozen=True)
+class Mahadvadashi:
+    """A mahadvadashi that held, and the fast it set."""
+
+    kind: MahadvadashiKind
+    """The kind that set the fast: the first of the rule's kinds that held."""
+
+    held: Tuple[MahadvadashiKind, ...]
+    """Every kind that held, in the rule's order."""
+
+    clause: str
+    """The verse that defines `kind`."""
+
+    joined: Optional[JoinedNakshatra]
+    """The joined nakshatra, for Jaya, Vijaya, Jayanti and Papanashini."""
+
 
 @dataclass(frozen=True)
 class ParanaWindow:
@@ -7456,8 +7497,9 @@ class ParanaWindow:
 class ParanaKept:
     """The window a parana was kept in, and the clause that set each edge:
     `WINDOW`, `HARI_VASARA` (the 12th's first quarter ends), `TITHI_START`,
-    `TITHI_END` or `NAKSHATRA` (an edge of a barred share of a nakshatra,
-    C700)."""
+    `TITHI_END`, `NAKSHATRA` (an edge of a barred share of a nakshatra,
+    C700) or `JOINED_NAKSHATRA` (the end of a mahadvadashi's nakshatra,
+    HBV 13.290–291)."""
 
     span: Interval
     """When the meal may be taken."""
@@ -7465,8 +7507,8 @@ class ParanaKept:
     at: ParanaWindow
     """The rule's window it lies in."""
 
-    from_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END", "NAKSHATRA"]
-    to_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END", "NAKSHATRA"]
+    from_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END", "NAKSHATRA", "JOINED_NAKSHATRA"]
+    to_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END", "NAKSHATRA", "JOINED_NAKSHATRA"]
 
 
 @dataclass(frozen=True)
@@ -14469,6 +14511,20 @@ def _ekadashi_fast(raw: Mapping[str, Any]) -> EkadashiFast:
         day=_serde_date(raw["day"]),
         margin_seconds=float(raw["marginSeconds"]),
         parana=_parana(raw["parana"]) if raw.get("parana") is not None else None,
+        mahadvadashi=_mahadvadashi(raw["mahadvadashi"]) if raw.get("mahadvadashi") is not None else None,
+    )
+
+
+def _mahadvadashi(raw: Mapping[str, Any]) -> Mahadvadashi:
+    """A fast's mahadvadashi as a festival answer writes it."""
+    joined = raw.get("joined")
+    return Mahadvadashi(
+        kind=raw["kind"],
+        held=tuple(raw["held"]),
+        clause=raw["clause"],
+        joined=None
+        if joined is None
+        else JoinedNakshatra(nakshatra=_member(Nakshatra, joined["nakshatra"]), span=_interval(joined["span"])),
     )
 
 

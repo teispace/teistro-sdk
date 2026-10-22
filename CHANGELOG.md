@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Gaudiya Ekadashi** (P1-7, `festival-rules.md` §8.9, C707–C712).
+**Numbers:** none move; a new pack. `GAUDIYA` keeps `EKADASHI_GAUDIYA`,
+*Hari Bhakti Vilasa*'s Ekadashi: the Vaishnava's vedha and table, and the
+eight mahadvadashis (Unmilani, Vyanjuli, Trisprisha, Pakshavardhini,
+Jaya, Vijaya, Jayanti, Papanashini) that name the fast or move it onto
+the 12th's day. An `EkadashiRule` gains an optional `mahadvadashi`
+(`kinds`, `trisprisha`, `joining`, `vyanjuli`, `sampurna`, each
+defaulting to the text's reading), a fast gains `mahadvadashi` (`kind`,
+`held`, `clause`, `joined`), and a parana's edge may be
+`JOINED_NAKSHATRA`. Both are left out when absent, so no other answer's
+hash changes. Every binding reads them.
+
 **The Navaratri's close** (P1-7, `festival-rules.md` §8.7, C701–C706).
 **Numbers:** `DHARMASINDHU` answers two more rules, `MAHA_NAVAMI` and
 `DEVI_VISARJAN`, so its answers' content hashes change; no other day

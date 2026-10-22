@@ -76,11 +76,14 @@ one a year did reach.
 | UPAKARMA_SAMAVEDI | EarlierOnly 5, LaterOnly 4, UnequalParts 1 | otherwise: 5, guard 0: 5 |
 | SANKASHTA_CHATURTHI | Both 2, EarlierOnly 57, LaterOnly 22, Neither 10 | otherwise: 32, guard 0: 57, guard 1: 2 |
 | KARAKA_CHATURTHI | EarlierOnly 2, LaterOnly 7, Neither 1 | otherwise: 8, guard 0: 2 |
+| MAHA_NAVAMI | EarlierOnly 5, LaterOnly 5 | otherwise: 6, guard 0: 4 |
+| DEVI_VISARJAN | LaterOnly 5, UnequalParts 5 | otherwise: 9, guard 0: 1 |
 
 The guards no year reached, and why:
 
 - VIJAYA_DASHAMI guard 1: the 10th beginning after the earlier day's aparahna with Shravana joining it only that evening, which no year of the decade had; the crate test `vijaya_dashami_held_later_alone_yields_to_shravana_on_the_earlier_evening` reaches it.
 - VIJAYA_DASHAMI guard 6: the 10th holding both aparahnas, neither or each in part, with Shravana joining it on the later day only, which no year of the decade had; the crate test `vijaya_dashami_held_on_both_days_or_neither_goes_to_shravana_alone` reaches it.
+- DEVI_VISARJAN guard 1: the 10th holding the earlier morning and ending before the later sunrise, a tithi shorter than a day begun in daylight, which no Ashvina of the decade had; the crate test `devi_visarjan_keeps_a_tenth_that_never_reaches_the_later_morning` reaches it.
 - NAVARATRA_ARAMBHA guard 0: the 1st holding two sunrises, a vriddhi no Ashwina of the decade had; the crate test `navaratra_arambha_needs_a_muhurta_past_the_later_sunrise` reaches it.
 - SHIVARATRI guard 1: the 14th holding the earlier night's eighth muhurta whole and the later's in part, which no year of the decade had; the crate test `shivaratri_takes_the_book_s_day_in_each_of_its_clauses` reaches it.
 - HOLIKA guard 1: the full moon beginning after the earlier day's pradosha and ending before the later's, a tithi shorter than the day between them, which no Phalguna of the decade had; the crate test `holika_takes_the_later_day_whenever_its_pradosha_holds_the_full_moon` reaches it.
@@ -93,13 +96,16 @@ The guards no year reached, and why:
 Drik Panchang's New Delhi lists for 2023–2026: its Ekadashi list's day for
 the Smarta householder, its Gauna day for the renunciant where that
 differs, and its ISKCON list for the Vaishnava. The rules are
-`EkadashiRule::dharmasindhu()` (`festival-rules.md` §8).
+`EkadashiRule::dharmasindhu()` (`festival-rules.md` §8) and
+`EkadashiRule::hari_bhakti_vilasa()` (§8.9), the Gaudiya rule with its
+mahadvadashis, which the Vaishnava's partings are.
 
 | proposed rule | verdict | measured |
 |---|---|---|
 | EKADASHI_SMARTA falls on the Smarta list's day | **holds** | 0 of 99 disagree |
 | EKADASHI_SMARTA_RENUNCIANT falls on the Gauna list's day | **holds** | 0 of 99 disagree |
 | EKADASHI_VAISHNAVA falls on the ISKCON list's day | falsified | 3 of 99 disagree; each parting is named below with its cause |
+| EKADASHI_GAUDIYA falls on the ISKCON list's day | **holds** | 0 of 99 disagree |
 
 Where a rule parts from the record, and why:
 

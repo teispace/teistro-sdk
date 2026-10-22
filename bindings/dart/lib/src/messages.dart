@@ -345,6 +345,7 @@ enum FestivalKey {
   ekadashiSmarta('festival.EKADASHI_SMARTA'),
   ekadashiSmartaRenunciant('festival.EKADASHI_SMARTA_RENUNCIANT'),
   ekadashiVaishnava('festival.EKADASHI_VAISHNAVA'),
+  ekadashiGaudiya('festival.EKADASHI_GAUDIYA'),
   chaiteDashain('festival.CHAITE_DASHAIN'),
   setoMachhindranathJatra('festival.SETO_MACHHINDRANATH_JATRA'),
   parashuramaJayanti('festival.PARASHURAMA_JAYANTI'),
@@ -2016,6 +2017,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get dwadashiShraddha => _r.entity('festival.DWADASHI_SHRADDHA');
   EntityForms get dwitiyaShraddha => _r.entity('festival.DWITIYA_SHRADDHA');
   EntityForms get earthquakeSafetyDay => _r.entity('festival.EARTHQUAKE_SAFETY_DAY');
+  EntityForms get ekadashiGaudiya => _r.entity('festival.EKADASHI_GAUDIYA');
   EntityForms get ekadashiShraddha => _r.entity('festival.EKADASHI_SHRADDHA');
   EntityForms get ekadashiSmarta => _r.entity('festival.EKADASHI_SMARTA');
   EntityForms get ekadashiSmartaRenunciant => _r.entity('festival.EKADASHI_SMARTA_RENUNCIANT');

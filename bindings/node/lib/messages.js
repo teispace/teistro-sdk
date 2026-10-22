@@ -447,6 +447,7 @@ export function messages(r) {
           dwadashiShraddha: () => r.entity('festival.DWADASHI_SHRADDHA'),
           dwitiyaShraddha: () => r.entity('festival.DWITIYA_SHRADDHA'),
           earthquakeSafetyDay: () => r.entity('festival.EARTHQUAKE_SAFETY_DAY'),
+          ekadashiGaudiya: () => r.entity('festival.EKADASHI_GAUDIYA'),
           ekadashiShraddha: () => r.entity('festival.EKADASHI_SHRADDHA'),
           ekadashiSmarta: () => r.entity('festival.EKADASHI_SMARTA'),
           ekadashiSmartaRenunciant: () => r.entity('festival.EKADASHI_SMARTA_RENUNCIANT'),

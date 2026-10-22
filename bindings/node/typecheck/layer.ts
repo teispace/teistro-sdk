@@ -110,6 +110,8 @@ import type {
   EkadashiKinds,
   EkadashiRule,
   EkadashiVedha,
+  Mahadvadashi,
+  MahadvadashiKind,
   Parana,
   NakshatraBar,
   Anniversary,
@@ -2195,7 +2197,9 @@ function theFestivals(almanac: Almanac): string {
     const [first, second] = fast.days;
     const [, eleventh] = fast.tithis;
     const at: EkadashiVedha | null = fast.piercedAt;
-    return `${fast.rule} ${fast.tithi} ${fast.month} ${fast.adhika} ${eleventh.from} ${first.day} ${second.day} ${at} ${fast.pierced} ${fast.excess} ${fast.choice} ${fast.day.day} ${fast.marginSeconds} ${parana(fast.parana)}`;
+    const great: Mahadvadashi | undefined = fast.mahadvadashi;
+    const kinds: readonly MahadvadashiKind[] = great?.held ?? [];
+    return `${fast.rule} ${fast.tithi} ${fast.month} ${fast.adhika} ${eleventh.from} ${first.day} ${second.day} ${at} ${fast.pierced} ${fast.excess} ${fast.choice} ${fast.day.day} ${fast.marginSeconds} ${parana(fast.parana)} ${great?.kind} ${kinds.length} ${great?.clause} ${great?.joined?.nakshatra} ${great?.joined?.span.to}`;
   });
   const unjudged = answer.unjudged.map((u) => `${u.rule} ${u.tithi.from} ${u.why}`);
   const madhava: EkadashiRule = {
@@ -2214,6 +2218,15 @@ function theFestivals(almanac: Almanac): string {
     key: 'EKADASHI_SMARTA_MORNING',
     parana: { at: [{ window: 'PART', part: 'PRATAH' }, { window: 'DAY_MUHURTA', from: 1, to: 5 }], hariVasara: true },
   };
+  const gaudiya: EkadashiRule = {
+    ...madhava,
+    key: 'EKADASHI_GAUDIYA_LETTER',
+    vedha: 'ARUNODAYA',
+    mahadvadashi: { kinds: ['PAKSHAVARDHINI', 'TRISPRISHA'], trisprisha: 'ARUNODAYA', joining: 'OUTLASTS_TWELFTH', vyanjuli: 'HALF_MUHURTA', sampurna: false },
+  };
+  const textual: EkadashiRule = { ...gaudiya, mahadvadashi: {} };
+  // @ts-expect-error the mahadvadashis are eight, and Gaura is none of them
+  const gaura: MahadvadashiKind = 'GAURA';
   // @ts-expect-error a parana is kept in the daylight, not at pradosha
   const atNight: ParanaWindow = { window: 'PRADOSHA' };
   const anuradha: NakshatraBar = { tithi: 'tithi.SHUKLA_EKADASHI', month: 'masa.ASHADHA', nakshatra: 'nakshatra.ANURADHA', portion: { parts: 4, which: 1 } };
@@ -2380,7 +2393,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), ...vrata, modern.kind, String(yamaless), afterRite.kind, onTheTenth.kind, String(riteless), byRite, barredRule.key, String(twelfthBar), barkhi.key, born.key, String(nowhere), ...remembered, String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), gaudiya.key, String(textual.mahadvadashi?.kinds), String(gaura), String(atNight), ...vrata, modern.kind, String(yamaless), afterRite.kind, onTheTenth.kind, String(riteless), byRite, barredRule.key, String(twelfthBar), barkhi.key, born.key, String(nowhere), ...remembered, String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

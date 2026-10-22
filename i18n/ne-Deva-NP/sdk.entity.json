@@ -2892,6 +2892,11 @@
       "prose": "वैष्णव एकादशी",
       "iast": "Vaiṣṇava Ekādaśī"
     },
+    "EKADASHI_GAUDIYA": {
+      "name": "गौडीय एकादशी",
+      "prose": "गौडीय एकादशी",
+      "iast": "Gauḍīya Ekādaśī"
+    },
     "CHAITE_DASHAIN": {
       "name": "चैते दशैं",
       "prose": "चैते दशैं",

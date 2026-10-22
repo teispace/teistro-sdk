@@ -186,7 +186,7 @@ which, so a reader following another authority sees where it parts.
 | Janmashtami | the next day, from the 8th's end, or from the later of the 8th's and Rohini's ends for a fast joined with Rohini; by day if either ends by day; otherwise before niśītha | DS pp. 51–52 |
 | Rama Navami | from the 9th's end | DS p. 34 |
 | Navaratri, Ashvina and Chaitra | after the dismissal, on the dismissal's day (the 10th with Shravana), or on the 9th by custom | DS p. 71, p. 34 |
-| a Mahadvadashi | by the tithi's and the joined nakshatra's ends | HBV 13.290–291; **not designed here** |
+| a Mahadvadashi | by the tithi's and the joined nakshatra's ends | HBV 13.290–291; built, `festival-rules.md` §8.9 |
 
 A *yāma* is a quarter of the daylight (a *prahara*), so "past three
 yamas" is past the start of the daylight's last quarter (C659).

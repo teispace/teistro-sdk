@@ -14281,7 +14281,12 @@ enum FestivalPack {
   /// *Dharmasindhu*'s fortnight of the ancestors: a mahalaya on each death
   /// tithi of Bhadrapada's dark half and the fortnight's own days, each at
   /// aparahna (`03-design/shraddha.md` §3.2).
-  pitriPaksha('PITRI_PAKSHA');
+  pitriPaksha('PITRI_PAKSHA'),
+
+  /// The Gaudiya Vaishnavas' Ekadashi after *Hari Bhakti Vilasa*: the
+  /// Vaishnava's table and the eight mahadvadashis that name the fast or
+  /// move it onto the 12th's day (`03-design/festival-rules.md` §8.9).
+  gaudiya('GAUDIYA');
 
   const FestivalPack(this.key);
 
@@ -14689,6 +14694,7 @@ final class EkadashiFast extends _Value {
     required this.day,
     required this.marginSeconds,
     required this.parana,
+    this.mahadvadashi,
   });
 
   /// The rule's key.
@@ -14718,8 +14724,12 @@ final class EkadashiFast extends _Value {
   /// `TWELFTH`, `BOTH` or `NEITHER`.
   final String excess;
 
-  /// `EARLIER` or `LATER`, which [day] resolves.
+  /// `EARLIER` or `LATER`, which [day] resolves unless a mahadvadashi
+  /// moved it.
   final String choice;
+
+  /// The fast: [choice]'s day, or the one a mahadvadashi set, which may
+  /// be the day after both.
   final CalendarDate day;
 
   /// How far the place can move: the seconds of time every instant the fast was
@@ -14731,6 +14741,10 @@ final class EkadashiFast extends _Value {
   /// When it is broken, under the rule's parana; null for a rule without
   /// one.
   final Parana? parana;
+
+  /// The mahadvadashi that set [day], when the rule keeps them and one
+  /// held (`GAUDIYA`'s rule).
+  final Mahadvadashi? mahadvadashi;
 
   @override
   List<Object?> get _fields => [
@@ -14748,6 +14762,47 @@ final class EkadashiFast extends _Value {
     ..._dateFields(day),
     marginSeconds,
     parana,
+    mahadvadashi,
+  ];
+}
+
+/// A mahadvadashi of *Hari Bhakti Vilasa* 13.265 that held, and the fast
+/// it set (`03-design/festival-rules.md` §8.9). An Ekadashi rule keeps
+/// them as `mahadvadashi: {kinds, trisprisha, joining, vyanjuli,
+/// sampurna}`, each field defaulting to the text's reading.
+final class Mahadvadashi extends _Value {
+  const Mahadvadashi({
+    required this.kind,
+    required this.held,
+    required this.clause,
+    this.joinedNakshatra,
+    this.joinedSpan,
+  });
+
+  /// The kind that set the fast, the first of the rule's kinds that held:
+  /// `UNMILANI`, `VYANJULI`, `TRISPRISHA`, `PAKSHAVARDHINI`, `JAYA`,
+  /// `VIJAYA`, `JAYANTI` or `PAPANASHINI`.
+  final String kind;
+
+  /// Every kind that held, in the rule's order.
+  final List<String> held;
+
+  /// The verse that defines [kind].
+  final String clause;
+
+  /// The joined nakshatra and its whole stay, for Jaya, Vijaya, Jayanti
+  /// and Papanashini; null otherwise.
+  final Nakshatra? joinedNakshatra;
+  final Interval? joinedSpan;
+
+  @override
+  List<Object?> get _fields => [
+    kind,
+    ...held,
+    clause,
+    joinedNakshatra,
+    joinedSpan?.from,
+    joinedSpan?.to,
   ];
 }
 
@@ -15320,7 +15375,24 @@ EkadashiFast _ekadashiFast(Map<String, Object?> raw) => EkadashiFast(
     null => null,
     final parana => _parana(_festivalAt(parana)),
   },
+  mahadvadashi: switch (raw['mahadvadashi']) {
+    null => null,
+    final great => _mahadvadashi(_festivalAt(great)),
+  },
 );
+
+Mahadvadashi _mahadvadashi(Map<String, Object?> raw) {
+  final joined = raw['joined'] == null ? null : _festivalAt(raw['joined']);
+  return Mahadvadashi(
+    kind: raw['kind']! as String,
+    held: [for (final kind in raw['held']! as List<Object?>) kind! as String],
+    clause: raw['clause']! as String,
+    joinedNakshatra: joined == null
+        ? null
+        : _key(joined['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+    joinedSpan: joined == null ? null : _festivalInterval(joined['span']),
+  );
+}
 
 Parana _parana(Map<String, Object?> raw) => Parana(
   day: _serdeDate(_festivalAt(raw['day'])),

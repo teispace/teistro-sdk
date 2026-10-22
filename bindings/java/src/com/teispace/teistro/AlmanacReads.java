@@ -269,7 +269,19 @@ final class AlmanacReads {
                 Reads.string(f, "choice"),
                 Reads.serdeDate(Reads.field(f, "day")),
                 Reads.number(f, "marginSeconds"),
-                f.get("parana") == null ? null : parana(Reads.object(f, "parana")));
+                f.get("parana") == null ? null : parana(Reads.object(f, "parana")),
+                f.get("mahadvadashi") == null ? null : mahadvadashi(Reads.object(f, "mahadvadashi")));
+    }
+
+    /** A fast's mahadvadashi as a festival answer writes it. */
+    private static Mahadvadashi mahadvadashi(Map<?, ?> m) {
+        Map<?, ?> joined = m.get("joined") == null ? null : Reads.object(m, "joined");
+        return new Mahadvadashi(
+                Reads.string(m, "kind"),
+                Reads.each(m, "held", Reads::string),
+                Reads.string(m, "clause"),
+                joined == null ? null : member(joined, "nakshatra", "Nakshatra", Nakshatra::byKey),
+                joined == null ? null : Reads.interval(Reads.field(joined, "span")));
     }
 
     /** A fast's parana as a festival answer writes it. */

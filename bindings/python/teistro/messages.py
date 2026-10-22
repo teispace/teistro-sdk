@@ -317,6 +317,7 @@ class FestivalKey(enum.StrEnum):
     EKADASHI_SMARTA = "festival.EKADASHI_SMARTA"
     EKADASHI_SMARTA_RENUNCIANT = "festival.EKADASHI_SMARTA_RENUNCIANT"
     EKADASHI_VAISHNAVA = "festival.EKADASHI_VAISHNAVA"
+    EKADASHI_GAUDIYA = "festival.EKADASHI_GAUDIYA"
     CHAITE_DASHAIN = "festival.CHAITE_DASHAIN"
     SETO_MACHHINDRANATH_JATRA = "festival.SETO_MACHHINDRANATH_JATRA"
     PARASHURAMA_JAYANTI = "festival.PARASHURAMA_JAYANTI"
@@ -4421,6 +4422,11 @@ class MessagesSdkEntityFestival:
     def earthquake_safety_day(self) -> EntityForms:
         """The forms of `festival.EARTHQUAKE_SAFETY_DAY` in the current locale."""
         return self._r.entity("festival.EARTHQUAKE_SAFETY_DAY")
+
+    @property
+    def ekadashi_gaudiya(self) -> EntityForms:
+        """The forms of `festival.EKADASHI_GAUDIYA` in the current locale."""
+        return self._r.entity("festival.EKADASHI_GAUDIYA")
 
     @property
     def ekadashi_shraddha(self) -> EntityForms:

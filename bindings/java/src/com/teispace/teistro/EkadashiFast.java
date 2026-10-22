@@ -17,8 +17,10 @@ import java.util.List;
  * @param pierced whether that pierces by the rule's vedha
  * @param excess which of the 11th and the 12th hold the sunrise after their
  *     own: {@code ELEVENTH}, {@code TWELFTH}, {@code BOTH} or {@code NEITHER}
- * @param choice the table's day, {@code EARLIER} or {@code LATER}, which {@code day} resolves
- * @param day the fast
+ * @param choice the table's day, {@code EARLIER} or {@code LATER}, which {@code day}
+ *     resolves unless a mahadvadashi moved it
+ * @param day the fast: {@code choice}'s day, or the one a mahadvadashi set, which
+ *     may be the day after both
  * @param marginSeconds how far the place can move: the seconds of time every instant the
  *     fast was decided from (the sunsets that give the 11th its own day,
  *     that day's sunrise and, under a Vaishnava vedha, its arunodaya, and
@@ -26,14 +28,25 @@ import java.util.List;
  *     before the day can change
  * @param parana when it is broken, under the rule's parana; null for a rule
  *     without one
+ * @param mahadvadashi the mahadvadashi that set {@code day}, when the rule keeps
+ *     them and one held; null otherwise
  */
 public record EkadashiFast(
         String rule, Tithi tithi, Masa month, boolean adhika, List<Interval> tithis, List<CalendarDate> days,
         String piercedAt, boolean pierced, String excess, String choice, CalendarDate day,
-        double marginSeconds, Parana parana) {
+        double marginSeconds, Parana parana, Mahadvadashi mahadvadashi) {
     /** Keeps the lists unmodifiable. */
     public EkadashiFast {
         tithis = List.copyOf(tithis);
         days = List.copyOf(days);
+    }
+
+    /** A fast no mahadvadashi set, as before rules kept them. */
+    public EkadashiFast(
+            String rule, Tithi tithi, Masa month, boolean adhika, List<Interval> tithis, List<CalendarDate> days,
+            String piercedAt, boolean pierced, String excess, String choice, CalendarDate day,
+            double marginSeconds, Parana parana) {
+        this(rule, tithi, month, adhika, tithis, days, piercedAt, pierced, excess, choice, day, marginSeconds,
+                parana, null);
     }
 }
