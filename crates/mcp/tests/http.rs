@@ -177,7 +177,11 @@ fn numerology(id: u64) -> Value {
             { "name": "Henry Elder", "date": { "year": 1872, "month": 1, "day": 17 } } } } })
 }
 
-/// A quarter of days at Kathmandu: seconds of work in a debug build.
+/// A year of days at Kathmandu, about the most one call may ask (366):
+/// long past the first progress notification (`EVERY`, 250 ms), so a
+/// token hears progress and a cancel lands while the call computes. A
+/// quarter once took seconds; the cheaper days made it end inside the
+/// window under load.
 fn days(id: u64, token: Option<&str>) -> Value {
     let mut meta = meta();
     if let Some(token) = token {
@@ -186,7 +190,7 @@ fn days(id: u64, token: Option<&str>) -> Value {
     json!({ "jsonrpc": "2.0", "id": id, "method": "tools/call", "params": {
         "_meta": meta, "name": "almanac.days", "arguments": { "request": {
             "first": { "year": 2026, "month": 1, "day": 1 },
-            "last": { "year": 2026, "month": 3, "day": 31 },
+            "last": { "year": 2026, "month": 12, "day": 31 },
             "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20_700 } } } })
 }
 
@@ -338,7 +342,6 @@ fn closing_the_connection_cancels_its_call() {
             ..Http::default()
         },
     );
-    let started = Instant::now();
     let message = days(9, Some("cancel-me"));
     let headers = required(&message);
     let headers: Vec<(&str, &str)> = headers.iter().map(|(k, v)| (*k, v.as_str())).collect();
@@ -350,6 +353,9 @@ fn closing_the_connection_cancels_its_call() {
         line.clear();
         assert!(reader.read_line(&mut line).unwrap() > 0, "the stream ended");
     }
+    // Timed from the close: the cold work before the first progress is
+    // not what a cancel saves.
+    let started = Instant::now();
     drop(reader);
     let next = post(&served, &numerology(10));
     let stopped = started.elapsed();
