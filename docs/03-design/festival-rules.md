@@ -619,10 +619,30 @@ calendar's third of the daylight gives `DayMuhurta {1, 5}`, which no
 rank-1 text in hand states. The default is the maintainer's to confirm
 (brief §4, QUESTIONS.md Q41).
 
-**Not built.** The *Nirnayasindhu* (pp. 79–80) cites a *Bhavishya*
-verse barring the meal on the bright 12ths of Ashadha, Bhadrapada and
-Kartika while Anuradha, Shravana or Revati holds, and then calls that
-verse and its gloss "baseless" (निर्मूलमेव). So it is not built. The short-12th rites before sunrise are the rites', not
+**The nakshatra bar, not built (C700).** A *Bhavishya* verse bars the
+meal on the bright 12ths of Ashadha, Bhadrapada and Kartika while
+Anuradha, Shravana or Revati holds. Where the yoga cannot be avoided,
+it bars only Anuradha's first quarter, Shravana's middle and Revati's
+last (the *Vishnudharma*). The two texts part on it:
+
+- The *Nirnayasindhu* (pp. 79–80) calls the verse and its gloss
+  "baseless" (निर्मूलमेव).
+- *Dharmasindhu* (pp. 80–81, second pariccheda) answers it by name.
+  "Baseless" there means only "not found in Madhava and the root
+  works". The Kaustubha and every recent work decide by the verse, and
+  "all the learned keep their parana by it".
+  `ParanaRule::dharmasindhu()` therefore does not yet carry all of
+  *Dharmasindhu*.
+
+The published reference keeps no bar. At Kathmandu on 7 July 2025, the
+Ashadha 12th, its window opens at 05:14 with the Moon in Anuradha's
+first quarter, the very part the narrow reading bars. Of the 11 parana
+mornings measured on these three 12ths, the Moon is in the barred
+nakshatra on three: Anuradha 2025, Shravana 2026 (its fourth quarter)
+and Revati 2026 (its second quarter). Whether a default keeps the bar,
+and on which reading, is the maintainer's (Q41).
+
+**Not built.** The short-12th rites before sunrise are the rites', not
 the meal's: the window still opens at sunrise. The Gaudiya
 mahadvadashis (HBV vv. 265 ff., unmilani, vyanjuli and the rest) are
 not computed. Other vratas' parana (Janmashtami at the tithi's and the

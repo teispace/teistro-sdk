@@ -485,6 +485,16 @@ first three muhurtas of the morning, say many; the afternoon, say some".
   "अपराह्ण एव कार्यम्"). It refuses the morning even with a long 12th,
   because otherwise the day's rites are obstructed.
 
+**A second part: the nakshatra bar (C700).** *Dharmasindhu* (pp.
+80–81) keeps a verse that the *Nirnayasindhu* calls baseless. It bars
+the meal on the bright 12ths of Ashadha, Bhadrapada and Kartika in
+Anuradha, Shravana and Revati, or only in a quarter of each where the
+yoga cannot be avoided. The published reference keeps neither. It is
+not built. The question is whether a default should keep it, and on
+which reading. The recommendation is to build it as a parameter, off
+by default, matching the reference and leaving *Dharmasindhu*'s
+readers one field away.
+
 **Recommendation:** A. It is the only option that answers every day, it
 follows *Dharmasindhu*'s two readings in its order, and a published
 reference prints it. D is the strongest rank-1 rival. B, C and D are
