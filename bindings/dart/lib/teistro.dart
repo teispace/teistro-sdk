@@ -1449,6 +1449,42 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **A death's first year** at a place (`03-design/shraddha.md` §3.3):
+  /// the *Dharmasindhu*'s sixteen shraddhas, the first abdika and the
+  /// sapindana, each on its day. Every day is the festival evaluator's, and
+  /// the eleventh day is the ashauch's day one plus ten, so a monthly, an
+  /// anniversary and an ashauch never judge a day differently. A reading
+  /// [request] leaves null is the *Dharmasindhu*'s; an empty key is refused
+  /// as `firstYear.request.key`.
+  ///
+  /// ```dart
+  /// final found = sdk.almanac.firstYear(
+  ///   request: const FirstYearRequest(
+  ///     key: 'grandfather',
+  ///     at: 2461333.677083, // 2026-10-20 10:00 NPT
+  ///     firstAbdika: FirstAbdika.eleventhDay,
+  ///   ),
+  ///   place: kathmandu, utcOffsetSeconds: 20700,
+  /// );
+  /// final first = found.value.rites.first.rite; // Rite.adyaMasika
+  /// ```
+  FirstYearAnswer firstYear({
+    required FirstYearRequest request,
+    required Observer place,
+    required int utcOffsetSeconds,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      'request': request._record,
+    });
+    return _firstYear(
+      _context._guarded(() => _context._inner.almanacFirstYear(asked)),
+    );
+  }
+
   /// **Where this context's reckoning and [other]'s disagree**, and why
   /// (`03-design/setup-disagreements.md`): the official day an app shows
   /// beside the modern one. [Disagreements.days] holds only the days on
@@ -14509,6 +14545,15 @@ final class FestivalWindow extends _Value {
   final int? fromMuhurta;
   final int? toMuhurta;
 
+  /// The window as a request spells it, the reader's own shape.
+  Map<String, Object?> get _record => <String, Object?>{
+    'window': window,
+    if (part case final part?) 'part': part,
+    if (muhurta case final muhurta?) 'muhurta': muhurta,
+    if (fromMuhurta case final from?) 'from': from,
+    if (toMuhurta case final to?) 'to': to,
+  };
+
   @override
   List<Object?> get _fields => [window, part, muhurta, fromMuhurta, toMuhurta];
 }
@@ -15522,31 +15567,33 @@ FestivalAnswer _festivalAnswer(String json) {
 }
 
 /// An anniversary's day as a festival answer writes it.
-AnniversaryDay _anniversaryDay(Map<String, Object?> raw) {
-  final origin = _festivalAt(raw['origin']);
+AnniversaryDay _anniversaryDay(Map<String, Object?> raw) => AnniversaryDay(
+  key: raw['key']! as String,
+  count: raw['count'] as int?,
+  kind: raw['kind']! as String,
+  origin: _anniversaryOrigin(_festivalAt(raw['origin'])),
+  monthBy: raw['monthBy']! as String,
+  observance: _festivalObservance(_festivalAt(raw['observance'])),
+);
+
+/// An origin as found, as an anniversary's day and a first year write it.
+AnniversaryOrigin _anniversaryOrigin(Map<String, Object?> origin) {
   final nakshatra = origin['nakshatra'];
-  return AnniversaryDay(
-    key: raw['key']! as String,
-    count: raw['count'] as int?,
-    kind: raw['kind']! as String,
-    origin: AnniversaryOrigin(
-      tithi: _key(origin['tithi'], Tithi.byKey, Tithi.unknown),
-      month: _key(origin['month'], Masa.byKey, Masa.unknown),
-      kind: origin['kind']! as String,
-      half: origin['half']! as String,
-      nakshatra:
-          nakshatra == null
-              ? null
-              : _key(nakshatra, Nakshatra.byKey, Nakshatra.unknown),
-      at: (origin['at'] as num?)?.toDouble(),
-      assumedSunrise: origin['assumedSunrise']! as bool,
-      candidates: List.unmodifiable([
-        for (final key in (origin['candidates'] as List<Object?>?) ?? const [])
-          _key(key, Tithi.byKey, Tithi.unknown),
-      ]),
-    ),
-    monthBy: raw['monthBy']! as String,
-    observance: _festivalObservance(_festivalAt(raw['observance'])),
+  return AnniversaryOrigin(
+    tithi: _key(origin['tithi'], Tithi.byKey, Tithi.unknown),
+    month: _key(origin['month'], Masa.byKey, Masa.unknown),
+    kind: origin['kind']! as String,
+    half: origin['half']! as String,
+    nakshatra:
+        nakshatra == null
+            ? null
+            : _key(nakshatra, Nakshatra.byKey, Nakshatra.unknown),
+    at: (origin['at'] as num?)?.toDouble(),
+    assumedSunrise: origin['assumedSunrise']! as bool,
+    candidates: List.unmodifiable([
+      for (final key in (origin['candidates'] as List<Object?>?) ?? const [])
+        _key(key, Tithi.byKey, Tithi.unknown),
+    ]),
   );
 }
 
@@ -16640,7 +16687,6 @@ final class AshauchAnswer {
 AshauchAnswer _ashauch(String json) {
   final envelope = jsonDecode(json) as Map<String, Object?>;
   final raw = envelope['value']! as Map<String, Object?>;
-  final by = raw['dayOneBy']! as Map<String, Object?>;
   final clause = raw['clause']! as Map<String, Object?>;
   final overlap = raw['overlap'] as Map<String, Object?>?;
   double jd(Object? raw) => (raw! as num).toDouble();
@@ -16652,11 +16698,7 @@ AshauchAnswer _ashauch(String json) {
       sex: raw['sex'] == null ? null : _keyedIn(AshauchSex.values, raw['sex']),
       start: jd(raw['start']),
       dayOne: _serdeDate(raw['dayOne']! as Map<String, Object?>),
-      dayOneBy: AshauchDayOneBy(
-        by: by['by']! as String,
-        rule:
-            by['rule'] == null ? null : _keyedIn(NightRule.values, by['rule']),
-      ),
+      dayOneBy: _dayOneBy(raw['dayOneBy']! as Map<String, Object?>),
       end: jd(raw['end']),
       lastDay:
           raw['lastDay'] == null
@@ -16687,6 +16729,393 @@ AshauchAnswer _ashauch(String json) {
     provenance: Provenance.fromJson(
       envelope['provenance']! as Map<String, Object?>,
     ),
+  );
+}
+
+/// Why a first day is the day it is, as an ashauch and a first year write
+/// it.
+AshauchDayOneBy _dayOneBy(Map<String, Object?> by) => AshauchDayOneBy(
+  by: by['by']! as String,
+  rule: by['rule'] == null ? null : _keyedIn(NightRule.values, by['rule']),
+);
+
+/// When the first abdika is kept (*Dharmasindhu* p. 330, two views).
+enum FirstAbdika implements _Keyed {
+  /// At the second year's start, the death's first anniversary; the
+  /// default.
+  secondYear('SECOND_YEAR'),
+
+  /// On the eleventh day with the first monthly, the anniversary being
+  /// the second: the view Dhakal records for Nepal.
+  eleventhDay('ELEVENTH_DAY');
+
+  const FirstAbdika(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which month the first anniversary takes when its month is doubled
+/// (C666).
+enum FirstYearAdhika implements _Keyed {
+  /// The adhika, the thirteenth month: the *Dharmasindhu*, the
+  /// *Nirnayasindhu* and Kane; the default.
+  adhika('ADHIKA'),
+
+  /// The ordinary month: Dhakal's note for Nepal's barkhi, which counts
+  /// the eleventh day's rite as the first abdika.
+  nija('NIJA');
+
+  const FirstYearAdhika(this.key);
+
+  @override
+  final String key;
+}
+
+/// The day the sapindana is kept on (*Dharmasindhu* p. 331).
+enum SapindanaAt implements _Keyed {
+  /// The eleventh day.
+  eleventhDay('ELEVENTH_DAY'),
+
+  /// The twelfth day; the default.
+  twelfthDay('TWELFTH_DAY'),
+
+  /// The traipakshika's day.
+  traipakshika('TRAIPAKSHIKA'),
+
+  /// The year's end, the first anniversary's day.
+  yearEnd('YEAR_END');
+
+  const SapindanaAt(this.key);
+
+  @override
+  final String key;
+}
+
+/// How far short an *ūna* rite is kept (*Dharmasindhu* p. 330).
+enum UnaDay implements _Keyed {
+  /// The day before the day it is short of: Madhava's, the default.
+  dayBefore('DAY_BEFORE'),
+
+  /// The tithi one short, its last occurrence before.
+  oneTithi('ONE_TITHI'),
+
+  /// The tithi two short.
+  twoTithis('TWO_TITHIS'),
+
+  /// The tithi three short.
+  threeTithis('THREE_TITHIS');
+
+  const UnaDay(this.key);
+
+  @override
+  final String key;
+}
+
+/// A death's first year, as a request asks it (`03-design/shraddha.md`
+/// §3.3). Every reading left null is the *Dharmasindhu*'s.
+final class FirstYearRequest extends _Value {
+  const FirstYearRequest({
+    required this.key,
+    required this.at,
+    this.night,
+    this.firstAbdika,
+    this.firstYearAdhika,
+    this.sapindana,
+    this.una,
+    this.window,
+  });
+
+  /// The consumer's own key, which the answer repeats.
+  final String key;
+
+  /// The death, a UTC Julian day.
+  final double at;
+
+  /// Which day a death at night belongs to, as the ashauch counts it;
+  /// [NightRule.thirds] when null.
+  final NightRule? night;
+
+  /// When the first abdika is kept; [FirstAbdika.secondYear] when null.
+  final FirstAbdika? firstAbdika;
+
+  /// The anniversary's month when it is doubled;
+  /// [FirstYearAdhika.adhika] when null.
+  final FirstYearAdhika? firstYearAdhika;
+
+  /// The sapindana's day; [SapindanaAt.twelfthDay] when null.
+  final SapindanaAt? sapindana;
+
+  /// How far short the *ūna* rites are kept; [UnaDay.dayBefore] when
+  /// null.
+  final UnaDay? una;
+
+  /// The rite's time in place of both forms' (kutapa to rauhina for the
+  /// ekoddishta, aparahna for the parvana).
+  final FestivalWindow? window;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'key': key,
+    'at': at,
+    if (night case final night?) 'night': night.key,
+    if (firstAbdika case final firstAbdika?) 'firstAbdika': firstAbdika.key,
+    if (firstYearAdhika case final adhika?) 'firstYearAdhika': adhika.key,
+    if (sapindana case final sapindana?) 'sapindana': sapindana.key,
+    if (una case final una?) 'una': una.key,
+    if (window case final window?) 'window': window._record,
+  };
+
+  @override
+  List<Object?> get _fields => [
+    key,
+    at,
+    night,
+    firstAbdika,
+    firstYearAdhika,
+    sapindana,
+    una,
+    window,
+  ];
+}
+
+/// Which rite of the first year.
+enum Rite implements _Keyed {
+  /// The first monthly, on the eleventh day.
+  adyaMasika('ADYA_MASIKA'),
+
+  /// Short of the first month.
+  unaMasika('UNA_MASIKA'),
+
+  /// A monthly, at its month's death tithi.
+  masika('MASIKA'),
+
+  /// At three fortnights.
+  traipakshika('TRAIPAKSHIKA'),
+
+  /// Short of the sixth month.
+  unaShanmasika('UNA_SHANMASIKA'),
+
+  /// Short of the year.
+  unaAbdika('UNA_ABDIKA'),
+
+  /// A yearly shraddha.
+  abdika('ABDIKA'),
+
+  /// The joining with the ancestors.
+  sapindana('SAPINDANA');
+
+  const Rite(this.key);
+
+  @override
+  final String key;
+}
+
+/// How a rite is performed.
+enum RiteForm implements _Keyed {
+  /// For the one dead, at kutapa to rauhina: before the sapindana.
+  ekoddishta('EKODDISHTA'),
+
+  /// For three generations, at aparahna: after it.
+  parvana('PARVANA');
+
+  const RiteForm(this.key);
+
+  @override
+  final String key;
+}
+
+/// What the *Dharmasindhu* bars an *ūna* rite's day for, found at its
+/// sunrise.
+enum UnaBar implements _Keyed {
+  /// A nandā tithi: the 1st, 6th or 11th of either half.
+  nanda('NANDA'),
+
+  /// Friday, Bhrigu's day.
+  friday('FRIDAY'),
+
+  /// The 14th of either half.
+  chaturdashi('CHATURDASHI'),
+
+  /// Krittika.
+  krittika('KRITTIKA');
+
+  const UnaBar(this.key);
+
+  @override
+  final String key;
+}
+
+/// One rite of the first year.
+final class FirstYearRite extends _Value {
+  const FirstYearRite({
+    required this.rite,
+    this.place,
+    this.month,
+    this.year,
+    required this.adhika,
+    required this.day,
+    this.form,
+    this.drawnTo,
+    this.bars = const [],
+    this.observance,
+    required this.clause,
+  });
+
+  /// Which rite.
+  final Rite rite;
+
+  /// Its place in the *Dharmasindhu*'s sixteen, 1 for the first monthly to
+  /// 16 for the ūnābdika; a doubled month's two monthlies share it. Null
+  /// for the abdika and the sapindana, which are not among them.
+  final int? place;
+
+  /// The month a monthly closes, 1 for the first to 12; null for every
+  /// other rite.
+  final int? month;
+
+  /// Which yearly shraddha, 1 for the first; null for every other rite.
+  final int? year;
+
+  /// Whether it is kept in an adhika lunation: the first of a doubled
+  /// month's two monthlies.
+  final bool adhika;
+
+  /// Its own day.
+  final CalendarDate day;
+
+  /// How it is performed on that day; null for the sapindana.
+  final RiteForm? form;
+
+  /// The sapindana's day, when the rite is first done there by the
+  /// ekoddishta and again on its own day by the parvana.
+  final CalendarDate? drawnTo;
+
+  /// What the text bars an *ūna* rite's day for; empty for every other
+  /// rite.
+  final List<UnaBar> bars;
+
+  /// The festival evaluator's judgement of a day kept on a tithi; null for
+  /// one counted in days.
+  final FestivalObservance? observance;
+
+  /// Where the rule is stated.
+  final String clause;
+
+  @override
+  List<Object?> get _fields => [
+    rite,
+    place,
+    month,
+    year,
+    adhika,
+    ..._dateFields(day),
+    form,
+    if (drawnTo case final drawnTo?) _dateFields(drawnTo) else null,
+    bars,
+    observance,
+    clause,
+  ];
+}
+
+/// A death's first year (`03-design/shraddha.md` §3.3): the
+/// *Dharmasindhu*'s sixteen shraddhas, the sapindana and the first abdika,
+/// each on its day.
+final class FirstYearSchedule extends _Value {
+  const FirstYearSchedule({
+    required this.key,
+    required this.origin,
+    required this.dayOne,
+    required this.dayOneBy,
+    required this.eleventhDay,
+    required this.sapindana,
+    required this.rites,
+  });
+
+  /// The request's key.
+  final String key;
+
+  /// The death's lunar date.
+  final AnniversaryOrigin origin;
+
+  /// The first day of the count, as the ashauch's.
+  final CalendarDate dayOne;
+
+  /// Why it is that day.
+  final AshauchDayOneBy dayOneBy;
+
+  /// The eleventh day.
+  final CalendarDate eleventhDay;
+
+  /// The sapindana's day.
+  final CalendarDate sapindana;
+
+  /// Every rite, in the order of their own days, then of the sixteen.
+  final List<FirstYearRite> rites;
+
+  @override
+  List<Object?> get _fields => [
+    key,
+    origin,
+    ..._dateFields(dayOne),
+    dayOneBy,
+    ..._dateFields(eleventhDay),
+    ..._dateFields(sapindana),
+    rites,
+  ];
+}
+
+/// What `almanac.firstYear` answers.
+final class FirstYearAnswer {
+  const FirstYearAnswer({required this.value, required this.provenance});
+
+  /// The schedule.
+  final FirstYearSchedule value;
+
+  /// What computed it, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// `ts_almanac_first_year`'s answer: the schedule as a value, with the
+/// provenance beside it.
+FirstYearAnswer _firstYear(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final raw = _festivalAt(envelope['value']);
+  CalendarDate date(Object? raw) => _serdeDate(_festivalAt(raw));
+  return FirstYearAnswer(
+    value: FirstYearSchedule(
+      key: raw['key']! as String,
+      origin: _anniversaryOrigin(_festivalAt(raw['origin'])),
+      dayOne: date(raw['dayOne']),
+      dayOneBy: _dayOneBy(_festivalAt(raw['dayOneBy'])),
+      eleventhDay: date(raw['eleventhDay']),
+      sapindana: date(raw['sapindana']),
+      rites: List.unmodifiable([
+        for (final rite in _festivalEach(raw['rites']))
+          FirstYearRite(
+            rite: _keyedIn(Rite.values, rite['rite']),
+            place: rite['place'] as int?,
+            month: rite['month'] as int?,
+            year: rite['year'] as int?,
+            adhika: rite['adhika']! as bool,
+            day: date(rite['day']),
+            form:
+                rite['form'] == null
+                    ? null
+                    : _keyedIn(RiteForm.values, rite['form']),
+            drawnTo: rite['drawnTo'] == null ? null : date(rite['drawnTo']),
+            bars: List.unmodifiable([
+              for (final bar in (rite['bars'] as List<Object?>?) ?? const [])
+                _keyedIn(UnaBar.values, bar),
+            ]),
+            observance:
+                rite['observance'] == null
+                    ? null
+                    : _festivalObservance(_festivalAt(rite['observance'])),
+            clause: rite['clause']! as String,
+          ),
+      ]),
+    ),
+    provenance: Provenance.fromJson(_festivalAt(envelope['provenance'])),
   );
 }
 

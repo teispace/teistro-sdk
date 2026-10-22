@@ -694,4 +694,5 @@ The clause keys' locale names wait on a Nepali reader (§8).
   is the same request repeated with `during` filled; a convenience
   wrapper can come after step 6.
 - The kriya days themselves (11th, 12th, 13th) belong to `shraddha.md`'s
-  first-year schedule (C673), which waits on the maintainer.
+  first-year schedule (C673, §3.3), built: its 11th day is this page's day
+  one plus ten under the same night rule.

@@ -8389,6 +8389,22 @@ export declare class AlmanacArea {
    */
   ashauch(query: AshauchQuery): AshauchAnswer;
   /**
+   * **A death's first year** at a place (`03-design/shraddha.md` §3.3):
+   * the *Dharmasindhu*'s sixteen shraddhas, the sapindana and the first
+   * abdika, each on its day. Every reading is the *Dharmasindhu*'s when
+   * left out; Nepal's, as Dhakal records it, is
+   * `{ firstAbdika: 'ELEVENTH_DAY', firstYearAdhika: 'NIJA' }`.
+   *
+   * @example
+   * const { value } = sdk.almanac.firstYear({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+   *   utcOffsetSeconds: 20700,
+   *   request: { key: 'GRANDFATHER', at: 2461333.677083 },
+   * });
+   * value.rites[0].rite; // 'ADYA_MASIKA'
+   */
+  firstYear(query: FirstYearQuery): FirstYearAnswer;
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the days on which some limb's
    * member at sunrise differs, with the instant the two members meet
@@ -8831,6 +8847,118 @@ export type AshauchOverlapped =
   | { readonly overlap: 'LAST_NIGHT'; readonly earlier: string; readonly days: number }
   /** A mother's death in the father's period: the father's end and a pakṣiṇī. */
   | { readonly overlap: 'MOTHER_AFTER_FATHER'; readonly earlier: string };
+
+/** A place, a clock and a request, as `almanac.firstYear` reads them. */
+export interface FirstYearQuery {
+  /** Where, in degrees and metres: the place whose sunrises count the days. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The death and the readings. */
+  readonly request: FirstYearRequest;
+}
+
+/**
+ * A death's first year, as a request asks it: every reading the
+ * *Dharmasindhu*'s when left out. Nepal's, as Dhakal records it, is
+ * `{ firstAbdika: 'ELEVENTH_DAY', firstYearAdhika: 'NIJA' }`.
+ */
+export interface FirstYearRequest {
+  /** The consumer's own key, which the answer repeats. */
+  readonly key: string;
+  /** The death, a UTC Julian day. */
+  readonly at: number;
+  /** Which day a death at night belongs to, as the ashauch counts it; `'THIRDS'` when left out. */
+  readonly night?: NightRule;
+  /** When the first abdika is kept; `'SECOND_YEAR'` when left out. */
+  readonly firstAbdika?: FirstAbdika;
+  /** The anniversary's month when it is doubled (C666); `'ADHIKA'` when left out. */
+  readonly firstYearAdhika?: 'ADHIKA' | 'NIJA';
+  /** The sapindana's day; `'TWELFTH_DAY'` when left out. */
+  readonly sapindana?: SapindanaAt;
+  /** How far short the *ūna* rites are kept; `'DAY_BEFORE'` when left out. */
+  readonly una?: UnaDay;
+  /** The rite's time in place of both forms' (kutapa to rauhina for the ekoddishta, aparahna for the parvana). */
+  readonly window?: FestivalWindow;
+}
+
+/** When the first abdika is kept (DS p. 330): at the second year's start, or on the eleventh day. */
+export type FirstAbdika = 'SECOND_YEAR' | 'ELEVENTH_DAY';
+
+/** The day the sapindana is kept on (DS p. 331). */
+export type SapindanaAt = 'ELEVENTH_DAY' | 'TWELFTH_DAY' | 'TRAIPAKSHIKA' | 'YEAR_END';
+
+/** How far short an *ūna* rite is kept (DS p. 330): the day before, or one to three tithis. */
+export type UnaDay = 'DAY_BEFORE' | 'ONE_TITHI' | 'TWO_TITHIS' | 'THREE_TITHIS';
+
+/** Which rite of the first year. */
+export type Rite =
+  | 'ADYA_MASIKA'
+  | 'UNA_MASIKA'
+  | 'MASIKA'
+  | 'TRAIPAKSHIKA'
+  | 'UNA_SHANMASIKA'
+  | 'UNA_ABDIKA'
+  | 'ABDIKA'
+  | 'SAPINDANA';
+
+/** How a rite is performed: for the one dead before the sapindana, for three generations after it. */
+export type RiteForm = 'EKODDISHTA' | 'PARVANA';
+
+/** What DS bars an *ūna* rite's day for, found at its sunrise. */
+export type UnaBar = 'NANDA' | 'FRIDAY' | 'CHATURDASHI' | 'KRITTIKA';
+
+/** What `almanac.firstYear` answers, frozen to its leaves. */
+export interface FirstYearAnswer {
+  /** The schedule. */
+  readonly value: FirstYearSchedule;
+  /** What computed it, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** A death's first year (`03-design/shraddha.md` §3.3). */
+export interface FirstYearSchedule {
+  /** The request's key. */
+  readonly key: string;
+  /** The death's lunar date, as an anniversary's origin is found. */
+  readonly origin: AnniversaryDay['origin'];
+  /** The first day of the count, as the ashauch's. */
+  readonly dayOne: CalendarDate;
+  /** Why it is that day. */
+  readonly dayOneBy: AshauchDayOneBy;
+  /** The eleventh day. */
+  readonly eleventhDay: CalendarDate;
+  /** The sapindana's day. */
+  readonly sapindana: CalendarDate;
+  /** Every rite, in the order of their own days, then of DS's sixteen. */
+  readonly rites: readonly FirstYearRite[];
+}
+
+/** One rite of the first year. */
+export interface FirstYearRite {
+  /** Which rite. */
+  readonly rite: Rite;
+  /** Its place in DS's sixteen, 1 to 16; a doubled month's two monthlies share it. None for the abdika and the sapindana. */
+  readonly place?: number;
+  /** The month a monthly closes, 1 to 12; none for every other rite. */
+  readonly month?: number;
+  /** Which yearly shraddha, 1 for the first; none for every other rite. */
+  readonly year?: number;
+  /** Whether it is kept in an adhika lunation: the first of a doubled month's two monthlies. */
+  readonly adhika: boolean;
+  /** Its own day. */
+  readonly day: CalendarDate;
+  /** How it is performed on that day; none for the sapindana. */
+  readonly form?: RiteForm;
+  /** The sapindana's day, when the rite is first done there by the ekoddishta and again on its own day by the parvana. */
+  readonly drawnTo?: CalendarDate;
+  /** What DS bars an *ūna* rite's day for; absent for every other rite. */
+  readonly bars?: readonly UnaBar[];
+  /** The festival evaluator's judgement of a day kept on a tithi; none for one counted in days. */
+  readonly observance?: FestivalObservance;
+  /** Where the rule is stated. */
+  readonly clause: string;
+}
 
 /** Two reckonings of one range at one place, as `almanac.disagreements` compares them. */
 export interface DisagreementRequest {
