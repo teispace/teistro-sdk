@@ -206,6 +206,19 @@ knob!(
         House = "HOUSE" }
 );
 knob!(
+    /// How the Naisargika dasha divides a period among its sub-periods,
+    /// which ch. 43 vv. 16 and 17 leave unstated (crux C743).
+    NaisargikaDivision { /// Ch. 51 vv. 13 to 16's shares, which v. 13 gives "the three pinda
+        /// dashas" of ch. 46 v. 201, the natural one among them: the lord a
+        /// full share, a graha with it a half, in a trikona a third, in the
+        /// fourth or eighth a quarter, in the seventh a seventh, read as
+        /// `ayurdaya_place` says.
+        Shares = "SHARES", /// In proportion to each lord's natural years against 120, from the
+        /// period's own lord: ch. 51 vv. 1 and 2.
+        Proportional = "PROPORTIONAL", /// In equal sevenths from the period's own lord: ch. 51 vv. 3 and 4.
+        Equal = "EQUAL" }
+);
+knob!(
     /// Which span's years an ayurdaya dasha runs (BPHS ch. 46 v. 201): the
     /// one the chart names, or one chosen (crux C742).
     AyurdayaSpan { /// The span of the strongest of the lagna, the Sun and the Moon: Amsayu,

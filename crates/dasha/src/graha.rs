@@ -96,6 +96,20 @@ pub fn tara_lords(grahas: &[(Graha, House, f64)]) -> Option<Vec<(Graha, f64)>> {
         .collect()
 }
 
+/// The Naisargika dasha's lords and years (BPHS ch. 43 vv. 16 and 17):
+/// "the Moon, Mars, Mercury, Venus, Jupiter, the Sun and Saturn, in order,
+/// one, two, nine, twenty, eighteen, twenty and fifty years … from the time
+/// of birth, in order, these are the natural dashas", 120 years in all.
+pub const NAISARGIKA_LORDS: [(Graha, f64); 7] = [
+    (Graha::Moon, 1.0),
+    (Graha::Mars, 2.0),
+    (Graha::Mercury, 9.0),
+    (Graha::Venus, 20.0),
+    (Graha::Jupiter, 18.0),
+    (Graha::Sun, 20.0),
+    (Graha::Saturn, 50.0),
+];
+
 /// The years a karaka gives in the Karaka dasha (BPHS ch. 46 v. 178): the
 /// signs counted forward from the lagna's to the karaka's, its own sign
 /// counting twelve, whatever the lagna's footedness. Santhanam's worked

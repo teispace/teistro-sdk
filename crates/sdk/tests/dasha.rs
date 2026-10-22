@@ -972,3 +972,152 @@ fn first_and_years(
         .sum();
     (years, reading.periods[0].clone())
 }
+
+/// The Naisargika dasha through the façade (BPHS ch. 43 vv. 16 and 17, ch.
+/// 51 vv. 13 to 16, C743): the seven in their natural order for their
+/// natural years of 360 days from birth. Each mahadasha's antardashas are
+/// the verse's shares, worked here from the document's own signs and
+/// shadbala: the lord whole, then of the bodies with it, in a trikona, in
+/// the fourth or eighth and in the seventh, the strongest of each place.
+/// Under `PROPORTIONAL` they are the natural years' proportions. Both
+/// rebuild from the document.
+#[test]
+fn a_reading_carries_the_naisargika_dasha_in_the_natural_order() {
+    use teistro::RuleInputs;
+    use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    use teistro::rules::Body;
+
+    let natural = [
+        (Graha::Moon, 1.0),
+        (Graha::Mars, 2.0),
+        (Graha::Mercury, 9.0),
+        (Graha::Venus, 20.0),
+        (Graha::Jupiter, 18.0),
+        (Graha::Sun, 20.0),
+        (Graha::Saturn, 50.0),
+    ];
+    let place = Place::new(
+        Latitude::try_new(27.7172).unwrap(),
+        Longitude::try_new(85.324).unwrap(),
+        Altitude::try_new(1400.0).unwrap(),
+    );
+    let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700).unwrap())
+        .with_dashas([DashaSystem::Naisargika])
+        .with_state()
+        .with_shadbala();
+    let context = |division: &str| {
+        Context::builder()
+            .profile("conformance-baseline")
+            .settings_json(format!(
+                r#"{{"dasha": {{"naisargika_division": "{division}"}}}}"#
+            ))
+            .ephemeris([teistro::Ephemeris::Builtin])
+            .build()
+            .unwrap()
+    };
+    let (shares, proportional) = (context("SHARES"), context("PROPORTIONAL"));
+    let mut related = 0;
+    for step in 0..6 {
+        let birth = JulianDay::literal(2_447_995.49 + f64::from(step) * 47.1);
+        let document = shares.chart().reading(birth, &request).unwrap().value;
+        let reading = &document.dashas[0];
+        let maha: Vec<&teistro::dasha::PeriodRow> = reading
+            .periods
+            .iter()
+            .filter(|row| row.level() == 1)
+            .collect();
+        assert_eq!(maha.len(), 7);
+        let mut from = birth.get();
+        for (row, (lord, years)) in maha.iter().zip(natural) {
+            assert_eq!(row.lord, lord);
+            assert!((row.interval.from.get() - from).abs() < 1e-6);
+            assert!((row.interval.days() - years * 360.0).abs() < 1e-6);
+            from = row.interval.to.get();
+        }
+        // The other road: the verse's shares from the document's signs and
+        // strengths.
+        let inputs = RuleInputs::of(&document).unwrap();
+        let sign = |graha: Graha| inputs.chart.placement(Body::Graha(graha)).sign;
+        let rupas =
+            |graha: Graha| inputs.chart.strengths.unwrap().of[Body::Graha(graha).index()].unwrap();
+        for (at, row) in maha.iter().enumerate() {
+            let lord = row.lord;
+            let expected = verse_shares(&natural, at, &sign, &rupas);
+            related += expected.len() - 1;
+            let sum: f64 = expected.iter().map(|(_, share)| share).sum();
+            let children: Vec<&teistro::dasha::PeriodRow> = reading
+                .periods
+                .iter()
+                .filter(|child| {
+                    child.level() == 2 && child.path.starts_with(&format!("{}/", row.path))
+                })
+                .collect();
+            assert_eq!(
+                children.iter().map(|child| child.lord).collect::<Vec<_>>(),
+                expected.iter().map(|(lord, _)| *lord).collect::<Vec<_>>(),
+                "{lord:?}"
+            );
+            for (child, (_, share)) in children.iter().zip(&expected) {
+                assert!((child.interval.days() - row.interval.days() * share / sum).abs() < 1e-6);
+            }
+        }
+        let cursor = shares
+            .chart()
+            .dasha(&document, DashaSystem::Naisargika)
+            .unwrap();
+        let venus = cursor.mahadashas().nth(3).unwrap();
+        let deeper = cursor.children(&venus).next().unwrap();
+        assert_eq!(deeper.lord, Graha::Venus);
+        assert!(cursor.children(&deeper).next().is_some());
+
+        let document = proportional.chart().reading(birth, &request).unwrap().value;
+        let periods = &document.dashas[0].periods;
+        let venus = periods.iter().find(|row| row.path == "3").unwrap();
+        let children: Vec<&teistro::dasha::PeriodRow> = periods
+            .iter()
+            .filter(|child| child.level() == 2 && child.path.starts_with("3/"))
+            .collect();
+        assert_eq!(children.len(), 7);
+        for (child, (lord, years)) in children.iter().zip(natural.iter().cycle().skip(3)) {
+            assert_eq!(child.lord, *lord);
+            assert!((child.interval.days() - venus.interval.days() * years / 120.0).abs() < 1e-6);
+        }
+    }
+    // The charts give the shares something to choose among.
+    assert!(related >= 12, "{related} related bodies over six charts");
+}
+
+/// Ch. 51 vv. 13 and 14's antardashas of the `at`th of `natural`'s lords,
+/// worked from the verse: the lord whole, then the strongest by `rupas` of
+/// those with it, in a trikona, in the fourth or eighth and in the seventh
+/// by `sign`, in the order the lords run from it, each with its share.
+fn verse_shares(
+    natural: &[(Graha, f64); 7],
+    at: usize,
+    sign: &dyn Fn(Graha) -> teistro::catalogue::Rashi,
+    rupas: &dyn Fn(Graha) -> f64,
+) -> Vec<(Graha, f64)> {
+    let lord = natural[at].0;
+    let mut places: Vec<(u8, Graha, f64)> = Vec::new();
+    for step in 1..7 {
+        let other = natural[(at + step) % 7].0;
+        let (place, share) = match teistro::House::between(sign(lord), sign(other)).get() {
+            1 => (1, 0.5),
+            5 | 9 => (5, 1.0 / 3.0),
+            4 | 8 => (4, 0.25),
+            7 => (7, 1.0 / 7.0),
+            _ => continue,
+        };
+        match places.iter_mut().find(|held| held.0 == place) {
+            Some(held) if rupas(other) > rupas(held.1) => *held = (place, other, share),
+            Some(_) => {}
+            None => places.push((place, other, share)),
+        }
+    }
+    let order =
+        |graha: Graha| (natural.iter().position(|(lord, _)| *lord == graha).unwrap() + 7 - at) % 7;
+    places.sort_by_key(|held| order(held.1));
+    std::iter::once((lord, 1.0))
+        .chain(places.iter().map(|held| (held.1, held.2)))
+        .collect()
+}

@@ -27,7 +27,7 @@ use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::Balance;
 use teistro_core::settings::{
     AyurdayaReadings, AyurdayaSpan, CharaKarakas, DecennialDivision, GrahaDivision,
-    ReleasingSharedSign, StrongestGraha,
+    NaisargikaDivision, ReleasingSharedSign, StrongestGraha,
 };
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
@@ -834,6 +834,13 @@ impl<'a> ChartArea<'a> {
             let dasha = self.tara_dasha_of(foundation, rules, &shadbala()?)?;
             return Ok(DashaReading::of_time_lord(system, &dasha, rules, depth));
         }
+        if system == DashaSystem::Naisargika {
+            // Stored to its second level, as the ayurdaya dasha is, since
+            // its antardashas may be the chart's.
+            let dasha = self.naisargika_dasha_of(foundation, rules, shadbala)?;
+            let depth = Depth::try_new(2).map_or(depth, |two| depth.max(two));
+            return Ok(DashaReading::of_time_lord(system, &dasha, rules, depth));
+        }
         if matches!(system, DashaSystem::Aayu | DashaSystem::Ashtakavarga) {
             // Its antardashas are the chart's, not a rule of its years, so
             // a reading always stores them, to be rebuilt from.
@@ -989,6 +996,63 @@ impl<'a> ChartArea<'a> {
             foundation.instant,
             rules.year_length,
             GrahaDivision::Proportional,
+            rules.after_cycle,
+        )
+    }
+
+    /// The Naisargika dasha of a founded chart (BPHS ch. 43 vv. 16 and 17,
+    /// `03-design/dasha-kernels.md`): the seven in their natural order, each
+    /// for its natural years, from birth. Its antardashas are as the
+    /// settings' `dasha.naisargika_division` says (crux C743): ch. 51 vv. 13
+    /// to 16's shares by default, from the grahas' signs and their shadbala
+    /// in rupas, which is computed only then.
+    fn naisargika_dasha_of(
+        self,
+        foundation: &ChartFoundation,
+        rules: DashaRules,
+        shadbala: &dyn Fn() -> Result<ShadbalaReading, Error>,
+    ) -> Result<GrahaDasha, Error> {
+        let settings = self.context.settings();
+        let lords = teistro_dasha::NAISARGIKA_LORDS.to_vec();
+        let division = match settings.dasha.naisargika_division {
+            NaisargikaDivision::Proportional => GrahaDivision::Proportional,
+            NaisargikaDivision::Equal => GrahaDivision::Equal,
+            _ => {
+                let shadbala = shadbala()?;
+                let states = state(foundation, settings)?;
+                let chart = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+                let givers: Vec<teistro_dasha::Giver> = lords
+                    .iter()
+                    .map(|&(graha, years)| teistro_dasha::Giver {
+                        graha: Some(graha),
+                        sign: chart.placement(teistro_rules::Body::Graha(graha)).sign,
+                        years,
+                        strength: shadbala
+                            .grahas
+                            .iter()
+                            .find(|entry| entry.graha == graha)
+                            .map_or(0.0, |entry| entry.rupas),
+                    })
+                    .collect();
+                let shares = teistro_dasha::ayurdaya_shares(&givers, settings.dasha.ayurdaya_place);
+                let seats = lords
+                    .iter()
+                    .map(|&(graha, years)| (graha, None, years))
+                    .collect();
+                return GrahaDasha::with_shares(
+                    seats,
+                    shares,
+                    foundation.instant,
+                    rules.year_length,
+                    rules.after_cycle,
+                );
+            }
+        };
+        GrahaDasha::new(
+            lords,
+            foundation.instant,
+            rules.year_length,
+            division,
             rules.after_cycle,
         )
     }
@@ -2664,15 +2728,18 @@ impl<'a> ChartArea<'a> {
     /// mahadashas store and the division its second level shows, or its
     /// own when it stores one level (the settings' for Karaka, Vimshottari's
     /// for Tara), so a change of the karaka scheme or the strength measure
-    /// since does not move it; an ayurdaya dasha from its seats and the
-    /// shares its second level stores.
+    /// since does not move it; an ayurdaya or Naisargika dasha from its
+    /// seats and the shares its second level stores.
     fn graha_dasha_from(
         self,
         document: &Document,
         reading: &DashaReading,
         system: DashaSystem,
     ) -> Result<GrahaDasha, Error> {
-        if matches!(system, DashaSystem::Aayu | DashaSystem::Ashtakavarga) {
+        if matches!(
+            system,
+            DashaSystem::Aayu | DashaSystem::Ashtakavarga | DashaSystem::Naisargika
+        ) {
             // From the seats and shares its two levels store, which every
             // reading of it holds.
             let stored = reading.graha_shares().ok_or_else(|| {
@@ -2771,7 +2838,11 @@ impl<'a> ChartArea<'a> {
         };
         if matches!(
             system,
-            DashaSystem::Karaka | DashaSystem::Tara | DashaSystem::Aayu | DashaSystem::Ashtakavarga
+            DashaSystem::Karaka
+                | DashaSystem::Tara
+                | DashaSystem::Aayu
+                | DashaSystem::Ashtakavarga
+                | DashaSystem::Naisargika
         ) {
             return self
                 .graha_dasha_from(document, reading, system)

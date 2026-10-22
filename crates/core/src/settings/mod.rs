@@ -39,13 +39,13 @@ pub use knobs::{
     DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
     GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
-    NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy,
-    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
-    ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
-    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
-    Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn,
-    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NaisargikaDivision, NakshatraScheme,
+    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
+    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
+    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
+    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
+    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -695,6 +695,9 @@ group!(
         /// Which of several bodies in one place takes the share in an
         /// ayurdaya dasha's antardashas (crux C741).
         ayurdaya_place: AntardashaPlace,
+        /// How the Naisargika dasha divides a period among its sub-periods
+        /// (crux C743).
+        naisargika_division: NaisargikaDivision,
         /// Which span's years an ayurdaya dasha runs (crux C742).
         ayurdaya_span: AyurdayaSpan,
         /// Whose readings of the reductions give the ayurdaya dashas'
