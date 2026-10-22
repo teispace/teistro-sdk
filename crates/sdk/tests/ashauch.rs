@@ -5,7 +5,11 @@
 //! Nepal time; its thirds turn at 21:57 and 02:26, its middle is 00:12, and
 //! its last quarter begins at 03:34.
 
-#![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+#![allow(
+    clippy::unwrap_used,
+    clippy::indexing_slicing,
+    reason = "tests fail by panicking and index the JSON they read"
+)]
 
 use teistro::ashauch::{
     Ashauch, AshauchEvent, AshauchRequest, AshauchTable, Clause, Deceased, Nearness, NightRule,

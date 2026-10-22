@@ -25,8 +25,8 @@ A native library is loaded, not downloaded, so only the wasm modules are held to
 
 | module | module | gzipped | budget, gzipped | left | glue | glue, gzipped |
 |---|--:|--:|--:|--:|--:|--:|
-| `full` | 10 922 869 | 2 510 433 | 2 720 000 | 7.7% | 57 609 | 12 407 |
-| `panchanga` | 3 450 277 | 1 088 208 | 1 310 000 | 16.9% | 57 609 | 12 407 |
+| `full` | 10 922 869 | 2 510 433 | 2 800 000 | 10.3% | 57 609 | 12 407 |
+| `panchanga` | 3 450 277 | 1 088 208 | 1 370 000 | 20.6% | 57 609 | 12 407 |
 
 ## Bundled
 
@@ -60,3 +60,5 @@ A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fa
 | 2026-10-22 | `by hand` | `full` | 11 446 558 | 2 665 078 | the parana of the Ekadashi fasts and of Janmashtami, Shivaratri and Rama Navami, the margin of each fast and the parana's timed events in the iCalendar feed, with their names in two locales; measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused |
 | 2026-10-22 | `by hand` | `panchanga` | 4 010 114 | 1 257 948 | the parana's nakshatra bar (each barred share of a nakshatra searched at its own bounds over the days that hold it), with the paranas of the Ekadashi fasts and of Janmashtami, Shivaratri and Rama Navami; measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused |
 | 2026-10-22 | `by hand` | `panchanga` | 4 101 884 | 1 278 628 | anniversaries kept by the tithi (the origin found at an instant or a date, the year's month by its clauses, the day by the rite's share of the tithi); measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused |
+| 2026-10-22 | `by hand` | `full` | 11 814 132 | 2 743 838 | the Navaratri's close, the Gaudiya Ekadashi and its mahadvadashis, and the ashauch (the Dharmasindhu's table as data, the night rule, late news and overlap); measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused |
+| 2026-10-22 | `by hand` | `panchanga` | 4 362 373 | 1 336 192 | the Navaratri's close, the Gaudiya Ekadashi and its mahadvadashis, and the ashauch (the Dharmasindhu's table as data, the night rule, late news and overlap); measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused |
