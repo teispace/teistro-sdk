@@ -5640,6 +5640,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.AVIDHAVA_NAVAMI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms avidhavaNavami() {
+                    return r.entity("festival.AVIDHAVA_NAVAMI");
+                }
+
+                /**
                  * The forms of `festival.BAHIDYO_BOYEGU` in the current locale.
                  *
                  * @return the forms
@@ -5772,6 +5781,15 @@ public final class Messages {
                  */
                 public EntityForms bhalBhalAshtami() {
                     return r.entity("festival.BHAL_BHAL_ASHTAMI");
+                }
+
+                /**
+                 * The forms of `festival.BHARANI_SHRADDHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bharaniShraddha() {
+                    return r.entity("festival.BHARANI_SHRADDHA");
                 }
 
                 /**
@@ -7680,6 +7698,15 @@ public final class Messages {
                  */
                 public EntityForms sanskritDay() {
                     return r.entity("festival.SANSKRIT_DAY");
+                }
+
+                /**
+                 * The forms of `festival.SANYASI_MAHALAYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sanyasiMahalaya() {
+                    return r.entity("festival.SANYASI_MAHALAYA");
                 }
 
                 /**
