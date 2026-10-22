@@ -2859,6 +2859,42 @@ void _engineTests() {
       (shayani.kept!.fromBy, shayani.kept!.span.from),
       ('NAKSHATRA', barred.span.to),
     );
+
+    // An anniversary kept by the tithi (`03-design/shraddha.md`): a parvana
+    // of the dark 1st falls on 2 September 2020, the day the committee
+    // announced for its Sora Shraddha.
+    final sora = ctx.almanac.festivals(
+      from: gregorian(2020, 8, 25),
+      to: gregorian(2020, 9, 20),
+      place: place,
+      utcOffsetSeconds: 20700,
+      festivals: const FestivalRequest(
+        rules: [
+          {
+            'key': 'PRATIPADA',
+            'origin': {
+              'by': 'LUNAR',
+              'month': 'BHADRAPADA',
+              'tithi': 'KRISHNA_PRATIPADA',
+            },
+            'kind': 'PARVANA',
+          },
+        ],
+      ),
+    );
+    final pratipada = sora.anniversaries.single;
+    expect(
+      (pratipada.key, pratipada.kind, pratipada.monthBy),
+      ('PRATIPADA', 'PARVANA', 'NIJA'),
+    );
+    expect(pratipada.origin.tithi, Tithi.krishnaPratipada);
+    expect(pratipada.count, isNull);
+    expect(pratipada.observance.month, Masa.bhadrapada);
+    expect(
+      (pratipada.observance.day.month, pratipada.observance.day.day),
+      (9, 2),
+    );
+    expect(july.anniversaries, isEmpty);
     expect(
       [for (final observance in answer.observances) observance.rule],
       [

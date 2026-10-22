@@ -22,10 +22,11 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
-    Case, Choice, Dated, DatedObservance, DatedRule, DayPart, Decided, Edge, EkadashiRule,
-    FestivalDay, FestivalRule, FollowingRule, Guard, InAdhika, Moonrise, NakshatraBar, Observances,
-    Occurs, ParanaBarred, Predicate, SunEntry, Unjudged, VrataEdge, VrataParana, VrataParanaTime,
-    Which, Window, dated, ekadashis, following, observances, yugma,
+    AnniversaryDay, AnniversaryKind, Case, Choice, Dated, DatedObservance, DatedRule, DayPart,
+    Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule, Guard, Half, InAdhika,
+    MonthClause, Moonrise, NakshatraBar, Observances, Occurs, OriginFound, ParanaBarred, Predicate,
+    SunEntry, Unjudged, VrataEdge, VrataParana, VrataParanaTime, Which, Window, dated, ekadashis,
+    following, observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -1747,43 +1748,56 @@ fn every_reading(parana: &mut Vec<VrataParanaTime>, era: Option<EraNumber>) {
     }
 }
 
+/// The string paths of a festival answer that name no catalogue member.
+const NOT_MEMBERS: [&str; 40] = [
+    "observances.rule",
+    "observances.decidedBy.rule",
+    "observances.day.resolution.kind",
+    "observances.extents.day.resolution.kind",
+    "observances.case",
+    "observances.decidedBy.by",
+    "observances.choice",
+    "observances.parana.day.resolution.kind",
+    "observances.parana.reading.kind",
+    "observances.parana.reading.at.window",
+    "observances.parana.reading.at.part",
+    "observances.parana.fromBy",
+    "observances.parana.toBy",
+    "ekadashis.rule",
+    "ekadashis.days.resolution.kind",
+    "ekadashis.day.resolution.kind",
+    "ekadashis.piercedAt",
+    "ekadashis.excess",
+    "ekadashis.choice",
+    "ekadashis.parana.day.resolution.kind",
+    "ekadashis.parana.kept.at.window",
+    "ekadashis.parana.kept.at.part",
+    "ekadashis.parana.kept.fromBy",
+    "ekadashis.parana.kept.toBy",
+    "unjudged.rule",
+    "unjudged.why",
+    "dated.rule",
+    "dated.day.resolution.kind",
+    "dated.on.resolution.kind",
+    "anniversaries.key",
+    "anniversaries.kind",
+    "anniversaries.monthBy",
+    "anniversaries.origin.kind",
+    "anniversaries.origin.half",
+    "anniversaries.observance.rule",
+    "anniversaries.observance.case",
+    "anniversaries.observance.choice",
+    "anniversaries.observance.decidedBy.by",
+    "anniversaries.observance.day.resolution.kind",
+    "anniversaries.observance.extents.day.resolution.kind",
+];
+
 /// `Observances::MEMBERS` names every catalogue member an answer holds,
 /// and nothing else: each string in its JSON is either listed there or
 /// listed here as not a member, and each of both lists is present.
 #[test]
 fn an_answer_names_its_catalogue_members_where_its_table_says() {
     // Every string an answer holds that is not a catalogue member.
-    const NOT_MEMBERS: [&str; 29] = [
-        "observances.rule",
-        "observances.decidedBy.rule",
-        "observances.day.resolution.kind",
-        "observances.extents.day.resolution.kind",
-        "observances.case",
-        "observances.decidedBy.by",
-        "observances.choice",
-        "observances.parana.day.resolution.kind",
-        "observances.parana.reading.kind",
-        "observances.parana.reading.at.window",
-        "observances.parana.reading.at.part",
-        "observances.parana.fromBy",
-        "observances.parana.toBy",
-        "ekadashis.rule",
-        "ekadashis.days.resolution.kind",
-        "ekadashis.day.resolution.kind",
-        "ekadashis.piercedAt",
-        "ekadashis.excess",
-        "ekadashis.choice",
-        "ekadashis.parana.day.resolution.kind",
-        "ekadashis.parana.kept.at.window",
-        "ekadashis.parana.kept.at.part",
-        "ekadashis.parana.kept.fromBy",
-        "ekadashis.parana.kept.toBy",
-        "unjudged.rule",
-        "unjudged.why",
-        "dated.rule",
-        "dated.day.resolution.kind",
-        "dated.on.resolution.kind",
-    ];
     let tithis = [
         (Tithi::KrishnaShashthi, ghati(0, 30.0)),
         (Tithi::KrishnaSaptami, ghati(1, 40.0)),
@@ -1837,6 +1851,29 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
         rule: "JANMASHTAMI".to_owned(),
         day: day.clone(),
         on: day,
+    });
+    // An anniversary whose origin is written whole.
+    let mut observance = answer.observances[0].clone();
+    observance.parana.clear();
+    answer.anniversaries.push(AnniversaryDay {
+        key: "GRANDFATHER".to_owned(),
+        count: Some(1),
+        kind: AnniversaryKind::Ekoddishta,
+        origin: OriginFound {
+            nakshatra: Some(Nakshatra::Rohini),
+            at: Some(JulianDay::literal(2_460_000.0)),
+            assumed_sunrise: true,
+            candidates: vec![Tithi::KrishnaShashthi, Tithi::KrishnaSaptami],
+            ..OriginFound::lunar(
+                Masa::Kartika,
+                Tithi::KrishnaSaptami,
+                false,
+                Half::First,
+                None,
+            )
+        },
+        month_by: MonthClause::Nija,
+        observance,
     });
     let mut found = std::collections::BTreeSet::new();
     string_paths(&serde_json::to_value(&answer).unwrap(), "", &mut found);

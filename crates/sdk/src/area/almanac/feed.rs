@@ -186,9 +186,11 @@ impl FestivalCalendarAsked {
 }
 
 impl AlmanacArea<'_> {
-    /// The observances [`AlmanacArea::festivals`] gives over a range, and
-    /// each Ekadashi fast, as an iCalendar feed: one whole-day event each,
-    /// on its civil day, ordered by day and then rule.
+    /// The observances [`AlmanacArea::festivals`] gives over a range, each
+    /// Ekadashi fast, each dated rule's day and each anniversary's, as an
+    /// iCalendar feed: one whole-day event each, on its civil day, ordered
+    /// by day and then rule. An anniversary's `SUMMARY` is its own key,
+    /// which the consumer names it by.
     ///
     /// A fast whose rule keeps a parana adds a timed event, the window
     /// its meal is kept in, in UTC (`sdk.calendar.parana`, "Parana:
@@ -259,7 +261,13 @@ impl AlmanacArea<'_> {
             .iter()
             .map(|observance| (&observance.rule, &observance.day))
             .chain(value.ekadashis.iter().map(|fast| (&fast.rule, &fast.day)))
-            .chain(value.dated.iter().map(|kept| (&kept.rule, &kept.day)));
+            .chain(value.dated.iter().map(|kept| (&kept.rule, &kept.day)))
+            .chain(
+                value
+                    .anniversaries
+                    .iter()
+                    .map(|kept| (&kept.key, &kept.observance.day)),
+            );
         let describe = |rule: &str| match source_of(festivals, rule) {
             Some(source) => format!("{source}\n{about}"),
             None => about.clone(),

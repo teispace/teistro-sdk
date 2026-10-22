@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Anniversaries kept by the tithi** (P1-8, `shraddha.md`). **Numbers:**
+none move; a request asking for none answers as before. A festival
+request's `rules` may name an `Anniversary` (an item with an `origin`:
+`INSTANT`, `DATE` or `LUNAR`), and the answer gains `anniversaries`,
+each `{key, count, kind, origin, monthBy, observance}`: a yearly shraddha
+as an ekoddishta (muhurtas 8–9) or a parvana (aparahna) by its origin, a
+janma tithi at sunrise with *Dharmasindhu*'s nakshatra tie and
+two-muhurta floor as switches, the first anniversary in an adhika month
+by `firstYearAdhika` (`ADHIKA`, the texts; `NIJA`, Nepal's custom), and
+a kshaya year's joined lunation answering to both names. Every binding
+reads it; the iCalendar feed writes it.
+
 **A parana may bar a nakshatra** (P1-7, C700, `festival-rules.md`
 §8.5). **Numbers:** none move; the shipped rules bar nothing. A
 `ParanaRule` gains `bars`, each a `NakshatraBar { tithi, month,

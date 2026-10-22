@@ -605,14 +605,14 @@ or with the baseline engine's value as the documented default.
 | C659 | A *yāma* | a quarter of the daylight | — | 1 | a quarter of daylight; [`parana.md`](../../03-design/parana.md) |
 | C660 | Janmashtami's parana with Rohini | DS pp. 51–52 | NS's Gauda and Hemadri readings in full | 1 | DS as read; [`parana.md`](../../03-design/parana.md) |
 | C661 | The origin tithi of a death or birth | NS p. 982 (Naradiya): the tithi at the moment | — | 1 | at the instant; sunrise flagged when no hour; [`shraddha.md`](../../03-design/shraddha.md) |
-| C662 | The ekoddishta's window | NS p. 987: kutapa to rauhina (muhurtas 8–9); DS pp. 265–266: madhyahna 7–9, the main time 8–9 | the maintainer's choice | 1 | **maintainer**: muhurtas 8–9; [`shraddha.md`](../../03-design/shraddha.md) |
+| C662 | The ekoddishta's window | NS p. 987: kutapa to rauhina (muhurtas 8–9); DS pp. 265–266: madhyahna 7–9, the main time 8–9 | the maintainer's choice | 1 | muhurtas 8–9, `window` overrides (built 2026-10-22); [`shraddha.md`](../../03-design/shraddha.md) |
 | C663 | Ekoddishta on both days, neither, or a tie | DS p. 266, NS: the earlier; unequal, the greater | — | 1 | the earlier; Gauda and *kharva-darpa* recorded; [`shraddha.md`](../../03-design/shraddha.md) |
 | C664 | Parvana on both days wholly or equally | DS p. 266: the earlier; Madhava's kshaya/vriddhi variant | — | 1 | the earlier; [`shraddha.md`](../../03-design/shraddha.md) |
 | C665 | Which anniversaries are parvana | Shankha in NS; Dhakal for Nepal | — | 1 | by the origin, overridable; [`shraddha.md`](../../03-design/shraddha.md) |
-| C666 | The first anniversary when its month is adhika | DS, NS pp. 25–26, Kane IV p. 546: the adhika month; Dhakal n. 14: the ordinary month for Nepal | the maintainer's choice | 1 | **maintainer**: the texts', a Nepal preset for Dhakal's; [`shraddha.md`](../../03-design/shraddha.md) |
+| C666 | The first anniversary when its month is adhika | DS, NS pp. 25–26, Kane IV p. 546: the adhika month; Dhakal n. 14: the ordinary month for Nepal | the maintainer's choice | 1 | `ADHIKA` (the texts), `NIJA` offered for Nepal (built 2026-10-22); [`shraddha.md`](../../03-design/shraddha.md) |
 | C667 | An origin in an adhika month | DS malamasa, NS p. 26, Dhakal n. 63, Kane IV pp. 546–547 | — | 1 | the ordinary month, the adhika when adhika again; [`shraddha.md`](../../03-design/shraddha.md) |
 | C668 | An origin in a kshaya month | Hemadri in NS; DS: the tithi's half names the month | — | 1 | the half at the instant; [`shraddha.md`](../../03-design/shraddha.md) |
-| C669 | An ordinary origin in a kshaya year | DS's *phalita*: the joined lunation on its tithi | — | 1 | the joined lunation; *saṃsarpa* flagged; [`shraddha.md`](../../03-design/shraddha.md) |
+| C669 | An ordinary origin in a kshaya year | DS's *phalita*: the joined lunation on its tithi | — | 1 | the joined lunation (built 2026-10-22); the *saṃsarpa* second day not yet; [`shraddha.md`](../../03-design/shraddha.md) |
 | C670 | Janma tithi | NS p. 531: the sunrise tithi; DS: nakshatra tie, two-muhurta floor | — | 1 | sunrise tithi; DS's options off; [`shraddha.md`](../../03-design/shraddha.md) |
 | C671 | Janma tithi in an adhika year | DS: not the adhika | — | 1 | the ordinary month; [`shraddha.md`](../../03-design/shraddha.md) |
 | C672 | The pitri paksha's month | Bhadrapada dark half, amanta | — | 1 | as stated; [`shraddha.md`](../../03-design/shraddha.md) |

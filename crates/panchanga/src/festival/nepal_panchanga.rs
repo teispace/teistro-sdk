@@ -42,7 +42,7 @@ use teistro_core::settings::LunarMonth as Convention;
 
 use super::{
     APARAHNA, Case, Choice, DayPart, FestivalRule, FollowingRule, Guard, InAdhika, MADHYAHNA,
-    Occurs, Predicate, Which, Window, case,
+    Occurs, Predicate, Which, Window, by_share, case,
 };
 
 /// Purvahna: the daylight's first six muhurtas, its first two fifths
@@ -91,19 +91,13 @@ impl Fit {
                 Later,
                 "the day whose sunrise holds the tithi, the later when both do and the earlier when neither does (C610)".to_owned(),
             ),
-            Fit::Share(window) => (
-                window,
-                vec![
-                    Guard::new([case(Case::LaterOnly)], Later),
-                    Guard::new([case(Case::Both)], Earlier),
-                    Guard::new([Predicate::Greater { day: Which::Later }], Later),
-                ],
-                Earlier,
-                format!(
+            Fit::Share(window) => {
+                let (decide, otherwise) = by_share();
+                (window, decide, otherwise, format!(
                     "{}: the day holding more of it, in time; the earlier on a tie, both holding it wholly being one, and when neither holds it (C601, C603)",
                     Fit::name(window)
-                ),
-            ),
+                ))
+            }
             Fit::Crescent => (
                 Window::DayMuhurta { from: 15, to: 15 },
                 vec![Guard::new([Predicate::Wholly { day: Which::Earlier }], Earlier)],

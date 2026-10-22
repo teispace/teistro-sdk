@@ -19,17 +19,35 @@ import com.teispace.teistro.record.Provenance;
  * @param unjudged the occurrences no day could be given to
  * @param dated each dated rule's days, in the order of the days; empty when
  *     none was asked
+ * @param anniversaries each anniversary's days, in the order of the tithis;
+ *     empty when none was asked
  * @param provenance what computed it: the widened days among the applied
  *     conventions as {@code festival.days}, and the hash of the value
  */
 public record FestivalAnswer(
         List<FestivalObservance> observances, List<EkadashiFast> ekadashis, List<FestivalUnjudged> unjudged,
-        List<DatedObservance> dated, Provenance provenance) {
+        List<DatedObservance> dated, List<AnniversaryDay> anniversaries, Provenance provenance) {
     /** Keeps the lists unmodifiable. */
     public FestivalAnswer {
         observances = List.copyOf(observances);
         ekadashis = List.copyOf(ekadashis);
         unjudged = List.copyOf(unjudged);
         dated = List.copyOf(dated);
+        anniversaries = List.copyOf(anniversaries);
+    }
+
+    /**
+     * An answer with no anniversaries, as one was written before they were
+     * asked for.
+     *
+     * @param observances each rule's day
+     * @param ekadashis each Ekadashi rule's fasts
+     * @param unjudged the occurrences no day could be given to
+     * @param dated each dated rule's days
+     * @param provenance what computed it
+     */
+    public FestivalAnswer(List<FestivalObservance> observances, List<EkadashiFast> ekadashis,
+            List<FestivalUnjudged> unjudged, List<DatedObservance> dated, Provenance provenance) {
+        this(observances, ekadashis, unjudged, dated, List.of(), provenance);
     }
 }

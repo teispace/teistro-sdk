@@ -88,7 +88,36 @@ final class AlmanacReads {
                                     Reads.serdeDate(Reads.field(d, "day")), Reads.serdeDate(Reads.field(d, "on")));
                         })
                         : java.util.List.of(),
+                // Left out of the answer when none was asked.
+                value.containsKey("anniversaries")
+                        ? Reads.each(value, "anniversaries", AlmanacReads::anniversary)
+                        : java.util.List.of(),
                 provenance(envelope));
+    }
+
+    private static AnniversaryDay anniversary(Object raw) {
+        Map<?, ?> a = Reads.object(raw);
+        Map<?, ?> o = Reads.object(a, "origin");
+        return new AnniversaryDay(
+                Reads.string(a, "key"),
+                Reads.optionalInteger(a, "count"),
+                Reads.string(a, "kind"),
+                new AnniversaryDay.Origin(
+                        member(o, "tithi", "Tithi", Tithi::byKey),
+                        member(o, "month", "Masa", Masa::byKey),
+                        Reads.string(o, "kind"),
+                        Reads.string(o, "half"),
+                        o.get("nakshatra") == null ? null : member(o, "nakshatra", "Nakshatra", Nakshatra::byKey),
+                        Reads.optionalNumber(o, "at"),
+                        Reads.flag(o, "assumedSunrise"),
+                        o.containsKey("candidates")
+                                ? Reads.each(o, "candidates", t -> {
+                                    String text = String.valueOf(t);
+                                    return Reads.member(Tithi.byKey(text), "Tithi", text);
+                                })
+                                : List.of()),
+                Reads.string(a, "monthBy"),
+                observance(Reads.field(a, "observance")));
     }
 
     /** {@code ts_almanac_disagreements}'s answer: each comparison asked, its members resolved, or null. */

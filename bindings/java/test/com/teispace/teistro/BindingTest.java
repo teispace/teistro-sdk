@@ -1370,6 +1370,24 @@ public final class BindingTest {
                 same(java.util.List.of("NAKSHATRA", barred.span().toJd()),
                         java.util.List.of(shayani.kept().fromBy(), shayani.kept().span().fromJd()),
                         "the meal opens where the share ends");
+                // An anniversary kept by the tithi (03-design/shraddha.md): a
+                // parvana of Bhadrapada's dark 1st falls on 2 September 2020.
+                FestivalAnswer sora = sky.almanac().festivals(
+                        Civil.date(Calendar.GREGORIAN, 2020, 8, 25), Civil.date(Calendar.GREGORIAN, 2020, 9, 20),
+                        kathmandu, 20_700,
+                        new com.teispace.teistro.request.FestivalRequest(java.util.List.of(java.util.Map.of(
+                                "key", "PRATIPADA",
+                                "origin", java.util.Map.of("by", "LUNAR", "month", "BHADRAPADA",
+                                        "tithi", "KRISHNA_PRATIPADA"),
+                                "kind", "PARVANA"))));
+                same(1, sora.anniversaries().size(), "one anniversary");
+                AnniversaryDay pratipada = sora.anniversaries().get(0);
+                same(java.util.List.of("PRATIPADA", "PARVANA", "NIJA"),
+                        java.util.List.of(pratipada.key(), pratipada.kind(), pratipada.monthBy()), "a parvana");
+                same(Tithi.KRISHNA_PRATIPADA, pratipada.origin().tithi(), "its tithi");
+                check(pratipada.count() == null && pratipada.origin().candidates().isEmpty(), "no moment");
+                same(java.util.List.of(9, 2), java.util.List.of(pratipada.observance().day().month(),
+                        pratipada.observance().day().day()), "2 September");
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
                 int varjyam = 0;
                 for (AlmanacDay day : week) {

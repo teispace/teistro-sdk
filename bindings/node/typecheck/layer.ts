@@ -112,6 +112,8 @@ import type {
   EkadashiVedha,
   Parana,
   NakshatraBar,
+  Anniversary,
+  AnniversaryDay,
   ParanaBarred,
   ParanaEdge,
   ParanaKept,
@@ -2218,6 +2220,13 @@ function theFestivals(almanac: Almanac): string {
   const barredRule: EkadashiRule = { ...morningOnly, parana: { at: [{ window: 'PART', part: 'PRATAH' }], hariVasara: true, bars: [anuradha] } };
   // @ts-expect-error a bar follows the fast of an 11th, not a 12th
   const twelfthBar: NakshatraBar = { tithi: 'tithi.SHUKLA_DWADASHI', month: 'masa.ASHADHA', nakshatra: 'nakshatra.ANURADHA' };
+  const barkhi: Anniversary = { key: 'GRANDFATHER', origin: { by: 'LUNAR', month: 'masa.KARTIKA', tithi: 'tithi.SHUKLA_DASHAMI' }, kind: 'PARVANA' };
+  const born: Anniversary = { key: 'BIRTH', origin: { by: 'INSTANT', at: 2451545 }, kind: 'JANMA_TITHI', janma: { twoMuhurtaFloor: true } };
+  // @ts-expect-error an origin is a moment, a date or a lunar date
+  const nowhere: Anniversary = { key: 'NOWHERE', origin: { by: 'SOLAR', at: 1 } };
+  const remembered = answer.anniversaries.map((day: AnniversaryDay) =>
+    `${day.key} ${day.count ?? '-'} ${day.kind} ${day.monthBy} ${day.origin.tithi} ${day.origin.candidates.length} ${day.observance.day.day}`,
+  );
   const vrata = answer.observances.flatMap((o) =>
     (o.parana ?? []).map((time: VrataParanaTime) => {
       const reading: VrataParana = time.reading;
@@ -2366,7 +2375,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), ...vrata, modern.kind, String(yamaless), barredRule.key, String(twelfthBar), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), ...vrata, modern.kind, String(yamaless), barredRule.key, String(twelfthBar), barkhi.key, born.key, String(nowhere), ...remembered, String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;
