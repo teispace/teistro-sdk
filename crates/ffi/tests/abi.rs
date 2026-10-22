@@ -6589,7 +6589,9 @@ fn a_panchanga_request_answers_festivals_over_its_own_days() {
     assert_eq!(
         rules,
         [
+            "MAHA_NAVAMI",
             "VIJAYA_DASHAMI",
+            "DEVI_VISARJAN",
             "SANKASHTA_CHATURTHI",
             "KARAKA_CHATURTHI",
             "LAKSHMI_PUJA",

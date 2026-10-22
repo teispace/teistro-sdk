@@ -285,6 +285,45 @@ pub struct Portion {
 impl Portion {
     /// The whole arc.
     pub const WHOLE: Portion = Portion { parts: 1, which: 1 };
+
+    /// This share of `nakshatra`'s arc in sidereal degrees, from its start
+    /// to its end.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_panchanga::festival::Portion;
+    ///
+    /// // Shravana's last quarter (Dharmasindhu p. 70), 290° to 293°20′.
+    /// let (from, to) = Portion { parts: 4, which: 4 }.arc_deg(Nakshatra::Shravana);
+    /// assert!((from - 290.0).abs() < 1e-9 && (to - 293.0 - 1.0 / 3.0).abs() < 1e-9);
+    /// ```
+    #[must_use]
+    pub fn arc_deg(self, nakshatra: Nakshatra) -> (f64, f64) {
+        let span = 360.0 / 27.0;
+        let start = f64::from(nakshatra.id()) * span;
+        let part = span / f64::from(self.parts);
+        let from = part.mul_add(f64::from(self.which.saturating_sub(1)), start);
+        (from, from + part)
+    }
+
+    /// Refuses a cut outside 1 to 12 parts or a part that does not exist,
+    /// named under `field`.
+    pub(crate) fn check(self, key: &str, field: &str) -> Result<(), Error> {
+        let Portion { parts, which } = self;
+        if !(1..=12).contains(&parts) {
+            return Err(Error::invalid_arg(format!(
+                "{key}: a nakshatra is cut in 1 to 12 parts, not {parts}"
+            ))
+            .with_field(format!("{field}.parts")));
+        }
+        if !(1..=parts).contains(&which) {
+            return Err(Error::invalid_arg(format!(
+                "{key}: part {which} of {parts} does not exist; count them from 1"
+            ))
+            .with_field(format!("{field}.which")));
+        }
+        Ok(())
+    }
 }
 
 impl Default for Portion {
@@ -375,11 +414,7 @@ impl NakshatraBar {
     /// The barred arc in sidereal degrees, from its start to its end.
     #[must_use]
     pub fn arc_deg(&self) -> (f64, f64) {
-        let span = 360.0 / 27.0;
-        let start = f64::from(self.nakshatra.id()) * span;
-        let part = span / f64::from(self.portion.parts);
-        let from = part.mul_add(f64::from(self.portion.which.saturating_sub(1)), start);
-        (from, from + part)
+        self.portion.arc_deg(self.nakshatra)
     }
 
     fn check(self, key: &str, index: usize) -> Result<(), Error> {
@@ -391,20 +426,7 @@ impl NakshatraBar {
             ))
             .with_field(format!("{at}.tithi")));
         }
-        let Portion { parts, which } = self.portion;
-        if !(1..=12).contains(&parts) {
-            return Err(Error::invalid_arg(format!(
-                "{key}: a nakshatra is cut in 1 to 12 parts, not {parts}"
-            ))
-            .with_field(format!("{at}.portion.parts")));
-        }
-        if !(1..=parts).contains(&which) {
-            return Err(Error::invalid_arg(format!(
-                "{key}: part {which} of {parts} does not exist; count them from 1"
-            ))
-            .with_field(format!("{at}.portion.which")));
-        }
-        Ok(())
+        self.portion.check(key, &format!("{at}.portion"))
     }
 }
 

@@ -4202,9 +4202,17 @@ class AnEngine(WithLibrary):
             self.assertIsInstance(answer, FestivalAnswer)
             self.assertEqual(
                 [o.rule for o in answer.observances],
-                ["VIJAYA_DASHAMI", "SANKASHTA_CHATURTHI", "KARAKA_CHATURTHI", "LAKSHMI_PUJA", "BALI_PRATIPADA"],
+                [
+                    "MAHA_NAVAMI",
+                    "VIJAYA_DASHAMI",
+                    "DEVI_VISARJAN",
+                    "SANKASHTA_CHATURTHI",
+                    "KARAKA_CHATURTHI",
+                    "LAKSHMI_PUJA",
+                    "BALI_PRATIPADA",
+                ],
             )
-            dashami = answer.observances[0]
+            dashami = answer.observances[1]
             self.assertEqual((dashami.day.calendar, dashami.day.month), (Calendar.GREGORIAN, 10))
             self.assertEqual(dashami.extents[0].day.calendar, Calendar.GREGORIAN)
             self.assertIn(dashami.decided_by.by, ("GUARD", "OTHERWISE"))
@@ -4253,6 +4261,25 @@ class AnEngine(WithLibrary):
             assert within.to_jd is not None
             self.assertLess(within.from_jd, within.to_jd)
             self.assertEqual((within.from_by, at_end.reading.kind, at_end.to_jd), ("SUNRISE", "TITHI_END", None))
+            # The Navaratri's close (§8.7): October 2025, the meal after the
+            # Devi's visarjana by the text, at the 10th's first daylight by
+            # the Nirnayasindhu.
+            october = ctx.almanac.festivals(
+                **{
+                    **days,
+                    "from_date": date(Calendar.GREGORIAN, 2025, 9, 26),
+                    "to_date": date(Calendar.GREGORIAN, 2025, 10, 6),
+                },
+                festivals={"rules": "DHARMASINDHU"},
+            )
+            navami = next(o for o in october.observances if o.rule == "MAHA_NAVAMI")
+            visarjana = next(o for o in october.observances if o.rule == "DEVI_VISARJAN")
+            after_rite, on_the_tenth = navami.parana
+            self.assertEqual(
+                (after_rite.reading.kind, after_rite.reading.rite, after_rite.reading.remnant, on_the_tenth.reading.kind),
+                ("AFTER_RITE", "DEVI_VISARJAN", 0, "NEXT_TITHI"),
+            )
+            self.assertEqual((after_rite.day, after_rite.from_by), (visarjana.day, "RITE"))
             # The parana's nakshatra bar (C700): Kathmandu, 7 July 2025, the
             # meal held past Anuradha's first quarter, which ends at 05:36.
             bar = {"tithi": "SHUKLA_EKADASHI", "month": "ASHADHA", "nakshatra": "ANURADHA", "portion": {"parts": 4, "which": 1}}

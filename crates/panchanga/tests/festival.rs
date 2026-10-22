@@ -609,15 +609,19 @@ fn one_of(
 fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
     let (mut text, nepal) = (FestivalRule::dharmasindhu(), FestivalRule::nepal());
     // The text's rules less the two chaturthis at moonrise, which the
-    // committee does not print, then the monthly full-moon fast no text
-    // states.
+    // committee does not print, and the Navaratri's close, which
+    // `NEPAL_PANCHANGA` keeps by its own print, then the monthly full-moon
+    // fast no text states.
     let at_moonrise: Vec<String> = text
         .iter()
         .filter(|rule| rule.at == Window::Moonrise)
         .map(|rule| rule.key.clone())
         .collect();
     assert_eq!(at_moonrise, ["SANKASHTA_CHATURTHI", "KARAKA_CHATURTHI"]);
-    text.retain(|rule| rule.at != Window::Moonrise);
+    text.retain(|rule| {
+        rule.at != Window::Moonrise
+            && !["MAHA_NAVAMI", "DEVI_VISARJAN"].contains(&rule.key.as_str())
+    });
     assert_eq!(text.len() + 1, nepal.len());
     assert_eq!(
         nepal.last().map(|rule| rule.key.as_str()),
@@ -894,6 +898,7 @@ fn a_rule_kept_on_a_nakshatra_reads_and_writes_flat_and_is_refused_by_name() {
                 day: Which::Later,
                 nakshatra: Nakshatra::Shravana,
                 at: None,
+                portion: None,
             }],
             Choice::Later,
         )],

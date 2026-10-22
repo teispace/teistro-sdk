@@ -10,6 +10,11 @@
 //! nakshatra ends do not: Rohini's on 27 August 2024 is 0.1 minute from
 //! the SDK's.
 //!
+//! Navaratri 2021 to 2027 is the almanac's "Ashwina Navratri Parana" page
+//! for New Delhi, which keeps *Nirnayasindhu*'s reading (the first
+//! daylight of the 10th), the second `MAHA_NAVAMI` lists; 2023's 9th ends
+//! a minute after the almanac's sunset, so the meal is the next morning's.
+//!
 //! The 2027 Janmashtami page read was the 25 August fast, the Vaishnava
 //! day of the government's list, where *Dharmasindhu*'s Smarta day is the
 //! 24th (`festival-measured.md` §1, C175); it is not a row here.
@@ -36,7 +41,7 @@ type Row = (
     &'static str,
 );
 
-const DELHI: [Row; 13] = [
+const DELHI: [Row; 20] = [
     // "Parana as per Dharma Shastra", then the alternate at sunrise.
     ("JANMASHTAMI", "2023-09-06", 0, "2023-09-07", "16:14", "-"),
     ("JANMASHTAMI", "2023-09-06", 1, "2023-09-07", "06:02", "-"),
@@ -93,6 +98,42 @@ const DELHI: [Row; 13] = [
         "06:52",
         "13:26",
     ),
+    ("MAHA_NAVAMI", "2021-10-14", 1, "2021-10-15", "06:22", "-"),
+    ("MAHA_NAVAMI", "2022-10-04", 1, "2022-10-04", "14:20", "-"),
+    ("MAHA_NAVAMI", "2023-10-23", 1, "2023-10-24", "06:27", "-"),
+    ("MAHA_NAVAMI", "2024-10-11", 1, "2024-10-12", "10:58", "-"),
+    ("MAHA_NAVAMI", "2025-10-01", 1, "2025-10-02", "06:15", "-"),
+    ("MAHA_NAVAMI", "2026-10-19", 1, "2026-10-20", "12:50", "-"),
+    ("MAHA_NAVAMI", "2027-10-08", 1, "2027-10-09", "09:01", "-"),
+];
+
+/// *Dharmasindhu*'s own Navaratri parana (pp. 70–71), the first reading,
+/// as recomputed with pyswisseph (Moshier, Lahiri, the refracted upper
+/// limb) in the research for it; no almanac in hand prints it. 2022 waits
+/// for the visarjana on the later 10th; 2024 and 2027 keep the meal
+/// inside the 9th left at the next sunrise, the visarjana a day later;
+/// 2026's visarjana is on the earlier 10th, Shravana's last quarter
+/// joining it, from the 10th's start.
+const BY_THE_TEXT: [Row; 5] = [
+    ("MAHA_NAVAMI", "2021-10-14", 0, "2021-10-15", "06:22", "-"),
+    ("MAHA_NAVAMI", "2022-10-04", 0, "2022-10-05", "06:16", "-"),
+    (
+        "MAHA_NAVAMI",
+        "2024-10-11",
+        0,
+        "2024-10-12",
+        "06:20",
+        "10:59",
+    ),
+    ("MAHA_NAVAMI", "2026-10-19", 0, "2026-10-20", "12:51", "-"),
+    (
+        "MAHA_NAVAMI",
+        "2027-10-08",
+        0,
+        "2027-10-09",
+        "06:18",
+        "09:02",
+    ),
 ];
 
 /// The almanac's sunrise is the upper limb's, refracted (§8.6).
@@ -142,13 +183,28 @@ fn within(miss: f64, by: VrataEdge) -> bool {
 
 #[test]
 fn every_printed_vrata_parana_at_delhi_is_the_reading_s() {
+    let missed = missed(&DELHI, within);
+    assert!(missed.is_empty(), "{}", missed.join("\n"));
+}
+
+/// The text's own Navaratri parana falls on the day the research put it,
+/// each edge within a minute of pyswisseph's (a tithi's edge being the
+/// SDK's own, not an almanac's early one).
+#[test]
+fn the_navaratri_parana_by_the_text_waits_for_the_visarjana() {
+    let missed = missed(&BY_THE_TEXT, |miss, _| miss.abs() < 1.0);
+    assert!(missed.is_empty(), "{}", missed.join("\n"));
+}
+
+/// Each row that does not fall where it says, under `close` for an edge.
+fn missed(rows: &[Row], close: fn(f64, VrataEdge) -> bool) -> Vec<String> {
     let delhi = Place::new(
         Latitude::literal(28.6356),
         Longitude::literal(77.2244),
         Altitude::literal(0.0),
     );
     let sdk = context();
-    let observances: Vec<_> = (2023..=2028)
+    let observances: Vec<_> = (2021..=2028)
         .flat_map(|year| {
             sdk.almanac()
                 .festivals(
@@ -164,7 +220,7 @@ fn every_printed_vrata_parana_at_delhi_is_the_reading_s() {
         })
         .collect();
     let mut missed = Vec::new();
-    for &(rule, fast, reading, day, from, to) in &DELHI {
+    for &(rule, fast, reading, day, from, to) in rows {
         let Some(kept) = observances
             .iter()
             .find(|o| o.rule == rule && (o.day.year, o.day.month, o.day.day) == date(fast))
@@ -178,11 +234,11 @@ fn every_printed_vrata_parana_at_delhi_is_the_reading_s() {
         let b = match (time.to, time.to_by, to) {
             (None, None, "-") => true,
             (Some(end), Some(by), to) if to != "-" => {
-                within(local(end.get(), 5.5) - printed(to), by)
+                close(local(end.get(), 5.5) - printed(to), by)
             }
             _ => false,
         };
-        if on != date(day) || !within(a, time.from_by) || !b {
+        if on != date(day) || !close(a, time.from_by) || !b {
             missed.push(format!(
                 "{rule} {fast} [{reading}] on {on:?}: {a:+.2} min ({:?}), to {:?} {:?}",
                 time.from_by,
@@ -191,5 +247,5 @@ fn every_printed_vrata_parana_at_delhi_is_the_reading_s() {
             ));
         }
     }
-    assert!(missed.is_empty(), "{}", missed.join("\n"));
+    missed
 }

@@ -1338,6 +1338,24 @@ public final class BindingTest {
                 same(java.util.Arrays.asList("SUNRISE", "TITHI_END", null),
                         java.util.Arrays.asList(within.fromBy(), atEnd.reading().kind(), atEnd.toJd()),
                         "then at the 14th's end");
+                // The Navaratri's close (§8.7): October 2025, the meal after
+                // the Devi's visarjana by the text, at the 10th's first
+                // daylight by the Nirnayasindhu.
+                java.util.List<FestivalObservance> october = sky.almanac().festivals(
+                        Civil.date(Calendar.GREGORIAN, 2025, 9, 26), Civil.date(Calendar.GREGORIAN, 2025, 10, 6),
+                        kathmandu, 20_700, pack).observances();
+                FestivalObservance navami = october.stream()
+                        .filter(o -> o.rule().equals("MAHA_NAVAMI")).findFirst().orElseThrow();
+                FestivalObservance visarjana = october.stream()
+                        .filter(o -> o.rule().equals("DEVI_VISARJAN")).findFirst().orElseThrow();
+                VrataReading afterRite = navami.parana().get(0).reading();
+                same(java.util.Arrays.asList("AFTER_RITE", "DEVI_VISARJAN", 0, "NEXT_TITHI"),
+                        java.util.Arrays.asList(afterRite.kind(), afterRite.rite(), afterRite.remnant(),
+                                navami.parana().get(1).reading().kind()),
+                        "after the visarjana, then on the 10th");
+                same(java.util.Arrays.asList(visarjana.day(), "RITE"),
+                        java.util.Arrays.asList(navami.parana().get(0).day(), navami.parana().get(0).fromBy()),
+                        "on the visarjana's day, after it");
                 // The parana's nakshatra bar (C700): Kathmandu, 7 July 2025,
                 // the meal held past Anuradha's first quarter, which ends at
                 // 05:36.
