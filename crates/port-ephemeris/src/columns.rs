@@ -414,6 +414,37 @@ impl PositionColumns {
         (0..self.len()).filter_map(|i| self.cell(i))
     }
 
+    /// The instants of `later` added after this grid's, as one answer to
+    /// the instants of both requests in order: how a request split into
+    /// parts is joined again. Grids of other bodies or another frame are
+    /// not joined, and the grid is left as it was.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Cell, Frame, PositionColumns};
+    ///
+    /// let mut first = PositionColumns::new(1, 2, Frame::CANONICAL);
+    /// let mut later = PositionColumns::new(2, 2, Frame::CANONICAL);
+    /// later.set_at(1, 1, Cell { lon: 7.0, ..Cell::EMPTY });
+    /// assert!(first.append(later));
+    /// assert_eq!(first.jd_count, 3);
+    /// assert_eq!(first.at(2, 1).map(|cell| cell.lon), Some(7.0));
+    /// ```
+    pub fn append(&mut self, later: PositionColumns) -> bool {
+        if later.body_count != self.body_count || later.frame != self.frame {
+            return false;
+        }
+        self.jd_count += later.jd_count;
+        self.lon.extend(later.lon);
+        self.lat.extend(later.lat);
+        self.dist.extend(later.dist);
+        self.lon_speed.extend(later.lon_speed);
+        self.lat_speed.extend(later.lat_speed);
+        self.dist_speed.extend(later.dist_speed);
+        self.status.extend(later.status);
+        self.source.extend(later.source);
+        true
+    }
+
     /// Whether every cell is [`CellStatus::Ok`].
     #[must_use]
     pub fn all_ok(&self) -> bool {

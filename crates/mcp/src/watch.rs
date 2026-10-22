@@ -27,6 +27,11 @@ use teistro_port_ephemeris::{
 /// million.
 const EVERY: Duration = Duration::from_millis(250);
 
+/// The instants of one engine request at most: a batched search asks for a
+/// whole range's in one, and a cancel is seen only between requests, so a
+/// batch is asked in parts this size (a few milliseconds each).
+const PART: usize = 512;
+
 /// How many requests cancelled before they ran are remembered; a
 /// cancellation of a request that never arrives is forgotten after this
 /// many others.
@@ -257,9 +262,29 @@ impl EphemerisProvider for Watched {
         self.inner.capabilities()
     }
 
+    /// A batch asked of the engine in parts of [`PART`] instants, each
+    /// counted and each refused once the call is cancelled, so a cancel
+    /// waits for one part rather than a whole range's batch.
     fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
-        self.shared.step(request.jds.len())?;
-        self.inner.positions(request)
+        let mut parts = request.jds.chunks(PART);
+        let Some(first) = parts.next() else {
+            return self.inner.positions(request);
+        };
+        let ask = |jds: &[f64]| {
+            self.shared.step(jds.len())?;
+            self.inner.positions(&PositionRequest { jds, ..*request })
+        };
+        let mut answer = ask(first)?;
+        for part in parts {
+            if !answer.append(ask(part)?) {
+                return Err(ProviderError::Refused {
+                    detail: String::from(
+                        "the engine answered the parts of one batch in two frames",
+                    ),
+                });
+            }
+        }
+        Ok(answer)
     }
 
     fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
