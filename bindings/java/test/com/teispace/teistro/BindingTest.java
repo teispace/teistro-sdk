@@ -1699,7 +1699,11 @@ public final class BindingTest {
                 check(ics.contains("X-WR-CALNAME:Dashain\r\n"), "its name");
                 FestivalAnswer answer = sky.almanac().festivals(first, last, kathmandu, 20_700, panchanga);
                 same(answer.observances().size() + answer.ekadashis().size() + answer.dated().size(),
-                        ics.split("BEGIN:VEVENT", -1).length - 1, "one event an occurrence");
+                        ics.split("DTSTART;VALUE=DATE:", -1).length - 1, "one whole-day event an occurrence");
+                long parana = answer.ekadashis().stream()
+                        .filter(fast -> fast.parana() != null && fast.parana().kept() != null).count();
+                check(parana > 0, "a fast keeps a parana");
+                same((int) parana, ics.split("\r\nDTSTART:", -1).length - 1, "one timed event a parana");
                 DatedObservance tula = answer.dated().get(0);
                 same("TULA_SANKRANTI", tula.rule(), "Kartik's sankranti");
                 same(java.util.List.of(10, 18), java.util.List.of(tula.day().month(), tula.day().day()), "on 18 October");

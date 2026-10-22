@@ -6,13 +6,13 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 422 of 498 | 84.7% | 144 of 144 | 100.0% |
-| `hi-Deva-IN` | base | 332 of 498 | 66.7% | 1 of 144 | 0.7% |
-| `ne-Deva-NP` | strict | 422 of 498 | 84.7% | 144 of 144 | 100.0% |
-| `sa-Deva` | base | 332 of 498 | 66.7% | 0 of 144 | 0.0% |
-| `sa-Latn` | base | 332 of 498 | 66.7% | 0 of 144 | 0.0% |
+| `en-Latn` | strict | 422 of 498 | 84.7% | 145 of 145 | 100.0% |
+| `hi-Deva-IN` | base | 332 of 498 | 66.7% | 1 of 145 | 0.7% |
+| `ne-Deva-NP` | strict | 422 of 498 | 84.7% | 145 of 145 | 100.0% |
+| `sa-Deva` | base | 332 of 498 | 66.7% | 0 of 145 | 0.0% |
+| `sa-Latn` | base | 332 of 498 | 66.7% | 0 of 145 | 0.0% |
 
-498 members of 38 kinds, 144 messages.
+498 members of 38 kinds, 145 messages.
 
 ## By kind
 

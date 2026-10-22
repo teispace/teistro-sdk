@@ -784,9 +784,14 @@ void _engineTests() {
       festivals: panchanga,
     );
     expect(
-      'BEGIN:VEVENT'.allMatches(ics).length,
+      'DTSTART;VALUE=DATE:'.allMatches(ics).length,
       answer.observances.length + answer.ekadashis.length + answer.dated.length,
     );
+    // And a timed event for each fast's parana.
+    final parana =
+        answer.ekadashis.where((fast) => fast.parana?.kept != null).length;
+    expect(parana, greaterThan(0));
+    expect('\r\nDTSTART:'.allMatches(ics).length, parana);
     // Kartik's sankranti on the first of the Bikram Sambat month.
     final tula = answer.dated.first;
     expect(

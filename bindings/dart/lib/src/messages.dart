@@ -1574,6 +1574,8 @@ final class MessagesSdkCalendar {
       _r.render('sdk.calendar.nepalSambatHalf', {'paksha': paksha});
   String nepalSambatMonth({required String kind, required int month}) =>
       _r.render('sdk.calendar.nepalSambatMonth', {'kind': kind, 'month': month});
+  String parana({required String fast}) =>
+      _r.render('sdk.calendar.parana', {'fast': fast});
   MessagesSdkCalendarTime get time => MessagesSdkCalendarTime(_r);
   String weekdayName({required int weekday}) =>
       _r.render('sdk.calendar.weekdayName', {'weekday': weekday});

@@ -18,6 +18,7 @@ designs that writer and the almanac call that feeds it.
 | calendar | `VERSION:2.0` and `PRODID` required; `CALSCALE:GREGORIAN`, `METHOD:PUBLISH` for a published feed | §3.7 |
 | event | `UID` and `DTSTAMP` required; `DTSTART` | §3.6.1 |
 | all-day | `DTSTART;VALUE=DATE:YYYYMMDD`, and `DTEND;VALUE=DATE` the next day, exclusive | §3.6.1, §3.8.2.2 |
+| timed | `DTSTART:YYYYMMDDTHHMMSSZ` and `DTEND` in UTC (form 2), the end exclusive | §3.3.5, §3.8.2.2 |
 | busy time | `TRANSP:TRANSPARENT`: an observance does not block the day | §3.8.2.7 |
 | name, refresh | `NAME` and `REFRESH-INTERVAL;VALUE=DURATION` | RFC 7986 §5.1, §5.7 |
 | the same, as clients read them | `X-WR-CALNAME`, `X-PUBLISHED-TTL` | Apple and Google read these; Outlook reads `X-PUBLISHED-TTL` |
@@ -33,7 +34,8 @@ A pure function from a feed to text. No clock and no I/O:
 pub struct Feed { pub product: String, pub name: String, pub refresh_minutes: Option<u32>,
                   pub stamp_unix_seconds: i64, pub events: Vec<Event> }
 pub struct Event { pub uid: String, pub summary: String, pub description: Option<String>,
-                   pub day: FixedDay }
+                   pub when: When }
+pub enum When { Day(FixedDay), Span { from_unix_seconds: i64, to_unix_seconds: i64 } }
 pub fn write(feed: &Feed) -> Result<String, Error>
 ```
 
@@ -48,10 +50,12 @@ pub fn write(feed: &Feed) -> Result<String, Error>
 - A day outside the years 1 to 9999 is refused as `OUT_OF_RANGE`: the
   format's year has four digits.
 - Events are written in the order given.
+- A span is written in UTC, so no `VTIMEZONE` is needed: a client shows
+  it in the viewer's zone. A span that does not end after it starts is
+  refused as `INVALID_ARG`.
 
-Every event is a whole day. The draft also designed a timed event for an
-Ekadashi fast's parana window; the SDK computes no parana yet (P1-7), so
-that waits for it.
+An event is a whole day, or a span for an Ekadashi fast's parana
+(§4).
 
 ## 3. The stable UID
 
@@ -75,6 +79,18 @@ provenance and its content hash taken over the text. `FeedOptions` holds
 - Each observance, each Ekadashi fast and each dated day (a sankranti,
   a national day) becomes an all-day event on its
   civil day, ordered by day, then rule key.
+- Each Ekadashi fast whose rule keeps a parana (`festival-rules.md`
+  §8.5) adds a timed event on the parana day: the window kept, its start
+  rounded **up** to the minute and its end **down**. A calendar app
+  shows minutes and drops the seconds, so a window from 06:12:40 would
+  read 06:12, before the meal may be taken. Rounded inward, every shown
+  minute lies inside the computed window. A window under a minute, or a
+  fast with no window kept, writes no event, and a rule without
+  `parana` writes none. Its `SUMMARY` is `sdk.calendar.parana` over the
+  fast's name ("Parana: Smarta Ekadashi", "स्मार्त एकादशीको पारणा"),
+  and its `UID` hashes `<rule>|PARANA` with the parana day and the
+  place. Timed events sort among a day's events by their start, after
+  the day's whole-day events.
 - `SUMMARY` is the festival's name in the context's locale
   (`sdk.entity` `festival`), falling back to the rule's key when the
   locale names it not. `check-intl` refuses a shipped pack's key that a
@@ -108,6 +124,18 @@ as `almanac.festivalCalendar`.
   2026-04-13), in `en-Latn` and `ne-Deva-NP`, parsed by Python's
   `icalendar` 6.1.0: 211 events each, every UID distinct, every event a
   day long, and the parser's own output read back to the same events.
-- Every binding reads the same bytes, through its own test.
+  Read again on 2026-10-22, with the pack grown and the parana added:
+  511 events each, 75 of them timed (one for each of the three
+  observers' 25 fasts). Every timed event is zoned, ends after it starts
+  and falls on whole minutes, and in `ne-Deva-NP` it is named "स्मार्त
+  एकादशीको पारणा".
+- A fast's parana (`a_fast_s_parana_is_a_timed_event_inside_its_window`):
+  over Dashain and Tihar 2025, one timed event for each fast that keeps
+  a window, on its parana day, each end on a whole minute, inside the
+  computed window and less than a minute from it. A rule without a
+  parana writes no timed event, and in `ne-Deva-NP` the summary is the
+  locale's.
+- Every binding reads the same bytes, through its own test, and counts
+  one whole-day event per occurrence and one timed event per parana.
 - Importing into Apple Calendar, Google Calendar and Outlook is a manual
   check, recorded once. Not done here.

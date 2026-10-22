@@ -4823,9 +4823,13 @@ test('an almanac writes its festivals as an iCalendar feed', () => {
     assert.ok(ics.includes('X-WR-CALNAME:Dashain\r\n'));
     const answer = ctx.almanac.festivals(season);
     assert.equal(
-      ics.split('BEGIN:VEVENT').length - 1,
+      ics.split('DTSTART;VALUE=DATE:').length - 1,
       answer.observances.length + answer.ekadashis.length + answer.dated.length,
     );
+    // And a timed event for each fast's parana.
+    const parana = answer.ekadashis.filter((fast) => fast.parana?.kept).length;
+    assert.ok(parana > 0);
+    assert.equal(ics.split('\r\nDTSTART:').length - 1, parana);
     // Kartik's sankranti on the first of the Bikram Sambat month.
     const [tula] = answer.dated;
     assert.equal(tula.rule, 'TULA_SANKRANTI');

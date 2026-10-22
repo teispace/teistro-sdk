@@ -1129,6 +1129,22 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.calendar.parana`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Parana {
+            /// The `fast` parameter.
+            pub fast: String,
+        }
+
+        impl crate::TypedMessage for Parana {
+            const KEY: &'static str = "sdk.calendar.parana";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("fast", crate::Value::Str(self.fast.clone())),
+                ])
+            }
+        }
+
         /// The `time` group.
         pub mod time {
             /// The message `sdk.calendar.time.long`.

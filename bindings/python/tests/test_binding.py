@@ -841,8 +841,12 @@ class AnEngine(WithLibrary):
             self.assertIn("X-WR-CALNAME:Dashain\r\n", ics)
             answer = sky.almanac.festivals(**season)
             self.assertEqual(
-                ics.count("BEGIN:VEVENT"), len(answer.observances) + len(answer.ekadashis) + len(answer.dated)
+                ics.count("DTSTART;VALUE=DATE:"), len(answer.observances) + len(answer.ekadashis) + len(answer.dated)
             )
+            # And a timed event for each fast's parana.
+            parana = sum(1 for fast in answer.ekadashis if fast.parana is not None and fast.parana.kept is not None)
+            self.assertGreater(parana, 0)
+            self.assertEqual(ics.count("\r\nDTSTART:"), parana)
             # Kartik's sankranti on the first of the Bikram Sambat month.
             tula = answer.dated[0]
             self.assertEqual((tula.rule, tula.day.month, tula.day.day), ("TULA_SANKRANTI", 10, 18))

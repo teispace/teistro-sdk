@@ -6833,6 +6833,13 @@ class MessagesSdkCalendar:
             {"kind": kind, "month": month},
         )
 
+    def parana(self, *, fast: str) -> str:
+        """`sdk.calendar.parana`"""
+        return self._r.render(
+            "sdk.calendar.parana",
+            {"fast": fast},
+        )
+
     @property
     def time(self) -> MessagesSdkCalendarTime:
         """The messages under `time`."""

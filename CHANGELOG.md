@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A parana in the iCalendar feed** (P2-2, `icalendar.md` §4).
+**Numbers:** no answer moves. A festival feed gains a timed event for
+each Ekadashi fast whose rule keeps a parana. The event is the window in
+UTC, its start rounded up to the minute and its end down, so a calendar
+app shows only minutes inside it. A feed asked for an Ekadashi rule
+therefore writes more events than before. `teistro_calendar::ical::Event`
+takes `when: When` (`Day` or `Span`) in place of `day`. A new message,
+`sdk.calendar.parana`, names the event in en-Latn and ne-Deva-NP.
+
 **When an Ekadashi fast is broken** (P1-7, `festival-rules.md` §8.5).
 **Numbers:** no day moves. Each Ekadashi fast under the shipped rules
 gains `parana`: the day after the fast, the tithi the meal is kept in,

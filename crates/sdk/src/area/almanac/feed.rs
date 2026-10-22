@@ -3,13 +3,14 @@
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use teistro_calendar::ical::{self, Event, Feed};
+use teistro_calendar::ical::{self, Event, Feed, When};
 use teistro_calendar::{CalendarDate, FixedDay};
 use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::{Envelope, Hash, canonical_json};
 use teistro_core::error::Error;
-use teistro_core::quantity::Place;
+use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
+use teistro_intl::messages::sdk::calendar::Parana;
 
 use super::AlmanacArea;
 use crate::area::system_of;
@@ -189,6 +190,13 @@ impl AlmanacArea<'_> {
     /// each Ekadashi fast, as an iCalendar feed: one whole-day event each,
     /// on its civil day, ordered by day and then rule.
     ///
+    /// A fast whose rule keeps a parana adds a timed event, the window
+    /// its meal is kept in, in UTC (`sdk.calendar.parana`, "Parana:
+    /// Smarta Ekadashi"). Its start is rounded up to the minute and its
+    /// end down, since a calendar app shows minutes, so the shown window
+    /// lies inside the computed one; a window under a minute writes no
+    /// event. A rule without `parana` writes none.
+    ///
     /// - `SUMMARY` is the festival's name in the context's locale, or its
     ///   rule's key when the locale and its fallbacks name it not.
     /// - `DESCRIPTION` gives the rule's source and the answer's
@@ -249,28 +257,57 @@ impl AlmanacArea<'_> {
             .map(|observance| (&observance.rule, &observance.day))
             .chain(value.ekadashis.iter().map(|fast| (&fast.rule, &fast.day)))
             .chain(value.dated.iter().map(|kept| (&kept.rule, &kept.day)));
-        let mut events: Vec<(FixedDay, &str, Event)> = Vec::new();
+        let describe = |rule: &str| match source_of(festivals, rule) {
+            Some(source) => format!("{source}\n{about}"),
+            None => about.clone(),
+        };
+        // Each event, keyed by its day, its start (a whole day's first)
+        // and its rule, the order the feed lists them in.
+        let mut events: Vec<(FixedDay, Option<i64>, &str, Event)> = Vec::new();
         for (rule, day) in occurrences {
             let fixed = system_of(day.calendar)?.fixed_of(day)?;
-            let description = match source_of(festivals, rule) {
-                Some(source) => format!("{source}\n{about}"),
-                None => about.clone(),
-            };
             let event = Event {
                 uid: uid(rule, fixed, place),
                 summary: self.festival_name(rule),
-                description: Some(description),
-                day: fixed,
+                description: Some(describe(rule)),
+                when: When::Day(fixed),
             };
-            events.push((fixed, rule, event));
+            events.push((fixed, None, rule, event));
         }
-        events.sort_by(|(a, x, _), (b, y, _)| a.cmp(b).then_with(|| x.cmp(y)));
+        for fast in &value.ekadashis {
+            let Some(parana) = &fast.parana else { continue };
+            let Some(kept) = parana.kept else { continue };
+            let from = minute_after(kept.span.from);
+            let to = minute_before(kept.span.to);
+            if to <= from {
+                continue;
+            }
+            let fixed = system_of(parana.day.calendar)?.fixed_of(&parana.day)?;
+            let summary = self
+                .context
+                .locale_engine()
+                .render_typed(&Parana {
+                    fast: self.festival_name(&fast.rule),
+                })
+                .text;
+            let event = Event {
+                uid: uid(&format!("{}|PARANA", fast.rule), fixed, place),
+                summary,
+                description: Some(describe(&fast.rule)),
+                when: When::Span {
+                    from_unix_seconds: from,
+                    to_unix_seconds: to,
+                },
+            };
+            events.push((fixed, Some(from), &fast.rule, event));
+        }
+        events.sort_by(|(a, s, x, _), (b, t, y, _)| a.cmp(b).then(s.cmp(t)).then_with(|| x.cmp(y)));
         let feed = Feed {
             product: options.product.clone(),
             name: options.name.clone(),
             refresh_minutes: options.refresh_minutes,
             stamp_unix_seconds: options.stamp_unix_seconds,
-            events: events.into_iter().map(|(_, _, event)| event).collect(),
+            events: events.into_iter().map(|(_, _, _, event)| event).collect(),
         };
         Ok(Envelope::sealing(ical::write(&feed)?, provenance))
     }
@@ -317,6 +354,42 @@ fn source_of<'a>(festivals: &'a FestivalRequest, rule: &str) -> Option<&'a str> 
         .chain(dated)
         .find(|(key, _)| key.as_str() == rule)
         .map(|(_, source)| source.as_str())
+}
+
+/// Seconds since the Unix epoch at the first whole minute at or after
+/// `at`.
+fn minute_after(at: JulianDay<Utc>) -> i64 {
+    seconds_of(unix_minutes(at).ceil())
+}
+
+/// Seconds since the Unix epoch at the last whole minute at or before
+/// `at`.
+fn minute_before(at: JulianDay<Utc>) -> i64 {
+    seconds_of(unix_minutes(at).floor())
+}
+
+/// A whole number of minutes as seconds.
+fn seconds_of(minutes: f64) -> i64 {
+    #[allow(
+        clippy::cast_possible_truncation,
+        reason = "a whole number of minutes in the years 1 to 9999 is far inside the range"
+    )]
+    let minutes = minutes as i64;
+    minutes * 60
+}
+
+/// Minutes since the Unix epoch, a millisecond's rounding below a whole
+/// minute counted as on it: a Julian day near 2.46e6 carries about 40
+/// microseconds, so a window computed on the minute is not moved a
+/// minute by its last bit.
+fn unix_minutes(at: JulianDay<Utc>) -> f64 {
+    let minutes = (at.get() - JulianDay::<Utc>::UNIX_EPOCH.get()) * 1_440.0;
+    let nearest = minutes.round();
+    if (minutes - nearest).abs() < 1.0 / 60_000.0 {
+        nearest
+    } else {
+        minutes
+    }
 }
 
 /// An occurrence's `UID`: the rule, the day and the place, hashed.

@@ -3163,6 +3163,16 @@ public final class Messages {
             }
 
             /**
+             * `sdk.calendar.parana`
+             *
+             * @param fast `fast`
+             * @return the text
+             */
+            public String parana(String fast) {
+                return r.render("sdk.calendar.parana", Map.ofEntries(Map.entry("fast", fast)));
+            }
+
+            /**
              * The messages under `time`.
              *
              * @return the group

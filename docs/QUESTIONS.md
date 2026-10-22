@@ -481,10 +481,14 @@ first three muhurtas of the morning, say many; the afternoon, say some".
   null`) on the days when the hari vasara outlasts the morning.
 - **C. The first third of the daylight** (`DAY_MUHURTA {1, 5}`): the
   Gaudiya calendar's reading. No rank-1 text in hand states it.
+- **D. Aparahna alone:** the *Nirnayasindhu*'s own ruling (p. 25,
+  "अपराह्ण एव कार्यम्"). It refuses the morning even with a long 12th,
+  because otherwise the day's rites are obstructed.
 
 **Recommendation:** A. It is the only option that answers every day, it
-follows the text's two readings in the text's order, and a published
-reference prints it. B and C stay one request field away.
+follows *Dharmasindhu*'s two readings in its order, and a published
+reference prints it. D is the strongest rank-1 rival. B, C and D are
+each one request field away.
 
 ## Decisions log
 

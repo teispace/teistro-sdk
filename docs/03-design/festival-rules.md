@@ -579,13 +579,20 @@ vv. 245–250; DS "स्वल्पद्वादशीसत्त्वे 
 सर्वा अपकृष्य कार्याः"), and in extremity the fast is broken with water,
 which counts as neither eating nor not (HBV vv. 251–256; DS).
 
-**The window.** Only DS names one: with the 12th lasting past midday,
+**The window.** DS and the *Nirnayasindhu* name one. DS: with the 12th lasting past midday,
 "the meal within the first three muhurtas of the morning, not at midday,
 say many; in the afternoon only, say some, since otherwise many rites'
 times are obstructed" (प्रातर्मुहूर्तत्रयमध्ये एव पारणं न मध्याह्ने इति
 बहवः । बहूनां कर्मकालानां बाधापत्तेरपराह्ण एवेति केचित्). Three muhurtas of
 fifteen are the daylight's first fifth, pratah. The many's reading has
 no answer when the hari vasara outlasts pratah; the some's answers it.
+The *Nirnayasindhu* (Kamalakara; Narayan Ram Acharya's fourth edition,
+p. 25) records the same two and takes the second as its own. "Some"
+keep the morning even with a long 12th ("सर्वेषामुपवासानां प्रातरेव
+हि पारणम्"). Its teachers rule the meal "in the aparahna only"
+(अपराह्ण एव कार्यम्), since otherwise many rites' times are obstructed
+without cause and the texts move the meal earlier only for a short
+12th. The word *pratah* there, they say, may mean the aparahna too.
 
 **The rule.** A `ParanaRule` on an `EkadashiRule` carries:
 
@@ -612,7 +619,10 @@ calendar's third of the daylight gives `DayMuhurta {1, 5}`, which no
 rank-1 text in hand states. The default is the maintainer's to confirm
 (brief §4, QUESTIONS.md Q41).
 
-**Not built.** The short-12th rites before sunrise are the rites', not
+**Not built.** The *Nirnayasindhu* (pp. 79–80) cites a *Bhavishya*
+verse barring the meal on the bright 12ths of Ashadha, Bhadrapada and
+Kartika while Anuradha, Shravana or Revati holds, and then calls that
+verse and its gloss "baseless" (निर्मूलमेव). So it is not built. The short-12th rites before sunrise are the rites', not
 the meal's: the window still opens at sunrise. The Gaudiya
 mahadvadashis (HBV vv. 265 ff., unmilani, vyanjuli and the rest) are
 not computed. Other vratas' parana (Janmashtami at the tithi's and the

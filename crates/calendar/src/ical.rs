@@ -11,14 +11,15 @@
 //! - TEXT escapes `\`, `;` and `,`, and writes a newline as `\n`
 //!   (§3.3.11).
 //! - An event is a whole day, `DTSTART;VALUE=DATE` and the next day as
-//!   `DTEND`, which is exclusive (§3.6.1). A lunar date does not recur in
-//!   Gregorian terms, so there is no `RRULE`: each occurrence is its own
-//!   event.
+//!   `DTEND`, which is exclusive (§3.6.1), or a span of time in UTC,
+//!   `DTSTART` and `DTEND` as `YYYYMMDDTHHMMSSZ` (§3.3.5's form 2). A
+//!   lunar date does not recur in Gregorian terms, so there is no
+//!   `RRULE`: each occurrence is its own event.
 //! - `DTSTAMP` is the feed's own stamp, which the caller gives.
 //!
 //! ```
 //! use teistro_calendar::{CalendarSystem, Gregorian};
-//! use teistro_calendar::ical::{write, Event, Feed};
+//! use teistro_calendar::ical::{write, Event, Feed, When};
 //!
 //! let feed = Feed {
 //!     product: "-//Example//Almanac//EN".to_owned(),
@@ -29,7 +30,7 @@
 //!         uid: "a1@example".to_owned(),
 //!         summary: "Vijaya Dashami".to_owned(),
 //!         description: None,
-//!         day: Gregorian.to_fixed_ymd(2026, 10, 21)?,
+//!         when: When::Day(Gregorian.to_fixed_ymd(2026, 10, 21)?),
 //!     }],
 //! };
 //! let text = write(&feed)?;
@@ -62,7 +63,7 @@ pub struct Feed {
     pub events: Vec<Event>,
 }
 
-/// One whole-day event.
+/// One event, a whole day or a span of time.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Event {
     /// `UID`: the same for the same occurrence, so a feed published again
@@ -72,8 +73,23 @@ pub struct Event {
     pub summary: String,
     /// `DESCRIPTION`, when there is one.
     pub description: Option<String>,
-    /// The day.
-    pub day: FixedDay,
+    /// When it is.
+    pub when: When,
+}
+
+/// When an event is.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum When {
+    /// A whole day, ending at the next day's start.
+    Day(FixedDay),
+    /// A span of time, each end in seconds since 1970-01-01T00:00:00Z and
+    /// written in UTC; the end is exclusive.
+    Span {
+        /// The start.
+        from_unix_seconds: i64,
+        /// The end, after the start.
+        to_unix_seconds: i64,
+    },
 }
 
 /// The longest a line may be, in octets, before its CRLF (§3.1).
@@ -86,8 +102,9 @@ const UNIX_EPOCH: FixedDay = FixedDay::new(719_163);
 ///
 /// # Errors
 ///
-/// `OUT_OF_RANGE` for a day or a stamp outside the years 1 to 9999, which
-/// the format's four-digit year cannot write.
+/// `OUT_OF_RANGE` for a day, a span's end or a stamp outside the years 1
+/// to 9999, which the format's four-digit year cannot write;
+/// `INVALID_ARG` for a span that does not end after it starts.
 pub fn write(feed: &Feed) -> Result<String, Error> {
     let stamp = date_time(feed.stamp_unix_seconds)?;
     let mut out = String::new();
@@ -110,14 +127,31 @@ pub fn write(feed: &Feed) -> Result<String, Error> {
         line(&mut out, "BEGIN:VEVENT");
         line(&mut out, &format!("UID:{}", text(&event.uid)));
         line(&mut out, &format!("DTSTAMP:{stamp}"));
-        line(
-            &mut out,
-            &format!("DTSTART;VALUE=DATE:{}", date(event.day)?),
-        );
-        line(
-            &mut out,
-            &format!("DTEND;VALUE=DATE:{}", date(event.day.plus_days(1))?),
-        );
+        match event.when {
+            When::Day(day) => {
+                line(&mut out, &format!("DTSTART;VALUE=DATE:{}", date(day)?));
+                line(
+                    &mut out,
+                    &format!("DTEND;VALUE=DATE:{}", date(day.plus_days(1))?),
+                );
+            }
+            When::Span {
+                from_unix_seconds,
+                to_unix_seconds,
+            } => {
+                if to_unix_seconds <= from_unix_seconds {
+                    return Err(Error::invalid_arg(format!(
+                        "the event {} ends at {to_unix_seconds}, not after its start at {from_unix_seconds}",
+                        event.uid
+                    )));
+                }
+                line(
+                    &mut out,
+                    &format!("DTSTART:{}", date_time(from_unix_seconds)?),
+                );
+                line(&mut out, &format!("DTEND:{}", date_time(to_unix_seconds)?));
+            }
+        }
         line(&mut out, &format!("SUMMARY:{}", text(&event.summary)));
         if let Some(description) = &event.description {
             line(&mut out, &format!("DESCRIPTION:{}", text(description)));
@@ -230,7 +264,7 @@ mod tests {
             uid: "u@teistro".to_owned(),
             summary: summary.to_owned(),
             description: None,
-            day: Gregorian.to_fixed_ymd(2026, 1, 1).unwrap(),
+            when: When::Day(Gregorian.to_fixed_ymd(2026, 1, 1).unwrap()),
         }
     }
 
@@ -291,9 +325,29 @@ mod tests {
     #[test]
     fn an_event_is_a_whole_day_and_its_end_is_the_next() {
         let mut last = event("New Year's Eve");
-        last.day = Gregorian.to_fixed_ymd(2026, 12, 31).unwrap();
+        last.when = When::Day(Gregorian.to_fixed_ymd(2026, 12, 31).unwrap());
         let text = write(&feed(vec![last])).unwrap();
         assert!(text.contains("DTSTART;VALUE=DATE:20261231\r\nDTEND;VALUE=DATE:20270101\r\n"));
+    }
+
+    #[test]
+    fn a_span_is_written_in_utc_and_one_that_does_not_end_after_it_starts_is_refused() {
+        let mut meal = event("Parana");
+        // 2026-01-01T01:02:03Z to 03:04:05Z.
+        let from = 1_767_229_323;
+        meal.when = When::Span {
+            from_unix_seconds: from,
+            to_unix_seconds: from + 7_322,
+        };
+        let text = write(&feed(vec![meal.clone()])).unwrap();
+        assert!(text.contains("DTSTART:20260101T010203Z\r\nDTEND:20260101T030405Z\r\n"));
+        assert!(!text.contains("VALUE=DATE"));
+        meal.when = When::Span {
+            from_unix_seconds: from,
+            to_unix_seconds: from,
+        };
+        let empty = write(&feed(vec![meal])).unwrap_err();
+        assert_eq!(empty.status, Status::InvalidArg);
     }
 
     #[test]
@@ -320,7 +374,7 @@ mod tests {
     fn a_year_the_format_cannot_write_is_refused() {
         let mut far = event("far");
         // Year 0 is astronomical 1 BCE: the calendar has it, the format not.
-        far.day = Gregorian.to_fixed_ymd(0, 6, 1).unwrap();
+        far.when = When::Day(Gregorian.to_fixed_ymd(0, 6, 1).unwrap());
         assert!(write(&feed(vec![far])).is_err());
     }
 }

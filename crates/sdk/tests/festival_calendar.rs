@@ -17,6 +17,7 @@ use teistro::{
     CalendarDate, Context, FeedOptions, FestivalCalendarRequest, FestivalPack, FestivalRequest,
     UtcOffset,
 };
+use teistro_calendar::CalendarSystem as _;
 use teistro_core::envelope::Hash;
 
 fn kathmandu() -> Place {
@@ -108,6 +109,97 @@ fn every_observance_and_fast_is_one_event_on_its_own_day() {
 }
 
 #[test]
+fn a_fast_s_parana_is_a_timed_event_inside_its_window() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let answer = sdk
+        .almanac()
+        .festivals(
+            &day(9, 20),
+            &day(11, 10),
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            &FestivalRequest::from(FestivalPack::NepalPanchanga),
+        )
+        .unwrap()
+        .value;
+    let kept: Vec<_> = answer
+        .ekadashis
+        .iter()
+        .filter_map(|fast| Some((fast, fast.parana.as_ref()?.kept?)))
+        .collect();
+    assert!(kept.len() >= 3, "{} fasts keep a parana", kept.len());
+    let unfolded = feed(&sdk, &FeedOptions::new(STAMP)).replace("\r\n ", "");
+    let timed: Vec<&str> = unfolded
+        .split("BEGIN:VEVENT")
+        .filter(|event| event.contains("\r\nDTSTART:"))
+        .collect();
+    assert_eq!(timed.len(), kept.len());
+    let unix = |jd: f64| (jd - 2_440_587.5) * 86_400.0;
+    for (fast, window) in kept {
+        let name = sdk
+            .intl()
+            .entity(&format!("festival.{}", fast.rule))
+            .unwrap();
+        let summary = format!("SUMMARY:Parana: {}\r\n", name.form("name").unwrap());
+        let parana = fast.parana.as_ref().unwrap();
+        let on = format!(
+            "{:04}{:02}{:02}T",
+            parana.day.year, parana.day.month, parana.day.day
+        );
+        let event = timed
+            .iter()
+            .find(|event| event.contains(&summary) && event.contains(&format!("DTSTART:{on}")))
+            .expect("each fast's parana an event on its day");
+        // The shown minutes lie inside the computed window, and each end
+        // is within the minute of it.
+        let [from, to] = ["DTSTART:", "DTEND:"].map(|property| {
+            let at = values(event, property)[0];
+            let (h, m, s) = (&at[9..11], &at[11..13], &at[13..15]);
+            assert_eq!(s, "00", "{at}: an end on the minute");
+            let date = teistro_calendar::Gregorian
+                .to_fixed_ymd(
+                    at[..4].parse().unwrap(),
+                    at[4..6].parse().unwrap(),
+                    at[6..8].parse().unwrap(),
+                )
+                .unwrap();
+            f64::from(i32::try_from(date.get() - 719_163).unwrap()) * 86_400.0
+                + h.parse::<f64>().unwrap() * 3_600.0
+                + m.parse::<f64>().unwrap() * 60.0
+        });
+        let (computed_from, computed_to) =
+            (unix(window.span.from.get()), unix(window.span.to.get()));
+        assert!(from >= computed_from - 1e-3 && from - computed_from < 60.0);
+        assert!(to <= computed_to + 1e-3 && computed_to - to < 60.0);
+    }
+    // A rule without a parana writes no timed event.
+    let request = FestivalRequest::from(FestivalPack::NepalPanchanga);
+    let without: Vec<_> = request
+        .ekadashis()
+        .iter()
+        .cloned()
+        .map(|mut rule| {
+            rule.parana = None;
+            rule
+        })
+        .collect();
+    let request = request.with_ekadashis(without);
+    let none = sdk
+        .almanac()
+        .festival_calendar(
+            &day(9, 20),
+            &day(11, 10),
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            &request,
+            &FeedOptions::new(STAMP),
+        )
+        .unwrap()
+        .value;
+    assert!(!none.contains("\r\nDTSTART:"));
+}
+
+#[test]
 fn every_line_is_crlf_and_at_most_75_octets() {
     let sdk = Context::builder().nepal_official([]).build().unwrap();
     sdk.intl().set_locale("ne-Deva-NP").unwrap();
@@ -121,6 +213,11 @@ fn every_line_is_crlf_and_at_most_75_octets() {
     let name = sdk.intl().entity("festival.VIJAYA_DASHAMI").unwrap();
     let unfolded = text.replace("\r\n ", "");
     assert!(unfolded.contains(&format!("SUMMARY:{}\r\n", name.form("name").unwrap())));
+    // And a parana's in its words.
+    assert!(
+        unfolded.contains("को पारणा\r\n"),
+        "a parana named in Nepali"
+    );
 }
 
 #[test]
