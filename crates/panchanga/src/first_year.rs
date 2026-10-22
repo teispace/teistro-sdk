@@ -16,7 +16,7 @@ use teistro_core::time::LocalClock;
 
 use crate::ashauch::{self, DayOneBy, NightRule};
 use crate::festival::{
-    Anniversary, AnniversaryKind, FestivalDay, FestivalRule, FirstYearAdhika, InAdhika,
+    Anniversary, AnniversaryKind, FestivalDay, FestivalRule, FirstYearAdhika, InAdhika, InSamsarpa,
     JanmaOptions, Observance, Origin, OriginFound, Window, anniversaries, by_share, observances,
 };
 use crate::limb::Member;
@@ -617,7 +617,7 @@ impl Reading<'_> {
             .into_iter()
             .nth(1)
             .ok_or_else(|| short("the traipakshika"))?;
-        let anniversary = anniversaries(&[(anniversary.clone(), origin.clone())], self.days)?
+        let anniversary = anniversaries(&[(anniversary.clone(), origin.clone())], self.days, &[])?
             .anniversaries
             .into_iter()
             .find(|kept| kept.count == Some(1))
@@ -676,6 +676,8 @@ pub fn first_year(
         kind: AnniversaryKind::Shraddha,
         window: asked.window,
         first_year_adhika: asked.first_year_adhika,
+        // The first abdika is one rite, which `first_year_adhika` places.
+        in_samsarpa: InSamsarpa::Nija,
         janma: JanmaOptions::default(),
     };
     let eleventh = index_of(days, &ashauch::day_after(days, first, 10)?.date)?;

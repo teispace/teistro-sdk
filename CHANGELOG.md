@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The samsarpa's second anniversary** (P1-8, `shraddha.md` §2.3, §3.1,
+C669). **Numbers:** an ordinary month's shraddha gains a day in the
+adhika month of its name before a kshaya month, which only a year with
+a kshaya month has (1963 is one, *Dharmasindhu*'s own example); every
+other answer is unchanged. `Anniversary.in_samsarpa` (`ALSO` by
+default, `NIJA` for the ordinary month alone) and `MonthClause::Samsarpa`
+are new; `Almanac::samsarpas` names the lunations past the range, so a
+range ending before the kshaya month still knows its samsarpa.
+`SAMSARPA_REACH_MONTHS` moves to `teistro_calendar::lunisolar`, the
+muhurta season re-exporting it.
+
 **The *Mitākṣarā*'s ashauch table** (P2-3, `ashauch.md` §2.10, C733).
 **Numbers:** none move; every *Dharmasindhu* answer is unchanged.
 `AshauchTable::mitakshara()` is Vijñāneśvara's table on *Yājñavalkya*

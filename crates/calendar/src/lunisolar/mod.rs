@@ -124,6 +124,15 @@ pub struct LunarMonthSpan {
     pub kind: MonthKind,
 }
 
+/// How many lunar months past an adhika month a kshaya month is looked
+/// for, so the adhika is known to be or not to be the *samsarpa* before
+/// one (*Dharmasindhu* p. 3): the muhurta season reads it, and so does an
+/// anniversary kept in the samsarpa too. The lunisolar pass measures the
+/// gap from a kshaya month back to the adhika before it over a millennium
+/// (at most five months) and fails if this does not cover it
+/// (`calendar-indian-lunisolar-measured.md` §5).
+pub const SAMSARPA_REACH_MONTHS: u8 = 6;
+
 /// A synodic month, days: the mean interval between new moons.
 pub const SYNODIC_DAYS: f64 = 29.530_588_9;
 

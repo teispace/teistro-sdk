@@ -7728,7 +7728,7 @@ class AnniversaryDay:
 
     kind: Literal["EKODDISHTA", "PARVANA", "JANMA_TITHI"]
     origin: AnniversaryOrigin
-    month_by: Literal["NIJA", "FIRST_YEAR_ADHIKA", "ADHIKA_ORIGIN", "KSHAYA_JOINED"]
+    month_by: Literal["NIJA", "FIRST_YEAR_ADHIKA", "ADHIKA_ORIGIN", "KSHAYA_JOINED", "SAMSARPA"]
     """The clause that chose the month (C666, C667, C669)."""
 
     observance: FestivalObservance

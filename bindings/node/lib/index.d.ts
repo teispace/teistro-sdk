@@ -6593,6 +6593,8 @@ export interface Anniversary {
   readonly window?: FestivalWindow;
   /** The first anniversary's month when it is doubled (C666): the adhika by the texts, the ordinary by Dhakal's note for Nepal. */
   readonly firstYearAdhika?: 'ADHIKA' | 'NIJA';
+  /** Whether a shraddha of an ordinary month is kept in the samsarpa of its name too, the adhika month before a kshaya month (C669): `ALSO` by default, `NIJA` for the ordinary month alone. */
+  readonly inSamsarpa?: 'ALSO' | 'NIJA';
   /** A janma tithi's *Dharmasindhu* options (C670), both off by default. */
   readonly janma?: { readonly nakshatraTie?: boolean; readonly twoMuhurtaFloor?: boolean };
 }
@@ -6618,7 +6620,7 @@ export interface AnniversaryDay {
     readonly candidates: readonly Tithi[];
   };
   /** The clause that chose the month (C666, C667, C669). */
-  readonly monthBy: 'NIJA' | 'FIRST_YEAR_ADHIKA' | 'ADHIKA_ORIGIN' | 'KSHAYA_JOINED';
+  readonly monthBy: 'NIJA' | 'FIRST_YEAR_ADHIKA' | 'ADHIKA_ORIGIN' | 'KSHAYA_JOINED' | 'SAMSARPA';
   readonly observance: FestivalObservance;
 }
 

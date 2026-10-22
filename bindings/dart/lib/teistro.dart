@@ -14754,7 +14754,7 @@ final class AnniversaryDay extends _Value {
   final AnniversaryOrigin origin;
 
   /// The clause that chose the month: `NIJA`, `FIRST_YEAR_ADHIKA`,
-  /// `ADHIKA_ORIGIN` or `KSHAYA_JOINED` (C666, C667, C669).
+  /// `ADHIKA_ORIGIN`, `KSHAYA_JOINED` or `SAMSARPA` (C666, C667, C669).
   final String monthBy;
 
   /// The day as the festival evaluator judged it.
