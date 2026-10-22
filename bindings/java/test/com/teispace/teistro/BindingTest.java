@@ -1322,6 +1322,22 @@ public final class BindingTest {
                         && f.parana().kept().span().fromJd() < f.parana().kept().span().toJd()
                         && f.parana().kept().at().window().equals("PART")),
                         "each Ekadashi fast says when it is broken");
+                // A vrata's parana (§8.7): Shivaratri 2026, inside the 14th
+                // within three yamas, then at its end.
+                FestivalObservance shivaratri = sky.almanac().festivals(
+                        Civil.date(Calendar.GREGORIAN, 2026, 2, 10), Civil.date(Calendar.GREGORIAN, 2026, 2, 20),
+                        kathmandu, 20_700, pack).observances().stream()
+                        .filter(o -> o.rule().equals("SHIVARATRI")).findFirst().orElseThrow();
+                same(2, shivaratri.parana().size(), "two readings");
+                VrataParanaTime within = shivaratri.parana().get(0);
+                VrataParanaTime atEnd = shivaratri.parana().get(1);
+                same(java.util.List.of("WITHIN", 3), java.util.List.of(within.reading().kind(), within.reading().yamas()),
+                        "inside the 14th within three yamas");
+                same(shivaratri.day().day() + 1, within.day().day(), "the day after");
+                check(within.toJd() != null && within.fromJd() < within.toJd(), "a window");
+                same(java.util.Arrays.asList("SUNRISE", "TITHI_END", null),
+                        java.util.Arrays.asList(within.fromBy(), atEnd.reading().kind(), atEnd.toJd()),
+                        "then at the 14th's end");
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
                 int varjyam = 0;
                 for (AlmanacDay day : week) {

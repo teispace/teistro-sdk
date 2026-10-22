@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**When a vrata's fast is broken** (P1-7, `festival-rules.md` §8.7).
+**Numbers:** no day moves. Janmashtami, Shivaratri and Rama Navami gain
+`parana`: each reading the rule lists (`TITHI_END`, with a joined
+nakshatra or a yamas cap, `WITHIN`, `SUNRISE`, `AFTER_WINDOW`) answered
+for the day after, with when the meal may begin and, for a window, when
+it must be taken by, and what set each edge. A festival answer over any
+of the three gains the field, so its content hash changes. A feed writes
+Shivaratri's parana as a timed event. `FestivalRule` gains `parana`, so a
+tradition can list its own readings. 13 of a published reference's Delhi
+rows, 2023 to 2028, agree. Every binding's `FestivalObservance` carries
+`parana`.
+
 **A parana in the iCalendar feed** (P2-2, `icalendar.md` §4).
 **Numbers:** no answer moves. A festival feed gains a timed event for
 each Ekadashi fast whose rule keeps a parana. The event is the window in

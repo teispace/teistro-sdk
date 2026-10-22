@@ -6725,6 +6725,8 @@ export interface FestivalRuleFields {
   readonly decide: readonly { readonly when: readonly FestivalPredicate[]; readonly choose: FestivalChoice }[];
   /** What decides when no guard holds. */
   readonly otherwise: FestivalChoice;
+  /** When the fast kept on the day is broken, each reading answered in order (§8.7); none when left out. */
+  readonly parana?: readonly VrataParana[];
 }
 
 /** Where the 10th pierces the 11th's day: four ghatis before sunrise (the Vaishnavas'), or at sunrise (the Smartas'). */
@@ -6862,6 +6864,37 @@ export interface FestivalObservance {
   readonly choice: FestivalChoice;
   /** How far the place can move: the seconds of time every instant the day was decided from (its sunrises and the windows the rule draws) may move, as another place moves them, before the day can change; 0 for two equal parts. */
   readonly marginSeconds: number;
+  /** When the fast kept on the day is broken, under each of the rule's readings in order (`03-design/festival-rules.md` §8.7); absent when the rule has none. */
+  readonly parana?: readonly VrataParanaTime[];
+}
+
+/**
+ * One reading of when a vrata's fast is broken (`03-design/festival-rules.md` §8.7).
+ */
+export type VrataParana =
+  /** After the tithi's end, and `nakshatra`'s when it joins the tithi within the fast day; with `yamas` (1 to 4), an end past them keeps the meal in the morning instead (*Dharmasindhu* pp. 7, 52). */
+  | { readonly kind: 'TITHI_END'; readonly nakshatra?: Nakshatra; readonly yamas?: number }
+  /** Inside the tithi, from sunrise to its end or to `yamas` (1 to 4) of the daylight, whichever is first (pp. 90–91). */
+  | { readonly kind: 'WITHIN'; readonly yamas: number }
+  /** From the parana day's sunrise, for one who cannot wait (p. 52). */
+  | { readonly kind: 'SUNRISE' }
+  /** From the end of `at` on the fast day, as after the nishitha muhurta; no shipped rule carries it. */
+  | { readonly kind: 'AFTER_WINDOW'; readonly at: FestivalWindow };
+
+/** What set an edge of a vrata's parana. */
+export type VrataEdge = 'SUNRISE' | 'TITHI_END' | 'NAKSHATRA_END' | 'YAMAS' | 'WINDOW_END';
+
+/** When a vrata's fast is broken under one reading. */
+export interface VrataParanaTime {
+  readonly reading: VrataParana;
+  /** The day after the observance. */
+  readonly day: CalendarDate;
+  /** When the meal may begin, a UTC Julian day. */
+  readonly from: number;
+  readonly fromBy: VrataEdge;
+  /** When it must be taken by, for a reading with a window. */
+  readonly to?: number;
+  readonly toBy?: VrataEdge;
 }
 
 /**

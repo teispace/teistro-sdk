@@ -195,7 +195,10 @@ impl AlmanacArea<'_> {
     /// Smarta Ekadashi"). Its start is rounded up to the minute and its
     /// end down, since a calendar app shows minutes, so the shown window
     /// lies inside the computed one; a window under a minute writes no
-    /// event. A rule without `parana` writes none.
+    /// event. A rule without `parana` writes none. A vrata's parana
+    /// (Shivaratri's) is written the same way from its rule's first
+    /// reading, when that reading ends the window; an open one writes
+    /// none.
     ///
     /// - `SUMMARY` is the festival's name in the context's locale, or its
     ///   rule's key when the locale and its fallbacks name it not.
@@ -274,32 +277,41 @@ impl AlmanacArea<'_> {
             };
             events.push((fixed, None, rule, event));
         }
-        for fast in &value.ekadashis {
-            let Some(parana) = &fast.parana else { continue };
-            let Some(kept) = parana.kept else { continue };
-            let from = minute_after(kept.span.from);
-            let to = minute_before(kept.span.to);
+        // An Ekadashi's kept window, and a vrata's first reading when it
+        // has an end: an open reading ("from the 8th's end") has no window
+        // to write.
+        let fasts = value.ekadashis.iter().filter_map(|fast| {
+            let parana = fast.parana.as_ref()?;
+            let kept = parana.kept?;
+            Some((&fast.rule, &parana.day, kept.span.from, kept.span.to))
+        });
+        let vratas = value.observances.iter().filter_map(|observance| {
+            let first = observance.parana.first()?;
+            Some((&observance.rule, &first.day, first.from, first.to?))
+        });
+        for (rule, day, from, to) in fasts.chain(vratas) {
+            let (from, to) = (minute_after(from), minute_before(to));
             if to <= from {
                 continue;
             }
-            let fixed = system_of(parana.day.calendar)?.fixed_of(&parana.day)?;
+            let fixed = system_of(day.calendar)?.fixed_of(day)?;
             let summary = self
                 .context
                 .locale_engine()
                 .render_typed(&Parana {
-                    fast: self.festival_name(&fast.rule),
+                    fast: self.festival_name(rule),
                 })
                 .text;
             let event = Event {
-                uid: uid(&format!("{}|PARANA", fast.rule), fixed, place),
+                uid: uid(&format!("{rule}|PARANA"), fixed, place),
                 summary,
-                description: Some(describe(&fast.rule)),
+                description: Some(describe(rule)),
                 when: When::Span {
                     from_unix_seconds: from,
                     to_unix_seconds: to,
                 },
             };
-            events.push((fixed, Some(from), &fast.rule, event));
+            events.push((fixed, Some(from), rule, event));
         }
         events.sort_by(|(a, s, x, _), (b, t, y, _)| a.cmp(b).then(s.cmp(t)).then_with(|| x.cmp(y)));
         let feed = Feed {

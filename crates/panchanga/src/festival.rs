@@ -34,6 +34,7 @@ mod dated;
 mod ekadashi;
 mod following;
 mod nepal_panchanga;
+mod vrata;
 
 pub use dated::{Dated, DatedObservance, DatedRule, dated};
 pub use ekadashi::{
@@ -41,6 +42,7 @@ pub use ekadashi::{
     ParanaKept, ParanaRule, Vedha, ekadashis,
 };
 pub use following::{FollowingRule, following};
+pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
 
 /// A fifth of the daylight (*Dharmasindhu*, p. 6).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -352,6 +354,10 @@ pub struct FestivalRule {
     pub decide: Vec<Guard>,
     /// What decides when no guard holds.
     pub otherwise: Choice,
+    /// When the fast kept on the day is broken, each reading answered in
+    /// order (§8.7); none when left out.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub parana: Vec<VrataParana>,
 }
 
 const fn amanta() -> Convention {
@@ -710,6 +716,9 @@ impl FestivalRule {
             .with_field("decide"));
         }
         check_window(&self.key, self.at, "at")?;
+        for (index, reading) in self.parana.iter().enumerate() {
+            reading.check(&self.key, index)?;
+        }
         for guard in &self.decide {
             for predicate in &guard.when {
                 match *predicate {
@@ -986,6 +995,10 @@ pub struct Observance {
     /// whose instants are each within this of these days'. 0 for a
     /// decision on two equal parts (C170), which any shift breaks.
     pub margin_seconds: f64,
+    /// When the fast is broken, under each of the rule's readings in
+    /// order (§8.7); left out when the rule has none.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub parana: Vec<VrataParanaTime>,
 }
 
 /// An occurrence a rule could not judge, and why.
@@ -1023,12 +1036,15 @@ impl Observances {
     /// of [`Observances`], then a dotted path through each item. What a
     /// boundary section writes in full; the crate's tests hold it to
     /// serde, both ways.
-    pub const MEMBERS: [(&'static str, &'static str, Kind); 18] = [
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 21] = [
         ("observances", "month", Kind::Masa),
         ("observances", "day.calendar", Kind::Calendar),
         ("observances", "day.era.era", Kind::Era),
         ("observances", "extents.day.calendar", Kind::Calendar),
         ("observances", "extents.day.era.era", Kind::Era),
+        ("observances", "parana.day.calendar", Kind::Calendar),
+        ("observances", "parana.day.era.era", Kind::Era),
+        ("observances", "parana.reading.nakshatra", Kind::Nakshatra),
         ("ekadashis", "tithi", Kind::Tithi),
         ("ekadashis", "month", Kind::Masa),
         ("ekadashis", "days.calendar", Kind::Calendar),
@@ -1340,9 +1356,27 @@ fn judge(
             .unwrap_or(Which::Earlier),
         Choice::None => return Ok(Ok(None)),
     };
-    let day = match which {
-        Which::Earlier => earlier.date.clone(),
-        Which::Later => later.date.clone(),
+    let kept = match which {
+        Which::Earlier => earlier,
+        Which::Later => later,
+    };
+    let day = kept.date.clone();
+    let parana = if rule.parana.is_empty() {
+        Vec::new()
+    } else {
+        let next = days
+            .iter()
+            .position(|held| std::ptr::eq(held, kept))
+            .and_then(|at| days.get(at + 1));
+        let Some(next) = next else {
+            return Ok(Err(
+                "the days do not hold the day after the observance, its parana".to_owned(),
+            ));
+        };
+        match vrata::paranas(&rule.parana, tithi, kept, next) {
+            Ok(parana) => parana,
+            Err(why) => return Ok(Err(why)),
+        }
     };
     let margin_seconds = if case == Case::EqualParts {
         0.0
@@ -1360,6 +1394,7 @@ fn judge(
         decided_by,
         choice,
         margin_seconds,
+        parana,
     })))
 }
 
@@ -1596,6 +1631,7 @@ impl FestivalRule {
                 Guard::new([case(Case::Both)], Choice::Earlier),
             ],
             otherwise: Choice::Later,
+            parana: Vec::new(),
         };
         vec![
             rule(
@@ -1667,6 +1703,7 @@ impl FestivalRule {
             at: Window::Sunset,
             decide: vec![Guard::new([case(Case::EarlierOnly)], Choice::Earlier)],
             otherwise: Choice::Later,
+            parana: Vec::new(),
         }
     }
 
@@ -1698,7 +1735,7 @@ impl FestivalRule {
         vec![
             FestivalRule {
                 key: "RAMA_NAVAMI".to_owned(),
-                source: "Dharmasindhu p. 33: madhyahna; the earlier day only if it alone holds it, since the 9th pierced by the 8th is forbidden".to_owned(),
+                source: "Dharmasindhu p. 33: madhyahna; the earlier day only if it alone holds it, since the 9th pierced by the 8th is forbidden; parana at the 9th's end (p. 34), which cannot run past p. 7's three yamas of the next day".to_owned(),
                 month: Some(Masa::Chaitra),
                 convention: Convention::Amanta,
                 occurs: Tithi::ShuklaNavami.into(),
@@ -1706,10 +1743,14 @@ impl FestivalRule {
                 at: MADHYAHNA,
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
                 otherwise: Later,
+                parana: vec![VrataParana::TithiEnd {
+                    nakshatra: None,
+                    yamas: None,
+                }],
             },
             FestivalRule {
                 key: "JANMASHTAMI".to_owned(),
-                source: "Dharmasindhu pp. 49-50: nishitha; Rohini joined there outranks the tithi alone; both or neither, the later".to_owned(),
+                source: "Dharmasindhu pp. 49-50: nishitha; Rohini joined there outranks the tithi alone; both or neither, the later; parana at the end of the 8th and of Rohini joined to it, by day when one ends by day, else at the first end, or for one who cannot wait at sunrise (p. 52)".to_owned(),
                 month: Some(Masa::Shravana),
                 convention: Convention::Amanta,
                 occurs: Tithi::KrishnaAshtami.into(),
@@ -1721,6 +1762,13 @@ impl FestivalRule {
                     Guard::new([case(Case::EarlierOnly)], Earlier),
                 ],
                 otherwise: Later,
+                parana: vec![
+                    VrataParana::TithiEnd {
+                        nakshatra: Some(Nakshatra::Rohini),
+                        yamas: None,
+                    },
+                    VrataParana::Sunrise,
+                ],
             },
             FestivalRule {
                 key: "VIJAYA_DASHAMI".to_owned(),
@@ -1756,6 +1804,7 @@ impl FestivalRule {
                     Guard::new([shravana(L)], Later),
                 ],
                 otherwise: Earlier,
+                parana: Vec::new(),
             },
             FestivalRule {
                 key: "LAKSHMI_PUJA".to_owned(),
@@ -1774,6 +1823,7 @@ impl FestivalRule {
                     Later,
                 )],
                 otherwise: Earlier,
+                parana: Vec::new(),
             },
         ]
     }
@@ -1793,6 +1843,7 @@ impl FestivalRule {
                 at: Window::Sunrise,
                 decide: vec![Guard::new([case(Case::Neither)], Earlier)],
                 otherwise: Later,
+                parana: Vec::new(),
             },
             FestivalRule {
                 key: "NAVARATRA_ARAMBHA".to_owned(),
@@ -1814,6 +1865,7 @@ impl FestivalRule {
                     ),
                 ],
                 otherwise: Earlier,
+                parana: Vec::new(),
             },
             FestivalRule {
                 key: "YAMA_DWITIYA".to_owned(),
@@ -1825,10 +1877,11 @@ impl FestivalRule {
                 at: APARAHNA,
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
                 otherwise: Later,
+                parana: Vec::new(),
             },
             FestivalRule {
                 key: "SHIVARATRI".to_owned(),
-                source: "Dharmasindhu p. 90: nishitha, the night's eighth muhurta; the earlier day when it alone holds it, or holds it whole where the later holds part; the later when the later alone holds it, when neither does, and when both do, with Madhava, the Nirnayasindhu and the Purusharthachintamani, where the Kaustubha takes the earlier (C195)".to_owned(),
+                source: "Dharmasindhu p. 90: nishitha, the night's eighth muhurta; the earlier day when it alone holds it, or holds it whole where the later holds part; the later when the later alone holds it, when neither does, and when both do, with Madhava, the Nirnayasindhu and the Purusharthachintamani, where the Kaustubha takes the earlier (C195); parana inside the 14th within three yamas, the Nirnayasindhu's, or at its end where too little of it is left (pp. 90-91)".to_owned(),
                 month: Some(Masa::Magha),
                 convention: Convention::Amanta,
                 occurs: Tithi::KrishnaChaturdashi.into(),
@@ -1842,6 +1895,13 @@ impl FestivalRule {
                     ),
                 ],
                 otherwise: Later,
+                parana: vec![
+                    VrataParana::Within { yamas: 3 },
+                    VrataParana::TithiEnd {
+                        nakshatra: None,
+                        yamas: None,
+                    },
+                ],
             },
         ]
     }
@@ -1867,6 +1927,7 @@ impl FestivalRule {
                 at: Window::Sunrise,
                 decide: vec![Guard::new([lasts(6)], Later)],
                 otherwise: Earlier,
+                parana: Vec::new(),
             },
             FestivalRule {
                 key: "BALI_PRATIPADA".to_owned(),
@@ -1878,6 +1939,7 @@ impl FestivalRule {
                 at: Window::Sunrise,
                 decide: vec![Guard::new([lasts(18)], Later)],
                 otherwise: Earlier,
+                parana: Vec::new(),
             },
             FestivalRule {
                 key: "HOLIKA".to_owned(),
@@ -1892,6 +1954,7 @@ impl FestivalRule {
                     Guard::new([case(Case::Neither)], Earlier),
                 ],
                 otherwise: Later,
+                parana: Vec::new(),
             },
         ]
     }
@@ -1923,6 +1986,7 @@ impl FestivalRule {
                 ),
             ],
             otherwise: Earlier,
+            parana: Vec::new(),
         };
         vec![
             rule(
@@ -1964,6 +2028,7 @@ impl FestivalRule {
                 Choice::Earlier,
             )],
             otherwise: Choice::Later,
+            parana: Vec::new(),
         }
     }
 }

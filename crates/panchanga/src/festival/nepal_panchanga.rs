@@ -1860,6 +1860,7 @@ impl FestivalRule {
                     at,
                     decide,
                     otherwise,
+                    parana: Vec::new(),
                 }
             })
             .collect()

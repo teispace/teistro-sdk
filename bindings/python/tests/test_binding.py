@@ -4235,6 +4235,23 @@ class AnEngine(WithLibrary):
                 self.assertIn(parana.kept.at.part, ("PRATAH", "APARAHNA"))
                 self.assertLess(parana.kept.span.from_jd, parana.kept.span.to_jd)
                 self.assertIn(parana.kept.from_by, ("WINDOW", "HARI_VASARA", "TITHI_START"))
+            # A vrata's parana (§8.7): Shivaratri 2026, inside the 14th
+            # within three yamas, then at its end.
+            night = ctx.almanac.festivals(
+                **{
+                    **days,
+                    "from_date": date(Calendar.GREGORIAN, 2026, 2, 10),
+                    "to_date": date(Calendar.GREGORIAN, 2026, 2, 20),
+                },
+                festivals={"rules": "DHARMASINDHU"},
+            )
+            shivaratri = next(o for o in night.observances if o.rule == "SHIVARATRI")
+            within, at_end = shivaratri.parana
+            self.assertEqual((within.reading.kind, within.reading.yamas), ("WITHIN", 3))
+            self.assertEqual(within.day.day, shivaratri.day.day + 1)
+            assert within.to_jd is not None
+            self.assertLess(within.from_jd, within.to_jd)
+            self.assertEqual((within.from_by, at_end.reading.kind, at_end.to_jd), ("SUNRISE", "TITHI_END", None))
 
             sunrise = {
                 "key": "LAKSHMI_PUJA",

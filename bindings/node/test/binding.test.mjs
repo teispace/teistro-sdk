@@ -4208,6 +4208,20 @@ test('an almanac carries the festivals it was asked for', () => {
     assert.ok(fast.parana.kept.span.from < fast.parana.kept.span.to);
     assert.equal(typeof fast.parana.day.day, 'number');
   }
+  // A vrata's parana (§8.7): Shivaratri 2026, inside the 14th within three
+  // yamas, then at its end.
+  const night = ctx.almanac.festivals({
+    ...days,
+    from: date(Calendar.Gregorian, 2026, 2, 10),
+    to: date(Calendar.Gregorian, 2026, 2, 20),
+    festivals: { rules: 'DHARMASINDHU' },
+  });
+  const shivaratri = night.observances.find((o) => o.rule === 'SHIVARATRI');
+  const [within, atEnd] = shivaratri.parana;
+  assert.deepEqual([within.reading.kind, within.reading.yamas], ['WITHIN', 3]);
+  assert.equal(within.day.day, shivaratri.day.day + 1);
+  assert.ok(within.from < within.to);
+  assert.deepEqual([within.fromBy, atEnd.reading.kind, atEnd.to], ['SUNRISE', 'TITHI_END', undefined]);
   assert.throws(() => ctx.almanac.festivals(days), /festivals: expected a festivals request/);
   assert.deepEqual(
     answer.observances.map((o) => o.rule),

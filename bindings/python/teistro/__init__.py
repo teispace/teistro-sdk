@@ -684,6 +684,9 @@ __all__ = [
     "Parana",
     "ParanaKept",
     "ParanaWindow",
+    "FestivalWindow",
+    "VrataReading",
+    "VrataParanaTime",
     "LunarYears",
     "Sankalpa",
     "SankalpaAnswer",
@@ -7316,6 +7319,60 @@ class FestivalObservance:
     day was decided from (its sunrises and the windows the rule draws) may
     move, as another place moves them, before the day can change; 0 for
     two equal parts."""
+
+    parana: Tuple["VrataParanaTime", ...] = ()
+    """When the fast kept on the day is broken, under each of the rule's
+    readings in order (`03-design/festival-rules.md` §8.7); empty when
+    the rule has none."""
+
+
+@dataclass(frozen=True)
+class FestivalWindow:
+    """A rite's window as a rule spells it: `SUNRISE`, `SUNSET`,
+    `PRADOSHA`, `NISHITHA`, `MOONRISE`, `PART` with its `part`,
+    `NIGHT_MUHURTA` with its `muhurta`, or `DAY_MUHURTA` with the
+    muhurtas `from_muhurta` to `to_muhurta`."""
+
+    window: str
+    part: Optional[str] = None
+    muhurta: Optional[int] = None
+    from_muhurta: Optional[int] = None
+    to_muhurta: Optional[int] = None
+
+
+@dataclass(frozen=True)
+class VrataReading:
+    """One reading of when a vrata's fast is broken (§8.7): `TITHI_END`
+    (after the tithi's end, and the `nakshatra`'s when it joins it; in
+    the morning past `yamas`), `WITHIN` (inside the tithi, within `yamas`
+    of the daylight), `SUNRISE`, or `AFTER_WINDOW` (after `at` on the
+    fast day)."""
+
+    kind: Literal["TITHI_END", "WITHIN", "SUNRISE", "AFTER_WINDOW"]
+    nakshatra: Optional[Nakshatra] = None
+    yamas: Optional[int] = None
+    at: Optional[FestivalWindow] = None
+
+
+@dataclass(frozen=True)
+class VrataParanaTime:
+    """When a vrata's fast is broken under one reading: from `from_jd`,
+    set by `from_by` (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END` or
+    `WINDOW_END`), to `to_jd` for a reading with a window, set by `to_by`
+    (`TITHI_END` or `YAMAS`)."""
+
+    reading: VrataReading
+    day: CalendarDate
+    """The day after the observance."""
+
+    from_jd: float
+    """When the meal may begin, a UTC Julian day."""
+
+    from_by: str
+    to_jd: Optional[float]
+    """When it must be taken by, for a reading with a window."""
+
+    to_by: Optional[str]
 
 
 @dataclass(frozen=True)
@@ -14267,6 +14324,34 @@ def _festival_observance(raw: Mapping[str, Any]) -> FestivalObservance:
         ),
         choice=raw["choice"],
         margin_seconds=float(raw["marginSeconds"]),
+        parana=tuple(_vrata_parana(time) for time in raw.get("parana", ())),
+    )
+
+def _festival_window(raw: Mapping[str, Any]) -> FestivalWindow:
+    """A rite's window as a rule writes it."""
+    return FestivalWindow(
+        window=raw["window"],
+        part=raw.get("part"),
+        muhurta=raw.get("muhurta"),
+        from_muhurta=raw.get("from"),
+        to_muhurta=raw.get("to"),
+    )
+
+def _vrata_parana(raw: Mapping[str, Any]) -> VrataParanaTime:
+    """A vrata's parana under one reading, as a festival answer writes it."""
+    reading = raw["reading"]
+    return VrataParanaTime(
+        reading=VrataReading(
+            kind=reading["kind"],
+            nakshatra=_member(Nakshatra, reading["nakshatra"]) if "nakshatra" in reading else None,
+            yamas=reading.get("yamas"),
+            at=_festival_window(reading["at"]) if "at" in reading else None,
+        ),
+        day=_serde_date(raw["day"]),
+        from_jd=raw["from"],
+        from_by=raw["fromBy"],
+        to_jd=raw.get("to"),
+        to_by=raw.get("toBy"),
     )
 
 def _ekadashi_fast(raw: Mapping[str, Any]) -> EkadashiFast:

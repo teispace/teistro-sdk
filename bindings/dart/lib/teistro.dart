@@ -14383,6 +14383,7 @@ final class FestivalObservance extends _Value {
     required this.decidedBy,
     required this.choice,
     required this.marginSeconds,
+    this.parana = const [],
   });
 
   /// The rule's key.
@@ -14417,6 +14418,11 @@ final class FestivalObservance extends _Value {
   /// two equal parts.
   final double marginSeconds;
 
+  /// When the fast kept on the day is broken, under each of the rule's
+  /// readings in order (`03-design/festival-rules.md` §8.7); empty when
+  /// the rule has none.
+  final List<VrataParanaTime> parana;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -14431,6 +14437,85 @@ final class FestivalObservance extends _Value {
     decidedBy,
     choice,
     marginSeconds,
+    ...parana,
+  ];
+}
+
+/// A rite's window as a rule spells it: `SUNRISE`, `SUNSET`, `PRADOSHA`,
+/// `NISHITHA`, `MOONRISE`, `PART` with its [part], `NIGHT_MUHURTA` with
+/// its [muhurta], or `DAY_MUHURTA` with the muhurtas [fromMuhurta] to
+/// [toMuhurta].
+final class FestivalWindow extends _Value {
+  const FestivalWindow({
+    required this.window,
+    this.part,
+    this.muhurta,
+    this.fromMuhurta,
+    this.toMuhurta,
+  });
+
+  final String window;
+  final String? part;
+  final int? muhurta;
+  final int? fromMuhurta;
+  final int? toMuhurta;
+
+  @override
+  List<Object?> get _fields => [window, part, muhurta, fromMuhurta, toMuhurta];
+}
+
+/// One reading of when a vrata's fast is broken (§8.7): `TITHI_END`
+/// (after the tithi's end, and the [nakshatra]'s when it joins it; in the
+/// morning past [yamas]), `WITHIN` (inside the tithi, within [yamas] of
+/// the daylight), `SUNRISE`, or `AFTER_WINDOW` (after [at] on the fast
+/// day).
+final class VrataReading extends _Value {
+  const VrataReading({required this.kind, this.nakshatra, this.yamas, this.at});
+
+  final String kind;
+  final Nakshatra? nakshatra;
+  final int? yamas;
+  final FestivalWindow? at;
+
+  @override
+  List<Object?> get _fields => [kind, nakshatra, yamas, at];
+}
+
+/// When a vrata's fast is broken under one reading: from [from], set by
+/// [fromBy] (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END` or `WINDOW_END`), to
+/// [to] for a reading with a window, set by [toBy] (`TITHI_END` or
+/// `YAMAS`).
+final class VrataParanaTime extends _Value {
+  const VrataParanaTime({
+    required this.reading,
+    required this.day,
+    required this.from,
+    required this.fromBy,
+    this.to,
+    this.toBy,
+  });
+
+  final VrataReading reading;
+
+  /// The day after the observance.
+  final CalendarDate day;
+
+  /// When the meal may begin, a UTC Julian day.
+  final double from;
+  final String fromBy;
+
+  /// When it must be taken by, for a reading with a window.
+  final double? to;
+  final String? toBy;
+
+  @override
+  List<Object?> get _fields => [
+    reading,
+    ..._dateFields(day),
+    from,
+    fromBy,
+    to,
+    toBy,
   ];
 }
 
@@ -15000,7 +15085,41 @@ FestivalObservance _festivalObservance(Map<String, Object?> raw) =>
       ),
       choice: raw['choice']! as String,
       marginSeconds: (raw['marginSeconds']! as num).toDouble(),
+      parana: List.unmodifiable([
+        for (final time in _festivalEach(raw['parana'] ?? const <Object?>[]))
+          _vrataParana(time),
+      ]),
     );
+
+/// A rite's window as a rule writes it.
+FestivalWindow _festivalWindow(Map<String, Object?> raw) => FestivalWindow(
+  window: raw['window']! as String,
+  part: raw['part'] as String?,
+  muhurta: raw['muhurta'] as int?,
+  fromMuhurta: raw['from'] as int?,
+  toMuhurta: raw['to'] as int?,
+);
+
+/// A vrata's parana under one reading, as a festival answer writes it.
+VrataParanaTime _vrataParana(Map<String, Object?> raw) {
+  final reading = _festivalAt(raw['reading']);
+  return VrataParanaTime(
+    reading: VrataReading(
+      kind: reading['kind']! as String,
+      nakshatra: _nakshatra(reading['nakshatra']),
+      yamas: reading['yamas'] as int?,
+      at: switch (reading['at']) {
+        null => null,
+        final at => _festivalWindow(_festivalAt(at)),
+      },
+    ),
+    day: _serdeDate(_festivalAt(raw['day'])),
+    from: (raw['from']! as num).toDouble(),
+    fromBy: raw['fromBy']! as String,
+    to: (raw['to'] as num?)?.toDouble(),
+    toBy: raw['toBy'] as String?,
+  );
+}
 
 /// An Ekadashi fast as a festival answer writes it.
 EkadashiFast _ekadashiFast(Map<String, Object?> raw) => EkadashiFast(

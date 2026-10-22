@@ -97,7 +97,8 @@ impl FollowingRule {
 /// observances `found` over the same `days`.
 ///
 /// Each carries the facts of the observance it counts from, its tithi,
-/// case and extents, with `decided_by` naming that rule and the count. An
+/// case and extents, with `decided_by` naming that rule and the count, but
+/// not its parana: the fast is the counted-from rule's, broken once. An
 /// observance whose counted day the days do not reach is unjudged.
 ///
 /// # Errors
@@ -126,6 +127,7 @@ pub fn following(
                         rule: observance.rule.clone(),
                         days: rule.days,
                     },
+                    parana: Vec::new(),
                     ..observance.clone()
                 }),
                 None => answer.unjudged.push(Unjudged {

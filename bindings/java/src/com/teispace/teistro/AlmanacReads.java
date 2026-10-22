@@ -185,7 +185,36 @@ final class AlmanacReads {
                 new FestivalDecided(Reads.string(decided, "by"), Reads.optionalInteger(decided, "index"),
                         Reads.optionalString(decided, "rule"), Reads.optionalInteger(decided, "days")),
                 Reads.string(o, "choice"),
-                Reads.number(o, "marginSeconds"));
+                Reads.number(o, "marginSeconds"),
+                o.get("parana") == null ? List.of() : Reads.each(o, "parana", AlmanacReads::vrataParana));
+    }
+
+    /** A vrata's parana under one reading, as a festival answer writes it. */
+    private static VrataParanaTime vrataParana(Object raw) {
+        Map<?, ?> p = Reads.object(raw);
+        Map<?, ?> reading = Reads.object(p, "reading");
+        return new VrataParanaTime(
+                new VrataReading(
+                        Reads.string(reading, "kind"),
+                        reading.get("nakshatra") == null ? null
+                                : member(reading, "nakshatra", "Nakshatra", Nakshatra::byKey),
+                        Reads.optionalInteger(reading, "yamas"),
+                        reading.get("at") == null ? null : festivalWindow(Reads.object(reading, "at"))),
+                Reads.serdeDate(Reads.field(p, "day")),
+                Reads.number(p, "from"),
+                Reads.string(p, "fromBy"),
+                Reads.optionalNumber(p, "to"),
+                Reads.optionalString(p, "toBy"));
+    }
+
+    /** A rite's window as a rule writes it. */
+    private static FestivalWindow festivalWindow(Map<?, ?> at) {
+        return new FestivalWindow(
+                Reads.string(at, "window"),
+                Reads.optionalString(at, "part"),
+                Reads.optionalInteger(at, "muhurta"),
+                Reads.optionalInteger(at, "from"),
+                Reads.optionalInteger(at, "to"));
     }
 
     private static EkadashiFast fast(Object raw) {

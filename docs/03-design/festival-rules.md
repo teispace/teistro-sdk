@@ -674,6 +674,105 @@ set by a tithi is held to between 0.5 and 2 minutes late. Neither
 moves a day, and the parana default is the maintainer's to confirm
 (QUESTIONS.md Q41).
 
+### 8.7 Other vratas' parana
+
+Derived from *Dharmasindhu* (1888 Nirnaya-sagara edition) pp. 7, 34,
+52 and 90–91, and the *Nirnayasindhu* (Narayan Ram Acharya's fourth
+edition) pp. 169–170. Read off the texts, then held to the published
+reference's Delhi rows (§8.8).
+
+**What the texts say.**
+
+- **The general rule** (DS p. 7, after Madhava): a fast kept on a
+  tithi is broken on the next day at that tithi's end. When the tithi
+  runs past three yamas, three quarters of the daylight, the meal is
+  taken in the morning, and "this holds everywhere"
+  (यामत्रयोर्ध्वगामिन्यां तिथौ प्रातः पारणमिति सर्वत्र ज्ञेयम्).
+  Rama Navami's parana (p. 34) is at the 9th's end (नवम्यन्ते पारणां कुर्यात्).
+- **Janmashtami** (DS p. 52; NS pp. 169–170): a fast on the tithi
+  alone ends at the tithi's end. A fast on a tithi joined with a
+  nakshatra ends at the end of both.
+  - When the end of one falls by day and the end of both at night, the
+    meal is by day at the one's end.
+  - When neither ends by day, it is before nishitha at the end of
+    either, and at nishitha when one ends just before it.
+  - DS refuses the view that the meal then waits for the third day.
+  - One who cannot wait breaks the fast at the end of either, or at the
+    festival's end in the morning, after the puja and the visarjana
+    (अशक्तस्तु एकतरान्तमात्रेऽपि उत्सवान्ते प्रातरेव …).
+- **Shivaratri** (DS pp. 90–91):
+  - Madhava: at the 14th's end when it ends within three yamas, and in
+    the morning inside the 14th when it runs past them.
+  - The *Nirnayasindhu*: always inside the 14th, never at its end.
+  - DS's own ruling keeps the meal inside the 14th, and at its end only
+    when too little of the 14th is left for the day's rites, or for one
+    with a new-moon shraddha.
+
+**The rule.** A `FestivalRule` gains `parana`, a list of readings.
+Each is answered in order, so a fast with two stated readings gives
+both, as the reference prints them. A reading is one of:
+
+- `TITHI_END { nakshatra?, yamas? }`: the end of the tithi, and of
+  `nakshatra` too when it joins the tithi within the fast day (sunrise
+  to sunrise). This is the Janmashtami rule, and for the tithi alone
+  the general one. On the parana day:
+  - when every end falls by day (before sunset, or already before
+    sunrise), the meal follows the last of them, never before sunrise;
+  - when some fall by day, it follows the last of those;
+  - when none does, it follows the first end.
+  - With `yamas`, when the end falls past that many yamas of the
+    daylight, the meal is instead from sunrise to their end (the
+    general rule's morning).
+- `WITHIN { yamas }`: inside the tithi, from sunrise to the tithi's end
+  or to `yamas` yamas of the daylight, whichever is first: the
+  *Nirnayasindhu*'s Shivaratri, capped by Madhava's three yamas. A
+  tithi already ended by sunrise leaves the meal open from sunrise.
+- `SUNRISE`: from the parana day's sunrise, DS's way for one who
+  cannot wait.
+- `AFTER_WINDOW { at }`: from the end of a window on the fast day,
+  as after nishitha. No rank-1 text in hand states it, so no shipped
+  rule carries it; a consumer may.
+
+Each answer says its reading, the parana day, the instant the meal may
+begin with what set it (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END`,
+`WINDOW_END`), and, for a window, its end with what set that (`TITHI_END`
+or `YAMAS`). `Observance.parana` lists them; it is left out when the
+rule has none.
+
+**The shipped readings** (`DHARMASINDHU`):
+
+- `JANMASHTAMI`: `TITHI_END { ROHINI }`, then `SUNRISE`.
+- `SHIVARATRI`: `WITHIN { 3 }`, then `TITHI_END` (DS's exception).
+- `RAMA_NAVAMI`: `TITHI_END`. The general rule's morning clause cannot
+  arise for it. A 9th that held the chosen day's madhyahna ends before
+  the next day's madhyahna, or within a few ghatis of its sunrise when
+  the later day was chosen, well inside three yamas. `yamas` is left out
+  rather than carried untested.
+
+The reference's "modern" Janmashtami parana, after nishitha, is an
+`AFTER_WINDOW` reading at the nishitha window, which no shipped rule
+carries.
+
+### 8.8 What is measured of the vratas' parana
+
+`crates/sdk/tests/vrata_parana.rs` holds 13 rows the reference (rank 3)
+prints for Delhi: Janmashtami 2023–2026 under both its readings (2026
+the main one only) and Shivaratri 2023–2028. A `TITHI_END` edge stands
+0.5 to 2 minutes after the reference's, as its tithi ends stand early
+(C698); every other edge, the nakshatra's end among them (Rohini on
+2024-08-27 is 0.1 minute off), is within a minute. 2027's Janmashtami
+is left out: the reference prints the Vaishnava day there (C175), not
+the smarta day the rule keeps. The test was proved red by dropping
+Rohini from the main reading and by counting one yama more.
+
+`crates/panchanga/tests/vrata.rs` holds the cases the rows do not reach:
+a nakshatra that does not join the tithi, a yamas cap on a rule of the
+consumer's own, an `AFTER_WINDOW` reading, and the refusals.
+
+**Not built.** Navaratri's parana, which DS (pp. 70–71) ties to the
+visarjana on a 10th joined with Shravana, and keeps on the 9th for the
+south; the readings above cannot state it.
+
 ## 9. Nepal
 
 Roadmap Phase 7, step 4: the observances Nepal's national panchanga

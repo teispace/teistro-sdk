@@ -5960,16 +5960,29 @@ function festivalsFrom(json) {
   if (!json) return null;
   const { value, provenance } = JSON.parse(json);
   return deepFreeze({
-    observances: value.observances.map((observance) => ({
-      ...observance,
-      day: dateFrom(observance.day),
-      extents: observance.extents.map((extent) => ({ ...extent, day: dateFrom(extent.day) })),
-    })),
+    observances: value.observances.map(observanceFrom),
     ekadashis: value.ekadashis.map(fastFrom),
     unjudged: value.unjudged,
     dated: (value.dated ?? []).map((kept) => ({ ...kept, day: dateFrom(kept.day), on: dateFrom(kept.on) })),
     provenance: decodeProvenance(provenance),
   });
+}
+
+/**
+ * An observance as a festival answer writes it, its dates, its extents'
+ * and its parana's in the shape every other date here has.
+ *
+ * @param {object} observance
+ * @returns {object}
+ */
+function observanceFrom(observance) {
+  const shaped = {
+    ...observance,
+    day: dateFrom(observance.day),
+    extents: observance.extents.map((extent) => ({ ...extent, day: dateFrom(extent.day) })),
+  };
+  if (observance.parana) shaped.parana = observance.parana.map((time) => ({ ...time, day: dateFrom(time.day) }));
+  return shaped;
 }
 
 /**
@@ -7321,14 +7334,7 @@ function dayDisagreementsFrom({ value, provenance }) {
  * @returns {object}
  */
 function festivalDisagreementsFrom({ value, provenance }) {
-  const observance = (one) =>
-    one === null
-      ? null
-      : {
-          ...one,
-          day: dateFrom(one.day),
-          extents: one.extents.map((extent) => ({ ...extent, day: dateFrom(extent.day) })),
-        };
+  const observance = (one) => (one === null ? null : observanceFrom(one));
   const fast = (one) => (one === null ? null : fastFrom(one));
   return {
     ...value,

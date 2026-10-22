@@ -2780,6 +2780,26 @@ void _engineTests() {
       expect(kept.at.window, 'PART');
       expect(kept.span.from < kept.span.to, isTrue);
     }
+    // A vrata's parana (§8.7): Shivaratri 2026, inside the 14th within
+    // three yamas, then at its end.
+    final night = ctx.almanac.festivals(
+      from: gregorian(2026, 2, 10),
+      to: gregorian(2026, 2, 20),
+      place: place,
+      utcOffsetSeconds: 20700,
+      festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu),
+    );
+    final shivaratri = night.observances.firstWhere(
+      (o) => o.rule == 'SHIVARATRI',
+    );
+    final [within, atEnd] = shivaratri.parana;
+    expect((within.reading.kind, within.reading.yamas), ('WITHIN', 3));
+    expect(within.day.day, shivaratri.day.day + 1);
+    expect(within.from < within.to!, isTrue);
+    expect(
+      (within.fromBy, atEnd.reading.kind, atEnd.to),
+      ('SUNRISE', 'TITHI_END', null),
+    );
     expect(
       [for (final observance in answer.observances) observance.rule],
       [

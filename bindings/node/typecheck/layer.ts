@@ -114,6 +114,9 @@ import type {
   ParanaEdge,
   ParanaKept,
   ParanaWindow,
+  VrataEdge,
+  VrataParana,
+  VrataParanaTime,
   DatedObservance,
   DatedRule,
   FestivalAnswer,
@@ -2208,6 +2211,16 @@ function theFestivals(almanac: Almanac): string {
   };
   // @ts-expect-error a parana is kept in the daylight, not at pradosha
   const atNight: ParanaWindow = { window: 'PRADOSHA' };
+  const vrata = answer.observances.flatMap((o) =>
+    (o.parana ?? []).map((time: VrataParanaTime) => {
+      const reading: VrataParana = time.reading;
+      const by: VrataEdge = time.fromBy;
+      return `${o.rule} ${reading.kind} ${time.day.day} ${time.from} ${by} ${time.to} ${time.toBy}`;
+    }),
+  );
+  const modern: VrataParana = { kind: 'AFTER_WINDOW', at: { window: 'NIGHT_MUHURTA', muhurta: 8 } };
+  // @ts-expect-error a WITHIN reading counts its yamas
+  const yamaless: VrataParana = { kind: 'WITHIN' };
   const rule: FestivalRule = {
     key: 'LAKSHMI_PUJA',
     source: 'Dharmasindhu p. 77',
@@ -2346,7 +2359,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), ...vrata, modern.kind, String(yamaless), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

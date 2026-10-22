@@ -24,7 +24,8 @@ use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     Case, Choice, Dated, DatedObservance, DatedRule, DayPart, Decided, Edge, EkadashiRule,
     FestivalDay, FestivalRule, FollowingRule, Guard, InAdhika, Moonrise, Observances, Occurs,
-    Predicate, SunEntry, Unjudged, Which, Window, dated, ekadashis, following, observances, yugma,
+    Predicate, SunEntry, Unjudged, VrataEdge, VrataParana, VrataParanaTime, Which, Window, dated,
+    ekadashis, following, observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -156,6 +157,7 @@ fn a_rule(tithi: Tithi, decide: Vec<Guard>, otherwise: Choice) -> FestivalRule {
         },
         decide,
         otherwise,
+        parana: Vec::new(),
     }
 }
 
@@ -1715,13 +1717,32 @@ fn string_paths(
     }
 }
 
+/// Adds a reading of each further shape to `parana`, so a window's end
+/// and a reading's own window are written, and names each day's era.
+fn every_reading(parana: &mut Vec<VrataParanaTime>, era: Option<EraNumber>) {
+    let mut within = parana[0].clone();
+    within.reading = VrataParana::Within { yamas: 3 };
+    within.to = Some(within.from);
+    within.to_by = Some(VrataEdge::Yamas);
+    let mut after = parana[0].clone();
+    after.reading = VrataParana::AfterWindow {
+        at: Window::Part {
+            part: DayPart::Pratah,
+        },
+    };
+    parana.extend([within, after]);
+    for time in parana {
+        time.day.era = era;
+    }
+}
+
 /// `Observances::MEMBERS` names every catalogue member an answer holds,
 /// and nothing else: each string in its JSON is either listed there or
 /// listed here as not a member, and each of both lists is present.
 #[test]
 fn an_answer_names_its_catalogue_members_where_its_table_says() {
     // Every string an answer holds that is not a catalogue member.
-    const NOT_MEMBERS: [&str; 23] = [
+    const NOT_MEMBERS: [&str; 29] = [
         "observances.rule",
         "observances.decidedBy.rule",
         "observances.day.resolution.kind",
@@ -1729,6 +1750,12 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
         "observances.case",
         "observances.decidedBy.by",
         "observances.choice",
+        "observances.parana.day.resolution.kind",
+        "observances.parana.reading.kind",
+        "observances.parana.reading.at.window",
+        "observances.parana.reading.at.part",
+        "observances.parana.fromBy",
+        "observances.parana.toBy",
         "ekadashis.rule",
         "ekadashis.days.resolution.kind",
         "ekadashis.day.resolution.kind",
@@ -1763,6 +1790,7 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
     for extent in &mut answer.observances[0].extents {
         extent.day.era = era;
     }
+    every_reading(&mut answer.observances[0].parana, era);
     // A following rule's observance, so `decidedBy` is written whole.
     let mut counted = answer.observances[0].clone();
     counted.decided_by = Decided::After {

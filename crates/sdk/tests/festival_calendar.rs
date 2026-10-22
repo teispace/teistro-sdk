@@ -281,3 +281,72 @@ fn a_request_without_a_stamp_or_festivals_is_refused_by_name() {
         );
     }
 }
+
+#[test]
+fn a_vrata_s_parana_is_timed_from_its_first_reading_when_that_ends() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let (from, to) = (
+        CalendarDate::defined(Calendar::Gregorian, 2026, 2, 1),
+        CalendarDate::defined(Calendar::Gregorian, 2026, 9, 30),
+    );
+    let request = FestivalRequest::from(FestivalPack::Dharmasindhu);
+    let answer = sdk
+        .almanac()
+        .festivals(
+            &from,
+            &to,
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            &request,
+        )
+        .unwrap()
+        .value;
+    let text = sdk
+        .almanac()
+        .festival_calendar(
+            &from,
+            &to,
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            &request,
+            &FeedOptions::new(STAMP),
+        )
+        .unwrap()
+        .value
+        .replace("\r\n ", "");
+    let timed: Vec<&str> = text
+        .split("BEGIN:VEVENT")
+        .filter(|event| event.contains("\r\nDTSTART:"))
+        .collect();
+    let summary = |rule: &str| {
+        let name = sdk.intl().entity(&format!("festival.{rule}")).unwrap();
+        format!("SUMMARY:Parana: {}\r\n", name.form("name").unwrap())
+    };
+    // Shivaratri's first reading keeps a window (WITHIN, three yamas).
+    let shivaratri = answer
+        .observances
+        .iter()
+        .find(|o| o.rule == "SHIVARATRI")
+        .unwrap();
+    let first = &shivaratri.parana[0];
+    assert!(first.to.is_some());
+    let on = format!(
+        "DTSTART:{:04}{:02}{:02}T",
+        first.day.year, first.day.month, first.day.day
+    );
+    let event = timed
+        .iter()
+        .find(|event| event.contains(&summary("SHIVARATRI")))
+        .expect("Shivaratri's parana a timed event");
+    assert!(event.contains(&on), "{event}");
+    assert!(event.contains("UID:"), "{event}");
+    // Janmashtami's and Rama Navami's first readings are open: no event.
+    for rule in ["JANMASHTAMI", "RAMA_NAVAMI"] {
+        let observance = answer.observances.iter().find(|o| o.rule == rule).unwrap();
+        assert!(observance.parana[0].to.is_none(), "{rule}");
+        assert!(
+            !timed.iter().any(|event| event.contains(&summary(rule))),
+            "{rule}"
+        );
+    }
+}

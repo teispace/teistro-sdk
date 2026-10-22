@@ -24,13 +24,17 @@ import java.util.List;
  *     every instant the day was decided from (its sunrises and the windows
  *     the rule draws) may move, as another place moves them, before the
  *     day can change; 0 for two equal parts
+ * @param parana when the fast kept on the day is broken, under each of the
+ *     rule's readings in order ({@code 03-design/festival-rules.md} §8.7);
+ *     empty when the rule has none
  */
 public record FestivalObservance(
         String rule, CalendarDate day, Interval tithi, Masa month, boolean adhika, String caseHeld,
         List<FestivalExtent> extents, FestivalDecided decidedBy, String choice,
-        double marginSeconds) {
-    /** Keeps the pair unmodifiable. */
+        double marginSeconds, List<VrataParanaTime> parana) {
+    /** Keeps the pair and the readings unmodifiable. */
     public FestivalObservance {
         extents = List.copyOf(extents);
+        parana = List.copyOf(parana);
     }
 }

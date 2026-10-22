@@ -54,8 +54,7 @@ pub fn write(feed: &Feed) -> Result<String, Error>
   it in the viewer's zone. A span that does not end after it starts is
   refused as `INVALID_ARG`.
 
-An event is a whole day, or a span for an Ekadashi fast's parana
-(§4).
+An event is a whole day, or a span for a fast's parana (§4).
 
 ## 3. The stable UID
 
@@ -91,6 +90,12 @@ provenance and its content hash taken over the text. `FeedOptions` holds
   and its `UID` hashes `<rule>|PARANA` with the parana day and the
   place. Timed events sort among a day's events by their start, after
   the day's whole-day events.
+- A vrata whose rule lists parana readings (`festival-rules.md` §8.7)
+  adds the same timed event from its **first** reading, when that
+  reading ends the window: Shivaratri's `WITHIN { 3 }`, sunrise to the
+  14th's end or three yamas. A first reading that only opens the meal
+  (Janmashtami's and Rama Navami's `TITHI_END`) has no end to write, and
+  the feed does not invent one.
 - `SUMMARY` is the festival's name in the context's locale
   (`sdk.entity` `festival`), falling back to the rule's key when the
   locale names it not. `check-intl` refuses a shipped pack's key that a
@@ -128,13 +133,21 @@ as `almanac.festivalCalendar`.
   511 events each, 75 of them timed (one for each of the three
   observers' 25 fasts). Every timed event is zoned, ends after it starts
   and falls on whole minutes, and in `ne-Deva-NP` it is named "स्मार्त
-  एकादशीको पारणा".
+  एकादशीको पारणा". Read again with the vratas' parana: 512 events, 76
+  timed, the new one Shivaratri's on 2026-02-16, 06:42 to 15:06 at
+  Kathmandu (sunrise to three yamas). Shila Charhe, counted from
+  Shivaratri's day, writes none: the fast is broken once.
 - A fast's parana (`a_fast_s_parana_is_a_timed_event_inside_its_window`):
   over Dashain and Tihar 2025, one timed event for each fast that keeps
   a window, on its parana day, each end on a whole minute, inside the
   computed window and less than a minute from it. A rule without a
   parana writes no timed event, and in `ne-Deva-NP` the summary is the
   locale's.
+- A vrata's parana
+  (`a_vrata_s_parana_is_timed_from_its_first_reading_when_that_ends`):
+  over February to September 2026, Shivaratri's is a timed event on its
+  parana day, and Janmashtami's and Rama Navami's open readings write
+  none. Proved red by dropping the vratas from the feed.
 - Every binding reads the same bytes, through its own test, and counts
   one whole-day event per occurrence and one timed event per parana.
 - Importing into Apple Calendar, Google Calendar and Outlook is a manual

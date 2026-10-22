@@ -495,6 +495,12 @@ which reading. The recommendation is to build it as a parameter, off
 by default, matching the reference and leaving *Dharmasindhu*'s
 readers one field away.
 
+**A third part: the other vratas (§8.7).** Janmashtami, Shivaratri and
+Rama Navami ship *Dharmasindhu*'s readings in its order (pp. 52, 90–91,
+34), each listed and answered, so no default picks one of them: a
+consumer shows the first or all. The question is only whether that order
+is the one to ship. 13 Delhi rows of the reference agree (§8.8).
+
 **Recommendation:** A. It is the only option that answers every day, it
 follows *Dharmasindhu*'s two readings in its order, and a published
 reference prints it. D is the strongest rank-1 rival. B, C and D are
