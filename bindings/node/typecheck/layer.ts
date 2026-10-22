@@ -111,6 +111,8 @@ import type {
   EkadashiRule,
   EkadashiVedha,
   Parana,
+  NakshatraBar,
+  ParanaBarred,
   ParanaEdge,
   ParanaKept,
   ParanaWindow,
@@ -2184,7 +2186,8 @@ function theFestivals(almanac: Almanac): string {
     const at: ParanaWindow | undefined = kept?.at;
     const edge: ParanaEdge | undefined = kept?.fromBy;
     const ends: number | null = p.hariVasaraEnds;
-    return `${p.day.day} ${p.tithi} ${ends} ${kept?.span.from} ${at?.window} ${edge}`;
+    const barred: ParanaBarred | undefined = p.barred;
+    return `${p.day.day} ${p.tithi} ${ends} ${kept?.span.from} ${at?.window} ${edge} ${barred?.bar.nakshatra} ${barred?.span.to} ${barred?.setAside}`;
   };
   const fasts = answer.ekadashis.map((fast) => {
     const [first, second] = fast.days;
@@ -2211,6 +2214,10 @@ function theFestivals(almanac: Almanac): string {
   };
   // @ts-expect-error a parana is kept in the daylight, not at pradosha
   const atNight: ParanaWindow = { window: 'PRADOSHA' };
+  const anuradha: NakshatraBar = { tithi: 'tithi.SHUKLA_EKADASHI', month: 'masa.ASHADHA', nakshatra: 'nakshatra.ANURADHA', portion: { parts: 4, which: 1 } };
+  const barredRule: EkadashiRule = { ...morningOnly, parana: { at: [{ window: 'PART', part: 'PRATAH' }], hariVasara: true, bars: [anuradha] } };
+  // @ts-expect-error a bar follows the fast of an 11th, not a 12th
+  const twelfthBar: NakshatraBar = { tithi: 'tithi.SHUKLA_DWADASHI', month: 'masa.ASHADHA', nakshatra: 'nakshatra.ANURADHA' };
   const vrata = answer.observances.flatMap((o) =>
     (o.parana ?? []).map((time: VrataParanaTime) => {
       const reading: VrataParana = time.reading;
@@ -2359,7 +2366,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), ...vrata, modern.kind, String(yamaless), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), String(atNight), ...vrata, modern.kind, String(yamaless), barredRule.key, String(twelfthBar), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

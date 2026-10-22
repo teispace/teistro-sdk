@@ -23,9 +23,9 @@ use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     Case, Choice, Dated, DatedObservance, DatedRule, DayPart, Decided, Edge, EkadashiRule,
-    FestivalDay, FestivalRule, FollowingRule, Guard, InAdhika, Moonrise, Observances, Occurs,
-    Predicate, SunEntry, Unjudged, VrataEdge, VrataParana, VrataParanaTime, Which, Window, dated,
-    ekadashis, following, observances, yugma,
+    FestivalDay, FestivalRule, FollowingRule, Guard, InAdhika, Moonrise, NakshatraBar, Observances,
+    Occurs, ParanaBarred, Predicate, SunEntry, Unjudged, VrataEdge, VrataParana, VrataParanaTime,
+    Which, Window, dated, ekadashis, following, observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -1717,6 +1717,17 @@ fn string_paths(
     }
 }
 
+/// Names a parana day's era and gives it a barred share, so a bar's
+/// members are written.
+fn barred(parana: &mut teistro_panchanga::festival::Parana, era: Option<EraNumber>) {
+    parana.day.era = era;
+    parana.barred = Some(ParanaBarred {
+        bar: NakshatraBar::dharmasindhu()[0],
+        span: Interval::literal(0.0, 1.0),
+        set_aside: false,
+    });
+}
+
 /// Adds a reading of each further shape to `parana`, so a window's end
 /// and a reading's own window are written, and names each day's era.
 fn every_reading(parana: &mut Vec<VrataParanaTime>, era: Option<EraNumber>) {
@@ -1819,7 +1830,7 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
     for day in &mut fast.days {
         day.era = era;
     }
-    fast.parana.as_mut().unwrap().day.era = era;
+    barred(fast.parana.as_mut().unwrap(), era);
     // A dated observance, its day named in both calendars.
     let day = fast.day.clone();
     answer.dated.push(DatedObservance {

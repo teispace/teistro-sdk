@@ -2800,6 +2800,65 @@ void _engineTests() {
       (within.fromBy, atEnd.reading.kind, atEnd.to),
       ('SUNRISE', 'TITHI_END', null),
     );
+    // The parana's nakshatra bar (C700): Kathmandu, 7 July 2025, the meal
+    // held past Anuradha's first quarter, which ends at 05:36.
+    final smarta = <String, Object?>{
+      'key': 'EKADASHI_SMARTA',
+      'source': '',
+      'vedha': 'SUNRISE',
+      'table': {
+        'pure': {
+          'eleventh': 'EARLIER',
+          'twelfth': 'EARLIER',
+          'both': 'LATER',
+          'neither': 'EARLIER',
+        },
+        'pierced': {
+          'eleventh': 'EARLIER',
+          'twelfth': 'LATER',
+          'both': 'LATER',
+          'neither': 'EARLIER',
+        },
+      },
+      'parana': {
+        'at': [
+          {'window': 'PART', 'part': 'PRATAH'},
+        ],
+        'hariVasara': true,
+        'bars': [
+          {
+            'tithi': 'SHUKLA_EKADASHI',
+            'month': 'ASHADHA',
+            'nakshatra': 'ANURADHA',
+            'portion': {'parts': 4, 'which': 1},
+          },
+        ],
+      },
+    };
+    final july = ctx.almanac.festivals(
+      from: gregorian(2025, 7, 1),
+      to: gregorian(2025, 7, 10),
+      place: place,
+      utcOffsetSeconds: 20700,
+      festivals: FestivalRequest(rules: [smarta]),
+    );
+    final shayani = july.ekadashis.first.parana!;
+    final barred = shayani.barred!;
+    expect(
+      barred.bar,
+      const NakshatraBar(
+        tithi: Tithi.shuklaEkadashi,
+        month: Masa.ashadha,
+        nakshatra: Nakshatra.anuradha,
+        parts: 4,
+        which: 1,
+      ),
+    );
+    expect(barred.setAside, isFalse);
+    expect(
+      (shayani.kept!.fromBy, shayani.kept!.span.from),
+      ('NAKSHATRA', barred.span.to),
+    );
     expect(
       [for (final observance in answer.observances) observance.rule],
       [

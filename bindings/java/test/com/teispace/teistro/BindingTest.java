@@ -1338,6 +1338,38 @@ public final class BindingTest {
                 same(java.util.Arrays.asList("SUNRISE", "TITHI_END", null),
                         java.util.Arrays.asList(within.fromBy(), atEnd.reading().kind(), atEnd.toJd()),
                         "then at the 14th's end");
+                // The parana's nakshatra bar (C700): Kathmandu, 7 July 2025,
+                // the meal held past Anuradha's first quarter, which ends at
+                // 05:36.
+                java.util.Map<String, Object> kinds = java.util.Map.of(
+                        "eleventh", "EARLIER", "twelfth", "EARLIER", "both", "LATER", "neither", "EARLIER");
+                java.util.Map<String, Object> pierced = java.util.Map.of(
+                        "eleventh", "EARLIER", "twelfth", "LATER", "both", "LATER", "neither", "EARLIER");
+                java.util.Map<String, Object> smarta = java.util.Map.of(
+                        "key", "EKADASHI_SMARTA",
+                        "source", "",
+                        "vedha", "SUNRISE",
+                        "table", java.util.Map.of("pure", kinds, "pierced", pierced),
+                        "parana", java.util.Map.of(
+                                "at", java.util.List.of(java.util.Map.of("window", "PART", "part", "PRATAH")),
+                                "hariVasara", true,
+                                "bars", java.util.List.of(java.util.Map.of(
+                                        "tithi", "SHUKLA_EKADASHI",
+                                        "month", "ASHADHA",
+                                        "nakshatra", "ANURADHA",
+                                        "portion", java.util.Map.of("parts", 4, "which", 1)))));
+                Parana shayani = sky.almanac().festivals(
+                        Civil.date(Calendar.GREGORIAN, 2025, 7, 1), Civil.date(Calendar.GREGORIAN, 2025, 7, 10),
+                        kathmandu, 20_700,
+                        new com.teispace.teistro.request.FestivalRequest(java.util.List.of(smarta)))
+                        .ekadashis().get(0).parana();
+                ParanaBarred barred = shayani.barred();
+                same(new NakshatraBar(Tithi.SHUKLA_EKADASHI, Masa.ASHADHA, Nakshatra.ANURADHA, 4, 1), barred.bar(),
+                        "Anuradha's first quarter");
+                check(!barred.setAside(), "the bar stands");
+                same(java.util.List.of("NAKSHATRA", barred.span().toJd()),
+                        java.util.List.of(shayani.kept().fromBy(), shayani.kept().span().fromJd()),
+                        "the meal opens where the share ends");
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
                 int varjyam = 0;
                 for (AlmanacDay day : week) {

@@ -681,7 +681,9 @@ __all__ = [
     "FestivalDecided",
     "FestivalUnjudged",
     "EkadashiFast",
+    "NakshatraBar",
     "Parana",
+    "ParanaBarred",
     "ParanaKept",
     "ParanaWindow",
     "FestivalWindow",
@@ -7240,7 +7242,7 @@ class FestivalRequest(TypedDict):
     (`03-design/festival-rules.md` §7): `rules`, a :data:`FestivalPack` the
     SDK ships, or a list whose items each name a pack or spell a rule out as
     a mapping in its record's spelling (an Ekadashi rule when it has a
-    `vedha`, with its `parana` `{at, hariVasara}` if it says when the fast
+    `vedha`, with its `parana` `{at, hariVasara, bars}` if it says when the fast
     is broken, a following rule when it has an `after`, which counts `days`
     civil days from that festival rule's day, a dated rule when it has a
     `civilDate` or a `civilWeekday`, kept on a date of a calendar, or a
@@ -7440,8 +7442,9 @@ class ParanaWindow:
 @dataclass(frozen=True)
 class ParanaKept:
     """The window a parana was kept in, and the clause that set each edge:
-    `WINDOW`, `HARI_VASARA` (the 12th's first quarter ends), `TITHI_START`
-    or `TITHI_END`."""
+    `WINDOW`, `HARI_VASARA` (the 12th's first quarter ends), `TITHI_START`,
+    `TITHI_END` or `NAKSHATRA` (an edge of a barred share of a nakshatra,
+    C700)."""
 
     span: Interval
     """When the meal may be taken."""
@@ -7449,8 +7452,34 @@ class ParanaKept:
     at: ParanaWindow
     """The rule's window it lies in."""
 
-    from_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END"]
-    to_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END"]
+    from_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END", "NAKSHATRA"]
+    to_by: Literal["WINDOW", "HARI_VASARA", "TITHI_START", "TITHI_END", "NAKSHATRA"]
+
+
+@dataclass(frozen=True)
+class NakshatraBar:
+    """A nakshatra a parana is not kept in (C700): after the fast of the
+    11th `tithi` in its nija amanta `month`, the `which`th of `parts`
+    equal shares of `nakshatra`'s arc (1 of 1 the whole). A rule's
+    `parana` names its bars as `bars`, each
+    `{tithi, month, nakshatra, portion: {parts, which}}`."""
+
+    tithi: Tithi
+    month: Masa
+    nakshatra: Nakshatra
+    parts: int
+    which: int
+
+
+@dataclass(frozen=True)
+class ParanaBarred:
+    """A rule's nakshatra bar met on the parana day, the Moon's stay in
+    the barred share, and whether it was set aside because it outlasts
+    the tithi the meal is kept in."""
+
+    bar: NakshatraBar
+    span: Interval
+    set_aside: bool
 
 
 @dataclass(frozen=True)
@@ -7472,6 +7501,9 @@ class Parana:
 
     kept: Optional[ParanaKept]
     """The window kept; None when none of the rule's leaves time."""
+
+    barred: Optional[ParanaBarred] = None
+    """The rule's nakshatra bar, when one met the parana day."""
 
 
 @dataclass(frozen=True)
@@ -14395,6 +14427,24 @@ def _parana(raw: Mapping[str, Any]) -> Parana:
             from_by=kept["fromBy"],
             to_by=kept["toBy"],
         ),
+        barred=_parana_barred(raw["barred"]) if raw.get("barred") is not None else None,
+    )
+
+
+def _parana_barred(raw: Mapping[str, Any]) -> ParanaBarred:
+    """A parana's barred share as a festival answer writes it."""
+    bar = raw["bar"]
+    portion = bar.get("portion") or {"parts": 1, "which": 1}
+    return ParanaBarred(
+        bar=NakshatraBar(
+            tithi=_member(Tithi, bar["tithi"]),
+            month=_member(Masa, bar["month"]),
+            nakshatra=_member(Nakshatra, bar["nakshatra"]),
+            parts=int(portion["parts"]),
+            which=int(portion["which"]),
+        ),
+        span=_interval(raw["span"]),
+        set_aside=bool(raw["setAside"]),
     )
 
 

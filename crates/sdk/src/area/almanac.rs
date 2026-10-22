@@ -18,8 +18,8 @@ use teistro_core::time::UtcOffset;
 use teistro_muhurta::Answer;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::festival::{
-    DatedRule, FestivalDay, FestivalRule, InAdhika, Observances, dated, ekadashis, following,
-    observances,
+    DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, Observances, dated, ekadashis,
+    following, observances,
 };
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
@@ -229,6 +229,40 @@ impl<'a> AlmanacArea<'a> {
         })
     }
 
+    /// Fills what a day's view holds only for a rule that reads it: a
+    /// moonrise is most of a day's requests, the Sun's nakshatra at each
+    /// midnight is read for a rule kept on its entry into one, and the
+    /// Moon's stay in a share of a nakshatra for a parana that bars it.
+    fn searched(
+        self,
+        calendar: Calendar,
+        offset: UtcOffset,
+        place: &Place,
+        request: &FestivalRequest,
+        viewed: &mut [FestivalDay],
+    ) -> Result<(), Error> {
+        if request.rules().iter().any(FestivalRule::reads_moonrise) {
+            self.with_almanac(calendar, offset, |almanac| almanac.moonrises(viewed, place))?;
+        }
+        if request.dated().iter().any(DatedRule::reads_sun_entry) {
+            self.with_almanac(calendar, offset, |almanac| {
+                almanac.sun_entries(viewed, place)
+            })?;
+        }
+        let mut arcs = Vec::new();
+        for arc in request.ekadashis().iter().flat_map(EkadashiRule::moon_arcs) {
+            if !arcs.contains(&arc) {
+                arcs.push(arc);
+            }
+        }
+        if !arcs.is_empty() {
+            self.with_almanac(calendar, offset, |almanac| {
+                almanac.moon_arcs(viewed, place, &arcs)
+            })?;
+        }
+        Ok(())
+    }
+
     /// The observances over the range's own `days`, stamped with their
     /// provenance. The widening is founded as runs of its own on each
     /// side, so the range's run is exactly the one [`AlmanacArea::of_each`]
@@ -300,20 +334,7 @@ impl<'a> AlmanacArea<'a> {
             mut provenance,
         } = days;
         let mut viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
-        // A moonrise is most of a day's requests, so it is searched only
-        // for a rule that reads one.
-        if request.rules().iter().any(FestivalRule::reads_moonrise) {
-            self.with_almanac(from.calendar, offset, |almanac| {
-                almanac.moonrises(&mut viewed, place)
-            })?;
-        }
-        // So is the Sun's nakshatra at each midnight, for a rule kept on
-        // its entry into one.
-        if request.dated().iter().any(DatedRule::reads_sun_entry) {
-            self.with_almanac(from.calendar, offset, |almanac| {
-                almanac.sun_entries(&mut viewed, place)
-            })?;
-        }
+        self.searched(from.calendar, offset, place, request, &mut viewed)?;
         let karmakala = observances(request.rules(), &viewed)?;
         let counted = following(request.following(), &karmakala.observances, &viewed)?;
         let mut found = karmakala

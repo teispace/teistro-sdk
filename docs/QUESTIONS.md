@@ -490,10 +490,11 @@ first three muhurtas of the morning, say many; the afternoon, say some".
 the meal on the bright 12ths of Ashadha, Bhadrapada and Kartika in
 Anuradha, Shravana and Revati, or only in a quarter of each where the
 yoga cannot be avoided. The published reference keeps neither. It is
-not built. The question is whether a default should keep it, and on
-which reading. The recommendation is to build it as a parameter, off
-by default, matching the reference and leaving *Dharmasindhu*'s
-readers one field away.
+built as a parameter, off by default (`ParanaRule.bars`,
+`NakshatraBar::dharmasindhu()` or `verse()`, §8.5). The question is
+whether a default should keep it, and on which reading. The
+recommendation is to leave it off, matching the reference, with
+*Dharmasindhu*'s readers one field away.
 
 **A third part: the other vratas (§8.7).** Janmashtami, Shivaratri and
 Rama Navami ship *Dharmasindhu*'s readings in its order (pp. 52, 90–91,

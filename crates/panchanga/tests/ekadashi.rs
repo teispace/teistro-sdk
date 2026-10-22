@@ -19,9 +19,10 @@ mod common;
 use common::{days_over, ghati};
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Masa, Tithi};
+use teistro_core::interval::Interval;
 use teistro_panchanga::festival::{
-    DayPart, EkadashiFast, EkadashiRule, Excess, Parana, ParanaEdge, ParanaRule, Vedha, Which,
-    Window, ekadashis,
+    DayPart, EkadashiFast, EkadashiRule, Excess, MoonArc, MoonArcs, NakshatraBar, Parana,
+    ParanaEdge, ParanaRule, Vedha, Which, Window, ekadashis,
 };
 
 use Which::{Earlier, Later};
@@ -363,7 +364,11 @@ fn the_meal_is_kept_in_the_morning_past_the_hari_vasara_else_the_afternoon() {
 fn the_12th_s_start_bars_the_meal_and_a_lost_morning_is_no_window() {
     let rule = |at: Vec<Window>, hari_vasara: bool| {
         let mut smarta = EkadashiRule::dharmasindhu().swap_remove(1);
-        smarta.parana = Some(ParanaRule { at, hari_vasara });
+        smarta.parana = Some(ParanaRule {
+            at,
+            hari_vasara,
+            bars: Vec::new(),
+        });
         vec![smarta]
     };
     let all_day = Window::DayMuhurta { from: 1, to: 15 };
@@ -397,6 +402,7 @@ fn a_parana_without_a_daylight_window_is_refused_by_its_field() {
         rule.parana = Some(ParanaRule {
             at,
             hari_vasara: true,
+            bars: Vec::new(),
         });
         rule.check().unwrap_err()
     };
@@ -408,5 +414,133 @@ fn a_parana_without_a_daylight_window_is_refused_by_its_field() {
     assert_eq!(
         refused(vec![Window::DayMuhurta { from: 4, to: 2 }]).field(),
         Some("parana.at[0].to")
+    );
+}
+
+/// The bright 11th of Ashadha with its 10th ending at day 1's ghati 40,
+/// the 11th at day 2's 30th and the 12th at day 3's 40th, so the Smarta's
+/// meal is day 3's morning (the 4th, ghatis 0 to 6); the parana barred by
+/// Anuradha's first quarter, whose stay is `barred` on day 3, in `kind`.
+fn barred_fast(barred: Option<(f64, f64)>, kind: MonthKind) -> Result<EkadashiFast, String> {
+    let tithis = [
+        (Tithi::ShuklaNavami, ghati(0, 50.0)),
+        (Tithi::ShuklaDashami, ghati(1, 40.0)),
+        (Tithi::ShuklaEkadashi, ghati(2, 30.0)),
+        (Tithi::ShuklaDwadashi, ghati(3, 40.0)),
+        (Tithi::ShuklaTrayodashi, ghati(5, 0.0)),
+        (Tithi::ShuklaChaturdashi, ghati(6, 0.0)),
+    ];
+    let mut days = days_over(6, &tithis, &[], Masa::Ashadha, kind);
+    let [bar, ..] = NakshatraBar::dharmasindhu();
+    let (from_deg, to_deg) = bar.arc_deg();
+    if let Some((from, to)) = barred {
+        for (k, day) in days.iter_mut().enumerate() {
+            day.moon_arcs = MoonArcs::Found(if k == 3 {
+                vec![MoonArc {
+                    from_deg,
+                    to_deg,
+                    span: Interval::literal(from, to),
+                }]
+            } else {
+                vec![]
+            });
+        }
+    }
+    let mut smarta = EkadashiRule::dharmasindhu().swap_remove(1);
+    smarta.parana.as_mut().unwrap().bars = NakshatraBar::dharmasindhu().to_vec();
+    let mut answer = ekadashis(&[smarta], &days).unwrap();
+    match answer.unjudged.pop() {
+        Some(unjudged) => Err(unjudged.why),
+        None => Ok(answer.ekadashis.remove(0)),
+    }
+}
+
+/// A barred share holding the meal's start opens it at its end; one
+/// later in the window closes it at its start (C700).
+#[test]
+fn a_barred_share_moves_the_meal_past_it_or_before_it() {
+    use ParanaEdge::{Nakshatra, Window as Edge};
+    let open = barred_fast(None, MonthKind::Nija);
+    assert!(open.unwrap_err().contains("Almanac::moon_arcs"));
+    let fast = barred_fast(Some((ghati(2, 50.0), ghati(3, 3.0))), MonthKind::Nija).unwrap();
+    let parana = fast.parana.as_ref().unwrap();
+    assert_eq!(
+        kept(parana),
+        (4, (3, 3.0), (3, 6.0), Nakshatra, Edge, PRATAH)
+    );
+    assert!(!parana.barred.unwrap().set_aside);
+    let fast = barred_fast(Some((ghati(3, 4.0), ghati(3, 10.0))), MonthKind::Nija).unwrap();
+    let parana = fast.parana.as_ref().unwrap();
+    assert_eq!(
+        kept(parana),
+        (4, (3, 0.0), (3, 4.0), Edge, Nakshatra, PRATAH)
+    );
+    // A stay that misses the daylight bars nothing and is not reported.
+    let fast = barred_fast(Some((ghati(3, 31.0), ghati(3, 50.0))), MonthKind::Nija).unwrap();
+    let parana = fast.parana.as_ref().unwrap();
+    assert_eq!(parana.barred, None);
+    assert_eq!(kept(parana), (4, (3, 0.0), (3, 6.0), Edge, Edge, PRATAH));
+}
+
+/// A share that leaves no window and outlasts the 12th is set aside, the
+/// meal kept as though it were not there (*Kaustubha*); in an adhika
+/// Ashadha the bar does not hold at all.
+#[test]
+fn a_share_outlasting_the_12th_is_set_aside_and_an_adhika_month_bars_nothing() {
+    use ParanaEdge::Window as Edge;
+    let whole_day = Some((ghati(2, 55.0), ghati(3, 45.0)));
+    let fast = barred_fast(whole_day, MonthKind::Nija).unwrap();
+    let parana = fast.parana.as_ref().unwrap();
+    assert!(parana.barred.unwrap().set_aside);
+    assert_eq!(kept(parana), (4, (3, 0.0), (3, 6.0), Edge, Edge, PRATAH));
+    let fast = barred_fast(whole_day, MonthKind::Adhika).unwrap();
+    let parana = fast.parana.as_ref().unwrap();
+    assert_eq!(parana.barred, None);
+    // A share ending before the 12th does stands, though it leaves no
+    // window: the rule's windows say where the meal may be.
+    let fast = barred_fast(Some((ghati(2, 55.0), ghati(3, 35.0))), MonthKind::Nija).unwrap();
+    let parana = fast.parana.as_ref().unwrap();
+    assert!(!parana.barred.unwrap().set_aside);
+    assert_eq!(parana.kept, None);
+}
+
+/// A bar's JSON names its share only when it is not the whole, and a bar
+/// that names a tithi other than an 11th, or a share that does not exist,
+/// is refused by its field.
+#[test]
+fn a_bar_reads_and_writes_its_share_and_refuses_one_that_does_not_exist() {
+    let [ashadha, ..] = NakshatraBar::dharmasindhu();
+    let json = serde_json::to_string(&ashadha).unwrap();
+    assert_eq!(
+        json,
+        r#"{"tithi":"SHUKLA_EKADASHI","month":"ASHADHA","nakshatra":"ANURADHA","portion":{"parts":4,"which":1}}"#
+    );
+    assert_eq!(
+        serde_json::from_str::<NakshatraBar>(&json).unwrap(),
+        ashadha
+    );
+    let [whole, ..] = NakshatraBar::verse();
+    let json = serde_json::to_string(&whole).unwrap();
+    assert!(!json.contains("portion"), "{json}");
+    let (from, to) = whole.arc_deg();
+    assert!((to - from - 360.0 / 27.0).abs() < 1e-12 && (from - 16.0 * 360.0 / 27.0).abs() < 1e-12);
+    let refused = |edit: fn(&mut NakshatraBar)| {
+        let mut bar = ashadha;
+        edit(&mut bar);
+        let mut rule = EkadashiRule::dharmasindhu().swap_remove(1);
+        rule.parana.as_mut().unwrap().bars = vec![ashadha, bar];
+        rule.check().unwrap_err().field().map(str::to_owned)
+    };
+    assert_eq!(
+        refused(|bar| bar.tithi = Tithi::ShuklaDwadashi).as_deref(),
+        Some("parana.bars[1].tithi")
+    );
+    assert_eq!(
+        refused(|bar| bar.portion.parts = 13).as_deref(),
+        Some("parana.bars[1].portion.parts")
+    );
+    assert_eq!(
+        refused(|bar| bar.portion.which = 5).as_deref(),
+        Some("parana.bars[1].portion.which")
     );
 }

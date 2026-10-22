@@ -11,5 +11,8 @@ package com.teispace.teistro;
  * @param hariVasaraEnds when the hari vasara ends, a UTC Julian day, if
  *     after that day's sunrise; null otherwise
  * @param kept the window kept; null when none of the rule's leaves time
+ * @param barred the rule's nakshatra bar, when one met the parana day;
+ *     null otherwise
  */
-public record Parana(CalendarDate day, Tithi tithi, Double hariVasaraEnds, ParanaKept kept) {}
+public record Parana(
+        CalendarDate day, Tithi tithi, Double hariVasaraEnds, ParanaKept kept, ParanaBarred barred) {}

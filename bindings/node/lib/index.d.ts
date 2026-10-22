@@ -6772,10 +6772,38 @@ export interface ParanaRule {
   readonly at: readonly ParanaWindow[];
   /** Whether the 12th's first quarter is passed over before eating. */
   readonly hariVasara: boolean;
+  /**
+   * The nakshatras the meal is not taken in (C700); none in the shipped rules, as the published
+   * reference keeps none.
+   */
+  readonly bars?: readonly NakshatraBar[];
+}
+
+/**
+ * A nakshatra a parana is not kept in (C700): after the fast of the 11th `tithi` in its nija
+ * amanta `month`, the `which`th of `parts` equal shares of `nakshatra`'s arc, the whole when
+ * `portion` is left out. *Dharmasindhu*'s (pp. 41–42, 56–57, 80–81): the first quarter of Anuradha, the
+ * middle third of Shravana and the last quarter of Revati, after the bright 11ths of Ashadha,
+ * Bhadrapada and Kartika.
+ */
+export interface NakshatraBar {
+  readonly tithi: 'tithi.SHUKLA_EKADASHI' | 'tithi.KRISHNA_EKADASHI';
+  readonly month: Masa;
+  readonly nakshatra: Nakshatra;
+  /** The share: the `which`th of `parts` (1 to 12) equal parts; the whole when left out. */
+  readonly portion?: { readonly parts: number; readonly which: number };
+}
+
+/** A rule's nakshatra bar met on the parana day, and the Moon's stay in its share. */
+export interface ParanaBarred {
+  readonly bar: NakshatraBar;
+  readonly span: Interval;
+  /** Whether the bar was set aside, as the share outlasts the tithi the meal is kept in. */
+  readonly setAside: boolean;
 }
 
 /** What set an edge of the window a parana was kept in. */
-export type ParanaEdge = 'WINDOW' | 'HARI_VASARA' | 'TITHI_START' | 'TITHI_END';
+export type ParanaEdge = 'WINDOW' | 'HARI_VASARA' | 'TITHI_START' | 'TITHI_END' | 'NAKSHATRA';
 
 /** The window a parana was kept in, and the clause that set each edge. */
 export interface ParanaKept {
@@ -6797,6 +6825,8 @@ export interface Parana {
   readonly hariVasaraEnds: number | null;
   /** The window kept; `null` when none of the rule's leaves time. */
   readonly kept: ParanaKept | null;
+  /** The rule's nakshatra bar, when one met the parana day. */
+  readonly barred?: ParanaBarred;
 }
 
 /** An Ekadashi's fast under one rule: the day, and the facts that gave it. */

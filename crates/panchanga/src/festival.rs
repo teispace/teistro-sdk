@@ -38,8 +38,8 @@ mod vrata;
 
 pub use dated::{Dated, DatedObservance, DatedRule, dated};
 pub use ekadashi::{
-    EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, Parana, ParanaEdge,
-    ParanaKept, ParanaRule, Vedha, ekadashis,
+    EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, NakshatraBar, Parana,
+    ParanaBarred, ParanaEdge, ParanaKept, ParanaRule, Portion, Vedha, ekadashis,
 };
 pub use following::{FollowingRule, following};
 pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
@@ -806,6 +806,41 @@ pub struct FestivalDay {
     /// midnight, read only for a rule kept on that entry
     /// ([`Dated::SunEnters`]).
     pub sun_entry: SunEntry,
+    /// The Moon's stays in the arcs a parana bar names, found only for a
+    /// rule that reads them ([`ParanaRule::bars`]).
+    pub moon_arcs: MoonArcs,
+}
+
+/// The Moon's stays in the sidereal arcs the rules read, over a day.
+#[derive(Clone, Debug, PartialEq)]
+pub enum MoonArcs {
+    /// Not searched: no rule read them. A rule reading them over such a
+    /// day is unjudged rather than read as a day the Moon stood in none.
+    Unsearched,
+    /// Each arc's stay that meets the day, sunrise to the next.
+    Found(Vec<MoonArc>),
+}
+
+/// The Moon's stay in one sidereal arc: from its crossing of `from_deg` to
+/// its crossing of `to_deg`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MoonArc {
+    /// Where the arc starts, in degrees of the sidereal zodiac.
+    pub from_deg: f64,
+    /// Where it ends.
+    pub to_deg: f64,
+    /// The Moon's stay in it.
+    pub span: Interval,
+}
+
+impl MoonArc {
+    /// Whether this is the stay in the arc `(from_deg, to_deg)`. Both
+    /// come from one rule's [`NakshatraBar::arc_deg`], so the same arc is
+    /// the same bits.
+    #[must_use]
+    pub fn is_of(&self, (from_deg, to_deg): (f64, f64)) -> bool {
+        self.from_deg.to_bits() == from_deg.to_bits() && self.to_deg.to_bits() == to_deg.to_bits()
+    }
 }
 
 /// Whether the sidereal Sun entered a nakshatra in a civil day, local
@@ -865,6 +900,7 @@ impl FestivalDay {
             nakshatra,
             moonrise: Moonrise::Unsearched,
             sun_entry: SunEntry::Unsearched,
+            moon_arcs: MoonArcs::Unsearched,
         }
     }
 
@@ -1036,7 +1072,7 @@ impl Observances {
     /// of [`Observances`], then a dotted path through each item. What a
     /// boundary section writes in full; the crate's tests hold it to
     /// serde, both ways.
-    pub const MEMBERS: [(&'static str, &'static str, Kind); 21] = [
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 24] = [
         ("observances", "month", Kind::Masa),
         ("observances", "day.calendar", Kind::Calendar),
         ("observances", "day.era.era", Kind::Era),
@@ -1054,6 +1090,9 @@ impl Observances {
         ("ekadashis", "parana.day.calendar", Kind::Calendar),
         ("ekadashis", "parana.day.era.era", Kind::Era),
         ("ekadashis", "parana.tithi", Kind::Tithi),
+        ("ekadashis", "parana.barred.bar.tithi", Kind::Tithi),
+        ("ekadashis", "parana.barred.bar.month", Kind::Masa),
+        ("ekadashis", "parana.barred.bar.nakshatra", Kind::Nakshatra),
         ("dated", "day.calendar", Kind::Calendar),
         ("dated", "day.era.era", Kind::Era),
         ("dated", "on.calendar", Kind::Calendar),

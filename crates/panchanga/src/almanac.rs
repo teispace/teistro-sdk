@@ -36,7 +36,7 @@ use teistro_time::local_day::{
     Carried, LocalDay, local_day, local_day_carrying, local_day_lit, local_midnight,
 };
 
-use crate::festival::{FestivalDay, Moonrise, SunEntry};
+use crate::festival::{FestivalDay, MoonArc, MoonArcs, Moonrise, SunEntry};
 use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
@@ -589,6 +589,77 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             } else {
                 SunEntry::Entered(closing)
             };
+        }
+        Ok(())
+    }
+
+    /// Fills each day's [`FestivalDay::moon_arcs`]: the Moon's stay in each
+    /// of `arcs`, sidereal degrees inside the nakshatra named beside them,
+    /// for the parana bars that read them (C700). Each stay is searched
+    /// at the arc's own bounds, in the sky and zodiac a day's nakshatras
+    /// are found in, and only on a day that nakshatra meets; a day keeps
+    /// the stays that meet it, sunrise to the next.
+    ///
+    /// # Errors
+    ///
+    /// A search the provider refuses.
+    pub fn moon_arcs(
+        &self,
+        days: &mut [FestivalDay],
+        place: &Place,
+        arcs: &[(Nakshatra, (f64, f64))],
+    ) -> Result<(), Error> {
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        let span_deg = 360.0 / 27.0;
+        // A stay is searched once though the days beside it meet it too.
+        let mut found: Vec<MoonArc> = Vec::new();
+        for day in days.iter_mut() {
+            let mut kept = Vec::new();
+            for &(nakshatra, (from_deg, to_deg)) in arcs {
+                for stay in day.nakshatra.iter().filter(|span| span.member == nakshatra) {
+                    // Inside the arc's stay: its middle, in proportion
+                    // through the nakshatra's own, misses by minutes, and
+                    // the shortest share a bar names lasts hours.
+                    let start_deg = f64::from(nakshatra.id()) * span_deg;
+                    let share = (from_deg + to_deg).mul_add(0.5, -start_deg) / span_deg;
+                    let whole = stay.whole;
+                    let inside =
+                        (whole.to.get() - whole.from.get()).mul_add(share, whole.from.get());
+                    let known = found.iter().find(|arc| {
+                        arc.is_of((from_deg, to_deg))
+                            && arc.span.from.get() <= inside
+                            && inside <= arc.span.to.get()
+                    });
+                    let arc = if let Some(&arc) = known {
+                        arc
+                    } else {
+                        let at = JulianDay::<Utc>::literal(inside);
+                        let (frame, zodiac) = self.at_instant(&completion, at)?;
+                        let mut longitudes = completion.longitudes(frame);
+                        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+                            longitudes = longitudes.with_observer(*place);
+                        }
+                        let span = limb::moon_between(&longitudes, at, zodiac, (from_deg, to_deg))?;
+                        let arc = MoonArc {
+                            from_deg,
+                            to_deg,
+                            span,
+                        };
+                        found.push(arc);
+                        arc
+                    };
+                    let meets = arc.span.to.get() > day.sunrise.get()
+                        && arc.span.from.get() < day.next_sunrise.get();
+                    if meets && !kept.contains(&arc) {
+                        kept.push(arc);
+                    }
+                }
+            }
+            day.moon_arcs = MoonArcs::Found(kept);
         }
         Ok(())
     }

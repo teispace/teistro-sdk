@@ -16,12 +16,14 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Masa, Tithi};
+use teistro_core::catalogue::{Masa, Nakshatra, Tithi};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 
-use super::{FestivalDay, Observances, Unjudged, Which, Window, check_window, occurrences};
+use super::{
+    FestivalDay, MoonArcs, Observances, Unjudged, Which, Window, check_window, occurrences,
+};
 
 /// Where the 10th pierces the 11th's day (p. 11).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -165,6 +167,17 @@ impl EkadashiRule {
             .map_or(Ok(()), |parana| parana.check(&self.key))
     }
 
+    /// The arcs of the Moon its parana's bars read, in sidereal degrees,
+    /// which the days must carry ([`FestivalDay::moon_arcs`]).
+    #[must_use]
+    pub fn moon_arcs(&self) -> Vec<(Nakshatra, (f64, f64))> {
+        self.parana
+            .iter()
+            .flat_map(|parana| &parana.bars)
+            .map(|bar| (bar.nakshatra, bar.arc_deg()))
+            .collect()
+    }
+
     /// *Dharmasindhu*'s three observers (§8.3), each citing its rows.
     #[must_use]
     pub fn dharmasindhu() -> Vec<EkadashiRule> {
@@ -250,6 +263,149 @@ pub struct ParanaRule {
     pub at: Vec<Window>,
     /// Whether the 12th's first quarter is passed over before eating.
     pub hari_vasara: bool,
+    /// The nakshatras the meal is not taken in after one 11th's fast
+    /// (C700): none in the default, as the published reference keeps
+    /// none; [`NakshatraBar::dharmasindhu`] for the *Dharmasindhu*'s.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub bars: Vec<NakshatraBar>,
+}
+
+/// A share of a nakshatra's arc: the `which`th of `parts` equal parts,
+/// `{1, 1}` the whole, `{4, 1}` its first quarter (pada).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+pub struct Portion {
+    /// The equal parts the arc is cut in, 1 to 12.
+    pub parts: u8,
+    /// Which of them, 1 to `parts`.
+    pub which: u8,
+}
+
+impl Portion {
+    /// The whole arc.
+    pub const WHOLE: Portion = Portion { parts: 1, which: 1 };
+}
+
+impl Default for Portion {
+    fn default() -> Portion {
+        Portion::WHOLE
+    }
+}
+
+/// A nakshatra the meal is not taken in, on the parana after the fast of
+/// one 11th in one month (C700).
+///
+/// ```
+/// use teistro_core::catalogue::{Masa, Nakshatra};
+/// use teistro_panchanga::festival::{NakshatraBar, Portion};
+///
+/// // Vishnu sleeps in Anuradha's first quarter (Dharmasindhu pp. 41–42).
+/// let [ashadha, ..] = NakshatraBar::dharmasindhu();
+/// assert_eq!((ashadha.month, ashadha.nakshatra), (Masa::Ashadha, Nakshatra::Anuradha));
+/// assert_eq!(ashadha.portion, Portion { parts: 4, which: 1 });
+/// let (from, to) = ashadha.arc_deg();
+/// assert!((from - 213.0 - 1.0 / 3.0).abs() < 1e-9 && (to - 216.0 - 2.0 / 3.0).abs() < 1e-9);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+pub struct NakshatraBar {
+    /// The 11th whose fast's parana it bars.
+    pub tithi: Tithi,
+    /// That 11th's amanta month. A bar holds in the nija month only: the
+    /// rites it guards are not kept in an adhika one (*Dharmasindhu* p. 41).
+    pub month: Masa,
+    /// The nakshatra.
+    pub nakshatra: Nakshatra,
+    /// The share of its arc that bars; the whole when left out.
+    #[serde(default, skip_serializing_if = "is_whole")]
+    pub portion: Portion,
+}
+
+#[expect(
+    clippy::trivially_copy_pass_by_ref,
+    reason = "serde's skip_serializing_if passes a reference"
+)]
+fn is_whole(portion: &Portion) -> bool {
+    *portion == Portion::WHOLE
+}
+
+impl NakshatraBar {
+    /// The *Dharmasindhu*'s reading (pp. 41–42, 56–57 and 80–81, after the
+    /// *Vishnudharma*): the bright 12ths of Ashadha, Bhadrapada and
+    /// Kartika bar the first quarter of Anuradha, where Vishnu sleeps, the
+    /// middle third of Shravana, where he turns, and the last quarter of
+    /// Revati, where he wakes.
+    #[must_use]
+    pub const fn dharmasindhu() -> [NakshatraBar; 3] {
+        [
+            NakshatraBar {
+                tithi: Tithi::ShuklaEkadashi,
+                month: Masa::Ashadha,
+                nakshatra: Nakshatra::Anuradha,
+                portion: Portion { parts: 4, which: 1 },
+            },
+            NakshatraBar {
+                tithi: Tithi::ShuklaEkadashi,
+                month: Masa::Bhadrapada,
+                nakshatra: Nakshatra::Shravana,
+                portion: Portion { parts: 3, which: 2 },
+            },
+            NakshatraBar {
+                tithi: Tithi::ShuklaEkadashi,
+                month: Masa::Kartika,
+                nakshatra: Nakshatra::Revati,
+                portion: Portion { parts: 4, which: 4 },
+            },
+        ]
+    }
+
+    /// The verse's own reading (*Dharmasindhu* p. 81, note: "आभाका
+    /// सितपक्षेषु मैत्रश्रवणरेवती"): the three nakshatras whole.
+    #[must_use]
+    pub const fn verse() -> [NakshatraBar; 3] {
+        let [mut ashadha, mut bhadrapada, mut kartika] = NakshatraBar::dharmasindhu();
+        ashadha.portion = Portion::WHOLE;
+        bhadrapada.portion = Portion::WHOLE;
+        kartika.portion = Portion::WHOLE;
+        [ashadha, bhadrapada, kartika]
+    }
+
+    /// The barred arc in sidereal degrees, from its start to its end.
+    #[must_use]
+    pub fn arc_deg(&self) -> (f64, f64) {
+        let span = 360.0 / 27.0;
+        let start = f64::from(self.nakshatra.id()) * span;
+        let part = span / f64::from(self.portion.parts);
+        let from = part.mul_add(f64::from(self.portion.which.saturating_sub(1)), start);
+        (from, from + part)
+    }
+
+    fn check(self, key: &str, index: usize) -> Result<(), Error> {
+        let at = format!("parana.bars[{index}]");
+        if !matches!(self.tithi, Tithi::ShuklaEkadashi | Tithi::KrishnaEkadashi) {
+            return Err(Error::invalid_arg(format!(
+                "{key}: a parana bar names the 11th whose fast it follows, not {:?}",
+                self.tithi
+            ))
+            .with_field(format!("{at}.tithi")));
+        }
+        let Portion { parts, which } = self.portion;
+        if !(1..=12).contains(&parts) {
+            return Err(Error::invalid_arg(format!(
+                "{key}: a nakshatra is cut in 1 to 12 parts, not {parts}"
+            ))
+            .with_field(format!("{at}.portion.parts")));
+        }
+        if !(1..=parts).contains(&which) {
+            return Err(Error::invalid_arg(format!(
+                "{key}: part {which} of {parts} does not exist; count them from 1"
+            ))
+            .with_field(format!("{at}.portion.which")));
+        }
+        Ok(())
+    }
 }
 
 impl ParanaRule {
@@ -266,6 +422,7 @@ impl ParanaRule {
                 Window::Part { part: Aparahna },
             ],
             hari_vasara: true,
+            bars: Vec::new(),
         }
     }
 
@@ -288,6 +445,9 @@ impl ParanaRule {
             }
             check_window(key, window, &at)?;
         }
+        for (index, bar) in self.bars.iter().enumerate() {
+            bar.check(key, index)?;
+        }
         Ok(())
     }
 }
@@ -306,6 +466,23 @@ pub enum ParanaEdge {
     TithiStart,
     /// The end of the tithi the meal is kept in.
     TithiEnd,
+    /// An edge of the barred share of a nakshatra (C700).
+    Nakshatra,
+}
+
+/// A barred share of a nakshatra met on the parana day (C700).
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct ParanaBarred {
+    /// The rule's bar.
+    pub bar: NakshatraBar,
+    /// The Moon's stay in the barred arc.
+    pub span: Interval,
+    /// Whether the bar was set aside, as the barred share outlasts the
+    /// tithi the meal is kept in, so that keeping it would leave no meal
+    /// inside the 12th (*Dharmasindhu* p. 42, after the *Kaustubha*).
+    pub set_aside: bool,
 }
 
 /// The window a parana was kept in.
@@ -336,6 +513,9 @@ pub struct Parana {
     /// When the hari vasara ends, if after that day's sunrise, whether or
     /// not the rule passes it over.
     pub hari_vasara_ends: Option<JulianDay<Utc>>,
+    /// The rule's nakshatra bar, when one met the parana day.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub barred: Option<ParanaBarred>,
     /// The window kept; null when none of the rule's leaves time, as the
     /// morning alone does when the hari vasara outlasts it.
     pub kept: Option<ParanaKept>,
@@ -473,7 +653,7 @@ impl Facts<'_> {
         let parana = rule
             .parana
             .as_ref()
-            .map(|parana| self.parana(parana, choice))
+            .map(|parana| self.parana(parana, choice, tithi))
             .transpose()?;
         Ok(EkadashiFast {
             rule: rule.key.clone(),
@@ -492,8 +672,8 @@ impl Facts<'_> {
         })
     }
 
-    /// The parana of a fast kept on `choice`'s day (§8.5).
-    fn parana(&self, rule: &ParanaRule, choice: Which) -> Result<Parana, String> {
+    /// The parana of a fast on `eleventh`, kept on `choice`'s day (§8.5).
+    fn parana(&self, rule: &ParanaRule, choice: Which, eleventh: Tithi) -> Result<Parana, String> {
         let day = match choice {
             Which::Earlier => self.days[1],
             Which::Later => self
@@ -523,39 +703,64 @@ impl Facts<'_> {
         if let Some(end) = hari_vasara_ends.filter(|_| rule.hari_vasara) {
             bars.push((end, ParanaEdge::HariVasara));
         }
-        for &at in &rule.at {
-            let span = day.window(at).map_err(|error| error.to_string())?;
-            let (from, from_by) = bars
-                .iter()
-                .copied()
-                .filter(|(bar, _)| bar.get() > span.from.get())
-                .max_by(|a, b| a.0.get().total_cmp(&b.0.get()))
-                .unwrap_or((span.from, ParanaEdge::Window));
-            let (to, to_by) = if held.to.get() < span.to.get() {
-                (held.to, ParanaEdge::TithiEnd)
-            } else {
-                (span.to, ParanaEdge::Window)
-            };
-            if from.get() < to.get() {
-                return Ok(Parana {
-                    day: day.date.clone(),
-                    tithi,
-                    hari_vasara_ends,
-                    kept: Some(ParanaKept {
-                        span: Interval::literal(from.get(), to.get()),
-                        at,
-                        from_by,
-                        to_by,
-                    }),
-                });
+        let mut barred = self.barred(rule, eleventh, day)?;
+        let mut kept = kept_in(rule, day, held, &bars, barred.map(|barred| barred.span))?;
+        // Kept, a bar whose share outlasts the tithi would leave no meal
+        // inside it: the bar is set aside and the meal kept as though
+        // there were none (*Dharmasindhu* p. 42, after the *Kaustubha*).
+        if kept.is_none() {
+            if let Some(barred) = barred
+                .as_mut()
+                .filter(|barred| barred.span.to.get() >= held.to.get())
+            {
+                barred.set_aside = true;
+                kept = kept_in(rule, day, held, &bars, None)?;
             }
         }
         Ok(Parana {
             day: day.date.clone(),
             tithi,
             hari_vasara_ends,
-            kept: None,
+            barred,
+            kept,
         })
+    }
+
+    /// The rule's bar for a fast on `eleventh` in this nija month, when the
+    /// Moon's stay in its arc meets `day`'s daylight.
+    fn barred(
+        &self,
+        rule: &ParanaRule,
+        eleventh: Tithi,
+        day: &FestivalDay,
+    ) -> Result<Option<ParanaBarred>, String> {
+        let month = self.days[0].month;
+        let Some(&bar) = rule.bars.iter().find(|bar| {
+            bar.tithi == eleventh && bar.month == month.amanta && month.kind == MonthKind::Nija
+        }) else {
+            return Ok(None);
+        };
+        let MoonArcs::Found(arcs) = &day.moon_arcs else {
+            return Err(format!(
+                "a parana bar reads the Moon's arcs on {}, which no search found; fill them first (`Almanac::moon_arcs`)",
+                day.date
+            ));
+        };
+        let (from_deg, to_deg) = bar.arc_deg();
+        let daylight = Interval::literal(day.sunrise.get(), day.sunset.get());
+        Ok(arcs
+            .iter()
+            .filter(|arc| arc.is_of((from_deg, to_deg)))
+            .find(|arc| {
+                arc.span
+                    .clipped_to(daylight)
+                    .is_some_and(|both| both.days() > 0.0)
+            })
+            .map(|arc| ParanaBarred {
+                bar,
+                span: arc.span,
+                set_aside: false,
+            }))
     }
 
     /// The least time, in days, between an edge of the three tithis and
@@ -584,6 +789,50 @@ impl Facts<'_> {
 const SECONDS_PER_DAY: f64 = 86_400.0;
 
 /// The 11th's two days and what stands on them (§8.2, C181).
+/// The first of the rule's windows on `day` that leaves time in `held`,
+/// the tithi the meal is kept in, past `bars` (the latest after a
+/// window's start sets it) and outside `barred`, a barred share of a
+/// nakshatra: the meal waits past that share when it holds the start, and
+/// is kept before it when it falls later in the window.
+fn kept_in(
+    rule: &ParanaRule,
+    day: &FestivalDay,
+    held: Interval,
+    bars: &[(JulianDay<Utc>, ParanaEdge)],
+    barred: Option<Interval>,
+) -> Result<Option<ParanaKept>, String> {
+    for &at in &rule.at {
+        let span = day.window(at).map_err(|error| error.to_string())?;
+        let (mut from, mut from_by) = bars
+            .iter()
+            .copied()
+            .filter(|(bar, _)| bar.get() > span.from.get())
+            .max_by(|a, b| a.0.get().total_cmp(&b.0.get()))
+            .unwrap_or((span.from, ParanaEdge::Window));
+        let (mut to, mut to_by) = if held.to.get() < span.to.get() {
+            (held.to, ParanaEdge::TithiEnd)
+        } else {
+            (span.to, ParanaEdge::Window)
+        };
+        if let Some(bar) = barred {
+            if bar.from.get() <= from.get() && from.get() < bar.to.get() {
+                (from, from_by) = (bar.to, ParanaEdge::Nakshatra);
+            } else if from.get() < bar.from.get() && bar.from.get() < to.get() {
+                (to, to_by) = (bar.from, ParanaEdge::Nakshatra);
+            }
+        }
+        if from.get() < to.get() {
+            return Ok(Some(ParanaKept {
+                span: Interval::literal(from.get(), to.get()),
+                at,
+                from_by,
+                to_by,
+            }));
+        }
+    }
+    Ok(None)
+}
+
 fn facts(
     days: &[FestivalDay],
     tithis: [Interval; 3],

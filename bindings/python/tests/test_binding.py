@@ -47,6 +47,7 @@ from teistro import (
     Leap,
     Lilith,
     Nakshatra,
+    NakshatraBar,
     Observer,
     Plugin,
     Rashi,
@@ -4252,6 +4253,32 @@ class AnEngine(WithLibrary):
             assert within.to_jd is not None
             self.assertLess(within.from_jd, within.to_jd)
             self.assertEqual((within.from_by, at_end.reading.kind, at_end.to_jd), ("SUNRISE", "TITHI_END", None))
+            # The parana's nakshatra bar (C700): Kathmandu, 7 July 2025, the
+            # meal held past Anuradha's first quarter, which ends at 05:36.
+            bar = {"tithi": "SHUKLA_EKADASHI", "month": "ASHADHA", "nakshatra": "ANURADHA", "portion": {"parts": 4, "which": 1}}
+            smarta = {
+                "key": "EKADASHI_SMARTA",
+                "source": "",
+                "vedha": "SUNRISE",
+                "table": {
+                    "pure": {"eleventh": "EARLIER", "twelfth": "EARLIER", "both": "LATER", "neither": "EARLIER"},
+                    "pierced": {"eleventh": "EARLIER", "twelfth": "LATER", "both": "LATER", "neither": "EARLIER"},
+                },
+                "parana": {"at": [{"window": "PART", "part": "PRATAH"}], "hariVasara": True, "bars": [bar]},
+            }
+            july = ctx.almanac.festivals(
+                **{
+                    **days,
+                    "from_date": date(Calendar.GREGORIAN, 2025, 7, 1),
+                    "to_date": date(Calendar.GREGORIAN, 2025, 7, 10),
+                },
+                festivals={"rules": [smarta]},
+            )
+            shayani = july.ekadashis[0].parana
+            assert shayani is not None and shayani.barred is not None and shayani.kept is not None
+            self.assertEqual(shayani.barred.bar, NakshatraBar(Tithi.SHUKLA_EKADASHI, Masa.ASHADHA, Nakshatra.ANURADHA, 4, 1))
+            self.assertFalse(shayani.barred.set_aside)
+            self.assertEqual((shayani.kept.from_by, shayani.kept.span.from_jd), ("NAKSHATRA", shayani.barred.span.to_jd))
 
             sunrise = {
                 "key": "LAKSHMI_PUJA",

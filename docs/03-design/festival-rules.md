@@ -619,11 +619,10 @@ calendar's third of the daylight gives `DayMuhurta {1, 5}`, which no
 rank-1 text in hand states. The default is the maintainer's to confirm
 (brief §4, QUESTIONS.md Q41).
 
-**The nakshatra bar, not built (C700).** A *Bhavishya* verse bars the
-meal on the bright 12ths of Ashadha, Bhadrapada and Kartika while
-Anuradha, Shravana or Revati holds. Where the yoga cannot be avoided,
-it bars only Anuradha's first quarter, Shravana's middle and Revati's
-last (the *Vishnudharma*). The two texts part on it:
+**The nakshatra bar (C700).** A *Bhavishya* verse bars the meal on
+the bright 12ths of Ashadha, Bhadrapada and Kartika while Anuradha,
+Shravana or Revati holds (DS p. 81, note: आभाकासितपक्षेषु
+मैत्रश्रवणरेवती). The two texts part on it:
 
 - The *Nirnayasindhu* (pp. 79–80) calls the verse and its gloss
   "baseless" (निर्मूलमेव).
@@ -631,22 +630,63 @@ last (the *Vishnudharma*). The two texts part on it:
   "Baseless" there means only "not found in Madhava and the root
   works". The Kaustubha and every recent work decide by the verse, and
   "all the learned keep their parana by it".
-  `ParanaRule::dharmasindhu()` therefore does not yet carry all of
-  *Dharmasindhu*.
 
-The published reference keeps no bar. At Kathmandu on 7 July 2025, the
-Ashadha 12th, its window opens at 05:14 with the Moon in Anuradha's
-first quarter, the very part the narrow reading bars. Of the 11 parana
-mornings measured on these three 12ths, the Moon is in the barred
-nakshatra on three: Anuradha 2025, Shravana 2026 (its fourth quarter)
-and Revati 2026 (its second quarter). Whether a default keeps the bar,
-and on which reading, is the maintainer's (Q41).
+*Dharmasindhu* narrows it to a share of each nakshatra, after the
+*Vishnudharma*: Anuradha's first quarter, where Vishnu sleeps (pp. 41–42,
+अनुराधाप्रथमपादयोग एव वर्ज्यः); Shravana's middle third, where he turns
+(pp. 56–57, the Shravana "divided in three", its middle "from the 20th
+ghati"); Revati's last quarter, where he wakes. When the 12th is so short
+that the barred share outlasts it, the bar is set aside and the meal kept
+inside the 12th (p. 42, after the Kaustubha). The rites it guards are not
+kept in an adhika month (p. 41, नेदं मलमासे कार्यम्).
+
+**The bar, built as a parameter.** `ParanaRule.bars` lists
+`NakshatraBar { tithi, month, nakshatra, portion }`, the 11th whose
+fast it follows, its amanta month, and the `which`th of `parts` equal
+shares of the nakshatra's arc (`{1, 1}` the whole).
+`NakshatraBar::dharmasindhu()` gives the three shares above, and
+`NakshatraBar::verse()` the verse's whole nakshatras. A bar holds in the
+nija month only.
+
+- The barred share is searched at its own bounds
+  (`Almanac::moon_arcs`, the Moon's stay between two sidereal
+  longitudes), only on a day the nakshatra meets and only for a rule
+  that lists bars. Placing a share in proportion through the
+  nakshatra's time misses by up to 5.8 minutes, measured over 2,000
+  nakshatras, so it is searched rather than placed.
+- A share holding a window's start opens the meal at its end
+  (`fromBy: NAKSHATRA`); one later in the window closes the meal at its
+  start (`toBy: NAKSHATRA`).
+- When keeping the bar leaves no window and the share outlasts the tithi
+  the meal is kept in, the bar is set aside and the windows read as
+  though it were not there (`setAside`). A share ending inside the
+  tithi stands though it leaves no window: the rule's windows say where
+  the meal may be.
+- `Parana.barred` names the bar, the Moon's stay and whether it was set
+  aside, when one met the parana day's daylight.
+
+**The default keeps none**, as the published reference keeps none (at
+Kathmandu on 7 July 2025 its window opens at 05:14, with the Moon in
+Anuradha's first quarter). Whether a default keeps a bar, and on which
+reading, is the maintainer's (Q41); a consumer keeping *Dharmasindhu*'s
+gives `bars: NakshatraBar::dharmasindhu()`.
+
+**What is measured** (`crates/sdk/tests/parana_bar.rs`). Over 2000 to
+2035, *Dharmasindhu*'s shares meet 91 parana days at each of Delhi and
+Kathmandu (three observers' fasts), 6 of them set aside. The shares'
+edges stand where pyswisseph (Moshier, Lahiri) puts the Moon's
+crossings, within 40 seconds: the time the Moon takes over the 20″ to
+30″ the built-in's theories stand from a modern ephemeris, not the
+search's, which meets a whole nakshatra's own search to the millisecond.
+At Kathmandu on 7 July 2025 the meal waits for Anuradha's first quarter
+to end, at 05:36. One parana keeps no window: on 16 September 2032 the
+hari vasara outlasts the morning, Shravana's middle third holds the
+afternoon, and the 12th outlasts the share.
 
 **Not built.** The short-12th rites before sunrise are the rites', not
 the meal's: the window still opens at sunrise. The Gaudiya
 mahadvadashis (HBV vv. 265 ff., unmilani, vyanjuli and the rest) are
-not computed. Other vratas' parana (Janmashtami at the tithi's and the
-nakshatra's end, DS p. 87) is a later step.
+not computed. Other vratas' parana is §8.7.
 
 ### 8.6 What is measured of the parana
 

@@ -14657,8 +14657,9 @@ final class ParanaWindow extends _Value {
 }
 
 /// The window a parana was kept in, and the clause that set each edge:
-/// `WINDOW`, `HARI_VASARA` (the 12th's first quarter ends), `TITHI_START`
-/// or `TITHI_END`.
+/// `WINDOW`, `HARI_VASARA` (the 12th's first quarter ends), `TITHI_START`,
+/// `TITHI_END` or `NAKSHATRA` (an edge of a barred share of a nakshatra,
+/// C700).
 final class ParanaKept extends _Value {
   const ParanaKept({
     required this.span,
@@ -14679,6 +14680,48 @@ final class ParanaKept extends _Value {
   List<Object?> get _fields => [span.from, span.to, at, fromBy, toBy];
 }
 
+/// A nakshatra a parana is not kept in (C700): after the fast of the
+/// 11th [tithi] in its nija amanta [month], the [which]th of [parts] equal
+/// shares of [nakshatra]'s arc (1 of 1 the whole). A rule's `parana` names
+/// its bars as `bars`, each `{tithi, month, nakshatra, portion: {parts,
+/// which}}`.
+final class NakshatraBar extends _Value {
+  const NakshatraBar({
+    required this.tithi,
+    required this.month,
+    required this.nakshatra,
+    required this.parts,
+    required this.which,
+  });
+
+  final Tithi tithi;
+  final Masa month;
+  final Nakshatra nakshatra;
+  final int parts;
+  final int which;
+
+  @override
+  List<Object?> get _fields => [tithi, month, nakshatra, parts, which];
+}
+
+/// A rule's nakshatra bar met on the parana day, the Moon's stay in the
+/// barred share, and whether it was set aside because it outlasts the
+/// tithi the meal is kept in.
+final class ParanaBarred extends _Value {
+  const ParanaBarred({
+    required this.bar,
+    required this.span,
+    required this.setAside,
+  });
+
+  final NakshatraBar bar;
+  final Interval span;
+  final bool setAside;
+
+  @override
+  List<Object?> get _fields => [bar, span.from, span.to, setAside];
+}
+
 /// When an Ekadashi fast is broken (`03-design/festival-rules.md` §8.5):
 /// the day after the fast, inside the 12th and past its first quarter,
 /// the hari vasara.
@@ -14688,6 +14731,7 @@ final class Parana extends _Value {
     required this.tithi,
     required this.hariVasaraEnds,
     required this.kept,
+    this.barred,
   });
 
   /// The day after the fast.
@@ -14704,12 +14748,16 @@ final class Parana extends _Value {
   /// The window kept; null when none of the rule's leaves time.
   final ParanaKept? kept;
 
+  /// The rule's nakshatra bar, when one met the parana day.
+  final ParanaBarred? barred;
+
   @override
   List<Object?> get _fields => [
     ..._dateFields(day),
     tithi,
     hariVasaraEnds,
     kept,
+    barred,
   ];
 }
 
@@ -15160,7 +15208,30 @@ Parana _parana(Map<String, Object?> raw) => Parana(
     null => null,
     final kept => _paranaKept(_festivalAt(kept)),
   },
+  barred: switch (raw['barred']) {
+    null => null,
+    final barred => _paranaBarred(_festivalAt(barred)),
+  },
 );
+
+ParanaBarred _paranaBarred(Map<String, Object?> raw) {
+  final bar = _festivalAt(raw['bar']);
+  final portion = switch (bar['portion']) {
+    null => const <String, Object?>{'parts': 1, 'which': 1},
+    final portion => _festivalAt(portion),
+  };
+  return ParanaBarred(
+    bar: NakshatraBar(
+      tithi: _key(bar['tithi'], Tithi.byKey, Tithi.unknown),
+      month: _key(bar['month'], Masa.byKey, Masa.unknown),
+      nakshatra: _key(bar['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+      parts: portion['parts']! as int,
+      which: portion['which']! as int,
+    ),
+    span: _festivalInterval(raw['span']),
+    setAside: raw['setAside']! as bool,
+  );
+}
 
 ParanaKept _paranaKept(Map<String, Object?> raw) {
   final at = _festivalAt(raw['at']);

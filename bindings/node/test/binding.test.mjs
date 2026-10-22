@@ -4222,6 +4222,30 @@ test('an almanac carries the festivals it was asked for', () => {
   assert.equal(within.day.day, shivaratri.day.day + 1);
   assert.ok(within.from < within.to);
   assert.deepEqual([within.fromBy, atEnd.reading.kind, atEnd.to], ['SUNRISE', 'TITHI_END', undefined]);
+  // The parana's nakshatra bar (C700): Kathmandu, 7 July 2025, the meal
+  // held past Anuradha's first quarter, which ends at 05:36.
+  const kinds = { eleventh: 'EARLIER', twelfth: 'EARLIER', both: 'LATER', neither: 'EARLIER' };
+  const smarta = {
+    key: 'EKADASHI_SMARTA',
+    source: '',
+    vedha: 'SUNRISE',
+    table: { pure: kinds, pierced: { ...kinds, twelfth: 'LATER' } },
+    parana: {
+      at: [{ window: 'PART', part: 'PRATAH' }],
+      hariVasara: true,
+      bars: [{ tithi: 'tithi.SHUKLA_EKADASHI', month: 'masa.ASHADHA', nakshatra: 'nakshatra.ANURADHA', portion: { parts: 4, which: 1 } }],
+    },
+  };
+  const july = ctx.almanac.festivals({
+    ...days,
+    from: date(Calendar.Gregorian, 2025, 7, 1),
+    to: date(Calendar.Gregorian, 2025, 7, 10),
+    festivals: { rules: [smarta] },
+  });
+  const shayani = july.ekadashis[0].parana;
+  assert.deepEqual(shayani.barred.bar, smarta.parana.bars[0]);
+  assert.equal(shayani.barred.setAside, false);
+  assert.deepEqual([shayani.kept.fromBy, shayani.kept.span.from], ['NAKSHATRA', shayani.barred.span.to]);
   assert.throws(() => ctx.almanac.festivals(days), /festivals: expected a festivals request/);
   assert.deepEqual(
     answer.observances.map((o) => o.rule),

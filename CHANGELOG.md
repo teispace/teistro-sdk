@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A parana may bar a nakshatra** (P1-7, C700, `festival-rules.md`
+§8.5). **Numbers:** none move; the shipped rules bar nothing. A
+`ParanaRule` gains `bars`, each a `NakshatraBar { tithi, month,
+nakshatra, portion }`; `NakshatraBar::dharmasindhu()` gives the first
+quarter of Anuradha, the middle third of Shravana and the last quarter of
+Revati after the bright 11ths of Ashadha, Bhadrapada and Kartika, and
+`verse()` the whole nakshatras. A barred share is searched at its own
+bounds, the meal kept outside it unless it outlasts the 12th, and a
+fast's `parana` names it as `barred`. `ParanaEdge` gains `NAKSHATRA`, and
+a festival day gains `moonArcs`, searched only for a rule with bars.
+Every binding reads `barred`.
+
 **When a vrata's fast is broken** (P1-7, `festival-rules.md` §8.7).
 **Numbers:** no day moves. Janmashtami, Shivaratri and Rama Navami gain
 `parana`: each reading the rule lists (`TITHI_END`, with a joined

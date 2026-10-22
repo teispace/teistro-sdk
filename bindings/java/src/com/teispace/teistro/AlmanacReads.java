@@ -252,7 +252,23 @@ final class AlmanacReads {
                         Reads.interval(Reads.field(kept, "span")),
                         paranaWindow(Reads.object(kept, "at")),
                         Reads.string(kept, "fromBy"),
-                        Reads.string(kept, "toBy")));
+                        Reads.string(kept, "toBy")),
+                p.get("barred") == null ? null : paranaBarred(Reads.object(p, "barred")));
+    }
+
+    /** A parana's barred share as a festival answer writes it. */
+    private static ParanaBarred paranaBarred(Map<?, ?> b) {
+        Map<?, ?> bar = Reads.object(b, "bar");
+        Map<?, ?> portion = bar.get("portion") == null ? null : Reads.object(bar, "portion");
+        return new ParanaBarred(
+                new NakshatraBar(
+                        member(bar, "tithi", "Tithi", Tithi::byKey),
+                        member(bar, "month", "Masa", Masa::byKey),
+                        member(bar, "nakshatra", "Nakshatra", Nakshatra::byKey),
+                        portion == null ? 1 : Reads.integer(portion, "parts"),
+                        portion == null ? 1 : Reads.integer(portion, "which")),
+                Reads.interval(Reads.field(b, "span")),
+                Reads.flag(b, "setAside"));
     }
 
     private static ParanaWindow paranaWindow(Map<?, ?> at) {
