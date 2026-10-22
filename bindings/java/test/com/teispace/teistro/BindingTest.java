@@ -1768,6 +1768,52 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac says the period of impurity after a death", () -> {
+            // A sapinda's death at 10:00 on 11 January 2026 in Kathmandu: ten
+            // days by the relation's row, from the 11th; heard fifty days on,
+            // three days by the late table's row within ninety; a second death
+            // three days later, during the first, ends with it.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1337));
+            double at = 2_461_051.677_083;
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                AshauchRequest.Builder died = AshauchRequest.builder()
+                        .relation(AshauchRelation.SAPINDA)
+                        .event(AshauchEventDeath.builder().at(at).build());
+                AshauchAnswer found = sky.almanac().ashauch(died.key("grandfather").build(), kathmandu, 20_700, null);
+                Ashauch value = found.value();
+                check(!found.provenance().inputHash().isEmpty(), "the request is sealed");
+                same("grandfather", value.key(), "the request's key");
+                same(AshauchKind.DEATH, value.kind(), "a death's");
+                same("RELATION", value.clause().clause(), "the relation's row");
+                check(!value.clause().said().isEmpty(), "the row's text");
+                same(10, value.days(), "ten days");
+                same(new AshauchLengthFull(), value.length(), "the full period");
+                same(List.of(2026, 1, 11),
+                        List.of(value.dayOne().year(), value.dayOne().month(), value.dayOne().day()),
+                        "the first day");
+                same("DAYLIGHT", value.dayOneBy().by(), "a death by day");
+                check(value.end() > value.start(), "it ends after it begins");
+                check(value.overlap() == null, "nothing was running");
+                same("DHARMASINDHU", value.table(), "the default table");
+
+                Ashauch heard = sky.almanac().ashauch(died.key("heard").heardAt(at + 50).build(), kathmandu,
+                        20_700, null).value();
+                same("LATE", heard.clause().clause(), "heard past the period");
+                same(90, heard.clause().withinDays(), "the late table's row");
+                same(false, heard.clause().abroad(), "not abroad");
+                same(new AshauchLengthDays(3), heard.length(), "three days");
+
+                Ashauch second = sky.almanac().ashauch(AshauchRequest.builder()
+                        .key("second").relation(AshauchRelation.SAPINDA)
+                        .event(AshauchEventDeath.builder().at(at + 3).build())
+                        .during(List.of(value.running())).build(), kathmandu, 20_700, null).value();
+                same("ENDS_WITH_EARLIER", second.overlap().overlap(), "a death during the first");
+                same("grandfather", second.overlap().earlier(), "the earlier period's key");
+                same(value.end(), second.end(), "it ends with the earlier");
+            }
+        });
+
         tests.put("an almanac writes its festivals as an iCalendar feed", () -> {
             // Dashain 2025 at Kathmandu: one event for each observance and fast
             // the festival answer gives, Vijaya Dashami on 2 October, every

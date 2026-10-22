@@ -4134,6 +4134,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_sankalpa.restype = ctypes.c_int32
+        self.ts_almanac_ashauch: Any = library.ts_almanac_ashauch
+        self.ts_almanac_ashauch.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_ashauch.restype = ctypes.c_int32
         self.ts_almanac_festival_calendar: Any = library.ts_almanac_festival_calendar
         self.ts_almanac_festival_calendar.argtypes = [
             ctypes.POINTER(_Context),
@@ -4953,6 +4960,48 @@ class TeistroContext:
         owned.append(_request_json)
         _out_json = _StringStruct()
         status = Status(self._lib.ts_almanac_sankalpa(
+            self._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
+
+    def almanac_ashauch(self, request_json: str) -> str:
+        """The period of impurity after a birth or a death at a place
+        (`03-design/ashauch.md`), answered with `{value, provenance}` as
+        canonical JSON.
+
+        `value` is `{key, kind, relation, sex, start, dayOne, dayOneBy, end,
+        lastDay, length, days, clause, overlap, ritesFrom, table}`: `start`
+        the instant counted from (the event, the cremation, or the hearing),
+        `dayOne` the civil day counted as the first and `dayOneBy` why
+        (daylight, or the night rule that gave it), `end` the instant it ends
+        (a sunrise, a nightfall, or `start` for a bath), `lastDay` the last
+        day it touches, `clause` the table's row or the rule (`REMAINDER`,
+        `LATE`, `ROW_HEARD_LATE`, `BIRTH_PERIOD_RUNS` and the rest) with its
+        text, `overlap` what a period already running did, and `ritesFrom`
+        when the mother of a birth may take part in rites again.
+
+        `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+        "utcOffsetSeconds", "table", "request"}`: `table` the
+        *Dharmasindhu*'s when left out, every row data; `request` `{key,
+        event, relation, heardAt, abroad, at, fullDays, during}`, its
+        instants UTC Julian days and `fullDays` ten when left out. A key it
+        does not read, or a table or request that cannot be counted, is
+        `INVALID_ARG` named under `ashauch`, as is a fact of the deceased a
+        band needs and the request leaves out; a relation the table names no
+        row for is `UNSUPPORTED`; a context without an ephemeris is
+        `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_almanac_ashauch(
             self._raw,
             _request_json,
             ctypes.byref(_out_json),

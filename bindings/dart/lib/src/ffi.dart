@@ -1948,6 +1948,8 @@ typedef TsAlmanacDisagreementsNative = ffi.Int32 Function(ffi.Pointer<Context>, 
 typedef TsAlmanacDisagreementsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSankalpaNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSankalpaDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacAshauchNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacAshauchDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalCalendarNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalCalendarDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
@@ -2022,6 +2024,7 @@ final class TeistroLibrary {
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
         ts_almanac_disagreements = library.lookupFunction<TsAlmanacDisagreementsNative, TsAlmanacDisagreementsDart>('ts_almanac_disagreements'),
         ts_almanac_sankalpa = library.lookupFunction<TsAlmanacSankalpaNative, TsAlmanacSankalpaDart>('ts_almanac_sankalpa'),
+        ts_almanac_ashauch = library.lookupFunction<TsAlmanacAshauchNative, TsAlmanacAshauchDart>('ts_almanac_ashauch'),
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
@@ -2342,6 +2345,33 @@ final class TeistroLibrary {
   /// instant in no day's window (a polar day the policy leaves undefined)
   /// `OUT_OF_RANGE`.
   final TsAlmanacSankalpaDart ts_almanac_sankalpa;
+
+  /// The period of impurity after a birth or a death at a place
+  /// (`03-design/ashauch.md`), answered with `{value, provenance}` as
+  /// canonical JSON.
+  ///
+  /// `value` is `{key, kind, relation, sex, start, dayOne, dayOneBy, end,
+  /// lastDay, length, days, clause, overlap, ritesFrom, table}`: `start`
+  /// the instant counted from (the event, the cremation, or the hearing),
+  /// `dayOne` the civil day counted as the first and `dayOneBy` why
+  /// (daylight, or the night rule that gave it), `end` the instant it ends
+  /// (a sunrise, a nightfall, or `start` for a bath), `lastDay` the last
+  /// day it touches, `clause` the table's row or the rule (`REMAINDER`,
+  /// `LATE`, `ROW_HEARD_LATE`, `BIRTH_PERIOD_RUNS` and the rest) with its
+  /// text, `overlap` what a period already running did, and `ritesFrom`
+  /// when the mother of a birth may take part in rites again.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "table", "request"}`: `table` the
+  /// *Dharmasindhu*'s when left out, every row data; `request` `{key,
+  /// event, relation, heardAt, abroad, at, fullDays, during}`, its
+  /// instants UTC Julian days and `fullDays` ten when left out. A key it
+  /// does not read, or a table or request that cannot be counted, is
+  /// `INVALID_ARG` named under `ashauch`, as is a fact of the deceased a
+  /// band needs and the request leaves out; a relation the table names no
+  /// row for is `UNSUPPORTED`; a context without an ephemeris is
+  /// `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
+  final TsAlmanacAshauchDart ts_almanac_ashauch;
 
   /// A range's observances and Ekadashi fasts at one place as an iCalendar
   /// feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each,
@@ -5756,6 +5786,42 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_almanac_sankalpa(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// The period of impurity after a birth or a death at a place
+  /// (`03-design/ashauch.md`), answered with `{value, provenance}` as
+  /// canonical JSON.
+  ///
+  /// `value` is `{key, kind, relation, sex, start, dayOne, dayOneBy, end,
+  /// lastDay, length, days, clause, overlap, ritesFrom, table}`: `start`
+  /// the instant counted from (the event, the cremation, or the hearing),
+  /// `dayOne` the civil day counted as the first and `dayOneBy` why
+  /// (daylight, or the night rule that gave it), `end` the instant it ends
+  /// (a sunrise, a nightfall, or `start` for a bath), `lastDay` the last
+  /// day it touches, `clause` the table's row or the rule (`REMAINDER`,
+  /// `LATE`, `ROW_HEARD_LATE`, `BIRTH_PERIOD_RUNS` and the rest) with its
+  /// text, `overlap` what a period already running did, and `ritesFrom`
+  /// when the mother of a birth may take part in rites again.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "table", "request"}`: `table` the
+  /// *Dharmasindhu*'s when left out, every row data; `request` `{key,
+  /// event, relation, heardAt, abroad, at, fullDays, during}`, its
+  /// instants UTC Julian days and `fullDays` ten when left out. A key it
+  /// does not read, or a table or request that cannot be counted, is
+  /// `INVALID_ARG` named under `ashauch`, as is a fact of the deceased a
+  /// band needs and the request leaves out; a relation the table names no
+  /// row for is `UNSUPPORTED`; a context without an ephemeris is
+  /// `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
+  String almanacAshauch(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_ashauch(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

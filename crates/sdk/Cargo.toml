@@ -414,6 +414,10 @@ name = "mahadvadashi"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "ashauch"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "western_houses"
 required-features = ["builtin-ephemeris"]
 

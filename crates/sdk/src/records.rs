@@ -345,9 +345,21 @@ pub fn records() -> Vec<Record> {
 }
 
 /// The almanac's records every build carries: a range's days with what is
-/// asked beside them, its festivals as a feed, and a sankalpa's time.
-fn almanac_records() -> [Record; 3] {
+/// asked beside them, its festivals as a feed, a sankalpa's time, and an
+/// ashauch.
+fn almanac_records() -> [Record; 4] {
     [
+        Record {
+            name: "almanac.ashauch",
+            boundary: "ts_almanac_ashauch",
+            title: "The period of impurity after a birth or a death, and the clause that set it",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::AshauchQuery::from_json(json)?;
+                Answered::sealed(context.almanac().ashauch_query(&asked)?)
+            },
+            schemas: schemas!(crate::ashauch_request::AshauchAsked => crate::ashauch::Ashauch),
+        },
         Record {
             name: "almanac.days",
             boundary: "ts_panchanga_days",

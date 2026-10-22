@@ -24,6 +24,7 @@ import {
   DashaSystem,
   Varga,
   altitude,
+  ashauchRunning,
   at,
   date,
   ianaZone,
@@ -4833,6 +4834,53 @@ test('an almanac says the time a sankalpa recites', () => {
     (error) => error.field === 'sankalpa.when',
   );
   assert.throws(() => ctx.almanac.sankalpa(null), TypeError);
+});
+
+/**
+ * A sapinda's death at 10:00 on 11 January 2026 in Kathmandu: the
+ * *Dharmasindhu*'s ten days by the relation's row, the 11th the first;
+ * heard 50 days on, three days from the hearing by the late table's first
+ * row (within 90 days); and a second sapinda's death three days in ends
+ * with the first (Manu V.79, `03-design/ashauch.md`).
+ */
+test('an almanac says the period of impurity after a death', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1337 };
+  const died = 2461051.677083;
+  const ask = (request) => ctx.almanac.ashauch({ place: kathmandu, utcOffsetSeconds: 20700, request });
+  const grandfather = { key: 'grandfather', relation: 'SAPINDA', event: { event: 'DEATH', at: died } };
+  const { value, provenance } = ask(grandfather);
+  assert.equal(typeof provenance.inputHash, 'string', 'the request is sealed');
+  assert.equal(value.key, 'grandfather');
+  assert.equal(value.kind, 'DEATH');
+  assert.equal(value.clause.clause, 'RELATION');
+  assert.equal(typeof value.clause.said, 'string');
+  assert.equal(value.days, 10);
+  assert.deepEqual(value.length, { length: 'FULL' });
+  assert.deepEqual([value.dayOne.year, value.dayOne.month, value.dayOne.day], [2026, 1, 11]);
+  assert.equal(value.dayOne.calendar, 'calendar.GREGORIAN');
+  assert.equal(value.dayOneBy.by, 'DAYLIGHT');
+  assert.ok(value.end > value.start);
+  assert.equal(value.table, 'DHARMASINDHU');
+  assert.ok(Object.isFrozen(value.clause), 'frozen to its leaves');
+
+  const late = ask({ ...grandfather, heardAt: died + 50 }).value;
+  assert.equal(late.clause.clause, 'LATE');
+  assert.equal(late.clause.within_days, 90);
+  assert.equal(late.clause.abroad, false);
+  assert.deepEqual(late.length, { length: 'DAYS', days: 3 });
+
+  const uncle = { key: 'uncle', relation: 'SAPINDA', event: { event: 'DEATH', at: died + 3 } };
+  const during = ask({ ...uncle, during: [ashauchRunning(value)] }).value;
+  assert.equal(during.overlap.overlap, 'ENDS_WITH_EARLIER');
+  assert.equal(during.overlap.earlier, 'grandfather');
+  assert.ok(Math.abs(during.end - value.end) < 1e-9, 'it ends with the earlier period');
+
+  assert.throws(
+    () => ask({ ...grandfather, caste: 'any' }),
+    (error) => error.field === 'ashauch.request.caste',
+  );
+  assert.throws(() => ctx.almanac.ashauch(null), TypeError);
 });
 
 /**

@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.teispace.teistro.record.Provenance;
+import com.teispace.teistro.request.AshauchKind;
+import com.teispace.teistro.request.AshauchLength;
+import com.teispace.teistro.request.AshauchRelation;
+import com.teispace.teistro.request.AshauchSex;
+import com.teispace.teistro.request.NightRule;
 
 /**
  * The almanac's JSON sections, each an envelope of a value and its
@@ -379,6 +384,43 @@ final class AlmanacReads {
                 member(v, "sun", "Rashi", Rashi::byKey),
                 member(v, "moon", "Rashi", Rashi::byKey),
                 member(v, "jupiter", "Rashi", Rashi::byKey)), provenance(envelope));
+    }
+
+    /** {@code ts_almanac_ashauch}'s answer: the period, its members resolved, with the provenance beside it. */
+    static AshauchAnswer ashauchAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        Map<?, ?> v = Reads.object(envelope, "value");
+        Map<?, ?> by = Reads.object(v, "dayOneBy");
+        // The clause's fields are spelt as Rust names them: no rename reaches
+        // inside a variant, so `within_days` keeps its underscore.
+        Map<?, ?> c = Reads.object(v, "clause");
+        Object sex = v.get("sex");
+        Object rule = by.get("rule");
+        Object lastDay = v.get("lastDay");
+        Object overlap = v.get("overlap");
+        Map<?, ?> o = overlap == null ? null : Reads.object(overlap);
+        return new AshauchAnswer(new Ashauch(
+                Reads.string(v, "key"),
+                AshauchKind.of(Reads.field(v, "kind")),
+                AshauchRelation.of(Reads.field(v, "relation")),
+                sex == null ? null : AshauchSex.of(sex),
+                Reads.number(v, "start"),
+                Reads.serdeDate(Reads.field(v, "dayOne")),
+                new AshauchDayOneBy(Reads.string(by, "by"), rule == null ? null : NightRule.of(rule)),
+                Reads.number(v, "end"),
+                lastDay == null ? null : Reads.serdeDate(lastDay),
+                AshauchLength.of(Reads.field(v, "length")),
+                Reads.optionalInteger(v, "days"),
+                new AshauchClause(
+                        Reads.string(c, "clause"),
+                        Reads.optionalInteger(c, "row"),
+                        Reads.optionalString(c, "said"),
+                        Reads.optionalInteger(c, "within_days"),
+                        c.get("abroad") == null ? null : Reads.flag(c, "abroad")),
+                o == null ? null : new AshauchOverlapped(
+                        Reads.string(o, "overlap"), Reads.string(o, "earlier"), Reads.optionalInteger(o, "days")),
+                Reads.optionalNumber(v, "ritesFrom"),
+                Reads.string(v, "table")), provenance(envelope));
     }
 
     /** The {@code nepal_sambat} section: one date a day, with the provenance beside them. */

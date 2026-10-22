@@ -697,6 +697,28 @@ __all__ = [
     "LunarYears",
     "Sankalpa",
     "SankalpaAnswer",
+    "AshauchSex",
+    "AshauchKind",
+    "AshauchRelation",
+    "Nearness",
+    "NightRule",
+    "AshauchLength",
+    "Deceased",
+    "AshauchEvent",
+    "AshauchRunning",
+    "AshauchRequest",
+    "AshauchRelationRow",
+    "AshauchMark",
+    "AshauchBand",
+    "AshauchLossRow",
+    "AshauchLateRow",
+    "AshauchOverlap",
+    "AshauchTable",
+    "AshauchDayOneBy",
+    "AshauchClause",
+    "AshauchOverlapped",
+    "Ashauch",
+    "AshauchAnswer",
     "Eclipses",
     "EclipsesFound",
     "LunarEclipseHere",
@@ -2608,6 +2630,41 @@ class AlmanacArea(_Area):
         }
         answered = self._context._through_provider(lambda: self._context.inner.almanac_sankalpa(json.dumps(asked)))
         return _sankalpa_answer(answered)
+
+    def ashauch(
+        self,
+        *,
+        place: Observer,
+        utc_offset_seconds: int,
+        request: "AshauchRequest",
+        table: Optional["AshauchTable"] = None,
+    ) -> "AshauchAnswer":
+        """**The period of impurity after a birth or a death** at a place
+        (`03-design/ashauch.md`): from when, until when, and by which
+        clause. The span is a count of sunrise days, the day the event
+        falls in the first and an event at night given to a day by the
+        table's night rule; `n` days end at the sunrise that begins day
+        `n + 1`. `request` and `table` (the *Dharmasindhu*'s when left out)
+        cross as written, so a key the SDK does not read is refused by
+        name; a period already running goes in `request["during"]`, each
+        one an earlier answer's `value.running()`.
+
+        >>> # found = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request={
+        >>> #     "key": "grandfather", "relation": "SAPINDA",
+        >>> #     "event": {"event": "DEATH", "at": 2461051.677083}})  # 2026-01-11 10:00 in Kathmandu
+        >>> # found.value.clause["clause"], found.value.days  # ("RELATION", 10)
+        """
+        asked: Dict[str, Any] = {
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "request": request,
+        }
+        if table is not None:
+            asked["table"] = table
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_ashauch(json.dumps(asked)))
+        return _ashauch_answer(answered)
 
     def disagreements(
         self,
@@ -7968,6 +8025,352 @@ class SankalpaAnswer:
     """
 
     value: Sankalpa
+    provenance: Provenance
+    """What computed it, and the hash of `value`."""
+
+
+AshauchSex = Literal["MALE", "FEMALE"]
+"""A son or a daughter, which an ashauch's age bands and the mother's
+further bar read."""
+
+AshauchKind = Literal["BIRTH", "DEATH"]
+"""A birth's impurity (*sūtaka*, a loss's too) or a death's."""
+
+AshauchRelation = Literal[
+    "MOTHER",
+    "FATHER",
+    "CHILD",
+    "SPOUSE",
+    "CO_WIFE",
+    "STEP_CHILD",
+    "SAPINDA",
+    "SAMANODAKA",
+    "SAGOTRA",
+    "MARRIED_DAUGHTER",
+    "MARRIED_SIBLING",
+    "MATERNAL_GRANDFATHER",
+    "MATERNAL_GRANDMOTHER",
+    "MATERNAL_UNCLE",
+    "SON_IN_LAW",
+    "PARENT_IN_LAW",
+    "PUPIL",
+    "ACHARYAS_FAMILY",
+    "ADOPTION",
+    "BANDHU",
+    "SUBJECT",
+    "OF_ASCETIC",
+]
+"""Who the observer is to the one born or deceased, as the app resolves
+it."""
+
+Nearness = Literal["OBSERVERS_HOUSE", "SAME_VILLAGE", "OTHER_VILLAGE"]
+"""Where a death was, to the observer."""
+
+NightRule = Literal["THIRDS", "HALF_NIGHT", "CIVIL_MIDNIGHT", "SUNRISE"]
+"""Which day an event at night belongs to (the Mitākṣarā on Yājñavalkya
+III.20)."""
+
+
+class AshauchLength(TypedDict, total=False):
+    """A span the texts name, by its `length`: `"BATH"` (pure at once),
+    `"SAJYOTIH"` (to nightfall, or at night to daybreak), `"PAKSHINI"`
+    (that day, its night and the next day), `"DAYS"` with its `days`, 1
+    to 60, or `"FULL"`, the request's full period.
+
+    >>> three: AshauchLength = {"length": "DAYS", "days": 3}
+    """
+
+    length: Required[Literal["BATH", "SAJYOTIH", "PAKSHINI", "DAYS", "FULL"]]
+    days: int
+
+
+class Deceased(TypedDict, total=False):
+    """The deceased, by the facts the age bands read. Left out with no
+    `born`, an adult who had every rite; with a `born` (a UTC Julian day),
+    a fact a band needs is asked for by a refusal rather than guessed.
+
+    >>> infant: Deceased = {"born": 2461040.5, "sex": "MALE"}
+    """
+
+    born: float
+    sex: AshauchSex
+    chudakarana: bool
+    upanayana: Literal["DONE", "NOT_DONE", "NOT_PERFORMED"]
+    betrothed: bool
+    married: bool
+    buried: bool
+
+
+class AshauchEvent(TypedDict, total=False):
+    """What happened, by its `event`, every instant a UTC Julian day:
+    `"BIRTH"` from the 7th month on, with the `child`'s sex optional;
+    `"LOSS"` before it, with the `month` of the pregnancy, 1 to 6; or
+    `"DEATH"`, with `crematedAt`, `ahitagni` (the count starts at the
+    cremation) and the `deceased` optional.
+
+    >>> died: AshauchEvent = {"event": "DEATH", "at": 2461051.677083}
+    """
+
+    event: Required[Literal["BIRTH", "LOSS", "DEATH"]]
+    at: Required[float]
+    child: AshauchSex
+    month: int
+    crematedAt: float
+    ahitagni: bool
+    deceased: Deceased
+
+
+class AshauchRunning(TypedDict, total=False):
+    """A period already running, as the overlap rules read it: an earlier
+    answer's `value.running()`."""
+
+    key: Required[str]
+    kind: Required[AshauchKind]
+    relation: Required[AshauchRelation]
+    sex: AshauchSex
+    start: Required[float]
+    end: Required[float]
+    length: Required[AshauchLength]
+    days: int
+
+
+class AshauchRequest(TypedDict, total=False):
+    """One ashauch request: one event, one observer (`03-design/ashauch.md`).
+    `key` is the consumer's own, which the answer repeats; `heardAt` when
+    the news reached the observer, the event's instant when left out;
+    `abroad` a fact the family gives; `nearness` `"SAME_VILLAGE"` when
+    left out; `fullDays` the family's full period, 10 when left out; and
+    `during` the periods already running.
+
+    >>> asked: AshauchRequest = {"key": "grandfather", "relation": "SAPINDA",
+    ...     "event": {"event": "DEATH", "at": 2461051.677083}}
+    """
+
+    key: Required[str]
+    event: Required[AshauchEvent]
+    relation: Required[AshauchRelation]
+    heardAt: float
+    abroad: bool
+    nearness: Nearness
+    fullDays: int
+    during: Sequence[AshauchRunning]
+
+
+class AshauchRelationRow(TypedDict, total=False):
+    """One relation's length under its conditions: `nearness` and
+    `marriedDaughter` narrow it when given, and `heardLate` is what news
+    past the period takes."""
+
+    relation: Required[AshauchRelation]
+    kind: Required[AshauchKind]
+    nearness: Nearness
+    marriedDaughter: bool
+    length: Required[AshauchLength]
+    heardLate: AshauchLength
+    clause: Required[str]
+
+
+class AshauchMark(TypedDict, total=False):
+    """A mark of the deceased's age a band ends before, by its `mark`:
+    `"DAY"`, `"MONTH"` or `"YEAR"` with its count, or `"CHUDAKARANA"`,
+    `"UPANAYANA"`, `"BETROTHAL"` or `"MARRIAGE"`."""
+
+    mark: Required[Literal["DAY", "MONTH", "YEAR", "CHUDAKARANA", "UPANAYANA", "BETROTHAL", "MARRIAGE"]]
+    day: int
+    month: int
+    year: int
+
+
+class AshauchBand(TypedDict, total=False):
+    """What a death before a mark takes, the parents' and the sapindas'
+    lengths and the samanodakas' when the band names one."""
+
+    sex: Required[AshauchSex]
+    before: Required[AshauchMark]
+    buried: bool
+    parents: Required[AshauchLength]
+    sapindas: Required[AshauchLength]
+    samanodakas: AshauchLength
+    clause: Required[str]
+
+
+class AshauchLossRow(TypedDict):
+    """A loss before the 7th month, to `toMonth` of the pregnancy."""
+
+    toMonth: int
+    mother: AshauchLength
+    others: AshauchLength
+    clause: str
+
+
+class AshauchLateRow(TypedDict):
+    """Late news, heard within `withinDays` of the event, and the length
+    from the hearing."""
+
+    withinDays: int
+    length: AshauchLength
+
+
+class AshauchOverlap(TypedDict):
+    """What a period known during another does: `lastNight` the days one
+    known in an equal period's last night adds, and in its last quarter;
+    `deathAbsorbsLongerBirth` whether a birth known during a shorter death
+    ends with it."""
+
+    lastNight: Sequence[int]
+    deathAbsorbsLongerBirth: bool
+
+
+class AshauchTable(TypedDict, total=False):
+    """A tradition, as data: every row with its clause and source, the
+    first row that matches answering. `motherRites` (`{"son", "daughter"}`,
+    days) is the mother's further bar after a birth, none reported when
+    left out."""
+
+    name: Required[str]
+    night: Required[NightRule]
+    pakshiniAtNight: Required[Literal["SECOND_SUNRISE", "NEXT_NIGHTFALL"]]
+    relations: Required[Sequence[AshauchRelationRow]]
+    bands: Required[Sequence[AshauchBand]]
+    losses: Required[Sequence[AshauchLossRow]]
+    late: Required[Sequence[AshauchLateRow]]
+    lateAbroad: Required[Sequence[AshauchLateRow]]
+    overlap: Required[AshauchOverlap]
+    motherRites: Mapping[str, int]
+
+
+class AshauchDayOneBy(TypedDict, total=False):
+    """Why the first day is the day it is, by its `by`: `"DAYLIGHT"`, or
+    `"NIGHT"` with the `rule` that gave the day."""
+
+    by: Required[Literal["DAYLIGHT", "NIGHT"]]
+    rule: NightRule
+
+
+class AshauchClause(TypedDict, total=False):
+    """The clause that set the span, by its `clause`: a table row's
+    (`"RELATION"`, `"BAND"`, `"LOSS"`, `"ROW_HEARD_LATE"`) with its `row`
+    index and the text it `said`; `"LATE"` with `within_days` and whether
+    the `abroad` table answered; or a rule alone (`"BIRTH_PERIOD_RUNS"`,
+    `"REMAINDER"`, `"LATE_BATH"`, `"SHORT_HEARD_LATE"`,
+    `"BIRTH_HEARD_LATE"`)."""
+
+    clause: Required[
+        Literal[
+            "RELATION",
+            "BAND",
+            "LOSS",
+            "BIRTH_PERIOD_RUNS",
+            "REMAINDER",
+            "LATE",
+            "LATE_BATH",
+            "ROW_HEARD_LATE",
+            "SHORT_HEARD_LATE",
+            "BIRTH_HEARD_LATE",
+        ]
+    ]
+    row: int
+    said: str
+    within_days: int
+    abroad: bool
+
+
+class AshauchOverlapped(TypedDict, total=False):
+    """What an overlap did, by its `overlap`, `earlier` the earlier
+    answer's key: `"ENDS_WITH_EARLIER"`, `"LAST_NIGHT"` with the `days`
+    added, or `"MOTHER_AFTER_FATHER"`."""
+
+    overlap: Required[Literal["ENDS_WITH_EARLIER", "LAST_NIGHT", "MOTHER_AFTER_FATHER"]]
+    earlier: Required[str]
+    days: int
+
+
+@dataclass(frozen=True)
+class Ashauch:
+    """The period of impurity after a birth or a death, and the clause
+    that set it (`03-design/ashauch.md`). The tagged parts (`length`,
+    `clause`, `day_one_by`, `overlap`) are as the SDK writes them."""
+
+    key: str
+    """The request's key."""
+
+    kind: AshauchKind
+    """A birth's or a death's."""
+
+    relation: AshauchRelation
+    """The request's relation."""
+
+    sex: Optional[AshauchSex]
+    """The deceased's sex, or the child's, as the request gave it."""
+
+    start: float
+    """When it began: the event, the cremation, or the hearing, a UTC
+    Julian day."""
+
+    day_one: CalendarDate
+    """The day it counts from."""
+
+    day_one_by: AshauchDayOneBy
+    """Why that day."""
+
+    end: float
+    """When it ends: a sunrise, a nightfall, or `start` itself for a bath,
+    a UTC Julian day."""
+
+    last_day: Optional[CalendarDate]
+    """The last day it touches, for a calendar to shade; `None` for a
+    bath."""
+
+    length: AshauchLength
+    """The length its clause named."""
+
+    days: Optional[int]
+    """The days, when the length is a count."""
+
+    clause: AshauchClause
+    """The clause."""
+
+    overlap: Optional[AshauchOverlapped]
+    """What an overlap did, when it did."""
+
+    rites_from: Optional[float]
+    """When the mother of a birth may take part in rites again, a UTC
+    Julian day, under a table that reports it."""
+
+    table: str
+    """The table's name."""
+
+    def running(self) -> AshauchRunning:
+        """This period as one already running, for a later request's
+        `during`: the parts the overlap rules read, and nothing else,
+        since the record refuses a key it does not read.
+
+        >>> # later = {**uncle, "during": [first.value.running()]}
+        """
+        found: AshauchRunning = {
+            "key": self.key,
+            "kind": self.kind,
+            "relation": self.relation,
+            "start": self.start,
+            "end": self.end,
+            "length": self.length,
+        }
+        if self.sex is not None:
+            found["sex"] = self.sex
+        if self.days is not None:
+            found["days"] = self.days
+        return found
+
+
+@dataclass(frozen=True)
+class AshauchAnswer:
+    """What `almanac.ashauch` answers.
+
+    >>> # found = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=asked)
+    >>> # ends = found.value.end
+    """
+
+    value: Ashauch
     provenance: Provenance
     """What computed it, and the hash of `value`."""
 
@@ -14748,6 +15151,35 @@ def _sankalpa_answer(text: str) -> "SankalpaAnswer":
             sun=_member(Rashi, raw["sun"]),
             moon=_member(Rashi, raw["moon"]),
             jupiter=_member(Rashi, raw["jupiter"]),
+        ),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _ashauch_answer(text: str) -> "AshauchAnswer":
+    """`ts_almanac_ashauch`'s answer: the span as a frozen record, its days
+    as this binding's dates and its tagged parts as the SDK writes them,
+    with the provenance beside it."""
+    envelope = json.loads(text)
+    raw = envelope["value"]
+    last_day = raw.get("lastDay")
+    return AshauchAnswer(
+        value=Ashauch(
+            key=raw["key"],
+            kind=raw["kind"],
+            relation=raw["relation"],
+            sex=raw.get("sex"),
+            start=raw["start"],
+            day_one=_serde_date(raw["dayOne"]),
+            day_one_by=raw["dayOneBy"],
+            end=raw["end"],
+            last_day=None if last_day is None else _serde_date(last_day),
+            length=raw["length"],
+            days=raw.get("days"),
+            clause=raw["clause"],
+            overlap=raw.get("overlap"),
+            rites_from=raw.get("ritesFrom"),
+            table=raw["table"],
         ),
         provenance=decode_provenance(envelope["provenance"]),
     )

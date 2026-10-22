@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The ashauch** (P2-3, `ashauch.md`, C713–C727). **Numbers:** none
+move; a new call. `almanac().ashauch` (`ts_almanac_ashauch`,
+`almanac.ashauch`, every binding) answers the period of impurity after a
+birth or a death: its start, its first day and why, its end (a sunrise,
+a nightfall, or a bath's start), its last day, its length and the clause
+that set it, what a period already running did, and for the mother of a
+birth when rites open again. Every rule is data in an `AshauchTable`;
+`dharmasindhu()` is the default. The full period is a number the family
+gives, ten when left out; nothing asks or stores a caste.
+
 **The Gaudiya Ekadashi** (P1-7, `festival-rules.md` §8.9, C707–C712).
 **Numbers:** none move; a new pack. `GAUDIYA` keeps `EKADASHI_GAUDIYA`,
 *Hari Bhakti Vilasa*'s Ekadashi: the Vaishnava's vedha and table, and the

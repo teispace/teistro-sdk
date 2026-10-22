@@ -1410,6 +1410,45 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **The period of impurity after a birth or a death** at a place
+  /// (`03-design/ashauch.md`): from when, until when, and by which clause.
+  /// The span is a count of sunrise days, the day the event falls in the
+  /// first and an event at night given to a day by the table's night rule;
+  /// `n` days end at the sunrise that begins day `n + 1`. A period already
+  /// running goes in [AshauchRequest.during], each one an earlier answer's
+  /// [Ashauch.running]. [table] is the tradition's table as its JSON record,
+  /// every row data; the *Dharmasindhu*'s when null.
+  ///
+  /// ```dart
+  /// final found = sdk.almanac.ashauch(
+  ///   request: AshauchRequest(
+  ///     key: 'grandfather',
+  ///     relation: AshauchRelation.sapinda,
+  ///     event: AshauchDeath(at: 2461051.677083), // 2026-01-11 10:00 NPT
+  ///   ),
+  ///   place: kathmandu, utcOffsetSeconds: 20700,
+  /// );
+  /// final days = found.value.days; // 10
+  /// ```
+  AshauchAnswer ashauch({
+    required AshauchRequest request,
+    required Observer place,
+    required int utcOffsetSeconds,
+    Map<String, Object?>? table,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      if (table != null) 'table': table,
+      'request': request._record,
+    });
+    return _ashauch(
+      _context._guarded(() => _context._inner.almanacAshauch(asked)),
+    );
+  }
+
   /// **Where this context's reckoning and [other]'s disagree**, and why
   /// (`03-design/setup-disagreements.md`): the official day an app shows
   /// beside the modern one. [Disagreements.days] holds only the days on
@@ -15917,6 +15956,733 @@ SankalpaAnswer _sankalpa(String json) {
       sun: _key(raw['sun'], Rashi.byKey, Rashi.unknown),
       moon: _key(raw['moon'], Rashi.byKey, Rashi.unknown),
       jupiter: _key(raw['jupiter'], Rashi.byKey, Rashi.unknown),
+    ),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
+/// Whose impurity (`03-design/ashauch.md`): a birth's (*sūtaka*, a loss's
+/// too) or a death's.
+enum AshauchKind implements _Keyed {
+  /// *Janana*, *sūtaka*.
+  birth('BIRTH'),
+
+  /// *Mṛta*, *śāva*.
+  death('DEATH');
+
+  const AshauchKind(this.key);
+
+  @override
+  final String key;
+}
+
+/// Who the observer is to the one born or deceased, as the app resolves
+/// it.
+enum AshauchRelation implements _Keyed {
+  /// The mother of the born or the deceased.
+  mother('MOTHER'),
+
+  /// The father.
+  father('FATHER'),
+
+  /// A son or daughter of the deceased.
+  child('CHILD'),
+
+  /// The deceased's wife or husband.
+  spouse('SPOUSE'),
+
+  /// A co-wife of the deceased.
+  coWife('CO_WIFE'),
+
+  /// A step-child: the deceased was the observer's step-mother.
+  stepChild('STEP_CHILD'),
+
+  /// A *sapiṇḍa* to the 7th generation, not named above.
+  sapinda('SAPINDA'),
+
+  /// A *samānodaka*, the 8th generation to the 14th.
+  samanodaka('SAMANODAKA'),
+
+  /// A *sagotra* beyond.
+  sagotra('SAGOTRA'),
+
+  /// A married daughter, for her parent's death.
+  marriedDaughter('MARRIED_DAUGHTER'),
+
+  /// A married brother or sister.
+  marriedSibling('MARRIED_SIBLING'),
+
+  /// The deceased was the observer's maternal grandfather.
+  maternalGrandfather('MATERNAL_GRANDFATHER'),
+
+  /// The deceased was the observer's maternal grandmother.
+  maternalGrandmother('MATERNAL_GRANDMOTHER'),
+
+  /// The deceased was the observer's maternal uncle.
+  maternalUncle('MATERNAL_UNCLE'),
+
+  /// A son-in-law: the deceased was his father- or mother-in-law.
+  sonInLaw('SON_IN_LAW'),
+
+  /// A parent-in-law: the deceased was the observer's son-in-law.
+  parentInLaw('PARENT_IN_LAW'),
+
+  /// A pupil: the deceased was the observer's *ācārya*.
+  pupil('PUPIL'),
+
+  /// The deceased was the observer's ācārya's wife or son.
+  acharyasFamily('ACHARYAS_FAMILY'),
+
+  /// An adopted son and his natural or adoptive parents, to each other.
+  adoption('ADOPTION'),
+
+  /// One of the three *bandhus*: cousins through a father's or mother's
+  /// sister or a mother's brother.
+  bandhu('BANDHU'),
+
+  /// A subject: the deceased was the ruler of the land.
+  subject('SUBJECT'),
+
+  /// A sapiṇḍa of an ascetic (*yati*).
+  ofAscetic('OF_ASCETIC');
+
+  const AshauchRelation(this.key);
+
+  @override
+  final String key;
+}
+
+/// A son or a daughter, which the texts' bands and the mother's further
+/// bar read.
+enum AshauchSex implements _Keyed {
+  /// Male.
+  male('MALE'),
+
+  /// Female.
+  female('FEMALE');
+
+  const AshauchSex(this.key);
+
+  @override
+  final String key;
+}
+
+/// Whether the deceased had the upanayana.
+enum Upanayana implements _Keyed {
+  /// Done.
+  done('DONE'),
+
+  /// Not yet done.
+  notDone('NOT_DONE'),
+
+  /// Not a rite of the deceased's community: the band before it runs to
+  /// marriage, or to the 16th year unmarried (*Dharmasindhu* pp. 300–301).
+  notPerformed('NOT_PERFORMED');
+
+  const Upanayana(this.key);
+
+  @override
+  final String key;
+}
+
+/// Where the death was, to the observer: the rows that turn on it.
+enum Nearness implements _Keyed {
+  /// In the observer's house.
+  observersHouse('OBSERVERS_HOUSE'),
+
+  /// In the observer's village or town; the default.
+  sameVillage('SAME_VILLAGE'),
+
+  /// In another village.
+  otherVillage('OTHER_VILLAGE');
+
+  const Nearness(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which day an event at night belongs to (the Mitākṣarā on Yājñavalkya
+/// III.20).
+enum NightRule implements _Keyed {
+  /// The night in three: the first two thirds belong to the day before,
+  /// the last to the day after.
+  thirds('THIRDS'),
+
+  /// Before the night's middle, the day before; after it, the day after.
+  halfNight('HALF_NIGHT'),
+
+  /// As [halfNight], at the civil midnight of the place's clock.
+  civilMidnight('CIVIL_MIDNIGHT'),
+
+  /// Any time before sunrise, the day before.
+  sunrise('SUNRISE');
+
+  const NightRule(this.key);
+
+  @override
+  final String key;
+}
+
+/// A span the texts name: a bath, a *sajyotiḥ*, a *pakṣiṇī*, a count of
+/// sunrise days, or the request's full period.
+final class AshauchLength extends _Value {
+  const AshauchLength._(this.key) : days = null;
+
+  /// *Sadyaḥ-śauca*: pure by a bath, at once.
+  static const AshauchLength bath = AshauchLength._('BATH');
+
+  /// *Sajyotiḥ*: an event by day ends at nightfall, one at night at
+  /// daybreak.
+  static const AshauchLength sajyotih = AshauchLength._('SAJYOTIH');
+
+  /// *Pakṣiṇī*: by day, that day, its night and the next day to nightfall;
+  /// at night, by the table's rule.
+  static const AshauchLength pakshini = AshauchLength._('PAKSHINI');
+
+  /// The request's full period, [AshauchRequest.fullDays].
+  static const AshauchLength full = AshauchLength._('FULL');
+
+  /// A count of [days] sunrise days, the first day the first.
+  const AshauchLength.count(int this.days) : key = 'DAYS';
+
+  /// The tag the boundary spells it with: `BATH`, `SAJYOTIH`, `PAKSHINI`,
+  /// `DAYS` or `FULL`.
+  final String key;
+
+  /// The count, for `DAYS`; null for the rest.
+  final int? days;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'length': key,
+    if (days case final days?) 'days': days,
+  };
+
+  static AshauchLength _read(Map<String, Object?> raw) {
+    final key = raw['length'];
+    if (key == 'DAYS') return AshauchLength.count(raw['days']! as int);
+    return const [bath, sajyotih, pakshini, full].firstWhere(
+      (length) => length.key == key,
+      orElse: () => throw StateError('an ashauch length $key'),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [key, days];
+}
+
+/// The deceased, by the facts the age bands read. Every fact is optional:
+/// left out with no [born], the deceased is an adult who had every rite;
+/// left out with a [born], a fact a band needs is asked for by a refusal
+/// rather than guessed.
+final class Deceased extends _Value {
+  const Deceased({
+    this.born,
+    this.sex,
+    this.chudakarana,
+    this.upanayana,
+    this.betrothed,
+    this.married,
+    this.buried = false,
+  });
+
+  /// When the deceased was born, a UTC Julian day.
+  final double? born;
+
+  /// The deceased's sex; the bands differ, and a parent's sex picks the
+  /// mother-and-father overlap rule.
+  final AshauchSex? sex;
+
+  /// Whether the *cūḍākaraṇa* was done; read from the age when null.
+  final bool? chudakarana;
+
+  /// The upanayana.
+  final Upanayana? upanayana;
+
+  /// A daughter's betrothal (*vāgdāna*).
+  final bool? betrothed;
+
+  /// Whether the deceased was married.
+  final bool? married;
+
+  /// Buried rather than cremated, as an infant may be.
+  final bool buried;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    if (born case final born?) 'born': born,
+    if (sex case final sex?) 'sex': sex.key,
+    if (chudakarana case final chudakarana?) 'chudakarana': chudakarana,
+    if (upanayana case final upanayana?) 'upanayana': upanayana.key,
+    if (betrothed case final betrothed?) 'betrothed': betrothed,
+    if (married case final married?) 'married': married,
+    if (buried) 'buried': true,
+  };
+
+  @override
+  List<Object?> get _fields => [
+    born,
+    sex,
+    chudakarana,
+    upanayana,
+    betrothed,
+    married,
+    buried,
+  ];
+}
+
+/// What happened: an [AshauchBirth], an [AshauchLoss] or an
+/// [AshauchDeath].
+sealed class AshauchEvent extends _Value {
+  const AshauchEvent();
+
+  /// When, a UTC Julian day.
+  double get at;
+
+  Map<String, Object?> get _record;
+}
+
+/// A birth from the 7th month on, live or still.
+final class AshauchBirth extends AshauchEvent {
+  const AshauchBirth({required this.at, this.child});
+
+  @override
+  final double at;
+
+  /// The child's sex, which sets the mother's further bar; null reports
+  /// none.
+  final AshauchSex? child;
+
+  @override
+  Map<String, Object?> get _record => <String, Object?>{
+    'event': 'BIRTH',
+    'at': at,
+    if (child case final child?) 'child': child.key,
+  };
+
+  @override
+  List<Object?> get _fields => [at, child];
+}
+
+/// A loss before the 7th month.
+final class AshauchLoss extends AshauchEvent {
+  const AshauchLoss({required this.at, required this.month});
+
+  @override
+  final double at;
+
+  /// The month of the pregnancy, 1 to 6.
+  final int month;
+
+  @override
+  Map<String, Object?> get _record => <String, Object?>{
+    'event': 'LOSS',
+    'at': at,
+    'month': month,
+  };
+
+  @override
+  List<Object?> get _fields => [at, month];
+}
+
+/// A death.
+final class AshauchDeath extends AshauchEvent {
+  const AshauchDeath({
+    required this.at,
+    this.crematedAt,
+    this.ahitagni = false,
+    this.deceased = const Deceased(),
+  });
+
+  @override
+  final double at;
+
+  /// The cremation, a UTC Julian day, from which the count starts for an
+  /// *āhitāgni*.
+  final double? crematedAt;
+
+  /// Whether the deceased kept the sacred fires: the count starts at the
+  /// cremation.
+  final bool ahitagni;
+
+  /// The deceased.
+  final Deceased deceased;
+
+  @override
+  Map<String, Object?> get _record => <String, Object?>{
+    'event': 'DEATH',
+    'at': at,
+    if (crematedAt case final crematedAt?) 'crematedAt': crematedAt,
+    if (ahitagni) 'ahitagni': true,
+    'deceased': deceased._record,
+  };
+
+  @override
+  List<Object?> get _fields => [at, crematedAt, ahitagni, deceased];
+}
+
+/// A period already running, as the overlap rules read it: the parts of an
+/// earlier [Ashauch] they need, which [Ashauch.running] gives.
+final class AshauchRunning extends _Value {
+  const AshauchRunning({
+    required this.key,
+    required this.kind,
+    required this.relation,
+    this.sex,
+    required this.start,
+    required this.end,
+    required this.length,
+    this.days,
+  });
+
+  /// The earlier answer's key, which an overlap names.
+  final String key;
+
+  /// A birth's or a death's.
+  final AshauchKind kind;
+
+  /// The earlier request's relation.
+  final AshauchRelation relation;
+
+  /// The deceased's sex, or the child's.
+  final AshauchSex? sex;
+
+  /// When it began, a UTC Julian day.
+  final double start;
+
+  /// When it ends, a UTC Julian day.
+  final double end;
+
+  /// Its length.
+  final AshauchLength length;
+
+  /// Its days, when the length is a count.
+  final int? days;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'key': key,
+    'kind': kind.key,
+    'relation': relation.key,
+    if (sex case final sex?) 'sex': sex.key,
+    'start': start,
+    'end': end,
+    'length': length._record,
+    if (days case final days?) 'days': days,
+  };
+
+  @override
+  List<Object?> get _fields => [
+    key,
+    kind,
+    relation,
+    sex,
+    start,
+    end,
+    length,
+    days,
+  ];
+}
+
+/// One ashauch request (`03-design/ashauch.md`): one event, one observer,
+/// and the periods already running for them.
+final class AshauchRequest extends _Value {
+  const AshauchRequest({
+    required this.key,
+    required this.event,
+    required this.relation,
+    this.heardAt,
+    this.abroad = false,
+    this.nearness,
+    this.fullDays,
+    this.during = const [],
+  });
+
+  /// The consumer's own key, which the answer repeats.
+  final String key;
+
+  /// What happened.
+  final AshauchEvent event;
+
+  /// Who the observer is to it.
+  final AshauchRelation relation;
+
+  /// When the news reached the observer, a UTC Julian day; the event's own
+  /// instant when null.
+  final double? heardAt;
+
+  /// Whether the observer was abroad: a fact the family gives, never
+  /// derived.
+  final bool abroad;
+
+  /// Where the death was, to the observer; [Nearness.sameVillage] when
+  /// null.
+  final Nearness? nearness;
+
+  /// The family's full period in days; ten when null.
+  final int? fullDays;
+
+  /// The periods already running for this observer, each an earlier
+  /// answer's [Ashauch.running]: the overlap rules read them.
+  final List<AshauchRunning> during;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'key': key,
+    'event': event._record,
+    'relation': relation.key,
+    if (heardAt case final heardAt?) 'heardAt': heardAt,
+    if (abroad) 'abroad': true,
+    if (nearness case final nearness?) 'nearness': nearness.key,
+    if (fullDays case final fullDays?) 'fullDays': fullDays,
+    if (during.isNotEmpty)
+      'during': [for (final running in during) running._record],
+  };
+
+  @override
+  List<Object?> get _fields => [
+    key,
+    event,
+    relation,
+    heardAt,
+    abroad,
+    nearness,
+    fullDays,
+    during,
+  ];
+}
+
+/// Why an ashauch's first day is the day it is.
+final class AshauchDayOneBy extends _Value {
+  const AshauchDayOneBy({required this.by, this.rule});
+
+  /// `DAYLIGHT`, the instant fell in the day's daylight, or `NIGHT`, it
+  /// fell in the night and [rule] gave the day.
+  final String by;
+
+  /// The night rule that gave the day; null by daylight.
+  final NightRule? rule;
+
+  @override
+  List<Object?> get _fields => [by, rule];
+}
+
+/// The clause that set an ashauch's span: the table's row, or the rule.
+final class AshauchClause extends _Value {
+  const AshauchClause({
+    required this.clause,
+    this.row,
+    this.said,
+    this.withinDays,
+    this.abroad,
+  });
+
+  /// The tag: `RELATION`, `BAND` or `LOSS` (a row of that part of the
+  /// table), `BIRTH_PERIOD_RUNS`, `REMAINDER` (heard inside the period, the
+  /// days left), `LATE` (heard past it, the late table's row), `LATE_BATH`,
+  /// `ROW_HEARD_LATE` (the relation row's own late length),
+  /// `SHORT_HEARD_LATE` or `BIRTH_HEARD_LATE`.
+  final String clause;
+
+  /// The row's index, for `RELATION`, `BAND`, `LOSS` and `ROW_HEARD_LATE`.
+  final int? row;
+
+  /// The row's text, beside [row].
+  final String? said;
+
+  /// For `LATE`: within how many days of the event the news came.
+  final int? withinDays;
+
+  /// For `LATE`: whether the abroad table answered.
+  final bool? abroad;
+
+  @override
+  List<Object?> get _fields => [clause, row, said, withinDays, abroad];
+}
+
+/// What a period already running did to an ashauch.
+final class AshauchOverlapped extends _Value {
+  const AshauchOverlapped({
+    required this.overlap,
+    required this.earlier,
+    this.days,
+  });
+
+  /// The tag: `ENDS_WITH_EARLIER` (it ends with the earlier period, which
+  /// is no shorter), `LAST_NIGHT` (known in the earlier equal period's
+  /// last night: its end and [days] more) or `MOTHER_AFTER_FATHER` (the
+  /// father's end and a pakṣiṇī).
+  final String overlap;
+
+  /// The earlier answer's key.
+  final String earlier;
+
+  /// The days added, for `LAST_NIGHT`.
+  final int? days;
+
+  @override
+  List<Object?> get _fields => [overlap, earlier, days];
+}
+
+/// The period of impurity after a birth or a death (`03-design/ashauch.md`),
+/// and the clause that set it.
+final class Ashauch extends _Value {
+  const Ashauch({
+    required this.key,
+    required this.kind,
+    required this.relation,
+    this.sex,
+    required this.start,
+    required this.dayOne,
+    required this.dayOneBy,
+    required this.end,
+    this.lastDay,
+    required this.length,
+    this.days,
+    required this.clause,
+    this.overlap,
+    this.ritesFrom,
+    required this.table,
+  });
+
+  /// The request's key.
+  final String key;
+
+  /// A birth's or a death's.
+  final AshauchKind kind;
+
+  /// The request's relation.
+  final AshauchRelation relation;
+
+  /// The deceased's sex, or the child's, as the request gave it.
+  final AshauchSex? sex;
+
+  /// When it began, a UTC Julian day: the event, the cremation, or the
+  /// hearing.
+  final double start;
+
+  /// The civil day it counts from.
+  final CalendarDate dayOne;
+
+  /// Why that day.
+  final AshauchDayOneBy dayOneBy;
+
+  /// When it ends, a UTC Julian day: a sunrise, a nightfall, or [start]
+  /// itself for a bath.
+  final double end;
+
+  /// The last day it touches, for a calendar to shade; null for a bath.
+  final CalendarDate? lastDay;
+
+  /// The length its clause named.
+  final AshauchLength length;
+
+  /// The days, when the length is a count.
+  final int? days;
+
+  /// The clause.
+  final AshauchClause clause;
+
+  /// What an overlap did, when it did.
+  final AshauchOverlapped? overlap;
+
+  /// When the mother may take part in rites again, a UTC Julian day, for
+  /// the mother of a birth under a table that reports it.
+  final double? ritesFrom;
+
+  /// The table's name.
+  final String table;
+
+  /// This period as a later request's [AshauchRequest.during] takes it.
+  AshauchRunning get running => AshauchRunning(
+    key: key,
+    kind: kind,
+    relation: relation,
+    sex: sex,
+    start: start,
+    end: end,
+    length: length,
+    days: days,
+  );
+
+  @override
+  List<Object?> get _fields => [
+    key,
+    kind,
+    relation,
+    sex,
+    start,
+    dayOne,
+    dayOneBy,
+    end,
+    lastDay,
+    length,
+    days,
+    clause,
+    overlap,
+    ritesFrom,
+    table,
+  ];
+}
+
+/// What `almanac.ashauch` answers.
+final class AshauchAnswer {
+  const AshauchAnswer({required this.value, required this.provenance});
+
+  /// The period.
+  final Ashauch value;
+
+  /// What computed it, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// `ts_almanac_ashauch`'s answer: the period as a value, with the
+/// provenance beside it.
+AshauchAnswer _ashauch(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final raw = envelope['value']! as Map<String, Object?>;
+  final by = raw['dayOneBy']! as Map<String, Object?>;
+  final clause = raw['clause']! as Map<String, Object?>;
+  final overlap = raw['overlap'] as Map<String, Object?>?;
+  double jd(Object? raw) => (raw! as num).toDouble();
+  return AshauchAnswer(
+    value: Ashauch(
+      key: raw['key']! as String,
+      kind: _keyedIn(AshauchKind.values, raw['kind']),
+      relation: _keyedIn(AshauchRelation.values, raw['relation']),
+      sex: raw['sex'] == null ? null : _keyedIn(AshauchSex.values, raw['sex']),
+      start: jd(raw['start']),
+      dayOne: _serdeDate(raw['dayOne']! as Map<String, Object?>),
+      dayOneBy: AshauchDayOneBy(
+        by: by['by']! as String,
+        rule:
+            by['rule'] == null ? null : _keyedIn(NightRule.values, by['rule']),
+      ),
+      end: jd(raw['end']),
+      lastDay:
+          raw['lastDay'] == null
+              ? null
+              : _serdeDate(raw['lastDay']! as Map<String, Object?>),
+      length: AshauchLength._read(raw['length']! as Map<String, Object?>),
+      days: raw['days'] as int?,
+      // The clause's fields are spelt as Rust names them: no rename reaches
+      // inside a variant, so `within_days` keeps its underscore.
+      clause: AshauchClause(
+        clause: clause['clause']! as String,
+        row: clause['row'] as int?,
+        said: clause['said'] as String?,
+        withinDays: clause['within_days'] as int?,
+        abroad: clause['abroad'] as bool?,
+      ),
+      overlap:
+          overlap == null
+              ? null
+              : AshauchOverlapped(
+                overlap: overlap['overlap']! as String,
+                earlier: overlap['earlier']! as String,
+                days: overlap['days'] as int?,
+              ),
+      ritesFrom: raw['ritesFrom'] == null ? null : jd(raw['ritesFrom']),
+      table: raw['table']! as String,
     ),
     provenance: Provenance.fromJson(
       envelope['provenance']! as Map<String, Object?>,

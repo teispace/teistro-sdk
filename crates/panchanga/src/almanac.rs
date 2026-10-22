@@ -37,6 +37,7 @@ use teistro_time::local_day::{
     Carried, LocalDay, local_day, local_day_carrying, local_day_lit, local_midnight,
 };
 
+use crate::ashauch::{self, Ashauch, AshauchRequest, AshauchTable};
 use crate::festival::{
     FestivalDay, Half, MoonArc, MoonArcs, Moonrise, Origin, OriginFound, SunEntry,
 };
@@ -317,6 +318,17 @@ struct SankalpaInput {
     longitude_deg: f64,
     altitude_m: f64,
     ayana: AyanaReckoning,
+}
+
+/// What an ashauch's answer is a function of.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+struct AshauchInput<'r> {
+    table: &'r AshauchTable,
+    request: &'r AshauchRequest,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    altitude_m: f64,
 }
 
 /// How long a moment is, days, over which a body's sign at an instant is
@@ -954,6 +966,59 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             }),
             frame,
         );
+        Ok(Envelope::new(value, provenance))
+    }
+
+    /// The ashauch `request` asks under `table` at a place
+    /// (`03-design/ashauch.md`): the days it reads are found around each
+    /// of [`AshauchRequest::anchors`], the day before through
+    /// [`AshauchRequest::reach`] days after, runs that meet joined into
+    /// one, so news heard years after the event costs two short runs
+    /// rather than the years between.
+    ///
+    /// # Errors
+    ///
+    /// As [`ashauch::ashauch`], and as [`Almanac::festival_days`] for each
+    /// run.
+    pub fn ashauch(
+        &self,
+        table: &AshauchTable,
+        request: &AshauchRequest,
+        place: &Place,
+    ) -> Result<Envelope<Ashauch>, Error> {
+        table.check()?;
+        request.check()?;
+        let reach = i64::from(request.reach(table));
+        let mut runs: Vec<(FixedDay, FixedDay)> = Vec::new();
+        for at in request.anchors() {
+            let (civil, _) = FixedDay::from_local_jd(self.clock.local_jd(at));
+            let (from, to) = (civil.plus_days(-2), civil.plus_days(reach));
+            match runs.last_mut() {
+                Some((_, last)) if from <= last.plus_days(1) => *last = (*last).max(to),
+                _ => runs.push((from, to)),
+            }
+        }
+        let mut days = Vec::new();
+        let mut stamp = None;
+        for (from, to) in runs {
+            let run = self.festival_days(
+                &self.calendar.date_of(from)?,
+                &self.calendar.date_of(to)?,
+                place,
+            )?;
+            days.extend(run.value);
+            stamp.get_or_insert(run.provenance);
+        }
+        let mut provenance =
+            stamp.ok_or_else(|| Error::internal("an ashauch request named no instant"))?;
+        provenance.input_hash = content_hash(&AshauchInput {
+            table,
+            request,
+            latitude_deg: place.latitude.get(),
+            longitude_deg: place.longitude.get(),
+            altitude_m: place.altitude.get(),
+        });
+        let value = ashauch::ashauch(table, request, &days, self.clock)?;
         Ok(Envelope::new(value, provenance))
     }
 

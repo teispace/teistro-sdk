@@ -198,6 +198,20 @@
     }
   },
   {
+    "record": "almanac.ashauch",
+    "request": {
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1337,
+      "utcOffsetSeconds": 20700,
+      "request": {
+        "key": "grandfather",
+        "relation": "SAPINDA",
+        "event": { "event": "DEATH", "at": 2461051.677083 }
+      }
+    }
+  },
+  {
     "record": "chart.rashifal",
     "request": {
       "periods": [
