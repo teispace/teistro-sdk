@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**An Ekadashi fast says how far the place can move** (P1-2,
+`festival-rules.md` §7.5). **Numbers:** no day moves. Each Ekadashi fast
+gains `marginSeconds`, as each observance has: the least time between an
+edge of the 10th, the 11th or the 12th and an instant the fast was decided
+from (the sunsets that give the 11th its own day, that day's sunrise, its
+arunodaya under a Vaishnava vedha, and the two sunrises after). A festival
+answer's JSON gains the field, so its content hash changes; every binding's
+`EkadashiFast` carries it.
+
 **The committee's star planets** (`committee-star-planets.md`, C38).
 **Numbers:** under `nepali-committee` (and so `nepal_official`) every
 chart's Mars, Mercury, Jupiter, Venus, Saturn and node move, by 1.6° to

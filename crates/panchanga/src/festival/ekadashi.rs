@@ -238,6 +238,14 @@ pub struct EkadashiFast {
     pub choice: Which,
     /// The fast.
     pub day: CalendarDate,
+    /// **How far the place can move**, in seconds of time, as an
+    /// observance's [`margin_seconds`](super::Observance::margin_seconds):
+    /// the least time between an edge of the 10th, the 11th or the 12th
+    /// and an instant the fast was decided from. Those are the sunsets
+    /// that give the 11th its own day, that day's sunrise (and its
+    /// arunodaya, for a rule pierced there), and the two sunrises after
+    /// it, which say what stands in excess.
+    pub margin_seconds: f64,
 }
 
 /// Every Ekadashi over consecutive sunrise days, under each rule.
@@ -288,7 +296,11 @@ pub fn ekadashis(rules: &[EkadashiRule], days: &[FestivalDay]) -> Result<Observa
 /// What an 11th's fast is decided by, whoever keeps it.
 struct Facts<'d> {
     tithis: [Interval; 3],
+    /// The day before the 11th's own: its sunset is one the own day
+    /// was chosen by.
+    before: &'d FestivalDay,
     days: [&'d FestivalDay; 2],
+    arunodaya: JulianDay<Utc>,
     pierced_at: Option<Vedha>,
     excess: Excess,
 }
@@ -320,9 +332,34 @@ impl Facts<'_> {
             excess: self.excess,
             choice,
             day: chosen.date.clone(),
+            margin_seconds: self.margin(rule.vedha) * SECONDS_PER_DAY,
         }
     }
+
+    /// The least time, in days, between an edge of the three tithis and
+    /// an instant a rule pierced at `vedha` decides by.
+    fn margin(&self, vedha: Vedha) -> f64 {
+        let [tenth, eleventh, twelfth] = self.tithis;
+        let [first, second] = self.days;
+        let edges = [tenth.from, eleventh.from, eleventh.to, twelfth.to].map(JulianDay::get);
+        let mut instants = vec![
+            self.before.sunset,
+            first.sunset,
+            first.sunrise,
+            second.sunrise,
+            second.next_sunrise,
+        ];
+        if vedha == Vedha::Arunodaya {
+            instants.push(self.arunodaya);
+        }
+        instants
+            .iter()
+            .flat_map(|instant| edges.map(|edge| (instant.get() - edge).abs()))
+            .fold(f64::INFINITY, f64::min)
+    }
 }
+
+const SECONDS_PER_DAY: f64 = 86_400.0;
 
 /// The 11th's two days and what stands on them (§8.2, C181).
 fn facts(days: &[FestivalDay], tithis: [Interval; 3]) -> Result<Facts<'_>, &'static str> {
@@ -356,7 +393,9 @@ fn facts(days: &[FestivalDay], tithis: [Interval; 3]) -> Result<Facts<'_>, &'sta
     );
     Ok(Facts {
         tithis,
+        before,
         days: [first, second],
+        arunodaya,
         pierced_at,
         excess,
     })

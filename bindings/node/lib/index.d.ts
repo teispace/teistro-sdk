@@ -6776,6 +6776,8 @@ export interface EkadashiFast {
   readonly choice: FestivalWhich;
   /** The fast. */
   readonly day: CalendarDate;
+  /** How far the place can move: the seconds of time every instant the fast was decided from (the sunsets that give the 11th its own day, that day's sunrise and, under a Vaishnava vedha, its arunodaya, and the two sunrises after) may move, as another place moves them, before the day can change. */
+  readonly marginSeconds: number;
 }
 
 /** A day's window for the rite, and the fraction of it the tithi held. */

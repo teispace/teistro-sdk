@@ -234,3 +234,28 @@ fn a_rule_without_a_key_is_refused_by_it() {
     let error = ekadashis(&[keyless], &[]).unwrap_err();
     assert_eq!(error.field(), Some("key"));
 }
+
+/// The margin is the least time between an edge of the three tithis and
+/// an instant the fast was decided from, so the Vaishnava's arunodaya
+/// counts for that rule alone: the 10th ends 1½ ghatis past arunodaya
+/// (ghati 56) and 2½ before the 11th's sunrise, and every other edge is
+/// further from every instant.
+#[test]
+fn each_rule_s_margin_is_its_own_nearest_instant() {
+    let found = fasts([(1, 57.5), (3, 5.0), (4, 10.0)]);
+    let ghati_seconds = 86_400.0 / 60.0;
+    for fast in &found {
+        let expected = if fast.rule == "EKADASHI_VAISHNAVA" {
+            1.5
+        } else {
+            2.5
+        } * ghati_seconds;
+        assert!(
+            (fast.margin_seconds - expected).abs() < 1e-3,
+            "{}: {}",
+            fast.rule,
+            fast.margin_seconds
+        );
+    }
+    assert_eq!(found.len(), KEYS.len());
+}

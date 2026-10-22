@@ -4222,6 +4222,8 @@ class AnEngine(WithLibrary):
             bare = ctx.almanac.of(**days, festivals={"rules": "DHARMASINDHU"}, days=False)
             self.assertEqual((len(bare), bare.festivals), (0, answer))
             self.assertTrue(all(o.margin_seconds >= 0 for o in answer.observances))
+            self.assertTrue(answer.ekadashis)
+            self.assertTrue(all(f.margin_seconds > 0 for f in answer.ekadashis))
 
             sunrise = {
                 "key": "LAKSHMI_PUJA",

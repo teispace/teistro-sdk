@@ -398,7 +398,11 @@ within that of these. An app grouping places compares it with how far
 its other place's sunrise and sunset move, which it has already: a
 degree of longitude in one time zone is four minutes. A decision between
 two equal parts (C170) has no room at all and reports 0. An Ekadashi
-fast is decided by its own clauses (§8) and does not carry one yet.
+fast is decided by its own clauses (§8) and carries its own: the least
+time between an edge of the 10th, the 11th or the 12th and the instants
+those clauses read, the sunsets that give the 11th its own day, that
+day's sunrise (and its arunodaya under a Vaishnava vedha) and the two
+sunrises after.
 
 ## 8. Ekadashi
 

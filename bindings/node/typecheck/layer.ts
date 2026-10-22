@@ -2175,7 +2175,7 @@ function theFestivals(almanac: Almanac): string {
     const [first, second] = fast.days;
     const [, eleventh] = fast.tithis;
     const at: EkadashiVedha | null = fast.piercedAt;
-    return `${fast.rule} ${fast.tithi} ${fast.month} ${fast.adhika} ${eleventh.from} ${first.day} ${second.day} ${at} ${fast.pierced} ${fast.excess} ${fast.choice} ${fast.day.day}`;
+    return `${fast.rule} ${fast.tithi} ${fast.month} ${fast.adhika} ${eleventh.from} ${first.day} ${second.day} ${at} ${fast.pierced} ${fast.excess} ${fast.choice} ${fast.day.day} ${fast.marginSeconds}`;
   });
   const unjudged = answer.unjudged.map((u) => `${u.rule} ${u.tithi.from} ${u.why}`);
   const madhava: EkadashiRule = {

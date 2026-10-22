@@ -4200,6 +4200,8 @@ test('an almanac carries the festivals it was asked for', () => {
   const bare = ctx.almanac.of({ ...days, festivals: { rules: 'DHARMASINDHU' }, days: false });
   assert.equal(bare.length, 0);
   assert.ok(answer.observances.every((o) => o.marginSeconds >= 0));
+  assert.ok(answer.ekadashis.length > 0);
+  assert.ok(answer.ekadashis.every((f) => f.marginSeconds > 0));
   assert.throws(() => ctx.almanac.festivals(days), /festivals: expected a festivals request/);
   assert.deepEqual(
     answer.observances.map((o) => o.rule),

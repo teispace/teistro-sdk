@@ -19,10 +19,16 @@ import java.util.List;
  *     own: {@code ELEVENTH}, {@code TWELFTH}, {@code BOTH} or {@code NEITHER}
  * @param choice the table's day, {@code EARLIER} or {@code LATER}, which {@code day} resolves
  * @param day the fast
+ * @param marginSeconds how far the place can move: the seconds of time every instant the
+ *     fast was decided from (the sunsets that give the 11th its own day,
+ *     that day's sunrise and, under a Vaishnava vedha, its arunodaya, and
+ *     the two sunrises after) may move, as another place moves them,
+ *     before the day can change
  */
 public record EkadashiFast(
         String rule, Tithi tithi, Masa month, boolean adhika, List<Interval> tithis, List<CalendarDate> days,
-        String piercedAt, boolean pierced, String excess, String choice, CalendarDate day) {
+        String piercedAt, boolean pierced, String excess, String choice, CalendarDate day,
+        double marginSeconds) {
     /** Keeps the lists unmodifiable. */
     public EkadashiFast {
         tithis = List.copyOf(tithis);

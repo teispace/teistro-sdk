@@ -2767,6 +2767,8 @@ void _engineTests() {
     expect(lean.provenance.contentHash, answer.provenance.contentHash);
     expect(lean.provenance.inputHash, answer.provenance.inputHash);
     expect(answer.observances.every((o) => o.marginSeconds >= 0), isTrue);
+    expect(answer.ekadashis, isNotEmpty);
+    expect(answer.ekadashis.every((f) => f.marginSeconds > 0), isTrue);
     expect(
       [for (final observance in answer.observances) observance.rule],
       [

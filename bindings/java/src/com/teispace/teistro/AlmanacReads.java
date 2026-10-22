@@ -207,7 +207,8 @@ final class AlmanacReads {
                 Reads.flag(f, "pierced"),
                 Reads.string(f, "excess"),
                 Reads.string(f, "choice"),
-                Reads.serdeDate(Reads.field(f, "day")));
+                Reads.serdeDate(Reads.field(f, "day")),
+                Reads.number(f, "marginSeconds"));
     }
 
     /** The {@code years} section: the envelope's years, with the provenance beside them. */

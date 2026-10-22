@@ -1314,6 +1314,9 @@ public final class BindingTest {
                 check(!lean.observances().isEmpty()
                         && lean.observances().stream().allMatch(o -> o.marginSeconds() >= 0),
                         "each observance says how far the place can move");
+                check(!lean.ekadashis().isEmpty()
+                        && lean.ekadashis().stream().allMatch(f -> f.marginSeconds() > 0),
+                        "each Ekadashi fast says how far the place can move");
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
                 int varjyam = 0;
                 for (AlmanacDay day : week) {

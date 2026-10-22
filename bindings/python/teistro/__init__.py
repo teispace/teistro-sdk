@@ -7349,6 +7349,13 @@ class EkadashiFast:
     choice: Literal["EARLIER", "LATER"]
     """The table's day, which `day` resolves."""
 
+    margin_seconds: float
+    """How far the place can move: the seconds of time every instant the fast
+    was decided from (the sunsets that give the 11th its own day, that
+    day's sunrise and, under a Vaishnava vedha, its arunodaya, and the two
+    sunrises after) may move, as another place moves them, before the day
+    can change."""
+
     day: CalendarDate
     """The fast."""
 
@@ -14221,6 +14228,7 @@ def _ekadashi_fast(raw: Mapping[str, Any]) -> EkadashiFast:
         excess=raw["excess"],
         choice=raw["choice"],
         day=_serde_date(raw["day"]),
+        margin_seconds=float(raw["marginSeconds"]),
     )
 
 

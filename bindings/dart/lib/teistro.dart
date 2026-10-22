@@ -14487,6 +14487,7 @@ final class EkadashiFast extends _Value {
     required this.excess,
     required this.choice,
     required this.day,
+    required this.marginSeconds,
   });
 
   /// The rule's key.
@@ -14520,6 +14521,12 @@ final class EkadashiFast extends _Value {
   final String choice;
   final CalendarDate day;
 
+  /// How far the place can move: the seconds of time every instant the fast was
+  /// decided from (the sunsets that give the 11th its own day, that day's
+  /// sunrise and, under a Vaishnava vedha, its arunodaya, and the two sunrises
+  /// after) may move, as another place moves them, before the day can change.
+  final double marginSeconds;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -14534,6 +14541,7 @@ final class EkadashiFast extends _Value {
     excess,
     choice,
     ..._dateFields(day),
+    marginSeconds,
   ];
 }
 
@@ -14935,6 +14943,7 @@ EkadashiFast _ekadashiFast(Map<String, Object?> raw) => EkadashiFast(
   excess: raw['excess']! as String,
   choice: raw['choice']! as String,
   day: _serdeDate(_festivalAt(raw['day'])),
+  marginSeconds: (raw['marginSeconds']! as num).toDouble(),
 );
 
 /// The `festivals` section: the envelope's value, its dates in this
