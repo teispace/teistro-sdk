@@ -504,9 +504,23 @@ longevity module's spans over a year of births. It requires two or more
 different firsts, and it fails when the weakest is chosen or a group is
 run from its weakest.
 
-`NAISARGIKA` is not this dasha. Its row is a fixed natural order over the
-natural years, which no source read here states, so it stays on the
-coverage page.
+**The Naisargika dasha** is the fourth, and its source was in hand all
+along: BPHS ch. 43 vv. 16 and 17, the Nisargayu verses, give "the Moon,
+Mars, Mercury, Venus, Jupiter, the Sun and Saturn, in order, 1, 2, 9, 20,
+18, 20 and 50 years … from the time of birth, in order, these are the
+natural dashas" (`NAISARGIKA_LORDS`, 120 years). It runs whole from birth
+in 360-day years, as the spans are counted. Its division is unstated
+there. Ch. 51 v. 13 gives "the three piṇḍa dashas", the Naisargi among
+them, vv. 13 to 16's shares, so those are the default, worked from the
+seven's signs and shadbala in rupas. The lagna has no period here, so it
+gives no share. `naisargika_division` offers vv. 1 and 2's proportion and
+vv. 3 and 4's equal parts (C743). V. 17's fixed order and v. 202's
+strongest-first order for the Naisargi dasha are both offered: this
+dasha is v. 17's, and `AAYU` under `ayurdaya_span: NISARGAYU` is v. 202's
+(C744). Like the ayurdaya dasha, a reading stores its second level and
+rebuilds from it. `a_reading_carries_the_naisargika_dasha_in_the_natural_order`
+works each mahadasha's shares from the verse against the document's own
+signs and shadbala, and a wrong trikona share fails it.
 
 ## Kernels
 
@@ -599,7 +613,7 @@ Abbreviations: Su Mo Ma Me Ju Ve Sa Ra Ke. All rows below use
 | Tithi-Yogini | tithi | to confirm | | 1 | | as Yogini | 36 | T |
 | Yoga-Vimshottari | yoga | to confirm | | 1 | | as Vimshottari | 120 | T |
 | Karana-Chaturashiti | karana | to confirm | | 1 | | as Chaturashiti-sama | 84 | T |
-| Naisargika | fixed | | | | | natural order, lifespan periods | | S (lord order and years) |
+| Naisargika | fixed | | | | | K-graha: the natural order and years from birth (ch. 43 vv. 16–17), ch. 51 vv. 13–16's shares (§ K-graha) | | T |
 | Tara | | | | | | Vimshottari's table begun from the strongest kendra graha (ch. 46 vv. 207–209); the periods are the table's, the first lord the chart's (§ The four) | | S |
 | Kaala, Rashmi, Buddhi-Gathi, Moola, Saptarishi | nakshatra | | | | | udu-shaped | | S |
 | Karaka | | | | | | K-graha: the chara karakas, each the count from the lagna to its sign (ch. 46 v. 178) | | S |

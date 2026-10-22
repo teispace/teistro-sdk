@@ -111,7 +111,7 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 9] = [
+const NOT_BUILT: [(&str, Blocker, &str); 8] = [
     (
         "TITHI_ASHTOTTARI",
         Blocker::Text,
@@ -135,12 +135,6 @@ const NOT_BUILT: [(&str, Blocker, &str); 9] = [
         "KARANA_CHATURASHITI",
         Blocker::Text,
         "Chaturashiti-sama's table seeded by the **karana**, on a sixty-fold cycle",
-    ),
-    (
-        "NAISARGIKA",
-        Blocker::Text,
-        "the natural order and the lifespan periods it divides are both unsettled \
-         here, which is the whole of the row",
     ),
     (
         "PANCHASWARA",

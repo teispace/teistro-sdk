@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Naisargika dasha** (`dasha-kernels.md`, C743, C744). **Numbers:**
+none computed move; a system that refused now answers. Every settings
+hash moved with the new knob and `NAISARGIKA`'s `year_length` default of
+`SAVANA_360`. BPHS ch. 43 vv. 16 and 17 run the seven from birth in
+their natural order for their natural years: the Moon 1, Mars 2, Mercury
+9, Venus 20, Jupiter 18, the Sun 20 and Saturn 50. The antardashas are
+ch. 51 vv. 13 to 16's shares by default, which v. 13 gives the three
+pinda dashas. The dasha group's `naisargika_division` offers the
+proportional and the equal division. The coverage page reads 37 computed
+and 8 left, every one blocked on text.
+
 **The ayurdaya dasha** (`dasha-kernels.md`, C738, C740 to C742).
 **Numbers:** a Karaka or Tara sub-period's ends may move in their last
 bits, both ends now read from one running sum so that each meets the

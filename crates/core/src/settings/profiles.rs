@@ -16,13 +16,13 @@ use super::knobs::{
     DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
     GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
-    NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy,
-    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
-    ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
-    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
-    Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn,
-    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NaisargikaDivision, NakshatraScheme,
+    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
+    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
+    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
+    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
+    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -235,6 +235,7 @@ pub fn root() -> Settings {
             // (crux C735).
             strongest_graha: StrongestGraha::ShadbalaTotal,
             ayurdaya_place: AntardashaPlace::Share,
+            naisargika_division: NaisargikaDivision::Shares,
             ayurdaya_span: AyurdayaSpan::Strongest,
             ayurdaya_readings: AyurdayaReadings::Bphs,
         },
@@ -562,16 +563,18 @@ fn surya_siddhanta() -> Profile {
 /// Every system's year: 365.25 days, but releasing's and the decennials'
 /// 360, the year Valens distributes in (*Anthologies* IV.9 and VI.5,
 /// `03-design/hellenistic-time-lords.md`, `hellenistic-decennials.md`), and
-/// the ayurdaya dashas' 360, the year their spans are counted in (*Jataka
-/// Parijata* ch. 5 v. 34, which turns them into solar years by 360 over
-/// 365).
+/// the ayurdaya and Naisargika dashas' 360, the year their spans are
+/// counted in (*Jataka Parijata* ch. 5 v. 34, which turns them into solar
+/// years by 360 over 365).
 fn year_lengths() -> BTreeMap<DashaSystem, YearLength> {
     DashaSystem::ALL
         .iter()
         .map(|system| {
             let length = match (system, system.attributes().family) {
                 (_, DashaFamily::Releasing | DashaFamily::Decennials)
-                | (DashaSystem::Aayu | DashaSystem::Ashtakavarga, _) => YearLength::Savana360,
+                | (DashaSystem::Aayu | DashaSystem::Ashtakavarga | DashaSystem::Naisargika, _) => {
+                    YearLength::Savana360
+                }
                 _ => YearLength::Julian36525,
             };
             (*system, length)

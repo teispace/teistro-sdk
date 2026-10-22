@@ -80,6 +80,7 @@ every shipped profile. The v1 inventory:
 | dasha | `ayurdaya_span` | enum | `STRONGEST` (the default: the span of the strongest of the lagna, Sun and Moon, BPHS ch. 43 vv. 30 to 32), `PINDAYU`, `AMSAYU`, `NISARGAYU` (that span, the Paindi, Amshi or Naisargi dasha); which span's years the ayurdaya dasha runs (ch. 46 v. 201, crux C742) |
 | dasha | `ayurdaya_readings` | enum | `BPHS` (the default), `JATAKA_PARIJATA` (ch. 5's reductions); whose readings of the reductions give the ayurdaya dasha's years (crux C742) |
 | dasha | `ayurdaya_place` | enum | `SHARE` (the default: one body per share the verse names, the two trikonas one place and the fourth and eighth another), `HOUSE` (one per house); which of several in one place takes a share of an ayurdaya dasha's antardashas (BPHS ch. 51 v. 14, crux C741) |
+| dasha | `naisargika_division` | enum | `SHARES` (the default: BPHS ch. 51 vv. 13 to 16's shares among the seven, by their signs and shadbala), `PROPORTIONAL` (vv. 1 and 2), `EQUAL` (vv. 3 and 4); how the Naisargika dasha divides a period, which ch. 43 vv. 16 and 17 leave unstated (crux C743) |
 | dasha | `shanta_sign` | enum | `FRIENDLY` (the default, a friend's or great friend's sign), `FRIEND` (crux C79) |
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |

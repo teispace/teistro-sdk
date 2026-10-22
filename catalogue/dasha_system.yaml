@@ -135,11 +135,13 @@ members:
   - key: NAISARGIKA
     id: 16
     doc: "Naisargika"
-    attributes: { family: UDU }
+    attributes: { family: GRAHA }
     sources:
+      - text: "BPHS"
+        ref: "ch. 43 vv. 16 and 17: the Moon, Mars, Mercury, Venus, Jupiter, the Sun and Saturn for 1, 2, 9, 20, 18, 20 and 50 years from birth; ch. 51 v. 13 gives its antardashas the three pinda dashas' shares"
       - text: "dasha-kernels"
         ref: "docs/03-design/dasha-kernels.md"
-    mark: S
+    mark: T
   - key: TARA
     id: 17
     doc: "Tara"
