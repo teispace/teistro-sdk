@@ -6619,7 +6619,7 @@ export interface AnniversaryDay {
  * the panchanga prints, each rule fitted to the committee's editions and
  * citing its page (§10).
  */
-export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA';
+export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA';
 
 /**
  * An observance on the day a number of civil days after another rule's
@@ -6822,6 +6822,45 @@ export interface EkadashiRule {
   readonly table: { readonly pure: EkadashiKinds; readonly pierced: EkadashiKinds };
   /** When the fast is broken (§8.5); a rule without one answers no parana. */
   readonly parana?: ParanaRule;
+  /** The mahadvadashis that name its fast or move it onto the 12th's day (§8.9); `{}` keeps all eight as the text reads them. */
+  readonly mahadvadashi?: MahadvadashiRule;
+}
+
+/** One of the eight mahadvadashis of *Hari Bhakti Vilasa* 13.265 (`03-design/festival-rules.md` §8.9). */
+export type MahadvadashiKind =
+  | 'UNMILANI'
+  | 'VYANJULI'
+  | 'TRISPRISHA'
+  | 'PAKSHAVARDHINI'
+  | 'JAYA'
+  | 'VIJAYA'
+  | 'JAYANTI'
+  | 'PAPANASHINI';
+
+/** Which mahadvadashis an Ekadashi keeps and how each is read; each field left out takes the text's reading. */
+export interface MahadvadashiRule {
+  /** The kinds kept, the first that holds setting the fast; the default is all eight, the 12th's day before Unmilani's. */
+  readonly kinds?: readonly MahadvadashiKind[];
+  /** Where the 11th stands on a Trisprisha's day: at sunrise (the default) or at arunodaya alone, 13.269's letter. */
+  readonly trisprisha?: 'SUNRISE' | 'ARUNODAYA';
+  /** What a nakshatra kind's joining (13.286–287) is measured against: two sunrises (the default), the 12th, or from sunrise. */
+  readonly joining?: 'TWO_SUNRISES' | 'OUTLASTS_TWELFTH' | 'BEGUN_IN_DAYLIGHT';
+  /** How much of the 12th a Vyanjuli needs past the second sunrise: any (the default) or half a muhurta (13.356). */
+  readonly vyanjuli?: 'ANY' | 'HALF_MUHURTA';
+  /** Whether Unmilani and Vyanjuli need the 11th pure at arunodaya, *sampurna* (the default). */
+  readonly sampurna?: boolean;
+}
+
+/** A mahadvadashi that held, and the fast it set. */
+export interface Mahadvadashi {
+  /** The kind that set the fast: the first of the rule's kinds that held. */
+  readonly kind: MahadvadashiKind;
+  /** Every kind that held, in the rule's order. */
+  readonly held: readonly MahadvadashiKind[];
+  /** The verse that defines `kind`. */
+  readonly clause: string;
+  /** The joined nakshatra and its whole stay, for Jaya, Vijaya, Jayanti and Papanashini. */
+  readonly joined?: { readonly nakshatra: Nakshatra; readonly span: Interval };
 }
 
 /** A daylight window a parana is kept in: a fifth of the daylight, or a run of its muhurtas. */
@@ -6870,7 +6909,7 @@ export interface ParanaBarred {
 }
 
 /** What set an edge of the window a parana was kept in. */
-export type ParanaEdge = 'WINDOW' | 'HARI_VASARA' | 'TITHI_START' | 'TITHI_END' | 'NAKSHATRA';
+export type ParanaEdge = 'WINDOW' | 'HARI_VASARA' | 'TITHI_START' | 'TITHI_END' | 'NAKSHATRA' | 'JOINED_NAKSHATRA';
 
 /** The window a parana was kept in, and the clause that set each edge. */
 export interface ParanaKept {
@@ -6915,14 +6954,16 @@ export interface EkadashiFast {
   /** Whether that pierces by the rule's vedha. */
   readonly pierced: boolean;
   readonly excess: EkadashiExcess;
-  /** The table's day, which `day` resolves. */
+  /** The table's day, which `day` resolves unless a mahadvadashi moved it. */
   readonly choice: FestivalWhich;
-  /** The fast. */
+  /** The fast: `choice`'s day, or the one a mahadvadashi set, which may be the day after both. */
   readonly day: CalendarDate;
   /** How far the place can move: the seconds of time every instant the fast was decided from (the sunsets that give the 11th its own day, that day's sunrise and, under a Vaishnava vedha, its arunodaya, and the two sunrises after) may move, as another place moves them, before the day can change. */
   readonly marginSeconds: number;
   /** When it is broken, under the rule's parana; absent for a rule without one. */
   readonly parana?: Parana;
+  /** The mahadvadashi that set `day`, when the rule keeps them and one held. */
+  readonly mahadvadashi?: Mahadvadashi;
 }
 
 /** A day's window for the rite, and the fraction of it the tithi held. */

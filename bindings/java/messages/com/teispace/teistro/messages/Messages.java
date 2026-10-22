@@ -6297,6 +6297,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.EKADASHI_GAUDIYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ekadashiGaudiya() {
+                    return r.entity("festival.EKADASHI_GAUDIYA");
+                }
+
+                /**
                  * The forms of `festival.EKADASHI_SHRADDHA` in the current locale.
                  *
                  * @return the forms

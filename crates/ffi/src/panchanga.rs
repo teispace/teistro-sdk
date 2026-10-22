@@ -249,7 +249,7 @@ pub struct TsPanchangaRequest {
     /// `api: nullable example={"rules":"RAMAN_MARRIAGE"}`
     pub muhurta_json: *const c_char,
     /// The days festival rules fall on over the same days, as a JSON
-    /// object: `rules`, a shipped pack (`DHARMASINDHU`, `NEPAL`, `NEPAL_PANCHANGA`, `PITRI_PAKSHA`) or
+    /// object: `rules`, a shipped pack (`DHARMASINDHU`, `NEPAL`, `NEPAL_PANCHANGA`, `PITRI_PAKSHA`, `GAUDIYA`) or
     /// a list whose items name a pack or spell a rule out, a later rule
     /// replacing an earlier one with its key; an item with a `vedha` is
     /// an Ekadashi rule, one with an `after` a rule counting `days` civil

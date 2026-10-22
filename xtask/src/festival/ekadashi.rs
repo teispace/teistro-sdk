@@ -275,11 +275,14 @@ pub(super) fn covers(year: i32) -> bool {
 }
 
 /// The observer each shipped rule is read against, and the record's day
-/// for it.
-const OBSERVERS: [(&str, &str); 3] = [
+/// for it. The ISKCON list is read against *Dharmasindhu*'s Vaishnava,
+/// whose partings are its mahadvadashis, and against the Gaudiya rule
+/// that keeps them (`festival-rules.md` §8.9).
+const OBSERVERS: [(&str, &str); 4] = [
     ("EKADASHI_SMARTA", "Smarta"),
     ("EKADASHI_SMARTA_RENUNCIANT", "Gauna"),
     ("EKADASHI_VAISHNAVA", "ISKCON"),
+    ("EKADASHI_GAUDIYA", "ISKCON"),
 ];
 
 /// Why a rule parts from the record.
@@ -520,7 +523,9 @@ pub(super) fn render(out: &mut String, measured: &[Measured]) {
          Drik Panchang's New Delhi lists for {}–{}: its Ekadashi list's day for\n\
          the Smarta householder, its Gauna day for the renunciant where that\n\
          differs, and its ISKCON list for the Vaishnava. The rules are\n\
-         `EkadashiRule::dharmasindhu()` (`festival-rules.md` §8).\n",
+         `EkadashiRule::dharmasindhu()` (`festival-rules.md` §8) and\n\
+         `EkadashiRule::hari_bhakti_vilasa()` (§8.9), the Gaudiya rule with its\n\
+         mahadvadashis, which the Vaishnava's partings are.\n",
         YEARS.start(),
         YEARS.end()
     );

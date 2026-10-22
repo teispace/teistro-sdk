@@ -37,15 +37,21 @@ pub enum FestivalPack {
     /// mahalaya on each death tithi of Bhadrapada's dark half and the
     /// fortnight's own days, each at aparahna.
     PitriPaksha,
+    /// The Gaudiya Vaishnavas' Ekadashi after *Hari Bhakti Vilasa*
+    /// ([`EkadashiRule::hari_bhakti_vilasa`], `festival-rules.md` §8.9):
+    /// the Vaishnava's table and the eight mahadvadashis that name the
+    /// fast or move it onto the 12th's day.
+    Gaudiya,
 }
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 4] = [
+    pub const ALL: [FestivalPack; 5] = [
         FestivalPack::Dharmasindhu,
         FestivalPack::Nepal,
         FestivalPack::NepalPanchanga,
         FestivalPack::PitriPaksha,
+        FestivalPack::Gaudiya,
     ];
 
     /// Its key, as a request names it.
@@ -56,6 +62,7 @@ impl FestivalPack {
             FestivalPack::Nepal => "NEPAL",
             FestivalPack::NepalPanchanga => "NEPAL_PANCHANGA",
             FestivalPack::PitriPaksha => "PITRI_PAKSHA",
+            FestivalPack::Gaudiya => "GAUDIYA",
         }
     }
 
@@ -71,6 +78,7 @@ impl FestivalPack {
                 rules
             }
             FestivalPack::PitriPaksha => FestivalRule::pitri_paksha(),
+            FestivalPack::Gaudiya => Vec::new(),
         }
     }
 
@@ -82,6 +90,7 @@ impl FestivalPack {
                 EkadashiRule::dharmasindhu()
             }
             FestivalPack::PitriPaksha => Vec::new(),
+            FestivalPack::Gaudiya => vec![EkadashiRule::hari_bhakti_vilasa()],
         }
     }
 
@@ -89,9 +98,10 @@ impl FestivalPack {
     #[must_use]
     pub fn dated(self) -> Vec<DatedRule> {
         match self {
-            FestivalPack::Dharmasindhu | FestivalPack::Nepal | FestivalPack::PitriPaksha => {
-                Vec::new()
-            }
+            FestivalPack::Dharmasindhu
+            | FestivalPack::Nepal
+            | FestivalPack::PitriPaksha
+            | FestivalPack::Gaudiya => Vec::new(),
             FestivalPack::NepalPanchanga => DatedRule::nepal_panchanga(),
         }
     }
@@ -100,7 +110,9 @@ impl FestivalPack {
     #[must_use]
     pub fn following(self) -> Vec<FollowingRule> {
         match self {
-            FestivalPack::Dharmasindhu | FestivalPack::PitriPaksha => Vec::new(),
+            FestivalPack::Dharmasindhu | FestivalPack::PitriPaksha | FestivalPack::Gaudiya => {
+                Vec::new()
+            }
             FestivalPack::Nepal => FollowingRule::nepal(),
             FestivalPack::NepalPanchanga => {
                 let mut rules = FollowingRule::nepal();
@@ -361,13 +373,15 @@ impl FestivalRequest {
     }
 
     /// How many days the request reaches past an observance's own:
-    /// the most any rule counts from another's, or from the Sun's entry.
+    /// the most any rule counts from another's, or from the Sun's entry,
+    /// or an Ekadashi's mahadvadashis read past the 11th's day.
     #[must_use]
     pub fn reach(&self) -> u8 {
         self.following
             .iter()
             .map(|rule| rule.days)
             .chain(self.dated.iter().map(DatedRule::reach))
+            .chain(self.ekadashis.iter().map(EkadashiRule::reach))
             .max()
             .unwrap_or(0)
     }

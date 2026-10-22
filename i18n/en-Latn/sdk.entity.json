@@ -2900,6 +2900,11 @@
       "prose": "Vaishnava Ekadashi",
       "iast": "Vaiṣṇava Ekādaśī"
     },
+    "EKADASHI_GAUDIYA": {
+      "name": "Gaudiya Ekadashi",
+      "prose": "Gaudiya Ekadashi",
+      "iast": "Gauḍīya Ekādaśī"
+    },
     "CHAITE_DASHAIN": {
       "name": "Chaite Dashain",
       "prose": "Chaite Dashain",

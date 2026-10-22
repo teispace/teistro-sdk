@@ -24,7 +24,7 @@ use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     AnniversaryDay, AnniversaryKind, Case, Choice, Dated, DatedObservance, DatedRule, DayPart,
     Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule, Guard, Half, InAdhika,
-    MonthClause, Moonrise, NakshatraBar, Observances, Occurs, OriginFound, ParanaBarred, Predicate,
+    MonthClause, MoonArcs, Moonrise, NakshatraBar, Observances, Occurs, OriginFound, ParanaBarred, Predicate,
     SunEntry, Unjudged, VrataEdge, VrataParana, VrataParanaTime, Which, Window, dated, ekadashis,
     following, observances, yugma,
 };
@@ -397,6 +397,27 @@ fn decided(rule: &FestivalRule, days: &[FestivalDay]) -> (Case, u8, Decided) {
         observance.day.day - 1,
         observance.decided_by.clone(),
     )
+}
+
+/// The Devi's visarjana (DS p. 70) on a 10th that holds the earlier
+/// day's morning and ends before the later sunrise: the earlier day, by
+/// its second guard, Shravana joining it nowhere.
+#[test]
+fn devi_visarjan_keeps_a_tenth_that_never_reaches_the_later_morning() {
+    let rule = shipped("DEVI_VISARJAN");
+    let tithis = [
+        (Tithi::ShuklaNavami, ghati(1, 5.0)),
+        (Tithi::ShuklaDashami, ghati(1, 58.0)),
+        (Tithi::ShuklaEkadashi, ghati(5, 0.0)),
+    ];
+    let mut days = days_of(&tithis, &[], Masa::Ashwina, MonthKind::Nija);
+    for day in &mut days {
+        day.moon_arcs = MoonArcs::Found(Vec::new());
+    }
+    assert_eq!(
+        decided(&rule, &days),
+        (Case::EarlierOnly, 1, Decided::Guard { index: 1 })
+    );
 }
 
 /// Vijaya Dashami (p. 71): the earlier day holds aparahna alone, but the

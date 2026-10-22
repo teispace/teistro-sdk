@@ -543,7 +543,8 @@ cell that decided, and the day.
   every published day. The Vaishnava rule parts on three, each a
   fortnight whose new moon holds two sunrises (ISKCON's *Paksha
   Vardhini Mahadvadashi*, a rule *Dharmasindhu* does not state), and
-  the pass founds each fortnight to check that it is so.
+  the pass founds each fortnight to check that it is so. The same list
+  is held against `EKADASHI_GAUDIYA` (§8.9), which keeps every one.
 
 **What the measuring corrected.** The first draft parted from the
 record on 13 days and was wrong twice. It had read the closing as
@@ -685,8 +686,7 @@ afternoon, and the 12th outlasts the share.
 
 **Not built.** The short-12th rites before sunrise are the rites', not
 the meal's: the window still opens at sunrise. The Gaudiya
-mahadvadashis (HBV vv. 265 ff., unmilani, vyanjuli and the rest) are
-not computed. Other vratas' parana is §8.7.
+mahadvadashis are §8.9. Other vratas' parana is §8.7.
 
 ### 8.6 What is measured of the parana
 
@@ -859,6 +859,80 @@ refusals.
 the 8th, the 9th and the 10th each stand whole), and Chaitra's
 navaratri, which DS pp. 31 and 34 decide as the Sharada's: the same
 rules in Chaitra, waiting on a vetted name for their keys.
+
+### 8.9 The Gaudiya Ekadashi and the eight mahadvadashis
+
+As built (`EkadashiRule::hari_bhakti_vilasa`, `MahadvadashiRule`, the
+`GAUDIYA` pack). *Hari Bhakti Vilasa* (Gopala Bhatta, with Sanatana's
+commentary; Haridas Shastri's edition, vol. 2, Vrindavan 1986) is the
+Gaudiya rank-1 text. Its vilasa 12 leaves a pure 11th "for growth
+ahead" (12.359's commentary), and vilasa 13 names eight great twelfths
+that set the fast (13.265–266): four by the tithis' joining, four by a
+bright 12th's nakshatra. `EKADASHI_GAUDIYA` keeps the Vaishnava's
+vedha at arunodaya and table (§8.3; 12.359's commentary gives the same
+cells), *Dharmasindhu*'s parana windows (the third-of-daylight window
+the lists print has no rank-1 citation, Q41), and
+`mahadvadashi: MahadvadashiRule::hari_bhakti_vilasa()`.
+
+| kind | clause | the fast |
+|---|---|---|
+| `UNMILANI` | 13.267: a *sampūrṇā* 11th holds two sunrises and the 12th does not | the second (the table's day; named) |
+| `VYANJULI` | 13.268: the 12th alone holds two sunrises, after a *sampūrṇā* 11th | the 12th's first sunrise day (the table's; named) |
+| `TRISPRISHA` | 13.269: the 11th at the day's arunodaya and sunrise, the 12th within it, the 13th at its end | that day |
+| `PAKSHAVARDHINI` | 13.270: the fortnight's new or full moon holds two sunrises; "leave the 11th, fast the 12th" | the 12th's day: may be the day after both of the 11th's |
+| `JAYA`, `VIJAYA`, `JAYANTI`, `PAPANASHINI` | 13.485, 489, 506, 534: a bright 12th with Punarvasu, Shravana, Rohini or Pushya, joined at its sunrise and the next (13.286–287), the 12th lasting to sunset except with Shravana (13.288–289) | the 12th's day |
+
+The first of `kinds` that holds sets the day; `held` lists every kind
+that did, so `UNMILANI` with `TRISPRISHA` is GCal's "Unmilani Trisprsa".
+`choice` stays the table's cell, so a reader sees what the table alone
+gave. The parana of a nakshatra kind is 13.290–291: with the 12th
+standing on the parana day, after the nakshatra when the 12th outlasts
+it, inside the 12th otherwise; with the 12th gone, inside Rohini or
+Shravana and after Punarvasu or Pushya (`ParanaEdge::JOINED_NAKSHATRA`).
+When no window leaves time the answer keeps none, as elsewhere; the
+joined nakshatra's stay is in the answer for a reader who prints GCal's
+"break fast after".
+
+Each measure the text leaves open is a field, with the default every
+published list follows (C707 to C711):
+
+| field | default | the other readings |
+|---|---|---|
+| `trisprisha` | `SUNRISE`: the 11th at arunodaya and sunrise (the Hindi gloss; all 9 published Trisprisha rows) | `ARUNODAYA`, 13.269's letter |
+| `joining` | `TWO_SUNRISES` (GCal; Delhi 2024-09-15, Shravana outlasting the bright 12th, is in neither published list) | `OUTLASTS_TWELFTH` (the gloss), `BEGUN_IN_DAYLIGHT` (13.286's "from sunrise") |
+| `vyanjuli` | `ANY` (12.374, "a kala or even a vikala"; Delhi 2023-12-10 stands 10 minutes past and is printed) | `HALF_MUHURTA`, 13.356 |
+| `sampurna` | `true` (13.356, 12.372's commentary, GCal) | `false`: 13.267–268 do not repeat it |
+| `kinds` | `VIJAYA, JAYA, JAYANTI, PAPANASHINI, VYANJULI, PAKSHAVARDHINI, UNMILANI, TRISPRISHA`: the 12th's day before Unmilani's (13.270), the one-day order GCal's | any order; a kind left out is not kept |
+
+The nakshatra kinds are bright only: every defining verse says सिते or
+शुक्ल. The façade founds six days past an 11th's own for a rule keeping
+mahadvadashis (`EkadashiRule::reach`), so the fortnight's end and its
+second sunrise are always read.
+
+**What is measured.** `crates/panchanga/tests/mahadvadashi.rs` holds one
+synthetic row per kind, each fork's other reading, the precedence, and
+the four parana clauses, and was proved red twice (the sunset clause
+dropped; Rohini's "inside" read as "after").
+`crates/sdk/tests/mahadvadashi.rs` holds the published lists (rank 3,
+GCal output), read 2026-10-22 under the refracted upper limb's sunrise:
+Drik Panchang's ISKCON list for New Delhi, 2021 to 2027, all 18
+labelled rows, day and kind; ISKCON Bangalore's calendars 2024–25 to
+2026–27, 6 rows; and ISKCON Melbourne's 2026 planner, 2 rows. At Delhi
+the one kind found on a day the list leaves unlabelled is 26 June 2026,
+a Pakshavardhini whose full moon ends 18 seconds after a sunrise; at
+Bangalore, 27 November 2024's Vyanjuli is here the 26th, its 12th ending
+18 seconds before the sunrise. Both are asserted by their margin, not
+their day (C712). `festival-measured.md` §3 holds `EKADASHI_GAUDIYA` to
+the ISKCON list with no parting where `EKADASHI_VAISHNAVA` parts on
+three.
+
+**Not built.** No clean published row of a nakshatra kind was found
+(Mayapur's Vamana Dvadashi of September 2027 is the case to find), so
+those four rest on the synthetic rows. The Sanskrit quoted is
+normalised from the OCR of the Internet Archive's `hbv_vol2` and is to
+be checked against the page images. No source says whether a
+mahadvadashi holds in an adhika month; they are kept there (*nitya*,
+13.282–285), unmeasured.
 
 ## 9. Nepal
 

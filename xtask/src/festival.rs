@@ -137,7 +137,7 @@ const VAISHNAVA: &str = "the Vaishnava day, the later one, whose sunrise the 8th
 /// with the crate test that reaches it on synthetic days. The pass fails
 /// on an unreached guard with no entry, on an entry for a guard a year
 /// reached, and on a test the crate does not have.
-const UNREACHED: [(&str, usize, &str, &str); 8] = [
+const UNREACHED: [(&str, usize, &str, &str); 9] = [
     (
         "VIJAYA_DASHAMI",
         1,
@@ -149,6 +149,12 @@ const UNREACHED: [(&str, usize, &str, &str); 8] = [
         6,
         "vijaya_dashami_held_on_both_days_or_neither_goes_to_shravana_alone",
         "the 10th holding both aparahnas, neither or each in part, with Shravana joining it on the later day only, which no year of the decade had",
+    ),
+    (
+        "DEVI_VISARJAN",
+        1,
+        "devi_visarjan_keeps_a_tenth_that_never_reaches_the_later_morning",
+        "the 10th holding the earlier morning and ending before the later sunrise, a tithi shorter than a day begun in daylight, which no Ashvina of the decade had",
     ),
     (
         "NAVARATRA_ARAMBHA",
@@ -352,7 +358,10 @@ fn years_of(request: &FestivalRequest) -> Result<BTreeMap<i32, Observances>, Str
 }
 
 fn page() -> Result<String, String> {
-    let request = FestivalRequest::from(FestivalPack::Dharmasindhu);
+    // The text's pack and the Gaudiya Ekadashi, which the ISKCON list is
+    // read against too (§3).
+    let request = FestivalRequest::from(FestivalPack::Dharmasindhu)
+        .with_ekadashis(FestivalPack::Gaudiya.ekadashis());
     let rules = request.rules();
     let years = years_of(&request)?;
 
