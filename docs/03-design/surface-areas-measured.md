@@ -12,10 +12,10 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 |---|---|---|
 | a boundary module a consumer reaches is reached from one area | **holds** | 0 of 13 disagree; so no operation can be looked for under two names |
 | every area holds an operation that reaches the boundary | **holds** | 0 of 11 disagree |
-| no operation's name repeats its own area's | **holds** | 0 of 48 disagree; which is what the namespace is for |
+| no operation's name repeats its own area's | **holds** | 0 of 49 disagree; which is what the namespace is for |
 | every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 19 disagree; unreached: `blob`, `lib`, `provider`, `string` |
 | an entry point's name already carries its own module | falsified | 13 of 59 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_context_new_with_provider` |
-| every operation the layer declares is listed by every parity runner | falsified | 12 of 219 disagree; unlisted: `calendar.tibetan_year by parity.mjs`, `almanac.sankalpa by parity.mjs`, `almanac.ashauch by parity.mjs`, `calendar.tibetan_year by parity.dart`, `almanac.sankalpa by parity.dart`, `almanac.ashauch by parity.dart`, `calendar.tibetan_year by parity.py`, `almanac.sankalpa by parity.py`, `almanac.ashauch by parity.py`, `calendar.tibetan_year by parity.rs`, `almanac.sankalpa by parity.rs`, `almanac.ashauch by parity.rs` |
+| every operation the layer declares is listed by every parity runner | falsified | 16 of 223 disagree; unlisted: `calendar.tibetan_year by parity.mjs`, `almanac.sankalpa by parity.mjs`, `almanac.ashauch by parity.mjs`, `almanac.first_year by parity.mjs`, `calendar.tibetan_year by parity.dart`, `almanac.sankalpa by parity.dart`, `almanac.ashauch by parity.dart`, `almanac.first_year by parity.dart`, `calendar.tibetan_year by parity.py`, `almanac.sankalpa by parity.py`, `almanac.ashauch by parity.py`, `almanac.first_year by parity.py`, `calendar.tibetan_year by parity.rs`, `almanac.sankalpa by parity.rs`, `almanac.ashauch by parity.rs`, `almanac.first_year by parity.rs` |
 | every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 11 disagree; site/content/docs/surface.mdx names all 11 and nothing else |
 
 **No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.
@@ -32,7 +32,7 @@ The remaining 6 are not accounted for: `ts_error_free`, `ts_almanac_disagreement
 
 ## The areas the layer wires
 
-**11 areas over 48 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
+**11 areas over 49 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
 
 ### The root — `Context`
 
@@ -114,6 +114,7 @@ The remaining 6 are not accounted for: `ts_error_free`, `ts_almanac_disagreement
 | `pakshi` | `ts_pakshi` (pakshi) |
 | `sankalpa` | `ts_almanac_sankalpa` (panchanga) |
 | `ashauch` | `ts_almanac_ashauch` (panchanga) |
+| `firstYear` | `ts_almanac_first_year` (panchanga) |
 | `disagreements` | `ts_almanac_disagreements` (panchanga) |
 | `festivalCalendar` | `ts_almanac_festival_calendar` (panchanga) |
 

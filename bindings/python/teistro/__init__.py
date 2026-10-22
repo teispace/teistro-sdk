@@ -719,6 +719,17 @@ __all__ = [
     "AshauchOverlapped",
     "Ashauch",
     "AshauchAnswer",
+    "FirstAbdika",
+    "FirstYearAdhika",
+    "SapindanaAt",
+    "UnaDay",
+    "FirstYearRequest",
+    "Rite",
+    "RiteForm",
+    "UnaBar",
+    "FirstYearRite",
+    "FirstYearSchedule",
+    "FirstYearAnswer",
     "Eclipses",
     "EclipsesFound",
     "LunarEclipseHere",
@@ -2665,6 +2676,36 @@ class AlmanacArea(_Area):
             asked["table"] = table
         answered = self._context._through_provider(lambda: self._context.inner.almanac_ashauch(json.dumps(asked)))
         return _ashauch_answer(answered)
+
+    def first_year(
+        self,
+        *,
+        place: Observer,
+        utc_offset_seconds: int,
+        request: "FirstYearRequest",
+    ) -> "FirstYearAnswer":
+        """**A death's first year** at a place (`03-design/shraddha.md`
+        §3.3): the *Dharmasindhu*'s sixteen shraddhas, the first abdika
+        and the sapindana, each on its day. Every day is the festival
+        evaluator's, and the eleventh day is the ashauch's day one plus
+        ten, so a monthly, an anniversary and an ashauch never judge a day
+        differently. `request` crosses as written, every reading the
+        *Dharmasindhu*'s when left out, so a key the SDK does not read is
+        refused by name under `firstYear.request`.
+
+        >>> # found = ctx.almanac.first_year(place=kathmandu, utc_offset_seconds=20700, request={
+        >>> #     "key": "GRANDFATHER", "at": 2461051.677083})  # 2026-01-11 10:00 in Kathmandu
+        >>> # found.value.rites[0].rite  # "ADYA_MASIKA"
+        """
+        asked: Dict[str, Any] = {
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "request": request,
+        }
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_first_year(json.dumps(asked)))
+        return _first_year_answer(answered)
 
     def disagreements(
         self,
@@ -8371,6 +8412,161 @@ class AshauchAnswer:
     """
 
     value: Ashauch
+    provenance: Provenance
+    """What computed it, and the hash of `value`."""
+
+
+FirstAbdika = Literal["SECOND_YEAR", "ELEVENTH_DAY"]
+"""When the first abdika is kept (*Dharmasindhu* p. 330, two views): at
+the second year's start, the death's first anniversary, or on the
+eleventh day with the first monthly, the view Dhakal records for Nepal."""
+
+FirstYearAdhika = Literal["ADHIKA", "NIJA"]
+"""Which month the first anniversary takes when its month is doubled
+(C666): the adhika, the thirteenth month, or the ordinary one, Nepal's
+barkhi."""
+
+SapindanaAt = Literal["ELEVENTH_DAY", "TWELFTH_DAY", "TRAIPAKSHIKA", "YEAR_END"]
+"""The day the sapindana is kept on (*Dharmasindhu* p. 331)."""
+
+UnaDay = Literal["DAY_BEFORE", "ONE_TITHI", "TWO_TITHIS", "THREE_TITHIS"]
+"""How far short an *ūna* rite is kept (*Dharmasindhu* p. 330): the day
+before the day it is short of (Madhava's), or the tithi one, two or three
+short, its last occurrence before."""
+
+
+class FirstYearRequest(TypedDict, total=False):
+    """A death's first year, as a request asks it (`03-design/shraddha.md`
+    §3.3). `key` is the consumer's own, which the answer repeats; `at` the
+    death, a UTC Julian day; and every reading the *Dharmasindhu*'s when
+    left out: `night` `"THIRDS"`, `firstAbdika` `"SECOND_YEAR"`,
+    `firstYearAdhika` `"ADHIKA"`, `sapindana` `"TWELFTH_DAY"` and `una`
+    `"DAY_BEFORE"`. `window` is a rite's time in place of both forms'
+    (kutapa to rauhina for the ekoddishta, aparahna for the parvana), as a
+    festival rule spells it: `{"window": "DAY_MUHURTA", "from": 8, "to": 9}`.
+
+    >>> asked: FirstYearRequest = {"key": "GRANDFATHER", "at": 2461051.677083,
+    ...     "firstAbdika": "ELEVENTH_DAY", "firstYearAdhika": "NIJA"}  # Dhakal's readings for Nepal
+    """
+
+    key: Required[str]
+    at: Required[float]
+    night: NightRule
+    firstAbdika: FirstAbdika
+    firstYearAdhika: FirstYearAdhika
+    sapindana: SapindanaAt
+    una: UnaDay
+    window: Mapping[str, Any]
+
+
+Rite = Literal[
+    "ADYA_MASIKA",
+    "UNA_MASIKA",
+    "MASIKA",
+    "TRAIPAKSHIKA",
+    "UNA_SHANMASIKA",
+    "UNA_ABDIKA",
+    "ABDIKA",
+    "SAPINDANA",
+]
+"""Which rite of the first year: the first monthly on the eleventh day,
+one short of the first month, a monthly, at three fortnights, one short of
+the sixth month, one short of the year, a yearly shraddha, or the joining
+with the ancestors."""
+
+RiteForm = Literal["EKODDISHTA", "PARVANA"]
+"""How a rite is performed: for the one dead, at kutapa to rauhina, before
+the sapindana; for three generations, at aparahna, after it."""
+
+UnaBar = Literal["NANDA", "FRIDAY", "CHATURDASHI", "KRITTIKA"]
+"""What the *Dharmasindhu* bars an *ūna* rite's day for, found at its
+sunrise: a nandā tithi (the 1st, 6th or 11th of either half), Friday, the
+14th of either half, or Krittika."""
+
+
+@dataclass(frozen=True)
+class FirstYearRite:
+    """One rite of the first year, on its own day."""
+
+    rite: Rite
+    """Which rite."""
+
+    place: Optional[int]
+    """Its place in the *Dharmasindhu*'s sixteen, 1 for the first monthly
+    to 16 for the ūnābdika, a doubled month's two monthlies sharing it;
+    `None` for the abdika and the sapindana, which are not among them."""
+
+    month: Optional[int]
+    """The month a monthly closes, 1 for the first to 12; `None` for every
+    other rite."""
+
+    year: Optional[int]
+    """Which yearly shraddha, 1 for the first; `None` for every other
+    rite."""
+
+    adhika: bool
+    """Whether it is kept in an adhika lunation: the first of a doubled
+    month's two monthlies."""
+
+    day: CalendarDate
+    """Its own day."""
+
+    form: Optional[RiteForm]
+    """How it is performed on that day; `None` for the sapindana."""
+
+    drawn_to: Optional[CalendarDate]
+    """The sapindana's day, when the rite is first done there by the
+    ekoddishta and again on its own day by the parvana."""
+
+    bars: Tuple[UnaBar, ...]
+    """What the text bars an *ūna* rite's day for; empty for every other
+    rite."""
+
+    observance: Optional[FestivalObservance]
+    """The festival evaluator's judgement of a day kept on a tithi; `None`
+    for one counted in days."""
+
+    clause: str
+    """Where the rule is stated."""
+
+
+@dataclass(frozen=True)
+class FirstYearSchedule:
+    """A death's first year (`03-design/shraddha.md` §3.3): the death's
+    lunar date, the ashauch's first day, and every rite on its day."""
+
+    key: str
+    """The request's key."""
+
+    origin: AnniversaryOrigin
+    """The death's lunar date."""
+
+    day_one: CalendarDate
+    """The first day of the count, as the ashauch's."""
+
+    day_one_by: AshauchDayOneBy
+    """Why it is that day."""
+
+    eleventh_day: CalendarDate
+    """The eleventh day."""
+
+    sapindana: CalendarDate
+    """The sapindana's day."""
+
+    rites: Tuple[FirstYearRite, ...]
+    """Every rite, in the order of their own days, then of the
+    *Dharmasindhu*'s sixteen."""
+
+
+@dataclass(frozen=True)
+class FirstYearAnswer:
+    """What `almanac.first_year` answers.
+
+    >>> # found = ctx.almanac.first_year(place=kathmandu, utc_offset_seconds=20700, request=asked)
+    >>> # joined = found.value.sapindana
+    """
+
+    value: FirstYearSchedule
     provenance: Provenance
     """What computed it, and the hash of `value`."""
 
@@ -14972,23 +15168,28 @@ def _parana_barred(raw: Mapping[str, Any]) -> ParanaBarred:
     )
 
 
+def _anniversary_origin(origin: Mapping[str, Any]) -> AnniversaryOrigin:
+    """An anniversary's origin as found, as a festival answer and a first
+    year's schedule write it."""
+    return AnniversaryOrigin(
+        tithi=_member(Tithi, origin["tithi"]),
+        month=_member(Masa, origin["month"]),
+        kind=origin["kind"],
+        half=origin["half"],
+        nakshatra=_member(Nakshatra, origin["nakshatra"]) if origin.get("nakshatra") is not None else None,
+        at=origin.get("at"),
+        assumed_sunrise=bool(origin["assumedSunrise"]),
+        candidates=tuple(_member(Tithi, t) for t in origin.get("candidates", ())),
+    )
+
+
 def _anniversary_day(raw: Mapping[str, Any]) -> AnniversaryDay:
     """An anniversary's day as a festival answer writes it."""
-    origin = raw["origin"]
     return AnniversaryDay(
         key=raw["key"],
         count=raw.get("count"),
         kind=raw["kind"],
-        origin=AnniversaryOrigin(
-            tithi=_member(Tithi, origin["tithi"]),
-            month=_member(Masa, origin["month"]),
-            kind=origin["kind"],
-            half=origin["half"],
-            nakshatra=_member(Nakshatra, origin["nakshatra"]) if origin.get("nakshatra") is not None else None,
-            at=origin.get("at"),
-            assumed_sunrise=bool(origin["assumedSunrise"]),
-            candidates=tuple(_member(Tithi, t) for t in origin.get("candidates", ())),
-        ),
+        origin=_anniversary_origin(raw["origin"]),
         month_by=raw["monthBy"],
         observance=_festival_observance(raw["observance"]),
     )
@@ -15180,6 +15381,46 @@ def _ashauch_answer(text: str) -> "AshauchAnswer":
             overlap=raw.get("overlap"),
             rites_from=raw.get("ritesFrom"),
             table=raw["table"],
+        ),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _first_year_rite(raw: Mapping[str, Any]) -> FirstYearRite:
+    """One rite of a first year as `ts_almanac_first_year` writes it: a
+    member the SDK leaves out (`None`, or no bars) is absent."""
+    drawn_to = raw.get("drawnTo")
+    observance = raw.get("observance")
+    return FirstYearRite(
+        rite=raw["rite"],
+        place=raw.get("place"),
+        month=raw.get("month"),
+        year=raw.get("year"),
+        adhika=bool(raw["adhika"]),
+        day=_serde_date(raw["day"]),
+        form=raw.get("form"),
+        drawn_to=None if drawn_to is None else _serde_date(drawn_to),
+        bars=tuple(raw.get("bars", ())),
+        observance=None if observance is None else _festival_observance(observance),
+        clause=raw["clause"],
+    )
+
+
+def _first_year_answer(text: str) -> "FirstYearAnswer":
+    """`ts_almanac_first_year`'s answer: the schedule as frozen records,
+    its days as this binding's dates and its members (written in full)
+    as this binding's enums, with the provenance beside it."""
+    envelope = json.loads(text)
+    raw = envelope["value"]
+    return FirstYearAnswer(
+        value=FirstYearSchedule(
+            key=raw["key"],
+            origin=_anniversary_origin(raw["origin"]),
+            day_one=_serde_date(raw["dayOne"]),
+            day_one_by=raw["dayOneBy"],
+            eleventh_day=_serde_date(raw["eleventhDay"]),
+            sapindana=_serde_date(raw["sapindana"]),
+            rites=tuple(_first_year_rite(rite) for rite in raw["rites"]),
         ),
         provenance=decode_provenance(envelope["provenance"]),
     )

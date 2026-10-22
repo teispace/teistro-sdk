@@ -20,6 +20,7 @@ from teistro import (
     nepal_official,
     Altitude,
     AshauchRequest,
+    FirstYearRequest,
     decode_provenance,
     AvasthaSayanadi,
     DashaDefinition,
@@ -869,6 +870,38 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as unread:
                 ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=caste)
             self.assertEqual(unread.exception.field, "ashauch.request.caste")
+
+    def test_an_almanac_schedules_the_first_year_after_a_death(self) -> None:
+        """A death at 10:00 on 20 October 2026 in Kathmandu: the
+        *Dharmasindhu*'s sixteen shraddhas each with its place, the first
+        monthly first, fifteen drawn to the sapindana's day, and the
+        sapindana on its own; under Dhakal's readings for Nepal the first
+        abdika lies on the eleventh day and the second follows
+        (`03-design/shraddha.md` §3.3)."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1337))
+        grandfather: FirstYearRequest = {"key": "GRANDFATHER", "at": 2461333.677083}
+        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.first_year(place=kathmandu, utc_offset_seconds=20700, request=grandfather)
+            value = found.value
+            self.assertTrue(found.provenance.input_hash)
+            self.assertEqual(value.key, "GRANDFATHER")
+            self.assertEqual(sum(1 for rite in value.rites if rite.place is not None), 16)
+            self.assertEqual(sum(1 for rite in value.rites if rite.drawn_to is not None), 15)
+            self.assertEqual(value.rites[0].rite, "ADYA_MASIKA")
+            sapindana = [rite for rite in value.rites if rite.rite == "SAPINDANA"]
+            self.assertEqual(len(sapindana), 1)
+            self.assertEqual(sapindana[0].day, value.sapindana)
+
+            nepal: FirstYearRequest = {**grandfather, "firstAbdika": "ELEVENTH_DAY", "firstYearAdhika": "NIJA"}
+            barkhi = ctx.almanac.first_year(place=kathmandu, utc_offset_seconds=20700, request=nepal).value
+            abdikas = {rite.year: rite.day for rite in barkhi.rites if rite.rite == "ABDIKA"}
+            self.assertEqual(abdikas.get(1), barkhi.eleventh_day)
+            self.assertIn(2, abdikas)
+
+            unkeyed: FirstYearRequest = {**grandfather, "key": ""}
+            with self.assertRaises(TeistroError) as empty:
+                ctx.almanac.first_year(place=kathmandu, utc_offset_seconds=20700, request=unkeyed)
+            self.assertEqual(empty.exception.field, "firstYear.request.key")
 
     def test_an_almanac_writes_its_festivals_as_an_icalendar_feed(self) -> None:
         """Dashain 2025 at Kathmandu: one event for each observance and fast

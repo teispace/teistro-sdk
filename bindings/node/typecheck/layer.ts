@@ -193,6 +193,10 @@ import type {
   AshauchClause,
   AshauchQuery,
   AshauchRunning,
+  FirstYearAnswer,
+  FirstYearQuery,
+  FirstYearRite,
+  FirstYearSchedule,
   TibetanYear,
   Disagreements,
   DayDisagreement,
@@ -1376,6 +1380,30 @@ function theAshauch(ctx: Context): string {
   return `${said} ${within} ${days} ${date.year} ${value.overlap?.earlier} ${answer.provenance.inputHash}`;
 }
 void theAshauch;
+
+// A first year's request under Nepal's readings, its rites' optional
+// numbers and dates, and its origin's catalogue members.
+function theFirstYear(ctx: Context): string {
+  const asked: FirstYearQuery = {
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+    utcOffsetSeconds: 20700,
+    request: { key: 'GRANDFATHER', at: 2461333.677083, firstAbdika: 'ELEVENTH_DAY', firstYearAdhika: 'NIJA' },
+  };
+  const answer: FirstYearAnswer = ctx.almanac.firstYear(asked);
+  const value: FirstYearSchedule = answer.value;
+  const rite: FirstYearRite | undefined = value.rites.find((one) => one.rite === 'SAPINDANA');
+  const place: number | undefined = value.rites[0]?.place;
+  const drawn: CalendarDate | undefined = value.rites[0]?.drawnTo;
+  const tithi: Tithi = value.origin.tithi;
+  const by = value.dayOneBy.by === 'NIGHT' ? value.dayOneBy.rule : 'DAYLIGHT';
+  ctx.almanac.firstYear({ ...asked, request: { ...asked.request, window: { window: 'PART', part: 'MADHYAHNA' } } });
+  // @ts-expect-error the sapindana's day is the table's, not a free word
+  ctx.almanac.firstYear({ ...asked, request: { ...asked.request, sapindana: 'TENTH_DAY' } });
+  // @ts-expect-error a first year needs the death's instant
+  ctx.almanac.firstYear({ ...asked, request: { key: 'GRANDFATHER' } });
+  return `${rite?.day.year} ${place} ${drawn?.day} ${tithi} ${by} ${value.eleventhDay.day} ${answer.provenance.inputHash}`;
+}
+void theFirstYear;
 
 // A Tibetan year's names by their catalogue types.
 function theTibetanYear(ctx: Context): string {

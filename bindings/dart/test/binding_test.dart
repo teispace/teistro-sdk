@@ -977,6 +977,59 @@ void _engineTests() {
     expect(second.end, value.end);
   });
 
+  // A death at 10:00 on 20 October 2026 in Kathmandu: the sixteen, fifteen
+  // of them done again after a twelfth-day sapindana (DS p. 331); with
+  // Dhakal's readings for Nepal the first abdika is the eleventh day's and
+  // the anniversary the second (`03-design/shraddha.md` §3.3).
+  test('an almanac says the rites of the first year after a death', () {
+    final sky = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1337),
+    );
+    const at = 2461333.677083;
+    FirstYearAnswer ask(FirstYearRequest request) => sky.almanac.firstYear(
+      request: request,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+    );
+    List<int> ymd(CalendarDate day) => [day.year, day.month, day.day];
+
+    final found = ask(const FirstYearRequest(key: 'grandfather', at: at));
+    final year = found.value;
+    expect(found.provenance.inputHash, isNotEmpty);
+    expect(year.key, 'grandfather');
+    expect(year.rites.where((rite) => rite.place != null), hasLength(16));
+    expect(year.rites.where((rite) => rite.drawnTo != null), hasLength(15));
+    expect(year.rites.first.rite, Rite.adyaMasika);
+    final sapindana = year.rites.firstWhere(
+      (rite) => rite.rite == Rite.sapindana,
+    );
+    expect(ymd(sapindana.day), ymd(year.sapindana));
+
+    final nepal =
+        ask(
+          const FirstYearRequest(
+            key: 'grandfather',
+            at: at,
+            firstAbdika: FirstAbdika.eleventhDay,
+            firstYearAdhika: FirstYearAdhika.nija,
+          ),
+        ).value;
+    final abdikas = [
+      for (final rite in nepal.rites)
+        if (rite.rite == Rite.abdika) rite,
+    ];
+    final first = abdikas.firstWhere((rite) => rite.year == 1);
+    expect(ymd(first.day), ymd(nepal.eleventhDay));
+    expect(abdikas.where((rite) => rite.year == 2), isNotEmpty);
+  });
+
   test('two reckonings say where they disagree and why', () {
     final official = teistro.nepalOfficial();
     addTearDown(official.dispose);

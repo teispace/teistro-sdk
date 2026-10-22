@@ -107,22 +107,27 @@ final class AlmanacReads {
                 Reads.string(a, "key"),
                 Reads.optionalInteger(a, "count"),
                 Reads.string(a, "kind"),
-                new AnniversaryDay.Origin(
-                        member(o, "tithi", "Tithi", Tithi::byKey),
-                        member(o, "month", "Masa", Masa::byKey),
-                        Reads.string(o, "kind"),
-                        Reads.string(o, "half"),
-                        o.get("nakshatra") == null ? null : member(o, "nakshatra", "Nakshatra", Nakshatra::byKey),
-                        Reads.optionalNumber(o, "at"),
-                        Reads.flag(o, "assumedSunrise"),
-                        o.containsKey("candidates")
-                                ? Reads.each(o, "candidates", t -> {
-                                    String text = String.valueOf(t);
-                                    return Reads.member(Tithi.byKey(text), "Tithi", text);
-                                })
-                                : List.of()),
+                origin(o),
                 Reads.string(a, "monthBy"),
                 observance(Reads.field(a, "observance")));
+    }
+
+    /** An anniversary's origin as found, as an anniversary and a first year write it. */
+    private static AnniversaryDay.Origin origin(Map<?, ?> o) {
+        return new AnniversaryDay.Origin(
+                member(o, "tithi", "Tithi", Tithi::byKey),
+                member(o, "month", "Masa", Masa::byKey),
+                Reads.string(o, "kind"),
+                Reads.string(o, "half"),
+                o.get("nakshatra") == null ? null : member(o, "nakshatra", "Nakshatra", Nakshatra::byKey),
+                Reads.optionalNumber(o, "at"),
+                Reads.flag(o, "assumedSunrise"),
+                o.containsKey("candidates")
+                        ? Reads.each(o, "candidates", t -> {
+                            String text = String.valueOf(t);
+                            return Reads.member(Tithi.byKey(text), "Tithi", text);
+                        })
+                        : List.of());
     }
 
     /** {@code ts_almanac_disagreements}'s answer: each comparison asked, its members resolved, or null. */
@@ -390,12 +395,10 @@ final class AlmanacReads {
     static AshauchAnswer ashauchAnswer(String text) {
         Map<?, ?> envelope = Reads.object(Json.read(text));
         Map<?, ?> v = Reads.object(envelope, "value");
-        Map<?, ?> by = Reads.object(v, "dayOneBy");
         // The clause's fields are spelt as Rust names them: no rename reaches
         // inside a variant, so `within_days` keeps its underscore.
         Map<?, ?> c = Reads.object(v, "clause");
         Object sex = v.get("sex");
-        Object rule = by.get("rule");
         Object lastDay = v.get("lastDay");
         Object overlap = v.get("overlap");
         Map<?, ?> o = overlap == null ? null : Reads.object(overlap);
@@ -406,7 +409,7 @@ final class AlmanacReads {
                 sex == null ? null : AshauchSex.of(sex),
                 Reads.number(v, "start"),
                 Reads.serdeDate(Reads.field(v, "dayOne")),
-                new AshauchDayOneBy(Reads.string(by, "by"), rule == null ? null : NightRule.of(rule)),
+                dayOneBy(Reads.object(v, "dayOneBy")),
                 Reads.number(v, "end"),
                 lastDay == null ? null : Reads.serdeDate(lastDay),
                 AshauchLength.of(Reads.field(v, "length")),
@@ -421,6 +424,46 @@ final class AlmanacReads {
                         Reads.string(o, "overlap"), Reads.string(o, "earlier"), Reads.optionalInteger(o, "days")),
                 Reads.optionalNumber(v, "ritesFrom"),
                 Reads.string(v, "table")), provenance(envelope));
+    }
+
+    /** Why a count's first day is the day it is, as an ashauch and a first year write it. */
+    private static AshauchDayOneBy dayOneBy(Map<?, ?> by) {
+        Object rule = by.get("rule");
+        return new AshauchDayOneBy(Reads.string(by, "by"), rule == null ? null : NightRule.of(rule));
+    }
+
+    /** {@code ts_almanac_first_year}'s answer: the schedule, its members resolved, with the provenance beside it. */
+    static FirstYearAnswer firstYearAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        Map<?, ?> v = Reads.object(envelope, "value");
+        return new FirstYearAnswer(new FirstYearSchedule(
+                Reads.string(v, "key"),
+                origin(Reads.object(v, "origin")),
+                Reads.serdeDate(Reads.field(v, "dayOne")),
+                dayOneBy(Reads.object(v, "dayOneBy")),
+                Reads.serdeDate(Reads.field(v, "eleventhDay")),
+                Reads.serdeDate(Reads.field(v, "sapindana")),
+                Reads.each(v, "rites", AlmanacReads::firstYearRite)), provenance(envelope));
+    }
+
+    /** One rite of a first year: each member the answer leaves out when it has none read as null. */
+    private static FirstYearRite firstYearRite(Object raw) {
+        Map<?, ?> r = Reads.object(raw);
+        Object drawnTo = r.get("drawnTo");
+        Object observance = r.get("observance");
+        return new FirstYearRite(
+                Reads.string(r, "rite"),
+                Reads.optionalInteger(r, "place"),
+                Reads.optionalInteger(r, "month"),
+                Reads.optionalInteger(r, "year"),
+                Reads.flag(r, "adhika"),
+                Reads.serdeDate(Reads.field(r, "day")),
+                Reads.optionalString(r, "form"),
+                drawnTo == null ? null : Reads.serdeDate(drawnTo),
+                // Left out of the answer when empty.
+                r.get("bars") == null ? List.of() : Reads.each(r, "bars", Reads::string),
+                observance == null ? null : observance(observance),
+                Reads.string(r, "clause"));
     }
 
     /** The {@code nepal_sambat} section: one date a day, with the provenance beside them. */

@@ -1814,6 +1814,39 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac says the rites of a death's first year", () -> {
+            // A death in Kathmandu at Julian day 2461333.677083: the sixteen
+            // each in its place, fifteen of them first done on the
+            // sapindana's day; under Nepal's readings the first abdika is
+            // kept on the eleventh day and the anniversary is the second.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1337));
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                FirstYearRequest.Builder died = FirstYearRequest.builder().key("GRANDFATHER").at(2_461_333.677_083);
+                FirstYearAnswer found = sky.almanac().firstYear(died.build(), kathmandu, 20_700);
+                FirstYearSchedule value = found.value();
+                check(!found.provenance().inputHash().isEmpty(), "the request is sealed");
+                same("GRANDFATHER", value.key(), "the request's key");
+                same(16L, value.rites().stream().filter(r -> r.place() != null).count(), "the sixteen");
+                same(15L, value.rites().stream().filter(r -> r.drawnTo() != null).count(),
+                        "drawn to the sapindana");
+                same("ADYA_MASIKA", value.rites().get(0).rite(), "the first monthly first");
+                FirstYearRite sapindana = value.rites().stream().filter(r -> r.rite().equals("SAPINDANA"))
+                        .findFirst().orElseThrow();
+                same(value.sapindana(), sapindana.day(), "the sapindana on its day");
+
+                FirstYearSchedule nepal = sky.almanac().firstYear(died.firstAbdika(FirstAbdika.ELEVENTH_DAY)
+                        .firstYearAdhika(FirstYearAdhika.NIJA).build(), kathmandu, 20_700).value();
+                FirstYearRite first = nepal.rites().stream()
+                        .filter(r -> r.rite().equals("ABDIKA") && Integer.valueOf(1).equals(r.year()))
+                        .findFirst().orElseThrow();
+                same(nepal.eleventhDay(), first.day(), "the first abdika on the eleventh day");
+                check(nepal.rites().stream()
+                        .anyMatch(r -> r.rite().equals("ABDIKA") && Integer.valueOf(2).equals(r.year())),
+                        "the anniversary is the second");
+            }
+        });
+
         tests.put("an almanac writes its festivals as an iCalendar feed", () -> {
             // Dashain 2025 at Kathmandu: one event for each observance and fast
             // the festival answer gives, Vijaya Dashami on 2 October, every

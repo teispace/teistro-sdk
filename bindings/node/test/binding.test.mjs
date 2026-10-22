@@ -4884,6 +4884,45 @@ test('an almanac says the period of impurity after a death', () => {
 });
 
 /**
+ * A death at 10:00 on 20 October 2026 in Kathmandu: the *Dharmasindhu*'s
+ * sixteen in place order, the first monthly first, fifteen of them drawn
+ * to the sapindana on the twelfth day; and under Nepal's readings the
+ * first abdika on the eleventh day with the anniversary the second
+ * (`03-design/shraddha.md` §3.3).
+ */
+test('an almanac says the rites of the first year after a death', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1337 };
+  const died = 2461333.677083;
+  const ask = (request) => ctx.almanac.firstYear({ place: kathmandu, utcOffsetSeconds: 20700, request });
+  const grandfather = { key: 'GRANDFATHER', at: died };
+  const { value, provenance } = ask(grandfather);
+  assert.equal(typeof provenance.inputHash, 'string', 'the request is sealed');
+  assert.equal(value.key, 'GRANDFATHER');
+  assert.equal(value.dayOne.calendar, 'calendar.GREGORIAN');
+  assert.ok(value.origin.tithi.startsWith('tithi.'), 'the origin names its tithi in full');
+  assert.equal(value.rites.filter((rite) => rite.place != null).length, 16);
+  assert.equal(value.rites.filter((rite) => rite.drawnTo != null).length, 15);
+  assert.equal(value.rites[0].rite, 'ADYA_MASIKA');
+  const sapindana = value.rites.find((rite) => rite.rite === 'SAPINDANA');
+  assert.deepEqual(sapindana.day, value.sapindana);
+  assert.ok(Object.isFrozen(value.rites[0]), 'frozen to its leaves');
+
+  const nepal = ask({ ...grandfather, firstAbdika: 'ELEVENTH_DAY', firstYearAdhika: 'NIJA' }).value;
+  const abdikas = nepal.rites.filter((rite) => rite.rite === 'ABDIKA');
+  const first = abdikas.find((rite) => rite.year === 1);
+  assert.ok(first, 'a first abdika');
+  assert.deepEqual(first.day, nepal.eleventhDay);
+  assert.ok(abdikas.some((rite) => rite.year === 2), 'the anniversary is the second');
+
+  assert.throws(
+    () => ask({ ...grandfather, key: '' }),
+    (error) => error.field === 'firstYear.request.key',
+  );
+  assert.throws(() => ctx.almanac.firstYear(null), TypeError);
+});
+
+/**
  * 2026 is the 40th year of the 17th rabjung, Parabhava, Fire–male–Horse
  * (Janson, appendix B), and a year before the first rabjung is refused by
  * name (`calendars/tibetan.md`).

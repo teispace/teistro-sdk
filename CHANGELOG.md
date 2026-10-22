@@ -14,7 +14,8 @@ the previous release, not by nobody having looked.
 
 **A death's first year** (P1-8, `shraddha.md` §3.3, C673, C674,
 C728–C732). **Numbers:** none move; a new call.
-`almanac().first_year` (`ts_almanac_first_year`, `almanac.firstYear`)
+`almanac().first_year` (`ts_almanac_first_year`, `almanac.firstYear`,
+every binding)
 answers the *Dharmasindhu*'s sixteen shraddhas in its order (pp.
 329–331), each with its day, its form and the day a sapindana draws it
 forward to, then the sapindana and the first abdika. The eleventh day is

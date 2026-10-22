@@ -9,11 +9,17 @@ A death's first year at a place (`03-design/shraddha.md` §3.3), answered with `
 
 `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "request"}`: `request` `{key, at, night, firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death as a UTC Julian day and every reading the *Dharmasindhu*'s when left out. A key it does not read or an empty `key` is `INVALID_ARG` named under `firstYear`; a context without an ephemeris is `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
 
+<Tabs items={['C']}>
+<Tab value="C">
+
 ```c
 ts_status ts_almanac_first_year(const ts_context * context, const char * request_json, ts_string * out_json);
 ```
 
-No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+</Tab>
+</Tabs>
+
+Reached from `almanac.first_year` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

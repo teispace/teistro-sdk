@@ -7245,6 +7245,75 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **A death's first year** at a place (`03-design/shraddha.md` §3.3):
+   * the *Dharmasindhu*'s sixteen shraddhas (pp. 329–331), the sapindana
+   * and the first abdika, each on its day. `origin` is the death's lunar
+   * date, `dayOne` the ashauch's first day and `dayOneBy` why,
+   * `eleventhDay` that day plus ten, and `rites` each rite in the order of
+   * its day: `place` its place among the sixteen, `month` the month a
+   * monthly closes, `year` which yearly shraddha, `form` how it is
+   * performed, `drawnTo` the sapindana's day when it is first done there,
+   * `bars` what the text bars an *ūna* rite's day for, and `observance`
+   * the festival evaluator's judgement of a day kept on a tithi. Every
+   * reading in `request` is the *Dharmasindhu*'s when left out; Nepal's,
+   * as Dhakal records it, is `{ firstAbdika: 'ELEVENTH_DAY',
+   * firstYearAdhika: 'NIJA' }`: the first abdika on the eleventh day and
+   * the barkhi in the ordinary month.
+   *
+   * @example
+   * const sdk = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const { value } = sdk.almanac.firstYear({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+   *   utcOffsetSeconds: 20700,
+   *   request: { key: 'GRANDFATHER', at: 2461333.677083 }, // 2026-10-20 10:00 in Kathmandu
+   * });
+   * value.rites[0].rite; // 'ADYA_MASIKA'
+   * value.rites.find((one) => one.rite === 'SAPINDANA').day; // value.sapindana
+   *
+   * @param {object} query
+   * @param {object} query.place `{ latitude, longitude, altitude }`
+   * @param {number} query.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {object} query.request `{ key, at, night, firstAbdika, firstYearAdhika, sapindana, una, window }`,
+   *   `at` the death as a UTC Julian day
+   * @returns {{ value: object, provenance: object }}
+   */
+  firstYear(query) {
+    if (typeof query !== 'object' || query === null || Array.isArray(query)) {
+      throw new TypeError('firstYear: expected a query, e.g. { place, utcOffsetSeconds, request }');
+    }
+    // The request and anything else cross as written, so a key the SDK
+    // does not read is refused by name there rather than dropped here.
+    const { place: where, utcOffsetSeconds, ...rest } = query;
+    const place = where ?? {};
+    const asked = {
+      ...rest,
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacFirstYear(JSON.stringify(asked))),
+    );
+    return deepFreeze({
+      value: {
+        ...value,
+        origin: { candidates: [], ...value.origin },
+        dayOne: dateFrom(value.dayOne),
+        eleventhDay: dateFrom(value.eleventhDay),
+        sapindana: dateFrom(value.sapindana),
+        rites: value.rites.map((rite) => ({
+          ...rite,
+          day: dateFrom(rite.day),
+          ...(rite.drawnTo == null ? {} : { drawnTo: dateFrom(rite.drawnTo) }),
+          ...(rite.observance == null ? {} : { observance: observanceFrom(rite.observance) }),
+        })),
+      },
+      provenance: decodeProvenance(provenance),
+    });
+  }
+
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the official day an app shows
    * beside the modern one. `days` holds only the days on which some

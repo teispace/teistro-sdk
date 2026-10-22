@@ -314,6 +314,44 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>A death's first year</b> at a place ({@code 03-design/shraddha.md} §3.3): the
+     * <i>Dharmasindhu</i>'s sixteen shraddhas, the first abdika and the sapindana, each on its day. The
+     * eleventh day is the ashauch's day one plus ten, and every day kept on a tithi is the festival
+     * evaluator's, so a monthly, an anniversary and an ashauch never judge a day differently. Every
+     * reading the request leaves out is the <i>Dharmasindhu</i>'s.
+     *
+     * <pre>{@code
+     * FirstYearAnswer found = sky.almanac().firstYear(FirstYearRequest.builder()
+     *         .key("GRANDFATHER").at(2_461_333.677_083)
+     *         .firstAbdika(FirstAbdika.ELEVENTH_DAY).firstYearAdhika(FirstYearAdhika.NIJA) // Nepal's
+     *         .build(), kathmandu, 20_700);
+     * CalendarDate sapindana = found.value().sapindana();
+     * }</pre>
+     *
+     * @param request the death, a UTC Julian day, and the readings
+     * @param place where the days are kept
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @return the schedule, sealed
+     */
+    public FirstYearAnswer firstYear(com.teispace.teistro.request.FirstYearRequest request, Observer place,
+            int utcOffsetSeconds) {
+        if (request == null) {
+            throw Reads.invalid("request is a FirstYearRequest", "request");
+        }
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.put("request", request);
+        String json = Json.write(asked);
+        return AlmanacReads.firstYearAnswer(context.locked((lib, raw) -> Calls.almanacFirstYear(lib, raw, json)));
+    }
+
+    /**
      * <b>Where this context's reckoning and {@code other}'s disagree</b>, and why
      * ({@code 03-design/setup-disagreements.md}): the official day an app shows beside the modern one.
      * {@link Disagreements#days()} holds only the days on which some limb's member at sunrise differs,
