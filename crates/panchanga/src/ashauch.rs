@@ -17,6 +17,7 @@
 //! ([`AshauchRequest::full_days`]); nothing here asks or stores a caste.
 
 mod dharmasindhu;
+mod mitakshara;
 
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
@@ -430,6 +431,12 @@ pub struct Band {
     /// when left out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub buried: Option<bool>,
+    /// Only when the *cūḍākaraṇa* was done (true), or only when it was not
+    /// (false), as the *Mitākṣarā* cuts a child's first three years (on
+    /// Yā III.23); either when left out. The deceased's `chudakarana`,
+    /// read from the age when left out.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub chudakarana: Option<bool>,
     /// The parents' length, a step-child's too.
     pub parents: Length,
     /// The sapiṇḍas'.
@@ -1235,6 +1242,9 @@ fn band_of<'t>(
         if band.sex == sex
             && band.buried.is_none_or(|buried| buried == deceased.buried)
             && !reached(band.before, deceased, at)?
+            && band.chudakarana.map_or(Ok(true), |wanted| {
+                reached(Mark::Chudakarana, deceased, at).map(|done| done == wanted)
+            })?
         {
             return Ok(Some((index, band)));
         }

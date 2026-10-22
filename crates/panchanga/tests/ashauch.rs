@@ -771,3 +771,162 @@ fn a_request_names_the_instants_its_run_must_hold() {
     assert_eq!(anchors, vec![11.0, 43.2, 50.2, 52.0]);
     assert_eq!(request.reach(&AshauchTable::dharmasindhu()), 44);
 }
+
+fn mit(request: &AshauchRequest) -> Ashauch {
+    under(&AshauchTable::mitakshara(), request)
+}
+
+#[test]
+fn m1_the_mitakshara_divides_the_night_at_its_middle() {
+    // Past the middle (k + 0.75), before the last third (k + 0.8333).
+    let night = asked("m1", death(40.78), Relation::Sapinda);
+    assert_eq!(answer(&night).day_one, date(40));
+    assert_eq!(mit(&night).day_one, date(41));
+    assert_eq!(AshauchTable::mitakshara().name, AshauchTable::MITAKSHARA);
+}
+
+#[test]
+fn m2_the_parents_of_a_child_under_two_keep_the_full_period() {
+    let under_mit = |deceased, relation| mit(&asked("m2", of(50.2, deceased), relation)).length;
+    let infant = child(Sex::Male, 29.5);
+    assert_eq!(under_mit(infant, Relation::Father), Length::Full);
+    assert_eq!(
+        under_mit(infant, Relation::Sapinda),
+        Length::Days { days: 1 }
+    );
+    // DS gives the parents three.
+    assert_eq!(
+        answer(&asked("m2", of(50.2, infant), Relation::Father)).length,
+        Length::Days { days: 3 }
+    );
+    let girl = child(Sex::Female, 1.5 * YEAR);
+    assert_eq!(under_mit(girl, Relation::Mother), Length::Full);
+    assert_eq!(under_mit(girl, Relation::Sapinda), Length::Bath);
+    // Past two, the parents three.
+    assert_eq!(
+        under_mit(child(Sex::Male, 2.5 * YEAR), Relation::Father),
+        Length::Days { days: 3 }
+    );
+}
+
+#[test]
+fn m3_a_childs_band_turns_on_its_chudakarana() {
+    let son = |age, chudakarana| Deceased {
+        chudakarana,
+        ..child(Sex::Male, age)
+    };
+    let sapindas = |deceased| mit(&asked("m3", of(50.2, deceased), Relation::Sapinda)).length;
+    // With teeth, before the cūḍā, a day; after it, three.
+    assert_eq!(
+        sapindas(son(1.5 * YEAR, Some(false))),
+        Length::Days { days: 1 }
+    );
+    assert_eq!(
+        sapindas(son(1.5 * YEAR, Some(true))),
+        Length::Days { days: 3 }
+    );
+    // Left out, read from the age: not yet done before three.
+    assert_eq!(sapindas(son(1.5 * YEAR, None)), Length::Days { days: 1 });
+    assert_eq!(sapindas(son(2.5 * YEAR, None)), Length::Days { days: 1 });
+    let three = Deceased {
+        upanayana: Some(Upanayana::NotDone),
+        ..son(3.5 * YEAR, None)
+    };
+    assert_eq!(sapindas(three), Length::Days { days: 3 });
+    let daughter = |chudakarana| Deceased {
+        chudakarana: Some(chudakarana),
+        ..child(Sex::Female, 1.5 * YEAR)
+    };
+    assert_eq!(sapindas(daughter(false)), Length::Bath);
+    assert_eq!(sapindas(daughter(true)), Length::Days { days: 1 });
+}
+
+#[test]
+fn m4_late_news_by_vriddha_vasishthas_months_and_a_bath_from_another_land() {
+    let late = |after: f64, abroad| {
+        let mut request = heard(asked("m4", death(1.2), Relation::Sapinda), 1.2 + after);
+        request.abroad = abroad;
+        mit(&request).length
+    };
+    assert_eq!(late(50.0, false), Length::Days { days: 3 });
+    assert_eq!(late(150.0, false), Length::Pakshini);
+    assert_eq!(late(240.0, false), Length::Days { days: 1 });
+    // DS keeps a sajyotiḥ here; the Mitakshara a bath.
+    assert_eq!(late(300.0, false), Length::Bath);
+    assert_eq!(late(40.0, true), Length::Bath);
+}
+
+#[test]
+fn m5_the_teacher_the_maternal_kin_and_the_in_laws_by_the_commentary() {
+    let length = |relation, nearness| {
+        let mut request = asked("m5", death(1.2), relation);
+        request.nearness = nearness;
+        mit(&request).length
+    };
+    assert_eq!(
+        length(Relation::MaternalUncle, Nearness::OtherVillage),
+        Length::Days { days: 1 }
+    );
+    assert_eq!(
+        length(Relation::MaternalUncle, Nearness::ObserversHouse),
+        Length::Pakshini
+    );
+    assert_eq!(
+        length(Relation::Pupil, Nearness::OtherVillage),
+        Length::Days { days: 3 }
+    );
+    assert_eq!(
+        length(Relation::SonInLaw, Nearness::SameVillage),
+        Length::Pakshini
+    );
+    assert_eq!(
+        length(Relation::ParentInLaw, Nearness::SameVillage),
+        Length::Bath
+    );
+    assert_eq!(
+        length(Relation::Adoption, Nearness::OtherVillage),
+        Length::Days { days: 1 }
+    );
+    assert_eq!(
+        length(Relation::Adoption, Nearness::SameVillage),
+        Length::Days { days: 3 }
+    );
+    // A row the commentary leaves to others is the Dharmasindhu's.
+    assert_eq!(
+        length(Relation::Subject, Nearness::SameVillage),
+        Length::Sajyotih
+    );
+}
+
+#[test]
+fn m6_a_married_daughter_away_from_her_fathers_house_is_none_on_his_side() {
+    let married = Deceased {
+        sex: Some(Sex::Female),
+        married: Some(true),
+        ..Deceased::default()
+    };
+    let mut away = asked("m6", of(1.2, married), Relation::Father);
+    away.nearness = Nearness::OtherVillage;
+    assert_eq!(mit(&away).length, Length::Bath);
+    away.nearness = Nearness::ObserversHouse;
+    assert_eq!(mit(&away).length, Length::Days { days: 3 });
+}
+
+#[test]
+fn m7_the_mother_takes_part_in_rites_on_the_20th_or_the_30th_day() {
+    let rites = |child| {
+        mit(&asked("m7", birth(1.2, Some(child)), Relation::Mother))
+            .rites_from
+            .map(JulianDay::get)
+    };
+    assert_eq!(rites(Sex::Male), Some(21.0));
+    assert_eq!(rites(Sex::Female), Some(31.0));
+}
+
+#[test]
+fn m8_the_mitakshara_table_is_counted() {
+    AshauchTable::mitakshara().check().unwrap();
+    let json = serde_json::to_string(&AshauchTable::mitakshara()).unwrap();
+    let back: AshauchTable = serde_json::from_str(&json).unwrap();
+    assert_eq!(back, AshauchTable::mitakshara());
+}

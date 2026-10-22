@@ -4881,6 +4881,9 @@ test('an almanac says the period of impurity after a death', () => {
     (error) => error.field === 'ashauch.request.caste',
   );
   assert.throws(() => ctx.almanac.ashauch(null), TypeError);
+
+  const named = ctx.almanac.ashauch({ place: kathmandu, utcOffsetSeconds: 20700, request: grandfather, tradition: 'MITAKSHARA' });
+  assert.equal(named.value.table, 'MITAKSHARA');
 });
 
 /**

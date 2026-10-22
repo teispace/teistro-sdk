@@ -1417,7 +1417,8 @@ final class AlmanacArea extends _Area {
   /// `n` days end at the sunrise that begins day `n + 1`. A period already
   /// running goes in [AshauchRequest.during], each one an earlier answer's
   /// [Ashauch.running]. [table] is the tradition's table as its JSON record,
-  /// every row data; the *Dharmasindhu*'s when null.
+  /// every row data; the *Dharmasindhu*'s when null. [tradition] names a
+  /// table the SDK ships instead, never beside [table].
   ///
   /// ```dart
   /// final found = sdk.almanac.ashauch(
@@ -1435,6 +1436,7 @@ final class AlmanacArea extends _Area {
     required Observer place,
     required int utcOffsetSeconds,
     Map<String, Object?>? table,
+    AshauchTradition? tradition,
   }) {
     final asked = jsonEncode(<String, Object?>{
       'latitudeDeg': place.latitudeDeg,
@@ -1442,6 +1444,7 @@ final class AlmanacArea extends _Area {
       'altitudeM': place.altitudeM,
       'utcOffsetSeconds': utcOffsetSeconds,
       if (table != null) 'table': table,
+      if (tradition != null) 'tradition': tradition.key,
       'request': request._record,
     });
     return _ashauch(
@@ -16008,6 +16011,20 @@ SankalpaAnswer _sankalpa(String json) {
       envelope['provenance']! as Map<String, Object?>,
     ),
   );
+}
+
+/// A table the SDK ships, by its name (`03-design/ashauch.md` §2.10).
+enum AshauchTradition implements _Keyed {
+  /// The *Dharmasindhu*'s, the default.
+  dharmasindhu('DHARMASINDHU'),
+
+  /// The *Mitākṣarā*'s.
+  mitakshara('MITAKSHARA');
+
+  const AshauchTradition(this.key);
+
+  @override
+  final String key;
 }
 
 /// Whose impurity (`03-design/ashauch.md`): a birth's (*sūtaka*, a loss's

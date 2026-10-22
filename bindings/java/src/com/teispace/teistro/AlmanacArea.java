@@ -281,7 +281,7 @@ public final class AlmanacArea {
      * AshauchAnswer found = sdk.almanac().ashauch(AshauchRequest.builder()
      *         .key("grandfather").relation(AshauchRelation.SAPINDA)
      *         .event(AshauchEventDeath.builder().at(2_461_051.677_083).build()) // 2026-01-11 10:00 NPT
-     *         .build(), kathmandu, 20_700, null);
+     *         .build(), kathmandu, 20_700);
      * Integer days = found.value().days(); // 10
      * }</pre>
      *
@@ -294,6 +294,42 @@ public final class AlmanacArea {
      */
     public AshauchAnswer ashauch(com.teispace.teistro.request.AshauchRequest request, Observer place,
             int utcOffsetSeconds, com.teispace.teistro.request.AshauchTable table) {
+        return ashauch(request, place, utcOffsetSeconds, "table", table);
+    }
+
+    /**
+     * The period under the <i>Dharmasindhu</i>'s table: {@link #ashauch(com.teispace.teistro.request.AshauchRequest,
+     * Observer, int, com.teispace.teistro.request.AshauchTable)} with no table.
+     *
+     * @param request the event, the observer and the periods already running
+     * @param place where the days are counted
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @return the period, sealed
+     */
+    public AshauchAnswer ashauch(com.teispace.teistro.request.AshauchRequest request, Observer place,
+            int utcOffsetSeconds) {
+        return ashauch(request, place, utcOffsetSeconds, "table", null);
+    }
+
+    /**
+     * The period under a table the SDK ships, named by its tradition ({@code 03-design/ashauch.md} §2.10).
+     *
+     * @param request the event, the observer and the periods already running
+     * @param place where the days are counted
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param tradition the table, such as {@link com.teispace.teistro.request.AshauchTradition#MITAKSHARA}
+     * @return the period, sealed
+     */
+    public AshauchAnswer ashauch(com.teispace.teistro.request.AshauchRequest request, Observer place,
+            int utcOffsetSeconds, com.teispace.teistro.request.AshauchTradition tradition) {
+        if (tradition == null) {
+            throw Reads.invalid("tradition is an AshauchTradition", "tradition");
+        }
+        return ashauch(request, place, utcOffsetSeconds, "tradition", tradition);
+    }
+
+    private AshauchAnswer ashauch(com.teispace.teistro.request.AshauchRequest request, Observer place,
+            int utcOffsetSeconds, String key, Object table) {
         if (request == null) {
             throw Reads.invalid("request is an AshauchRequest", "request");
         }
@@ -306,7 +342,7 @@ public final class AlmanacArea {
         asked.put("altitudeM", place.altitudeM().value());
         asked.put("utcOffsetSeconds", utcOffsetSeconds);
         if (table != null) {
-            asked.put("table", table);
+            asked.put(key, table);
         }
         asked.put("request", request);
         String json = Json.write(asked);

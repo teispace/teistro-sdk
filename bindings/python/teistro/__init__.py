@@ -714,6 +714,7 @@ __all__ = [
     "AshauchLateRow",
     "AshauchOverlap",
     "AshauchTable",
+    "AshauchTradition",
     "AshauchDayOneBy",
     "AshauchClause",
     "AshauchOverlapped",
@@ -2649,6 +2650,7 @@ class AlmanacArea(_Area):
         utc_offset_seconds: int,
         request: "AshauchRequest",
         table: Optional["AshauchTable"] = None,
+        tradition: Optional["AshauchTradition"] = None,
     ) -> "AshauchAnswer":
         """**The period of impurity after a birth or a death** at a place
         (`03-design/ashauch.md`): from when, until when, and by which
@@ -2657,7 +2659,8 @@ class AlmanacArea(_Area):
         table's night rule; `n` days end at the sunrise that begins day
         `n + 1`. `request` and `table` (the *Dharmasindhu*'s when left out)
         cross as written, so a key the SDK does not read is refused by
-        name; a period already running goes in `request["during"]`, each
+        name; `tradition` names a table the SDK ships (`"MITAKSHARA"`),
+        never beside `table`; a period already running goes in `request["during"]`, each
         one an earlier answer's `value.running()`.
 
         >>> # found = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request={
@@ -2674,6 +2677,8 @@ class AlmanacArea(_Area):
         }
         if table is not None:
             asked["table"] = table
+        if tradition is not None:
+            asked["tradition"] = tradition
         answered = self._context._through_provider(lambda: self._context.inner.almanac_ashauch(json.dumps(asked)))
         return _ashauch_answer(answered)
 
@@ -8070,6 +8075,10 @@ class SankalpaAnswer:
     """What computed it, and the hash of `value`."""
 
 
+AshauchTradition = Literal["DHARMASINDHU", "MITAKSHARA"]
+"""A table the SDK ships, by its name: the *Dharmasindhu*'s (the default)
+or the *Mitakshara*'s."""
+
 AshauchSex = Literal["MALE", "FEMALE"]
 """A son or a daughter, which an ashauch's age bands and the mother's
 further bar read."""
@@ -8229,6 +8238,7 @@ class AshauchBand(TypedDict, total=False):
     sex: Required[AshauchSex]
     before: Required[AshauchMark]
     buried: bool
+    chudakarana: bool
     parents: Required[AshauchLength]
     sapindas: Required[AshauchLength]
     samanodakas: AshauchLength

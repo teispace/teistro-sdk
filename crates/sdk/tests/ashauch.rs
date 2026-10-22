@@ -252,3 +252,25 @@ fn a_binding_query_is_the_same_answer_and_names_a_refusal_under_its_record() {
         "{error}"
     );
 }
+
+#[test]
+fn a_query_names_the_mitakshara_by_its_tradition_and_never_beside_a_table() {
+    let at = |tradition: &str| {
+        format!(
+            r#"{{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+                {tradition}
+                "request": {{"key": "k", "relation": "SAPINDA",
+                            "event": {{"event": "DEATH", "at": 2461051.4375}}}}}}"#
+        )
+    };
+    let named = AshauchQuery::from_json(&at(r#""tradition": "MITAKSHARA","#)).unwrap();
+    assert_eq!(named.table, AshauchTable::mitakshara());
+    let table = serde_json::to_string(&AshauchTable::dharmasindhu()).unwrap();
+    let both = AshauchQuery::from_json(&at(&format!(
+        r#""tradition": "MITAKSHARA", "table": {table},"#
+    )))
+    .unwrap_err();
+    assert_eq!(both.field(), Some("ashauch.tradition"), "{both}");
+    let found = context().almanac().ashauch_query(&named).unwrap().value;
+    assert_eq!(found["table"], "MITAKSHARA");
+}

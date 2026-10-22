@@ -13,13 +13,14 @@ import java.util.Objects;
  *
  * @param before The band holds while this mark is not yet reached.
  * @param buried Only for a burial (true), or only for a cremation (false); either when left out. Null leaves the SDK's default.
+ * @param chudakarana Only when the *cūḍākaraṇa* was done (true), or only when it was not (false), as the *Mitākṣarā* cuts a child's first three years (on Yā III.23); either when left out. The deceased's `chudakarana`, read from the age when left out. Null leaves the SDK's default.
  * @param clause The clause, with its source.
  * @param parents The parents' length, a step-child's too.
  * @param samanodakas The samānodakas', when the band names one; a bath otherwise, as for every relation the band does not name. Null leaves the SDK's default.
  * @param sapindas The sapiṇḍas'.
  * @param sex A son's band or a daughter's.
  */
-public record AshauchBand(AshauchMark before, Boolean buried, String clause, AshauchLength parents, AshauchLength samanodakas, AshauchLength sapindas, AshauchSex sex) implements RequestJson {
+public record AshauchBand(AshauchMark before, Boolean buried, Boolean chudakarana, String clause, AshauchLength parents, AshauchLength samanodakas, AshauchLength sapindas, AshauchSex sex) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -49,6 +50,7 @@ public record AshauchBand(AshauchMark before, Boolean buried, String clause, Ash
     public static final class Builder {
         private AshauchMark before;
         private Boolean buried;
+        private Boolean chudakarana;
         private String clause;
         private AshauchLength parents;
         private AshauchLength samanodakas;
@@ -76,6 +78,17 @@ public record AshauchBand(AshauchMark before, Boolean buried, String clause, Ash
          */
         public Builder buried(boolean buried) {
             this.buried = buried;
+            return this;
+        }
+
+        /**
+         * Sets {@code chudakarana}.
+         *
+         * @param chudakarana Only when the *cūḍākaraṇa* was done (true), or only when it was not (false), as the *Mitākṣarā* cuts a child's first three years (on Yā III.23); either when left out. The deceased's `chudakarana`, read from the age when left out. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder chudakarana(boolean chudakarana) {
+            this.chudakarana = chudakarana;
             return this;
         }
 
@@ -141,7 +154,7 @@ public record AshauchBand(AshauchMark before, Boolean buried, String clause, Ash
          * @throws NullPointerException naming a required field left unset
          */
         public AshauchBand build() {
-            return new AshauchBand(before, buried, clause, parents, samanodakas, sapindas, sex);
+            return new AshauchBand(before, buried, chudakarana, clause, parents, samanodakas, sapindas, sex);
         }
     }
 
@@ -157,6 +170,7 @@ public record AshauchBand(AshauchMark before, Boolean buried, String clause, Ash
         return new AshauchBand(
             AshauchMark.of(Read.required(json.get("before"), "AshauchBand.before")),
             Read.orNull(json.get("buried"), present -> Read.bool(present, "AshauchBand.buried")),
+            Read.orNull(json.get("chudakarana"), present -> Read.bool(present, "AshauchBand.chudakarana")),
             Read.text(Read.required(json.get("clause"), "AshauchBand.clause"), "AshauchBand.clause"),
             AshauchLength.of(Read.required(json.get("parents"), "AshauchBand.parents")),
             Read.orNull(json.get("samanodakas"), present -> AshauchLength.of(present)),
@@ -170,6 +184,9 @@ public record AshauchBand(AshauchMark before, Boolean buried, String clause, Ash
         json.put("before", before.toJson());
         if (buried != null) {
             json.put("buried", buried);
+        }
+        if (chudakarana != null) {
+            json.put("chudakarana", chudakarana);
         }
         json.put("clause", clause);
         json.put("parents", parents.toJson());

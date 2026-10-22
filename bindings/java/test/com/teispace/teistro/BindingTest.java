@@ -1780,7 +1780,7 @@ public final class BindingTest {
                 AshauchRequest.Builder died = AshauchRequest.builder()
                         .relation(AshauchRelation.SAPINDA)
                         .event(AshauchEventDeath.builder().at(at).build());
-                AshauchAnswer found = sky.almanac().ashauch(died.key("grandfather").build(), kathmandu, 20_700, null);
+                AshauchAnswer found = sky.almanac().ashauch(died.key("grandfather").build(), kathmandu, 20_700);
                 Ashauch value = found.value();
                 check(!found.provenance().inputHash().isEmpty(), "the request is sealed");
                 same("grandfather", value.key(), "the request's key");
@@ -1798,7 +1798,7 @@ public final class BindingTest {
                 same("DHARMASINDHU", value.table(), "the default table");
 
                 Ashauch heard = sky.almanac().ashauch(died.key("heard").heardAt(at + 50).build(), kathmandu,
-                        20_700, null).value();
+                        20_700).value();
                 same("LATE", heard.clause().clause(), "heard past the period");
                 same(90, heard.clause().withinDays(), "the late table's row");
                 same(false, heard.clause().abroad(), "not abroad");
@@ -1807,10 +1807,17 @@ public final class BindingTest {
                 Ashauch second = sky.almanac().ashauch(AshauchRequest.builder()
                         .key("second").relation(AshauchRelation.SAPINDA)
                         .event(AshauchEventDeath.builder().at(at + 3).build())
-                        .during(List.of(value.running())).build(), kathmandu, 20_700, null).value();
+                        .during(List.of(value.running())).build(), kathmandu, 20_700).value();
                 same("ENDS_WITH_EARLIER", second.overlap().overlap(), "a death during the first");
                 same("grandfather", second.overlap().earlier(), "the earlier period's key");
                 same(value.end(), second.end(), "it ends with the earlier");
+
+                Ashauch mitakshara = sky.almanac().ashauch(AshauchRequest.builder()
+                        .key("mitakshara").relation(AshauchRelation.SAPINDA)
+                        .event(AshauchEventDeath.builder().at(at).build()).build(), kathmandu, 20_700,
+                        AshauchTradition.MITAKSHARA).value();
+                same("MITAKSHARA", mitakshara.table(), "the table its tradition names");
+                same(10, mitakshara.days(), "a sapinda's ten days");
             }
         });
 

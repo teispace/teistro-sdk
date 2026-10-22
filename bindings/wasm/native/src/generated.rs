@@ -4628,8 +4628,10 @@ impl Context {
     /// when the mother of a birth may take part in rites again.
     ///
     /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-    /// "utcOffsetSeconds", "table", "request"}`: `table` the
-    /// *Dharmasindhu*'s when left out, every row data; `request` `{key,
+    /// "utcOffsetSeconds", "table", "tradition", "request"}`: `table` the
+    /// *Dharmasindhu*'s when left out, every row data, or `tradition` a
+    /// shipped table by name (`DHARMASINDHU`, `MITAKSHARA`), never both;
+    /// `request` `{key,
     /// event, relation, heardAt, abroad, at, fullDays, during}`, its
     /// instants UTC Julian days and `fullDays` ten when left out. A key it
     /// does not read, or a table or request that cannot be counted, is
