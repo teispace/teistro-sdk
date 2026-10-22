@@ -299,14 +299,14 @@
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 12060000,
-      "gzip": 2800000
+      "raw": 12200000,
+      "gzip": 2850000
     },
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 4450000,
-      "gzip": 1370000
+      "raw": 4550000,
+      "gzip": 1400000
     }
   ],
   "history": [
@@ -471,6 +471,24 @@
       "raw": 4362373,
       "gzip": 1336192,
       "why": "the Navaratri's close, the Gaudiya Ekadashi and its mahadvadashis, and the ashauch (the Dharmasindhu's table as data, the night rule, late news and overlap); measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-23",
+      "subject": "full",
+      "artefact": "module",
+      "raw": 11941527,
+      "gzip": 2780611,
+      "why": "the graha dashas of 2026-10-23 (the Karaka, Tara and ayurdaya dashas on K-graha, its share table and the ayurdaya spans they read in the dasha step) and the MCP watcher's parts; measured by check-wasm on macOS with rustc 1.99.1 at cd208183, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-23",
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 4452546,
+      "gzip": 1360613,
+      "why": "the graha dashas of 2026-10-23 (the Karaka, Tara and ayurdaya dashas on K-graha, its share table and the ayurdaya spans they read in the dasha step) and the MCP watcher's parts; measured by check-wasm on macOS with rustc 1.99.1 at cd208183, since GitHub CI is paused"
     }
   ]
 }
