@@ -2826,7 +2826,10 @@ void _engineTests() {
       ),
       ('AFTER_RITE', 'DEVI_VISARJAN', 0, 'NEXT_TITHI'),
     );
-    expect((afterRite.day, afterRite.fromBy), (visarjana.day, 'RITE'));
+    expect(
+      (afterRite.day.month, afterRite.day.day, afterRite.fromBy),
+      (visarjana.day.month, visarjana.day.day, 'RITE'),
+    );
     // The parana's nakshatra bar (C700): Kathmandu, 7 July 2025, the meal
     // held past Anuradha's first quarter, which ends at 05:36.
     final smarta = <String, Object?>{

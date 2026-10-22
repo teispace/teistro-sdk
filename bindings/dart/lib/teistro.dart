@@ -15387,9 +15387,10 @@ Mahadvadashi _mahadvadashi(Map<String, Object?> raw) {
     kind: raw['kind']! as String,
     held: [for (final kind in raw['held']! as List<Object?>) kind! as String],
     clause: raw['clause']! as String,
-    joinedNakshatra: joined == null
-        ? null
-        : _key(joined['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+    joinedNakshatra:
+        joined == null
+            ? null
+            : _key(joined['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
     joinedSpan: joined == null ? null : _festivalInterval(joined['span']),
   );
 }
