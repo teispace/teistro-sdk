@@ -161,7 +161,11 @@ fn every_sign_based_system_is_reproduced() {
         .collect();
     assert_eq!(
         unrecorded,
-        [DashaSystem::Sthira, DashaSystem::Yogardha],
+        [
+            DashaSystem::Sthira,
+            DashaSystem::Yogardha,
+            DashaSystem::SudarshanaChakra
+        ],
         "the shipped rows the corpus does not record"
     );
     assert_eq!(
@@ -221,4 +225,60 @@ fn bphs_readings_move_the_answers_they_reach() {
     // every system that counts to or names a stronger lord, and the start the
     // three systems BPHS starts from a stronger sign.
     assert_eq!((by_dual_lord, by_start), (360, 98));
+}
+
+/// The Sudarshana chakra's dasha (BPHS ch. 74 vv. 21 to 26) on the
+/// chapter's example, an Aquarius lagna: a year a house forward from the
+/// lagna whatever its parity, twelve months of a year each a twelfth from
+/// its own house forward, and so on down; the twelve years again for life,
+/// though the settings end every other system's cycle.
+#[test]
+fn the_sudarshana_chakra_runs_a_year_a_house_for_life() {
+    let row = rashi_row(DashaSystem::SudarshanaChakra).unwrap();
+    let mut chart = RashiChart {
+        lagna: Rashi::Aquarius,
+        arudha_lagna: Rashi::Aries,
+        navamsa_lagna: Rashi::Aries,
+        signs: [Rashi::Capricorn; 9],
+        dignities: [Dignity::Neutral; 9],
+        brahma: None,
+    };
+    chart.signs[1] = Rashi::Gemini;
+    let birth = JulianDay::literal(2_451_545.0);
+    let year = YearLength::Julian36525.days();
+    let dasha = RashiDasha::new(
+        row,
+        &chart,
+        birth,
+        YearLength::Julian36525,
+        AfterCycle::End,
+        teistro_dasha::RashiRules::RECORDING_ENGINE,
+    )
+    .unwrap();
+    let signs: Vec<Rashi> = dasha
+        .mahadashas()
+        .map(|period| period.sign.unwrap())
+        .collect();
+    let from_aquarius: Vec<Rashi> = (0..12)
+        .map(|k| Rashi::from_id(u16::try_from((10 + k) % 12).unwrap()).unwrap())
+        .collect();
+    assert_eq!(signs, from_aquarius);
+    for (k, period) in dasha.mahadashas().enumerate() {
+        let k = f64::from(u8::try_from(k).unwrap());
+        assert!((period.interval.from.get() - (birth.get() + k * year)).abs() < 1e-9);
+        assert!((period.interval.days() - year).abs() < 1e-9);
+    }
+    // Year 14 is the second house again, and its months begin there.
+    let fourteenth = dasha.mahadasha_at(birth.get() + 13.5 * year).unwrap();
+    assert_eq!(fourteenth.sign, Some(Rashi::Pisces));
+    assert_eq!(fourteenth.path.to_string(), "1:1");
+    let months: Vec<_> = dasha.children(&fourteenth).collect();
+    assert_eq!(months.len(), 12);
+    assert_eq!(months[0].sign, Some(Rashi::Pisces));
+    assert_eq!(months[1].sign, Some(Rashi::Aries));
+    assert!((months[0].interval.days() - year / 12.0).abs() < 1e-9);
+    let parts: Vec<_> = dasha.children(&months[1]).collect();
+    assert_eq!(parts[0].sign, Some(Rashi::Aries));
+    assert_eq!(parts[1].sign, Some(Rashi::Taurus));
+    assert!((parts[0].interval.days() - year / 144.0).abs() < 1e-9);
 }

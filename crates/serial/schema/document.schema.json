@@ -6187,6 +6187,10 @@
           "default": "CONSECUTIVE",
           "description": "The order it visits the signs in; every sign in turn by default."
         },
+        "recurs": {
+          "description": "Whether the cycle runs again for life whatever the settings say; the settings' `after_cycle` decides by default.",
+          "type": "boolean"
+        },
         "sources": {
           "description": "Where the row comes from.",
           "items": {

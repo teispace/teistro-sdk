@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Sudarshana chakra's dasha** (`dasha-kernels.md`, C734 to C738).
+**Numbers:** none move; a system that refused now answers.
+`DashaSystem::SudarshanaChakra` is computed, a K-rashi row: a year a
+house forward from the lagna, twelve sub-periods at every level, and the
+twelve again for life (BPHS ch. 74 vv. 21–26), whatever the settings'
+`after_cycle` says. A `RashiDefinition` can say the same with `recurs`.
+The dasha coverage page now says 32 systems are computed and 13 are not,
+and it corrects its account of Tara, Karaka and Ashtakavarga from BPHS
+ch. 46: Tara takes Vimshottari's years, and Karaka and Ashtakavarga need
+a graha kernel, which is planned. The typings of `RashiDefinition` gain
+`BRAHMA`, `FORWARD` and `recurs`.
+
 **The samsarpa's second anniversary** (P1-8, `shraddha.md` §2.3, §3.1,
 C669). **Numbers:** an ordinary month's shraddha gains a day in the
 adhika month of its name before a kshaya month, which only a year with

@@ -6,7 +6,7 @@ Status: `generated` by `cargo xtask dasha-coverage` over
 regenerates this page and fails on any difference. The design it
 measures is [`dasha-kernels.md`](dasha-kernels.md).
 
-The catalogue names 45 dasha systems and this build computes 31. The 14
+The catalogue names 45 dasha systems and this build computes 32. The 13
 left are **not** a backlog of unwritten code: every one of them is
 blocked on something that is not typing, and this page is the list of
 what, grouped by the blocker that would have to go first.
@@ -44,24 +44,24 @@ and all of them are listed.
 | `SUDASA` | no verse is in hand. BPHS does not name it among its dasas (ch. 46 vv. 6 to 11), and neither Sanskrit edition of the Jaimini sutras read states it in plain words; PyJHora starts it from the Sree lagna with a first period set by its longitude, which the kernel has neither of. It was listed as waiting on the karakamsha, which is built and is not its start in any source read |
 | `VARSHA_NARAYANA` | Narayana read over one year. The solar return it waited on is built and the three annual dashas beside it are computed (`annual-dashas.md`), but neither book read for them gives this one: Charak's chapter V and the *Tajika Nilakanthi* name the Mudda, the Yogini and the Patyayini and stop |
 
-## 4 systems: the kernel cannot express it
+## 3 systems: the kernel cannot express it
 
-What closes them is a change to the kernel, which is the decision
-ADR-0017 set a kill criterion for: a third chart-query field serves
-three of these at once, or the kernel is redesigned as an interpreter
-and serves them all. They are taken together for that reason, never one
-at a time.
+What closes them is a third kernel, a graha dasha whose lords and years
+a chart query gives, with no seed and no balance: `KARAKA` and
+`ASHTAKAVARGA` are that shape as the verses state them, and `TARA` is
+Vimshottari begun from a lord the chart names. A field on K-udu would be
+the chart-query escape hatch ADR-0017 set a kill criterion for, so they
+wait on the kernel, not on a field.
 
 | system | why it is not computed |
 |---|---|
-| `TARA` | its periods come from the chart's tara counts, and the row schema states its periods. A row that asks the chart is a field K-udu has not got |
-| `KARAKA` | its lord **order** comes from chara-karaka strength, which is a second thing a row would have to ask the chart for |
-| `ASHTAKAVARGA` | its periods come from the bindu counts. The three above are one mechanism asked for three ways, and the kernel takes them together or not at all |
-| `SUDARSHANA_CHAKRA` | three rashi progressions running at once, from the lagna, the Sun and the Moon. A composition over kernels, and the reason it is a combinator |
+| `TARA` | Vimshottari's years and order, begun from the strongest graha in a kendra (BPHS ch. 46 vv. 207 to 209): its periods are the table's, and what the chart gives is the first lord, which K-udu's nakshatra map cannot say. No verse names the strength or a balance at birth |
+| `KARAKA` | the chara karakas in their order, each running the count of signs from the lagna to its own (BPHS ch. 46 v. 178): a graha dasha whose lords **and** years the chart gives, with no seed and no balance, which is neither kernel's shape |
+| `ASHTAKAVARGA` | the name BPHS ch. 46 v. 203 gives the Paindi, Amshi and Naisargika dashas: each body's ayurdaya years, from the strongest of the lagna, the Sun and the Moon and then the kendras, panapharas and apoklimas from it (vv. 201 and 202), the same graha-dasha shape as `KARAKA`. No verse read gives it periods from bindu counts |
 
 ## Asking for one
 
-Every one of the 14 unbuilt systems was asked of a real founded chart.
+Every one of the 13 unbuilt systems was asked of a real founded chart.
 None of them answered: each came back refused, naming the system asked
 for and hinting with every system this build does compute. That is what
 makes the gap a declared one rather than a dead end — a member that
@@ -69,7 +69,7 @@ answered an empty reading would be indistinguishable from a bug, and
 nothing but a call can tell the two apart.
 
 ```text
-unsupported: TITHI_ASHTOTTARI is a dasha the catalogue names and this build does not compute yet (field `dashas[0]`); the dashas built are VIMSHOTTARI, ASHTOTTARI, DWADASHOTTARI, PANCHOTTARI, SHATABDIKA, CHATURASHITI_SAMA, DWISAPTATI_SAMA, YOGINI, TRIBHAGI, SHODASHOTTARI, SHATTRIMSHA_SAMA, SHASHTIHAYANI, CHARA, NARAYANA, PADANADHAMSA, TRIKONA, DRIG, SHOOLA, NIRYANA_SHOOLA, MANDOOKA, STHIRA, YOGARDHA, KALACHAKRA, RELEASING_FORTUNE, RELEASING_DAIMON, PROFECTION, FIRDARIA, DECENNIALS
+unsupported: TITHI_ASHTOTTARI is a dasha the catalogue names and this build does not compute yet (field `dashas[0]`); the dashas built are VIMSHOTTARI, ASHTOTTARI, DWADASHOTTARI, PANCHOTTARI, SHATABDIKA, CHATURASHITI_SAMA, DWISAPTATI_SAMA, YOGINI, TRIBHAGI, SHODASHOTTARI, SHATTRIMSHA_SAMA, SHASHTIHAYANI, CHARA, NARAYANA, PADANADHAMSA, TRIKONA, DRIG, SHOOLA, NIRYANA_SHOOLA, MANDOOKA, STHIRA, YOGARDHA, SUDARSHANA_CHAKRA, KALACHAKRA, RELEASING_FORTUNE, RELEASING_DAIMON, PROFECTION, FIRDARIA, DECENNIALS
 ```
 
 ## Who can supply one
@@ -80,7 +80,7 @@ reference, or where a system starts, the order it visits the signs in
 and how long a sign runs — each checked by the same row validation a
 shipped system passes. So a consumer holding the text registers the
 system on their context and asks for it by key, today, with no change
-here. That covers 0 of the 14 systems left.
+here. That covers 0 of the 13 systems left.
 
 None is left that only wants its numbers: the last two, `SHODASHOTTARI`
 and `SHATTRIMSHA_SAMA`, ship from BPHS ch. 46.
@@ -90,13 +90,12 @@ The path is walked once per kernel rather than cited:
 nakshatra-seeded kernel and `DEMO_RASHI`, every sign from the lagna for
 seven, eight or nine years by modality, the sign-based kernel.
 
-**The 14 left cannot be supplied by anyone**, and each for a reason in
+**The 13 left cannot be supplied by anyone**, and each for a reason in
 its own row rather than for want of an arm: `SUDASA` starts from the
 karakamsha and `VARNADA` from the Varnada lagna, which are places
 `Start` does not name; the tithi, yoga and karana seeds want a reference
 that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA` ask the
-chart for their periods; `SUDARSHANA_CHAKRA` is a composition of systems
-rather than a system. Those are rows the kernels do not express, which
+chart for their lords. Those are rows the kernels do not express, which
 is a different thing from a row nobody has written down — and the
 difference is what this section exists to keep visible.
 
@@ -104,12 +103,12 @@ difference is what this section exists to keep visible.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every catalogued system this build does not compute is listed here with a reason | **holds** | 0 of 14 disagree |
-| no reason here outlives its blocker: nothing listed is already computed | **holds** | 0 of 14 disagree |
-| every reason names a system the catalogue names | **holds** | 0 of 14 disagree |
+| every catalogued system this build does not compute is listed here with a reason | **holds** | 0 of 13 disagree |
+| no reason here outlives its blocker: nothing listed is already computed | **holds** | 0 of 13 disagree |
+| every reason names a system the catalogue names | **holds** | 0 of 13 disagree |
 | every system said to be registrable is one this build does not compute | untested | nothing tests it |
-| asking for an unbuilt system is refused and never answered | **holds** | 0 of 14 disagree |
-| the refusal names the system asked for | **holds** | 0 of 14 disagree |
-| the refusal names every system this build does compute | **holds** | 0 of 14 disagree |
-| the counts on this page are read from the types and not written down | **holds** | `DashaSystem::ALL` 45, `teistro::dasha::systems()` 31 |
+| asking for an unbuilt system is refused and never answered | **holds** | 0 of 13 disagree |
+| the refusal names the system asked for | **holds** | 0 of 13 disagree |
+| the refusal names every system this build does compute | **holds** | 0 of 13 disagree |
+| the counts on this page are read from the types and not written down | **holds** | `DashaSystem::ALL` 45, `teistro::dasha::systems()` 32 |
 

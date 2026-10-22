@@ -10559,9 +10559,13 @@
           "aliases": [],
           "deprecated": false,
           "attributes": {
-            "family": "COMPOSITION"
+            "family": "RASHI"
           },
           "sources": [
+            {
+              "text": "BPHS",
+              "ref": "ch. 74 vv. 21 to 26: a year a house from the lagna, twelve months of it, recurring for life"
+            },
             {
               "text": "dasha-kernels",
               "ref": "docs/03-design/dasha-kernels.md"

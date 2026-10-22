@@ -12927,13 +12927,16 @@ class RashiDashaDefinition(_RashiDashaDefinitionRequired, total=False):
     """
 
     sources: List[str]
-    start: Literal["LAGNA", "ARUDHA_LAGNA", "NAVAMSA_LAGNA"]
-    order: Literal["CONSECUTIVE", "TRINE_GROUPS", "DRISHTI_CHAIN", "LEAP"]
+    start: Literal["LAGNA", "ARUDHA_LAGNA", "NAVAMSA_LAGNA", "BRAHMA"]
+    order: Literal["CONSECUTIVE", "TRINE_GROUPS", "DRISHTI_CHAIN", "LEAP", "FORWARD"]
     length: Union[Literal["COUNT_TO_LORD", "COUNT_TO_LORD_BY_DIGNITY"], Dict[str, object]]
     named_lord: Literal["STRONGER", "FIRST"]
     stronger_of: List[int]
     year_length: DashaYearLength
     depth: int
+    recurs: bool
+    """Whether the cycle runs again for life whatever the settings'
+    `after_cycle` says, as the Sudarshana chakra's does."""
 
 
 DashaDefinition = Union[UduDashaDefinition, RashiDashaDefinition]

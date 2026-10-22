@@ -4494,6 +4494,7 @@ final class RashiDashaDefinition extends DashaDefinition {
     this.strongerOf = const <int>[],
     this.yearLength,
     this.depth,
+    this.recurs = false,
   });
 
   @override
@@ -4526,6 +4527,10 @@ final class RashiDashaDefinition extends DashaDefinition {
   /// How many levels of periods a reading carries, 1 to 6; three by default.
   final int? depth;
 
+  /// Whether the cycle runs again for life whatever the settings'
+  /// `after_cycle` says, as the Sudarshana chakra's does.
+  final bool recurs;
+
   @override
   Map<String, Object?> toJson() => {
     'kernel': 'RASHI',
@@ -4538,6 +4543,7 @@ final class RashiDashaDefinition extends DashaDefinition {
     if (strongerOf.isNotEmpty) 'stronger_of': strongerOf,
     if (yearLength != null) 'year_length': yearLength,
     if (depth != null) 'depth': depth,
+    if (recurs) 'recurs': true,
   };
 }
 
@@ -4566,7 +4572,11 @@ enum RashiStart {
   arudhaLagna('ARUDHA_LAGNA'),
 
   /// The navamsa lagna.
-  navamsaLagna('NAVAMSA_LAGNA');
+  navamsaLagna('NAVAMSA_LAGNA'),
+
+  /// The sign the Brahma graha occupies (BPHS ch. 46 v. 169), which about
+  /// half of charts give.
+  brahma('BRAHMA');
 
   const RashiStart(this.key);
 
@@ -4587,7 +4597,10 @@ enum RashiOrder {
   drishtiChain('DRISHTI_CHAIN'),
 
   /// Back two signs at a time from the start.
-  leap('LEAP');
+  leap('LEAP'),
+
+  /// Every sign in turn forward, whatever the start's parity.
+  forward('FORWARD');
 
   const RashiOrder(this.key);
 
