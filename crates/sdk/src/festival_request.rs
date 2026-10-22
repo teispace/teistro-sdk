@@ -295,7 +295,7 @@ impl FestivalRequest {
     /// ```
     /// use teistro::FestivalRequest;
     /// use teistro::catalogue::{Masa, Tithi};
-    /// use teistro::festival::{Anniversary, AnniversaryKind, FirstYearAdhika, JanmaOptions, Origin};
+    /// use teistro::festival::{Anniversary, AnniversaryKind, FirstYearAdhika, InSamsarpa, JanmaOptions, Origin};
     ///
     /// let barkhi = Anniversary {
     ///     key: "GRANDFATHER".to_owned(),
@@ -303,6 +303,7 @@ impl FestivalRequest {
     ///     kind: AnniversaryKind::Shraddha,
     ///     window: None,
     ///     first_year_adhika: FirstYearAdhika::Adhika,
+    ///     in_samsarpa: InSamsarpa::Also,
     ///     janma: JanmaOptions::default(),
     /// };
     /// let asked = FestivalRequest::new(Vec::new()).with_anniversary(barkhi);

@@ -75,13 +75,7 @@ const MONTHS_BEFORE_DAYS: f64 = 5.0 * SYNODIC_MONTH_DAYS;
 /// last month the range touches is closed.
 const MONTHS_AFTER_DAYS: f64 = 31.0;
 
-/// How many synodic months past a range the season looks for a kshaya
-/// month, so that an adhika month inside the range is known to be or not
-/// to be the samsarpa before one. The lunisolar pass measures the gap
-/// from a kshaya month back to the adhika before it over a millennium
-/// (at most five months) and fails if this does not cover it
-/// (`calendar-indian-lunisolar-measured.md` §5).
-pub const SAMSARPA_REACH_MONTHS: f64 = 6.0;
+pub use teistro_calendar::lunisolar::SAMSARPA_REACH_MONTHS;
 
 /// A synodic month, days.
 const SYNODIC_MONTH_DAYS: f64 = 29.530_588_9;
@@ -169,7 +163,7 @@ pub fn blackouts<S: Longitudes + ?Sized>(
 ) -> Result<Vec<Blackout>, Error> {
     let lead = interval(
         range.from.get() - MONTHS_BEFORE_DAYS,
-        range.to.get() + SAMSARPA_REACH_MONTHS * SYNODIC_MONTH_DAYS,
+        range.to.get() + f64::from(SAMSARPA_REACH_MONTHS) * SYNODIC_MONTH_DAYS,
     )?;
     let months = months(tropical, zodiac, lead)?;
     let source = Sidereal::over(tropical, zodiac);

@@ -6,6 +6,7 @@ use teistro_astro::Completion;
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::CalendarDate;
+use teistro_calendar::lunisolar::MonthKind;
 use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::{Convention, Envelope, Hash, content_hash};
@@ -19,7 +20,7 @@ use teistro_muhurta::Answer;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::ashauch::{Ashauch, AshauchRequest, AshauchTable};
 use teistro_panchanga::festival::{
-    DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, Observances, Origin,
+    DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, InSamsarpa, Observances, Origin,
     anniversaries, dated, ekadashis, following, observances,
 };
 use teistro_panchanga::first_year::{FirstYear, FirstYearSchedule};
@@ -290,7 +291,18 @@ impl<'a> AlmanacArea<'a> {
                 .map_err(|why| why.under(&format!("festivals.anniversaries[{index}].origin")))?;
             asked.push((anniversary.clone(), found));
         }
-        anniversaries(&asked, viewed)
+        // A samsarpa is looked for only when an anniversary would keep a
+        // day in it.
+        let samsarpas = if asked
+            .iter()
+            .any(|(anniversary, _)| anniversary.in_samsarpa == InSamsarpa::Also)
+            && viewed.iter().any(|day| day.month.kind == MonthKind::Adhika)
+        {
+            self.with_almanac(calendar, offset, |almanac| almanac.samsarpas(viewed, place))?
+        } else {
+            Vec::new()
+        };
+        anniversaries(&asked, viewed, &samsarpas)
     }
 
     /// The observances over the range's own `days`, stamped with their

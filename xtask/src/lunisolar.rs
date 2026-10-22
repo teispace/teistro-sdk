@@ -29,7 +29,7 @@ use serde_json::Value;
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, Verdict, count, fill, table};
-use teistro_muhurta::season::SAMSARPA_REACH_MONTHS;
+use teistro_calendar::lunisolar::SAMSARPA_REACH_MONTHS;
 
 const PAGE: &str = "docs/03-design/calendar-indian-lunisolar-measured.md";
 const CHARTS: &str = "fixtures/baseline/charts";
@@ -147,13 +147,13 @@ fn page(root: &Path) -> Result<String, String> {
         .filter(|k| {
             k.before
                 .and_then(|gap| u32::try_from(gap).ok())
-                .is_none_or(|gap| f64::from(gap) > SAMSARPA_REACH_MONTHS)
+                .is_none_or(|gap| gap > u32::from(SAMSARPA_REACH_MONTHS))
         })
         .map(|k| k.year)
         .collect();
     if !short.is_empty() {
         return Err(format!(
-            "the season's SAMSARPA_REACH_MONTHS ({SAMSARPA_REACH_MONTHS}) does not reach back from \
+            "SAMSARPA_REACH_MONTHS ({SAMSARPA_REACH_MONTHS}) does not reach back from \
              the kshaya months of {short:?} to an adhika month before them"
         ));
     }
@@ -586,9 +586,10 @@ fn season(months: &[Month]) -> String {
          and {} have one after them, {} to {} months on. *Dharmasindhu*\n\
          calls the one before *samsarpa*, fit for every rite, and the\n\
          kshaya month and the one after it are avoided in all of them\n\
-         (C179). So the muhurta season has to look past the range it is\n\
-         asked for to know whether an adhika month inside it is the\n\
-         samsarpa. It looks {} synodic months on\n\
+         (C179), and an anniversary is kept in it too (C669). So the\n\
+         muhurta season and the anniversaries have to look past the range\n\
+         they are asked for to know whether an adhika month inside it is\n\
+         the samsarpa. They look {} lunar months on\n\
          (`SAMSARPA_REACH_MONTHS`), and this pass refuses to write the\n\
          page if any gap above is longer.\n\n",
         count(kshaya),

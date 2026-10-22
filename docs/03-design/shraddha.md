@@ -121,9 +121,15 @@ the kshaya example): every tithi of the joined lunation is of both
 months, the first **half of each tithi** the first month's, the second
 half the second's; a death or a birth in it takes the month of the half
 it fell in. An ordinary-year anniversary of either month is kept in the
-joined lunation on its tithi, with no half to choose (DS's *phalita*). An
-adhika month just before a kshaya (*saṃsarpa*) also carries that month's
-anniversaries, in DS's own words "as it seems" (*iti bhāti*).
+joined lunation on its tithi, with no half to choose (DS's *phalita*). The
+adhika month before a kshaya (*saṃsarpa*, DS p. 3) also carries that
+month's anniversaries, in DS's own words "as it seems" (*iti bhāti*).
+Dhakal (NS, the introduction's malamasa section) gives it as an
+instruction for Nepal with two examples: an adhika Kartika before a
+kshaya lunation, its shraddha in the adhika and in the joined month; and
+DS's own year, an adhika Ashvin before a kshaya Margashirsha, Ashvin's
+shraddha in both Ashvins. The adhika after the kshaya (*aṃhaspati*)
+carries none.
 
 ### 2.4 Janma tithi
 
@@ -211,6 +217,7 @@ pub struct Anniversary {
     pub kind: AnniversaryKind,           // Shraddha (by the origin, C665) | Ekoddishta | Parvana | JanmaTithi
     pub window: Option<Window>,          // overrides the kind's (C662)
     pub first_year_adhika: FirstYearAdhika, // Adhika (the texts) | Nija (Dhakal), C666
+    pub in_samsarpa: InSamsarpa,         // Also (DS, Dhakal) | Nija, C669
     pub janma: JanmaOptions,             // C670: nakshatra_tie, two_muhurta_floor
 }
 
@@ -219,7 +226,7 @@ pub struct AnniversaryDay {
     pub count: Option<u16>,   // 1 for the first recurrence after the origin; a janma tithi's age turned
     pub kind: AnniversaryKind,           // as kept: never Shraddha
     pub origin: OriginFound,  // tithi, month, kind, half, nakshatra, at, assumed_sunrise, candidates
-    pub month_by: MonthClause,           // Nija | FirstYearAdhika | AdhikaOrigin | KshayaJoined
+    pub month_by: MonthClause,           // Nija | FirstYearAdhika | AdhikaOrigin | KshayaJoined | Samsarpa
     pub observance: Observance,          // the festival evaluator's answer, case and extents
 }
 ```
@@ -242,6 +249,20 @@ rows 1–12, `crates/sdk/tests/anniversary.rs`), the origin cases of §5.2,
 an adhika origin's recurrence, both first-year policies, the two-muhurta
 floor, and the kshaya year's joined lunation (C669) on synthetic days,
 proved red (`crates/panchanga/tests/anniversary.rs`).
+
+The samsarpa's second day (C669) is kept for a shraddha of an ordinary
+month when `in_samsarpa` is `ALSO`, the default; a janma tithi and the
+first year's abdika never take it, the first year's month being
+`first_year_adhika`'s. Whether an adhika month is the samsarpa is the
+almanac's (`Almanac::samsarpas`): the lunations after it are named a
+month at a time, in the days' own sky and rule, up to
+`SAMSARPA_REACH_MONTHS` (6, measured against the five-month gap in
+`calendar-indian-lunisolar-measured.md` §5), so a range ending before the
+kshaya month still knows its samsarpa. Held to 1963 at Kathmandu under
+`nepal_official`, DS's own year: an adhika Ashvin before the kshaya month
+joining Margashirsha and Pausha keeps an ordinary Ashvin's shraddha on
+22 September beside October's, and 1964's adhika Chaitra after it keeps
+none (`crates/sdk/tests/anniversary.rs`), each guard proved red.
 
 ### 3.2 The `PITRI_PAKSHA` pack
 
@@ -342,7 +363,7 @@ the count treats as one lunation, one monthly (DS gives no case).
 | C666 | an ordinary origin, the first anniversary in a year whose month is adhika | **maintainer**: the texts (DS, NS, Kane) put it in the adhika month; Dhakal for Nepal's barkhi puts it in the ordinary month. Proposed: `ADHIKA` (the texts), with `NIJA` (Dhakal) offered and named, and a Nepal preset choosing `NIJA` | both months (Vrddha-Vasishtha, Marichi in NS) |
 | C667 | an origin in an adhika month | **the ordinary month, and the adhika when that month is adhika again**; the dark half as the same amanta lunation's dark half (Dhakal n. 63; Kane–Bhrgu) | Hemadri's *sauram mānam* read literally as a solar month, which can point a month away; recorded, not offered |
 | C668 | an origin in a kshaya month | **the half of the tithi at the instant** names the month (Hemadri in NS; DS); with only a date, the lunation's first name and a flag | — |
-| C669 | an ordinary-year anniversary of either name, in a kshaya year | **in the joined lunation on its tithi**, no half split (DS's *phalita*); the *saṃsarpa* adhika before it also carries that month's anniversaries as a second day, flagged as DS's own inference | the joined lunation only |
+| C669 | an ordinary-year anniversary of either name, in a kshaya year | **in the joined lunation on its tithi**, no half split (DS's *phalita*); the *saṃsarpa* adhika before it also carries that month's anniversaries as a second day, DS's own inference, which Dhakal gives as Nepal's instruction | built: both; `in_samsarpa: NIJA` keeps the joined lunation alone |
 | C670 | janma tithi | **the sunrise tithi** (NS); on two sunrises the earlier, on none the day it runs (Kane V.1 p. 89) | DS's two options, each a switch: the birth-nakshatra tie, and the two-muhurta floor (previous day when the sunrise tithi lasts less); the consumer measured 5.2% of occurrences moved by the floor |
 | C671 | janma tithi in an adhika year | **the ordinary month** (DS "न त्वधिके"; NS "as the annual shraddha") | — |
 | C672 | the pitri paksha's month | **Bhadrapada's dark half, amanta** (Ashvina's, purnimanta), the full moon before it included | — |

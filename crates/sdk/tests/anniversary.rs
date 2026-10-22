@@ -13,8 +13,8 @@
 
 use teistro::catalogue::{Calendar, Masa, Tithi};
 use teistro::festival::{
-    Anniversary, AnniversaryDay, AnniversaryKind, FirstYearAdhika, Half, JanmaOptions, MonthClause,
-    Origin,
+    Anniversary, AnniversaryDay, AnniversaryKind, FirstYearAdhika, Half, InSamsarpa, JanmaOptions,
+    MonthClause, Origin,
 };
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
 use teistro::{CalendarDate, Context, FestivalPack, FestivalRequest, UtcOffset};
@@ -57,6 +57,7 @@ fn anniversary(key: &str, origin: Origin, kind: AnniversaryKind) -> Anniversary 
         kind,
         window: None,
         first_year_adhika: FirstYearAdhika::Adhika,
+        in_samsarpa: InSamsarpa::Also,
         janma: JanmaOptions::default(),
     }
 }
@@ -443,4 +444,91 @@ fn the_pitri_paksha_pack_keeps_the_announced_days() {
     by_anniversary.sort_unstable();
     by_pack.sort_unstable();
     assert_eq!(by_pack, by_anniversary);
+}
+
+/// C669: 1963's Ashvin was doubled before the kshaya month joining
+/// Margashirsha and Pausha, *Dharmasindhu*'s own example, so the adhika
+/// Ashvin is the samsarpa and keeps an ordinary Ashvin's shraddha as a
+/// second day; 1964's adhika after the kshaya month keeps none. A range
+/// that ends before the kshaya month still knows its samsarpa, and a janma
+/// tithi or `InSamsarpa::Nija` keeps the nija month alone.
+#[test]
+fn the_samsarpa_before_a_kshaya_month_keeps_its_months_shraddha_too() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let over = |asked: Anniversary, to: CalendarDate| -> Vec<(MonthClause, (i32, u8, u8))> {
+        sdk.almanac()
+            .festivals(
+                &date(1963, 9, 1),
+                &to,
+                &kathmandu(),
+                NPT,
+                &FestivalRequest::new(Vec::new()).with_anniversary(asked),
+            )
+            .unwrap()
+            .value
+            .anniversaries
+            .iter()
+            .map(|kept| (kept.month_by, day_of(kept)))
+            .collect()
+    };
+    let ashvin = || {
+        anniversary(
+            "ASHVIN",
+            lunar(Masa::Ashwina, Tithi::ShuklaPanchami),
+            AnniversaryKind::Ekoddishta,
+        )
+    };
+    let both = over(ashvin(), date(1963, 10, 31));
+    assert_eq!(
+        both.iter().map(|(by, _)| *by).collect::<Vec<_>>(),
+        [MonthClause::Samsarpa, MonthClause::Nija],
+        "{both:?}"
+    );
+    assert_eq!(both[0].1, (1963, 9, 22));
+    // Before the kshaya month is reached, the adhika is still the samsarpa.
+    assert_eq!(over(ashvin(), date(1963, 9, 30)), both[..1]);
+    let nija = Anniversary {
+        in_samsarpa: InSamsarpa::Nija,
+        ..ashvin()
+    };
+    assert_eq!(over(nija, date(1963, 10, 31)), both[1..]);
+    let janma = anniversary(
+        "BIRTHDAY",
+        lunar(Masa::Ashwina, Tithi::ShuklaPanchami),
+        AnniversaryKind::JanmaTithi,
+    );
+    assert!(
+        over(janma, date(1963, 10, 31))
+            .iter()
+            .all(|(by, _)| *by == MonthClause::Nija)
+    );
+    // A first anniversary is kept in the adhika already, once.
+    let first = Anniversary {
+        origin: Origin::Lunar {
+            month: Masa::Ashwina,
+            tithi: Tithi::ShuklaPanchami,
+            adhika: false,
+            half: Half::First,
+            at: Some(npt(1962, 10, 3, 12.0)),
+        },
+        ..ashvin()
+    };
+    let once = over(first, date(1963, 10, 31));
+    assert_eq!(
+        once.iter().map(|(by, _)| *by).collect::<Vec<_>>(),
+        [MonthClause::FirstYearAdhika],
+        "{once:?}"
+    );
+    // 1964's Chaitra is doubled after the kshaya month, and is no samsarpa.
+    let chaitra = anniversary(
+        "CHAITRA",
+        lunar(Masa::Chaitra, Tithi::ShuklaPanchami),
+        AnniversaryKind::Ekoddishta,
+    );
+    let after = kept(vec![chaitra], 1964..=1964);
+    assert_eq!(
+        after.iter().map(|kept| kept.month_by).collect::<Vec<_>>(),
+        [MonthClause::Nija],
+        "{after:?}"
+    );
 }

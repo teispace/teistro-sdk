@@ -39,8 +39,8 @@ mod nepal_panchanga;
 mod vrata;
 
 pub use anniversary::{
-    Anniversary, AnniversaryDay, AnniversaryKind, FirstYearAdhika, Half, JanmaOptions, MonthClause,
-    Origin, OriginFound, anniversaries,
+    Anniversary, AnniversaryDay, AnniversaryKind, FirstYearAdhika, Half, InSamsarpa, JanmaOptions,
+    MonthClause, Origin, OriginFound, anniversaries,
 };
 pub use dated::{Dated, DatedObservance, DatedRule, dated};
 pub use ekadashi::{

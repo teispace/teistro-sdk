@@ -21,8 +21,8 @@ import java.util.List;
  * @param kind {@code EKODDISHTA}, {@code PARVANA} or {@code JANMA_TITHI}
  * @param origin the origin, as found
  * @param monthBy the clause that chose the month: {@code NIJA},
- *     {@code FIRST_YEAR_ADHIKA}, {@code ADHIKA_ORIGIN} or
- *     {@code KSHAYA_JOINED} (C666, C667, C669)
+ *     {@code FIRST_YEAR_ADHIKA}, {@code ADHIKA_ORIGIN},
+ *     {@code KSHAYA_JOINED} or {@code SAMSARPA} (C666, C667, C669)
  * @param observance the day as the festival evaluator judged it
  */
 public record AnniversaryDay(String key, Integer count, String kind, Origin origin, String monthBy,

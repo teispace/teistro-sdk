@@ -130,9 +130,10 @@ Margashirsha or Pausha.
 an adhika month before them, 1 to 5 months back, and 19 have one after
 them, 1 to 5 months on. *Dharmasindhu* calls the one before *samsarpa*,
 fit for every rite, and the kshaya month and the one after it are
-avoided in all of them (C179). So the muhurta season has to look past
-the range it is asked for to know whether an adhika month inside it is
-the samsarpa. It looks 6 synodic months on (`SAMSARPA_REACH_MONTHS`),
+avoided in all of them (C179), and an anniversary is kept in it too
+(C669). So the muhurta season and the anniversaries have to look past
+the range they are asked for to know whether an adhika month inside it
+is the samsarpa. They look 6 lunar months on (`SAMSARPA_REACH_MONTHS`),
 and this pass refuses to write the page if any gap above is longer.
 
 ## 6. What this decides

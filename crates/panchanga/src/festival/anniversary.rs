@@ -15,6 +15,7 @@ use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Masa, Nakshatra, Paksha, Tithi};
 use teistro_core::error::Error;
+use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::settings::LunarMonth as Convention;
 
@@ -214,6 +215,22 @@ pub enum FirstYearAdhika {
     Nija,
 }
 
+/// Whether an ordinary month's anniversary is kept in the *samsarpa* too,
+/// the adhika month of its name before a kshaya month (C669).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum InSamsarpa {
+    /// In the samsarpa and the nija month both: *Dharmasindhu*'s own
+    /// inference in its kshaya example ("iti bhāti"), and Dhakal's
+    /// instruction for Nepal (NS, the introduction's malamasa section).
+    #[default]
+    Also,
+    /// In the nija month alone, as in any other year with an adhika month.
+    Nija,
+}
+
 /// *Dharmasindhu*'s two options for a janma tithi, both off by default
 /// (C670).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -271,6 +288,10 @@ pub struct Anniversary {
     /// The first anniversary's month when it is doubled.
     #[serde(default)]
     pub first_year_adhika: FirstYearAdhika,
+    /// Whether a shraddha of an ordinary month is kept in the samsarpa of
+    /// its name too; a janma tithi never is.
+    #[serde(default)]
+    pub in_samsarpa: InSamsarpa,
     /// A janma tithi's options.
     #[serde(default, skip_serializing_if = "JanmaOptions::is_default")]
     pub janma: JanmaOptions,
@@ -293,6 +314,10 @@ pub enum MonthClause {
     /// The joined lunation of a kshaya year, which answers to both its
     /// names (C669).
     KshayaJoined,
+    /// The *samsarpa*, the adhika month before a kshaya month, which keeps
+    /// an ordinary month's anniversary of its name as a second day
+    /// ([`InSamsarpa::Also`], C669).
+    Samsarpa,
 }
 
 /// An anniversary's day.
@@ -328,6 +353,8 @@ enum Year {
     First,
     /// A kshaya year's joined lunation, under its first name.
     Kshaya,
+    /// The samsarpa before a kshaya month, beside the nija month.
+    Samsarpa,
 }
 
 impl Anniversary {
@@ -393,8 +420,14 @@ impl Anniversary {
     }
 
     /// The year rules, each with the year it answers for; a kshaya year's
-    /// only when the days hold a kshaya lunation.
-    fn rules(&self, origin: &OriginFound, kshaya: bool) -> Vec<(Year, FestivalRule)> {
+    /// only when the days hold a kshaya lunation, and the samsarpa's only
+    /// when they hold a samsarpa.
+    fn rules(
+        &self,
+        origin: &OriginFound,
+        kshaya: bool,
+        samsarpa: bool,
+    ) -> Vec<(Year, FestivalRule)> {
         let janma = self.kept_as(origin) == AnniversaryKind::JanmaTithi;
         let later = if origin.kind == MonthKind::Adhika && !janma {
             InAdhika::First
@@ -416,6 +449,12 @@ impl Anniversary {
             rules.push((
                 Year::Kshaya,
                 self.rule(origin, month::previous(origin.month), InAdhika::Nija),
+            ));
+        }
+        if samsarpa && !janma && later == InAdhika::Nija && self.in_samsarpa == InSamsarpa::Also {
+            rules.push((
+                Year::Samsarpa,
+                self.rule(origin, origin.month, InAdhika::First),
             ));
         }
         rules
@@ -509,7 +548,8 @@ impl Counted {
 
 /// Every anniversary's days over consecutive sunrise days, each with its
 /// origin already found; what the festival evaluator leaves unjudged is
-/// added to `unjudged` under the anniversary's key.
+/// added to `unjudged` under the anniversary's key. `samsarpas` are the
+/// days' samsarpa lunations ([`crate::almanac::Almanac::samsarpas`]).
 ///
 /// # Errors
 ///
@@ -518,22 +558,26 @@ impl Counted {
 pub fn anniversaries(
     asked: &[(Anniversary, OriginFound)],
     days: &[FestivalDay],
+    samsarpas: &[Interval],
 ) -> Result<Observances, Error> {
     let mut answer = Observances::default();
     let any_kshaya = days.iter().any(|day| day.month.kind == MonthKind::Kshaya);
+    let in_samsarpa = |day: &FestivalDay| {
+        samsarpas
+            .iter()
+            .any(|span| span.from.get() <= day.sunrise.get() && day.sunrise.get() < span.to.get())
+    };
     for (anniversary, origin) in asked {
         anniversary.check()?;
         let kind = anniversary.kept_as(origin);
-        let rules = anniversary.rules(origin, any_kshaya);
+        let rules = anniversary.rules(origin, any_kshaya, !samsarpas.is_empty());
         let has_first = rules.iter().any(|(year, _)| *year == Year::First);
         for (year, rule) in rules {
             let found = observances(core::slice::from_ref(&rule), days)?;
             for observance in found.observances {
-                let lunation = days
-                    .iter()
-                    .find(|day| day.date == observance.day)
-                    .map(|day| day.month.kind);
-                let kshaya = lunation == Some(MonthKind::Kshaya);
+                let day = days.iter().find(|day| day.date == observance.day);
+                let kshaya = day.is_some_and(|day| day.month.kind == MonthKind::Kshaya);
+                let samsarpa = observance.adhika && day.is_some_and(in_samsarpa);
                 let count = match Counted::of(origin, &observance) {
                     Counted::Not => continue,
                     Counted::Unnumbered => None,
@@ -544,7 +588,10 @@ pub fn anniversaries(
                     Year::Kshaya if !kshaya => continue,
                     Year::First if !first => continue,
                     Year::Later if first && has_first => continue,
+                    // The first year's is in the adhika already.
+                    Year::Samsarpa if !samsarpa || (first && has_first) => continue,
                     Year::Kshaya => MonthClause::KshayaJoined,
+                    Year::Samsarpa => MonthClause::Samsarpa,
                     _ if observance.adhika && year == Year::First => MonthClause::FirstYearAdhika,
                     _ if observance.adhika => MonthClause::AdhikaOrigin,
                     _ if kshaya => MonthClause::KshayaJoined,

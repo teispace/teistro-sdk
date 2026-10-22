@@ -13,9 +13,10 @@ mod common;
 use common::{days_of, ghati};
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Masa, Tithi};
+use teistro_core::interval::Interval;
 use teistro_panchanga::festival::{
-    Anniversary, AnniversaryKind, FirstYearAdhika, Half, JanmaOptions, MonthClause, Origin,
-    OriginFound, Window, anniversaries,
+    Anniversary, AnniversaryKind, FirstYearAdhika, Half, InSamsarpa, JanmaOptions, MonthClause,
+    Origin, OriginFound, Window, anniversaries,
 };
 
 fn asked(month: Masa, tithi: Tithi, kind: AnniversaryKind) -> (Anniversary, OriginFound) {
@@ -33,6 +34,7 @@ fn asked(month: Masa, tithi: Tithi, kind: AnniversaryKind) -> (Anniversary, Orig
             kind,
             window: None,
             first_year_adhika: FirstYearAdhika::Adhika,
+            in_samsarpa: InSamsarpa::Also,
             janma: JanmaOptions::default(),
         },
         OriginFound::lunar(month, tithi, false, Half::First, None),
@@ -63,6 +65,7 @@ fn a_kshaya_lunation_keeps_both_its_months_anniversaries() {
                 AnniversaryKind::Ekoddishta,
             )],
             &kshaya,
+            &[],
         )
         .unwrap();
         assert_eq!(found.anniversaries.len(), 1, "{month:?}");
@@ -79,9 +82,61 @@ fn a_kshaya_lunation_keeps_both_its_months_anniversaries() {
             AnniversaryKind::Ekoddishta,
         )],
         &ordinary,
+        &[],
     )
     .unwrap();
     assert_eq!(found.anniversaries, Vec::new());
+}
+
+/// C669: an adhika month the almanac found to be the samsarpa keeps an
+/// ordinary anniversary of its name as a second day; one that is not, or
+/// an anniversary asking for the nija month alone, keeps none there.
+#[test]
+fn a_samsarpa_keeps_its_months_anniversary_as_a_second_day() {
+    let adhika = days_of(&fifth(), &[], Masa::Kartika, MonthKind::Adhika);
+    let samsarpa = [Interval::literal(
+        adhika[0].sunrise.get(),
+        adhika[4].next_sunrise.get(),
+    )];
+    let kept = |anniversary: (Anniversary, OriginFound), samsarpas: &[Interval]| {
+        anniversaries(&[anniversary], &adhika, samsarpas)
+            .unwrap()
+            .anniversaries
+            .iter()
+            .map(|kept| (kept.month_by, kept.observance.day.day))
+            .collect::<Vec<_>>()
+    };
+    let shraddha = || {
+        asked(
+            Masa::Kartika,
+            Tithi::ShuklaPanchami,
+            AnniversaryKind::Ekoddishta,
+        )
+    };
+    assert_eq!(kept(shraddha(), &samsarpa), [(MonthClause::Samsarpa, 2)]);
+    assert_eq!(kept(shraddha(), &[]), []);
+    // A samsarpa elsewhere is not this adhika month.
+    let elsewhere = [Interval::literal(
+        adhika[0].sunrise.get() - 60.0,
+        adhika[0].sunrise.get() - 31.0,
+    )];
+    assert_eq!(kept(shraddha(), &elsewhere), []);
+    let (mut nija, origin) = shraddha();
+    nija.in_samsarpa = InSamsarpa::Nija;
+    assert_eq!(kept((nija, origin), &samsarpa), []);
+    let janma = asked(
+        Masa::Kartika,
+        Tithi::ShuklaPanchami,
+        AnniversaryKind::JanmaTithi,
+    );
+    assert_eq!(kept(janma, &samsarpa), []);
+    // Another month's anniversary is not this samsarpa's.
+    let other = asked(
+        Masa::Ashwina,
+        Tithi::ShuklaPanchami,
+        AnniversaryKind::Ekoddishta,
+    );
+    assert_eq!(kept(other, &samsarpa), []);
 }
 
 /// DS p. 266 (C663): a tithi holding both days' kutapa wholly gives the
@@ -102,6 +157,7 @@ fn the_choice_and_the_kind_follow_the_texts() {
             AnniversaryKind::Shraddha,
         )],
         &days,
+        &[],
     )
     .unwrap();
     let kept = &found.anniversaries[0];
@@ -150,7 +206,7 @@ fn a_refusal_names_the_field() {
     );
     janma.window = Some(Window::Sunset);
     let days = days_of(&fifth(), &[], Masa::Kartika, MonthKind::Nija);
-    let refused = anniversaries(&[(janma, origin.clone())], &days).unwrap_err();
+    let refused = anniversaries(&[(janma, origin.clone())], &days, &[]).unwrap_err();
     assert_eq!(refused.field(), Some("window"));
     let (mut shraddha, _) = asked(
         Masa::Kartika,
@@ -158,7 +214,7 @@ fn a_refusal_names_the_field() {
         AnniversaryKind::Shraddha,
     );
     shraddha.janma.two_muhurta_floor = true;
-    let refused = anniversaries(&[(shraddha, origin.clone())], &days).unwrap_err();
+    let refused = anniversaries(&[(shraddha, origin.clone())], &days, &[]).unwrap_err();
     assert_eq!(refused.field(), Some("janma"));
     let (mut blank, _) = asked(
         Masa::Kartika,
@@ -167,7 +223,7 @@ fn a_refusal_names_the_field() {
     );
     blank.key = " ".to_owned();
     assert_eq!(
-        anniversaries(&[(blank, origin)], &days)
+        anniversaries(&[(blank, origin)], &days, &[])
             .unwrap_err()
             .field(),
         Some("key")

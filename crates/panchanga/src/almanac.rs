@@ -17,7 +17,7 @@ use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::lockstep::Lockstep;
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::rise_set::Solver;
-use teistro_calendar::lunisolar::MonthKind;
+use teistro_calendar::lunisolar::{MonthKind, SAMSARPA_REACH_MONTHS};
 use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
@@ -622,6 +622,62 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             };
         }
         Ok(())
+    }
+
+    /// The adhika lunations among `days` that are the *samsarpa*, the
+    /// adhika month before a kshaya month (*Dharmasindhu* p. 3, C179), each
+    /// as its span from new moon to new moon, for the anniversaries kept in
+    /// it too (C669). The kshaya month is looked for a lunation at a time
+    /// past the adhika, up to [`SAMSARPA_REACH_MONTHS`], in the sky and by
+    /// the rule the days' own months were named by, so a range ending
+    /// before the kshaya month still knows its samsarpa.
+    ///
+    /// # Errors
+    ///
+    /// A search the provider refuses.
+    pub fn samsarpas(&self, days: &[FestivalDay], place: &Place) -> Result<Vec<Interval>, Error> {
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        let mut found: Vec<Interval> = Vec::new();
+        for day in days
+            .iter()
+            .filter(|day| day.month.kind == MonthKind::Adhika)
+        {
+            if found.iter().any(|span| {
+                span.from.get() <= day.sunrise.get() && day.sunrise.get() < span.to.get()
+            }) {
+                continue;
+            }
+            let (frame, zodiac) = self.at_instant(&completion, day.sunrise)?;
+            let mut longitudes = completion.longitudes(frame);
+            if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+                longitudes = longitudes.with_observer(*place);
+            }
+            let lunation_at = |at: f64| {
+                let at = JulianDay::try_new(at)?;
+                limb::lunar_month_span(&longitudes, Interval::new(at, next_by(at, 1.0))?, zodiac)
+            };
+            let adhika = lunation_at(day.sunrise.get())?;
+            let mut next = adhika;
+            for _ in 0..SAMSARPA_REACH_MONTHS {
+                // A day past the new moon that closes the month, so the
+                // span found is the month after it.
+                next = lunation_at(next.to.get() + 1.0)?;
+                match teistro_calendar::lunisolar::kind_of(self.model, next.from, next.to)? {
+                    MonthKind::Nija => {}
+                    MonthKind::Kshaya => {
+                        found.push(adhika);
+                        break;
+                    }
+                    // The next adhika month: this one was no samsarpa.
+                    MonthKind::Adhika => break,
+                }
+            }
+        }
+        Ok(found)
     }
 
     /// Fills each day's [`FestivalDay::moon_arcs`]: the Moon's stay in each
