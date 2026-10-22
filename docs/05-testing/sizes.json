@@ -305,8 +305,8 @@
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 4000000,
-      "gzip": 1260000
+      "raw": 4100000,
+      "gzip": 1290000
     }
   ],
   "history": [
@@ -435,6 +435,15 @@
       "raw": 11446558,
       "gzip": 2665078,
       "why": "the parana of the Ekadashi fasts and of Janmashtami, Shivaratri and Rama Navami, the margin of each fast and the parana's timed events in the iCalendar feed, with their names in two locales; measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-22",
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 4010114,
+      "gzip": 1257948,
+      "why": "the parana's nakshatra bar (each barred share of a nakshatra searched at its own bounds over the days that hold it), with the paranas of the Ekadashi fasts and of Janmashtami, Shivaratri and Rama Navami; measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused"
     }
   ]
 }

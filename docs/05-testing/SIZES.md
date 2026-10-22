@@ -26,7 +26,7 @@ A native library is loaded, not downloaded, so only the wasm modules are held to
 | module | module | gzipped | budget, gzipped | left | glue | glue, gzipped |
 |---|--:|--:|--:|--:|--:|--:|
 | `full` | 10 922 869 | 2 510 433 | 2 720 000 | 7.7% | 57 609 | 12 407 |
-| `panchanga` | 3 450 277 | 1 088 208 | 1 260 000 | 13.6% | 57 609 | 12 407 |
+| `panchanga` | 3 450 277 | 1 088 208 | 1 290 000 | 15.6% | 57 609 | 12 407 |
 
 ## Bundled
 
@@ -58,3 +58,4 @@ A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fa
 | 2026-10-21 | `by hand` | `panchanga` | 3 816 219 | 1 204 337 | twelve more of NEPAL_PANCHANGA's festivals with the text each cites, and the ayanamsha's kept epoch; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused |
 | 2026-10-21 | `by hand` | `panchanga` | 3 918 508 | 1 234 473 | the day's lagna table (a sign-edge walk over each day's arc, read on the modern sphere in a chosen ayanamsha) and the amrit kalam; measured by check-wasm on macOS with rustc 1.99.0, since GitHub CI is paused |
 | 2026-10-22 | `by hand` | `full` | 11 446 558 | 2 665 078 | the parana of the Ekadashi fasts and of Janmashtami, Shivaratri and Rama Navami, the margin of each fast and the parana's timed events in the iCalendar feed, with their names in two locales; measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused |
+| 2026-10-22 | `by hand` | `panchanga` | 4 010 114 | 1 257 948 | the parana's nakshatra bar (each barred share of a nakshatra searched at its own bounds over the days that hold it), with the paranas of the Ekadashi fasts and of Janmashtami, Shivaratri and Rama Navami; measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused |
