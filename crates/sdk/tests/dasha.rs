@@ -320,6 +320,66 @@ fn a_reading_carries_the_sudarshana_chakra_and_its_houses_recur() {
     );
 }
 
+/// The Karaka dasha through the façade (BPHS ch. 46 v. 178, C737): the
+/// karakas of the settings' scheme from the Atmakaraka `jaimini` names,
+/// each for a whole count of signs, and rebuilt from the document with the
+/// division its second level shows.
+#[test]
+fn a_reading_carries_the_karaka_dasha_under_either_scheme_and_rebuilds_it() {
+    for (scheme, lords, division) in [("SEVEN", 7, "PROPORTIONAL"), ("EIGHT", 8, "EQUAL")] {
+        let patch = format!(
+            r#"{{"jaimini": {{"chara_karakas": "{scheme}"}},
+                "dasha": {{"karaka_division": "{division}", "depth": {{"KARAKA": 2}}}}}}"#
+        );
+        let (sdk, document) = reading(&patch, &[DashaSystem::Karaka]);
+        let dasha = &document.dashas[0];
+        assert!(dasha.seed.is_none() && dasha.balance.is_none(), "{scheme}");
+        let mahadashas: Vec<_> = dasha
+            .periods
+            .iter()
+            .filter(|row| row.level() == 1)
+            .collect();
+        assert_eq!(mahadashas.len(), lords, "{scheme}");
+        assert_eq!(
+            mahadashas[0].lord,
+            sdk.chart()
+                .jaimini(&document)
+                .unwrap()
+                .karakamsha
+                .atmakaraka,
+            "{scheme}"
+        );
+        let year = 365.25;
+        for row in &mahadashas {
+            let years = row.interval.days() / year;
+            assert!(
+                (years - years.round()).abs() < 1e-9 && (1.0..=12.0).contains(&years),
+                "{scheme}: {years}"
+            );
+        }
+        // Rebuilt, a period's sub-periods are the ones the document stores,
+        // under whichever division it was written with.
+        let rebuilt = sdk.chart().dasha(&document, DashaSystem::Karaka).unwrap();
+        assert!(rebuilt.graha().is_some());
+        let first = rebuilt.mahadashas().next().unwrap();
+        let stored: Vec<_> = dasha
+            .periods
+            .iter()
+            .filter(|row| row.level() == 2)
+            .take(lords)
+            .collect();
+        for (ours, row) in rebuilt.children(&first).zip(&stored) {
+            assert_eq!(ours.lord, row.lord, "{scheme}");
+            assert!(
+                (ours.interval.from.get() - row.interval.from.get()).abs() < 1e-6
+                    && (ours.interval.to.get() - row.interval.to.get()).abs() < 1e-6,
+                "{scheme} {}",
+                row.path
+            );
+        }
+    }
+}
+
 /// The Kalachakra on the corpus's first chart, founded here with the built-in
 /// ephemeris, under both balance methods: seeded and signed, its balance and
 /// every recorded period within the corpus's tolerances, carried to the

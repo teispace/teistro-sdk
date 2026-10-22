@@ -59,6 +59,11 @@ public enum DashaFamily implements Catalogued {
      */
     DECENNIALS(9, "DECENNIALS"),
 
+    /**
+     * Graha
+     */
+    GRAHA(10, "GRAHA"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

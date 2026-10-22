@@ -4187,6 +4187,7 @@ export type DashaFamily =
   | 'dasha_family.PROFECTION'
   | 'dasha_family.FIRDARIA'
   | 'dasha_family.DECENNIALS'
+  | 'dasha_family.GRAHA'
   | 'unknown';
 
 /** Every DashaFamily by name; the values are the strings the union accepts. */
@@ -4231,6 +4232,10 @@ export declare const DashaFamily: {
    * Decennials
    */
   readonly Decennials: 'dasha_family.DECENNIALS';
+  /**
+   * Graha
+   */
+  readonly Graha: 'dasha_family.GRAHA';
 };
 
 /**

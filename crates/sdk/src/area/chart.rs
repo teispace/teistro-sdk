@@ -33,7 +33,7 @@ use teistro_dasha::jaimini::{
 };
 use teistro_dasha::rashi::{Direction, step};
 use teistro_dasha::{
-    Birth, Dasha, DashaCursor, DashaName, DashaReading, DecennialDasha, FirdariaDasha,
+    Birth, Dasha, DashaCursor, DashaName, DashaReading, DecennialDasha, FirdariaDasha, GrahaDasha,
     KalachakraDasha, KalachakraRules, ProfectionDasha, RashiChart, RashiDasha, RashiRules,
     Rules as DashaRules, Wheel,
 };
@@ -814,6 +814,10 @@ impl<'a> ChartArea<'a> {
             let dasha = self.rashi_dasha_of(foundation, system, rules, RashiRules::of(settings))?;
             return Ok(DashaReading::of_rashi(&dasha, rules, depth));
         }
+        if system == DashaSystem::Karaka {
+            let dasha = self.karaka_dasha_of(foundation, rules)?;
+            return Ok(DashaReading::of_time_lord(system, &dasha, rules, depth));
+        }
         if let Some(cursor) = self.time_lord_of(chart, system, rules, lots)? {
             // A year is not divided, so a profection carries one level; a
             // firdar is divided once, into sevenths.
@@ -881,6 +885,38 @@ impl<'a> ChartArea<'a> {
         let start = self.time_lord_start(chart, system, lots)?;
         teistro_dasha::time_lord(system, start, chart.foundation.instant, rules.year_length)
             .transpose()
+    }
+
+    /// The Karaka dasha of a founded chart (BPHS ch. 46 v. 178,
+    /// `03-design/dasha-kernels.md`): the chara karakas of the settings'
+    /// `jaimini.chara_karakas` scheme from the Atmakaraka down, each for the
+    /// signs from the lagna to its own, divided as `dasha.karaka_division`
+    /// says (crux C737).
+    fn karaka_dasha_of(
+        self,
+        foundation: &ChartFoundation,
+        rules: DashaRules,
+    ) -> Result<GrahaDasha, Error> {
+        let settings = self.context.settings();
+        let states = state(foundation, settings)?;
+        let karakas = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+        let lagna = karakas.lagna();
+        let eight = settings.jaimini.chara_karakas == CharaKarakas::Eight;
+        let lords = karakas
+            .chara_karaka_ranking(eight)
+            .into_iter()
+            .map(|graha| {
+                let sign = karakas.placement(teistro_rules::Body::Graha(graha)).sign;
+                (graha, f64::from(teistro_dasha::karaka_years(lagna, sign)))
+            })
+            .collect();
+        GrahaDasha::new(
+            lords,
+            foundation.instant,
+            rules.year_length,
+            settings.dasha.karaka_division,
+            rules.after_cycle,
+        )
     }
 
     /// The luminary of a chart's sect, read under the request's lot rules
@@ -2494,6 +2530,27 @@ impl<'a> ChartArea<'a> {
             ))
             .with_field("system"));
         };
+        if system == DashaSystem::Karaka {
+            // The Karaka dasha rebuilds from the lords and the whole years
+            // its mahadashas store and the division its second level shows,
+            // or the settings' when it stores one level, so a change of the
+            // karaka scheme since does not move a stored reading.
+            let lords = reading.graha_lords(true).ok_or_else(|| {
+                Error::invalid_arg("the document's Karaka dasha stores no period")
+                    .with_field("system")
+            })?;
+            let division = reading
+                .graha_division()
+                .unwrap_or(self.context.settings().dasha.karaka_division);
+            return GrahaDasha::new(
+                lords,
+                document.foundation.instant,
+                reading.rules.year_length,
+                division,
+                reading.rules.after_cycle,
+            )
+            .map(DashaCursor::Graha);
+        }
         if let Some(start) = reading.start_sign() {
             // A time lord rebuilds from the sign its first period names.
             if let Some(cursor) = teistro_dasha::time_lord(

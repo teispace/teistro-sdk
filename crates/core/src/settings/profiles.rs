@@ -13,8 +13,8 @@ use super::knobs::{
     Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre,
     CharaKarakas, Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras,
     Drekkana, Drik, DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha,
-    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta,
-    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning,
+    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
     LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
     Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
@@ -226,6 +226,9 @@ pub fn root() -> Settings {
             releasing_shared_sign: ReleasingSharedSign::Next,
             firdaria_nodes: FirdariaNodes::End,
             decennial_division: DecennialDivision::Proportional,
+            // BPHS ch. 51 vv. 1 and 2, the rule for a dasha whose years
+            // add to a total, as the Karaka dasha's do (crux C737).
+            karaka_division: GrahaDivision::Proportional,
         },
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,

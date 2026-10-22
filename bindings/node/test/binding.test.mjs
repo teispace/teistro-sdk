@@ -735,8 +735,9 @@ test('every catalogue enum has a complete id table', () => {
   // Indian national calendar; 1380 since the tabular Hijri calendar and
   // its era; 1384 since the Tibetan calendar and `TsLeap`, three; 1403
   // since the Tibetan year's `TsTibetanElement`, five, and
-  // `TsTibetanAnimal`, twelve, with their two members of `TsKind`.
-  assert.equal(entries, 1403, 'every member of every enum is in a table');
+  // `TsTibetanAnimal`, twelve, with their two members of `TsKind`; 1404
+  // since `TsDashaFamily` gained `GRAHA`, the Karaka dasha's kernel.
+  assert.equal(entries, 1404, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

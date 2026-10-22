@@ -579,6 +579,7 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
             "COMPOSITION",
             "DECENNIALS",
             "FIRDARIA",
+            "GRAHA",
             "KALACHAKRA",
             "OWN",
             "PROFECTION",

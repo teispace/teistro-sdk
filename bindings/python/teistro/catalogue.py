@@ -2524,6 +2524,9 @@ class DashaFamily(Catalogued):
     DECENNIALS = 9
     """Decennials"""
 
+    GRAHA = 10
+    """Graha"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -6417,6 +6420,7 @@ _KEYS: dict[str, dict[int, str]] = {
         7: "PROFECTION",
         8: "FIRDARIA",
         9: "DECENNIALS",
+        10: "GRAHA",
         -1: "UNKNOWN",
     },
     "AvasthaJagradadi": {

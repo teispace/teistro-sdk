@@ -3243,6 +3243,10 @@ typedef enum ts_dasha_family {
      * Decennials
      */
     TS_DASHA_FAMILY_DECENNIALS = 9,
+    /**
+     * Graha
+     */
+    TS_DASHA_FAMILY_GRAHA = 10,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_DASHA_FAMILY_UNKNOWN = -1,
 } ts_dasha_family;

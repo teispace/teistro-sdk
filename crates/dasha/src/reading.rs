@@ -10,12 +10,13 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra, Rashi};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::Depth;
-use teistro_core::settings::{DecennialDivision, FirdariaNodes};
+use teistro_core::settings::{DecennialDivision, FirdariaNodes, GrahaDivision};
 
 use crate::balance::BalanceAtBirth;
 use crate::decennials::{DECENNIAL_STARS, DecennialDasha};
 use crate::definition::DashaDefinition;
 use crate::firdaria::{DESCENDING, FirdariaDasha};
+use crate::graha::GrahaDasha;
 use crate::kalachakra::{KalachakraDasha, KalachakraRules};
 use crate::rashi::{RashiDasha, RashiDefinition, RashiRules};
 use crate::releasing::{ProfectionDasha, ReleasingDasha};
@@ -218,11 +219,13 @@ impl DashaReading {
 }
 
 impl DashaReading {
-    /// A Hellenistic time lord's reading (`03-design/hellenistic-time-lords.md`):
-    /// releasing or the profected year, its periods to `depth` levels. It
-    /// carries no seed and no balance, since its first period runs whole
-    /// from birth, and its first period's sign is the sign it starts from,
-    /// which is all a stored document needs to rebuild it.
+    /// A Hellenistic time lord's reading (`03-design/hellenistic-time-lords.md`),
+    /// or a graha dasha's (`03-design/dasha-kernels.md`), its periods to
+    /// `depth` levels. It carries no seed and no balance, since its first
+    /// period runs whole from birth; a time lord's first period's sign is
+    /// the sign it starts from, and a graha dasha's mahadashas are its
+    /// lords and their years, which is all a stored document needs to
+    /// rebuild either.
     #[must_use]
     pub fn of_time_lord(
         system: DashaSystem,
@@ -245,6 +248,61 @@ impl DashaReading {
             depth,
             periods,
         }
+    }
+
+    /// A graha dasha's lords and their years, from its stored mahadashas:
+    /// each span in the reading's years, rounded to `whole` years when the
+    /// system's years are counts. Nothing when it stores no period.
+    #[must_use]
+    pub fn graha_lords(&self, whole: bool) -> Option<Vec<(Graha, f64)>> {
+        let year_days = self.rules.year_length.days();
+        let lords: Vec<(Graha, f64)> = self
+            .periods
+            .iter()
+            .filter(|row| row.level() == 1)
+            .map(|row| {
+                let years = row.interval.days() / year_days;
+                (row.lord, if whole { years.round() } else { years })
+            })
+            .collect();
+        (!lords.is_empty()).then_some(lords)
+    }
+
+    /// How a graha dasha's reading divides, when its rows show it: a first
+    /// mahadasha whose sub-periods are equal, among lords whose years are
+    /// not, is divided equally (BPHS ch. 51 vv. 3 and 4), and any other in
+    /// proportion (vv. 1 and 2). Nothing when it stores one level, or when
+    /// every lord's years are equal, which divide alike either way.
+    #[must_use]
+    pub fn graha_division(&self) -> Option<GrahaDivision> {
+        let first = self.periods.iter().find(|row| row.level() == 1)?;
+        let parts: Vec<f64> = self
+            .periods
+            .iter()
+            .filter(|row| row.level() == 2 && row.path.starts_with(&format!("{}/", first.path)))
+            .map(|row| row.interval.days())
+            .collect();
+        let years: Vec<f64> = self
+            .periods
+            .iter()
+            .filter(|row| row.level() == 1)
+            .map(|row| row.interval.days())
+            .collect();
+        let alike = |spans: &[f64]| {
+            spans.iter().all(|span| {
+                spans
+                    .first()
+                    .is_some_and(|first| (span - first).abs() < 1e-6)
+            })
+        };
+        if parts.len() < 2 || alike(&years) {
+            return None;
+        }
+        Some(if alike(&parts) {
+            GrahaDivision::Equal
+        } else {
+            GrahaDivision::Proportional
+        })
     }
 
     /// The sign a time lord's reading starts from: its first period's.
@@ -337,6 +395,8 @@ pub enum DashaCursor {
     Firdaria(FirdariaDasha),
     /// Valens's decennials.
     Decennials(DecennialDasha),
+    /// A graha dasha, its lords and years from the chart.
+    Graha(GrahaDasha),
 }
 
 impl Timeline for DashaCursor {
@@ -349,6 +409,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Profection(dasha) => dasha.breadth(),
             DashaCursor::Firdaria(dasha) => dasha.breadth(),
             DashaCursor::Decennials(dasha) => dasha.breadth(),
+            DashaCursor::Graha(dasha) => dasha.breadth(),
         }
     }
 
@@ -361,6 +422,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Profection(dasha) => dasha.mahadasha(cycle, index),
             DashaCursor::Firdaria(dasha) => dasha.mahadasha(cycle, index),
             DashaCursor::Decennials(dasha) => dasha.mahadasha(cycle, index),
+            DashaCursor::Graha(dasha) => dasha.mahadasha(cycle, index),
         }
     }
 
@@ -373,6 +435,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Profection(dasha) => dasha.mahadasha_at(instant),
             DashaCursor::Firdaria(dasha) => dasha.mahadasha_at(instant),
             DashaCursor::Decennials(dasha) => dasha.mahadasha_at(instant),
+            DashaCursor::Graha(dasha) => dasha.mahadasha_at(instant),
         }
     }
 
@@ -385,6 +448,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Profection(dasha) => dasha.child(parent, index),
             DashaCursor::Firdaria(dasha) => dasha.child(parent, index),
             DashaCursor::Decennials(dasha) => dasha.child(parent, index),
+            DashaCursor::Graha(dasha) => dasha.child(parent, index),
         }
     }
 }
@@ -449,6 +513,15 @@ impl DashaCursor {
     pub const fn decennials(&self) -> Option<&DecennialDasha> {
         match self {
             DashaCursor::Decennials(dasha) => Some(dasha),
+            _ => None,
+        }
+    }
+
+    /// The graha dasha, when it is one.
+    #[must_use]
+    pub const fn graha(&self) -> Option<&GrahaDasha> {
+        match self {
+            DashaCursor::Graha(dasha) => Some(dasha),
             _ => None,
         }
     }

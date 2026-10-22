@@ -371,7 +371,7 @@ which is the same) says otherwise, and the design follows the text:
 |---|---|---|---|---|---|
 | Sudarshana chakra | ch. 74 vv. 4–7, 19–26 | a house a year from the lagna, forward | one, the twelve again for life (v. 26) | twelve, forward from the period's own house, at every level | **K-rashi, built**: `SUDARSHANA_CHAKRA`, `Order::Forward`, `Length::Fixed(1)`, `recurs` |
 | Tara | ch. 46 vv. 11, 207–209 | Vimshottari's cycle from the strongest graha in a kendra | Vimshottari's | Vimshottari's, by inference | K-udu begun from a lord the chart names |
-| Karaka | ch. 46 vv. 7, 178 | the chara karakas in their order | the count of signs from the lagna to the karaka's, forward, the same sign twelve | not stated | a graha dasha |
+| Karaka | ch. 46 vv. 7, 178 | the chara karakas in their order | the count of signs from the lagna to the karaka's, forward, the same sign twelve | not stated; ch. 51 vv. 1–2 by default | **K-graha, built**: `GrahaDasha`, `karaka_years` |
 | Ashtakavarga | ch. 46 vv. 10–11, 201–203; ch. 51 vv. 13–16 | the strongest of the lagna, Sun and Moon, then the kendras, panapharas and apoklimas from it by strength | each body's ayurdaya years (Paindi, Amshi or Naisargika) | ch. 51 vv. 13–16's shares | a graha dasha |
 
 **The Sudarshana chakra is no composition.** Its three rings turn
@@ -401,6 +401,39 @@ What the verses leave open, each a crux before anything is built: the
 strength that ranks grahas (vv. 202, 208 name none, C735), Tara's balance
 at birth (C736), Karaka's antardashas (C737) and whether the Ashtakavarga
 dasha's years are the ayurdaya spans or ch. 71's rekha spans (C738).
+
+### K-graha, built with the Karaka dasha (2026-10-23)
+
+`teistro_dasha::GrahaDasha` takes its lords and their years in the order
+they run, both from the chart. It has no seed and no balance: the first
+lord runs whole from birth. The cycle ends or repeats as `after_cycle`
+says. Every level divides a period from its own lord onwards in the
+lords' order (ch. 51 v. 2), in proportion to each lord's years against
+their total (v. 1), or in equal parts (vv. 3 and 4), as the dasha group's
+`karaka_division` says (C737).
+
+**The Karaka dasha** runs the grahas `RuleChart::chara_karaka_ranking`
+gives, from the Atmakaraka down, seven or eight as `jaimini.chara_karakas`
+says. That is the order the karakas rank in under either naming of the
+eight, since `EightKarakas` names the ranks and does not reorder them.
+Each karaka runs `karaka_years(lagna, sign)`, the signs counted forward
+from the lagna to its own, its own sign counting twelve. Santhanam's
+worked table under v. 178 (vol. 2, p. 564: 11, 12, 4, 12, 9, 12, 4 and 3,
+67 years in all) is `crates/dasha/tests/graha.rs`. A stored reading
+rebuilds from its mahadashas' lords and whole years and from the division
+its second level shows, so a later change of the karaka scheme does not
+move it.
+
+Two things the example does not settle:
+
+- **Seven or eight karakas.** Santhanam's table runs eight, Rahu
+  included. The dasha follows the chart's own scheme, `SEVEN` by default,
+  rather than a second knob for the same question.
+- **The Moon's degrees (C739).** The page prints the Moon at 2s 22° 6′ 58″,
+  which would make her the Amatyakaraka. His ranking puts her seventh,
+  where 2° would. `crates/rules/tests/karaka_ranking.rs` holds both
+  readings. The years do not depend on it: the Moon is in Gemini either
+  way.
 
 ## Kernels
 

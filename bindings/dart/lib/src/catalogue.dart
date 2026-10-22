@@ -3260,6 +3260,8 @@ enum DashaFamily implements KeyOf<DashaFamily> {
   firdaria(8, 'FIRDARIA'),
   /// Decennials
   decennials(9, 'DECENNIALS'),
+  /// Graha
+  graha(10, 'GRAHA'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

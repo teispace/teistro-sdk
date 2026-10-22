@@ -438,7 +438,7 @@ impl Kind {
             Kind::Auspiciousness => 4,
             Kind::Degeneracy => 2,
             Kind::AyanamshaCategory => 7,
-            Kind::DashaFamily => 10,
+            Kind::DashaFamily => 11,
             Kind::AvasthaJagradadi => 3,
             Kind::AvasthaDeeptadi => 9,
             Kind::AvasthaLajjitadi => 6,

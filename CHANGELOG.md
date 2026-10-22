@@ -12,6 +12,20 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Karaka dasha, on a third kernel** (`dasha-kernels.md`, C737 to
+C739). **Numbers:** none computed move; a system that refused now
+answers. Every settings hash moved with the new knob. `KARAKA` is
+computed on K-graha, `teistro_dasha::GrahaDasha`: a graha dasha whose
+lords and years both come from the chart, with no seed and no balance.
+The karakas run from the Atmakaraka (`RuleChart::chara_karaka_ranking`,
+seven or eight as `jaimini.chara_karakas` says), each for the signs from
+the lagna to its own (`karaka_years`, BPHS ch. 46 v. 178). Santhanam's
+worked table (11, 12, 4, 12, 9, 12, 4 and 3 years) is a test. The dasha
+group's `karaka_division` divides a period in proportion (`PROPORTIONAL`,
+ch. 51 vv. 1 and 2, the default) or equally (`EQUAL`, vv. 3 and 4). The
+`dasha_family` catalogue gains `GRAHA`. The coverage page reads 33
+computed and 12 left.
+
 **The Sudarshana chakra's dasha** (`dasha-kernels.md`, C734 to C738).
 **Numbers:** none move; a system that refused now answers.
 `DashaSystem::SudarshanaChakra` is computed, a K-rashi row: a year a

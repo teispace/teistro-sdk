@@ -173,6 +173,17 @@ knob!(
         Cycles = "CYCLES" }
 );
 knob!(
+    /// How a graha dasha whose lords and years come from the chart divides
+    /// a period among its sub-periods, which BPHS ch. 46 v. 178 leaves
+    /// unstated for the Karaka dasha (crux C737).
+    GrahaDivision { /// In proportion to each karaka's own years against their total, from
+        /// the period's own lord in the karakas' order: ch. 51 vv. 1 and 2,
+        /// the antardashas of every dasha whose years add to a total.
+        Proportional = "PROPORTIONAL", /// In equal parts, from the period's own lord in the karakas' order:
+        /// ch. 51 vv. 3 and 4's equal ninths, one part a karaka.
+        Equal = "EQUAL" }
+);
+knob!(
     /// Which friendly signs make a dasha favourable, BPHS ch. 47 vv. 5 and 6
     /// naming a "Shant" sign against an "inimical" one (crux C79).
     ShantaSign { /// A friend's or a great friend's sign, the friendly signs set against

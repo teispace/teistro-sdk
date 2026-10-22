@@ -52,6 +52,7 @@ pub mod balance;
 pub mod decennials;
 pub mod definition;
 pub mod firdaria;
+pub mod graha;
 pub mod jaimini;
 pub mod kalachakra;
 pub mod rashi;
@@ -71,6 +72,7 @@ pub use definition::DashaDefinition;
 pub use firdaria::{
     FIRDARIA_PERIODS, FIRDARIA_ROUNDS, FIRDARIA_YEARS, FirdariaDasha, firdar_years, firdaria_order,
 };
+pub use graha::{GrahaDasha, karaka_years};
 pub use kalachakra::{KalachakraDasha, KalachakraRules, pada_row};
 pub use rashi::{
     Footedness, Length, NamedLord, Order, Parity, RASHI_ROWS, RashiChart, RashiDasha,
@@ -91,7 +93,7 @@ pub use wheel::{Segment, Wheel};
 
 /// Every dasha system this build computes, in the catalogue's order within
 /// each kernel: the nakshatra-seeded rows, the sign-based rows, the
-/// Kalachakra, and Valens's time lords.
+/// Kalachakra, Valens's time lords, and the graha dashas.
 pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
     ROWS.iter()
         .filter_map(|row| row.system.catalogued())
@@ -103,6 +105,7 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
         .chain([
             teistro_core::catalogue::DashaSystem::Firdaria,
             teistro_core::catalogue::DashaSystem::Decennials,
+            teistro_core::catalogue::DashaSystem::Karaka,
         ])
 }
 
