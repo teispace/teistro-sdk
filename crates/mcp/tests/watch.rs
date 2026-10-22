@@ -28,12 +28,16 @@ fn meta(token: Option<&str>) -> Value {
     meta
 }
 
-/// A quarter of days at Kathmandu: seconds of work in a debug build.
+/// A year of days at Kathmandu, about the most one call may ask (366):
+/// long past the first progress notification (`EVERY`, 250 ms), so a
+/// token hears progress and a cancel lands while the call computes. A
+/// quarter once took seconds; the cheaper days made it end inside the
+/// window under load.
 fn days(id: u64, token: Option<&str>) -> Value {
     json!({ "jsonrpc": "2.0", "id": id, "method": "tools/call", "params": {
         "_meta": meta(token), "name": "almanac.days", "arguments": { "request": {
             "first": { "year": 2026, "month": 1, "day": 1 },
-            "last": { "year": 2026, "month": 3, "day": 31 },
+            "last": { "year": 2026, "month": 12, "day": 31 },
             "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20_700 } } } })
 }
 
@@ -103,7 +107,10 @@ fn a_call_with_a_token_hears_increasing_progress_before_its_answer() {
             line["params"]["progress"].as_f64().unwrap()
         })
         .collect();
-    assert!(!progress.is_empty(), "no progress before the answer");
+    assert!(
+        !progress.is_empty(),
+        "no progress before the answer: {lines:?}"
+    );
     assert!(
         progress.windows(2).all(|pair| pair[0] < pair[1]),
         "{progress:?}"
@@ -120,9 +127,11 @@ fn a_call_with_a_token_hears_increasing_progress_before_its_answer() {
 #[test]
 fn a_call_cancelled_while_it_computes_stops_unanswered() {
     let mut session = Session::start();
-    let started = Instant::now();
     session.send(&days(7, Some("cancel-me")));
     assert_eq!(session.next()["method"], "notifications/progress");
+    // Timed from the cancel: the start-up and the cold work before the
+    // first progress are not what a cancel saves.
+    let started = Instant::now();
     session.send(
         &json!({ "jsonrpc": "2.0", "method": "notifications/cancelled",
                           "params": { "requestId": 7, "reason": "changed my mind" } }),
@@ -142,8 +151,11 @@ fn a_call_cancelled_while_it_computes_stops_unanswered() {
     let rest = session.finish();
     let whole = whole.elapsed();
     assert_eq!(rest.last().unwrap()["id"], 9);
+    // Cancelled a quarter or so into the call, a call left running would
+    // hold the ping for the rest of it, three quarters of a whole call; a
+    // stopped one answers it within milliseconds.
     assert!(
-        stopped < whole,
+        stopped < whole / 4,
         "the cancelled call ran on: stopped after {stopped:?}, a whole call took {whole:?}"
     );
 }
