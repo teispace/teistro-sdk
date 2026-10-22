@@ -4676,6 +4676,12 @@
           "value": 9,
           "doc": "Decennials",
           "key": "DECENNIALS"
+        },
+        {
+          "name": "Graha",
+          "value": 10,
+          "doc": "Graha",
+          "key": "GRAHA"
         }
       ],
       "source": "catalogue/catalogue.json"

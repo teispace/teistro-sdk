@@ -36,8 +36,8 @@ pub use knobs::{
     Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre,
     CharaKarakas, Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras,
     Drekkana, Drik, DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha,
-    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta,
-    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning,
+    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
     LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
     Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
@@ -685,6 +685,9 @@ group!(
         /// How the decennials divide a period below the second level (crux
         /// C228).
         decennial_division: DecennialDivision,
+        /// How the Karaka dasha divides a period among its sub-periods
+        /// (crux C737).
+        karaka_division: GrahaDivision,
     }
 );
 

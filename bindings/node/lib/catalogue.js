@@ -2044,6 +2044,7 @@ export const DashaFamily = /* @__PURE__ */ Object.freeze({
   Profection: 'dasha_family.PROFECTION',
   Firdaria: 'dasha_family.FIRDARIA',
   Decennials: 'dasha_family.DECENNIALS',
+  Graha: 'dasha_family.GRAHA',
 });
 
 /**
@@ -2061,6 +2062,7 @@ export const DashaFamilyById = /* @__PURE__ */ new Map([
   [7, 'dasha_family.PROFECTION'],
   [8, 'dasha_family.FIRDARIA'],
   [9, 'dasha_family.DECENNIALS'],
+  [10, 'dasha_family.GRAHA'],
 ]);
 
 /** Every AvasthaJagradadi by name. */

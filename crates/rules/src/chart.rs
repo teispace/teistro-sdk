@@ -465,25 +465,7 @@ impl RuleChart {
     /// ```
     #[must_use]
     pub fn with_chara_karakas(mut self, order: EightKarakas) -> RuleChart {
-        // Arc-seconds into the sign, or still to go for Rahu.
-        let seconds = |graha: Graha| {
-            let into = self
-                .placement(Body::Graha(graha))
-                .longitude
-                .rem_euclid(30.0);
-            let degrees = if graha == Graha::Rahu {
-                30.0 - into
-            } else {
-                into
-            };
-            #[expect(
-                clippy::cast_possible_truncation,
-                clippy::cast_sign_loss,
-                reason = "a place in a sign is under 108 000 arc-seconds"
-            )]
-            let seconds = (degrees * 3600.0).floor() as u32;
-            seconds
-        };
+        let seconds = |graha: Graha| self.karaka_seconds(graha);
         let seven = KARAKA_GRAHAS.map(|graha| (graha, seconds(graha)));
         let mut with_rahu = [(Graha::Rahu, seconds(Graha::Rahu)); 8];
         for (slot, graha) in with_rahu.iter_mut().zip(seven) {
@@ -504,6 +486,68 @@ impl RuleChart {
             }
         }
         self
+    }
+
+    /// The grahas that hold the chara karakas, the Atmakaraka's first and
+    /// down (BPHS ch. 32): seven, or eight `with_rahu`. This is the order
+    /// the Karaka dasha runs in (ch. 46 v. 178) under either naming of the
+    /// eight, since [`EightKarakas`] names the ranks and does not reorder
+    /// them. Two grahas equal to the arc-second keep the grahas' order.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// use teistro_rules::{Body, House, Placement, RuleChart};
+    ///
+    /// let at = |longitude| Placement {
+    ///     longitude,
+    ///     sign: Rashi::Aries,
+    ///     house: House::try_new(1).unwrap(),
+    ///     dignity: Dignity::Neutral,
+    ///     retrograde: false,
+    ///     combust: false,
+    ///     karaka7: None,
+    ///     karaka8: None,
+    ///     navamsha: Rashi::Aries,
+    /// };
+    /// let mut placements = [at(10.0); 10];
+    /// placements[Body::Graha(Graha::Moon).index()] = at(25.0);
+    /// // Rahu at 2° has 28° still to go, the most of all.
+    /// placements[Body::Graha(Graha::Rahu).index()] = at(2.0);
+    /// let chart = RuleChart { placements, panchanga: None, strengths: None };
+    /// assert_eq!(chart.chara_karaka_ranking(false)[0], Graha::Moon);
+    /// assert_eq!(&chart.chara_karaka_ranking(true)[..2], &[Graha::Rahu, Graha::Moon]);
+    /// ```
+    #[must_use]
+    pub fn chara_karaka_ranking(&self, with_rahu: bool) -> Vec<Graha> {
+        let mut grahas = KARAKA_GRAHAS.to_vec();
+        if with_rahu {
+            grahas.push(Graha::Rahu);
+        }
+        // Stable, so equals keep the grahas' order.
+        grahas.sort_by_key(|&graha| core::cmp::Reverse(self.karaka_seconds(graha)));
+        grahas
+    }
+
+    /// How far `graha` is into its sign in whole arc-seconds, or, for
+    /// Rahu, whose motion is backwards, how far he has still to go: what
+    /// the chara karakas rank by.
+    fn karaka_seconds(&self, graha: Graha) -> u32 {
+        let into = self
+            .placement(Body::Graha(graha))
+            .longitude
+            .rem_euclid(30.0);
+        let degrees = if graha == Graha::Rahu {
+            30.0 - into
+        } else {
+            into
+        };
+        #[expect(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "a place in a sign is under 108 000 arc-seconds"
+        )]
+        let seconds = (degrees * 3600.0).floor() as u32;
+        seconds
     }
 
     /// A divisional chart of this one: each body's sign in the division, from
