@@ -238,7 +238,7 @@ fn a_prompts_argument_completes_from_its_table() {
     let packs = complete("day-panchanga", "festivals", "");
     assert_eq!(
         packs["result"]["completion"]["values"],
-        json!(["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA"])
+        json!(["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA"])
     );
     let date = complete("birth-chart", "date", "1990");
     assert_eq!(date["result"]["completion"]["values"], json!([]), "{date}");

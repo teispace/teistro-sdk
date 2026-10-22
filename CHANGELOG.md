@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The fortnight of the ancestors** (P1-8, `shraddha.md` §3.2).
+**Numbers:** none move; a new pack. `PITRI_PAKSHA` names *Dharmasindhu*'s
+mahalayas (pp. 61–62) on each death tithi of Bhadrapada's dark half, the
+14th kept for the killed by a weapon, and Avidhava Navami, the ascetics'
+mahalaya, Magha shraddha and the Bharani shraddha, each at aparahna. Its
+mahalayas share `NEPAL_PANCHANGA`'s keys, so a request naming both keeps
+the later pack's rule of each. Every binding's pack list gains it.
+
 **Anniversaries kept by the tithi** (P1-8, `shraddha.md`). **Numbers:**
 none move; a request asking for none answers as before. A festival
 request's `rules` may name an `Anniversary` (an item with an `origin`:

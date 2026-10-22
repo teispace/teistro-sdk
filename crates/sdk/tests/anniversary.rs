@@ -17,7 +17,7 @@ use teistro::festival::{
     Origin,
 };
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
-use teistro::{CalendarDate, Context, FestivalRequest, UtcOffset};
+use teistro::{CalendarDate, Context, FestivalPack, FestivalRequest, UtcOffset};
 
 fn kathmandu() -> Place {
     Place::new(
@@ -343,4 +343,104 @@ fn an_anniversary_is_read_from_a_bindings_request() {
     )
     .unwrap_err();
     assert_eq!(wrong.field(), Some("festivals.rules[0].window"));
+}
+
+/// The `PITRI_PAKSHA` pack (`shraddha.md` §3.2) keeps each mahalaya where
+/// the committee announced its Sora Shraddha (§5.1 rows 1 to 12) and where
+/// the same tithi's parvana anniversary falls, so the two readings of the
+/// fortnight are one; the special days share their tithi's day.
+#[test]
+fn the_pitri_paksha_pack_keeps_the_announced_days() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let observed: Vec<(String, (i32, u8, u8))> = (2020..=2022)
+        .flat_map(|year| {
+            sdk.almanac()
+                .festivals(
+                    &date(year, 8, 1),
+                    &date(year, 10, 31),
+                    &kathmandu(),
+                    NPT,
+                    &FestivalRequest::from(FestivalPack::PitriPaksha),
+                )
+                .unwrap()
+                .value
+                .observances
+        })
+        .map(|kept| {
+            let day = &kept.day;
+            (kept.rule.clone(), (day.year, day.month, day.day))
+        })
+        .collect();
+    let on = |key: &str| -> Vec<(i32, u8, u8)> {
+        observed
+            .iter()
+            .filter(|(rule, _)| rule == key)
+            .map(|&(_, day)| day)
+            .collect()
+    };
+    assert_eq!(
+        on("PRATIPADA_SHRADDHA"),
+        [(2020, 9, 2), (2021, 9, 21), (2022, 9, 11)]
+    );
+    assert_eq!(
+        on("DWITIYA_SHRADDHA"),
+        [(2020, 9, 3), (2021, 9, 22), (2022, 9, 11)]
+    );
+    for (key, day) in [
+        ("TRITIYA_SHRADDHA", (2020, 9, 4)),
+        ("TRITIYA_SHRADDHA", (2021, 9, 23)),
+        ("CHATURTHI_SHRADDHA", (2021, 9, 24)),
+        ("PANCHAMI_SHRADDHA", (2021, 9, 25)),
+        ("SAPTAMI_SHRADDHA", (2022, 9, 16)),
+        ("ASHTAMI_SHRADDHA", (2022, 9, 18)),
+    ] {
+        assert!(on(key).contains(&day), "{key} on {day:?}: {:?}", on(key));
+    }
+    // The fortnight's mahalayas, one a tithi; the 14th is the killed by a
+    // weapon's alone.
+    let mahalaya = |rule: &str| {
+        rule.ends_with("_SHRADDHA")
+            && rule != "CHATURDASHI_SHRADDHA"
+            && rule != "MAGHA_SHRADDHA"
+            && rule != "BHARANI_SHRADDHA"
+    };
+    let mahalayas = |day| {
+        observed
+            .iter()
+            .any(|(rule, on)| *on == day && mahalaya(rule))
+    };
+    assert!(!mahalayas((2020, 9, 5)) && !mahalayas((2022, 9, 17)));
+    for (special, tithi) in [
+        ("AVIDHAVA_NAVAMI", "NAVAMI_SHRADDHA"),
+        ("SANYASI_MAHALAYA", "DWADASHI_SHRADDHA"),
+        ("MAGHA_SHRADDHA", "TRAYODASHI_SHRADDHA"),
+    ] {
+        assert_eq!(on(special), on(tithi), "{special}");
+        assert_eq!(on(special).len(), 3, "{special}");
+    }
+    assert_eq!(on("CHATURDASHI_SHRADDHA").len(), 3);
+    assert_eq!(on("BHARANI_SHRADDHA").len(), 3);
+    // Read back through the anniversaries: each tithi's parvana falls on
+    // its mahalaya's day.
+    let asked = FORTNIGHT
+        .iter()
+        .filter(|&&tithi| tithi != Tithi::KrishnaChaturdashi)
+        .map(|&tithi| {
+            anniversary(
+                &format!("{tithi:?}"),
+                lunar(Masa::Bhadrapada, tithi),
+                AnniversaryKind::Parvana,
+            )
+        })
+        .collect();
+    let mut by_anniversary: Vec<(i32, u8, u8)> =
+        kept(asked, 2020..=2022).iter().map(day_of).collect();
+    let mut by_pack: Vec<(i32, u8, u8)> = observed
+        .iter()
+        .filter(|(rule, _)| mahalaya(rule))
+        .map(|&(_, day)| day)
+        .collect();
+    by_anniversary.sort_unstable();
+    by_pack.sort_unstable();
+    assert_eq!(by_pack, by_anniversary);
 }

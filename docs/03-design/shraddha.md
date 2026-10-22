@@ -2,8 +2,8 @@
 
 Status: `building`, 2026-10-22. Steps 1–3 of §6 are built: the windows
 and the choice, the origin, and anniversaries through every binding
-(§3.1). The `PITRI_PAKSHA` pack (§3.2) and the first-year schedule (C673)
-are not yet. The **maintainer** forks in §4 ship as parameters with the
+(§3.1), and the `PITRI_PAKSHA` pack (§3.2). The first-year schedule (C673)
+is not yet. The **maintainer** forks in §4 ship as parameters with the
 researched default, as the maintainer delegated (C662 muhurtas 8–9, C666
 the adhika month with `NIJA` for Nepal); C673 waits.
 
@@ -245,15 +245,28 @@ proved red (`crates/panchanga/tests/anniversary.rs`).
 
 ### 3.2 The `PITRI_PAKSHA` pack
 
-Sixteen rules, Bhadrapada (amanta) full moon and dark 1st to new moon,
-each at aparahna with `Greater`, keyed `MAHALAYA_PURNIMA`,
-`MAHALAYA_PRATIPADA` … `MAHALAYA_AMAVASYA`; plus `AVIDHAVA_NAVAMI` (an alias
-of the 9th's day), `SANYASI_DWADASHI` (the 12th at aparahna),
-`MAGHA_TRAYODASHI` (the 13th, with a `Joined { nakshatra: Magha }` note),
-`GHATA_CHATURDASHI` (the 14th at aparahna) and `BHARANI_SHRADDHA` (a
-nakshatra rule, `Occurs::Nakshatra { Bharani, Krishna }`). Each cites
-its DS page. A day with no rule and a day with two are reported as such,
-which is how the committee prints them.
+As built (`FestivalRule::pitri_paksha`, `FestivalPack::PitriPaksha`):
+*Dharmasindhu* pp. 61–62 (1888 edition), every rule in Bhadrapada's dark
+half, amanta, at aparahna by `by_share` (DS p. 61, "निर्णयोऽपराह्णव्याप्त्यादौ"):
+
+- fourteen mahalayas, the 1st to the new moon but the 14th, keyed as
+  `NEPAL_PANCHANGA` keys the same days (`PRATIPADA_SHRADDHA` …
+  `AMAVASYA_SHRADDHA`), so a reader names them once; a request naming both
+  packs keeps the later one's rule of each key;
+- `CHATURDASHI_SHRADDHA`, the 14th for the killed by a weapon alone (p. 61:
+  a death on the 14th or the full moon keeps its mahalaya on the 12th or the
+  new moon instead);
+- `AVIDHAVA_NAVAMI` (p. 62), on the 9th;
+- `SANYASI_MAHALAYA` (p. 62), the ascetics' on the 12th holding the
+  aparahna, the text preferring it to the Ekadashi's parana day;
+- `MAGHA_SHRADDHA` (p. 62), on the 13th; Magha alone, which the text also
+  allows, is not given;
+- `BHARANI_SHRADDHA` (p. 61), on Bharani in the dark half, without pinda.
+
+The full moon is not a mahalaya in DS (a full-moon death's goes to the 12th
+or the new moon), so the pack has no full-moon rule. Held to §5.1 rows 1–12,
+and read back through the anniversaries of the same tithis
+(`crates/sdk/tests/anniversary.rs`).
 
 ## 4. Forks
 
@@ -337,7 +350,7 @@ dated committee example.
 
 ## 6. What is measured, and the order of work
 
-Steps 1–3 are built (2026-10-22).
+Steps 1–4 are built (2026-10-22).
 
 1. `Window::DayMuhurtas` and `Choice::Greater` in the festival rules,
    with synthetic-day tests for each of DS p. 266's cases, proved red by

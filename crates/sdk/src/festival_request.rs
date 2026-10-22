@@ -32,14 +32,20 @@ pub enum FestivalPack {
     /// VS 2082 and 2083 editions where no text in hand gives a table, each
     /// citing its page (`festival-rules.md` §10, C600).
     NepalPanchanga,
+    /// *Dharmasindhu*'s fortnight of the ancestors
+    /// ([`FestivalRule::pitri_paksha`], `03-design/shraddha.md` §3.2): a
+    /// mahalaya on each death tithi of Bhadrapada's dark half and the
+    /// fortnight's own days, each at aparahna.
+    PitriPaksha,
 }
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 3] = [
+    pub const ALL: [FestivalPack; 4] = [
         FestivalPack::Dharmasindhu,
         FestivalPack::Nepal,
         FestivalPack::NepalPanchanga,
+        FestivalPack::PitriPaksha,
     ];
 
     /// Its key, as a request names it.
@@ -49,6 +55,7 @@ impl FestivalPack {
             FestivalPack::Dharmasindhu => "DHARMASINDHU",
             FestivalPack::Nepal => "NEPAL",
             FestivalPack::NepalPanchanga => "NEPAL_PANCHANGA",
+            FestivalPack::PitriPaksha => "PITRI_PAKSHA",
         }
     }
 
@@ -63,6 +70,7 @@ impl FestivalPack {
                 rules.extend(FestivalRule::nepal_panchanga());
                 rules
             }
+            FestivalPack::PitriPaksha => FestivalRule::pitri_paksha(),
         }
     }
 
@@ -73,6 +81,7 @@ impl FestivalPack {
             FestivalPack::Dharmasindhu | FestivalPack::Nepal | FestivalPack::NepalPanchanga => {
                 EkadashiRule::dharmasindhu()
             }
+            FestivalPack::PitriPaksha => Vec::new(),
         }
     }
 
@@ -80,7 +89,9 @@ impl FestivalPack {
     #[must_use]
     pub fn dated(self) -> Vec<DatedRule> {
         match self {
-            FestivalPack::Dharmasindhu | FestivalPack::Nepal => Vec::new(),
+            FestivalPack::Dharmasindhu | FestivalPack::Nepal | FestivalPack::PitriPaksha => {
+                Vec::new()
+            }
             FestivalPack::NepalPanchanga => DatedRule::nepal_panchanga(),
         }
     }
@@ -89,7 +100,7 @@ impl FestivalPack {
     #[must_use]
     pub fn following(self) -> Vec<FollowingRule> {
         match self {
-            FestivalPack::Dharmasindhu => Vec::new(),
+            FestivalPack::Dharmasindhu | FestivalPack::PitriPaksha => Vec::new(),
             FestivalPack::Nepal => FollowingRule::nepal(),
             FestivalPack::NepalPanchanga => {
                 let mut rules = FollowingRule::nepal();

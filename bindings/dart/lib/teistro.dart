@@ -14276,7 +14276,12 @@ enum FestivalPack {
   /// [nepal]'s rules and the further days the panchanga prints, each rule
   /// fitted to the committee's editions and citing its page
   /// (`03-design/festival-rules.md` §10).
-  nepalPanchanga('NEPAL_PANCHANGA');
+  nepalPanchanga('NEPAL_PANCHANGA'),
+
+  /// *Dharmasindhu*'s fortnight of the ancestors: a mahalaya on each death
+  /// tithi of Bhadrapada's dark half and the fortnight's own days, each at
+  /// aparahna (`03-design/shraddha.md` §3.2).
+  pitriPaksha('PITRI_PAKSHA');
 
   const FestivalPack(this.key);
 

@@ -922,7 +922,9 @@ mod tests {
     fn a_year_names_its_members_where_its_table_says() {
         let year = year_name(2026).unwrap();
         let value = serde_json::to_value(year).unwrap();
-        let strings: Vec<&str> = value
+        // Sorted: serde_json keeps insertion order when a workspace build
+        // turns on its `preserve_order`, and sorts the keys otherwise.
+        let mut strings: Vec<&str> = value
             .as_object()
             .unwrap()
             .iter()
@@ -931,6 +933,7 @@ mod tests {
             .collect();
         let mut listed: Vec<&str> = TibetanYear::MEMBERS.iter().map(|(path, _)| *path).collect();
         listed.sort_unstable();
+        strings.sort_unstable();
         assert_eq!(strings, listed);
         let mut full = value;
         for (path, kind) in TibetanYear::MEMBERS {

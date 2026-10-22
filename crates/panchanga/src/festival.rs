@@ -34,6 +34,7 @@ mod anniversary;
 mod dated;
 mod ekadashi;
 mod following;
+mod mahalaya;
 mod nepal_panchanga;
 mod vrata;
 
