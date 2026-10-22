@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 58 entry points over 27 structs and 166 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 59 entry points over 27 structs and 166 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -115,6 +115,7 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 | [`ts_almanac_disagreements`](panchanga/ts_almanac_disagreements) | Compares this context's reckoning of a range with another's at one place (`03-design/setup-disagreements.md`) and answers with `{days, festivals}` as canonical JSON, each the `{value, provenance}` of one comparison asked, sealed by this context's provenance, and null when not asked. |
 | [`ts_almanac_sankalpa`](panchanga/ts_almanac_sankalpa) | The time a sankalpa recites at an instant and a place (`03-design/sankalpa.md`), answered with `{value, provenance}` as canonical JSON, every catalogue member a full key. |
 | [`ts_almanac_ashauch`](panchanga/ts_almanac_ashauch) | The period of impurity after a birth or a death at a place (`03-design/ashauch.md`), answered with `{value, provenance}` as canonical JSON. |
+| [`ts_almanac_first_year`](panchanga/ts_almanac_first_year) | A death's first year at a place (`03-design/shraddha.md` §3.3), answered with `{value, provenance}` as canonical JSON. |
 | [`ts_almanac_festival_calendar`](panchanga/ts_almanac_festival_calendar) | A range's observances and Ekadashi fasts at one place as an iCalendar feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each, ordered by day and then rule, its `SUMMARY` the festival's name in the context's locale, its `DESCRIPTION` the rule's source and the answer's provenance, and its `UID` stable for the rule, the day and the place. |
 
 ### Naam

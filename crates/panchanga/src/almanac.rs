@@ -41,6 +41,7 @@ use crate::ashauch::{self, Ashauch, AshauchRequest, AshauchTable};
 use crate::festival::{
     FestivalDay, Half, MoonArc, MoonArcs, Moonrise, Origin, OriginFound, SunEntry,
 };
+use crate::first_year::{self, FirstYear, FirstYearSchedule};
 use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
@@ -326,6 +327,16 @@ struct SankalpaInput {
 struct AshauchInput<'r> {
     table: &'r AshauchTable,
     request: &'r AshauchRequest,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    altitude_m: f64,
+}
+
+/// What a first year's answer is a function of.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+struct FirstYearInput<'r> {
+    request: &'r FirstYear,
     latitude_deg: f64,
     longitude_deg: f64,
     altitude_m: f64,
@@ -1019,6 +1030,50 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             altitude_m: place.altitude.get(),
         });
         let value = ashauch::ashauch(table, request, &days, self.clock)?;
+        Ok(Envelope::new(value, provenance))
+    }
+
+    /// A death's first year at a place (`03-design/shraddha.md` §3.3):
+    /// the sixteen shraddhas, the sapindana and the first abdika, over
+    /// the run of days [`FirstYear::reach`] names around the death, its
+    /// origin the tithi at the instant.
+    ///
+    /// # Errors
+    ///
+    /// As [`first_year::first_year`], [`Almanac::origin`] and
+    /// [`Almanac::festival_days`].
+    pub fn first_year(
+        &self,
+        request: &FirstYear,
+        place: &Place,
+    ) -> Result<Envelope<FirstYearSchedule>, Error> {
+        request.check()?;
+        let origin = self.origin(&Origin::Instant { at: request.at }, place)?;
+        let (civil, _) = FixedDay::from_local_jd(self.clock.local_jd(request.at));
+        let (back, ahead) = FirstYear::reach();
+        // Founded in two runs that join, a range holding at most a year.
+        let middle = ahead / 2;
+        let mut days = self.festival_days(
+            &self.calendar.date_of(civil.plus_days(-back))?,
+            &self.calendar.date_of(civil.plus_days(middle))?,
+            place,
+        )?;
+        days.value.extend(
+            self.festival_days(
+                &self.calendar.date_of(civil.plus_days(middle + 1))?,
+                &self.calendar.date_of(civil.plus_days(ahead))?,
+                place,
+            )?
+            .value,
+        );
+        let mut provenance = days.provenance;
+        provenance.input_hash = content_hash(&FirstYearInput {
+            request,
+            latitude_deg: place.latitude.get(),
+            longitude_deg: place.longitude.get(),
+            altitude_m: place.altitude.get(),
+        });
+        let value = first_year::first_year(request, &origin, &days.value, self.clock)?;
         Ok(Envelope::new(value, provenance))
     }
 

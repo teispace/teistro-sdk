@@ -11237,6 +11237,70 @@ fn ashauch_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
     }
 }
 
+fn first_year_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_first_year(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// A death's first year crosses as the façade answers it
+/// (`03-design/shraddha.md` §3.3), and an empty key is refused.
+#[test]
+fn a_first_year_crosses_as_the_facade_answers_it() {
+    let death = r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337,
+        "utcOffsetSeconds": 20700,
+        "request": {"key": "grandfather", "at": 2461333.677083}}"#;
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+    let crossed: serde_json::Value =
+        serde_json::from_str(&first_year_json(&ctx, death).unwrap()).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-default")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .almanac()
+        .first_year_query(&teistro::FirstYearQuery::from_json(death).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    let rites = crossed["value"]["rites"].as_array().unwrap();
+    assert_eq!(
+        rites
+            .iter()
+            .filter(|rite| rite.get("place").is_some())
+            .count(),
+        16
+    );
+    assert_eq!(
+        rites
+            .iter()
+            .filter(|rite| rite.get("drawnTo").is_some())
+            .count(),
+        15
+    );
+    assert_eq!(rites[0]["rite"], "ADYA_MASIKA");
+    let empty = r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+        "request": {"key": "", "at": 2461333.677083}}"#;
+    assert_eq!(
+        first_year_json(&ctx, empty).unwrap_err(),
+        Status::InvalidArg
+    );
+}
+
 /// An ashauch crosses as the façade answers it, and a relation the table
 /// names no row for is refused as unsupported (`03-design/ashauch.md`).
 #[test]

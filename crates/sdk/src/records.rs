@@ -345,9 +345,9 @@ pub fn records() -> Vec<Record> {
 }
 
 /// The almanac's records every build carries: a range's days with what is
-/// asked beside them, its festivals as a feed, a sankalpa's time, and an
-/// ashauch.
-fn almanac_records() -> [Record; 4] {
+/// asked beside them, its festivals as a feed, a sankalpa's time, an
+/// ashauch, and a death's first year.
+fn almanac_records() -> [Record; 5] {
     [
         Record {
             name: "almanac.ashauch",
@@ -359,6 +359,17 @@ fn almanac_records() -> [Record; 4] {
                 Answered::sealed(context.almanac().ashauch_query(&asked)?)
             },
             schemas: schemas!(crate::ashauch_request::AshauchAsked => crate::ashauch::Ashauch),
+        },
+        Record {
+            name: "almanac.firstYear",
+            boundary: "ts_almanac_first_year",
+            title: "A death's first year: the sixteen shraddhas, the sapindana and the first abdika, each on its day",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::FirstYearQuery::from_json(json)?;
+                Answered::sealed(context.almanac().first_year_query(&asked)?)
+            },
+            schemas: schemas!(crate::first_year_request::FirstYearAsked => crate::first_year::FirstYearSchedule),
         },
         Record {
             name: "almanac.days",

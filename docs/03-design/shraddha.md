@@ -268,6 +268,68 @@ or the new moon), so the pack has no full-moon rule. Held to §5.1 rows 1–12,
 and read back through the anniversaries of the same tithis
 (`crates/sdk/tests/anniversary.rs`).
 
+### 3.3 The first-year schedule
+
+From a death's instant and place, the sixteen shraddhas of DS p. 330 in
+DS's own order, each with its day, its form, and the day it is drawn
+forward to; the sapindana; and the first abdika. Every day is the
+festival evaluator's, through rules kept every month (`month: None`, the
+adhika lunations included), so a monthly and the anniversary cannot judge
+a day differently.
+
+The DS passage, as read here from the 1888 edition's OCR (pp. 329–331):
+
+- the order: "आद्यमासिकम् १ ऊनमासिकम् २ द्वितीयमासिकम् ३ त्रैपक्षिकम् ४
+  तृतीयमासिकम् ५ … षष्ठम् ८ ऊनषाण्मासिकम् ९ सप्तमम् १० … द्वादशम् १५
+  ऊनाब्दिकम् १६";
+- the times: "मासादौ मासिकं कार्यम् आद्यं स्यादेकादशेऽहनि", each monthly at
+  its month's start, the first on the eleventh day; the *ūna* rites "one,
+  two or three days short, or by a third", which the next sentence reads as
+  tithis (a death on the 5th: the 4th, the 3rd, the 2nd); "माधवस्तु
+  ऊनषाण्मासिकम् ऊनाब्दिकं च मृताहात् पूर्वेद्युः", Madhava's day before the
+  death tithi's day; "त्रैपक्षिकं त्रिपक्षे अतीते मृताहे", the
+  traipakshika on the death tithi's number three fortnights on;
+- the bars on an *ūna* rite: "त्रिपुष्करेषु नन्दासु सिनीवाल्यां भृगोर्दिने ।
+  चतुर्दश्यां च नोनानि कृत्तिकासु द्विपुष्करे", not on the nandā tithis,
+  Friday, the 14th, Krittika, the sinīvālī, or a tri- or dvi-pushkara;
+- the first abdika: two views, on the eleventh day with the first monthly
+  ("आद्यमासिकम् आद्याब्दिकं चैकादशेऽहि") or at the second year's start
+  ("आब्दिकं वत्सरे गते");
+- sapindana drawn forward: the sixteen done on its day by the ekoddishta,
+  and those whose own time follows it done again in their own times by the
+  parvana ("पुनः सपिण्ड्युत्तरं स्वस्वकाले पार्वणविधिना"); DS counts sixteen
+  repeated for an eleventh-day sapindana, fifteen for the twelfth day (the
+  first monthly being in its own time) and thirteen for the traipakshika,
+  and calls repeating all sixteen after a twelfth-day sapindana a mistake;
+- an adhika month in the twelve: "तन्मासस्थमासिकश्राद्धम् अधिके शुद्धे मासे च
+  इति द्विवारम्", that month's monthly twice, seventeen.
+
+What is built from it:
+
+| part | rule | parameter (default first) |
+|---|---|---|
+| the 11th day | the ashauch's day one (`Run::day_one` under the night rule) plus ten, so the two never disagree (`ashauch.md` §7 step 7) | `night`: the DS table's thirds |
+| the monthlies | the death tithi's occurrences after the death, one a lunation, numbered 2 to 12; a lunation following an adhika one keeps its number (the doubled month), so a year with an adhika answers seventeen | — |
+| the *ūna* rites | short of the 2nd monthly, the 7th (the first of a doubled 7th) and the first abdika | `una`: `DAY_BEFORE` (Madhava), `ONE_TITHI`, `TWO_TITHIS`, `THREE_TITHIS` (the tithi so many short, its last occurrence before) |
+| the traipakshika | the second occurrence after the death of the tithi of the same number in the other paksha | — |
+| the bars | reported on each *ūna* rite's day, at its sunrise: `NANDA`, `FRIDAY`, `CHATURDASHI`, `KRITTIKA`; the day is not moved, DS saying no more | the sinīvālī and the pushkara yogas not checked |
+| the first abdika | `SECOND_YEAR`: the anniversary (§3.1, count 1); `ELEVENTH_DAY`: on the 11th day with the first monthly, the anniversary then the second | `firstAbdika` |
+| the anniversary's month | §3.1's `firstYearAdhika` (C666) | `ADHIKA` |
+| the sapindana | `TWELFTH_DAY`, `ELEVENTH_DAY`, `TRAIPAKSHIKA` (its day), `YEAR_END` (the anniversary's day, "पूर्णे संवत्सरे") | `TWELFTH_DAY` |
+| drawn forward | a rite whose own day is the sapindana's or later is done on the sapindana's day by the ekoddishta and again in its own time by the parvana, judged at aparahna; one before it is done once, by the ekoddishta at kutapa to rauhina. This reproduces all three of DS's counts | `window` overrides both |
+
+`FirstYear::nepal` takes Dhakal's readings for Nepal: the first abdika on
+the 11th day and the anniversary (the barkhi) as the second, in the
+ordinary month (`NIJA`, C666). The sapindana stays on the 12th day.
+
+Not built, each recorded: the *āhitāgni*'s count from the cremation tithi
+(DS p. 330); the *ūna* "by a third"; the "12th day" option for the
+ūnamāsika; sapindana drawn forward to a *vṛddhi*'s day, the 3rd, 6th or
+11th month, or the first month's end (a consumer can name the day by
+building the answer around `YEAR_END` or `TWELFTH_DAY` and its own date);
+the daily *udakumbha* and lamp; a kshaya lunation inside the year, which
+the count treats as one lunation, one monthly (DS gives no case).
+
 ## 4. Forks
 
 | # | fork | proposed default | the other readings |
@@ -284,7 +346,7 @@ and read back through the anniversaries of the same tithis
 | C670 | janma tithi | **the sunrise tithi** (NS); on two sunrises the earlier, on none the day it runs (Kane V.1 p. 89) | DS's two options, each a switch: the birth-nakshatra tie, and the two-muhurta floor (previous day when the sunrise tithi lasts less); the consumer measured 5.2% of occurrences moved by the floor |
 | C671 | janma tithi in an adhika year | **the ordinary month** (DS "न त्वधिके"; NS "as the annual shraddha") | — |
 | C672 | the pitri paksha's month | **Bhadrapada's dark half, amanta** (Ashvina's, purnimanta), the full moon before it included | — |
-| C673 | the first-year schedule | **maintainer**: proposed DS pp. 329–331 as a `FIRST_YEAR_DS` tradition: the first monthly on the 11th day, the twelve monthly on the death tithi, the four *ūna* rites by Madhava (the day before the death tithi; traipakshika on it), sapindana on the 12th day; with `NEPAL` taking Dhakal's eleventh-day first abdika and the barkhi as the second abdika | sapindana at the year's end or any of DS p. 331's seven other times, as a parameter |
+| C673 | the first-year schedule | **built** (decided under the autonomy mandate): DS pp. 329–331 (`FirstYear::dharmasindhu`): the first monthly on the 11th day, the monthlies on the death tithi, Madhava's ūna rites (the day before; the traipakshika on the death tithi's number three fortnights on), sapindana on the 12th day; `FirstYear::nepal` takes Dhakal's eleventh-day first abdika and the barkhi as the second abdika in the ordinary month (§3.3, C728–C732) | sapindana on the 11th day, at the traipakshika or at the year's end, and the ūna rites one to three tithis short, each a parameter |
 | C674 | an adhika month in the first year | **that month's monthly twice**, seventeen in all (DS p. 331) | — |
 | C675 | an unknown date | **Kane IV p. 530's rules**: month unknown, Margashirsha or Magha; tithi unknown, that month's new moon; neither, Sarvapitri Amavasya (the committee) | — |
 | C676 | a yearly shraddha missed by day | **reported, not chosen**: the night's first watch is allowed (DS p. 266; NS) | — |
@@ -350,7 +412,7 @@ dated committee example.
 
 ## 6. What is measured, and the order of work
 
-Steps 1–4 are built (2026-10-22).
+Steps 1–5 are built (2026-10-22).
 
 1. `Window::DayMuhurtas` and `Choice::Greater` in the festival rules,
    with synthetic-day tests for each of DS p. 266's cases, proved red by
@@ -361,5 +423,9 @@ Steps 1–4 are built (2026-10-22).
    binding; §5.1 rows 13–22 as unit tests.
 4. The `PITRI_PAKSHA` pack, held to §5.1 rows 1–12 under the committee
    setup, and counted over a decade in the festival pass.
-5. The first-year schedule (C673), after the maintainer picks its
-   default.
+5. The first-year schedule (C673, §3.3), built 2026-10-22: DS's own
+   counts (sixteen, seventeen with an adhika month; sixteen, fifteen,
+   thirteen and none done again by the sapindana's day) and the eleventh
+   day equal to the ashauch's under every night rule, at Kathmandu
+   (`crates/sdk/tests/first_year.rs`), each test proved red by breaking
+   its rule.

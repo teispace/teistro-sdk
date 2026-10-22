@@ -1107,6 +1107,26 @@ impl<'d> Run<'d> {
     }
 }
 
+/// The run's index of the first day of a count from `instant` under
+/// `rule`, and why: what the first year counts its eleventh day from.
+pub(crate) fn day_one(
+    days: &[FestivalDay],
+    instant: JulianDay<Utc>,
+    rule: NightRule,
+    clock: &dyn LocalClock,
+) -> Result<(usize, DayOneBy), Error> {
+    Run { days }.day_one(instant, rule, clock)
+}
+
+/// The day `after` days on from the run's `index`, refused across a gap.
+pub(crate) fn day_after(
+    days: &[FestivalDay],
+    index: usize,
+    after: usize,
+) -> Result<&FestivalDay, Error> {
+    Run { days }.after(index, after)
+}
+
 fn short(what: &str) -> Error {
     Error::internal(format!(
         "the ashauch's run of days does not hold {what}; build it over AshauchRequest::anchors"

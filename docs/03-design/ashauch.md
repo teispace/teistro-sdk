@@ -655,10 +655,10 @@ Steps 1 to 6 are built, each test proved red by breaking its rule; the
 bindings' suites hold the Kathmandu case, its late news and an overlap.
 The clause keys' locale names wait on a Nepali reader (§8).
 
-7. **The `shraddha.md` first-year schedule** reads the ashauch's end for
-   its 11th-day rite, so the two never disagree on which day is the 11th.
-   Test: K1's 11th day under each night rule equals the first-year
-   schedule's first monthly.
+7. **The `shraddha.md` first-year schedule** counts its 11th day from the
+   ashauch's day one under the same night rule, so the two never disagree
+   on which day is the 11th. Built: K1's ten days end on the schedule's
+   11th day under each night rule (`crates/sdk/tests/first_year.rs`).
 
 ## 8. Sensitivities
 

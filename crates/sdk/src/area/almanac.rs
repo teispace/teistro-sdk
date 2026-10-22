@@ -22,6 +22,7 @@ use teistro_panchanga::festival::{
     DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, Observances, Origin,
     anniversaries, dated, ekadashis, following, observances,
 };
+use teistro_panchanga::first_year::{FirstYear, FirstYearSchedule};
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
 use teistro_panchanga::span::Span;
@@ -776,6 +777,47 @@ impl<'a> AlmanacArea<'a> {
     ) -> Result<Envelope<Ashauch>, Error> {
         let found = self.with_almanac(Calendar::Gregorian, offset, |almanac| {
             almanac.ashauch(table, request, place)
+        })?;
+        Ok(Envelope::sealing(found.value, found.provenance))
+    }
+
+    /// A death's first year at a place (`03-design/shraddha.md` §3.3): the
+    /// *Dharmasindhu*'s sixteen shraddhas in its order, each with its own
+    /// day, its form and the day it is drawn forward to, the sapindana,
+    /// and the first abdika. Its eleventh day is the ashauch's day one plus
+    /// ten under the same night rule, and every day kept on a tithi is the
+    /// festival evaluator's.
+    ///
+    /// ```no_run
+    /// use teistro::first_year::{FirstYear, Rite};
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{Context, UtcOffset};
+    ///
+    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1337.0)?);
+    /// // A grandfather's death at 10:00 Nepal time on 11 January 2026, read as Nepal reads it.
+    /// let asked = FirstYear::nepal("GRANDFATHER", JulianDay::try_new(2_461_051.677_083)?);
+    /// let year = sdk.almanac().first_year(&asked, &kathmandu, UtcOffset::literal(5, 45, 0))?;
+    /// for rite in &year.value.rites {
+    ///     println!("{} {:?} {:?}", rite.day, rite.rite, rite.form);
+    /// }
+    /// assert!(year.value.rites.iter().any(|rite| rite.rite == Rite::Sapindana));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::of`]; a request with an empty key; a death on a
+    /// polar day, or a rite's occurrence no day can be given to
+    /// (`OUT_OF_RANGE`).
+    pub fn first_year(
+        self,
+        request: &FirstYear,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<Envelope<FirstYearSchedule>, Error> {
+        let found = self.with_almanac(Calendar::Gregorian, offset, |almanac| {
+            almanac.first_year(request, place)
         })?;
         Ok(Envelope::sealing(found.value, found.provenance))
     }
