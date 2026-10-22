@@ -25,7 +25,9 @@ use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::Balance;
-use teistro_core::settings::{CharaKarakas, DecennialDivision, ReleasingSharedSign};
+use teistro_core::settings::{
+    CharaKarakas, DecennialDivision, GrahaDivision, ReleasingSharedSign, StrongestGraha,
+};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
     JaiminiReading, brahma, graha_arudhas, karaka_bhavas, karakamsha, pada_lord, pada_lords,
@@ -746,9 +748,17 @@ impl<'a> ChartArea<'a> {
             let drawing = draw(row, foundation, *varga).map_err(|error| error.under(&at))?;
             document = document.with_drawing(drawing);
         }
+        // A dasha begun from the strongest graha reads the chart's
+        // shadbala: the document's when the request asked for it, and
+        // computed only when such a dasha is asked for.
+        let stored = document.shadbala.clone();
+        let shadbala = || match &stored {
+            Some(reading) => Ok(reading.clone()),
+            None => Self::shadbala_of(founder, foundation, settings, request.offset()),
+        };
         for (index, system) in request.dashas().iter().enumerate() {
             let dasha = self
-                .dasha_reading(&document, *system, request.lot_rules())
+                .dasha_reading(&document, *system, request.lot_rules(), &shadbala)
                 .map_err(|error| error.under(&format!("dashas[{index}]")))?;
             document = document.with_dasha(dasha);
         }
@@ -770,12 +780,13 @@ impl<'a> ChartArea<'a> {
     /// One dasha of a chart under the settings' rules, its periods to the
     /// settings' depth: a nakshatra-seeded one with its balance, a
     /// sign-based one with its signs, a time lord from the lots read under
-    /// `lots`.
+    /// `lots`, a graha dasha begun from the strongest graha by `shadbala`.
     fn dasha_reading(
         self,
         chart: &Document,
         id: KeyId,
         lots: LotRequest,
+        shadbala: &dyn Fn() -> Result<ShadbalaReading, Error>,
     ) -> Result<DashaReading, Error> {
         let foundation = &chart.foundation;
         let settings = self.context.settings();
@@ -816,6 +827,10 @@ impl<'a> ChartArea<'a> {
         }
         if system == DashaSystem::Karaka {
             let dasha = self.karaka_dasha_of(foundation, rules)?;
+            return Ok(DashaReading::of_time_lord(system, &dasha, rules, depth));
+        }
+        if system == DashaSystem::Tara {
+            let dasha = self.tara_dasha_of(foundation, rules, &shadbala()?)?;
             return Ok(DashaReading::of_time_lord(system, &dasha, rules, depth));
         }
         if let Some(cursor) = self.time_lord_of(chart, system, rules, lots)? {
@@ -915,6 +930,57 @@ impl<'a> ChartArea<'a> {
             foundation.instant,
             rules.year_length,
             settings.dasha.karaka_division,
+            rules.after_cycle,
+        )
+    }
+
+    /// The Tara dasha of a founded chart (BPHS ch. 46 vv. 207 to 209,
+    /// `03-design/dasha-kernels.md`): Vimshottari's lords and years from the
+    /// strongest of the seven in a kendra from the lagna, by `shadbala`
+    /// under the settings' `dasha.strongest_graha` (crux C735), its
+    /// antardashas Vimshottari's (ch. 51 v. 1) and with no balance at birth
+    /// (C736).
+    ///
+    /// # Errors
+    ///
+    /// A chart with none of the seven in a kendra, `UNSUPPORTED`: v. 209
+    /// gives the dasha only to a chart with one.
+    fn tara_dasha_of(
+        self,
+        foundation: &ChartFoundation,
+        rules: DashaRules,
+        shadbala: &ShadbalaReading,
+    ) -> Result<GrahaDasha, Error> {
+        let settings = self.context.settings();
+        let states = state(foundation, settings)?;
+        let houses = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+        let measure = settings.dasha.strongest_graha;
+        let grahas: Vec<(Graha, teistro_core::house::House, f64)> = shadbala
+            .grahas
+            .iter()
+            .map(|entry| {
+                let strength = match measure {
+                    StrongestGraha::ShadbalaRatio => entry.rupas / entry.required_rupas,
+                    _ => entry.virupas,
+                };
+                let house = houses
+                    .placement(teistro_rules::Body::Graha(entry.graha))
+                    .house;
+                (entry.graha, house, strength)
+            })
+            .collect();
+        let lords = teistro_dasha::tara_lords(&grahas).ok_or_else(|| {
+            Error::unsupported(
+                "the Tara dasha is a chart's with a graha in a kendra from the lagna (BPHS \
+                 ch. 46 v. 209), and none of the seven stands in one",
+            )
+            .with_field("system")
+        })?;
+        GrahaDasha::new(
+            lords,
+            foundation.instant,
+            rules.year_length,
+            GrahaDivision::Proportional,
             rules.after_cycle,
         )
     }
@@ -2475,6 +2541,40 @@ impl<'a> ChartArea<'a> {
         })
     }
 
+    /// A stored graha dasha rebuilt from the lords and the whole years its
+    /// mahadashas store and the division its second level shows, or its
+    /// own when it stores one level (the settings' for Karaka, Vimshottari's
+    /// for Tara), so a change of the karaka scheme or the strength measure
+    /// since does not move it.
+    fn graha_dasha_from(
+        self,
+        document: &Document,
+        reading: &DashaReading,
+        system: DashaSystem,
+    ) -> Result<GrahaDasha, Error> {
+        let lords = reading.graha_lords(true).ok_or_else(|| {
+            Error::invalid_arg(format!(
+                "the document's {} dasha stores no period",
+                system.key()
+            ))
+            .with_field("system")
+        })?;
+        let division = reading
+            .graha_division()
+            .unwrap_or(if system == DashaSystem::Tara {
+                GrahaDivision::Proportional
+            } else {
+                self.context.settings().dasha.karaka_division
+            });
+        GrahaDasha::new(
+            lords,
+            document.foundation.instant,
+            reading.rules.year_length,
+            division,
+            reading.rules.after_cycle,
+        )
+    }
+
     /// The cursor behind a document's dasha: to read deeper than the
     /// document's periods, or the chain running at an instant.
     ///
@@ -2530,26 +2630,10 @@ impl<'a> ChartArea<'a> {
             ))
             .with_field("system"));
         };
-        if system == DashaSystem::Karaka {
-            // The Karaka dasha rebuilds from the lords and the whole years
-            // its mahadashas store and the division its second level shows,
-            // or the settings' when it stores one level, so a change of the
-            // karaka scheme since does not move a stored reading.
-            let lords = reading.graha_lords(true).ok_or_else(|| {
-                Error::invalid_arg("the document's Karaka dasha stores no period")
-                    .with_field("system")
-            })?;
-            let division = reading
-                .graha_division()
-                .unwrap_or(self.context.settings().dasha.karaka_division);
-            return GrahaDasha::new(
-                lords,
-                document.foundation.instant,
-                reading.rules.year_length,
-                division,
-                reading.rules.after_cycle,
-            )
-            .map(DashaCursor::Graha);
+        if system == DashaSystem::Karaka || system == DashaSystem::Tara {
+            return self
+                .graha_dasha_from(document, reading, system)
+                .map(DashaCursor::Graha);
         }
         if let Some(start) = reading.start_sign() {
             // A time lord rebuilds from the sign its first period names.

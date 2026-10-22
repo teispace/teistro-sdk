@@ -184,6 +184,16 @@ knob!(
         Equal = "EQUAL" }
 );
 knob!(
+    /// What makes a graha the strongest where a dasha begins from "the
+    /// strongest" and names no measure, as the Tara dasha does (BPHS ch. 46
+    /// v. 208, crux C735).
+    StrongestGraha { /// The most shadbala, its six strengths together in virupas (ch. 27).
+        ShadbalaTotal = "SHADBALA_TOTAL", /// The most shadbala against the rupas the graha must reach to be
+        /// strong (ch. 27 vv. 32 and 33, as `required_rupas` gives them),
+        /// the reading that weighs a graha by its own measure.
+        ShadbalaRatio = "SHADBALA_RATIO" }
+);
+knob!(
     /// Which friendly signs make a dasha favourable, BPHS ch. 47 vv. 5 and 6
     /// naming a "Shant" sign against an "inimical" one (crux C79).
     ShantaSign { /// A friend's or a great friend's sign, the friendly signs set against

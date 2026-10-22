@@ -20,8 +20,8 @@ use super::knobs::{
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
     RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
     RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
-    ShantaSign, Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn,
-    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
+    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -229,6 +229,10 @@ pub fn root() -> Settings {
             // BPHS ch. 51 vv. 1 and 2, the rule for a dasha whose years
             // add to a total, as the Karaka dasha's do (crux C737).
             karaka_division: GrahaDivision::Proportional,
+            // The plain sum of the six strengths: v. 208 names no measure,
+            // and the total is the one every shadbala chapter ranks by
+            // (crux C735).
+            strongest_graha: StrongestGraha::ShadbalaTotal,
         },
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,
