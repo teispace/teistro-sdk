@@ -50,7 +50,7 @@ pub fn write(feed: &Feed) -> Result<String, Error>
 - Events are written in the order given.
 
 Every event is a whole day. The draft also designed a timed event for an
-Ekadashi fast's parana window; the SDK computes no parana yet (P1-8), so
+Ekadashi fast's parana window; the SDK computes no parana yet (P1-7), so
 that waits for it.
 
 ## 3. The stable UID
