@@ -370,7 +370,7 @@ which is the same) says otherwise, and the design follows the text:
 | system | verses | lords | years | sub-periods | kernel |
 |---|---|---|---|---|---|
 | Sudarshana chakra | ch. 74 vv. 4–7, 19–26 | a house a year from the lagna, forward | one, the twelve again for life (v. 26) | twelve, forward from the period's own house, at every level | **K-rashi, built**: `SUDARSHANA_CHAKRA`, `Order::Forward`, `Length::Fixed(1)`, `recurs` |
-| Tara | ch. 46 vv. 11, 207–209 | Vimshottari's cycle from the strongest graha in a kendra | Vimshottari's | Vimshottari's, by inference | K-udu begun from a lord the chart names |
+| Tara | ch. 46 vv. 11, 207–209 | Vimshottari's cycle from the strongest graha in a kendra | Vimshottari's | Vimshottari's: ch. 51 v. 1 over the 120 | **K-graha, built**: `tara_lords` |
 | Karaka | ch. 46 vv. 7, 178 | the chara karakas in their order | the count of signs from the lagna to the karaka's, forward, the same sign twelve | not stated; ch. 51 vv. 1–2 by default | **K-graha, built**: `GrahaDasha`, `karaka_years` |
 | Ashtakavarga | ch. 46 vv. 10–11, 201–203; ch. 51 vv. 13–16 | the strongest of the lagna, Sun and Moon, then the kendras, panapharas and apoklimas from it by strength | each body's ayurdaya years (Paindi, Amshi or Naisargika) | ch. 51 vv. 13–16's shares | a graha dasha |
 
@@ -434,6 +434,22 @@ Two things the example does not settle:
   where 2° would. `crates/rules/tests/karaka_ranking.rs` holds both
   readings. The years do not depend on it: the Moon is in Gemini either
   way.
+
+**The Tara dasha** is a K-graha row too. Ch. 51 v. 1 over Vimshottari's
+120 years is Vimshottari's own antardasha rule, so Vimshottari's cycle
+run whole from a named lord is a `GrahaDasha` divided in proportion.
+`tara_lords` begins it from the strongest of the seven standing in a
+kendra (whole-sign houses from the lagna). Strength is the chart's
+shadbala under the dasha group's `strongest_graha`: the total by default,
+or the total against the rupas required (C735). The nodes have no
+shadbala and are not weighed. A chart with none of the seven in a kendra
+is not given the dasha (v. 209) and is refused `UNSUPPORTED`. So `TARA`
+is left out of `systems_every_chart_gives`, as the Sthira dasa is.
+There is no balance at birth, since Santhanam's worked sequence runs
+whole years (C736). The taras' names (Janma to Parama-maitra) label the
+periods without moving a boundary, and a reading does not carry them. A
+reading asked for without the shadbala section computes the shadbala for
+the dasha alone.
 
 ## Kernels
 

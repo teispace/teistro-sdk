@@ -72,7 +72,7 @@ pub use definition::DashaDefinition;
 pub use firdaria::{
     FIRDARIA_PERIODS, FIRDARIA_ROUNDS, FIRDARIA_YEARS, FirdariaDasha, firdar_years, firdaria_order,
 };
-pub use graha::{GrahaDasha, karaka_years};
+pub use graha::{GrahaDasha, karaka_years, tara_lords};
 pub use kalachakra::{KalachakraDasha, KalachakraRules, pada_row};
 pub use rashi::{
     Footedness, Length, NamedLord, Order, Parity, RASHI_ROWS, RashiChart, RashiDasha,
@@ -106,6 +106,7 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
             teistro_core::catalogue::DashaSystem::Firdaria,
             teistro_core::catalogue::DashaSystem::Decennials,
             teistro_core::catalogue::DashaSystem::Karaka,
+            teistro_core::catalogue::DashaSystem::Tara,
         ])
 }
 
@@ -113,12 +114,15 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
 /// computes on **every** chart, which is what a request for everything
 /// asks for. A sign-based row whose start a chart may not give (the Sthira
 /// dasa, from a Brahma graha the verses often do not find) is left to be
-/// asked for by name, where its refusal says which setting supplies one.
+/// asked for by name, where its refusal says which setting supplies one;
+/// so is the Tara dasha, which a chart with no graha in a kendra is not
+/// given (BPHS ch. 46 v. 209).
 pub fn systems_every_chart_gives() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
     systems().filter(|system| {
-        RASHI_ROWS
-            .iter()
-            .filter(|row| row.system.catalogued() == Some(*system))
-            .all(|row| row.start.every_chart_gives())
+        *system != teistro_core::catalogue::DashaSystem::Tara
+            && RASHI_ROWS
+                .iter()
+                .filter(|row| row.system.catalogued() == Some(*system))
+                .all(|row| row.start.every_chart_gives())
     })
 }

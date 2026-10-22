@@ -380,6 +380,145 @@ fn a_reading_carries_the_karaka_dasha_under_either_scheme_and_rebuilds_it() {
     }
 }
 
+/// Vimshottari's lords and years, from Ketu.
+const VIMSHOTTARI_LORDS: [(Graha, f64); 9] = [
+    (Graha::Ketu, 7.0),
+    (Graha::Venus, 20.0),
+    (Graha::Sun, 6.0),
+    (Graha::Moon, 10.0),
+    (Graha::Mars, 7.0),
+    (Graha::Rahu, 18.0),
+    (Graha::Jupiter, 16.0),
+    (Graha::Saturn, 19.0),
+    (Graha::Mercury, 17.0),
+];
+
+/// The Tara dasha through the façade (BPHS ch. 46 vv. 207 to 209, C735):
+/// over a year of births, Vimshottari from the strongest of the seven in a
+/// kendra by the chart's shadbala under either measure, or refused where
+/// none stands in one; the same whether the request asked for the shadbala
+/// or not, and rebuilt from the document. Births where two or more stand in
+/// kendras are counted, so the choice of the strongest is tested at all.
+#[test]
+fn a_reading_carries_the_tara_dasha_from_the_strongest_graha_in_a_kendra() {
+    let mut contested = 0;
+    for measure in ["SHADBALA_TOTAL", "SHADBALA_RATIO"] {
+        let sdk = Context::builder()
+            .profile("conformance-baseline")
+            .settings_json(format!(
+                r#"{{"dasha": {{"strongest_graha": "{measure}", "depth": {{"TARA": 2}}}}}}"#
+            ))
+            .ephemeris([teistro::Ephemeris::Builtin])
+            .build()
+            .unwrap();
+        for step in 0..12 {
+            let birth = JulianDay::literal(2_447_995.49 + f64::from(step) * 31.3);
+            contested += usize::from(tara_at(&sdk, measure, birth).unwrap_or(false));
+        }
+    }
+    assert!(contested >= 4, "{contested} births with a contest");
+}
+
+/// One birth's Tara dasha checked as the test above says: whether two or
+/// more of the seven stood in kendras, or nothing where it was refused.
+fn tara_at(sdk: &Context, measure: &str, birth: JulianDay<teistro::quantity::Utc>) -> Option<bool> {
+    use teistro::catalogue::Rashi;
+    use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    use teistro::strength::shadbala::GrahaShadbala;
+    use teistro::{House, Status};
+
+    let place = Place::new(
+        Latitude::try_new(27.7172).unwrap(),
+        Longitude::try_new(85.324).unwrap(),
+        Altitude::try_new(1400.0).unwrap(),
+    );
+    let offset = UtcOffset::try_from_seconds(20_700).unwrap();
+    let ask = |shadbala: bool| {
+        let request = ChartRequest::at(place, offset).with_dashas([DashaSystem::Tara]);
+        let request = if shadbala {
+            request.with_shadbala()
+        } else {
+            request
+        };
+        sdk.chart()
+            .reading(birth, &request)
+            .map(|reading| reading.value)
+    };
+    let document = match ask(true) {
+        Ok(document) => document,
+        Err(error) => {
+            // A chart with none of the seven in a kendra, by name.
+            assert_eq!(error.status, Status::Unsupported, "{error}");
+            assert!(error.message.contains("kendra"), "{error}");
+            return None;
+        }
+    };
+    let strength = |entry: &GrahaShadbala| {
+        if measure == "SHADBALA_RATIO" {
+            entry.rupas / entry.required_rupas
+        } else {
+            entry.virupas
+        }
+    };
+    let lagna = Rashi::of_longitude(sdk.chart().angles(&document).unwrap().ascendant_deg);
+    let kendra: Vec<&GrahaShadbala> = document
+        .shadbala
+        .as_ref()
+        .unwrap()
+        .grahas
+        .iter()
+        .filter(|entry| {
+            let at = document
+                .foundation
+                .graha(entry.graha)
+                .unwrap()
+                .longitude_deg;
+            House::between(lagna, Rashi::of_longitude(at)).is_kendra()
+        })
+        .collect();
+    let strongest = kendra
+        .iter()
+        .max_by(|a, b| strength(a).total_cmp(&strength(b)))
+        .unwrap()
+        .graha;
+    let dasha = &document.dashas[0];
+    let lords: Vec<(Graha, f64)> = dasha
+        .periods
+        .iter()
+        .filter(|row| row.level() == 1)
+        .map(|row| (row.lord, (row.interval.days() / 365.25).round()))
+        .collect();
+    let from = VIMSHOTTARI_LORDS
+        .iter()
+        .position(|(graha, _)| *graha == strongest)
+        .unwrap();
+    let expected: Vec<(Graha, f64)> = (0..9)
+        .map(|at| VIMSHOTTARI_LORDS[(from + at) % 9])
+        .collect();
+    assert_eq!(lords, expected, "{measure} at {birth:?}");
+    // Unasked, the shadbala is computed for the dasha alone.
+    let bare = ask(false).unwrap();
+    assert!(bare.shadbala.is_none());
+    assert_eq!(bare.dashas[0].periods, dasha.periods, "{measure}");
+    // Rebuilt, the antardashas are Vimshottari's proportions.
+    let rebuilt = sdk.chart().dasha(&document, DashaSystem::Tara).unwrap();
+    let first = rebuilt.mahadashas().next().unwrap();
+    let stored: Vec<_> = dasha
+        .periods
+        .iter()
+        .filter(|row| row.level() == 2)
+        .take(9)
+        .collect();
+    for (ours, row) in rebuilt.children(&first).zip(&stored) {
+        assert_eq!(ours.lord, row.lord, "{measure}");
+        assert!(
+            (ours.interval.to.get() - row.interval.to.get()).abs() < 1e-6,
+            "{measure}"
+        );
+    }
+    Some(kendra.len() > 1)
+}
+
 /// The Kalachakra on the corpus's first chart, founded here with the built-in
 /// ephemeris, under both balance methods: seeded and signed, its balance and
 /// every recorded period within the corpus's tolerances, carried to the

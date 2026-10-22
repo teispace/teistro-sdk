@@ -87,13 +87,12 @@ impl Blocker {
                  are listed"
             }
             Blocker::Kernel => {
-                "K-graha, the graha dasha whose lords and years the chart gives, \
-                 with no seed and no balance, which `KARAKA` now runs on: \
-                 `ASHTAKAVARGA` is that shape as the verses state it and waits on \
-                 its years and its strength, and `TARA` is Vimshottari begun from \
-                 a lord the chart names. A field on K-udu would be the chart-query \
-                 escape hatch ADR-0017 set a kill criterion for, so they wait on \
-                 the kernel's inputs, not on a field"
+                "the inputs of K-graha, the graha dasha whose lords and years the \
+                 chart gives, with no seed and no balance, which `KARAKA` and \
+                 `TARA` run on: `ASHTAKAVARGA` is that shape as the verses state \
+                 it, and waits on its years (C738). A field on K-udu would be the \
+                 chart-query escape hatch ADR-0017 set a kill criterion for, so it \
+                 waits on the kernel's inputs, not on a field"
             }
             Blocker::Module => {
                 "the module itself. Each is the **last** step of one, so scheduling \
@@ -112,7 +111,7 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 12] = [
+const NOT_BUILT: [(&str, Blocker, &str); 11] = [
     (
         "TITHI_ASHTOTTARI",
         Blocker::Text,
@@ -160,14 +159,6 @@ const NOT_BUILT: [(&str, Blocker, &str); 12] = [
          cited and the point is built",
     ),
     (
-        "TARA",
-        Blocker::Kernel,
-        "Vimshottari's years and order, begun from the strongest graha in a \
-         kendra (BPHS ch. 46 vv. 207 to 209): its periods are the table's, and \
-         what the chart gives is the first lord, which K-udu's nakshatra map \
-         cannot say. No verse names the strength or a balance at birth",
-    ),
-    (
         "ASHTAKAVARGA",
         Blocker::Kernel,
         "the name BPHS ch. 46 v. 203 gives the Paindi, Amshi and Naisargika \
@@ -184,8 +175,8 @@ const NOT_BUILT: [(&str, Blocker, &str); 12] = [
          between them ([`ayurdaya-spans.md`](ayurdaya-spans.md), C305 to \
          C318). What is missing is the dasha itself, which no source read \
          states: which span's givers it runs, in what order and from which. \
-         Its periods would be read from the chart, as `KARAKA`'s are and \
-         `TARA`'s and `ASHTAKAVARGA`'s would be",
+         Its periods would be read from the chart, as `KARAKA`'s and \
+         `TARA`'s are and `ASHTAKAVARGA`'s would be",
     ),
     (
         "SUDASA",
@@ -231,8 +222,8 @@ const NOT_BUILT: [(&str, Blocker, &str); 12] = [
 /// What is still unregistrable is unregistrable for a reason in its row and
 /// not for want of an arm: `SUDASA` starts from the karakamsha and
 /// `VARNADA` from the Varnada lagna, places `Start` does not name; the
-/// tithi, yoga and karana seeds want a reference that is not a nakshatra; `TARA` and `ASHTAKAVARGA`
-/// ask the chart for their lords.
+/// tithi, yoga and karana seeds want a reference that is not a nakshatra; `ASHTAKAVARGA`
+/// asks the chart for its lords.
 const REGISTRABLE: [(&str, Kernel); 0] = [];
 
 /// Which kernel a definition names.
@@ -640,7 +631,7 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
          the karakamsha and `VARNADA` from the Varnada lagna, which are \
          places `Start` does not name; the tithi, \
          yoga and karana seeds want a reference that is not a nakshatra; \
-         `TARA` and `ASHTAKAVARGA` ask the chart for their lords. \
+         `ASHTAKAVARGA` asks the chart for its lords. \
          Those are rows the kernels do not express, which is a \
          different thing from a row nobody has written down — and the \
          difference is what this section exists to keep visible.\n\n",

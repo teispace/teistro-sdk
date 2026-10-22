@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Tara dasha** (`dasha-kernels.md`, C735, C736). **Numbers:** none
+computed move; a system that refused now answers. Every settings hash
+moved with the new knob. `TARA` runs on K-graha: Vimshottari's lords and
+years from the strongest of the seven in a kendra (BPHS ch. 46 vv. 207 to
+209), its antardashas Vimshottari's, with no balance at birth. The
+dasha group's `strongest_graha` ranks by the shadbala total
+(`SHADBALA_TOTAL`, the default) or against the required rupas
+(`SHADBALA_RATIO`). A chart with none of the seven in a kendra is
+refused `UNSUPPORTED`, so a request for every system leaves `TARA` out.
+The coverage page reads 34 computed and 11 left.
+
 **The Karaka dasha, on a third kernel** (`dasha-kernels.md`, C737 to
 C739). **Numbers:** none computed move; a system that refused now
 answers. Every settings hash moved with the new knob. `KARAKA` is

@@ -43,8 +43,8 @@ pub use knobs::{
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
     RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
     RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
-    ShantaSign, Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn,
-    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
+    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -688,6 +688,9 @@ group!(
         /// How the Karaka dasha divides a period among its sub-periods
         /// (crux C737).
         karaka_division: GrahaDivision,
+        /// What makes a graha the strongest where a dasha begins from the
+        /// strongest and names no measure (crux C735).
+        strongest_graha: StrongestGraha,
     }
 );
 

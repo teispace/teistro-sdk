@@ -7,7 +7,10 @@
 //! proportion to the lords' years against their total (BPHS ch. 51 vv. 1
 //! and 2) or in equal parts (vv. 3 and 4). The Karaka dasha is one (ch. 46
 //! v. 178): the chara karakas from the Atmakaraka, each for the signs
-//! counted from the lagna to its own, [`karaka_years`].
+//! counted from the lagna to its own, [`karaka_years`]. So is the Tara
+//! dasha (vv. 207 to 209): Vimshottari's lords and years from the strongest
+//! graha in a kendra, [`tara_lords`], whose antardashas ch. 51 v. 1 gives
+//! as Vimshottari's own.
 //!
 //! ```
 //! use teistro_core::catalogue::{Graha, Rashi};
@@ -37,11 +40,61 @@
 
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
+use teistro_core::house::House;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::settings::{AfterCycle, GrahaDivision, YearLength};
 
+use crate::row::VIMSHOTTARI_LORDS;
 use crate::tree::{Path, Period, Timeline};
+
+/// The Tara dasha's lords and years (BPHS ch. 46 vv. 207 to 209):
+/// Vimshottari's, in its order and with its years, begun from the strongest
+/// of the grahas given that stands in a kendra, each given with its house
+/// from the lagna and its strength. Equal strengths keep the order given.
+/// Nothing when none stands in a kendra, the chart v. 209 does not give the
+/// dasha to.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_dasha::graha::tara_lords;
+///
+/// let house = House::try_new;
+/// // Jupiter in the lagna, stronger than Saturn in the tenth; the Sun,
+/// // stronger still, is in the twelfth and not a kendra.
+/// let lords = tara_lords(&[
+///     (Graha::Sun, house(12)?, 9.0),
+///     (Graha::Jupiter, house(1)?, 7.0),
+///     (Graha::Saturn, house(10)?, 6.0),
+/// ])
+/// .ok_or("a graha in a kendra")?;
+/// assert_eq!(lords[0], (Graha::Jupiter, 16.0));
+/// assert_eq!(lords[1], (Graha::Saturn, 19.0));
+/// assert!(tara_lords(&[(Graha::Sun, house(12)?, 9.0)]).is_none());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[must_use]
+pub fn tara_lords(grahas: &[(Graha, House, f64)]) -> Option<Vec<(Graha, f64)>> {
+    let mut first: Option<(Graha, f64)> = None;
+    for &(graha, house, strength) in grahas {
+        if house.is_kendra() && first.is_none_or(|(_, best)| strength > best) {
+            first = Some((graha, strength));
+        }
+    }
+    let (first, _) = first?;
+    let from = VIMSHOTTARI_LORDS
+        .iter()
+        .position(|lord| lord.graha == first)?;
+    let count = VIMSHOTTARI_LORDS.len();
+    (0..count)
+        .map(|step| {
+            VIMSHOTTARI_LORDS
+                .get((from + step) % count)
+                .map(|lord| (lord.graha, f64::from(lord.years)))
+        })
+        .collect()
+}
 
 /// The years a karaka gives in the Karaka dasha (BPHS ch. 46 v. 178): the
 /// signs counted forward from the lagna's to the karaka's, its own sign
@@ -233,6 +286,10 @@ mod tests {
     use super::*;
     use teistro_core::quantity::Depth;
 
+    fn house(number: u8) -> House {
+        House::try_new(number).unwrap()
+    }
+
     fn karaka(division: GrahaDivision, after_cycle: AfterCycle) -> GrahaDasha {
         GrahaDasha::new(
             vec![(Graha::Sun, 11.0), (Graha::Venus, 12.0), (Graha::Mars, 3.0)],
@@ -313,6 +370,44 @@ mod tests {
         assert_eq!(
             refused(vec![(Graha::Sun, f64::NAN)]).as_deref(),
             Some("lords[0]")
+        );
+    }
+
+    #[test]
+    fn the_tara_dasha_runs_vimshottari_from_the_strongest_kendra_graha() {
+        // Santhanam's example under vv. 207 to 209: Jupiter in the lagna
+        // with Venus and Mercury, Mars in the fourth and Saturn in the
+        // tenth, Jupiter the strongest, and the years Vimshottari's.
+        let lords = tara_lords(&[
+            (Graha::Sun, house(12), 5.0),
+            (Graha::Moon, house(5), 5.0),
+            (Graha::Mars, house(4), 5.0),
+            (Graha::Mercury, house(1), 6.0),
+            (Graha::Jupiter, house(1), 8.0),
+            (Graha::Venus, house(1), 7.0),
+            (Graha::Saturn, house(10), 6.5),
+        ])
+        .unwrap();
+        assert_eq!(
+            lords,
+            [
+                (Graha::Jupiter, 16.0),
+                (Graha::Saturn, 19.0),
+                (Graha::Mercury, 17.0),
+                (Graha::Ketu, 7.0),
+                (Graha::Venus, 20.0),
+                (Graha::Sun, 6.0),
+                (Graha::Moon, 10.0),
+                (Graha::Mars, 7.0),
+                (Graha::Rahu, 18.0),
+            ]
+        );
+        // Equal strengths keep the order given; none in a kendra, nothing.
+        let tied =
+            tara_lords(&[(Graha::Mars, house(7), 5.0), (Graha::Venus, house(4), 5.0)]).unwrap();
+        assert_eq!(tied[0].0, Graha::Mars);
+        assert!(
+            tara_lords(&[(Graha::Sun, house(2), 9.0), (Graha::Moon, house(11), 9.0)]).is_none()
         );
     }
 

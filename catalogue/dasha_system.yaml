@@ -143,11 +143,13 @@ members:
   - key: TARA
     id: 17
     doc: "Tara"
-    attributes: { family: UDU }
+    attributes: { family: GRAHA }
     sources:
+      - text: "BPHS"
+        ref: "ch. 46 vv. 207 to 209: Vimshottari's years and order from the strongest graha in a kendra, for a chart with one"
       - text: "dasha-kernels"
         ref: "docs/03-design/dasha-kernels.md"
-    mark: S
+    mark: T
   - key: KARAKA
     id: 18
     doc: "Karaka"
