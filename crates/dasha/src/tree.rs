@@ -263,6 +263,11 @@ impl Period {
     pub const fn whole(&self) -> Interval {
         self.whole
     }
+
+    /// Its lord's place in the row.
+    pub(crate) const fn seat(&self) -> usize {
+        self.seat
+    }
 }
 
 /// The periods running at an instant, from the mahadasha down.

@@ -87,12 +87,12 @@ impl Blocker {
                  are listed"
             }
             Blocker::Kernel => {
-                "the inputs of K-graha, the graha dasha whose lords and years the \
-                 chart gives, with no seed and no balance, which `KARAKA` and \
-                 `TARA` run on: `ASHTAKAVARGA` is that shape as the verses state \
-                 it, and waits on its years (C738). A field on K-udu would be the \
-                 chart-query escape hatch ADR-0017 set a kill criterion for, so it \
-                 waits on the kernel's inputs, not on a field"
+                "a kernel that takes the row. K-graha, the graha dasha whose lords \
+                 and years the chart gives, closed the last of these: `KARAKA`, \
+                 `TARA`, `AAYU` and `ASHTAKAVARGA` run on it. A field on K-udu \
+                 would be the chart-query escape hatch ADR-0017 set a kill \
+                 criterion for, so a row of this kind waits on a kernel's \
+                 inputs, not on a field"
             }
             Blocker::Module => {
                 "the module itself. Each is the **last** step of one, so scheduling \
@@ -111,7 +111,7 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 11] = [
+const NOT_BUILT: [(&str, Blocker, &str); 9] = [
     (
         "TITHI_ASHTOTTARI",
         Blocker::Text,
@@ -159,26 +159,6 @@ const NOT_BUILT: [(&str, Blocker, &str); 11] = [
          cited and the point is built",
     ),
     (
-        "ASHTAKAVARGA",
-        Blocker::Kernel,
-        "the name BPHS ch. 46 v. 203 gives the Paindi, Amshi and Naisargika \
-         dashas: each body's ayurdaya years, from the strongest of the lagna, \
-         the Sun and the Moon and then the kendras, panapharas and apoklimas \
-         from it (vv. 201 and 202), the graha-dasha shape `KARAKA` runs on. No \
-         verse read gives it periods from bindu counts",
-    ),
-    (
-        "AAYU",
-        Blocker::Text,
-        "the longevity module it ends with is built: all eight of *Jataka \
-         Parijata* ch. 5's spans with each giver's years, and v. 33's choice \
-         between them ([`ayurdaya-spans.md`](ayurdaya-spans.md), C305 to \
-         C318). What is missing is the dasha itself, which no source read \
-         states: which span's givers it runs, in what order and from which. \
-         Its periods would be read from the chart, as `KARAKA`'s and \
-         `TARA`'s are and `ASHTAKAVARGA`'s would be",
-    ),
-    (
         "SUDASA",
         Blocker::Text,
         "no verse is in hand. BPHS does not name it among its dasas (ch. 46 \
@@ -222,8 +202,7 @@ const NOT_BUILT: [(&str, Blocker, &str); 11] = [
 /// What is still unregistrable is unregistrable for a reason in its row and
 /// not for want of an arm: `SUDASA` starts from the karakamsha and
 /// `VARNADA` from the Varnada lagna, places `Start` does not name; the
-/// tithi, yoga and karana seeds want a reference that is not a nakshatra; `ASHTAKAVARGA`
-/// asks the chart for its lords.
+/// tithi, yoga and karana seeds want a reference that is not a nakshatra.
 const REGISTRABLE: [(&str, Kernel); 0] = [];
 
 /// Which kernel a definition names.
@@ -630,8 +609,7 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
          in its own row rather than for want of an arm: `SUDASA` starts from \
          the karakamsha and `VARNADA` from the Varnada lagna, which are \
          places `Start` does not name; the tithi, \
-         yoga and karana seeds want a reference that is not a nakshatra; \
-         `ASHTAKAVARGA` asks the chart for its lords. \
+         yoga and karana seeds want a reference that is not a nakshatra. \
          Those are rows the kernels do not express, which is a \
          different thing from a row nobody has written down — and the \
          difference is what this section exists to keep visible.\n\n",

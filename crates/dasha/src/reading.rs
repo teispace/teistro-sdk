@@ -109,6 +109,17 @@ impl PeriodRow {
     }
 }
 
+/// A graha dasha's seats and their sub-periods' shares, as a stored
+/// reading holds them: what [`GrahaDasha::with_shares`](crate::GrahaDasha::with_shares)
+/// rebuilds it from.
+#[derive(Clone, Debug, PartialEq)]
+pub struct GrahaShares {
+    /// Each seat's lord, the sign its period is of, and its years.
+    pub seats: Vec<(Graha, Option<Rashi>, f64)>,
+    /// Each seat's sub-periods: the seats they are of, with their parts.
+    pub shares: Vec<Vec<(usize, f64)>>,
+}
+
 impl DashaReading {
     /// A nakshatra-seeded dasha's reading, its periods to `depth` levels.
     ///
@@ -303,6 +314,39 @@ impl DashaReading {
         } else {
             GrahaDivision::Proportional
         })
+    }
+
+    /// An ayurdaya dasha's seats and shares, from its stored periods: each
+    /// mahadasha's lord, the sign it is of and its span in the reading's
+    /// years, and each one's sub-periods as the seats they are of with
+    /// their parts of its span. Nothing when it stores no second level, or
+    /// a sub-period of no stored mahadasha's seat.
+    #[must_use]
+    pub fn graha_shares(&self) -> Option<GrahaShares> {
+        let year_days = self.rules.year_length.days();
+        let mahadashas: Vec<&PeriodRow> =
+            self.periods.iter().filter(|row| row.level() == 1).collect();
+        let seats: Vec<(Graha, Option<Rashi>, f64)> = mahadashas
+            .iter()
+            .map(|row| (row.lord, row.sign, row.interval.days() / year_days))
+            .collect();
+        let mut shares = Vec::with_capacity(mahadashas.len());
+        for parent in &mahadashas {
+            let under = format!("{}/", parent.path);
+            let row: Option<Vec<(usize, f64)>> = self
+                .periods
+                .iter()
+                .filter(|row| row.level() == 2 && row.path.starts_with(&under))
+                .map(|child| {
+                    let seat = seats
+                        .iter()
+                        .position(|seat| (seat.0, seat.1) == (child.lord, child.sign))?;
+                    Some((seat, child.interval.days() / parent.interval.days()))
+                })
+                .collect();
+            shares.push(row.filter(|row| !row.is_empty())?);
+        }
+        (!seats.is_empty()).then_some(GrahaShares { seats, shares })
     }
 
     /// The sign a time lord's reading starts from: its first period's.

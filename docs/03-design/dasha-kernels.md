@@ -451,6 +451,63 @@ periods without moving a boundary, and a reading does not carry them. A
 reading asked for without the shadbala section computes the shadbala for
 the dasha alone.
 
+**The ayurdaya dasha** (`AAYU`, and `ASHTAKAVARGA`, which v. 203 says
+the former teachers called it) is the third. V. 201 runs the native's
+span of life giver by giver: "whichever āyus is stated for them, Paiṇḍa,
+Āṃśa or Nisargaja, their dasha is that, the Paindi, Amshi or Naisargi".
+Ch. 43 vv. 30 to 32 name the span by the strongest of the lagna, the Sun
+and the Moon: Amsayu, Pindayu or Nisargayu. V. 202 begins the dasha from
+that one, then runs the givers in kendras from it, then those in
+panapharas, then those in apoklimas, each group from the strongest
+(`ayurdaya_order`). So one comparison picks both the span and the first
+lord. The years are each giver's net years in the longevity module's
+span (`teistro_rules::longevity`, C305 to C318), counted in 360-day years
+(*Jataka Parijata* ch. 5 v. 34), so the profiles' `year_length` for both
+keys is `SAVANA_360`. A giver whose span gives it no years runs no period.
+
+The strengths are C308's, the measure `longevity.choice` weighs: the
+grahas' shadbala and the lagna's Bhava bala, both in rupas.
+`strongest_graha` does not reach it, because the lagna has no required
+rupas to take a ratio against (C735). Two of the three equally strong is
+refused `UNSUPPORTED`, v. 202 beginning from the one strongest.
+
+The lagna gives years as the grahas do, so the kernel gained a seat that
+is a sign: a lagna period is its sign under the sign's lord, as a
+sign-based period is (`PeriodRow.sign`), and a graha period carries no
+sign. The document schema does not change. Two seats may share a lord
+(the lagna in Aries and Mars), so a sub-period is found from its
+parent's seat, not its lord.
+
+The antardashas are ch. 51 vv. 13 to 16's, which are not proportional to
+the lords' years. So `GrahaDasha` gained a share table
+(`GrahaDasha::with_shares`): for each seat, the seats of its sub-periods
+in order and their parts, at every level (v. 16). `ayurdaya_shares`
+builds it. The dasha lord takes a full share. A body with it takes a
+half, one in a trikona a third, one in the fourth or eighth a quarter,
+one in the seventh a seventh. Of several in one place only the strongest
+takes the share ("bahuṣv eko balī", `ayurdaya_place`, C741). The lagna
+takes part ("salagnakāḥ"). Each part is the share over the sum of the
+shares. The verses give no order, so the lord comes first and the related
+bodies follow in the order the mahadashas run from it (C740). Proportional
+and Equal are tables of the same kind computed on the fly, so this is one
+generalisation rather than a second kernel.
+
+The spans and reductions are knobs: `ayurdaya_span` runs one span from
+the same first (`PINDAYU`, `AMSAYU` or `NISARGAYU`, the Paindi, Amshi or
+Naisargi dasha), and `ayurdaya_readings` reads the reductions as BPHS or
+as *Jataka Parijata* ch. 5 (C742). The antardashas are the chart's, not a
+rule of the years, so a reading always stores its second level and a
+stored one rebuilds from its seats and shares rather than from the
+settings. `a_reading_carries_the_ayurdaya_dasha_from_the_strongest_of_the_three`
+reads each answer back against the document's own strengths and the
+longevity module's spans over a year of births. It requires two or more
+different firsts, and it fails when the weakest is chosen or a group is
+run from its weakest.
+
+`NAISARGIKA` is not this dasha. Its row is a fixed natural order over the
+natural years, which no source read here states, so it stays on the
+coverage page.
+
 ## Kernels
 
 | kernel | family | shape |
@@ -546,8 +603,8 @@ Abbreviations: Su Mo Ma Me Ju Ve Sa Ra Ke. All rows below use
 | Tara | | | | | | Vimshottari's table begun from the strongest kendra graha (ch. 46 vv. 207–209); the periods are the table's, the first lord the chart's (§ The four) | | S |
 | Kaala, Rashmi, Buddhi-Gathi, Moola, Saptarishi | nakshatra | | | | | udu-shaped | | S |
 | Karaka | | | | | | K-graha: the chara karakas, each the count from the lagna to its sign (ch. 46 v. 178) | | S |
-| Aayu | | | | | | linked to the longevity module | | S |
-| Ashtakavarga dasha | | | | | | K-graha: the Paindi, Amshi and Naisargika dashas (ch. 46 vv. 201–203); not bindu counts | | S |
+| Aayu | | | | | | K-graha: the native's span giver by giver, from the strongest of the lagna, Sun and Moon (ch. 46 vv. 201–202, ch. 43 vv. 30–32), ch. 51 vv. 13–16's shares (§ K-graha) | | T |
+| Ashtakavarga dasha | | | | | | v. 203's name for Aayu: the same periods; not bindu counts | | T |
 | Panchaswara | | | | | | shape not established | | S |
 
 Two observations from normalising the rows: Yogini and Shattrimsha-sama

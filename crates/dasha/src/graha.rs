@@ -15,7 +15,7 @@
 //! ```
 //! use teistro_core::catalogue::{Graha, Rashi};
 //! use teistro_core::quantity::JulianDay;
-//! use teistro_core::settings::{AfterCycle, GrahaDivision, YearLength};
+//! use teistro_core::settings::{AfterCycle, AntardashaPlace, GrahaDivision, YearLength};
 //! use teistro_dasha::{GrahaDasha, Timeline, karaka_years};
 //!
 //! // An Aquarius lagna: the Sun in Capricorn has eleven signs to run, and
@@ -43,7 +43,7 @@ use teistro_core::error::Error;
 use teistro_core::house::House;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
-use teistro_core::settings::{AfterCycle, GrahaDivision, YearLength};
+use teistro_core::settings::{AfterCycle, AntardashaPlace, GrahaDivision, YearLength};
 
 use crate::row::VIMSHOTTARI_LORDS;
 use crate::tree::{Path, Period, Timeline};
@@ -113,11 +113,195 @@ pub fn karaka_years(lagna: Rashi, karaka: Rashi) -> u8 {
 #[derive(Clone, Debug, PartialEq)]
 pub struct GrahaDasha {
     lords: Vec<(Graha, f64)>,
+    /// The sign each seat's period is of, the lagna's in an ayurdaya dasha;
+    /// nothing for a graha's.
+    signs: Vec<Option<Rashi>>,
     birth: JulianDay<Utc>,
     year_days: f64,
     total_years: f64,
-    division: GrahaDivision,
+    shares: Shares,
     after_cycle: AfterCycle,
+}
+
+/// How a period divides among its sub-periods.
+#[derive(Clone, Debug, PartialEq)]
+enum Shares {
+    /// From the period's own lord through every lord, as the division says.
+    Divided(GrahaDivision),
+    /// For each seat, the seats of its sub-periods in order, each with its
+    /// part of the whole.
+    Table(Vec<Vec<(usize, f64)>>),
+}
+
+/// One giver of an ayurdaya dasha's years (BPHS ch. 46 vv. 201 to 203): a
+/// graha, or the lagna, whose periods are its sign's under the sign's lord.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Giver {
+    /// The graha; nothing for the lagna.
+    pub graha: Option<Graha>,
+    /// The sign it stands in, or the lagna's.
+    pub sign: Rashi,
+    /// The years its span gives it, after the reductions.
+    pub years: f64,
+    /// Its strength, the grahas' and the lagna's in one unit.
+    pub strength: f64,
+}
+
+impl Giver {
+    /// The lord its periods carry: the graha, or the lagna's sign's lord.
+    #[must_use]
+    pub fn lord(&self) -> Graha {
+        self.graha.unwrap_or_else(|| self.sign.attributes().lord)
+    }
+
+    /// The sign its periods are of: the lagna's, and none for a graha's.
+    #[must_use]
+    pub const fn period_sign(&self) -> Option<Rashi> {
+        match self.graha {
+            Some(_) => None,
+            None => Some(self.sign),
+        }
+    }
+}
+
+/// The share ch. 51 vv. 13 and 14 give a body `house` signs from a dasha's
+/// lord, counted inclusively, with the place the share is reckoned in: the
+/// lord's own sign a half, a trikona a third, the fourth or the eighth a
+/// quarter, the seventh a seventh. Nothing in any other house.
+fn relation(house: House) -> Option<(u8, f64)> {
+    Some(match house.get() {
+        1 => (1, 1.0 / 2.0),
+        5 | 9 => (5, 1.0 / 3.0),
+        4 | 8 => (4, 1.0 / 4.0),
+        7 => (7, 1.0 / 7.0),
+        _ => return None,
+    })
+}
+
+/// The order an ayurdaya dasha's givers run in (BPHS ch. 46 v. 202): the
+/// one at `first`, then those in kendras from it, then those in
+/// panapharas, then those in apoklimas, each group from the strongest.
+/// Equal strengths keep the order given; nothing when `first` is not one.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_dasha::graha::{Giver, ayurdaya_order};
+///
+/// let giver = |graha, sign, strength| Giver { graha, sign, years: 1.0, strength };
+/// let givers = [
+///     giver(None, Rashi::Aries, 6.0),                        // the lagna
+///     giver(Some(Graha::Sun), Rashi::Taurus, 8.0),           // a panaphara
+///     giver(Some(Graha::Moon), Rashi::Cancer, 5.0),          // a kendra
+///     giver(Some(Graha::Mars), Rashi::Libra, 7.0),           // a kendra
+///     giver(Some(Graha::Saturn), Rashi::Gemini, 9.0),        // an apoklima
+/// ];
+/// assert_eq!(ayurdaya_order(&givers, 0), [0, 3, 2, 1, 4]);
+/// ```
+#[must_use]
+pub fn ayurdaya_order(givers: &[Giver], first: usize) -> Vec<usize> {
+    let Some(from) = givers.get(first).map(|giver| giver.sign) else {
+        return Vec::new();
+    };
+    let group = |giver: &Giver| {
+        let house = House::between(from, giver.sign);
+        if house.is_kendra() {
+            0
+        } else if house.is_panaphara() {
+            1
+        } else {
+            2
+        }
+    };
+    let mut rest: Vec<(usize, u8, f64)> = givers
+        .iter()
+        .enumerate()
+        .filter(|&(at, _)| at != first)
+        .map(|(at, giver)| (at, group(giver), giver.strength))
+        .collect();
+    // A stable sort, so equal strengths keep the order given.
+    rest.sort_by(|a, b| a.1.cmp(&b.1).then(b.2.total_cmp(&a.2)));
+    std::iter::once(first)
+        .chain(rest.into_iter().map(|(at, _, _)| at))
+        .collect()
+}
+
+/// The antardashas of an ayurdaya dasha (BPHS ch. 51 vv. 13 to 16), its
+/// `seats` the givers in the order they run: for each seat, its own first
+/// with a full share, then each giver standing with it, in a trikona, in
+/// the fourth or the eighth, or in the seventh from it, in the order the
+/// seats run from it, each with its share. Of several in one place only
+/// the strongest takes the share, a place as `place` reads it (crux C741),
+/// and equal strengths keep the nearer seat. Each row's parts sum to one.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_core::settings::AntardashaPlace;
+/// use teistro_dasha::graha::{Giver, ayurdaya_shares};
+///
+/// let giver = |graha, sign| Giver { graha: Some(graha), sign, years: 1.0, strength: 1.0 };
+/// // The Sun's period: Mars with him a half, Jupiter in the fifth a third,
+/// // Saturn in the seventh a seventh; Venus in the second takes none.
+/// let seats = [
+///     giver(Graha::Sun, Rashi::Aries),
+///     giver(Graha::Mars, Rashi::Aries),
+///     giver(Graha::Jupiter, Rashi::Leo),
+///     giver(Graha::Venus, Rashi::Taurus),
+///     giver(Graha::Saturn, Rashi::Libra),
+/// ];
+/// let sun = &ayurdaya_shares(&seats, AntardashaPlace::Share)[0];
+/// let sum = 1.0 + 1.0 / 2.0 + 1.0 / 3.0 + 1.0 / 7.0;
+/// let seats_of: Vec<usize> = sun.iter().map(|(seat, _)| *seat).collect();
+/// assert_eq!(seats_of, [0, 1, 2, 4]);
+/// assert!((sun[2].1 - 1.0 / 3.0 / sum).abs() < 1e-12);
+/// ```
+#[must_use]
+pub fn ayurdaya_shares(seats: &[Giver], place: AntardashaPlace) -> Vec<Vec<(usize, f64)>> {
+    let count = seats.len();
+    seats
+        .iter()
+        .enumerate()
+        .map(|(seat, lord)| {
+            // The strongest in each place: its place, its seat, its
+            // strength and its share. The seats are met in the order they
+            // run from the lord, so a tie keeps the nearer.
+            let mut places: Vec<(u8, usize, f64, f64)> = Vec::new();
+            let after = seats
+                .iter()
+                .enumerate()
+                .cycle()
+                .skip(seat + 1)
+                .take(count.saturating_sub(1));
+            for (other, giver) in after {
+                let house = House::between(lord.sign, giver.sign);
+                let Some((category, share)) = relation(house) else {
+                    continue;
+                };
+                let key = match place {
+                    AntardashaPlace::House => house.get(),
+                    _ => category,
+                };
+                match places.iter_mut().find(|held| held.0 == key) {
+                    Some(held) if giver.strength > held.2 => {
+                        *held = (key, other, giver.strength, share);
+                    }
+                    Some(_) => {}
+                    None => places.push((key, other, giver.strength, share)),
+                }
+            }
+            places.sort_by_key(|held| (held.1 + count - seat) % count);
+            let row: Vec<(usize, f64)> = std::iter::once((seat, 1.0))
+                .chain(
+                    places
+                        .into_iter()
+                        .map(|(_, other, _, share)| (other, share)),
+                )
+                .collect();
+            let total: f64 = row.iter().map(|(_, share)| share).sum();
+            row.into_iter()
+                .map(|(other, share)| (other, share / total))
+                .collect()
+        })
+        .collect()
 }
 
 impl GrahaDasha {
@@ -137,6 +321,137 @@ impl GrahaDasha {
         division: GrahaDivision,
         after_cycle: AfterCycle,
     ) -> Result<GrahaDasha, Error> {
+        let signs = vec![None; lords.len()];
+        GrahaDasha::checked(
+            lords,
+            signs,
+            birth,
+            year_length,
+            Shares::Divided(division),
+            after_cycle,
+        )
+    }
+
+    /// The dasha running `seats` in order from `birth`, each a lord, the
+    /// sign its period is of when it is a sign's, and its years of
+    /// `year_length`. Each seat's sub-periods are its row of `shares`: the
+    /// seats they are of, in order, with their parts, scaled to sum to one,
+    /// and so at every level. Two seats may share a lord when their signs
+    /// differ, as the lagna and its lord do in an ayurdaya dasha.
+    ///
+    /// # Errors
+    ///
+    /// As [`GrahaDasha::new`], a seat named twice counting its sign; not
+    /// one row of shares a seat, named `shares`; a row empty, longer than
+    /// 255, or naming no seat or a part not a positive number, named
+    /// `shares[i]`.
+    pub fn with_shares(
+        seats: Vec<(Graha, Option<Rashi>, f64)>,
+        shares: Vec<Vec<(usize, f64)>>,
+        birth: JulianDay<Utc>,
+        year_length: YearLength,
+        after_cycle: AfterCycle,
+    ) -> Result<GrahaDasha, Error> {
+        let count = seats.len();
+        if shares.len() != count {
+            return Err(Error::invalid_arg(format!(
+                "{} rows of shares for {count} seats",
+                shares.len()
+            ))
+            .with_field("shares"));
+        }
+        let mut table = Vec::with_capacity(count);
+        for (at, row) in shares.into_iter().enumerate() {
+            let malformed = row.is_empty()
+                || row.len() > usize::from(u8::MAX)
+                || row
+                    .iter()
+                    .any(|&(seat, part)| seat >= count || !(part.is_finite() && part > 0.0));
+            if malformed {
+                return Err(Error::invalid_arg(
+                    "a row holds 1 to 255 sub-periods, each a seat and a positive part",
+                )
+                .with_field(format!("shares[{at}]")));
+            }
+            let total: f64 = row.iter().map(|(_, part)| part).sum();
+            table.push(
+                row.into_iter()
+                    .map(|(seat, part)| (seat, part / total))
+                    .collect(),
+            );
+        }
+        let (lords, signs) = seats
+            .into_iter()
+            .map(|(lord, sign, years)| ((lord, years), sign))
+            .unzip();
+        GrahaDasha::checked(
+            lords,
+            signs,
+            birth,
+            year_length,
+            Shares::Table(table),
+            after_cycle,
+        )
+    }
+
+    /// An ayurdaya dasha (BPHS ch. 46 vv. 201 to 203): `givers` in the
+    /// order [`ayurdaya_order`] runs them from the one at `first`, those
+    /// whose span gives them no years left out, each for its years of
+    /// `year_length`, the antardashas as [`ayurdaya_shares`] gives them
+    /// under `place`.
+    ///
+    /// # Errors
+    ///
+    /// `first` not a giver, named `first`; a giver's years negative or not
+    /// a number, named `givers[i]`; and as [`GrahaDasha::with_shares`].
+    pub fn ayurdaya(
+        givers: &[Giver],
+        first: usize,
+        place: AntardashaPlace,
+        birth: JulianDay<Utc>,
+        year_length: YearLength,
+        after_cycle: AfterCycle,
+    ) -> Result<GrahaDasha, Error> {
+        if first >= givers.len() {
+            return Err(Error::invalid_arg(format!(
+                "{first} names none of {} givers",
+                givers.len()
+            ))
+            .with_field("first"));
+        }
+        for (at, giver) in givers.iter().enumerate() {
+            if !(giver.years.is_finite() && giver.years >= 0.0) {
+                return Err(Error::invalid_arg(format!(
+                    "{:?} is given {} years, not a number of none or more",
+                    giver.lord(),
+                    giver.years
+                ))
+                .with_field(format!("givers[{at}]")));
+            }
+        }
+        let seats: Vec<Giver> = ayurdaya_order(givers, first)
+            .into_iter()
+            .filter_map(|at| givers.get(at).copied())
+            .filter(|giver| giver.years > 0.0)
+            .collect();
+        let shares = ayurdaya_shares(&seats, place);
+        let seats = seats
+            .iter()
+            .map(|giver| (giver.lord(), giver.period_sign(), giver.years))
+            .collect();
+        GrahaDasha::with_shares(seats, shares, birth, year_length, after_cycle)
+    }
+
+    /// A dasha of `lords`, each seat's period of its sign in `signs`,
+    /// checked as the constructors say.
+    fn checked(
+        lords: Vec<(Graha, f64)>,
+        signs: Vec<Option<Rashi>>,
+        birth: JulianDay<Utc>,
+        year_length: YearLength,
+        shares: Shares,
+        after_cycle: AfterCycle,
+    ) -> Result<GrahaDasha, Error> {
         if lords.is_empty() {
             return Err(
                 Error::invalid_arg("a graha dasha runs at least one lord").with_field("lords")
@@ -147,14 +462,18 @@ impl GrahaDasha {
                 Error::invalid_arg("a graha dasha runs at most 255 lords").with_field("lords")
             );
         }
-        for (at, (graha, years)) in lords.iter().enumerate() {
+        let seats = || lords.iter().zip(&signs);
+        for (at, ((graha, years), sign)) in seats().enumerate() {
             if !(years.is_finite() && *years > 0.0) {
                 return Err(Error::invalid_arg(format!(
                     "{graha:?} is given {years} years, not a positive number"
                 ))
                 .with_field(format!("lords[{at}]")));
             }
-            if lords.iter().take(at).any(|(earlier, _)| earlier == graha) {
+            if seats()
+                .take(at)
+                .any(|((earlier, _), its)| earlier == graha && its == sign)
+            {
                 return Err(
                     Error::invalid_arg(format!("{graha:?} is named twice")).with_field("lords")
                 );
@@ -167,10 +486,11 @@ impl GrahaDasha {
         let total_years = lords.iter().map(|(_, years)| years).sum();
         Ok(GrahaDasha {
             lords,
+            signs,
             birth,
             year_days,
             total_years,
-            division,
+            shares,
             after_cycle,
         })
     }
@@ -181,10 +501,21 @@ impl GrahaDasha {
         &self.lords
     }
 
-    /// How a period divides among its sub-periods.
+    /// The sign each lord's period is of, in the same order: the lagna's
+    /// in an ayurdaya dasha, and nothing for a graha's.
     #[must_use]
-    pub const fn division(&self) -> GrahaDivision {
-        self.division
+    pub fn signs(&self) -> &[Option<Rashi>] {
+        &self.signs
+    }
+
+    /// How a period divides among its sub-periods; nothing when a table of
+    /// shares divides it.
+    #[must_use]
+    pub const fn division(&self) -> Option<GrahaDivision> {
+        match self.shares {
+            Shares::Divided(division) => Some(division),
+            Shares::Table(_) => None,
+        }
     }
 
     /// The days of one cycle, every lord's years.
@@ -192,14 +523,37 @@ impl GrahaDasha {
         self.total_years * self.year_days
     }
 
-    /// The share of a parent's span the lord at `seat` takes.
-    fn share(&self, seat: usize) -> Option<f64> {
-        let (_, years) = self.lords.get(seat)?;
-        Some(match self.division {
-            #[expect(clippy::cast_precision_loss, reason = "at most 255 lords")]
-            GrahaDivision::Equal => 1.0 / self.lords.len() as f64,
-            _ => years / self.total_years,
-        })
+    /// The `index`th sub-period of the period of the lord at `seat`: the
+    /// seat it is of and its share of the parent's span, with the shares of
+    /// those before it.
+    fn sub_period(&self, seat: usize, index: usize) -> Option<(usize, f64, f64)> {
+        match &self.shares {
+            Shares::Table(table) => {
+                let row = table.get(seat)?;
+                let &(of, share) = row.get(index)?;
+                let before = row.iter().take(index).map(|(_, part)| part).sum();
+                Some((of, share, before))
+            }
+            Shares::Divided(division) => {
+                let count = self.lords.len();
+                if index >= count {
+                    return None;
+                }
+                let share = |step: usize| -> Option<f64> {
+                    let (_, years) = self.lords.get((seat + step) % count)?;
+                    Some(match division {
+                        #[expect(clippy::cast_precision_loss, reason = "at most 255 lords")]
+                        GrahaDivision::Equal => 1.0 / count as f64,
+                        _ => years / self.total_years,
+                    })
+                };
+                let mut before = 0.0;
+                for step in 0..index {
+                    before += share(step)?;
+                }
+                Some(((seat + index) % count, share(index)?, before))
+            }
+        }
     }
 }
 
@@ -221,7 +575,7 @@ impl Timeline for GrahaDasha {
         let span = Interval::literal(from, from + years * self.year_days);
         Some(Period::of_share(
             lord,
-            None,
+            *self.signs.get(index)?,
             Path::root(cycle, u8::try_from(index).ok()?),
             span,
             span,
@@ -245,29 +599,19 @@ impl Timeline for GrahaDasha {
             .find(|period| instant < period.interval.to.get())
     }
 
-    /// The `index`th sub-period of `parent`, from its own lord onwards in
-    /// the lords' order (ch. 51 v. 2), its share as the division says.
+    /// The `index`th sub-period of `parent`: from its own lord onwards in
+    /// the lords' order (ch. 51 v. 2), its share as the division says, or
+    /// its seat's row of shares.
     fn child(&self, parent: &Period, index: usize) -> Option<Period> {
-        let count = self.lords.len();
-        if index >= count {
-            return None;
-        }
-        // The lords are distinct, so a lord's place is its seat.
-        let from = self
-            .lords
-            .iter()
-            .position(|(graha, _)| *graha == parent.lord)?;
-        let seat_of = |step: usize| (from + step) % count;
+        let (seat, share, before) = self.sub_period(parent.seat(), index)?;
+        // Both ends from the running sum, so one sub-period ends exactly
+        // where the next begins.
         let days = parent.interval.days();
-        let mut start = parent.interval.from.get();
-        for step in 0..index {
-            start += days * self.share(seat_of(step))?;
-        }
-        let seat = seat_of(index);
-        let span = Interval::literal(start, start + days * self.share(seat)?);
+        let from = parent.interval.from.get();
+        let span = Interval::literal(from + days * before, from + days * (before + share));
         Some(Period::of_share(
             self.lords.get(seat)?.0,
-            None,
+            *self.signs.get(seat)?,
             parent.path.child(u8::try_from(index).ok()?)?,
             span,
             span,
@@ -409,6 +753,190 @@ mod tests {
         assert!(
             tara_lords(&[(Graha::Sun, house(2), 9.0), (Graha::Moon, house(11), 9.0)]).is_none()
         );
+    }
+
+    fn giver(graha: Option<Graha>, sign: Rashi, years: f64, strength: f64) -> Giver {
+        Giver {
+            graha,
+            sign,
+            years,
+            strength,
+        }
+    }
+
+    /// An Aries lagna with Mars, its lord, in Aries too; the Sun in Leo,
+    /// Jupiter in Sagittarius, the Moon in Cancer, Saturn in Scorpio and
+    /// Venus in Libra; Mercury in Taurus gives no years.
+    fn ayurdaya_givers() -> Vec<Giver> {
+        vec![
+            giver(Some(Graha::Sun), Rashi::Leo, 10.0, 7.0),
+            giver(Some(Graha::Moon), Rashi::Cancer, 12.0, 5.0),
+            giver(Some(Graha::Mars), Rashi::Aries, 8.0, 6.0),
+            giver(Some(Graha::Mercury), Rashi::Taurus, 0.0, 9.0),
+            giver(Some(Graha::Jupiter), Rashi::Sagittarius, 9.0, 6.5),
+            giver(Some(Graha::Venus), Rashi::Libra, 11.0, 5.5),
+            giver(Some(Graha::Saturn), Rashi::Scorpio, 15.0, 4.0),
+            giver(None, Rashi::Aries, 6.0, 8.0),
+        ]
+    }
+
+    fn ayurdaya(place: AntardashaPlace) -> GrahaDasha {
+        GrahaDasha::ayurdaya(
+            &ayurdaya_givers(),
+            7,
+            place,
+            JulianDay::literal(2_451_545.0),
+            YearLength::Savana360,
+            AfterCycle::End,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn an_ayurdaya_dasha_runs_from_the_first_through_kendras_panapharas_and_apoklimas() {
+        let dasha = ayurdaya(AntardashaPlace::Share);
+        // The lagna first, as its sign under Mars; then the kendras from
+        // it (Mars with it, the Moon in the fourth, Venus in the seventh)
+        // by strength, the panapharas (the Sun in the fifth, Saturn in the
+        // eighth), the apoklima (Jupiter in the ninth). Mercury, with no
+        // years, runs no period.
+        let seats: Vec<(Graha, Option<Rashi>)> = dasha
+            .lords()
+            .iter()
+            .zip(dasha.signs())
+            .map(|((lord, _), sign)| (*lord, *sign))
+            .collect();
+        assert_eq!(
+            seats,
+            [
+                (Graha::Mars, Some(Rashi::Aries)),
+                (Graha::Mars, None),
+                (Graha::Venus, None),
+                (Graha::Moon, None),
+                (Graha::Sun, None),
+                (Graha::Saturn, None),
+                (Graha::Jupiter, None),
+            ]
+        );
+        let total: f64 = dasha.lords().iter().map(|(_, years)| years).sum();
+        assert!((total - 71.0).abs() < 1e-12);
+        assert_eq!(dasha.division(), None);
+    }
+
+    #[test]
+    fn an_antardasha_takes_the_share_its_place_from_the_lord_gives() {
+        let dasha = ayurdaya(AntardashaPlace::Share);
+        // The lagna's period: Mars with it a half, the Moon in the fourth a
+        // quarter (Saturn in the eighth is weaker in the same place), Venus
+        // in the seventh a seventh, the Sun in the fifth a third (Jupiter
+        // in the ninth is weaker).
+        let lagna = dasha.mahadasha(0, 0).unwrap();
+        let children: Vec<Period> = dasha.children(&lagna).collect();
+        let parts = [1.0, 1.0 / 2.0, 1.0 / 7.0, 1.0 / 4.0, 1.0 / 3.0];
+        let sum: f64 = parts.iter().sum();
+        assert_eq!(
+            children
+                .iter()
+                .map(|child| (child.lord, child.sign))
+                .collect::<Vec<_>>(),
+            [
+                (Graha::Mars, Some(Rashi::Aries)),
+                (Graha::Mars, None),
+                (Graha::Venus, None),
+                (Graha::Moon, None),
+                (Graha::Sun, None),
+            ]
+        );
+        for (child, part) in children.iter().zip(parts) {
+            assert!((child.interval.days() - lagna.interval.days() * part / sum).abs() < 1e-6);
+        }
+        // Read by the house, the eighth and the ninth take their own.
+        let by_house = ayurdaya(AntardashaPlace::House);
+        let lagna = by_house.mahadasha(0, 0).unwrap();
+        let lords: Vec<Graha> = by_house.children(&lagna).map(|child| child.lord).collect();
+        assert_eq!(
+            lords,
+            [
+                Graha::Mars,
+                Graha::Mars,
+                Graha::Venus,
+                Graha::Moon,
+                Graha::Sun,
+                Graha::Saturn,
+                Graha::Jupiter,
+            ]
+        );
+    }
+
+    #[test]
+    fn every_ayurdaya_level_partitions_its_parent_from_its_own_seat() {
+        for place in [AntardashaPlace::Share, AntardashaPlace::House] {
+            let dasha = ayurdaya(place);
+            for maha in dasha.mahadashas() {
+                for parent in std::iter::once(maha).chain(dasha.children(&maha)) {
+                    let children: Vec<Period> = dasha.children(&parent).collect();
+                    assert_eq!(children[0].lord, parent.lord);
+                    assert_eq!(children[0].sign, parent.sign);
+                    assert_eq!(children[0].interval.from, parent.interval.from);
+                    let end = children.last().unwrap().interval.to.get();
+                    assert!((end - parent.interval.to.get()).abs() < 1e-6, "{place:?}");
+                    for pair in children.windows(2) {
+                        assert_eq!(pair[0].interval.to, pair[1].interval.from);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_malformed_ayurdaya_dasha_is_refused_by_its_field() {
+        let field =
+            |result: Result<GrahaDasha, Error>| result.unwrap_err().field().map(str::to_owned);
+        let birth = JulianDay::literal(0.0);
+        let mut givers = ayurdaya_givers();
+        let built = |givers: &[Giver], first| {
+            GrahaDasha::ayurdaya(
+                givers,
+                first,
+                AntardashaPlace::Share,
+                birth,
+                YearLength::Savana360,
+                AfterCycle::End,
+            )
+        };
+        assert_eq!(field(built(&givers, 8)).as_deref(), Some("first"));
+        givers[2].years = -1.0;
+        assert_eq!(field(built(&givers, 7)).as_deref(), Some("givers[2]"));
+        let seats = vec![(Graha::Sun, None, 1.0), (Graha::Moon, None, 2.0)];
+        let shared = |shares| {
+            GrahaDasha::with_shares(
+                seats.clone(),
+                shares,
+                birth,
+                YearLength::Savana360,
+                AfterCycle::End,
+            )
+        };
+        assert_eq!(
+            field(shared(vec![vec![(0, 1.0)]])).as_deref(),
+            Some("shares")
+        );
+        assert_eq!(
+            field(shared(vec![vec![(0, 1.0)], vec![(2, 1.0)]])).as_deref(),
+            Some("shares[1]")
+        );
+        assert_eq!(
+            field(shared(vec![vec![], vec![(1, 1.0)]])).as_deref(),
+            Some("shares[0]")
+        );
+        let twice = GrahaDasha::with_shares(
+            vec![(Graha::Mars, None, 1.0), (Graha::Mars, None, 2.0)],
+            vec![vec![(0, 1.0)], vec![(1, 1.0)]],
+            birth,
+            YearLength::Savana360,
+            AfterCycle::End,
+        );
+        assert_eq!(field(twice).as_deref(), Some("lords"));
     }
 
     #[test]

@@ -72,13 +72,13 @@ pub use definition::DashaDefinition;
 pub use firdaria::{
     FIRDARIA_PERIODS, FIRDARIA_ROUNDS, FIRDARIA_YEARS, FirdariaDasha, firdar_years, firdaria_order,
 };
-pub use graha::{GrahaDasha, karaka_years, tara_lords};
+pub use graha::{Giver, GrahaDasha, ayurdaya_order, ayurdaya_shares, karaka_years, tara_lords};
 pub use kalachakra::{KalachakraDasha, KalachakraRules, pada_row};
 pub use rashi::{
     Footedness, Length, NamedLord, Order, Parity, RASHI_ROWS, RashiChart, RashiDasha,
     RashiDefinition, RashiRow, RashiRules, Start, rashi_row, stronger_sign,
 };
-pub use reading::{DashaCursor, DashaReading, PeriodRow};
+pub use reading::{DashaCursor, DashaReading, GrahaShares, PeriodRow};
 pub use registry::DashaSystems;
 pub use releasing::{
     LotAngle, PROFECTION_YEARS, ProfectionDasha, RELEASING_CYCLE, ReleasingDasha, TIME_LORDS,
@@ -107,6 +107,8 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
             teistro_core::catalogue::DashaSystem::Decennials,
             teistro_core::catalogue::DashaSystem::Karaka,
             teistro_core::catalogue::DashaSystem::Tara,
+            teistro_core::catalogue::DashaSystem::Aayu,
+            teistro_core::catalogue::DashaSystem::Ashtakavarga,
         ])
 }
 
