@@ -94,9 +94,20 @@ pub fn of(amanta: Masa, at_sunrise: Tithi, convention: Convention, kind: MonthKi
 
 /// The month after another.
 #[must_use]
-fn next(month: Masa) -> Masa {
+pub(crate) fn next(month: Masa) -> Masa {
+    shifted(month, 1)
+}
+
+/// The month before another.
+#[must_use]
+pub(crate) fn previous(month: Masa) -> Masa {
+    shifted(month, 11)
+}
+
+/// The month so many after another, around the year.
+fn shifted(month: Masa, by: u16) -> Masa {
     let count = u16::try_from(Masa::ALL.len()).unwrap_or(12);
-    Masa::from_id((month.id() + 1) % count).unwrap_or(month)
+    Masa::from_id((month.id() + by) % count).unwrap_or(month)
 }
 
 #[cfg(test)]

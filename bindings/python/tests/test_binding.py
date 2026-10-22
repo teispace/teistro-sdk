@@ -4280,6 +4280,32 @@ class AnEngine(WithLibrary):
             self.assertFalse(shayani.barred.set_aside)
             self.assertEqual((shayani.kept.from_by, shayani.kept.span.from_jd), ("NAKSHATRA", shayani.barred.span.to_jd))
 
+            # An anniversary kept by the tithi (`03-design/shraddha.md`): a
+            # parvana of the dark 1st falls on 2 September 2020, the day the
+            # committee announced for its Sora Shraddha.
+            sora = ctx.almanac.festivals(
+                **{
+                    **days,
+                    "from_date": date(Calendar.GREGORIAN, 2020, 8, 25),
+                    "to_date": date(Calendar.GREGORIAN, 2020, 9, 20),
+                },
+                festivals={
+                    "rules": [
+                        {
+                            "key": "PRATIPADA",
+                            "origin": {"by": "LUNAR", "month": "BHADRAPADA", "tithi": "KRISHNA_PRATIPADA"},
+                            "kind": "PARVANA",
+                        }
+                    ]
+                },
+            )
+            (pratipada,) = sora.anniversaries
+            self.assertEqual((pratipada.key, pratipada.kind, pratipada.month_by), ("PRATIPADA", "PARVANA", "NIJA"))
+            self.assertEqual(pratipada.origin.tithi, Tithi.KRISHNA_PRATIPADA)
+            self.assertIsNone(pratipada.count)
+            self.assertEqual(pratipada.observance.month, Masa.BHADRAPADA)
+            self.assertEqual((pratipada.observance.day.month, pratipada.observance.day.day), (9, 2))
+
             sunrise = {
                 "key": "LAKSHMI_PUJA",
                 "source": "the tithi at sunrise",

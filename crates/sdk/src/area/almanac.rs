@@ -18,8 +18,8 @@ use teistro_core::time::UtcOffset;
 use teistro_muhurta::Answer;
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::festival::{
-    DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, Observances, dated, ekadashis,
-    following, observances,
+    DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, Observances, Origin,
+    anniversaries, dated, ekadashis, following, observances,
 };
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
@@ -263,6 +263,33 @@ impl<'a> AlmanacArea<'a> {
         Ok(())
     }
 
+    /// Each anniversary's days over the viewed days, its origin found at
+    /// the place and, for a date, in the date's own calendar
+    /// (`03-design/shraddha.md` §3.1).
+    fn kept_anniversaries(
+        self,
+        calendar: Calendar,
+        offset: UtcOffset,
+        place: &Place,
+        request: &FestivalRequest,
+        viewed: &[FestivalDay],
+    ) -> Result<Observances, Error> {
+        let mut asked = Vec::with_capacity(request.anniversaries().len());
+        for (index, anniversary) in request.anniversaries().iter().enumerate() {
+            let calendar = match &anniversary.origin {
+                Origin::Date { date } => date.calendar,
+                _ => calendar,
+            };
+            let found = self
+                .with_almanac(calendar, offset, |almanac| {
+                    almanac.origin(&anniversary.origin, place)
+                })
+                .map_err(|why| why.under(&format!("festivals.anniversaries[{index}].origin")))?;
+            asked.push((anniversary.clone(), found));
+        }
+        anniversaries(&asked, viewed)
+    }
+
     /// The observances over the range's own `days`, stamped with their
     /// provenance. The widening is founded as runs of its own on each
     /// side, so the range's run is exactly the one [`AlmanacArea::of_each`]
@@ -299,7 +326,7 @@ impl<'a> AlmanacArea<'a> {
                 .filter(|rule| rule.in_adhika == InAdhika::First)
         };
         let back = widen
-            + if firsts().next().is_some() {
+            + if firsts().next().is_some() || !request.anniversaries().is_empty() {
                 LUNATION
             } else {
                 0
@@ -340,7 +367,8 @@ impl<'a> AlmanacArea<'a> {
         let mut found = karmakala
             .merged(counted)
             .merged(ekadashis(request.ekadashis(), &viewed)?)
-            .merged(dated(request.dated(), &viewed)?);
+            .merged(dated(request.dated(), &viewed)?)
+            .merged(self.kept_anniversaries(from.calendar, offset, place, request, &viewed)?);
         let inside = |date: &CalendarDate| {
             calendar
                 .fixed_of(date)
@@ -351,6 +379,9 @@ impl<'a> AlmanacArea<'a> {
             .retain(|observance| inside(&observance.day));
         found.ekadashis.retain(|fast| inside(&fast.day));
         found.dated.retain(|kept| inside(&kept.day));
+        found
+            .anniversaries
+            .retain(|kept| inside(&kept.observance.day));
         found.unjudged.retain(|unjudged| {
             start.is_some_and(|start| unjudged.tithi.to.get() > start)
                 && end.is_some_and(|end| unjudged.tithi.from.get() < end)

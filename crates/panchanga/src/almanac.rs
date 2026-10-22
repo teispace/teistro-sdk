@@ -17,10 +17,11 @@ use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::lockstep::Lockstep;
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::rise_set::Solver;
+use teistro_calendar::lunisolar::MonthKind;
 use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
-use teistro_core::catalogue::{Direction, Nakshatra, Rashi, Ritu, Vara};
+use teistro_core::catalogue::{Direction, Nakshatra, Rashi, Ritu, Tithi, Vara};
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
@@ -36,7 +37,9 @@ use teistro_time::local_day::{
     Carried, LocalDay, local_day, local_day_carrying, local_day_lit, local_midnight,
 };
 
-use crate::festival::{FestivalDay, MoonArc, MoonArcs, Moonrise, SunEntry};
+use crate::festival::{
+    FestivalDay, Half, MoonArc, MoonArcs, Moonrise, Origin, OriginFound, SunEntry,
+};
 use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
@@ -320,6 +323,11 @@ struct SankalpaInput {
 /// read: a tenth of a second, inside which no body changes sign but on
 /// the instant itself.
 const MOMENT_DAYS: f64 = 1e-6;
+
+/// How near a karana's start must be to its tithi's to be its first: a
+/// second, where the two searches agree to a few microseconds and a
+/// karana lasts some six hours.
+const HALF_TOLERANCE_DAYS: f64 = 1.0 / 86_400.0;
 
 /// The same, for a range.
 #[derive(Serialize, Deserialize)]
@@ -712,6 +720,147 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok(Envelope::new(values, provenance))
     }
 
+    /// The day an instant falls in, sunrise to sunrise: its civil day's,
+    /// or the day before's when the instant is before that day's sunrise.
+    fn holding(&self, at: JulianDay<Utc>, place: &Place) -> Result<(Panchanga, Frame), Error> {
+        let (civil, _) = FixedDay::from_local_jd(self.clock.local_jd(at));
+        for back in [0, 1] {
+            let date = self.calendar.date_of(civil.plus_days(-back))?;
+            let (day, frame) = self.value(&date, place, &mut Memo::default())?;
+            if day.window.from.get() <= at.get() && at.get() < day.window.to.get() {
+                return Ok((day, frame));
+            }
+        }
+        Err(Error::new(
+            Status::OutOfRange,
+            format!(
+                "the instant {at} falls in neither its civil day's window nor the day before's"
+            ),
+        ))
+    }
+
+    /// An anniversary's origin as found at a place (`03-design/shraddha.md`
+    /// §2.1, C661, C668): the tithi at the moment, the lunation holding it
+    /// and its kind, the half of the tithi, and the nakshatra; for a date
+    /// alone, its sunrise tithi, marked as assumed, with every tithi the
+    /// date held midnight to midnight. A lunar origin is taken as given.
+    ///
+    /// The lunation is the one holding the moment, not the one at the
+    /// day's sunrise: a death after the day's new moon falls in the next
+    /// month. In a kshaya lunation the tithi's half names the month, the
+    /// first half the lunation's first name and the second its second.
+    ///
+    /// # Errors
+    ///
+    /// As [`Almanac::day`] for the day holding the moment, the day after it
+    /// and, for a date, the day before.
+    pub fn origin(&self, origin: &Origin, place: &Place) -> Result<OriginFound, Error> {
+        match origin {
+            Origin::Instant { at } => {
+                let (day, _) = self.holding(*at, place)?;
+                self.found_at(&day, *at, place, false, Vec::new())
+            }
+            Origin::Date { date } => {
+                let (day, _) = self.value(date, place, &mut Memo::default())?;
+                let fixed = self.calendar.fixed_of(date)?;
+                let civil = Interval::new(
+                    local_midnight(self.clock, fixed)?,
+                    local_midnight(self.clock, fixed.plus_days(1))?,
+                )?;
+                let (before, _) = self.value(
+                    &self.calendar.date_of(fixed.plus_days(-1))?,
+                    place,
+                    &mut Memo::default(),
+                )?;
+                let mut held: Vec<Tithi> = Vec::new();
+                for span in before.limbs.tithi.iter().chain(&day.limbs.tithi) {
+                    if span.whole.from.get() < civil.to.get()
+                        && civil.from.get() < span.whole.to.get()
+                        && !held.contains(&span.member)
+                    {
+                        held.push(span.member);
+                    }
+                }
+                if held.len() < 2 {
+                    held.clear();
+                }
+                self.found_at(&day, day.day.sunrise, place, true, held)
+            }
+            Origin::Lunar {
+                month,
+                tithi,
+                adhika,
+                half,
+                at,
+            } => Ok(OriginFound::lunar(*month, *tithi, *adhika, *half, *at)),
+        }
+    }
+
+    /// The origin at an instant inside a day.
+    fn found_at(
+        &self,
+        day: &Panchanga,
+        at: JulianDay<Utc>,
+        place: &Place,
+        assumed_sunrise: bool,
+        candidates: Vec<Tithi>,
+    ) -> Result<OriginFound, Error> {
+        let limb = |name: &str| {
+            Error::internal(format!(
+                "the day's {name} spans do not hold the instant {at}"
+            ))
+        };
+        let holds = |span: &&Span<Tithi>| {
+            span.whole.from.get() <= at.get() && at.get() < span.whole.to.get()
+        };
+        let tithi = day
+            .limbs
+            .tithi
+            .iter()
+            .find(holds)
+            .ok_or_else(|| limb("tithi"))?;
+        let at_sunrise =
+            sankalpa::at(&day.limbs.tithi, day.day.sunrise).ok_or_else(|| limb("tithi"))?;
+        // A new moon between the sunrise and the moment opens the next
+        // lunation, whose month the next day's sunrise names.
+        let lunation = if tithi.member.id() < at_sunrise.id() {
+            let next = self
+                .calendar
+                .date_of(self.calendar.fixed_of(&day.day.date)?.plus_days(1))?;
+            self.value(&next, place, &mut Memo::default())?.0.month
+        } else {
+            day.month
+        };
+        // The tithi's first karana begins with it.
+        let karana = day
+            .limbs
+            .karana
+            .iter()
+            .find(|span| span.whole.from.get() <= at.get() && at.get() < span.whole.to.get())
+            .ok_or_else(|| limb("karana"))?;
+        let half = if (karana.whole.from.get() - tithi.whole.from.get()).abs() < HALF_TOLERANCE_DAYS
+        {
+            Half::First
+        } else {
+            Half::Second
+        };
+        let month = if lunation.kind == MonthKind::Kshaya && half == Half::Second {
+            month::next(lunation.amanta)
+        } else {
+            lunation.amanta
+        };
+        Ok(OriginFound {
+            tithi: tithi.member,
+            month,
+            kind: lunation.kind,
+            half,
+            nakshatra: sankalpa::at(&day.limbs.nakshatra, at),
+            at: Some(at),
+            assumed_sunrise,
+            candidates,
+        })
+    }
+
     /// The time a sankalpa recites for a rite begun at `at`
     /// (`03-design/sankalpa.md`): the day's year, ayana, season and month
     /// as its sunrise holds them, and the tithi, nakshatra, yoga, karana
@@ -733,26 +882,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         ayana: AyanaReckoning,
     ) -> Result<Envelope<Sankalpa>, Error> {
         let settings = self.settings();
-        // The civil day the instant falls on, and the day before it when
-        // the instant is before that day's sunrise.
-        let (civil, _) = FixedDay::from_local_jd(self.clock.local_jd(at));
-        let mut found = None;
-        for back in [0, 1] {
-            let date = self.calendar.date_of(civil.plus_days(-back))?;
-            let (day, frame) = self.value(&date, place, &mut Memo::default())?;
-            if day.window.from.get() <= at.get() && at.get() < day.window.to.get() {
-                found = Some((day, frame));
-                break;
-            }
-        }
-        let Some((day, frame)) = found else {
-            return Err(Error::new(
-                Status::OutOfRange,
-                format!(
-                    "the instant {at} falls in neither its civil day's window nor the day before's"
-                ),
-            ));
-        };
+        let (day, frame) = self.holding(at, place)?;
         let year = self
             .years(&day.day.date, &day.day.date, place)?
             .value
@@ -1633,7 +1763,7 @@ struct Lunation {
     span: Interval,
     frame: Frame,
     amanta: teistro_core::catalogue::Masa,
-    kind: teistro_calendar::lunisolar::MonthKind,
+    kind: MonthKind,
 }
 
 /// The most lunar years before a range the samvatsara's naming may read:

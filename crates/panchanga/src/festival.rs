@@ -30,12 +30,17 @@ use crate::Panchanga;
 use crate::month::{self, LunarMonth};
 use crate::span::Span;
 
+mod anniversary;
 mod dated;
 mod ekadashi;
 mod following;
 mod nepal_panchanga;
 mod vrata;
 
+pub use anniversary::{
+    Anniversary, AnniversaryDay, AnniversaryKind, FirstYearAdhika, Half, JanmaOptions, MonthClause,
+    Origin, OriginFound, anniversaries,
+};
 pub use dated::{Dated, DatedObservance, DatedRule, dated};
 pub use ekadashi::{
     EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, NakshatraBar, Parana,
@@ -302,6 +307,22 @@ pub struct Guard {
     pub when: Vec<Predicate>,
     /// What it decides.
     pub choose: Choice,
+}
+
+/// The guards of a rite judged by its window's share: the day holding the
+/// tithi there alone; the earlier when both hold it wholly, on a tie, or
+/// when neither does; else the day holding more of it, in time. The shared
+/// table of *Dharmasindhu* p. 266's shraddhas and the committee's fitted
+/// days (C601, C603, C663).
+pub(crate) fn by_share() -> (Vec<Guard>, Choice) {
+    (
+        vec![
+            Guard::new([case(Case::LaterOnly)], Choice::Later),
+            Guard::new([case(Case::Both)], Choice::Earlier),
+            Guard::new([Predicate::Greater { day: Which::Later }], Choice::Later),
+        ],
+        Choice::Earlier,
+    )
 }
 
 impl Guard {
@@ -1065,6 +1086,10 @@ pub struct Observances {
     /// none, so an answer no dated rule was asked of is the one it was.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub dated: Vec<DatedObservance>,
+    /// Each anniversary's days, in the order of the tithis; left out when
+    /// none was asked.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub anniversaries: Vec<AnniversaryDay>,
 }
 
 impl Observances {
@@ -1072,7 +1097,7 @@ impl Observances {
     /// of [`Observances`], then a dotted path through each item. What a
     /// boundary section writes in full; the crate's tests hold it to
     /// serde, both ways.
-    pub const MEMBERS: [(&'static str, &'static str, Kind); 24] = [
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 33] = [
         ("observances", "month", Kind::Masa),
         ("observances", "day.calendar", Kind::Calendar),
         ("observances", "day.era.era", Kind::Era),
@@ -1097,6 +1122,19 @@ impl Observances {
         ("dated", "day.era.era", Kind::Era),
         ("dated", "on.calendar", Kind::Calendar),
         ("dated", "on.era.era", Kind::Era),
+        ("anniversaries", "origin.tithi", Kind::Tithi),
+        ("anniversaries", "origin.month", Kind::Masa),
+        ("anniversaries", "origin.nakshatra", Kind::Nakshatra),
+        ("anniversaries", "origin.candidates", Kind::Tithi),
+        ("anniversaries", "observance.month", Kind::Masa),
+        ("anniversaries", "observance.day.calendar", Kind::Calendar),
+        ("anniversaries", "observance.day.era.era", Kind::Era),
+        (
+            "anniversaries",
+            "observance.extents.day.calendar",
+            Kind::Calendar,
+        ),
+        ("anniversaries", "observance.extents.day.era.era", Kind::Era),
     ];
 
     /// Both answers as one, the occurrences no day was given to in the
@@ -1108,6 +1146,14 @@ impl Observances {
         self.ekadashis.extend(other.ekadashis);
         self.unjudged.extend(other.unjudged);
         self.dated.extend(other.dated);
+        self.anniversaries.extend(other.anniversaries);
+        self.anniversaries.sort_by(|a, b| {
+            a.observance
+                .tithi
+                .from
+                .get()
+                .total_cmp(&b.observance.tithi.from.get())
+        });
         self.unjudged
             .sort_by(|a, b| a.tithi.from.get().total_cmp(&b.tithi.from.get()));
         self

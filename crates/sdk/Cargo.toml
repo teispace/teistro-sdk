@@ -402,6 +402,10 @@ name = "parana_bar"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "anniversary"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "vrata_parana"
 required-features = ["builtin-ephemeris"]
 

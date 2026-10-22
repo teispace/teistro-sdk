@@ -666,6 +666,8 @@ __all__ = [
     "FestivalPack",
     "FestivalRequest",
     "DatedObservance",
+    "AnniversaryDay",
+    "AnniversaryOrigin",
     "FestivalAnswer",
     "DayDisagreement",
     "DayDisagreements",
@@ -7246,7 +7248,11 @@ class FestivalRequest(TypedDict):
     is broken, a following rule when it has an `after`, which counts `days`
     civil days from that festival rule's day, a dated rule when it has a
     `civilDate` or a `civilWeekday`, kept on a date of a calendar, or a
-    `sunEnters`, kept on the civil day the Sun enters a `nakshatra`; a
+    `sunEnters`, kept on the civil day the Sun enters a `nakshatra`, an
+    anniversary when it has an `origin` (`{"by": "INSTANT", "at": jd}`,
+    `{"by": "DATE", "date": ...}` or `{"by": "LUNAR", "month", "tithi"}`),
+    kept every year as a `SHRADDHA`, `EKODDISHTA`, `PARVANA` or
+    `JANMA_TITHI` `kind` (`03-design/shraddha.md`); a
     festival rule is kept on a `tithi`, or on a `nakshatra` in a `paksha`),
     a later rule replacing an
     earlier one with its key. A catalogue member may be a member, a full key
@@ -7532,6 +7538,52 @@ class DatedObservance:
 
 
 @dataclass(frozen=True)
+class AnniversaryOrigin:
+    """An anniversary's origin as found (`03-design/shraddha.md` §2.1): the
+    tithi at the moment, the amanta month it names (in a kshaya lunation
+    by the tithi's `half`), and that lunation's `kind`."""
+
+    tithi: Tithi
+    month: Masa
+    kind: Literal["NIJA", "ADHIKA", "KSHAYA"]
+    half: Literal["FIRST", "SECOND"]
+    nakshatra: Optional[Nakshatra]
+    """The nakshatra then; None for a lunar origin."""
+
+    at: Optional[float]
+    """The moment the years are counted from, a UTC Julian day."""
+
+    assumed_sunrise: bool
+    """Whether the tithi is a date's sunrise tithi, for want of an hour."""
+
+    candidates: Tuple[Tithi, ...]
+    """Every tithi the date held when more than one; empty otherwise."""
+
+
+@dataclass(frozen=True)
+class AnniversaryDay:
+    """An anniversary's day: a yearly shraddha, a barkhi or a janma tithi
+    (`03-design/shraddha.md`).
+
+    >>> # asked = {"rules": [{"key": "GRANDFATHER", "origin": {"by": "LUNAR", "month": "KARTIKA", "tithi": "SHUKLA_DASHAMI"}}]}
+    >>> # day = ctx.almanac.festivals(..., festivals=asked).anniversaries[0]
+    """
+
+    key: str
+    count: Optional[int]
+    """Which anniversary: 1 for the first recurrence after the origin, a
+    janma tithi's the age turned; None for a lunar origin given no moment."""
+
+    kind: Literal["EKODDISHTA", "PARVANA", "JANMA_TITHI"]
+    origin: AnniversaryOrigin
+    month_by: Literal["NIJA", "FIRST_YEAR_ADHIKA", "ADHIKA_ORIGIN", "KSHAYA_JOINED"]
+    """The clause that chose the month (C666, C667, C669)."""
+
+    observance: FestivalObservance
+    """The day as the festival evaluator judged it."""
+
+
+@dataclass(frozen=True)
 class FestivalAnswer:
     """What a set of festival rules gives over an almanac's days
     (`03-design/festival-rules.md` §7.3).
@@ -7547,6 +7599,10 @@ class FestivalAnswer:
     unjudged: Tuple[FestivalUnjudged, ...]
     dated: Tuple[DatedObservance, ...]
     """Each dated rule's days, in the order of the days; empty when none
+    was asked."""
+
+    anniversaries: Tuple[AnniversaryDay, ...]
+    """Each anniversary's days, in the order of the tithis; empty when none
     was asked."""
 
     provenance: Provenance
@@ -14448,6 +14504,28 @@ def _parana_barred(raw: Mapping[str, Any]) -> ParanaBarred:
     )
 
 
+def _anniversary_day(raw: Mapping[str, Any]) -> AnniversaryDay:
+    """An anniversary's day as a festival answer writes it."""
+    origin = raw["origin"]
+    return AnniversaryDay(
+        key=raw["key"],
+        count=raw.get("count"),
+        kind=raw["kind"],
+        origin=AnniversaryOrigin(
+            tithi=_member(Tithi, origin["tithi"]),
+            month=_member(Masa, origin["month"]),
+            kind=origin["kind"],
+            half=origin["half"],
+            nakshatra=_member(Nakshatra, origin["nakshatra"]) if origin.get("nakshatra") is not None else None,
+            at=origin.get("at"),
+            assumed_sunrise=bool(origin["assumedSunrise"]),
+            candidates=tuple(_member(Tithi, t) for t in origin.get("candidates", ())),
+        ),
+        month_by=raw["monthBy"],
+        observance=_festival_observance(raw["observance"]),
+    )
+
+
 def _festivals_answer(text: str) -> FestivalAnswer:
     """The `festivals` section: the envelope's value, its dates in this
     binding's shape, with the provenance beside it."""
@@ -14463,6 +14541,7 @@ def _festivals_answer(text: str) -> FestivalAnswer:
             DatedObservance(rule=d["rule"], day=_serde_date(d["day"]), on=_serde_date(d["on"]))
             for d in value.get("dated", ())
         ),
+        anniversaries=tuple(_anniversary_day(a) for a in value.get("anniversaries", ())),
         provenance=decode_provenance(envelope["provenance"]),
     )
 

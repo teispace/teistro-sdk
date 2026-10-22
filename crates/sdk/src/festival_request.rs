@@ -9,7 +9,9 @@
 use serde::Serialize;
 use serde_json::Value;
 use teistro_core::error::Error;
-use teistro_panchanga::festival::{DatedRule, EkadashiRule, FestivalRule, FollowingRule};
+use teistro_panchanga::festival::{
+    Anniversary, DatedRule, EkadashiRule, FestivalRule, FollowingRule,
+};
 
 /// A pack of rules the SDK ships, which a request may name rather than
 /// spell out.
@@ -99,8 +101,9 @@ impl FestivalPack {
 }
 
 /// What a festival reckoning is asked: karmakala rules, Ekadashi rules,
-/// rules counted from another's day and rules kept on a date, each key
-/// once across all four, because an answer is named by it.
+/// rules counted from another's day, rules kept on a date and a family's
+/// anniversaries kept by the tithi, each key once across all five, because
+/// an answer is named by it.
 ///
 /// ```
 /// use teistro::{FestivalPack, FestivalRequest};
@@ -128,7 +131,7 @@ impl FestivalPack {
 /// assert_eq!(wrong.field(), Some("festivals.rules"));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct FestivalRequest {
     rules: Vec<FestivalRule>,
@@ -137,6 +140,9 @@ pub struct FestivalRequest {
     /// Left out when none, so a request without them hashes as it did.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     dated: Vec<DatedRule>,
+    /// Left out when none, as `dated` is.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    anniversaries: Vec<Anniversary>,
 }
 
 impl From<FestivalPack> for FestivalRequest {
@@ -174,6 +180,12 @@ impl Keyed for DatedRule {
     }
 }
 
+impl Keyed for Anniversary {
+    fn key(&self) -> &str {
+        &self.key
+    }
+}
+
 /// Puts `rule` in place of the one in `list` with its key, or hands it
 /// back when none has it.
 fn replaced<T: Keyed>(list: &mut [T], rule: T) -> Result<(), T> {
@@ -196,6 +208,7 @@ impl FestivalRequest {
             ekadashis: Vec::new(),
             following: Vec::new(),
             dated: Vec::new(),
+            anniversaries: Vec::new(),
         }
     }
 
@@ -205,6 +218,7 @@ impl FestivalRequest {
         self.ekadashis.retain(|held| held.key != key);
         self.following.retain(|held| held.key != key);
         self.dated.retain(|held| held.key != key);
+        self.anniversaries.retain(|held| held.key != key);
     }
 
     /// The same request with a rule added, or put in place of the one
@@ -248,6 +262,34 @@ impl FestivalRequest {
         if let Err(rule) = replaced(&mut self.dated, rule) {
             self.forget(&rule.key);
             self.dated.push(rule);
+        }
+        self
+    }
+
+    /// The same request with an anniversary added, or put in place of the
+    /// one with its key; a rule of another kind with that key goes.
+    ///
+    /// ```
+    /// use teistro::FestivalRequest;
+    /// use teistro::catalogue::{Masa, Tithi};
+    /// use teistro::festival::{Anniversary, AnniversaryKind, FirstYearAdhika, JanmaOptions, Origin};
+    ///
+    /// let barkhi = Anniversary {
+    ///     key: "GRANDFATHER".to_owned(),
+    ///     origin: Origin::Lunar { month: Masa::Kartika, tithi: Tithi::ShuklaDashami, adhika: false, half: Default::default(), at: None },
+    ///     kind: AnniversaryKind::Shraddha,
+    ///     window: None,
+    ///     first_year_adhika: FirstYearAdhika::Adhika,
+    ///     janma: JanmaOptions::default(),
+    /// };
+    /// let asked = FestivalRequest::new(Vec::new()).with_anniversary(barkhi);
+    /// assert_eq!(asked.anniversaries()[0].key, "GRANDFATHER");
+    /// ```
+    #[must_use]
+    pub fn with_anniversary(mut self, anniversary: Anniversary) -> FestivalRequest {
+        if let Err(anniversary) = replaced(&mut self.anniversaries, anniversary) {
+            self.forget(&anniversary.key);
+            self.anniversaries.push(anniversary);
         }
         self
     }
@@ -301,6 +343,12 @@ impl FestivalRequest {
         &self.dated
     }
 
+    /// The anniversaries, in order.
+    #[must_use]
+    pub fn anniversaries(&self) -> &[Anniversary] {
+        &self.anniversaries
+    }
+
     /// How many days the request reaches past an observance's own:
     /// the most any rule counts from another's, or from the Sun's entry.
     #[must_use]
@@ -314,26 +362,31 @@ impl FestivalRequest {
     }
 
     /// Refuses what no reckoning could answer, naming the field under
-    /// `rules`, `ekadashis`, `following` or `dated`: a rule its own
-    /// `check` refuses, a key given twice across all four, which would answer two
+    /// `rules`, `ekadashis`, `following`, `dated` or `anniversaries`: a rule
+    /// its own `check` refuses, a key given twice across all five, which would answer two
     /// observances a reader cannot tell apart, or a rule counted from one
     /// that is not a karmakala rule of the request.
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` on `rules[i]`, `ekadashis[i]`, `following[i]` or
-    /// `dated[i]` and the rule's own field.
+    /// `INVALID_ARG` on `rules[i]`, `ekadashis[i]`, `following[i]`,
+    /// `dated[i]` or `anniversaries[i]` and the rule's own field.
     pub fn check(&self) -> Result<(), Error> {
         let rules = self.rules.iter().map(|rule| (&rule.key, rule.check()));
         let ekadashis = self.ekadashis.iter().map(|rule| (&rule.key, rule.check()));
         let following = self.following.iter().map(|rule| (&rule.key, rule.check()));
         let dated = self.dated.iter().map(|rule| (&rule.key, rule.check()));
+        let anniversaries = self
+            .anniversaries
+            .iter()
+            .map(|asked| (&asked.key, asked.check()));
         let mut seen = std::collections::BTreeSet::new();
         for (list, items) in [
             ("rules", rules.collect::<Vec<_>>()),
             ("ekadashis", ekadashis.collect()),
             ("following", following.collect()),
             ("dated", dated.collect()),
+            ("anniversaries", anniversaries.collect()),
         ] {
             for (index, (key, checked)) in items.into_iter().enumerate() {
                 let at = format!("{list}[{index}]");
@@ -364,7 +417,8 @@ impl FestivalRequest {
     /// whose items each name a pack or spell a rule out, in order: an
     /// [`EkadashiRule`] when it has a `vedha`, a [`FollowingRule`] when it
     /// has an `after`, a [`DatedRule`] when it has a `civilDate`, a
-    /// `civilWeekday` or a `sunEnters`, else a [`FestivalRule`]. A
+    /// `civilWeekday` or a `sunEnters`, an [`Anniversary`] when it has an
+    /// `origin`, else a [`FestivalRule`]. A
     /// later rule replaces an earlier one with its key. A
     /// catalogue member anywhere in it may be written bare or in full
     /// (`masa.ASHWINA`), as every binding reads one back.
@@ -395,6 +449,11 @@ impl FestivalRequest {
                     let rule: EkadashiRule = teistro_core::strict::read_value(item, &field)?;
                     rule.check().map_err(|why| why.under(&field))?;
                     request = request.with_ekadashi(rule);
+                }
+                Value::Object(spelt) if listed && spelt.contains_key("origin") => {
+                    let asked: Anniversary = teistro_core::strict::read_value(item, &field)?;
+                    asked.check().map_err(|why| why.under(&field))?;
+                    request = request.with_anniversary(asked);
                 }
                 Value::Object(spelt) if listed && spelt.contains_key("after") => {
                     let rule: FollowingRule = teistro_core::strict::read_value(item, &field)?;

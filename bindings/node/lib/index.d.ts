@@ -6536,12 +6536,79 @@ export interface FestivalRequest {
    * A pack the SDK ships, by name; or a list whose items each name a pack
    * or spell a rule out, in order: an Ekadashi rule when it has a `vedha`,
    * a following rule when it has an `after`, a dated rule when it has a
-   * `civilDate`, a `civilWeekday` or a `sunEnters`, else a festival rule. A later rule
+   * `civilDate`, a `civilWeekday` or a `sunEnters`, an anniversary when it
+   * has an `origin`, else a festival rule. A later rule
    * replaces an earlier one with its key.
    */
   readonly rules:
     | FestivalPack
-    | readonly (FestivalPack | FestivalRule | EkadashiRule | FollowingRule | DatedRule)[];
+    | readonly (FestivalPack | FestivalRule | EkadashiRule | FollowingRule | DatedRule | Anniversary)[];
+}
+
+/**
+ * Where an anniversary is counted from (`03-design/shraddha.md` §2.1): the
+ * moment of the death or birth (the tithi running then, C661), only its
+ * civil date (that day's sunrise tithi, marked as assumed), or the lunar
+ * date a family keeps, with the moment if known so the years are counted.
+ */
+export type AnniversaryOrigin =
+  | { readonly by: 'INSTANT'; readonly at: number }
+  | { readonly by: 'DATE'; readonly date: CalendarDate }
+  | {
+      readonly by: 'LUNAR';
+      readonly month: Masa;
+      readonly tithi: Tithi;
+      readonly adhika?: boolean;
+      /** The tithi's half, which names the month in a kshaya lunation (C668). */
+      readonly half?: 'FIRST' | 'SECOND';
+      readonly at?: number;
+    };
+
+/**
+ * A yearly shraddha, a barkhi or a janma tithi, kept every year by the
+ * tithi (`03-design/shraddha.md`). `SHRADDHA`, the default, is an
+ * ekoddishta at kutapa to rauhina, or a parvana at aparahna for a death on
+ * a new moon or in Bhadrapada's dark half (C665).
+ *
+ * @example
+ * const barkhi: Anniversary = { key: 'GRANDFATHER', origin: { by: 'LUNAR', month: 'masa.KARTIKA', tithi: 'tithi.SHUKLA_DASHAMI' } };
+ */
+export interface Anniversary {
+  /** The consumer's own key, which names the answer and the feed's event. */
+  readonly key: string;
+  readonly origin: AnniversaryOrigin;
+  readonly kind?: 'SHRADDHA' | 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI';
+  /** The rite's time in place of the kind's: `{ window: 'PART', part: 'MADHYAHNA' }` is DS's madhyahna (C662). Not for a janma tithi. */
+  readonly window?: FestivalWindow;
+  /** The first anniversary's month when it is doubled (C666): the adhika by the texts, the ordinary by Dhakal's note for Nepal. */
+  readonly firstYearAdhika?: 'ADHIKA' | 'NIJA';
+  /** A janma tithi's *Dharmasindhu* options (C670), both off by default. */
+  readonly janma?: { readonly nakshatraTie?: boolean; readonly twoMuhurtaFloor?: boolean };
+}
+
+/** An anniversary's day, as the festival evaluator judged it. */
+export interface AnniversaryDay {
+  readonly key: string;
+  /** Which anniversary: 1 for the first recurrence after the origin, a janma tithi's the age turned; absent for a lunar origin given no moment. */
+  readonly count?: number;
+  readonly kind: 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI';
+  /** The origin as found: the tithi, the amanta month it names, that lunation's kind and the tithi's half. */
+  readonly origin: {
+    readonly tithi: Tithi;
+    readonly month: Masa;
+    readonly kind: 'NIJA' | 'ADHIKA' | 'KSHAYA';
+    readonly half: 'FIRST' | 'SECOND';
+    readonly nakshatra?: Nakshatra;
+    /** The moment the years are counted from, a UTC Julian day. */
+    readonly at?: number;
+    /** Whether the tithi is a date's sunrise tithi, for want of an hour. */
+    readonly assumedSunrise: boolean;
+    /** Every tithi the date held when more than one; empty otherwise. */
+    readonly candidates: readonly Tithi[];
+  };
+  /** The clause that chose the month (C666, C667, C669). */
+  readonly monthBy: 'NIJA' | 'FIRST_YEAR_ADHIKA' | 'ADHIKA_ORIGIN' | 'KSHAYA_JOINED';
+  readonly observance: FestivalObservance;
 }
 
 /**
@@ -7121,6 +7188,8 @@ export interface FestivalAnswer {
   readonly unjudged: readonly { readonly rule: string; readonly tithi: Interval; readonly why: string }[];
   /** Each dated rule's days, in the order of the days; empty when none was asked. */
   readonly dated: readonly DatedObservance[];
+  /** Each anniversary's days, in the order of the tithis; empty when none was asked. */
+  readonly anniversaries: readonly AnniversaryDay[];
   /** What computed it: the widened days among the applied conventions as `festival.days`, and the hash of this value. */
   readonly provenance: Provenance;
 }

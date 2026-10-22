@@ -305,8 +305,8 @@
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 4100000,
-      "gzip": 1290000
+      "raw": 4190000,
+      "gzip": 1310000
     }
   ],
   "history": [
@@ -444,6 +444,15 @@
       "raw": 4010114,
       "gzip": 1257948,
       "why": "the parana's nakshatra bar (each barred share of a nakshatra searched at its own bounds over the days that hold it), with the paranas of the Ekadashi fasts and of Janmashtami, Shivaratri and Rama Navami; measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-22",
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 4101884,
+      "gzip": 1278628,
+      "why": "anniversaries kept by the tithi (the origin found at an instant or a date, the year's month by its clauses, the day by the rite's share of the tithi); measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused"
     }
   ]
 }

@@ -5964,6 +5964,11 @@ function festivalsFrom(json) {
     ekadashis: value.ekadashis.map(fastFrom),
     unjudged: value.unjudged,
     dated: (value.dated ?? []).map((kept) => ({ ...kept, day: dateFrom(kept.day), on: dateFrom(kept.on) })),
+    anniversaries: (value.anniversaries ?? []).map((kept) => ({
+      ...kept,
+      origin: { candidates: [], ...kept.origin },
+      observance: observanceFrom(kept.observance),
+    })),
     provenance: decodeProvenance(provenance),
   });
 }

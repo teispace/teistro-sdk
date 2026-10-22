@@ -14557,6 +14557,97 @@ final class DatedObservance extends _Value {
   List<Object?> get _fields => [rule, ..._dateFields(day), ..._dateFields(on)];
 }
 
+/// An anniversary's origin as found (`03-design/shraddha.md` §2.1): the
+/// tithi at the moment, the amanta month it names (in a kshaya lunation by
+/// the tithi's [half]), and that lunation's [kind].
+final class AnniversaryOrigin extends _Value {
+  const AnniversaryOrigin({
+    required this.tithi,
+    required this.month,
+    required this.kind,
+    required this.half,
+    required this.nakshatra,
+    required this.at,
+    required this.assumedSunrise,
+    required this.candidates,
+  });
+
+  final Tithi tithi;
+  final Masa month;
+
+  /// `NIJA`, `ADHIKA` or `KSHAYA`.
+  final String kind;
+
+  /// `FIRST` or `SECOND`.
+  final String half;
+
+  /// The nakshatra then; null for a lunar origin.
+  final Nakshatra? nakshatra;
+
+  /// The moment the years are counted from, a UTC Julian day, or null.
+  final double? at;
+
+  /// Whether the tithi is a date's sunrise tithi, for want of an hour.
+  final bool assumedSunrise;
+
+  /// Every tithi the date held when more than one; empty otherwise.
+  final List<Tithi> candidates;
+
+  @override
+  List<Object?> get _fields => [
+    tithi,
+    month,
+    kind,
+    half,
+    nakshatra,
+    at,
+    assumedSunrise,
+    ...candidates,
+  ];
+}
+
+/// An anniversary's day: a yearly shraddha, a barkhi or a janma tithi kept
+/// every year by the tithi (`03-design/shraddha.md`). A request asks for one
+/// as an item of `rules` with an `origin`:
+///
+/// ```dart
+/// final barkhi = {
+///   'key': 'GRANDFATHER',
+///   'origin': {'by': 'LUNAR', 'month': 'KARTIKA', 'tithi': 'SHUKLA_DASHAMI'},
+/// };
+/// ```
+final class AnniversaryDay extends _Value {
+  const AnniversaryDay({
+    required this.key,
+    required this.count,
+    required this.kind,
+    required this.origin,
+    required this.monthBy,
+    required this.observance,
+  });
+
+  /// The request's key.
+  final String key;
+
+  /// Which anniversary: 1 for the first recurrence after the origin, a
+  /// janma tithi's the age turned; null for a lunar origin given no moment.
+  final int? count;
+
+  /// `EKODDISHTA`, `PARVANA` or `JANMA_TITHI`.
+  final String kind;
+  final AnniversaryOrigin origin;
+
+  /// The clause that chose the month: `NIJA`, `FIRST_YEAR_ADHIKA`,
+  /// `ADHIKA_ORIGIN` or `KSHAYA_JOINED` (C666, C667, C669).
+  final String monthBy;
+
+  /// The day as the festival evaluator judged it.
+  final FestivalObservance observance;
+
+  @override
+  List<Object?> get _fields => [key, count, kind, origin, monthBy, observance];
+}
+
 /// An Ekadashi fast: the day a rule gives the 11th, by its vedha and the
 /// excess the 11th and the 12th hold (`03-design/festival-rules.md` §8).
 final class EkadashiFast extends _Value {
@@ -14769,6 +14860,7 @@ final class FestivalAnswer {
     required this.ekadashis,
     required this.unjudged,
     required this.dated,
+    this.anniversaries = const [],
     required this.provenance,
   });
 
@@ -14781,6 +14873,10 @@ final class FestivalAnswer {
   /// Each dated rule's days, in the order of the days; empty when none
   /// was asked.
   final List<DatedObservance> dated;
+
+  /// Each anniversary's days, in the order of the tithis; empty when none
+  /// was asked.
+  final List<AnniversaryDay> anniversaries;
 
   /// What computed it: the widened days among the applied conventions as
   /// `festival.days`, and the hash of the value.
@@ -15277,7 +15373,42 @@ FestivalAnswer _festivalAnswer(String json) {
           on: _serdeDate(_festivalAt(raw['on'])),
         ),
     ]),
+    anniversaries: List.unmodifiable([
+      for (final raw in _festivalEach(
+        value['anniversaries'] ?? const <Object?>[],
+      ))
+        _anniversaryDay(raw),
+    ]),
     provenance: Provenance.fromJson(_festivalAt(envelope['provenance'])),
+  );
+}
+
+/// An anniversary's day as a festival answer writes it.
+AnniversaryDay _anniversaryDay(Map<String, Object?> raw) {
+  final origin = _festivalAt(raw['origin']);
+  final nakshatra = origin['nakshatra'];
+  return AnniversaryDay(
+    key: raw['key']! as String,
+    count: raw['count'] as int?,
+    kind: raw['kind']! as String,
+    origin: AnniversaryOrigin(
+      tithi: _key(origin['tithi'], Tithi.byKey, Tithi.unknown),
+      month: _key(origin['month'], Masa.byKey, Masa.unknown),
+      kind: origin['kind']! as String,
+      half: origin['half']! as String,
+      nakshatra:
+          nakshatra == null
+              ? null
+              : _key(nakshatra, Nakshatra.byKey, Nakshatra.unknown),
+      at: (origin['at'] as num?)?.toDouble(),
+      assumedSunrise: origin['assumedSunrise']! as bool,
+      candidates: List.unmodifiable([
+        for (final key in (origin['candidates'] as List<Object?>?) ?? const [])
+          _key(key, Tithi.byKey, Tithi.unknown),
+      ]),
+    ),
+    monthBy: raw['monthBy']! as String,
+    observance: _festivalObservance(_festivalAt(raw['observance'])),
   );
 }
 

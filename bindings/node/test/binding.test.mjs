@@ -4246,6 +4246,23 @@ test('an almanac carries the festivals it was asked for', () => {
   assert.deepEqual(shayani.barred.bar, smarta.parana.bars[0]);
   assert.equal(shayani.barred.setAside, false);
   assert.deepEqual([shayani.kept.fromBy, shayani.kept.span.from], ['NAKSHATRA', shayani.barred.span.to]);
+  // An anniversary kept by the tithi (`03-design/shraddha.md`): a parvana of
+  // Bhadrapada's dark 1st falls on 2 September 2020.
+  const sora = ctx.almanac.festivals({
+    ...days,
+    from: date(Calendar.Gregorian, 2020, 8, 25),
+    to: date(Calendar.Gregorian, 2020, 9, 20),
+    festivals: {
+      rules: [{ key: 'PRATIPADA', origin: { by: 'LUNAR', month: 'BHADRAPADA', tithi: 'KRISHNA_PRATIPADA' }, kind: 'PARVANA' }],
+    },
+  });
+  assert.equal(sora.anniversaries.length, 1);
+  const [pratipada] = sora.anniversaries;
+  assert.deepEqual([pratipada.key, pratipada.kind, pratipada.monthBy, pratipada.origin.tithi], ['PRATIPADA', 'PARVANA', 'NIJA', 'tithi.KRISHNA_PRATIPADA']);
+  assert.deepEqual(pratipada.origin.candidates, []);
+  assert.equal(pratipada.count, undefined);
+  assert.deepEqual([pratipada.observance.day.month, pratipada.observance.day.day], [9, 2]);
+  assert.deepEqual(july.anniversaries, []);
   assert.throws(() => ctx.almanac.festivals(days), /festivals: expected a festivals request/);
   assert.deepEqual(
     answer.observances.map((o) => o.rule),

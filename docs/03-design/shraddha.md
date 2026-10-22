@@ -1,8 +1,11 @@
 # Shraddha, barkhi and janma tithi: personal lunar anniversaries
 
-Status: `draft`, 2026-10-20. Research and design, written from the texts
-before any code. Nothing here is built. The defaults marked
-**maintainer** in §4 are proposals until the maintainer confirms them.
+Status: `building`, 2026-10-22. Steps 1–3 of §6 are built: the windows
+and the choice, the origin, and anniversaries through every binding
+(§3.1). The `PITRI_PAKSHA` pack (§3.2) and the first-year schedule (C673)
+are not yet. The **maintainer** forks in §4 ship as parameters with the
+researched default, as the maintainer delegated (C662 muhurtas 8–9, C666
+the adhika month with `NIJA` for Nepal); C673 waits.
 
 A family keeps a death anniversary (barkhi, *pratyābdika* or
 *sāṃvatsarika śrāddha*) and a birthday (janma tithi, *vardhāpana*) by the
@@ -197,34 +200,48 @@ or kshaya one.
 
 ### 3.1 The request and the answer
 
+As built (`teistro_panchanga::festival::anniversary`). A request names an
+anniversary as an item of `FestivalRequest.rules` with an `origin`, or by
+`FestivalRequest::with_anniversary`; every binding reads the answer.
+
 ```rust
 pub struct Anniversary {
-    pub key: String,                  // the consumer's own, "GRANDFATHER_BARKHI"
-    pub origin: Origin,               // Instant { at, place } | Lunar { masa, tithi, adhika, half }
-    pub kind: AnniversaryKind,        // Ekoddishta | Parvana | JanmaTithi
-    pub window: Option<Window>,       // overrides the kind's (C662)
-    pub first_year_adhika: FirstYearAdhika, // C666
-    pub janma: JanmaOptions,          // C670: nakshatra tie, two-muhurta floor
+    pub key: String,                     // the consumer's own, "GRANDFATHER"
+    pub origin: Origin,                  // Instant { at } | Date { date } | Lunar { month, tithi, adhika, half, at }
+    pub kind: AnniversaryKind,           // Shraddha (by the origin, C665) | Ekoddishta | Parvana | JanmaTithi
+    pub window: Option<Window>,          // overrides the kind's (C662)
+    pub first_year_adhika: FirstYearAdhika, // Adhika (the texts) | Nija (Dhakal), C666
+    pub janma: JanmaOptions,             // C670: nakshatra_tie, two_muhurta_floor
 }
 
 pub struct AnniversaryDay {
     pub key: String,
-    pub year_count: u16,              // 1 for the first anniversary: what it counts, defined
-    pub origin: OriginFound,          // the tithi, month, kind, half, and `assumed_sunrise`
-    pub month_by: MonthClause,        // Nija | AdhikaFirstYear | AdhikaOrigin | KshayaJoined | KshayaHalf
-    pub observance: Observance,       // the festival evaluator's answer, case and extents
-    pub window: Interval,             // the rite's window on the chosen day
-    pub source: String,
+    pub count: Option<u16>,   // 1 for the first recurrence after the origin; a janma tithi's age turned
+    pub kind: AnniversaryKind,           // as kept: never Shraddha
+    pub origin: OriginFound,  // tithi, month, kind, half, nakshatra, at, assumed_sunrise, candidates
+    pub month_by: MonthClause,           // Nija | FirstYearAdhika | AdhikaOrigin | KshayaJoined
+    pub observance: Observance,          // the festival evaluator's answer, case and extents
 }
 ```
 
-`sdk.almanac().anniversaries(from, to, place, clock, &[Anniversary])`
-answers every anniversary falling in the range, founded once with the
-festivals (`festival-rules.md` §4.3), in every binding. A Sora Shraddha
-request is the pack `PITRI_PAKSHA` (§3.2) plus the family's tithis,
-returned as the same `Observance`s. `year_count` is the ordinal
-`an-ordinal-must-say-what-it-counts` asks for: the number of the
-anniversary, the first being the first recurrence after the origin.
+The origin is found at the place asked (`Almanac::origin`): an instant
+gives its tithi, the amanta month and its kind, and in a kshaya lunation
+the half of the tithi (its karana) names the month (C668); a date gives
+its sunrise tithi, flagged, with every tithi the civil day touched as
+`candidates`; a lunar origin is taken as given, with `count` absent unless
+it carries `at`. `count` is round((tithi start − origin) / sidereal year):
+the ordinal `an-ordinal-must-say-what-it-counts` asks for. The day choice
+is `by_share` (the earlier on both, neither or a tie; the greater share
+otherwise, C663, C664), which the `NEPAL_PANCHANGA` share fits use too.
+The range is widened back a lunation so an anniversary near its start is
+judged, and a refusal names `festivals.anniversaries[i].origin`. The
+iCalendar feed writes each as a whole-day event.
+
+Held to: the committee's announced Sora Shraddha days 2020–2022 (§5.1
+rows 1–12, `crates/sdk/tests/anniversary.rs`), the origin cases of §5.2,
+an adhika origin's recurrence, both first-year policies, the two-muhurta
+floor, and the kshaya year's joined lunation (C669) on synthetic days,
+proved red (`crates/panchanga/tests/anniversary.rs`).
 
 ### 3.2 The `PITRI_PAKSHA` pack
 
@@ -319,6 +336,8 @@ madhyahna rule rests on the texts and Dhakal's commentary, not on a
 dated committee example.
 
 ## 6. What is measured, and the order of work
+
+Steps 1–3 are built (2026-10-22).
 
 1. `Window::DayMuhurtas` and `Choice::Greater` in the festival rules,
    with synthetic-day tests for each of DS p. 266's cases, proved red by
