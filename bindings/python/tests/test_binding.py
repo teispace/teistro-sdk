@@ -871,6 +871,9 @@ class AnEngine(WithLibrary):
                 ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=caste)
             self.assertEqual(unread.exception.field, "ashauch.request.caste")
 
+            named = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=grandfather, tradition="MITAKSHARA")
+            self.assertEqual(named.value.table, "MITAKSHARA")
+
     def test_an_almanac_schedules_the_first_year_after_a_death(self) -> None:
         """A death at 10:00 on 20 October 2026 in Kathmandu: the
         *Dharmasindhu*'s sixteen shraddhas each with its place, the first

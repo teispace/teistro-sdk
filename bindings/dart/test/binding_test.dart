@@ -975,6 +975,18 @@ void _engineTests() {
     expect(second.overlap?.overlap, 'ENDS_WITH_EARLIER');
     expect(second.overlap?.earlier, 'grandfather');
     expect(second.end, value.end);
+
+    final named = sky.almanac.ashauch(
+      request: const AshauchRequest(
+        key: 'mitakshara',
+        event: AshauchDeath(at: at),
+        relation: AshauchRelation.sapinda,
+      ),
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      tradition: AshauchTradition.mitakshara,
+    );
+    expect(named.value.table, 'MITAKSHARA');
   });
 
   // A death at 10:00 on 20 October 2026 in Kathmandu: the sixteen, fifteen

@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The *Mitākṣarā*'s ashauch table** (P2-3, `ashauch.md` §2.10, C733).
+**Numbers:** none move; every *Dharmasindhu* answer is unchanged.
+`AshauchTable::mitakshara()` is Vijñāneśvara's table on *Yājñavalkya*
+III.18–25: the night halved at its middle, the parents of a child under
+two keeping the full period, a child's bands cut by the cūḍākaraṇa, its
+own rows for the teacher, the maternal kin, the in-laws, a married
+sibling and an adopted son, its late table and its bath for news from
+abroad. A query names it with `tradition: "MITAKSHARA"` (every binding;
+Java's `ashauch(…, AshauchTradition)` and a three-argument form for the
+default), never beside a `table`. An `AshauchBand` gains an optional
+`chudakarana`, a band without it holding as before.
+
 **A death's first year** (P1-8, `shraddha.md` §3.3, C673, C674,
 C728–C732). **Numbers:** none move; a new call.
 `almanac().first_year` (`ts_almanac_first_year`, `almanac.firstYear`,

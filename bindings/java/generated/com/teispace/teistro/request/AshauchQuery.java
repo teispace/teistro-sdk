@@ -16,9 +16,10 @@ import java.util.Objects;
  * @param longitudeDeg The place's longitude, degrees east positive.
  * @param request The event, the observer and the periods already running.
  * @param table The tradition's table, every row data; the *Dharmasindhu*'s when left out. Null leaves the SDK's default.
+ * @param tradition A shipped table by its name, in place of `table`. Null leaves the SDK's default.
  * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
  */
-public record AshauchQuery(Double altitudeM, double latitudeDeg, double longitudeDeg, AshauchRequest request, AshauchTable table, int utcOffsetSeconds) implements RequestJson {
+public record AshauchQuery(Double altitudeM, double latitudeDeg, double longitudeDeg, AshauchRequest request, AshauchTable table, AshauchTradition tradition, int utcOffsetSeconds) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -47,6 +48,7 @@ public record AshauchQuery(Double altitudeM, double latitudeDeg, double longitud
         private Double longitudeDeg;
         private AshauchRequest request;
         private AshauchTable table;
+        private AshauchTradition tradition;
         private Integer utcOffsetSeconds;
 
         private Builder() {}
@@ -107,6 +109,17 @@ public record AshauchQuery(Double altitudeM, double latitudeDeg, double longitud
         }
 
         /**
+         * Sets {@code tradition}.
+         *
+         * @param tradition A shipped table by its name, in place of `table`. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder tradition(AshauchTradition tradition) {
+            this.tradition = tradition;
+            return this;
+        }
+
+        /**
          * Sets {@code utcOffsetSeconds}.
          *
          * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
@@ -124,7 +137,7 @@ public record AshauchQuery(Double altitudeM, double latitudeDeg, double longitud
          * @throws NullPointerException naming a required field left unset
          */
         public AshauchQuery build() {
-            return new AshauchQuery(altitudeM, Objects.requireNonNull(latitudeDeg, "`AshauchQuery.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`AshauchQuery.longitudeDeg` is required"), request, table, Objects.requireNonNull(utcOffsetSeconds, "`AshauchQuery.utcOffsetSeconds` is required"));
+            return new AshauchQuery(altitudeM, Objects.requireNonNull(latitudeDeg, "`AshauchQuery.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`AshauchQuery.longitudeDeg` is required"), request, table, tradition, Objects.requireNonNull(utcOffsetSeconds, "`AshauchQuery.utcOffsetSeconds` is required"));
         }
     }
 
@@ -143,6 +156,7 @@ public record AshauchQuery(Double altitudeM, double latitudeDeg, double longitud
             Read.number(Read.required(json.get("longitudeDeg"), "AshauchQuery.longitudeDeg"), "AshauchQuery.longitudeDeg"),
             AshauchRequest.of(Read.required(json.get("request"), "AshauchQuery.request")),
             Read.orNull(json.get("table"), present -> AshauchTable.of(present)),
+            Read.orNull(json.get("tradition"), present -> Read.member(present, "AshauchQuery.tradition", AshauchTradition::byKey)),
             Read.int32(Read.required(json.get("utcOffsetSeconds"), "AshauchQuery.utcOffsetSeconds"), "AshauchQuery.utcOffsetSeconds"));
     }
 
@@ -157,6 +171,9 @@ public record AshauchQuery(Double altitudeM, double latitudeDeg, double longitud
         json.put("request", request.toJson());
         if (table != null) {
             json.put("table", table.toJson());
+        }
+        if (tradition != null) {
+            json.put("tradition", tradition.toJson());
         }
         json.put("utcOffsetSeconds", utcOffsetSeconds);
         return json;

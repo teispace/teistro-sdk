@@ -386,7 +386,50 @@ What the texts and the one Nepali summary found say together:
   days. A family that keeps 13 days of jutho sets `full_days: 13`.
 - **The committee** publishes no ashauch rules that this search found.
 
-### 2.10 What other apps compute
+### 2.10 The Mitākṣarā's table
+
+`AshauchTable::mitakshara()` (`MITAKSHARA`, asked by `tradition`) is
+Vijñāneśvara's table on Yā III.18–25, each row its own clause with its
+verse; a row Mit leaves to other texts stays the *Dharmasindhu*'s and
+still cites DS. The rows, in our words:
+
+- **The night**: the first of Mit's three kalpas on III.20, the night
+  halved at its middle (`HALF_NIGHT`); DS's thirds stay its own default
+  (C715).
+- **The parents of a child under two** keep the full period, Mit's first
+  reading of III.18 ("ūnadvivarṣa ubhayoḥ"); DS gives them three days.
+  The 3rd year begins at two, so the band ends at `YEAR 3`.
+- **A child's bands** follow Mit's own summary on III.23 (§2.5): a bath
+  before the naming; from the naming to teething a day if cremated, a bath
+  if buried; with teeth, before the cūḍā, a day; after the cūḍā three
+  days; past three years three days even without it, to the upanayana.
+  Mit cuts the first three years by whether the cūḍā was done, so a band
+  carries `chudakarana: true | false` and holds only when the deceased's
+  rite matches; a band without it holds either way, as before. A daughter
+  (on III.24, Āpastamba): before her cūḍā a bath, after it a day to her
+  betrothal, then three days to her marriage (Manu V.72).
+- **Relations Mit names itself** (on III.24–25): the teacher three nights
+  (Manu V.80); the maternal uncle and the other bāndhavas a day when not
+  near, a pakṣiṇī when near (Manu V.81); the maternal grandfather three
+  days (Bṛhaspati); a parent-in-law's death a pakṣiṇī for the son-in-law
+  (Vṛddha-Vasiṣṭha), a son-in-law's a bath for his parents-in-law; a
+  married sibling a bath, a night when the death is in one's own house
+  (Viṣṇu 22.46); a son not of one's body a day when not near, three
+  nights when near (III.25, Viṣṇu 22.43); a married daughter dying away
+  from her father's house, a bath on his side (Viṣṇu 22.33).
+- **Late news** (on III.21): Vṛddha-Vasiṣṭha's months, three days inside
+  three, a pakṣiṇī inside six, a day inside nine, a bath after; news from
+  another land a bath, Vijñāneśvara's own rule (C719 keeps Mādhava's as
+  DS's default).
+- **The mother's bar on rites** to the 20th day after a son and the 30th
+  after a daughter (Paiṭhīnasi, on III.19), against DS's 30 and 40.
+
+The e-text is CC BY-SA (§1), so the table's clauses are this SDK's own
+words with the verse they read; no line of the commentary is copied into
+code or data. Tests: `crates/panchanga/tests/ashauch.rs` m1–m8, each
+proved red by breaking its row.
+
+### 2.11 What other apps compute
 
 No published description of a birth or death ashauch calculator was found
 for Drik Panchang or any other almanac app; Drik's and vedpanchang's
@@ -400,7 +443,7 @@ texts' rule is the reverse, §2.7). Recorded as a gap, not a source.
 
 | # | fork | proposed default | evidence | other readings, all offered |
 |---|---|---|---|---|
-| F1 | the tradition table | **`DHARMASINDHU`**: DS pp. 298–306, the same edition the festival rules read, and the most detailed; Nepal's own commentary tradition (Dhakal on NS) agrees with it clause by clause where read | DS; NS; Dk | `MITAKSHARA` (Mit's own table on III.23, Vijñāneśvara's abroad bath, its night kalpas); `NEPAL` = DS with Pr's four relation rows, the two-day-only last-night rule, and the thirds |
+| F1 | the tradition table | **`DHARMASINDHU`**: DS pp. 298–306, the same edition the festival rules read, and the most detailed; Nepal's own commentary tradition (Dhakal on NS) agrees with it clause by clause where read | DS; NS; Dk | `MITAKSHARA`, built (§2.10: Mit's own table on III.18–25, Vijñāneśvara's abroad bath, its first night kalpa); `NEPAL` = DS with Pr's four relation rows, the two-day-only last-night rule, and the thirds |
 | F2 | the full period | **a number, default 10** (`full_days`); the texts' varṇa lengths are documentation, never an input | Manu V.83, Yā III.22 vs Aṅgiras in Mit on III.22; Mit declines to arrange the schemes; Pr has 10 for every sapiṇḍa | 12, 15, 30, 13 or any number a family keeps |
 | F3 | the night | **thirds**: the night (sunset to sunrise) in three; the first two belong to the day before | Mit's second kalpa, which NS p. 377 calls the Mitakshara's; DS p. 304 gives it first; Pr rule 16 | `HALF_NIGHT` (before the night's middle, the day before); `SUNRISE` (any time before sunrise, the day before); see F3a |
 | F3a | "ardharātra" | **the middle of the night**, sunset to sunrise, as `Window::Nishitha` | ardha-rātra is half the night; the SDK's niśītha already is that instant | civil midnight (Kane IV p. 287 writes "midnight"; Pr "मध्यरात्री"); offered as `CIVIL_MIDNIGHT` |
@@ -512,11 +555,11 @@ Where the build differs from the draft above, and why:
   late tables answer only a sapiṇḍa's full period.
 - **The night's civil midnight** is read from the place's clock at that
   night's sunset, so a daylight-saving change moves it with the clock.
-- **One preset ships, `DHARMASINDHU`.** `NEPAL` would take Pr's rows,
-  which are rank 3 (`CLEAN_ROOM.md`: a rule with no rank-1 citation does
-  not ship); a family that keeps them loads them as a table. `MITAKSHARA`
-  waits on its own band table (Mit on III.18's ten days for a child under
-  two), recorded in §9.
+- **Two presets ship, `DHARMASINDHU` (the default) and `MITAKSHARA`**
+  (§2.10), a query naming one by `tradition` or giving its own `table`,
+  never both. `NEPAL` would take Pr's rows, which are rank 3
+  (`CLEAN_ROOM.md`: a rule with no rank-1 citation does not ship); a
+  family that keeps them loads them as a table.
 - **The draft's `Relation::Row`** is not needed: a consumer's own row
   names an existing relation under a placement or a married-daughter
   condition, and a relation the table names no row for is
@@ -614,7 +657,7 @@ the archive scan) before relying on either sentence (crux C716).
 
 | # | item | what is known | what is missing | rank of the evidence | action |
 |---|---|---|---|---|---|
-| C713 | ashauch: the tradition default | DS pp. 298–306 is the most detailed table; Mit on Yā III.23 has its own band summary; Pr (rank 3) is the one Nepali rule list found and agrees with DS on most rows | the maintainer's choice of default (brief §4) | 1 | built: `DHARMASINDHU`, every row data; `NEPAL` not shipped (its rows are rank 3), `MITAKSHARA` later (§9) |
+| C713 | ashauch: the tradition default | DS pp. 298–306 is the most detailed table; Mit on Yā III.23 has its own band summary; Pr (rank 3) is the one Nepali rule list found and agrees with DS on most rows | the maintainer's choice of default (brief §4) | 1 | built: `DHARMASINDHU` the default, every row data; `MITAKSHARA` built (§2.10), asked by `tradition`; `NEPAL` not shipped (its rows are rank 3) |
 | C714 | the full period by varṇa | Manu V.83 and Yā III.22 grade 10/12/15/30; Aṅgiras (in Mit on III.22) gives 10 for all; Mit declines to arrange the schemes "for want of usage"; age bands and late news are the same for all (Mit on III.21, DS p. 304, NS p. 368) | none needed: the API takes the number | 1 | `full_days`, default 10; no caste field anywhere |
 | C715 | an event at night | three kalpas in Mit on III.20, "by local usage"; NS p. 377 names the thirds the Mitakshara's; DS p. 304 gives them first; Pr rule 16 the thirds | a Nepal statement or a dated case | 1 | default `THIRDS`; `HALF_NIGHT` (the night's middle), `CIVIL_MIDNIGHT`, `SUNRISE` |
 | C716 | Kane's 1 a.m. illustration | Kane IV pp. 287–288 says "Monday excluded" under the midnight view, which follows only if the event's day is not day 1; Mit counts it as day 1 | the page image; a second rank-2 statement | 2 | open; F4 default from Mit |
@@ -629,6 +672,7 @@ the archive scan) before relying on either sentence (crux C716).
 | C725 | a married daughter told inside the ten days | DS p. 301 "दशाहमध्ये त्रिरात्रम्", p. 303 a pakṣiṇī after; the clause does not say whether her three nights count from the death or the hearing | a second rank-1 statement | 1 | built: her three days count from the death, news inside them keeps the days left, news past them takes the row's pakṣiṇī from the hearing |
 | C726 | a married daughter's death away from her parents' house | DS p. 301 gives her parents three days when she dies in her father's house; no length for elsewhere was read | the clause for elsewhere | 1 | `UNSUPPORTED` with a hint: a family adds its row |
 | C727 | a child's death, the relations its band does not name | DS pp. 300–301's bands name the parents, the sapiṇḍas and the samānodakas | a clause for the maternal kin of a child | 1 | built: a bath, the band's clause cited |
+| C733 | ashauch: the Mitākṣarā's own table | Mit on Yā III.18 reads "ūnadvivarṣa ubhayoḥ" first as the parents' full period; its III.23 summary cuts the first three years by the cūḍā; its night is three kalpas by local usage (III.20) | which kalpa a family in Nepal keeps; a Nepal statement for the parents' period | 1 | built: `MITAKSHARA` with the parents' full period, bands filtered by `chudakarana`, the first kalpa (`HALF_NIGHT`); every row data a family can change |
 
 ## 7. The order of work, each step with its test
 

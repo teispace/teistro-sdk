@@ -11,12 +11,17 @@ use AshauchKind::{Birth, Death};
 use Length::{Bath, Full, Pakshini, Sajyotih};
 use Nearness::{ObserversHouse, OtherVillage, SameVillage};
 
-const fn days(days: u8) -> Length {
+pub(super) const fn days(days: u8) -> Length {
     Length::Days { days }
 }
 
 /// One relation row, at any placement and for any deceased.
-fn row(relation: Relation, kind: AshauchKind, length: Length, clause: &str) -> RelationRow {
+pub(super) fn row(
+    relation: Relation,
+    kind: AshauchKind,
+    length: Length,
+    clause: &str,
+) -> RelationRow {
     RelationRow {
         relation,
         kind,
@@ -29,14 +34,14 @@ fn row(relation: Relation, kind: AshauchKind, length: Length, clause: &str) -> R
 }
 
 impl RelationRow {
-    fn at(self, nearness: Nearness) -> RelationRow {
+    pub(super) fn at(self, nearness: Nearness) -> RelationRow {
         RelationRow {
             nearness: Some(nearness),
             ..self
         }
     }
 
-    fn married_daughter(self, married: bool) -> RelationRow {
+    pub(super) fn married_daughter(self, married: bool) -> RelationRow {
         RelationRow {
             married_daughter: Some(married),
             ..self
@@ -51,11 +56,18 @@ impl RelationRow {
     }
 }
 
-fn band(sex: Sex, before: Mark, parents: Length, sapindas: Length, clause: &str) -> Band {
+pub(super) fn band(
+    sex: Sex,
+    before: Mark,
+    parents: Length,
+    sapindas: Length,
+    clause: &str,
+) -> Band {
     Band {
         sex,
         before,
         buried: None,
+        chudakarana: None,
         parents,
         sapindas,
         samanodakas: None,
@@ -72,7 +84,7 @@ fn loss(to_month: u8, mother: Length, others: Length, clause: &str) -> LossRow {
     }
 }
 
-const fn late(within_days: u16, length: Length) -> LateRow {
+pub(super) const fn late(within_days: u16, length: Length) -> LateRow {
     LateRow {
         within_days,
         length,
@@ -146,7 +158,7 @@ impl AshauchTable {
     }
 }
 
-fn relations() -> Vec<RelationRow> {
+pub(super) fn relations() -> Vec<RelationRow> {
     use Relation::{
         AcharyasFamily, Adoption, Bandhu, Child, CoWife, Father, MarriedDaughter, MarriedSibling,
         MaternalGrandfather, MaternalGrandmother, MaternalUncle, Mother, OfAscetic, ParentInLaw,

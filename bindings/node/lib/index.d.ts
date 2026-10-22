@@ -8532,9 +8532,14 @@ export interface AshauchQuery {
   readonly utcOffsetSeconds: number;
   /** The tradition's table, every row data; the *Dharmasindhu*'s when left out. */
   readonly table?: AshauchTable;
+  /** A table the SDK ships, by its name; never beside `table`. */
+  readonly tradition?: AshauchTradition;
   /** The event, the observer and the periods already running. */
   readonly request: AshauchRequest;
 }
+
+/** A table the SDK ships: the *Dharmasindhu*'s (the default) or the *Mitākṣarā*'s. */
+export type AshauchTradition = 'DHARMASINDHU' | 'MITAKSHARA';
 
 /** One request: one event, one observer. */
 export interface AshauchRequest {
@@ -8729,6 +8734,8 @@ export interface AshauchBand {
   readonly before: AshauchMark;
   /** Only for a burial (true), or only for a cremation (false); either when left out. */
   readonly buried?: boolean;
+  /** Only when the cūḍākaraṇa was done (true), or only when it was not (false); either when left out. */
+  readonly chudakarana?: boolean;
   /** The parents' length, a step-child's too. */
   readonly parents: AshauchLength;
   /** The sapiṇḍas'. */

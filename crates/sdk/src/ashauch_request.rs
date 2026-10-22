@@ -49,15 +49,30 @@ pub(crate) struct AshauchAsked {
     /// left out.
     #[serde(default)]
     table: Option<AshauchTable>,
+    /// A shipped table by its name, in place of `table`.
+    #[serde(default)]
+    tradition: Option<AshauchTradition>,
     /// The event, the observer and the periods already running.
     request: AshauchRequest,
+}
+
+/// A table the SDK ships, by its name.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub(crate) enum AshauchTradition {
+    /// [`AshauchTable::dharmasindhu`], the default.
+    Dharmasindhu,
+    /// [`AshauchTable::mitakshara`].
+    Mitakshara,
 }
 
 impl AshauchQuery {
     /// The record a binding sends, as JSON: `latitudeDeg`, `longitudeDeg`,
     /// `altitudeM` (0 when left out) and `utcOffsetSeconds`; `table`, the
-    /// *Dharmasindhu*'s when left out; and `request`, its instants UTC
-    /// Julian days.
+    /// *Dharmasindhu*'s when left out, or `tradition`, a shipped table by
+    /// its name (`DHARMASINDHU`, `MITAKSHARA`); and `request`, its instants
+    /// UTC Julian days.
     ///
     /// ```
     /// use teistro::AshauchQuery;
@@ -71,6 +86,13 @@ impl AshauchQuery {
     /// )?;
     /// assert_eq!(asked.request.relation, Relation::Sapinda);
     /// assert_eq!(asked.table.name, "DHARMASINDHU");
+    /// let mitakshara = AshauchQuery::from_json(
+    ///     r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+    ///         "tradition": "MITAKSHARA",
+    ///         "request": {"key": "grandfather", "relation": "SAPINDA",
+    ///                     "event": {"event": "DEATH", "at": 2461051.677083}}}"#,
+    /// )?;
+    /// assert_eq!(mitakshara.table.name, "MITAKSHARA");
     /// let unread = AshauchQuery::from_json(
     ///     r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
     ///         "request": {"key": "k", "relation": "SAPINDA", "caste": "any",
@@ -95,7 +117,17 @@ impl AshauchQuery {
 
 impl AshauchAsked {
     fn query(self) -> Result<AshauchQuery, Error> {
-        let table = self.table.unwrap_or_else(AshauchTable::dharmasindhu);
+        let table = match (self.table, self.tradition) {
+            (Some(_), Some(_)) => {
+                return Err(Error::invalid_arg(
+                    "an ashauch names a `table` or a `tradition`, not both",
+                )
+                .with_field("tradition"));
+            }
+            (Some(table), None) => table,
+            (None, Some(AshauchTradition::Mitakshara)) => AshauchTable::mitakshara(),
+            (None, Some(AshauchTradition::Dharmasindhu) | None) => AshauchTable::dharmasindhu(),
+        };
         table.check().map_err(|why| why.under("table"))?;
         self.request.check().map_err(|why| why.under("request"))?;
         Ok(AshauchQuery {
