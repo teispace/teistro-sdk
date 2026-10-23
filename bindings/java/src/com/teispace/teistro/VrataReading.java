@@ -22,7 +22,14 @@ package com.teispace.teistro;
  */
 public record VrataReading(
         String kind, Nakshatra nakshatra, Integer yamas, FestivalWindow at, String rite, Integer remnant) {
-    /** A reading that follows no rite. */
+    /**
+     * A reading that follows no rite.
+     *
+     * @param kind as the record's
+     * @param nakshatra as the record's
+     * @param yamas as the record's
+     * @param at as the record's
+     */
     public VrataReading(String kind, Nakshatra nakshatra, Integer yamas, FestivalWindow at) {
         this(kind, nakshatra, yamas, at, null, null);
     }

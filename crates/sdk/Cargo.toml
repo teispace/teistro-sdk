@@ -414,6 +414,10 @@ name = "mahadvadashi"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "festival_calendar"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "ashauch"
 required-features = ["builtin-ephemeris"]
 

@@ -1526,6 +1526,49 @@ mod tests {
     }
 
     #[test]
+    fn a_month_of_moonrises_in_lockstep_is_the_month_read_alone() {
+        let provider = TestProvider::new();
+        let sky = Completion::new(
+            &provider,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
+        let solver = Solver::new(
+            &sky,
+            Body::Moon,
+            place(27.7172, 85.324),
+            Horizon::UPPER_LIMB_REFRACTION,
+            DeltaTModel::TableThenModel,
+        );
+        let days: Vec<JulianDay<Ut1>> = (0..30)
+            .map(|d| JulianDay::literal(2_460_482.5 + f64::from(d)))
+            .collect();
+        for kind in [
+            HorizonEventKind::Rise,
+            HorizonEventKind::Set,
+            HorizonEventKind::Transit,
+        ] {
+            let alone: Vec<_> = days
+                .iter()
+                .map(|day| solver.event(kind, *day, 1.0))
+                .collect();
+            let lockstep = Lockstep::new();
+            let together = lockstep.run(
+                days.iter()
+                    .map(|day| solver.event_in(&lockstep, kind, *day, 1.0)),
+            );
+            assert_eq!(alone, together, "{kind:?}");
+            // The Moon's day is longer than the Earth's, so one day of
+            // the month has none of each.
+            let none = alone
+                .iter()
+                .filter(|event| event.as_ref().unwrap().is_none())
+                .count();
+            assert_eq!(none, 1, "{kind:?}");
+        }
+    }
+
+    #[test]
     fn discs_and_target_altitudes_follow_the_convention() {
         let moon = Disc::of(Body::Moon, 0.002_57);
         assert!((moon.parallax_deg - 0.951).abs() < 0.01, "{moon:?}");

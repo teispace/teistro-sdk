@@ -1558,6 +1558,36 @@ mod tests {
     }
 
     #[test]
+    fn the_settings_read_back_and_each_error_names_its_step() {
+        let completion = completion(OverridePolicy::SdkOnly)
+            .with_precession(PrecessionModel::Iau2006)
+            .with_ayanamsha_basis(Basis::True);
+        assert_eq!(completion.precession(), PrecessionModel::Iau2006);
+        assert_eq!(completion.ayanamsha_basis(), Basis::True);
+        let longitudes = format!("{:?}", completion.longitudes(Frame::CANONICAL));
+        assert!(
+            longitudes.starts_with("FrameLongitudes { provider: \"test-provider"),
+            "{longitudes}"
+        );
+        assert!(longitudes.ends_with("observer: None }"), "{longitudes}");
+
+        let sdk = CompletionError::from(Error::internal("no model answers"));
+        assert_eq!(sdk.to_string(), "internal error: no model answers");
+        assert_eq!(
+            CompletionError::Unsupported { step: "rotate" }.to_string(),
+            "completion step `rotate` is not implemented"
+        );
+        assert_eq!(
+            CompletionError::PolicyRefused {
+                step: "crossings",
+                policy: OverridePolicy::NativeOnly,
+            }
+            .to_string(),
+            "the NATIVE_ONLY override policy refuses the available implementation of `crossings`"
+        );
+    }
+
+    #[test]
     fn a_matching_frame_passes_through() {
         let completion = completion(OverridePolicy::PreferNative);
         let jds = [2_460_000.5];
