@@ -373,3 +373,9 @@ impl Vocabulary for teistro_intl::Intl {
             .is_some_and(|record| record.form(form).is_some())
     }
 }
+
+/// The README's examples, run as doctests so that the first page a
+/// reader meets cannot drift from the crate.
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

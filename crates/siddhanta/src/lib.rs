@@ -61,3 +61,9 @@ pub use modern::ModernParts;
 pub use params::{Bija, Parameters, Planet};
 pub use provider::SiddhantaProvider;
 pub use trig::Trig;
+
+/// The README's examples, run as doctests so that the first page a
+/// reader meets cannot drift from the crate.
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

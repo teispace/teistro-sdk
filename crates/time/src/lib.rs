@@ -72,3 +72,9 @@ pub use zone::{
     ZoneSpec, civil_of, civil_of_with, resolve, resolve_at_place, resolve_at_place_with,
     resolve_with,
 };
+
+/// The README's examples, run as doctests so that the first page a
+/// reader meets cannot drift from the crate.
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

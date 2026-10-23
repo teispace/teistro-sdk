@@ -80,3 +80,9 @@ pub use vtable::{
     HorizonEventFn, ObliquityFn, PositionRequestC, PositionsFn, ProviderCode, ProviderVtable,
     VTABLE_ABI_VERSION, VtableProvider,
 };
+
+/// The README's examples, run as doctests so that the first page a
+/// reader meets cannot drift from the crate.
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;
