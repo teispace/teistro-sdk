@@ -655,6 +655,14 @@ impl NumberStyle {
     }
 }
 
+/// The most fraction digits `:number` writes, as ECMA-402's
+/// `maximumFractionDigits` allows.
+const FRACTION_DIGITS: usize = 100;
+
+/// The most integer digits `:number` pads to, as ECMA-402's
+/// `minimumIntegerDigits` allows.
+const INTEGER_DIGITS: usize = 21;
+
 /// A decimal string with `min` to `max` fraction digits, trailing zeros
 /// beyond `min` removed, no exponent, `-0` normalised.
 #[must_use]
@@ -1553,7 +1561,24 @@ impl<'a> Eval<'a> {
                 keys: Keys::None,
             };
         };
-        let option = |name: &str| options.get(name).and_then(|v| v.parse::<usize>().ok());
+        // A digit count past what `Intl.NumberFormat` accepts (ECMA-402:
+        // 0 to 100 fraction digits, 1 to 21 integer digits) is ignored
+        // with a warning, rather than written as that many digits.
+        let mut option = |name: &str| {
+            let count = options.get(name)?.parse::<usize>().ok()?;
+            let limit = if name == "minimumIntegerDigits" {
+                INTEGER_DIGITS
+            } else {
+                FRACTION_DIGITS
+            };
+            if count > limit {
+                self.warn(format!(
+                    "`{name}={count}` is past the {limit} digits a number is written to; ignored"
+                ));
+                return None;
+            }
+            Some(count)
+        };
         let (min, max) = if integer {
             value = value.round();
             (0, 0)
@@ -2442,6 +2467,39 @@ mod tests {
         assert!(partial.warnings.iter().any(|w| w.contains("$bhava")));
         assert!(intl.has("sdk.reason.welcome"));
         assert!(!intl.has("sdk.reason.nothing"));
+    }
+
+    /// Found by the `mf2` fuzz target: `maximumFractionDigits=87777777777`
+    /// asked the formatter for that many digits and the allocation
+    /// aborted. A digit count past ECMA-402's range is ignored with a
+    /// warning, and one inside it is written.
+    #[test]
+    fn a_digit_count_past_the_range_is_ignored_with_a_warning() {
+        let mut intl = intl("en-Latn");
+        let say = |intl: &mut Intl, options: &str| {
+            let source = format!("{{$x :number {options}}}");
+            intl.set_override("en-Latn", "sdk.ui.digits", &source)
+                .unwrap_or_else(|e| panic!("{e}"));
+            intl.render("sdk.ui.digits", &params([("x", Value::from(1.5))]))
+        };
+        for options in [
+            "maximumFractionDigits=87777777777",
+            "minimumFractionDigits=101",
+            "minimumIntegerDigits=22",
+        ] {
+            let said = say(&mut intl, options);
+            assert_eq!(said.text, "1.5", "{options}");
+            assert!(
+                said.warnings.iter().any(|w| w.contains("ignored")),
+                "{options}: {:?}",
+                said.warnings
+            );
+        }
+        let widest = say(&mut intl, "minimumFractionDigits=100");
+        assert!(widest.warnings.is_empty(), "{:?}", widest.warnings);
+        assert_eq!(widest.text.len(), "1.".len() + 100);
+        let padded = say(&mut intl, "minimumIntegerDigits=21");
+        assert_eq!(padded.text.split('.').next().map(str::len), Some(21 + 6));
     }
 
     #[test]
