@@ -12,7 +12,7 @@ cargo run --release --features app-speed \
 cargo xtask app-speed
 ```
 
-Every gated median is inside 2× its budget.
+Every gated median is inside 2× its budget, and every thread count answers alike and keeps its floor.
 
 ## `android-arm64-android-emulator-sdk-gphone64-arm64`
 
@@ -58,49 +58,71 @@ Medians in milliseconds. The spread of every row:
 | drik-builtin | chart | 21 | 2.58 | 3.09 |
 | drik-builtin | matching | 21 | 0.023 | 0.033 |
 
+Contexts on threads: not measured in this record.
+
 ## `desktop-Darwin-arm64`
 
-Apple M2 Pro (Darwin 27.0.0, aarch64), commit `bbc36cfc`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
+Apple M2 Pro (Darwin 27.0.0, aarch64), commit `0c5a49b1`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
 
 | request | budget | target | drik, Teimeris | committee, Surya Siddhanta + Teimeris | drik, built-in | built-in ÷ Teimeris |
 |---|---:|---:|---:|---:|---:|---:|
-| open (a context opened, the engine with it) | — | 3.00 ms | 0.045 | 0.021 | 0.013 | 0.3× |
-| day (one almanac day) | 2.00 ms | 0.500 ms | 1.33 | 0.613 | 2.34 | 1.8× |
-| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 19.9 | 13.4 | 38.5 | 1.9× |
-| year (a year of almanac days) | — | — | 173 | 123 | 348 | 2.0× |
-| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 55.9 | 22.4 | 125 | 2.2× |
-| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 143 | 84.0 | 492 | 3.5× |
-| chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.04 | 1.03 | 1.54 | 1.5× |
+| open (a context opened, the engine with it) | — | 3.00 ms | 0.021 | 0.022 | 0.013 | 0.6× |
+| day (one almanac day) | 2.00 ms | 0.500 ms | 1.09 | 0.554 | 2.24 | 2.1× |
+| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 16.8 | 10.8 | 34.8 | 2.1× |
+| year (a year of almanac days) | — | — | 150 | 101 | 328 | 2.2× |
+| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 54.6 | 22.9 | 126 | 2.3× |
+| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 138 | 106 | 503 | 3.6× |
+| chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 0.521 | 0.522 | 0.987 | 1.9× |
 | matching (Ashta Koota between two cast charts) | — | — | 0.012 | 0.012 | 0.012 | 1.0× |
 
 Medians in milliseconds. The spread of every row:
 
 | setup | request | runs | fastest | slowest |
 |---|---|---:|---:|---:|
-| drik-teimeris | open | 21 | 0.040 | 0.084 |
-| drik-teimeris | day | 21 | 1.24 | 2.18 |
-| drik-teimeris | month | 21 | 19.5 | 21.0 |
-| drik-teimeris | year | 21 | 168 | 211 |
-| drik-teimeris | festivals | 21 | 54.4 | 57.6 |
-| drik-teimeris | muhurta | 21 | 137 | 152 |
-| drik-teimeris | chart | 21 | 1.03 | 1.20 |
+| drik-teimeris | open | 21 | 0.019 | 0.035 |
+| drik-teimeris | day | 21 | 1.05 | 1.27 |
+| drik-teimeris | month | 21 | 16.3 | 18.3 |
+| drik-teimeris | year | 21 | 147 | 173 |
+| drik-teimeris | festivals | 21 | 53.4 | 78.8 |
+| drik-teimeris | muhurta | 21 | 136 | 166 |
+| drik-teimeris | chart | 21 | 0.512 | 0.611 |
 | drik-teimeris | matching | 21 | 0.012 | 0.015 |
-| committee-teimeris | open | 21 | 0.020 | 0.029 |
-| committee-teimeris | day | 21 | 0.579 | 0.721 |
-| committee-teimeris | month | 21 | 13.2 | 24.4 |
-| committee-teimeris | year | 21 | 120 | 144 |
-| committee-teimeris | festivals | 21 | 22.3 | 22.9 |
-| committee-teimeris | muhurta | 21 | 82.6 | 87.9 |
-| committee-teimeris | chart | 21 | 1.01 | 1.09 |
-| committee-teimeris | matching | 21 | 0.012 | 0.016 |
-| drik-builtin | open | 21 | 0.013 | 0.016 |
-| drik-builtin | day | 21 | 2.30 | 2.38 |
-| drik-builtin | month | 21 | 38.0 | 38.9 |
-| drik-builtin | year | 12 | 345 | 368 |
-| drik-builtin | festivals | 21 | 125 | 130 |
-| drik-builtin | muhurta | 9 | 489 | 499 |
-| drik-builtin | chart | 21 | 1.50 | 1.87 |
-| drik-builtin | matching | 21 | 0.012 | 0.013 |
+| committee-teimeris | open | 21 | 0.021 | 0.027 |
+| committee-teimeris | day | 21 | 0.526 | 0.667 |
+| committee-teimeris | month | 21 | 10.4 | 11.5 |
+| committee-teimeris | year | 21 | 98.9 | 116 |
+| committee-teimeris | festivals | 21 | 22.0 | 23.6 |
+| committee-teimeris | muhurta | 21 | 104 | 131 |
+| committee-teimeris | chart | 21 | 0.506 | 0.657 |
+| committee-teimeris | matching | 21 | 0.012 | 0.021 |
+| drik-builtin | open | 21 | 0.013 | 0.017 |
+| drik-builtin | day | 21 | 2.21 | 2.62 |
+| drik-builtin | month | 21 | 34.1 | 59.1 |
+| drik-builtin | year | 13 | 325 | 353 |
+| drik-builtin | festivals | 21 | 124 | 149 |
+| drik-builtin | muhurta | 8 | 500 | 530 |
+| drik-builtin | chart | 21 | 0.946 | 1.11 |
+| drik-builtin | matching | 21 | 0.012 | 0.015 |
+
+Contexts on threads, the `month` request's grid on each, a context a thread, of the 10 threads this machine offers. **Efficiency** is the throughput over the one thread's times the count (1 is linear); up to 4 threads it is held to 0.75. **Alike** is whether every thread's month hashed as one thread's did.
+
+| setup | threads | median trial, ms | months a second | efficiency | alike |
+|---|---:|---:|---:|---:|---|
+| drik-teimeris | 1 | 33.9 (5 trials of 3 months) | 88.45 | 1.000 | yes |
+| drik-teimeris | 2 | 35.4 (5 trials of 3 months) | 169.46 | 0.958 | yes |
+| drik-teimeris | 4 | 36.4 (5 trials of 3 months) | 329.60 | 0.932 | yes |
+| drik-teimeris | 8 | 46.3 (5 trials of 3 months) | 518.67 | 0.733 | yes |
+| drik-teimeris | 10 | 56.9 (5 trials of 3 months) | 527.34 | 0.596 | yes |
+| committee-teimeris | 1 | 32.6 (5 trials of 3 months) | 91.89 | 1.000 | yes |
+| committee-teimeris | 2 | 34.4 (5 trials of 3 months) | 174.54 | 0.950 | yes |
+| committee-teimeris | 4 | 35.9 (5 trials of 3 months) | 334.07 | 0.909 | yes |
+| committee-teimeris | 8 | 46.8 (5 trials of 3 months) | 513.34 | 0.698 | yes |
+| committee-teimeris | 10 | 52.4 (5 trials of 3 months) | 572.01 | 0.622 | yes |
+| drik-builtin | 1 | 105 (5 trials of 3 months) | 28.70 | 1.000 | yes |
+| drik-builtin | 2 | 106 (5 trials of 3 months) | 56.78 | 0.989 | yes |
+| drik-builtin | 4 | 108 (5 trials of 3 months) | 111.06 | 0.967 | yes |
+| drik-builtin | 8 | 143 (5 trials of 3 months) | 167.68 | 0.730 | yes |
+| drik-builtin | 10 | 156 (5 trials of 3 months) | 192.40 | 0.670 | yes |
 
 ## `ios-sim-arm64-ios-simulator-iphone-18-pro`
 
@@ -145,3 +167,5 @@ Medians in milliseconds. The spread of every row:
 | drik-builtin | muhurta | 3 | 2720 | 2762 |
 | drik-builtin | chart | 21 | 2.60 | 3.04 |
 | drik-builtin | matching | 21 | 0.014 | 0.030 |
+
+Contexts on threads: not measured in this record.

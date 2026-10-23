@@ -22,8 +22,17 @@
 //! as a cache hit; only `open` times the build itself. The median of the
 //! runs is what the page reports, with the fastest and slowest beside it.
 //!
+//! **Contexts on threads.** Each setup's month grid is then asked on 1, 2,
+//! 4, … threads up to the machine's parallelism, each thread on a context
+//! of its own opened before the clock starts. What a thread count reports
+//! is its throughput beside the one thread's (the efficiency: 1 is
+//! linear) and whether every thread's month hashed as the one thread's
+//! did, since contexts that share nothing answer alike whatever runs
+//! beside them.
+//!
 //! stdout is the record; `cargo xtask app-speed` renders the page from it
-//! and `check-app-speed` gates each median against its budget.
+//! and `check-app-speed` gates each median against its budget and each
+//! thread count against its floor.
 //!
 //! ```text
 //! cargo run --release --features app-speed --bin teistro-ephemeris-teimeris-app-speed \
@@ -40,6 +49,7 @@
 )]
 
 use std::process::Command;
+use std::sync::Barrier;
 use std::time::{Duration, Instant};
 
 use serde::Serialize;
@@ -47,8 +57,8 @@ use teistro::catalogue::{Calendar, DashaSystem};
 use teistro::muhurta::ActivityRules;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    CalendarDate, ChartRequest, Context, Ephemeris, FestivalPack, FestivalRequest, KootaRules,
-    MuhurtaRequest, UtcOffset,
+    CalendarDate, ChartRequest, Context, Ephemeris, FestivalPack, FestivalRequest, Hash,
+    KootaRules, MuhurtaRequest, UtcOffset, content_hash,
 };
 use teistro_ephemeris_teimeris::{DATA_DIR_ENV, TeimerisProvider, data_dir_from_env};
 
@@ -243,6 +253,29 @@ struct Record {
     data: &'static str,
     memo: &'static str,
     timings: Vec<Timing>,
+    /// The threads the machine offers, as the standard library reads them.
+    parallelism: usize,
+    scaling: Vec<Scaling>,
+}
+
+/// One setup's month grid on a number of threads.
+#[derive(Serialize)]
+struct Scaling {
+    setup: &'static str,
+    threads: usize,
+    /// Months each thread asks in a trial.
+    months: u32,
+    trials: usize,
+    /// The median trial's wall time, from the threads' start to the last
+    /// one's end.
+    median_ms: f64,
+    /// Months answered a second over the median trial, all threads
+    /// together.
+    per_second: f64,
+    /// `per_second` over the one thread's times this many threads.
+    efficiency: f64,
+    /// Whether every thread's month hashed as the one thread's.
+    identical: bool,
 }
 
 fn ms(duration: Duration) -> f64 {
@@ -267,6 +300,92 @@ fn measure(setup: Setup, request: &'static str) -> Timing {
         min_ms: ms(times[0]),
         max_ms: ms(times[times.len() - 1]),
     }
+}
+
+/// Months each thread asks in a trial, and the trials a thread count gets.
+const MONTHS: u32 = 3;
+const TRIALS: usize = 5;
+
+/// The month grid every thread asks: the `month` request's.
+fn month(sdk: &Context) -> Hash {
+    let grid = sdk
+        .almanac()
+        .of(&date(2026, 9, 27), &date(2026, 11, 7), &place(), offset())
+        .expect("a month grid");
+    content_hash(&grid.value)
+}
+
+/// 1, 2, 4, … up to `most`, and `most` itself.
+fn counts(most: usize) -> Vec<usize> {
+    let mut counts: Vec<usize> = std::iter::successors(Some(1usize), |n| n.checked_mul(2))
+        .take_while(|n| *n <= most)
+        .collect();
+    if counts.last() != Some(&most) {
+        counts.push(most);
+    }
+    counts
+}
+
+/// One trial on `threads` threads: its wall time and every month's hash.
+/// Each thread opens its context and asks once before the clock starts,
+/// so what is timed is asking, on contexts already warm.
+fn trial(setup: Setup, threads: usize) -> (Duration, Vec<Hash>) {
+    let ready = Barrier::new(threads + 1);
+    let done = Barrier::new(threads + 1);
+    std::thread::scope(|scope| {
+        let workers: Vec<_> = (0..threads)
+            .map(|_| {
+                scope.spawn(|| {
+                    let sdk = open(setup);
+                    month(&sdk);
+                    ready.wait();
+                    let hashes: Vec<Hash> = (0..MONTHS).map(|_| month(&sdk)).collect();
+                    done.wait();
+                    hashes
+                })
+            })
+            .collect();
+        ready.wait();
+        let started = Instant::now();
+        done.wait();
+        let spent = started.elapsed();
+        let hashes = workers
+            .into_iter()
+            .flat_map(|worker| worker.join().expect("a thread answers"))
+            .collect();
+        (spent, hashes)
+    })
+}
+
+fn scaling(setup: Setup, parallelism: usize) -> Vec<Scaling> {
+    let mut rows: Vec<Scaling> = Vec::new();
+    let mut expected: Option<Hash> = None;
+    for threads in counts(parallelism) {
+        let mut spent = Vec::with_capacity(TRIALS);
+        let mut identical = true;
+        for _ in 0..TRIALS {
+            let (wall, hashes) = trial(setup, threads);
+            let first = *expected.get_or_insert(hashes[0]);
+            identical &= hashes.iter().all(|hash| *hash == first);
+            spent.push(wall);
+        }
+        spent.sort();
+        let median = spent[TRIALS / 2];
+        let many = f64::from(u32::try_from(threads).expect("a count of threads"));
+        let per_second = many * f64::from(MONTHS) / median.as_secs_f64();
+        let single = rows.first().map_or(per_second, |one| one.per_second);
+        rows.push(Scaling {
+            setup: setup.key,
+            threads,
+            months: MONTHS,
+            trials: TRIALS,
+            median_ms: ms(median),
+            per_second: (per_second * 100.0).round() / 100.0,
+            efficiency: (per_second / (single * many) * 1000.0).round() / 1000.0,
+            identical,
+        });
+    }
+    rows
 }
 
 fn output(program: &str, args: &[&str]) -> Option<String> {
@@ -351,6 +470,24 @@ fn main() {
             timings.push(timing);
         }
     }
+    let parallelism = std::thread::available_parallelism().map_or(1, usize::from);
+    let mut scaled = Vec::new();
+    for setup in SETUPS {
+        if !wanted(setup, "threads") {
+            continue;
+        }
+        for row in scaling(setup, parallelism) {
+            eprintln!(
+                "{:<20} {:>2} threads {:>8.2} months/s  efficiency {:.3}{}",
+                row.setup,
+                row.threads,
+                row.per_second,
+                row.efficiency,
+                if row.identical { "" } else { "  DIFFERS" }
+            );
+            scaled.push(row);
+        }
+    }
     let record = Record {
         machine: machine(),
         os: os(),
@@ -363,6 +500,8 @@ fn main() {
         data: data(),
         memo: "cold: a fresh context every run",
         timings,
+        parallelism,
+        scaling: scaled,
     };
     println!(
         "{}",

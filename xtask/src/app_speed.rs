@@ -8,6 +8,13 @@
 //! setups over the Teimeris engine. Wall time is noisy, so a median fails
 //! only past **twice** its budget. The built-in ephemeris is printed beside
 //! them with its ratio to Teimeris and is not held to the native budget.
+//!
+//! A record also carries each setup's month grid on 1, 2, 4, … threads,
+//! a context each. Every thread count must answer what one thread did,
+//! and up to [`FLOOR_THREADS`] threads each setup must keep [`FLOOR`] of
+//! linear throughput: past that a machine's threads are efficiency cores
+//! or a core's second thread, which a context cannot be held to. At least
+//! one record must carry the measure, so the claim stands on a machine.
 
 use std::fmt::Write as _;
 use std::path::Path;
@@ -21,6 +28,12 @@ const RECORDED: &str = "docs/05-testing/app-speed";
 
 /// How far past its budget a median may run before the gate fails it.
 const CEILING: f64 = 2.0;
+
+/// The least share of linear throughput a thread count up to
+/// [`FLOOR_THREADS`] keeps: a context that waited on another's lock would
+/// fall to a half at two threads and a quarter at four.
+const FLOOR: f64 = 0.75;
+const FLOOR_THREADS: usize = 4;
 
 /// The setups the gate holds, and the order the page prints them in.
 const GATED: [&str; 2] = ["drik-teimeris", "committee-teimeris"];
@@ -116,6 +129,25 @@ struct Record {
     data: String,
     memo: String,
     timings: Vec<Timing>,
+    /// The threads the machine offered; 0 in a record taken before the
+    /// threads were measured.
+    #[serde(default)]
+    parallelism: usize,
+    #[serde(default)]
+    scaling: Vec<Scaling>,
+}
+
+/// A setup's month grid on a number of threads, a context each.
+#[derive(Deserialize)]
+struct Scaling {
+    setup: String,
+    threads: usize,
+    months: u32,
+    trials: usize,
+    median_ms: f64,
+    per_second: f64,
+    efficiency: f64,
+    identical: bool,
 }
 
 fn files() -> String {
@@ -179,8 +211,71 @@ fn breaches(records: &[(String, Record)]) -> Vec<String> {
                 }
             }
         }
+        for row in &record.scaling {
+            if !row.identical {
+                found.push(format!(
+                    "{name}: `{}` on {} threads answered other than on one: a context shares state",
+                    row.setup, row.threads
+                ));
+            }
+            if row.threads <= FLOOR_THREADS && row.efficiency < FLOOR {
+                found.push(format!(
+                    "{name}: `{}` on {} threads kept {:.3} of linear throughput, under its floor of {FLOOR}",
+                    row.setup, row.threads, row.efficiency
+                ));
+            }
+        }
+    }
+    if records.iter().all(|(_, record)| record.scaling.is_empty()) {
+        found.push(String::from(
+            "no record measures contexts on threads; re-record one with the app-speed binary",
+        ));
     }
     found
+}
+
+/// The table of a record's thread counts, or a line saying it has none.
+fn threads(record: &Record) -> String {
+    let mut out = String::new();
+    if record.scaling.is_empty() {
+        let _ = writeln!(
+            out,
+            "Contexts on threads: not measured in this record.
+"
+        );
+        return out;
+    }
+    let _ = writeln!(
+        out,
+        "Contexts on threads, the `month` request's grid on each, a context a thread, of the \
+         {} threads this machine offers. **Efficiency** is the throughput over the one \
+         thread's times the count (1 is linear); up to {FLOOR_THREADS} threads it is held to \
+         {FLOOR}. **Alike** is whether every thread's month hashed as one thread's did.\n",
+        record.parallelism
+    );
+    let _ = writeln!(
+        out,
+        "| setup | threads | median trial, ms | months a second | efficiency | alike |"
+    );
+    let _ = writeln!(out, "|---|---:|---:|---:|---:|---|");
+    for row in &record.scaling {
+        let under = row.threads <= FLOOR_THREADS && row.efficiency < FLOOR;
+        let _ = writeln!(
+            out,
+            "| {} | {} | {} ({} trials of {} months) | {:.2} | {:.3}{} | {} |",
+            row.setup,
+            row.threads,
+            ms(row.median_ms),
+            row.trials,
+            row.months,
+            row.per_second,
+            row.efficiency,
+            if under { " **under**" } else { "" },
+            if row.identical { "yes" } else { "**no**" }
+        );
+    }
+    out.push('\n');
+    out
 }
 
 fn ms(value: f64) -> String {
@@ -299,7 +394,11 @@ fn page(records: &[(String, Record)]) -> String {
     );
     let over = breaches(records);
     if over.is_empty() {
-        let _ = writeln!(out, "Every gated median is inside {CEILING}× its budget.\n");
+        let _ = writeln!(
+            out,
+            "Every gated median is inside {CEILING}× its budget, and every thread count \
+             answers alike and keeps its floor.\n"
+        );
     } else {
         let _ = writeln!(out, "**Past the ceiling:**\n");
         for line in &over {
@@ -310,6 +409,7 @@ fn page(records: &[(String, Record)]) -> String {
     for (name, record) in records {
         out.push_str(&section(name, record));
         out.push('\n');
+        out.push_str(&threads(record));
     }
     out.truncate(out.trim_end().len());
     out.push('\n');
@@ -362,6 +462,8 @@ mod tests {
             teimeris: String::from("t"),
             data: files(),
             memo: String::from("cold"),
+            parallelism: 0,
+            scaling: Vec::new(),
             timings: vec![Timing {
                 setup: setup.into(),
                 request: request.into(),
@@ -400,6 +502,45 @@ mod tests {
             lines
                 .iter()
                 .any(|l| l.contains("no `day` timing under `drik-teimeris`"))
+        );
+    }
+
+    fn scaled(threads: usize, efficiency: f64, identical: bool) -> Record {
+        let mut record = record("drik-teimeris", "day", 1.0);
+        record.parallelism = 8;
+        record.scaling = vec![Scaling {
+            setup: String::from("drik-teimeris"),
+            threads,
+            months: 3,
+            trials: 5,
+            median_ms: 60.0,
+            per_second: 50.0,
+            efficiency,
+            identical,
+        }];
+        record
+    }
+
+    #[test]
+    fn a_thread_count_under_its_floor_or_answering_otherwise_fails() {
+        let threads = |r: Record| {
+            breaches(&[(String::from("x"), r)])
+                .into_iter()
+                .filter(|line| line.contains("threads"))
+                .count()
+        };
+        assert_eq!(threads(scaled(4, 0.80, true)), 0);
+        assert_eq!(threads(scaled(4, 0.70, true)), 1);
+        assert_eq!(
+            threads(scaled(8, 0.50, true)),
+            0,
+            "past four threads the efficiency is reported, not held"
+        );
+        assert_eq!(threads(scaled(8, 0.90, false)), 1);
+        assert_eq!(
+            threads(record("drik-teimeris", "day", 1.0)),
+            1,
+            "a claim no record measures fails"
         );
     }
 }
