@@ -220,10 +220,19 @@ fn string_call(
     unsafe { ts_string_free(&raw mut out) };
 }
 
-/// Whether `text` is a record the shipped server refuses for its size.
-fn beyond_bounds(text: &[u8]) -> bool {
-    serde_json::from_slice::<serde_json::Value>(text)
-        .is_ok_and(|record| Limits::default().check(&record).is_err())
+/// Whether `text` is a record the shipped server refuses for its size,
+/// read where the server reads it: a chart section under its own name in
+/// the chart's record (`hits_json` is the record's `hits`), where the
+/// server's bounds look for a transit window, and any other slot's text as
+/// the whole record.
+fn beyond_bounds(section: Option<&str>, text: &[u8]) -> bool {
+    serde_json::from_slice::<serde_json::Value>(text).is_ok_and(|value| {
+        let record = match section.and_then(|slot| slot.strip_suffix("_json")) {
+            Some(name) => serde_json::json!({ name: value }),
+            None => value,
+        };
+        Limits::default().check(&record).is_err()
+    })
 }
 
 /// The `json` target: a selector byte names a slot and the rest is its
@@ -238,11 +247,11 @@ pub fn json(data: &[u8]) {
     let Some((selector, rest)) = data.split_first() else {
         return;
     };
-    if beyond_bounds(rest) {
+    let at = usize::from(*selector) % (CHART_SLOTS.len() + OTHER_SLOTS.len());
+    if beyond_bounds(CHART_SLOTS.get(at).copied(), rest) {
         return;
     }
     let text = c_text(rest);
-    let at = usize::from(*selector) % (CHART_SLOTS.len() + OTHER_SLOTS.len());
     if let Some(name) = CHART_SLOTS.get(at) {
         let instant = 2_460_000.5;
         let mut request = chart_request(&instant);
@@ -455,8 +464,31 @@ mod tests {
                 r#"{{"periods": [{{"first": {{"year": {first}, "month": 10, "day": 4}}, "last": {{"year": {last}, "month": 10, "day": 3}}, "latitudeDeg": 27.7152, "longitudeDeg": 85.324}}], "baseline": "WEEKLY"}}"#
             )
         };
-        assert!(beyond_bounds(period(1837, 2037).as_bytes()));
-        assert!(!beyond_bounds(period(2026, 2027).as_bytes()));
-        assert!(!beyond_bounds(b"{\"periods\": ["));
+        assert!(beyond_bounds(None, period(1837, 2037).as_bytes()));
+        assert!(!beyond_bounds(None, period(2026, 2027).as_bytes()));
+        assert!(!beyond_bounds(None, b"{\"periods\": ["));
+    }
+
+    /// The nightly minute's first timeout (2026-10-23): a transit window
+    /// of 9,750 years in `hits_json`, which the server refuses as the
+    /// chart record's `hits` and the harness read as a bare record. A
+    /// year's window is not skipped, and the skip is the server's own:
+    /// the same window under another section's name is not a window.
+    #[test]
+    fn a_transit_window_past_the_servers_bounds_is_skipped() {
+        let window =
+            |to: f64| format!(r#"{{"from": 2460676.5, "to": {to}, "grahas": ["SATURN"]}}"#);
+        assert!(beyond_bounds(
+            Some("hits_json"),
+            window(6_021_641.5).as_bytes()
+        ));
+        assert!(!beyond_bounds(
+            Some("hits_json"),
+            window(2_461_041.5).as_bytes()
+        ));
+        assert!(!beyond_bounds(
+            Some("gochar_json"),
+            window(6_021_641.5).as_bytes()
+        ));
     }
 }
