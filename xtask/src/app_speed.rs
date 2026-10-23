@@ -26,6 +26,9 @@ use crate::generated::{Output, check, write};
 const PAGE: &str = "docs/05-testing/app-speed-measured.md";
 const RECORDED: &str = "docs/05-testing/app-speed";
 
+/// The fewest runs a median is taken from, as the recorder takes them.
+const MIN_RUNS: usize = 3;
+
 /// How far past its budget a median may run before the gate fails it.
 const CEILING: f64 = 2.0;
 
@@ -193,6 +196,26 @@ fn recorded(root: &Path) -> Result<Vec<(String, Record)>, String> {
 fn breaches(records: &[(String, Record)]) -> Vec<String> {
     let mut found = Vec::new();
     for (name, record) in records {
+        // A median is a claim only with the runs it was taken from and a
+        // spread that holds it.
+        for t in &record.timings {
+            if t.runs < MIN_RUNS || !(t.min_ms <= t.median_ms && t.median_ms <= t.max_ms) {
+                found.push(format!(
+                    "{name}: `{}` under `{}` is {} runs from {} to {} ms around {} ms: \
+                     a median needs {MIN_RUNS} runs and a spread that holds it",
+                    t.request, t.setup, t.runs, t.min_ms, t.max_ms, t.median_ms
+                ));
+            }
+        }
+        for row in &record.scaling {
+            if row.trials < MIN_RUNS || row.months == 0 {
+                found.push(format!(
+                    "{name}: `{}` on {} threads is {} trials of {} months: \
+                     a throughput needs {MIN_RUNS} trials of at least one month",
+                    row.setup, row.threads, row.trials, row.months
+                ));
+            }
+        }
         for request in &REQUESTS {
             let Some(budget) = request.budget else {
                 continue;
@@ -335,6 +358,11 @@ fn section(name: &str, record: &Record) -> String {
             record.timing("drik-builtin", request.key),
             record.timing("drik-teimeris", request.key),
         ) {
+            // Two spreads that overlap say only that neither is
+            // measurably faster, whatever their medians' ratio.
+            (Some(b), Some(t)) if b.min_ms <= t.max_ms && t.min_ms <= b.max_ms => {
+                String::from("within spread")
+            }
             (Some(b), Some(t)) if t.median_ms > 0.0 => format!("{:.1}×", b.median_ms / t.median_ms),
             _ => String::from("—"),
         };
@@ -386,7 +414,9 @@ fn page(records: &[(String, Record)]) -> String {
          a busy runner rather than on a regression. The **target** is the faster figure a \
          consumer's app needs on a low-end phone, scaled to a laptop core, and is reported, not \
          gated. The built-in ephemeris needs no engine and is held to accuracy, not to the native \
-         budget; its ratio to Teimeris is the column on the right.\n"
+         budget; its ratio to Teimeris is the column on the right, which says `within spread` where \
+         the two setups' fastest-to-slowest ranges overlap, since no ratio is measured there. A \
+         median taken from fewer than {MIN_RUNS} runs, or outside its own range, fails the gate.\n"
     );
     let _ = writeln!(
         out,
@@ -542,5 +572,22 @@ mod tests {
             1,
             "a claim no record measures fails"
         );
+    }
+
+    #[test]
+    fn a_median_without_its_runs_or_outside_its_spread_fails() {
+        let mut few = record("drik-builtin", "open", 1.0);
+        few.timings[0].runs = 2;
+        let mut outside = record("drik-builtin", "open", 1.0);
+        outside.timings[0].max_ms = 0.5;
+        let named = |r: Record| {
+            breaches(&[(String::from("x"), r)])
+                .into_iter()
+                .filter(|line| line.contains("a median needs"))
+                .count()
+        };
+        assert_eq!(named(record("drik-builtin", "open", 1.0)), 0);
+        assert_eq!(named(few), 1);
+        assert_eq!(named(outside), 1);
     }
 }

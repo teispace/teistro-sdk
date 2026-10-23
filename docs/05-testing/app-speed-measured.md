@@ -2,7 +2,7 @@
 
 Status: `generated` by `cargo xtask app-speed` from `docs/05-testing/app-speed/*.json`, gated by `check-app-speed`. Do not edit. Each record is written by `teistro-ephemeris-teimeris-app-speed` (`adapters/ephemeris-teimeris/rust`), which times the calls an almanac or chart screen makes through the Rust façade, each on a fresh context so that the call memo starts empty.
 
-The **budget** is the performance page's (`02-architecture/09-performance-architecture.md`), written for a native provider: the gate fails a median past 2× its budget under either setup over Teimeris, because wall time is noisy and a tight ceiling would fail on a busy runner rather than on a regression. The **target** is the faster figure a consumer's app needs on a low-end phone, scaled to a laptop core, and is reported, not gated. The built-in ephemeris needs no engine and is held to accuracy, not to the native budget; its ratio to Teimeris is the column on the right.
+The **budget** is the performance page's (`02-architecture/09-performance-architecture.md`), written for a native provider: the gate fails a median past 2× its budget under either setup over Teimeris, because wall time is noisy and a tight ceiling would fail on a busy runner rather than on a regression. The **target** is the faster figure a consumer's app needs on a low-end phone, scaled to a laptop core, and is reported, not gated. The built-in ephemeris needs no engine and is held to accuracy, not to the native budget; its ratio to Teimeris is the column on the right, which says `within spread` where the two setups' fastest-to-slowest ranges overlap, since no ratio is measured there. A median taken from fewer than 3 runs, or outside its own range, fails the gate.
 
 ```text
 cd adapters/ephemeris-teimeris/rust
@@ -20,14 +20,14 @@ Android emulator, `sdk_gphone64_arm64` (Android 15, API 35, aarch64), commit `34
 
 | request | budget | target | drik, Teimeris | committee, Surya Siddhanta + Teimeris | drik, built-in | built-in ÷ Teimeris |
 |---|---:|---:|---:|---:|---:|---:|
-| open (a context opened, the engine with it) | — | 3.00 ms | 0.018 | 0.021 | 0.014 | 0.8× |
+| open (a context opened, the engine with it) | — | 3.00 ms | 0.018 | 0.021 | 0.014 | within spread |
 | day (one almanac day) | 2.00 ms | 0.500 ms | 1.54 | 0.703 | 31.0 | 20.2× |
 | month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 34.3 | 18.7 | 626 | 18.3× |
 | year (a year of almanac days) | — | — | 295 | 170 | 5323 | 18.0× |
 | festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 251 | 124 | 5320 | 21.2× |
 | muhurta (a 90-day marriage muhurta search) | 200 ms | — | 182 | 90.3 | 2768 | 15.2× |
 | chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.37 | 1.38 | 2.66 | 1.9× |
-| matching (Ashta Koota between two cast charts) | — | — | 0.023 | 0.024 | 0.023 | 1.0× |
+| matching (Ashta Koota between two cast charts) | — | — | 0.023 | 0.024 | 0.023 | within spread |
 
 Medians in milliseconds. The spread of every row:
 
@@ -73,7 +73,7 @@ Apple M2 Pro (Darwin 27.0.0, aarch64), commit `0c5a49b1`, Teimeris 0.1.0, its da
 | festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 54.6 | 22.9 | 126 | 2.3× |
 | muhurta (a 90-day marriage muhurta search) | 200 ms | — | 138 | 106 | 503 | 3.6× |
 | chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 0.521 | 0.522 | 0.987 | 1.9× |
-| matching (Ashta Koota between two cast charts) | — | — | 0.012 | 0.012 | 0.012 | 1.0× |
+| matching (Ashta Koota between two cast charts) | — | — | 0.012 | 0.012 | 0.012 | within spread |
 
 Medians in milliseconds. The spread of every row:
 
@@ -137,7 +137,7 @@ iOS simulator, iPhone 18 Pro (iOS 27.0, aarch64), commit `34f88dcb`, Teimeris 0.
 | festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 255 | 129 | 5260 | 20.7× |
 | muhurta (a 90-day marriage muhurta search) | 200 ms | — | 179 | 92.5 | 2733 | 15.3× |
 | chart (a birth chart with its Vimshottari to depth 3) | 10.0 ms | — | 1.40 | 1.38 | 2.75 | 2.0× |
-| matching (Ashta Koota between two cast charts) | — | — | 0.016 | 0.016 | 0.017 | 1.1× |
+| matching (Ashta Koota between two cast charts) | — | — | 0.016 | 0.016 | 0.017 | within spread |
 
 Medians in milliseconds. The spread of every row:
 
