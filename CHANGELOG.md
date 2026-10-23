@@ -12,6 +12,20 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Panauti's full moon and Kashi's Ganesh** (`festival-classification.md`, C693).
+**Numbers:** none computed move; three festivals that had no rule now
+answer. `NEPAL_PANCHANGA` gains `PANAUTI_SNAN_MELA` and `PANAUTI_JATRA`
+on Jyeshtha's full moon at sunrise, the day both editions of the
+committee's panchanga print them (VS 2082 p. 5, 11 June 2025; VS 2083
+p. 7, 29 June 2026, the jatra in the text after Ⓑ). Neither takes the
+full-moon fast's day, printed the day before in 2025. Kashi bada Ganesh
+utsav (`KASHI_BADA_GANESH_UTSAV`) follows *Dharmasindhu* p. 9's
+Sankashta chaturthi: the purnimanta Magha's dark 4th at moonrise, the
+earlier day when both hold it. Both editions print it on the day whose
+sunrise holds the 3rd (VS 2082 p. 20, 6 January 2026; VS 2083 p. 22, 25
+January 2027), where the sunrise rule would give the next. Shipped rules
+number 265 of 502 and 26 still need a form.
+
 **The Naisargika dasha** (`dasha-kernels.md`, C743, C744). **Numbers:**
 none computed move; a system that refused now answers. Every settings
 hash moved with the new knob and `NAISARGIKA`'s `year_length` default of

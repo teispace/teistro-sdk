@@ -593,8 +593,11 @@ class FestivalKey(enum.StrEnum):
     WALKE_PARVA = "festival.WALKE_PARVA"
     KALKI_JAYANTI = "festival.KALKI_JAYANTI"
     VARAHA_JAYANTI = "festival.VARAHA_JAYANTI"
+    PANAUTI_JATRA = "festival.PANAUTI_JATRA"
+    PANAUTI_SNAN_MELA = "festival.PANAUTI_SNAN_MELA"
     BAHIDYO_BOYEGU = "festival.BAHIDYO_BOYEGU"
     LALITPUR_NARSINGH_JATRA = "festival.LALITPUR_NARSINGH_JATRA"
+    KASHI_BADA_GANESH_UTSAV = "festival.KASHI_BADA_GANESH_UTSAV"
     NARASIMHA_JAYANTI = "festival.NARASIMHA_JAYANTI"
     PADMINI_EKADASHI = "festival.PADMINI_EKADASHI"
     PARAMA_EKADASHI = "festival.PARAMA_EKADASHI"
@@ -4749,6 +4752,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.KARTIK_SNAN_ENDS")
 
     @property
+    def kashi_bada_ganesh_utsav(self) -> EntityForms:
+        """The forms of `festival.KASHI_BADA_GANESH_UTSAV` in the current locale."""
+        return self._r.entity("festival.KASHI_BADA_GANESH_UTSAV")
+
+    @property
     def katin_punhi(self) -> EntityForms:
         """The forms of `festival.KATIN_PUNHI` in the current locale."""
         return self._r.entity("festival.KATIN_PUNHI")
@@ -5052,6 +5060,16 @@ class MessagesSdkEntityFestival:
     def pahan_charhe(self) -> EntityForms:
         """The forms of `festival.PAHAN_CHARHE` in the current locale."""
         return self._r.entity("festival.PAHAN_CHARHE")
+
+    @property
+    def panauti_jatra(self) -> EntityForms:
+        """The forms of `festival.PANAUTI_JATRA` in the current locale."""
+        return self._r.entity("festival.PANAUTI_JATRA")
+
+    @property
+    def panauti_snan_mela(self) -> EntityForms:
+        """The forms of `festival.PANAUTI_SNAN_MELA` in the current locale."""
+        return self._r.entity("festival.PANAUTI_SNAN_MELA")
 
     @property
     def panchami_shraddha(self) -> EntityForms:

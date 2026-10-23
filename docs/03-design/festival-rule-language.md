@@ -530,7 +530,7 @@ is missing is evidence. "None" means no form would decide the row.
 | 25 | `VISHNU_BAIKUNTHA_CHATURDASHI` | 9 of 14 | sayahna or pradosha, 12 of 14 | none | *Dharmasindhu* p. 82 keeps the vrata on the 14th at arunodaya; evidence |
 | 26 | `ARJUNDHARA_MELA` | 12 of 14 in the morning | day muhurtas 1–6, 12 of 14 | none new | **shipped** on Halesi mela's day: both editions print it in the continuation of that row; the source's day after is not printed in VS 2083 (C693) |
 | 27 | `GURU_GOBIND_SINGH_JAYANTI` | Poush 21 or 20, or 5 January; 12 of 14 at best | a civil date | §3.6 a civil date | the community's own calendar sets it (C619) |
-| 28 | `KASHI_BADA_GANESH_UTSAV` | 8 of 14 | moonrise, sayahna or pradosha, 12 of 14 | §3.1 moonrise | Magha's dark 4th is a Sankashta chaturthi, kept at moonrise (*Dharmasindhu* p. 9); the rule is the text's |
+| 28 | `KASHI_BADA_GANESH_UTSAV` | 8 of 14 | moonrise, sayahna or pradosha, 12 of 14 | none new | **shipped** by the text: Magha's dark 4th (purnimanta; the amanta Pausha's) is a Sankashta chaturthi, kept at moonrise and on the earlier day when both hold it (*Dharmasindhu* p. 9); both editions print it on the day whose sunrise holds the 3rd and whose moonrise the 4th (2026-01-06, 2027-01-25) |
 | 29 | `SI_PUNHI` | the source's rule names Magha's full moon; 12 verified days are Magha's bright 5th | Magha's bright 5th at sunrise, 12 of 14 | none new | **shipped** on Magha's full moon, the source's rule: both editions print it on the full-moon fast's day, so it takes that rule (C200); the source's bright 5th days are not printed (C693) |
 | 30 | `PASHUPATINATH_CHHAYA_DARSHAN` | 11 of 14 | sunrise, 11 of 14 | none | evidence |
 | 31 | `FAGU_PURNIMA` | 11 of 14 | day muhurtas 2–6, 13 of 14 | §3.2 day muhurtas | a candidate only |
@@ -542,8 +542,8 @@ is missing is evidence. "None" means no form would decide the row.
 | 37 | `BHOTO_JATRA` | set each year to close the chariot festival | none | none | community: set each year |
 | 38 | `MUKTAK_DIWAS` | one verified day | none | none | evidence |
 | 39 | `SAFER_INTERNET_DAY` | the organisers' second day of the second week of February; one verified day | none | §3.6 a civil weekday | a Gregorian weekday rule |
-| 40 | `PANAUTI_SNAN_MELA` | 2 of 2 by Jyeshtha's full moon or the next day's afternoon | Jyeshtha's full moon at sunrise | none new | both editions print it on Jyeshtha's full moon (2025-06-11, 2026-06-29); the print settles it |
-| 41 | `PANAUTI_JATRA` | as the mela | Jyeshtha's full moon at sunrise | none new | as the mela |
+| 40 | `PANAUTI_SNAN_MELA` | 2 of 2 by Jyeshtha's full moon or the next day's afternoon | Jyeshtha's full moon at sunrise | none new | **shipped** at sunrise: both editions print it on Jyeshtha's full moon (2025-06-11, 2026-06-29), not on the day before, the full-moon fast's |
+| 41 | `PANAUTI_JATRA` | as the mela | Jyeshtha's full moon at sunrise | none new | **shipped**, as the mela; VS 2083 prints it after Ⓑ, the full moon's row |
 | 42 | `BARAHAKSHETRA_MELA` | one verified day | none | none | evidence |
 | 43 | `JANA_YUDDHA_DIWAS` | the source ended every rule | none | none | no longer kept |
 | 44 | `BAHIDYO_BOYEGU` | 2 of 3 | sunrise, 2 of 3 | none new | **shipped** at sunrise: both printed days (C693) |
