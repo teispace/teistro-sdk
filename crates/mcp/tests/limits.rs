@@ -174,16 +174,28 @@ fn a_window_of_saturns_spells_is_bounded_in_years() {
     assert_eq!(refusal["field"], "sadeSati.to");
     assert!(refusal["message"].as_str().unwrap().contains("at most 150"));
     assert!(refusal["hint"].as_str().unwrap().contains("--max-years"));
-    let (answer, _) = call(&mut server, "chart.found", &spells(2_460_676.5 + 120.0 * 365.25));
+    let (answer, _) = call(
+        &mut server,
+        "chart.found",
+        &spells(2_460_676.5 + 120.0 * 365.25),
+    );
     assert_ne!(answer["status"], "LIMIT", "{answer}");
     let limits = Limits {
         years: Some(3),
         ..Limits::default()
     };
     let mut server = Server::new(Engine::None).with_limits(limits);
-    let (answer, _) = call(&mut server, "chart.found", &spells(2_460_676.5 + 3.0 * 365.25));
+    let (answer, _) = call(
+        &mut server,
+        "chart.found",
+        &spells(2_460_676.5 + 3.0 * 365.25),
+    );
     assert_ne!(answer["status"], "LIMIT", "{answer}");
-    let (refusal, _) = call(&mut server, "chart.found", &spells(2_460_677.5 + 3.0 * 365.25));
+    let (refusal, _) = call(
+        &mut server,
+        "chart.found",
+        &spells(2_460_677.5 + 3.0 * 365.25),
+    );
     assert_eq!(refusal["status"], "LIMIT", "{refusal}");
 }
 
