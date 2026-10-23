@@ -11,10 +11,10 @@ exclude_re = [
   # The step either side of a lattice boundary is a hundredth or a hundred
   # times the tolerance: both put the two readings on either side of it,
   # and the parts are degrees wide.
-  'crates/vargas/src/change\.rs:111:35: replace \* with / in by_lattice',
+  'crates/vargas/src/change\.rs:200:35: replace \* with / in by_lattice',
   # `left <= to` loops once more at `left == to`, where `right` is `to`
   # again and the `right >= to` break ends it with nothing found.
-  'crates/vargas/src/change\.rs:142:16: replace < with <= in by_bisection',
+  'crates/vargas/src/change\.rs:231:16: replace < with <= in by_bisection',
   # When the occupied sign's number equals the empty one's, what is left
   # the empty one is their difference, nothing, either way.
   'crates/strength/src/ashtakavarga\.rs:362:65: replace < with <= in ekadhipatya',

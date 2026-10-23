@@ -1,0 +1,70 @@
+# A pull request's own mutants (`docs/05-testing/01-quality-bar.md`,
+# "mutation testing"): the mutants of only the lines it changed in the
+# kernel crates, each a build and a test run, so a change that adds code
+# its tests do not hold fails here rather than at the weekly `mutants`
+# run. `check-mutants --diff` fails on a mutant the listing made that the
+# run did not report, and on a survivor `docs/05-testing/mutants.json`
+# does not name. There is no `paths:` filter: the kernel crates are named
+# once, in `xtask/src/mutants.rs`, and a change that touches none of them
+# lists no mutant and passes in a few minutes.
+name: mutants (changed)
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutants-changed-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changed:
+    name: the change's own mutants
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: mutants-changed
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-mutants@27.1.0
+      # cargo-mutants exits 2 when a mutant survived and 3 when one timed
+      # out, which `check-mutants` judges; anything else is the run's own
+      # failure. The listing is what the run is held to, so a run that
+      # stopped part way fails on the mutants it never reached.
+      - name: The mutants of the lines the change touched
+        run: |
+          mkdir -p runs/changed
+          git diff "origin/${{ github.base_ref }}...HEAD" > runs/changed/change.diff
+          packages=$(cargo xtask mutants --packages)
+          # shellcheck disable=SC2086
+          cargo mutants --in-diff runs/changed/change.diff $packages --list --json \
+            > runs/changed/listed.json
+          if [ -z "$(tr -d '[:space:][]' < runs/changed/listed.json)" ]; then
+            echo "the change makes no mutant in a kernel crate"
+            exit 0
+          fi
+          code=0
+          # shellcheck disable=SC2086
+          cargo mutants --in-diff runs/changed/change.diff $packages \
+            --output runs/changed --jobs 2 --no-shuffle || code=$?
+          case "$code" in
+            0|2|3) ;;
+            *) echo "cargo mutants failed with $code"; exit "$code" ;;
+          esac
+      - name: Held to the record
+        run: cargo xtask check-mutants --diff runs/changed
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutants-changed
+          path: runs/changed
+          if-no-files-found: ignore

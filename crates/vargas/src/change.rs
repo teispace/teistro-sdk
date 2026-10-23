@@ -313,10 +313,48 @@ mod tests {
 
     use super::{TOLERANCE_DAYS, either_side, equal_spans, lines, sampling_step};
     use crate::evaluate::place;
-    use crate::scheme::Scheme;
+    use crate::scheme::{Classifier, Group, Scheme, Spans};
     use teistro_core::angle::Nas;
     use teistro_core::catalogue::Varga;
     use teistro_port_ephemeris::Body;
+
+    /// A chart of the consumer's own reaches every arm of [`lines`]. The
+    /// shipped charts are all even, or whole degrees whose common divisor
+    /// is one, and neither can tell the widths' divisor from one or
+    /// nought, nor an even group beside whole-degree ones.
+    #[test]
+    fn a_mixed_or_whole_degree_chart_steps_by_its_widths_common_divisor() {
+        let map = Scheme::of(Varga::D30).groups[0].map;
+        let step = |divisions: u16, spans: &[Spans]| {
+            let groups: &'static [Group] = Box::leak(
+                spans
+                    .iter()
+                    .map(|&spans| Group { spans, map })
+                    .collect::<Vec<_>>()
+                    .into_boxed_slice(),
+            );
+            lines(&Scheme {
+                varga: None,
+                divisions,
+                classifier: Classifier::Parity,
+                groups,
+            })
+            .map(|lattice| lattice.step_deg)
+        };
+        let twelve_and_eighteen = Spans::Degrees { widths: &[12, 18] };
+        let ten_and_twenty = Spans::Degrees { widths: &[10, 20] };
+        assert_eq!(
+            step(2, &[twelve_and_eighteen, twelve_and_eighteen]),
+            Some(6.0)
+        );
+        // Fifths of a sign are six degrees, and six beside ten and twenty
+        // leaves two.
+        assert_eq!(step(5, &[Spans::Equal, ten_and_twenty]), Some(2.0));
+        assert_eq!(step(5, &[ten_and_twenty, Spans::Equal]), Some(2.0));
+        // Sevenths are not whole degrees, so no whole-degree lattice holds
+        // them beside the widths.
+        assert_eq!(step(7, &[Spans::Equal, ten_and_twenty]), None);
+    }
 
     #[test]
     fn every_change_lies_on_the_lines() {
