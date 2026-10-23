@@ -14,7 +14,13 @@
 //!   each floor raised to the run's whole percent and never lowered, and
 //!   the survivors replaced by the run's;
 //! - `cargo xtask check-mutants` alone holds the page to the record, and
-//!   the floors to `main`'s.
+//!   the floors to `main`'s;
+//! - on a pull request, `.github/workflows/mutants-changed.yml` makes only
+//!   the mutants of the lines the change touched in the kernel crates
+//!   (`cargo xtask mutants --packages` names them), and `cargo xtask
+//!   check-mutants --diff DIR` fails when one the run listed has no
+//!   outcome, or one survives that the record does not name. A diff's
+//!   share is not a crate's, so no floor is read.
 //!
 //! A mutant is caught when the tests fail or time out under it; one that
 //! does not build is not counted. A survivor is named by its file, change
@@ -23,7 +29,7 @@
 //! computes is listed, with why, in `.cargo/mutants.toml`, and is never
 //! generated.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::fs;
 use std::path::Path;
@@ -108,19 +114,29 @@ pub(crate) fn command(root: &Path, command: &str, args: &[String]) -> i32 {
         .iter()
         .position(|arg| arg == "--from")
         .and_then(|at| args.get(at + 1));
+    let diff = args
+        .iter()
+        .position(|arg| arg == "--diff")
+        .and_then(|at| args.get(at + 1));
     let matrix = args.iter().any(|arg| arg == "--matrix");
+    let packages = args.iter().any(|arg| arg == "--packages");
     let result = match (command, from) {
         ("mutants", _) if matrix => {
             println!("{}", self::matrix());
             Ok(0)
         }
+        ("mutants", _) if packages => {
+            println!("{}", self::packages());
+            Ok(0)
+        }
         ("mutants", Some(from)) => record(root, Path::new(from)),
         ("mutants", None) => {
             eprintln!(
-                "usage: cargo xtask mutants --from DIR | mutants --matrix | check-mutants [--from DIR]"
+                "usage: cargo xtask mutants --from DIR | mutants --matrix | mutants --packages | check-mutants [--from DIR | --diff DIR]"
             );
             return 2;
         }
+        (_, _) if diff.is_some() => diff.map_or(Ok(2), |dir| check_diff(root, Path::new(dir))),
         (_, from) => check_mutants(root, from.map(Path::new)),
     };
     match result {
@@ -148,6 +164,15 @@ fn matrix() -> Value {
         })
         .collect();
     serde_json::json!({ "include": include })
+}
+
+/// The kernel crates as `cargo mutants` arguments, one `--package` each.
+fn packages() -> String {
+    KERNEL
+        .iter()
+        .map(|(name, _)| format!("--package teistro-{name}"))
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 fn read_record(root: &Path) -> Result<Record, String> {
@@ -297,21 +322,129 @@ fn findings(record: &BTreeMap<String, Measured>, run: &BTreeMap<String, Run>) ->
                 measured.floor
             ));
         }
-        let mut named: BTreeMap<&str, usize> = BTreeMap::new();
-        for survivor in &measured.survivors {
-            *named.entry(survivor).or_default() += 1;
-        }
-        for survivor in &run.survivors {
-            match named.get_mut(survivor.as_str()) {
-                Some(left) if *left > 0 => *left -= 1,
-                _ => found.push(format!(
-                    "`{survivor}` survived: a test should fail under it, or it goes in \
-                     `.cargo/mutants.toml` with why it cannot change the answer"
-                )),
-            }
-        }
+        found.extend(unnamed(&measured.survivors, &run.survivors));
     }
     found
+}
+
+/// The survivors of a run the record does not name, each a finding.
+/// Survivors are counted, so a second mutant like a named one is new too.
+fn unnamed(named: &[String], survivors: &[String]) -> Vec<String> {
+    let mut left: BTreeMap<&str, usize> = BTreeMap::new();
+    for survivor in named {
+        *left.entry(survivor).or_default() += 1;
+    }
+    survivors
+        .iter()
+        .filter(|survivor| match left.get_mut(survivor.as_str()) {
+            Some(count) if *count > 0 => {
+                *count -= 1;
+                false
+            }
+            _ => true,
+        })
+        .map(|survivor| {
+            format!(
+                "`{survivor}` survived: a test should fail under it, or it goes in \
+                 `.cargo/mutants.toml` with why it cannot change the answer"
+            )
+        })
+        .collect()
+}
+
+/// What a change's own run says: a mutant the listing made that has no
+/// outcome, and a survivor the record does not name. `listed.json` is
+/// `cargo mutants --list --json` over the change, and empty when the
+/// change makes no mutant, in which case no outcomes are needed.
+fn diff_findings(
+    record: &BTreeMap<String, Measured>,
+    listed: &[String],
+    outcomes: Option<&Value>,
+) -> Result<(usize, Vec<String>), String> {
+    let Some(outcomes) = outcomes else {
+        return Ok((
+            0,
+            listed
+                .iter()
+                .map(|name| {
+                    format!("`{name}` was listed and has no outcome: the run did not reach it")
+                })
+                .collect(),
+        ));
+    };
+    let reported: BTreeSet<&str> = outcomes
+        .get("outcomes")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|outcome| {
+            outcome
+                .pointer("/scenario/Mutant/name")
+                .and_then(Value::as_str)
+        })
+        .collect();
+    let mut found: Vec<String> = listed
+        .iter()
+        .filter(|name| !reported.contains(name.as_str()))
+        .map(|name| format!("`{name}` was listed and has no outcome: the run did not reach it"))
+        .collect();
+    let mut runs = BTreeMap::new();
+    read_outcomes(outcomes, &mut runs)?;
+    for (name, run) in &runs {
+        let named = record
+            .get(name)
+            .map(|m| m.survivors.as_slice())
+            .unwrap_or_default();
+        found.extend(unnamed(named, &run.survivors));
+    }
+    Ok((reported.len(), found))
+}
+
+/// `check-mutants --diff DIR`: a change's own mutants held to the record.
+fn check_diff(root: &Path, dir: &Path) -> Result<i32, String> {
+    let record = read_record(root)?;
+    let path = dir.join("listed.json");
+    let text = fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let listed: Vec<String> = if text.trim().is_empty() {
+        Vec::new()
+    } else {
+        let value: Value =
+            serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
+        value
+            .as_array()
+            .ok_or_else(|| format!("{} is not a list of mutants", path.display()))?
+            .iter()
+            .map(|mutant| {
+                mutant
+                    .get("name")
+                    .and_then(Value::as_str)
+                    .map(str::to_owned)
+                    .ok_or_else(|| format!("{}: a mutant without a name", path.display()))
+            })
+            .collect::<Result<_, _>>()?
+    };
+    if listed.is_empty() {
+        println!("ok    the change makes no mutant in a kernel crate");
+        return Ok(0);
+    }
+    let path = dir.join("mutants.out").join("outcomes.json");
+    let outcomes = match fs::read_to_string(&path) {
+        Ok(text) => Some(
+            serde_json::from_str::<Value>(&text).map_err(|e| format!("{}: {e}", path.display()))?,
+        ),
+        Err(_) => None,
+    };
+    let (reported, found) = diff_findings(&record.crates, &listed, outcomes.as_ref())?;
+    for finding in &found {
+        println!("FAIL  {finding}");
+    }
+    if found.is_empty() {
+        println!(
+            "ok    {reported} of the change's {} mutants tested, none a new survivor",
+            listed.len()
+        );
+    }
+    Ok(i32::from(!found.is_empty()))
 }
 
 fn record(root: &Path, from: &Path) -> Result<i32, String> {
@@ -585,6 +718,60 @@ mod tests {
             .map(|(name, _)| ((*name).to_owned(), run(1, &[])))
             .collect();
         assert_eq!(findings(&record, &fine), Vec::<String>::new());
+    }
+
+    /// A change's run fails on a listed mutant it did not reach and on a
+    /// survivor the record does not name, and passes one it does.
+    #[test]
+    fn a_changes_mutants_are_each_reported_and_none_new_survives() {
+        let name =
+            |line: u32| format!("crates/vargas/src/change.rs:{line}:5: replace a with b in f");
+        let outcome = |line: u32, summary: &str| {
+            serde_json::json!({
+                "scenario": {"Mutant": {"file": "crates/vargas/src/change.rs", "name": name(line)}},
+                "summary": summary,
+            })
+        };
+        let record: BTreeMap<String, Measured> = [(
+            "vargas".into(),
+            Measured {
+                floor: 90,
+                survivors: vec!["crates/vargas/src/change.rs: replace a with b in f".into()],
+            },
+        )]
+        .into();
+        let listed = [name(1), name(2), name(3)];
+        let outcomes = serde_json::json!({"outcomes": [
+            {"scenario": "Baseline", "summary": "Success"},
+            outcome(1, "CaughtMutant"),
+            outcome(2, "MissedMutant"),
+            outcome(3, "Unviable"),
+        ]});
+        let (reported, found) = diff_findings(&record, &listed, Some(&outcomes)).unwrap();
+        assert_eq!((reported, found.len()), (3, 0), "{found:?}");
+        let (_, found) = diff_findings(&BTreeMap::new(), &listed, Some(&outcomes)).unwrap();
+        assert_eq!(found.len(), 1, "an unnamed survivor: {found:?}");
+        let (_, found) = diff_findings(&record, &[name(1), name(4)], Some(&outcomes)).unwrap();
+        assert!(
+            found
+                .iter()
+                .any(|f| f.contains(":4:5:") && f.contains("no outcome")),
+            "{found:?}"
+        );
+        let (_, found) = diff_findings(&record, &listed, None).unwrap();
+        assert_eq!(
+            found.len(),
+            3,
+            "a run that left nothing reached nothing: {found:?}"
+        );
+    }
+
+    #[test]
+    fn the_packages_are_the_kernel_crates() {
+        assert_eq!(
+            packages(),
+            "--package teistro-dasha --package teistro-rules --package teistro-strength --package teistro-vargas"
+        );
     }
 
     #[test]

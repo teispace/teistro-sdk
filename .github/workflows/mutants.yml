@@ -54,8 +54,12 @@ jobs:
         # cargo-mutants exits 2 when a mutant survived and 3 when one timed
         # out, which `check-mutants` judges; anything else is the run's own
         # failure.
+        # cargo-mutants makes its output directory but not that
+        # directory's parents, and every shard of the first run failed on
+        # `runs/<crate>` not being there.
         run: |
           code=0
+          mkdir -p runs/${{ matrix.crate }}/${{ matrix.shard }}
           cargo mutants --package ${{ matrix.package }} \
             --shard ${{ matrix.shard }}/${{ matrix.shards }} \
             --output runs/${{ matrix.crate }}/${{ matrix.shard }} \
