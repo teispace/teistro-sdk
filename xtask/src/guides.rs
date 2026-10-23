@@ -28,6 +28,12 @@
 //!
 //! Everything else -- a shell command, a JSON request, a POM's
 //! dependency -- is not a program, and is not checked.
+//!
+//! The READMEs a consumer reads where a package is published ([`READMES`])
+//! are held the same way: a forge or a registry shows a fence's first word
+//! as its language and ignores the rest, so `title=` and `fragment` cost
+//! the reader nothing there. A crate's README is not among them: its Rust
+//! runs as the crate's doctests (`check-lints`' `readme-example-runs`).
 
 use std::collections::BTreeSet;
 use std::fs;
@@ -38,6 +44,24 @@ use crate::examples::{Binding, Ran};
 /// The hand-written guides, beside the generated reference under
 /// [`REFERENCE`].
 const GUIDES: &str = "site/content/docs";
+
+/// The READMEs each binding and adapter publishes with its package, held
+/// as the guides are.
+const READMES: [&str; 13] = [
+    "README.md",
+    "bindings/c/README.md",
+    "bindings/dart/README.md",
+    "bindings/flutter/README.md",
+    "bindings/java/README.md",
+    "bindings/node/README.md",
+    "bindings/python/README.md",
+    "bindings/wasm/README.md",
+    "adapters/ephemeris-teimeris/dart/README.md",
+    "adapters/ephemeris-teimeris/flutter/README.md",
+    "adapters/ephemeris-teimeris/java/README.md",
+    "adapters/ephemeris-teimeris/node/README.md",
+    "adapters/ephemeris-teimeris/python/README.md",
+];
 const REFERENCE: &str = "reference";
 
 /// The files outside the shared examples a guide may cut a program from,
@@ -167,7 +191,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     println!(
         "ok    {} in {} cut from files a gate runs, {} of the shared examples' output, and {}:",
         crate::measure::plural(tally.excerpts, "program"),
-        crate::measure::plural(pages.len(), "guide"),
+        crate::measure::plural(pages.len(), "page"),
         crate::measure::plural(tally.outputs, "block"),
         crate::measure::plural(tally.fragments.len(), "fragment"),
     );
@@ -389,6 +413,7 @@ fn guide_blocks(root: &Path) -> Result<Vec<Block>, ()> {
         println!("FAIL  {GUIDES} holds no guides");
         return Err(());
     }
+    pages.extend(READMES.iter().map(|readme| root.join(readme)));
     let mut blocks = Vec::new();
     for page in pages {
         let text =

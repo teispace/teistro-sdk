@@ -7,17 +7,21 @@ The SDK computes with whatever ephemeris it is given. In most cases that
 should be a real engine (Teimeris here), and the SDK's own built-in is
 the fallback rather than the intended path (ADR-0029).
 
-```java
-import com.teispace.teistro.*;
+```java title="adapters/ephemeris-teimeris/java/typecheck/Consumer.java"
+import com.teispace.teistro.Teistro;
 import com.teispace.teistro.teimeris.Teimeris;
-
-Teistro sdk = Teistro.open();
-try (Context sky = sdk.context(ContextOptions.builder()
-        .ephemeris(Teimeris.builder().dataDir("./ephe").build(),
-                   EphemerisChoice.of(Ephemeris.BUILTIN))
-        .build())) {
-    Teimeris.engine(sky.engine()).tmBodyName(0);  // "Sun"
-}
+// …
+        Teistro sdk = Teistro.open();
+// …
+        // A real engine, and the SDK's own only if it is not there.
+        ContextOptions options = ContextOptions.builder()
+                .profile("parashari-classical")
+                .ephemeris(Teimeris.builder().dataDir("./ephe").build(), EphemerisChoice.of(Ephemeris.BUILTIN))
+                .build();
+        try (Context sky = sdk.context(options)) {
+// …
+            TeimerisEngine typed = Teimeris.engine(sky.engine());
+            String name = typed.tmBodyName(0);
 ```
 
 The module is `com.teispace.teistro.teimeris`, which requires
@@ -45,11 +49,11 @@ Moon's (`semo_*.se1`), and a third (`seas_*.se1`) for Chiron, Ceres,
 Pallas, Juno and Vesta. Download a block's files into the app's own
 storage, then name them:
 
-```java
-Teimeris.builder()
-    .file(cache + "/sepl_12.se1")
-    .file(cache + "/semo_12.se1") // adds 1200 to 1799
-    .build();
+```java title="adapters/ephemeris-teimeris/java/typecheck/Consumer.java"
+        Plugin ranged = Teimeris.builder()
+                .file(cache + "/sepl_12.se1")
+                .file(cache + "/semo_12.se1") // adds 1200 to 1799
+                .build();
 ```
 
 `dataDir` names a directory of data files read after the built-in ones; `embedded(false)` leaves the built-in data out.

@@ -74,3 +74,7 @@ def main() -> None:
         )
         cusps: list[float] = houses["cusps"]
         print(f"{len(cusps)} cusps, ascendant {houses['out_angles']['ascendant']}")
+
+    # Ranges beyond the built-in years, by path: these two add 1200 to 1799.
+    with sdk.context(ephemeris=[teimeris(files=["cache/sepl_12.se1", "cache/semo_12.se1"])]) as ctx:
+        print(ctx.engine)

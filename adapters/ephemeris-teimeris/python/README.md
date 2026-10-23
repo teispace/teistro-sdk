@@ -7,13 +7,20 @@ The SDK computes with whatever ephemeris it is given. In most cases that
 should be a real engine — Teimeris here — and the SDK's own built-in is
 the fallback rather than the intended path (ADR-0029).
 
-```python
+```python title="adapters/ephemeris-teimeris/python/typecheck/consumer.py"
 import teistro
+from teistro import Body, Ephemeris
 from teistro_ephemeris_teimeris import engine, teimeris
-
-sdk = teistro.Teistro.open()
-with sdk.context(ephemeris=[teimeris(data_dir="./ephe")]) as ctx:
-    engine(ctx.engine).tm_body_name(body=0)  # 'Sun'
+# …
+    sdk = teistro.Teistro.open()
+    # A real engine, and the SDK's own only if it is not there.
+    with sdk.context(
+        profile="parashari-classical",
+        ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN],
+    ) as ctx:
+# …
+        typed = engine(ctx.engine)
+        name: str = typed.tm_body_name(body=0)
 ```
 
 ## The descriptor
@@ -35,9 +42,9 @@ Moon's (`semo_*.se1`), and a third (`seas_*.se1`) for Chiron, Ceres,
 Pallas, Juno and Vesta. Download a block's files into the app's own
 storage, then name them:
 
-```python
-with sdk.context(ephemeris=[teimeris(files=["cache/sepl_12.se1", "cache/semo_12.se1"])]) as ctx:
-    ...  # adds 1200 to 1799
+```python title="adapters/ephemeris-teimeris/python/typecheck/consumer.py"
+    # Ranges beyond the built-in years, by path: these two add 1200 to 1799.
+    with sdk.context(ephemeris=[teimeris(files=["cache/sepl_12.se1", "cache/semo_12.se1"])]) as ctx:
 ```
 
 `data_dir` names a directory of data files read after the built-in ones; `embedded=False` leaves the built-in data out.

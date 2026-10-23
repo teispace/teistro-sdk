@@ -12,11 +12,13 @@ dependencies:
   teistro_flutter: ^0.1.0
 ```
 
-```dart
+```dart title="bindings/flutter/example/lib/main.dart"
 import 'package:teistro_flutter/teistro_flutter.dart';
-
-final teistro = Teistro.open(); // the library the hook bundled
+// …
+    final teistro = Teistro.open();
 ```
+
+`Teistro.open()` finds the library the build hook bundled.
 
 `package:teistro_flutter/teistro_flutter.dart` re-exports
 `package:teistro/teistro.dart`, so the whole API is available through this

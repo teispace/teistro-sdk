@@ -62,17 +62,29 @@ Six runnable programs live in [`example/`](example/), and
 what the binding does. Start with
 [`example/quickstart.mjs`](example/quickstart.mjs):
 
-```js
-import { Body, Calendar, Context, at, date, ianaZone } from '@teistro/sdk';
-
+```js title="bindings/node/example/quickstart.mjs"
+import {
+  Body,
+  Calendar,
+  Context,
+  at,
+  date,
+  ianaZone,
+  sdkVersion,
+} from '@teistro/sdk';
+// …
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });
+
+// 14 April 2015 is 1 Baisakh 2072 BS.
 const bs = ctx.calendar.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
+// …
+// The Sun and the Moon at J2000, in the SDK's canonical frame.
 const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Moon] });
-console.log(bs.year, sky.at(0, 0).longitude, sky.provenance.settingsHash);
+// …
 ctx.dispose();
 ```
 
@@ -96,11 +108,11 @@ A context with no ephemeris computes calendars, times and messages;
 positions need one. `ephemeris` names it, or names an **ordered chain**
 tried in order (ADR-0029):
 
-```js
-import teimeris from '@teistro/ephemeris-teimeris';
-
-const ctx = new Context({
-  // A real engine, and the SDK's own only if it is not there.
+```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
+import teimeris, { engine } from '@teistro/ephemeris-teimeris';
+// …
+const sdk = new Context({
+  profile: 'parashari-classical',
   ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'],
 });
 ```
@@ -123,21 +135,32 @@ over them.
 
 ## An ephemeris of your own
 
-```js
-const ctx = new Context({
-  provider: {
-    name: 'my-engine',
+```js title="bindings/node/example/your_own_ephemeris.mjs"
+function tableEphemeris({ wantedFrame = null, broken = false } = {}) {
+// …
+    name: 'table-ephemeris',
+    version: '1.0.0',
+// …
     bodies: [Body.Sun, Body.Moon],
+// …
     positions(request) {
-      // One call for the whole grid, never a loop. One value per cell,
-      // instants outermost: cell `i * bodies.length + j` is instant `i`,
-      // body `j`.
+// …
       const cells = request.jds.length * request.bodies.length;
-      return { lon: new Float64Array(cells), status: new Int32Array(cells) };
-    },
-  },
-});
+// …
+      // Cells run instants outermost: cell `i * bodies.length + j` is
+      // instant `i`, body `j`. Building the columns in that order is the
+      // whole of the contract.
+      const lon = new Float64Array(cells);
+// …
+      return { lon, lat: new Float64Array(cells), dist: new Float64Array(cells).fill(1), lonSpeed };
+// …
+  const provider = tableEphemeris();
+  const ctx = new Context({ profile: 'parashari-classical', provider });
 ```
+
+The whole program, [`example/your_own_ephemeris.mjs`](example/your_own_ephemeris.mjs),
+also returns `null` for a frame it does not compute, so the SDK asks in
+its own and completes the rest, and shows each way a provider is refused.
 
 Returning nothing means "not in that frame": the SDK asks again in the
 provider's own frame and completes the rest itself, so an engine that

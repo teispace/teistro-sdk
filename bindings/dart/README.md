@@ -80,13 +80,17 @@ A context with no ephemeris computes calendars, times and messages;
 positions need one. `ephemeris` names an **ordered chain**, tried in
 order (ADR-0029):
 
-```dart
+```dart title="adapters/ephemeris-teimeris/dart/example/consumer.dart"
 import 'package:teistro_ephemeris_teimeris/teistro_ephemeris_teimeris.dart';
-
-final ctx = teistro.context(
+// …
   // A real engine, and the SDK's own only if it is not there.
-  ephemeris: [teimeris(dataDir: './ephe'), NamedEphemeris(Ephemeris.builtin)],
-);
+  final ctx = teistro.context(
+    profile: 'parashari-classical',
+    ephemeris: [
+      teimeris(dataDir: './ephe'),
+      const NamedEphemeris(Ephemeris.builtin),
+    ],
+  );
 ```
 
 **That is the intended path.** In most cases a consumer should be on a
@@ -113,29 +117,38 @@ Extend `EphemerisProvider` and give the context one. It is asked once for
 a whole grid, never in a loop, and everything but the name, the bodies
 and the positions has a default.
 
-```dart
-final class MyEphemeris extends EphemerisProvider {
+```dart title="bindings/dart/example/your_own_ephemeris.dart"
+base class TableEphemeris extends EphemerisProvider {
+// …
   @override
-  String get name => 'my-ephemeris';
-
+  String get name => 'table-ephemeris';
+// …
   @override
   List<Body> get bodies => const [Body.sun, Body.moon];
-
+// …
   @override
   PositionAnswer? positions(PositionQuery query) {
-    final cells = query.cellCount;
-    // Return null for "not in that frame": the SDK then asks in your
-    // native frame and completes the rest itself, stamping every step.
+// …
+    // Cells run instants outermost: cell `i * bodies.length + j` is
+    // instant `i`, body `j`. Building the columns in that order is the
+    // whole of the contract.
+    final lon = Float64List(query.cellCount);
+// …
     return PositionAnswer(
-      lon: Float64List(cells),
-      lat: Float64List(cells),
-      dist: Float64List(cells),
+      lon: lon,
+      lat: Float64List(query.cellCount),
+      dist: Float64List(query.cellCount)..fillRange(0, query.cellCount, 1.0),
+// …
+    final provider = TableEphemeris();
+    final ctx = teistro.context(
+      profile: 'parashari-classical',
+      provider: provider,
     );
-  }
-}
-
-final ctx = teistro.context(provider: MyEphemeris());
 ```
+
+The whole program, [`example/your_own_ephemeris.dart`](example/your_own_ephemeris.dart),
+also returns `null` for a frame it does not compute, so the SDK asks in
+its own and completes the rest, and shows each way a provider is refused.
 
 A body, an observer or an instant the provider never declared is refused
 before the call reaches it, by name. What the provider throws is what the

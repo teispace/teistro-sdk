@@ -5,13 +5,21 @@ the Foreign Function and Memory API, with no native code of its own and
 no dependency. The design is
 [`docs/03-design/java-binding.md`](../../docs/03-design/java-binding.md).
 
-```java
-import com.teispace.teistro.*;
-
-try (Teistro teistro = Teistro.open();
-     Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").build())) {
-    System.out.println(sky.settingsHash());
-}
+```java title="bindings/java/example/Quickstart.java"
+import com.teispace.teistro.Context;
+import com.teispace.teistro.ContextOptions;
+import com.teispace.teistro.Ephemeris;
+// …
+        Teistro teistro = Teistro.open();
+// …
+        ContextOptions options = ContextOptions.builder()
+                .profile("nepali-default")
+                .locale("ne-Deva-NP")
+                .ephemeris(Ephemeris.BUILTIN)
+                .build();
+        try (Context ctx = teistro.context(options)) {
+            // 14 April 2015 is 1 Baisakh 2072 BS.
+            CalendarDate bs = ctx.calendar().convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT);
 ```
 
 Run with the module granted native access:
@@ -87,8 +95,8 @@ the examples run there as they do anywhere.
 A quantity that would otherwise be swappable is its own record, checked
 when it is made:
 
-```java
-Observer place = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+```java title="bindings/java/example/BirthChart.java"
+            Observer place = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
 ```
 
 Passing a `Latitude` where a `Longitude` is wanted is a compile error,
@@ -104,14 +112,14 @@ A context with no ephemeris computes calendars, times and messages;
 positions need one. `ephemeris` names it, or names an **ordered chain**
 tried in order (ADR-0029):
 
-```java
+```java title="adapters/ephemeris-teimeris/java/typecheck/Consumer.java"
 import com.teispace.teistro.teimeris.Teimeris;
-
-// A real engine, and the SDK's own only if it is not there.
-ContextOptions.builder()
-    .ephemeris(Teimeris.builder().dataDir("./ephe").build(),
-               EphemerisChoice.of(Ephemeris.BUILTIN))
-    .build();
+// …
+        // A real engine, and the SDK's own only if it is not there.
+        ContextOptions options = ContextOptions.builder()
+                .profile("parashari-classical")
+                .ephemeris(Teimeris.builder().dataDir("./ephe").build(), EphemerisChoice.of(Ephemeris.BUILTIN))
+                .build();
 ```
 
 **That is the intended path.** In most cases a consumer should be on a

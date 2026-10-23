@@ -7,12 +7,18 @@ The SDK computes with whatever ephemeris it is given. In most cases that
 should be a real engine — Teimeris here — and the SDK's own built-in is
 the fallback rather than the intended path (ADR-0029).
 
-```js
-import { Context } from '@teistro/sdk';
+```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
+import { Context, nepalOfficial } from '@teistro/sdk';
+// …
 import teimeris, { engine } from '@teistro/ephemeris-teimeris';
-
-const sdk = new Context({ ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'] });
-engine(sdk.engine).tmBodyName({ body: 0 });   // 'Sun'
+// …
+const sdk = new Context({
+  profile: 'parashari-classical',
+  ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'],
+});
+// …
+const typed = engine(sdk.engine);
+const name: string = typed.tmBodyName({ body: 0 });
 ```
 
 ## The descriptor
@@ -34,11 +40,16 @@ Moon's (`semo_*.se1`), and a third (`seas_*.se1`) for Chiron, Ceres,
 Pallas, Juno and Vesta. Download a block's files into the app's own
 storage, then name them:
 
-```js
-const sdk = new Context({
-  ephemeris: [teimeris({ files: ['cache/sepl_12.se1', 'cache/semo_12.se1'] })], // adds 1200 to 1799
+```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
+// Ranges beyond the built-in years, by path, with the switches beside them.
+const ranged = teimeris({
+  files: ['cache/sepl_12.se1', 'cache/semo_12.se1'],
+  embedded: true,
+  verify: true,
 });
 ```
+
+The two files add 1200 to 1799.
 
 `dataDir` names a directory of data files read after the built-in ones; `embedded: false` leaves the built-in data out.
 
@@ -58,7 +69,7 @@ There the engine is its own wasm module, `teimeris-wasm`, and
 JavaScript, which the SDK's wasm build takes as `provider` or as an entry
 of an `ephemeris` chain:
 
-```js
+```js fragment
 import * as engine from 'teimeris-wasm';
 import { Context, nepalOfficial } from '@teistro/sdk-wasm';
 import { teimerisWeb } from '@teistro/ephemeris-teimeris/web';
@@ -72,7 +83,7 @@ It reads the same built-in 1800 to 2399, and other years the same way, as
 bytes the app downloaded, each checked against the same published size
 and SHA-256 (with `crypto.subtle`, so the call is `await`ed):
 
-```js
+```js fragment
 const bytes = async (name) => (await fetch(`/ephe/${name}`)).arrayBuffer();
 const provider = await teimerisWeb(engine, {
   files: [
