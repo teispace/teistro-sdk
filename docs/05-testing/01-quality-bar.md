@@ -134,12 +134,32 @@ The counting allocator found that on its first run.
 
 | gate | what it proves | status |
 |---|---|---|
-| peak memory per operation | a context, a foundation, a full chart, a month grid and a muhurta search each stay within a documented peak, profiled in a nightly job and published | **not yet enforced: taken up in the hardening pass** |
+| peak memory per operation | a context, a foundation, a full chart, a month grid and a muhurta search each stay within a documented peak, profiled in a nightly job and published | **enforced**: `crates/sdk/tests/peak_memory.rs` measures each with the counting allocator's peak (the most bytes held at once), holds it to the budget below and requires nothing kept once dropped, under `cargo test --workspace`, fast check. It also holds a full chart's peak to four times its document's canonical text, the guard against a tree built beside it. The figures are exact and the same on every run, so the test is the profile and no nightly job is needed |
 | leak checks in Rust | no leak across 10,000 iterations of every public operation, under a LeakSanitizer build and `valgrind --leak-check=full` on Linux | **enforced in part**: `crates/ffi/tests/leaks.rs` runs each family of C ABI entry points (contexts and a refused constructor's owned record, the settings, positions, a chart and a refused one, two days of almanac, the JSON families and their refusals, a rendered message, a lent entity and transliteration) once to warm, then 100 times under a counting allocator that also counts what is freed, and requires every byte back. The count is exact, so a leak of one byte a cycle fails where a flat curve over 10,000 would have to be read; a string the test deliberately does not free fails it. The ABI tests also run under LeakSanitizer in verify's `sanitizers` job. **Not yet:** valgrind |
 | leak checks per binding | a binding's objects release their native memory: 10,000 create-use-drop cycles in Node (with forced GC and heap measurement), Python (`tracemalloc` and RSS), Dart and Java, with a flat RSS curve | **enforced in part**: Python's `tests/test_leaks.py` reads the C allocator's own bytes in use (`malloc_zone_statistics` on macOS, glibc's `mallinfo2` on Linux) across a context closed, one dropped unclosed (its finaliser) and a chart with a positions answer on one context: 500 cycles to settle, then three runs of 500, at least one of which must end within 64 KiB of where it began. A leak grows every run, so 150 bytes a cycle fails, and contexts kept rather than freed fail by 2.4 GB; skipped where the allocator cannot be read (Windows, musl) and on Intel macOS, where the zones' bytes in use climbed about 1.5 MB every 2000 positions calls while `heap(1)` counted the same live blocks after 500 calls and after 4500 and the counting-allocator test got every byte back on the same runner, so that count is not the bytes live there. **Measured, and why not RSS:** on macOS a process keeping thousands of contexts was seen to shrink from 2.3 GB resident to 1.0 GB as the system compressed the idle pages, so a resident-set curve cannot show a leak, and a Node test written on it passed with every context kept; it was not shipped. **Not yet:** Node, Dart and Java, which have no way to read the allocator from the language; the C ABI under them is held to keeping no byte (`leak checks in Rust`) |
 | cache bounds | every cache respects its byte limit under sustained load | **enforced in part**: the memo's budget is a count of cells (the setting `provider.cache_cells`, 65 536 by default), and its tests hold that a full cache stops admitting and keeps answering (`crates/port-ephemeris/src/caching.rs`), under `cargo test --workspace`, fast check. **Not yet enforced: taken up in the hardening pass**: a test under sustained load |
 | size | the binary size per profile and per platform, and the pack size per locale, stay within budget | **enforced** for the shipped artefacts: `cargo xtask check-sizes --from` and `check-wasm` against `05-testing/sizes.json`, verify (the wasm size row above). **Not yet enforced: taken up in the hardening pass**: a budget per locale's pack |
 | no global state | contexts on N threads scale near-linearly and share nothing; TSan clean | **enforced in part**: `check-lints` refuses reads of the clock, the environment and the process in a computation crate, fast check, and the C ABI has no global state by design (a constructor's failure crosses as an owned record), and verify's `sanitizers` job runs the shared memo and the surface's per-thread contexts under ThreadSanitizer (the sanitizers row). **Not yet enforced: taken up in the hardening pass**: the thread benchmark |
+
+### The peaks measured
+
+Measured 2026-10-23 (`crates/sdk/tests/peak_memory.rs`, the built-in
+ephemeris, Kathmandu):
+
+| operation | peak | budget | asked for in all |
+|---|---:|---:|---:|
+| a context | 18,825 B | 40,000 B | 25,156 B |
+| a foundation | 27,533 B | 40,000 B | 89,177 B |
+| a full chart (`with_everything`) | 10.1 MB | 13 MB | 20.5 MB |
+| thirty days | 0.93 MB | 1.2 MB | 2.9 MB |
+| a month's muhurta search | 0.66 MB | 0.9 MB | 14.5 MB |
+
+The full chart's peak was 36 MB until this measurement found where it
+went. Its document's canonical text is 3.4 MB, and the hash wrote that
+text from a `serde_json::Value` tree of the whole document, about ten
+times its size. Now the text is written straight from serde, so the
+chart holds three times its text at most. Its 32 dasha systems are most
+of what is left.
 
 ## Code quality
 
