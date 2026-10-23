@@ -62,12 +62,12 @@ Where the two counts differ, and why:
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 
-Total: 502 festivals: rule, shipped 262; rule, not yet shipped 9; rule, needs a form 29; solar 26; fixed civil 165; community 6; published only 5.
+Total: 502 festivals: rule, shipped 265; rule, not yet shipped 9; rule, needs a form 26; solar 26; fixed civil 165; community 6; published only 5.
 
 ## 3. The festivals, by class
 
 
-### Rule, shipped (262)
+### Rule, shipped (265)
 
 The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key below is in it.
 
@@ -201,6 +201,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `KAMIKA_EKADASHI` | Kamika Ekadashi | कामिका एकादशी |  | NEPAL_PANCHANGA |
 | `KARTIK_SNAN_BEGINS` | Kartik Snan Begins | कार्तिक स्नान आरम्भ |  | NEPAL_PANCHANGA |
 | `KARTIK_SNAN_ENDS` | Kartik Snan Ends | कार्तिक स्नान समाप्ति |  | NEPAL_PANCHANGA |
+| `KASHI_BADA_GANESH_UTSAV` | Kashi Bada Ganesh Utsav | काशी बडागणेश उत्सव |  | NEPAL_PANCHANGA |
 | `KATIN_PUNHI` | Katin Punhi | कतिं पुन्ही | Newar | NEPAL_PANCHANGA |
 | `KAYA_ASHTAMI` | Kaya Ashtami | कायः अष्टमी | Newar | NEPAL_PANCHANGA |
 | `KHADGA_JATRA` | Khadga Jatra | खड्ग जात्रा | Newar | NEPAL_PANCHANGA |
@@ -250,6 +251,8 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `PACHALI_BHAIRAV_JATRA` | Pachali Bhairav Jatra | पचली भैरव जात्रा | Newar | NEPAL_PANCHANGA |
 | `PADMINI_EKADASHI` | Padmini Ekadashi | पद्मिनी एकादशी |  | NEPAL_PANCHANGA |
 | `PAHAN_CHARHE` | Pahan Charhe | पाहाँ चह्रे | Newar | NEPAL_PANCHANGA |
+| `PANAUTI_JATRA` | Panauti Jatra | पनौती जात्रा | Newar | NEPAL_PANCHANGA |
+| `PANAUTI_SNAN_MELA` | Panauti Snan Mela | पनौती स्नान मेला |  | NEPAL_PANCHANGA |
 | `PANCHAMI_SHRADDHA` | Panchami Shraddha | पञ्चमी श्राद्ध |  | NEPAL_PANCHANGA |
 | `PANGA_VAISHNAVI_DEVI_JATRA` | Panga Vaishnavi Devi Jatra | पाँगा वैष्णवी देवी जात्रा | Newar | NEPAL_PANCHANGA |
 | `PAPANKUSHA_EKADASHI` | Papankusha Ekadashi | पापाङ्कुशा एकादशी |  | NEPAL_PANCHANGA |
@@ -352,7 +355,7 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689) |
 | `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687) |
 
-### Rule, needs a form (29)
+### Rule, needs a form (26)
 
 `festival-rule-language.md` §4 maps each to the form it needs, or says why none fits.
 
@@ -367,7 +370,6 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `GOVATSA_DWADASHI` | Govatsa Dwadashi | गोवत्स द्वादशी |  |  |
 | `INDRADHWAJA_PATAN` | Indradhwaja Patan | इन्द्रध्वज पातन | Newar |  |
 | `JUGA_CHARHE` | Juga Charhe | जुगः चह्रे | Newar |  |
-| `KASHI_BADA_GANESH_UTSAV` | Kashi Bada Ganesh Utsav | काशी बडागणेश उत्सव |  |  |
 | `KRISHNA_RATH_JATRA` | Krishna Rath Jatra | कृष्ण रथ जात्रा |  |  |
 | `MAHALAXMI_VRAT_BEGINS` | Mahalaxmi Vrat Begins | महालक्ष्मी व्रत आरम्भ |  |  |
 | `MAHALAXMI_VRAT_ENDS` | Mahalaxmi Vrat Ends | महालक्ष्मी व्रत समाप्ति |  |  |
@@ -377,8 +379,6 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `NALASWANE_CHARHE` | Nalaswane Charhe | नःलास्वने चह्रे | Newar |  |
 | `NALA_MACHHINDRANATH_SNAN` | Nala Machhindranath Snan | नाला मच्छिन्द्रनाथ स्नान | Newar |  |
 | `NANICHAYA` | Nanichaya | नानिचाया |  |  |
-| `PANAUTI_JATRA` | Panauti Jatra | पनौती जात्रा | Newar | both editions print it on Jyeshtha's full moon |
-| `PANAUTI_SNAN_MELA` | Panauti Snan Mela | पनौती स्नान मेला |  | both editions print it on Jyeshtha's full moon |
 | `PASHUPATINATH_CHHAYA_DARSHAN` | Pashupatinath Chhaya Darshan | पशुपतिनाथ छाया दर्शन |  |  |
 | `PHARPING_HARISHANKAR_JATRA` | Pharping Harishankar Jatra | फर्पिङ हरिशङ्कर जात्रा |  |  |
 | `RADHA_KRISHNA_RATH_JATRA` | Radha Krishna Rath Jatra | राधाकृष्ण रथ जात्रा |  |  |

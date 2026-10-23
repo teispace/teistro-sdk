@@ -4106,6 +4106,14 @@
       "name": "Varaha Jayanti",
       "prose": "Varaha Jayanti"
     },
+    "PANAUTI_JATRA": {
+      "name": "Panauti Jatra",
+      "prose": "Panauti Jatra"
+    },
+    "PANAUTI_SNAN_MELA": {
+      "name": "Panauti Snan Mela",
+      "prose": "Panauti Snan Mela"
+    },
     "BAHIDYO_BOYEGU": {
       "name": "Bahidyo Boyegu",
       "prose": "Bahidyo Boyegu"
@@ -4113,6 +4121,10 @@
     "LALITPUR_NARSINGH_JATRA": {
       "name": "Lalitpur Narsingh Jatra",
       "prose": "Lalitpur Narsingh Jatra"
+    },
+    "KASHI_BADA_GANESH_UTSAV": {
+      "name": "Kashi Bada Ganesh Utsav",
+      "prose": "Kashi Bada Ganesh Utsav"
     },
     "NARASIMHA_JAYANTI": {
       "name": "Narasimha Jayanti",

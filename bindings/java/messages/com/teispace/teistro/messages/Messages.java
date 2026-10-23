@@ -6882,6 +6882,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.KASHI_BADA_GANESH_UTSAV` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kashiBadaGaneshUtsav() {
+                    return r.entity("festival.KASHI_BADA_GANESH_UTSAV");
+                }
+
+                /**
                  * The forms of `festival.KATIN_PUNHI` in the current locale.
                  *
                  * @return the forms
@@ -7428,6 +7437,24 @@ public final class Messages {
                  */
                 public EntityForms pahanCharhe() {
                     return r.entity("festival.PAHAN_CHARHE");
+                }
+
+                /**
+                 * The forms of `festival.PANAUTI_JATRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms panautiJatra() {
+                    return r.entity("festival.PANAUTI_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.PANAUTI_SNAN_MELA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms panautiSnanMela() {
+                    return r.entity("festival.PANAUTI_SNAN_MELA");
                 }
 
                 /**

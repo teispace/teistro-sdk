@@ -621,8 +621,11 @@ enum FestivalKey {
   walkeParva('festival.WALKE_PARVA'),
   kalkiJayanti('festival.KALKI_JAYANTI'),
   varahaJayanti('festival.VARAHA_JAYANTI'),
+  panautiJatra('festival.PANAUTI_JATRA'),
+  panautiSnanMela('festival.PANAUTI_SNAN_MELA'),
   bahidyoBoyegu('festival.BAHIDYO_BOYEGU'),
   lalitpurNarsinghJatra('festival.LALITPUR_NARSINGH_JATRA'),
+  kashiBadaGaneshUtsav('festival.KASHI_BADA_GANESH_UTSAV'),
   narasimhaJayanti('festival.NARASIMHA_JAYANTI'),
   padminiEkadashi('festival.PADMINI_EKADASHI'),
   paramaEkadashi('festival.PARAMA_EKADASHI'),
@@ -2082,6 +2085,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get karkataSankranti => _r.entity('festival.KARKATA_SANKRANTI');
   EntityForms get kartikSnanBegins => _r.entity('festival.KARTIK_SNAN_BEGINS');
   EntityForms get kartikSnanEnds => _r.entity('festival.KARTIK_SNAN_ENDS');
+  EntityForms get kashiBadaGaneshUtsav => _r.entity('festival.KASHI_BADA_GANESH_UTSAV');
   EntityForms get katinPunhi => _r.entity('festival.KATIN_PUNHI');
   EntityForms get kayaAshtami => _r.entity('festival.KAYA_ASHTAMI');
   EntityForms get khadgaJatra => _r.entity('festival.KHADGA_JATRA');
@@ -2143,6 +2147,8 @@ final class MessagesSdkEntityFestival {
   EntityForms get pachaliBhairavJatra => _r.entity('festival.PACHALI_BHAIRAV_JATRA');
   EntityForms get padminiEkadashi => _r.entity('festival.PADMINI_EKADASHI');
   EntityForms get pahanCharhe => _r.entity('festival.PAHAN_CHARHE');
+  EntityForms get panautiJatra => _r.entity('festival.PANAUTI_JATRA');
+  EntityForms get panautiSnanMela => _r.entity('festival.PANAUTI_SNAN_MELA');
   EntityForms get panchamiShraddha => _r.entity('festival.PANCHAMI_SHRADDHA');
   EntityForms get pangaVaishnaviDeviJatra => _r.entity('festival.PANGA_VAISHNAVI_DEVI_JATRA');
   EntityForms get papankushaEkadashi => _r.entity('festival.PAPANKUSHA_EKADASHI');

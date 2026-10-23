@@ -37,7 +37,7 @@ const SPANS: [(Day, Day); 8] = [
 
 /// What the committee printed for the fitted rules: the Vikram year, the
 /// rule, the Gregorian day, and the page and the words it prints.
-static PRINTED: [(i32, &str, Day, &str); 581] = [
+static PRINTED: [(i32, &str, Day, &str); 587] = [
     (
         2082,
         "VARUTHINI_EKADASHI",
@@ -892,6 +892,20 @@ static PRINTED: [(i32, &str, Day, &str); 581] = [
     (2083, "KABIR_JAYANTI", (2026, 6, 29), "p. 7: कवीरजयन्ती"),
     (2082, "MASTA_PURNIMA", (2025, 6, 11), "p. 5: मष्टपूर्णिमा"),
     (2083, "MASTA_PURNIMA", (2026, 6, 29), "p. 7: मष्टपूर्णिमा"),
+    (2082, "PANAUTI_SNAN_MELA", (2025, 6, 11), "p. 5: पनौतीस्नान"),
+    (2083, "PANAUTI_SNAN_MELA", (2026, 6, 29), "p. 7: पनौतीस्नान"),
+    (
+        2082,
+        "PANAUTI_JATRA",
+        (2025, 6, 11),
+        "p. 5: पनौती भैरवभद्रकाली इन्द्रेश्वर रथयात्रा",
+    ),
+    (
+        2083,
+        "PANAUTI_JATRA",
+        (2026, 6, 29),
+        "p. 7: Ⓑ पनौती भैरवभद्रकाली इन्द्रेश्वररथयात्रा",
+    ),
     (2082, "BHAL_BHAL_ASHTAMI", (2025, 6, 19), "p. 6: भलभलअष्टमी"),
     (2083, "BHAL_BHAL_ASHTAMI", (2026, 7, 8), "p. 8: भलभलअष्टमी"),
     (
@@ -1773,6 +1787,12 @@ static PRINTED: [(i32, &str, Day, &str); 581] = [
         (2025, 11, 18),
         "p. 16: सताक्षीधाम तथा अर्जुनधारा मेला",
     ),
+    (
+        2082,
+        "KASHI_BADA_GANESH_UTSAV",
+        (2026, 1, 6),
+        "p. 20: काशीमा बडागणेश उत्सव",
+    ),
     (2082, "SI_PUNHI", (2026, 2, 1), "p. 21: (सिपून्हि)"),
     (
         2082,
@@ -1812,6 +1832,12 @@ static PRINTED: [(i32, &str, Day, &str); 581] = [
         "ARJUNDHARA_MELA",
         (2026, 12, 6),
         "p. 18: झापा सताक्षीधाम तथा अर्जुनधारामेला",
+    ),
+    (
+        2083,
+        "KASHI_BADA_GANESH_UTSAV",
+        (2027, 1, 25),
+        "p. 22: काशीमा बडागणेश उत्सव",
     ),
     (2083, "SI_PUNHI", (2027, 2, 20), "p. 23: (सिपून्हि)"),
 ];

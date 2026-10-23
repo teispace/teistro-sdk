@@ -4098,6 +4098,14 @@
       "name": "वराह जयन्ती",
       "prose": "वराह जयन्ती"
     },
+    "PANAUTI_JATRA": {
+      "name": "पनौती जात्रा",
+      "prose": "पनौती जात्रा"
+    },
+    "PANAUTI_SNAN_MELA": {
+      "name": "पनौती स्नान मेला",
+      "prose": "पनौती स्नान मेला"
+    },
     "BAHIDYO_BOYEGU": {
       "name": "बहीद्यः बोयेगु",
       "prose": "बहीद्यः बोयेगु"
@@ -4105,6 +4113,10 @@
     "LALITPUR_NARSINGH_JATRA": {
       "name": "ललितपुर नृसिंह जात्रा",
       "prose": "ललितपुर नृसिंह जात्रा"
+    },
+    "KASHI_BADA_GANESH_UTSAV": {
+      "name": "काशी बडागणेश उत्सव",
+      "prose": "काशी बडागणेश उत्सव"
     },
     "NARASIMHA_JAYANTI": {
       "name": "नृसिंह जयन्ती",

@@ -536,6 +536,10 @@ measures the fit and not a text (C600).
 | 2083 | KABIR_JAYANTI | 29 Jun | p. 7: कवीरजयन्ती | 29 Jun | 29 Jun |
 | 2082 | MASTA_PURNIMA | 11 Jun | p. 5: मष्टपूर्णिमा | 11 Jun | 11 Jun |
 | 2083 | MASTA_PURNIMA | 29 Jun | p. 7: मष्टपूर्णिमा | 29 Jun | 29 Jun |
+| 2082 | PANAUTI_SNAN_MELA | 11 Jun | p. 5: पनौतीस्नान | 11 Jun | 11 Jun |
+| 2083 | PANAUTI_SNAN_MELA | 29 Jun | p. 7: पनौतीस्नान | 29 Jun | 29 Jun |
+| 2082 | PANAUTI_JATRA | 11 Jun | p. 5: पनौती भैरवभद्रकाली इन्द्रेश्वर रथयात्रा | 11 Jun | 11 Jun |
+| 2083 | PANAUTI_JATRA | 29 Jun | p. 7: Ⓑ पनौती भैरवभद्रकाली इन्द्रेश्वररथयात्रा | 29 Jun | 29 Jun |
 | 2082 | BHAL_BHAL_ASHTAMI | 19 Jun | p. 6: भलभलअष्टमी | 19 Jun | 19 Jun |
 | 2083 | BHAL_BHAL_ASHTAMI | 8 Jul | p. 8: भलभलअष्टमी | 8 Jul | 8 Jul |
 | 2082 | DEOPATAN_TRISHUL_JATRA | 19 Jun | p. 6: देउपाटनमा त्रिशूलयात्रा | 19 Jun | 19 Jun |
@@ -802,6 +806,7 @@ measures the fit and not a text (C600).
 | 2082 | LALITPUR_NARSINGH_JATRA | 14 Aug | p. 10: ल.पु. नृसिंहयात्रा (उपाकलं सायाः) | 14 Aug | 13 Aug ✗ |
 | 2082 | KOJAGRAT_PURNIMA | 6 Oct | p. 13: कोजाग्रतव्रत | 6 Oct | 6 Oct |
 | 2082 | ARJUNDHARA_MELA | 18 Nov | p. 16: सताक्षीधाम तथा अर्जुनधारा मेला | 18 Nov | 18 Nov |
+| 2082 | KASHI_BADA_GANESH_UTSAV | 6 Jan | p. 20: काशीमा बडागणेश उत्सव | 6 Jan | 6 Jan |
 | 2082 | SI_PUNHI | 1 Feb | p. 21: (सिपून्हि) | 1 Feb | 1 Feb |
 | 2082 | KAMADA_EKADASHI | 29 Mar | p. 25: कामदाएकादशीव्रत | 29 Mar | 29 Mar |
 | 2083 | VARAHA_JAYANTI | 15 Aug | p. 11: वराहजयन्ती | 15 Aug | 15 Aug |
@@ -812,12 +817,13 @@ measures the fit and not a text (C600).
 | 2083 | LALITPUR_NARSINGH_JATRA | 1 Sep | p. 12: ल.पु. नृसिंहयात्रा (उपाकलं सायाः) | 1 Sep | 2 Sep ✗ |
 | 2083 | KOJAGRAT_PURNIMA | 25 Oct | p. 15: कोजाग्रतव्रत | 25 Oct | 25 Oct |
 | 2083 | ARJUNDHARA_MELA | 6 Dec | p. 18: झापा सताक्षीधाम तथा अर्जुनधारामेला | 6 Dec | 6 Dec |
+| 2083 | KASHI_BADA_GANESH_UTSAV | 25 Jan | p. 22: काशीमा बडागणेश उत्सव | 25 Jan | 25 Jan |
 | 2083 | SI_PUNHI | 20 Feb | p. 23: (सिपून्हि) | 20 Feb | 20 Feb |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 581 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 60 of 581 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 587 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 60 of 587 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 

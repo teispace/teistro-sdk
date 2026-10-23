@@ -71,6 +71,10 @@ enum Fit {
     /// The earlier day only when it alone holds the tithi at a window, the
     /// later otherwise: the full-moon fast's decision at sunset (C200).
     EarlierAlone(Window),
+    /// The earlier day whenever it holds the tithi at a window, alone or
+    /// with the later, the later otherwise: the Sankashta chaturthi's
+    /// decision at moonrise.
+    EarlierHolds(Window),
 }
 
 impl Fit {
@@ -110,6 +114,18 @@ impl Fit {
                 Later,
                 format!(
                     "{}: the earlier day only when it alone holds the tithi there, the later otherwise",
+                    Fit::name(window)
+                ),
+            ),
+            Fit::EarlierHolds(window) => (
+                window,
+                vec![
+                    Guard::new([case(Case::EarlierOnly)], Earlier),
+                    Guard::new([case(Case::Both)], Earlier),
+                ],
+                Later,
+                format!(
+                    "{}: the earlier day when it holds the tithi there, alone or with the later, the later otherwise",
                     Fit::name(window)
                 ),
             ),
@@ -633,7 +649,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 67] = [
 /// The rules a text gives, which the committee's print follows in both
 /// editions: key, month (amanta, the nija month), tithi, the decision,
 /// and the text with the page it was read from.
-const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 2] = [
+const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 3] = [
     (
         "NARASIMHA_JAYANTI",
         Masa::Vaishakha,
@@ -648,6 +664,13 @@ const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 2] = [
         Fit::EarlierAlone(Window::Nishitha),
         "Dharmasindhu p. 74, read off the page image: \"सा पूर्वत्रैव निशीथव्याप्तौ पूर्वा, उत्तरदिने एव दिनद्वयेऽपि वा निशीथव्याप्तौ दिनद्वये निशीथास्पर्शे वा उत्तरैव\", pradosha being only some authorities' reading (C617); Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: कोजाग्रतव्रत",
     ),
+    (
+        "KASHI_BADA_GANESH_UTSAV",
+        Masa::Pausha,
+        Tithi::KrishnaChaturthi,
+        Fit::EarlierHolds(Window::Moonrise),
+        "Dharmasindhu p. 9, the Sankashta chaturthi: the dark 4th at moonrise (चन्द्रोदयव्यापिनी), the earlier day, joined to the 3rd, when both hold it; Nepal's national panchanga, VS 2082 p. 20 and VS 2083 p. 22: काशीमा बडागणेश उत्सव, the purnimanta Magha's dark 4th, printed both years on the day whose sunrise holds the 3rd",
+    ),
 ];
 
 /// The days the committee prints on the udaya rule, each read off both
@@ -655,7 +678,7 @@ const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 2] = [
 /// is printed. Each also gives every day a patro printed in Nepal verified
 /// for it from 2013 to 2027, by a back-test kept outside the repository
 /// (`festival-classification.md`).
-const AT_SUNRISE: [(&str, Masa, Tithi, &str); 162] = [
+const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
     (
         "SAMVATSARA_ARAMBHA",
         Masa::Chaitra,
@@ -847,6 +870,18 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 162] = [
         Masa::Jyeshtha,
         Tithi::Purnima,
         "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 7: मष्टपूर्णिमा",
+    ),
+    (
+        "PANAUTI_SNAN_MELA",
+        Masa::Jyeshtha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 7: पनौतीस्नान, on the full moon's day, not the day before when पूर्णिमाव्रत is kept",
+    ),
+    (
+        "PANAUTI_JATRA",
+        Masa::Jyeshtha,
+        Tithi::Purnima,
+        "Nepal's national panchanga, VS 2082 p. 5: पनौती भैरवभद्रकाली इन्द्रेश्वर रथयात्रा; VS 2083 p. 7: पनौती भैरवभद्रकाली इन्द्रेश्वररथयात्रा, the text after Ⓑ that ends the full moon's row",
     ),
     (
         "BHAL_BHAL_ASHTAMI",
