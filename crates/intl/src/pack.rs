@@ -23,6 +23,10 @@ pub const BUNDLE_MAGIC: [u8; 4] = *b"TPB1";
 /// The container format version.
 pub const FORMAT_VERSION: u16 = 2;
 
+/// The fewest bytes a bundle's index entry takes: a `u16` name length
+/// and a `u32` pack length.
+const INDEX_ENTRY_MIN: usize = 6;
+
 const KIND_MESSAGE: u8 = 1;
 const KIND_ENTITY: u8 = 2;
 const TABLE_ENTRY: usize = 16;
@@ -535,6 +539,15 @@ impl<'a> Bundle<'a> {
         }
         let meta_len = cursor.u32()? as usize;
         let meta = cursor.take(meta_len)?;
+        // The count is the file's word, and the reader allocates by it:
+        // each index entry takes at least its name's length and its own
+        // (six bytes), so a count the bytes left cannot hold is refused
+        // before anything is reserved for it.
+        if count > bytes.len().saturating_sub(cursor.pos) / INDEX_ENTRY_MIN {
+            return Err(PackError(format!(
+                "an index of {count} packs is longer than the bundle"
+            )));
+        }
         let mut index = Vec::with_capacity(count);
         for _ in 0..count {
             let name = cursor.u16_str()?;
@@ -784,6 +797,23 @@ mod tests {
         let mut extended = bytes.clone();
         extended.push(0);
         assert!(Pack::parse(&extended).is_err_and(|e| e.0.contains("trailing")));
+    }
+
+    #[test]
+    fn a_bundle_whose_count_outruns_its_bytes_is_refused_unallocated() {
+        // The fuzz smoke's input (verify, 2026-10-23): a valid checksum
+        // over a count of 0x4E490000 packs, which the reader once
+        // reserved 29 GB for before reading the first.
+        let bytes: &[u8] = b"TPB1\x02\x00\x00\x00\x00\x00\x00\x00IN\xbf\x12\xaa~\xe2\xcdgV$\xff\xff\xff_r|ici\
+            \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+            @2paka\x02\x18\x11\x10\xde#\xa3q8\xcdy\x01\x00\x00{\"loc\x00";
+        assert_eq!(bytes.len(), 83);
+        // Refused at the count, so the checksum held and the input
+        // reaches the reservation it once made.
+        assert!(
+            Bundle::parse(bytes).is_err_and(|e| e.0.contains("longer than the bundle")),
+            "the count is refused"
+        );
     }
 
     #[test]

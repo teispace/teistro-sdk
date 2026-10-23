@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A count is checked before it is allocated for.** **Numbers:** none
+move. The verify run's fuzz smoke handed `ts_intl_load_pack` an 83-byte
+locale bundle with a valid checksum and a count of 0x4E490000 packs, and
+the reader reserved 29 GB for its index before reading the first entry.
+A bundle's index is now refused when the bytes left cannot hold it, and
+the answer blob's reader does the same for its table, which trusted its
+count the same way. A malformed input is refused as `INVALID_ARG`
+rather than aborting the process.
+
 **Four festivals as printed** (`festival-classification.md`, C693).
 **Numbers:** none computed move; four festivals that had no rule now
 answer. `NEPAL_PANCHANGA` gains `PANAUTI_SNAN_MELA` and `PANAUTI_JATRA`
