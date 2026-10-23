@@ -92,7 +92,7 @@ beside the module to drift from it.
 
 A quantity that would otherwise be swappable is its own type:
 
-```python
+```python fragment
 from teistro import Observer
 from teistro._ffi import Altitude, Latitude, Longitude
 
@@ -114,7 +114,7 @@ A decoded column is a read-only `memoryview` over the blob's own bytes,
 not a copy, so a large grid costs one allocation. `numpy.asarray` wraps
 such a view without copying:
 
-```python
+```python fragment
 import numpy as np
 
 sky = ctx.positions(instants=jds, bodies=[Body.SUN])
@@ -129,11 +129,14 @@ A context with no ephemeris computes calendars, times and messages;
 positions need one. `ephemeris` names it, or names an **ordered chain**
 tried in order (ADR-0029):
 
-```python
-from teistro_ephemeris_teimeris import teimeris
-
-# A real engine, and the SDK's own only if it is not there.
-ctx = sdk.context(ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN])
+```python title="adapters/ephemeris-teimeris/python/typecheck/consumer.py"
+from teistro_ephemeris_teimeris import engine, teimeris
+# …
+    # A real engine, and the SDK's own only if it is not there.
+    with sdk.context(
+        profile="parashari-classical",
+        ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN],
+    ) as ctx:
 ```
 
 **That is the intended path.** In most cases a consumer should be on a
@@ -158,26 +161,34 @@ Subclass `EphemerisProvider` and give the context one. It is asked once
 for a whole grid, never in a loop, and everything but the name, the
 bodies and the positions has a default.
 
-```python
-from teistro import Body, EphemerisProvider, PositionAnswer, PositionQuery, Teistro
-
-
-class MyEphemeris(EphemerisProvider):
-    name = "my-ephemeris"
-    bodies = [Body.SUN, Body.MOON]
-
-    def positions(self, query: PositionQuery) -> PositionAnswer | None:
-        cells = query.cell_count
-        # Return None for "not in that frame": the SDK then asks in your
-        # native frame and completes the rest itself.
-        return PositionAnswer(
-            lon=[0.0] * cells, lat=[0.0] * cells, dist=[1.0] * cells
-        )
-
-
-with Teistro.open().context(provider=MyEphemeris()) as ctx:
-    ...
+```python title="bindings/python/example/your_own_ephemeris.py"
+class TableEphemeris(EphemerisProvider):
+# …
+    name = "table-ephemeris"
+    version = "1.0.0"
+# …
+    bodies: Sequence[Body] = (Body.SUN, Body.MOON)
+# …
+    def positions(self, query: PositionQuery) -> Optional[PositionAnswer]:
+# …
+        # Cells run instants outermost: cell `i * len(bodies) + j` is
+        # instant `i`, body `j`. Building the columns in that order is
+        # the whole of the contract.
+        lon: list[float] = []
+        for jd in query.jds:
+            days = jd - 2451545.0
+            for body in query.bodies:
+                rate = 0.9856 if body == Body.SUN else 13.1764
+                start = 280.46 if body == Body.SUN else 218.32
+                lon.append((start + rate * days) % 360.0)
+# …
+    provider = TableEphemeris()
+    with teistro.context(profile="parashari-classical", provider=provider) as ctx:
 ```
+
+The whole program, [`example/your_own_ephemeris.py`](example/your_own_ephemeris.py),
+also answers `None` for a frame it does not compute, so the SDK asks in
+its own and completes the rest, and shows each way a provider is refused.
 
 What the provider raises reaches the caller: only a code crosses the C
 boundary, so the adapter keeps the exception and re-raises it on the

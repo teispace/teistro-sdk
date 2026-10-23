@@ -5,6 +5,7 @@ import com.teispace.teistro.Context;
 import com.teispace.teistro.ContextOptions;
 import com.teispace.teistro.Ephemeris;
 import com.teispace.teistro.EphemerisChoice;
+import com.teispace.teistro.Plugin;
 import com.teispace.teistro.Teistro;
 import com.teispace.teistro.teimeris.Teimeris;
 import com.teispace.teistro.teimeris.TeimerisEngine;
@@ -85,5 +86,13 @@ public final class Consumer {
             List<Double> cusps = houses.cusps();
             System.out.println(cusps.size() + " cusps, ascendant " + houses.outAngles().ascendant());
         }
+
+        // Years beyond the built-in ones, from files the app downloaded.
+        String cache = "./cache";
+        Plugin ranged = Teimeris.builder()
+                .file(cache + "/sepl_12.se1")
+                .file(cache + "/semo_12.se1") // adds 1200 to 1799
+                .build();
+        System.out.println(ranged);
     }
 }

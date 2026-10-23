@@ -9,7 +9,8 @@
 
 import { Context, nepalOfficial } from '@teistro/sdk';
 import { teimerisWeb, type TeimerisWasm } from '../web.js';
-import teimeris, { engine, binary, platformPackage, type TmDatetime, type TmPosition, type TmStar } from '../index.js';
+import teimeris, { engine } from '../index.js';
+import { binary, platformPackage, type TmDatetime, type TmPosition, type TmStar } from '../index.js';
 
 // The descriptor is what an `ephemeris` chain takes.
 const sdk = new Context({

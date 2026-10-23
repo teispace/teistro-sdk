@@ -21,7 +21,7 @@ dependencies:
   teistro_ephemeris_teimeris_flutter: ...    # this package
 ```
 
-```dart
+```dart fragment
 import 'package:teistro/teistro.dart';
 import 'package:teistro_ephemeris_teimeris_flutter/teistro_ephemeris_teimeris_flutter.dart';
 
@@ -54,7 +54,7 @@ Moon's (`semo_*.se1`), and a third (`seas_*.se1`) for Chiron, Ceres,
 Pallas, Juno and Vesta. Download a block's files into the app's own
 storage, then name them:
 
-```dart
+```dart fragment
 final support = (await getApplicationSupportDirectory()).path;
 final ctx = sdk.context(ephemeris: [
   teimeris(files: ['$support/sepl_12.se1', '$support/semo_12.se1']), // adds 1200 to 1799

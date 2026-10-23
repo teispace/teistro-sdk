@@ -7,13 +7,21 @@ The SDK computes with whatever ephemeris it is given. In most cases that
 should be a real engine — Teimeris here — and the SDK's own built-in is
 the fallback rather than the intended path (ADR-0029).
 
-```dart
+```dart title="adapters/ephemeris-teimeris/dart/example/consumer.dart"
 import 'package:teistro/teistro.dart';
 import 'package:teistro_ephemeris_teimeris/teistro_ephemeris_teimeris.dart';
-
-final sdk = Teistro.open();
-final ctx = sdk.context(ephemeris: [teimeris(dataDir: './ephe')]);
-ctx.engine.tmBodyName(body: 0); // 'Sun'
+// …
+  final teistro = Teistro.open();
+  // A real engine, and the SDK's own only if it is not there.
+  final ctx = teistro.context(
+    profile: 'parashari-classical',
+    ephemeris: [
+      teimeris(dataDir: './ephe'),
+      const NamedEphemeris(Ephemeris.builtin),
+    ],
+  );
+// …
+  final String name = ctx.engine.tmBodyName(body: 0);
 ```
 
 The façade is an **extension**, so importing this package is what makes
@@ -38,10 +46,10 @@ Moon's (`semo_*.se1`), and a third (`seas_*.se1`) for Chiron, Ceres,
 Pallas, Juno and Vesta. Download a block's files into the app's own
 storage, then name them:
 
-```dart
-final ctx = sdk.context(ephemeris: [
-  teimeris(files: ['$cache/sepl_12.se1', '$cache/semo_12.se1']), // adds 1200 to 1799
-]);
+```dart title="adapters/ephemeris-teimeris/dart/example/consumer.dart"
+  final ranged = teistro.context(ephemeris: [
+    teimeris(files: ['$cache/sepl_12.se1', '$cache/semo_12.se1']), // adds 1200 to 1799
+  ]);
 ```
 
 `dataDir` names a directory of data files read after the built-in ones; `embedded: false` leaves the built-in data out.

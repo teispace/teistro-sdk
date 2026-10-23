@@ -5,7 +5,7 @@ The Teistro SDK as WebAssembly: **the same API as
 native addon. Use it in a browser, a Web Worker, or any JavaScript host no
 prebuilt addon covers.
 
-```js
+```js fragment
 import { Body, Context } from '@teistro/sdk-wasm';
 
 const ctx = new Context({ profile: 'parashari-classical', ephemeris: 'BUILTIN' });
@@ -42,7 +42,7 @@ synchronously everywhere else), so nothing you import is ever half-ready.
   a Worker must. The bundle is about 1.4 MB gzipped, within the free
   plan's 3 MB.
 
-  ```js
+  ```js fragment
   import { Body, Context } from '@teistro/sdk-wasm';
 
   export default {
@@ -85,7 +85,7 @@ A patro, a calendar widget or an almanac page needs the calendars, the
 days and the muhurta search, and not the charts. Import the subpath and
 the bundle carries a module about half the size:
 
-```js
+```js fragment
 import { Calendar, Context } from '@teistro/sdk-wasm/panchanga';
 ```
 
