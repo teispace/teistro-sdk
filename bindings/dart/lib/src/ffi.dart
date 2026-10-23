@@ -871,7 +871,7 @@ final class ChartRequestStruct extends ffi.Struct {
   external double longitudeDeg;
 
   /// The place's altitude, metres above the ellipsoid.
-  /// Unit: m. Range: [-500,9000]. Example: 1400.
+  /// Unit: m. Range: [-500,12000]. Example: 1400.
   @ffi.Double()
   external double altitudeM;
 
@@ -1515,7 +1515,7 @@ final class ZoneSpecStruct extends ffi.Struct {
   external ffi.Array<ffi.Uint8> reserved;
 
   /// The offset east of UTC in seconds, for a fixed offset.
-  /// Unit: s. Range: [-86400,86400]. Example: 20700.
+  /// Unit: s. Range: [-64800,64800]. Example: 20700.
   @ffi.Int32()
   external int offsetSeconds;
 
@@ -1785,7 +1785,7 @@ final class PanchangaRequestStruct extends ffi.Struct {
   external double longitudeDeg;
 
   /// The place's altitude, metres above the ellipsoid.
-  /// Unit: m. Range: [-500,9000]. Example: 1400.
+  /// Unit: m. Range: [-500,12000]. Example: 1400.
   @ffi.Double()
   external double altitudeM;
 
@@ -3736,7 +3736,7 @@ final class ChartRequest {
   final double longitudeDeg;
 
   /// The place's altitude, metres above the ellipsoid.
-  /// Unit: m. Range: [-500,9000]. Example: 1400.
+  /// Unit: m. Range: [-500,12000]. Example: 1400.
   final double altitudeM;
 
   /// The local clock's offset from UTC in seconds, east positive: the
@@ -4702,7 +4702,7 @@ final class ZoneSpec {
   final ZoneKind kind;
 
   /// The offset east of UTC in seconds, for a fixed offset.
-  /// Unit: s. Range: [-86400,86400]. Example: 20700.
+  /// Unit: s. Range: [-64800,64800]. Example: 20700.
   final int offsetSeconds;
 
   /// The longitude east-positive in degrees, for local mean time.
@@ -5100,7 +5100,7 @@ final class PanchangaRequest {
   final double longitudeDeg;
 
   /// The place's altitude, metres above the ellipsoid.
-  /// Unit: m. Range: [-500,9000]. Example: 1400.
+  /// Unit: m. Range: [-500,12000]. Example: 1400.
   final double altitudeM;
 
   /// The local clock's offset from UTC in seconds, east positive: the

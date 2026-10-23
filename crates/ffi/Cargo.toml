@@ -116,6 +116,10 @@ name = "keys"
 required-features = ["full"]
 
 [[test]]
+name = "ranges"
+required-features = ["full"]
+
+[[test]]
 name = "description"
 required-features = ["full"]
 

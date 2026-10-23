@@ -732,7 +732,7 @@ export interface ChartRequest {
   /**
    * The place's altitude, metres above the ellipsoid.
    * @unit m
-   * @range [-500,9000]
+   * @range [-500,12000]
    * @example 1400
    */
   readonly altitudeM: number;
@@ -1418,7 +1418,7 @@ export interface ZoneSpec {
   /**
    * The offset east of UTC in seconds, for a fixed offset.
    * @unit s
-   * @range [-86400,86400]
+   * @range [-64800,64800]
    * @example 20700
    */
   readonly offsetSeconds: number;
@@ -1697,7 +1697,7 @@ export interface PanchangaRequest {
   /**
    * The place's altitude, metres above the ellipsoid.
    * @unit m
-   * @range [-500,9000]
+   * @range [-500,12000]
    * @example 1400
    */
   readonly altitudeM: number;

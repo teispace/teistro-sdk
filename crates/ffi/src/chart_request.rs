@@ -48,7 +48,7 @@ pub struct TsChartRequest {
     /// `api: unit=deg range=[-180,180] example=85.324`
     pub longitude_deg: f64,
     /// The place's altitude, metres above the ellipsoid.
-    /// `api: unit=m range=[-500,9000] example=1400`
+    /// `api: unit=m range=[-500,12000] example=1400`
     pub altitude_m: f64,
     /// The local clock's offset from UTC in seconds, east positive: the
     /// clock the day's date is read in.

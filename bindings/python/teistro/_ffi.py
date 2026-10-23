@@ -2309,7 +2309,7 @@ class ChartRequest:
 
     altitude_m: float
     """The place's altitude, metres above the ellipsoid.
-    Unit: m. Range: [-500,9000]. Example: 1400.
+    Unit: m. Range: [-500,12000]. Example: 1400.
     """
 
     utc_offset_seconds: int
@@ -3218,7 +3218,7 @@ class ZoneSpec:
 
     offset_seconds: int
     """The offset east of UTC in seconds, for a fixed offset.
-    Unit: s. Range: [-86400,86400]. Example: 20700.
+    Unit: s. Range: [-64800,64800]. Example: 20700.
     """
 
     longitude_deg: Longitude
@@ -3675,7 +3675,7 @@ class PanchangaRequest:
 
     altitude_m: float
     """The place's altitude, metres above the ellipsoid.
-    Unit: m. Range: [-500,9000]. Example: 1400.
+    Unit: m. Range: [-500,12000]. Example: 1400.
     """
 
     utc_offset_seconds: int
