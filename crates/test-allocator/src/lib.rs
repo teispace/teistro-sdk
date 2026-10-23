@@ -23,6 +23,23 @@
 //! // Created and dropped inside: nothing retained.
 //! let ((), counts) = measure(|| drop(vec![0_u8; 64]));
 //! assert_eq!((counts.bytes, counts.retained()), (64, 0));
+//!
+//! // Two blocks, the first freed before the second: 96 bytes asked for,
+//! // never more than 64 held at once.
+//! let ((), counts) = measure(|| {
+//!     drop(vec![0_u8; 64]);
+//!     drop(vec![0_u8; 32]);
+//! });
+//! assert_eq!((counts.bytes, counts.peak), (96, 64));
+//!
+//! // A measurement inside another: its peak sits on what the outer held.
+//! let ((), outer) = measure(|| {
+//!     let held = vec![0_u8; 100];
+//!     let ((), inner) = measure(|| drop(vec![0_u8; 50]));
+//!     assert_eq!(inner.peak, 50);
+//!     drop(held);
+//! });
+//! assert_eq!((outer.bytes, outer.peak, outer.retained()), (150, 150, 0));
 //! ```
 
 use std::alloc::{GlobalAlloc, Layout, System};
@@ -35,6 +52,11 @@ thread_local! {
     static ALLOCATIONS: Cell<u64> = const { Cell::new(0) };
     static BYTES: Cell<u64> = const { Cell::new(0) };
     static FREED: Cell<u64> = const { Cell::new(0) };
+    /// The bytes held now and the most held at once, of what the
+    /// measurement allocated. `LIVE` goes below zero when the measurement
+    /// frees memory allocated before it.
+    static LIVE: Cell<i64> = const { Cell::new(0) };
+    static PEAK: Cell<u64> = const { Cell::new(0) };
     static MEASURING: Cell<bool> = const { Cell::new(false) };
 }
 
@@ -51,6 +73,11 @@ pub struct Counts {
     /// counts here too, so a measurement meant to find a leak runs its
     /// work once untimed first.
     pub freed: u64,
+    /// The most bytes the measurement held at once of what it allocated:
+    /// an operation's peak memory, where [`Counts::bytes`] is its
+    /// throughput. A reallocation counts its new block before it gives
+    /// back the old, as a reallocation that moves holds both.
+    pub peak: u64,
 }
 
 impl Counts {
@@ -88,10 +115,16 @@ impl<A> Counting<A> {
     }
 }
 
+/// A block's size as the live count reads it.
+fn signed(size: usize) -> i64 {
+    i64::try_from(size).unwrap_or(i64::MAX)
+}
+
 /// Records one release, when a measurement is running.
 fn release(size: usize) {
     if MEASURING.with(Cell::get) {
         FREED.with(|freed| freed.set(freed.get().saturating_add(size as u64)));
+        LIVE.with(|live| live.set(live.get().saturating_sub(signed(size))));
     }
 }
 
@@ -100,6 +133,12 @@ fn record(size: usize) {
     if MEASURING.with(Cell::get) {
         ALLOCATIONS.with(|count| count.set(count.get().saturating_add(1)));
         BYTES.with(|bytes| bytes.set(bytes.get().saturating_add(size as u64)));
+        let live = LIVE.with(|live| {
+            live.set(live.get().saturating_add(signed(size)));
+            live.get()
+        });
+        let held = u64::try_from(live).unwrap_or(0);
+        PEAK.with(|peak| peak.set(peak.get().max(held)));
     }
 }
 
@@ -141,27 +180,37 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for Counting<A> {
 ///
 /// Measurements do not nest: an inner one counts into its own totals and
 /// the outer one resumes where it left off, which is what a helper that
-/// measures inside a measured block would want.
+/// measures inside a measured block would want. The outer peak takes the
+/// inner one on top of what the outer held when the inner began.
 pub fn measure<T>(f: impl FnOnce() -> T) -> (T, Counts) {
     let outer = (
         MEASURING.with(Cell::get),
         ALLOCATIONS.with(Cell::get),
         BYTES.with(Cell::get),
         FREED.with(Cell::get),
+        LIVE.with(Cell::get),
+        PEAK.with(Cell::get),
     );
     ALLOCATIONS.with(|count| count.set(0));
     BYTES.with(|bytes| bytes.set(0));
     FREED.with(|freed| freed.set(0));
+    LIVE.with(|live| live.set(0));
+    PEAK.with(|peak| peak.set(0));
     MEASURING.with(|on| on.set(true));
     let value = f();
     let counts = Counts {
         allocations: ALLOCATIONS.with(Cell::get),
         bytes: BYTES.with(Cell::get),
         freed: FREED.with(Cell::get),
+        peak: PEAK.with(Cell::get),
     };
+    let live = LIVE.with(Cell::get);
     MEASURING.with(|on| on.set(outer.0));
     ALLOCATIONS.with(|count| count.set(outer.1.saturating_add(counts.allocations)));
     BYTES.with(|bytes| bytes.set(outer.2.saturating_add(counts.bytes)));
     FREED.with(|freed| freed.set(outer.3.saturating_add(counts.freed)));
+    LIVE.with(|held| held.set(outer.4.saturating_add(live)));
+    let under = u64::try_from(outer.4).unwrap_or(0);
+    PEAK.with(|peak| peak.set(outer.5.max(under.saturating_add(counts.peak))));
     (value, counts)
 }
