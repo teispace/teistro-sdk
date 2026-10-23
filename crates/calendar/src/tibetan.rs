@@ -187,7 +187,7 @@ pub fn losar(year: i32) -> FixedDay {
 
 /// Which neighbour keeps an observance whose date's number is skipped.
 ///
-/// Janson §11, after his [21]: "if that date is skipped, the holiday is
+/// Janson §11, after his \[21\]: "if that date is skipped, the holiday is
 /// on the preceding day", and FPMT kept Chotrul Duchen 2018, whose 15th
 /// of month 1 was skipped, on 1 March, the 14th; Tushita, in Dharamsala,
 /// printed 2 March, the 16th. The preceding day is the one in which the
@@ -214,7 +214,7 @@ pub enum SkippedDay {
 /// Project, in Dharamsala, printed Saga Dawa Duchen 2016 on 21 May, the
 /// 15th of leap month 4, Lhabab Duchen 2021 on 27 October, the 22nd of
 /// leap month 9, and Chokhor Duchen 2024 on 9 July, the first of the two
-/// 4ths of leap month 6. Janson's [21] holds holidays out of a leap month,
+/// 4ths of leap month 6. Janson's \[21\] holds holidays out of a leap month,
 /// a reading those three years do not follow (`calendars/tibetan.md`).
 ///
 /// ```
