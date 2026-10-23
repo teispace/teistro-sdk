@@ -7,8 +7,6 @@
 
 use core::fmt::Write as _;
 
-use serde_json::Value;
-
 use core::fmt;
 use std::borrow::Cow;
 
@@ -103,8 +101,8 @@ pub fn canonical_json_at<T: serde::Serialize + ?Sized>(value: &T, decimals: u8) 
 /// a varga scheme serde could not write sealed every document carrying it
 /// with the hash of nothing, and nothing noticed.
 fn written<T: serde::Serialize + ?Sized>(value: &T, digits: Digits) -> String {
-    match serde_json::to_value(value) {
-        Ok(value) => write_canonical(&value, digits),
+    match canonical::write(value, digits) {
+        Ok(text) => text,
         Err(error) => {
             debug_assert!(false, "a value serde cannot write: {error}");
             String::new()
@@ -155,14 +153,21 @@ pub fn content_hashes<T: serde::Serialize>(items: &[T]) -> (Hash, Vec<Hash>) {
     (Hash(list.finalize().into()), each)
 }
 
-/// A value in the canonical form, at a given number of decimals.
-fn write_canonical(value: &Value, digits: Digits) -> String {
+mod canonical;
+
+/// A value in the canonical form, at a given number of decimals, written
+/// from a `serde_json::Value` tree: the writer the form was first defined
+/// by, kept as the reference [`canonical::write`] is held to.
+#[cfg(test)]
+fn write_canonical(value: &serde_json::Value, digits: Digits) -> String {
     let mut out = String::new();
     push_canonical(value, digits, &mut out);
     out
 }
 
-fn push_canonical(value: &Value, digits: Digits, out: &mut String) {
+#[cfg(test)]
+fn push_canonical(value: &serde_json::Value, digits: Digits, out: &mut String) {
+    use serde_json::Value;
     match value {
         Value::Null => out.push_str("null"),
         Value::Bool(true) => out.push_str("true"),
@@ -202,6 +207,7 @@ fn push_canonical(value: &Value, digits: Digits, out: &mut String) {
 
 /// A number in the grammar: a decimal, never an exponent, trailing zeros
 /// trimmed, and no negative nought.
+#[cfg(test)]
 fn push_number(number: &serde_json::Number, digits: Digits, out: &mut String) {
     if let Some(integer) = number.as_i64() {
         let _ = write!(out, "{integer}");
@@ -219,31 +225,42 @@ fn push_number(number: &serde_json::Number, digits: Digits, out: &mut String) {
 /// A double as a plain decimal.
 #[must_use]
 pub fn decimal(value: f64, digits: Digits) -> String {
+    let mut out = String::new();
+    push_decimal(value, digits, &mut out);
+    out
+}
+
+/// [`decimal`], written onto the end of `out`.
+fn push_decimal(value: f64, digits: Digits, out: &mut String) {
     if !value.is_finite() {
         // JSON has no infinity and no NaN; a value that reached here is
         // a caller's mistake and nought is the only representable
         // answer. `Derived::at` and its like refuse such a value long
         // before this.
-        return String::from("0");
+        out.push('0');
+        return;
     }
-    let text = match digits {
+    let start = out.len();
+    let _ = match digits {
         // Rust's `Display` for a double is the shortest decimal that
         // reads back as the same value, and it never writes an exponent,
         // which is this grammar's other rule. Nothing to do but ask for
         // it.
-        Digits::Shortest => format!("{value}"),
-        Digits::Rounded(decimals) => format!("{value:.*}", usize::from(decimals)),
+        Digits::Shortest => write!(out, "{value}"),
+        Digits::Rounded(decimals) => write!(out, "{value:.*}", usize::from(decimals)),
     };
-    let trimmed = if text.contains('.') {
-        text.trim_end_matches('0').trim_end_matches('.')
+    let written = out.get(start..).unwrap_or_default();
+    let kept = if written.contains('.') {
+        written.trim_end_matches('0').trim_end_matches('.').len()
     } else {
-        text.as_str()
+        written.len()
     };
+    out.truncate(start + kept);
     // `-0`, `-0.0` and the like are one value with one spelling.
-    if trimmed == "-0" || trimmed.is_empty() {
-        return String::from("0");
+    if matches!(out.get(start..), Some("-0" | "")) {
+        out.truncate(start);
+        out.push('0');
     }
-    trimmed.to_string()
 }
 
 /// A string with the escapes JSON requires and no others, so two writers
