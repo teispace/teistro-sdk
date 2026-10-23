@@ -21,6 +21,14 @@ millennia would hold a worker for minutes. **Added:** `Limits::years`
 and `--max-years`, 150 by default (a century and a half answers in about
 four seconds): a window past it is a `LIMIT` naming `sadeSati.to`.
 
+**A number's digit options are held to their range** (`intl::render`,
+`:number`). **Numbers:** none move. A message asking `:number` for more
+fraction digits than ECMA-402's `Intl.NumberFormat` allows (100), or
+more integer digits (21), was written with that many digits: the new
+`mf2` fuzz target found `maximumFractionDigits=87777777777`, which
+aborted on its allocation. The option is now ignored with a warning.
+No shipped message asks for more than 2 digits of either.
+
 **Every described range is refused naming its field** (`idl/api.json`,
 `crates/ffi/tests/ranges.rs`). **Numbers:** none move. A test now reads
 each ranged field from the API description and sends it the nearest
