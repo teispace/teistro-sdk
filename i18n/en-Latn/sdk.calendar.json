@@ -76,6 +76,15 @@
    "full": ".input {$leap :string} .match $leap DAY {{{$weekdayName}, {$monthName}, leap day {$day :integer}, {$year :integer useGrouping=false}}} MONTH_AND_DAY {{{$weekdayName}, {$monthName}, leap day {$day :integer}, {$year :integer useGrouping=false}}} * {{{$weekdayName}, {$monthName}, day {$day :integer}, {$year :integer useGrouping=false}}}"
   }
  },
+ "BANGLADESHI": {
+  "monthName": ".input {$month :integer} .match $month 1 {{Boishakh}} 2 {{Joishtho}} 3 {{Asharh}} 4 {{Srabon}} 5 {{Bhadro}} 6 {{Ashwin}} 7 {{Kartik}} 8 {{Ogrohayon}} 9 {{Poush}} 10 {{Magh}} 11 {{Falgun}} 12 {{Choitro}} * {{{$month}}}",
+  "monthShort": "{sdk.calendar.BANGLADESHI.monthName :msg}",
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} Bangabda",
+   "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} Bangabda",
+   "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} Bangabda"
+  }
+ },
  "time": {
   "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
   "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",

@@ -66,3 +66,10 @@ members:
       - text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014"
         ref: "docs/calendars/tibetan.md"
     mark: V
+  - key: BANGLADESHI
+    id: 9
+    doc: "Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019"
+    sources:
+      - text: "Bangla Academy's 2019 revision, as reported by the Dhaka Tribune and Prothom Alo"
+        ref: "docs/calendars/bangladeshi.md"
+    mark: V

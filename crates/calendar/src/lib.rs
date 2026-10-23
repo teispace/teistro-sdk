@@ -14,6 +14,7 @@
 //! assert_eq!(day.weekday().to_string(), "Tuesday");
 //! ```
 
+pub mod bangladeshi;
 pub mod bikram_sambat;
 pub mod date;
 pub mod easter;

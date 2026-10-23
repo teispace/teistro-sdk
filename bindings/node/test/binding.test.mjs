@@ -736,8 +736,9 @@ test('every catalogue enum has a complete id table', () => {
   // its era; 1384 since the Tibetan calendar and `TsLeap`, three; 1403
   // since the Tibetan year's `TsTibetanElement`, five, and
   // `TsTibetanAnimal`, twelve, with their two members of `TsKind`; 1404
-  // since `TsDashaFamily` gained `GRAHA`, the Karaka dasha's kernel.
-  assert.equal(entries, 1404, 'every member of every enum is in a table');
+  // since `TsDashaFamily` gained `GRAHA`, the Karaka dasha's kernel; 1405
+  // since `TsCalendar` gained the Bangladeshi calendar.
+  assert.equal(entries, 1405, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4489,6 +4490,9 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   const independence = { ...gregorian, year: 1947, eraYear: 1947, month: 8, day: 15 };
   const saka = ctx.calendar.convert(independence, Calendar.IndianNational);
   assert.deepEqual([saka.era, saka.year, saka.month, saka.day], ['era.SHAKA', 1869, 5, 24]);
+  // Ekushey in the Bangladeshi calendar: 21 February 2025 is 8 Falgun 1431.
+  const ekushey = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 2, day: 21 }, Calendar.Bangladeshi);
+  assert.deepEqual([ekushey.era, ekushey.year, ekushey.month, ekushey.day], ['era.BENGALI', 1431, 11, 8]);
   // And the tabular Hijri calendar's: 1 Ramadan 1446 is 1 March 2025.
   const ramadan = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 3, day: 1 }, Calendar.HijriTabular);
   assert.deepEqual([ramadan.era, ramadan.year, ramadan.month, ramadan.day], ['era.HIJRI', 1446, 9, 1]);
@@ -4977,7 +4981,7 @@ test('an almanac writes its festivals as an iCalendar feed', () => {
     assert.ok(parana > 0);
     assert.equal(ics.split('\r\nDTSTART:').length - 1, parana);
     // Kartik's sankranti on the first of the Bikram Sambat month.
-    const [tula] = answer.dated;
+    const tula = answer.dated.find((day) => day.rule === 'TULA_SANKRANTI');
     assert.equal(tula.rule, 'TULA_SANKRANTI');
     assert.deepEqual([tula.day.month, tula.day.day], [10, 18]);
     assert.deepEqual([tula.on.calendar, tula.on.month, tula.on.day], ['calendar.BIKRAM_SAMBAT', 7, 1]);

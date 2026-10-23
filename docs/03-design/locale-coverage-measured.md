@@ -6,13 +6,13 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 422 of 498 | 84.7% | 145 of 145 | 100.0% |
-| `hi-Deva-IN` | base | 332 of 498 | 66.7% | 1 of 145 | 0.7% |
-| `ne-Deva-NP` | strict | 422 of 498 | 84.7% | 145 of 145 | 100.0% |
-| `sa-Deva` | base | 332 of 498 | 66.7% | 0 of 145 | 0.0% |
-| `sa-Latn` | base | 332 of 498 | 66.7% | 0 of 145 | 0.0% |
+| `en-Latn` | strict | 422 of 499 | 84.6% | 150 of 150 | 100.0% |
+| `hi-Deva-IN` | base | 332 of 499 | 66.5% | 1 of 150 | 0.7% |
+| `ne-Deva-NP` | strict | 422 of 499 | 84.6% | 150 of 150 | 100.0% |
+| `sa-Deva` | base | 332 of 499 | 66.5% | 0 of 150 | 0.0% |
+| `sa-Latn` | base | 332 of 499 | 66.5% | 0 of 150 | 0.0% |
 
-498 members of 38 kinds, 145 messages.
+499 members of 38 kinds, 150 messages.
 
 ## By kind
 
@@ -26,7 +26,7 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `avastha_sayanadi` | 12 | 12 | 0 | 12 | 0 | 0 |
 | `ayana` | 2 | 2 | 2 | 2 | 2 | 2 |
 | `ayanamsha` | 47 | 47 | 47 | 47 | 47 | 47 |
-| `calendar` | 9 | 0 | 0 | 0 | 0 | 0 |
+| `calendar` | 10 | 0 | 0 | 0 | 0 | 0 |
 | `chart_kind` | 7 | 0 | 0 | 0 | 0 | 0 |
 | `choghadiya` | 7 | 7 | 7 | 7 | 7 | 7 |
 | `dasha_system` | 45 | 29 | 18 | 29 | 18 | 18 |

@@ -235,6 +235,15 @@ void main() {
       [saka.era, saka.year, saka.month, saka.day],
       [Era.shaka, 1869, 5, 24],
     );
+    // Ekushey in the Bangladeshi calendar: 8 Falgun 1431.
+    final ekushey = ctx.calendar.convert(
+      gregorian(2025, 2, 21),
+      Calendar.bangladeshi,
+    );
+    expect(
+      [ekushey.era, ekushey.year, ekushey.month, ekushey.day],
+      [Era.bengali, 1431, 11, 8],
+    );
     // And 1 Ramadan 1446 in the tabular Hijri calendar.
     final ramadan = ctx.calendar.convert(
       gregorian(2025, 3, 1),
@@ -793,7 +802,7 @@ void _engineTests() {
     expect(parana, greaterThan(0));
     expect('\r\nDTSTART:'.allMatches(ics).length, parana);
     // Kartik's sankranti on the first of the Bikram Sambat month.
-    final tula = answer.dated.first;
+    final tula = answer.dated.firstWhere((day) => day.rule == 'TULA_SANKRANTI');
     expect(
       (tula.rule, tula.day.month, tula.day.day),
       ('TULA_SANKRANTI', 10, 18),

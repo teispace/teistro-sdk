@@ -7004,6 +7004,11 @@ class MessagesSdkCalendar:
 
 
     @property
+    def bangladeshi(self) -> MessagesSdkCalendarBangladeshi:
+        """The messages under `BANGLADESHI`."""
+        return MessagesSdkCalendarBangladeshi(self._r)
+
+    @property
     def bikram_sambat(self) -> MessagesSdkCalendarBikramSambat:
         """The messages under `BIKRAM_SAMBAT`."""
         return MessagesSdkCalendarBikramSambat(self._r)
@@ -7663,6 +7668,59 @@ class MessagesSdkCalendarBikramSambatDate:
         """`sdk.calendar.BIKRAM_SAMBAT.date.numeric`"""
         return self._r.render(
             "sdk.calendar.BIKRAM_SAMBAT.date.numeric",
+            {"day": day, "month": month, "year": year},
+        )
+
+
+class MessagesSdkCalendarBangladeshi:
+    """The messages under `MessagesSdkCalendarBangladeshi`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def date(self) -> MessagesSdkCalendarBangladeshiDate:
+        """The messages under `date`."""
+        return MessagesSdkCalendarBangladeshiDate(self._r)
+
+    def month_name(self, *, month: int) -> str:
+        """`sdk.calendar.BANGLADESHI.monthName`"""
+        return self._r.render(
+            "sdk.calendar.BANGLADESHI.monthName",
+            {"month": month},
+        )
+
+    def month_short(self) -> str:
+        """`sdk.calendar.BANGLADESHI.monthShort`"""
+        return self._r.render("sdk.calendar.BANGLADESHI.monthShort")
+
+
+class MessagesSdkCalendarBangladeshiDate:
+    """The messages under `MessagesSdkCalendarBangladeshiDate`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def full(self, *, day: int, month_name: str, weekday_name: str, year: int) -> str:
+        """`sdk.calendar.BANGLADESHI.date.full`"""
+        return self._r.render(
+            "sdk.calendar.BANGLADESHI.date.full",
+            {"day": day, "monthName": month_name, "weekdayName": weekday_name, "year": year},
+        )
+
+    def long(self, *, day: int, month_name: str, year: int) -> str:
+        """`sdk.calendar.BANGLADESHI.date.long`"""
+        return self._r.render(
+            "sdk.calendar.BANGLADESHI.date.long",
+            {"day": day, "monthName": month_name, "year": year},
+        )
+
+    def numeric(self, *, day: int, month: int, year: int) -> str:
+        """`sdk.calendar.BANGLADESHI.date.numeric`"""
+        return self._r.render(
+            "sdk.calendar.BANGLADESHI.date.numeric",
             {"day": day, "month": month, "year": year},
         )
 

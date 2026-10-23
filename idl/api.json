@@ -4292,6 +4292,12 @@
           "value": 8,
           "doc": "Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806",
           "key": "TIBETAN_PHUGPA"
+        },
+        {
+          "name": "Bangladeshi",
+          "value": 9,
+          "doc": "Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019",
+          "key": "BANGLADESHI"
         }
       ],
       "source": "catalogue/catalogue.json"

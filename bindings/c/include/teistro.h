@@ -2967,6 +2967,10 @@ typedef enum ts_calendar {
      * Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806
      */
     TS_CALENDAR_TIBETAN_PHUGPA = 8,
+    /**
+     * Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019
+     */
+    TS_CALENDAR_BANGLADESHI = 9,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CALENDAR_UNKNOWN = -1,
 } ts_calendar;

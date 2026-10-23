@@ -12968,6 +12968,23 @@
           ],
           "mark": "V",
           "unverified": []
+        },
+        {
+          "key": "BANGLADESHI",
+          "id": 9,
+          "doc": "Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Bangla Academy's 2019 revision, as reported by the Dhaka Tribune and Prothom Alo",
+              "ref": "docs/calendars/bangladeshi.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
         }
       ]
     },

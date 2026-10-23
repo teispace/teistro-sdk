@@ -54,6 +54,11 @@ public enum Calendar implements Catalogued {
      */
     TIBETAN_PHUGPA(8, "TIBETAN_PHUGPA"),
 
+    /**
+     * Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019
+     */
+    BANGLADESHI(9, "BANGLADESHI"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

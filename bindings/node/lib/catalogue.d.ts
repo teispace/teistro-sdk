@@ -3815,6 +3815,7 @@ export type Calendar =
   | 'calendar.INDIAN_NATIONAL'
   | 'calendar.HIJRI_TABULAR'
   | 'calendar.TIBETAN_PHUGPA'
+  | 'calendar.BANGLADESHI'
   | 'unknown';
 
 /** Every Calendar by name; the values are the strings the union accepts. */
@@ -3855,6 +3856,10 @@ export declare const Calendar: {
    * Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806
    */
   readonly TibetanPhugpa: 'calendar.TIBETAN_PHUGPA';
+  /**
+   * Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019
+   */
+  readonly Bangladeshi: 'calendar.BANGLADESHI';
 };
 
 /**
