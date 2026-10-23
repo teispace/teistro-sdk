@@ -249,7 +249,7 @@ mod tests {
         reason = "tests fail by panicking and index what they asked for"
     )]
 
-    use super::House;
+    use super::{House, house_of, sripati_mid_points};
     use crate::catalogue::Rashi;
 
     /// Every house is 1 to 12 and nothing else is a house.
@@ -293,5 +293,47 @@ mod tests {
         }
         assert!(House::try_new(6).unwrap().is_trika());
         assert!(!House::try_new(7).unwrap().is_trika());
+        assert_eq!(House::try_from(9_u8).unwrap(), House::try_new(9).unwrap());
+        assert!(House::try_from(0_u8).is_err());
+        assert_eq!(u8::from(House::try_new(4).unwrap()), 4);
+    }
+
+    /// A planet near a cusp joins that cusp's house, from either side and
+    /// across 0°; outside every orb it is in the house whose cusp it last
+    /// passed, over unequal houses too.
+    #[test]
+    fn a_planet_takes_the_nearest_cusp_within_its_orb() {
+        let house = |n| House::try_new(n).unwrap();
+        let equal: [f64; 12] = std::array::from_fn(|k| f64::from(u8::try_from(k).unwrap()) * 30.0);
+        assert_eq!(house_of(27.0, &equal, 5.0), house(2));
+        assert_eq!(house_of(27.0, &equal, 0.0), house(1));
+        assert_eq!(house_of(357.0, &equal, 5.0), house(1));
+        assert_eq!(house_of(357.0, &equal, 0.0), house(12));
+        assert_eq!(house_of(-3.0, &equal, 0.0), house(12));
+        assert_eq!(house_of(30.0, &equal, 0.0), house(2));
+        let unequal = [
+            100.0, 125.0, 155.0, 190.0, 225.0, 255.0, 280.0, 305.0, 335.0, 10.0, 45.0, 75.0,
+        ];
+        assert_eq!(house_of(5.0, &unequal, 0.0), house(9));
+        assert_eq!(house_of(5.0, &unequal, 6.0), house(10));
+        assert_eq!(house_of(99.0, &unequal, 2.0), house(1));
+        assert_eq!(house_of(99.0, &unequal, 0.0), house(12));
+    }
+
+    /// The mid-points keep the angles, split each quadrant in three and
+    /// set every house opposite its seventh.
+    #[test]
+    fn sripati_mid_points_split_the_quadrants_from_the_angles() {
+        let points = sripati_mid_points(400.0, -90.0);
+        assert_eq!(points[0], 40.0);
+        assert_eq!(points[9], 270.0);
+        assert_eq!(points[3], 90.0);
+        let close = |a: f64, b: f64| (a - b).abs() < 1e-9;
+        assert!(close(points[1], 56.666_666_666_666_66), "{points:?}");
+        assert!(close(points[2], 73.333_333_333_333_33), "{points:?}");
+        assert!(close(points[10], 313.333_333_333_333_3), "{points:?}");
+        for (one, other) in points.iter().zip(points.iter().skip(6)) {
+            assert!(close((one - other).rem_euclid(360.0), 180.0), "{points:?}");
+        }
     }
 }

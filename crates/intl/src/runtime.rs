@@ -452,6 +452,20 @@ mod tests {
         intl.clear_overrides(None);
         assert_eq!(intl.override_count(), 0);
         assert!(!intl.has("sdk.ui.title"));
+        // Several at once stand until the failing one, and one locale's
+        // clear leaves another's.
+        assert!(
+            intl.set_overrides(
+                "ne-Deva-NP",
+                [("sdk.ui.a", "क"), ("sdk.ui.b", "ख"), ("sdk.ui.c", "a } b")]
+            )
+            .is_err()
+        );
+        assert_eq!(intl.override_count(), 2);
+        intl.set_overrides("en-Latn", [("sdk.ui.a", "A")]).unwrap();
+        intl.clear_overrides(Some("ne-Deva-NP"));
+        assert_eq!(intl.override_count(), 1);
+        assert_eq!(intl.render("sdk.ui.a", &params([])).text, "A");
     }
 
     /// A record's forms are an open set, so a pack carrying one form adds

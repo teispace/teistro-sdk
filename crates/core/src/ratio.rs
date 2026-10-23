@@ -285,6 +285,49 @@ mod tests {
         assert_eq!(r(1, 3).scaled_floor(1_000_000), Ok(333_333));
     }
 
+    #[test]
+    fn parts_read_back_and_refusals_say_why() {
+        let x = Ratio::from_integer(-4);
+        assert_eq!((x.numerator(), x.denominator()), (-4, 1));
+        assert!(!x.is_zero() && Ratio::ZERO.is_zero());
+        assert_eq!(r(3, 4).checked_div(r(-1, 2)), Ok(r(-3, 2)));
+        assert_eq!(
+            r(3, 4).checked_div(Ratio::ZERO),
+            Err(RatioError::ZeroDenominator)
+        );
+        let big = r(Ratio::LIMIT - 1, 1);
+        assert_eq!(big.scaled_floor(i64::MAX), Err(RatioError::Overflow));
+        assert_eq!(r(-1, 3).scaled_floor(3), Ok(-1));
+        assert_eq!(r(-1, 3).scaled_floor(2), Ok(-1));
+        assert_eq!(r(1, 3).partial_cmp(&r(1, 2)), Some(Ordering::Less));
+        assert_eq!(format!("{:?}", r(-2, 6)), "Ratio(-1/3)");
+        assert_eq!(
+            RatioError::ZeroDenominator.to_string(),
+            "a rational needs a non-zero denominator"
+        );
+        assert_eq!(
+            RatioError::Overflow.to_string(),
+            "the rational exceeds the exact range"
+        );
+        assert_eq!(" 6 / -8 ".parse::<Ratio>(), Ok(r(-3, 4)));
+        assert_eq!("x/2".parse::<Ratio>(), Err(RatioError::Overflow));
+        assert_eq!("1/y".parse::<Ratio>(), Err(RatioError::Overflow));
+        assert_eq!("1/0".parse::<Ratio>(), Err(RatioError::ZeroDenominator));
+    }
+
+    #[test]
+    fn a_ratio_crosses_serde_as_its_text() {
+        let json = serde_json::to_string(&r(7, 20)).unwrap();
+        assert_eq!(json, "\"7/20\"");
+        assert_eq!(serde_json::from_str::<Ratio>(&json).unwrap(), r(7, 20));
+        assert_eq!(
+            serde_json::from_str::<Ratio>("\"5\"").unwrap(),
+            Ratio::from_integer(5)
+        );
+        assert!(serde_json::from_str::<Ratio>("\"1/0\"").is_err());
+        assert!(serde_json::from_str::<Ratio>("3").is_err());
+    }
+
     proptest! {
         #[test]
         fn ordering_agrees_with_floating_point(a in -1_000_000i128..1_000_000, b in 1i128..1_000_000, c in -1_000_000i128..1_000_000, d in 1i128..1_000_000) {
