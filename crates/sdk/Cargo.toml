@@ -184,6 +184,10 @@ name = "muhurta"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "sustained_load"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "peak_memory"
 required-features = ["builtin-ephemeris", "chart", "muhurta"]
 
