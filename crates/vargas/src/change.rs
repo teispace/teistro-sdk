@@ -324,7 +324,7 @@ mod tests {
     /// nought, nor an even group beside whole-degree ones.
     #[test]
     fn a_mixed_or_whole_degree_chart_steps_by_its_widths_common_divisor() {
-        let map = Scheme::of(Varga::D30).groups[0].map;
+        let map = Scheme::of(Varga::D30).groups.first().expect("a group").map;
         let step = |divisions: u16, spans: &[Spans]| {
             let groups: &'static [Group] = Box::leak(
                 spans
