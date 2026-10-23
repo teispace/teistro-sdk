@@ -62,12 +62,12 @@ Where the two counts differ, and why:
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 
-Total: 502 festivals: rule, shipped 265; rule, not yet shipped 9; rule, needs a form 26; solar 26; fixed civil 165; community 6; published only 5.
+Total: 502 festivals: rule, shipped 266; rule, not yet shipped 9; rule, needs a form 25; solar 26; fixed civil 165; community 6; published only 5.
 
 ## 3. The festivals, by class
 
 
-### Rule, shipped (265)
+### Rule, shipped (266)
 
 The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key below is in it.
 
@@ -164,6 +164,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `GOSAIKUNDA_SNANA_ARAMBHA` | Gosaikunda Snan Begins | गोसाइँकुण्ड स्नान आरम्भ |  | NEPAL_PANCHANGA |
 | `GOSAIKUNDA_SNANA_SAMAPTI` | Gosaikunda Snan Ends | गोसाइँकुण्ड स्नान समाप्ति |  | NEPAL_PANCHANGA |
 | `GOVARDHAN_PUJA` | Govardhan Puja | गोवर्धन पूजा |  | NEPAL_PANCHANGA |
+| `GOVATSA_DWADASHI` | Govatsa Dwadashi | गोवत्स द्वादशी |  | NEPAL_PANCHANGA |
 | `GOVINDA_DWADASHI` | Govinda Dwadashi | गोविन्द द्वादशी |  | NEPAL_PANCHANGA |
 | `GUGA_NAVAMI` | Guga Navami | गुगा नवमी |  | NEPAL_PANCHANGA |
 | `GUHYESHWARI_JATRA` | Guhyeshwari Jatra | गुह्येश्वरी जात्रा | Newar | NEPAL_PANCHANGA |
@@ -355,7 +356,7 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689) |
 | `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687) |
 
-### Rule, needs a form (26)
+### Rule, needs a form (25)
 
 `festival-rule-language.md` §4 maps each to the form it needs, or says why none fits.
 
@@ -367,7 +368,6 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `GATHAMUGA_CHARHE` | Gathamuga Charhe | गथाँमुग चह्रे | Newar |  |
 | `GAURA_PARVA` | Gaura Parva | गौरा पर्व |  |  |
 | `GHANTAKARNA_CHATURDASHI` | Ghantakarna Chaturdashi | घण्टाकर्ण चतुर्दशी |  |  |
-| `GOVATSA_DWADASHI` | Govatsa Dwadashi | गोवत्स द्वादशी |  |  |
 | `INDRADHWAJA_PATAN` | Indradhwaja Patan | इन्द्रध्वज पातन | Newar |  |
 | `JUGA_CHARHE` | Juga Charhe | जुगः चह्रे | Newar |  |
 | `KRISHNA_RATH_JATRA` | Krishna Rath Jatra | कृष्ण रथ जात्रा |  |  |

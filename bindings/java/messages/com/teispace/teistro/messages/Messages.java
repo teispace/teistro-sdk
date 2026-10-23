@@ -6504,6 +6504,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.GOVATSA_DWADASHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms govatsaDwadashi() {
+                    return r.entity("festival.GOVATSA_DWADASHI");
+                }
+
+                /**
                  * The forms of `festival.GOVINDA_DWADASHI` in the current locale.
                  *
                  * @return the forms

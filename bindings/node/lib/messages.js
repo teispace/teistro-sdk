@@ -470,6 +470,7 @@ export function messages(r) {
           gosaikundaSnanaArambha: () => r.entity('festival.GOSAIKUNDA_SNANA_ARAMBHA'),
           gosaikundaSnanaSamapti: () => r.entity('festival.GOSAIKUNDA_SNANA_SAMAPTI'),
           govardhanPuja: () => r.entity('festival.GOVARDHAN_PUJA'),
+          govatsaDwadashi: () => r.entity('festival.GOVATSA_DWADASHI'),
           govindaDwadashi: () => r.entity('festival.GOVINDA_DWADASHI'),
           gugaNavami: () => r.entity('festival.GUGA_NAVAMI'),
           guhyeshwariJatra: () => r.entity('festival.GUHYESHWARI_JATRA'),

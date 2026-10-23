@@ -597,6 +597,7 @@ class FestivalKey(enum.StrEnum):
     PANAUTI_SNAN_MELA = "festival.PANAUTI_SNAN_MELA"
     BAHIDYO_BOYEGU = "festival.BAHIDYO_BOYEGU"
     LALITPUR_NARSINGH_JATRA = "festival.LALITPUR_NARSINGH_JATRA"
+    GOVATSA_DWADASHI = "festival.GOVATSA_DWADASHI"
     KASHI_BADA_GANESH_UTSAV = "festival.KASHI_BADA_GANESH_UTSAV"
     NARASIMHA_JAYANTI = "festival.NARASIMHA_JAYANTI"
     PADMINI_EKADASHI = "festival.PADMINI_EKADASHI"
@@ -4540,6 +4541,11 @@ class MessagesSdkEntityFestival:
     def govardhan_puja(self) -> EntityForms:
         """The forms of `festival.GOVARDHAN_PUJA` in the current locale."""
         return self._r.entity("festival.GOVARDHAN_PUJA")
+
+    @property
+    def govatsa_dwadashi(self) -> EntityForms:
+        """The forms of `festival.GOVATSA_DWADASHI` in the current locale."""
+        return self._r.entity("festival.GOVATSA_DWADASHI")
 
     @property
     def govinda_dwadashi(self) -> EntityForms:

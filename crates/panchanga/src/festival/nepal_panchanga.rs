@@ -649,7 +649,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 67] = [
 /// The rules a text gives, which the committee's print follows in both
 /// editions: key, month (amanta, the nija month), tithi, the decision,
 /// and the text with the page it was read from.
-const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 3] = [
+const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 4] = [
     (
         "NARASIMHA_JAYANTI",
         Masa::Vaishakha,
@@ -663,6 +663,13 @@ const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 3] = [
         Tithi::Purnima,
         Fit::EarlierAlone(Window::Nishitha),
         "Dharmasindhu p. 74, read off the page image: \"सा पूर्वत्रैव निशीथव्याप्तौ पूर्वा, उत्तरदिने एव दिनद्वयेऽपि वा निशीथव्याप्तौ दिनद्वये निशीथास्पर्शे वा उत्तरैव\", pradosha being only some authorities' reading (C617); Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: कोजाग्रतव्रत",
+    ),
+    (
+        "GOVATSA_DWADASHI",
+        Masa::Ashwina,
+        Tithi::KrishnaDwadashi,
+        Fit::EarlierHolds(Window::Pradosha),
+        "Dharmasindhu p. 76, read off the OCR'd page: \"आश्विनकृष्णद्वादशी गोवत्सद्वादशी सा प्रदोषव्यापिनी ग्राह्या दिनद्वये तदव्याप्तौ परा … उभयत्र तद्व्याप्तौ पूर्वेति बहवः\", the earlier as most authorities hold; Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: गोवत्सद्वादशी, printed both years beside रमाएकादशीव्रत on the day whose sunrise holds the 11th",
     ),
     (
         "KASHI_BADA_GANESH_UTSAV",
