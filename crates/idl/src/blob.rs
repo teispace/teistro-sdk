@@ -710,6 +710,15 @@ impl<'b, 's> Reader<'b, 's> {
                 schema.id, schema.name
             )));
         }
+        // The count is the blob's word and the reader allocates by it, so
+        // a table the bytes cannot hold is refused before anything is
+        // reserved for it.
+        if count > bytes.len().saturating_sub(HEADER_LEN) / ENTRY_LEN {
+            return Err(BlobError::Malformed(format!(
+                "a table of {count} entries is longer than the {} bytes given",
+                bytes.len()
+            )));
+        }
         let mut entries = Vec::with_capacity(count);
         for i in 0..count {
             let at = HEADER_LEN + i * ENTRY_LEN;
@@ -996,6 +1005,23 @@ mod tests {
     /// value that overflows its declared scalar is invisible there; a
     /// column stores the scalar's own width, and truncating quietly
     /// would put a wrong number in a blob that parses.
+    #[test]
+    fn a_count_its_bytes_cannot_hold_is_refused_unallocated() {
+        let schema = schema();
+        let mut bytes = vec![0_u8; HEADER_LEN];
+        let mut put = |at: usize, word: u32| bytes[at..at + 4].copy_from_slice(&word.to_le_bytes());
+        put(0, MAGIC);
+        put(4, VERSION);
+        put(8, u32::MAX);
+        put(12, u32::try_from(HEADER_LEN).unwrap());
+        put(16, schema.id);
+        let refused = Reader::parse(&bytes, &schema).map(|_| ()).unwrap_err();
+        assert!(
+            refused.to_string().contains("longer than the 32 bytes"),
+            "{refused}"
+        );
+    }
+
     #[test]
     fn a_value_wider_than_its_column_is_refused() {
         let schema = schema();
