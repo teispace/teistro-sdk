@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The canonical form is written without a tree** (`envelope.rs`,
+`canonical_json`). **Numbers:** none move, and no hash moves: the bytes
+are the bytes the old writer gave, held to it by a test over every shape
+serde writes and over random trees. `canonical_json` built a
+`serde_json::Value` of the whole value before writing it, and every
+sealed answer pays for that. On a full chart (`with_everything`) the
+tree took 36 of the chart's 46 milliseconds, 683,000 allocations and a
+34 MB peak. Now members are written into the text as they arrive, and an
+object whose keys came out of order is put in order when it closes,
+through one shared scratch buffer. The same chart reads in 21
+milliseconds: the canonical form takes 11.5 of them, 48 allocations and
+a 7.9 MB peak, and the chart's whole peak falls from 36 MB to 10 MB.
+
 **The Bangladeshi calendar** (`calendars/bangladeshi.md`). **Numbers:**
 none move. `calendar.BANGLADESHI` is the revised Bengali calendar Bangla
 Academy keeps, with its rules as revised from 17 October 2019. Year *B*
