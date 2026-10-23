@@ -2106,7 +2106,7 @@ public final class Native {
 
         /**
          * The offset of `altitude_m`. The place's altitude, metres above the ellipsoid.
-         * Unit: m. Range: [-500,9000]. Example: 1400.
+         * Unit: m. Range: [-500,12000]. Example: 1400.
          */
         public static final long ALTITUDE_M_OFFSET = 40;
 
@@ -3062,7 +3062,7 @@ public final class Native {
 
         /**
          * The offset of `offset_seconds`. The offset east of UTC in seconds, for a fixed offset.
-         * Unit: s. Range: [-86400,86400]. Example: 20700.
+         * Unit: s. Range: [-64800,64800]. Example: 20700.
          */
         public static final long OFFSET_SECONDS_OFFSET = 8;
 
@@ -3680,7 +3680,7 @@ public final class Native {
 
         /**
          * The offset of `altitude_m`. The place's altitude, metres above the ellipsoid.
-         * Unit: m. Range: [-500,9000]. Example: 1400.
+         * Unit: m. Range: [-500,12000]. Example: 1400.
          */
         public static final long ALTITUDE_M_OFFSET = 40;
 

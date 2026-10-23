@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every described range is refused naming its field** (`idl/api.json`,
+`crates/ffi/tests/ranges.rs`). **Numbers:** none move. A test now reads
+each ranged field from the API description and sends it the nearest
+value outside each end, and a float field not a number and both
+infinities, through the entry point that reads it. Its first run found
+three faults, now fixed. The description gave the altitude of a chart
+and of a range of days as up to 9,000 m where the SDK takes 12,000, and
+a zone's offset as ±86,400 s where it takes ±64,800. A zone's refusals
+named no field and now name `zone.offset_seconds` or
+`zone.longitude_deg`. A range of days refused an impossible end date
+naming `month` or `day` where it now names `from_month` or `to_day`.
+
 **The solvers refuse what they cannot search** (`astro::solve`).
 **Numbers:** none move. A narrowing counted the halvings from its
 bracket's width down to the tolerance, and a bracket whose width

@@ -8115,7 +8115,7 @@ struct ts_chart_request {
     double longitude_deg;
     /**
      * The place's altitude, metres above the ellipsoid.
-     * Unit: m. Range: [-500,9000]. Example: 1400.
+     * Unit: m. Range: [-500,12000]. Example: 1400.
      */
     double altitude_m;
     /**
@@ -8804,7 +8804,7 @@ struct ts_zone_spec {
     uint8_t reserved[3];
     /**
      * The offset east of UTC in seconds, for a fixed offset.
-     * Unit: s. Range: [-86400,86400]. Example: 20700.
+     * Unit: s. Range: [-64800,64800]. Example: 20700.
      */
     int32_t offset_seconds;
     /**
@@ -9096,7 +9096,7 @@ struct ts_panchanga_request {
     double longitude_deg;
     /**
      * The place's altitude, metres above the ellipsoid.
-     * Unit: m. Range: [-500,9000]. Example: 1400.
+     * Unit: m. Range: [-500,12000]. Example: 1400.
      */
     double altitude_m;
     /**

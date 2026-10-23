@@ -1948,7 +1948,7 @@ pub struct ChartRequest {
     /// Unit: deg. Range: `[-180,180]`. Example: `85.324`.
     pub longitude_deg: f64,
     /// The place's altitude, metres above the ellipsoid.
-    /// Unit: m. Range: `[-500,9000]`. Example: `1400`.
+    /// Unit: m. Range: `[-500,12000]`. Example: `1400`.
     pub altitude_m: f64,
     /// The local clock's offset from UTC in seconds, east positive: the
     /// clock the day's date is read in.
@@ -3055,7 +3055,7 @@ pub struct ZoneSpec {
     /// Enum: TsZoneKind. Example: `0`.
     pub kind: String,
     /// The offset east of UTC in seconds, for a fixed offset.
-    /// Unit: s. Range: `[-86400,86400]`. Example: `20700`.
+    /// Unit: s. Range: `[-64800,64800]`. Example: `20700`.
     pub offset_seconds: i32,
     /// The longitude east-positive in degrees, for local mean time.
     /// Unit: deg. Range: `[-180,180]`. Example: `85.3240`.
@@ -3560,7 +3560,7 @@ pub struct PanchangaRequest {
     /// Unit: deg. Range: `[-180,180]`. Example: `85.324`.
     pub longitude_deg: f64,
     /// The place's altitude, metres above the ellipsoid.
-    /// Unit: m. Range: `[-500,9000]`. Example: `1400`.
+    /// Unit: m. Range: `[-500,12000]`. Example: `1400`.
     pub altitude_m: f64,
     /// The local clock's offset from UTC in seconds, east positive: the
     /// clock the days' dates are read in.

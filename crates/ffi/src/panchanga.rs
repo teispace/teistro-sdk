@@ -208,7 +208,7 @@ pub struct TsPanchangaRequest {
     /// `api: unit=deg range=[-180,180] example=85.324`
     pub longitude_deg: f64,
     /// The place's altitude, metres above the ellipsoid.
-    /// `api: unit=m range=[-500,9000] example=1400`
+    /// `api: unit=m range=[-500,12000] example=1400`
     pub altitude_m: f64,
     /// The local clock's offset from UTC in seconds, east positive: the
     /// clock the days' dates are read in.
@@ -839,6 +839,16 @@ pub unsafe extern "C" fn ts_panchanga_days(
             asked.from_day,
         );
         let to = CalendarDate::defined(asked_calendar, asked.to_year, asked.to_month, asked.to_day);
+        // Each end read on its own first, so a refusal says which: a
+        // date names its `month`, and a range has two.
+        for (date, end) in [(&from, "from"), (&to, "to")] {
+            ctx.sdk().calendar().fixed_of(date).map_err(|error| {
+                let field = error
+                    .field()
+                    .map_or_else(|| format!("{end}_date"), |inner| format!("{end}_{inner}"));
+                error.with_field(field)
+            })?;
+        }
         // **The façade computes it**, as `ts_chart_found` has it found:
         // this entry point was the almanac's second composition, and the
         // calendar it resolved by hand is the one `AlmanacArea::of`

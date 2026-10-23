@@ -15,7 +15,7 @@ import com.teispace.teistro.ffi.Native;
  * A zone: an IANA name, a fixed offset, or local mean time at a longitude.
  *
  * @param kind Which field applies. Enum: TsZoneKind. Example: 0.
- * @param offsetSeconds The offset east of UTC in seconds, for a fixed offset. Unit: s. Range: [-86400,86400]. Example: 20700.
+ * @param offsetSeconds The offset east of UTC in seconds, for a fixed offset. Unit: s. Range: [-64800,64800]. Example: 20700.
  * @param longitudeDeg The longitude east-positive in degrees, for local mean time. Unit: deg. Range: [-180,180]. Example: 85.3240.
  * @param zone The IANA name, for a database zone. Example: Asia/Kathmandu. May be null.
  */

@@ -258,7 +258,7 @@ pub struct TsZoneSpec {
     /// Reserved, zero.
     pub reserved: [u8; 3],
     /// The offset east of UTC in seconds, for a fixed offset.
-    /// `api: unit=s range=[-86400,86400] example=20700`
+    /// `api: unit=s range=[-64800,64800] example=20700`
     pub offset_seconds: i32,
     /// Reserved, zero.
     pub reserved2: u32,
@@ -454,12 +454,14 @@ impl TsZoneSpec {
                 })?;
                 Ok(ZoneSpec::iana(name))
             }
-            1 => Ok(ZoneSpec::fixed(UtcOffset::try_from_seconds(
-                self.offset_seconds,
-            )?)),
-            2 => Ok(ZoneSpec::local_mean(Longitude::try_new(
-                self.longitude_deg,
-            )?)),
+            1 => Ok(ZoneSpec::fixed(
+                UtcOffset::try_from_seconds(self.offset_seconds)
+                    .map_err(|e| Error::from(e).with_field("zone.offset_seconds"))?,
+            )),
+            2 => Ok(ZoneSpec::local_mean(
+                Longitude::try_new(self.longitude_deg)
+                    .map_err(|e| Error::from(e).with_field("zone.longitude_deg"))?,
+            )),
             other => Err(Error::invalid_arg(format!(
                 "`zone.kind` is {other}; the kinds are IANA=0, FIXED=1, LOCAL_MEAN=2"
             ))
