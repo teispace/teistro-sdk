@@ -1,5 +1,6 @@
 //! The bounds a request is held to (`03-design/mcp-server.md` §7, P5): a
-//! message's text, an array's length and a range of days. A bound passed
+//! message's text, an array's length, a range of days and a window of
+//! years. A bound passed
 //! is a refusal naming the field, the bound and the option that moves
 //! it, never a slow answer: a server a model drives must not be made to
 //! compute a century of days by one typo.
@@ -34,6 +35,11 @@ pub struct Limits {
     /// to `to`, searched day by day) its days begun. A window of life, a
     /// progression's, is not one: its cost is a day a year.
     pub days: Option<u64>,
+    /// The most years the windows of Saturn's spells span, summed: a
+    /// `sadeSati` section's `from` to `to`, its years begun. The search
+    /// follows Saturn alone, so it costs a few hundredths of a second a
+    /// year rather than a day's, and runs as far as the ephemeris reaches.
+    pub years: Option<u64>,
 }
 
 impl Limits {
@@ -42,19 +48,23 @@ impl Limits {
         message_bytes: None,
         items: None,
         days: None,
+        years: None,
     };
 }
 
 impl Default for Limits {
     /// The shipped bounds: a message of 16 MiB, an array of a thousand
-    /// (a thousand charts found in a few seconds), and a year of days (a
+    /// (a thousand charts found in a few seconds), a year of days (a
     /// leap year's almanac answers in seconds; a century would take the
-    /// better part of half an hour).
+    /// better part of half an hour), and a century and a half of Saturn's
+    /// spells (a long life and more, found in about four seconds, where
+    /// the built-in ephemeris's six centuries take six).
     fn default() -> Limits {
         Limits {
             message_bytes: Some(16 << 20),
             items: Some(1_000),
             days: Some(366),
+            years: Some(150),
         }
     }
 }
@@ -63,6 +73,14 @@ impl Default for Limits {
 pub(crate) const MESSAGE_OPTION: &str = "--max-message-bytes";
 const ITEMS_OPTION: &str = "--max-items";
 const DAYS_OPTION: &str = "--max-days";
+const YEARS_OPTION: &str = "--max-years";
+
+/// What a request has spent of the bounds that sum over it.
+#[derive(Default)]
+struct Spent {
+    days: u64,
+    years: u64,
+}
 
 impl Limits {
     /// Whether `request`, a tool's record, is inside the bounds; a
@@ -91,16 +109,16 @@ impl Limits {
     /// `LIMIT` naming the array or the range's `last` that passed a
     /// bound, the bound, and the option that moves it.
     pub fn check(&self, request: &Value) -> Result<(), Error> {
-        self.walk(request, &mut String::new(), &mut 0)
+        self.walk(request, &mut String::new(), &mut Spent::default())
     }
 
     /// Whether an engine operation's arguments are inside the bounds,
     /// each field named as the operation spells it.
     pub(crate) fn check_fields(&self, fields: &Map<String, Value>) -> Result<(), Error> {
-        self.fields(fields, &mut String::new(), &mut 0)
+        self.fields(fields, &mut String::new(), &mut Spent::default())
     }
 
-    fn walk(&self, value: &Value, path: &mut String, days: &mut u64) -> Result<(), Error> {
+    fn walk(&self, value: &Value, path: &mut String, spent: &mut Spent) -> Result<(), Error> {
         match value {
             Value::Array(members) => {
                 if let Some(most) = self.items.filter(|most| members.len() > *most) {
@@ -117,11 +135,11 @@ impl Limits {
                 for (at, member) in members.iter().enumerate() {
                     let length = path.len();
                     let _ = write!(path, "[{at}]");
-                    self.walk(member, path, days)?;
+                    self.walk(member, path, spent)?;
                     path.truncate(length);
                 }
             }
-            Value::Object(fields) => self.fields(fields, path, days)?,
+            Value::Object(fields) => self.fields(fields, path, spent)?,
             _ => {}
         }
         Ok(())
@@ -131,33 +149,51 @@ impl Limits {
         &self,
         fields: &Map<String, Value>,
         path: &mut String,
-        days: &mut u64,
+        spent: &mut Spent,
     ) -> Result<(), Error> {
-        let window = path
-            .rsplit('.')
-            .next()
-            .is_some_and(|key| WINDOWS.contains(&key));
-        let (spanned, end) = if window {
-            (transit_window(fields), "to")
-        } else {
-            (span(fields), "last")
-        };
-        *days = days.saturating_add(spanned);
-        if let Some(most) = self.days.filter(|most| *days > *most) {
-            let last = if path.is_empty() {
+        let key = path.rsplit('.').next().unwrap_or_default();
+        let at = |end: &str| {
+            if path.is_empty() {
                 String::from(end)
             } else {
                 format!("{path}.{end}")
+            }
+        };
+        if key == SPELLS {
+            spent.years = spent.years.saturating_add(begun(fields, YEAR));
+            if let Some(most) = self.years.filter(|most| spent.years > *most) {
+                let to = at("to");
+                return Err(Error::limit(format!(
+                    "the request's windows of Saturn's spells span {} years to `{to}`; the \
+                     server searches at most {most} in one call",
+                    spent.years
+                ))
+                .with_field(to)
+                .with_hint(format!(
+                    "ask in windows of {most} years or fewer, or start the server with \
+                     `{YEARS_OPTION}`"
+                )));
+            }
+        } else {
+            let (spanned, end) = if WINDOWS.contains(&key) {
+                (begun(fields, 1.0), "to")
+            } else {
+                (span(fields), "last")
             };
-            return Err(Error::limit(format!(
-                "the request spans {days} days to `{last}`; the server answers at most \
-                 {most} in one call"
-            ))
-            .with_field(last)
-            .with_hint(format!(
-                "ask in ranges of {most} days or fewer, or start the server with \
-                 `{DAYS_OPTION}`"
-            )));
+            spent.days = spent.days.saturating_add(spanned);
+            if let Some(most) = self.days.filter(|most| spent.days > *most) {
+                let last = at(end);
+                return Err(Error::limit(format!(
+                    "the request spans {} days to `{last}`; the server answers at most \
+                     {most} in one call",
+                    spent.days
+                ))
+                .with_field(last)
+                .with_hint(format!(
+                    "ask in ranges of {most} days or fewer, or start the server with \
+                     `{DAYS_OPTION}`"
+                )));
+            }
         }
         for (key, member) in fields {
             let length = path.len();
@@ -165,7 +201,7 @@ impl Limits {
                 path.push('.');
             }
             path.push_str(key);
-            self.walk(member, path, days)?;
+            self.walk(member, path, spent)?;
             path.truncate(length);
         }
         Ok(())
@@ -178,19 +214,30 @@ impl Limits {
 /// minutes.
 const WINDOWS: &[&str] = &["hits"];
 
-/// The days a transit window's `from` to `to` begins, as Julian days; none
-/// for a window its reader will refuse.
+/// The section whose `from` to `to` is a window of Saturn's spells,
+/// counted in years: Saturn alone is followed, a year in about three
+/// hundredths of a second, and the search runs on to the ephemeris's
+/// edge, so a window of millennia on an ephemeris that reaches them holds
+/// a worker for minutes. The fuzzer's 670,000 years ran the built-in's
+/// whole six centuries past its timeout.
+const SPELLS: &str = "sadeSati";
+
+/// A Julian year, the unit a window of Saturn's spells is counted in.
+const YEAR: f64 = 365.25;
+
+/// The units of `unit` days a window's `from` to `to` (Julian days)
+/// begins; none for a window its reader will refuse.
 #[allow(
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss,
     reason = "positive and whole, and a float cast saturates past u64::MAX"
 )]
-fn transit_window(fields: &Map<String, Value>) -> u64 {
+fn begun(fields: &Map<String, Value>, unit: f64) -> u64 {
     let instant = |key: &str| fields.get(key).and_then(Value::as_f64);
     let (Some(from), Some(to)) = (instant("from"), instant("to")) else {
         return 0;
     };
-    let between = (to - from).ceil();
+    let between = ((to - from) / unit).ceil();
     if between.is_finite() && between > 0.0 {
         between as u64
     } else {

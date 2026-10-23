@@ -157,6 +157,36 @@ fn a_transit_window_is_a_range_of_days() {
     assert_ne!(answer["status"], "LIMIT", "{answer}");
 }
 
+/// **A window of Saturn's spells is counted in years**: the fuzzer's
+/// 670,000 years are refused naming the window's end, the bound and the
+/// option, a long life of them is read under the shipped bounds, and the
+/// years of a bound are read where a day past them is not.
+#[test]
+fn a_window_of_saturns_spells_is_bounded_in_years() {
+    let spells = |to: f64| {
+        placed(json!({ "instant": 2_460_676.5,
+            "sadeSati": { "from": 2_460_676.5, "to": to, "reckoning": "SIGN" } }))
+    };
+    let mut server = Server::new(Engine::None);
+    let (refusal, refused) = call(&mut server, "chart.found", &spells(246_434_429.0));
+    assert!(refused);
+    assert_eq!(refusal["status"], "LIMIT", "{refusal}");
+    assert_eq!(refusal["field"], "sadeSati.to");
+    assert!(refusal["message"].as_str().unwrap().contains("at most 150"));
+    assert!(refusal["hint"].as_str().unwrap().contains("--max-years"));
+    let (answer, _) = call(&mut server, "chart.found", &spells(2_460_676.5 + 120.0 * 365.25));
+    assert_ne!(answer["status"], "LIMIT", "{answer}");
+    let limits = Limits {
+        years: Some(3),
+        ..Limits::default()
+    };
+    let mut server = Server::new(Engine::None).with_limits(limits);
+    let (answer, _) = call(&mut server, "chart.found", &spells(2_460_676.5 + 3.0 * 365.25));
+    assert_ne!(answer["status"], "LIMIT", "{answer}");
+    let (refusal, _) = call(&mut server, "chart.found", &spells(2_460_677.5 + 3.0 * 365.25));
+    assert_eq!(refusal["status"], "LIMIT", "{refusal}");
+}
+
 /// **A batch is bounded** (P5): an array at the bound is read, one past
 /// it is a `LIMIT` naming the array by its path.
 #[test]

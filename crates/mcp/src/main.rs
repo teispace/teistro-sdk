@@ -18,7 +18,8 @@ or Streamable HTTP
 
 usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                    [--schemas DETAIL] [--max-message-bytes N] [--max-items N]
-                   [--max-days N] [--task-after MS] [--pack PATH]...
+                   [--max-days N] [--max-years N] [--task-after MS]
+                   [--pack PATH]...
                    [--layouts PATH]...
                    [--dashas PATH]...
                    [--http ADDRESS [--http-workers N] [--http-rate N]
@@ -53,6 +54,8 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                          unless told: a batch's instants, a corpus's charts
   --max-days N           the most days a record's ranges span, 366 unless
                          told
+  --max-years N          the most years a record's windows of Saturn's
+                         spells span, 150 unless told
                          (each takes `none` to bound nothing; a request past
                          a bound is refused naming its field and the bound)
   --task-after MS        how long a call is waited on before it is handed
@@ -396,6 +399,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
             "--max-message-bytes" => limits.message_bytes = bound(&arg, args.next())?,
             "--max-items" => limits.items = bound(&arg, args.next())?,
             "--max-days" => limits.days = bound(&arg, args.next())?,
+            "--max-years" => limits.years = bound(&arg, args.next())?,
             "--task-after" => {
                 patience = bound::<u64>(&arg, args.next())?.map(Duration::from_millis);
             }
