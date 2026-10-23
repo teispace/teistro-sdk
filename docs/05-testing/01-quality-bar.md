@@ -99,7 +99,7 @@ library.
 | interleaved A/B against the baseline engine | the SDK through Node is not slower than the engine it replaces on the same inputs | **not yet enforced: taken up in the hardening pass** |
 | results schema | a claim is refused when it is smaller than its own spread, has no noise floor or no record of what was measured | **not yet enforced: taken up in the hardening pass** |
 | FFI cost | the cost of a callback-based provider and of result marshalling per binding is measured and published, never guessed | **not yet enforced: taken up in the hardening pass**. The engine passthrough's relay was measured once by hand, and nothing republishes the figure |
-| allocation counts | hot paths allocate a fixed, documented number of times per call, asserted by a counting allocator in tests, and the count does not grow with the work: a completion allocates the same for a grid of 10 cells and of 1000; a calendar conversion allocates nothing; a render parses once and the second render of a key allocates less than the first. The modules of Phase 4 (foundation, rule evaluation, dasha trees, panchanga day) join as they are built | **enforced** for `astro`, `calendar`, `dasha`, `intl`, rule evaluation and the panchanga day: `teistro-test-allocator` in `crates/*/tests/allocations.rs`, under `cargo test --workspace`, fast check. **Not yet enforced: taken up in the hardening pass**: the foundation |
+| allocation counts | hot paths allocate a fixed, documented number of times per call, asserted by a counting allocator in tests, and the count does not grow with the work: a completion allocates the same for a grid of 10 cells and of 1000; a calendar conversion allocates nothing; a render parses once and the second render of a key allocates less than the first. The modules of Phase 4 (foundation, rule evaluation, dasha trees, panchanga day) join as they are built | **enforced** for `astro`, `calendar`, `dasha`, `intl`, the foundation, rule evaluation and the panchanga day: `teistro-test-allocator` in `crates/*/tests/allocations.rs`, under `cargo test --workspace`, fast check |
 | profiles on file | every optimisation is preceded by a profile and followed by a measurement; the numbers go in the commit body | **enforced by review**, not by a gate |
 
 ### What the counting allocator measured
@@ -115,6 +115,8 @@ Measured 2026-09-06 (`crates/*/tests/allocations.rs`):
 | thirty Bikram Sambat dates | 0 | the same, thirty times |
 | a render, first time | 126 | the message parsed and the text built |
 | the same render again | 58 | the parse is cached; the text is built again |
+| a chart foundation (2026-10-23) | 881 | its completions of 13 each (zodiac, the day's sunrises, two house divisions, the lagnas, the grahas), its vectors and its stamp; none kept once dropped |
+| ten foundations in a batch | 5,025 | under ten times one chart's: the batch is stamped once |
 | building a rule evaluator (2026-10-23) | 0 | it borrows the chart |
 | a rule, absent | 0 | a condition reads the chart in place; 551 of 597 rules over the recorded chart |
 | a rule, present | 1 to 3 | one block for each of its houses, found-from and cancellations that is not empty, asserted exactly |
