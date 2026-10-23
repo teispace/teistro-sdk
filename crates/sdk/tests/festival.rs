@@ -686,6 +686,61 @@ fn a_rule_on_a_tibetan_date_keeps_the_printed_day() {
     );
 }
 
+/// Good Friday by both churches' reckonings, written as a binding writes
+/// it: 3 April 2026 in the West and 10 April in the East, whose Easter
+/// Sunday is 30 March in the Julian calendar (12 April).
+#[test]
+fn a_rule_counted_from_easter_reads_as_a_binding_writes_it() {
+    let request = FestivalRequest::from_json(
+        r#"{"rules": [
+            {"key": "GOOD_FRIDAY", "source": "a test", "easter": {"computus": "GREGORIAN", "days": -2}},
+            {"key": "ORTHODOX_GOOD_FRIDAY", "source": "a test", "easter": {"computus": "JULIAN", "days": -2}}
+        ]}"#,
+    )
+    .unwrap();
+    let kept: Vec<(String, u8, Calendar, u8, u8)> = context()
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2026, 3, 28),
+            &CalendarDate::defined(Calendar::Gregorian, 2026, 4, 15),
+            &delhi(),
+            UtcOffset::literal(5, 30, 0),
+            &request,
+        )
+        .unwrap()
+        .value
+        .dated
+        .into_iter()
+        .map(|kept| {
+            (
+                kept.rule,
+                kept.day.day,
+                kept.on.calendar,
+                kept.on.month,
+                kept.on.day,
+            )
+        })
+        .collect();
+    assert_eq!(
+        kept,
+        [
+            ("GOOD_FRIDAY".to_owned(), 3, Calendar::Gregorian, 4, 5),
+            (
+                "ORTHODOX_GOOD_FRIDAY".to_owned(),
+                10,
+                Calendar::Julian,
+                3,
+                30
+            ),
+        ]
+    );
+    let refused = FestivalRequest::from_json(
+        r#"{"rules": [{"key": "X", "source": "a test", "easter": {"computus": "GREGORIAN", "days": 71}}]}"#,
+    )
+    .unwrap_err();
+    assert_eq!(refused.field(), Some("festivals.rules[0].easter.days"));
+}
+
 /// A rule on the Sun's entry into a nakshatra, written as a binding writes
 /// it: Nautapa begins the day the Sun enters Rohini, which the panchangas
 /// printed in India give as 25 May 2025 (about 03:27 IST).

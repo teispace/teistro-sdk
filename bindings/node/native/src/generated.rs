@@ -3515,8 +3515,9 @@ pub struct PanchangaRequest {
     /// days from that festival rule's day (§9.4), one with a `civilDate`
     /// or a `civilWeekday` a rule kept on a date of a calendar, one with
     /// a `sunEnters` a rule kept on the civil day the Sun enters a
-    /// `nakshatra`, or `days` after it (`festival-rule-language.md`
-    /// §3.6), the rest festival rules,
+    /// `nakshatra`, or `days` after it, one with an `easter` a rule kept
+    /// `days` from Easter Sunday by a `GREGORIAN` or `JULIAN` `computus`
+    /// (`festival-rule-language.md` §3.6), the rest festival rules,
     /// each kept on a `tithi` or on a `nakshatra` in a `paksha` (§9.7). A
     /// catalogue member may be written bare or in full. The answer comes
     /// back in the `festivals` section, over this blob's own days founded

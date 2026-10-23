@@ -16,6 +16,7 @@
 
 pub mod bikram_sambat;
 pub mod date;
+pub mod easter;
 pub mod fixed;
 pub mod gregorian;
 pub mod hijri;

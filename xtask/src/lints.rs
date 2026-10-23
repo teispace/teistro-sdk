@@ -2679,7 +2679,7 @@ const SPELT_OTHERWISE: [(&str, &str); 6] = [
     (
         "crates/panchanga/src/festival/dated.rs",
         "a dated rule's form, written as the field that holds it \
-         (`civilDate`, `civilWeekday`, `sunEnters`) as a following rule's `after` is: \
+         (`civilDate`, `civilWeekday`, `sunEnters`, `easter`) as a following rule's `after` is: \
          the enum is externally tagged, so its tags are field names",
     ),
     (

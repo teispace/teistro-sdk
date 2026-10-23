@@ -7354,7 +7354,9 @@ class FestivalRequest(TypedDict):
     is broken, a following rule when it has an `after`, which counts `days`
     civil days from that festival rule's day, a dated rule when it has a
     `civilDate` or a `civilWeekday`, kept on a date of a calendar, or a
-    `sunEnters`, kept on the civil day the Sun enters a `nakshatra`, an
+    `sunEnters`, kept on the civil day the Sun enters a `nakshatra`, or an
+    `easter`, kept `days` from Easter Sunday by a `GREGORIAN` or `JULIAN`
+    `computus`, an
     anniversary when it has an `origin` (`{"by": "INSTANT", "at": jd}`,
     `{"by": "DATE", "date": ...}` or `{"by": "LUNAR", "month", "tithi"}`),
     kept every year as a `SHRADDHA`, `EKODDISHTA`, `PARVANA` or

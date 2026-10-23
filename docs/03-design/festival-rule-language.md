@@ -318,7 +318,7 @@ negative day is the one `civilDate` takes. Two forms say every row:
 ```
 
 A rule is a `DatedRule` in a request's `rules`, told apart by its
-`civilDate` or `civilWeekday`, and its days come back as the answer's
+`civilDate` or `civilWeekday` (or the `sunEnters` and `easter` below), and its days come back as the answer's
 `dated` list, each `{rule, day, on}`: the day, and the same day in the
 rule's own calendar. The list is left out of an answer when empty, so
 no answer that asks for none changes its hash. `NEPAL_PANCHANGA` ships
@@ -373,9 +373,36 @@ and only when a rule asks. `on` in the answer names the entry's day.
 Nautapa (the Sun's entry into Rohini) and the Tamil Agni nakshatram are
 the same form.
 
+**A count from Easter.** A fourth form keeps the day `days` days after
+Easter Sunday, before it when negative, by the Western (`GREGORIAN`) or
+the Eastern (`JULIAN`) computus:
+
+```json
+{"key": "GOOD_FRIDAY", "source": "...", "easter": {"computus": "GREGORIAN", "days": -2}}
+{"key": "ORTHODOX_PASCHA", "source": "...", "easter": {"computus": "JULIAN"}}
+```
+
+The churches' moveable feasts are all such counts: Ash Wednesday at -46,
+Palm Sunday at -7, Good Friday at -2, Ascension at 39, Pentecost at 49.
+The bound is 70 either way, which reaches the Eastern churches' Sunday of
+the Publican and the Pharisee (-70) and the Western Sacred Heart (68).
+Easter is the ecclesiastical moon's arithmetic, not the sky's, so the
+form reads nothing of the almanac and needs no day before the range.
+`teistro_calendar::easter` reckons it. The Gregorian date is the
+anonymous 1876 algorithm, and the Julian is Meeus's (*Astronomical
+Algorithms*, ch. 8), dated in the crate's own Julian calendar rather
+than by a fixed thirteen days. The Gregorian date matches the Clavian
+epact rules, derived independently as Knuth gives them (TAOCP vol. 1,
+§1.3.2 ex. 14), in every year from 1583 to 9999. Both reckonings match
+the published table for 2016 to 2036. `on` in the answer names Easter
+Sunday in the reckoning's own calendar, so an Eastern rule's Sunday is
+a Julian date (30 March 2026 for 12 April). The Gregorian computus
+answers from 1583, its first whole year, and a day counted from an
+earlier year keeps nothing; the Julian answers from 326.
+
 **Settles:** the 24 solar festivals and the 165 fixed civil ones of the
 classification, Guriya parva (C621), Safer internet day's weekday rule,
-and Bhumiraj and the Bhumi puja (C696).
+Bhumiraj and the Bhumi puja (C696), and the churches' moveable feasts.
 
 ### 3.7 The adhika month: `inAdhika`
 

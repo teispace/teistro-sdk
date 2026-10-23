@@ -9,8 +9,14 @@
 //! a solar calendar, and two forms say every such rule: a day of a month,
 //! counted back from its end when negative, and the nth weekday of a
 //! month.
+//!
+//! The churches' moveable feasts are kept by a count from Easter Sunday,
+//! which the computus dates in its own calendar (`teistro_calendar::easter`):
+//! Good Friday two days before it, Pentecost forty-nine after.
 
 use serde::{Deserialize, Serialize};
+use teistro_calendar::easter::{Computus, easter};
+use teistro_calendar::gregorian::gregorian_from_fixed;
 use teistro_calendar::tibetan::{self, SkippedDay, TIBETAN_RANGE};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay, shipped};
 use teistro_core::catalogue::{Calendar, Nakshatra, Vara};
@@ -190,6 +196,17 @@ pub enum Dated {
         #[serde(default)]
         days: u8,
     },
+    /// The day `days` days after Easter Sunday by `computus`, before it
+    /// when negative: Good Friday at -2, Pentecost at 49. A year the
+    /// computus does not reckon (the Gregorian before 1583) keeps none.
+    Easter {
+        /// Which churches' reckoning of Easter.
+        computus: Computus,
+        /// The days from Easter Sunday, 0 for that day, at most
+        /// [`Dated::EASTER_DAYS`] either way.
+        #[serde(default)]
+        days: i16,
+    },
 }
 
 impl Dated {
@@ -198,8 +215,14 @@ impl Dated {
     /// entry names the day better than a count.
     pub const MOST_DAYS: u8 = 15;
 
+    /// The most days a rule counts from Easter, either way: ten weeks,
+    /// which reach the Eastern churches' Sunday of the Publican and the
+    /// Pharisee (-70), the Triodion's first, and the Western Sacred Heart
+    /// (68), the farthest feasts either calendar keeps by Easter.
+    pub const EASTER_DAYS: i16 = 70;
+
     /// The calendar and month a civil form names; none for the Sun's
-    /// entry, which no calendar dates.
+    /// entry and for a count from Easter, which no month dates.
     fn civil(self) -> Option<(Calendar, u8)> {
         match self {
             Dated::CivilDate {
@@ -208,7 +231,7 @@ impl Dated {
             | Dated::CivilWeekday {
                 calendar, month, ..
             } => Some((calendar, month)),
-            Dated::SunEnters { .. } => None,
+            Dated::SunEnters { .. } | Dated::Easter { .. } => None,
         }
     }
 
@@ -240,7 +263,7 @@ impl Dated {
                 };
                 vara == weekday && nth == i16::from(wanted)
             }
-            Dated::SunEnters { .. } => false,
+            Dated::SunEnters { .. } | Dated::Easter { .. } => false,
         }
     }
 }
@@ -259,14 +282,17 @@ impl DatedRule {
     pub fn reach(&self) -> u8 {
         match self.on {
             Dated::SunEnters { days, .. } => days,
-            Dated::CivilDate { .. } | Dated::CivilWeekday { .. } => 0,
+            // Easter is reckoned from the year alone, so its count needs
+            // no day before the range.
+            Dated::CivilDate { .. } | Dated::CivilWeekday { .. } | Dated::Easter { .. } => 0,
         }
     }
 
     /// Refuses a rule that could not be kept: an empty key, a calendar
     /// the SDK does not ship, month 0, a day of 0 or past 32 either way,
-    /// an nth of 0 or past 5 either way, or a count from the Sun's entry
-    /// past [`Dated::MOST_DAYS`].
+    /// an nth of 0 or past 5 either way, a count from the Sun's entry
+    /// past [`Dated::MOST_DAYS`], or one from Easter past
+    /// [`Dated::EASTER_DAYS`] either way.
     ///
     /// # Errors
     ///
@@ -290,7 +316,17 @@ impl DatedRule {
                 ))
                 .with_field("sunEnters.days"));
             }
-            Dated::SunEnters { .. } => return Ok(()),
+            Dated::Easter { days, .. }
+                if days.unsigned_abs() > Dated::EASTER_DAYS.unsigned_abs() =>
+            {
+                return Err(Error::invalid_arg(format!(
+                    "{}: a rule counts at most {} days either way from Easter, not {days}",
+                    self.key,
+                    Dated::EASTER_DAYS
+                ))
+                .with_field("easter.days"));
+            }
+            Dated::SunEnters { .. } | Dated::Easter { .. } => return Ok(()),
         };
         if shipped(calendar).is_none() {
             return Err(Error::invalid_arg(format!(
@@ -516,6 +552,10 @@ pub fn dated(rules: &[DatedRule], days: &[FestivalDay]) -> Result<Observances, E
                     nakshatra,
                     days: count,
                 } => entered(days, at, nakshatra, count)?.map(|from| from.date.clone()),
+                Dated::Easter {
+                    computus,
+                    days: count,
+                } => from_easter(fixed, computus, count)?,
                 Dated::CivilDate {
                     calendar: Calendar::TibetanPhugpa,
                     month,
@@ -543,6 +583,34 @@ pub fn dated(rules: &[DatedRule], days: &[FestivalDay]) -> Result<Observances, E
         }
     }
     Ok(answer)
+}
+
+/// Easter Sunday in `computus`'s own calendar, when `fixed` is `count`
+/// days after it; none in a year the computus does not reckon, whose
+/// churches kept no such Easter.
+///
+/// # Errors
+///
+/// None for a day the range could hold; the calendar's own refusal past
+/// its years.
+fn from_easter(
+    fixed: FixedDay,
+    computus: Computus,
+    count: i16,
+) -> Result<Option<CalendarDate>, Error> {
+    let sunday = fixed.plus_days(-i64::from(count));
+    let (year, ..) = gregorian_from_fixed(sunday);
+    if year < computus.first_year() {
+        return Ok(None);
+    }
+    if easter(year, computus)? != sunday {
+        return Ok(None);
+    }
+    let calendar = match computus {
+        Computus::Gregorian => Calendar::Gregorian,
+        Computus::Julian => Calendar::Julian,
+    };
+    system(calendar)?.date_of(sunday).map(Some)
 }
 
 /// The day `count` days before `days[at]`, when the Sun entered
@@ -628,6 +696,63 @@ mod tests {
             weekday,
             nth,
         }
+    }
+
+    /// Good Friday and Easter by both reckonings in 2026, a week apart, and
+    /// none before the Gregorian reckoning began.
+    #[test]
+    fn a_count_from_easter_keeps_the_day_and_names_the_sunday() {
+        let fixed = teistro_calendar::gregorian::fixed_from_gregorian;
+        let keeps = |computus, (year, month, day), count| {
+            from_easter(fixed(year, month, day), computus, count)
+                .unwrap()
+                .map(|on| (on.calendar, on.year, on.month, on.day))
+        };
+        let (west, east) = (Computus::Gregorian, Computus::Julian);
+        let sunday = Some((Calendar::Gregorian, 2026, 4, 5));
+        assert_eq!(keeps(west, (2026, 4, 3), -2), sunday);
+        assert_eq!(keeps(west, (2026, 4, 5), 0), sunday);
+        assert_eq!(keeps(west, (2026, 5, 24), 49), sunday);
+        assert_eq!(keeps(west, (2026, 4, 4), -2), None);
+        // The Eastern Sunday is 12 April, 30 March in the Julian calendar.
+        let julian = Some((Calendar::Julian, 2026, 3, 30));
+        assert_eq!(keeps(east, (2026, 4, 10), -2), julian);
+        assert_eq!(keeps(east, (2026, 4, 3), -2), None);
+        // 1500's Western Easter was not reckoned, and the Eastern one was:
+        // Julian 19 April, ten days behind once its 29 February had passed.
+        assert_eq!(keeps(west, (1500, 4, 19), 0), None);
+        assert_eq!(
+            keeps(east, (1500, 4, 29), 0),
+            Some((Calendar::Julian, 1500, 4, 19))
+        );
+    }
+
+    #[test]
+    fn a_count_from_easter_is_bounded_and_spelt_as_its_field() {
+        let rule = |days| DatedRule {
+            key: "X".to_owned(),
+            source: "a test".to_owned(),
+            on: Dated::Easter {
+                computus: Computus::Julian,
+                days,
+            },
+        };
+        rule(-Dated::EASTER_DAYS).check().unwrap();
+        rule(Dated::EASTER_DAYS).check().unwrap();
+        for far in [-Dated::EASTER_DAYS - 1, Dated::EASTER_DAYS + 1, i16::MIN] {
+            assert_eq!(rule(far).check().unwrap_err().field(), Some("easter.days"));
+        }
+        assert_eq!((rule(-2).reach(), rule(-2).reads_sun_entry()), (0, false));
+        let spelt: DatedRule = serde_json::from_str(
+            r#"{"key": "X", "source": "a test", "easter": {"computus": "JULIAN"}}"#,
+        )
+        .unwrap();
+        assert_eq!(spelt, rule(0));
+        let text = serde_json::to_string(&rule(-2)).unwrap();
+        assert!(
+            text.contains(r#""easter":{"computus":"JULIAN","days":-2}"#),
+            "{text}"
+        );
     }
 
     #[test]

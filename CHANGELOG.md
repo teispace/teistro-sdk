@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Easter, by both churches' reckonings** (`festival-rule-language.md`
+§3.6). **Numbers:** none move; no shipped rule uses the new form.
+`teistro_calendar::easter` dates Easter Sunday by the Western
+(`GREGORIAN`) or Eastern (`JULIAN`) computus. The Western date is the
+1876 algorithm, checked against the Clavian epact rules in every year
+from 1583 to 9999; the Eastern is Meeus's, dated in the Julian calendar.
+Both match the published dates for 2016 to 2036. A dated rule gains
+a fourth form, `{"easter": {"computus": ..., "days": ...}}`, which keeps
+the day that many days from Easter, -70 to 70: Good Friday at -2,
+Pentecost at 49. Its answer's `on` is Easter Sunday in the reckoning's
+own calendar. A day counted from a year before 1583 by the Gregorian
+reckoning keeps nothing.
+
 **A count is checked before it is allocated for.** **Numbers:** none
 move. The verify run's fuzz smoke handed `ts_intl_load_pack` an 83-byte
 locale bundle with a valid checksum and a count of 0x4E490000 packs, and
