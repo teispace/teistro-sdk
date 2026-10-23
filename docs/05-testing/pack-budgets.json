@@ -1,0 +1,11 @@
+{
+  "schema": "teistro-pack-budgets/1",
+  "why": "Each locale's bundle, as `crates/sdk/build.rs` compiles it from `i18n/` into every artefact, in bytes. `crates/intl/tests/pack_budgets.rs` holds each both ways: a bundle over its budget fails, and so does a budget more than a quarter over its bundle, a locale with no budget and a budget with no locale. A budget moves by hand, in the change that needs it, with the reason in the commit. Set 2026-10-23 about a tenth over the bundles measured then: en-Latn 107,795, hi-Deva-IN 70,714, ne-Deva-NP 143,491, sa-Deva 50,528, sa-Latn 39,702.",
+  "budgets": {
+    "en-Latn": 120000,
+    "hi-Deva-IN": 80000,
+    "ne-Deva-NP": 160000,
+    "sa-Deva": 56000,
+    "sa-Latn": 44000
+  }
+}
