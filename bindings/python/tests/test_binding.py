@@ -235,6 +235,12 @@ class TheCalendars(WithLibrary):
         assert saka.era is not None
         self.assertEqual(saka.era.key, "SHAKA")
 
+    def test_ekushey_is_8_falgun_1431_in_the_bangladeshi_calendar(self) -> None:
+        ekushey = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2025, 2, 21), Calendar.BANGLADESHI)
+        self.assertEqual((ekushey.year, ekushey.month, ekushey.day), (1431, 11, 8))
+        assert ekushey.era is not None
+        self.assertEqual(ekushey.era.key, "BENGALI")
+
     def test_the_first_of_ramadan_1446_is_1_march_2025_in_the_tabular_hijri_calendar(self) -> None:
         ramadan = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2025, 3, 1), Calendar.HIJRI_TABULAR)
         self.assertEqual((ramadan.year, ramadan.month, ramadan.day), (1446, 9, 1))
@@ -931,7 +937,7 @@ class AnEngine(WithLibrary):
             self.assertGreater(parana, 0)
             self.assertEqual(ics.count("\r\nDTSTART:"), parana)
             # Kartik's sankranti on the first of the Bikram Sambat month.
-            tula = answer.dated[0]
+            tula = next(day for day in answer.dated if day.rule == "TULA_SANKRANTI")
             self.assertEqual((tula.rule, tula.day.month, tula.day.day), ("TULA_SANKRANTI", 10, 18))
             self.assertEqual((tula.on.calendar, tula.on.month, tula.on.day), (Calendar.BIKRAM_SAMBAT, 7, 1))
             self.assertIn(

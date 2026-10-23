@@ -2287,6 +2287,9 @@ class Calendar(Catalogued):
     TIBETAN_PHUGPA = 8
     """Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806"""
 
+    BANGLADESHI = 9
+    """Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -6341,6 +6344,7 @@ _KEYS: dict[str, dict[int, str]] = {
         6: "INDIAN_NATIONAL",
         7: "HIJRI_TABULAR",
         8: "TIBETAN_PHUGPA",
+        9: "BANGLADESHI",
         -1: "UNKNOWN",
     },
     "Era": {

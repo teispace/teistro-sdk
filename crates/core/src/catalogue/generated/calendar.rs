@@ -30,9 +30,12 @@ pub enum Calendar {
     HijriTabular = 7,
     /// Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806
     TibetanPhugpa = 8,
+    /// Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019
+    Bangladeshi = 9,
 }
 
-const BY_KEY: [(&str, Calendar); 9] = [
+const BY_KEY: [(&str, Calendar); 10] = [
+    ("BANGLADESHI", Calendar::Bangladeshi),
     ("BIKRAM_SAMBAT", Calendar::BikramSambat),
     ("GREGORIAN", Calendar::Gregorian),
     ("HIJRI_TABULAR", Calendar::HijriTabular),
@@ -52,7 +55,7 @@ impl Calendar {
     pub const KIND: Kind = Kind::Calendar;
 
     /// Every member, in id order.
-    pub const ALL: [Calendar; 9] = [
+    pub const ALL: [Calendar; 10] = [
         Calendar::Gregorian,
         Calendar::Julian,
         Calendar::Mixed,
@@ -62,6 +65,7 @@ impl Calendar {
         Calendar::IndianNational,
         Calendar::HijriTabular,
         Calendar::TibetanPhugpa,
+        Calendar::Bangladeshi,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -77,6 +81,7 @@ impl Calendar {
             Calendar::IndianNational => "INDIAN_NATIONAL",
             Calendar::HijriTabular => "HIJRI_TABULAR",
             Calendar::TibetanPhugpa => "TIBETAN_PHUGPA",
+            Calendar::Bangladeshi => "BANGLADESHI",
         }
     }
 
@@ -93,6 +98,7 @@ impl Calendar {
             Calendar::IndianNational => "calendar.INDIAN_NATIONAL",
             Calendar::HijriTabular => "calendar.HIJRI_TABULAR",
             Calendar::TibetanPhugpa => "calendar.TIBETAN_PHUGPA",
+            Calendar::Bangladeshi => "calendar.BANGLADESHI",
         }
     }
 
@@ -109,6 +115,7 @@ impl Calendar {
             Calendar::IndianNational => "Indian National: the Saka-era civil calendar of 1957",
             Calendar::HijriTabular => "Hijri Tabular: the arithmetic Islamic calendar of the civil epoch",
             Calendar::TibetanPhugpa => "Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806",
+            Calendar::Bangladeshi => "Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019",
         }
     }
 
@@ -125,6 +132,7 @@ impl Calendar {
             Calendar::IndianNational => None,
             Calendar::HijriTabular => None,
             Calendar::TibetanPhugpa => None,
+            Calendar::Bangladeshi => None,
         }
     }
 
@@ -141,6 +149,7 @@ impl Calendar {
             Calendar::IndianNational => Mark::Verified,
             Calendar::HijriTabular => Mark::Verified,
             Calendar::TibetanPhugpa => Mark::Verified,
+            Calendar::Bangladeshi => Mark::Verified,
         }
     }
 
@@ -157,6 +166,7 @@ impl Calendar {
             Calendar::IndianNational => false,
             Calendar::HijriTabular => false,
             Calendar::TibetanPhugpa => false,
+            Calendar::Bangladeshi => false,
         }
     }
 
@@ -173,6 +183,7 @@ impl Calendar {
             Calendar::IndianNational => &[Source { text: "Report of the Calendar Reform Committee, 1955, part C", reference: "docs/calendars/indian-national.md" }],
             Calendar::HijriTabular => &[Source { text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7", reference: "docs/calendars/hijri.md" }],
             Calendar::TibetanPhugpa => &[Source { text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014", reference: "docs/calendars/tibetan.md" }],
+            Calendar::Bangladeshi => &[Source { text: "Bangla Academy's 2019 revision, as reported by the Dhaka Tribune and Prothom Alo", reference: "docs/calendars/bangladeshi.md" }],
         }
     }
 
@@ -189,6 +200,7 @@ impl Calendar {
             Calendar::IndianNational => &[],
             Calendar::HijriTabular => &[],
             Calendar::TibetanPhugpa => &[],
+            Calendar::Bangladeshi => &[],
         }
     }
 
@@ -223,6 +235,7 @@ impl Calendar {
             6 => Some(Calendar::IndianNational),
             7 => Some(Calendar::HijriTabular),
             8 => Some(Calendar::TibetanPhugpa),
+            9 => Some(Calendar::Bangladeshi),
             _ => None,
         }
     }

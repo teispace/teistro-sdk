@@ -2187,6 +2187,100 @@ public final class Messages {
             }
 
             /**
+             * The messages under `BANGLADESHI`.
+             *
+             * @return the group
+             */
+            public SdkCalendarBangladeshi bangladeshi() {
+                return new SdkCalendarBangladeshi(r);
+            }
+
+            /** The messages under `SdkCalendarBangladeshi`, each rendered by its own key. */
+            public static final class SdkCalendarBangladeshi {
+                private final Renderer r;
+
+                SdkCalendarBangladeshi(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The messages under `date`.
+                 *
+                 * @return the group
+                 */
+                public SdkCalendarBangladeshiDate date() {
+                    return new SdkCalendarBangladeshiDate(r);
+                }
+
+                /** The messages under `SdkCalendarBangladeshiDate`, each rendered by its own key. */
+                public static final class SdkCalendarBangladeshiDate {
+                    private final Renderer r;
+
+                    SdkCalendarBangladeshiDate(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.calendar.BANGLADESHI.date.full`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param weekdayName `weekdayName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String full(long day, String monthName, String weekdayName, long year) {
+                        return r.render("sdk.calendar.BANGLADESHI.date.full", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("weekdayName", weekdayName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.BANGLADESHI.date.long`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String long_(long day, String monthName, long year) {
+                        return r.render("sdk.calendar.BANGLADESHI.date.long", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.BANGLADESHI.date.numeric`
+                     *
+                     * @param day `day`
+                     * @param month `month`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String numeric(long day, long month, long year) {
+                        return r.render("sdk.calendar.BANGLADESHI.date.numeric", Map.ofEntries(Map.entry("day", day), Map.entry("month", month), Map.entry("year", year)));
+                    }
+                }
+
+
+                /**
+                 * `sdk.calendar.BANGLADESHI.monthName`
+                 *
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthName(long month) {
+                    return r.render("sdk.calendar.BANGLADESHI.monthName", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.BANGLADESHI.monthShort`
+                 *
+                 * @return the text
+                 */
+                public String monthShort() {
+                    return r.render("sdk.calendar.BANGLADESHI.monthShort", Map.of());
+                }
+            }
+
+
+            /**
              * The messages under `BIKRAM_SAMBAT`.
              *
              * @return the group

@@ -300,6 +300,7 @@ pub fn shipped(id: Calendar) -> Option<&'static dyn CalendarSystem> {
         Calendar::IndianNational => Some(&crate::indian_national::IndianNational),
         Calendar::HijriTabular => Some(&crate::hijri::HijriTabular),
         Calendar::TibetanPhugpa => Some(&crate::tibetan::TibetanPhugpa),
+        Calendar::Bangladeshi => Some(&crate::bangladeshi::Bangladeshi),
         _ => None,
     }
 }

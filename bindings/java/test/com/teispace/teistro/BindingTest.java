@@ -212,6 +212,12 @@ public final class BindingTest {
                 same(1869, saka.year(), "Shravana 24, 1869 (Saka)");
                 same(5, saka.month(), "Shravana");
                 same(24, saka.day(), "the 24th");
+                CalendarDate ekusheyDay = new CalendarDate(Calendar.GREGORIAN, null, 2025, 0, 2, 21,
+                        Resolution.DEFINED, 0, 0, null);
+                CalendarDate ekushey = calendar.convert(ekusheyDay, Calendar.BANGLADESHI);
+                same(1431, ekushey.year(), "8 Falgun 1431 (Bangabda)");
+                same(11, ekushey.month(), "Falgun");
+                same(8, ekushey.day(), "the 8th");
                 CalendarDate march = new CalendarDate(Calendar.GREGORIAN, null, 2025, 0, 3, 1,
                         Resolution.DEFINED, 0, 0, null);
                 CalendarDate ramadan = calendar.convert(march, Calendar.HIJRI_TABULAR);
@@ -1874,7 +1880,8 @@ public final class BindingTest {
                         .filter(fast -> fast.parana() != null && fast.parana().kept() != null).count();
                 check(parana > 0, "a fast keeps a parana");
                 same((int) parana, ics.split("\r\nDTSTART:", -1).length - 1, "one timed event a parana");
-                DatedObservance tula = answer.dated().get(0);
+                DatedObservance tula = answer.dated().stream()
+                        .filter(day -> day.rule().equals("TULA_SANKRANTI")).findFirst().orElseThrow();
                 same("TULA_SANKRANTI", tula.rule(), "Kartik's sankranti");
                 same(java.util.List.of(10, 18), java.util.List.of(tula.day().month(), tula.day().day()), "on 18 October");
                 same(java.util.List.of(Calendar.BIKRAM_SAMBAT, 7, 1),

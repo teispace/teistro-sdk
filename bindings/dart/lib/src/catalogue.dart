@@ -2792,6 +2792,8 @@ enum Calendar implements KeyOf<Calendar> {
   hijriTabular(7, 'HIJRI_TABULAR'),
   /// Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806
   tibetanPhugpa(8, 'TIBETAN_PHUGPA'),
+  /// Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019
+  bangladeshi(9, 'BANGLADESHI'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

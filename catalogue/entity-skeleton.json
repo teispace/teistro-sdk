@@ -699,7 +699,8 @@
     "INDIAN_LUNISOLAR": {},
     "INDIAN_NATIONAL": {},
     "HIJRI_TABULAR": {},
-    "TIBETAN_PHUGPA": {}
+    "TIBETAN_PHUGPA": {},
+    "BANGLADESHI": {}
   },
   "era": {
     "VIKRAMA": {},

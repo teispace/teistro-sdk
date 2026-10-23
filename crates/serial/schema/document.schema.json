@@ -1281,7 +1281,8 @@
             "INDIAN_LUNISOLAR",
             "INDIAN_NATIONAL",
             "HIJRI_TABULAR",
-            "TIBETAN_PHUGPA"
+            "TIBETAN_PHUGPA",
+            "BANGLADESHI"
           ],
           "type": "string"
         },
@@ -1296,7 +1297,8 @@
             "calendar.INDIAN_LUNISOLAR",
             "calendar.INDIAN_NATIONAL",
             "calendar.HIJRI_TABULAR",
-            "calendar.TIBETAN_PHUGPA"
+            "calendar.TIBETAN_PHUGPA",
+            "calendar.BANGLADESHI"
           ],
           "type": "string",
           "writeOnly": true

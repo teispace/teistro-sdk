@@ -1837,6 +1837,7 @@ export const Calendar = /* @__PURE__ */ Object.freeze({
   IndianNational: 'calendar.INDIAN_NATIONAL',
   HijriTabular: 'calendar.HIJRI_TABULAR',
   TibetanPhugpa: 'calendar.TIBETAN_PHUGPA',
+  Bangladeshi: 'calendar.BANGLADESHI',
 });
 
 /**
@@ -1853,6 +1854,7 @@ export const CalendarById = /* @__PURE__ */ new Map([
   [6, 'calendar.INDIAN_NATIONAL'],
   [7, 'calendar.HIJRI_TABULAR'],
   [8, 'calendar.TIBETAN_PHUGPA'],
+  [9, 'calendar.BANGLADESHI'],
 ]);
 
 /** Every Era by name. */

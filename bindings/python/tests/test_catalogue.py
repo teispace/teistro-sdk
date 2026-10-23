@@ -111,6 +111,8 @@ class TheCatalogue(unittest.TestCase):
             # and their two members of `Kind`.
             + 6 + 13 + 2
             # `DashaFamily`'s `GRAHA`, the Karaka dasha's kernel.
+            + 1
+            # `Calendar`'s `BANGLADESHI`.
             + 1,
         )
 

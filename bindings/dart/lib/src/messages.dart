@@ -1342,6 +1342,30 @@ final class MessagesSdkAspect {
       _r.render('sdk.aspect.mutual', {'first': {r'$entity': first.key}, 'second': {r'$entity': second.key}});
 }
 
+final class MessagesSdkCalendarBangladeshiDate {
+  const MessagesSdkCalendarBangladeshiDate(this._r);
+
+  final Renderer _r;
+
+  String full({required int day, required String monthName, required String weekdayName, required int year}) =>
+      _r.render('sdk.calendar.BANGLADESHI.date.full', {'day': day, 'monthName': monthName, 'weekdayName': weekdayName, 'year': year});
+  String long({required int day, required String monthName, required int year}) =>
+      _r.render('sdk.calendar.BANGLADESHI.date.long', {'day': day, 'monthName': monthName, 'year': year});
+  String numeric({required int day, required int month, required int year}) =>
+      _r.render('sdk.calendar.BANGLADESHI.date.numeric', {'day': day, 'month': month, 'year': year});
+}
+
+final class MessagesSdkCalendarBangladeshi {
+  const MessagesSdkCalendarBangladeshi(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkCalendarBangladeshiDate get date => MessagesSdkCalendarBangladeshiDate(_r);
+  String monthName({required int month}) =>
+      _r.render('sdk.calendar.BANGLADESHI.monthName', {'month': month});
+  String monthShort() => _r.render('sdk.calendar.BANGLADESHI.monthShort');
+}
+
 final class MessagesSdkCalendarBikramSambatDate {
   const MessagesSdkCalendarBikramSambatDate(this._r);
 
@@ -1597,6 +1621,7 @@ final class MessagesSdkCalendar {
 
   final Renderer _r;
 
+  MessagesSdkCalendarBangladeshi get bangladeshi => MessagesSdkCalendarBangladeshi(_r);
   MessagesSdkCalendarBikramSambat get bikramSambat => MessagesSdkCalendarBikramSambat(_r);
   MessagesSdkCalendarGregorian get gregorian => MessagesSdkCalendarGregorian(_r);
   MessagesSdkCalendarHijriTabular get hijriTabular => MessagesSdkCalendarHijriTabular(_r);

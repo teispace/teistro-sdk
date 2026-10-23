@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Bangladeshi calendar** (`calendars/bangladeshi.md`). **Numbers:**
+none move. `calendar.BANGLADESHI` is the revised Bengali calendar Bangla
+Academy keeps, with its rules as revised from 17 October 2019. Year *B*
+begins on 14 April of Gregorian *B* + 593. Boishakh to Ashwin have 31
+days, Kartik to Magh 30, Falgun 29 (30 in a Gregorian leap year) and
+Choitro 30, so each month begins on one Gregorian date every year. Its
+dates carry the `BENGALI` era. Earlier dates are reckoned by these
+rules, since the 1987 scheme's leap year is not settled by any source
+read. Every day of the range round-trips, and every binding converts
+Ekushey, 21 February 2025, to 8 Falgun 1431.
+
 **35 civil days as printed** (`festival-classification.md`, Fixed
 civil). **Numbers:** none computed move; 35 days that had no rule now
 answer. Every page of both editions of the committee's panchanga was
