@@ -75,7 +75,8 @@ pub struct Crossing {
 pub enum SolveError<E> {
     /// The quantity could not be evaluated.
     Evaluation(E),
-    /// The rate or the tolerance was not a positive finite number.
+    /// A step, a rate or a tolerance was not a positive finite number,
+    /// or an instant not a finite one.
     Argument {
         /// Which argument.
         name: &'static str,
@@ -168,15 +169,41 @@ const PULL: f64 = 0.1;
 /// The steps the narrowing may take beyond a bisection's count (`n₀`).
 const SLACK: i32 = 1;
 
+/// The most halvings [`halvings`] counts: `f64::MAX` takes 2,098 to reach
+/// the least subnormal, so a finite width over a positive tolerance never
+/// needs more, and an infinite one, which halving never shrinks, stops
+/// here rather than counting for ever.
+const MOST_HALVINGS: i32 = 2_100;
+
 /// How many halvings take `width` down to the tolerance.
 fn halvings(width: f64, tolerance: f64) -> i32 {
     let mut count = 0;
     let mut remaining = width;
-    while remaining > tolerance {
+    while remaining > tolerance && count < MOST_HALVINGS {
         remaining *= 0.5;
         count += 1;
     }
     count
+}
+
+/// Refuses an instant that is not a finite number: no search can step
+/// from it or narrow toward it.
+fn finite<E>(name: &'static str, value: f64) -> Result<(), SolveError<E>> {
+    if value.is_finite() {
+        Ok(())
+    } else {
+        Err(SolveError::Argument { name, value })
+    }
+}
+
+/// Refuses a step, a rate or a tolerance that is not a positive finite
+/// number.
+fn positive<E>(name: &'static str, value: f64) -> Result<(), SolveError<E>> {
+    if value.is_finite() && value > 0.0 {
+        Ok(())
+    } else {
+        Err(SolveError::Argument { name, value })
+    }
 }
 
 /// The crossing at the middle of a narrowed bracket.
@@ -320,7 +347,8 @@ impl Narrowing {
 ///
 /// # Errors
 ///
-/// A non-positive or non-finite step or tolerance, an evaluation error,
+/// A non-positive or non-finite step or tolerance, a window end that is
+/// not finite, an evaluation error,
 /// or a bracket that does not narrow within the cap.
 pub fn first_zero<E>(
     f: impl FnMut(f64) -> Result<f64, E>,
@@ -488,11 +516,10 @@ pub async fn first_zero_gridded_async<E>(
         caps,
         chunk,
     } = *scan;
-    for (name, value) in [("step", step), ("tolerance", tolerance)] {
-        if !(value.is_finite() && value > 0.0) {
-            return Err(SolveError::Argument { name, value });
-        }
-    }
+    positive("step", step)?;
+    positive("tolerance", tolerance)?;
+    finite("from", from)?;
+    finite("to", to)?;
     let chunk = chunk.max(1);
     let sign = |value: f64| if upward { value } else { -value };
     let mut evaluations = 0u32;
@@ -578,7 +605,8 @@ pub async fn first_zero_gridded_async<E>(
 ///
 /// # Errors
 ///
-/// A non-positive or non-finite tolerance, a bracket without the sign
+/// A non-positive or non-finite tolerance, a bracket whose ends or width
+/// are not finite, a bracket without the sign
 /// change, an evaluation error, or a bracket that does not narrow within
 /// the cap.
 pub fn refine<E>(
@@ -588,12 +616,9 @@ pub fn refine<E>(
     tolerance: f64,
     caps: Caps,
 ) -> Result<Crossing, SolveError<E>> {
-    if !(tolerance.is_finite() && tolerance > 0.0) {
-        return Err(SolveError::Argument {
-            name: "tolerance",
-            value: tolerance,
-        });
-    }
+    positive("tolerance", tolerance)?;
+    finite("lo", lo)?;
+    finite("hi", hi)?;
     let f_lo = f(lo).map_err(SolveError::Evaluation)?;
     let f_hi = f(hi).map_err(SolveError::Evaluation)?;
     let narrowed = refine_known(f, (lo, f_lo), (hi, f_hi), tolerance, caps)?;
@@ -629,12 +654,10 @@ pub fn refine_known<E>(
     tolerance: f64,
     caps: Caps,
 ) -> Result<Crossing, SolveError<E>> {
-    if !(tolerance.is_finite() && tolerance > 0.0) {
-        return Err(SolveError::Argument {
-            name: "tolerance",
-            value: tolerance,
-        });
-    }
+    positive("tolerance", tolerance)?;
+    finite("lo", lo)?;
+    finite("hi", hi)?;
+    finite("bracket", hi - lo)?;
     if !(f_lo < 0.0 && f_hi >= 0.0) {
         return Err(SolveError::NotBracketed { steps: 0, last: lo });
     }
@@ -805,12 +828,10 @@ impl RatesRefinement {
         tolerance: f64,
         caps: Caps,
     ) -> Result<RatesRefinement, SolveError<E>> {
-        if !(tolerance.is_finite() && tolerance > 0.0) {
-            return Err(SolveError::Argument {
-                name: "tolerance",
-                value: tolerance,
-            });
-        }
+        positive("tolerance", tolerance)?;
+        finite("lo", lo.0)?;
+        finite("hi", hi.0)?;
+        finite("bracket", hi.0 - lo.0)?;
         if !(lo.1 < 0.0 && hi.1 >= 0.0) {
             return Err(SolveError::NotBracketed {
                 steps: 0,
@@ -919,7 +940,8 @@ fn nearer_newton(lo: Sloped, hi: Sloped) -> f64 {
 ///
 /// # Errors
 ///
-/// A non-positive or non-finite rate or tolerance, an evaluation error,
+/// A non-positive or non-finite rate or tolerance, a start or a target
+/// that is not finite, an evaluation error,
 /// or a cap reached.
 pub fn next_crossing<E>(
     mut angle: impl FnMut(f64) -> Result<f64, E>,
@@ -929,11 +951,10 @@ pub fn next_crossing<E>(
     tolerance_days: f64,
     caps: Caps,
 ) -> Result<Crossing, SolveError<E>> {
-    for (name, value) in [("rate", rate_deg_per_day), ("tolerance", tolerance_days)] {
-        if !(value.is_finite() && value > 0.0) {
-            return Err(SolveError::Argument { name, value });
-        }
-    }
+    positive("rate", rate_deg_per_day)?;
+    positive("tolerance", tolerance_days)?;
+    finite("target", target_deg)?;
+    finite("from", from)?;
     let mut evaluations = 0u32;
     let mut evaluate = |t: f64| -> Result<f64, SolveError<E>> {
         evaluations += 1;
@@ -1035,13 +1056,8 @@ pub fn minimum<E>(
     tolerance: f64,
     caps: Caps,
 ) -> Result<Minimum, SolveError<E>> {
-    if !(tolerance.is_finite() && tolerance > 0.0) {
-        return Err(SolveError::Argument {
-            name: "tolerance",
-            value: tolerance,
-        });
-    }
-    if !(lo.is_finite() && hi.is_finite() && hi > lo) {
+    positive("tolerance", tolerance)?;
+    if !(lo.is_finite() && hi.is_finite() && hi > lo && (hi - lo).is_finite()) {
         return Err(SolveError::Argument {
             name: "bracket",
             value: hi - lo,

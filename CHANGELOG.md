@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The solvers refuse what they cannot search** (`astro::solve`).
+**Numbers:** none move. A narrowing counted the halvings from its
+bracket's width down to the tolerance, and a bracket whose width
+overflows, such as one from `f64::MIN` to `f64::MAX`, never halves
+below it: the count ran on for ever. It now stops at 2,100, more than
+any finite width needs, so no finite search takes a different step. The
+solvers also refuse, as `Argument`, a window end, a bracket end, a
+start or a target that is not finite, and a bracket whose width is not.
+Property tests drive every solver, every house system and a day's rise
+and set with hostile input, and require each to end.
+
 **The canonical form is written without a tree** (`envelope.rs`,
 `canonical_json`). **Numbers:** none move, and no hash moves: the bytes
 are the bytes the old writer gave, held to it by a test over every shape
