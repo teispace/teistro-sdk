@@ -1988,6 +1988,7 @@ dependencies = [
  "teistro-chart",
  "teistro-core",
  "teistro-port-ephemeris",
+ "teistro-test-allocator",
  "teistro-time",
 ]
 
