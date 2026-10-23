@@ -47,9 +47,13 @@ Pallas, Juno and Vesta. Download a block's files into the app's own
 storage, then name them:
 
 ```dart title="adapters/ephemeris-teimeris/dart/example/consumer.dart"
-  final ranged = teistro.context(ephemeris: [
-    teimeris(files: ['$cache/sepl_12.se1', '$cache/semo_12.se1']), // adds 1200 to 1799
-  ]);
+  final ranged = teistro.context(
+    ephemeris: [
+      teimeris(
+        files: ['$cache/sepl_12.se1', '$cache/semo_12.se1'],
+      ), // adds 1200 to 1799
+    ],
+  );
 ```
 
 `dataDir` names a directory of data files read after the built-in ones; `embedded: false` leaves the built-in data out.

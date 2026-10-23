@@ -653,7 +653,8 @@ pub fn fixed_of_jd(jd: f64) -> (FixedDay, f64) {
 include!(concat!(env!("OUT_DIR"), "/bundles.rs"));
 
 /// The README's examples, run as doctests so that the first page a
-/// reader meets cannot drift from the crate.
-#[cfg(doctest)]
+/// reader meets cannot drift from the crate. They open the built-in
+/// ephemeris, so a build without it does not run them.
+#[cfg(all(doctest, feature = "builtin-ephemeris"))]
 #[doc = include_str!("../README.md")]
 struct ReadmeDoctests;
