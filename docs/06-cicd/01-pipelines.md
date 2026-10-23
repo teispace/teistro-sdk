@@ -20,8 +20,8 @@ red teaches people to ignore it.
 
 ## The fast check
 
-Format, `clippy -D warnings`, `cargo deny check`, `cargo test
---workspace`, and then every gate in `xtask`:
+Format, `clippy -D warnings`, `cargo deny check`, `cargo vet --locked`,
+`cargo test --workspace`, and then every gate in `xtask`:
 
 `check-docs`, `check-fixtures`, `check-catalogue`, `check-calendars`,
 `check-time`, `check-accuracy`, `check-intl`, `check-ffi`, `check-lints`,

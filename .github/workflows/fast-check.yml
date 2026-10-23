@@ -50,6 +50,15 @@ jobs:
         uses: EmbarkStudios/cargo-deny-action@v2
         with:
           command: check
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-vet@0.10.3
+      # Every dependency is audited, by an audit imported from a published
+      # set (supply-chain/config.toml) or one of our own, or stands in the
+      # exemptions it was found in; a new crate or a new version fails here
+      # until one of the three says why it is trusted.
+      - name: Dependency vetting (every crate audited, imported or exempted)
+        run: cargo vet --locked
       - name: Unit tests
         run: cargo test --workspace
       # Every intra-doc link resolves and every example block parses: a
