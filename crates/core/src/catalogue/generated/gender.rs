@@ -233,3 +233,29 @@ impl schemars::JsonSchema for Gender {
         crate::catalogue::key_schema::<Gender>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in Gender::ALL {
+            assert_eq!(Gender::from_key(member.key()), Some(member));
+            assert_eq!(Gender::from_id(member.id()), Some(member));
+            assert_eq!(Gender::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::Gender.name(), member.key()));
+            assert_eq!(member.full_key().parse::<Gender>(), Ok(member));
+            assert_eq!(member.to_string().parse::<Gender>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<Gender>(&json).unwrap(), member);
+            assert_eq!(<Gender as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+        }
+        assert_eq!(Gender::ALL.len(), Kind::Gender.count());
+    }
+}

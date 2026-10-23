@@ -220,3 +220,29 @@ impl schemars::JsonSchema for Ayana {
         crate::catalogue::key_schema::<Ayana>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in Ayana::ALL {
+            assert_eq!(Ayana::from_key(member.key()), Some(member));
+            assert_eq!(Ayana::from_id(member.id()), Some(member));
+            assert_eq!(Ayana::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::Ayana.name(), member.key()));
+            assert_eq!(member.full_key().parse::<Ayana>(), Ok(member));
+            assert_eq!(member.to_string().parse::<Ayana>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<Ayana>(&json).unwrap(), member);
+            assert_eq!(<Ayana as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+        }
+        assert_eq!(Ayana::ALL.len(), Kind::Ayana.count());
+    }
+}

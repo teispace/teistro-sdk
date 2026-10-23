@@ -233,3 +233,29 @@ impl schemars::JsonSchema for Nature {
         crate::catalogue::key_schema::<Nature>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in Nature::ALL {
+            assert_eq!(Nature::from_key(member.key()), Some(member));
+            assert_eq!(Nature::from_id(member.id()), Some(member));
+            assert_eq!(Nature::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::Nature.name(), member.key()));
+            assert_eq!(member.full_key().parse::<Nature>(), Ok(member));
+            assert_eq!(member.to_string().parse::<Nature>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<Nature>(&json).unwrap(), member);
+            assert_eq!(<Nature as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+        }
+        assert_eq!(Nature::ALL.len(), Kind::Nature.count());
+    }
+}

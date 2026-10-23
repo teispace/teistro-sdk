@@ -638,3 +638,30 @@ impl schemars::JsonSchema for Tithi {
         crate::catalogue::key_schema::<Tithi>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in Tithi::ALL {
+            assert_eq!(Tithi::from_key(member.key()), Some(member));
+            assert_eq!(Tithi::from_id(member.id()), Some(member));
+            assert_eq!(Tithi::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::Tithi.name(), member.key()));
+            assert_eq!(member.full_key().parse::<Tithi>(), Ok(member));
+            assert_eq!(member.to_string().parse::<Tithi>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<Tithi>(&json).unwrap(), member);
+            assert_eq!(<Tithi as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+            assert_ne!(format!("{:?}", member.attributes()), "");
+        }
+        assert_eq!(Tithi::ALL.len(), Kind::Tithi.count());
+    }
+}

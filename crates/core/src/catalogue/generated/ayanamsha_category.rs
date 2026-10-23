@@ -285,3 +285,29 @@ impl schemars::JsonSchema for AyanamshaCategory {
         crate::catalogue::key_schema::<AyanamshaCategory>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in AyanamshaCategory::ALL {
+            assert_eq!(AyanamshaCategory::from_key(member.key()), Some(member));
+            assert_eq!(AyanamshaCategory::from_id(member.id()), Some(member));
+            assert_eq!(AyanamshaCategory::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::AyanamshaCategory.name(), member.key()));
+            assert_eq!(member.full_key().parse::<AyanamshaCategory>(), Ok(member));
+            assert_eq!(member.to_string().parse::<AyanamshaCategory>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<AyanamshaCategory>(&json).unwrap(), member);
+            assert_eq!(<AyanamshaCategory as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+        }
+        assert_eq!(AyanamshaCategory::ALL.len(), Kind::AyanamshaCategory.count());
+    }
+}

@@ -368,3 +368,30 @@ impl schemars::JsonSchema for Karana {
         crate::catalogue::key_schema::<Karana>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in Karana::ALL {
+            assert_eq!(Karana::from_key(member.key()), Some(member));
+            assert_eq!(Karana::from_id(member.id()), Some(member));
+            assert_eq!(Karana::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::Karana.name(), member.key()));
+            assert_eq!(member.full_key().parse::<Karana>(), Ok(member));
+            assert_eq!(member.to_string().parse::<Karana>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<Karana>(&json).unwrap(), member);
+            assert_eq!(<Karana as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+            assert_ne!(format!("{:?}", member.attributes()), "");
+        }
+        assert_eq!(Karana::ALL.len(), Kind::Karana.count());
+    }
+}

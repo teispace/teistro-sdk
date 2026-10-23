@@ -350,3 +350,29 @@ impl schemars::JsonSchema for State {
         crate::catalogue::key_schema::<State>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in State::ALL {
+            assert_eq!(State::from_key(member.key()), Some(member));
+            assert_eq!(State::from_id(member.id()), Some(member));
+            assert_eq!(State::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::State.name(), member.key()));
+            assert_eq!(member.full_key().parse::<State>(), Ok(member));
+            assert_eq!(member.to_string().parse::<State>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<State>(&json).unwrap(), member);
+            assert_eq!(<State as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+        }
+        assert_eq!(State::ALL.len(), Kind::State.count());
+    }
+}

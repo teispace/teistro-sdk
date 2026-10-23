@@ -220,3 +220,29 @@ impl schemars::JsonSchema for Sex {
         crate::catalogue::key_schema::<Sex>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in Sex::ALL {
+            assert_eq!(Sex::from_key(member.key()), Some(member));
+            assert_eq!(Sex::from_id(member.id()), Some(member));
+            assert_eq!(Sex::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::Sex.name(), member.key()));
+            assert_eq!(member.full_key().parse::<Sex>(), Ok(member));
+            assert_eq!(member.to_string().parse::<Sex>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<Sex>(&json).unwrap(), member);
+            assert_eq!(<Sex as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+        }
+        assert_eq!(Sex::ALL.len(), Kind::Sex.count());
+    }
+}
