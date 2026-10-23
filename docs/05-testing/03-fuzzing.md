@@ -1,9 +1,10 @@
 # Fuzzing
 
-Status: `built`, 2026-10-12. The quality bar's fuzzing row
-([`01-quality-bar.md`](01-quality-bar.md)): pack parsers, the MF2
-engine and every C ABI entry point survive arbitrary bytes, with a
-committed corpus, a nightly smoke run and a weekly long run.
+Status: `built`, 2026-10-12; the `mf2` and `blob` targets 2026-10-23.
+The quality bar's fuzzing row ([`01-quality-bar.md`](01-quality-bar.md)):
+pack parsers, the MF2 engine, the blob decoders and every C ABI entry
+point survive arbitrary bytes, with a committed corpus, a nightly smoke
+run and a weekly long run.
 
 ## 1. What is fuzzed, and why there
 
@@ -19,6 +20,18 @@ reaches as written, and miss the boundary's own copying and checks.
 | `json` | every entry point that reads a caller's JSON: the 26 sections of `ts_chart_request`, `ts_research`, `ts_pakshi`, `ts_rashifal`, `ts_numerology_profile`, `ts_naam_milan`, `ts_panchanga_days`'s muhurta and festivals, `ts_intl_render`'s parameters, and the context's settings, layouts and dashas | a selector byte names the slot; the rest is the text, cut at its first NUL as a C caller's string is |
 | `pack` | `ts_intl_load_pack` | the bytes, as a caller's buffer |
 | `key` | `ts_key_parse`, `ts_intl_render`'s key, `ts_intl_entity` | the text |
+| `mf2` | the MF2 parser and formatter, through `ts_intl_render` | a selector byte picks the base locale or Nepali; the rest is a message's source, set as an override under a key no locale has and rendered with one parameter of every type the engine formats |
+| `blob` | the result-blob reader (`teistro_idl::blob::Reader`) | the bytes as a blob, read under the schema its header names: every section by its kind, every field of each |
+
+The MF2 engine and the blob reader have targets of their own because
+the ABI targets reach them only through text the library already
+checked. A pack's messages are its translators' words, which a fuzzer
+reaching them through a pack would first have to get past the pack's
+own checks. A blob is bytes the library wrote and a binding reads, so a
+reader must survive bytes cut short or altered between the two. The
+reader is the reference every generated binding decoder is held to, and
+`every_blob_the_library_writes_reads_whole` holds it to one blob of
+each schema the library writes.
 
 A chart request's other fields are fixed at a request that founds one
 chart, so every section's reader runs against a real sky; the context is
@@ -44,7 +57,11 @@ counts as a finding on every record that server would accept.
 
 - The seed corpus is committed under `fuzz/corpus/<target>/`: each JSON
   slot seeded with the requests the ABI's own tests send, so the fuzzer
-  starts past the parser; the pack seeded with the shipped packs.
+  starts past the parser; the pack seeded with the shipped packs; `mf2`
+  with shipped English and Nepali messages using each function and
+  shape, and messages naming every parameter; `blob` with one blob of
+  each schema, written by `TEISTRO_FUZZ_SEEDS=corpus/blob cargo test
+  every_blob` in `fuzz/` and the positions blob of `blob_fixtures`.
 - **Nightly smoke** (`verify.yml`): each target for 60 seconds from the
   committed corpus. A crash fails verify and uploads its input.
 - **Weekly long run** (`fuzz.yml`): each target for an hour; new coverage
@@ -64,3 +81,5 @@ nightly and `libfuzzer-sys`, which the workspace builds without.
 | 2026-10-12, five minutes of `json` | `ts_rashifal` with one period from 1837 to 2037, `WEEKLY` | nothing: 73 000 days of readings take minutes because 73 000 were asked for | not a defect. The target holds records to the shipped server's bounds (§2), and the input is in the corpus; `a_record_past_the_servers_bounds_is_skipped` holds it |
 | 2026-10-23, verify's nightly minute of `json` | `hits_json` asking `{"from": 2460676.5, "to": 6021641.5, "grahas": ["SATURN"]}` | nothing in the SDK: 9,750 years of Saturn's hits take minutes because they were asked for. The harness read a chart section's text as a whole record, where the server's bounds find no `hits` window, so it did not skip a record the server refuses | the harness reads a chart section under its own name in the chart's record, as the server does; `a_transit_window_past_the_servers_bounds_is_skipped` holds it |
 | 2026-10-23, verify's minute of `json` on `8557e728` | `sade_sati_json` asking `{"from":2460676.5,"to":246434429.0,"reckoning":"SIGN"}` | the server bounded no window of Saturn's spells: the search runs on to the ephemeris's edge, so 670,000 years asked the built-in's whole six centuries (six seconds in release, past the timeout under the fuzzer), and an ephemeris reaching millennia would hold a worker for minutes | `Limits::years` (`--max-years`, 150 by default) bounds a `sadeSati` window in years, and the harness names a section as the chart record spells it; `a_window_of_saturns_spells_is_bounded_in_years` and `a_window_of_spells_past_the_servers_bounds_is_skipped` hold it |
+| 2026-10-23, the first seconds of `mf2` | `{$x :number maximumFractionDigits=87777777777}` | the formatter wrote that many fraction digits, and the allocation aborted | a digit count past ECMA-402's range (100 fraction digits, 21 integer) is ignored with a warning; `a_digit_count_past_the_range_is_ignored_with_a_warning` holds it, and five minutes more found nothing |
+| 2026-10-23, five minutes of `blob` | — | nothing in 327 000 runs | — |

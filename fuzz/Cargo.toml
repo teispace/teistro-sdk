@@ -15,6 +15,7 @@ cargo-fuzz = true
 libfuzzer-sys = "0.4"
 teistro-core = { path = "../crates/core" }
 teistro-ffi = { path = "../crates/ffi" }
+teistro-idl = { path = "../crates/idl", default-features = false }
 teistro-mcp = { path = "../crates/mcp" }
 serde_json = "1"
 
@@ -35,6 +36,20 @@ bench = false
 [[bin]]
 name = "key"
 path = "fuzz_targets/key.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "mf2"
+path = "fuzz_targets/mf2.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "blob"
+path = "fuzz_targets/blob.rs"
 test = false
 doc = false
 bench = false

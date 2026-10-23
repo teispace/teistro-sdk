@@ -411,7 +411,7 @@ jobs:
         # where a sanitizer cannot link, so the host's triple is named.
         run: |
           host=$(rustc +nightly -vV | sed -n 's/^host: //p')
-          for target in json pack key; do
+          for target in json pack key mf2 blob; do
             mkdir -p "found/$target"
             cargo +nightly fuzz run --target "$host" "$target" "found/$target" "corpus/$target" -- \
               -max_total_time=60 -rss_limit_mb=4096 -timeout=30

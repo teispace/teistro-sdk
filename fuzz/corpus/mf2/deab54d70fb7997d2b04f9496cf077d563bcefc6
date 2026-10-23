@@ -1,0 +1,1 @@
+{#b}{$graha :entity kind=graha}{/b} आफ्नो राशीश {$dispositor :entity kind=graha}सँग {$compound :entity kind=relationship} छ: तालिकाले {$natural :entity kind=relationship}, राशीशको स्थानले {$temporary :entity kind=relationship}

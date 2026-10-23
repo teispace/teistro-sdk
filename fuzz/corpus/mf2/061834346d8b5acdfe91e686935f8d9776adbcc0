@@ -1,0 +1,1 @@
+.input {$n :integer} .match $n 0 {{none}} one {{one {$n}}} * {{{$n} of them}}

@@ -1,0 +1,1 @@
+{$graha :entity kind=graha} rose at {$at :time timeZone=+05:45} on {$at :date}

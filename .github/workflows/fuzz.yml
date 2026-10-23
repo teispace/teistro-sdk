@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [json, pack, key]
+        target: [json, pack, key, mf2, blob]
     steps:
       - uses: actions/checkout@v5
         with:

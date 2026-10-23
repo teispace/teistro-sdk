@@ -35,6 +35,8 @@ use teistro_ffi::panchanga::{TsPanchangaRequest, ts_panchanga_days};
 use teistro_ffi::rashifal::ts_rashifal;
 use teistro_ffi::research::ts_research;
 use teistro_ffi::string::{TsStr, TsString, ts_string_free};
+use teistro_idl::blob::Reader;
+use teistro_idl::model::{Api, BlobSchema, SectionKind};
 use teistro_mcp::Limits;
 
 /// A size as a C caller writes it into `struct_size`.
@@ -311,31 +313,10 @@ pub fn json(data: &[u8]) {
 
 /// A panchanga request for two days at Kathmandu with one JSON section.
 fn panchanga(text: &CString, festivals: bool) {
-    let request = TsPanchangaRequest {
-        struct_size: size::<TsPanchangaRequest>(),
-        calendar: Calendar::Gregorian.id(),
-        reserved: 0,
-        from_year: 2026,
-        from_month: 11,
-        from_day: 20,
-        to_month: 11,
-        to_day: 21,
-        to_year: 2026,
-        latitude_deg: 27.7172,
-        longitude_deg: 85.324,
-        altitude_m: 1400.0,
-        utc_offset_seconds: 20_700,
-        sections: 0,
-        muhurta_json: if festivals {
-            ptr::null()
-        } else {
-            text.as_ptr()
-        },
-        festivals_json: if festivals {
-            text.as_ptr()
-        } else {
-            ptr::null()
-        },
+    let request = if festivals {
+        panchanga_request(ptr::null(), text.as_ptr())
+    } else {
+        panchanga_request(text.as_ptr(), ptr::null())
     };
     let mut blob = TsBlob::empty();
     // SAFETY: a live context, a valid request and a valid slot.
@@ -350,6 +331,31 @@ fn panchanga(text: &CString, festivals: bool) {
     );
     // SAFETY: a descriptor the library wrote, or the empty one.
     unsafe { ts_blob_free(&raw mut blob) };
+}
+
+/// Two days at Kathmandu with these sections, either of them null.
+fn panchanga_request(
+    muhurta_json: *const c_char,
+    festivals_json: *const c_char,
+) -> TsPanchangaRequest {
+    TsPanchangaRequest {
+        struct_size: size::<TsPanchangaRequest>(),
+        calendar: Calendar::Gregorian.id(),
+        reserved: 0,
+        from_year: 2026,
+        from_month: 11,
+        from_day: 20,
+        to_month: 11,
+        to_day: 21,
+        to_year: 2026,
+        latitude_deg: 27.7172,
+        longitude_deg: 85.324,
+        altitude_m: 1400.0,
+        utc_offset_seconds: 20_700,
+        sections: 0,
+        muhurta_json,
+        festivals_json,
+    }
 }
 
 /// The `pack` target: the bytes as a caller's pack, loaded into a context
@@ -433,9 +439,126 @@ pub fn key(data: &[u8]) {
     }
 }
 
+/// The key the `mf2` target writes its message under, which no shipped
+/// locale has, so the fuzzer's text is the only source it can render.
+const MF2_KEY: &str = "sdk.fuzz.message";
+
+/// What the `mf2` target renders every message with: one value of each
+/// type the engine formats, read by the boundary's own parameter reader.
+const MF2_PARAMS: &str = r#"{"n": 7, "x": -1.5, "s": "text", "l": [1, "a", {"$entity": "rashi.MESHA"}], "graha": {"$entity": "graha.SUN"}, "d": {"$date": {"calendar": "BIKRAM_SAMBAT", "year": 2083, "month": 5, "day": 21}}, "t": {"$time": {"hour": 6, "minute": 15, "second": 0}}, "dt": {"$datetime": {"date": {"calendar": "GREGORIAN", "year": 2026, "month": 9, "day": 6}, "time": {"hour": 23, "minute": 59, "second": 59}}}, "gh": {"$ghati": {"ghati": 12, "pala": 30, "vipala": 0}}, "at": {"$instant": 2460000.25}}"#;
+
+/// The context the `mf2` target writes its message into, one a locale,
+/// built once and never freed: the base locale, and Nepali with its own
+/// digits and plural rules. They are not [`shared`], which every other
+/// target reads and none changes.
+fn messages(nepali: bool) -> *const TsContext {
+    static CONTEXTS: [OnceLock<usize>; 2] = [OnceLock::new(), OnceLock::new()];
+    let address = *CONTEXTS[usize::from(nepali)].get_or_init(|| {
+        let handle = open(TsEphemeris::None, None).unwrap_or_else(|| panic!("a context opens"));
+        if nepali {
+            let tag = c_text(b"ne-Deva-NP");
+            // SAFETY: a live context and a NUL-terminated string.
+            let status = unsafe { ts_intl_set_locale(handle, tag.as_ptr()) };
+            assert_eq!(status, Status::Ok, "the Nepali locale is shipped");
+        }
+        handle as usize
+    });
+    address as *const TsContext
+}
+
+/// The `mf2` target: the text as a message, set as an override in the
+/// context's locale and rendered through `ts_intl_render`, so it reaches
+/// the parser and the formatter as a pack's message would. A selector
+/// byte picks the base locale or Nepali.
+pub fn mf2(data: &[u8]) {
+    let Some((selector, rest)) = data.split_first() else {
+        return;
+    };
+    // A message reaches the engine as text: a pack holding bytes that are
+    // not UTF-8 is refused before any message is read.
+    let Ok(source) = core::str::from_utf8(rest) else {
+        return;
+    };
+    let context = messages(selector % 2 == 1);
+    // SAFETY: a context this crate opened and never frees.
+    let held = unsafe { &*context };
+    let tag = held.intl().locale().to_string();
+    if held.intl_mut().set_override(&tag, MF2_KEY, source).is_err() {
+        return;
+    }
+    let (key, params) = (c_text(MF2_KEY.as_bytes()), c_text(MF2_PARAMS.as_bytes()));
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, NUL-terminated strings and a valid slot.
+    let status = unsafe { ts_intl_render(context, key.as_ptr(), params.as_ptr(), &raw mut blob) };
+    answered(status, "ts_intl_render");
+    // SAFETY: a descriptor the library wrote, or the empty one.
+    unsafe { ts_blob_free(&raw mut blob) };
+    held.intl_mut().clear_override(&tag, MF2_KEY);
+}
+
+/// The blob schemas, read once from the description every binding's
+/// decoder is generated from.
+fn schemas() -> &'static [BlobSchema] {
+    static API: OnceLock<Api> = OnceLock::new();
+    &API.get_or_init(|| {
+        serde_json::from_str(include_str!("../../idl/api.json"))
+            .unwrap_or_else(|error| panic!("idl/api.json reads: {error}"))
+    })
+    .blobs
+}
+
+/// The `blob` target: the bytes as a result blob, read whole by the
+/// reference reader under the schema its header names, or the first when
+/// it names none: every section by its kind and every field of each.
+pub fn blob(data: &[u8]) {
+    let schemas = schemas();
+    let named = data
+        .get(16..20)
+        .and_then(|word| word.try_into().ok())
+        .map(u32::from_le_bytes);
+    let Some(schema) = schemas
+        .iter()
+        .find(|schema| Some(schema.id) == named)
+        .or_else(|| schemas.first())
+    else {
+        return;
+    };
+    let Ok(reader) = Reader::parse(data, schema) else {
+        return;
+    };
+    for section in &schema.sections {
+        let name = section.name.as_str();
+        let _ = reader.count(name);
+        match section.kind {
+            SectionKind::Fixed => {
+                let _ = reader.fixed(name);
+                for field in &section.fields {
+                    let _ = reader.field(name, &field.name);
+                }
+            }
+            SectionKind::Columns => {
+                for field in &section.fields {
+                    let _ = reader.column(name, &field.name);
+                }
+            }
+            SectionKind::Bytes => {
+                let _ = reader.bytes(name);
+                let _ = reader.text(name);
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use std::sync::Mutex;
+
     use super::*;
+
+    /// The tests run on threads and a context is one caller's, so the two
+    /// that write into [`messages`] take turns, as the fuzzer's one thread
+    /// does.
+    static MESSAGES: Mutex<()> = Mutex::new(());
 
     /// The slots are a list and the request's fields are the truth: every
     /// `*_json` field of `ts_chart_request` is a slot, and every slot a
@@ -459,6 +582,9 @@ mod tests {
     /// Every slot answers a seed without a finding.
     #[test]
     fn every_slot_answers_its_seed() {
+        let _turn = MESSAGES
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         for selector in 0..=u8::MAX {
             let mut input = vec![selector];
             input.extend_from_slice(b"{}");
@@ -466,6 +592,107 @@ mod tests {
         }
         pack(b"not a pack");
         key(b"sdk.graha.name");
+        for selector in [0, 1] {
+            mf2(&[&[selector][..], b"{$graha} at {$n :number} on {$d :date}"].concat());
+            mf2(&[
+                &[selector][..],
+                b".match {$n :number} one {{one}} * {{many}}",
+            ]
+            .concat());
+            mf2(&[selector, b'{']);
+        }
+        blob(b"");
+        blob(b"TSRB");
+    }
+
+    /// The bytes of a blob the library wrote, copied out, the blob freed.
+    fn written(blob: &mut TsBlob) -> Vec<u8> {
+        let bytes = if blob.data.is_null() {
+            Vec::new()
+        } else {
+            // SAFETY: a blob the library wrote holds `len` bytes at `data`.
+            unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec()
+        };
+        // SAFETY: a descriptor the library wrote, freed once.
+        unsafe { ts_blob_free(blob) };
+        bytes
+    }
+
+    /// The reference reader reads every schema of blob the library
+    /// writes, whole: every section the blob carries, by its kind. With
+    /// `TEISTRO_FUZZ_SEEDS` naming a directory, the blobs are also written
+    /// there, which is how `corpus/blob/` was seeded
+    /// (`docs/05-testing/03-fuzzing.md` §3).
+    #[test]
+    fn every_blob_the_library_writes_reads_whole() {
+        let _turn = MESSAGES
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let mut blobs: Vec<(&str, Vec<u8>)> = Vec::new();
+        let mut out = TsBlob::empty();
+        let instant = 2_460_000.5;
+        let request = chart_request(&instant);
+        // SAFETY: a live context, a valid request and a valid slot.
+        let status = unsafe { ts_chart_found(shared(), &raw const request, &raw mut out) };
+        assert_eq!(status, Status::Ok, "ts_chart_found");
+        blobs.push(("charts", written(&mut out)));
+        let request = panchanga_request(ptr::null(), ptr::null());
+        // SAFETY: as above.
+        let status = unsafe { ts_panchanga_days(shared(), &raw const request, &raw mut out) };
+        assert_eq!(status, Status::Ok, "ts_panchanga_days");
+        blobs.push(("panchanga", written(&mut out)));
+        let names = c_text("{\"bride\": \"सीता\", \"groom\": \"राम\"}".as_bytes());
+        // SAFETY: a live context, a NUL-terminated string and a valid slot.
+        let status = unsafe { ts_naam_milan(shared(), names.as_ptr(), &raw mut out) };
+        assert_eq!(status, Status::Ok, "ts_naam_milan");
+        blobs.push(("naam", written(&mut out)));
+        let (key, params) = (c_text(MF2_KEY.as_bytes()), c_text(MF2_PARAMS.as_bytes()));
+        // SAFETY: a context this crate opened and never frees.
+        let held = unsafe { &*messages(true) };
+        let tag = held.intl().locale().to_string();
+        let set = held
+            .intl_mut()
+            .set_override(&tag, MF2_KEY, "{$graha} {$n :number} {$d :date}");
+        assert!(set.is_ok(), "{set:?}");
+        // SAFETY: a live context, NUL-terminated strings and a valid slot.
+        let status =
+            unsafe { ts_intl_render(messages(true), key.as_ptr(), params.as_ptr(), &raw mut out) };
+        assert_eq!(status, Status::Ok, "ts_intl_render");
+        blobs.push(("intl_render", written(&mut out)));
+        held.intl_mut().clear_override(&tag, MF2_KEY);
+
+        let seeds = std::env::var_os("TEISTRO_FUZZ_SEEDS");
+        for (name, bytes) in &blobs {
+            let schema = schemas()
+                .iter()
+                .find(|schema| schema.name == *name)
+                .unwrap_or_else(|| panic!("a `{name}` schema"));
+            let reader =
+                Reader::parse(bytes, schema).unwrap_or_else(|error| panic!("{name}: {error}"));
+            let mut carried = 0;
+            for section in &schema.sections {
+                let section_name = section.name.as_str();
+                if reader.entry(section_name).is_none() {
+                    continue;
+                }
+                carried += 1;
+                let read = match section.kind {
+                    SectionKind::Fixed => reader.fixed(section_name).map(drop),
+                    SectionKind::Columns => section
+                        .fields
+                        .iter()
+                        .try_for_each(|field| reader.column(section_name, &field.name).map(drop)),
+                    SectionKind::Bytes => reader.bytes(section_name).map(drop),
+                };
+                assert!(read.is_ok(), "{name}.{section_name}: {read:?}");
+            }
+            assert!(carried > 0, "{name} carries no section");
+            blob(bytes);
+            if let Some(dir) = &seeds {
+                let path = std::path::Path::new(dir).join(format!("{name}.tsrb"));
+                std::fs::write(&path, bytes).unwrap_or_else(|error| panic!("{error}"));
+            }
+        }
     }
 
     /// The fuzzer's first timeout, two centuries of weekly readings, is
