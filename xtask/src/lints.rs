@@ -2030,6 +2030,63 @@ fn item_name(line: &str) -> Option<&str> {
         .filter(|name| !name.is_empty())
 }
 
+/// A crate README's Rust examples run: a README holding a Rust block (or
+/// a bare fence, which rustdoc reads as Rust) is included in its crate as
+/// doctests (`#[cfg(doctest)] #[doc = include_str!("../README.md")]`).
+///
+/// A README is the first page a reader meets, on the forge and on
+/// crates.io, and its examples were the only Rust in the repository
+/// nothing compiled: the façade's called `?` outside a function that
+/// returns a `Result`, and the composers' named a chart it never built.
+fn readme_examples_run(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "readme-example-runs";
+    const INCLUDED: &str = "include_str!(\"../README.md\")";
+    let Ok(entries) = std::fs::read_dir(root.join("crates")) else {
+        return;
+    };
+    let mut crates: Vec<PathBuf> = entries.flatten().map(|entry| entry.path()).collect();
+    crates.sort();
+    for krate in crates {
+        let Ok(readme) = std::fs::read_to_string(krate.join("README.md")) else {
+            continue;
+        };
+        let mut open = false;
+        let mut first = None;
+        for (index, line) in readme.lines().enumerate() {
+            let Some(info) = line.trim_start().strip_prefix("```") else {
+                continue;
+            };
+            if !open {
+                let language = info.split([' ', ',']).next().unwrap_or("");
+                if first.is_none() && (language.is_empty() || language == "rust") {
+                    first = Some(index + 1);
+                }
+            }
+            open = !open;
+        }
+        let Some(line) = first else {
+            continue;
+        };
+        let included = std::fs::read_to_string(krate.join("src/lib.rs"))
+            .is_ok_and(|lib| lib.contains(INCLUDED));
+        if !included {
+            outcome.failures.push(Finding {
+                file: krate
+                    .join("README.md")
+                    .strip_prefix(root)
+                    .unwrap_or(&krate)
+                    .display()
+                    .to_string(),
+                line,
+                text: format!(
+                    "holds a Rust example its crate never runs: add `#[cfg(doctest)] #[doc = {INCLUDED}]` to `src/lib.rs`"
+                ),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 /// Every type a document-carrying crate serialises can describe itself.
 ///
 /// The document schema is generated from `schemars::JsonSchema`, and a
@@ -2988,7 +3045,7 @@ const ANSWERED: &str = "an answer's echo of the rules it was read under, as the 
 const WRITTEN: &str = "the readings as written, one JSON text a field";
 
 /// Every rule [`check`] reports, in the order it reports them.
-const RULES: [&str; 28] = [
+const RULES: [&str; 29] = [
     "deterministic-iteration",
     "ambient-input",
     "unsafe-inventory",
@@ -3017,6 +3074,7 @@ const RULES: [&str; 28] = [
     "crate-is-listed",
     "open-question-is-named",
     "generated-page-is-gated",
+    "readme-example-runs",
 ];
 
 pub(crate) fn check(root: &Path) -> i32 {
@@ -3088,6 +3146,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     crates_are_listed(root, &mut outcome);
     open_questions_are_named(root, &mut outcome);
     generated_pages_are_gated(root, &mut outcome);
+    readme_examples_run(root, &mut outcome);
 
     let mut report = String::new();
     for rule in RULES {
@@ -3333,6 +3392,21 @@ mod serialised_type_describes_itself {
     }
 
     #[test]
+    fn a_tests_own_types_and_an_excused_helper_are_not_found() {
+        let found = findings(
+            "pub fn f() {\n    struct Helper;\n    // lint: serialised-type-describes-itself (a key)\n    \
+             impl serde::Serialize for Helper {}\n    struct Loud;\n    impl serde::Serialize for Loud {}\n}\n\n\
+             #[cfg(test)]\nmod tests {\n    #[derive(serde::Serialize)]\n    struct Shape;\n    \
+             struct Hand;\n    impl serde::Serialize for Hand {}\n}\n",
+        );
+        assert_eq!(
+            found,
+            ["6:serialises `Loud` by hand with no `JsonSchema` for it in this crate"],
+            "the indented impl is numbered on its own line"
+        );
+    }
+
+    #[test]
     fn a_serialised_type_without_a_schema_is_found_in_both_forms() {
         let found = findings(
             "#[derive(Debug,\n    serde::Serialize)]\n#[serde(rename_all = \"lowercase\")]\npub enum Bare { One }\n\n\
@@ -3469,5 +3543,50 @@ mod serialised_type_describes_itself {
         );
         assert_eq!(found.len(), 1, "{found:?}");
         assert!(found[0].contains("state the floor as `>=N`"), "{found:?}");
+    }
+}
+
+#[cfg(test)]
+mod readme_example_runs {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    /// The rule over one crate with this README and `lib.rs`.
+    fn findings(readme: &str, lib: &str) -> Vec<usize> {
+        let root = std::env::temp_dir().join(format!(
+            "teistro-readme-{}-{}-{}",
+            std::process::id(),
+            readme.len(),
+            lib.len()
+        ));
+        let krate = root.join("crates/sample");
+        std::fs::create_dir_all(krate.join("src")).unwrap();
+        std::fs::write(krate.join("README.md"), readme).unwrap();
+        std::fs::write(krate.join("src/lib.rs"), lib).unwrap();
+        let mut outcome = Outcome::default();
+        readme_examples_run(&root, &mut outcome);
+        std::fs::remove_dir_all(&root).unwrap();
+        outcome.failures.iter().map(|f| f.line).collect()
+    }
+
+    #[test]
+    fn a_rust_block_or_a_bare_fence_needs_its_readme_included() {
+        let included =
+            "#[cfg(doctest)]\n#[doc = include_str!(\"../README.md\")]\nstruct ReadmeDoctests;\n";
+        assert_eq!(
+            findings("# x\n\n```sh\nls\n```\n\n```rust\nlet a = 1;\n```\n", ""),
+            [7]
+        );
+        assert_eq!(findings("```\nlet a = 1;\n```\n", ""), [1]);
+        assert_eq!(
+            findings("```rust\nlet a = 1;\n```\n", included),
+            Vec::<usize>::new()
+        );
+        assert_eq!(
+            findings("```sh\nls\n```\n```text\nout\n```\n", ""),
+            Vec::<usize>::new(),
+            "a README with no Rust in it needs nothing"
+        );
     }
 }

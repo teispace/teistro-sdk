@@ -651,3 +651,9 @@ pub fn fixed_of_jd(jd: f64) -> (FixedDay, f64) {
 // `BUNDLES`: the SDK's locales, built from `i18n/` by this crate's build
 // script so a consumer needs no files to render its messages (ADR-0010).
 include!(concat!(env!("OUT_DIR"), "/bundles.rs"));
+
+/// The README's examples, run as doctests so that the first page a
+/// reader meets cannot drift from the crate.
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

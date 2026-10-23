@@ -71,3 +71,9 @@ pub use render::{
 };
 pub use runtime::{Loaded, LocaleReport, RuntimeReport};
 pub use source::{BASE_LOCALE, ENTITY_NAMESPACE, sdk_root};
+
+/// The README's examples, run as doctests so that the first page a
+/// reader meets cannot drift from the crate.
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

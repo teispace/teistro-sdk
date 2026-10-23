@@ -18,10 +18,14 @@ let sdk = Context::builder()
     .profile("nepali-default")
     .locale("ne-Deva-NP")
     .ephemeris([Ephemeris::Builtin])
-    .build()?;
+    .build()
+    .expect("a shipped profile and locale");
 
 let day = CalendarDate::defined(Calendar::Gregorian, 2015, 4, 14);
-let bs = sdk.calendar().convert(&day, Calendar::BikramSambat)?;
+let bs = sdk
+    .calendar()
+    .convert(&day, Calendar::BikramSambat)
+    .expect("a day the table holds");
 ```
 
 ## What it is, and what it is not

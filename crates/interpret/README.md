@@ -24,19 +24,15 @@ composer rather than the translator.
 | [`conditions`](src/conditions.rs) | what each graha *is* where it stands: its dignity, its navamsha and the vargottama it may make, its retrogression, its combustion — `sdk.condition`, whose values the entity namespace already named |
 | [`karakas`](src/karakas.rs) | which chara karaka each graha holds, under the seven-karaka scheme and the eight — both, because they disagree about half the time |
 
-```rust
-use teistro_interpret::{houses, placements, readings};
+A consumer reaches the composers through the SDK, whose
+`sdk.chart().interpreted` founds a chart, reads the sections they need and
+composes the plans asked for in one call. The SDK's
+[`interpretation`](../sdk/examples/interpretation.rs) example renders one
+plan in English and in Nepali, and runs in every gate that runs the
+examples:
 
-// A chart the SDK founded, read as the rules kernel reads it.
-let mut plan = placements(&chart);
-plan.items.extend(readings(held));
-// A section composer reads the document instead, and concatenates: a
-// report says what it wants in the order it wants, which is what a flat
-// plan is for.
-plan.items.extend(houses(document.houses.as_ref().unwrap().all()));
-for item in &plan {
-    println!("{}", sdk.intl().render(&item.key, &item.params).text);
-}
+```sh
+cargo run --release -p teistro --example interpretation
 ```
 
 ## What the research found

@@ -82,3 +82,9 @@ pub use quantity::{Altitude, Degrees, InvalidValue, JulianDay, Latitude, Longitu
 pub use ratio::Ratio;
 pub use settings::{Profile, Settings, SettingsPatch};
 pub use time::{LocalClock, UtcOffset};
+
+/// The README's examples, run as doctests so that the first page a
+/// reader meets cannot drift from the crate.
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;
