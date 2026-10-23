@@ -335,7 +335,10 @@ day both editions print: Bisket's beginning on Chaitra's fourth-last day
 and its end on Baisakh 5, the Baisakh jatras of Bhaktapur, Tokha and
 Thimi on Baisakh 1 to 4, Kandakarak puja and Kheer khane din on Shrawan 1
 and 15, Kirtipur's Bagh Bhairav jatra on Bhadra 1, Vishwakarma puja on
-Asoj 1, and Maghi and the Makar snans on Magh 1 (`SOLAR_DAYS`).
+Asoj 1, and Maghi and the Makar snans on Magh 1 (`SOLAR_DAYS`). 35 civil days
+follow on the dates both editions print them, 15 Bikram Sambat and 20
+Gregorian (`GREGORIAN_DAYS`): Republic day on Jestha 15 and Christmas on
+25 December among them (`festival-classification.md`, Fixed civil).
 
 A `civilDate` on the Tibetan calendar keeps the day its observance falls
 on, the first of a doubled month and of a repeated day, and the day

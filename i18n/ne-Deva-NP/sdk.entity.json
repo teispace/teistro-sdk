@@ -4205,6 +4205,146 @@
     "BHUMI_PUJA": {
       "name": "भूमि पूजा",
       "prose": "भूमि पूजा"
+    },
+    "CHHANDA_DIWAS": {
+      "name": "छन्द दिवस",
+      "prose": "छन्द दिवस"
+    },
+    "KIRAT_SAMAJ_SUDHAR_DIWAS": {
+      "name": "किरात समाज सुधार दिवस",
+      "prose": "किरात समाज सुधार दिवस"
+    },
+    "LAW_DAY": {
+      "name": "कानुन दिवस",
+      "prose": "कानुन दिवस"
+    },
+    "REPUBLIC_DAY": {
+      "name": "गणतन्त्र दिवस",
+      "prose": "गणतन्त्र दिवस"
+    },
+    "CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY": {
+      "name": "जातीय भेदभाव तथा छुवाछूत उन्मूलन दिवस",
+      "prose": "जातीय भेदभाव तथा छुवाछूत उन्मूलन दिवस"
+    },
+    "NATIONAL_PADDY_DAY": {
+      "name": "राष्ट्रिय धान दिवस",
+      "prose": "राष्ट्रिय धान दिवस"
+    },
+    "BHANU_JAYANTI": {
+      "name": "भानु जयन्ती",
+      "prose": "भानु जयन्ती"
+    },
+    "NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING": {
+      "name": "मानव बेचबिखन विरुद्धको राष्ट्रिय दिवस",
+      "prose": "मानव बेचबिखन विरुद्धको राष्ट्रिय दिवस"
+    },
+    "CIVIL_SERVICE_DAY": {
+      "name": "निजामती सेवा दिवस",
+      "prose": "निजामती सेवा दिवस"
+    },
+    "NATIONAL_CHILDREN_S_DAY": {
+      "name": "राष्ट्रिय बाल दिवस",
+      "prose": "राष्ट्रिय बाल दिवस"
+    },
+    "VASTU_DIWAS": {
+      "name": "वास्तु दिवस",
+      "prose": "वास्तु दिवस"
+    },
+    "FALGUNANDA_JAYANTI": {
+      "name": "फाल्गुनन्द जयन्ती",
+      "prose": "फाल्गुनन्द जयन्ती"
+    },
+    "LEKHNATH_PAUDYAL_JAYANTI": {
+      "name": "कविशिरोमणि लेखनाथ पौड्याल जयन्ती",
+      "prose": "कविशिरोमणि लेखनाथ पौड्याल जयन्ती"
+    },
+    "ARANIKO_MEMORIAL_DAY": {
+      "name": "अरनिको स्मृति दिवस",
+      "prose": "अरनिको स्मृति दिवस"
+    },
+    "ELECTION_DAY": {
+      "name": "निर्वाचन दिवस",
+      "prose": "निर्वाचन दिवस"
+    },
+    "NEW_YEAR_S_DAY_AD": {
+      "name": "नयाँ वर्ष (ईस्वी)",
+      "prose": "नयाँ वर्ष (ईस्वी)"
+    },
+    "INTERNATIONAL_WOMEN_S_DAY": {
+      "name": "अन्तर्राष्ट्रिय नारी दिवस",
+      "prose": "अन्तर्राष्ट्रिय नारी दिवस"
+    },
+    "WORLD_WATER_DAY": {
+      "name": "विश्व जल दिवस",
+      "prose": "विश्व जल दिवस"
+    },
+    "WORLD_TUBERCULOSIS_DAY": {
+      "name": "विश्व क्षयरोग दिवस",
+      "prose": "विश्व क्षयरोग दिवस"
+    },
+    "INTERNATIONAL_LABOUR_DAY": {
+      "name": "अन्तर्राष्ट्रिय श्रमिक दिवस",
+      "prose": "अन्तर्राष्ट्रिय श्रमिक दिवस"
+    },
+    "WORLD_PRESS_FREEDOM_DAY": {
+      "name": "विश्व प्रेस स्वतन्त्रता दिवस",
+      "prose": "विश्व प्रेस स्वतन्त्रता दिवस"
+    },
+    "WORLD_RED_CROSS_DAY": {
+      "name": "विश्व रेडक्रस दिवस",
+      "prose": "विश्व रेडक्रस दिवस"
+    },
+    "WORLD_NO_TOBACCO_DAY": {
+      "name": "विश्व सुर्तीजन्य पदार्थ निषेध दिवस",
+      "prose": "विश्व सुर्तीजन्य पदार्थ निषेध दिवस"
+    },
+    "WORLD_ENVIRONMENT_DAY": {
+      "name": "विश्व वातावरण दिवस",
+      "prose": "विश्व वातावरण दिवस"
+    },
+    "INTERNATIONAL_SPORTS_JOURNALISTS_DAY": {
+      "name": "अन्तर्राष्ट्रिय खेलकुद पत्रकार दिवस",
+      "prose": "अन्तर्राष्ट्रिय खेलकुद पत्रकार दिवस"
+    },
+    "WORLD_POPULATION_DAY": {
+      "name": "विश्व जनसङ्ख्या दिवस",
+      "prose": "विश्व जनसङ्ख्या दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES": {
+      "name": "विश्व आदिवासी दिवस",
+      "prose": "विश्व आदिवासी दिवस"
+    },
+    "INTERNATIONAL_LITERACY_DAY": {
+      "name": "अन्तर्राष्ट्रिय साक्षरता दिवस",
+      "prose": "अन्तर्राष्ट्रिय साक्षरता दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_PEACE": {
+      "name": "अन्तर्राष्ट्रिय शान्ति दिवस",
+      "prose": "अन्तर्राष्ट्रिय शान्ति दिवस"
+    },
+    "WORLD_TOURISM_DAY": {
+      "name": "विश्व पर्यटन दिवस",
+      "prose": "विश्व पर्यटन दिवस"
+    },
+    "UNITED_NATIONS_DAY": {
+      "name": "संयुक्त राष्ट्रसङ्घ दिवस",
+      "prose": "संयुक्त राष्ट्रसङ्घ दिवस"
+    },
+    "WORLD_DIABETES_DAY": {
+      "name": "विश्व मधुमेह दिवस",
+      "prose": "विश्व मधुमेह दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES": {
+      "name": "अन्तर्राष्ट्रिय अपाङ्गता दिवस",
+      "prose": "अन्तर्राष्ट्रिय अपाङ्गता दिवस"
+    },
+    "HUMAN_RIGHTS_DAY": {
+      "name": "मानव अधिकार दिवस",
+      "prose": "मानव अधिकार दिवस"
+    },
+    "CHRISTMAS": {
+      "name": "क्रिसमस",
+      "prose": "क्रिसमस"
     }
   }
 }

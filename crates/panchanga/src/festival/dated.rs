@@ -30,7 +30,7 @@ use super::{FestivalDay, Observances, SunEntry};
 /// month's last), and where the day is printed. Each also gives every day
 /// a patro printed in Nepal verified for it, by a back-test kept outside
 /// the repository (`festival-classification.md`).
-const SOLAR_DAYS: [(&str, u8, i8, &str); 16] = [
+const SOLAR_DAYS: [(&str, u8, i8, &str); 31] = [
     (
         "TOKHA_SAPAN_TIRTHA_SNAN",
         1,
@@ -126,6 +126,222 @@ const SOLAR_DAYS: [(&str, u8, i8, &str); 16] = [
         12,
         -4,
         "VS 2082 p. 26 and VS 2083 p. 27: \"भ.पु.भैरवभद्रकाली रथयात्रारम्भ\" on Chaitra's fourth-last day, its 27th of 30",
+    ),
+    (
+        "CHHANDA_DIWAS",
+        1,
+        8,
+        "VS 2082 p. 2 and VS 2083 p. 3: \"छन्द दिवस\" on Baisakh 8",
+    ),
+    (
+        "KIRAT_SAMAJ_SUDHAR_DIWAS",
+        1,
+        24,
+        "VS 2082 p. 3 and VS 2083 p. 4: \"किराँत समाजसुधार दिवस\" on Baisakh 24",
+    ),
+    (
+        "LAW_DAY",
+        1,
+        26,
+        "VS 2082 p. 3 and VS 2083 p. 4: \"कानुनदिवस\" on Baisakh 26",
+    ),
+    (
+        "REPUBLIC_DAY",
+        2,
+        15,
+        "VS 2082 p. 5 and VS 2083 p. 5: \"गणतन्त्र दिवस\" on Jestha 15",
+    ),
+    (
+        "CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY",
+        2,
+        21,
+        "VS 2082 p. 5 and VS 2083 p. 6: \"जातीय भेदभाव तथा छुवाछुत उन्मूलन राष्ट्रिय दिवस\" on Jestha 21",
+    ),
+    (
+        "NATIONAL_PADDY_DAY",
+        3,
+        15,
+        "VS 2082 p. 7 and VS 2083 p. 7: \"धानदिवस\" on Asar 15",
+    ),
+    (
+        "BHANU_JAYANTI",
+        3,
+        29,
+        "VS 2082 p. 8 and VS 2083 p. 8: \"भानुजयन्ती\" on Asar 29",
+    ),
+    (
+        "NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING",
+        5,
+        20,
+        "VS 2082 p. 11 and VS 2083 p. 12: \"मानव बेचबिखन विरुद्धको राष्ट्रिय दिवस\" on Bhadra 20",
+    ),
+    (
+        "CIVIL_SERVICE_DAY",
+        5,
+        22,
+        "VS 2082 p. 11 and VS 2083 p. 12: \"निजामती सेवादिवस\" on Bhadra 22",
+    ),
+    (
+        "NATIONAL_CHILDREN_S_DAY",
+        5,
+        29,
+        "VS 2082 p. 12 and VS 2083 p. 13: \"बालदिवस\" on Bhadra 29",
+    ),
+    (
+        "VASTU_DIWAS",
+        6,
+        1,
+        "VS 2082 p. 12 and VS 2083 p. 13: \"वास्तुदिवस\" on Asoj 1",
+    ),
+    (
+        "FALGUNANDA_JAYANTI",
+        7,
+        25,
+        "VS 2082 p. 16 and VS 2083 p. 17: \"फाल्गुनन्दजयन्ती\" on Kartik 25",
+    ),
+    (
+        "LEKHNATH_PAUDYAL_JAYANTI",
+        9,
+        15,
+        "VS 2082 p. 19 and VS 2083 p. 20: \"कवि शिरोमणि लेखनाथ जयन्ती\" on Poush 15",
+    ),
+    (
+        "ARANIKO_MEMORIAL_DAY",
+        9,
+        23,
+        "VS 2082 p. 20: \"अरनिको स्मृति दिवस\", and VS 2083 p. 20: \"अरनिको स्मृतिदिवस\", continuing its row, on Poush 23",
+    ),
+    (
+        "ELECTION_DAY",
+        11,
+        7,
+        "VS 2082 p. 23 and VS 2083 p. 23: \"निर्वाचन दिवस\" on Phalgun 7",
+    ),
+];
+
+/// The days Nepal's national panchanga prints on a Gregorian date, each
+/// on the same date in both editions and on every day a patro printed in
+/// Nepal verified for it: key, month, day, and where the day is printed.
+const GREGORIAN_DAYS: [(&str, u8, i8, &str); 20] = [
+    (
+        "NEW_YEAR_S_DAY_AD",
+        1,
+        1,
+        "VS 2082 p. 19: \"सन् २०२६ प्रारम्भ\", and VS 2083 p. 20: \"सन् २०२७ प्रारम्भ\", on 1 January",
+    ),
+    (
+        "INTERNATIONAL_WOMEN_S_DAY",
+        3,
+        8,
+        "VS 2082 p. 24 and VS 2083 p. 24: \"अन्तर्राष्ट्रिय नारी दिवस\" on 8 March",
+    ),
+    (
+        "WORLD_WATER_DAY",
+        3,
+        22,
+        "VS 2082 p. 25 and VS 2083 p. 25: \"जलदिवस\" on 22 March",
+    ),
+    (
+        "WORLD_TUBERCULOSIS_DAY",
+        3,
+        24,
+        "VS 2082 p. 25: \"विश्व क्षयरोगदिवस\", and VS 2083 p. 26: \"विश्वक्षयरोग दिवस\", on 24 March",
+    ),
+    (
+        "INTERNATIONAL_LABOUR_DAY",
+        5,
+        1,
+        "VS 2082 p. 3: \"मजदूरदिवस\", and VS 2083 p. 3: \"मजदूर दिवस\", on 1 May",
+    ),
+    (
+        "WORLD_PRESS_FREEDOM_DAY",
+        5,
+        3,
+        "VS 2082 p. 3 and VS 2083 p. 4: \"अन्तर्राष्ट्रिय प्रेस स्वतन्त्रता दिवस\" on 3 May",
+    ),
+    (
+        "WORLD_RED_CROSS_DAY",
+        5,
+        8,
+        "VS 2082 p. 3 and VS 2083 p. 4: \"रेडक्रस दिवस\" on 8 May",
+    ),
+    (
+        "WORLD_NO_TOBACCO_DAY",
+        5,
+        31,
+        "VS 2082 p. 5: \"धूम्रपानरहितदिवस\", and VS 2083 p. 5: \"धूम्रपानरहित दिवस\", on 31 May",
+    ),
+    (
+        "WORLD_ENVIRONMENT_DAY",
+        6,
+        5,
+        "VS 2082 p. 5: \"विश्व वातावरण दिवस\", continuing its row, and VS 2083 p. 6: \"विश्व वातावरण दिवस\", on 5 June",
+    ),
+    (
+        "INTERNATIONAL_SPORTS_JOURNALISTS_DAY",
+        7,
+        2,
+        "VS 2082 p. 7 and VS 2083 p. 8: \"खेलकूद पत्रकार दिवस\" on 2 July",
+    ),
+    (
+        "WORLD_POPULATION_DAY",
+        7,
+        11,
+        "VS 2082 p. 8 and VS 2083 p. 8: \"विश्व जनसङ्ख्या दिवस\" on 11 July",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES",
+        8,
+        9,
+        "VS 2082 p. 9: \"विश्व आदिवासी दिवस\", continuing its row, and VS 2083 p. 10: \"विश्व आदिबासी दिवस\", on 9 August",
+    ),
+    (
+        "INTERNATIONAL_LITERACY_DAY",
+        9,
+        8,
+        "VS 2082 p. 12 and VS 2083 p. 12: \"शिक्षा तथा साक्षरता दिवस\" on 8 September",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_PEACE",
+        9,
+        21,
+        "VS 2082 p. 12 and VS 2083 p. 13: \"विश्वशान्तिदिवस\" on 21 September",
+    ),
+    (
+        "WORLD_TOURISM_DAY",
+        9,
+        27,
+        "VS 2082 p. 13 and VS 2083 p. 14: \"विश्व पर्यटन दिवस\" on 27 September",
+    ),
+    (
+        "UNITED_NATIONS_DAY",
+        10,
+        24,
+        "VS 2082 p. 15 and VS 2083 p. 15: \"संयुक्तराष्ट्रसंघ दिवस\" on 24 October",
+    ),
+    (
+        "WORLD_DIABETES_DAY",
+        11,
+        14,
+        "VS 2082 p. 16 and VS 2083 p. 17: \"विश्व मधुमेह दिवस\" on 14 November",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES",
+        12,
+        3,
+        "VS 2082 p. 17 and VS 2083 p. 18: \"विश्व अपाङ्ग दिवस\" on 3 December",
+    ),
+    (
+        "HUMAN_RIGHTS_DAY",
+        12,
+        10,
+        "VS 2082 p. 18: \"मानवअधिकार दिवस\", and VS 2083 p. 19: \"मानव अधिकार दिवस\", on 10 December",
+    ),
+    (
+        "CHRISTMAS",
+        12,
+        25,
+        "VS 2082 p. 19 and VS 2083 p. 20: \"क्रिसमस डे\" on 25 December",
     ),
 ];
 
@@ -482,16 +698,31 @@ impl DatedRule {
                 "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 11: \"वल्केपर्व\" on Bhadra 1, the day of भाद्रसङ्क्रान्ति",
             ),
         ];
-        rules.extend(SOLAR_DAYS.iter().map(|&(key, month, day, printed)| {
-            bs(
-                key,
-                month,
-                day,
-                &format!("Nepal's national panchanga, {printed}"),
-            )
-        }));
+        rules.extend(Self::on_printed_dates());
         rules.extend(Self::on_the_suns_entry());
         rules
+    }
+
+    /// The festivals and civil days both editions print on one date of a
+    /// Bikram Sambat month ([`SOLAR_DAYS`]) or of the Gregorian year
+    /// ([`GREGORIAN_DAYS`]).
+    fn on_printed_dates() -> impl Iterator<Item = DatedRule> {
+        let printed = |calendar| {
+            move |&(key, month, day, printed): &(&str, u8, i8, &str)| DatedRule {
+                key: key.to_owned(),
+                source: format!("Nepal's national panchanga, {printed}"),
+                on: Dated::CivilDate {
+                    calendar,
+                    month,
+                    day,
+                    skipped: None,
+                },
+            }
+        };
+        SOLAR_DAYS
+            .iter()
+            .map(printed(Calendar::BikramSambat))
+            .chain(GREGORIAN_DAYS.iter().map(printed(Calendar::Gregorian)))
     }
 
     /// The days Nepal's national panchanga keeps on the Sun's entry into
