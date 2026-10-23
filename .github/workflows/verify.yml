@@ -571,3 +571,34 @@ jobs:
           ADR-0008 requires stay possible
         if: matrix.tier == 'standard'
         run: cargo build -p teistro-ffi --no-default-features
+
+  # Every feature of every crate on its own, and each crate with none
+  # (`05-testing/01-quality-bar.md`, "feature matrix"): a feature that
+  # needs another it does not turn on builds in the workspace, where some
+  # other crate turns it on, and fails for the consumer who asks for it
+  # alone. Dev-dependencies are left out, since they are what turns them
+  # on in a test build.
+  features:
+    name: feature matrix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack@0.6.45
+      # `builtin-ephemeris` on the façade and the boundary is the base a
+      # tier turns on, and the built-in crate with no tier is refused by
+      # name (its `compile_error!`), so neither is built alone: the tiers
+      # are, each on its own.
+      - name: Each feature alone, and none, in every crate
+        run: >
+          cargo hack check --workspace --exclude teistro-ephemeris-builtin
+          --each-feature --no-dev-deps --exclude-features builtin-ephemeris
+      - name: Each tier of the built-in ephemeris alone
+        run: >
+          cargo hack check -p teistro-ephemeris-builtin --each-feature
+          --exclude-no-default-features --exclude-features ingest --no-dev-deps
