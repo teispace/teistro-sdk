@@ -117,8 +117,12 @@ void main() {
 
   // Years beyond the built-in ones, from files the app downloaded.
   const cache = './cache';
-  final ranged = teistro.context(ephemeris: [
-    teimeris(files: ['$cache/sepl_12.se1', '$cache/semo_12.se1']), // adds 1200 to 1799
-  ]);
+  final ranged = teistro.context(
+    ephemeris: [
+      teimeris(
+        files: ['$cache/sepl_12.se1', '$cache/semo_12.se1'],
+      ), // adds 1200 to 1799
+    ],
+  );
   ranged.dispose();
 }
