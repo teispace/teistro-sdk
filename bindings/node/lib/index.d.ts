@@ -6549,7 +6549,7 @@ export interface FestivalRequest {
    * A pack the SDK ships, by name; or a list whose items each name a pack
    * or spell a rule out, in order: an Ekadashi rule when it has a `vedha`,
    * a following rule when it has an `after`, a dated rule when it has a
-   * `civilDate`, a `civilWeekday` or a `sunEnters`, an anniversary when it
+   * `civilDate`, a `civilWeekday`, a `sunEnters` or an `easter`, an anniversary when it
    * has an `origin`, else a festival rule. A later rule
    * replaces an earlier one with its key.
    */
@@ -6656,8 +6656,9 @@ export interface FollowingRule {
  * An observance kept on a date of a calendar
  * (`03-design/festival-rule-language.md` §3.6): a sankranti on the first
  * of a Bikram Sambat month, a national day; or on the civil day the Sun
- * enters a nakshatra, Bhumiraj on its entry into Ardra. Exactly one of
- * `civilDate`, `civilWeekday` and `sunEnters`.
+ * enters a nakshatra, Bhumiraj on its entry into Ardra; or by a count
+ * from Easter Sunday, Good Friday at -2. Exactly one of `civilDate`,
+ * `civilWeekday`, `sunEnters` and `easter`.
  */
 export type DatedRule = {
   /** Its key in its pack, `'MAKARA_SANKRANTI'`; an observance is named by it. */
@@ -6676,6 +6677,7 @@ export type DatedRule = {
       };
       readonly civilWeekday?: never;
       readonly sunEnters?: never;
+      readonly easter?: never;
     }
   | {
       /** The `nth` weekday of a month; a negative `nth` counts back from its end, -1 for the last. */
@@ -6687,6 +6689,7 @@ export type DatedRule = {
       };
       readonly civilDate?: never;
       readonly sunEnters?: never;
+      readonly easter?: never;
     }
   | {
       /**
@@ -6697,6 +6700,19 @@ export type DatedRule = {
       readonly sunEnters: { readonly nakshatra: Nakshatra; readonly days?: number };
       readonly civilDate?: never;
       readonly civilWeekday?: never;
+      readonly easter?: never;
+    }
+  | {
+      /**
+       * The day `days` days from Easter Sunday by the Western (`'GREGORIAN'`)
+       * or the Eastern (`'JULIAN'`) computus, before it when negative (0 when
+       * left out, at most 70 either way); none in a year before the
+       * computus's first, 1583 for the Gregorian.
+       */
+      readonly easter: { readonly computus: 'GREGORIAN' | 'JULIAN'; readonly days?: number };
+      readonly civilDate?: never;
+      readonly civilWeekday?: never;
+      readonly sunEnters?: never;
     }
 );
 

@@ -2438,10 +2438,13 @@ function theFestivals(almanac: Almanac): string {
     source: 'Tushita',
     civilDate: { calendar: 'calendar.TIBETAN_PHUGPA', month: 1, day: 15, skipped: 'AFTER' },
   };
+  const goodFriday: DatedRule = { key: 'GOOD_FRIDAY', source: 'the churches', easter: { computus: 'GREGORIAN', days: -2 } };
+  // @ts-expect-error a count from Easter is no Sun's entry
+  const easterAndEntry: DatedRule = { ...goodFriday, sunEnters: bhumi.sunEnters };
   // @ts-expect-error the Sun's entry is no date
   const entryAndDate: DatedRule = { ...bhumi, civilDate: { calendar: 'calendar.BIKRAM_SAMBAT', month: 3, day: 8 } };
   const kept = answer.dated.map((one: DatedObservance) => `${one.rule} ${one.day.day} ${one.on.month}/${one.on.day}`);
-  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, purvahna, pradosha, mangala, terai, sankashta, maghe, safer, bhumi, chotrul] };
+  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, samavedi, purvahna, pradosha, mangala, terai, sankashta, maghe, safer, bhumi, chotrul, goodFriday] };
   const pack: FestivalPack = 'NEPAL';
   // @ts-expect-error a following rule counts days, a number
   const spelt: FollowingRule = { ...terai, days: 'one' };
@@ -2451,7 +2454,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(yugma), String(morningOnly.parana?.at.length), gaudiya.key, String(textual.mahadvadashi?.kinds), String(gaura), String(atNight), ...vrata, modern.kind, String(yamaless), afterRite.kind, onTheTenth.kind, String(riteless), byRite, barredRule.key, String(twelfthBar), barkhi.key, born.key, String(nowhere), ...remembered, String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, ...kept, String(twoDates), String(entryAndDate), String(easterAndEntry), String(yugma), String(morningOnly.parana?.at.length), gaudiya.key, String(textual.mahadvadashi?.kinds), String(gaura), String(atNight), ...vrata, modern.kind, String(yamaless), afterRite.kind, onTheTenth.kind, String(riteless), byRite, barredRule.key, String(twelfthBar), barkhi.key, born.key, String(nowhere), ...remembered, String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(endless), String(twice), String(numbered), String(both), String(halfless), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

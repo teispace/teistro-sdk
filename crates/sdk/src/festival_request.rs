@@ -443,7 +443,7 @@ impl FestivalRequest {
     /// whose items each name a pack or spell a rule out, in order: an
     /// [`EkadashiRule`] when it has a `vedha`, a [`FollowingRule`] when it
     /// has an `after`, a [`DatedRule`] when it has a `civilDate`, a
-    /// `civilWeekday` or a `sunEnters`, an [`Anniversary`] when it has an
+    /// `civilWeekday`, a `sunEnters` or an `easter`, an [`Anniversary`] when it has an
     /// `origin`, else a [`FestivalRule`]. A
     /// later rule replaces an earlier one with its key. A
     /// catalogue member anywhere in it may be written bare or in full
@@ -490,7 +490,8 @@ impl FestivalRequest {
                     if listed
                         && (spelt.contains_key("civilDate")
                             || spelt.contains_key("civilWeekday")
-                            || spelt.contains_key("sunEnters")) =>
+                            || spelt.contains_key("sunEnters")
+                            || spelt.contains_key("easter")) =>
                 {
                     let rule: DatedRule = teistro_core::strict::read_value(item, &field)?;
                     rule.check().map_err(|why| why.under(&field))?;
