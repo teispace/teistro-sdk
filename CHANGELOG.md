@@ -34,7 +34,11 @@ tree took 36 of the chart's 46 milliseconds, 683,000 allocations and a
 object whose keys came out of order is put in order when it closes,
 through one shared scratch buffer. The same chart reads in 21
 milliseconds: the canonical form takes 11.5 of them, 48 allocations and
-a 7.9 MB peak, and the chart's whole peak falls from 36 MB to 10 MB.
+a 7.9 MB peak, and the chart's whole peak falls from 36 MB to 10 MB. A
+chart's foundation allocates 448 times where it did 881. The price is
+code: each type serialised now has a second serialiser's code beside
+the tree's, and the wasm modules grow by 1.3% (full, 2.83 MB gzipped)
+and 2.3% (panchanga, 1.40 MB), with their budgets raised to match.
 
 **The Bangladeshi calendar** (`calendars/bangladeshi.md`). **Numbers:**
 none move. `calendar.BANGLADESHI` is the revised Bengali calendar Bangla

@@ -105,8 +105,8 @@ fn a_day_keeps_nothing_and_a_range_shares_its_lunation() {
         );
     }
     assert!(
-        day.allocations <= 4_000,
-        "a day allocates {} times, measured at 3,267: some 250 completions of 13 \
+        day.allocations <= 3_500,
+        "a day allocates {} times, measured at 2,837: some 250 completions of 13 \
          each; far above that is a search asking the sky more often than it did",
         day.allocations
     );

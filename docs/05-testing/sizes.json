@@ -299,14 +299,14 @@
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 12200000,
-      "gzip": 2850000
+      "raw": 12380000,
+      "gzip": 2890000
     },
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 4550000,
-      "gzip": 1400000
+      "raw": 4730000,
+      "gzip": 1430000
     }
   ],
   "history": [
@@ -489,6 +489,24 @@
       "raw": 4452546,
       "gzip": 1360613,
       "why": "the graha dashas of 2026-10-23 (the Karaka, Tara and ayurdaya dashas on K-graha, its share table and the ayurdaya spans they read in the dasha step) and the MCP watcher's parts; measured by check-wasm on macOS with rustc 1.99.1 at cd208183, since GitHub CI is paused"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-23",
+      "subject": "full",
+      "artefact": "module",
+      "raw": 12135268,
+      "gzip": 2829789,
+      "why": "the canonical form written straight from serde instead of through a `serde_json::Value` tree (a full chart read in 46 to 21 ms, its peak 36 to 10 MB): every type serialised gains a second serialiser's code beside the tree's; measured by check-wasm on macOS with rustc 1.99.1, with the writer's non-generic halves kept out of line"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-23",
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 4630015,
+      "gzip": 1399334,
+      "why": "the canonical form written straight from serde instead of through a `serde_json::Value` tree (a full chart read in 46 to 21 ms, its peak 36 to 10 MB): every type serialised gains a second serialiser's code beside the tree's; measured by check-wasm on macOS with rustc 1.99.1, with the writer's non-generic halves kept out of line"
     }
   ]
 }

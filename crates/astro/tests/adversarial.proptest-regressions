@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc a14f80615537f1343ddaa35ae6202e7d543fa7bb2adb843a55af0d35fbbee7c3 # shrinks to curve = Line { root: 0.0, rate: 0.0 }, lo = 0.0, hi = inf, ends_at = (-1.0, 0.0), tolerance = 1e-9, caps = Caps { bracket_steps: 64, refinements: 64 }

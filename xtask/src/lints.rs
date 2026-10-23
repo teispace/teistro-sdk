@@ -145,6 +145,18 @@ fn outside_tests(text: &str) -> Vec<(usize, &str)> {
     out
 }
 
+/// A file's lines with those inside a `#[cfg(test)]` item blanked, so
+/// that every other line keeps its number.
+fn blank_tests(text: &str) -> Vec<&str> {
+    let mut lines = vec![""; text.lines().count()];
+    for (number, line) in outside_tests(text) {
+        if let Some(slot) = lines.get_mut(number - 1) {
+            *slot = line;
+        }
+    }
+    lines
+}
+
 /// Whether a line asks to be excused, and from which rule.
 fn excused(line: &str, rule: &str) -> bool {
     line.contains(&format!("lint: {rule}"))
@@ -2068,7 +2080,9 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
                 .unwrap_or(path)
                 .display()
                 .to_string();
-            let lines: Vec<&str> = text.lines().collect();
+            // A test's own types reach no document.
+            let lines = blank_tests(text);
+            let production = lines.join("\n");
             let mut index = 0;
             while index < lines.len() {
                 let line = lines[index].trim_start();
@@ -2117,15 +2131,18 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
                     written_through_states_its_schema(&lines, index, &shown, outcome);
                 }
             }
-            for found in hand_impl.captures_iter(text) {
+            for found in hand_impl.captures_iter(&production) {
                 let name = &found[1];
-                if described(name) {
-                    continue;
-                }
-                let line = text[..found.get(0).map_or(0, |m| m.start())]
-                    .lines()
+                let line = production[..found.get(0).map_or(0, |m| m.start())]
+                    .matches('\n')
                     .count()
                     + 1;
+                // A serialiser's own helper, which writes no document,
+                // says so on the line above it.
+                let above = lines.get(line.saturating_sub(2)).copied().unwrap_or("");
+                if described(name) || excused(above, RULE) {
+                    continue;
+                }
                 outcome.failures.push(Finding {
                     file: shown.clone(),
                     line,
