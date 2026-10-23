@@ -2113,6 +2113,7 @@ dependencies = [
  "teistro-points",
  "teistro-state",
  "teistro-strength",
+ "teistro-test-allocator",
  "teistro-vargas",
 ]
 
