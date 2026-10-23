@@ -545,6 +545,7 @@ dependencies = [
  "teistro-state",
  "teistro-strength",
  "teistro-tajika",
+ "teistro-test-allocator",
  "teistro-time",
  "teistro-vargas",
  "teistro-western",
@@ -950,6 +951,10 @@ dependencies = [
  "teistro-port-ephemeris",
  "teistro-vargas",
 ]
+
+[[package]]
+name = "teistro-test-allocator"
+version = "0.0.0"
 
 [[package]]
 name = "teistro-time"

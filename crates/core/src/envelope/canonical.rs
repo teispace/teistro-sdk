@@ -377,15 +377,22 @@ struct Array<'a> {
 
 impl Array<'_> {
     fn element<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<(), Unwritable> {
+        value.serialize(self.next())
+    }
+
+    /// Everything an element does but write itself, kept out of the
+    /// generic `element` so each type serialised costs only its call.
+    #[inline(never)]
+    fn next(&mut self) -> Sink<'_> {
         if !self.first {
             self.out.push(',');
         }
         self.first = false;
-        value.serialize(Sink {
+        Sink {
             out: &mut *self.out,
             work: &mut *self.work,
             digits: self.digits,
-        })
+        }
     }
 
     fn close(self) {
@@ -469,6 +476,21 @@ struct Object<'a> {
 
 impl Object<'_> {
     fn member<T: Serialize + ?Sized>(&mut self, key: Key, value: &T) -> Result<(), Unwritable> {
+        let from = self.open(key);
+        value.serialize(Sink {
+            out: &mut *self.out,
+            work: &mut *self.work,
+            digits: self.digits,
+        })?;
+        self.written(key, from);
+        Ok(())
+    }
+
+    /// Writes a member's `"key":` and says where the member begins: the
+    /// half of `member` before its value, kept out of the generic `member`
+    /// so each type serialised costs only its call.
+    #[inline(never)]
+    fn open(&mut self, key: Key) -> usize {
         if !self.members.entries.is_empty() {
             self.out.push(',');
         }
@@ -485,14 +507,14 @@ impl Object<'_> {
             self.out,
         );
         self.out.push(':');
-        value.serialize(Sink {
-            out: &mut *self.out,
-            work: &mut *self.work,
-            digits: self.digits,
-        })?;
+        from
+    }
+
+    /// Records a member written from `from` to where the text now ends.
+    #[inline(never)]
+    fn written(&mut self, key: Key, from: usize) {
         let to = self.out.len();
         self.members.entries.push(Member { key, from, to });
-        Ok(())
     }
 
     fn close(mut self) {
@@ -616,6 +638,7 @@ impl KeySink<'_> {
     /// the one numbers are written with, and keys like this are rare.
     fn float<F: Serialize>(self, value: F) -> Result<(), Unwritable> {
         struct OneKey<F>(F);
+        // lint: serialised-type-describes-itself (a key's spelling, no document)
         impl<F: Serialize> Serialize for OneKey<F> {
             fn serialize<S: ser::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
                 let mut map = serializer.serialize_map(Some(1))?;

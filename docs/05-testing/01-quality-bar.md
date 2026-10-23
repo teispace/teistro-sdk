@@ -115,12 +115,12 @@ Measured 2026-09-06 (`crates/*/tests/allocations.rs`):
 | thirty Bikram Sambat dates | 0 | the same, thirty times |
 | a render, first time | 126 | the message parsed and the text built |
 | the same render again | 58 | the parse is cached; the text is built again |
-| a chart foundation (2026-10-23) | 881 | its completions of 13 each (zodiac, the day's sunrises, two house divisions, the lagnas, the grahas), its vectors and its stamp; none kept once dropped |
-| ten foundations in a batch | 5,025 | under ten times one chart's: the batch is stamped once |
+| a chart foundation (2026-10-23) | 448 | its completions of 13 each (zodiac, the day's sunrises, two house divisions, the lagnas, the grahas), its vectors and its stamp; none kept once dropped |
+| ten foundations in a batch | 4,551 | its charts and its own lists, within a twentieth of ten charts one by one; the stamp was 881 − 448 = 433 of a chart's allocations while the settings were hashed through a `Value` tree |
 | building a rule evaluator (2026-10-23) | 0 | it borrows the chart |
 | a rule, absent | 0 | a condition reads the chart in place; 551 of 597 rules over the recorded chart |
 | a rule, present | 1 to 3 | one block for each of its houses, found-from and cancellations that is not empty, asserted exactly |
-| a panchanga day (2026-10-23) | 3,267 | some 250 completions of 13 each: sunrise, the limbs' crossings, the lunation's new moons and sankrantis; none kept once dropped |
+| a panchanga day (2026-10-23) | 2,837 | some 250 completions of 13 each: sunrise, the limbs' crossings, the lunation's new moons and sankrantis; none kept once dropped |
 | each later day of a 28-day range | 318 | the lunation found once and shared; 807 with its memo taken out |
 | each later festival day of 28 | 132 | the parts festival rules read, without the Moon's rises and sets |
 

@@ -6,8 +6,11 @@
 //! allocates its 13 (`crates/astro/tests/allocations.rs`); the rest is
 //! the chart's own vectors and its stamp. So the count is the number of
 //! times it asks, and what this test holds is its shape: a chart keeps
-//! nothing once dropped, and a batch, stamped once, costs less than its
-//! charts founded one by one.
+//! nothing once dropped, and a batch costs what its charts cost. Its
+//! stamp, written once, was a saving of some 430 allocations while the
+//! settings were hashed through a `serde_json::Value` tree; written
+//! straight from serde it costs a few, so a batch is now its charts and
+//! its own lists, within a twentieth of the same charts one by one.
 
 #![allow(
     clippy::unwrap_used,
@@ -39,7 +42,7 @@ fn counted<T>(call: impl Fn() -> T) -> Counts {
 }
 
 #[test]
-fn a_chart_keeps_nothing_and_a_batch_is_stamped_once() {
+fn a_chart_keeps_nothing_and_a_batch_costs_its_charts() {
     let provider = TestProvider;
     let resolved = Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
         .unwrap()
@@ -96,16 +99,17 @@ fn a_chart_keeps_nothing_and_a_batch_is_stamped_once() {
         );
     }
     assert!(
-        one.allocations <= 1_100,
-        "a chart allocates {} times, measured at 881: its completions of 13 each, \
+        one.allocations <= 560,
+        "a chart allocates {} times, measured at 448: its completions of 13 each, \
          its vectors and its stamp; far above that is a search asking the sky more \
          often than it did",
         one.allocations
     );
     assert!(
-        ten.allocations < 10 * one.allocations,
-        "ten charts in a batch allocate {} times against {} for one: the batch is \
-         stamped once, so it costs less than ten charts founded one by one",
+        20 * ten.allocations <= 21 * 10 * one.allocations,
+        "ten charts in a batch allocate {} times against {} for one: a batch \
+         should cost its charts and its own lists, within a twentieth of ten \
+         charts founded one by one",
         ten.allocations,
         one.allocations
     );
