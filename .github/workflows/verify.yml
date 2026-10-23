@@ -602,3 +602,15 @@ jobs:
         run: >
           cargo hack check -p teistro-ephemeris-builtin --each-feature
           --exclude-no-default-features --exclude-features ingest --no-dev-deps
+      # The tests too, under each feature alone and with none. The
+      # façade, the boundary and the wasm module are tested per family by
+      # the fast check, and the built-in's tiers by `ephemeris tier`. A
+      # crate with no feature of its own runs its tests once more here
+      # rather than be named in a list that would miss it gaining one.
+      # A test build has its dev-dependencies, which may turn a feature
+      # back on: that the crate does not need it is the step above's.
+      - name: Every crate's tests under each feature alone, and none
+        run: >
+          cargo hack test --workspace --each-feature
+          --exclude teistro --exclude teistro-ffi --exclude teistro-wasm
+          --exclude teistro-ephemeris-builtin
