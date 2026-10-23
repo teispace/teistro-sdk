@@ -359,7 +359,7 @@ impl DatedRule {
 
     /// The days Nepal's national panchanga prints on a Bikram Sambat date:
     /// the twelve sankrantis on the first of each month, the national days
-    /// it names, and the festivals it keeps on a date ([`SOLAR_DAYS`]);
+    /// it names, and the festivals it keeps on a date;
     /// and the two it keeps on the Sun's entry into Ardra, भूमिरज and the
     /// भूमि पूजा three days on.
     #[must_use]

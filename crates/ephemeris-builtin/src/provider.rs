@@ -701,3 +701,29 @@ impl EphemerisProvider for Builtin {
         Ok(columns)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn each_variant_changes_only_what_it_names() {
+        let normal = Builtin::new();
+        assert_eq!(format!("{:?}", Builtin::default()), format!("{normal:?}"));
+        let (series, plain) = (normal.with_series(), Builtin::without_bija());
+        assert!(normal.fitted && !series.fitted && series.bija);
+        assert!(!plain.bija && plain.fitted);
+        let pinned = normal.with_delta_t(DeltaTModel::EspenakMeeus2006);
+        assert_eq!(pinned.delta_t, DeltaTModel::EspenakMeeus2006);
+        assert!(pinned.bija && pinned.fitted);
+        // A UT1 instant reaches the theories through the Delta T model it
+        // names; a TT instant does not.
+        let jd = 2_451_545.0;
+        let tt = |provider: Builtin, scale| provider.dynamical(jd, scale).unwrap();
+        assert_ne!(tt(normal, TimeScale::Ut1), tt(pinned, TimeScale::Ut1));
+        assert_eq!(tt(normal, TimeScale::Tt), tt(pinned, TimeScale::Tt));
+        assert!(normal.dynamical(f64::NAN, TimeScale::Ut1).is_err());
+    }
+}

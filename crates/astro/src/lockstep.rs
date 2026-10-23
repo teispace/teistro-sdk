@@ -244,3 +244,200 @@ impl Future for Answered {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::float_cmp,
+        reason = "tests fail by panicking and compare the values they were handed"
+    )]
+
+    use core::sync::atomic::{AtomicUsize, Ordering};
+
+    use super::*;
+
+    /// A source answering each instant with its own Julian day as the
+    /// right ascension, and counting its requests.
+    #[derive(Default)]
+    struct Echo {
+        asked: AtomicUsize,
+    }
+
+    impl ApparentPositions for Echo {
+        fn apparent(&self, _body: Body, ut1: JulianDay<Ut1>) -> Result<Apparent, Error> {
+            Ok(Apparent {
+                ra_deg: ut1.get(),
+                dec_deg: 0.0,
+                distance_au: 1.0,
+            })
+        }
+
+        fn apparent_many(
+            &self,
+            body: Body,
+            ut1: &[JulianDay<Ut1>],
+            out: &mut Vec<Apparent>,
+        ) -> Result<(), Error> {
+            self.asked.fetch_add(1, Ordering::Relaxed);
+            out.clear();
+            for at in ut1 {
+                out.push(self.apparent(body, *at)?);
+            }
+            Ok(())
+        }
+
+        fn describe(&self) -> String {
+            String::from("an echo")
+        }
+    }
+
+    /// A source refusing every request.
+    struct Refuses;
+
+    impl ApparentPositions for Refuses {
+        fn apparent(&self, _body: Body, _ut1: JulianDay<Ut1>) -> Result<Apparent, Error> {
+            Err(Error::unsupported("no sky here"))
+        }
+
+        fn describe(&self) -> String {
+            String::from("a refusal")
+        }
+    }
+
+    /// A source answering one instant fewer than it was asked for.
+    struct Short;
+
+    impl ApparentPositions for Short {
+        fn apparent(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<Apparent, Error> {
+            Echo::default().apparent(body, ut1)
+        }
+
+        fn apparent_many(
+            &self,
+            body: Body,
+            ut1: &[JulianDay<Ut1>],
+            out: &mut Vec<Apparent>,
+        ) -> Result<(), Error> {
+            Echo::default().apparent_many(body, ut1, out)?;
+            out.pop();
+            Ok(())
+        }
+
+        fn describe(&self) -> String {
+            String::from("a short answer")
+        }
+    }
+
+    fn days(from: f64, n: u32) -> Vec<JulianDay<Ut1>> {
+        (0..n)
+            .map(|d| JulianDay::literal(from + f64::from(d)))
+            .collect()
+    }
+
+    /// Two reads in a row, so each search waits twice.
+    async fn twice<'s>(
+        lockstep: &Lockstep<'s>,
+        sky: &'s dyn ApparentPositions,
+        body: Body,
+        at: &[JulianDay<Ut1>],
+    ) -> Result<Vec<f64>, Error> {
+        let first = lockstep.apparent(sky, body, at).await?;
+        let later: Vec<JulianDay<Ut1>> = first
+            .iter()
+            .map(|a| JulianDay::literal(a.ra_deg + 0.5))
+            .collect();
+        let second = lockstep.apparent(sky, body, &later).await?;
+        Ok(second.iter().map(|a| a.ra_deg).collect())
+    }
+
+    #[test]
+    fn each_search_gets_its_own_share_and_a_round_asks_once() {
+        let echo = Echo::default();
+        let lockstep = Lockstep::new();
+        let starts = [days(10.0, 3), days(20.0, 1), days(30.0, 2)];
+        let answers = lockstep.run(
+            starts
+                .iter()
+                .map(|at| twice(&lockstep, &echo, Body::Moon, at)),
+        );
+        let answers: Vec<Vec<f64>> = answers.into_iter().map(Result::unwrap).collect();
+        assert_eq!(
+            answers,
+            vec![vec![10.5, 11.5, 12.5], vec![20.5], vec![30.5, 31.5]]
+        );
+        // Two rounds, one body, one source: two requests for six searches'
+        // twelve readings.
+        assert_eq!(echo.asked.load(Ordering::Relaxed), 2);
+    }
+
+    #[test]
+    fn a_round_asks_each_source_and_body_apart() {
+        let (a, b) = (Echo::default(), Echo::default());
+        let lockstep = Lockstep::new();
+        let at = days(5.0, 2);
+        let searches = [
+            (&a, Body::Moon),
+            (&a, Body::Sun),
+            (&b, Body::Moon),
+            (&a, Body::Moon),
+        ];
+        let answers = lockstep.run(
+            searches
+                .iter()
+                .map(|&(sky, body)| twice(&lockstep, sky, body, &at)),
+        );
+        assert!(
+            answers
+                .iter()
+                .all(|answer| answer.as_ref().unwrap() == &[5.5, 6.5])
+        );
+        // Each round asks `a` for the Moon and the Sun and `b` for the Moon.
+        assert_eq!(a.asked.load(Ordering::Relaxed), 4);
+        assert_eq!(b.asked.load(Ordering::Relaxed), 2);
+    }
+
+    #[test]
+    fn a_refusal_reaches_every_search_waiting_on_it() {
+        let (echo, refuses) = (Echo::default(), Refuses);
+        let lockstep = Lockstep::new();
+        let at = days(1.0, 2);
+        let answers = lockstep.run([
+            twice(&lockstep, &refuses, Body::Moon, &at),
+            twice(&lockstep, &echo, Body::Moon, &at),
+            twice(&lockstep, &refuses, Body::Moon, &at),
+        ]);
+        let no_sky = Err(Error::unsupported("no sky here"));
+        assert_eq!(answers, [no_sky.clone(), Ok(vec![1.5, 2.5]), no_sky]);
+    }
+
+    #[test]
+    fn a_short_answer_is_refused_rather_than_shared_out() {
+        let lockstep = Lockstep::new();
+        let at = days(1.0, 3);
+        let answers = lockstep.run([twice(&lockstep, &Short, Body::Moon, &at)]);
+        let error = answers.into_iter().next().unwrap().unwrap_err();
+        assert_eq!(error.status, teistro_core::error::Status::Internal);
+        assert!(error.message.contains("2 of 3"), "{}", error.message);
+    }
+
+    #[test]
+    fn a_search_read_on_the_spot_finishes_unless_it_waits() {
+        assert_eq!(finished(async { 7 }), Some(7));
+        let echo = Echo::default();
+        let lockstep = Lockstep::default();
+        let at = days(1.0, 1);
+        assert!(finished(lockstep.apparent(&echo, Body::Moon, &at)).is_none());
+        assert_eq!(format!("{lockstep:?}"), "Lockstep { waiting: 1, .. }");
+    }
+
+    #[test]
+    fn the_test_sources_name_themselves() {
+        let names = [
+            Echo::default().describe(),
+            Refuses.describe(),
+            Short.describe(),
+        ];
+        assert_eq!(names, ["an echo", "a refusal", "a short answer"]);
+    }
+}
