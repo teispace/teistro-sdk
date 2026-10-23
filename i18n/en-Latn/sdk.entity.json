@@ -4213,6 +4213,146 @@
     "BHUMI_PUJA": {
       "name": "Bhumi Puja",
       "prose": "Bhumi Puja, three days after Bhumiraj"
+    },
+    "CHHANDA_DIWAS": {
+      "name": "Chhanda Diwas",
+      "prose": "Chhanda Diwas, Baisakh 8"
+    },
+    "KIRAT_SAMAJ_SUDHAR_DIWAS": {
+      "name": "Kirat Samaj Sudhar Diwas",
+      "prose": "Kirat Samaj Sudhar Diwas, Baisakh 24"
+    },
+    "LAW_DAY": {
+      "name": "Law Day",
+      "prose": "Law Day, Baisakh 26"
+    },
+    "REPUBLIC_DAY": {
+      "name": "Republic Day",
+      "prose": "Republic Day, Jestha 15"
+    },
+    "CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY": {
+      "name": "Caste-based Discrimination and Untouchability Elimination Day",
+      "prose": "Caste-based Discrimination and Untouchability Elimination Day, Jestha 21"
+    },
+    "NATIONAL_PADDY_DAY": {
+      "name": "National Paddy Day",
+      "prose": "National Paddy Day, Asar 15"
+    },
+    "BHANU_JAYANTI": {
+      "name": "Bhanu Jayanti",
+      "prose": "Bhanu Jayanti, Asar 29"
+    },
+    "NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING": {
+      "name": "National Day Against Human Trafficking",
+      "prose": "National Day Against Human Trafficking, Bhadra 20"
+    },
+    "CIVIL_SERVICE_DAY": {
+      "name": "Civil Service Day",
+      "prose": "Civil Service Day, Bhadra 22"
+    },
+    "NATIONAL_CHILDREN_S_DAY": {
+      "name": "National Children's Day",
+      "prose": "National Children's Day, Bhadra 29"
+    },
+    "VASTU_DIWAS": {
+      "name": "Vastu Diwas",
+      "prose": "Vastu Diwas, Asoj 1"
+    },
+    "FALGUNANDA_JAYANTI": {
+      "name": "Falgunanda Jayanti",
+      "prose": "Falgunanda Jayanti, Kartik 25"
+    },
+    "LEKHNATH_PAUDYAL_JAYANTI": {
+      "name": "Lekhnath Paudyal Jayanti",
+      "prose": "Lekhnath Paudyal Jayanti, Poush 15"
+    },
+    "ARANIKO_MEMORIAL_DAY": {
+      "name": "Araniko Memorial Day",
+      "prose": "Araniko Memorial Day, Poush 23"
+    },
+    "ELECTION_DAY": {
+      "name": "Election Day",
+      "prose": "Election Day, Phalgun 7"
+    },
+    "NEW_YEAR_S_DAY_AD": {
+      "name": "New Year's Day (AD)",
+      "prose": "New Year's Day (AD), 1 January"
+    },
+    "INTERNATIONAL_WOMEN_S_DAY": {
+      "name": "International Women's Day",
+      "prose": "International Women's Day, 8 March"
+    },
+    "WORLD_WATER_DAY": {
+      "name": "World Water Day",
+      "prose": "World Water Day, 22 March"
+    },
+    "WORLD_TUBERCULOSIS_DAY": {
+      "name": "World Tuberculosis Day",
+      "prose": "World Tuberculosis Day, 24 March"
+    },
+    "INTERNATIONAL_LABOUR_DAY": {
+      "name": "International Labour Day",
+      "prose": "International Labour Day, 1 May"
+    },
+    "WORLD_PRESS_FREEDOM_DAY": {
+      "name": "World Press Freedom Day",
+      "prose": "World Press Freedom Day, 3 May"
+    },
+    "WORLD_RED_CROSS_DAY": {
+      "name": "World Red Cross Day",
+      "prose": "World Red Cross Day, 8 May"
+    },
+    "WORLD_NO_TOBACCO_DAY": {
+      "name": "World No Tobacco Day",
+      "prose": "World No Tobacco Day, 31 May"
+    },
+    "WORLD_ENVIRONMENT_DAY": {
+      "name": "World Environment Day",
+      "prose": "World Environment Day, 5 June"
+    },
+    "INTERNATIONAL_SPORTS_JOURNALISTS_DAY": {
+      "name": "International Sports Journalists Day",
+      "prose": "International Sports Journalists Day, 2 July"
+    },
+    "WORLD_POPULATION_DAY": {
+      "name": "World Population Day",
+      "prose": "World Population Day, 11 July"
+    },
+    "INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES": {
+      "name": "International Day of the World's Indigenous Peoples",
+      "prose": "International Day of the World's Indigenous Peoples, 9 August"
+    },
+    "INTERNATIONAL_LITERACY_DAY": {
+      "name": "International Literacy Day",
+      "prose": "International Literacy Day, 8 September"
+    },
+    "INTERNATIONAL_DAY_OF_PEACE": {
+      "name": "International Day of Peace",
+      "prose": "International Day of Peace, 21 September"
+    },
+    "WORLD_TOURISM_DAY": {
+      "name": "World Tourism Day",
+      "prose": "World Tourism Day, 27 September"
+    },
+    "UNITED_NATIONS_DAY": {
+      "name": "United Nations Day",
+      "prose": "United Nations Day, 24 October"
+    },
+    "WORLD_DIABETES_DAY": {
+      "name": "World Diabetes Day",
+      "prose": "World Diabetes Day, 14 November"
+    },
+    "INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES": {
+      "name": "International Day of Persons with Disabilities",
+      "prose": "International Day of Persons with Disabilities, 3 December"
+    },
+    "HUMAN_RIGHTS_DAY": {
+      "name": "Human Rights Day",
+      "prose": "Human Rights Day, 10 December"
+    },
+    "CHRISTMAS": {
+      "name": "Christmas",
+      "prose": "Christmas, 25 December"
     }
   }
 }

@@ -620,6 +620,41 @@ class FestivalKey(enum.StrEnum):
     BISKET_JATRA_BEGINS = "festival.BISKET_JATRA_BEGINS"
     BHUMIRAJ = "festival.BHUMIRAJ"
     BHUMI_PUJA = "festival.BHUMI_PUJA"
+    CHHANDA_DIWAS = "festival.CHHANDA_DIWAS"
+    KIRAT_SAMAJ_SUDHAR_DIWAS = "festival.KIRAT_SAMAJ_SUDHAR_DIWAS"
+    LAW_DAY = "festival.LAW_DAY"
+    REPUBLIC_DAY = "festival.REPUBLIC_DAY"
+    CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY = "festival.CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY"
+    NATIONAL_PADDY_DAY = "festival.NATIONAL_PADDY_DAY"
+    BHANU_JAYANTI = "festival.BHANU_JAYANTI"
+    NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING = "festival.NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING"
+    CIVIL_SERVICE_DAY = "festival.CIVIL_SERVICE_DAY"
+    NATIONAL_CHILDREN_S_DAY = "festival.NATIONAL_CHILDREN_S_DAY"
+    VASTU_DIWAS = "festival.VASTU_DIWAS"
+    FALGUNANDA_JAYANTI = "festival.FALGUNANDA_JAYANTI"
+    LEKHNATH_PAUDYAL_JAYANTI = "festival.LEKHNATH_PAUDYAL_JAYANTI"
+    ARANIKO_MEMORIAL_DAY = "festival.ARANIKO_MEMORIAL_DAY"
+    ELECTION_DAY = "festival.ELECTION_DAY"
+    NEW_YEAR_S_DAY_AD = "festival.NEW_YEAR_S_DAY_AD"
+    INTERNATIONAL_WOMEN_S_DAY = "festival.INTERNATIONAL_WOMEN_S_DAY"
+    WORLD_WATER_DAY = "festival.WORLD_WATER_DAY"
+    WORLD_TUBERCULOSIS_DAY = "festival.WORLD_TUBERCULOSIS_DAY"
+    INTERNATIONAL_LABOUR_DAY = "festival.INTERNATIONAL_LABOUR_DAY"
+    WORLD_PRESS_FREEDOM_DAY = "festival.WORLD_PRESS_FREEDOM_DAY"
+    WORLD_RED_CROSS_DAY = "festival.WORLD_RED_CROSS_DAY"
+    WORLD_NO_TOBACCO_DAY = "festival.WORLD_NO_TOBACCO_DAY"
+    WORLD_ENVIRONMENT_DAY = "festival.WORLD_ENVIRONMENT_DAY"
+    INTERNATIONAL_SPORTS_JOURNALISTS_DAY = "festival.INTERNATIONAL_SPORTS_JOURNALISTS_DAY"
+    WORLD_POPULATION_DAY = "festival.WORLD_POPULATION_DAY"
+    INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES = "festival.INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES"
+    INTERNATIONAL_LITERACY_DAY = "festival.INTERNATIONAL_LITERACY_DAY"
+    INTERNATIONAL_DAY_OF_PEACE = "festival.INTERNATIONAL_DAY_OF_PEACE"
+    WORLD_TOURISM_DAY = "festival.WORLD_TOURISM_DAY"
+    UNITED_NATIONS_DAY = "festival.UNITED_NATIONS_DAY"
+    WORLD_DIABETES_DAY = "festival.WORLD_DIABETES_DAY"
+    INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES = "festival.INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES"
+    HUMAN_RIGHTS_DAY = "festival.HUMAN_RIGHTS_DAY"
+    CHRISTMAS = "festival.CHRISTMAS"
 
 
 class GanaKey(enum.StrEnum):
@@ -4043,6 +4078,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.APARA_EKADASHI")
 
     @property
+    def araniko_memorial_day(self) -> EntityForms:
+        """The forms of `festival.ARANIKO_MEMORIAL_DAY` in the current locale."""
+        return self._r.entity("festival.ARANIKO_MEMORIAL_DAY")
+
+    @property
     def argha_sarai_parva(self) -> EntityForms:
         """The forms of `festival.ARGHA_SARAI_PARVA` in the current locale."""
         return self._r.entity("festival.ARGHA_SARAI_PARVA")
@@ -4143,6 +4183,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.BHAL_BHAL_ASHTAMI")
 
     @property
+    def bhanu_jayanti(self) -> EntityForms:
+        """The forms of `festival.BHANU_JAYANTI` in the current locale."""
+        return self._r.entity("festival.BHANU_JAYANTI")
+
+    @property
     def bharani_shraddha(self) -> EntityForms:
         """The forms of `festival.BHARANI_SHRADDHA` in the current locale."""
         return self._r.entity("festival.BHARANI_SHRADDHA")
@@ -4216,6 +4261,11 @@ class MessagesSdkEntityFestival:
     def budhashtami(self) -> EntityForms:
         """The forms of `festival.BUDHASHTAMI` in the current locale."""
         return self._r.entity("festival.BUDHASHTAMI")
+
+    @property
+    def caste_based_discrimination_and_untouchability_elimination_day(self) -> EntityForms:
+        """The forms of `festival.CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY` in the current locale."""
+        return self._r.entity("festival.CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY")
 
     @property
     def chaala(self) -> EntityForms:
@@ -4293,6 +4343,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.CHATURTHI_SHRADDHA")
 
     @property
+    def chhanda_diwas(self) -> EntityForms:
+        """The forms of `festival.CHHANDA_DIWAS` in the current locale."""
+        return self._r.entity("festival.CHHANDA_DIWAS")
+
+    @property
     def chhath(self) -> EntityForms:
         """The forms of `festival.CHHATH` in the current locale."""
         return self._r.entity("festival.CHHATH")
@@ -4306,6 +4361,16 @@ class MessagesSdkEntityFestival:
     def chonam_parva(self) -> EntityForms:
         """The forms of `festival.CHONAM_PARVA` in the current locale."""
         return self._r.entity("festival.CHONAM_PARVA")
+
+    @property
+    def christmas(self) -> EntityForms:
+        """The forms of `festival.CHRISTMAS` in the current locale."""
+        return self._r.entity("festival.CHRISTMAS")
+
+    @property
+    def civil_service_day(self) -> EntityForms:
+        """The forms of `festival.CIVIL_SERVICE_DAY` in the current locale."""
+        return self._r.entity("festival.CIVIL_SERVICE_DAY")
 
     @property
     def constitution_day(self) -> EntityForms:
@@ -4451,6 +4516,16 @@ class MessagesSdkEntityFestival:
     def ekadashi_vaishnava(self) -> EntityForms:
         """The forms of `festival.EKADASHI_VAISHNAVA` in the current locale."""
         return self._r.entity("festival.EKADASHI_VAISHNAVA")
+
+    @property
+    def election_day(self) -> EntityForms:
+        """The forms of `festival.ELECTION_DAY` in the current locale."""
+        return self._r.entity("festival.ELECTION_DAY")
+
+    @property
+    def falgunanda_jayanti(self) -> EntityForms:
+        """The forms of `festival.FALGUNANDA_JAYANTI` in the current locale."""
+        return self._r.entity("festival.FALGUNANDA_JAYANTI")
 
     @property
     def fulkharka_gangajamuna_mela(self) -> EntityForms:
@@ -4658,6 +4733,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.HOLI_TERAI")
 
     @property
+    def human_rights_day(self) -> EntityForms:
+        """The forms of `festival.HUMAN_RIGHTS_DAY` in the current locale."""
+        return self._r.entity("festival.HUMAN_RIGHTS_DAY")
+
+    @property
     def indira_ekadashi(self) -> EntityForms:
         """The forms of `festival.INDIRA_EKADASHI` in the current locale."""
         return self._r.entity("festival.INDIRA_EKADASHI")
@@ -4676,6 +4756,41 @@ class MessagesSdkEntityFestival:
     def indra_jatra(self) -> EntityForms:
         """The forms of `festival.INDRA_JATRA` in the current locale."""
         return self._r.entity("festival.INDRA_JATRA")
+
+    @property
+    def international_day_of_peace(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_DAY_OF_PEACE` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_DAY_OF_PEACE")
+
+    @property
+    def international_day_of_persons_with_disabilities(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES")
+
+    @property
+    def international_day_of_the_world_s_indigenous_peoples(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES")
+
+    @property
+    def international_labour_day(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_LABOUR_DAY` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_LABOUR_DAY")
+
+    @property
+    def international_literacy_day(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_LITERACY_DAY` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_LITERACY_DAY")
+
+    @property
+    def international_sports_journalists_day(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_SPORTS_JOURNALISTS_DAY` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_SPORTS_JOURNALISTS_DAY")
+
+    @property
+    def international_women_s_day(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_WOMEN_S_DAY` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_WOMEN_S_DAY")
 
     @property
     def jagannath_rath_jatra(self) -> EntityForms:
@@ -4788,6 +4903,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.KHEER_KHANE_DIN")
 
     @property
+    def kirat_samaj_sudhar_diwas(self) -> EntityForms:
+        """The forms of `festival.KIRAT_SAMAJ_SUDHAR_DIWAS` in the current locale."""
+        return self._r.entity("festival.KIRAT_SAMAJ_SUDHAR_DIWAS")
+
+    @property
     def kirtipur_bagh_bhairav_jatra(self) -> EntityForms:
         """The forms of `festival.KIRTIPUR_BAGH_BHAIRAV_JATRA` in the current locale."""
         return self._r.entity("festival.KIRTIPUR_BAGH_BHAIRAV_JATRA")
@@ -4873,9 +4993,19 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.LALITPUR_NARSINGH_JATRA")
 
     @property
+    def law_day(self) -> EntityForms:
+        """The forms of `festival.LAW_DAY` in the current locale."""
+        return self._r.entity("festival.LAW_DAY")
+
+    @property
     def laxmi_prasad_devkota_jayanti(self) -> EntityForms:
         """The forms of `festival.LAXMI_PRASAD_DEVKOTA_JAYANTI` in the current locale."""
         return self._r.entity("festival.LAXMI_PRASAD_DEVKOTA_JAYANTI")
+
+    @property
+    def lekhnath_paudyal_jayanti(self) -> EntityForms:
+        """The forms of `festival.LEKHNATH_PAUDYAL_JAYANTI` in the current locale."""
+        return self._r.entity("festival.LEKHNATH_PAUDYAL_JAYANTI")
 
     @property
     def loktantra_diwas(self) -> EntityForms:
@@ -5028,6 +5158,21 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.NARASIMHA_JAYANTI")
 
     @property
+    def national_children_s_day(self) -> EntityForms:
+        """The forms of `festival.NATIONAL_CHILDREN_S_DAY` in the current locale."""
+        return self._r.entity("festival.NATIONAL_CHILDREN_S_DAY")
+
+    @property
+    def national_day_against_human_trafficking(self) -> EntityForms:
+        """The forms of `festival.NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING` in the current locale."""
+        return self._r.entity("festival.NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING")
+
+    @property
+    def national_paddy_day(self) -> EntityForms:
+        """The forms of `festival.NATIONAL_PADDY_DAY` in the current locale."""
+        return self._r.entity("festival.NATIONAL_PADDY_DAY")
+
+    @property
     def navami_shraddha(self) -> EntityForms:
         """The forms of `festival.NAVAMI_SHRADDHA` in the current locale."""
         return self._r.entity("festival.NAVAMI_SHRADDHA")
@@ -5041,6 +5186,11 @@ class MessagesSdkEntityFestival:
     def nepal_sambat_new_year(self) -> EntityForms:
         """The forms of `festival.NEPAL_SAMBAT_NEW_YEAR` in the current locale."""
         return self._r.entity("festival.NEPAL_SAMBAT_NEW_YEAR")
+
+    @property
+    def new_year_s_day_ad(self) -> EntityForms:
+        """The forms of `festival.NEW_YEAR_S_DAY_AD` in the current locale."""
+        return self._r.entity("festival.NEW_YEAR_S_DAY_AD")
 
     @property
     def nirjala_ekadashi(self) -> EntityForms:
@@ -5196,6 +5346,11 @@ class MessagesSdkEntityFestival:
     def ravi_saptami(self) -> EntityForms:
         """The forms of `festival.RAVI_SAPTAMI` in the current locale."""
         return self._r.entity("festival.RAVI_SAPTAMI")
+
+    @property
+    def republic_day(self) -> EntityForms:
+        """The forms of `festival.REPUBLIC_DAY` in the current locale."""
+        return self._r.entity("festival.REPUBLIC_DAY")
 
     @property
     def rishi_panchami(self) -> EntityForms:
@@ -5478,6 +5633,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.UDHAULI")
 
     @property
+    def united_nations_day(self) -> EntityForms:
+        """The forms of `festival.UNITED_NATIONS_DAY` in the current locale."""
+        return self._r.entity("festival.UNITED_NATIONS_DAY")
+
+    @property
     def upakarma_madhyandina(self) -> EntityForms:
         """The forms of `festival.UPAKARMA_MADHYANDINA` in the current locale."""
         return self._r.entity("festival.UPAKARMA_MADHYANDINA")
@@ -5523,6 +5683,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.VARUTHINI_EKADASHI")
 
     @property
+    def vastu_diwas(self) -> EntityForms:
+        """The forms of `festival.VASTU_DIWAS` in the current locale."""
+        return self._r.entity("festival.VASTU_DIWAS")
+
+    @property
     def vayu_ashtami(self) -> EntityForms:
         """The forms of `festival.VAYU_ASHTAMI` in the current locale."""
         return self._r.entity("festival.VAYU_ASHTAMI")
@@ -5566,6 +5731,51 @@ class MessagesSdkEntityFestival:
     def watu_magh_jatra(self) -> EntityForms:
         """The forms of `festival.WATU_MAGH_JATRA` in the current locale."""
         return self._r.entity("festival.WATU_MAGH_JATRA")
+
+    @property
+    def world_diabetes_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_DIABETES_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_DIABETES_DAY")
+
+    @property
+    def world_environment_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_ENVIRONMENT_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_ENVIRONMENT_DAY")
+
+    @property
+    def world_no_tobacco_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_NO_TOBACCO_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_NO_TOBACCO_DAY")
+
+    @property
+    def world_population_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_POPULATION_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_POPULATION_DAY")
+
+    @property
+    def world_press_freedom_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_PRESS_FREEDOM_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_PRESS_FREEDOM_DAY")
+
+    @property
+    def world_red_cross_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_RED_CROSS_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_RED_CROSS_DAY")
+
+    @property
+    def world_tourism_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_TOURISM_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_TOURISM_DAY")
+
+    @property
+    def world_tuberculosis_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_TUBERCULOSIS_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_TUBERCULOSIS_DAY")
+
+    @property
+    def world_water_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_WATER_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_WATER_DAY")
 
     @property
     def yala_panchadan(self) -> EntityForms:

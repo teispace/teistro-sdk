@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**35 civil days as printed** (`festival-classification.md`, Fixed
+civil). **Numbers:** none computed move; 35 days that had no rule now
+answer. Every page of both editions of the committee's panchanga was
+read for the 165 fixed civil days of the consumer's list.
+`NEPAL_PANCHANGA` now keeps the 35 that both editions print on one date
+and that agree with every verified day of a patro printed in Nepal: 15
+on a Bikram Sambat date (Republic day, Law day, Bhanu jayanti and
+others) and 20 on a Gregorian one (`GREGORIAN_DAYS`: Christmas, New
+Year's day, the UN's days the print names). Each is held to the
+Gregorian day both editions print. Eight printed days with no one date
+are left out, each with its reason.
+
 **Easter, by both churches' reckonings** (`festival-rule-language.md`
 §3.6). **Numbers:** none move; no shipped rule uses the new form.
 `teistro_calendar::easter` dates Easter Sunday by the Western

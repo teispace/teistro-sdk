@@ -450,7 +450,16 @@ An authority announces the day.
 
 A date in the Bikram Sambat or the Gregorian calendar, fixed by law or by the body that keeps it. These are listed by key and English name only.
 
-Six of them ship as dated days in `NEPAL_PANCHANGA`, each on the Bikram Sambat date the committee prints: `LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY` and `DEMOCRACY_DAY`.
+41 of them ship as dated days in `NEPAL_PANCHANGA`, 21 on a Bikram Sambat date and 20 on a Gregorian one. Each was searched for on every page of both editions of the committee's print, and ships only where both editions print it on the same date and every day a patro printed in Nepal verified for it agrees. The six national days came first (`LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY`, `DEMOCRACY_DAY`); the other 35 are listed with their pages in `crates/panchanga/src/festival/dated.rs` (`SOLAR_DAYS`, `GREGORIAN_DAYS`), and `crates/sdk/tests/festival.rs` holds each to the Gregorian day both editions print.
+
+Five are printed and still not shipped, because no one date holds:
+- `GURU_GOBIND_SINGH_JAYANTI`: Poush 21 in both editions, 5 January, but the verified days fall on 4 and 6 January in two years.
+- `PENSION_DAY`: Bhadra 17 in both editions; the verified day for VS 2082 is Bhadra 27.
+- `WORLD_SOIL_CONSERVATION_DAY`: 8 August in both editions; the verified days include 7 and 9 August.
+- `RASTRIYA_DHARMA_SABHA_DIWAS`: Bhadra 11 in VS 2082 and Bhadra 29 in VS 2083, beside Teej.
+- `SWAMI_PARAMANANDA_MEMORIAL_DAY`: Poush 27 in VS 2082 and Magh 16 in VS 2083.
+
+`SAGARMATHA_DAY` and `INTERNATIONAL_DAY_OF_YOGA` are printed in VS 2083 only, and `SWAMI_SHASHIDHAR_JAYANTI` in VS 2082 only, twice (Baisakh 3 and Chaitra 22), so it follows a tithi. The other 116 are not printed in either edition; a pack of the organisations' own dates would ship them on another source.
 
 | key | name |
 |---|---|

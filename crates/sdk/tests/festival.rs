@@ -490,6 +490,15 @@ fn kept_dated(from: Day, to: Day) -> Vec<(String, Day)> {
         .collect()
 }
 
+/// The days `NEPAL_PANCHANGA` keeps on a date over the range, less the
+/// civil days [`PRINTED_CIVIL_DAYS`] holds to both editions.
+fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
+    kept_dated(from, to)
+        .into_iter()
+        .filter(|(rule, _)| PRINTED_CIVIL_DAYS.iter().all(|&(civil, ..)| civil != rule))
+        .collect()
+}
+
 fn printed(rows: &[(&str, Day)]) -> Vec<(String, Day)> {
     rows.iter()
         .map(|(rule, day)| ((*rule).to_owned(), *day))
@@ -505,7 +514,7 @@ fn printed(rows: &[(&str, Day)]) -> Vec<(String, Day)> {
 /// Sun's entry into Ardra (p. 6).
 #[test]
 fn the_dated_days_are_the_committees_printed_rows() {
-    let kept = kept_dated;
+    let kept = kept_solar;
     assert_eq!(
         kept((2025, 4, 14), (2026, 4, 13)),
         printed(&[
@@ -551,10 +560,90 @@ fn the_dated_days_are_the_committees_printed_rows() {
     );
 }
 
+/// The civil days both editions print on one date, each with the
+/// Gregorian day VS 2082 prints it on and the day VS 2083 does, read off
+/// the `ता.` column of the committee's pages.
+const PRINTED_CIVIL_DAYS: [(&str, Day, Day); 35] = [
+    ("CHHANDA_DIWAS", (2025, 4, 21), (2026, 4, 21)),
+    ("INTERNATIONAL_LABOUR_DAY", (2025, 5, 1), (2026, 5, 1)),
+    ("WORLD_PRESS_FREEDOM_DAY", (2025, 5, 3), (2026, 5, 3)),
+    ("KIRAT_SAMAJ_SUDHAR_DIWAS", (2025, 5, 7), (2026, 5, 7)),
+    ("WORLD_RED_CROSS_DAY", (2025, 5, 8), (2026, 5, 8)),
+    ("LAW_DAY", (2025, 5, 9), (2026, 5, 9)),
+    ("REPUBLIC_DAY", (2025, 5, 29), (2026, 5, 29)),
+    ("WORLD_NO_TOBACCO_DAY", (2025, 5, 31), (2026, 5, 31)),
+    (
+        "CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY",
+        (2025, 6, 4),
+        (2026, 6, 4),
+    ),
+    ("WORLD_ENVIRONMENT_DAY", (2025, 6, 5), (2026, 6, 5)),
+    ("NATIONAL_PADDY_DAY", (2025, 6, 29), (2026, 6, 29)),
+    (
+        "INTERNATIONAL_SPORTS_JOURNALISTS_DAY",
+        (2025, 7, 2),
+        (2026, 7, 2),
+    ),
+    ("WORLD_POPULATION_DAY", (2025, 7, 11), (2026, 7, 11)),
+    ("BHANU_JAYANTI", (2025, 7, 13), (2026, 7, 13)),
+    (
+        "INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES",
+        (2025, 8, 9),
+        (2026, 8, 9),
+    ),
+    (
+        "NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING",
+        (2025, 9, 5),
+        (2026, 9, 5),
+    ),
+    ("CIVIL_SERVICE_DAY", (2025, 9, 7), (2026, 9, 7)),
+    ("INTERNATIONAL_LITERACY_DAY", (2025, 9, 8), (2026, 9, 8)),
+    ("NATIONAL_CHILDREN_S_DAY", (2025, 9, 14), (2026, 9, 14)),
+    ("VASTU_DIWAS", (2025, 9, 17), (2026, 9, 17)),
+    ("INTERNATIONAL_DAY_OF_PEACE", (2025, 9, 21), (2026, 9, 21)),
+    ("WORLD_TOURISM_DAY", (2025, 9, 27), (2026, 9, 27)),
+    ("UNITED_NATIONS_DAY", (2025, 10, 24), (2026, 10, 24)),
+    ("FALGUNANDA_JAYANTI", (2025, 11, 11), (2026, 11, 11)),
+    ("WORLD_DIABETES_DAY", (2025, 11, 14), (2026, 11, 14)),
+    (
+        "INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES",
+        (2025, 12, 3),
+        (2026, 12, 3),
+    ),
+    ("HUMAN_RIGHTS_DAY", (2025, 12, 10), (2026, 12, 10)),
+    ("CHRISTMAS", (2025, 12, 25), (2026, 12, 25)),
+    ("LEKHNATH_PAUDYAL_JAYANTI", (2025, 12, 30), (2026, 12, 30)),
+    ("NEW_YEAR_S_DAY_AD", (2026, 1, 1), (2027, 1, 1)),
+    ("ARANIKO_MEMORIAL_DAY", (2026, 1, 7), (2027, 1, 7)),
+    ("ELECTION_DAY", (2026, 2, 19), (2027, 2, 19)),
+    ("INTERNATIONAL_WOMEN_S_DAY", (2026, 3, 8), (2027, 3, 8)),
+    ("WORLD_WATER_DAY", (2026, 3, 22), (2027, 3, 22)),
+    ("WORLD_TUBERCULOSIS_DAY", (2026, 3, 24), (2027, 3, 24)),
+];
+
+/// Each civil day falls on the Gregorian day both editions print, the
+/// Bikram Sambat ones through the calendar's own conversion.
+#[test]
+fn the_civil_days_fall_on_the_days_both_editions_print() {
+    let kept: Vec<(String, Day)> = [
+        kept_dated((2025, 4, 14), (2026, 4, 13)),
+        kept_dated((2026, 4, 14), (2027, 4, 13)),
+    ]
+    .concat();
+    for (rule, first, second) in PRINTED_CIVIL_DAYS {
+        let days: Vec<Day> = kept
+            .iter()
+            .filter(|(kept, _)| kept == rule)
+            .map(|&(_, day)| day)
+            .collect();
+        assert_eq!(days, [first, second], "{rule}");
+    }
+}
+
 /// VS 2083's rows checked against the same pack (pp. 2-3, 9-13, 20-23, 27).
 #[test]
 fn the_dated_days_are_the_second_editions_printed_rows() {
-    let kept = kept_dated;
+    let kept = kept_solar;
     // VS 2083 pp. 2-3: Bisket and the Baisakh jatras, Thimi's and Chhuma
     // Ganesh's continuing their rows after Ⓑ and Ⓒ.
     assert_eq!(
