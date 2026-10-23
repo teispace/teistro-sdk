@@ -1140,7 +1140,6 @@ provider's DUT1).
    maintainer owns printed copies of Santhanam's BPHS and Saravali and
    Kapoor's Phaladeepika, so they may be read; the repository gets
    citations and paraphrase only, and the Sanskrit wins.
-   - BPHS ch. 9 v. 13 waits on the twilight and the Moon's hora.
    - *Jataka Parijata* ch. 4 v. 70 asks a house in a cruel shashtyamsha,
      which a whole-sign house has no degree for, and v. 101 names its grahas
      "from Saturn to Mars", three or four (C396); vv. 69 and 102 to 106 ship. Its ch. 5 v. 47 is
