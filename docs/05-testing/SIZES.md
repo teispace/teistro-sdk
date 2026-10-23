@@ -25,8 +25,8 @@ A native library is loaded, not downloaded, so only the wasm modules are held to
 
 | module | module | gzipped | budget, gzipped | left | glue | glue, gzipped |
 |---|--:|--:|--:|--:|--:|--:|
-| `full` | 10 922 869 | 2 510 433 | 2 850 000 | 11.9% | 57 609 | 12 407 |
-| `panchanga` | 3 450 277 | 1 088 208 | 1 400 000 | 22.3% | 57 609 | 12 407 |
+| `full` | 10 922 869 | 2 510 433 | 2 890 000 | 13.1% | 57 609 | 12 407 |
+| `panchanga` | 3 450 277 | 1 088 208 | 1 430 000 | 23.9% | 57 609 | 12 407 |
 
 ## Bundled
 
@@ -64,3 +64,5 @@ A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fa
 | 2026-10-22 | `by hand` | `panchanga` | 4 362 373 | 1 336 192 | the Navaratri's close, the Gaudiya Ekadashi and its mahadvadashis, and the ashauch (the Dharmasindhu's table as data, the night rule, late news and overlap); measured by check-wasm on macOS with rustc 1.99.1, since GitHub CI is paused |
 | 2026-10-23 | `by hand` | `full` | 11 941 527 | 2 780 611 | the graha dashas of 2026-10-23 (the Karaka, Tara and ayurdaya dashas on K-graha, its share table and the ayurdaya spans they read in the dasha step) and the MCP watcher's parts; measured by check-wasm on macOS with rustc 1.99.1 at cd208183, since GitHub CI is paused |
 | 2026-10-23 | `by hand` | `panchanga` | 4 452 546 | 1 360 613 | the graha dashas of 2026-10-23 (the Karaka, Tara and ayurdaya dashas on K-graha, its share table and the ayurdaya spans they read in the dasha step) and the MCP watcher's parts; measured by check-wasm on macOS with rustc 1.99.1 at cd208183, since GitHub CI is paused |
+| 2026-10-23 | `by hand` | `full` | 12 135 268 | 2 829 789 | the canonical form written straight from serde instead of through a `serde_json::Value` tree (a full chart read in 46 to 21 ms, its peak 36 to 10 MB): every type serialised gains a second serialiser's code beside the tree's; measured by check-wasm on macOS with rustc 1.99.1, with the writer's non-generic halves kept out of line |
+| 2026-10-23 | `by hand` | `panchanga` | 4 630 015 | 1 399 334 | the canonical form written straight from serde instead of through a `serde_json::Value` tree (a full chart read in 46 to 21 ms, its peak 36 to 10 MB): every type serialised gains a second serialiser's code beside the tree's; measured by check-wasm on macOS with rustc 1.99.1, with the writer's non-generic halves kept out of line |
