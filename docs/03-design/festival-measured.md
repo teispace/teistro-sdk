@@ -805,6 +805,7 @@ measures the fit and not a text (C600).
 | 2082 | HAYAGRIVA_JAYANTI | 8 Aug | p. 9: हयग्रीवोत्पत्ति | 8 Aug | 8 Aug |
 | 2082 | LALITPUR_NARSINGH_JATRA | 14 Aug | p. 10: ल.पु. नृसिंहयात्रा (उपाकलं सायाः) | 14 Aug | 13 Aug ✗ |
 | 2082 | KOJAGRAT_PURNIMA | 6 Oct | p. 13: कोजाग्रतव्रत | 6 Oct | 6 Oct |
+| 2082 | GOVATSA_DWADASHI | 17 Oct | p. 14: गोवत्सद्वादशी | 17 Oct | 17 Oct |
 | 2082 | ARJUNDHARA_MELA | 18 Nov | p. 16: सताक्षीधाम तथा अर्जुनधारा मेला | 18 Nov | 18 Nov |
 | 2082 | KASHI_BADA_GANESH_UTSAV | 6 Jan | p. 20: काशीमा बडागणेश उत्सव | 6 Jan | 6 Jan |
 | 2082 | SI_PUNHI | 1 Feb | p. 21: (सिपून्हि) | 1 Feb | 1 Feb |
@@ -816,14 +817,15 @@ measures the fit and not a text (C600).
 | 2083 | HAYAGRIVA_JAYANTI | 27 Aug | p. 11: हयग्रीवोत्पत्ति | 27 Aug | 27 Aug |
 | 2083 | LALITPUR_NARSINGH_JATRA | 1 Sep | p. 12: ल.पु. नृसिंहयात्रा (उपाकलं सायाः) | 1 Sep | 2 Sep ✗ |
 | 2083 | KOJAGRAT_PURNIMA | 25 Oct | p. 15: कोजाग्रतव्रत | 25 Oct | 25 Oct |
+| 2083 | GOVATSA_DWADASHI | 5 Nov | p. 16: गोवत्सद्वादशी | 5 Nov | 5 Nov |
 | 2083 | ARJUNDHARA_MELA | 6 Dec | p. 18: झापा सताक्षीधाम तथा अर्जुनधारामेला | 6 Dec | 6 Dec |
 | 2083 | KASHI_BADA_GANESH_UTSAV | 25 Jan | p. 22: काशीमा बडागणेश उत्सव | 25 Jan | 25 Jan |
 | 2083 | SI_PUNHI | 20 Feb | p. 23: (सिपून्हि) | 20 Feb | 20 Feb |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 587 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 60 of 587 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 589 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 60 of 589 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 

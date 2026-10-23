@@ -625,6 +625,7 @@ enum FestivalKey {
   panautiSnanMela('festival.PANAUTI_SNAN_MELA'),
   bahidyoBoyegu('festival.BAHIDYO_BOYEGU'),
   lalitpurNarsinghJatra('festival.LALITPUR_NARSINGH_JATRA'),
+  govatsaDwadashi('festival.GOVATSA_DWADASHI'),
   kashiBadaGaneshUtsav('festival.KASHI_BADA_GANESH_UTSAV'),
   narasimhaJayanti('festival.NARASIMHA_JAYANTI'),
   padminiEkadashi('festival.PADMINI_EKADASHI'),
@@ -2043,6 +2044,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get gosaikundaSnanaArambha => _r.entity('festival.GOSAIKUNDA_SNANA_ARAMBHA');
   EntityForms get gosaikundaSnanaSamapti => _r.entity('festival.GOSAIKUNDA_SNANA_SAMAPTI');
   EntityForms get govardhanPuja => _r.entity('festival.GOVARDHAN_PUJA');
+  EntityForms get govatsaDwadashi => _r.entity('festival.GOVATSA_DWADASHI');
   EntityForms get govindaDwadashi => _r.entity('festival.GOVINDA_DWADASHI');
   EntityForms get gugaNavami => _r.entity('festival.GUGA_NAVAMI');
   EntityForms get guhyeshwariJatra => _r.entity('festival.GUHYESHWARI_JATRA');
