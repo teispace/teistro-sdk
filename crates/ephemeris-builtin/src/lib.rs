@@ -22,12 +22,24 @@
 pub mod chebyshev;
 pub mod elp;
 pub mod fitted;
+#[cfg(any(feature = "compact", feature = "standard", feature = "full"))]
 #[rustfmt::skip]
 pub mod pluto;
+#[cfg(any(feature = "compact", feature = "standard", feature = "full"))]
 pub mod provider;
 pub mod series;
+#[cfg(any(feature = "compact", feature = "standard", feature = "full"))]
 #[rustfmt::skip]
 pub mod tables;
+
+// Said by name rather than left to a missing item: a dependent that turns
+// on the built-in and names no tier gets this sentence alone. The modules
+// that read a tier's data are left out above, so no error about `PLUTO` or
+// `TIER` follows it and buries it.
+#[cfg(not(any(feature = "compact", feature = "standard", feature = "full")))]
+compile_error!(
+    "teistro-ephemeris-builtin needs a tier: enable `compact`, `standard` or `full` (on the façade and the boundary, `builtin-compact`, `builtin-standard` or `builtin-full`)"
+);
 
 #[cfg(feature = "ingest")]
 pub mod ingest;
