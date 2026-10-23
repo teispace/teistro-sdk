@@ -974,4 +974,29 @@ mod tests {
             Hash::of(canonical_json(&value).as_bytes())
         );
     }
+
+    /// Sealing stamps the value's own hash over whatever the provenance
+    /// carried, and a batch stamps each member's beside the list's.
+    #[test]
+    fn a_seal_stamps_the_value_s_hash() {
+        let stale = Hash::of(b"stale");
+        let provenance = Provenance::new(Version::new(0, 1, 0), 1, 1, "p", stale, stale);
+        let sealed = Envelope::sealing([3_u8, 1], provenance.clone());
+        assert_eq!(sealed.provenance.content_hash, content_hash(&[3_u8, 1]));
+        assert_eq!(sealed.provenance.settings_hash, stale);
+        let (batch, each) = Envelope::sealing_each(vec![1_u8, 2], provenance);
+        assert_eq!(batch.provenance.content_hash, content_hash(&[1_u8, 2]));
+        assert_eq!(each, [content_hash(&1_u8), content_hash(&2_u8)]);
+    }
+
+    #[test]
+    fn small_values_write_as_their_documents_read_them() {
+        assert_eq!(canonical_json_at(&[1.23456_f64, 2.0], 2), "[1.23,2]");
+        assert_eq!(decimal(f64::NAN, Digits::Shortest), "0");
+        assert_eq!(decimal(f64::NEG_INFINITY, Digits::Rounded(3)), "0");
+        let hash = Hash::of(b"");
+        assert_eq!(hash.bytes().len(), 32);
+        assert_eq!(format!("{hash:?}"), format!("Hash({hash})"));
+        assert_eq!(MonthDay { month: 3, day: 7 }.to_string(), "03-07");
+    }
 }

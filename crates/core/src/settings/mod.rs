@@ -1512,6 +1512,55 @@ mod tests {
     }
 
     #[test]
+    fn a_warning_reaches_the_stamp_and_a_refusal_names_its_field() {
+        let root = shipped(DEFAULT_PROFILE);
+        let base = root
+            .resolve(&SettingsPatch::default())
+            .expect("the default resolves");
+        let other = [Ayanamsha::Raman, Ayanamsha::Lahiri]
+            .into_iter()
+            .map(Into::into)
+            .find(|ayanamsha| *ayanamsha != base.settings.frame.ayanamsha)
+            .expect("two ayanamshas differ");
+        let mut patch = SettingsPatch::default();
+        patch.frame.zodiac = Some(Zodiac::Tropical);
+        patch.frame.ayanamsha = Some(other);
+        let resolved = root.resolve(&patch).expect("a warning is not a refusal");
+        assert!(
+            resolved
+                .warnings
+                .iter()
+                .any(|w| w.rule == "ayanamsha-ignored")
+        );
+        let stamp = resolved.provenance(Version::new(0, 1, 0), Hash::of(b"input"));
+        let warned = stamp
+            .warnings
+            .iter()
+            .find(|w| w.code == "AYANAMSHA_IGNORED")
+            .expect("the warning is stamped");
+        assert!(
+            warned
+                .slots
+                .iter()
+                .any(|(slot, value)| slot == "fields" && value == "frame.zodiac,frame.ayanamsha")
+        );
+
+        assert_eq!(
+            sunrise_rules(SunriseConvention::Custom { altitude_deg: 91.0 }),
+            ["sunrise-altitude"]
+        );
+        let mut patch = SettingsPatch::default();
+        patch.day.sunrise = Some(SunriseConvention::Custom {
+            altitude_deg: f64::NAN,
+        });
+        let refused = Error::from(root.resolve(&patch).expect_err("not an altitude"));
+        assert_eq!(
+            (refused.status, refused.field()),
+            (Status::InvalidArg, Some("day.sunrise"))
+        );
+    }
+
+    #[test]
     fn the_settings_refuse_an_air_that_cannot_be_applied() {
         let air = |which, air| SunriseConvention::Atmospheric { which, air };
         assert!(

@@ -712,7 +712,7 @@ mod tests {
     #![allow(clippy::panic, reason = "tests fail by panicking")]
 
     use super::*;
-    use crate::source::{Entity, Namespace, sdk_root};
+    use crate::source::{Entity, ListPattern, Namespace, sdk_root};
 
     fn tree() -> Tree {
         Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"))
@@ -755,6 +755,75 @@ mod tests {
         DayPeriod {
             from,
             key: String::from(key),
+        }
+    }
+
+    /// Every rule on a locale's metadata refuses its own fault, each by
+    /// its own words, and the two fallback-chain shapes warn.
+    #[test]
+    fn a_locales_metadata_is_refused_rule_by_rule() {
+        let mut tree = tree();
+        let tags: Vec<String> = tree.locales.keys().cloned().collect();
+        let other = tags
+            .iter()
+            .find(|tag| *tag != BASE_LOCALE)
+            .cloned()
+            .unwrap_or_else(|| panic!("a second locale"));
+        let base = &mut tree
+            .locales
+            .get_mut(BASE_LOCALE)
+            .unwrap_or_else(|| panic!("the base locale"))
+            .meta;
+        base.numbering_system = String::from("roman");
+        base.grouping = vec![3, 0];
+        base.contexts.insert(
+            String::from("case"),
+            vec![String::from("a"), String::from("a")],
+        );
+        base.contexts.insert(String::from("empty"), Vec::new());
+        base.fallback = vec![String::from("xx-Latn"), String::from(BASE_LOCALE)];
+        base.list_patterns.insert(
+            String::from("broken"),
+            ListPattern {
+                pair: String::from("{0} and"),
+                middle: String::from("{0}, {1}"),
+                end: String::from("{1}"),
+            },
+        );
+        tree.locales
+            .get_mut(&other)
+            .unwrap_or_else(|| panic!("{other}"))
+            .meta
+            .fallback
+            .clear();
+        let report = validate(&tree);
+        let errors = errors(&report);
+        for expected in [
+            "unknown numbering system `roman`",
+            "a digit group size of 0",
+            "context `case` must list distinct values",
+            "context `empty` must list distinct values",
+            "fallback `xx-Latn` is not a loaded locale",
+            "a locale cannot fall back to itself",
+            "list pattern `broken.pair` needs `{0}` and `{1}`",
+            "list pattern `broken.end` needs `{0}` and `{1}`",
+        ] {
+            assert!(
+                errors.iter().any(|e| e.ends_with(expected)),
+                "{expected}: {errors:?}"
+            );
+        }
+        let warnings: Vec<String> = report
+            .diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Warning)
+            .map(|d| format!("{}: {}", d.locale, d.message))
+            .collect();
+        for expected in [
+            format!("{BASE_LOCALE}: the base locale needs no fallback chain"),
+            format!("{other}: the fallback chain does not end in the base locale"),
+        ] {
+            assert!(warnings.contains(&expected), "{expected}: {warnings:?}");
         }
     }
 

@@ -523,4 +523,77 @@ mod tests {
             core::mem::size_of::<Error>()
         );
     }
+
+    #[test]
+    fn every_status_names_itself_and_opens_its_message() {
+        let all = [
+            (Status::Ok, "OK", "ok"),
+            (Status::InvalidArg, "INVALID_ARG", "invalid argument"),
+            (Status::OutOfRange, "OUT_OF_RANGE", "out of range"),
+            (Status::Capability, "CAPABILITY", "capability missing"),
+            (Status::Provider, "PROVIDER", "provider failed"),
+            (Status::NotConverged, "NOT_CONVERGED", "did not converge"),
+            (Status::Unsupported, "UNSUPPORTED", "unsupported"),
+            (Status::Pack, "PACK", "pack rejected"),
+            (Status::Limit, "LIMIT", "limit exceeded"),
+            (
+                Status::SchemaVersion,
+                "SCHEMA_VERSION",
+                "schema version mismatch",
+            ),
+            (Status::Internal, "INTERNAL", "internal error"),
+        ];
+        for (status, name, phrase) in all {
+            assert_eq!((status.name(), status.to_string()), (name, name.to_owned()));
+            assert_eq!(status.phrase(), phrase);
+            let error = Error::new(status, "m");
+            assert_eq!(error.to_string(), format!("{phrase}: m"));
+        }
+    }
+
+    #[test]
+    fn every_conversion_keeps_its_status_field_and_hint() {
+        let left = Error::left_out("kp");
+        assert_eq!(left.status, Status::Capability);
+        assert!(
+            left.to_string()
+                .contains("`kp` module family; use a build with `kp`")
+        );
+        assert_eq!(Error::limit("m").status, Status::Limit);
+        assert_eq!(Error::internal("m").status, Status::Internal);
+
+        let invalid = |field: Option<&str>| InvalidValue {
+            quantity: "latitude",
+            value: String::from("91"),
+            accepted: "-90 to 90 degrees",
+            field: field.map(String::from),
+        };
+        let named = Error::from(invalid(Some("place.latitude")));
+        assert_eq!(
+            (named.status, named.field()),
+            (Status::InvalidArg, Some("place.latitude"))
+        );
+        assert_eq!(Error::from(invalid(None)).field(), None);
+
+        let unknown = Error::from(UnknownKey {
+            kind: None,
+            key: String::from("zzz"),
+            suggestion: None,
+        });
+        assert_eq!(
+            (unknown.status, unknown.detail, unknown.hint()),
+            (Status::Unsupported, Some(Detail::UnknownKey), None)
+        );
+
+        let overflow = Error::from(RatioError::Overflow);
+        assert_eq!(
+            (overflow.status, overflow.detail),
+            (Status::Internal, Some(Detail::Overflow))
+        );
+        let boxed: Box<dyn std::error::Error> = Box::new(overflow);
+        assert_eq!(
+            boxed.to_string(),
+            "internal error: the rational exceeds the exact range"
+        );
+    }
 }

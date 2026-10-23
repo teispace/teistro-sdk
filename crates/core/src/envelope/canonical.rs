@@ -995,6 +995,92 @@ mod tests {
         agree(&BTreeMap::<String, u8>::new());
     }
 
+    #[derive(Serialize)]
+    struct Pair(i16, Option<u8>);
+
+    #[derive(Serialize, PartialEq, Eq, PartialOrd, Ord)]
+    enum Variant {
+        Unit,
+        Newtype(u8),
+        Tuple(u8, u8),
+        Struct { a: u8 },
+    }
+
+    #[derive(Serialize)]
+    struct Holds {
+        inner: Failing,
+    }
+
+    /// A value whose `Serialize` fails on its own account.
+    struct Failing;
+
+    impl Serialize for Failing {
+        fn serialize<S: Serializer>(&self, _serializer: S) -> Result<S::Ok, S::Error> {
+            Err(serde::ser::Error::custom("this value cannot be written"))
+        }
+    }
+
+    #[test]
+    fn every_key_shape_reads_as_the_tree_wrote_it_or_both_refuse() {
+        agree(&Keyed(vec![(-1_i8, 1), (i8::MAX, 2)]));
+        agree(&Keyed(vec![(-1_i16, 1), (i16::MIN, 2)]));
+        agree(&Keyed(vec![(-1_i32, 1), (i32::MAX, 2)]));
+        agree(&Keyed(vec![(-1_i64, 1), (i64::MIN, 2)]));
+        agree(&Keyed(vec![(0_u8, 1), (u8::MAX, 2)]));
+        agree(&Keyed(vec![(0_u16, 1), (u16::MAX, 2)]));
+        agree(&Keyed(vec![(0_u32, 1), (u32::MAX, 2)]));
+        agree(&Keyed(vec![(0_u64, 1), (u64::MAX, 2)]));
+        agree(&Keyed(vec![(0_u128, 1), (u128::MAX, 2)]));
+        agree(&Keyed(vec![(1.5_f32, 1), (-0.0, 2)]));
+        agree(&Keyed(vec![("b", 1), ("a", 2)]));
+        agree(&Keyed(vec![(Variant::Unit, 1)]));
+        agree(&Keyed(vec![(Variant::Newtype(1), 1)]));
+        agree(&Keyed(vec![(Variant::Tuple(1, 2), 1)]));
+        agree(&Keyed(vec![(Variant::Struct { a: 1 }, 1)]));
+        agree(&Keyed(vec![(None::<u8>, 1)]));
+        agree(&Keyed(vec![(Unit, 1)]));
+        agree(&Keyed(vec![(Pair(1, None), 1)]));
+        agree(&Keyed(vec![((1, 2), 1)]));
+        agree(&Keyed(vec![(BTreeMap::from([("a", 1)]), 1)]));
+        agree(&Keyed(vec![(
+            Inner {
+                b: 'b',
+                a: (0, 0.0, ()),
+                unit: Unit,
+                wrapped: Wrapped(0),
+            },
+            1,
+        )]));
+        agree(&Keyed(vec![(Bytes(b"k"), 1)]));
+        agree(&Keyed(vec![(Failing, 1)]));
+    }
+
+    #[test]
+    fn every_value_shape_reads_as_the_tree_wrote_it_or_both_refuse() {
+        agree(&Pair(-7, None));
+        agree(&[Pair(1, Some(2)), Pair(i16::MIN, None)]);
+        agree(&[
+            Variant::Unit,
+            Variant::Newtype(3),
+            Variant::Tuple(4, 5),
+            Variant::Struct { a: 6 },
+        ]);
+        agree(&(1_i8, 2_i16, 3_i32, 4_u8, 5_u16, 6_u32, None::<u8>, Unit));
+        agree(&Failing);
+        agree(&[Failing]);
+        agree(&Holds { inner: Failing });
+    }
+
+    #[test]
+    fn a_refusal_says_why() {
+        let refused = write(&Failing, Digits::Shortest)
+            .map_or_else(|error| error.to_string(), |_| String::new());
+        assert_eq!(refused, "this value cannot be written");
+        let keyed = write(&Keyed(vec![(vec![1_u8], 1)]), Digits::Shortest)
+            .map_or_else(|error| error.to_string(), |_| String::new());
+        assert_ne!(keyed, "");
+    }
+
     fn values() -> impl Strategy<Value = Value> {
         let leaf = prop_oneof![
             Just(Value::Null),
