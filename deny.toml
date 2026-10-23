@@ -35,7 +35,12 @@ confidence-threshold = 0.93
 unused-allowed-license = "allow"
 
 [bans]
-multiple-versions = "warn"
+multiple-versions = "deny"
+# A second version is a second copy of the code in every artefact, so it is
+# refused, and each one allowed says why.
+skip = [
+  { crate = "syn:^2", reason = "napi-derive and ICU4X's derives (through synstructure) are on syn 2 and clap_derive on syn 3; a proc macro's parser runs at build time and ships in no artefact" },
+]
 wildcards = "deny"
 # Workspace path dependencies without a version are fine: every crate that
 # has one is `publish = false` (xtask, spikes).
