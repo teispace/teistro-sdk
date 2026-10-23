@@ -259,3 +259,29 @@ impl schemars::JsonSchema for Varna {
         crate::catalogue::key_schema::<Varna>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in Varna::ALL {
+            assert_eq!(Varna::from_key(member.key()), Some(member));
+            assert_eq!(Varna::from_id(member.id()), Some(member));
+            assert_eq!(Varna::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::Varna.name(), member.key()));
+            assert_eq!(member.full_key().parse::<Varna>(), Ok(member));
+            assert_eq!(member.to_string().parse::<Varna>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<Varna>(&json).unwrap(), member);
+            assert_eq!(<Varna as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+        }
+        assert_eq!(Varna::ALL.len(), Kind::Varna.count());
+    }
+}

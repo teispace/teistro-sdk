@@ -296,3 +296,30 @@ impl schemars::JsonSchema for Ritu {
         crate::catalogue::key_schema::<Ritu>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in Ritu::ALL {
+            assert_eq!(Ritu::from_key(member.key()), Some(member));
+            assert_eq!(Ritu::from_id(member.id()), Some(member));
+            assert_eq!(Ritu::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::Ritu.name(), member.key()));
+            assert_eq!(member.full_key().parse::<Ritu>(), Ok(member));
+            assert_eq!(member.to_string().parse::<Ritu>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<Ritu>(&json).unwrap(), member);
+            assert_eq!(<Ritu as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+            assert_ne!(format!("{:?}", member.attributes()), "");
+        }
+        assert_eq!(Ritu::ALL.len(), Kind::Ritu.count());
+    }
+}

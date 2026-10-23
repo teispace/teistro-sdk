@@ -898,3 +898,30 @@ impl schemars::JsonSchema for Point {
         crate::catalogue::key_schema::<Point>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in Point::ALL {
+            assert_eq!(Point::from_key(member.key()), Some(member));
+            assert_eq!(Point::from_id(member.id()), Some(member));
+            assert_eq!(Point::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::Point.name(), member.key()));
+            assert_eq!(member.full_key().parse::<Point>(), Ok(member));
+            assert_eq!(member.to_string().parse::<Point>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<Point>(&json).unwrap(), member);
+            assert_eq!(<Point as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+            assert_ne!(format!("{:?}", member.attributes()), "");
+        }
+        assert_eq!(Point::ALL.len(), Kind::Point.count());
+    }
+}

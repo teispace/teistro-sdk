@@ -246,3 +246,29 @@ impl schemars::JsonSchema for BodyClass {
         crate::catalogue::key_schema::<BodyClass>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in BodyClass::ALL {
+            assert_eq!(BodyClass::from_key(member.key()), Some(member));
+            assert_eq!(BodyClass::from_id(member.id()), Some(member));
+            assert_eq!(BodyClass::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::BodyClass.name(), member.key()));
+            assert_eq!(member.full_key().parse::<BodyClass>(), Ok(member));
+            assert_eq!(member.to_string().parse::<BodyClass>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<BodyClass>(&json).unwrap(), member);
+            assert_eq!(<BodyClass as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+        }
+        assert_eq!(BodyClass::ALL.len(), Kind::BodyClass.count());
+    }
+}

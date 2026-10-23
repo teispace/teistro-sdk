@@ -522,3 +522,30 @@ impl schemars::JsonSchema for HouseSystem {
         crate::catalogue::key_schema::<HouseSystem>(&ALIASES)
     }
 }
+
+#[cfg(test)]
+mod every_member {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn every_member_reads_whole_and_comes_back() {
+        for member in HouseSystem::ALL {
+            assert_eq!(HouseSystem::from_key(member.key()), Some(member));
+            assert_eq!(HouseSystem::from_id(member.id()), Some(member));
+            assert_eq!(HouseSystem::try_from(member.key_id()), Ok(member));
+            assert_eq!(member.full_key(), format!("{}.{}", Kind::HouseSystem.name(), member.key()));
+            assert_eq!(member.full_key().parse::<HouseSystem>(), Ok(member));
+            assert_eq!(member.to_string().parse::<HouseSystem>(), Ok(member));
+            let json = serde_json::to_string(&member).unwrap();
+            assert_eq!(serde_json::from_str::<HouseSystem>(&json).unwrap(), member);
+            assert_eq!(<HouseSystem as Catalogued>::mark(member), member.mark());
+            assert_ne!(member.doc(), "");
+            assert_ne!(member.glyph(), Some(""));
+            let _ = (member.deprecated(), member.sources(), member.unverified());
+            assert_ne!(format!("{:?}", member.attributes()), "");
+        }
+        assert_eq!(HouseSystem::ALL.len(), Kind::HouseSystem.count());
+    }
+}
