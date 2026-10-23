@@ -28,7 +28,7 @@ scan, and its stride is 1.
 | body | stations | shortest retrograde | shortest direct | table | stride | crossings | instants |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Sun | 0 | — | — | — | 12 | 8000 | 44.9% |
-| Moon | 0 | — | — | — | 2 | 106 947 | 98.3% |
+| Moon | 0 | — | — | — | 2 | 106 947 | 98.1% |
 | Mercury | 3783 | 19.76 | 87.83 | 19.50 | 5 | 9869 | 61.4% |
 | Venus | 750 | 40.87 | 537.96 | 40.50 | 10 | 8452 | 49.0% |
 | Mars | 562 | 59.78 | 684.14 | 59.50 | 14 | 4593 | 32.5% |
@@ -38,7 +38,7 @@ scan, and its stride is 1.
 | Neptune | 1193 | 156.32 | 207.13 | 156.00 | 117 | 182 | 10.5% |
 | Pluto | 1195 | 156.18 | 200.81 | 156.00 | 117 | 148 | 10.3% |
 | MeanNode | 0 | — | — | — | 111 | 430 | 3.7% |
-| TrueNode | 28 079 | 0.08 | 0.00 | none | 1 | 0 | — |
+| TrueNode | 28 470 | 0.01 | 0.00 | none | 1 | 0 | — |
 
 ## 2. What this pass decides
 
@@ -48,7 +48,7 @@ scan, and its stride is 1.
 | the Sun, the Moon and the mean node never turn | **holds** | 0 of 3 disagree |
 | the true node turns within a day, so it keeps the fine scan | **holds** | its shortest run is 0.00 days |
 | every body but the true node has a table entry, and the true node has none | **holds** | 0 of 12 disagree |
-| the strided scan finds every crossing the fine scan finds, to the bit, geocentric | **holds** | 0 of 140507 disagree; 53.6% of the fine scan's instants |
+| the strided scan finds every crossing the fine scan finds, to the bit, geocentric | **holds** | 0 of 140507 disagree; 51.7% of the fine scan's instants |
 | the same holds topocentric, seen from Delhi and Tromsø | **holds** | 0 of 28064 disagree; 56.4% of the fine scan's instants |
 
 None of the six claims is falsified. The comparison is bit for bit, not
