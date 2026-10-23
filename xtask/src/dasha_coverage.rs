@@ -194,9 +194,11 @@ const NOT_BUILT: [(&str, Blocker, &str); 8] = [
 /// it came to be built (`jaimini-significators.md`).
 ///
 /// What is still unregistrable is unregistrable for a reason in its row and
-/// not for want of an arm: `SUDASA` starts from the karakamsha and
-/// `VARNADA` from the Varnada lagna, places `Start` does not name; the
-/// tithi, yoga and karana seeds want a reference that is not a nakshatra.
+/// not for want of an arm: `VARNADA` starts from the Varnada lagna, a
+/// place `Start` does not name, and `SUDASA` from no start any source read
+/// states; the tithi, yoga and karana seeds want a reference that is not a
+/// nakshatra; `PANCHASWARA` has no attested shape and `VARSHA_NARAYANA` no
+/// text that gives it.
 const REGISTRABLE: [(&str, Kernel); 0] = [];
 
 /// Which kernel a definition names.
@@ -600,11 +602,12 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
     let _ = write!(
         out,
         "**{} cannot be supplied by anyone**, and each for a reason \
-         in its own row rather than for want of an arm: `SUDASA` starts from \
-         the karakamsha and `VARNADA` from the Varnada lagna, which are \
-         places `Start` does not name; the tithi, \
-         yoga and karana seeds want a reference that is not a nakshatra. \
-         Those are rows the kernels do not express, which is a \
+         in its own row rather than for want of an arm: `VARNADA` starts \
+         from the Varnada lagna, a place `Start` does not name, and \
+         `SUDASA` from no start any source read states; the tithi, yoga and \
+         karana seeds want a reference that is not a nakshatra; \
+         `PANCHASWARA` has no attested shape, and `VARSHA_NARAYANA` no text \
+         that gives it. Those are rows the kernels do not express, which is a \
          different thing from a row nobody has written down — and the \
          difference is what this section exists to keep visible.\n\n",
         if REGISTRABLE.is_empty() {
