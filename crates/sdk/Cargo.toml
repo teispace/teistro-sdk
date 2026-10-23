@@ -51,6 +51,7 @@ teistro-siddhanta = { path = "../siddhanta" }
 teistro-geometry = { path = "../geometry" }
 teistro-render-svg = { path = "../render-svg", optional = true }
 teistro-state = { path = "../state" }
+teistro-test-allocator = { path = "../test-allocator" }
 teistro-time = { path = "../time" }
 teistro-vargas = { path = "../vargas" }
 teistro-western = { path = "../western", optional = true }
@@ -152,6 +153,7 @@ builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
 
 [dev-dependencies]
 teistro-state = { path = "../state" }
+teistro-test-allocator = { path = "../test-allocator" }
 
 [lints]
 workspace = true
@@ -180,6 +182,10 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "muhurta"
 required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "peak_memory"
+required-features = ["builtin-ephemeris", "chart", "muhurta"]
 
 [[test]]
 name = "days_request"

@@ -1643,6 +1643,7 @@ dependencies = [
  "teistro-state",
  "teistro-strength",
  "teistro-tajika",
+ "teistro-test-allocator",
  "teistro-time",
  "teistro-vargas",
  "teistro-western",
