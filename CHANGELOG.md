@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A window of Saturn's spells is bounded over MCP** (`mcp-server.md`,
+P5). **Numbers:** none moved. **Fixed:** `Limits` bounded no `sadeSati`
+window, and the search runs on to the ephemeris's edge, so the fuzzer's
+670,000 years asked the built-in's whole six centuries of Saturn (six
+seconds in release, past the fuzzer's timeout), and an ephemeris reaching
+millennia would hold a worker for minutes. **Added:** `Limits::years`
+and `--max-years`, 150 by default (a century and a half answers in about
+four seconds): a window past it is a `LIMIT` naming `sadeSati.to`.
+
 **Every described range is refused naming its field** (`idl/api.json`,
 `crates/ffi/tests/ranges.rs`). **Numbers:** none move. A test now reads
 each ranged field from the API description and sends it the nearest

@@ -222,17 +222,30 @@ fn string_call(
 
 /// Whether `text` is a record the shipped server refuses for its size,
 /// read where the server reads it: a chart section under its own name in
-/// the chart's record (`hits_json` is the record's `hits`), where the
-/// server's bounds look for a transit window, and any other slot's text as
-/// the whole record.
+/// the chart's record (`hits_json` is the record's `hits`, `sade_sati_json`
+/// its `sadeSati`), where the server's bounds look for a window, and any
+/// other slot's text as the whole record.
 fn beyond_bounds(section: Option<&str>, text: &[u8]) -> bool {
     serde_json::from_slice::<serde_json::Value>(text).is_ok_and(|value| {
         let record = match section.and_then(|slot| slot.strip_suffix("_json")) {
-            Some(name) => serde_json::json!({ name: value }),
+            Some(name) => serde_json::json!({ camel(name): value }),
             None => value,
         };
         Limits::default().check(&record).is_err()
     })
+}
+
+/// A slot's name as the chart's record spells it: `sade_sati` is
+/// `sadeSati`.
+fn camel(name: &str) -> String {
+    let mut words = name.split('_');
+    let mut spelt = String::from(words.next().unwrap_or_default());
+    for word in words {
+        let mut letters = word.chars();
+        spelt.extend(letters.next().map(|first| first.to_ascii_uppercase()));
+        spelt.push_str(letters.as_str());
+    }
+    spelt
 }
 
 /// The `json` target: a selector byte names a slot and the rest is its
@@ -489,6 +502,25 @@ mod tests {
         assert!(!beyond_bounds(
             Some("gochar_json"),
             window(6_021_641.5).as_bytes()
+        ));
+    }
+
+    /// Verify's smoke run on `8557e728` timed out on 670,000 years of
+    /// Saturn's spells in `sade_sati_json`: the search runs on to the
+    /// ephemeris's edge, six centuries of Saturn, which the server now
+    /// bounds in years as the chart record's `sadeSati`.
+    #[test]
+    fn a_window_of_spells_past_the_servers_bounds_is_skipped() {
+        let window = |to: f64| format!(r#"{{"from": 2460676.5, "to": {to}, "reckoning": "SIGN"}}"#);
+        assert_eq!(camel("sade_sati"), "sadeSati");
+        assert_eq!(camel("hits"), "hits");
+        assert!(beyond_bounds(
+            Some("sade_sati_json"),
+            window(246_434_429.0).as_bytes()
+        ));
+        assert!(!beyond_bounds(
+            Some("sade_sati_json"),
+            window(2_490_000.5).as_bytes()
         ));
     }
 }

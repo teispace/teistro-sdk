@@ -378,7 +378,8 @@ limit, not a slow answer: a server a model drives must not be made to
 compute a century of days by one typo.
 
 *Built.* `Limits` bounds a message's bytes (`--max-message-bytes`),
-the members of any array in a record (`--max-items`) and the days a
+the members of any array in a record (`--max-items`), the years of its
+windows of Saturn's spells (`--max-years`) and the days a
 record's ranges span (`--max-days`), summed over every object holding
 `first` and `last` as dates; each is `None`, or `none` on the command
 line, for unbounded, and `Limits::default` states the shipped bounds.
@@ -391,6 +392,11 @@ day: a year of one chart's hits takes about a second and a half, and the
 fuzzer's eighty-four years of Saturn outran its timeout. A window of life
 (progressions' `from` and `to`) is not a range of days and is not
 counted, since it spans decades by design and costs a day a year. A
+window of Saturn's spells (a `sadeSati` section's `from` and `to`) is
+counted in years against its own bound (`--max-years`, 150): the search
+follows Saturn alone, a century and a half in about four seconds, but
+runs on to the ephemeris's edge, and the fuzzer's 670,000 years took the
+built-in's whole six centuries past its timeout. A
 record past a bound is a `LIMIT` naming the field by its path
 (`periods[1].last`, `instants`), the bound and the option; a prompt
 writes no such call and names its own argument. The transport stops
