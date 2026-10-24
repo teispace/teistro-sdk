@@ -39,10 +39,15 @@ the runner and handed to both sides, so neither chooses its own case.
 
 A timing is the same work only if both sides computed the same thing.
 Before any figure is taken, the runner asks each side once for every
-input and holds the Sun's sidereal longitude of the two to the golden
-tolerance for it (`fixtures/tolerances.json`). An input where they
-disagree is reported and leaves the timing, so a side that answered fast
-because it answered something else is never timed.
+input and holds the two Suns' sidereal longitudes within an arcminute. An
+input where they disagree is reported and leaves the timing, so a side
+that answered fast because it answered something else (another instant,
+another place) is never timed. An arcminute and not the golden tolerance:
+measured on c001, `parashari-classical` over Teimeris stands 5.8″ from the
+recorded Sun, `nepali-default` 11.4″, the same over the built-in, so the
+gap is an ayanamsha model's and not an ephemeris's. Matching that model
+is the golden vectors' work (`05-testing/01-golden-vectors.md`); a wrong
+instant moves the Sun by 2.5′ an hour, which the arcminute catches.
 
 The SDK side is `parashari-classical` over Teimeris, the modern engine
 the performance page's budgets are written for. The baseline reads the
