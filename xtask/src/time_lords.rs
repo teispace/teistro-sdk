@@ -257,9 +257,8 @@ fn open_claims(reads: &[Read]) -> Vec<Claim> {
     let mut latest: Option<(f64, Rashi)> = None;
     let mut never = 0;
     for start in Rashi::ALL {
-        let reached = ReleasingDasha::new(start, JulianDay::literal(0.0), YearLength::Savana360)
-            .ok()
-            .and_then(|dasha| first_loosing(&dasha, 0.0))
+        let dasha = ReleasingDasha::new(start, JulianDay::literal(0.0), YearLength::Savana360);
+        let reached = first_loosing(&dasha, 0.0)
             .map(|days| days / JULIAN_YEAR_DAYS);
         match reached {
             Some(age) if age < BY_AGE_YEARS => {

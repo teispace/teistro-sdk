@@ -892,3 +892,18 @@ knob!(
         Full = "FULL", /// The DE refit.
         Reference = "REFERENCE" }
 );
+
+#[cfg(test)]
+mod tests {
+    use super::YearLength;
+
+    /// Every year length is a positive, finite number of days, which each
+    /// dasha kernel divides by and so no constructor checks again.
+    #[test]
+    fn every_year_length_is_some_days() {
+        for length in YearLength::ALL {
+            let days = length.days();
+            assert!(days.is_finite() && days > 300.0 && days < 400.0, "{length:?}: {days}");
+        }
+    }
+}

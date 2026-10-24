@@ -326,8 +326,7 @@ impl GrahaDasha {
     /// # Errors
     ///
     /// No lords, or a lord named twice, named `lords`; a lord's years not
-    /// a positive number, named `lords[i]`; a year of no days, named
-    /// `year_length`.
+    /// a positive number, named `lords[i]`.
     pub fn new(
         lords: Vec<(Graha, f64)>,
         birth: JulianDay<Utc>,
@@ -494,9 +493,6 @@ impl GrahaDasha {
             }
         }
         let year_days = year_length.days();
-        if year_days.is_nan() || year_days <= 0.0 {
-            return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
-        }
         let total_years = lords.iter().map(|(_, years)| years).sum();
         Ok(GrahaDasha {
             lords,

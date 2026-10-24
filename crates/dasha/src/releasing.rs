@@ -27,7 +27,7 @@
 //! // IV.8: the Lot of Fortune in Leo. Leo 19 years, Virgo 20, Libra 8 and
 //! // Scorpio 15 make 62, so the 70th year is Sagittarius's.
 //! let birth = JulianDay::literal(2_451_545.0);
-//! let dasha = ReleasingDasha::new(Rashi::Leo, birth, YearLength::Savana360)?;
+//! let dasha = ReleasingDasha::new(Rashi::Leo, birth, YearLength::Savana360);
 //! let seventieth = JulianDay::literal(2_451_545.0 + 69.5 * 360.0);
 //! let chain = dasha.at(seventieth, Depth::try_new(1)?);
 //! assert_eq!(chain.iter().next().and_then(|period| period.sign), Some(Rashi::Sagittarius));
@@ -35,7 +35,6 @@
 //! ```
 
 use teistro_core::catalogue::{DashaFamily, DashaSystem, Graha, Rashi};
-use teistro_core::error::Error;
 use teistro_core::house::House;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
@@ -43,7 +42,7 @@ use teistro_core::settings::YearLength;
 
 use crate::rashi::{Direction, step};
 use crate::reading::DashaCursor;
-use crate::tree::{MAX_DEPTH, Path, Period, Timeline};
+use crate::tree::{Path, Period, Timeline};
 
 /// The signs of a whole cycle.
 const SIGNS: usize = 12;
@@ -57,12 +56,12 @@ pub const RELEASING_CYCLE: u32 = 211;
 const RELEASING_BREADTH: usize = 24;
 
 /// The years a sign allots in releasing: its lord's minimum years (IV.1),
-/// except Capricorn's 27 and Aquarius's 30 (IV.6).
+/// except Capricorn's 27 (IV.6). IV.6 gives Aquarius 30 as well, which are
+/// its lord Saturn's own.
 #[must_use]
 pub fn releasing_years(sign: Rashi) -> u32 {
     match sign {
         Rashi::Capricorn => 27,
-        Rashi::Aquarius => 30,
         _ => minimum_years(sign.attributes().lord),
     }
 }
@@ -88,15 +87,6 @@ pub const fn minimum_years(planet: Graha) -> u32 {
 /// A sign's lord, which a period of the sign names.
 fn lord(sign: Rashi) -> Graha {
     sign.attributes().lord
-}
-
-/// The days in a year of `length`, refused when there are none.
-fn year_days(length: YearLength) -> Result<f64, Error> {
-    let days = length.days();
-    if days.is_nan() || days <= 0.0 {
-        return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
-    }
-    Ok(days)
 }
 
 /// An angle of the circle counted from a lot by whole signs: the lot's own
@@ -226,20 +216,17 @@ pub struct ReleasingDasha {
 impl ReleasingDasha {
     /// Releasing from `start` at `birth`, a period year being `year_length`
     /// (Valens's is 360 days, IV.9).
-    ///
-    /// # Errors
-    ///
-    /// A year length of no days, named `year_length`.
-    pub fn new(
+    #[must_use]
+    pub const fn new(
         start: Rashi,
         birth: JulianDay<Utc>,
         year_length: YearLength,
-    ) -> Result<ReleasingDasha, Error> {
-        Ok(ReleasingDasha {
+    ) -> ReleasingDasha {
+        ReleasingDasha {
             start,
             birth,
-            year_days: year_days(year_length)?,
-        })
+            year_days: year_length.days(),
+        }
     }
 
     /// The sign it is released from.
@@ -270,7 +257,9 @@ impl ReleasingDasha {
         if index < SIGNS {
             step(from, Direction::Forward, index)
         } else {
-            step(from.opposite(), Direction::Forward, index - SIGNS)
+            // `step` counts round the twelve, so the opposite sign's
+            // count is the index itself.
+            step(from.opposite(), Direction::Forward, index)
         }
     }
 
@@ -296,13 +285,13 @@ impl ReleasingDasha {
     /// // IV.4: Gemini's 20 years spend the twelve in 17 years 7 months,
     /// // and the rest goes to Sagittarius, opposite.
     /// let birth = JulianDay::literal(2_451_545.0);
-    /// let dasha = ReleasingDasha::new(Rashi::Gemini, birth, YearLength::Savana360)?;
+    /// let dasha = ReleasingDasha::new(Rashi::Gemini, birth, YearLength::Savana360);
     /// let gemini = dasha.mahadashas().next().ok_or("no first period")?;
     /// let loosed = dasha.loosing(&gemini).ok_or("no loosing")?;
     /// assert_eq!(loosed.sign, Some(Rashi::Sagittarius));
     /// assert!(ReleasingDasha::is_loosed(&loosed));
     /// // Aries's 15 years end before the twelve are spent.
-    /// let dasha = ReleasingDasha::new(Rashi::Aries, birth, YearLength::Savana360)?;
+    /// let dasha = ReleasingDasha::new(Rashi::Aries, birth, YearLength::Savana360);
     /// let aries = dasha.mahadashas().next().ok_or("no first period")?;
     /// assert!(dasha.loosing(&aries).is_none());
     /// # Ok::<(), Box<dyn std::error::Error>>(())
@@ -328,7 +317,7 @@ impl ReleasingDasha {
     /// use teistro_dasha::{ReleasingDasha, Timeline};
     ///
     /// let birth = JulianDay::literal(2_451_545.0);
-    /// let dasha = ReleasingDasha::new(Rashi::Gemini, birth, YearLength::Savana360)?;
+    /// let dasha = ReleasingDasha::new(Rashi::Gemini, birth, YearLength::Savana360);
     /// let gemini = dasha.mahadashas().next().ok_or("no first period")?;
     /// let loosed: Vec<Rashi> = dasha
     ///     .children(&gemini)
@@ -387,7 +376,8 @@ impl Timeline for ReleasingDasha {
     /// parent is spent or below the deepest level.
     fn child(&self, parent: &Period, index: usize) -> Option<Period> {
         let from_sign = parent.sign?;
-        if index >= RELEASING_BREADTH || parent.path.depth() >= MAX_DEPTH {
+        // Below the deepest level the parent's path has no child.
+        if index >= RELEASING_BREADTH {
             return None;
         }
         let unit = self.unit_days(parent.path.depth() + 1);
@@ -424,20 +414,17 @@ pub struct ProfectionDasha {
 impl ProfectionDasha {
     /// The years profected from `start` at `birth`, a year being
     /// `year_length` (Valens's is 365¼ days, IV.9).
-    ///
-    /// # Errors
-    ///
-    /// A year length of no days, named `year_length`.
-    pub fn new(
+    #[must_use]
+    pub const fn new(
         start: Rashi,
         birth: JulianDay<Utc>,
         year_length: YearLength,
-    ) -> Result<ProfectionDasha, Error> {
-        Ok(ProfectionDasha {
+    ) -> ProfectionDasha {
+        ProfectionDasha {
             start,
             birth,
-            year_days: year_days(year_length)?,
-        })
+            year_days: year_length.days(),
+        }
     }
 
     /// The sign the count starts from.
@@ -511,23 +498,24 @@ pub const TIME_LORDS: [DashaSystem; 3] = [
 /// The time lord a catalogued system names, begun from `start`: releasing
 /// for the releasing family, the profected year for the profection family,
 /// and nothing for a system of any other kernel.
-///
-/// # Errors
-///
-/// A year length of no days, named `year_length`.
+#[must_use]
 pub fn time_lord(
     system: DashaSystem,
     start: Rashi,
     birth: JulianDay<Utc>,
     year_length: YearLength,
-) -> Option<Result<DashaCursor, Error>> {
+) -> Option<DashaCursor> {
     match system.attributes().family {
-        DashaFamily::Releasing => {
-            Some(ReleasingDasha::new(start, birth, year_length).map(DashaCursor::Releasing))
-        }
-        DashaFamily::Profection => {
-            Some(ProfectionDasha::new(start, birth, year_length).map(DashaCursor::Profection))
-        }
+        DashaFamily::Releasing => Some(DashaCursor::Releasing(ReleasingDasha::new(
+            start,
+            birth,
+            year_length,
+        ))),
+        DashaFamily::Profection => Some(DashaCursor::Profection(ProfectionDasha::new(
+            start,
+            birth,
+            year_length,
+        ))),
         _ => None,
     }
 }
@@ -549,7 +537,7 @@ mod tests {
     const BIRTH: f64 = 2_451_545.0;
 
     fn releasing(start: Rashi) -> ReleasingDasha {
-        ReleasingDasha::new(start, JulianDay::literal(BIRTH), YearLength::Savana360).unwrap()
+        ReleasingDasha::new(start, JulianDay::literal(BIRTH), YearLength::Savana360)
     }
 
     /// A period's start and end in months after birth, a month being 30
@@ -579,7 +567,7 @@ mod tests {
         let birth = JulianDay::literal(BIRTH);
         for system in TIME_LORDS {
             let cursor = time_lord(system, Rashi::Leo, birth, YearLength::Savana360);
-            assert!(cursor.is_some_and(|built| built.is_ok()), "{system:?}");
+            assert!(cursor.is_some(), "{system:?}");
         }
         assert!(time_lord(DashaSystem::Chara, Rashi::Leo, birth, YearLength::Savana360).is_none());
     }
@@ -910,8 +898,7 @@ mod tests {
             Rashi::Virgo,
             JulianDay::literal(BIRTH),
             YearLength::Julian36525,
-        )
-        .unwrap();
+        );
         assert_eq!(dasha.sign_of_year(35), Some(Rashi::Cancer));
         assert_eq!(dasha.sign_of_year(1), Some(Rashi::Virgo));
         assert_eq!(dasha.sign_of_year(13), Some(Rashi::Virgo));
@@ -924,5 +911,110 @@ mod tests {
         // The year's index is the completed age, 34, in the first cycle.
         assert_eq!(period.path.to_string(), "34");
         assert_ne!(Some(period.sign.unwrap()), dasha.sign_of_year(36));
+    }
+
+    /// The twelve first-level periods are the whole first cycle, and
+    /// nothing lies outside it: before birth, at its end, or a later cycle.
+    #[test]
+    fn releasing_runs_one_cycle_of_the_twelve() {
+        let dasha = releasing(Rashi::Gemini);
+        assert!(dasha.mahadasha(0, 11).is_some());
+        assert!(dasha.mahadasha(0, SIGNS).is_none());
+        assert!(dasha.mahadasha(1, 0).is_none());
+        let end = BIRTH + f64::from(RELEASING_CYCLE) * 360.0;
+        assert_eq!(dasha.mahadasha(0, 11).unwrap().interval.to.get(), end);
+        assert!(dasha.mahadasha_at(BIRTH - 1e-6).is_none());
+        assert!(dasha.mahadasha_at(end).is_none());
+        let first = dasha.mahadasha_at(BIRTH).unwrap();
+        assert_eq!(
+            (first.sign, first.path.to_string()),
+            (Some(Rashi::Gemini), String::from("0"))
+        );
+        // A period's end is the next one's start: Gemini's 20 years give
+        // way to Cancer's.
+        let at_end = dasha.mahadasha_at(BIRTH + 20.0 * 360.0).unwrap();
+        assert_eq!(at_end.sign, Some(Rashi::Cancer));
+        let before_end = dasha.mahadasha_at(BIRTH + 20.0 * 360.0 - 1e-6).unwrap();
+        assert_eq!(before_end.sign, Some(Rashi::Gemini));
+        let last = dasha.mahadasha_at(end - 1e-6).unwrap();
+        assert_eq!(last.sign, Some(Rashi::Taurus));
+        // A birth far from the epoch reads the same: the instant is
+        // counted from the birth.
+        let later = ReleasingDasha::new(
+            Rashi::Gemini,
+            JulianDay::literal(BIRTH + 1_000.0),
+            YearLength::Savana360,
+        );
+        assert_eq!(
+            later.mahadasha_at(BIRTH + 1_000.0).unwrap().sign,
+            Some(Rashi::Gemini)
+        );
+        assert!(later.mahadasha_at(BIRTH + 999.0).is_none());
+    }
+
+    /// Only a period below the first level is loosed, however its last
+    /// place reads.
+    #[test]
+    fn a_first_level_period_is_never_loosed() {
+        let place = |path: Path| {
+            Period::of_sign(
+                Rashi::Aries,
+                Graha::Mars,
+                path,
+                Interval::literal(BIRTH, BIRTH + 1.0),
+            )
+        };
+        assert!(!ReleasingDasha::is_loosed(&place(Path::root(0, 12))));
+        assert!(ReleasingDasha::is_loosed(&place(
+            Path::root(0, 0).child(12).unwrap()
+        )));
+        assert!(!ReleasingDasha::is_loosed(&place(
+            Path::root(0, 0).child(11).unwrap()
+        )));
+    }
+
+    /// The deepest level has no children, and a place past the most a
+    /// period holds has none.
+    #[test]
+    fn the_deepest_period_has_no_children() {
+        let dasha = releasing(Rashi::Aquarius);
+        let mut period = dasha.mahadashas().next().unwrap();
+        while let Some(child) = dasha.child(&period, 0) {
+            period = child;
+        }
+        assert_eq!(period.path.depth(), crate::tree::MAX_DEPTH);
+        let aquarius = dasha.mahadashas().next().unwrap();
+        assert_eq!(dasha.children(&aquarius).count(), 21);
+        assert!(dasha.child(&aquarius, RELEASING_BREADTH).is_none());
+    }
+
+    /// A year a sign, from the start, cycle after cycle without end, the
+    /// year that begins at birth included.
+    #[test]
+    fn the_profected_year_runs_a_sign_a_year_without_end() {
+        let dasha = ProfectionDasha::new(
+            Rashi::Virgo,
+            JulianDay::literal(BIRTH),
+            YearLength::Julian36525,
+        );
+        let year = 365.25;
+        let third = dasha.mahadasha(0, 3).unwrap();
+        assert_eq!(third.sign, Some(Rashi::Sagittarius));
+        assert_eq!(third.interval.from.get(), BIRTH + 3.0 * year);
+        assert_eq!(third.interval.to.get(), BIRTH + 4.0 * year);
+        let next_cycle = dasha.mahadasha(2, 5).unwrap();
+        assert_eq!(next_cycle.interval.from.get(), BIRTH + 245.0 * year);
+        assert_eq!(next_cycle.path.to_string(), "2:5");
+        assert_eq!(next_cycle.sign, Some(Rashi::Aquarius));
+        assert!(dasha.mahadasha(0, usize::from(PROFECTION_YEARS)).is_none());
+        let at_birth = dasha.mahadasha_at(BIRTH).unwrap();
+        assert_eq!(
+            (at_birth.sign, at_birth.path.to_string()),
+            (Some(Rashi::Virgo), String::from("0"))
+        );
+        assert!(dasha.mahadasha_at(BIRTH - 1e-6).is_none());
+        let late = dasha.mahadasha_at(BIRTH + 130.5 * year).unwrap();
+        assert_eq!(late.path.to_string(), "1:10");
+        assert!(dasha.child(&at_birth, 0).is_none());
     }
 }

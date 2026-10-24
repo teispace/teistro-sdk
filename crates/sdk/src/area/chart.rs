@@ -913,8 +913,12 @@ impl<'a> ChartArea<'a> {
             return Ok(None);
         }
         let start = self.time_lord_start(chart, system, lots)?;
-        teistro_dasha::time_lord(system, start, chart.foundation.instant, rules.year_length)
-            .transpose()
+        Ok(teistro_dasha::time_lord(
+            system,
+            start,
+            chart.foundation.instant,
+            rules.year_length,
+        ))
     }
 
     /// The Karaka dasha of a founded chart (BPHS ch. 46 v. 178,
@@ -2575,7 +2579,11 @@ impl<'a> ChartArea<'a> {
     ) -> Result<ProfectionDasha, Error> {
         let start = self.point_place(chart, point, request)?.sign;
         let rules = DashaRules::of(&self.context.settings().dasha, DashaSystem::Profection);
-        ProfectionDasha::new(start, chart.foundation.instant, rules.year_length)
+        Ok(ProfectionDasha::new(
+            start,
+            chart.foundation.instant,
+            rules.year_length,
+        ))
     }
 
     /// What a chart's dignities are read from: the seven's longitudes and
@@ -2856,7 +2864,7 @@ impl<'a> ChartArea<'a> {
                 document.foundation.instant,
                 reading.rules.year_length,
             ) {
-                return cursor;
+                return Ok(cursor);
             }
         }
         if system == DashaSystem::Decennials {

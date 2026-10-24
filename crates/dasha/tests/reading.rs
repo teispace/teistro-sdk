@@ -365,10 +365,10 @@ fn the_decennials_order_and_division_are_read_back_from_their_rows() {
 
 #[test]
 fn a_time_lord_s_start_is_its_first_period_s_sign() {
-    let releasing = ReleasingDasha::new(Rashi::Leo, birth(), YearLength::Savana360).unwrap();
+    let releasing = ReleasingDasha::new(Rashi::Leo, birth(), YearLength::Savana360);
     let reading = time_lord(DashaSystem::ReleasingFortune, &releasing, 2);
     assert_eq!(reading.start_sign(), Some(Rashi::Leo));
-    let profection = ProfectionDasha::new(Rashi::Pisces, birth(), YearLength::Julian36525).unwrap();
+    let profection = ProfectionDasha::new(Rashi::Pisces, birth(), YearLength::Julian36525);
     let reading = time_lord(DashaSystem::Profection, &profection, 1);
     assert_eq!(reading.start_sign(), Some(Rashi::Pisces));
     // A graha dasha's periods carry no sign.
@@ -417,7 +417,7 @@ fn sudarshana() -> RashiDasha {
 
 #[test]
 fn a_registered_system_s_reading_carries_its_definition() {
-    let mut definition = UduDefinition::of("sdk.test.three", Nakshatra::Ashwini);
+    let mut definition = UduDefinition::of("MY_THREE", Nakshatra::Ashwini);
     definition.lords = vec![
         Lord {
             graha: Graha::Sun,
@@ -453,7 +453,7 @@ fn a_registered_system_s_reading_carries_its_definition() {
         DashaReading::of(&dasha, definition.depth, None)
     );
 
-    let definition = RashiDefinition::of("sdk.test.signs");
+    let definition = RashiDefinition::of("MY_SIGNS");
     let dasha = RashiDasha::new(
         &definition.row(),
         &rashi_chart(),
@@ -504,12 +504,16 @@ fn the_cursor_answers_as_the_kernel_it_holds() {
         DashaCursor::Nakshatra(vimshottari()),
         DashaCursor::Rashi(sudarshana()),
         DashaCursor::Kalachakra(kalachakra),
-        DashaCursor::Releasing(
-            ReleasingDasha::new(Rashi::Leo, birth(), YearLength::Savana360).unwrap(),
-        ),
-        DashaCursor::Profection(
-            ProfectionDasha::new(Rashi::Pisces, birth(), YearLength::Julian36525).unwrap(),
-        ),
+        DashaCursor::Releasing(ReleasingDasha::new(
+            Rashi::Leo,
+            birth(),
+            YearLength::Savana360,
+        )),
+        DashaCursor::Profection(ProfectionDasha::new(
+            Rashi::Pisces,
+            birth(),
+            YearLength::Julian36525,
+        )),
         DashaCursor::Firdaria(
             FirdariaDasha::new(
                 Graha::Sun,
