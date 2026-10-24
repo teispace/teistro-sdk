@@ -56,7 +56,7 @@ struct Request {
     target: Option<f64>,
 }
 
-const REQUESTS: [Request; 8] = [
+const REQUESTS: [Request; 10] = [
     Request {
         key: "open",
         asks: "a context opened, the engine with it",
@@ -96,6 +96,12 @@ const REQUESTS: [Request; 8] = [
     Request {
         key: "chart",
         asks: "a birth chart with its Vimshottari to depth 3",
+        budget: None,
+        target: None,
+    },
+    Request {
+        key: "parity-chart",
+        asks: "the full parity chart: every section, varga and dasha a chart gives, with the shipped rules",
         budget: Some(10.0),
         target: None,
     },
@@ -103,6 +109,12 @@ const REQUESTS: [Request; 8] = [
         key: "matching",
         asks: "Ashta Koota between two cast charts",
         budget: None,
+        target: None,
+    },
+    Request {
+        key: "rectify",
+        asks: "a day-long window rectified at the default one-minute seed",
+        budget: Some(1000.0),
         target: None,
     },
 ];

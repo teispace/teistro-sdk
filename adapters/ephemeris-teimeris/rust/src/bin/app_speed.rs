@@ -5,8 +5,9 @@
 //! The crates' own benches time pieces (a dasha kernel, a render, a
 //! series). This times what the performance page's budgets are written
 //! for: a context opened, one almanac day, a month grid, a year, a year of
-//! festivals, a 90-day muhurta search, a birth chart with its Vimshottari
-//! and a match, each over
+//! festivals, a 90-day muhurta search, a birth chart with its Vimshottari,
+//! the full parity chart with the shipped rules, a match and a full day's
+//! rectification, each over
 //!
 //! - `drik-teimeris`: `parashari-classical` over the Teimeris engine, the
 //!   modern positions;
@@ -56,9 +57,10 @@ use serde::Serialize;
 use teistro::catalogue::{Calendar, DashaSystem};
 use teistro::muhurta::ActivityRules;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro::rectification::{Rules, Window};
 use teistro::{
     CalendarDate, ChartRequest, Context, Ephemeris, FestivalPack, FestivalRequest, Hash,
-    KootaRules, MuhurtaRequest, UtcOffset, content_hash,
+    KootaRules, MuhurtaRequest, RuleRequest, ShippedRules, UtcOffset, content_hash,
 };
 use teistro_ephemeris_teimeris::{DATA_DIR_ENV, TeimerisProvider, data_dir_from_env};
 
@@ -108,7 +110,7 @@ const SETUPS: [Setup; 3] = [
 ];
 
 /// The requests, in the order the page prints them.
-const REQUESTS: [&str; 8] = [
+const REQUESTS: [&str; 10] = [
     "open",
     "day",
     "month",
@@ -116,7 +118,9 @@ const REQUESTS: [&str; 8] = [
     "festivals",
     "muhurta",
     "chart",
+    "parity-chart",
     "matching",
+    "rectify",
 ];
 
 /// Runs a request gets: at least [`MIN_RUNS`], and more while the total
@@ -155,6 +159,10 @@ fn chart_request() -> ChartRequest {
     ChartRequest::at(place(), offset()).with_dashas([DashaSystem::Vimshottari])
 }
 
+/// The instant the chart requests are founded at, and the day the
+/// rectification window opens on: 1 January 2000, 06:00 UT.
+const BIRTH: f64 = 2_451_545.25;
+
 /// Times one run of `request` on a fresh context; `open` times the build.
 fn run(setup: Setup, request: &str) -> Duration {
     if request == "open" {
@@ -175,6 +183,13 @@ fn run(setup: Setup, request: &str) -> Duration {
                 .value
         };
         (cast(2_447_892.6), cast(2_448_380.2))
+    });
+    // The shipped rules are read once, as an app reads them when it opens:
+    // what is timed is a chart read with them.
+    let rules = (request == "parity-chart").then(|| {
+        RuleRequest::shipped(ShippedRules::ALL)
+            .rule_set()
+            .expect("the shipped rules")
     });
     let started = Instant::now();
     match request {
@@ -217,9 +232,37 @@ fn run(setup: Setup, request: &str) -> Duration {
         ),
         "chart" => drop(
             sdk.chart()
-                .reading(JulianDay::<Utc>::literal(2_451_545.25), &chart_request())
+                .reading(JulianDay::<Utc>::literal(BIRTH), &chart_request())
                 .expect("a chart"),
         ),
+        // What the parity runner asks of a chart: every section, every
+        // divisional chart and every dasha a chart always gives, at the
+        // settings' depth, read with every shipped rule.
+        "parity-chart" => {
+            let set = rules.as_ref().expect("read above");
+            let request = ChartRequest::at(place(), offset())
+                .with_everything()
+                .with_rule_inputs(set.rules());
+            drop(
+                sdk.chart()
+                    .readings_with_rules(&[JulianDay::<Utc>::literal(BIRTH)], &request, set)
+                    .expect("the parity chart"),
+            );
+        }
+        // A birth known to the day: a window a day long, judged at the
+        // default seed step.
+        "rectify" => {
+            let window = Window::between(
+                JulianDay::<Utc>::literal(BIRTH - 0.25),
+                JulianDay::<Utc>::literal(BIRTH + 0.75),
+            )
+            .expect("a day's window");
+            drop(
+                sdk.chart()
+                    .rectify(window, &place(), offset(), &Rules::default())
+                    .expect("a rectification"),
+            );
+        }
         "matching" => {
             let (bride, groom) = partners.expect("cast above");
             drop(
