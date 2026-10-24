@@ -65,6 +65,23 @@ its untested branches from 12 to 6. The new cases are:
 
 Each instant was worked by hand from the tz database's zone lines.
 
+**The ephemeris kit is shown to fail each fault it checks for.**
+**Numbers:** ten faults, ten checks failed by name. One test provider
+breaks one property at a time:
+- a cell that is not a number;
+- an answer that drifts from call to call;
+- a longitude that depends on the batch size;
+- doubled speeds;
+- a stepped longitude;
+- an instant outside the coverage answered;
+- an unoffered body answered;
+- a declared DUT1 that fails;
+- a declared Delta T a day off;
+- capabilities with no name and an empty range.
+
+For each, the suite asserts that the kit's check named for that fault
+fails. Until now only a wrong obliquity was shown to fail.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:
