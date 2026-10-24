@@ -1224,7 +1224,7 @@ mod tests {
             embedded.capabilities().jd_range,
             (
                 sefile::julian_day(1800, 1, 1),
-                sefile::julian_day(2399, 12, 31)
+                sefile::julian_day(2400, 1, 1)
             ),
         );
         let on_disk = provider();
@@ -1245,7 +1245,7 @@ mod tests {
     fn the_plugin_configuration_reads_the_built_in_data_and_what_it_adds() {
         let built_in = (
             sefile::julian_day(1800, 1, 1),
-            sefile::julian_day(2399, 12, 31),
+            sefile::julian_day(2400, 1, 1),
         );
         let opened = |json: &str| plugin::open(json).unwrap_or_else(|e| panic!("{json}: {e}"));
         let refused = |json: &str| {
@@ -1325,7 +1325,7 @@ mod tests {
             by_path.capabilities().jd_range,
             (
                 sefile::civil_julian_day(1200, 1, 1),
-                sefile::julian_day(2399, 12, 31)
+                sefile::julian_day(2400, 1, 1)
             )
         );
         for added in [&by_path, &by_bytes] {
@@ -1481,6 +1481,24 @@ mod tests {
         let sun = columns.cell(0).unwrap_or_else(|| panic!("cell"));
         assert!(sun.lon < 0.02 || sun.lon > 359.98, "{}", sun.lon);
         assert_eq!(sun.source.kind, EphemerisKind::Files);
+    }
+
+    #[test]
+    fn the_last_day_of_the_range_is_served_whole() {
+        // 31 December 2399 at 18h UT, after 0h of the range's last day,
+        // which the coverage once ended at: the corpus's range-end chart
+        // (c048) needs that day's sunrise, and an almanac its next.
+        let p = TeimerisProvider::embedded().unwrap_or_else(|e| panic!("{e}"));
+        let (_, hi) = p.capabilities.jd_range;
+        assert!((hi - sefile::julian_day(2400, 1, 1)).abs() < 1e-9, "{hi}");
+        let columns = p
+            .positions(&request(&[hi - 0.25, hi + 1.0], &[Body::Sun]))
+            .unwrap_or_else(|e| panic!("{e}"));
+        let last = columns.cell(0).unwrap_or_else(|| panic!("cell"));
+        assert_eq!(last.status, CellStatus::Ok);
+        assert_eq!(last.source.kind, EphemerisKind::Files);
+        let past = columns.cell(1).unwrap_or_else(|| panic!("cell"));
+        assert_eq!(past.status, CellStatus::OutOfRange);
     }
 
     #[test]
