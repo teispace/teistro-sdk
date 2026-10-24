@@ -1,6 +1,7 @@
 # Micro-operation budgets: the kernels held to the performance page
 
-Status: `implemented` in part, 2026-10-24: steps 1, 2 and 4 of §5. The quality bar's "micro-benchmarks per module
+Status: `implemented`, 2026-10-25: steps 1, 2 and 4 of §5 on 2026-10-24,
+steps 3 and 5 on 2026-10-25. The quality bar's "micro-benchmarks per module
 with budgets" row ([`05-testing/01-quality-bar.md`](../05-testing/01-quality-bar.md)):
 each operation stays within its budget
 (`02-architecture/09-performance-architecture.md`), with the baselines
@@ -26,11 +27,11 @@ The rows of the performance page's budget table that none of them reaches:
 | one varga chart | 5 µs | nowhere |
 | all standard vargas | 100 µs | nowhere |
 | 900 rules | 2 ms | `crates/rules/benches/rules.rs`, over 597 rules: the shipped set is now 4,396 |
-| rectification step (Δt = 1 s) | 1 ms | nowhere |
+| rectification step (Δt = 1 s) | 1 ms | nowhere until 2026-10-25; now `check-app-speed`'s `rectify` (§3) |
 
-The full parity chart's 10 ms is held by `check-app-speed`'s `chart`, which
-asks the chart and its Vimshottari to depth 3 but no rules. Section 5 says
-what closes that gap.
+The full parity chart's 10 ms was held by `check-app-speed`'s `chart`,
+which asked for the chart and its Vimshottari to depth 3 but no rules.
+Since 2026-10-25 a `parity-chart` request holds it (§5, step 5).
 
 ## 2. The harness: the crates' own `criterion` benches
 
@@ -132,3 +133,54 @@ machines, and two requests added at once cost one re-record rather than
 two. At the default one-minute seed a full day is 1,440 samples, so a
 day held to its 1 s holds the average step to 0.69 ms, inside the step's
 1 ms: the one request holds both rows.
+
+## 6. As built, steps 3 and 5 (2026-10-25)
+
+**What the parity chart asks.** The performance page's row names "all P0
+slices, dashas to depth 3, 624 rules": the baseline engine's parity tier.
+`parity-chart` asks for every section and divisional chart, the sixteen
+dashas `01-research/feature-universe/03-dashas.md` marks `P0` that a chart
+gives, to the settings' depth (three), and every shipped rule, which is
+more than 624. The Sthira dasa is left out, as a request for everything
+leaves it out. Patyayini and Mudda divide a year, and the annual chart
+reads them. `widest-chart`, unbudgeted, asks for every dasha a chart gives
+as well, and is printed beside it.
+
+**What it cost to get inside.** The first record of the widest request
+took 38 ms. Two costs were the rules', and neither was the evaluation:
+
+- every reading walked all 4,818 rules to decide which sections they read,
+  now decided once when a `RuleSet` is built;
+- `Rule::reads_points` built each condition into a `serde_json::Value`, and
+  now searches its compact text.
+
+One reading with the shipped rules fell from 16.6 ms to 5.2 ms. The rest
+is the chart and its seal. A rashi dasha at depth 3 is 1,728 rows, and
+the widest document is 3.3 MB of canonical JSON. Sealing it copied every
+unordered object out and back, so the 3 MB moved twice at each level.
+The largest member is now left in place. A faster shortest-float writer,
+`zmij`, was tried and refused. On random doubles it broke ties between
+equally short decimals differently from `Display` (`…677.25` is halfway
+between `.2` and `.3`), and the content hash is taken over those bytes.
+
+| request, this commit | desktop | Android emulator | iOS simulator | budget |
+|---|---|---|---|---|
+| `parity-chart`, drik over Teimeris | 9.7 ms | 11.3 ms | 10.7 ms | 10 ms |
+| `parity-chart`, committee | 9.1 ms | 11.0 ms | 9.8 ms | 10 ms |
+| `widest-chart`, drik over Teimeris | 18.1 ms | 21.7 ms | 19.2 ms | none |
+| `rectify`, drik over Teimeris | 31.2 ms | 34.2 ms | 30.7 ms | 1 s |
+
+The day's 1,440 samples put a rectification step at 22 µs against its
+1 ms.
+
+**The thread floor.** The device records carried no thread scaling
+before. The Android emulator's record kept 0.72 and 0.69 of linear
+throughput at four threads over Teimeris, both under the 0.75 floor. At
+two threads it kept 0.92 and 0.96, and the built-in ephemeris kept 0.93
+at four. The emulator has four cores, so four threads take every one of
+them, alongside the system's own work. A shared lock would keep a half
+at two threads, and no lock is shared between contexts: each holds its
+own provider. Booted with 4 GB rather than 2 GB, the emulator kept 0.77
+and 0.71, so memory was not the cause. The floor now holds the thread
+counts below the machine's own: a count taking every core is reported
+and not held.
