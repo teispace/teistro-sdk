@@ -20,6 +20,7 @@
 
 use std::fmt::Write as _;
 use std::path::Path;
+use std::process::Command;
 
 use serde::Deserialize;
 
@@ -28,6 +29,41 @@ use crate::measured::{Figure, MIN_RUNS, ratio};
 
 const PAGE: &str = "docs/05-testing/app-speed-measured.md";
 const RECORDED: &str = "docs/05-testing/app-speed";
+
+/// The commit a record is taken at, as eight hex digits, with `-dirty`
+/// when the tree has changes other than the records and their page:
+/// recording writes those, a machine at a time, so they are not changes
+/// to what is measured. The app-speed binary marks a desktop record the
+/// same way.
+pub(crate) fn recorded_commit(root: &Path) -> String {
+    let git = |args: &[&str]| {
+        Command::new("git")
+            .args(args)
+            .current_dir(root)
+            .output()
+            .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_owned())
+            .unwrap_or_default()
+    };
+    let head = git(&["rev-parse", "--short=8", "HEAD"]);
+    let (records, page) = (
+        format!(":(top,exclude){RECORDED}"),
+        format!(":(top,exclude){PAGE}"),
+    );
+    let changes = git(&[
+        "status",
+        "--porcelain",
+        "--untracked-files=no",
+        "--",
+        ":/",
+        &records,
+        &page,
+    ]);
+    if changes.is_empty() {
+        head
+    } else {
+        format!("{head}-dirty")
+    }
+}
 
 /// How far past its budget a median may run before the gate fails it.
 const CEILING: f64 = 2.0;
@@ -213,6 +249,14 @@ fn recorded(root: &Path) -> Result<Vec<(String, Record)>, String> {
 fn breaches(records: &[(String, Record)]) -> Vec<String> {
     let mut found = Vec::new();
     for (name, record) in records {
+        // A record is a claim about the commit it names, and about none
+        // when it names none.
+        found.extend(crate::measured::dirty(name, &record.commit));
+        if record.commit.is_empty() || record.commit == "unknown" {
+            found.push(format!(
+                "{name}: names no commit; re-record from a checkout git can read"
+            ));
+        }
         // A median is a claim only with the runs it was taken from and a
         // spread that holds it.
         for t in &record.timings {
@@ -560,6 +604,24 @@ mod tests {
             identical,
         }];
         record
+    }
+
+    #[test]
+    fn a_record_from_a_changed_tree_or_no_commit_fails() {
+        let commit = |commit: &str| {
+            let mut record = scaled(4, 0.90, true);
+            record.commit = commit.to_owned();
+            breaches(&[(String::from("x"), record)])
+                .into_iter()
+                .filter(|line| {
+                    line.contains("a tree with changes") || line.contains("names no commit")
+                })
+                .count()
+        };
+        assert_eq!(commit("cfa50116"), 0);
+        assert_eq!(commit("cfa50116-dirty"), 1);
+        assert_eq!(commit("unknown"), 1);
+        assert_eq!(commit(""), 1);
     }
 
     #[test]

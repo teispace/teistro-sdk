@@ -60,7 +60,7 @@ use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rectification::{Rules, Window};
 use teistro::{
     CalendarDate, ChartRequest, Context, Ephemeris, FestivalPack, FestivalRequest, Hash,
-    KootaRules, MuhurtaRequest, RuleRequest, ShippedRules, UtcOffset, content_hash,
+    KootaRules, MuhurtaRequest, RuleRequest, RuleSet, ShippedRules, UtcOffset, content_hash,
 };
 use teistro_ephemeris_teimeris::{DATA_DIR_ENV, TeimerisProvider, data_dir_from_env};
 
@@ -188,6 +188,23 @@ const PARITY_DASHAS: [DashaSystem; 16] = [
 /// rectification window opens on: 1 January 2000, 06:00 UT.
 const BIRTH: f64 = 2_451_545.25;
 
+/// Every shipped rule, as one set.
+fn shipped_rules() -> RuleSet {
+    RuleRequest::shipped(ShippedRules::ALL)
+        .rule_set()
+        .expect("the shipped rules")
+}
+
+/// A chart at the birth read with a rule set, the reading adding what the
+/// rules read itself.
+fn read_with_rules(sdk: &Context, request: &ChartRequest, set: &RuleSet) {
+    drop(
+        sdk.chart()
+            .readings_with_rules(&[JulianDay::<Utc>::literal(BIRTH)], request, set)
+            .expect("a chart read with its rules"),
+    );
+}
+
 /// Times one run of `request` on a fresh context; `open` times the build.
 fn run(setup: Setup, request: &str) -> Duration {
     if request == "open" {
@@ -211,12 +228,7 @@ fn run(setup: Setup, request: &str) -> Duration {
     });
     // The shipped rules are read once, as an app reads them when it opens:
     // what is timed is a chart read with them.
-    let rules = matches!(request, "parity-chart" | "widest-chart").then(|| {
-        RuleRequest::shipped(ShippedRules::ALL)
-            .rule_set()
-            .expect("the shipped rules")
-    });
-    let ruled = || rules.as_ref().expect("read above");
+    let rules = matches!(request, "parity-chart" | "widest-chart").then(shipped_rules);
     let started = Instant::now();
     match request {
         "day" => drop(
@@ -265,26 +277,20 @@ fn run(setup: Setup, request: &str) -> Duration {
         // divisional chart, the baseline engine's parity-tier dashas to
         // the settings' depth (three), and every shipped rule, which is
         // more than the page's 624 (the reading adds what they read).
-        "parity-chart" => {
-            let request = ChartRequest::at(place(), offset())
+        "parity-chart" => read_with_rules(
+            &sdk,
+            &ChartRequest::at(place(), offset())
                 .with_everything()
-                .with_dashas(PARITY_DASHAS);
-            drop(
-                sdk.chart()
-                    .readings_with_rules(&[JulianDay::<Utc>::literal(BIRTH)], &request, ruled())
-                    .expect("the parity chart"),
-            );
-        }
+                .with_dashas(PARITY_DASHAS),
+            rules.as_ref().expect("read above"),
+        ),
         // The widest chart there is: every dasha a chart always gives as
         // well, which a parity runner asks of the SDK.
-        "widest-chart" => {
-            let request = ChartRequest::at(place(), offset()).with_everything();
-            drop(
-                sdk.chart()
-                    .readings_with_rules(&[JulianDay::<Utc>::literal(BIRTH)], &request, ruled())
-                    .expect("the widest chart"),
-            );
-        }
+        "widest-chart" => read_with_rules(
+            &sdk,
+            &ChartRequest::at(place(), offset()).with_everything(),
+            rules.as_ref().expect("read above"),
+        ),
         // A birth known to the day: a window a day long, judged at the
         // default seed step.
         "rectify" => {
@@ -474,6 +480,27 @@ fn output(program: &str, args: &[&str]) -> Option<String> {
     (!text.is_empty()).then(|| text.to_owned())
 }
 
+/// The commit measured, with `-dirty` when the tree has changes other than
+/// the records and their page, which recording writes (the record this
+/// run's output is redirected into among them): the rule
+/// `xtask/src/app_speed.rs`'s `recorded_commit` applies to a device's.
+fn commit() -> Option<String> {
+    let head = output("git", &["rev-parse", "--short=8", "HEAD"])?;
+    let changes = output(
+        "git",
+        &[
+            "status",
+            "--porcelain",
+            "--untracked-files=no",
+            "--",
+            ":/",
+            ":(top,exclude)docs/05-testing/app-speed",
+            ":(top,exclude)docs/05-testing/app-speed-measured.md",
+        ],
+    );
+    Some(if changes.is_some() { format!("{head}-dirty") } else { head })
+}
+
 /// An environment variable's value, when it is set and not empty.
 fn var(name: &str) -> Option<String> {
     std::env::var(name).ok().filter(|value| !value.is_empty())
@@ -573,7 +600,7 @@ fn main() {
         arch: std::env::consts::ARCH,
         // A device has no checkout: its runner passes the commit in.
         commit: var("TEISTRO_COMMIT")
-            .or_else(|| output("git", &["rev-parse", "--short=8", "HEAD"]))
+            .or_else(commit)
             .unwrap_or_else(|| String::from("unknown")),
         teimeris: teimeris::version().to_string(),
         data: data(),

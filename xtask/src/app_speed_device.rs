@@ -72,13 +72,7 @@ pub(crate) fn run(root: &Path, name: Option<&str>) -> i32 {
         .join(row.triple)
         .join("release")
         .join(BINARY);
-    let commit = Command::new("git")
-        .args(["rev-parse", "--short=8", "HEAD"])
-        .current_dir(root)
-        .output()
-        .ok()
-        .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_owned())
-        .unwrap_or_default();
+    let commit = crate::app_speed::recorded_commit(root);
     let printed = match row.os {
         Os::Android => android(row, &binary, &commit),
         Os::Ios => simulator(&binary, &commit),
