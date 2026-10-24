@@ -436,11 +436,15 @@ mod tests {
         for limb in [30, 27, 60] {
             turns(limb, &|nas| nas.division_index(limb));
         }
-        turns(108, &|nas| u32::from(nas.nakshatra_index().get()) * 4 + u32::from(nas.pada().get()));
+        turns(108, &|nas| {
+            u32::from(nas.nakshatra_index().get()) * 4 + u32::from(nas.pada().get())
+        });
         // A sign cut into `n` parts is the circle cut into `12 n`, so every
         // varga of equal spans turns at these edges too.
         for n in 1..=300 {
-            turns(12 * n, &|nas| u32::from(nas.sign_index().get()) * n + nas.part(n));
+            turns(12 * n, &|nas| {
+                u32::from(nas.sign_index().get()) * n + nas.part(n)
+            });
         }
     }
 
