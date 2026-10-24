@@ -188,6 +188,7 @@ pub fn dwadasamsa_of(longitude: f64) -> Rashi {
 }
 
 /// How a graha stands to the place its rays are read by.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Standing {
     /// Its own, its exaltation or a great friend's: doubled.
     Doubles,
@@ -329,5 +330,59 @@ mod tests {
         // A dwadasamsa runs on from the sign: 13° 10′ Aries is Virgo's.
         assert_eq!(dwadasamsa_of(13.0 + 10.0 / 60.0), Rashi::Virgo);
         assert_eq!(dwadasamsa_of(359.9), Rashi::Aquarius);
+    }
+
+    /// A place doubles the rays in the graha's own sign or exaltation, and
+    /// by the dwadasamsa reduces them in its debilitation whatever the
+    /// friendships say: the Sun with Venus, his natural enemy, in the 2nd,
+    /// a temporary friend, stands neither in Venus's Libra by the sign.
+    #[test]
+    fn a_place_doubles_at_home_or_exalted_and_reduces_at_the_debilitation() {
+        let venus_in_the_second = |graha: Graha| {
+            Some(if graha == Graha::Venus {
+                Rashi::Taurus
+            } else {
+                Rashi::Aries
+            })
+        };
+        let stands = |place: Rashi, by: RayPlace| {
+            standing(Graha::Sun, Rashi::Aries, place, by, venus_in_the_second)
+        };
+        assert_eq!(stands(Rashi::Leo, RayPlace::Sign), Standing::Doubles);
+        assert_eq!(stands(Rashi::Aries, RayPlace::Sign), Standing::Doubles);
+        assert_eq!(
+            stands(Rashi::Libra, RayPlace::Dwadasamsa),
+            Standing::Reduces
+        );
+        assert_eq!(stands(Rashi::Libra, RayPlace::Sign), Standing::Neither);
+    }
+
+    /// The Sun at Aries 15° stands in Libra's dwadasamsa, his debilitation,
+    /// and loses a sixteenth; Mars exalted and eclipsed is doubled and
+    /// halved.
+    #[test]
+    fn a_graha_s_rays_take_their_place_s_share_and_an_eclipse_s_half() {
+        let mut chart = crate::test_chart::chart();
+        let rules = RasmiRules {
+            place: RayPlace::Dwadasamsa,
+        };
+        let sun = *chart.placement(Body::Graha(Graha::Sun));
+        let rays = graha_rays(Graha::Sun, 10.0, &sun, &chart, rules);
+        assert!((rays.enemy_share - 1.0 / 16.0).abs() < 1e-15 && !rays.doubled);
+        assert!((rays.rays - rays.basic * 15.0 / 16.0).abs() < 1e-12);
+        crate::test_chart::place(&mut chart, Body::Graha(Graha::Mars), Rashi::Capricorn);
+        let mut mars = *chart.placement(Body::Graha(Graha::Mars));
+        mars.combust = true;
+        let rays = graha_rays(Graha::Mars, 5.0, &mars, &chart, RasmiRules::VERSE);
+        assert!(rays.doubled && rays.eclipsed);
+        assert!((rays.rays - rays.basic).abs() < 1e-12);
+    }
+
+    /// A graha climbs from just past its debilitation to its exaltation.
+    #[test]
+    fn a_graha_faces_its_exaltation_from_past_its_debilitation_to_it() {
+        assert_eq!(facing(Graha::Sun, 10.0), Facing::Towards);
+        assert_eq!(facing(Graha::Sun, 190.0), Facing::Away);
+        assert_eq!(facing(Graha::Sun, 191.0), Facing::Towards);
     }
 }

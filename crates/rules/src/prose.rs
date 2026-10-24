@@ -1504,4 +1504,54 @@ mod tests {
         }
         assert!(rendered > 900, "only {rendered} rules rendered");
     }
+
+    /// The empty combinators, and a count's bounds, said as they are.
+    #[test]
+    fn an_empty_combinator_and_a_count_s_bounds_read_as_they_are() {
+        assert_eq!(
+            read(r#"{"type": "and", "conditions": []}"#).to_string(),
+            "nothing is required"
+        );
+        assert_eq!(
+            read(r#"{"type": "or", "conditions": []}"#).to_string(),
+            "nothing can hold"
+        );
+        let n_of = |least: u8, most: u8| {
+            read(&format!(
+                r#"{{"type": "n-of", "atLeast": {least}, "atMost": {most}, "conditions": [{{"type": "birth-by-day"}}, {{"type": "planet-combust", "planet": "MOON"}}]}}"#
+            ))
+            .to_string()
+        };
+        assert!(
+            n_of(2, 2).starts_with("exactly 2 of these hold"),
+            "{}",
+            n_of(2, 2)
+        );
+        assert!(
+            n_of(1, 2).starts_with("at least 1 and at most 2 of these hold"),
+            "{}",
+            n_of(1, 2)
+        );
+    }
+
+    /// A rule's one condition is written whole; among several, a combinator
+    /// is bracketed so its parts stay its own.
+    #[test]
+    fn a_combinator_among_a_rule_s_conditions_is_bracketed() {
+        let or = r#"{"type": "or", "conditions": [{"type": "birth-by-day"}, {"type": "planet-combust", "planet": "MOON"}]}"#;
+        let shown = read(or).to_string();
+        let rule = |conditions: &str| -> crate::Rule {
+            serde_json::from_str(&format!(
+                r#"{{"key": "R", "category": "c", "source": {{"text": "t"}}, "conditions": [{conditions}]}}"#
+            ))
+            .unwrap()
+        };
+        let alone = rule(or).to_string();
+        assert!(
+            alone.contains(&shown) && !alone.contains(&format!("({shown})")),
+            "{alone}"
+        );
+        let among = rule(&format!(r#"{{"type": "birth-by-day"}}, {or}"#)).to_string();
+        assert!(among.contains(&format!("({shown})")), "{among}");
+    }
 }

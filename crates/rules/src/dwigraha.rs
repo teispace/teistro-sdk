@@ -707,7 +707,8 @@ impl Table {
                 .rising_part
                 .parts
                 .iter()
-                .find(|part| part.name == carried.from && part.count == 1);
+                .find(|part| part.name == carried.from)
+                .filter(|part| part.count == 1);
             let width = 30.0 / f64::from(carried.count);
             Rashi::ALL
                 .into_iter()
@@ -1008,5 +1009,29 @@ mod tests {
             sizes.push(size);
         }
         assert_eq!(sizes, [2, 3, 4, 5, 6]);
+    }
+
+    /// Ch. 51 v. 110: each of a sign's twelve dwadasamsas reads as the lagna
+    /// in the sign it counts to, under the carrying's own note: the 2nd of
+    /// Aries says what Taurus rising says.
+    #[test]
+    fn a_dwadasamsa_says_what_the_sign_it_counts_to_says_rising() {
+        let table: Table = serde_json::from_str(include_str!("../rules/classical-readings.json"))
+            .expect("the dwigraha table reads");
+        let rules = table.rules();
+        let carried = table
+            .rising_part
+            .carried
+            .first()
+            .expect("one carried division");
+        let of = |key: &str| rules.iter().find(|rule| rule.key == key).expect(key);
+        let parts = rules
+            .iter()
+            .filter(|rule| rule.key.starts_with("SARAVALI_DWADASAMSA_"))
+            .count();
+        assert_eq!(parts, 144);
+        let second = of("SARAVALI_DWADASAMSA_2_OF_ARIES");
+        assert_eq!(second.source.note.as_deref(), Some(carried.note.as_str()));
+        assert_eq!(second.effect(), of("SARAVALI_LAGNA_TAURUS").effect());
     }
 }

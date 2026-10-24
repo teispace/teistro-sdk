@@ -12,6 +12,13 @@
 all_features = true
 
 exclude_re = [
+  # A body on either node's sign has already ended the count, so `from`
+  # never equals `arc` where the side is chosen.
+  'crates/rules/src/eval\.rs:853:72: replace > with >= in Evaluator<.a>::predicate',
+  # Two strengths a span's chosen by differ by exactly the epsilon only by
+  # chance no chart's arithmetic makes, so the bound's own point is never
+  # met.
+  'crates/rules/src/longevity/ayurdaya\.rs:290:67: replace < with <= in Ayurdaya::chosen',
   # Two distinct own signs stand at distinct counts from the graha, so
   # the greater count is never a tie.
   'crates/dasha/src/jaimini\.rs:442:33: replace > with >= in graha_arudha',
