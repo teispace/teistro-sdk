@@ -11,9 +11,11 @@
 //!
 //! A record also carries each setup's month grid on 1, 2, 4, … threads,
 //! a context each. Every thread count must answer what one thread did,
-//! and up to [`FLOOR_THREADS`] threads each setup must keep [`FLOOR`] of
-//! linear throughput: past that a machine's threads are efficiency cores
-//! or a core's second thread, which a context cannot be held to. At least
+//! and up to [`FLOOR_THREADS`] threads, fewer than the machine offers, each
+//! setup must keep [`FLOOR`] of linear throughput: past that a machine's
+//! threads are efficiency cores or a core's second thread, and a count
+//! taking every core shares them with the system, none of which a context
+//! can be held to. At least
 //! one record must carry the measure, so the claim stands on a machine.
 
 use std::fmt::Write as _;
@@ -35,6 +37,16 @@ const CEILING: f64 = 2.0;
 /// fall to a half at two threads and a quarter at four.
 const FLOOR: f64 = 0.75;
 const FLOOR_THREADS: usize = 4;
+
+/// The thread counts a record's floor holds: up to [`FLOOR_THREADS`], and
+/// fewer than the machine offers. A count taking every core shares them
+/// with the system, so what it loses is the machine's rather than a lock's:
+/// the four-core Android emulator kept 0.72 of linear at four threads over
+/// Teimeris and 0.95 at two, where a lock would keep a half. A record
+/// taken before the threads were measured offers none.
+fn floor_holds(threads: usize, parallelism: usize) -> bool {
+    threads <= FLOOR_THREADS && threads < parallelism
+}
 
 /// The setups the gate holds, and the order the page prints them in.
 const GATED: [&str; 2] = ["drik-teimeris", "committee-teimeris"];
@@ -245,7 +257,7 @@ fn breaches(records: &[(String, Record)]) -> Vec<String> {
                     row.setup, row.threads
                 ));
             }
-            if row.threads <= FLOOR_THREADS && row.efficiency < FLOOR {
+            if floor_holds(row.threads, record.parallelism) && row.efficiency < FLOOR {
                 found.push(format!(
                     "{name}: `{}` on {} threads kept {:.3} of linear throughput, under its floor of {FLOOR}",
                     row.setup, row.threads, row.efficiency
@@ -276,8 +288,8 @@ fn threads(record: &Record) -> String {
         out,
         "Contexts on threads, the `month` request's grid on each, a context a thread, of the \
          {} threads this machine offers. **Efficiency** is the throughput over the one \
-         thread's times the count (1 is linear); up to {FLOOR_THREADS} threads it is held to \
-         {FLOOR}. **Alike** is whether every thread's month hashed as one thread's did.\n",
+         thread's times the count (1 is linear); up to {FLOOR_THREADS} threads, and fewer than \
+         the machine offers, it is held to {FLOOR}. **Alike** is whether every thread's month hashed as one thread's did.\n",
         record.parallelism
     );
     let _ = writeln!(
@@ -566,6 +578,21 @@ mod tests {
             "past four threads the efficiency is reported, not held"
         );
         assert_eq!(threads(scaled(8, 0.90, false)), 1);
+        let every_core = |threads, efficiency| {
+            let mut record = scaled(threads, efficiency, true);
+            record.parallelism = 4;
+            record
+        };
+        assert_eq!(
+            threads(every_core(4, 0.70)),
+            0,
+            "a count taking every core is reported, not held"
+        );
+        assert_eq!(
+            threads(every_core(2, 0.50)),
+            1,
+            "a lock still shows below it"
+        );
         assert_eq!(
             threads(record("drik-teimeris", "day", 1.0)),
             1,
