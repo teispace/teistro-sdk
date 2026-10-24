@@ -145,11 +145,11 @@ pub(crate) fn dirty(name: &str, commit: &str) -> Option<String> {
 
 /// Every record in `dir` under `root`, one JSON file a machine, by its
 /// file's stem and in that order. A directory holding none is an error
-/// naming `measure`, the command that writes one.
+/// naming `recorder`, the command that writes one.
 pub(crate) fn records<R: DeserializeOwned>(
     root: &Path,
     dir: &str,
-    measure: &str,
+    recorder: &str,
 ) -> Result<Vec<(String, R)>, String> {
     let mut names: Vec<String> = std::fs::read_dir(root.join(dir))
         .map_err(|e| format!("{dir}: {e}"))?
@@ -160,9 +160,7 @@ pub(crate) fn records<R: DeserializeOwned>(
         .collect();
     names.sort();
     if names.is_empty() {
-        return Err(format!(
-            "{dir} holds no record; run `cargo xtask {measure}`"
-        ));
+        return Err(format!("{dir} holds no record; run `{recorder}`"));
     }
     names
         .into_iter()

@@ -439,7 +439,7 @@ fn outputs(root: &Path) -> Result<(Vec<Output>, Vec<String>), i32> {
         eprintln!("{PERFORMANCE}: {e}");
         1
     })?;
-    match crate::measured::records::<Record>(root, RECORDED, "measure-micro") {
+    match crate::measured::records::<Record>(root, RECORDED, "cargo xtask measure-micro") {
         Ok(records) => {
             let mut found = faults(&records);
             found.extend(page_disagrees(&performance));
