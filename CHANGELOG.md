@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Each property invariant is held by a named test, at its boundaries**
+(`check-properties`, fast check). **Numbers:** none.
+`teistro_core::angle::edges(divisions)` is new. It returns every boundary
+of a circle cut into equal parts, each with the values a microarcsecond
+below and above it. The sign, nakshatra and pada, every equal-span
+varga's part, and the panchanga's thirty tithis, twenty-seven yogas and
+sixty half-tithis are now swept across every one of their edges.
+Serialise-deserialise fixed points are listed as open: three types are
+held at one value each.
+
 **The kernels are held to the performance page's budgets**
 (`docs/05-testing/micro-measured.md`). **Numbers:** none.
 `cargo xtask measure-micro` runs the crates' own `criterion` benches and

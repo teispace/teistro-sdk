@@ -1,6 +1,6 @@
 # Property coverage: each invariant held, by name, at its boundaries
 
-Status: `draft`, 2026-10-24. The quality bar's "property tests" row
+Status: `implemented` in part, 2026-10-25: steps 1, 2 and 4 of §4; step 3, the fixed points, is open. The quality bar's "property tests" row
 ([`05-testing/01-quality-bar.md`](../05-testing/01-quality-bar.md)) lists
 seven invariants and asks that generators "deliberately produce values at
 and one microarcsecond either side of every classification boundary". Its
@@ -61,14 +61,19 @@ part's index is the integer arithmetic of `Nas`, never a float division.
 ## 3. The register and the gate
 
 `xtask/src/properties.rs` lists each invariant once, with what holds it:
-`(invariant, file, test fn, Sweep | Sample, boundary: bool)`.
+`(invariant, file, test fn, Sweep | Sample | Example, the boundary
+generator it calls)`. A generator is the function the test reaches the
+boundaries with: `edges`, or the vargas' `first_nas_of` for unequal
+spans, or the dashas' `below`, the last bit before a period's start. An
+invariant held only by `Example` tests is listed as open, with why.
 `check-properties` (fast check) fails:
 
 - an invariant of the quality bar's row with no entry;
 - an entry whose file has no `fn <name>(`, so a renamed or deleted test
   is not silently a hole;
-- an entry marked `boundary` whose file does not call
-  `teistro_core::angle::edges`.
+- an entry naming a boundary generator its file does not call;
+- an invariant held only at examples and not listed as open, and one
+  listed as open that a sweep or a sample now holds.
 
 The row's list and the register are the same list. The quality bar's
 row is the prose of the register, and the register is held to the row's
