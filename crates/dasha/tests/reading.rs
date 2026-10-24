@@ -582,7 +582,9 @@ fn the_cursor_answers_as_the_kernel_it_holds() {
 /// Every system the build computes is listed once, and those a request
 /// for everything takes leave out only the ones a chart may be refused:
 /// the Sthira dasa, which starts from a Brahma graha the verses may not
-/// find, and the Tara dasha, which needs a graha in a kendra.
+/// find, the Tara dasha, which needs a graha in a kendra, and the two
+/// Ayurdaya dashas, which need one strongest of the lagna, the Sun and the
+/// Moon.
 #[test]
 fn the_systems_every_chart_gives_leave_out_the_refusable_ones() {
     let all: Vec<DashaSystem> = teistro_dasha::systems().collect();
@@ -606,5 +608,13 @@ fn the_systems_every_chart_gives_leave_out_the_refusable_ones() {
         .copied()
         .filter(|system| !every.contains(system))
         .collect();
-    assert_eq!(left, [DashaSystem::Sthira, DashaSystem::Tara]);
+    assert_eq!(
+        left,
+        [
+            DashaSystem::Sthira,
+            DashaSystem::Tara,
+            DashaSystem::Aayu,
+            DashaSystem::Ashtakavarga
+        ]
+    );
 }

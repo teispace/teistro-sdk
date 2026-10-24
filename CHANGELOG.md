@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A request for everything no longer asks for the two Ayurdaya dashas.**
+**Numbers:** a document read with `ChartRequest::with_everything` no
+longer holds the Aayu and Ashtakavarga dashas, so its content hash moves.
+A request that names either dasha answers as before. Both dashas begin
+from the one strongest of the lagna, the Sun and the Moon (BPHS ch. 46
+v. 202), and the SDK refuses one when two are equally strong. A Cancer
+lagna's Bhava bala can equal the Moon's shadbala exactly, so the request
+for everything refused the corpus's c030 outright.
+`teistro_dasha::systems_every_chart_gives` now leaves both out, beside
+the Tara dasha and the Sthira dasa.
+
 **The SDK is timed against the baseline engine, on the same work**
 (`docs/05-testing/ab-measured.md`). **Numbers:** none. `cargo xtask
 measure-ab` runs both through Node on all 55 golden births, interleaved
