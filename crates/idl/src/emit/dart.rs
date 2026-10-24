@@ -1387,6 +1387,11 @@ final class _Blob {
     final sections = <int, _Section>{};
     for (var i = 0; i < count; i++) {
       final at = _headerLength + i * _entryLength;
+      if (at + _entryLength > total) {
+        throw const FormatException(
+          'the table of contents runs past the end of the blob',
+        );
+      }
       final section = _Section(
         data.getUint32(at + 4, Endian.little),
         data.getUint32(at + 8, Endian.little),
@@ -1411,13 +1416,56 @@ final class _Blob {
     return found;
   }
 
-  /// The offset of one column of a column section.
-  int columnOffset(_Section at, int index) =>
-      at.offset + data.getUint32(at.offset + index * 4, Endian.little);
+  /// A fixed section, checked to hold a slot for each of its fields.
+  _Section fixed(int id, String name, int slots) {
+    final at = section(id, name);
+    if (slots * 8 > at.length) {
+      throw FormatException(
+        'the `$name` section holds ${at.length} bytes, not $slots slots',
+      );
+    }
+    return at;
+  }
 
-  /// A bytes section as the UTF-8 text the library wrote.
-  String text(_Section at) =>
-      utf8.decode(Uint8List.sublistView(bytes, at.offset, at.offset + at.count));
+  /// One column of a column section as a typed view over the bytes,
+  /// checked to start on a multiple of its width, as a typed list must,
+  /// and to hold every row inside its own section.
+  T column<T>(
+    _Section at,
+    int index,
+    int width,
+    T Function(TypedData data, int start, int end) view,
+  ) {
+    if ((index + 1) * 4 > at.length) {
+      throw const FormatException(
+        'a column\'s offset runs past the end of its section',
+      );
+    }
+    final start =
+        at.offset + data.getUint32(at.offset + index * 4, Endian.little);
+    if (start % width != 0) {
+      throw FormatException(
+        'a column of width $width starts at byte $start, '
+        'not on a multiple of $width',
+      );
+    }
+    final end = start + at.count * width;
+    if (end > at.offset + at.length) {
+      throw const FormatException('a column runs past the end of its section');
+    }
+    return view(bytes, start, end);
+  }
+
+  /// A bytes section as the UTF-8 text the library wrote; text that is
+  /// not UTF-8 is the [FormatException] `utf8` throws.
+  String text(_Section at, String name) {
+    if (at.count > at.length) {
+      throw FormatException('the `$name` text runs past the end of its section');
+    }
+    return utf8.decode(
+      Uint8List.sublistView(bytes, at.offset, at.offset + at.count),
+    );
+  }
 }
 ";
 
@@ -1615,11 +1663,21 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
     let mut arguments = Vec::new();
     for section in &schema.sections {
         let at = format!("at{}", pascal(&section.name));
-        let _ = writeln!(
-            out,
-            "  final {at} = blob.section({}, '{}');",
-            section.id, section.name
-        );
+        let _ = if section.kind == SectionKind::Fixed {
+            writeln!(
+                out,
+                "  final {at} = blob.fixed({}, '{}', {});",
+                section.id,
+                section.name,
+                section.fields.len()
+            )
+        } else {
+            writeln!(
+                out,
+                "  final {at} = blob.section({}, '{}');",
+                section.id, section.name
+            )
+        };
         match section.kind {
             SectionKind::Fixed if section.shape.is_some() => {
                 let shape = section.shape.as_deref().unwrap_or_default();
@@ -1671,10 +1729,10 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
                 let mut columns = Vec::new();
                 for (index, column) in section.fields.iter().enumerate() {
                     columns.push(format!(
-                        "      {}: {}.sublistView(\n        blob.bytes,\n        blob.columnOffset({at}, {index}),\n        blob.columnOffset({at}, {index}) + {at}.count * {},\n      ),",
+                        "      {}: blob.column({at}, {index}, {}, {}.sublistView),",
                         identifier(&column.name),
-                        typed_list(column.scalar),
-                        column.scalar.width(8)
+                        column.scalar.width(8),
+                        typed_list(column.scalar)
                     ));
                 }
                 arguments.push(format!(
@@ -1686,8 +1744,9 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
             }
             SectionKind::Bytes => {
                 arguments.push(format!(
-                    "    {}: blob.text({at}),",
-                    identifier(&section.name)
+                    "    {}: blob.text({at}, '{}'),",
+                    identifier(&section.name),
+                    section.name
                 ));
             }
         }

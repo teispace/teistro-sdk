@@ -12,6 +12,27 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A corrupted blob is refused in every binding, never thrown or
+misread** (the Node, Python, Dart and Java decoders). **Numbers:** none.
+A blob the library wrote decodes exactly as before. Each binding's blob
+test now corrupts one blob of every schema two thousand times with the
+same seeded mutator. Its first run found the Node, Python and Dart
+decoders throwing the runtime's own errors (a `RangeError`, a
+`struct.error`, a `UnicodeDecodeError`) where a section, a column or a
+text ran outside its bounds or off its alignment, and reading past a
+section into the next where the blob still held the bytes. All four
+decoders now refuse those blobs with the binding's blob error:
+
+- **Node:** the refusal is `BlobFormatError`, a new export and a
+  `TypeError` still, so code catching that is unchanged.
+- **Java:** text that is not UTF-8 is refused rather than decoded with
+  replacement characters, and a column off its alignment is refused as
+  it is in the other bindings.
+
+`blob_fixtures` writes the chart, panchanga and naam blobs beside the
+two it wrote, so its "one blob of every schema" is true, and the Java
+gate now reads them.
+
 **The Teimeris adapter has a gate** (`xtask`, CI). **Numbers:** none.
 `cargo xtask check-teimeris-adapter` runs the adapter's tests, the
 provider kit over it under the published bounds (its report in
@@ -46,7 +67,11 @@ at a child's start ending in that child. It found three faults:
   instant exactly at a boundary into the period before it. A chain at
   that instant then held the wrong mahadasha and none of its children.
   Both now compare the instant with each bound as the period's own ends
-  are computed.
+  are computed. Under `after_cycle: "REPEAT"`, the Kalachakra's first
+  instant of a later cycle was still answered with the last period of the
+  cycle before it, since that cycle's end and the next one's start are
+  summed from different bases and can differ in the last bit. An instant
+  at a cycle's start is now in that cycle.
 
 **A rule's unbound `SELF` is reported where it is written**
 (`teistro-rules`). **Numbers:** none move. `Condition::names_self` read a

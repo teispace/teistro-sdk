@@ -23,13 +23,17 @@ use std::path::Path;
 use std::ptr;
 
 use teistro_core::Status;
+use teistro_core::catalogue::Calendar;
 use teistro_ffi::TS_CONTEXT_TEST_PROVIDER;
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
+use teistro_ffi::chart::{TsChartRequest, ts_chart_found};
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, ts_context_free, ts_context_new,
 };
 use teistro_ffi::frame::{TsFrame, ts_frame_canonical, ts_frame_pack};
 use teistro_ffi::intl::ts_intl_render;
+use teistro_ffi::naam::ts_naam_milan;
+use teistro_ffi::panchanga::{TsPanchangaRequest, ts_panchanga_days};
 use teistro_ffi::positions::ts_positions;
 use teistro_port_ephemeris::vtable::{ObserverC, PositionRequestC};
 use teistro_port_ephemeris::{Body, TimeScale};
@@ -138,10 +142,62 @@ fn main() {
     assert!(status == Status::Ok, "the message renders");
     write(dir, "intl_render.tsrb", &take(&mut blob));
 
+    charts_panchanga_and_names(context, dir);
+
     write(dir, PACK, &overlay_pack());
 
     // SAFETY: the handle came from `ts_context_new` and is not used again.
     unsafe { ts_context_free(context) };
+}
+
+/// A blob of each of the schemas a chart, a run of days and two names
+/// answer with.
+fn charts_panchanga_and_names(context: *mut TsContext, dir: &Path) {
+    let mut blob = TsBlob::empty();
+    // A chart at one instant with the day's almanac and the houses
+    // service beside the foundation, so the optional sections a decoder
+    // reads are in the blob rather than absent.
+    let instants = [2_451_545.0_f64];
+    // SAFETY: every field of the request is a number or a pointer, for
+    // which zero is the value an unset field takes.
+    let mut chart: TsChartRequest = unsafe { std::mem::zeroed() };
+    chart.struct_size = u32::try_from(size_of::<TsChartRequest>()).unwrap_or(0);
+    chart.instants = instants.as_ptr();
+    chart.instant_count = instants.len();
+    chart.latitude_deg = 27.7172;
+    chart.longitude_deg = 85.324;
+    chart.altitude_m = 1400.0;
+    chart.utc_offset_seconds = 20_700;
+    chart.sections = 1 | 16;
+    // SAFETY: a live handle, a valid request and a valid slot.
+    let status = unsafe { ts_chart_found(context, &raw const chart, &raw mut blob) };
+    assert!(status == Status::Ok, "the chart is founded");
+    write(dir, "charts.tsrb", &take(&mut blob));
+
+    // SAFETY: as for the chart request.
+    let mut days: TsPanchangaRequest = unsafe { std::mem::zeroed() };
+    days.struct_size = u32::try_from(size_of::<TsPanchangaRequest>()).unwrap_or(0);
+    days.calendar = Calendar::Gregorian.id();
+    days.from_year = 2026;
+    days.from_month = 11;
+    days.from_day = 20;
+    days.to_year = 2026;
+    days.to_month = 11;
+    days.to_day = 21;
+    days.latitude_deg = 27.7172;
+    days.longitude_deg = 85.324;
+    days.altitude_m = 1400.0;
+    days.utc_offset_seconds = 20_700;
+    // SAFETY: a live handle, a valid request and a valid slot.
+    let status = unsafe { ts_panchanga_days(context, &raw const days, &raw mut blob) };
+    assert!(status == Status::Ok, "the days compute");
+    write(dir, "panchanga.tsrb", &take(&mut blob));
+
+    let names = CString::new(r#"{"bride": "सीता", "groom": "राम"}"#).expect("the request");
+    // SAFETY: a live handle, a NUL-terminated request and a valid slot.
+    let status = unsafe { ts_naam_milan(context, names.as_ptr(), &raw mut blob) };
+    assert!(status == Status::Ok, "the names match");
+    write(dir, "naam.tsrb", &take(&mut blob));
 }
 
 /// The fixture pack's name, which every binding's test reads.

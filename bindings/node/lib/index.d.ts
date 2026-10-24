@@ -235,7 +235,7 @@ export declare function fixedZone(offsetSeconds: number): ZoneSpec;
  */
 export declare function localMeanZone(longitudeDeg: Longitude): ZoneSpec;
 
-export { decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
+export { BlobFormatError, decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 
 /** A failed call, with everything the library said about it. */

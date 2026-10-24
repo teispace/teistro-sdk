@@ -63,6 +63,13 @@ function instances() {
     error = caught;
   }
   bare.dispose();
+  let refused;
+  try {
+    // Four bytes are no blob, which a decoder refuses as its own error.
+    layer.decodePositions(new Uint8Array(4));
+  } catch (caught) {
+    refused = caught;
+  }
   const made = {
     Context: ctx,
     Positions: ctx.positions({ instants: [2451545], bodies: [Body.Sun] }),
@@ -72,6 +79,7 @@ function instances() {
     AlmanacDay: ctx.almanac.day({ date: date(Calendar.Gregorian, 2024, 6, 21), place, utcOffsetSeconds: 20700 }),
     Rendered: ctx.intl.render('entity.graha.sun.name'),
     TeistroError: error instanceof TeistroError ? error : undefined,
+    BlobFormatError: refused instanceof layer.BlobFormatError ? refused : undefined,
     // The areas a context hands out, each the one a consumer reaches.
     CalendarArea: ctx.calendar,
     TimeArea: ctx.time,

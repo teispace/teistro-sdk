@@ -230,6 +230,7 @@ fn render_brands(out: &mut String, api: &Api) {
 #[must_use]
 pub fn blob_declarations(api: &Api) -> String {
     let mut out = preamble(api, "//");
+    out.push_str(BLOB_FORMAT_ERROR_DECLARATION);
     // Shared across every blob, so a shape declared by two of them is
     // written once.
     let mut shapes = BTreeSet::new();
@@ -238,6 +239,20 @@ pub fn blob_declarations(api: &Api) -> String {
     }
     out
 }
+
+/// The decoders' refusal, declared. A `TypeError` still, so a caller who
+/// caught that before catches this, and a class of its own, so a refusal
+/// is told from a fault in the code reading the blob.
+const BLOB_FORMAT_ERROR_DECLARATION: &str = "
+/**
+ * Bytes that are not a blob this decoder reads: too short, another schema
+ * or layout version, a section or a column outside the blob or off its
+ * alignment, or text that is not UTF-8.
+ */
+export declare class BlobFormatError extends TypeError {
+  readonly name: 'BlobFormatError';
+}
+";
 
 /// The enums a shown struct's fields name, in declaration order, so the
 /// types file imports exactly what it uses; the status enum is always
@@ -532,7 +547,7 @@ fn render_blob_types(out: &mut String, schema: &BlobSchema, shapes: &mut BTreeSe
     let _ = writeln!(out, "}}\n");
     let _ = writeln!(
         out,
-        "/**\n * Decodes a {name} blob. The columns are views over `bytes`, so the\n * buffer must outlive the result; a blob of another layout version or\n * another schema is a `TypeError`.\n */\nexport declare function decode{name}(bytes: Uint8Array): {name};\n"
+        "/**\n * Decodes a {name} blob. The columns are views over `bytes`, so the\n * buffer must outlive the result; a blob of another layout version or\n * another schema is a `BlobFormatError`.\n */\nexport declare function decode{name}(bytes: Uint8Array): {name};\n"
     );
 }
 
@@ -689,6 +704,17 @@ const READERS = {
 const TEXT = new TextDecoder('utf-8', { fatal: true });
 
 /**
+ * Bytes that are not a blob this decoder reads. A `TypeError`, as every
+ * refusal here was before it had a class of its own.
+ */
+export class BlobFormatError extends TypeError {
+  constructor(message) {
+    super(message);
+    this.name = 'BlobFormatError';
+  }
+}
+
+/**
  * The bytes as an 8-aligned view. A buffer the runtime handed us at an
  * odd offset is copied once, because a typed array must start on its
  * element's alignment; everything else is a view.
@@ -708,53 +734,86 @@ function open(input, schemaId, schemaName) {
   const bytes = aligned(input);
   const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (bytes.byteLength < HEADER_LEN || dv.getUint32(0, true) !== MAGIC) {
-    throw new TypeError('not a Teistro result blob');
+    throw new BlobFormatError('not a Teistro result blob');
   }
   const version = dv.getUint32(4, true);
   if (version !== VERSION) {
-    throw new TypeError(`blob layout version ${version}, this decoder reads version ${VERSION}`);
+    throw new BlobFormatError(`blob layout version ${version}, this decoder reads version ${VERSION}`);
   }
   const total = dv.getUint32(12, true);
   if (total !== bytes.byteLength) {
-    throw new TypeError(`the header says ${total} bytes, ${bytes.byteLength} were given`);
+    throw new BlobFormatError(`the header says ${total} bytes, ${bytes.byteLength} were given`);
   }
   const id = dv.getUint32(16, true);
   if (id !== schemaId) {
-    throw new TypeError(`blob schema ${id}, expected ${schemaId} (${schemaName})`);
+    throw new BlobFormatError(`blob schema ${id}, expected ${schemaId} (${schemaName})`);
   }
   const count = dv.getUint32(8, true);
   const sections = new Map();
   for (let i = 0; i < count; i += 1) {
     const at = HEADER_LEN + i * ENTRY_LEN;
+    if (at + ENTRY_LEN > total) {
+      throw new BlobFormatError('the table of contents runs past the end of the blob');
+    }
     const entry = {
       offset: dv.getUint32(at + 4, true),
       length: dv.getUint32(at + 8, true),
       count: dv.getUint32(at + 12, true),
     };
     if (entry.offset + entry.length > total) {
-      throw new TypeError(`section ${dv.getUint32(at, true)} runs past the end of the blob`);
+      throw new BlobFormatError(`section ${dv.getUint32(at, true)} runs past the end of the blob`);
     }
     sections.set(dv.getUint32(at, true), entry);
   }
   return { bytes, dv, sections };
 }
 
-/** The section with an id, or a `TypeError` naming what is missing. */
+/** The section with an id, or a `BlobFormatError` naming what is missing. */
 function section(blob, id, name) {
   const found = blob.sections.get(id);
-  if (!found) throw new TypeError(`the blob carries no \`${name}\` section`);
+  if (!found) throw new BlobFormatError(`the blob carries no \`${name}\` section`);
   return found;
 }
 
-/** One column of a column section, as a view over the blob's bytes. */
+/** A fixed section, checked to hold a slot for each of its fields. */
+function fixed(blob, id, name, slots) {
+  const at = section(blob, id, name);
+  if (slots * SLOT > at.length) {
+    throw new BlobFormatError(`the \`${name}\` section holds ${at.length} bytes, not ${slots} slots`);
+  }
+  return at;
+}
+
+/**
+ * One column of a column section, as a view over the blob's bytes,
+ * checked to start on its element's alignment and to hold every row
+ * inside its own section.
+ */
 function column(blob, at, index, type, count) {
+  if ((index + 1) * 4 > at.length) {
+    throw new BlobFormatError("a column's offset runs past the end of its section");
+  }
   const offset = at.offset + blob.dv.getUint32(at.offset + index * 4, true);
+  const width = VIEWS[type].BYTES_PER_ELEMENT;
+  if (offset % width !== 0) {
+    throw new BlobFormatError(`a column of ${type} starts at byte ${offset}, not on a multiple of ${width}`);
+  }
+  if (offset + count * width > at.offset + at.length) {
+    throw new BlobFormatError('a column runs past the end of its section');
+  }
   return new VIEWS[type](blob.bytes.buffer, blob.bytes.byteOffset + offset, count);
 }
 
-/** A bytes section as text. */
-function text(blob, at) {
-  return TEXT.decode(new Uint8Array(blob.bytes.buffer, blob.bytes.byteOffset + at.offset, at.count));
+/** A bytes section as the UTF-8 text the library wrote. */
+function text(blob, at, name) {
+  if (at.count > at.length) {
+    throw new BlobFormatError(`the \`${name}\` text runs past the end of its section`);
+  }
+  try {
+    return TEXT.decode(new Uint8Array(blob.bytes.buffer, blob.bytes.byteOffset + at.offset, at.count));
+  } catch {
+    throw new BlobFormatError(`the \`${name}\` text is not UTF-8`);
+  }
 }
 
 "#;
@@ -767,11 +826,21 @@ fn render_decoder(out: &mut String, schema: &BlobSchema) {
         schema.doc, schema.id, schema.name
     );
     for s in &schema.sections {
-        let _ = writeln!(
-            out,
-            "  {{\n    const at = section(blob, {}, '{}');",
-            s.id, s.name
-        );
+        let _ = if s.kind == SectionKind::Fixed {
+            writeln!(
+                out,
+                "  {{\n    const at = fixed(blob, {}, '{}', {});",
+                s.id,
+                s.name,
+                s.fields.len()
+            )
+        } else {
+            writeln!(
+                out,
+                "  {{\n    const at = section(blob, {}, '{}');",
+                s.id, s.name
+            )
+        };
         match s.kind {
             // A section that names a shape decodes into one object, so
             // the fields a chart and a panchanga share are read the same
@@ -819,7 +888,12 @@ fn render_decoder(out: &mut String, schema: &BlobSchema) {
                 let _ = writeln!(out, "      length: at.count,\n    }};");
             }
             SectionKind::Bytes => {
-                let _ = writeln!(out, "    out.{} = text(blob, at);", camel(&s.name));
+                let _ = writeln!(
+                    out,
+                    "    out.{} = text(blob, at, '{}');",
+                    camel(&s.name),
+                    s.name
+                );
             }
         }
         let _ = writeln!(out, "  }}");
@@ -1009,7 +1083,8 @@ mod tests {
             "const blob = open(bytes, 1, 'positions');",
             "out.jdCount = READERS.u32(blob.dv, at.offset + 0);",
             "lon: column(blob, at, 0, 'f64', at.count),",
-            "out.provenance = text(blob, at);",
+            "out.provenance = text(blob, at, 'provenance');",
+            "const at = fixed(blob, 1, 'summary', ",
         ] {
             assert!(js.contains(expected), "missing {expected:?} in\n{js}");
         }
