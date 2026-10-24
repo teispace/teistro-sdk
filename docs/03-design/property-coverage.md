@@ -1,6 +1,6 @@
 # Property coverage: each invariant held, by name, at its boundaries
 
-Status: `implemented` in part, 2026-10-25: steps 1, 2 and 4 of §4; step 3, the fixed points, is open. The quality bar's "property tests" row
+Status: `implemented`, 2026-10-25: every step of §4, step 3 as §4 now words it. The quality bar's "property tests" row
 ([`05-testing/01-quality-bar.md`](../05-testing/01-quality-bar.md)) lists
 seven invariants and asks that generators "deliberately produce values at
 and one microarcsecond either side of every classification boundary". Its
@@ -24,16 +24,15 @@ values.
 | sums | `strength`: the Ashtakavarga's classical totals, the Shadbala's six, the Bhava bala's components | swept over the corpus | not a boundary property |
 | tree consistency, and `dasha_at` finds every instant | `dasha/tests/timeline.rs`, one contract for every kernel | swept, every period's children over three cycles, and the last bit before every start | yes, to the bit |
 | monotonic transitions | `astro/src/events.rs`, `calendar/src/mixed.rs`, `muhurta/tests/season.rs` | swept over their ranges | events at their boundaries |
-| serialise-deserialise fixed points | `rules`: a rule and a condition; `sdk/src/varsha.rs`; the envelope | a few types | — |
+| serialise-deserialise fixed points | `core/src/settings/mod.rs`, `every_shipped_profile_resolves_and_hashes_stably`; `sdk/tests/fixed_points.rs`, `every_corpus_chart_reads_back_as_the_document_it_was`; a rule, the envelope and the varsha request at examples | swept: every shipped profile's settings, and every corpus birth's widest document | the corpus's two range-edge births, refused by name |
 | calendar round trips | `calendar/tests/range.rs` and every calendar's own `every_day_round_trips` | swept, every day of its range | its first and last day |
 
-Two gaps are real:
+Two gaps were real when this page was written:
 
 - **Fixed points.** The SDK has 76 request and record types that read
-  JSON (`derive(Deserialize)` in `crates/sdk/src`), and three of them are
-  held to reading back what they write. A request a consumer stores and
-  sends again (a saved chart request, an MCP tool's arguments) must come
-  back as itself.
+  JSON (`derive(Deserialize)` in `crates/sdk/src`), and three of them
+  were held to reading back what they write, at one value each. §4 step
+  3 says what closed it.
 - **The boundary generator.** Every classification the SDK makes from a
   longitude (sign, nakshatra, pada, a varga's part, the tithi's and the
   yoga's twelfths and thirteen-twentieths) has a boundary, and only the
@@ -85,9 +84,29 @@ seven names, as `check-micro` holds its budgets to the performance page.
    a microarcsecond apart.
 2. The classifiers held at their edges: sign, nakshatra and pada in
    `core`, tithi and yoga in `panchanga`, each varga's part in `vargas`.
-3. Fixed points: one test in `crates/sdk/tests` reading every request
-   type from the JSON its `Default`, or its documented example where it
-   has no default, writes, and writing it back byte for byte. The type
-   list comes from the request types the MCP server takes and the
-   document schema names, so a type added to either joins the test.
+3. Fixed points, held where a consumer keeps what the SDK wrote. The
+   first plan was a test per request type, from its `Default` or its
+   documented example. Measured, that was the wrong unit: 988 public
+   types derive both serde traits, only 225 have a `Default`, and a
+   request record is text the consumer wrote and the SDK only reads (a
+   `DaysRequest` is a resolved form with no writer at all). What the SDK
+   writes and is read back is the settings document and the chart
+   document. So `sdk/tests/fixed_points.rs` founds every corpus birth with
+   `ChartRequest::with_everything`, writes its canonical JSON, reads it
+   back, and holds the bytes and the value. The document's sections are
+   built from most of those 988 types, each at real skies. The core's
+   settings test already swept every shipped profile the same way. The
+   two births the corpus tags `range-start` and `range-end` are refused
+   (the widest document asks the Sun for instants past the data), and
+   the test names them.
+
+   The sweep found a defect on its first run. `with_everything` promised
+   "the widest document the SDK can produce for any chart", and asked for
+   the two Ayurdaya dashas (the Aayu and the Ashtakavarga). Those begin
+   from the one strongest of the lagna, the Sun and the Moon (BPHS ch. 46
+   v. 202) and are refused when two are equally strong. In c030 the lagna
+   is Cancer, and its Bhava bala equals the Moon's shadbala exactly
+   (381.155 virupas), so the request for everything refused that chart.
+   `systems_every_chart_gives` now leaves both out, beside the Tara dasha
+   and the Sthira dasa, to be asked for by name.
 4. The register, `check-properties`, and the quality bar's row.
