@@ -461,6 +461,50 @@ mod tests {
     use crate::language::EvidenceRank;
     use crate::table::Tables;
 
+    /// `packs` is the one list: it holds every rule every staged pack file
+    /// holds, each once, so a file a later chapter adds and leaves out of
+    /// the packs fails here, as does a pack that comes back empty.
+    #[test]
+    fn the_packs_hold_every_staged_rule_once() {
+        let dir = concat!(env!("OUT_DIR"), "/rules");
+        let mut staged = std::collections::BTreeMap::new();
+        for entry in std::fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            let name = path.file_name().unwrap().to_string_lossy().into_owned();
+            let text = std::fs::read_to_string(&path).unwrap();
+            // The two-graha readings are a table the rules are built from.
+            let rules = if name == "classical-readings.json" {
+                serde_json::from_str::<crate::dwigraha::Table>(&text)
+                    .unwrap()
+                    .rules()
+            } else {
+                read(&text)
+            };
+            assert!(!rules.is_empty(), "{name} holds no rule");
+            for rule in rules {
+                if let Some(earlier) = staged.insert(rule.key.clone(), name.clone()) {
+                    panic!("{} is in both {earlier} and {name}", rule.key);
+                }
+            }
+        }
+        let mut shipped = std::collections::BTreeSet::new();
+        for rule in packs().into_iter().flatten() {
+            assert!(
+                shipped.insert(rule.key.clone()),
+                "{} is in two packs",
+                rule.key
+            );
+        }
+        let staged: std::collections::BTreeSet<String> = staged.into_keys().collect();
+        let unwired: Vec<&String> = staged.difference(&shipped).collect();
+        let unstaged: Vec<&String> = shipped.difference(&staged).collect();
+        assert!(unwired.is_empty(), "staged but in no pack: {unwired:?}");
+        assert!(
+            unstaged.is_empty(),
+            "in a pack but staged by no file: {unstaged:?}"
+        );
+    }
+
     /// What a caller asks a chart reading for is derived from the rules: the
     /// divisions they step into, whether they read strength, and whether they
     /// name a point. Held over the whole shipped set so a pack that starts
