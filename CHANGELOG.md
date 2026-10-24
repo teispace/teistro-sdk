@@ -12,6 +12,32 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every dasha kernel keeps one contract, and two lookups and the decennials'
+cycles are fixed by it** (`teistro-dasha`). **Numbers:** none move under
+the default settings. A new test, `tests/timeline.rs`, holds every kernel
+to the same contract: nothing before birth, each mahadasha found from its
+start to its end, every parent partitioned by its children, and the chain
+at a child's start ending in that child. It found three faults:
+
+- **The decennials' cycles under another year.** Under
+  `decennial_division: "CYCLES"`, VI.5's third-level cycles were 129 days
+  whatever the year. Valens counts them in days of his 360-day year, which
+  is the decennials' default, so under any other year seven cycles fell
+  short of Saturn's 30 months and left the end of its period with no
+  period. The cycles, and the minimum years counted as days below them,
+  now keep their share of the year: 129 days in 360. Only the `CYCLES`
+  division under a year other than 360 days moves.
+  `DashaReading::decennial_division` now reads the division back by a
+  third-level period's share of its mahadasha, a thirtieth, which holds
+  under any year.
+- **A boundary in a year's dasha and in the Kalachakra.** `mahadasha_at`
+  found the period by an inverse of the arithmetic that set its ends, a
+  fraction of the year or an offset into the cycle, which could round an
+  instant exactly at a boundary into the period before it. A chain at
+  that instant then held the wrong mahadasha and none of its children.
+  Both now compare the instant with each bound as the period's own ends
+  are computed.
+
 **A dasha kernel cannot be given a year of no days** (`teistro-dasha`).
 **Numbers:** none move. **Changed:** `ReleasingDasha::new` and
 `ProfectionDasha::new` return the dasha rather than a `Result`, and

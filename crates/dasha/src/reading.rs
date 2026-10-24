@@ -389,13 +389,18 @@ impl DashaReading {
     }
 
     /// How a decennials reading divides below the second level, when its
-    /// rows show it: a third-level period of exactly 129 days is a cycle
-    /// (VI.5), which no proportion of the minimum years gives. Nothing
+    /// rows show it: a third-level period a thirtieth of its mahadasha is a
+    /// cycle, 129 of Valens's days in the 129 months' 3870 under any year
+    /// (VI.5), which no proportion of the minimum years gives: the first
+    /// third-level period is the square of its star's years over 129 of
+    /// the mahadasha, a thirtieth only for a star of 23.55 years. Nothing
     /// when it stores two levels or fewer.
     #[must_use]
     pub fn decennial_division(&self) -> Option<DecennialDivision> {
+        let first = self.periods.iter().find(|row| row.level() == 1)?;
         let third = self.periods.iter().find(|row| row.level() == 3)?;
-        Some(if (third.interval.days() - 129.0).abs() < 1e-6 {
+        let share = third.interval.days() / first.interval.days();
+        Some(if (share - 1.0 / 30.0).abs() < 1e-9 {
             DecennialDivision::Cycles
         } else {
             DecennialDivision::Proportional

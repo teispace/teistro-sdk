@@ -338,11 +338,20 @@ fn the_firdaria_s_nodes_are_read_back_from_where_the_head_runs() {
 #[test]
 fn the_decennials_order_and_division_are_read_back_from_their_rows() {
     let order = decennial_order(Graha::Moon, &PLACES).unwrap();
-    for division in [DecennialDivision::Cycles, DecennialDivision::Proportional] {
-        let dasha = DecennialDasha::new(order, birth(), YearLength::Julian36525, division).unwrap();
+    for (division, year) in [DecennialDivision::Cycles, DecennialDivision::Proportional]
+        .into_iter()
+        .flat_map(|division| {
+            [YearLength::Julian36525, YearLength::Savana360].map(|year| (division, year))
+        })
+    {
+        let dasha = DecennialDasha::new(order, birth(), year, division).unwrap();
         let reading = time_lord(DashaSystem::Decennials, &dasha, 3);
         assert_eq!(reading.decennial_order(), Some(order));
-        assert_eq!(reading.decennial_division(), Some(division), "{division:?}");
+        assert_eq!(
+            reading.decennial_division(),
+            Some(division),
+            "{division:?} {year:?}"
+        );
         // Two levels show no division.
         let shallow = time_lord(DashaSystem::Decennials, &dasha, 2);
         assert_eq!(shallow.decennial_division(), None);
@@ -568,4 +577,34 @@ fn the_cursor_answers_as_the_kernel_it_holds() {
     }
     assert_eq!(cursors[0].nakshatra(), Some(&vimshottari()));
     assert_eq!(cursors[1].rashi(), Some(&sudarshana()));
+}
+
+/// Every system the build computes is listed once, and those a request
+/// for everything takes leave out only the ones a chart may be refused:
+/// the Sthira dasa, which starts from a Brahma graha the verses may not
+/// find, and the Tara dasha, which needs a graha in a kendra.
+#[test]
+fn the_systems_every_chart_gives_leave_out_the_refusable_ones() {
+    let all: Vec<DashaSystem> = teistro_dasha::systems().collect();
+    let mut unique = all.clone();
+    unique.sort_by_key(|system| system.key());
+    unique.dedup();
+    assert_eq!(unique.len(), all.len(), "a system listed twice");
+    for system in [
+        DashaSystem::Vimshottari,
+        DashaSystem::Chara,
+        DashaSystem::Kalachakra,
+        DashaSystem::ReleasingFortune,
+        DashaSystem::Firdaria,
+        DashaSystem::Naisargika,
+    ] {
+        assert!(all.contains(&system), "{system:?}");
+    }
+    let every: Vec<DashaSystem> = teistro_dasha::systems_every_chart_gives().collect();
+    let left: Vec<DashaSystem> = all
+        .iter()
+        .copied()
+        .filter(|system| !every.contains(system))
+        .collect();
+    assert_eq!(left, [DashaSystem::Sthira, DashaSystem::Tara]);
 }

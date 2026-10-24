@@ -167,6 +167,11 @@ mod tests {
         assert!(systems.register(definition("ACME_THREE")).is_err());
         let keys: Vec<&str> = systems.iter().map(|(_, d)| d.key()).collect();
         assert_eq!(keys, ["ACME_ONE", "ACME_TWO"]);
+        assert!(!systems.is_empty());
+        let one = systems.get("ACME_ONE").unwrap();
+        assert_eq!(one.key(), "ACME_ONE");
+        assert_eq!(systems.by_id(first), Some(one));
+        assert!(systems.get("ACME_THREE").is_none());
     }
 
     #[test]

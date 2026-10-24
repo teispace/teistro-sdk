@@ -132,7 +132,6 @@ impl Wheel {
         match nas {
             _ if nas < UTTARASHADHA * Nas::PER_NAKSHATRA => whole(nakshatra),
             _ if nas < ABHIJIT_FROM => Segment {
-                place: place(UTTARASHADHA),
                 to: ABHIJIT_FROM,
                 ..whole(UTTARASHADHA)
             },
