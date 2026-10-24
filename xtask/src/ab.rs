@@ -31,8 +31,15 @@ const ROUNDS: usize = 15;
 
 /// The requests both sides answer, and what each asks.
 const REQUESTS: [(&str, &str); 2] = [
-    ("chart", "a birth chart with its Vimshottari to depth 3"),
-    ("day", "the almanac day of the birth's date at its place"),
+    (
+        "chart",
+        "a birth chart with its drishti, upagrahas, houses, dignities, arudhas and Vimshottari \
+         to depth 3",
+    ),
+    (
+        "day",
+        "the almanac day of the birth's date at its place, its limbs, kaalas, choghadiya and horas",
+    ),
 ];
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

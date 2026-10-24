@@ -1,0 +1,64 @@
+{
+  "os": "macos",
+  "arch": "aarch64",
+  "commit": "d9965f0d3",
+  "node": "v26.12.0",
+  "corpus": 55,
+  "differ": [],
+  "refused": [
+    {
+      "id": "c047",
+      "side": "sdk",
+      "request": "day",
+      "reason": "MOON at JD 2378496.179673321: OutOfRange"
+    },
+    {
+      "id": "c048",
+      "side": "sdk",
+      "request": "day",
+      "reason": "MOON at JD 2597641.5517241377: OutOfRange"
+    }
+  ],
+  "figures": [
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "chart",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 1232.2681818181743,
+      "min_us": 1183.984090909094,
+      "max_us": 1813.0083454545622
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "chart",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 7276.845454545467,
+      "min_us": 7158.981818181813,
+      "max_us": 7707.73332727273
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "day",
+      "rounds": 15,
+      "inputs": 53,
+      "median_us": 617.0290943396054,
+      "min_us": 601.0959245283269,
+      "max_us": 624.0856981132207
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "day",
+      "rounds": 15,
+      "inputs": 53,
+      "median_us": 11886.969339622636,
+      "min_us": 11774.444169811311,
+      "max_us": 12459.878924528313
+    }
+  ]
+}
