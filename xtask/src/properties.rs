@@ -73,7 +73,7 @@ const CALENDAR: &str = "calendar round trips";
 const INVARIANTS: [&str; 7] = [PARTITION, SUMS, TREE, FINDS, MONOTONIC, FIXED, CALENDAR];
 
 /// What holds each invariant.
-const HELD: [Held; 18] = [
+const HELD: [Held; 20] = [
     held(
         PARTITION,
         "crates/core/src/angle.rs",
@@ -183,6 +183,18 @@ const HELD: [Held; 18] = [
         How::Example,
     ),
     held(
+        FIXED,
+        "crates/core/src/settings/mod.rs",
+        "every_shipped_profile_resolves_and_hashes_stably",
+        How::Sweep,
+    ),
+    held(
+        FIXED,
+        "crates/sdk/tests/fixed_points.rs",
+        "every_corpus_chart_reads_back_as_the_document_it_was",
+        How::Sweep,
+    ),
+    held(
         CALENDAR,
         "crates/calendar/tests/range.rs",
         "every_shipped_calendar_reads_back_the_days_it_names",
@@ -193,11 +205,7 @@ const HELD: [Held; 18] = [
 /// The invariants held only at examples, each with why and what closes
 /// it. One here that a sweep or a sample comes to hold fails until it is
 /// taken off, so the list says what is open and nothing else.
-const OPEN: [(&str, &str); 1] = [(
-    FIXED,
-    "three of the SDK's 76 deserialisable types read back what they write, at one value each; \
-     a records-wide round trip is `03-design/property-coverage.md` §4 step 3",
-)];
+const OPEN: [(&str, &str); 0] = [];
 
 /// Why the register and the tree disagree, as sentences.
 fn faults(row: Option<&str>, read: &dyn Fn(&str) -> Option<String>) -> Vec<String> {

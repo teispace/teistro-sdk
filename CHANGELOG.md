@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every golden birth's widest chart document reads back as itself**
+(`crates/sdk/tests/fixed_points.rs`). **Numbers:** none. Each is written
+as canonical JSON and read back to the same bytes and value. The
+serial crate's own test holds three hand-built samples. With every
+shipped profile's settings, which already read back, the quality bar's
+serialise-deserialise fixed points are enforced.
+
 **A request for everything no longer asks for the two Ayurdaya dashas.**
 **Numbers:** a document read with `ChartRequest::with_everything` no
 longer holds the Aayu and Ashtakavarga dashas, so its content hash moves.
