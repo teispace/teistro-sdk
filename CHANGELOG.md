@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Teimeris adapter has a gate** (`xtask`, CI). **Numbers:** none.
+`cargo xtask check-teimeris-adapter` runs the adapter's tests, the
+provider kit over it under the published bounds (its report in
+`target/teimeris-kit/`), and the Node, Python, Dart and Java gates again
+with `TEISTRO_TEIMERIS_ADAPTER` naming the built plugin, so each binding's
+plugin test loads the engine instead of skipping. Without a Teimeris
+checkout beside the SDK the gate skips, which a strict run refuses.
+Verify's new `teimeris` job runs it once the `TEIMERIS_READ_TOKEN` secret
+exists, and says in a notice that it did not run while it does not.
+
 **Every dasha kernel keeps one contract, and two lookups and the decennials'
 cycles are fixed by it** (`teistro-dasha`). **Numbers:** none move under
 the default settings. A new test, `tests/timeline.rs`, holds every kernel
