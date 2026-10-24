@@ -29,6 +29,18 @@ article as the TypeScript emitter already did. The corpus emitter also
 names a brand whose range is not two numbers instead of panicking
 inside the generator.
 
+**Each crate's branches have a floor, and the floors name the toolchain
+that counted them.** **Numbers:** branch floors run from 60% to 100%;
+`time` is at 70% and `houses` and `ephemeris-kit` at 60%. Verify's
+coverage job now measures with `cargo +nightly-2026-10-21 llvm-cov
+--branch`, which counts lines differently from stable: `intl` went from
+8848 counted lines to 8504. So `coverage.json` records `counted_by`, and
+`check-coverage` requires verify to measure with that toolchain. A
+record another toolchain counted is re-based by the next run rather
+than compared with main's. The move lowered seven line floors by 1 to 3
+points, for `ephemeris-kit`, `intl`, `numerology`, `rashifal`,
+`remedies`, `research` and `sdk`, and raised seven.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:

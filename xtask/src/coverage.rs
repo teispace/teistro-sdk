@@ -16,6 +16,12 @@
 //!   record to the one on `main` where git can read it, so a floor lowered
 //!   by hand fails.
 //!
+//! Each llvm counts a crate's lines its own way: moving from stable to the
+//! nightly's `--branch` counted 8848 lines of `intl` as 8504. A floor is a
+//! share of one toolchain's count, so the record names the toolchain that
+//! counted it ([`COUNTED_BY`], the one verify runs), and a record counted
+//! by another is re-based on the next run rather than raised or compared.
+//!
 //! The floors are whole percents of lines and of branches. A crate is the files under its
 //! `crates/<name>/src/` but its generated tables; tests, examples and
 //! benches are not measured, and neither is a crate in [`NOT_MEASURED`].
@@ -36,6 +42,11 @@ const RECORD: &str = "docs/05-testing/coverage.json";
 const PAGE: &str = "docs/05-testing/coverage-measured.md";
 /// The record's schema.
 const SCHEMA: &str = "teistro-coverage/1";
+/// The toolchain verify's `coverage` job measures with; `check-coverage`
+/// holds the workflow to it.
+const COUNTED_BY: &str = "nightly-2026-10-21";
+/// The workflow that runs the measurement.
+const WORKFLOW: &str = ".github/workflows/verify.yml";
 /// The line coverage the quality bar asks of a computation crate.
 const TARGET: u8 = 90;
 /// Crates under `crates/` that are not measured, each with why.
@@ -47,13 +58,21 @@ const NOT_MEASURED: [(&str, &str); 1] = [(
 
 /// The floors, a whole percent of lines to a crate and a whole percent of
 /// branches. A record from before branches were measured has no branch
-/// floors.
+/// floors, and one from before the toolchain was named was counted by
+/// stable.
 #[derive(Debug, Serialize, Deserialize)]
 struct Record {
     schema: String,
+    #[serde(default = "stable")]
+    counted_by: String,
     floors: BTreeMap<String, u8>,
     #[serde(default)]
     branch_floors: BTreeMap<String, u8>,
+}
+
+/// What counted a record from before the toolchain was named.
+fn stable() -> String {
+    String::from("stable")
 }
 
 /// What a run measured of a crate.
@@ -260,12 +279,17 @@ fn findings(
 
 fn record(root: &Path, from: &Path) -> Result<i32, String> {
     let run = read_export(from)?;
-    let old = read_record(root).ok();
+    // A record another toolchain counted says nothing of this count, so
+    // the run re-bases every floor.
+    let old = read_record(root)
+        .ok()
+        .filter(|old| old.counted_by == COUNTED_BY);
     let exists = |name: &str| root.join("crates").join(name).is_dir();
     let (old_lines, old_branches) =
         old.map_or_else(Default::default, |old| (old.floors, old.branch_floors));
     let record = Record {
         schema: SCHEMA.to_owned(),
+        counted_by: COUNTED_BY.to_owned(),
         floors: raised(&old_lines, &lines_of(&run), exists),
         branch_floors: raised(&old_branches, &branches_of(&run), exists),
     };
@@ -301,7 +325,29 @@ fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
         println!("FAIL  {finding}");
         failures += 1;
     };
+    if record.counted_by != COUNTED_BY {
+        fail(format!(
+            "{RECORD} was counted by `{}`, and verify counts with `{COUNTED_BY}`: record a run \
+             with `cargo xtask coverage --from FILE`",
+            record.counted_by
+        ));
+    }
+    match fs::read_to_string(root.join(WORKFLOW)) {
+        Ok(workflow) if workflow.contains(&format!("+{COUNTED_BY} llvm-cov")) => {}
+        Ok(_) => fail(format!(
+            "{WORKFLOW} does not measure with `cargo +{COUNTED_BY} llvm-cov`, the toolchain \
+             the floors were counted by"
+        )),
+        Err(e) => fail(format!("{WORKFLOW}: {e}")),
+    }
     match on_main(root, RECORD).map(|text| parse_record(&text)) {
+        Some(Ok(main)) if main.counted_by != record.counted_by => {
+            println!(
+                "note  main's floors were counted by `{}` and these by `{}`, so they are \
+                 re-based and none is compared with main's",
+                main.counted_by, record.counted_by
+            );
+        }
         Some(Ok(main)) => {
             lowered("line", &main.floors, &record.floors)
                 .into_iter()
@@ -367,8 +413,10 @@ fn render(record: &Record) -> String {
          job; `check-coverage` holds this page to [`coverage.json`](coverage.json), and verify \
          holds every run to the floors.\n\n\
          Each crate has two floors: the share of its lines its tests run and the share of its \
-         branches, each rounded down to a whole percent, from the last run recorded. Branches \
-         are llvm's, measured on the pinned nightly `cargo llvm-cov --branch` needs. A crate's \
+         branches, each rounded down to a whole percent, from the last run recorded. Both are \
+         counted by `{counted_by}`, the pinned nightly `cargo llvm-cov --branch` needs; each \
+         llvm counts lines its own way, so a record another toolchain counted is re-based on \
+         the next run. A crate's \
          generated tables are not counted, since their generators' checks hold them{skipped} \
          ([`01-quality-bar.md`](01-quality-bar.md), \"coverage floors\"). A floor only rises: a \
          run below it fails, recording raises it to what the run reached, and a floor lowered \
@@ -377,6 +425,7 @@ fn render(record: &Record) -> String {
          both.\n\n\
          | crate | lines | branches | at {TARGET}% |\n|---|---:|---:|---|\n{rows}",
         total = record.floors.len(),
+        counted_by = record.counted_by,
         skipped = NOT_MEASURED
             .iter()
             .fold(String::new(), |mut out, (name, why)| {
@@ -498,12 +547,24 @@ mod tests {
         assert_eq!(findings("lines", &floors, &run), Vec::<String>::new());
     }
 
+    /// A record from before the toolchain was named reads as stable's, so
+    /// the next run re-bases it.
+    #[test]
+    fn a_record_without_its_toolchain_was_counted_by_stable() {
+        let old = parse_record(r#"{"schema": "teistro-coverage/1", "floors": {"a": 90}}"#).unwrap();
+        assert_eq!(old.counted_by, "stable");
+        assert_ne!(old.counted_by, COUNTED_BY);
+        let page = render(&old);
+        assert!(page.contains("counted by `stable`"), "{page}");
+    }
+
     /// The page says which crates have both floors at the target, and that
     /// a crate whose branches were never measured has no branch floor yet.
     #[test]
     fn the_page_marks_a_crate_at_the_target_only_on_both_floors() {
         let record = Record {
             schema: SCHEMA.into(),
+            counted_by: COUNTED_BY.into(),
             floors: [("a".into(), 95), ("b".into(), 95), ("c".into(), 95)].into(),
             branch_floors: [("a".into(), 91), ("b".into(), 85)].into(),
         };
