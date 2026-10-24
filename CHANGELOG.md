@@ -51,6 +51,20 @@ positions; Dart covers disposed contexts and the same answers. Dart's
 leak file runs on its own, because `dart test` runs files side by side
 in one process.
 
+**Every time-zone policy is tested on a real transition.**
+**Numbers:** the zone module's untested lines fell from 119 to 69, and
+its untested branches from 12 to 6. The new cases are:
+- the quarter-hour Kathmandu skipped on 1 January 1986 (+05:30 to
+  +05:45), refused or shifted;
+- New York's 2024 spring gap and autumn overlap under each policy;
+- a date with no time, read as noon or midnight, or refused;
+- the leap second at the end of 2016, folded in UTC and at Kathmandu's
+  05:44:60, and refused on 30 June 2017, which had none;
+- a fixed offset;
+- a lunisolar date given to `resolve`, refused.
+
+Each instant was worked by hand from the tz database's zone lines.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:
