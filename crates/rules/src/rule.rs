@@ -973,6 +973,59 @@ mod tests {
         assert_eq!(back, parsed);
     }
 
+    /// A rule writes back only what differs from a default: the natal
+    /// scope, a place's weight of one and Mars as the weighed body go
+    /// unwritten, and anything else is written.
+    #[test]
+    fn a_rule_writes_only_what_differs_from_the_defaults() {
+        let written = |json: String| serde_json::to_value(rule(&json).unwrap()).unwrap();
+        let group = |weight: &str| {
+            format!(
+                r#""referenceConditions": [{{"reference": "moon", "label": "Moon"{weight}, "conditions": [{{"type": "planet-in-kendra", "planet": "MARS"}}]}}]"#
+            )
+        };
+        let severity = |planet: &str| {
+            format!(
+                r#""severityRule": {{"type": "house-weighted"{planet}, "weights": {{"7": 100}}, "default": 50}}"#
+            )
+        };
+        let plain = written(format!("{{{HEAD}, {}, {}}}", group(""), severity("")));
+        assert!(plain.get("applicableTo").is_none(), "{plain}");
+        assert!(
+            plain["referenceConditions"][0].get("weight").is_none(),
+            "{plain}"
+        );
+        assert!(plain["severityRule"].get("planet").is_none(), "{plain}");
+        let set = written(format!(
+            r#"{{{HEAD}, "applicableTo": "all", {}, {}}}"#,
+            group(r#", "weight": 2"#),
+            severity(r#", "planet": "SATURN""#)
+        ));
+        assert_eq!(set["applicableTo"], "all");
+        assert_eq!(set["referenceConditions"][0]["weight"], 2);
+        assert_eq!(set["severityRule"]["planet"], "SATURN");
+    }
+
+    /// A rule reads the transits or the moment when any condition does.
+    #[test]
+    fn a_rule_reads_what_any_of_its_conditions_reads() {
+        let kendra = rule(&format!(
+            r#"{{{HEAD}, "conditions": [{{"type": "planet-in-kendra", "planet": "SUN"}}]}}"#
+        ))
+        .unwrap();
+        assert!(!kendra.reads_transits() && !kendra.reads_moment());
+        let eclipse = rule(&format!(
+            r#"{{{HEAD}, "conditions": [{{"type": "planet-in-kendra", "planet": "SUN"}}, {{"type": "birth-during-eclipse"}}]}}"#
+        ))
+        .unwrap();
+        assert!(eclipse.reads_moment() && !eclipse.reads_transits());
+        let transit = rule(&format!(
+            r#"{{{HEAD}, "applicableTo": "all", "conditions": [{{"type": "transit-in-house", "planet": "SATURN", "houses": [12, 1, 2], "from": "MOON"}}]}}"#
+        ))
+        .unwrap();
+        assert!(transit.reads_transits() && !transit.reads_moment());
+    }
+
     #[test]
     fn the_engine_s_severity_formulas_read_as_severity_rules_and_others_are_refused() {
         let custom = |key: &str| {
