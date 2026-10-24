@@ -14,9 +14,17 @@ from __future__ import annotations
 
 import struct
 import unittest
+from collections.abc import Callable, Iterator
 
 from teistro import Body, TimeScale
-from teistro._blob import BlobError, decode_intl_render, decode_positions
+from teistro._blob import (
+    BlobError,
+    decode_charts,
+    decode_intl_render,
+    decode_naam,
+    decode_panchanga,
+    decode_positions,
+)
 from tests.support import fixture
 
 
@@ -115,6 +123,77 @@ class BytesThatAreNotABlob(unittest.TestCase):
         with self.assertRaises(BlobError) as caught:
             decode_positions(self.raw + b"\0" * 8)
         self.assertIn("bytes", str(caught.exception))
+
+
+# Every blob of every schema, corrupted the same way in every binding's
+# test: a seeded xorshift32 stream picks, two thousand times a blob, one
+# of four mutations -- a few bytes flipped past the header, one aligned
+# word set to an edge value (0, 1, 3, 4, 8, 2**31 - 1, 2**31, 2**32 - 1 or
+# the blob's length), the blob cut short, or the blob grown with zeros,
+# the last two with the header's length mended so the table of contents
+# is read. Each mutant is decoded or refused as a `BlobError`; anything
+# else raised is a fault in the decoder.
+_MUTANTS = 2000
+_EDGES = (0, 1, 3, 4, 8, 0x7FFFFFFF, 0x80000000, 0xFFFFFFFF, -1)
+_SCHEMAS: tuple[tuple[str, Callable[[bytes], object]], ...] = (
+    ("positions.tsrb", decode_positions),
+    ("intl_render.tsrb", decode_intl_render),
+    ("charts.tsrb", decode_charts),
+    ("panchanga.tsrb", decode_panchanga),
+    ("naam.tsrb", decode_naam),
+)
+
+
+def _mutants(good: bytes) -> Iterator[tuple[int, int, bytes]]:
+    x = 0x9E3779B9
+
+    def next_word() -> int:
+        nonlocal x
+        x ^= (x << 13) & 0xFFFFFFFF
+        x ^= x >> 17
+        x ^= (x << 5) & 0xFFFFFFFF
+        return x
+
+    for i in range(_MUTANTS):
+        raw = bytearray(good)
+        kind = next_word() % 4
+        if kind == 0:
+            for _ in range(1 + next_word() % 4):
+                raw[20 + next_word() % (len(raw) - 20)] ^= 1 + next_word() % 255
+        elif kind == 1:
+            at = (next_word() % (len(raw) >> 2)) * 4
+            edge = _EDGES[next_word() % len(_EDGES)]
+            # The magic, the version and the schema stay, or nothing past
+            # them is read.
+            if at < 8 or 12 <= at < 20:
+                continue
+            struct.pack_into("<I", raw, at, len(raw) if edge == -1 else edge)
+        else:
+            if kind == 2:
+                raw = raw[: 32 + next_word() % (len(raw) - 32)]
+            else:
+                raw += bytes(8 * (1 + next_word() % 8))
+            struct.pack_into("<I", raw, 12, len(raw))
+        yield i, kind, bytes(raw)
+
+
+class ACorruptedBlob(unittest.TestCase):
+    def test_of_every_schema_is_decoded_or_refused_never_anything_else(
+        self,
+    ) -> None:
+        for name, decode in _SCHEMAS:
+            decoded = refused = 0
+            for i, kind, raw in _mutants(fixture(name)):
+                try:
+                    decode(raw)
+                    decoded += 1
+                except BlobError:
+                    refused += 1
+                except Exception as error:  # noqa: BLE001 - the finding
+                    found = f"{type(error).__name__}: {str(error)[:200]}"
+                    self.fail(f"{name}, mutant {i} (mutation {kind}): {found}")
+            # Both ways out were taken, so the mutants reach past the header.
+            self.assertTrue(decoded and refused, f"{name}: {decoded}, {refused}")
 
 
 if __name__ == "__main__":

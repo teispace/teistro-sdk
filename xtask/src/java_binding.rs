@@ -381,15 +381,20 @@ pub(crate) fn check(root: &Path) -> i32 {
     let Ok(library) = library(root) else {
         return 1;
     };
-    let outcome = compile(root, &classes, TESTS).and_then(|main| {
-        step(
-            patched(&main, &classes.join(TESTS), MAIN, &library).current_dir(root),
-            &format!("{PACKAGE}'s tests pass against the real library"),
-            &format!("{PACKAGE}'s tests did not pass"),
-        )?;
-        adapter(root, &classes, &main)?;
-        wrong_usages(root, &classes, &main)
-    });
+    let fixtures = root.join(crate::binding::FIXTURES);
+    let outcome = crate::binding::blob_fixtures(root, &fixtures)
+        .and_then(|()| compile(root, &classes, TESTS))
+        .and_then(|main| {
+            step(
+                patched(&main, &classes.join(TESTS), MAIN, &library)
+                    .env("TEISTRO_FIXTURES", &fixtures)
+                    .current_dir(root),
+                &format!("{PACKAGE}'s tests pass against the real library"),
+                &format!("{PACKAGE}'s tests did not pass"),
+            )?;
+            adapter(root, &classes, &main)?;
+            wrong_usages(root, &classes, &main)
+        });
     let outcome = outcome.and_then(|()| {
         crate::examples::Binding::Java
             .run(root, &crate::examples::Runtime::of(root))

@@ -1681,6 +1681,15 @@ class _Blob:
             raise BlobError(f"the blob carries no `{name}` section")
         return found
 
+    def fixed_section(self, section_id: int, name: str, slots: int) -> _Section:
+        """A fixed section, checked to hold a slot for each of its fields."""
+        at = self.section(section_id, name)
+        if slots * 8 > at.length:
+            raise BlobError(
+                f"the `{name}` section holds {at.length} bytes, not {slots} slots"
+            )
+        return at
+
     def fixed(self, at: _Section, slot: int, code: str) -> float:
         """One field of a fixed section, which gives every field a slot."""
         value = struct.unpack_from(f"<{code}", self.bytes, at.offset + slot * 8)[0]
@@ -1691,19 +1700,35 @@ class _Blob:
 
         The caller casts them to the column's own format code, which it
         knows as a literal; a format passed through here as a string
-        would be one a type checker could not follow.
+        would be one a type checker could not follow. The column is
+        checked to start on a multiple of its width, as every other
+        binding's typed view must, and to end inside its own section.
         """
+        if (index + 1) * 4 > at.length:
+            raise BlobError("a column's offset runs past the end of its section")
         offset = at.offset + struct.unpack_from(
             "<I", self.bytes, at.offset + index * 4
         )[0]
+        if offset % width != 0:
+            raise BlobError(
+                f"a column of width {width} starts at byte {offset}, "
+                f"not on a multiple of {width}"
+            )
         end = offset + rows * width
         if end > at.offset + at.length:
             raise BlobError("a column runs past the end of its section")
         return self.view[offset:end]
 
-    def text(self, at: _Section) -> str:
+    def text(self, at: _Section, name: str) -> str:
         """A bytes section as the UTF-8 text the library wrote."""
-        return self.bytes[at.offset : at.offset + at.count].decode("utf-8")
+        if at.count > at.length:
+            raise BlobError(f"the `{name}` text runs past the end of its section")
+        try:
+            return self.bytes[at.offset : at.offset + at.count].decode("utf-8")
+        except UnicodeDecodeError as error:
+            raise BlobError(
+                f"the `{name}` text is not UTF-8: {error.reason}"
+            ) from None
 
 
 "#;
@@ -1903,13 +1928,24 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
         schema.id, schema.name
     );
     for section in &schema.sections {
-        let _ = writeln!(
-            out,
-            "    at_{} = blob.section({}, \"{}\")",
-            snake(&section.name),
-            section.id,
-            section.name
-        );
+        let _ = if section.kind == SectionKind::Fixed {
+            writeln!(
+                out,
+                "    at_{} = blob.fixed_section({}, \"{}\", {})",
+                snake(&section.name),
+                section.id,
+                section.name,
+                section.fields.len()
+            )
+        } else {
+            writeln!(
+                out,
+                "    at_{} = blob.section({}, \"{}\")",
+                snake(&section.name),
+                section.id,
+                section.name
+            )
+        };
     }
     let _ = writeln!(out, "    return {name}(");
     for section in &schema.sections {
@@ -1970,8 +2006,9 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
             SectionKind::Bytes => {
                 let _ = writeln!(
                     out,
-                    "        {}=blob.text({at}),",
-                    identifier(&section.name)
+                    "        {}=blob.text({at}, \"{}\"),",
+                    identifier(&section.name),
+                    section.name
                 );
             }
         }

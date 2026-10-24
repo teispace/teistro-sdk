@@ -37,6 +37,17 @@ const READERS = {
 const TEXT = new TextDecoder('utf-8', { fatal: true });
 
 /**
+ * Bytes that are not a blob this decoder reads. A `TypeError`, as every
+ * refusal here was before it had a class of its own.
+ */
+export class BlobFormatError extends TypeError {
+  constructor(message) {
+    super(message);
+    this.name = 'BlobFormatError';
+  }
+}
+
+/**
  * The bytes as an 8-aligned view. A buffer the runtime handed us at an
  * odd offset is copied once, because a typed array must start on its
  * element's alignment; everything else is a view.
@@ -56,53 +67,86 @@ function open(input, schemaId, schemaName) {
   const bytes = aligned(input);
   const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (bytes.byteLength < HEADER_LEN || dv.getUint32(0, true) !== MAGIC) {
-    throw new TypeError('not a Teistro result blob');
+    throw new BlobFormatError('not a Teistro result blob');
   }
   const version = dv.getUint32(4, true);
   if (version !== VERSION) {
-    throw new TypeError(`blob layout version ${version}, this decoder reads version ${VERSION}`);
+    throw new BlobFormatError(`blob layout version ${version}, this decoder reads version ${VERSION}`);
   }
   const total = dv.getUint32(12, true);
   if (total !== bytes.byteLength) {
-    throw new TypeError(`the header says ${total} bytes, ${bytes.byteLength} were given`);
+    throw new BlobFormatError(`the header says ${total} bytes, ${bytes.byteLength} were given`);
   }
   const id = dv.getUint32(16, true);
   if (id !== schemaId) {
-    throw new TypeError(`blob schema ${id}, expected ${schemaId} (${schemaName})`);
+    throw new BlobFormatError(`blob schema ${id}, expected ${schemaId} (${schemaName})`);
   }
   const count = dv.getUint32(8, true);
   const sections = new Map();
   for (let i = 0; i < count; i += 1) {
     const at = HEADER_LEN + i * ENTRY_LEN;
+    if (at + ENTRY_LEN > total) {
+      throw new BlobFormatError('the table of contents runs past the end of the blob');
+    }
     const entry = {
       offset: dv.getUint32(at + 4, true),
       length: dv.getUint32(at + 8, true),
       count: dv.getUint32(at + 12, true),
     };
     if (entry.offset + entry.length > total) {
-      throw new TypeError(`section ${dv.getUint32(at, true)} runs past the end of the blob`);
+      throw new BlobFormatError(`section ${dv.getUint32(at, true)} runs past the end of the blob`);
     }
     sections.set(dv.getUint32(at, true), entry);
   }
   return { bytes, dv, sections };
 }
 
-/** The section with an id, or a `TypeError` naming what is missing. */
+/** The section with an id, or a `BlobFormatError` naming what is missing. */
 function section(blob, id, name) {
   const found = blob.sections.get(id);
-  if (!found) throw new TypeError(`the blob carries no \`${name}\` section`);
+  if (!found) throw new BlobFormatError(`the blob carries no \`${name}\` section`);
   return found;
 }
 
-/** One column of a column section, as a view over the blob's bytes. */
+/** A fixed section, checked to hold a slot for each of its fields. */
+function fixed(blob, id, name, slots) {
+  const at = section(blob, id, name);
+  if (slots * SLOT > at.length) {
+    throw new BlobFormatError(`the \`${name}\` section holds ${at.length} bytes, not ${slots} slots`);
+  }
+  return at;
+}
+
+/**
+ * One column of a column section, as a view over the blob's bytes,
+ * checked to start on its element's alignment and to hold every row
+ * inside its own section.
+ */
 function column(blob, at, index, type, count) {
+  if ((index + 1) * 4 > at.length) {
+    throw new BlobFormatError("a column's offset runs past the end of its section");
+  }
   const offset = at.offset + blob.dv.getUint32(at.offset + index * 4, true);
+  const width = VIEWS[type].BYTES_PER_ELEMENT;
+  if (offset % width !== 0) {
+    throw new BlobFormatError(`a column of ${type} starts at byte ${offset}, not on a multiple of ${width}`);
+  }
+  if (offset + count * width > at.offset + at.length) {
+    throw new BlobFormatError('a column runs past the end of its section');
+  }
   return new VIEWS[type](blob.bytes.buffer, blob.bytes.byteOffset + offset, count);
 }
 
-/** A bytes section as text. */
-function text(blob, at) {
-  return TEXT.decode(new Uint8Array(blob.bytes.buffer, blob.bytes.byteOffset + at.offset, at.count));
+/** A bytes section as the UTF-8 text the library wrote. */
+function text(blob, at, name) {
+  if (at.count > at.length) {
+    throw new BlobFormatError(`the \`${name}\` text runs past the end of its section`);
+  }
+  try {
+    return TEXT.decode(new Uint8Array(blob.bytes.buffer, blob.bytes.byteOffset + at.offset, at.count));
+  } catch {
+    throw new BlobFormatError(`the \`${name}\` text is not UTF-8`);
+  }
 }
 
 /**
@@ -114,7 +158,7 @@ export function decodePositions(bytes) {
   const blob = open(bytes, 1, 'positions');
   const out = {};
   {
-    const at = section(blob, 1, 'summary');
+    const at = fixed(blob, 1, 'summary', 4);
     out.frameBits = READERS.u32(blob.dv, at.offset + 0);
     out.jdCount = READERS.u32(blob.dv, at.offset + 8);
     out.bodyCount = READERS.u32(blob.dv, at.offset + 16);
@@ -150,11 +194,11 @@ export function decodePositions(bytes) {
   }
   {
     const at = section(blob, 5, 'steps');
-    out.steps = text(blob, at);
+    out.steps = text(blob, at, 'steps');
   }
   {
     const at = section(blob, 6, 'provenance_json');
-    out.provenanceJson = text(blob, at);
+    out.provenanceJson = text(blob, at, 'provenance_json');
   }
   return out;
 }
@@ -168,26 +212,26 @@ export function decodeIntlRender(bytes) {
   const blob = open(bytes, 2, 'intl_render');
   const out = {};
   {
-    const at = section(blob, 1, 'flags');
+    const at = fixed(blob, 1, 'flags', 3);
     out.isFallback = READERS.u8(blob.dv, at.offset + 0);
     out.isOverride = READERS.u8(blob.dv, at.offset + 8);
     out.warningCount = READERS.u32(blob.dv, at.offset + 16);
   }
   {
     const at = section(blob, 2, 'text');
-    out.text = text(blob, at);
+    out.text = text(blob, at, 'text');
   }
   {
     const at = section(blob, 3, 'resolved_from');
-    out.resolvedFrom = text(blob, at);
+    out.resolvedFrom = text(blob, at, 'resolved_from');
   }
   {
     const at = section(blob, 4, 'warnings');
-    out.warnings = text(blob, at);
+    out.warnings = text(blob, at, 'warnings');
   }
   {
     const at = section(blob, 5, 'parts');
-    out.parts = text(blob, at);
+    out.parts = text(blob, at, 'parts');
   }
   return out;
 }
@@ -201,7 +245,7 @@ export function decodeCharts(bytes) {
   const blob = open(bytes, 3, 'charts');
   const out = {};
   {
-    const at = section(blob, 1, 'summary');
+    const at = fixed(blob, 1, 'summary', 8);
     out.kind = READERS.u16(blob.dv, at.offset + 0);
     out.chartCount = READERS.u32(blob.dv, at.offset + 8);
     out.grahaCount = READERS.u32(blob.dv, at.offset + 16);
@@ -250,7 +294,7 @@ export function decodeCharts(bytes) {
     };
   }
   {
-    const at = section(blob, 4, 'readings');
+    const at = fixed(blob, 4, 'readings', 6);
     out.housesMethod = READERS.u16(blob.dv, at.offset + 0);
     out.housesSource = READERS.u16(blob.dv, at.offset + 8);
     out.housesReading = READERS.u8(blob.dv, at.offset + 16);
@@ -275,7 +319,7 @@ export function decodeCharts(bytes) {
     };
   }
   {
-    const at = section(blob, 7, 'zodiac');
+    const at = fixed(blob, 7, 'zodiac', 3);
     out.frameBits = READERS.u32(blob.dv, at.offset + 0);
     out.ayanamshaKind = READERS.u8(blob.dv, at.offset + 8);
     out.ayanamsha = READERS.u16(blob.dv, at.offset + 16);
@@ -323,15 +367,15 @@ export function decodeCharts(bytes) {
   }
   {
     const at = section(blob, 10, 'model');
-    out.model = text(blob, at);
+    out.model = text(blob, at, 'model');
   }
   {
     const at = section(blob, 11, 'steps');
-    out.steps = text(blob, at);
+    out.steps = text(blob, at, 'steps');
   }
   {
     const at = section(blob, 12, 'provenance_json');
-    out.provenanceJson = text(blob, at);
+    out.provenanceJson = text(blob, at, 'provenance_json');
   }
   {
     const at = section(blob, 13, 'vargas');
@@ -370,7 +414,7 @@ export function decodeCharts(bytes) {
   }
   {
     const at = section(blob, 16, 'drishti_table');
-    out.drishtiTable = text(blob, at);
+    out.drishtiTable = text(blob, at, 'drishti_table');
   }
   {
     const at = section(blob, 17, 'points');
@@ -438,15 +482,15 @@ export function decodeCharts(bytes) {
   }
   {
     const at = section(blob, 20, 'combustion_orbs');
-    out.combustionOrbs = text(blob, at);
+    out.combustionOrbs = text(blob, at, 'combustion_orbs');
   }
   {
     const at = section(blob, 21, 'drawings');
-    out.drawings = text(blob, at);
+    out.drawings = text(blob, at, 'drawings');
   }
   {
     const at = section(blob, 22, 'svgs');
-    out.svgs = text(blob, at);
+    out.svgs = text(blob, at, 'svgs');
   }
   {
     const at = section(blob, 23, 'dashas');
@@ -608,11 +652,11 @@ export function decodeCharts(bytes) {
   }
   {
     const at = section(blob, 33, 'rules');
-    out.rules = text(blob, at);
+    out.rules = text(blob, at, 'rules');
   }
   {
     const at = section(blob, 34, 'plans');
-    out.plans = text(blob, at);
+    out.plans = text(blob, at, 'plans');
   }
   {
     const at = section(blob, 35, 'praveshas');
@@ -827,7 +871,7 @@ export function decodeCharts(bytes) {
   }
   {
     const at = section(blob, 50, 'content_hashes');
-    out.contentHashes = text(blob, at);
+    out.contentHashes = text(blob, at, 'content_hashes');
   }
   {
     const at = section(blob, 51, 'jaimini');
@@ -938,7 +982,7 @@ export function decodeCharts(bytes) {
   }
   {
     const at = section(blob, 59, 'kp');
-    out.kp = text(blob, at);
+    out.kp = text(blob, at, 'kp');
   }
   {
     const at = section(blob, 60, 'dignities');
@@ -1737,23 +1781,23 @@ export function decodeCharts(bytes) {
   }
   {
     const at = section(blob, 119, 'avakahada_syllables');
-    out.avakahadaSyllables = text(blob, at);
+    out.avakahadaSyllables = text(blob, at, 'avakahada_syllables');
   }
   {
     const at = section(blob, 120, 'prashna');
-    out.prashna = text(blob, at);
+    out.prashna = text(blob, at, 'prashna');
   }
   {
     const at = section(blob, 121, 'remedies');
-    out.remedies = text(blob, at);
+    out.remedies = text(blob, at, 'remedies');
   }
   {
     const at = section(blob, 122, 'rectification');
-    out.rectification = text(blob, at);
+    out.rectification = text(blob, at, 'rectification');
   }
   {
     const at = section(blob, 123, 'lalkitab');
-    out.lalkitab = text(blob, at);
+    out.lalkitab = text(blob, at, 'lalkitab');
   }
   {
     const at = section(blob, 124, 'moment');
@@ -1874,23 +1918,23 @@ export function decodeCharts(bytes) {
   }
   {
     const at = section(blob, 135, 'sarvatobhadra');
-    out.sarvatobhadra = text(blob, at);
+    out.sarvatobhadra = text(blob, at, 'sarvatobhadra');
   }
   {
     const at = section(blob, 136, 'tithi_pravesha');
-    out.tithiPravesha = text(blob, at);
+    out.tithiPravesha = text(blob, at, 'tithi_pravesha');
   }
   {
     const at = section(blob, 137, 'dossier');
-    out.dossier = text(blob, at);
+    out.dossier = text(blob, at, 'dossier');
   }
   {
     const at = section(blob, 138, 'masa_pravesha');
-    out.masaPravesha = text(blob, at);
+    out.masaPravesha = text(blob, at, 'masa_pravesha');
   }
   {
     const at = section(blob, 139, 'western_configurations');
-    out.westernConfigurations = text(blob, at);
+    out.westernConfigurations = text(blob, at, 'western_configurations');
   }
   return out;
 }
@@ -1904,7 +1948,7 @@ export function decodePanchanga(bytes) {
   const blob = open(bytes, 4, 'panchanga');
   const out = {};
   {
-    const at = section(blob, 1, 'summary');
+    const at = fixed(blob, 1, 'summary', 6);
     out.dayCount = READERS.u32(blob.dv, at.offset + 0);
     out.latitudeDeg = READERS.f64(blob.dv, at.offset + 8);
     out.longitudeDeg = READERS.f64(blob.dv, at.offset + 16);
@@ -2158,35 +2202,35 @@ export function decodePanchanga(bytes) {
   }
   {
     const at = section(blob, 18, 'model');
-    out.model = text(blob, at);
+    out.model = text(blob, at, 'model');
   }
   {
     const at = section(blob, 19, 'provenance_json');
-    out.provenanceJson = text(blob, at);
+    out.provenanceJson = text(blob, at, 'provenance_json');
   }
   {
     const at = section(blob, 20, 'content_hashes');
-    out.contentHashes = text(blob, at);
+    out.contentHashes = text(blob, at, 'content_hashes');
   }
   {
     const at = section(blob, 21, 'muhurta');
-    out.muhurta = text(blob, at);
+    out.muhurta = text(blob, at, 'muhurta');
   }
   {
     const at = section(blob, 22, 'festivals');
-    out.festivals = text(blob, at);
+    out.festivals = text(blob, at, 'festivals');
   }
   {
     const at = section(blob, 23, 'years');
-    out.years = text(blob, at);
+    out.years = text(blob, at, 'years');
   }
   {
     const at = section(blob, 24, 'eclipses');
-    out.eclipses = text(blob, at);
+    out.eclipses = text(blob, at, 'eclipses');
   }
   {
     const at = section(blob, 25, 'nepal_sambat');
-    out.nepalSambat = text(blob, at);
+    out.nepalSambat = text(blob, at, 'nepal_sambat');
   }
   {
     const at = section(blob, 26, 'varjyam');
@@ -2301,7 +2345,7 @@ export function decodeNaam(bytes) {
     };
   }
   {
-    const at = section(blob, 2, 'naam_varga');
+    const at = fixed(blob, 2, 'naam_varga', 1);
     out.relation = READERS.u8(blob.dv, at.offset + 0);
   }
   {

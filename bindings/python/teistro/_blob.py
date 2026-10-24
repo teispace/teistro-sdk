@@ -75,6 +75,15 @@ class _Blob:
             raise BlobError(f"the blob carries no `{name}` section")
         return found
 
+    def fixed_section(self, section_id: int, name: str, slots: int) -> _Section:
+        """A fixed section, checked to hold a slot for each of its fields."""
+        at = self.section(section_id, name)
+        if slots * 8 > at.length:
+            raise BlobError(
+                f"the `{name}` section holds {at.length} bytes, not {slots} slots"
+            )
+        return at
+
     def fixed(self, at: _Section, slot: int, code: str) -> float:
         """One field of a fixed section, which gives every field a slot."""
         value = struct.unpack_from(f"<{code}", self.bytes, at.offset + slot * 8)[0]
@@ -85,19 +94,35 @@ class _Blob:
 
         The caller casts them to the column's own format code, which it
         knows as a literal; a format passed through here as a string
-        would be one a type checker could not follow.
+        would be one a type checker could not follow. The column is
+        checked to start on a multiple of its width, as every other
+        binding's typed view must, and to end inside its own section.
         """
+        if (index + 1) * 4 > at.length:
+            raise BlobError("a column's offset runs past the end of its section")
         offset = at.offset + struct.unpack_from(
             "<I", self.bytes, at.offset + index * 4
         )[0]
+        if offset % width != 0:
+            raise BlobError(
+                f"a column of width {width} starts at byte {offset}, "
+                f"not on a multiple of {width}"
+            )
         end = offset + rows * width
         if end > at.offset + at.length:
             raise BlobError("a column runs past the end of its section")
         return self.view[offset:end]
 
-    def text(self, at: _Section) -> str:
+    def text(self, at: _Section, name: str) -> str:
         """A bytes section as the UTF-8 text the library wrote."""
-        return self.bytes[at.offset : at.offset + at.count].decode("utf-8")
+        if at.count > at.length:
+            raise BlobError(f"the `{name}` text runs past the end of its section")
+        try:
+            return self.bytes[at.offset : at.offset + at.count].decode("utf-8")
+        except UnicodeDecodeError as error:
+            raise BlobError(
+                f"the `{name}` text is not UTF-8: {error.reason}"
+            ) from None
 
 
 @dataclass(frozen=True)
@@ -209,7 +234,7 @@ def decode_positions(raw: bytes) -> Positions:
     `BlobError`.
     """
     blob = _Blob(raw, 1, "positions")
-    at_summary = blob.section(1, "summary")
+    at_summary = blob.fixed_section(1, "summary", 4)
     at_instants = blob.section(2, "instants")
     at_bodies = blob.section(3, "bodies")
     at_cells = blob.section(4, "cells")
@@ -239,8 +264,8 @@ def decode_positions(raw: bytes) -> Positions:
             source=blob.column(at_cells, 7, 4, at_cells.count).cast("I"),
             length=at_cells.count,
         ),
-        steps=blob.text(at_steps),
-        provenance_json=blob.text(at_provenance_json),
+        steps=blob.text(at_steps, "steps"),
+        provenance_json=blob.text(at_provenance_json, "provenance_json"),
     )
 
 
@@ -281,7 +306,7 @@ def decode_intl_render(raw: bytes) -> IntlRender:
     `BlobError`.
     """
     blob = _Blob(raw, 2, "intl_render")
-    at_flags = blob.section(1, "flags")
+    at_flags = blob.fixed_section(1, "flags", 3)
     at_text = blob.section(2, "text")
     at_resolved_from = blob.section(3, "resolved_from")
     at_warnings = blob.section(4, "warnings")
@@ -290,10 +315,10 @@ def decode_intl_render(raw: bytes) -> IntlRender:
         is_fallback=int(blob.fixed(at_flags, 0, "B")),
         is_override=int(blob.fixed(at_flags, 1, "B")),
         warning_count=int(blob.fixed(at_flags, 2, "I")),
-        text=blob.text(at_text),
-        resolved_from=blob.text(at_resolved_from),
-        warnings=blob.text(at_warnings),
-        parts=blob.text(at_parts),
+        text=blob.text(at_text, "text"),
+        resolved_from=blob.text(at_resolved_from, "resolved_from"),
+        warnings=blob.text(at_warnings, "warnings"),
+        parts=blob.text(at_parts, "parts"),
     )
 
 
@@ -4854,13 +4879,13 @@ def decode_charts(raw: bytes) -> Charts:
     `BlobError`.
     """
     blob = _Blob(raw, 3, "charts")
-    at_summary = blob.section(1, "summary")
+    at_summary = blob.fixed_section(1, "summary", 8)
     at_cast = blob.section(2, "cast")
     at_grahas = blob.section(3, "grahas")
-    at_readings = blob.section(4, "readings")
+    at_readings = blob.fixed_section(4, "readings", 6)
     at_houses = blob.section(5, "houses")
     at_chalit = blob.section(6, "chalit")
-    at_zodiac = blob.section(7, "zodiac")
+    at_zodiac = blob.fixed_section(7, "zodiac", 3)
     at_day = blob.section(8, "day")
     at_timing = blob.section(9, "timing")
     at_model = blob.section(10, "model")
@@ -5136,9 +5161,9 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("B"),
             length=at_timing.count,
         ),
-        model=blob.text(at_model),
-        steps=blob.text(at_steps),
-        provenance_json=blob.text(at_provenance_json),
+        model=blob.text(at_model, "model"),
+        steps=blob.text(at_steps, "steps"),
+        provenance_json=blob.text(at_provenance_json, "provenance_json"),
         vargas=ChartsVargas(
             varga=blob.column(at_vargas, 0, 2, at_vargas.count).cast("H"),
             lagna_rashi=blob.column(
@@ -5185,7 +5210,7 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("d"),
             length=at_aspects.count,
         ),
-        drishti_table=blob.text(at_drishti_table),
+        drishti_table=blob.text(at_drishti_table, "drishti_table"),
         points=ChartsPoints(
             point=blob.column(at_points, 0, 2, at_points.count).cast("H"),
             longitude_deg=blob.column(
@@ -5273,9 +5298,9 @@ def decode_charts(raw: bytes) -> Charts:
             cheshta_5=blob.column(at_states, 36, 2, at_states.count).cast("H"),
             length=at_states.count,
         ),
-        combustion_orbs=blob.text(at_combustion_orbs),
-        drawings=blob.text(at_drawings),
-        svgs=blob.text(at_svgs),
+        combustion_orbs=blob.text(at_combustion_orbs, "combustion_orbs"),
+        drawings=blob.text(at_drawings, "drawings"),
+        svgs=blob.text(at_svgs, "svgs"),
         dashas=ChartsDashas(
             system=blob.column(at_dashas, 0, 2, at_dashas.count).cast("H"),
             seeded=blob.column(at_dashas, 1, 1, at_dashas.count).cast("B"),
@@ -5558,8 +5583,8 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("B"),
             length=at_dasha_phala.count,
         ),
-        rules=blob.text(at_rules),
-        plans=blob.text(at_plans),
+        rules=blob.text(at_rules, "rules"),
+        plans=blob.text(at_plans, "plans"),
         praveshas=ChartsPraveshas(
             year=blob.column(at_praveshas, 0, 2, at_praveshas.count).cast("H"),
             jd=blob.column(at_praveshas, 1, 8, at_praveshas.count).cast("d"),
@@ -5964,7 +5989,7 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("d"),
             length=at_year_dasha_periods.count,
         ),
-        content_hashes=blob.text(at_content_hashes),
+        content_hashes=blob.text(at_content_hashes, "content_hashes"),
         jaimini=ChartsJaimini(
             atmakaraka=blob.column(
                 at_jaimini, 0, 2, at_jaimini.count
@@ -6130,7 +6155,7 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("d"),
             length=at_sade_sati_visits.count,
         ),
-        kp=blob.text(at_kp),
+        kp=blob.text(at_kp, "kp"),
         dignities=ChartsDignities(
             sect=blob.column(at_dignities, 0, 1, at_dignities.count).cast("B"),
             sect_rule=blob.column(
@@ -7591,11 +7616,11 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("B"),
             length=at_avakahada.count,
         ),
-        avakahada_syllables=blob.text(at_avakahada_syllables),
-        prashna=blob.text(at_prashna),
-        remedies=blob.text(at_remedies),
-        rectification=blob.text(at_rectification),
-        lalkitab=blob.text(at_lalkitab),
+        avakahada_syllables=blob.text(at_avakahada_syllables, "avakahada_syllables"),
+        prashna=blob.text(at_prashna, "prashna"),
+        remedies=blob.text(at_remedies, "remedies"),
+        rectification=blob.text(at_rectification, "rectification"),
+        lalkitab=blob.text(at_lalkitab, "lalkitab"),
         moment=ChartsMoment(
             sign=blob.column(at_moment, 0, 2, at_moment.count).cast("H"),
             rose=blob.column(at_moment, 1, 8, at_moment.count).cast("d"),
@@ -7770,11 +7795,11 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("H"),
             length=at_dispositor_end_members.count,
         ),
-        sarvatobhadra=blob.text(at_sarvatobhadra),
-        tithi_pravesha=blob.text(at_tithi_pravesha),
-        dossier=blob.text(at_dossier),
-        masa_pravesha=blob.text(at_masa_pravesha),
-        western_configurations=blob.text(at_western_configurations),
+        sarvatobhadra=blob.text(at_sarvatobhadra, "sarvatobhadra"),
+        tithi_pravesha=blob.text(at_tithi_pravesha, "tithi_pravesha"),
+        dossier=blob.text(at_dossier, "dossier"),
+        masa_pravesha=blob.text(at_masa_pravesha, "masa_pravesha"),
+        western_configurations=blob.text(at_western_configurations, "western_configurations"),
     )
 
 
@@ -8700,7 +8725,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     `BlobError`.
     """
     blob = _Blob(raw, 4, "panchanga")
-    at_summary = blob.section(1, "summary")
+    at_summary = blob.fixed_section(1, "summary", 6)
     at_days = blob.section(2, "days")
     at_counts = blob.section(3, "counts")
     at_day = blob.section(4, "day")
@@ -9066,14 +9091,14 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ).cast("H"),
             length=at_muhurta_yogas.count,
         ),
-        model=blob.text(at_model),
-        provenance_json=blob.text(at_provenance_json),
-        content_hashes=blob.text(at_content_hashes),
-        muhurta=blob.text(at_muhurta),
-        festivals=blob.text(at_festivals),
-        years=blob.text(at_years),
-        eclipses=blob.text(at_eclipses),
-        nepal_sambat=blob.text(at_nepal_sambat),
+        model=blob.text(at_model, "model"),
+        provenance_json=blob.text(at_provenance_json, "provenance_json"),
+        content_hashes=blob.text(at_content_hashes, "content_hashes"),
+        muhurta=blob.text(at_muhurta, "muhurta"),
+        festivals=blob.text(at_festivals, "festivals"),
+        years=blob.text(at_years, "years"),
+        eclipses=blob.text(at_eclipses, "eclipses"),
+        nepal_sambat=blob.text(at_nepal_sambat, "nepal_sambat"),
         varjyam=PanchangaVarjyam(
             member=blob.column(at_varjyam, 0, 2, at_varjyam.count).cast("H"),
             whole_from=blob.column(
@@ -9299,7 +9324,7 @@ def decode_naam(raw: bytes) -> Naam:
     """
     blob = _Blob(raw, 5, "naam")
     at_naam_names = blob.section(1, "naam_names")
-    at_naam_varga = blob.section(2, "naam_varga")
+    at_naam_varga = blob.fixed_section(2, "naam_varga", 1)
     at_matchings = blob.section(3, "matchings")
     at_matching_kootas = blob.section(4, "matching_kootas")
     at_poruthams = blob.section(5, "poruthams")

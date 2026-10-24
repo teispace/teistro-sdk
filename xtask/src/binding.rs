@@ -270,7 +270,11 @@ pub(crate) fn library(root: &Path) -> Result<PathBuf, ()> {
     Ok(root.join("target/release").join(library_artefact()))
 }
 
-/// Writes the result blobs a binding's decoders are tested against.
+/// Where [`blob_fixtures`] writes, beside the build, for every binding's gate.
+pub(crate) const FIXTURES: &str = "target/tsrb";
+
+/// Writes one result blob of every schema, the blobs a binding's decoders
+/// are tested against.
 pub(crate) fn blob_fixtures(root: &Path, into: &Path) -> Result<(), ()> {
     step(
         Command::new(cargo())

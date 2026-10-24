@@ -19,7 +19,7 @@
 use std::path::Path;
 use std::process::Command;
 
-use crate::binding::{blob_fixtures, library, present, python_command, step};
+use crate::binding::{FIXTURES, blob_fixtures, library, present, python_command, step};
 use crate::examples::{Binding, Runtime};
 use crate::platform::Platform;
 
@@ -33,7 +33,6 @@ const PACKAGE: &str = "bindings/python";
 /// declarations would be a broken package however green the SDK's gate
 /// was. Most of what it holds is the generated façade (ADR-0030).
 const ADAPTER: &str = "adapters/ephemeris-teimeris/python";
-const FIXTURES: &str = "target/tsrb";
 /// The file whose whole purpose is to be wrong: every line marked
 /// `# expect:` must be reported, which is how the Python half of Phase
 /// 1's "a swapped latitude and longitude does not compile" is proved.

@@ -11,11 +11,10 @@
 use std::path::Path;
 use std::process::Command;
 
-use crate::binding::{blob_fixtures, build, pinned_npm_tool, present, step, tool};
+use crate::binding::{FIXTURES, blob_fixtures, build, pinned_npm_tool, present, step, tool};
 use crate::examples::{Binding, Runtime};
 use crate::platform::Platform;
 
-const FIXTURES: &str = "target/tsrb";
 const TESTS: &str = "bindings/node/test/";
 /// The Node binding's suite, as `node --test` is given it from the
 /// package's own directory (and from the staged wasm package, which has

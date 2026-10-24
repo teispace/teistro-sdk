@@ -5,7 +5,8 @@ package com.teispace.teistro.blob;
 
 /**
  * Bytes that are not a result blob this decoder reads: too short, another
- * schema, another layout version, or a section that runs past the end.
+ * schema, another layout version, a section that runs past the end, a
+ * column off its alignment, or text that is not UTF-8.
  */
 public final class BlobFormatException extends IllegalArgumentException {
     private static final long serialVersionUID = 1L;

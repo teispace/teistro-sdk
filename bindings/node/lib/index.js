@@ -8098,7 +8098,7 @@ export const ashauchRunning = (answer) => ({
   ...(answer.days == null ? {} : { days: answer.days }),
 });
 
-export { decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
+export { BlobFormatError, decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 export * from './catalogue.js';
 export * from './records.js';
