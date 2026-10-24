@@ -9,6 +9,7 @@
 #![allow(
     clippy::unwrap_used,
     clippy::panic,
+    clippy::indexing_slicing,
     reason = "a test fails by panicking"
 )]
 
