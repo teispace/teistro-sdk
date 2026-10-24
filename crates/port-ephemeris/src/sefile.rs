@@ -27,7 +27,9 @@ pub struct SeFiles {
     /// Their hashes.
     pub hashes: Vec<DataHash>,
     /// Coverage in Julian days: the union of the planet blocks present,
-    /// which every body needs; `None` when no planet block is present.
+    /// which every body needs, from 0h of a block's first day to 0h of
+    /// the day after its last, so its last day is served whole; `None`
+    /// when no planet block is present.
     pub jd_range: Option<(f64, f64)>,
     /// Whether the fixed-star catalogue (`sefstars.txt`) is present, which
     /// the star-anchored and galactic ayanamshas need.
@@ -238,7 +240,7 @@ impl SeFiles {
         for name in names.iter().filter(|n| n.starts_with("sepl")) {
             if let Some((first, last)) = block_years(name) {
                 let lo = civil_julian_day(first, 1, 1);
-                let hi = civil_julian_day(last, 12, 31);
+                let hi = civil_julian_day(last + 1, 1, 1);
                 range = Some(range.map_or((lo, hi), |(a, b)| (a.min(lo), b.max(hi))));
             }
         }
@@ -381,7 +383,7 @@ mod tests {
         assert_eq!(described.names, ["semo_18.se1", "sepl_18.se1"]);
         assert_eq!(
             described.jd_range,
-            Some((julian_day(1800, 1, 1), julian_day(2399, 12, 31)))
+            Some((julian_day(1800, 1, 1), julian_day(2400, 1, 1)))
         );
     }
 }

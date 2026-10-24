@@ -280,8 +280,9 @@ fn script(manifest: &Manifest, blocks: &[Block<'_>]) -> String {
          // Each Teimeris data file the engine publishes, with the size and SHA-256 a\n\
          // download is checked against and the span its header records; and each\n\
          // 600-year block, with its files and the span a set holding it claims\n\
-         // (its first year's 1 January to its last year's 31 December, in the\n\
-         // calendar the engine names blocks by).\n"
+         // (0h of its first year's 1 January to 0h of the 1 January after its\n\
+         // last year, so the last day is whole, in the calendar the engine\n\
+         // names blocks by).\n"
     );
     let _ = writeln!(out, "export const SCHEMA = '{SCHEMA}';\n");
     let _ = writeln!(out, "export const FILES = Object.freeze([");
@@ -304,7 +305,7 @@ fn script(manifest: &Manifest, blocks: &[Block<'_>]) -> String {
             "  Object.freeze({{ century: {}, first: {first}, last: {last}, start: {:?}, end: {:?}, planets: '{}', moon: '{}', asteroids: {asteroids} }}),",
             block.century,
             sefile::civil_julian_day(first, 1, 1),
-            sefile::civil_julian_day(last, 12, 31),
+            sefile::civil_julian_day(last + 1, 1, 1),
             block.planets.file,
             block.moon.file,
         );

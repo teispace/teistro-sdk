@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A Teimeris data set now serves its last day whole.** **Numbers:** none
+moved; instants that were refused are now answered. A set's coverage
+ended at 0h of its last year's 31 December, so with the default
+1800–2399 data every instant on 31 December 2399 was refused as out of
+range, and so was every chart or almanac day that needed that day's
+sunrise. The corpus's range-end chart (c048) was one of them. Coverage now runs
+to 0h of the following 1 January, the instant the next block starts
+(`SeFiles::jd_range`), and the web provider's block table
+(`adapters/ephemeris-teimeris/node/ranges.js`) ends each block at the
+same instant.
+
 **Each property invariant is held by a named test, at its boundaries**
 (`check-properties`, fast check). **Numbers:** none.
 `teistro_core::angle::edges(divisions)` is new. It returns every boundary
