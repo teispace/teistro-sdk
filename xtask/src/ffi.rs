@@ -11,12 +11,13 @@ use std::io::Write as _;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use teistro_idl::emit::{c, dart, java, mdx, node, python, records, ts};
+use teistro_idl::emit::{c, dart, java, mdx, node, python, records, ts, validators};
 use teistro_idl::sdk::describe;
 
 use crate::generated::{Output, check, prune, strays, write};
 
 const API_JSON: &str = "idl/api.json";
+const VALIDATORS: &str = "idl/validators.json";
 const C_HEADER: &str = "bindings/c/include/teistro.h";
 const TS_CATALOGUE: &str = "bindings/node/lib/catalogue.d.ts";
 const TS_TABLES: &str = "bindings/node/lib/catalogue.js";
@@ -499,6 +500,7 @@ fn outputs(root: &Path) -> Vec<Output> {
     let json = serde_json::to_string_pretty(&api).expect("the description serialises");
     let mut outputs = vec![
         Output::new(API_JSON, format!("{json}\n")),
+        Output::new(VALIDATORS, validators::corpus(&api)),
         Output::new(C_HEADER, c::render(&api)),
         Output::new(TS_CATALOGUE, ts::catalogue_declarations(&api)),
         Output::new(TS_TABLES, ts::tables(&api)),
