@@ -1259,7 +1259,10 @@ mod tests {
         assert_eq!(definition.row().mahadashas(), 255);
         assert!(definition.validate().is_ok());
         definition.scale.rounds = 52;
-        assert_eq!(definition.validate().unwrap_err().field(), Some("scale.rounds"));
+        assert_eq!(
+            definition.validate().unwrap_err().field(),
+            Some("scale.rounds")
+        );
     }
 
     /// Ashtottari's row is the grouping's, and every other system's row

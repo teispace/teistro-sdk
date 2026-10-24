@@ -741,4 +741,122 @@ pub(crate) mod tests {
         assert_eq!(reading.in_rasi[Graha::Mercury as usize], 8);
         assert_eq!(reading.in_navamsha[Graha::Mercury as usize], 10);
     }
+
+    /// Of equal degrees, the one in the stronger sign, whichever comes
+    /// first: the Sun alone in Aries loses to the Moon with Mars in Leo, and
+    /// wins once they change places.
+    #[test]
+    fn equal_degrees_go_to_the_stronger_sign() {
+        let among = [Graha::Sun, Graha::Moon];
+        let degrees = [10.0; 9];
+        let moon_wins = placed(
+            Rashi::Taurus,
+            &[
+                (Graha::Sun, Rashi::Aries),
+                (Graha::Moon, Rashi::Leo),
+                (Graha::Mars, Rashi::Leo),
+            ],
+        );
+        assert_eq!(
+            most_degrees(&moon_wins, &degrees, &among),
+            Some(Graha::Moon)
+        );
+        let sun_wins = placed(
+            Rashi::Taurus,
+            &[
+                (Graha::Sun, Rashi::Leo),
+                (Graha::Moon, Rashi::Aries),
+                (Graha::Mars, Rashi::Leo),
+            ],
+        );
+        assert_eq!(most_degrees(&sun_wins, &degrees, &among), Some(Graha::Sun));
+        assert_eq!(most_degrees(&sun_wins, &degrees, &[]), None);
+    }
+
+    /// Scorpio's lords under each co-lordship: Mars alone, both with Ketu
+    /// first, or the stronger, which with Mars standing in Scorpio is Ketu.
+    #[test]
+    fn a_dual_sign_s_lords_follow_the_co_lordship() {
+        let chart = placed(Rashi::Taurus, &[(Graha::Mars, Rashi::Scorpio)]);
+        let of = |co| lords(&chart, Rashi::Scorpio, co);
+        assert_eq!(of(NodeCoLordship::None), [Graha::Mars]);
+        assert_eq!(of(NodeCoLordship::Both), [Graha::Mars, Graha::Ketu]);
+        assert_eq!(of(NodeCoLordship::StrongerLord), [Graha::Ketu]);
+        assert_eq!(
+            lords(&chart, Rashi::Leo, NodeCoLordship::Both),
+            [Graha::Sun]
+        );
+    }
+
+    /// The six signs behind Aries are Aries and the five before it, back to
+    /// Scorpio; Libra, the sixth step, is not among them.
+    #[test]
+    fn behind_is_the_sign_and_the_five_before_it() {
+        for sign in [Rashi::Aries, Rashi::Pisces, Rashi::Scorpio] {
+            assert!(behind(sign, Rashi::Aries), "{sign:?}");
+        }
+        for sign in [Rashi::Libra, Rashi::Taurus, Rashi::Virgo] {
+            assert!(!behind(sign, Rashi::Aries), "{sign:?}");
+        }
+    }
+
+    /// The note's rule with the 8th empty falls to a planet in an odd sign
+    /// behind the sign counted from, and with a planet in the 8th takes it.
+    #[test]
+    fn the_note_takes_the_8th_s_planet_and_else_one_behind() {
+        let note = |chart: &RashiChart| {
+            brahma(
+                chart,
+                &[10.0; 9],
+                NodeCoLordship::None,
+                BrahmaRule::TranslatorsNote,
+            )
+        };
+        // The Sun makes Aries the stronger, and stands in it, odd.
+        let empty = placed(Rashi::Taurus, &[(Graha::Sun, Rashi::Aries)]);
+        let found = note(&empty);
+        assert_eq!(found.counted_from, Rashi::Aries);
+        assert_eq!(found.graha, Some(Graha::Sun));
+        assert_eq!(found.qualified, [Graha::Sun]);
+        let held = placed(
+            Rashi::Taurus,
+            &[(Graha::Sun, Rashi::Aries), (Graha::Moon, Rashi::Scorpio)],
+        );
+        let found = note(&held);
+        assert_eq!(found.graha, Some(Graha::Moon));
+        assert_eq!(found.qualified, [Graha::Moon]);
+    }
+
+    /// Of two equal own signs the greater count decides, whichever is
+    /// listed first: Mercury in Leo counts ten to Gemini over one to Virgo,
+    /// and ten more from Gemini is Aries.
+    #[test]
+    fn of_two_equal_signs_the_greater_count_wins_either_way() {
+        let chart = placed(Rashi::Taurus, &[(Graha::Mercury, Rashi::Leo)]);
+        let arudha = graha_arudha(
+            &chart,
+            Graha::Mercury,
+            NodeCoLordship::None,
+            GrahaArudhaException::None,
+        );
+        assert_eq!(arudha, Some(Rashi::Aries));
+    }
+
+    #[test]
+    fn every_graha_s_arudha_is_its_own() {
+        let (chart, _) = example();
+        for co in [NodeCoLordship::None, NodeCoLordship::Both] {
+            for exception in EXCEPTIONS {
+                let all = graha_arudhas(&chart, co, exception);
+                for graha in GRAHAS {
+                    assert_eq!(
+                        all[graha as usize],
+                        graha_arudha(&chart, graha, co, exception),
+                        "{graha:?}"
+                    );
+                }
+                assert!(all[Graha::Sun as usize].is_some());
+            }
+        }
+    }
 }

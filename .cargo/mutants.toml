@@ -12,15 +12,18 @@
 all_features = true
 
 exclude_re = [
+  # Two distinct own signs stand at distinct counts from the graha, so
+  # the greater count is never a tie.
+  'crates/dasha/src/jaimini\.rs:442:33: replace > with >= in graha_arudha',
   # A profected year has no children (`child` is always nothing), so a
   # breadth of one asks for a child that is never there.
   'crates/dasha/src/releasing\.rs:448:9: replace <impl Timeline for ProfectionDasha>::breadth -> usize with 1',
   # Two stored spans are alike within a millionth of a day, and a third
-  # level's period is a cycle's 129 days within one: spans a millionth
-  # apart to the bit are never written, so the bound's own point reads the
-  # same either side.
+  # level's period is a thirtieth of its mahadasha within a billionth:
+  # spans that far apart to the bit are never written, so the bound's own
+  # point reads the same either side.
   'crates/dasha/src/reading\.rs:306:63: replace < with <= in DashaReading::graha_division',
-  'crates/dasha/src/reading\.rs:398:55: replace < with <= in DashaReading::decennial_division',
+  'crates/dasha/src/reading\.rs:403:44: replace < with <= in DashaReading::decennial_division',
   # The step either side of a lattice boundary is a hundredth or a hundred
   # times the tolerance: both put the two readings on either side of it,
   # and the parts are degrees wide.

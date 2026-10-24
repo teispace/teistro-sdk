@@ -850,4 +850,125 @@ mod tests {
         assert!((dasha.balance().remaining - 0.5).abs() < 1e-12);
         assert_eq!(dasha.balance().method, Balance::Temporal);
     }
+
+    /// A path prints as its places, and a later cycle's before a colon.
+    #[test]
+    fn a_path_debugs_as_its_places() {
+        assert_eq!(
+            format!("{:?}", Path::root(0, 2).child(5).unwrap()),
+            "Path(2/5)"
+        );
+        assert_eq!(format!("{:?}", Path::root(2, 3)), "Path(2:3)");
+    }
+
+    fn repeating() -> Dasha {
+        dasha(Rules {
+            after_cycle: AfterCycle::Repeat,
+            ..rules()
+        })
+    }
+
+    /// Past the birth cycle the lords run again whole, each cycle a whole
+    /// 120 years after the last, from the end of the birth cycle.
+    #[test]
+    fn a_later_cycle_runs_the_lords_whole_from_the_last_one_s_end() {
+        let dasha = repeating();
+        let year = 365.25;
+        let end = dasha.mahadasha(0, 8).unwrap().interval.to.get();
+        for cycle in 1..4 {
+            let base = end + f64::from(cycle - 1) * 120.0 * year;
+            let first = dasha.mahadasha(cycle, 0).unwrap();
+            // The first lord, Saturn, runs its 19 years whole.
+            assert_eq!(first.lord, Graha::Saturn);
+            assert!(
+                (first.interval.from.get() - base).abs() < 1e-6,
+                "cycle {cycle}"
+            );
+            assert!(
+                (first.interval.days() - 19.0 * year).abs() < 1e-6,
+                "cycle {cycle}"
+            );
+            let second = dasha.mahadasha(cycle, 1).unwrap();
+            assert!((second.interval.from.get() - (base + 19.0 * year)).abs() < 1e-6);
+            // An instant a day into it finds it, and its start finds it too.
+            for instant in [second.interval.from.get(), second.interval.from.get() + 1.0] {
+                let at = dasha.mahadasha_at(instant).unwrap();
+                assert_eq!(at.path, second.path, "cycle {cycle} at {instant}");
+            }
+            let just_before = dasha
+                .mahadasha_at(second.interval.from.get() - 1e-6)
+                .unwrap();
+            assert_eq!(just_before.path, first.path, "cycle {cycle}");
+        }
+        // The birth cycle's end begins the next.
+        assert_eq!(dasha.mahadasha_at(end).unwrap().path, Path::root(1, 0));
+    }
+
+    /// No period before birth, the first at it, and none past the cycle
+    /// the rules end.
+    #[test]
+    fn the_mahadasha_at_an_instant_starts_at_birth_and_ends_with_the_cycle() {
+        let ending = dasha(rules());
+        let born = birth().instant.get();
+        assert!(ending.mahadasha_at(born - 1e-6).is_none());
+        assert_eq!(ending.mahadasha_at(born).unwrap().path, Path::root(0, 0));
+        let end = ending.mahadasha(0, 8).unwrap().interval.to.get();
+        assert_eq!(
+            ending.mahadasha_at(end - 1e-6).unwrap().path,
+            Path::root(0, 8)
+        );
+        assert!(ending.mahadasha_at(end).is_none());
+        assert!(ending.mahadasha_at(end + 1_000.0).is_none());
+        assert!(repeating().mahadasha_at(born - 1e-6).is_none());
+    }
+
+    /// The chain at an instant takes, at each level, the period beginning
+    /// there rather than the one ending there; the periods of a window go
+    /// no deeper than asked.
+    #[test]
+    fn the_chain_at_a_boundary_is_the_period_it_begins() {
+        let dasha = dasha(rules());
+        let maha = dasha.mahadasha(0, 1).unwrap();
+        let second = dasha.child(&maha, 1).unwrap();
+        let chain = dasha.at(second.interval.from, Depth::try_new(2).unwrap());
+        let paths: Vec<Path> = chain.iter().map(|period| period.path).collect();
+        assert_eq!(paths, [maha.path, second.path]);
+        for levels in 1..=3 {
+            let depth = Depth::try_new(levels).unwrap();
+            let periods = dasha.periods(maha.interval, depth);
+            assert!(
+                periods
+                    .iter()
+                    .all(|period| period.path.depth() <= usize::from(levels))
+            );
+            assert!(
+                periods
+                    .iter()
+                    .any(|period| period.path.depth() == usize::from(levels))
+            );
+        }
+    }
+
+    /// A period's last child ends where it does, to the bit, at every
+    /// level of every cycle.
+    #[test]
+    fn the_last_child_closes_its_parent_to_the_bit() {
+        let dasha = repeating();
+        for cycle in 0..3 {
+            for index in 0..9 {
+                let maha = dasha.mahadasha(cycle, index).unwrap();
+                let mut parents = vec![maha];
+                for _ in 0..3 {
+                    let mut next = Vec::new();
+                    for parent in &parents {
+                        let children: Vec<Period> = dasha.children(parent).collect();
+                        let last = children.last().unwrap();
+                        assert_eq!(last.whole.to, parent.whole.to, "{:?}", last.path);
+                        next.extend(children.into_iter().take(2));
+                    }
+                    parents = next;
+                }
+            }
+        }
+    }
 }

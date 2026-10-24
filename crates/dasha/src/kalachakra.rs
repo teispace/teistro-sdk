@@ -355,15 +355,23 @@ impl Timeline for KalachakraDasha {
             clippy::cast_sign_loss,
             reason = "a non-negative whole number of cycles, far below u32::MAX for any date"
         )]
-        let cycle = (into / cycle_days).floor() as u32;
-        let within = into - f64::from(cycle) * cycle_days;
-        let index = self
+        let mut cycle = (into / cycle_days).floor() as u32;
+        // The bounds are summed as a period's own ends are, so an instant on
+        // a boundary falls in the period that begins there; the division
+        // can land a cycle's first instant in the cycle before, or its last
+        // in the next.
+        let base = |cycle: u32| self.birth.get() + f64::from(cycle) * cycle_days;
+        if cycle > 0 && instant < base(cycle) {
+            cycle -= 1;
+        }
+        let begun = self
             .offsets
-            .iter()
-            .zip(self.offsets.iter().skip(1))
-            .take(self.running())
-            .position(|(from, to)| *from <= within && within < *to)?;
-        self.mahadasha(cycle, index)
+            .get(..=self.running())?
+            .partition_point(|offset| base(cycle) + offset <= instant);
+        match begun.checked_sub(1)? {
+            index if index < self.running() => self.mahadasha(cycle, index),
+            _ => self.mahadasha(cycle + 1, 0),
+        }
     }
 
     /// Nine antardashas from the mahadasha's own place among its nine, each

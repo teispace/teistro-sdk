@@ -451,17 +451,17 @@ impl Timeline for YearDasha {
         self.period(Path::root(0, u8::try_from(index).ok()?), place)
     }
 
+    /// Each bound is read through the clock as a period's own ends are, so
+    /// an instant on a boundary falls in the period that begins there, and
+    /// one outside the year in none.
     fn mahadasha_at(&self, instant: f64) -> Option<Period> {
-        let year = self.year();
-        if instant < year.from.get() || instant >= year.to.get() {
+        let begun = self
+            .bounds
+            .partition_point(|bound| self.clock.at(*bound) <= instant);
+        if begun >= self.bounds.len() {
             return None;
         }
-        let fraction = self.clock.fraction_of(instant);
-        let index = self
-            .bounds
-            .windows(2)
-            .position(|pair| matches!(pair, [from, to] if *from <= fraction && fraction < *to))?;
-        self.mahadasha(0, index)
+        self.mahadasha(0, begun.checked_sub(1)?)
     }
 
     fn child(&self, parent: &Period, index: usize) -> Option<Period> {
@@ -721,5 +721,158 @@ mod tests {
         assert_eq!(maha.lord, Graha::Mars);
         let first = dasha.mahadasha(0, 0).unwrap();
         assert!(dasha.children(&first).nth(4).unwrap().interval.is_empty());
+    }
+
+    fn ring(weights: &[f64], first: usize, remaining: Option<f64>) -> YearRing {
+        let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+        YearRing {
+            system: DashaName::Catalogued(DashaSystem::Mudda),
+            ring: weights
+                .iter()
+                .zip(lords.iter().cycle())
+                .map(|(&weight, &lord)| Share {
+                    lord,
+                    sign: None,
+                    weight,
+                })
+                .collect(),
+            first,
+            remaining,
+        }
+    }
+
+    /// A year holds a mahadasha a lord, and one more when the first lord's
+    /// share is split across its two ends; a ring holds 1 to 255 lords.
+    #[test]
+    fn a_ring_counts_its_mahadashas_and_holds_255_lords_at_most() {
+        assert_eq!(vimshottari_ring(0, None).mahadashas(), 9);
+        assert_eq!(vimshottari_ring(0, Some(0.5)).mahadashas(), 10);
+        assert!(ring(&[1.0; 255], 0, None).validate().is_ok());
+        let past = ring(&[1.0; 256], 0, None).validate().unwrap_err();
+        assert_eq!(past.field(), Some("ring"));
+        let empty = ring(&[], 0, None).validate().unwrap_err();
+        assert_eq!(empty.field(), Some("ring"));
+        let knots = vec![OPENS, OPENS + 100.0, OPENS + 365.0];
+        assert_eq!(Clock::new(knots.clone()).unwrap().knots(), knots);
+    }
+
+    /// Every period's seat is its lord's place in the ring, from a first
+    /// place past the ring's middle round to the start again.
+    #[test]
+    fn every_period_sits_at_its_lord_s_place_in_the_ring() {
+        let ring = vimshottari_ring(7, Some(0.25));
+        let lords = ring.ring.clone();
+        let dasha = YearDasha::new(ring, days(365.25), BirthPeriod::Compressed).unwrap();
+        let depth = Depth::try_new(2).unwrap();
+        for period in dasha.periods(dasha.year(), depth) {
+            let seat = period.seat();
+            assert!(seat < lords.len(), "{period:?}");
+            assert_eq!(lords[seat].lord, period.lord, "{period:?}");
+        }
+    }
+
+    /// A period's last child ends where the period's whole span does, to
+    /// the bit, though the ring's weights summed from the child's own lord
+    /// round to a different total than summed from the first.
+    #[test]
+    fn the_last_child_closes_its_parent_exactly() {
+        // 0.1 + 0.2 + 0.3 is 0.6000000000000001; from the second, 0.6.
+        let dasha = YearDasha::new(
+            ring(&[0.1, 0.2, 0.3], 0, None),
+            days(365.25),
+            BirthPeriod::Compressed,
+        )
+        .unwrap();
+        for maha in dasha.mahadashas() {
+            let children: Vec<Period> = dasha.children(&maha).collect();
+            assert_eq!(children.len(), 3, "{maha:?}");
+            assert_eq!(
+                children.last().unwrap().whole().to,
+                maha.whole().to,
+                "{maha:?}"
+            );
+            for pair in children.windows(2) {
+                assert_eq!(pair[0].whole().to, pair[1].whole().from);
+                assert!(pair[0].interval.days() > 0.0);
+            }
+        }
+    }
+
+    /// The last child's end is its parent's own, not the sum of the
+    /// shares from the child's lord, which rounds to another total: from
+    /// the 1e16, the two ones vanish, where in the ring's order they count.
+    #[test]
+    fn the_last_child_ends_on_its_parent_whatever_the_sums_round_to() {
+        let clock = Clock::new(vec![0.0, 1.0]).unwrap();
+        let dasha = YearDasha::new(
+            ring(&[1.0, 1.0, 1e16], 0, None),
+            clock,
+            BirthPeriod::Compressed,
+        )
+        .unwrap();
+        let heavy = dasha.mahadasha(0, 2).unwrap();
+        assert_eq!(heavy.whole().to.get(), 1.0);
+        let last = dasha.children(&heavy).last().unwrap();
+        assert_eq!(last.whole().to.get(), 1.0);
+    }
+
+    /// Under the elapsed reading the first mahadasha's whole share began
+    /// before the year: a child that ran out before the year opened is
+    /// nothing, even one ending exactly as it opens, and a share of no
+    /// weight is kept, empty, in its place.
+    #[test]
+    fn a_child_before_the_year_is_cut_and_an_empty_share_kept() {
+        // The first lord, the Sun, has a quarter of the year and half of it
+        // left: its whole runs from an eighth before the year to an eighth
+        // into it. Its children, from the Sun: the Sun (an eighth before to
+        // a sixteenth before), the Moon (to the year's opening, exactly) and
+        // Mars (the rest).
+        let dasha = YearDasha::new(
+            ring(&[1.0, 1.0, 2.0], 0, Some(0.5)),
+            days(256.0),
+            BirthPeriod::Elapsed,
+        )
+        .unwrap();
+        let first = dasha.mahadasha(0, 0).unwrap();
+        assert_eq!(first.interval.from.get(), OPENS);
+        assert_eq!(first.whole().from.get(), OPENS - 32.0);
+        let lords: Vec<Graha> = dasha.children(&first).map(|child| child.lord).collect();
+        assert_eq!(lords, [Graha::Mars]);
+        // A weightless Moon keeps its place, empty.
+        let dasha = YearDasha::new(
+            ring(&[1.0, 0.0, 2.0], 0, None),
+            days(256.0),
+            BirthPeriod::Compressed,
+        )
+        .unwrap();
+        let sun = dasha.mahadasha(0, 0).unwrap();
+        let children: Vec<(Graha, f64)> = dasha
+            .children(&sun)
+            .map(|child| (child.lord, child.interval.days()))
+            .collect();
+        assert_eq!(children.len(), 3);
+        assert_eq!(children[1], (Graha::Moon, 0.0));
+    }
+
+    /// No mahadasha runs outside the year.
+    #[test]
+    fn the_year_s_mahadashas_lie_inside_it() {
+        let dasha = YearDasha::new(
+            vimshottari_ring(0, None),
+            days(360.0),
+            BirthPeriod::Compressed,
+        )
+        .unwrap();
+        assert!(dasha.mahadasha_at(OPENS - 1e-6).is_none());
+        assert!(dasha.mahadasha_at(OPENS + 360.0).is_none());
+        assert_eq!(dasha.mahadasha_at(OPENS).unwrap().path.to_string(), "0");
+        assert_eq!(
+            dasha
+                .mahadasha_at(OPENS + 360.0 - 1e-6)
+                .unwrap()
+                .path
+                .to_string(),
+            "8"
+        );
     }
 }

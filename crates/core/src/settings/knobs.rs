@@ -903,7 +903,10 @@ mod tests {
     fn every_year_length_is_some_days() {
         for length in YearLength::ALL {
             let days = length.days();
-            assert!(days.is_finite() && days > 300.0 && days < 400.0, "{length:?}: {days}");
+            assert!(
+                days.is_finite() && days > 300.0 && days < 400.0,
+                "{length:?}: {days}"
+            );
         }
     }
 }

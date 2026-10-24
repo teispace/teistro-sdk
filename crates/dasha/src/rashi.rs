@@ -535,7 +535,7 @@ impl RashiRow {
         match self.order {
             Order::Consecutive => fill(&mut (0..SIGNS).map(|k| step(start, direction, k))),
             Order::TrineGroups => fill(&mut (0..4).flat_map(|g| {
-                let base = sign_at((start as usize % 4 + g) % 4);
+                let base = sign_at((start as usize + g) % 4);
                 let trine = [
                     base,
                     step(base, Direction::Forward, 4),
@@ -565,7 +565,9 @@ impl RashiRow {
                 } else {
                     step(start, Direction::Back, 1)
                 };
-                step(seed, Direction::Back, 2 * (k % 6))
+                // `step` counts round the twelve, so the seventh leap from
+                // the sign before the start is the first from it.
+                step(seed, Direction::Back, 2 * k)
             })),
             Order::Forward => fill(&mut (0..SIGNS).map(|k| step(start, Direction::Forward, k))),
         }
@@ -1482,5 +1484,112 @@ mod tests {
             .collect();
         assert_eq!(children, forward);
         assert_eq!(children[1], Some(Rashi::Aries));
+    }
+
+    /// A sign of no years is refused by modality as by count, a house of
+    /// a stronger-of list is one of the twelve, and the registry's trait
+    /// reads the definition's key and checks.
+    #[test]
+    fn a_definition_s_lengths_and_houses_are_checked() {
+        use teistro_core::registry::Definition as _;
+
+        let mut definition = RashiDefinition::of("MY_SIGNS");
+        assert_eq!(definition.key(), "MY_SIGNS");
+        assert!(definition.validate().is_ok());
+        for (movable, fixed, dual) in [(0, 1, 1), (1, 0, 1), (1, 1, 0)] {
+            definition.length = Length::ByModality {
+                movable,
+                fixed,
+                dual,
+            };
+            let refused = definition.validate().unwrap_err();
+            assert_eq!(refused.field(), Some("length"), "{movable} {fixed} {dual}");
+        }
+        definition.length = Length::ByModality {
+            movable: 7,
+            fixed: 8,
+            dual: 9,
+        };
+        assert!(definition.validate().is_ok());
+        definition.stronger_of = vec![1, 12];
+        assert!(definition.validate().is_ok());
+        definition.stronger_of = vec![1, 13];
+        assert_eq!(
+            definition.validate().unwrap_err().field(),
+            Some("stronger_of[1]")
+        );
+    }
+
+    /// The cycle ends a whole cycle after birth; no period runs before
+    /// birth, the first runs from it.
+    #[test]
+    fn the_cycle_runs_from_birth_to_its_end() {
+        let row = rashi_row(DashaSystem::Chara).unwrap();
+        let chart = RashiChart {
+            lagna: Rashi::Aries,
+            arudha_lagna: Rashi::Aries,
+            navamsa_lagna: Rashi::Aries,
+            signs: [Rashi::Capricorn; 9],
+            dignities: [teistro_core::catalogue::Dignity::Neutral; 9],
+            brahma: None,
+        };
+        let birth = JulianDay::literal(2_451_545.0);
+        let dasha = RashiDasha::new(
+            row,
+            &chart,
+            birth,
+            YearLength::Julian36525,
+            AfterCycle::End,
+            RashiRules::RECORDING_ENGINE,
+        )
+        .unwrap();
+        let last = dasha.mahadasha(0, SIGNS - 1).unwrap();
+        assert_eq!(dasha.cycle_end(), last.interval.to);
+        let first = dasha.mahadasha(0, 0).unwrap();
+        let days: f64 = dasha
+            .mahadashas()
+            .map(|period| period.interval.days())
+            .sum();
+        assert!((dasha.cycle_end().get() - (birth.get() + days)).abs() < 1e-6);
+        assert!(dasha.mahadasha_at(birth.get() - 1e-6).is_none());
+        assert_eq!(dasha.mahadasha_at(birth.get()), Some(first));
+    }
+
+    /// Each trine group from the start's runs from the group's movable,
+    /// fixed or dual sign, whatever sign of the group the start is.
+    #[test]
+    fn the_trine_groups_run_from_the_start_s_group() {
+        let row = RashiDefinition {
+            order: Order::TrineGroups,
+            ..RashiDefinition::of("MY_TRINES")
+        }
+        .row();
+        let first_of_each = |start: Rashi| {
+            let chart = RashiChart {
+                lagna: start,
+                arudha_lagna: start,
+                navamsa_lagna: start,
+                signs: [Rashi::Capricorn; 9],
+                dignities: [teistro_core::catalogue::Dignity::Neutral; 9],
+                brahma: None,
+            };
+            let signs = row.sequence(&chart, RashiRules::RECORDING_ENGINE).unwrap();
+            [signs[0], signs[3], signs[6], signs[9]]
+        };
+        // Leo's group is Aries's; Sagittarius's too.
+        let from_fire = [Rashi::Aries, Rashi::Taurus, Rashi::Gemini, Rashi::Cancer];
+        assert_eq!(first_of_each(Rashi::Leo), from_fire);
+        assert_eq!(first_of_each(Rashi::Sagittarius), from_fire);
+        // From an even start each group is reversed, so begins at its
+        // third sign: Pisces's group is Cancer's, then Aries's and on.
+        assert_eq!(
+            first_of_each(Rashi::Pisces),
+            [
+                Rashi::Pisces,
+                Rashi::Sagittarius,
+                Rashi::Capricorn,
+                Rashi::Aquarius
+            ]
+        );
     }
 }

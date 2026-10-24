@@ -67,6 +67,9 @@ pub const DECENNIAL_ROUNDS: usize = 2;
 /// [`DecennialDivision::Cycles`]: 129, one to a minimum year of each star.
 const CYCLE_DAYS: f64 = 129.0;
 
+/// The days of the year Valens counts the cycles' days in (VI.5).
+const VALENS_YEAR_DAYS: f64 = 360.0;
+
 /// The seven, which an order must name once each.
 const SEVEN: [Graha; DECENNIAL_STARS] = [
     Graha::Sun,
@@ -200,9 +203,13 @@ impl DecennialDasha {
             parent.interval.days() * years / f64::from(DECENNIAL_MONTHS),
             false,
         );
+        // The worked count's days are Valens's, a 360th of his year, so
+        // under another year they keep their share of it and seven cycles
+        // still cover the longest second-level period, as in his.
+        let day = self.year_days / VALENS_YEAR_DAYS;
         match (self.division, parent.path.depth()) {
-            (DecennialDivision::Cycles, 2) => (CYCLE_DAYS, true),
-            (DecennialDivision::Cycles, 3) => (years, true),
+            (DecennialDivision::Cycles, 2) => (CYCLE_DAYS * day, true),
+            (DecennialDivision::Cycles, 3) => (years * day, true),
             _ => proportion,
         }
     }
