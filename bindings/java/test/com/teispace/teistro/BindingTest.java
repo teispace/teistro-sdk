@@ -178,6 +178,38 @@ public final class BindingTest {
             check(refused.toString().startsWith("TeistroException ["), "and says so");
         });
 
+        // The leak checks print their skip, since a run where the allocator
+        // cannot be read proves nothing (BytesInUse).
+        java.util.Optional<java.util.function.LongSupplier> inUse = BytesInUse.reader();
+        tests.put("a context closed or dropped gives back its native memory", () -> {
+            if (inUse.isEmpty()) {
+                System.out.println("skip  the allocator's bytes in use cannot be read faithfully here");
+                return;
+            }
+            BytesInUse.givesBack(inUse.get(), () -> {
+                try (Context sky = context(teistro)) {
+                    check(!sky.profile().isEmpty(), "a profile");
+                }
+            });
+            // Dropped unclosed: the cleaner frees it once it is collected.
+            BytesInUse.givesBack(inUse.get(), () -> check(!context(teistro).profile().isEmpty(), "a profile"));
+        });
+
+        tests.put("charts and positions give back their answers", () -> {
+            if (inUse.isEmpty()) {
+                System.out.println("skip  the allocator's bytes in use cannot be read faithfully here");
+                return;
+            }
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").locale("en-Latn")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                BytesInUse.givesBack(inUse.get(), () -> {
+                    sky.chart().found(2_451_545.0, kathmandu, 20_700, ChartOptions.builder().build());
+                    sky.positions(new double[] {2_451_545.0, 2_451_546.0}, List.of(Body.SUN, Body.MOON));
+                });
+            }
+        });
+
         tests.put("a closed context refuses, and closing twice does nothing", () -> {
             Context sky = context(teistro);
             sky.close();

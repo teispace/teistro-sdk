@@ -211,15 +211,24 @@ pub(crate) fn check(root: &Path) -> i32 {
         .and_then(|()| wrong_usages(&package))
         .and_then(|()| Binding::Dart.run(root, &Runtime::of(root)).map(drop))
         .and_then(|()| {
-            step(
-                Command::new("dart")
-                    .arg("test")
-                    .env("TEISTRO_LIBRARY", &library)
-                    .env("TEISTRO_FIXTURES", &fixtures)
-                    .current_dir(&package),
-                &format!("{PACKAGE}/test reads what the library produced"),
-                &format!("{PACKAGE}/test did not pass"),
-            )
+            // The leak checks read the allocator every file the runner holds
+            // at once shares, so they run after the rest, on their own.
+            [
+                ("-x", "reads what the library produced"),
+                ("-t", "gives back the native memory it takes"),
+            ]
+            .into_iter()
+            .try_for_each(|(select, said)| {
+                step(
+                    Command::new("dart")
+                        .args(["test", select, "leaks"])
+                        .env("TEISTRO_LIBRARY", &library)
+                        .env("TEISTRO_FIXTURES", &fixtures)
+                        .current_dir(&package),
+                    &format!("{PACKAGE}/test {said}"),
+                    &format!("{PACKAGE}/test did not pass ({select} leaks)"),
+                )
+            })
         });
     i32::from(outcome.is_err())
 }

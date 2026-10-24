@@ -41,6 +41,16 @@ than compared with main's. The move lowered seven line floors by 1 to 3
 points, for `ephemeris-kit`, `intl`, `numerology`, `rashifal`,
 `remedies`, `research` and `sdk`, and raised seven.
 
+**The Java and Dart bindings are held to giving back their native
+memory.** **Numbers:** a planted leak of one context a cycle fails both at
+about 21 KB a cycle; the budget is 64 KiB over 500 cycles. They read the
+C allocator's bytes in use as the Python test does, through FFM and
+`dart:ffi`: `malloc_zone_statistics` on Apple silicon and `mallinfo2` on
+glibc. Java covers closed and dropped contexts and a chart with
+positions; Dart covers disposed contexts and the same answers. Dart's
+leak file runs on its own, because `dart test` runs files side by side
+in one process.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:

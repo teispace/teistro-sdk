@@ -1,0 +1,6 @@
+# `leaks` reads the C allocator's bytes in use, and every test file the
+# runner holds at once allocates from that one allocator, so those tests
+# run on their own: `dart test -x leaks`, then `dart test -t leaks`
+# (`cargo xtask check-dart` runs both).
+tags:
+  leaks:
