@@ -294,6 +294,39 @@ pub struct Dms {
     pub nanos: u32,
 }
 
+/// One microarcsecond, in the nanoarcseconds a [`Nas`] counts.
+pub const MICROARCSECOND: i64 = 1_000;
+
+/// Every boundary of the circle cut into `divisions` equal parts, each as
+/// three values: one microarcsecond below it, the boundary itself, and one
+/// microarcsecond above. `3 × divisions` values, boundary by boundary from
+/// 0°, so the first, below 0°, wraps to just under 360°.
+///
+/// A boundary is where [`Nas::division_index`] changes, the smallest value
+/// of its part: `⌈k × CIRCLE / divisions⌉` for the `k`th. This is what a
+/// test of a classification walks or samples, since a `<` that should be
+/// `<=` passes everywhere but there (`03-design/property-coverage.md`).
+///
+/// ```
+/// use teistro_core::angle::{Nas, edges};
+///
+/// // The twelve signs: below each start, at it, and above it.
+/// let signs: Vec<Nas> = edges(12).collect();
+/// assert_eq!(signs.len(), 36);
+/// assert_eq!(signs[3].division_index(12), 0, "just below Taurus is Aries");
+/// assert_eq!(signs[4].division_index(12), 1, "Taurus starts at 30°");
+/// ```
+pub fn edges(divisions: u32) -> impl Iterator<Item = Nas> {
+    let circle = i128::from(Nas::CIRCLE);
+    let parts = i128::from(divisions);
+    (0..divisions).flat_map(move |k| {
+        let at = (i128::from(k) * circle + parts - 1).div_euclid(parts);
+        // Below the circle, so it fits an i64.
+        let at = i64::try_from(at).unwrap_or(0);
+        [at - MICROARCSECOND, at, at + MICROARCSECOND].map(Nas::new)
+    })
+}
+
 impl fmt::Display for Nas {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let d = self.dms();
@@ -374,6 +407,41 @@ mod tests {
     /// `ceil(a / b)` for non-negative `a` and positive `b`.
     fn ceil_div(a: i128, b: i128) -> i128 {
         (a + b - 1).div_euclid(b)
+    }
+
+    /// Every classification of a longitude turns exactly at its edges: a
+    /// microarcsecond below a boundary is the part before, the boundary
+    /// and a microarcsecond above are the part it starts. Swept, every
+    /// edge of every cut, since there are few enough.
+    #[test]
+    fn every_classification_turns_exactly_at_its_edges() {
+        let turns = |divisions: u32, read: &dyn Fn(Nas) -> u32| {
+            for (k, edge) in edges(divisions).collect::<Vec<_>>().chunks(3).enumerate() {
+                let k = u32::try_from(k).unwrap_or(u32::MAX);
+                let below = (k + divisions - 1) % divisions;
+                assert_eq!(read(edge[0]), below, "below edge {k} of {divisions}");
+                assert_eq!(read(edge[1]), k, "at edge {k} of {divisions}");
+                assert_eq!(read(edge[2]), k, "above edge {k} of {divisions}");
+            }
+        };
+        turns(12, &|nas| u32::from(nas.sign().id()));
+        turns(12, &|nas| u32::from(nas.sign_index().get()));
+        turns(27, &|nas| u32::from(nas.nakshatra().id()));
+        turns(27, &|nas| u32::from(nas.nakshatra_index().get()));
+        turns(108, &|nas| nas.pada_global());
+        // The panchanga's limbs read their quantity through the same
+        // integer path: the tithi's thirty parts of the elongation, the
+        // yoga's twenty-seven of the sum, and the sixty half-tithis the
+        // karana is named from.
+        for limb in [30, 27, 60] {
+            turns(limb, &|nas| nas.division_index(limb));
+        }
+        turns(108, &|nas| u32::from(nas.nakshatra_index().get()) * 4 + u32::from(nas.pada().get()));
+        // A sign cut into `n` parts is the circle cut into `12 n`, so every
+        // varga of equal spans turns at these edges too.
+        for n in 1..=300 {
+            turns(12 * n, &|nas| u32::from(nas.sign_index().get()) * n + nas.part(n));
+        }
     }
 
     #[test]
@@ -457,6 +525,23 @@ mod tests {
             let nas = Nas::try_from_degrees(value).unwrap_or_default();
             let again = Nas::try_from_degrees(nas.to_degrees()).unwrap_or_default();
             prop_assert!((again.get() - nas.get()).abs() <= 1);
+        }
+
+        #[test]
+        fn every_edge_is_a_microarcsecond_either_side_of_where_its_part_starts(divisions in 1u32..=360) {
+            let all: Vec<Nas> = edges(divisions).collect();
+            prop_assert_eq!(all.len(), 3 * divisions as usize);
+            for (k, edge) in all.chunks(3).enumerate() {
+                let k = u32::try_from(k).unwrap_or(u32::MAX);
+                let below = (k + divisions - 1) % divisions;
+                prop_assert_eq!(edge[0].division_index(divisions), below);
+                prop_assert_eq!(edge[1].division_index(divisions), k);
+                prop_assert_eq!(edge[2].division_index(divisions), k);
+                // The boundary is its part's smallest value.
+                prop_assert_eq!(Nas::new(edge[1].get() - 1).division_index(divisions), below);
+                prop_assert_eq!(edge[1].arc_to(edge[2]).get(), MICROARCSECOND);
+                prop_assert_eq!(edge[0].arc_to(edge[1]).get(), MICROARCSECOND);
+            }
         }
 
         #[test]
