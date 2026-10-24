@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Sealing a document moves its largest member once, not twice.**
+**Numbers:** none. The bytes are the same. An object whose keys arrive
+out of order is put in order when it closes. Before, its whole text was
+copied out to scratch and back. Now its largest member stays where it was
+written and the rest are written around it. A dasha's periods and a
+document's dashas are the large members here. The widest chart's seal
+moved 3 MB at every level, and the widest reading went from 19.3 ms to
+18.1 ms on this machine.
+
 **A reading with rules works out what the rules read once per rule set.**
 **Numbers:** none. A `RuleSet` now decides when it is built which sections
 its rules read (points, strength, limbs, the moment, the vargas), and

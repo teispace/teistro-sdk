@@ -527,29 +527,40 @@ impl Object<'_> {
             // Stable, so a key's occurrences stay in the order they came
             // and the last of each run is the value a map keeps.
             entries.sort_by(|one, other| key(keys, one).cmp(key(keys, other)));
+            entries.dedup_by(|later, earlier| {
+                let same = key(keys, later) == key(keys, earlier);
+                if same {
+                    core::mem::swap(later, earlier);
+                }
+                same
+            });
+            // The largest member is left where it was written and the
+            // rest are written around it: an object holding a large one (a
+            // dasha's periods, a document's dashas) is unordered because
+            // its small members came first, and a copy out and back of the
+            // whole object cost a chart a 3 MB move at every level.
+            let largest = entries
+                .iter()
+                .enumerate()
+                .max_by_key(|(_, entry)| entry.to - entry.from)
+                .map_or(0, |(index, _)| index);
             let scratch = &mut self.work.scratch;
             scratch.clear();
-            scratch.push_str(self.out.get(self.body..).unwrap_or_default());
-            self.out.truncate(self.body);
-            let mut first = true;
+            let (mut split, mut kept) = (0, (self.body, self.body));
             for (index, entry) in entries.iter().enumerate() {
-                let this = key(keys, entry);
-                if entries
-                    .get(index + 1)
-                    .is_some_and(|next| key(keys, next) == this)
-                {
+                if index > 0 {
+                    scratch.push(',');
+                }
+                if index == largest {
+                    split = scratch.len();
+                    kept = (entry.from, entry.to);
                     continue;
                 }
-                if !first {
-                    self.out.push(',');
-                }
-                first = false;
-                self.out.push_str(
-                    scratch
-                        .get(entry.from - self.body..entry.to - self.body)
-                        .unwrap_or_default(),
-                );
+                scratch.push_str(self.out.get(entry.from..entry.to).unwrap_or_default());
             }
+            let (before, after) = scratch.split_at(split);
+            self.out.replace_range(kept.1.., after);
+            self.out.replace_range(self.body..kept.0, before);
         }
         self.out.push('}');
         if self.variant {
@@ -1053,6 +1064,33 @@ mod tests {
         )]));
         agree(&Keyed(vec![(Bytes(b"k"), 1)]));
         agree(&Keyed(vec![(Failing, 1)]));
+    }
+
+    /// A key a map writes twice keeps its last value, wherever the
+    /// object's largest member lies: before the repeat, the repeat
+    /// itself, or a value the repeat replaces.
+    #[test]
+    fn a_repeated_key_keeps_its_last_value() {
+        let written = |keyed: &Keyed<&str>| {
+            write(keyed, Digits::Shortest).unwrap_or_else(|error| panic!("{error}"))
+        };
+        let cases = [
+            (vec![("b", 1), ("a", 2), ("b", 3)], r#"{"a":2,"b":3}"#),
+            (
+                vec![("long", 200), ("a", 1), ("long", 2)],
+                r#"{"a":1,"long":2}"#,
+            ),
+            (
+                vec![("c", 1), ("longest", 100), ("a", 2), ("c", 3)],
+                r#"{"a":2,"c":3,"longest":100}"#,
+            ),
+            (vec![("z", 1), ("z", 2), ("z", 3)], r#"{"z":3}"#),
+        ];
+        for (pairs, expected) in cases {
+            let keyed = Keyed(pairs);
+            assert_eq!(written(&keyed), expected);
+            agree(&keyed);
+        }
     }
 
     #[test]
