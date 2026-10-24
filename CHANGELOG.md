@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**An app-speed record taken from a changed tree is refused.**
+**Numbers:** none. Both recorders now mark a commit `-dirty` when the
+tree holds changes, as the FFI-cost, micro and A/B records already did:
+the app-speed binary for the desktop, and `cargo xtask app-speed-device`
+for a phone. Changes to the records themselves and to their page don't
+count, because recording three machines one after another writes them.
+`check-app-speed` fails a dirty record and a record that names no
+commit.
+
 **Branch coverage is measured and floored beside line coverage.**
 **Numbers:** none. Verify's `coverage` job runs `cargo llvm-cov --branch`
 on a pinned nightly, `nightly-2026-10-21`, because llvm's branch coverage
