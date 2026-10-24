@@ -769,7 +769,10 @@ pub(crate) fn check(root: &Path) -> i32 {
         .and_then(|()| blob_fixtures(root, &root.join(FIXTURES)))
         .and_then(|()| {
             fs::create_dir_all(&tests)
-                .and_then(|()| copy_files(&root.join(NODE).join("test"), &tests, &[]))
+                // The A/B runner's tests are of a bench harness that reads
+                // the repository's corpus beside it, run by `check-node`;
+                // the staged package carries no `bench/` to import.
+                .and_then(|()| copy_files(&root.join(NODE).join("test"), &tests, &["ab.test.mjs"]))
                 .map_err(|e| println!("FAIL  the suite could not be copied in: {e}"))
         })
         .and_then(|()| {
