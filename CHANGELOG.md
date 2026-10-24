@@ -38,6 +38,14 @@ at a child's start ending in that child. It found three faults:
   Both now compare the instant with each bound as the period's own ends
   are computed.
 
+**A rule's unbound `SELF` is reported where it is written**
+(`teistro-rules`). **Numbers:** none move. `Condition::names_self` read a
+combinator's children as its own references, so a rule naming `SELF` under
+an `and`, `or`, `not`, `n-of` or `in-varga` with no `for-any` above it was
+refused as an unbound `and` rather than by the condition that names it.
+Every combinator's children now name for themselves, as `for-any`'s `then`
+already did.
+
 **A dasha kernel cannot be given a year of no days** (`teistro-dasha`).
 **Numbers:** none move. **Changed:** `ReleasingDasha::new` and
 `ProfectionDasha::new` return the dasha rather than a `Result`, and

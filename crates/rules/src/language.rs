@@ -1197,20 +1197,23 @@ impl Condition {
     #[must_use]
     pub fn names_self(&self) -> bool {
         // A condition's references are what its own serialisation holds, and
-        // `SELF` is written as that word.
-        serde_json::to_value(self).is_ok_and(|value| {
-            fn names(value: &serde_json::Value) -> bool {
-                match value {
-                    serde_json::Value::String(text) => text == SELF,
-                    serde_json::Value::Array(items) => items.iter().any(names),
-                    serde_json::Value::Object(fields) => fields
-                        .iter()
-                        .filter(|(key, _)| key.as_str() != "then")
-                        .any(|(_, value)| names(value)),
-                    _ => false,
-                }
+        // `SELF` is written as that word; its children are written under
+        // these keys, and name for themselves.
+        const CHILDREN: [&str; 3] = ["condition", "conditions", "then"];
+        fn names(value: &serde_json::Value) -> bool {
+            match value {
+                serde_json::Value::String(text) => text == SELF,
+                serde_json::Value::Array(items) => items.iter().any(names),
+                serde_json::Value::Object(fields) => fields.values().any(names),
+                _ => false,
             }
-            names(&value)
+        }
+        serde_json::to_value(self).is_ok_and(|value| match value {
+            serde_json::Value::Object(fields) => fields
+                .iter()
+                .filter(|(key, _)| !CHILDREN.contains(&key.as_str()))
+                .any(|(_, value)| names(value)),
+            other => names(&other),
         })
     }
 
@@ -1441,7 +1444,11 @@ impl Source {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, reason = "tests unwrap what they read")]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::indexing_slicing,
+        reason = "tests unwrap and index what they read"
+    )]
 
     use super::*;
 
@@ -1548,5 +1555,89 @@ mod tests {
         );
         assert_eq!(c.children().len(), 2);
         assert!(c.walk().skip(1).all(|sub| sub.walk().count() <= 3));
+    }
+
+    /// `SELF` is bound only under a `for-any` or `count-of`: named bare, in a
+    /// list or in a reference's parts, and under any other combinator, it is
+    /// unbound and the condition that names it is reported; the binder's own
+    /// `then` is not its naming.
+    #[test]
+    fn self_is_unbound_outside_a_binder_wherever_it_is_written() {
+        let unbound = |json: &str| condition(json).unwrap().unbound_self();
+        let bare = r#"{"type": "planet-in-kendra", "planet": "SELF"}"#;
+        assert_eq!(unbound(bare), Some("planet-in-kendra"));
+        assert_eq!(
+            unbound(r#"{"type": "planet-conjunct", "planets": ["SUN", "SELF"]}"#),
+            Some("planet-conjunct")
+        );
+        assert_eq!(
+            unbound(r#"{"type": "planet-in-kendra", "planet": {"lordOf": "SELF"}}"#),
+            Some("planet-in-kendra")
+        );
+        assert_eq!(
+            unbound(&format!(r#"{{"type": "and", "conditions": [{bare}]}}"#)),
+            Some("planet-in-kendra")
+        );
+        assert_eq!(
+            unbound(&format!(r#"{{"type": "for-any", "then": {bare}}}"#)),
+            None
+        );
+        assert_eq!(
+            unbound(&format!(
+                r#"{{"type": "not", "condition": {{"type": "for-any", "then": {bare}}}}}"#
+            )),
+            None
+        );
+        assert_eq!(
+            unbound(r#"{"type": "planet-in-kendra", "planet": "JUPITER"}"#),
+            None
+        );
+        let and = condition(&format!(r#"{{"type": "and", "conditions": [{bare}]}}"#)).unwrap();
+        assert!(!and.binds_self() && !and.names_self());
+    }
+
+    /// A limb divides into two parts at least, and its parts run 1 to that.
+    #[test]
+    fn a_limb_part_needs_two_parts_and_names_one_it_has() {
+        let malformed = |of: u8, parts: &str| {
+            let json = format!(
+                r#"{{"type": "limb-part", "limb": "tithi", "of": {of}, "parts": {parts}}}"#
+            );
+            condition(&json).unwrap().malformed_part()
+        };
+        assert_eq!(malformed(2, "[1, 2]"), None);
+        assert!(malformed(1, "[1]").unwrap().contains("at least 2"));
+        assert!(malformed(3, "[]").unwrap().contains("names no part"));
+        assert!(malformed(3, "[4]").unwrap().contains("part 4 of 3"));
+        assert!(malformed(3, "[0]").unwrap().contains("part 0 of 3"));
+        let inside = condition(
+            r#"{"type": "not", "condition": {"type": "limb-part", "limb": "tithi", "of": 1, "parts": [1]}}"#,
+        )
+        .unwrap();
+        assert!(inside.malformed_part().is_some());
+    }
+
+    /// What a condition itself reads, so a caller knows what to give it.
+    #[test]
+    fn a_condition_says_whether_it_reads_the_moment_or_the_transits() {
+        let kendra = condition(r#"{"type": "planet-in-kendra", "planet": "JUPITER"}"#).unwrap();
+        let eclipse = condition(r#"{"type": "birth-during-eclipse"}"#).unwrap();
+        assert!(eclipse.reads_moment() && !kendra.reads_moment());
+        assert!(!kendra.reads_transits() && !eclipse.reads_transits());
+        assert_eq!(EvidenceRank::try_new(3).unwrap().get(), 3);
+    }
+
+    #[test]
+    fn a_combinator_s_children_change_in_place() {
+        let mut not = condition(
+            r#"{"type": "not", "condition": {"type": "planet-in-kendra", "planet": "JUPITER"}}"#,
+        )
+        .unwrap();
+        let children = not.children_mut();
+        assert_eq!(children.len(), 1);
+        children[0] = condition(r#"{"type": "birth-by-day"}"#).unwrap();
+        assert_eq!(not.children()[0].kind(), "birth-by-day");
+        let mut leaf = condition(r#"{"type": "birth-by-day"}"#).unwrap();
+        assert_eq!(leaf.children_mut(), []);
     }
 }

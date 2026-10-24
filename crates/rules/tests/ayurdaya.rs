@@ -506,3 +506,82 @@ fn the_lagna_s_ashtakavarga_and_the_span_of_the_seven_s_signs() {
     // v. 49 calls for it on 31 charts by the Moon and 2 by the tenth.
     assert_eq!(called, [31, 2]);
 }
+
+/// vv. 44 to 46 and 70 and 71's arithmetic, held of every chart under both
+/// divisors: each graha's years are its basic years by its factor and the
+/// bhinna span their sum; the samudaya product is the net pindas' seven
+/// twenty-sevenths, less a hundred once when over one (C314).
+#[test]
+fn the_bhinna_and_samudaya_spans_keep_their_arithmetic() {
+    use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter};
+    use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus, Divisor, pinda_years};
+    use teistro_strength::ashtakavarga::{AshtakavargaChart, bindus};
+
+    let seven = [
+        Graha::Sun,
+        Graha::Moon,
+        Graha::Mars,
+        Graha::Mercury,
+        Graha::Jupiter,
+        Graha::Venus,
+        Graha::Saturn,
+    ];
+    let (mut bhinna, mut samudaya, mut over) = (Vec::new(), Vec::new(), 0_u32);
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+        let sign = |body: Body| chart.placement(body).sign;
+        let ashtakavarga = AshtakavargaChart {
+            lagna: sign(Body::Lagna),
+            signs: seven.map(|graha| sign(Body::Graha(graha))),
+        };
+        let given = Bindus {
+            grahas: bindus(&ashtakavarga, MoonBinduFromJupiter::Twelfth),
+            ekadhipatya: Ekadhipatya::Bphs,
+        };
+        for divisor in [Divisor::Thirty, Divisor::SevenOverTwentySeven] {
+            let rules = AshtakavargaAyusRules {
+                divisor,
+                ..AshtakavargaAyusRules::default()
+            };
+            let spans = evaluator.ashtakavarga_ayus(&given, rules);
+            let label = format!("{} {divisor:?}", path.display());
+            for giver in &spans.grahas {
+                let pinda = giver.rashi_pinda + giver.graha_pinda;
+                assert_eq!(giver.basic, pinda_years(pinda, divisor), "{label}");
+                assert_eq!(giver.years, giver.basic * giver.factor, "{label}");
+            }
+            let sum: f64 = spans.grahas.iter().map(|giver| giver.years).sum();
+            assert!((spans.bhinna - sum).abs() < 1e-9, "{label}");
+            let pindas = spans.samudaya_product * 27.0 / 7.0;
+            assert!(
+                pindas >= 1.0 && (pindas - pindas.round()).abs() < 1e-9,
+                "{label}"
+            );
+            let product = spans.samudaya_product;
+            let cast = if product > 100.0 {
+                product - 100.0
+            } else {
+                product
+            };
+            assert_eq!(spans.samudaya, cast, "{label}");
+            // The hundred comes off once (C314), so a product over 200
+            // keeps more than a hundred.
+            assert!(spans.samudaya > 0.0, "{label}");
+            assert!(
+                (spans.samudaya_solar * 365.0 - spans.samudaya * 324.0).abs() < 1e-9,
+                "{label}"
+            );
+            if divisor == Divisor::Thirty {
+                bhinna.push(spans.bhinna);
+                samudaya.push(spans.samudaya);
+                over += u32::from(product > 100.0);
+            }
+        }
+    }
+    let round = |value: f64| (value * 100.0).round() / 100.0;
+    let mean = |years: &[f64]| round(years.iter().sum::<f64>() / 93.0);
+    // Over 30 the 93 charts' bhinna spans average 42.24 years and their
+    // samudaya 57.69, the hundred taken off 73 products.
+    assert_eq!((mean(&bhinna), mean(&samudaya), over), (42.24, 57.69, 73));
+}

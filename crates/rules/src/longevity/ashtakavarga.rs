@@ -544,6 +544,8 @@ mod tests {
     #[test]
     fn the_divisors_cast_out_their_cycles_and_parijata_measures_virgo_as_5() {
         assert!((pinda_years(252, Divisor::Thirty) - 8.4).abs() < 1e-12);
+        // 360 / 30 is a whole twelve, which is not over one, so it stands.
+        assert!((pinda_years(360, Divisor::Thirty) - 12.0).abs() < 1e-12);
         // 390 / 30 = 13 years, less a twelve.
         assert!((pinda_years(390, Divisor::Thirty) - 1.0).abs() < 1e-12);
         // 252 × 7 / 27 = 65⅓, less two twenty-sevens.
