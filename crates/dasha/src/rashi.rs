@@ -1039,8 +1039,7 @@ impl RashiDasha {
     ///
     /// # Errors
     ///
-    /// A year length of no days, named `year_length`; a start the chart
-    /// cannot give ([`RashiRow::start_sign`]).
+    /// A start the chart cannot give ([`RashiRow::start_sign`]).
     pub fn new(
         row: &RashiRow,
         chart: &RashiChart,
@@ -1050,9 +1049,6 @@ impl RashiDasha {
         rules: RashiRules,
     ) -> Result<RashiDasha, Error> {
         let year_days = year_length.days();
-        if year_days.is_nan() || year_days <= 0.0 {
-            return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
-        }
         let signs = row.sequence(chart, rules)?;
         let after_cycle = if row.recurs {
             AfterCycle::Repeat

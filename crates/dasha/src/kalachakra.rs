@@ -180,13 +180,9 @@ impl KalachakraDasha {
     /// # Errors
     ///
     /// A temporal balance with no Moon span, or one that does not hold the
-    /// birth, named `moon_span`; a year length of no days, named
-    /// `year_length`.
+    /// birth, named `moon_span`.
     pub fn new(birth: &Birth, rules: KalachakraRules) -> Result<KalachakraDasha, Error> {
         let year_days = rules.year_length.days();
-        if year_days.is_nan() || year_days <= 0.0 {
-            return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
-        }
         let moon = birth.moon;
         let seed = moon.nakshatra();
         let in_nakshatra = moon.in_nakshatra().get();

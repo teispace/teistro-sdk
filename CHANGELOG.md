@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A dasha kernel cannot be given a year of no days** (`teistro-dasha`).
+**Numbers:** none move. **Changed:** `ReleasingDasha::new` and
+`ProfectionDasha::new` return the dasha rather than a `Result`, and
+`time_lord` returns `Option<DashaCursor>`; the firdaria, decennials, graha,
+Kalachakra and sign-based constructors no longer list "a year of no days"
+among their errors. Every `YearLength` is a fixed positive count of days
+(a core test holds them to it), so the six checks each kernel made could
+never refuse, and mutation testing found each as a branch no test could
+reach.
+
 **A window of Saturn's spells is bounded over MCP** (`mcp-server.md`,
 P5). **Numbers:** none moved. **Fixed:** `Limits` bounded no `sadeSati`
 window, and the search runs on to the ephemeris's edge, so the fuzzer's

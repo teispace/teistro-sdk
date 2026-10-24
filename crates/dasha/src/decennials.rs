@@ -145,7 +145,7 @@ impl DecennialDasha {
     /// # Errors
     ///
     /// An `order` that does not name each of the seven once, named
-    /// `order`; a year of no days, named `year_length`.
+    /// `order`.
     pub fn new(
         order: [Graha; DECENNIAL_STARS],
         birth: JulianDay<Utc>,
@@ -159,9 +159,6 @@ impl DecennialDasha {
             );
         }
         let year_days = year_length.days();
-        if year_days.is_nan() || year_days <= 0.0 {
-            return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
-        }
         Ok(DecennialDasha {
             order,
             birth,

@@ -7,7 +7,14 @@
 # survives and fails `check-mutants` until the entry follows it; each says
 # why it is equivalent. A mutant that is merely hard to catch is not listed
 # here: it gets its test.
+# Every feature on, as clippy builds: a mutant inside a feature's code,
+# such as a type's JSON Schema, is otherwise compiled out and survives.
+all_features = true
+
 exclude_re = [
+  # A profected year has no children (`child` is always nothing), so a
+  # breadth of one asks for a child that is never there.
+  'crates/dasha/src/releasing\.rs:448:9: replace <impl Timeline for ProfectionDasha>::breadth -> usize with 1',
   # Two stored spans are alike within a millionth of a day, and a third
   # level's period is a cycle's 129 days within one: spans a millionth
   # apart to the bit are never written, so the bound's own point reads the
