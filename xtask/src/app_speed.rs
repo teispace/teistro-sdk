@@ -56,7 +56,7 @@ struct Request {
     target: Option<f64>,
 }
 
-const REQUESTS: [Request; 10] = [
+const REQUESTS: [Request; 11] = [
     Request {
         key: "open",
         asks: "a context opened, the engine with it",
@@ -101,8 +101,14 @@ const REQUESTS: [Request; 10] = [
     },
     Request {
         key: "parity-chart",
-        asks: "the full parity chart: every section, varga and dasha a chart gives, with the shipped rules",
+        asks: "the full parity chart: every section and varga, the baseline's parity-tier dashas to depth 3, every shipped rule",
         budget: Some(10.0),
+        target: None,
+    },
+    Request {
+        key: "widest-chart",
+        asks: "the parity chart with every dasha a chart gives",
+        budget: None,
         target: None,
     },
     Request {

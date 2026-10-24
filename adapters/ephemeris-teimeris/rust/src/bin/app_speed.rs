@@ -110,7 +110,7 @@ const SETUPS: [Setup; 3] = [
 ];
 
 /// The requests, in the order the page prints them.
-const REQUESTS: [&str; 10] = [
+const REQUESTS: [&str; 11] = [
     "open",
     "day",
     "month",
@@ -119,6 +119,7 @@ const REQUESTS: [&str; 10] = [
     "muhurta",
     "chart",
     "parity-chart",
+    "widest-chart",
     "matching",
     "rectify",
 ];
@@ -159,6 +160,30 @@ fn chart_request() -> ChartRequest {
     ChartRequest::at(place(), offset()).with_dashas([DashaSystem::Vimshottari])
 }
 
+/// The baseline engine's parity-tier dashas a birth chart gives, as
+/// `01-research/feature-universe/03-dashas.md` marks them `P0`: the Sthira
+/// dasa is left out as a request for everything leaves it out (a tie in
+/// sign strength refuses it), and Patyayini and Mudda divide a year, which
+/// the annual chart reads.
+const PARITY_DASHAS: [DashaSystem; 16] = [
+    DashaSystem::Vimshottari,
+    DashaSystem::Ashtottari,
+    DashaSystem::Yogini,
+    DashaSystem::Kalachakra,
+    DashaSystem::Shodashottari,
+    DashaSystem::Dwadashottari,
+    DashaSystem::Panchottari,
+    DashaSystem::Shatabdika,
+    DashaSystem::ChaturashitiSama,
+    DashaSystem::DwisaptatiSama,
+    DashaSystem::Shashtihayani,
+    DashaSystem::ShattrimshaSama,
+    DashaSystem::Chara,
+    DashaSystem::Narayana,
+    DashaSystem::Shoola,
+    DashaSystem::SudarshanaChakra,
+];
+
 /// The instant the chart requests are founded at, and the day the
 /// rectification window opens on: 1 January 2000, 06:00 UT.
 const BIRTH: f64 = 2_451_545.25;
@@ -186,11 +211,12 @@ fn run(setup: Setup, request: &str) -> Duration {
     });
     // The shipped rules are read once, as an app reads them when it opens:
     // what is timed is a chart read with them.
-    let rules = (request == "parity-chart").then(|| {
+    let rules = matches!(request, "parity-chart" | "widest-chart").then(|| {
         RuleRequest::shipped(ShippedRules::ALL)
             .rule_set()
             .expect("the shipped rules")
     });
+    let ruled = || rules.as_ref().expect("read above");
     let started = Instant::now();
     match request {
         "day" => drop(
@@ -235,18 +261,28 @@ fn run(setup: Setup, request: &str) -> Duration {
                 .reading(JulianDay::<Utc>::literal(BIRTH), &chart_request())
                 .expect("a chart"),
         ),
-        // What the parity runner asks of a chart: every section, every
-        // divisional chart and every dasha a chart always gives, at the
-        // settings' depth, read with every shipped rule.
+        // The performance page's full parity chart: every section and
+        // divisional chart, the baseline engine's parity-tier dashas to
+        // the settings' depth (three), and every shipped rule, which is
+        // more than the page's 624 (the reading adds what they read).
         "parity-chart" => {
-            let set = rules.as_ref().expect("read above");
             let request = ChartRequest::at(place(), offset())
                 .with_everything()
-                .with_rule_inputs(set.rules());
+                .with_dashas(PARITY_DASHAS);
             drop(
                 sdk.chart()
-                    .readings_with_rules(&[JulianDay::<Utc>::literal(BIRTH)], &request, set)
+                    .readings_with_rules(&[JulianDay::<Utc>::literal(BIRTH)], &request, ruled())
                     .expect("the parity chart"),
+            );
+        }
+        // The widest chart there is: every dasha a chart always gives as
+        // well, which a parity runner asks of the SDK.
+        "widest-chart" => {
+            let request = ChartRequest::at(place(), offset()).with_everything();
+            drop(
+                sdk.chart()
+                    .readings_with_rules(&[JulianDay::<Utc>::literal(BIRTH)], &request, ruled())
+                    .expect("the widest chart"),
             );
         }
         // A birth known to the day: a window a day long, judged at the
