@@ -1159,7 +1159,7 @@ class Latitude(float):
         return super().__new__(cls, value)
 
 class Altitude(float):
-    """A altitude in m, [-500,12000].
+    """An altitude in m, [-500,12000].
 
     Its own type, so it cannot be passed where another quantity is
     wanted, and a float at run time, so it crosses the boundary as one.
@@ -1170,7 +1170,7 @@ class Altitude(float):
     def __new__(cls, value: float) -> "Altitude":
         if not -500 <= value <= 12000:
             raise ValueError(
-                f"a altitude is [-500,12000] and {value} is not"
+                f"an altitude is [-500,12000] and {value} is not"
             )
         return super().__new__(cls, value)
 

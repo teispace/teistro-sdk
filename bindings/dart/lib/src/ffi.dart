@@ -2643,10 +2643,10 @@ extension type const Latitude._(double value) implements double {
   }
 }
 
-/// A altitude in m, [-500,12000]. Its own type, so it cannot be passed where
+/// An altitude in m, [-500,12000]. Its own type, so it cannot be passed where
 /// another quantity is wanted.
 extension type const Altitude._(double value) implements double {
-  /// A altitude in m, checked.
+  /// An altitude in m, checked.
   factory Altitude(double value) {
     if (!(value >= -500 && value <= 12000)) {
       throw RangeError.range(value, -500, 12000, 'altitude');
