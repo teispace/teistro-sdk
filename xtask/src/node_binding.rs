@@ -57,6 +57,11 @@ pub(crate) fn addon_artefact() -> String {
 /// Builds the addon and puts it where the loader looks.
 fn build_addon(root: &Path) -> Result<(), ()> {
     build(root, "teistro-node", "the Node addon")?;
+    install_addon(root)
+}
+
+/// Copies the release addon to where `lib/addon.js` loads it.
+pub(crate) fn install_addon(root: &Path) -> Result<(), ()> {
     let built = root.join("target/release").join(addon_artefact());
     let addon = root.join(ADDON);
     std::fs::copy(&built, &addon).map(|_| ()).map_err(|e| {

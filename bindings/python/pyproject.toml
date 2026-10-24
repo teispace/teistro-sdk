@@ -40,7 +40,7 @@ teistro = ["py.typed"]
 [tool.mypy]
 strict = true
 python_version = "3.11"
-files = ["teistro", "tests", "example", "parity.py"]
+files = ["teistro", "tests", "example", "bench", "parity.py"]
 # `ctypes` answers `Any` for a looked-up symbol and for a pointer's
 # contents, and the generated layer holds those in fields it declares as
 # `Any` deliberately. Everything a consumer touches is typed, which is
