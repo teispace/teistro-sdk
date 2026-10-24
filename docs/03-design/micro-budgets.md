@@ -124,3 +124,11 @@ callgrind gate's, and the row will say so rather than claim it twice.
 5. The full parity chart: `check-app-speed`'s `chart` asks the shipped
    rules too, or a `parity-chart` request joins it, so the 10 ms budget
    is held over what it names.
+
+Steps 3 and 5 land together. `check-app-speed` holds every record to
+every budgeted request, the Android emulator's and the iOS simulator's
+included, so a new budgeted request means re-recording all three
+machines, and two requests added at once cost one re-record rather than
+two. At the default one-minute seed a full day is 1,440 samples, so a
+day held to its 1 s holds the average step to 0.69 ms, inside the step's
+1 ms: the one request holds both rows.
