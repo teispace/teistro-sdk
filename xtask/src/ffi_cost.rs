@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::binding::{build, cargo};
 use crate::generated::{Output, check, write};
-use crate::measured::{Figure, difference};
+use crate::measured::{Figure, difference, us, version};
 
 const PAGE: &str = "docs/05-testing/ffi-cost-measured.md";
 const RECORDED: &str = "docs/05-testing/ffi-cost";
@@ -95,30 +95,7 @@ impl Record {
 }
 
 fn recorded(root: &Path) -> Result<Vec<(String, Record)>, String> {
-    let dir = root.join(RECORDED);
-    let mut names: Vec<String> = std::fs::read_dir(&dir)
-        .map_err(|e| format!("{RECORDED}: {e}"))?
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
-        .filter_map(|path| Some(path.file_stem()?.to_string_lossy().into_owned()))
-        .collect();
-    names.sort();
-    if names.is_empty() {
-        return Err(format!(
-            "{RECORDED} holds no record; run `cargo xtask measure-ffi-cost`"
-        ));
-    }
-    names
-        .into_iter()
-        .map(|name| {
-            let path = dir.join(format!("{name}.json"));
-            let text = std::fs::read_to_string(&path).map_err(|e| format!("{name}.json: {e}"))?;
-            let record: Record =
-                serde_json::from_str(&text).map_err(|e| format!("{RECORDED}/{name}.json: {e}"))?;
-            Ok((name, record))
-        })
-        .collect()
+    crate::measured::records(root, RECORDED, "measure-ffi-cost")
 }
 
 /// Every figure that is no claim and every one a record lacks, as
@@ -126,12 +103,7 @@ fn recorded(root: &Path) -> Result<Vec<(String, Record)>, String> {
 fn faults(records: &[(String, Record)]) -> Vec<String> {
     let mut found = Vec::new();
     for (name, record) in records {
-        if record.commit.ends_with("-dirty") {
-            found.push(format!(
-                "{name}: measured from a tree with changes at `{}`; re-record from a commit",
-                record.commit
-            ));
-        }
+        found.extend(crate::measured::dirty(name, &record.commit));
         for t in &record.figures {
             if let Some(fault) = t.figure().fault() {
                 found.push(format!(
@@ -152,16 +124,6 @@ fn faults(records: &[(String, Record)]) -> Vec<String> {
         }
     }
     found
-}
-
-fn us(value: f64) -> String {
-    if value.abs() >= 100.0 {
-        format!("{value:.0}")
-    } else if value.abs() >= 10.0 {
-        format!("{value:.1}")
-    } else {
-        format!("{value:.2}")
-    }
 }
 
 /// What a binding pays over Rust for one key: its figure less Rust's,
@@ -344,22 +306,6 @@ fn lines(binding: &str, output: &std::process::Output) -> Result<Vec<Timed>, Str
         .collect()
 }
 
-/// The first line a tool prints of its version, or `unknown`.
-fn version(program: &str, arg: &str) -> String {
-    Command::new(program)
-        .arg(arg)
-        .output()
-        .ok()
-        .filter(|o| o.status.success())
-        .map_or_else(
-            || String::from("unknown"),
-            |o| {
-                let text = String::from_utf8_lossy(&o.stdout);
-                text.lines().next().unwrap_or("unknown").trim().to_string()
-            },
-        )
-}
-
 /// Where the Rust floor writes the grid's blob, for the Java harness to
 /// decode: that binding hands a consumer no call's raw bytes.
 const GRID_BLOB: &str = "target/ffi-cost/grid.tsrb";
@@ -368,7 +314,13 @@ const GRID_BLOB: &str = "target/ffi-cost/grid.tsrb";
 /// and the page.
 pub(crate) fn measure(root: &Path) -> i32 {
     match harnesses(root) {
-        Ok(record) => write_record(root, &record),
+        Ok(record) => match crate::measured::write_record(root, RECORDED, &record) {
+            Ok(()) => generate(root),
+            Err(message) => {
+                println!("FAIL  {message}");
+                1
+            }
+        },
         Err(message) => {
             println!("FAIL  {message}");
             1
@@ -432,43 +384,13 @@ fn harnesses(root: &Path) -> Result<Record, String> {
         crate::java_binding::example(root, "FfiCost", &library).arg(&grid),
     )?);
     runtimes.push((String::from("java"), version("java", "--version")));
-    let commit = Command::new("git")
-        // A tree with changes is marked so: its figures are not the commit's.
-        .args(["describe", "--always", "--dirty", "--abbrev=9"])
-        .current_dir(root)
-        .output()
-        .map_or_else(
-            |_| String::from("unknown"),
-            |o| String::from_utf8_lossy(&o.stdout).trim().to_string(),
-        );
     Ok(Record {
         os: String::from(std::env::consts::OS),
         arch: String::from(std::env::consts::ARCH),
-        commit,
+        commit: crate::measured::commit(root),
         runtimes,
         figures,
     })
-}
-
-/// Writes this machine's record, and the page.
-fn write_record(root: &Path, record: &Record) -> i32 {
-    let path = root.join(RECORDED).join(format!(
-        "{}-{}.json",
-        std::env::consts::OS,
-        std::env::consts::ARCH
-    ));
-    let written = serde_json::to_string_pretty(record)
-        .map_err(|e| e.to_string())
-        .and_then(|text| {
-            std::fs::create_dir_all(root.join(RECORDED)).map_err(|e| e.to_string())?;
-            std::fs::write(&path, text + "\n").map_err(|e| e.to_string())
-        });
-    if let Err(message) = written {
-        println!("FAIL  {}: {message}", path.display());
-        return 1;
-    }
-    println!("ok    {}", path.display());
-    generate(root)
 }
 
 #[cfg(test)]

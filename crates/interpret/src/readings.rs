@@ -321,14 +321,7 @@ mod tests {
     /// would be rounded silently, so this fails instead.
     #[test]
     fn every_shipped_span_is_whole() {
-        for pack in [
-            teistro_rules::shipped::nabhasas(),
-            teistro_rules::shipped::arishtas(),
-            teistro_rules::shipped::gandantas(),
-            teistro_rules::shipped::readings(),
-            teistro_rules::shipped::computed_doshas(),
-            teistro_rules::shipped::computed_yogas(),
-        ] {
+        for pack in teistro_rules::shipped::packs() {
             for rule in pack {
                 for outcome in &rule.outcomes {
                     if let Outcome::LifeSpan { count, .. } = outcome {

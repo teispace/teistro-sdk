@@ -7,6 +7,12 @@
 //! number only where their ranges do not overlap. Where they overlap,
 //! neither is measurably the larger, whatever their medians say.
 
+use std::path::Path;
+use std::process::Command;
+
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+
 /// The fewest runs a median is taken from.
 pub(crate) const MIN_RUNS: usize = 3;
 
@@ -88,6 +94,103 @@ pub(crate) fn difference(left: &Figure, right: &Figure) -> Comparison {
     }
 }
 
+/// A figure in microseconds as a page prints it: three significant digits
+/// up to 100, and whole microseconds past it.
+pub(crate) fn us(value: f64) -> String {
+    if value.abs() >= 100.0 {
+        format!("{value:.0}")
+    } else if value.abs() >= 10.0 {
+        format!("{value:.1}")
+    } else {
+        format!("{value:.2}")
+    }
+}
+
+/// The first line a tool prints of its version, or `unknown`.
+pub(crate) fn version(program: &str, arg: &str) -> String {
+    Command::new(program)
+        .arg(arg)
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .map_or_else(
+            || String::from("unknown"),
+            |o| {
+                let text = String::from_utf8_lossy(&o.stdout);
+                text.lines().next().unwrap_or("unknown").trim().to_string()
+            },
+        )
+}
+
+/// The commit a measurement is taken from, marked `-dirty` when the tree
+/// has changes, since then its figures are not the commit's.
+pub(crate) fn commit(root: &Path) -> String {
+    Command::new("git")
+        .args(["describe", "--always", "--dirty", "--abbrev=9"])
+        .current_dir(root)
+        .output()
+        .map_or_else(
+            |_| String::from("unknown"),
+            |o| String::from_utf8_lossy(&o.stdout).trim().to_string(),
+        )
+}
+
+/// Why a record taken at `commit` is no claim, or `None`: a tree with
+/// changes is not the commit it names.
+pub(crate) fn dirty(name: &str, commit: &str) -> Option<String> {
+    commit.ends_with("-dirty").then(|| {
+        format!("{name}: measured from a tree with changes at `{commit}`; re-record from a commit")
+    })
+}
+
+/// Every record in `dir` under `root`, one JSON file a machine, by its
+/// file's stem and in that order. A directory holding none is an error
+/// naming `measure`, the command that writes one.
+pub(crate) fn records<R: DeserializeOwned>(
+    root: &Path,
+    dir: &str,
+    measure: &str,
+) -> Result<Vec<(String, R)>, String> {
+    let mut names: Vec<String> = std::fs::read_dir(root.join(dir))
+        .map_err(|e| format!("{dir}: {e}"))?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
+        .filter_map(|path| Some(path.file_stem()?.to_string_lossy().into_owned()))
+        .collect();
+    names.sort();
+    if names.is_empty() {
+        return Err(format!(
+            "{dir} holds no record; run `cargo xtask {measure}`"
+        ));
+    }
+    names
+        .into_iter()
+        .map(|name| {
+            let path = root.join(dir).join(format!("{name}.json"));
+            let text =
+                std::fs::read_to_string(&path).map_err(|e| format!("{dir}/{name}.json: {e}"))?;
+            let record =
+                serde_json::from_str(&text).map_err(|e| format!("{dir}/{name}.json: {e}"))?;
+            Ok((name, record))
+        })
+        .collect()
+}
+
+/// Writes `record` as this machine's file in `dir`, `<os>-<arch>.json`.
+pub(crate) fn write_record<R: Serialize>(root: &Path, dir: &str, record: &R) -> Result<(), String> {
+    let path = root.join(dir).join(format!(
+        "{}-{}.json",
+        std::env::consts::OS,
+        std::env::consts::ARCH
+    ));
+    let text = serde_json::to_string_pretty(record).map_err(|e| e.to_string())?;
+    std::fs::create_dir_all(root.join(dir)).map_err(|e| format!("{dir}: {e}"))?;
+    std::fs::write(&path, text + "\n").map_err(|e| format!("{}: {e}", path.display()))?;
+    println!("ok    {}", path.display());
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -152,5 +255,19 @@ mod tests {
             "1.5×"
         );
         assert_eq!(Comparison::Undefined.render(|v| v.to_string()), "—");
+    }
+
+    #[test]
+    fn a_figure_prints_three_digits_until_it_is_whole() {
+        assert_eq!(us(0.0526), "0.05");
+        assert_eq!(us(9.72), "9.72");
+        assert_eq!(us(15.64), "15.6");
+        assert_eq!(us(1801.4), "1801");
+    }
+
+    #[test]
+    fn only_a_tree_with_changes_is_refused() {
+        assert_eq!(dirty("m", "436994439"), None);
+        assert!(dirty("m", "436994439-dirty").is_some_and(|s| s.contains("re-record")));
     }
 }

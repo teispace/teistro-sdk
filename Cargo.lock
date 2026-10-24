@@ -2308,6 +2308,7 @@ dependencies = [
 name = "teistro-vargas"
 version = "0.0.0"
 dependencies = [
+ "criterion",
  "schemars",
  "serde",
  "serde_json",

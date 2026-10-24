@@ -433,6 +433,21 @@ pub fn computed_yogas() -> &'static [Rule] {
     &YOGAS
 }
 
+/// Every rule the crate ships, pack by pack: the one list of them, so a
+/// consumer that reads them all (a timing, an audit) cannot miss one a
+/// later chapter adds.
+#[must_use]
+pub fn packs() -> [&'static [Rule]; 6] {
+    [
+        nabhasas(),
+        arishtas(),
+        gandantas(),
+        readings(),
+        computed_doshas(),
+        computed_yogas(),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(

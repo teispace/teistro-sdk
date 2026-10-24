@@ -70,21 +70,25 @@ two disagree on any budget, so the page cannot drift from the gate.
 |---|---|---|
 | `dasha-at-<kernel>` | `<kernel>: at(t, 5), per instant`, every kernel the bench times | 20 µs |
 | `varga-one` | `varga: D9 chart` | 5 µs |
-| `varga-all` | `varga: every standard chart` | 100 µs |
-| `rules` | `rules: the shipped set over one chart` | 2 ms for each 900 rules, scaled to the set's size |
-| `rectification-step` | `rectification: one candidate judged` | 1 ms |
+| `varga-all` | `varga: every catalogued chart` | 100 µs |
+| `rules` | `rules/the shipped set over one chart` | 2 ms for each 900 rules, scaled to the set's size |
 
 The rules budget scales because the set grows with every chapter that
 ships: the performance page's "900 rules under 2 ms" is a rate, 2.22 µs a
-rule, and holding a fixed 2 ms against 4,396 rules would fail a kernel
-that got faster. The bench records how many rules it evaluated, and the
-budget is that count times the rate.
+rule, and holding a fixed 2 ms against the shipped set would fail a kernel
+that got faster. The bench reads every evaluable rule of `shipped::packs()`
+(a new list of the crate's six packs, which the interpret crate's span test
+reads too) and gives their count as its `criterion` group's elements, and
+the budget is that count times the rate. The 597 rules the old bench read
+were the recording engine's corpus, a test fixture, not what ships.
 
-`rectification: one candidate judged` is one candidate instant of a
-baseline pass over the test provider: its sky and the circumstance
-judgement, divided by the candidates the pass asked. The test provider
-stands in for a native one as it does in the FFI cost scenario. The
-kernel's work is what is measured, and the page says so.
+The rectification step is not on the list. Its cost is the sky's: one
+candidate is a set of positions and a lagna at an instant, and the only sky
+the crate holds is a test's straight line, so a figure timed there would
+measure the toy. The step is held where the real sky is, by
+`check-app-speed`: a `rectify` request over a full day's window under
+Teimeris, against the page's 1 s, with its candidates counted so the
+step's 1 ms is printed beside it (§5, step 3).
 
 ## 4. The gate
 
@@ -111,8 +115,10 @@ callgrind gate's, and the row will say so rather than claim it twice.
    hand.
 2. The benches the list names and the crates lack: `crates/vargas/benches`
    (one chart and every chart over one foundation), and the rules bench
-   over the shipped set, printing its count.
-3. `rectification: one candidate judged` in `crates/rectification/benches`.
+   over the shipped set, giving its count as the group's elements.
+3. A `rectify` request in the app-speed harness: a full day's window over
+   Teimeris against 1 s, and its time over the candidates it judged
+   against the step's 1 ms.
 4. A record from this machine, the performance page's table checked
    against the list, and the quality bar's row.
 5. The full parity chart: `check-app-speed`'s `chart` asks the shipped
