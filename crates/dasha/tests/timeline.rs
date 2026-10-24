@@ -26,6 +26,12 @@ use teistro_dasha::{
 
 const BIRTH: f64 = 2_451_545.0;
 
+/// The float just below a positive one: `f64::next_down`, which the
+/// workspace's MSRV predates.
+fn below(x: f64) -> f64 {
+    f64::from_bits(x.to_bits() - 1)
+}
+
 fn birth() -> JulianDay<Utc> {
     JulianDay::literal(BIRTH)
 }
@@ -64,6 +70,25 @@ fn holds(name: &str, timeline: &impl Timeline, cycles: u32, levels: usize) {
             this.path,
             next.path
         );
+        // The last bit before a period begins: in the period before while
+        // that one holds it, and in one or the other where the two ends,
+        // summed their own ways, leave the bit between them.
+        let before = below(next.interval.from.get());
+        let found = timeline.mahadasha_at(before).map(|p| p.path);
+        if before < this.interval.to.get() {
+            assert_eq!(
+                found,
+                Some(this.path),
+                "{name}: the bit before {}",
+                next.path
+            );
+        } else {
+            assert!(
+                found == Some(this.path) || found == Some(next.path),
+                "{name}: the bit before {} is in neither: {found:?}",
+                next.path
+            );
+        }
     }
     for period in &mahadashas {
         let (from, to) = (period.interval.from.get(), period.interval.to.get());
@@ -208,9 +233,22 @@ fn every_sign_dasha_keeps_the_contract() {
 
 #[test]
 fn the_kalachakra_keeps_the_contract() {
-    for degrees in [3.0, 123.456, 250.0, 359.0] {
-        let dasha = KalachakraDasha::new(&moon(degrees), KalachakraRules::of(&root())).unwrap();
-        holds(&format!("Kalachakra at {degrees}"), &dasha, 2, 2);
+    // Under `REPEAT` too, so the second cycle is there and an instant at
+    // a cycle's boundary is put in the right one.
+    for after_cycle in [AfterCycle::End, AfterCycle::Repeat] {
+        for degrees in [3.0, 123.456, 250.0, 359.0] {
+            let rules = KalachakraRules {
+                after_cycle,
+                ..KalachakraRules::of(&root())
+            };
+            let dasha = KalachakraDasha::new(&moon(degrees), rules).unwrap();
+            holds(
+                &format!("Kalachakra at {degrees} {after_cycle:?}"),
+                &dasha,
+                3,
+                2,
+            );
+        }
     }
 }
 

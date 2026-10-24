@@ -347,6 +347,32 @@ mod tests {
         Depth::try_new(levels).unwrap()
     }
 
+    /// Under a year other than Valens's the worked count keeps its share of
+    /// that year: a third-level cycle is 129 of his 360 days, and a
+    /// fourth-level share a star's minimum years in days, each scaled by
+    /// the year's days over 360.
+    #[test]
+    fn the_cycles_keep_their_share_of_another_year() {
+        let order = decennial_order(Graha::Moon, &VALENS).unwrap();
+        let dasha = DecennialDasha::new(
+            order,
+            JulianDay::literal(BIRTH),
+            YearLength::Julian36525,
+            DecennialDivision::Cycles,
+        )
+        .unwrap();
+        let day = 365.25 / VALENS_YEAR_DAYS;
+        let first = dasha.mahadasha(0, 0).unwrap();
+        let second = dasha.child(&first, 0).unwrap();
+        let cycle = dasha.child(&second, 0).unwrap();
+        assert!(close(cycle.interval.days(), CYCLE_DAYS * day));
+        let share = dasha.child(&cycle, 0).unwrap();
+        assert!(close(
+            share.interval.days(),
+            f64::from(minimum_years(share.lord)) * day
+        ));
+    }
+
     /// The minimum years are the 129 months a star rules.
     #[test]
     fn the_minimum_years_fill_a_period() {
@@ -452,6 +478,14 @@ mod tests {
         assert_eq!(cycles.len(), 7);
         assert!(cycles[..6].iter().all(|&days| close(days, 129.0)));
         assert!(close(cycles[6], 900.0 - 6.0 * 129.0));
+        // The cut cycle's own periods are each star's minimum years in
+        // days, as in a whole one, and not shrunk to the 126 left.
+        let cut = dasha.child(&saturn, 6).unwrap();
+        let first = dasha.child(&cut, 0).unwrap();
+        assert!(close(
+            first.interval.days(),
+            f64::from(minimum_years(first.lord))
+        ));
     }
 
     /// VI.6, the third stage: a star of `a` minimum years gives `b`'s
