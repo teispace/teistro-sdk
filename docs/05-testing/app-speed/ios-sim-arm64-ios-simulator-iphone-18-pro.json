@@ -2,7 +2,7 @@
   "machine": "iOS simulator, iPhone 18 Pro",
   "os": "iOS 27.0",
   "arch": "aarch64",
-  "commit": "34f88dcb",
+  "commit": "cfa50116",
   "teimeris": "0.1.0",
   "data": "embedded",
   "memo": "cold: a fresh context every run",
@@ -11,129 +11,177 @@
       "setup": "drik-teimeris",
       "request": "open",
       "runs": 21,
-      "median_ms": 0.024,
-      "min_ms": 0.023,
-      "max_ms": 0.045
+      "median_ms": 0.025,
+      "min_ms": 0.022,
+      "max_ms": 0.069
     },
     {
       "setup": "drik-teimeris",
       "request": "day",
       "runs": 21,
-      "median_ms": 1.893,
-      "min_ms": 1.723,
-      "max_ms": 2.253
+      "median_ms": 1.101,
+      "min_ms": 1.073,
+      "max_ms": 1.329
     },
     {
       "setup": "drik-teimeris",
       "request": "month",
       "runs": 21,
-      "median_ms": 33.297,
-      "min_ms": 32.157,
-      "max_ms": 40.578
+      "median_ms": 16.976,
+      "min_ms": 16.484,
+      "max_ms": 22.907
     },
     {
       "setup": "drik-teimeris",
       "request": "year",
-      "runs": 14,
-      "median_ms": 294.188,
-      "min_ms": 284.196,
-      "max_ms": 308.595
+      "runs": 21,
+      "median_ms": 151.867,
+      "min_ms": 150.305,
+      "max_ms": 155.249
     },
     {
       "setup": "drik-teimeris",
       "request": "festivals",
-      "runs": 16,
-      "median_ms": 254.529,
-      "min_ms": 238.824,
-      "max_ms": 272.341
+      "runs": 21,
+      "median_ms": 56.308,
+      "min_ms": 55.184,
+      "max_ms": 57.219
     },
     {
       "setup": "drik-teimeris",
       "request": "muhurta",
       "runs": 21,
-      "median_ms": 179.17,
-      "min_ms": 171.919,
-      "max_ms": 186.799
+      "median_ms": 133.585,
+      "min_ms": 131.391,
+      "max_ms": 135.5
     },
     {
       "setup": "drik-teimeris",
       "request": "chart",
       "runs": 21,
-      "median_ms": 1.403,
-      "min_ms": 1.344,
-      "max_ms": 1.53
+      "median_ms": 0.57,
+      "min_ms": 0.549,
+      "max_ms": 0.598
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "parity-chart",
+      "runs": 21,
+      "median_ms": 10.668,
+      "min_ms": 10.286,
+      "max_ms": 14.44
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "widest-chart",
+      "runs": 21,
+      "median_ms": 19.223,
+      "min_ms": 18.797,
+      "max_ms": 19.748
     },
     {
       "setup": "drik-teimeris",
       "request": "matching",
       "runs": 21,
-      "median_ms": 0.016,
-      "min_ms": 0.014,
-      "max_ms": 0.093
+      "median_ms": 0.013,
+      "min_ms": 0.013,
+      "max_ms": 0.019
+    },
+    {
+      "setup": "drik-teimeris",
+      "request": "rectify",
+      "runs": 21,
+      "median_ms": 30.658,
+      "min_ms": 30.039,
+      "max_ms": 32.488
     },
     {
       "setup": "committee-teimeris",
       "request": "open",
       "runs": 21,
-      "median_ms": 0.022,
-      "min_ms": 0.021,
-      "max_ms": 0.028
+      "median_ms": 0.025,
+      "min_ms": 0.025,
+      "max_ms": 0.037
     },
     {
       "setup": "committee-teimeris",
       "request": "day",
       "runs": 21,
-      "median_ms": 0.721,
-      "min_ms": 0.702,
-      "max_ms": 0.894
+      "median_ms": 0.572,
+      "min_ms": 0.557,
+      "max_ms": 0.604
     },
     {
       "setup": "committee-teimeris",
       "request": "month",
       "runs": 21,
-      "median_ms": 19.633,
-      "min_ms": 18.354,
-      "max_ms": 24.743
+      "median_ms": 10.825,
+      "min_ms": 10.501,
+      "max_ms": 11.579
     },
     {
       "setup": "committee-teimeris",
       "request": "year",
       "runs": 21,
-      "median_ms": 168.331,
-      "min_ms": 162.571,
-      "max_ms": 184.42
+      "median_ms": 101.353,
+      "min_ms": 99.442,
+      "max_ms": 104.319
     },
     {
       "setup": "committee-teimeris",
       "request": "festivals",
       "runs": 21,
-      "median_ms": 128.875,
-      "min_ms": 122.863,
-      "max_ms": 145.835
+      "median_ms": 23.37,
+      "min_ms": 22.613,
+      "max_ms": 24.577
     },
     {
       "setup": "committee-teimeris",
       "request": "muhurta",
       "runs": 21,
-      "median_ms": 92.546,
-      "min_ms": 89.722,
-      "max_ms": 97.775
+      "median_ms": 107.833,
+      "min_ms": 105.075,
+      "max_ms": 110.177
     },
     {
       "setup": "committee-teimeris",
       "request": "chart",
       "runs": 21,
-      "median_ms": 1.379,
-      "min_ms": 1.32,
-      "max_ms": 1.583
+      "median_ms": 0.551,
+      "min_ms": 0.535,
+      "max_ms": 0.676
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "parity-chart",
+      "runs": 21,
+      "median_ms": 9.826,
+      "min_ms": 9.449,
+      "max_ms": 10.239
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "widest-chart",
+      "runs": 21,
+      "median_ms": 18.532,
+      "min_ms": 18.268,
+      "max_ms": 19.273
     },
     {
       "setup": "committee-teimeris",
       "request": "matching",
       "runs": 21,
-      "median_ms": 0.016,
-      "min_ms": 0.015,
-      "max_ms": 0.023
+      "median_ms": 0.014,
+      "min_ms": 0.013,
+      "max_ms": 0.055
+    },
+    {
+      "setup": "committee-teimeris",
+      "request": "rectify",
+      "runs": 21,
+      "median_ms": 21.834,
+      "min_ms": 21.772,
+      "max_ms": 23.234
     },
     {
       "setup": "drik-builtin",
@@ -141,63 +189,240 @@
       "runs": 21,
       "median_ms": 0.013,
       "min_ms": 0.013,
-      "max_ms": 0.015
+      "max_ms": 0.016
     },
     {
       "setup": "drik-builtin",
       "request": "day",
       "runs": 21,
-      "median_ms": 30.669,
-      "min_ms": 29.561,
-      "max_ms": 35.846
+      "median_ms": 2.115,
+      "min_ms": 2.09,
+      "max_ms": 2.179
     },
     {
       "setup": "drik-builtin",
       "request": "month",
-      "runs": 7,
-      "median_ms": 633.234,
-      "min_ms": 607.2,
-      "max_ms": 649.714
+      "runs": 21,
+      "median_ms": 32.192,
+      "min_ms": 31.974,
+      "max_ms": 33.923
     },
     {
       "setup": "drik-builtin",
       "request": "year",
-      "runs": 3,
-      "median_ms": 5246.608,
-      "min_ms": 5225.776,
-      "max_ms": 5282.793
+      "runs": 13,
+      "median_ms": 307.486,
+      "min_ms": 304.335,
+      "max_ms": 316.299
     },
     {
       "setup": "drik-builtin",
       "request": "festivals",
-      "runs": 3,
-      "median_ms": 5259.763,
-      "min_ms": 5240.255,
-      "max_ms": 5314.048
+      "runs": 21,
+      "median_ms": 118.304,
+      "min_ms": 115.815,
+      "max_ms": 123.095
     },
     {
       "setup": "drik-builtin",
       "request": "muhurta",
-      "runs": 3,
-      "median_ms": 2732.742,
-      "min_ms": 2719.887,
-      "max_ms": 2762.191
+      "runs": 9,
+      "median_ms": 476.135,
+      "min_ms": 471.33,
+      "max_ms": 480.81
     },
     {
       "setup": "drik-builtin",
       "request": "chart",
       "runs": 21,
-      "median_ms": 2.749,
-      "min_ms": 2.603,
-      "max_ms": 3.04
+      "median_ms": 0.93,
+      "min_ms": 0.915,
+      "max_ms": 0.997
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "parity-chart",
+      "runs": 21,
+      "median_ms": 11.714,
+      "min_ms": 11.405,
+      "max_ms": 12.195
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "widest-chart",
+      "runs": 21,
+      "median_ms": 20.441,
+      "min_ms": 20.027,
+      "max_ms": 21.213
     },
     {
       "setup": "drik-builtin",
       "request": "matching",
       "runs": 21,
-      "median_ms": 0.017,
-      "min_ms": 0.014,
-      "max_ms": 0.03
+      "median_ms": 0.014,
+      "min_ms": 0.013,
+      "max_ms": 0.018
+    },
+    {
+      "setup": "drik-builtin",
+      "request": "rectify",
+      "runs": 21,
+      "median_ms": 43.626,
+      "min_ms": 42.914,
+      "max_ms": 86.295
+    }
+  ],
+  "parallelism": 10,
+  "scaling": [
+    {
+      "setup": "drik-teimeris",
+      "threads": 1,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 33.259,
+      "per_second": 90.2,
+      "efficiency": 1.0,
+      "identical": true
+    },
+    {
+      "setup": "drik-teimeris",
+      "threads": 2,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 34.872,
+      "per_second": 172.06,
+      "efficiency": 0.954,
+      "identical": true
+    },
+    {
+      "setup": "drik-teimeris",
+      "threads": 4,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 39.64,
+      "per_second": 302.73,
+      "efficiency": 0.839,
+      "identical": true
+    },
+    {
+      "setup": "drik-teimeris",
+      "threads": 8,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 52.752,
+      "per_second": 454.96,
+      "efficiency": 0.63,
+      "identical": true
+    },
+    {
+      "setup": "drik-teimeris",
+      "threads": 10,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 59.618,
+      "per_second": 503.21,
+      "efficiency": 0.558,
+      "identical": true
+    },
+    {
+      "setup": "committee-teimeris",
+      "threads": 1,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 32.67,
+      "per_second": 91.83,
+      "efficiency": 1.0,
+      "identical": true
+    },
+    {
+      "setup": "committee-teimeris",
+      "threads": 2,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 34.875,
+      "per_second": 172.05,
+      "efficiency": 0.937,
+      "identical": true
+    },
+    {
+      "setup": "committee-teimeris",
+      "threads": 4,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 37.993,
+      "per_second": 315.84,
+      "efficiency": 0.86,
+      "identical": true
+    },
+    {
+      "setup": "committee-teimeris",
+      "threads": 8,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 48.673,
+      "per_second": 493.09,
+      "efficiency": 0.671,
+      "identical": true
+    },
+    {
+      "setup": "committee-teimeris",
+      "threads": 10,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 61.201,
+      "per_second": 490.19,
+      "efficiency": 0.534,
+      "identical": true
+    },
+    {
+      "setup": "drik-builtin",
+      "threads": 1,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 97.796,
+      "per_second": 30.68,
+      "efficiency": 1.0,
+      "identical": true
+    },
+    {
+      "setup": "drik-builtin",
+      "threads": 2,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 100.69,
+      "per_second": 59.59,
+      "efficiency": 0.971,
+      "identical": true
+    },
+    {
+      "setup": "drik-builtin",
+      "threads": 4,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 104.407,
+      "per_second": 114.94,
+      "efficiency": 0.937,
+      "identical": true
+    },
+    {
+      "setup": "drik-builtin",
+      "threads": 8,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 143.148,
+      "per_second": 167.66,
+      "efficiency": 0.683,
+      "identical": true
+    },
+    {
+      "setup": "drik-builtin",
+      "threads": 10,
+      "months": 3,
+      "trials": 5,
+      "median_ms": 170.862,
+      "per_second": 175.58,
+      "efficiency": 0.572,
+      "identical": true
     }
   ]
 }

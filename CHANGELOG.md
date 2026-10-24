@@ -12,6 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The full parity chart and the rectification step are held to their
+budgets** (`docs/03-design/micro-budgets.md` §6). **Numbers:** none.
+`check-app-speed` gains three requests, re-recorded on the desktop, the
+Android emulator and the iOS simulator:
+
+- `parity-chart`: every section, the baseline's parity-tier dashas to depth
+  3, and every shipped rule. It takes 9.1 to 11.3 ms against 10 ms.
+- `widest-chart`: unbudgeted, with every dasha a chart gives. It takes 18
+  to 22 ms.
+- `rectify`: a day's window. It takes 22 to 34 ms against 1 s, which puts
+  a step at about 22 µs against 1 ms.
+
+The thread floor now holds only thread counts below the machine's own.
+The four-core emulator keeps 0.72 of linear throughput at four threads
+and 0.92 at two, where a shared lock would keep a half. The quality bar's
+micro-benchmark row is enforced.
+
 **Sealing a document moves its largest member once, not twice.**
 **Numbers:** none. The bytes are the same. An object whose keys arrive
 out of order is put in order when it closes. Before, its whole text was
