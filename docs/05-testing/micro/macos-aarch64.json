@@ -1,0 +1,65 @@
+{
+  "os": "macos",
+  "arch": "aarch64",
+  "commit": "c049423a8",
+  "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "figures": [
+    {
+      "key": "dasha-at-vimshottari",
+      "samples": 100,
+      "median_us": 0.3551541228685732,
+      "min_us": 0.34209595034595036,
+      "max_us": 0.8111754317111459
+    },
+    {
+      "key": "dasha-at-ashtottari",
+      "samples": 100,
+      "median_us": 0.34927728125344804,
+      "min_us": 0.3325922759433962,
+      "max_us": 0.9409540050173133
+    },
+    {
+      "key": "dasha-at-registered",
+      "samples": 100,
+      "median_us": 0.35236555689648147,
+      "min_us": 0.3384936855124825,
+      "max_us": 0.6170051834130782
+    },
+    {
+      "key": "dasha-at-chara",
+      "samples": 100,
+      "median_us": 0.21972109494488426,
+      "min_us": 0.21501745109608314,
+      "max_us": 0.3230147157312811
+    },
+    {
+      "key": "dasha-at-kalachakra",
+      "samples": 100,
+      "median_us": 0.13521461096898765,
+      "min_us": 0.13220148613889682,
+      "max_us": 0.1901648351141801
+    },
+    {
+      "key": "varga-one",
+      "samples": 100,
+      "median_us": 0.2344656262182236,
+      "min_us": 0.229648987463838,
+      "max_us": 0.3108738758942387
+    },
+    {
+      "key": "varga-all",
+      "samples": 100,
+      "median_us": 6.4146516824085005,
+      "min_us": 6.291420958351993,
+      "max_us": 9.30222444946358
+    },
+    {
+      "key": "rules",
+      "samples": 100,
+      "median_us": 233.87918970467598,
+      "min_us": 223.64555555555557,
+      "max_us": 395.96451612903223,
+      "elements": 4818
+    }
+  ]
+}
