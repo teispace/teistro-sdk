@@ -5,6 +5,7 @@ package com.teispace.teistro.blob;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -87,12 +88,19 @@ final class BlobReader {
         return at;
     }
 
-    /** The byte offset of one column of a column section, checked to hold every row. */
+    /**
+     * The byte offset of one column of a column section, checked to start on
+     * a multiple of its width, as every other binding's typed view must, and
+     * to hold every row.
+     */
     int column(Section at, int index, int width) {
         if ((long) (index + 1) * 4 > at.length()) {
             throw new BlobFormatException("a column's offset runs past the end of its section");
         }
         long offset = at.offset() + Integer.toUnsignedLong(bytes.getInt(at.offset() + index * 4));
+        if (offset % width != 0) {
+            throw new BlobFormatException("a column of width " + width + " starts at byte " + offset + ", not on a multiple of " + width);
+        }
         if (offset + (long) at.count() * width > (long) at.offset() + at.length()) {
             throw new BlobFormatException("a column runs past the end of its section");
         }
@@ -105,8 +113,10 @@ final class BlobReader {
         if (at.count() > at.length()) {
             throw new BlobFormatException("the `" + name + "` text runs past the end of its section");
         }
-        byte[] text = new byte[at.count()];
-        bytes.get(at.offset(), text);
-        return new String(text, StandardCharsets.UTF_8);
+        try {
+            return StandardCharsets.UTF_8.newDecoder().decode(bytes.slice(at.offset(), at.count())).toString();
+        } catch (CharacterCodingException error) {
+            throw new BlobFormatException("the `" + name + "` text is not UTF-8");
+        }
     }
 }

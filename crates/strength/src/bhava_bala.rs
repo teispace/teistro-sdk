@@ -292,7 +292,8 @@ fn special(chart: &BhavaBalaChart, bhava: usize) -> f64 {
     // its sunset, and dawn the last three before the next sunrise.
     let in_twilight = (chart.instant >= sunset && chart.instant < sunset + twilight)
         || chart.instant >= next_sunrise - twilight;
-    let by_day = !in_twilight && chart.instant < sunset;
+    // Before sunset is neither twilight: dawn's begins after the night.
+    let by_day = chart.instant < sunset;
     let fits = match rising {
         Rising::Sirshodaya => by_day,
         Rising::Prishtodaya => !by_day && !in_twilight,
@@ -442,6 +443,8 @@ mod tests {
             [special(&chart, 0), special(&chart, 2), special(&chart, 11)]
         };
         assert_eq!(rising(empty.instant), [0.0, 15.0, 0.0], "by day");
+        assert_eq!(rising(sunset - 1e-6), [0.0, 15.0, 0.0], "day's end");
+        assert_eq!(rising(sunset), [0.0, 0.0, 15.0], "sunset is dusk");
         assert_eq!(rising(sunset + 0.01), [0.0, 0.0, 15.0], "at dusk");
         // BPHS's twilight is three ghatis, so two and a half past sunset is
         // still dusk, where the two once declared made it night.

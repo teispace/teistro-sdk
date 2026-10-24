@@ -10,7 +10,14 @@ import { join } from 'node:path';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { decodePositions, decodeIntlRender } from '../lib/blob.js';
+import {
+  BlobFormatError,
+  decodeCharts,
+  decodeIntlRender,
+  decodeNaam,
+  decodePanchanga,
+  decodePositions,
+} from '../lib/blob.js';
 import { Body, Graha, Kind, Status, TimeScale } from '../lib/catalogue.js';
 
 // Named by the gate in `TEISTRO_FIXTURES`; see `binding.test.mjs`.
@@ -80,8 +87,80 @@ test('a blob of the wrong shape is refused, never misread', () => {
   assert.throws(() => decodePositions(Uint8Array.from(bytes).fill(0, 4, 8)), /layout version 0/);
   assert.throws(() => decodeIntlRender(bytes), /blob schema 1, expected 2/);
   assert.throws(() => decodePositions([1, 2, 3]), /expected a Uint8Array/);
+  assert.throws(() => decodePositions(new Uint8Array(4)), BlobFormatError);
+  assert.throws(() => decodePositions(new Uint8Array(4)), TypeError, 'still a TypeError');
   const truncated = bytes.slice(0, bytes.length - 8);
   assert.throws(() => decodePositions(truncated), /the header says/);
+});
+
+// Every blob of every schema, corrupted the same way in every binding's
+// test: a seeded xorshift32 stream picks, two thousand times a blob, one
+// of four mutations — a few bytes flipped past the header, one aligned
+// word set to an edge value (0, 1, 3, 4, 8, 2^31 - 1, 2^31, 2^32 - 1 or
+// the blob's length), the blob cut short, or the blob grown with zeros,
+// the last two with the header's length mended so the table of contents
+// is read. Each mutant is decoded or refused as a `BlobFormatError`;
+// anything else thrown is a fault in the decoder.
+const MUTANTS = 2000;
+const SCHEMAS = [
+  ['positions.tsrb', decodePositions],
+  ['intl_render.tsrb', decodeIntlRender],
+  ['charts.tsrb', decodeCharts],
+  ['panchanga.tsrb', decodePanchanga],
+  ['naam.tsrb', decodeNaam],
+];
+
+function* mutants(good) {
+  let x = 0x9e3779b9;
+  const next = () => {
+    x ^= x << 13;
+    x >>>= 0;
+    x ^= x >>> 17;
+    x ^= x << 5;
+    x >>>= 0;
+    return x;
+  };
+  const edges = [0, 1, 3, 4, 8, 0x7fffffff, 0x80000000, 0xffffffff, -1];
+  for (let i = 0; i < MUTANTS; i += 1) {
+    let bytes = Uint8Array.from(good);
+    const kind = next() % 4;
+    if (kind === 0) {
+      for (let n = 1 + (next() % 4); n > 0; n -= 1) {
+        bytes[20 + (next() % (bytes.length - 20))] ^= 1 + (next() % 255);
+      }
+    } else if (kind === 1) {
+      const at = (next() % (bytes.length >>> 2)) * 4;
+      const edge = edges[next() % edges.length];
+      // The magic, the version and the schema stay, or nothing past them is read.
+      if (at < 8 || (at >= 12 && at < 20)) continue;
+      new DataView(bytes.buffer).setUint32(at, edge === -1 ? bytes.length : edge, true);
+    } else {
+      const grown = new Uint8Array(kind === 2 ? 32 + (next() % (bytes.length - 32)) : bytes.length + 8 * (1 + (next() % 8)));
+      grown.set(kind === 2 ? bytes.subarray(0, grown.length) : bytes);
+      bytes = grown;
+      new DataView(bytes.buffer).setUint32(12, bytes.length, true);
+    }
+    yield [i, kind, bytes];
+  }
+}
+
+test('a corrupted blob of every schema is decoded or refused, never anything else', () => {
+  for (const [name, decode] of SCHEMAS) {
+    const tally = { decoded: 0, refused: 0 };
+    for (const [i, kind, bytes] of mutants(read(name))) {
+      try {
+        decode(bytes);
+        tally.decoded += 1;
+      } catch (error) {
+        if (!(error instanceof BlobFormatError)) {
+          assert.fail(`${name}, mutant ${i} (mutation ${kind}): ${error}`);
+        }
+        tally.refused += 1;
+      }
+    }
+    // Both ways out were taken, so the mutants reach past the header.
+    assert.ok(tally.decoded > 0 && tally.refused > 0, `${name}: ${JSON.stringify(tally)}`);
+  }
 });
 
 test('a decoder reads a blob that does not start on an eight-byte boundary', () => {

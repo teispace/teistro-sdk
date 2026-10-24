@@ -306,7 +306,7 @@ impl schemars::JsonSchema for BodySubject {
 
     fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
         schemars::json_schema!({
-            "description": "A body: a key, `self`, `ANY_BENEFIC`-style any-of, or {lordOf}, {exaltedIn}, {karaka, scheme}.",
+            "description": "A body: a key, `SELF`, `any-benefic`-style any-of, or {lordOf}, {exaltedIn}, {karaka, scheme}.",
             "anyOf": [
                 { "type": "string" },
                 { "type": "integer", "minimum": 1, "maximum": 12 },
@@ -435,7 +435,7 @@ impl schemars::JsonSchema for BodyRef {
 
     fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
         schemars::json_schema!({
-            "description": "A body: a key, `self`, or {lordOf}, {exaltedIn}, {karaka, scheme}.",
+            "description": "A body: a key, `SELF`, or {lordOf}, {exaltedIn}, {karaka, scheme}.",
             "anyOf": [
                 { "type": "string" },
                 { "type": "integer", "minimum": 1, "maximum": 12 },
@@ -553,7 +553,7 @@ impl schemars::JsonSchema for Subject {
 
     fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
         schemars::json_schema!({
-            "description": "A sign or any-of subject: as a sign reference, or `ANY_BENEFIC`-style any-of.",
+            "description": "A sign or any-of subject: as a sign reference, or `any-benefic`-style any-of.",
             "anyOf": [
                 { "type": "string" },
                 { "type": "integer", "minimum": 1, "maximum": 12 },

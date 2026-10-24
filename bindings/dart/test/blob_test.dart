@@ -172,4 +172,90 @@ void main() {
     expect(contextTestProvider, 1);
     expect(vtableAbiVersion, 4);
   });
+
+  test(
+    'a corrupted blob of every schema is decoded or refused, never anything else',
+    () {
+      for (final (name, decode) in _schemas) {
+        var decoded = 0;
+        var refused = 0;
+        for (final (i, kind, bytes) in _mutants(_read(name))) {
+          try {
+            decode(bytes);
+            decoded++;
+          } on FormatException {
+            refused++;
+          } on Object catch (error) {
+            fail('$name, mutant $i (mutation $kind): $error');
+          }
+        }
+        // Both ways out were taken, so the mutants reach past the header.
+        expect(
+          decoded > 0 && refused > 0,
+          isTrue,
+          reason: '$name: $decoded, $refused',
+        );
+      }
+    },
+  );
+}
+
+// Every blob of every schema, corrupted the same way in every binding's
+// test: a seeded xorshift32 stream picks, two thousand times a blob, one of
+// four mutations: a few bytes flipped past the header, one aligned word set
+// to an edge value (0, 1, 3, 4, 8, 2^31 - 1, 2^31, 2^32 - 1 or the blob's
+// length), the blob cut short, or the blob grown with zeros, the last two
+// with the header's length mended so the table of contents is read. Each
+// mutant is decoded or refused as a [FormatException]; anything else thrown
+// is a fault in the decoder.
+const _mutantCount = 2000;
+const _edges = [0, 1, 3, 4, 8, 0x7fffffff, 0x80000000, 0xffffffff, -1];
+final _schemas = <(String, Object Function(Uint8List))>[
+  ('positions.tsrb', decodePositions),
+  ('intl_render.tsrb', decodeIntlRender),
+  ('charts.tsrb', decodeCharts),
+  ('panchanga.tsrb', decodePanchanga),
+  ('naam.tsrb', decodeNaam),
+];
+
+Iterable<(int, int, Uint8List)> _mutants(Uint8List good) sync* {
+  var x = 0x9e3779b9;
+  int next() {
+    x ^= (x << 13) & 0xffffffff;
+    x ^= x >> 17;
+    x ^= (x << 5) & 0xffffffff;
+    return x;
+  }
+
+  for (var i = 0; i < _mutantCount; i++) {
+    var bytes = Uint8List.fromList(good);
+    final kind = next() % 4;
+    if (kind == 0) {
+      for (var n = 1 + next() % 4; n > 0; n--) {
+        bytes[20 + next() % (bytes.length - 20)] ^= 1 + next() % 255;
+      }
+    } else if (kind == 1) {
+      final at = (next() % (bytes.length >> 2)) * 4;
+      final edge = _edges[next() % _edges.length];
+      // The magic, the version and the schema stay, or nothing past them
+      // is read.
+      if (at < 8 || (at >= 12 && at < 20)) continue;
+      ByteData.sublistView(
+        bytes,
+      ).setUint32(at, edge == -1 ? bytes.length : edge, Endian.little);
+    } else {
+      bytes =
+          kind == 2
+              ? Uint8List.sublistView(
+                bytes,
+                0,
+                32 + next() % (bytes.length - 32),
+              )
+              : (Uint8List(bytes.length + 8 * (1 + next() % 8))
+                ..setAll(0, bytes));
+      bytes = Uint8List.fromList(bytes);
+      ByteData.sublistView(bytes).setUint32(12, bytes.length, Endian.little);
+    }
+    yield (i, kind, bytes);
+  }
 }

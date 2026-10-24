@@ -180,13 +180,9 @@ impl KalachakraDasha {
     /// # Errors
     ///
     /// A temporal balance with no Moon span, or one that does not hold the
-    /// birth, named `moon_span`; a year length of no days, named
-    /// `year_length`.
+    /// birth, named `moon_span`.
     pub fn new(birth: &Birth, rules: KalachakraRules) -> Result<KalachakraDasha, Error> {
         let year_days = rules.year_length.days();
-        if year_days.is_nan() || year_days <= 0.0 {
-            return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
-        }
         let moon = birth.moon;
         let seed = moon.nakshatra();
         let in_nakshatra = moon.in_nakshatra().get();
@@ -351,23 +347,37 @@ impl Timeline for KalachakraDasha {
     fn mahadasha_at(&self, instant: f64) -> Option<Period> {
         let into = instant - self.birth.get();
         let cycle_days = self.cycle_days();
-        if into < 0.0 || cycle_days <= 0.0 {
+        // An instant before birth is answered by the search below, which
+        // finds no period begun.
+        if cycle_days <= 0.0 {
             return None;
         }
         #[expect(
             clippy::cast_possible_truncation,
             clippy::cast_sign_loss,
-            reason = "a non-negative whole number of cycles, far below u32::MAX for any date"
+            reason = "a whole number of cycles, cast to zero before birth (where nothing is found) and far below u32::MAX for any date"
         )]
         let cycle = (into / cycle_days).floor() as u32;
-        let within = into - f64::from(cycle) * cycle_days;
-        let index = self
+        // The bounds are summed as a period's own ends are, so an instant on
+        // a boundary falls in the period that begins there. The division
+        // never rounds an instant up into the next cycle: an instant's last
+        // bit is a hundred-trillionth of a cycle, far above the quotient's.
+        // It can land a cycle's first instant in the cycle before, which the
+        // comparison with the next base below puts right.
+        let base = |cycle: u32| self.birth.get() + f64::from(cycle) * cycle_days;
+        let begun = self
             .offsets
-            .iter()
-            .zip(self.offsets.iter().skip(1))
-            .take(self.running())
-            .position(|(from, to)| *from <= within && within < *to)?;
-        self.mahadasha(cycle, index)
+            .get(..=self.running())?
+            .partition_point(|offset| base(cycle) + offset <= instant);
+        let index = begun.checked_sub(1)?;
+        // A cycle's last end is summed from its own base and the next
+        // cycle's start from the next base, and the two can differ in the
+        // last bit: an instant at the next cycle's start is in it.
+        if index < self.running() && instant < base(cycle + 1) {
+            self.mahadasha(cycle, index)
+        } else {
+            self.mahadasha(cycle + 1, 0)
+        }
     }
 
     /// Nine antardashas from the mahadasha's own place among its nine, each
@@ -421,6 +431,46 @@ mod tests {
             balance_of: KalachakraBalance::FirstSign,
             after_ninth: KalachakraAfterNinth::Reverse,
         }
+    }
+
+    /// The last bits below a later cycle's start, over a moon at every
+    /// tenth of a degree: each is in the period before, or, past that
+    /// period's own end, in the next cycle's first. None is in no period,
+    /// and the division never puts one in the cycle it has not reached.
+    #[test]
+    fn an_instant_just_below_a_cycle_is_in_the_cycle_before() {
+        for tenth in 0..3600 {
+            let rules = KalachakraRules {
+                after_cycle: AfterCycle::Repeat,
+                ..rules()
+            };
+            let dasha = KalachakraDasha::new(&birth(f64::from(tenth) / 10.0), rules).unwrap();
+            let days = dasha.cycle_days();
+            for cycle in 1..4_u32 {
+                let start = dasha.birth.get() + f64::from(cycle) * days;
+                let last = dasha.mahadasha(cycle - 1, dasha.running() - 1).unwrap();
+                let mut instant = below(start);
+                for _ in 0..4 {
+                    assert!(((instant - dasha.birth.get()) / days).floor() < f64::from(cycle));
+                    // Past the last period's own end, in the bit its sum
+                    // leaves before the next cycle's, either holds it.
+                    let found = dasha.mahadasha_at(instant).map(|p| p.path);
+                    let next = Path::root(cycle, 0);
+                    assert!(
+                        found == Some(last.path)
+                            || (instant >= last.interval.to.get() && found == Some(next)),
+                        "{tenth} tenths, cycle {cycle}: {found:?}"
+                    );
+                    instant = below(instant);
+                }
+            }
+        }
+    }
+
+    /// The float just below a positive one: `f64::next_down`, which the
+    /// workspace's MSRV predates.
+    fn below(x: f64) -> f64 {
+        f64::from_bits(x.to_bits() - 1)
     }
 
     fn birth(degrees: f64) -> Birth {

@@ -33,6 +33,30 @@ reader is the reference every generated binding decoder is held to, and
 `every_blob_the_library_writes_reads_whole` holds it to one blob of
 each schema the library writes.
 
+The generated decoders in Node, Python, Dart and Java are out of
+libFuzzer's reach, so each binding's blob test corrupts what the library
+wrote instead (`blob.test.mjs`, `test_blob.py`, `blob_test.dart`,
+`BindingTest.java`). Every binding runs the same mutator over one blob of
+each schema (`crates/ffi/examples/blob_fixtures.rs`): a seeded xorshift32
+stream picks, two thousand times a blob, one of four mutations: a few
+bytes flipped past the header; one aligned word set to an edge value
+(0, 1, 3, 4, 8, 2^31 − 1, 2^31, 2^32 − 1 or the blob's length); the blob
+cut short; or the blob grown with zeros. The last two mend the header's
+length so the table of contents is read. A mutant is decoded or refused
+as the binding's blob error (`BlobFormatError`, `BlobError`,
+`FormatException`, `BlobFormatException`), and anything else thrown is a
+finding. Each schema must take both ways out, so a mutator that never got
+past the header cannot pass. Its first run found every decoder but
+Java's throwing the runtime's own errors (a `RangeError`, a
+`struct.error`, a `UnicodeDecodeError`) where a section, a column or a
+text ran outside its bounds or off its alignment. All four now hold one
+contract, which Java's reader already mostly kept:
+- the table of contents fits the blob;
+- a fixed section holds a slot for each field;
+- a column's offset is inside its section, starts on a multiple of its
+  width, and holds every row;
+- a text's count fits its section and is UTF-8.
+
 A chart request's other fields are fixed at a request that founds one
 chart, so every section's reader runs against a real sky; the context is
 built once per process with the compact built-in ephemeris.

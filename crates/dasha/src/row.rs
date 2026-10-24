@@ -315,8 +315,9 @@ impl UduRow {
         let covered = self.covered().max(1);
         let overflow = !self.repeats && counted >= covered;
         // Round and round the lords' windows until the seed falls in one; a
-        // row that repeats covers the wheel as often as it takes.
-        let mut left = if overflow { counted } else { counted % covered };
+        // row that repeats covers the wheel as often as it takes, and
+        // `window_of` and the lord's index both count round the lords.
+        let mut left = counted;
         let mut group = 0_usize;
         while left >= u16::from(self.window_of(group)) {
             left -= u16::from(self.window_of(group));
@@ -1172,5 +1173,140 @@ mod tests {
             endless.validate().unwrap_err().field(),
             Some("scale.rounds")
         );
+    }
+
+    /// A system's name reads as its key, under its kind as a binding
+    /// spells it, and crosses JSON as the key.
+    #[test]
+    fn a_dasha_name_is_its_key() {
+        let catalogued = DashaName::Catalogued(DashaSystem::Vimshottari);
+        let registered = DashaName::Registered(String::from("MY_SYSTEM"));
+        assert_eq!(catalogued.key(), "VIMSHOTTARI");
+        assert_eq!(catalogued.full_key(), "dasha_system.VIMSHOTTARI");
+        assert_eq!(registered.key(), "MY_SYSTEM");
+        assert_eq!(registered.full_key(), "dasha_system.MY_SYSTEM");
+        assert_eq!(catalogued.to_string(), "VIMSHOTTARI");
+        assert_eq!(registered.to_string(), "MY_SYSTEM");
+        for name in [&catalogued, &registered] {
+            let json = serde_json::to_string(name).unwrap();
+            assert_eq!(json, format!("\"{}\"", name.key()));
+            assert_eq!(serde_json::from_str::<DashaName>(&json).unwrap(), *name);
+        }
+        assert!(serde_json::from_str::<DashaName>("\"not a key\"").is_err());
+    }
+
+    /// The name's schema is the catalogue's keys or any key name.
+    #[cfg(feature = "schema")]
+    #[test]
+    fn a_dasha_name_s_schema_takes_either() {
+        use schemars::JsonSchema as _;
+        assert_eq!(DashaName::schema_name(), "DashaName");
+        let schema = serde_json::to_value(schemars::schema_for!(DashaName)).unwrap();
+        let any_of = schema["anyOf"].as_array().unwrap();
+        assert_eq!(any_of.len(), 2, "{schema}");
+        assert!(
+            schema["description"]
+                .as_str()
+                .unwrap()
+                .contains("registered")
+        );
+    }
+
+    /// The first lord is counted on from the row's offset and round the
+    /// lords again past the last.
+    #[test]
+    fn an_offset_seat_counts_round_the_lords() {
+        let mut definition = UduDefinition::of("MY_OFFSET", Nakshatra::Ashwini);
+        definition.lords = vec![
+            lord(Graha::Sun, 6),
+            lord(Graha::Moon, 10),
+            lord(Graha::Mars, 7),
+        ];
+        definition.offset = 2;
+        let row = definition.row();
+        let lords: Vec<usize> = (0..6).map(|place| row.seat(place).lord).collect();
+        assert_eq!(lords, [2, 0, 1, 2, 0, 1]);
+    }
+
+    /// Lords may cover the whole wheel and no more.
+    #[test]
+    fn lords_cover_the_wheel_at_most() {
+        use teistro_core::registry::Definition as _;
+
+        let mut definition = UduDefinition::of("MY_COVER", Nakshatra::Ashwini);
+        definition.lords = VIMSHOTTARI_LORDS.to_vec();
+        definition.span = 3;
+        assert!(
+            definition.row().validate().is_ok(),
+            "nine lords of three cover 27"
+        );
+        definition.span = 4;
+        let refused = definition.row().validate().unwrap_err();
+        assert_eq!(refused.field(), Some("span"));
+        definition.span = 1;
+        definition.groups = vec![4, 3, 3, 3, 3, 3, 3, 3, 3];
+        let refused = definition.row().validate().unwrap_err();
+        assert_eq!(refused.field(), Some("groups"));
+        // Through the registry's trait, as a context registers it.
+        assert_eq!(definition.key(), "MY_COVER");
+        assert!(definition.validate().is_err());
+        definition.groups.clear();
+        assert!(definition.validate().is_ok());
+        // As many as 255 mahadashas, the most a path's place holds.
+        definition.lords = VIMSHOTTARI_LORDS[..5].to_vec();
+        definition.span = 1;
+        definition.scale.rounds = 51;
+        assert_eq!(definition.row().mahadashas(), 255);
+        assert!(definition.validate().is_ok());
+        definition.scale.rounds = 52;
+        assert_eq!(
+            definition.validate().unwrap_err().field(),
+            Some("scale.rounds")
+        );
+    }
+
+    /// Ashtottari's row is the grouping's, and every other system's row
+    /// is its own whatever the grouping.
+    #[test]
+    fn ashtottari_s_row_follows_its_grouping() {
+        let three = row(DashaSystem::Ashtottari, AshtottariGrouping::ThreeEach).unwrap();
+        let bphs = row(DashaSystem::Ashtottari, AshtottariGrouping::FourAndThree).unwrap();
+        assert_eq!(*bphs, ASHTOTTARI_BPHS);
+        assert_ne!(three, bphs);
+        assert_eq!(three.system, DashaSystem::Ashtottari);
+        for grouping in [
+            AshtottariGrouping::ThreeEach,
+            AshtottariGrouping::FourAndThree,
+        ] {
+            let vimshottari = row(DashaSystem::Vimshottari, grouping).unwrap();
+            assert_eq!(vimshottari.system, DashaSystem::Vimshottari);
+        }
+    }
+
+    /// A definition writes only how it differs from Vimshottari's shape,
+    /// and reads back the defaults it left out.
+    #[test]
+    fn a_definition_writes_what_differs_and_reads_the_defaults() {
+        let mut definition = UduDefinition::of("MY_SHAPE", Nakshatra::Ashwini);
+        definition.lords = vec![lord(Graha::Sun, 6)];
+        let json = serde_json::to_value(&definition).unwrap();
+        assert!(json.get("wheel").is_none(), "{json}");
+        let read: UduDefinition = serde_json::from_value(json).unwrap();
+        assert_eq!(read, definition);
+        assert!(read.repeats);
+        definition.wheel = Wheel::WithAbhijit;
+        definition.repeats = false;
+        let json = serde_json::to_value(&definition).unwrap();
+        assert_eq!(json["wheel"], "WITH_ABHIJIT", "{json}");
+        assert_eq!(
+            serde_json::from_value::<UduDefinition>(json).unwrap(),
+            definition
+        );
+        let bare: UduDefinition = serde_json::from_value(serde_json::json!({
+            "key": "MY_BARE", "lords": [{"graha": "SUN", "years": 6}], "reference": "ASHWINI"
+        }))
+        .unwrap();
+        assert!(bare.repeats);
+        assert_eq!(bare.wheel, Wheel::Nakshatras);
     }
 }

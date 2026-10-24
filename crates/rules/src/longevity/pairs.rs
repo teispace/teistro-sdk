@@ -572,4 +572,40 @@ mod tests {
     fn a_chart_without_its_hora_lagna_has_no_three_pairs() {
         assert!(read(&chart(), &[], ThreePairsRules::VERSE).is_none());
     }
+
+    /// v. 47: Saturn keeps the class in his own sign or his exaltation, or
+    /// touched by malefics alone; untouched, or touched by a benefic too,
+    /// he does not. From Aries nothing but Saturn aspects Gemini.
+    #[test]
+    fn saturn_is_exempt_at_home_exalted_or_among_malefics_alone() {
+        let exempt = |placed: &[(Body, Rashi)]| {
+            let mut c = chart();
+            for (body, sign) in placed {
+                place(&mut c, *body, *sign);
+            }
+            Evaluator::new(&c, Readings::TEXTS).saturn_exempt()
+        };
+        assert!(exempt(&[(SATURN, Rashi::Capricorn)]));
+        assert!(exempt(&[(SATURN, Rashi::Libra)]));
+        assert!(!exempt(&[(SATURN, Rashi::Gemini)]));
+        assert!(exempt(&[(SATURN, Rashi::Gemini), (MARS, Rashi::Gemini)]));
+        assert!(!exempt(&[
+            (SATURN, Rashi::Gemini),
+            (MARS, Rashi::Gemini),
+            (JUPITER, Rashi::Gemini)
+        ]));
+    }
+
+    /// v. 48: Jupiter in the lagna with benefics and no malefic touching
+    /// him raises the class; a malefic beside him undoes it.
+    #[test]
+    fn jupiter_raises_the_class_among_benefics_alone() {
+        let mut c = chart();
+        for body in [Body::Graha(Graha::Sun), MARS, SATURN, MOON, RAHU, KETU] {
+            place(&mut c, body, Rashi::Taurus);
+        }
+        assert!(Evaluator::new(&c, Readings::TEXTS).jupiter_raises());
+        place(&mut c, MARS, Rashi::Aries);
+        assert!(!Evaluator::new(&c, Readings::TEXTS).jupiter_raises());
+    }
 }

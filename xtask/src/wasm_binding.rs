@@ -70,7 +70,7 @@ use std::process::Command;
 
 use serde_json::{Value, json};
 
-use crate::binding::{blob_fixtures, cargo, pinned_npm_tool, present, step, tool};
+use crate::binding::{FIXTURES, blob_fixtures, cargo, pinned_npm_tool, present, step, tool};
 use crate::platform::NPM_WASM;
 use crate::sbom;
 use crate::sizes::{self, Allowed, Artefact, Row};
@@ -106,7 +106,6 @@ const WASM: &str = "bindings/wasm";
 /// version: inside the build tree, so nothing outside the repository is
 /// touched and a cache of `target/` keeps it.
 const TOOLS: &str = "target/tools";
-const FIXTURES: &str = "target/tsrb";
 /// The package's loaders by the import condition that picks each, **in
 /// the order a resolver tries them**: the first condition a host sets
 /// wins, so the Workers one comes before `node` (a Worker bundled with

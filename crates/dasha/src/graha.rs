@@ -122,6 +122,13 @@ pub fn karaka_years(lagna: Rashi, karaka: Rashi) -> u8 {
     if ahead == 0 { 12 } else { ahead }
 }
 
+/// The most seats a graha dasha can run: each is a graha and the sign its
+/// period is of, or none, and no two are the same.
+pub const MOST_SEATS: usize = Graha::ALL.len() * (Rashi::ALL.len() + 1);
+
+// A seat's place in a path is a `u8`.
+const _: () = assert!(MOST_SEATS <= u8::MAX as usize);
+
 /// A graha dasha of one birth: its lords in the order they run, each with
 /// the years the chart gives it.
 #[derive(Clone, Debug, PartialEq)]
@@ -326,8 +333,7 @@ impl GrahaDasha {
     /// # Errors
     ///
     /// No lords, or a lord named twice, named `lords`; a lord's years not
-    /// a positive number, named `lords[i]`; a year of no days, named
-    /// `year_length`.
+    /// a positive number, named `lords[i]`.
     pub fn new(
         lords: Vec<(Graha, f64)>,
         birth: JulianDay<Utc>,
@@ -457,7 +463,8 @@ impl GrahaDasha {
     }
 
     /// A dasha of `lords`, each seat's period of its sign in `signs`,
-    /// checked as the constructors say.
+    /// checked as the constructors say. No seat is named twice, so no more
+    /// run than [`MOST_SEATS`], which a path's place holds.
     fn checked(
         lords: Vec<(Graha, f64)>,
         signs: Vec<Option<Rashi>>,
@@ -469,11 +476,6 @@ impl GrahaDasha {
         if lords.is_empty() {
             return Err(
                 Error::invalid_arg("a graha dasha runs at least one lord").with_field("lords")
-            );
-        }
-        if lords.len() > usize::from(u8::MAX) {
-            return Err(
-                Error::invalid_arg("a graha dasha runs at most 255 lords").with_field("lords")
             );
         }
         let seats = || lords.iter().zip(&signs);
@@ -494,9 +496,6 @@ impl GrahaDasha {
             }
         }
         let year_days = year_length.days();
-        if year_days.is_nan() || year_days <= 0.0 {
-            return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
-        }
         let total_years = lords.iter().map(|(_, years)| years).sum();
         Ok(GrahaDasha {
             lords,
@@ -963,5 +962,130 @@ mod tests {
                 assert_eq!(back, karaka.id(), "{lagna:?} to {karaka:?}");
             }
         }
+    }
+
+    /// A giver of a year in `sign` of `strength`.
+    fn placed(sign: Rashi, strength: f64) -> Giver {
+        giver(None, sign, 1.0, strength)
+    }
+
+    /// The strongest giver in a place takes it, and of two as strong the
+    /// one met first from the lord keeps it; the place's givers then run
+    /// in seat order from the lord, round past the last seat.
+    #[test]
+    fn the_strongest_in_each_place_gives_and_they_run_from_the_lord() {
+        let seats = [
+            placed(Rashi::Aries, 1.0),
+            // From Aries: the fourth and the eighth share a place, and the
+            // eighth is stronger.
+            placed(Rashi::Cancer, 5.0),
+            placed(Rashi::Scorpio, 9.0),
+            // The fifth and the ninth share one, as strong as each other.
+            placed(Rashi::Leo, 3.0),
+            placed(Rashi::Sagittarius, 3.0),
+        ];
+        // A row's parts are scaled to sum to one.
+        let same = |row: &[(usize, f64)], expected: &[(usize, f64)]| {
+            let total: f64 = expected.iter().map(|(_, part)| part).sum();
+            assert_eq!(row.len(), expected.len(), "{row:?}");
+            for (got, want) in row.iter().zip(expected) {
+                assert_eq!(got.0, want.0, "{row:?}");
+                assert!((got.1 - want.1 / total).abs() < 1e-12, "{row:?}");
+            }
+        };
+        let rows = ayurdaya_shares(&seats, AntardashaPlace::Share);
+        same(&rows[0], &[(0, 1.0), (2, 1.0 / 4.0), (3, 1.0 / 3.0)]);
+        // From Leo, the seats after it are the Sagittarius, the Aries (both
+        // trines: the Sagittarius, met first and stronger, keeps it), the
+        // Cancer (the twelfth, no place) and the Scorpio (the fourth): the
+        // Sagittarius runs before the Scorpio, though its seat is later.
+        same(&rows[3], &[(3, 1.0), (4, 1.0 / 3.0), (2, 1.0 / 4.0)]);
+        // Read by the house, the eighth and the fourth are places of their
+        // own.
+        let by_house = ayurdaya_shares(&seats, AntardashaPlace::House);
+        same(
+            &by_house[0],
+            &[
+                (0, 1.0),
+                (1, 1.0 / 4.0),
+                (2, 1.0 / 4.0),
+                (3, 1.0 / 3.0),
+                (4, 1.0 / 3.0),
+            ],
+        );
+    }
+
+    /// A row of shares holds from one to 255 sub-periods, each a seat and
+    /// a positive, finite part, and its parts are scaled to sum to one.
+    #[test]
+    fn a_row_of_shares_is_scaled_and_bounded() {
+        let birth = JulianDay::literal(0.0);
+        let shared = |shares: Vec<Vec<(usize, f64)>>| {
+            GrahaDasha::with_shares(
+                vec![(Graha::Sun, None, 4.0), (Graha::Moon, None, 2.0)],
+                shares,
+                birth,
+                YearLength::Savana360,
+                AfterCycle::End,
+            )
+        };
+        let dasha = shared(vec![vec![(0, 2.0), (1, 6.0)], vec![(1, 5.0)]]).unwrap();
+        assert_eq!(dasha.division(), None);
+        let sun = dasha.mahadasha(0, 0).unwrap();
+        let parts: Vec<f64> = dasha
+            .children(&sun)
+            .map(|child| child.interval.days() / sun.interval.days())
+            .collect();
+        assert_eq!(parts.len(), 2);
+        assert!(
+            (parts[0] - 0.25).abs() < 1e-12 && (parts[1] - 0.75).abs() < 1e-12,
+            "{parts:?}"
+        );
+        let most = vec![(0, 1.0); usize::from(u8::MAX)];
+        assert!(shared(vec![most.clone(), vec![(1, 1.0)]]).is_ok());
+        let past = vec![(0, 1.0); usize::from(u8::MAX) + 1];
+        let field = |shares| shared(shares).unwrap_err().field().map(str::to_owned);
+        assert_eq!(
+            field(vec![past, vec![(1, 1.0)]]).as_deref(),
+            Some("shares[0]")
+        );
+        for part in [0.0, -1.0, f64::INFINITY, f64::NAN] {
+            assert_eq!(
+                field(vec![vec![(0, 1.0)], vec![(1, part)]]).as_deref(),
+                Some("shares[1]"),
+                "{part}"
+            );
+        }
+        let divided = GrahaDasha::new(
+            vec![(Graha::Sun, 4.0)],
+            birth,
+            YearLength::Savana360,
+            GrahaDivision::Equal,
+            AfterCycle::End,
+        )
+        .unwrap();
+        assert_eq!(divided.division(), Some(GrahaDivision::Equal));
+    }
+
+    /// Twelve grahas, each with a sign or none.
+    #[test]
+    fn a_dasha_runs_at_most_twelve_grahas_by_thirteen_signs() {
+        assert_eq!(MOST_SEATS, 156);
+    }
+
+    /// The mahadasha at an instant: none before birth, the first at it,
+    /// and at a boundary the one beginning there.
+    #[test]
+    fn the_mahadasha_at_an_instant_begins_at_birth() {
+        let dasha = karaka(GrahaDivision::Proportional, AfterCycle::End);
+        let birth = 2_451_545.0;
+        assert!(dasha.mahadasha_at(birth - 1e-6).is_none());
+        assert_eq!(dasha.mahadasha_at(birth).unwrap().lord, Graha::Sun);
+        let sun_ends = dasha.mahadasha(0, 0).unwrap().interval.to.get();
+        assert_eq!(dasha.mahadasha_at(sun_ends).unwrap().lord, Graha::Venus);
+        assert_eq!(
+            dasha.mahadasha_at(sun_ends - 1e-6).unwrap().lord,
+            Graha::Sun
+        );
     }
 }

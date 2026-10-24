@@ -539,11 +539,15 @@ fn factor(graha: Graha, longitude: f64, retrograde: bool, combust: bool) -> f64 
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::indexing_slicing, reason = "tests index the rows they built")]
+
     use super::*;
 
     #[test]
     fn the_divisors_cast_out_their_cycles_and_parijata_measures_virgo_as_5() {
         assert!((pinda_years(252, Divisor::Thirty) - 8.4).abs() < 1e-12);
+        // 360 / 30 is a whole twelve, which is not over one, so it stands.
+        assert!((pinda_years(360, Divisor::Thirty) - 12.0).abs() < 1e-12);
         // 390 / 30 = 13 years, less a twelve.
         assert!((pinda_years(390, Divisor::Thirty) - 1.0).abs() < 1e-12);
         // 252 × 7 / 27 = 65⅓, less two twenty-sevens.
@@ -564,5 +568,41 @@ mod tests {
         assert!(close(factor(Graha::Sun, 100.0, false, false), 1.25));
         assert!(close(factor(Graha::Mars, 118.0, true, false), 2.0));
         assert!(close(factor(Graha::Venus, 357.0, false, true), 0.5));
+    }
+
+    /// A reading's raw rows become the bindus graha by graha, whatever
+    /// order it lists them in, and a graha it leaves out has none.
+    #[test]
+    fn a_reading_s_rows_are_its_bindus_graha_by_graha() {
+        use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaRules};
+        let chart = AshtakavargaChart {
+            lagna: Rashi::Leo,
+            signs: [
+                Rashi::Aries,
+                Rashi::Cancer,
+                Rashi::Virgo,
+                Rashi::Pisces,
+                Rashi::Sagittarius,
+                Rashi::Taurus,
+                Rashi::Capricorn,
+            ],
+        };
+        let mut reading = AshtakavargaReading::of(
+            &chart,
+            AshtakavargaRules::of(&teistro_core::settings::root()),
+        );
+        reading.grahas.reverse();
+        let saturn = reading.grahas.remove(0);
+        assert_eq!(saturn.graha, Graha::Saturn);
+        let bindus = Bindus::from(&reading);
+        for row in &reading.grahas {
+            assert_eq!(
+                bindus.grahas[row.graha as usize], row.bindus,
+                "{:?}",
+                row.graha
+            );
+        }
+        assert_eq!(bindus.grahas[Graha::Saturn as usize], [0; 12]);
+        assert_eq!(bindus.ekadhipatya, reading.rules.ekadhipatya);
     }
 }

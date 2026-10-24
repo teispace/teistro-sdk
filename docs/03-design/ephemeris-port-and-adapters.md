@@ -394,7 +394,11 @@ direction, and a distance an engine gives one is a convention. The kit's
 and explained, and `CorpusReport::against` holds it both ways — a miss no
 entry explains fails, and so does an entry that explains nothing in a run
 it applies to. The built-in tiers run it in CI (`tests/conformance.rs`,
-one tier per verify job); Teimeris, the corpus's own ephemeris, by hand
+one tier per verify job). Teimeris, the corpus's own ephemeris, is run by
+`cargo xtask check-teimeris-adapter` (the kit under the published bounds,
+then every binding's plugin test with the adapter loaded), which verify's
+`teimeris` job runs once a read token for the private repository is a
+secret; the corpus run is by hand
 (`--corpus fixtures --class same-ephemeris`), and `--native-frame-only`
 founds the charts over its native frame alone, which measures the SDK's
 completion rather than the engine's.

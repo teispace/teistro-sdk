@@ -244,7 +244,13 @@ providers**" and the engine half of that does not exist outside Rust:
   maintainer's** — how this repository's CI obtains the Teimeris source,
   given that it cannot be a sibling checkout as it is today, and that
   the SDK's tree and workspace are deliberately AGPL-free. STATUS.md's
-  "How to resume" states the options and what each costs.
+  "How to resume" states the options and what each costs. For the
+  adapter's own gate the route is taken: verify's `teimeris` job clones
+  Teimeris beside the SDK, outside its tree, with a read-only token in
+  the `TEIMERIS_READ_TOKEN` secret, and runs
+  `cargo xtask check-teimeris-adapter`. Creating that token is the
+  maintainer's; until then the job reports in a notice that it checked
+  nothing.
 - **The engine route is wired.** The Teimeris adapter answers the port's
   `native_manifest` and `native_call` from its own 161-function IDL,
   which it has always described and never exposed, so `sdk.engine.*`

@@ -125,8 +125,7 @@ impl FirdariaDasha {
     ///
     /// # Errors
     ///
-    /// A `first` that is neither luminary, named `first`; a year of no
-    /// days, named `year_length`.
+    /// A `first` that is neither luminary, named `first`.
     pub fn new(
         first: Graha,
         birth: JulianDay<Utc>,
@@ -140,9 +139,6 @@ impl FirdariaDasha {
             .with_field("first"));
         }
         let year_days = year_length.days();
-        if year_days.is_nan() || year_days <= 0.0 {
-            return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
-        }
         Ok(FirdariaDasha {
             order: firdaria_order(first, nodes),
             birth,

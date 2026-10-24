@@ -14,7 +14,7 @@
 use std::path::Path;
 use std::process::Command;
 
-use crate::binding::{blob_fixtures, library, present, step};
+use crate::binding::{FIXTURES, blob_fixtures, library, present, step};
 use crate::examples::{Binding, Runtime};
 
 const PACKAGE: &str = "bindings/dart";
@@ -40,7 +40,6 @@ const FLUTTER_ADAPTER: &str = "adapters/ephemeris-teimeris/flutter";
 /// `// expect:` must be reported, which is how the Dart half of Phase 1's
 /// "a swapped latitude and longitude does not compile" is proved.
 const WRONG: &str = "typecheck/wrong.dart";
-const FIXTURES: &str = "target/tsrb";
 /// Analyses the file of wrong usages and holds it to what it expects:
 /// every `// expect: <text>` line must be answered by an error carrying
 /// that text, and no error may go unexpected.

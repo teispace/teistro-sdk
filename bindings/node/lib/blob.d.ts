@@ -2,6 +2,15 @@
 // crates; do not edit. ABI version 1, SDK 0.0.0.
 // The description this file was rendered from ships as idl/api.json.
 
+
+/**
+ * Bytes that are not a blob this decoder reads: too short, another schema
+ * or layout version, a section or a column outside the blob or off its
+ * alignment, or text that is not UTF-8.
+ */
+export declare class BlobFormatError extends TypeError {
+  readonly name: 'BlobFormatError';
+}
 /**
  * The `instants` section of a Positions blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
@@ -124,7 +133,7 @@ export interface Positions {
 /**
  * Decodes a Positions blob. The columns are views over `bytes`, so the
  * buffer must outlive the result; a blob of another layout version or
- * another schema is a `TypeError`.
+ * another schema is a `BlobFormatError`.
  */
 export declare function decodePositions(bytes: Uint8Array): Positions;
 
@@ -167,7 +176,7 @@ export interface IntlRender {
 /**
  * Decodes a IntlRender blob. The columns are views over `bytes`, so the
  * buffer must outlive the result; a blob of another layout version or
- * another schema is a `TypeError`.
+ * another schema is a `BlobFormatError`.
  */
 export declare function decodeIntlRender(bytes: Uint8Array): IntlRender;
 
@@ -5894,7 +5903,7 @@ export interface Charts {
 /**
  * Decodes a Charts blob. The columns are views over `bytes`, so the
  * buffer must outlive the result; a blob of another layout version or
- * another schema is a `TypeError`.
+ * another schema is a `BlobFormatError`.
  */
 export declare function decodeCharts(bytes: Uint8Array): Charts;
 
@@ -7058,7 +7067,7 @@ export interface Panchanga {
 /**
  * Decodes a Panchanga blob. The columns are views over `bytes`, so the
  * buffer must outlive the result; a blob of another layout version or
- * another schema is a `TypeError`.
+ * another schema is a `BlobFormatError`.
  */
 export declare function decodePanchanga(bytes: Uint8Array): Panchanga;
 
@@ -7131,7 +7140,7 @@ export interface Naam {
 /**
  * Decodes a Naam blob. The columns are views over `bytes`, so the
  * buffer must outlive the result; a blob of another layout version or
- * another schema is a `TypeError`.
+ * another schema is a `BlobFormatError`.
  */
 export declare function decodeNaam(bytes: Uint8Array): Naam;
 

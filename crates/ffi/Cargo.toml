@@ -95,6 +95,12 @@ builtin-standard = ["builtin-ephemeris", "teistro/builtin-standard"]
 builtin-full = ["builtin-ephemeris", "teistro/builtin-full"]
 
 
+# One blob of every schema, the chart and the names among them, so a
+# build that leaves those families out has none of them to write.
+[[example]]
+name = "blob_fixtures"
+required-features = ["full"]
+
 # The ABI suite reads every family's answers, the key suite holds every
 # family's spelling to its serde and the description suite holds the whole
 # description to the library, so a build that leaves one out

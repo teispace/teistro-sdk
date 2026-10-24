@@ -12,6 +12,91 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A corrupted blob is refused in every binding, never thrown or
+misread** (the Node, Python, Dart and Java decoders). **Numbers:** none.
+A blob the library wrote decodes exactly as before. Each binding's blob
+test now corrupts one blob of every schema two thousand times with the
+same seeded mutator. Its first run found the Node, Python and Dart
+decoders throwing the runtime's own errors (a `RangeError`, a
+`struct.error`, a `UnicodeDecodeError`) where a section, a column or a
+text ran outside its bounds or off its alignment, and reading past a
+section into the next where the blob still held the bytes. All four
+decoders now refuse those blobs with the binding's blob error:
+
+- **Node:** the refusal is `BlobFormatError`, a new export and a
+  `TypeError` still, so code catching that is unchanged.
+- **Java:** text that is not UTF-8 is refused rather than decoded with
+  replacement characters, and a column off its alignment is refused as
+  it is in the other bindings.
+
+`blob_fixtures` writes the chart, panchanga and naam blobs beside the
+two it wrote, so its "one blob of every schema" is true, and the Java
+gate now reads them.
+
+**The Teimeris adapter has a gate** (`xtask`, CI). **Numbers:** none.
+`cargo xtask check-teimeris-adapter` runs the adapter's tests, the
+provider kit over it under the published bounds (its report in
+`target/teimeris-kit/`), and the Node, Python, Dart and Java gates again
+with `TEISTRO_TEIMERIS_ADAPTER` naming the built plugin, so each binding's
+plugin test loads the engine instead of skipping. Without a Teimeris
+checkout beside the SDK the gate skips, which a strict run refuses.
+Verify's new `teimeris` job runs it once the `TEIMERIS_READ_TOKEN` secret
+exists, and says in a notice that it did not run while it does not.
+
+**Every dasha kernel keeps one contract, and two lookups and the decennials'
+cycles are fixed by it** (`teistro-dasha`). **Numbers:** none move under
+the default settings. A new test, `tests/timeline.rs`, holds every kernel
+to the same contract: nothing before birth, each mahadasha found from its
+start to its end, every parent partitioned by its children, and the chain
+at a child's start ending in that child. It found three faults:
+
+- **The decennials' cycles under another year.** Under
+  `decennial_division: "CYCLES"`, VI.5's third-level cycles were 129 days
+  whatever the year. Valens counts them in days of his 360-day year, which
+  is the decennials' default, so under any other year seven cycles fell
+  short of Saturn's 30 months and left the end of its period with no
+  period. The cycles, and the minimum years counted as days below them,
+  now keep their share of the year: 129 days in 360. Only the `CYCLES`
+  division under a year other than 360 days moves.
+  `DashaReading::decennial_division` now reads the division back by a
+  third-level period's share of its mahadasha, a thirtieth, which holds
+  under any year.
+- **A boundary in a year's dasha and in the Kalachakra.** `mahadasha_at`
+  found the period by an inverse of the arithmetic that set its ends, a
+  fraction of the year or an offset into the cycle, which could round an
+  instant exactly at a boundary into the period before it. A chain at
+  that instant then held the wrong mahadasha and none of its children.
+  Both now compare the instant with each bound as the period's own ends
+  are computed. Under `after_cycle: "REPEAT"`, the Kalachakra's first
+  instant of a later cycle was still answered with the last period of the
+  cycle before it, since that cycle's end and the next one's start are
+  summed from different bases and can differ in the last bit. An instant
+  at a cycle's start is now in that cycle.
+
+**A rule's unbound `SELF` is reported where it is written**
+(`teistro-rules`). **Numbers:** none move. `Condition::names_self` read a
+combinator's children as its own references, so a rule naming `SELF` under
+an `and`, `or`, `not`, `n-of` or `in-varga` with no `for-any` above it was
+refused as an unbound `and` rather than by the condition that names it.
+Every combinator's children now name for themselves, as `for-any`'s `then`
+already did.
+
+**The rule language's schemas spell what their readers take**
+(`teistro-rules`). **Numbers:** none move. The hand-written schemas of a
+body and a subject described the any-of shapes as `ANY_BENEFIC`-style and
+the bound body as `self`; the readers take `any-benefic` and `SELF`, and
+the descriptions now say so.
+
+**A dasha kernel cannot be given a year of no days** (`teistro-dasha`).
+**Numbers:** none move. **Changed:** `ReleasingDasha::new` and
+`ProfectionDasha::new` return the dasha rather than a `Result`, and
+`time_lord` returns `Option<DashaCursor>`; the firdaria, decennials, graha,
+Kalachakra and sign-based constructors no longer list "a year of no days"
+among their errors. Every `YearLength` is a fixed positive count of days
+(a core test holds them to it), so the six checks each kernel made could
+never refuse, and mutation testing found each as a branch no test could
+reach.
+
 **A window of Saturn's spells is bounded over MCP** (`mcp-server.md`,
 P5). **Numbers:** none moved. **Fixed:** `Limits` bounded no `sadeSati`
 window, and the search runs on to the ephemeris's edge, so the fuzzer's

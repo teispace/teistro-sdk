@@ -368,6 +368,81 @@ public final class BindingTest {
             }
         });
 
+        // Every blob of every schema, corrupted the same way in every binding's
+        // test: a seeded xorshift32 stream picks, two thousand times a blob,
+        // one of four mutations: a few bytes flipped past the header, one
+        // aligned word set to an edge value (0, 1, 3, 4, 8, 2^31 - 1, 2^31,
+        // 2^32 - 1 or the blob's length), the blob cut short, or the blob
+        // grown with zeros, the last two with the header's length mended so
+        // the table of contents is read. Each mutant is decoded or refused as
+        // a BlobFormatException; anything else thrown is a fault in the decoder.
+        tests.put("a corrupted blob of every schema is decoded or refused, never anything else", () -> {
+            String dir = System.getenv("TEISTRO_FIXTURES");
+            check(dir != null, "TEISTRO_FIXTURES names the blobs `cargo xtask check-java` writes");
+            Map<String, java.util.function.Consumer<byte[]>> schemas = new java.util.LinkedHashMap<>();
+            schemas.put("positions.tsrb", Positions::decode);
+            schemas.put("intl_render.tsrb", IntlRender::decode);
+            schemas.put("charts.tsrb", com.teispace.teistro.blob.Charts::decode);
+            schemas.put("panchanga.tsrb", com.teispace.teistro.blob.Panchanga::decode);
+            schemas.put("naam.tsrb", com.teispace.teistro.blob.Naam::decode);
+            long[] edges = {0, 1, 3, 4, 8, 0x7fffffffL, 0x80000000L, 0xffffffffL, -1};
+            for (Map.Entry<String, java.util.function.Consumer<byte[]>> schema : schemas.entrySet()) {
+                byte[] good;
+                try {
+                    good = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(dir, schema.getKey()));
+                } catch (java.io.IOException e) {
+                    throw new AssertionError("the fixture " + schema.getKey(), e);
+                }
+                int[] x = {0x9e3779b9};
+                java.util.function.IntSupplier next = () -> {
+                    x[0] ^= x[0] << 13;
+                    x[0] ^= x[0] >>> 17;
+                    x[0] ^= x[0] << 5;
+                    return x[0];
+                };
+                // The stream's words as the unsigned numbers every binding reads.
+                java.util.function.LongSupplier word = () -> Integer.toUnsignedLong(next.getAsInt());
+                int decoded = 0;
+                int refused = 0;
+                for (int i = 0; i < 2000; i += 1) {
+                    byte[] bytes = good.clone();
+                    int kind = (int) (word.getAsLong() % 4);
+                    if (kind == 0) {
+                        for (long n = 1 + word.getAsLong() % 4; n > 0; n -= 1) {
+                            int at = (int) (20 + word.getAsLong() % (bytes.length - 20));
+                            bytes[at] ^= (byte) (1 + word.getAsLong() % 255);
+                        }
+                    } else if (kind == 1) {
+                        int at = (int) (word.getAsLong() % (bytes.length >>> 2)) * 4;
+                        long edge = edges[(int) (word.getAsLong() % edges.length)];
+                        // The magic, the version and the schema stay, or nothing past them is read.
+                        if (at < 8 || (at >= 12 && at < 20)) {
+                            continue;
+                        }
+                        java.nio.ByteBuffer.wrap(bytes).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                                .putInt(at, (int) (edge == -1 ? bytes.length : edge));
+                    } else {
+                        int length = kind == 2
+                                ? (int) (32 + word.getAsLong() % (bytes.length - 32))
+                                : (int) (bytes.length + 8 * (1 + word.getAsLong() % 8));
+                        bytes = java.util.Arrays.copyOf(bytes, length);
+                        java.nio.ByteBuffer.wrap(bytes).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                                .putInt(12, bytes.length);
+                    }
+                    try {
+                        schema.getValue().accept(bytes);
+                        decoded += 1;
+                    } catch (BlobFormatException expected) {
+                        refused += 1;
+                    } catch (RuntimeException e) {
+                        throw new AssertionError(schema.getKey() + ", mutant " + i + " (mutation " + kind + ")", e);
+                    }
+                }
+                // Both ways out were taken, so the mutants reach past the header.
+                check(decoded > 0 && refused > 0, schema.getKey() + ": " + decoded + ", " + refused);
+            }
+        });
+
         tests.put("a message renders in the context's locale", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
                     .locale("en-Latn").testProvider(true).build())) {

@@ -511,4 +511,15 @@ mod tests {
                 .ends_with("the tables are none")
         );
     }
+
+    /// A key is a capital letter and then capitals, digits or underscores;
+    /// a degree reads back as its number.
+    #[test]
+    fn a_key_keeps_its_grammar_to_the_last_character() {
+        assert!(TableKey::try_new("A_1").is_ok());
+        for refused in ["Ab", "A-1", "1A", ""] {
+            assert!(TableKey::try_new(refused).is_err(), "{refused}");
+        }
+        assert_eq!(u8::from(SignDegree::try_new(17).unwrap()), 17);
+    }
 }
