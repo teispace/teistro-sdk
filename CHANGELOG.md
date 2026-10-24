@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**One validator corpus holds every binding and the Rust newtypes alike**
+(`docs/03-design/validator-corpus.md`). **Numbers:** none. `cargo xtask
+gen ffi` writes `idl/validators.json` from the description's branded
+quantities: latitude, longitude and altitude. It lists each one's
+bounds, the doubles just inside and just outside each bound, NaN, the
+infinities and ±1e308. The Rust constructors, Node, Python, Dart and
+Java all read it and accept and refuse the same values. The Rust
+newtypes keep their own constants, so this is the first check that
+holds the description to them.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:

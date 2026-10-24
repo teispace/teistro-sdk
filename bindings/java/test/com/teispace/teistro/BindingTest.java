@@ -237,6 +237,47 @@ public final class BindingTest {
             }
         });
 
+        // The shared validator corpus (docs/03-design/validator-corpus.md):
+        // what idl/validators.json lists as valid makes a quantity and what
+        // it lists as invalid is refused, as the Rust newtypes and every
+        // other binding agree. Found by walking up from the directory the
+        // suite runs in.
+        tests.put("every branded constructor agrees with the shared corpus", () -> {
+            java.nio.file.Path dir = java.nio.file.Path.of("").toAbsolutePath();
+            while (dir != null && !java.nio.file.Files.isRegularFile(dir.resolve("idl/validators.json"))) {
+                dir = dir.getParent();
+            }
+            check(dir != null, "no idl/validators.json above the suite's directory");
+            Map<String, Object> corpus = JsonRead.object(
+                    Json.read(java.nio.file.Files.readString(dir.resolve("idl/validators.json"))));
+            same("teistro-validators/1", JsonRead.text(corpus.get("schema")), "the corpus's schema");
+            Map<String, java.util.function.DoubleConsumer> constructors = Map.of(
+                    "latitude", Latitude::new,
+                    "longitude", Longitude::new,
+                    "altitude", Altitude::new);
+            List<?> brands = JsonRead.list(corpus.get("brands"));
+            check(!brands.isEmpty(), "the corpus names no brand");
+            for (Object found : brands) {
+                Map<String, Object> entry = JsonRead.object(found);
+                String brand = JsonRead.text(entry.get("brand"));
+                java.util.function.DoubleConsumer make = constructors.get(brand);
+                check(make != null, brand + " is branded in the description and has no constructor here");
+                for (Object text : JsonRead.list(entry.get("valid"))) {
+                    double value = Double.parseDouble(JsonRead.text(text));
+                    make.accept(value);
+                }
+                for (Object text : JsonRead.list(entry.get("invalid"))) {
+                    double value = Double.parseDouble(JsonRead.text(text));
+                    try {
+                        make.accept(value);
+                        throw new AssertionError(brand + "(" + JsonRead.text(text) + ") was made");
+                    } catch (IllegalArgumentException expected) {
+                        // refused, as the corpus says
+                    }
+                }
+            }
+        });
+
         tests.put("a value C cannot hold is refused by the name the caller wrote", () -> {
             try (Context sky = context(teistro)) {
                 CalendarDate bad = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 300, 8,

@@ -15,7 +15,9 @@
 //! - [`mdx`]: the documentation site's reference pages, one per entry
 //!   point;
 //! - [`records`]: the JSON records that cross as text, typed and decoded
-//!   in TypeScript, Python and Dart.
+//!   in TypeScript, Python and Dart;
+//! - [`validators`]: the corpus every binding's validating constructors
+//!   and the Rust newtypes are held to alike.
 //!
 //! [`reserved`] holds each target's reserved words, so an emitter's
 //! renaming rule and the pass that measures it read one list.
@@ -29,6 +31,7 @@ pub mod python;
 pub mod records;
 pub mod reserved;
 pub mod ts;
+pub mod validators;
 
 use std::fmt::Write;
 
