@@ -1,10 +1,13 @@
 //! Coverage floors (`05-testing/01-quality-bar.md`, "coverage floors"):
-//! each library crate's line coverage, held to a floor that only rises.
+//! each library crate's line and branch coverage, each held to a floor that
+//! only rises.
 //!
 //! - verify's `coverage` job runs every library crate's tests under
-//!   `cargo llvm-cov` and hands the JSON summary to `check-coverage --from
-//!   FILE`, which fails when a crate falls below its floor, when a measured
-//!   crate has no floor, and when a floored crate went unmeasured;
+//!   `cargo llvm-cov --branch`, on the pinned nightly branch coverage needs,
+//!   and hands the JSON summary to `check-coverage --from
+//!   FILE`, which fails when a crate falls below either floor, when a
+//!   measured crate has no floor, and when a floored crate went unmeasured,
+//!   its branches included;
 //! - `cargo xtask coverage --from FILE` raises each crate's floor to the
 //!   run's figure, rounded down to a whole percent so a run's noise does
 //!   not fail the next, and never lowers one; a crate that no longer
@@ -13,7 +16,7 @@
 //!   record to the one on `main` where git can read it, so a floor lowered
 //!   by hand fails.
 //!
-//! The floors are whole percents of lines. A crate is the files under its
+//! The floors are whole percents of lines and of branches. A crate is the files under its
 //! `crates/<name>/src/` but its generated tables; tests, examples and
 //! benches are not measured, and neither is a crate in [`NOT_MEASURED`].
 
@@ -42,22 +45,38 @@ const NOT_MEASURED: [(&str, &str); 1] = [(
      gates rather than by tests of its own",
 )];
 
-/// The floors, a whole percent of lines to a crate.
+/// The floors, a whole percent of lines to a crate and a whole percent of
+/// branches. A record from before branches were measured has no branch
+/// floors.
 #[derive(Debug, Serialize, Deserialize)]
 struct Record {
     schema: String,
     floors: BTreeMap<String, u8>,
+    #[serde(default)]
+    branch_floors: BTreeMap<String, u8>,
 }
 
-/// A crate's lines: how many count, and how many ran.
+/// What a run measured of a crate.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-struct Lines {
+struct Measured {
+    lines: Counts,
+    branches: Counts,
+}
+
+/// How many of a crate's lines or branches count, and how many ran.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct Counts {
     count: u64,
     covered: u64,
 }
 
-impl Lines {
-    /// The share that ran, a percent; a crate with no lines is all covered.
+impl Counts {
+    fn add(&mut self, other: Counts) {
+        self.count += other.count;
+        self.covered += other.covered;
+    }
+
+    /// The share that ran, a percent; a crate with none is all covered.
     #[allow(
         clippy::cast_precision_loss,
         reason = "line counts far below 2^52, read to a percent"
@@ -117,14 +136,14 @@ fn parse_record(text: &str) -> Result<Record, String> {
     Ok(record)
 }
 
-/// Each crate's lines in an `llvm-cov export` summary, by the directory
-/// under `crates/` its file sits in.
-fn measured(export: &Value) -> Result<BTreeMap<String, Lines>, String> {
+/// Each crate's lines and branches in an `llvm-cov export` summary, by
+/// the directory under `crates/` its file sits in.
+fn measured(export: &Value) -> Result<BTreeMap<String, Measured>, String> {
     let files = export
         .pointer("/data/0/files")
         .and_then(Value::as_array)
         .ok_or("not an llvm-cov export: no data[0].files")?;
-    let mut by: BTreeMap<String, Lines> = BTreeMap::new();
+    let mut by: BTreeMap<String, Measured> = BTreeMap::new();
     for file in files {
         let name = file
             .get("filename")
@@ -134,16 +153,39 @@ fn measured(export: &Value) -> Result<BTreeMap<String, Lines>, String> {
         let Some(name) = crate_of(&name) else {
             continue;
         };
-        let lines = file.pointer("/summary/lines");
-        let read = |key: &str| lines.and_then(|l| l.get(key)).and_then(Value::as_u64);
-        let (Some(count), Some(covered)) = (read("count"), read("covered")) else {
-            return Err(format!("{name}: a file summary without line counts"));
+        let counts = |kind: &str| {
+            let summary = file.pointer(&format!("/summary/{kind}"));
+            let read = |key: &str| summary.and_then(|s| s.get(key)).and_then(Value::as_u64);
+            match (read("count"), read("covered")) {
+                (Some(count), Some(covered)) => Ok(Counts { count, covered }),
+                _ => Err(format!("{name}: a file summary without {kind} counts")),
+            }
         };
+        let (lines, branches) = (counts("lines")?, counts("branches")?);
         let entry = by.entry(name.to_owned()).or_default();
-        entry.count += count;
-        entry.covered += covered;
+        entry.lines.add(lines);
+        entry.branches.add(branches);
     }
     Ok(by)
+}
+
+/// Each crate's lines, from a run.
+fn lines_of(run: &BTreeMap<String, Measured>) -> BTreeMap<String, Counts> {
+    run.iter()
+        .map(|(name, m)| (name.clone(), m.lines))
+        .collect()
+}
+
+/// Each crate's branches, from a run that measured them: none from a run
+/// without `--branch`, whose every crate counts no branch at all and would
+/// otherwise read as wholly covered.
+fn branches_of(run: &BTreeMap<String, Measured>) -> BTreeMap<String, Counts> {
+    if run.values().all(|m| m.branches.count == 0) {
+        return BTreeMap::new();
+    }
+    run.iter()
+        .map(|(name, m)| (name.clone(), m.branches))
+        .collect()
 }
 
 /// The crate a source file belongs to: `<name>` of `…/crates/<name>/src/…`.
@@ -159,7 +201,7 @@ pub(crate) fn crate_of(path: &str) -> Option<&str> {
     .then_some(name)
 }
 
-fn read_export(from: &Path) -> Result<BTreeMap<String, Lines>, String> {
+fn read_export(from: &Path) -> Result<BTreeMap<String, Measured>, String> {
     let text = fs::read_to_string(from).map_err(|e| format!("{}: {e}", from.display()))?;
     let export: Value =
         serde_json::from_str(&text).map_err(|e| format!("{}: {e}", from.display()))?;
@@ -171,7 +213,7 @@ fn read_export(from: &Path) -> Result<BTreeMap<String, Lines>, String> {
 /// dropped.
 fn raised(
     old: &BTreeMap<String, u8>,
-    run: &BTreeMap<String, Lines>,
+    run: &BTreeMap<String, Counts>,
     exists: impl Fn(&str) -> bool,
 ) -> BTreeMap<String, u8> {
     let mut floors: BTreeMap<String, u8> = old
@@ -186,26 +228,31 @@ fn raised(
     floors
 }
 
-/// What a run says against the floors: a crate below its floor, a measured
-/// crate with none, a floored crate unmeasured.
-fn findings(floors: &BTreeMap<String, u8>, run: &BTreeMap<String, Lines>) -> Vec<String> {
+/// What a run says against one kind of floor (`lines` or `branches`): a
+/// crate below its floor, a measured crate with none, a floored crate
+/// unmeasured.
+fn findings(
+    kind: &str,
+    floors: &BTreeMap<String, u8>,
+    run: &BTreeMap<String, Counts>,
+) -> Vec<String> {
     let mut found = Vec::new();
     for (name, floor) in floors {
         match run.get(name) {
             None => found.push(format!(
-                "`{name}` has a floor of {floor}% but the run measured no line of it"
+                "`{name}` has a {kind} floor of {floor}% but the run measured none of its {kind}"
             )),
-            Some(lines) if lines.percent() < f64::from(*floor) => found.push(format!(
-                "`{name}` covers {:.2}% of its lines, under its floor of {floor}%: add the \
+            Some(counts) if counts.percent() < f64::from(*floor) => found.push(format!(
+                "`{name}` covers {:.2}% of its {kind}, under its floor of {floor}%: add the \
                  tests the change left out",
-                lines.percent()
+                counts.percent()
             )),
             Some(_) => {}
         }
     }
     for name in run.keys().filter(|name| !floors.contains_key(*name)) {
         found.push(format!(
-            "`{name}` has no floor; record it with `cargo xtask coverage --from FILE`"
+            "`{name}` has no {kind} floor; record it with `cargo xtask coverage --from FILE`"
         ));
     }
     found
@@ -213,11 +260,14 @@ fn findings(floors: &BTreeMap<String, u8>, run: &BTreeMap<String, Lines>) -> Vec
 
 fn record(root: &Path, from: &Path) -> Result<i32, String> {
     let run = read_export(from)?;
-    let old = read_record(root).map(|r| r.floors).unwrap_or_default();
-    let floors = raised(&old, &run, |name| root.join("crates").join(name).is_dir());
+    let old = read_record(root).ok();
+    let exists = |name: &str| root.join("crates").join(name).is_dir();
+    let (old_lines, old_branches) =
+        old.map_or_else(Default::default, |old| (old.floors, old.branch_floors));
     let record = Record {
         schema: SCHEMA.to_owned(),
-        floors,
+        floors: raised(&old_lines, &lines_of(&run), exists),
+        branch_floors: raised(&old_branches, &branches_of(&run), exists),
     };
     let text = serde_json::to_string_pretty(&record).map_err(|e| e.to_string())? + "\n";
     Ok(write(
@@ -229,6 +279,17 @@ fn record(root: &Path, from: &Path) -> Result<i32, String> {
     ))
 }
 
+/// Each floor of `now` lower than `main`'s, as sentences.
+fn lowered(kind: &str, main: &BTreeMap<String, u8>, now: &BTreeMap<String, u8>) -> Vec<String> {
+    main.iter()
+        .filter_map(|(name, was)| {
+            now.get(name)
+                .filter(|now| *now < was)
+                .map(|now| format!("`{name}`'s {kind} floor fell from {was}% on main to {now}%"))
+        })
+        .collect()
+}
+
 fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
     let record = read_record(root)?;
     let mut failures = check(
@@ -236,14 +297,20 @@ fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
         &[Output::new(PAGE, render(&record))],
         "cargo xtask coverage --from FILE",
     );
+    let mut fail = |finding: String| {
+        println!("FAIL  {finding}");
+        failures += 1;
+    };
     match on_main(root, RECORD).map(|text| parse_record(&text)) {
         Some(Ok(main)) => {
-            for (name, was) in &main.floors {
-                if let Some(now) = record.floors.get(name).filter(|now| *now < was) {
-                    println!("FAIL  `{name}`'s floor fell from {was}% on main to {now}%");
-                    failures += 1;
-                }
-            }
+            lowered("line", &main.floors, &record.floors)
+                .into_iter()
+                .chain(lowered(
+                    "branch",
+                    &main.branch_floors,
+                    &record.branch_floors,
+                ))
+                .for_each(&mut fail);
         }
         Some(Err(why)) => {
             println!("note  main's record is unreadable ({why}), so no floor is compared with it");
@@ -254,37 +321,61 @@ fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
     }
     if let Some(from) = from {
         let run = read_export(from)?;
-        for finding in findings(&record.floors, &run) {
-            println!("FAIL  {finding}");
-            failures += 1;
-        }
+        findings("lines", &record.floors, &lines_of(&run))
+            .into_iter()
+            .chain(findings(
+                "branches",
+                &record.branch_floors,
+                &branches_of(&run),
+            ))
+            .for_each(&mut fail);
         if failures == 0 {
-            println!("ok    {} crates at or over their floors", run.len());
+            println!(
+                "ok    {} crates at or over their line and branch floors",
+                run.len()
+            );
         }
     }
     Ok(i32::from(failures != 0))
 }
 
 fn render(record: &Record) -> String {
-    let at_target = record.floors.values().filter(|f| **f >= TARGET).count();
+    let at = |name: &str, floor: u8| {
+        floor >= TARGET
+            && record
+                .branch_floors
+                .get(name)
+                .is_some_and(|branch| *branch >= TARGET)
+    };
+    let at_target = record
+        .floors
+        .iter()
+        .filter(|(name, floor)| at(name, **floor))
+        .count();
     let mut rows = String::new();
     for (name, floor) in &record.floors {
-        let mark = if *floor >= TARGET { "yes" } else { "no" };
-        let _ = writeln!(rows, "| `{name}` | {floor}% | {mark} |");
+        let branch = record
+            .branch_floors
+            .get(name)
+            .map_or_else(|| String::from("not yet measured"), |b| format!("{b}%"));
+        let mark = if at(name, *floor) { "yes" } else { "no" };
+        let _ = writeln!(rows, "| `{name}` | {floor}% | {branch} | {mark} |");
     }
     format!(
         "# Coverage floors, measured\n\n\
          Status: `generated` by `cargo xtask coverage --from FILE` from verify's `coverage` \
          job; `check-coverage` holds this page to [`coverage.json`](coverage.json), and verify \
          holds every run to the floors.\n\n\
-         Each crate's floor is the share of its lines its tests run, rounded down to a whole \
-         percent, from the last run recorded; a crate's generated tables are not counted, \
-         since their generators' checks hold them{skipped} ([`01-quality-bar.md`](01-quality-bar.md), \
-         \"coverage floors\"). A floor only rises: a run below it fails, recording raises it \
-         to what the run reached, and a floor lowered by hand fails against `main`'s. The \
-         quality bar asks {TARGET}% of a computation crate; {at_target} of the {total} crates \
-         have reached it.\n\n\
-         | crate | floor | at {TARGET}% |\n|---|---:|---|\n{rows}",
+         Each crate has two floors: the share of its lines its tests run and the share of its \
+         branches, each rounded down to a whole percent, from the last run recorded. Branches \
+         are llvm's, measured on the pinned nightly `cargo llvm-cov --branch` needs. A crate's \
+         generated tables are not counted, since their generators' checks hold them{skipped} \
+         ([`01-quality-bar.md`](01-quality-bar.md), \"coverage floors\"). A floor only rises: a \
+         run below it fails, recording raises it to what the run reached, and a floor lowered \
+         by hand fails against `main`'s. The quality bar asks {TARGET}% of lines and of \
+         branches of a computation crate; {at_target} of the {total} crates have reached \
+         both.\n\n\
+         | crate | lines | branches | at {TARGET}% |\n|---|---:|---:|---|\n{rows}",
         total = record.floors.len(),
         skipped = NOT_MEASURED
             .iter()
@@ -301,8 +392,8 @@ mod tests {
 
     use super::*;
 
-    fn lines(count: u64, covered: u64) -> Lines {
-        Lines { count, covered }
+    fn lines(count: u64, covered: u64) -> Counts {
+        Counts { count, covered }
     }
 
     #[test]
@@ -317,14 +408,41 @@ mod tests {
         );
         assert_eq!(crate_of("/w/crates/scenario/src/lib.rs"), None);
         let export = serde_json::json!({"data": [{"files": [
-            {"filename": "/w/crates/core/src/a.rs", "summary": {"lines": {"count": 10, "covered": 9}}},
-            {"filename": "/w/crates/core/src/b.rs", "summary": {"lines": {"count": 10, "covered": 10}}},
-            {"filename": "/home/.cargo/registry/serde/src/lib.rs", "summary": {"lines": {"count": 5, "covered": 0}}},
+            {"filename": "/w/crates/core/src/a.rs", "summary": {
+                "lines": {"count": 10, "covered": 9}, "branches": {"count": 4, "covered": 3}}},
+            {"filename": "/w/crates/core/src/b.rs", "summary": {
+                "lines": {"count": 10, "covered": 10}, "branches": {"count": 0, "covered": 0}}},
+            {"filename": "/home/.cargo/registry/serde/src/lib.rs", "summary": {
+                "lines": {"count": 5, "covered": 0}, "branches": {"count": 2, "covered": 0}}},
         ]}]});
         let run = measured(&export).unwrap();
         assert_eq!(run.len(), 1);
-        assert_eq!(run["core"], lines(20, 19));
-        assert_eq!(run["core"].floor(), 95);
+        assert_eq!(run["core"].lines, lines(20, 19));
+        assert_eq!(run["core"].lines.floor(), 95);
+        assert_eq!(branches_of(&run)["core"], lines(4, 3));
+        assert_eq!(branches_of(&run)["core"].floor(), 75);
+    }
+
+    /// A run without `--branch` counts no branch anywhere, which is no
+    /// measurement of branches rather than every branch covered.
+    #[test]
+    fn a_run_without_branches_measures_none() {
+        let run: BTreeMap<String, Measured> = [(
+            "core".into(),
+            Measured {
+                lines: lines(10, 9),
+                branches: lines(0, 0),
+            },
+        )]
+        .into();
+        assert!(branches_of(&run).is_empty());
+        let floors: BTreeMap<String, u8> = [("core".into(), 80)].into();
+        let found = findings("branches", &floors, &branches_of(&run)).join("\n");
+        assert!(
+            found.contains("`core` has a branches floor of 80% but the run measured none"),
+            "{found}"
+        );
+        assert_eq!(raised(&floors, &branches_of(&run), |_| true), floors);
     }
 
     /// A floor rises to the run and never falls; a gone crate leaves.
@@ -336,7 +454,7 @@ mod tests {
             ("rules".into(), 80),
         ]
         .into();
-        let run: BTreeMap<String, Lines> = [
+        let run: BTreeMap<String, Counts> = [
             ("core".into(), lines(1000, 874)),
             ("rules".into(), lines(1000, 857)),
             ("new".into(), lines(3, 2)),
@@ -357,20 +475,56 @@ mod tests {
     #[test]
     fn a_run_under_its_floor_or_beside_the_record_is_refused() {
         let floors: BTreeMap<String, u8> = [("core".into(), 90), ("rules".into(), 80)].into();
-        let run: BTreeMap<String, Lines> = [
+        let run: BTreeMap<String, Counts> = [
             ("core".into(), lines(1000, 899)),
             ("new".into(), lines(1, 1)),
         ]
         .into();
-        let found = findings(&floors, &run).join("\n");
-        assert!(found.contains("`core` covers 89.90%"), "{found}");
-        assert!(found.contains("`rules` has a floor of 80%"), "{found}");
-        assert!(found.contains("`new` has no floor"), "{found}");
-        let run: BTreeMap<String, Lines> = [
+        let found = findings("lines", &floors, &run).join("\n");
+        assert!(
+            found.contains("`core` covers 89.90% of its lines"),
+            "{found}"
+        );
+        assert!(
+            found.contains("`rules` has a lines floor of 80%"),
+            "{found}"
+        );
+        assert!(found.contains("`new` has no lines floor"), "{found}");
+        let run: BTreeMap<String, Counts> = [
             ("core".into(), lines(10, 9)),
             ("rules".into(), lines(10, 8)),
         ]
         .into();
-        assert_eq!(findings(&floors, &run), Vec::<String>::new());
+        assert_eq!(findings("lines", &floors, &run), Vec::<String>::new());
+    }
+
+    /// The page says which crates have both floors at the target, and that
+    /// a crate whose branches were never measured has no branch floor yet.
+    #[test]
+    fn the_page_marks_a_crate_at_the_target_only_on_both_floors() {
+        let record = Record {
+            schema: SCHEMA.into(),
+            floors: [("a".into(), 95), ("b".into(), 95), ("c".into(), 95)].into(),
+            branch_floors: [("a".into(), 91), ("b".into(), 85)].into(),
+        };
+        let page = render(&record);
+        assert!(page.contains("| `a` | 95% | 91% | yes |"), "{page}");
+        assert!(page.contains("| `b` | 95% | 85% | no |"), "{page}");
+        assert!(
+            page.contains("| `c` | 95% | not yet measured | no |"),
+            "{page}"
+        );
+        assert!(
+            page.contains("1 of the 3 crates have reached both"),
+            "{page}"
+        );
+        assert_eq!(
+            lowered("branch", &[("a".into(), 91)].into(), &record.branch_floors),
+            Vec::<String>::new()
+        );
+        assert_eq!(
+            lowered("branch", &[("b".into(), 90)].into(), &record.branch_floors),
+            ["`b`'s branch floor fell from 90% on main to 85%"]
+        );
     }
 }
