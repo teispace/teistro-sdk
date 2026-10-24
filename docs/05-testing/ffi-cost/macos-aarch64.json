@@ -1,0 +1,107 @@
+{
+  "os": "macos",
+  "arch": "aarch64",
+  "commit": "b63652cab",
+  "runtimes": [
+    [
+      "rust",
+      "rustc 1.99.1 (58cf8f9c3 2026-10-13)"
+    ],
+    [
+      "node",
+      "v26.12.0"
+    ]
+  ],
+  "figures": [
+    {
+      "binding": "rust",
+      "key": "call-native",
+      "runs": 5,
+      "calls": 2048,
+      "median_us": 27.6547646484375,
+      "min_us": 27.0773720703125,
+      "max_us": 31.72214794921875
+    },
+    {
+      "binding": "rust",
+      "key": "call-hosted",
+      "runs": 5,
+      "calls": 2048,
+      "median_us": 26.24652099609375,
+      "min_us": 25.85211181640625,
+      "max_us": 27.03769921875
+    },
+    {
+      "binding": "rust",
+      "key": "grid-native",
+      "runs": 5,
+      "calls": 32,
+      "median_us": 1705.55596875,
+      "min_us": 1688.12109375,
+      "max_us": 1732.27475
+    },
+    {
+      "binding": "rust",
+      "key": "grid-hosted",
+      "runs": 5,
+      "calls": 64,
+      "median_us": 1095.83071875,
+      "min_us": 1074.024734375,
+      "max_us": 1107.467453125
+    },
+    {
+      "binding": "rust",
+      "key": "decode",
+      "runs": 5,
+      "calls": 1048576,
+      "median_us": 0.055844664573669434,
+      "min_us": 0.05543212032318116,
+      "max_us": 0.05595739650726319
+    },
+    {
+      "binding": "node",
+      "key": "call-native",
+      "runs": 5,
+      "calls": 2048,
+      "median_us": 35.29866552734373,
+      "min_us": 35.13531494140623,
+      "max_us": 36.105346679687514
+    },
+    {
+      "binding": "node",
+      "key": "call-hosted",
+      "runs": 5,
+      "calls": 2048,
+      "median_us": 35.49503564453127,
+      "min_us": 33.89925146484379,
+      "max_us": 35.8756103515625
+    },
+    {
+      "binding": "node",
+      "key": "grid-native",
+      "runs": 5,
+      "calls": 32,
+      "median_us": 1762.9557187499997,
+      "min_us": 1736.97396875,
+      "max_us": 1786.8059687500022
+    },
+    {
+      "binding": "node",
+      "key": "grid-hosted",
+      "runs": 5,
+      "calls": 64,
+      "median_us": 1164.9869843749982,
+      "min_us": 1140.0143281249982,
+      "max_us": 1188.752593750003
+    },
+    {
+      "binding": "node",
+      "key": "decode",
+      "runs": 5,
+      "calls": 65536,
+      "median_us": 0.8884944915771507,
+      "min_us": 0.8795413970947297,
+      "max_us": 0.9253927917480531
+    }
+  ]
+}

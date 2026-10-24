@@ -253,6 +253,8 @@ jobs:
         run: cargo xtask check-agreement
       - name: App speed page (what an app pays per request under each setup, every median over Teimeris inside twice its budget)
         run: cargo xtask check-app-speed
+      - name: FFI cost page (what each binding pays to cross, every figure held to the results schema)
+        run: cargo xtask check-ffi-cost
       - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
         run: cargo xtask check-arudhas
       - name: Reception page (Lilly's worked receptions held to the shipped tables, and each kind counted over the corpus)

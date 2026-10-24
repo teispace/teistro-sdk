@@ -189,6 +189,10 @@ pub(crate) fn example(root: &Path, class: &str, library: &Path) -> Command {
     command
 }
 
+/// The FFI-cost harness (`03-design/ffi-cost.md`), compiled as the shared
+/// examples are.
+pub(crate) const BENCH: &str = "bindings/java/bench/FfiCost.java";
+
 /// The shared examples' directory.
 const EXAMPLES: &str = "example";
 /// Where the examples and the module they run against are compiled.
@@ -393,7 +397,10 @@ pub(crate) fn check(root: &Path) -> i32 {
                 &format!("{PACKAGE}'s tests did not pass"),
             )?;
             adapter(root, &classes, &main)?;
-            wrong_usages(root, &classes, &main)
+            wrong_usages(root, &classes, &main)?;
+            // Run only by `cargo xtask measure-ffi-cost`, so compiled here
+            // where every change to the binding meets it.
+            compile_examples(root, &[root.join(BENCH)])
         });
     let outcome = outcome.and_then(|()| {
         crate::examples::Binding::Java

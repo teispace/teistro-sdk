@@ -22,12 +22,10 @@ use std::path::Path;
 use serde::Deserialize;
 
 use crate::generated::{Output, check, write};
+use crate::measured::{Figure, MIN_RUNS, ratio};
 
 const PAGE: &str = "docs/05-testing/app-speed-measured.md";
 const RECORDED: &str = "docs/05-testing/app-speed";
-
-/// The fewest runs a median is taken from, as the recorder takes them.
-const MIN_RUNS: usize = 3;
 
 /// How far past its budget a median may run before the gate fails it.
 const CEILING: f64 = 2.0;
@@ -157,6 +155,18 @@ fn files() -> String {
     String::from("files")
 }
 
+impl Timing {
+    /// The timing as the results schema holds it.
+    fn figure(&self) -> Figure {
+        Figure {
+            runs: self.runs,
+            median: self.median_ms,
+            min: self.min_ms,
+            max: self.max_ms,
+        }
+    }
+}
+
 impl Record {
     fn timing(&self, setup: &str, request: &str) -> Option<&Timing> {
         self.timings
@@ -199,11 +209,10 @@ fn breaches(records: &[(String, Record)]) -> Vec<String> {
         // A median is a claim only with the runs it was taken from and a
         // spread that holds it.
         for t in &record.timings {
-            if t.runs < MIN_RUNS || !(t.min_ms <= t.median_ms && t.median_ms <= t.max_ms) {
+            if let Some(fault) = t.figure().fault() {
                 found.push(format!(
-                    "{name}: `{}` under `{}` is {} runs from {} to {} ms around {} ms: \
-                     a median needs {MIN_RUNS} runs and a spread that holds it",
-                    t.request, t.setup, t.runs, t.min_ms, t.max_ms, t.median_ms
+                    "{name}: `{}` under `{}`, in ms, is {fault}",
+                    t.request, t.setup
                 ));
             }
         }
@@ -358,12 +367,7 @@ fn section(name: &str, record: &Record) -> String {
             record.timing("drik-builtin", request.key),
             record.timing("drik-teimeris", request.key),
         ) {
-            // Two spreads that overlap say only that neither is
-            // measurably faster, whatever their medians' ratio.
-            (Some(b), Some(t)) if b.min_ms <= t.max_ms && t.min_ms <= b.max_ms => {
-                String::from("within spread")
-            }
-            (Some(b), Some(t)) if t.median_ms > 0.0 => format!("{:.1}×", b.median_ms / t.median_ms),
+            (Some(b), Some(t)) => ratio(&b.figure(), &t.figure()).render(|r| format!("{r:.1}×")),
             _ => String::from("—"),
         };
         let _ = write!(

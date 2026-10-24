@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**What a binding pays to cross the C ABI is measured and published**
+(`docs/05-testing/ffi-cost-measured.md`). **Numbers:** none. Nothing an
+answer holds changes. `cargo xtask measure-ffi-cost` times one scenario
+from Rust and through each binding: a call, a 3,660-cell grid, each over
+the test provider and over a provider written in the binding's own
+language, and the decoder alone. It records the figures per machine with
+the commit they were taken from. Each binding is printed against the Rust
+floor, and a difference is a number only where the two ranges are apart.
+`check-ffi-cost` (fast check) holds the page to the results schema, now
+one module (`xtask/src/measured.rs`) that `check-app-speed` shares, with
+its page unchanged.
+
 **A corrupted blob is refused in every binding, never thrown or
 misread** (the Node, Python, Dart and Java decoders). **Numbers:** none.
 A blob the library wrote decodes exactly as before. Each binding's blob
