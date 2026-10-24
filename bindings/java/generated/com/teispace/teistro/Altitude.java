@@ -4,7 +4,7 @@
 package com.teispace.teistro;
 
 /**
- * A altitude in m, [-500,12000].
+ * An altitude in m, [-500,12000].
  *
  * Its own type, so it cannot be passed where another quantity is wanted.
  *
@@ -12,13 +12,13 @@ package com.teispace.teistro;
  */
 public record Altitude(double value) {
     /**
-     * A altitude, checked.
+     * An altitude, checked.
      *
      * @throws IllegalArgumentException for a value outside [-500,12000], or not a number
      */
     public Altitude {
         if (!(-500 <= value && value <= 12000)) {
-            throw new IllegalArgumentException("a altitude is [-500,12000], and " + value + " is not");
+            throw new IllegalArgumentException("an altitude is [-500,12000], and " + value + " is not");
         }
     }
 }

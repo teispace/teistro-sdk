@@ -22,6 +22,13 @@ Java all read it and accept and refuse the same values. The Rust
 newtypes keep their own constants, so this is the first check that
 holds the description to them.
 
+**An altitude's constructor says "an altitude".** **Numbers:** none.
+The Python, Dart and Java emitters wrote "A altitude" in the generated
+docs and "a altitude is [-500,12000]" in the refusal. They now pick the
+article as the TypeScript emitter already did. The corpus emitter also
+names a brand whose range is not two numbers instead of panicking
+inside the generator.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:

@@ -406,9 +406,10 @@ fn render_brand(api: &Api, brand: &str, field: &FieldDef) -> String {
     let name = pascal(brand);
     let unit = field.meta.unit.as_deref().unwrap_or("");
     let range = field.meta.range.as_deref().unwrap_or("");
+    let a = crate::emit::ts::article(brand);
     let mut out = preamble(api, PACKAGE);
     let doc = format!(
-        "A {brand}{}{}.\n\nIts own type, so it cannot be passed where another quantity is wanted.\n\n@param value the {brand}{}",
+        "{a} {brand}{}{}.\n\nIts own type, so it cannot be passed where another quantity is wanted.\n\n@param value the {brand}{}",
         if unit.is_empty() {
             String::new()
         } else {
@@ -431,8 +432,8 @@ fn render_brand(api: &Api, brand: &str, field: &FieldDef) -> String {
     if let Some((low, high)) = crate::emit::ts::brand_range(field) {
         let _ = writeln!(
             out,
-            "    /**\n     * A {brand}, checked.\n     *\n     * @throws IllegalArgumentException for a value outside {range}, or not a number\n     */\n    public {name} {{\n        if (!({low} <= value && value <= {high})) {{\n            throw new IllegalArgumentException({} + value + {});\n        }}\n    }}",
-            literal(&format!("a {brand} is {range}, and ")),
+            "    /**\n     * {a} {brand}, checked.\n     *\n     * @throws IllegalArgumentException for a value outside {range}, or not a number\n     */\n    public {name} {{\n        if (!({low} <= value && value <= {high})) {{\n            throw new IllegalArgumentException({} + value + {});\n        }}\n    }}",
+            literal(&format!("{} {brand} is {range}, and ", a.to_lowercase())),
             literal(" is not")
         );
     }

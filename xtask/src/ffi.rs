@@ -500,7 +500,11 @@ fn outputs(root: &Path) -> Vec<Output> {
     let json = serde_json::to_string_pretty(&api).expect("the description serialises");
     let mut outputs = vec![
         Output::new(API_JSON, format!("{json}\n")),
-        Output::new(VALIDATORS, validators::corpus(&api)),
+        Output::new(
+            VALIDATORS,
+            validators::corpus(&api)
+                .unwrap_or_else(|complaint| panic!("the validator corpus: {complaint}")),
+        ),
         Output::new(C_HEADER, c::render(&api)),
         Output::new(TS_CATALOGUE, ts::catalogue_declarations(&api)),
         Output::new(TS_TABLES, ts::tables(&api)),

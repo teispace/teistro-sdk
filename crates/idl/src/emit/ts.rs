@@ -100,8 +100,9 @@ fn array_type(field: &FieldDef, reads: bool) -> String {
     }
 }
 
-/// `An` before a vowel, `A` before anything else.
-fn article(word: &str) -> &'static str {
+/// `An` before a vowel, `A` before anything else: what every emitter's
+/// sentence about a quantity begins with.
+pub(crate) fn article(word: &str) -> &'static str {
     if word.starts_with(['a', 'e', 'i', 'o', 'u']) {
         "An"
     } else {

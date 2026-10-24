@@ -654,15 +654,17 @@ fn render_brands(out: &mut String, api: &Api) {
             format!(" in {unit}")
         };
         let range = field.meta.range.as_deref().unwrap_or("");
+        let a = crate::emit::ts::article(&brand);
+        let lower = a.to_lowercase();
         let check = match crate::emit::ts::brand_range(field) {
             Some((low, high)) => format!(
-                "        if not {low} <= value <= {high}:\n            raise ValueError(\n                f\"a {brand} is {range} and {{value}} is not\"\n            )\n"
+                "        if not {low} <= value <= {high}:\n            raise ValueError(\n                f\"{lower} {brand} is {range} and {{value}} is not\"\n            )\n"
             ),
             None => String::new(),
         };
         let _ = writeln!(
             out,
-            "class {name}(float):\n    \"\"\"A {brand}{where_}{}.\n\n    Its own type, so it cannot be passed where another quantity is\n    wanted, and a float at run time, so it crosses the boundary as one.\n    \"\"\"\n\n    __slots__ = ()\n\n    def __new__(cls, value: float) -> \"{name}\":\n{check}        return super().__new__(cls, value)\n",
+            "class {name}(float):\n    \"\"\"{a} {brand}{where_}{}.\n\n    Its own type, so it cannot be passed where another quantity is\n    wanted, and a float at run time, so it crosses the boundary as one.\n    \"\"\"\n\n    __slots__ = ()\n\n    def __new__(cls, value: float) -> \"{name}\":\n{check}        return super().__new__(cls, value)\n",
             if range.is_empty() {
                 String::new()
             } else {

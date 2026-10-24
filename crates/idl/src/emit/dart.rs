@@ -481,9 +481,10 @@ fn render_brands(out: &mut String, api: &Api) {
             ),
             None => String::new(),
         };
+        let a = crate::emit::ts::article(&brand);
         let _ = writeln!(
             out,
-            "/// A {brand}{where_}{}. Its own type, so it cannot be passed where\n/// another quantity is wanted.\nextension type const {name}._(double value) implements double {{\n  /// A {brand}{where_}, checked.\n  factory {name}(double value) {{{check}\n    return {name}._(value);\n  }}\n}}\n",
+            "/// {a} {brand}{where_}{}. Its own type, so it cannot be passed where\n/// another quantity is wanted.\nextension type const {name}._(double value) implements double {{\n  /// {a} {brand}{where_}, checked.\n  factory {name}(double value) {{{check}\n    return {name}._(value);\n  }}\n}}\n",
             if range.is_empty() {
                 String::new()
             } else {
