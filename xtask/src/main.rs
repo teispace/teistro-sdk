@@ -258,6 +258,7 @@
     clippy::indexing_slicing
 )]
 
+mod ab;
 mod abi_stability;
 mod absence;
 mod accuracy;
@@ -496,6 +497,7 @@ const PASSES: &[Pass] = &[
     ("app-speed", app_speed::generate, app_speed::check_generated),
     ("ffi-cost", ffi_cost::generate, ffi_cost::check_generated),
     ("micro", micro::generate, micro::check_generated),
+    ("ab", ab::generate, ab::check_generated),
     (
         "mobile-sizes",
         mobile_sizes::generate,
@@ -680,6 +682,7 @@ fn mobile_command(command: &str, args: &[String]) -> Option<i32> {
         )),
         "measure-ffi-cost" => Some(ffi_cost::measure(&repo_root())),
         "measure-micro" => Some(micro::measure(&repo_root())),
+        "measure-ab" => Some(ab::measure(&repo_root())),
         "app-speed-device" => Some(app_speed_device::run(
             &repo_root(),
             args.get(1).map(String::as_str),
@@ -838,7 +841,7 @@ fn usage() -> i32 {
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
-         check-versions | measure-mobile [ROW...] | measure-ffi-cost | measure-micro | app-speed-device ROW | \
+         check-versions | measure-mobile [ROW...] | measure-ffi-cost | measure-micro | measure-ab | app-speed-device ROW | \
          conformance --from DIR | check-conformance --from DIR | \
          check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | check-coverage [--from FILE] | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-teimeris-adapter | check-properties | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
