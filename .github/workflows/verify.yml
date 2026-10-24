@@ -466,18 +466,24 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@stable
+      # Branch coverage is llvm's `-Z coverage-options=branch`, which only a
+      # nightly compiler takes. The nightly is pinned, since a floor is a
+      # count of the compiler's branches and a moving compiler would move
+      # them; it is raised by hand with the floors re-recorded.
+      - uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly-2026-10-21
           components: llvm-tools-preview
       - uses: Swatinem/rust-cache@v2
         with:
-          key: coverage
+          key: coverage-nightly-2026-10-21
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-llvm-cov
-      - name: Every library crate's tests, measured
+      - name: Every library crate's tests, measured, lines and branches
         run: >-
-          cargo llvm-cov --workspace --json --summary-only --output-path coverage.json
+          cargo +nightly-2026-10-21 llvm-cov --branch --workspace --json --summary-only
+          --output-path coverage.json
           --exclude xtask --exclude teistro-test-allocator --exclude teistro-test-adapter
           --exclude teistro-node --exclude teistro-wasm
           --exclude teistro-spike-slice --exclude teistro-spike-a-ffi --exclude teistro-spike-a-gen
@@ -488,8 +494,8 @@ jobs:
           name: coverage
           path: coverage.json
           if-no-files-found: ignore
-      - name: Each crate at or over its floor
-        run: cargo xtask check-coverage --from coverage.json
+      - name: Each crate at or over its floors
+        run: cargo +nightly-2026-10-21 xtask check-coverage --from coverage.json
 
   # The same crates' unit and integration tests built with
   # AddressSanitizer, which on Linux brings LeakSanitizer: every ABI test

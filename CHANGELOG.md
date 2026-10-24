@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Branch coverage is measured and floored beside line coverage.**
+**Numbers:** none. Verify's `coverage` job runs `cargo llvm-cov --branch`
+on a pinned nightly, `nightly-2026-10-21`, because llvm's branch coverage
+takes only a nightly compiler. `coverage.json` keeps a `branch_floors` map
+beside the line floors. `check-coverage --from` fails a crate under either
+floor, and also fails a run that counted no branch at all, which is what a
+run without `--branch` looks like. Both floors only rise. The page shows
+a crate at the 90% target only when both floors are.
+
 **The full parity chart and the rectification step are held to their
 budgets** (`docs/03-design/micro-budgets.md` §6). **Numbers:** none.
 `check-app-speed` gains three requests, re-recorded on the desktop, the
