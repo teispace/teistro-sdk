@@ -1,7 +1,7 @@
 {
   "os": "macos",
   "arch": "aarch64",
-  "commit": "b63652cab",
+  "commit": "436994439",
   "runtimes": [
     [
       "rust",
@@ -10,6 +10,18 @@
     [
       "node",
       "v26.12.0"
+    ],
+    [
+      "python",
+      "Python 3.15.0"
+    ],
+    [
+      "dart",
+      "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"macos_arm64\""
+    ],
+    [
+      "java",
+      "java 25.0.1 2025-10-21 LTS"
     ]
   ],
   "figures": [
@@ -18,90 +30,225 @@
       "key": "call-native",
       "runs": 5,
       "calls": 2048,
-      "median_us": 27.6547646484375,
-      "min_us": 27.0773720703125,
-      "max_us": 31.72214794921875
+      "median_us": 34.75850439453125,
+      "min_us": 27.739949218750002,
+      "max_us": 38.26824951171875
     },
     {
       "binding": "rust",
       "key": "call-hosted",
       "runs": 5,
       "calls": 2048,
-      "median_us": 26.24652099609375,
-      "min_us": 25.85211181640625,
-      "max_us": 27.03769921875
+      "median_us": 30.41107177734375,
+      "min_us": 27.18841552734375,
+      "max_us": 33.87225341796875
     },
     {
       "binding": "rust",
       "key": "grid-native",
       "runs": 5,
       "calls": 32,
-      "median_us": 1705.55596875,
-      "min_us": 1688.12109375,
-      "max_us": 1732.27475
+      "median_us": 1800.78125,
+      "min_us": 1783.1028749999998,
+      "max_us": 2008.1796875000002
     },
     {
       "binding": "rust",
       "key": "grid-hosted",
       "runs": 5,
       "calls": 64,
-      "median_us": 1095.83071875,
-      "min_us": 1074.024734375,
-      "max_us": 1107.467453125
+      "median_us": 1144.716796875,
+      "min_us": 1136.966140625,
+      "max_us": 1454.43034375
     },
     {
       "binding": "rust",
       "key": "decode",
       "runs": 5,
       "calls": 1048576,
-      "median_us": 0.055844664573669434,
-      "min_us": 0.05543212032318116,
-      "max_us": 0.05595739650726319
+      "median_us": 0.05753159523010254,
+      "min_us": 0.05447399616241455,
+      "max_us": 0.14059440231323242
     },
     {
       "binding": "node",
       "key": "call-native",
       "runs": 5,
       "calls": 2048,
-      "median_us": 35.29866552734373,
-      "min_us": 35.13531494140623,
-      "max_us": 36.105346679687514
+      "median_us": 35.848530761718735,
+      "min_us": 35.39739990234375,
+      "max_us": 49.45652294921874
     },
     {
       "binding": "node",
       "key": "call-hosted",
       "runs": 5,
       "calls": 2048,
-      "median_us": 35.49503564453127,
-      "min_us": 33.89925146484379,
-      "max_us": 35.8756103515625
+      "median_us": 34.793477539062536,
+      "min_us": 34.41048193359375,
+      "max_us": 34.963969238281265
     },
     {
       "binding": "node",
       "key": "grid-native",
       "runs": 5,
       "calls": 32,
-      "median_us": 1762.9557187499997,
-      "min_us": 1736.97396875,
-      "max_us": 1786.8059687500022
+      "median_us": 1757.4218749999986,
+      "min_us": 1731.0768124999995,
+      "max_us": 1812.4856562499972
     },
     {
       "binding": "node",
       "key": "grid-hosted",
       "runs": 5,
       "calls": 64,
-      "median_us": 1164.9869843749982,
-      "min_us": 1140.0143281249982,
-      "max_us": 1188.752593750003
+      "median_us": 1135.1530000000025,
+      "min_us": 1125.0859375000032,
+      "max_us": 1152.4121093749998
     },
     {
       "binding": "node",
       "key": "decode",
       "runs": 5,
       "calls": 65536,
-      "median_us": 0.8884944915771507,
-      "min_us": 0.8795413970947297,
-      "max_us": 0.9253927917480531
+      "median_us": 0.9142398834228529,
+      "min_us": 0.8989505767822287,
+      "max_us": 0.9282239227294958
+    },
+    {
+      "binding": "python",
+      "key": "call-native",
+      "runs": 5,
+      "calls": 1024,
+      "median_us": 50.36458401264099,
+      "min_us": 50.185872055408254,
+      "max_us": 51.47261515503487
+    },
+    {
+      "binding": "python",
+      "key": "call-hosted",
+      "runs": 5,
+      "calls": 1024,
+      "median_us": 51.62402339919936,
+      "min_us": 49.58520503350883,
+      "max_us": 52.103840857853356
+    },
+    {
+      "binding": "python",
+      "key": "grid-native",
+      "runs": 5,
+      "calls": 32,
+      "median_us": 1813.9544044970535,
+      "min_us": 1806.4687501464505,
+      "max_us": 1826.6523438796867
+    },
+    {
+      "binding": "python",
+      "key": "grid-hosted",
+      "runs": 5,
+      "calls": 64,
+      "median_us": 1237.5338592391927,
+      "min_us": 1220.1731879031286,
+      "max_us": 1301.2141862418503
+    },
+    {
+      "binding": "python",
+      "key": "decode",
+      "runs": 5,
+      "calls": 8192,
+      "median_us": 9.718012577764057,
+      "min_us": 9.69772339942665,
+      "max_us": 9.80608618306178
+    },
+    {
+      "binding": "dart",
+      "key": "call-native",
+      "runs": 5,
+      "calls": 2048,
+      "median_us": 29.418498046875,
+      "min_us": 28.55961083984375,
+      "max_us": 29.79736328125
+    },
+    {
+      "binding": "dart",
+      "key": "call-hosted",
+      "runs": 5,
+      "calls": 2048,
+      "median_us": 28.39385986328125,
+      "min_us": 28.0810341796875,
+      "max_us": 28.66217041015625
+    },
+    {
+      "binding": "dart",
+      "key": "grid-native",
+      "runs": 5,
+      "calls": 32,
+      "median_us": 1709.790375,
+      "min_us": 1692.0625,
+      "max_us": 2369.12890625
+    },
+    {
+      "binding": "dart",
+      "key": "grid-hosted",
+      "runs": 5,
+      "calls": 64,
+      "median_us": 1135.598953125,
+      "min_us": 1117.140625,
+      "max_us": 1162.8326875
+    },
+    {
+      "binding": "dart",
+      "key": "decode",
+      "runs": 5,
+      "calls": 65536,
+      "median_us": 1.0986372528076171,
+      "min_us": 1.0814183502197265,
+      "max_us": 1.135485336303711
+    },
+    {
+      "binding": "java",
+      "key": "call-native",
+      "runs": 5,
+      "calls": 2048,
+      "median_us": 31.68267822265625,
+      "min_us": 29.95817041015625,
+      "max_us": 36.4997763671875
+    },
+    {
+      "binding": "java",
+      "key": "call-hosted",
+      "runs": 5,
+      "calls": 2048,
+      "median_us": 33.9908037109375,
+      "min_us": 31.56689453125,
+      "max_us": 63.88130712890625
+    },
+    {
+      "binding": "java",
+      "key": "grid-native",
+      "runs": 5,
+      "calls": 32,
+      "median_us": 1738.056,
+      "min_us": 1723.89975,
+      "max_us": 1818.76821875
+    },
+    {
+      "binding": "java",
+      "key": "grid-hosted",
+      "runs": 5,
+      "calls": 64,
+      "median_us": 1188.669921875,
+      "min_us": 1179.919921875,
+      "max_us": 1205.516921875
+    },
+    {
+      "binding": "java",
+      "key": "decode",
+      "runs": 5,
+      "calls": 65536,
+      "median_us": 1.365788787841797,
+      "min_us": 1.3289852142333984,
+      "max_us": 1.374628692626953
     }
   ]
 }
