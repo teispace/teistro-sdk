@@ -1,6 +1,6 @@
 # Micro-operation budgets: the kernels held to the performance page
 
-Status: `draft`, 2026-10-24. The quality bar's "micro-benchmarks per module
+Status: `implemented` in part, 2026-10-24: steps 1, 2 and 4 of §5. The quality bar's "micro-benchmarks per module
 with budgets" row ([`05-testing/01-quality-bar.md`](../05-testing/01-quality-bar.md)):
 each operation stays within its budget
 (`02-architecture/09-performance-architecture.md`), with the baselines

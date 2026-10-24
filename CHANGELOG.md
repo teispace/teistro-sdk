@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The kernels are held to the performance page's budgets**
+(`docs/05-testing/micro-measured.md`). **Numbers:** none.
+`cargo xtask measure-micro` runs the crates' own `criterion` benches and
+`check-micro` (fast check) fails a median past twice its budget. On the
+first record every kernel is far inside: `dasha_at` to depth 5 takes 0.14
+to 0.36 µs against 20 µs, every varga chart 6.4 µs against 100 µs, and
+the 4,818 evaluable shipped rules 234 µs against 10.7 ms, the page's 2 ms
+for each 900. The rules bench used to time the recording engine's 597
+corpus rules, a test fixture. `teistro_rules::shipped::packs()` is new:
+every pack the crate ships, in one list.
+
 **What a binding pays to cross the C ABI is measured and published**
 (`docs/05-testing/ffi-cost-measured.md`). **Numbers:** none. Nothing an
 answer holds changes. `cargo xtask measure-ffi-cost` times one scenario
