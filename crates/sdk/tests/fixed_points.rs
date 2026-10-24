@@ -7,7 +7,9 @@
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
-    reason = "tests fail by panicking"
+    clippy::panic,
+    clippy::indexing_slicing,
+    reason = "tests fail by panicking and index what they asked for"
 )]
 
 mod common;
