@@ -82,6 +82,14 @@ breaks one property at a time:
 For each, the suite asserts that the kit's check named for that fault
 fails. Until now only a wrong obliquity was shown to fail.
 
+**The kernels' mutation floors are re-recorded from a full run.**
+**Numbers:** `dasha` went from 84% to 99% (220 survivors to 8), `rules`
+from 87% to 99% (170 to 8), `strength` from 99% to 100%, and `vargas`
+stays at 100%. The run is mutants run 40135052194, on 5c0d297e. A new
+test now holds `shipped::packs` to every rule the build stages, each in
+exactly one pack. Without it, `packs` could return six empty packs and
+every test still passed.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:
