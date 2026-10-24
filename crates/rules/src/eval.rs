@@ -796,7 +796,7 @@ impl<'a> Evaluator<'a> {
                 let at = |i: usize| bodies.nth(i).map(|body| self.at(body));
                 let held = match orb {
                     Some(orb) => (0..bodies.len()).all(|i| {
-                        (i + 1..bodies.len()).all(|j| {
+                        (0..i).all(|j| {
                             matches!((at(i), at(j)), (Some(a), Some(b)) if conjunction::within(a.longitude, b.longitude, orb))
                         })
                     }),
@@ -2180,12 +2180,14 @@ mod tests {
         assert!(holds(&c, ENGINE, &upapada("CAPRICORN")).0);
         assert!(!holds(&c, parity, &upapada("CAPRICORN")).0);
         assert!(holds(&c, parity, &upapada("AQUARIUS")).0);
-        // An odd lagna reads the twelfth either way.
+        // An odd lagna reads the twelfth either way: the twelfth from
+        // Gemini, Taurus, counts twelve to Venus and twelve again to Pisces,
+        // where the second's pada would be Libra.
         place(&mut c, Body::Lagna, Rashi::Gemini);
-        assert_eq!(
-            holds(&c, ENGINE, &upapada("TAURUS")),
-            holds(&c, parity, &upapada("TAURUS"))
-        );
+        for reading in [ENGINE, parity] {
+            assert!(holds(&c, reading, &upapada("PISCES")).0);
+            assert!(!holds(&c, reading, &upapada("LIBRA")).0);
+        }
     }
 
     #[test]
@@ -2329,6 +2331,11 @@ mod tests {
         assert!(explanation.to_string().starts_with(
             "EXAMPLE: present, MARS, MOON in house 1\n  holds: one of these, adding MARS, MOON\n"
         ));
+        // Each step is indented a level below the one it was checked in.
+        let shown = explanation.to_string();
+        let lines: Vec<&str> = shown.lines().collect();
+        assert!(lines[2].starts_with("    fails: "), "{shown}");
+        assert!(lines[3].starts_with("      holds: "), "{shown}");
 
         // Not present: no cancellation is checked.
         let absent = rule(
@@ -3612,5 +3619,91 @@ mod tests {
             )
             .0
         );
+    }
+
+    /// A malefic's sign aspects by the signs' own rule: movable Aries holds
+    /// Saturn and Mars and aspects fixed Leo; from fixed Taurus they do not.
+    #[test]
+    fn a_class_s_sign_aspects_from_wherever_one_of_it_stands() {
+        let mut c = chart();
+        let aspects = written(r#"{"type": "rashi-aspects", "from": "any-malefic", "target": 5}"#);
+        assert!(holds(&c, ENGINE, &aspects).0);
+        for body in [
+            Body::Graha(Graha::Sun),
+            MARS,
+            SATURN,
+            Body::Graha(Graha::Rahu),
+            Body::Graha(Graha::Ketu),
+            MOON,
+        ] {
+            place(&mut c, body, Rashi::Taurus);
+        }
+        assert!(!holds(&c, ENGINE, &aspects).0);
+    }
+
+    /// A body's degrees in its sign run from `from` up to, not into, `to`.
+    #[test]
+    fn degrees_in_a_sign_hold_from_their_start_up_to_their_end() {
+        let c = chart();
+        let between = |from: f64, to: f64| {
+            written(&format!(
+                r#"{{"type": "planet-in-degrees", "planet": "SUN", "from": {from}, "to": {to}}}"#
+            ))
+        };
+        assert!(holds(&c, ENGINE, &between(15.0, 16.0)).0);
+        assert!(!holds(&c, ENGINE, &between(10.0, 15.0)).0);
+    }
+
+    /// An orb of nothing is no orb: the readings' conjunction decides, the
+    /// same sign here, where an orb of 0° would part the Sun at Aries 15°
+    /// from the Moon at 29°.
+    #[test]
+    fn an_orb_of_nothing_falls_back_to_the_readings_conjunction() {
+        let mut c = chart();
+        c.placements[MOON.index()].longitude = 29.0;
+        let conjunct = |orb: f64| {
+            written(&format!(
+                r#"{{"type": "planet-conjunct", "planets": ["SUN", "MOON"], "maxOrb": {orb}}}"#
+            ))
+        };
+        assert!(holds(&c, ENGINE, &conjunct(0.0)).0);
+        assert!(!holds(&c, ENGINE, &conjunct(10.0)).0);
+    }
+
+    /// A body aspecting a house is a participant only under a reading that
+    /// gathers aspects.
+    #[test]
+    fn an_aspect_adds_its_body_only_where_the_reading_gathers_it() {
+        let c = chart();
+        let aspect =
+            written(r#"{"type": "planet-aspects-house", "from": "SATURN", "houseRuled": 7}"#);
+        assert_eq!(holds(&c, ENGINE, &aspect), (true, vec![SATURN]));
+        assert_eq!(
+            holds(&c, Readings::RECORDING_ENGINE_DOSHAS, &aspect),
+            (true, vec![])
+        );
+    }
+
+    /// A result gives the span, the class and the words its verse gives,
+    /// each from its own outcome.
+    #[test]
+    fn a_result_reads_each_outcome_its_rule_gives() {
+        let rule: crate::Rule = serde_json::from_str(
+            r#"{"key": "R", "category": "c", "source": {"text": "t"},
+                "conditions": [{"type": "planet-in-kendra", "planet": "SUN"}],
+                "outcomes": [{"type": "effect", "text": "a warrior"},
+                             {"type": "life-span", "count": 2, "unit": "years"},
+                             {"type": "life-class", "class": "long"}]}"#,
+        )
+        .unwrap();
+        let c = chart();
+        let result = Evaluator::new(&c, ENGINE).evaluate(&rule);
+        assert_eq!(result.effect(), Some("a warrior"));
+        assert_eq!(result.life_span(), Some(730.5));
+        assert_eq!(result.life_class(), Some(crate::rule::LifeClass::Long));
+        let mut gathered = Participants::default();
+        gathered.push(SUN);
+        gathered.push(MOON);
+        assert_eq!(Vec::from(gathered), [SUN, MOON]);
     }
 }

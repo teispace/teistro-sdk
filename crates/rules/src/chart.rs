@@ -819,3 +819,35 @@ pub(crate) const NATURAL_MALEFICS: [Graha; 5] = [
     Graha::Rahu,
     Graha::Ketu,
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Weak is below what is required, not at it; a chart that says
+    /// nothing is weak in nothing.
+    #[test]
+    fn a_body_is_weak_only_below_what_it_requires() {
+        let strengths = |strength: f64| Strengths {
+            measure: StrengthMeasure::Caller,
+            of: [Some(strength); 10],
+            required: [Some(5.0); 10],
+        };
+        assert!(strengths(4.9).is_weak(Body::Lagna));
+        assert!(!strengths(5.0).is_weak(Body::Lagna));
+        let silent = Strengths {
+            required: [None; 10],
+            ..strengths(1.0)
+        };
+        assert!(!silent.is_weak(Body::Lagna));
+    }
+
+    /// A span with either part below nothing has no part.
+    #[test]
+    fn a_span_with_a_negative_part_has_no_part() {
+        let part = |elapsed: f64, remaining: f64| Span { elapsed, remaining }.part(6);
+        assert_eq!(part(-1.0, 60.0), None);
+        assert_eq!(part(60.0, -1.0), None);
+        assert_eq!(part(30.0, 30.0), Some(4));
+    }
+}

@@ -46,6 +46,12 @@ refused as an unbound `and` rather than by the condition that names it.
 Every combinator's children now name for themselves, as `for-any`'s `then`
 already did.
 
+**The rule language's schemas spell what their readers take**
+(`teistro-rules`). **Numbers:** none move. The hand-written schemas of a
+body and a subject described the any-of shapes as `ANY_BENEFIC`-style and
+the bound body as `self`; the readers take `any-benefic` and `SELF`, and
+the descriptions now say so.
+
 **A dasha kernel cannot be given a year of no days** (`teistro-dasha`).
 **Numbers:** none move. **Changed:** `ReleasingDasha::new` and
 `ProfectionDasha::new` return the dasha rather than a `Result`, and

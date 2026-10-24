@@ -341,7 +341,7 @@ pub fn full_years(method: Method, graha: Graha) -> Option<f64> {
 pub fn by_exaltation(graha: Graha, longitude: f64, full: f64) -> Option<f64> {
     let point = deep_exaltation(graha)?;
     let arc = (point - longitude).rem_euclid(360.0);
-    let arc = if arc < 180.0 { 360.0 - arc } else { arc };
+    let arc = arc.max(360.0 - arc);
     Some(full * arc / 360.0)
 }
 
@@ -656,7 +656,8 @@ mod tests {
     #![allow(
         clippy::unwrap_used,
         clippy::indexing_slicing,
-        reason = "tests unwrap what they built and index their own arrays"
+        clippy::float_cmp,
+        reason = "tests unwrap what they built, index their own arrays and compare exact multiples"
     )]
 
     use super::*;
@@ -771,5 +772,82 @@ mod tests {
         spans.amsayu.years = 12.8;
         assert!((spans.chosen(2.0, 2.0, 2.0) - 33.733_333_333).abs() < 1e-6);
         assert!((spans.chosen(3.0, 2.0, 1.0) - 12.8).abs() < 1e-9);
+    }
+
+    /// vv. 20 to 22's multiple, the larger only: Mars exalted in Capricorn
+    /// or in his own Aries gives three; in his own navamsha or drekkana
+    /// two; elsewhere, or when the rules do not multiply, one.
+    #[test]
+    fn amsayu_multiplies_by_the_strongest_dignity_only() {
+        let base = chart().placements[Body::Graha(Graha::Mars).index()];
+        let multiple = |sign: Rashi, degrees: f64, navamsha: Rashi, multiplied: bool| {
+            let at = Placement {
+                sign,
+                longitude: f64::from(sign as u8) * 30.0 + degrees,
+                navamsha,
+                ..base
+            };
+            let rules = AyurdayaRules {
+                amsayu_multiplied: multiplied,
+                ..AyurdayaRules::default()
+            };
+            amsayu_multiple(rules, Graha::Mars, &at)
+        };
+        assert_eq!(multiple(Rashi::Capricorn, 5.0, Rashi::Taurus, true), 3.0);
+        assert_eq!(multiple(Rashi::Aries, 5.0, Rashi::Taurus, true), 3.0);
+        assert_eq!(multiple(Rashi::Gemini, 5.0, Rashi::Aries, true), 2.0);
+        // Sagittarius's middle third is Aries's drekkana.
+        assert_eq!(multiple(Rashi::Sagittarius, 15.0, Rashi::Taurus, true), 2.0);
+        assert_eq!(multiple(Rashi::Gemini, 5.0, Rashi::Taurus, true), 1.0);
+        assert_eq!(multiple(Rashi::Capricorn, 5.0, Rashi::Taurus, false), 1.0);
+    }
+
+    /// Nothing measured is nothing taken, each share in turn or not.
+    #[test]
+    fn no_years_lose_nothing() {
+        for combine in [Combine::Largest, Combine::Each] {
+            assert_eq!(
+                combined(0.0, Reductions::default(), combine),
+                0.0,
+                "{combine:?}"
+            );
+        }
+    }
+
+    /// A malefic in the rising sign takes the lagna's share of the zodiac,
+    /// a half of it under a benefic's aspect; benefics rising take nothing.
+    #[test]
+    fn only_a_malefic_rising_takes_the_lagna_s_share() {
+        let mut c = chart();
+        let share = 15.0 / 360.0;
+        let rising = Evaluator::new(&c, Readings::TEXTS);
+        assert!((rising.rising_share(false) - share).abs() < 1e-12);
+        assert!((rising.rising_share(true) - share / 2.0).abs() < 1e-12);
+        for graha in [Graha::Sun, Graha::Mars, Graha::Saturn] {
+            crate::test_chart::place(&mut c, Body::Graha(graha), Rashi::Taurus);
+        }
+        let benefics = Evaluator::new(&c, Readings::TEXTS);
+        assert_eq!(benefics.rising_share(false), 0.0);
+    }
+
+    /// The Sun exalted at Aries 15° gives his navamshas' years three times
+    /// over when the rules multiply, and once when they do not.
+    #[test]
+    fn an_exalted_graha_s_amsayu_is_its_navamshas_years_tripled() {
+        let c = chart();
+        let evaluator = Evaluator::new(&c, Readings::TEXTS);
+        let sun = |multiplied: bool| {
+            evaluator
+                .ayurdaya(AyurdayaRules {
+                    amsayu_multiplied: multiplied,
+                    ..AyurdayaRules::default()
+                })
+                .amsayu
+                .contributions[0]
+                .basic
+        };
+        let years = by_navamsha(15.0);
+        assert!((sun(true) - 3.0 * years).abs() < 1e-12);
+        assert!((sun(false) - years).abs() < 1e-12);
     }
 }

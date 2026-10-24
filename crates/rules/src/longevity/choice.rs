@@ -212,6 +212,12 @@ pub fn span_choice(
 
 #[cfg(test)]
 mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::float_cmp,
+        reason = "tests unwrap what they built and compare copied values"
+    )]
+
     use super::*;
     use crate::chart::StrengthMeasure;
 
@@ -257,5 +263,48 @@ mod tests {
             Ayus::named_by(Body::Graha(Graha::Mars)),
             Some(Ayus::Bhinnashtakavarga)
         );
+    }
+
+    /// Each span's years come from what was computed, and its solar years
+    /// from the span's own conversion: the two ashtakavarga spans their
+    /// own, the rest 360 over 365. Only the lagna's strength fills the
+    /// lagna's place.
+    #[test]
+    fn each_candidate_carries_its_span_s_years_and_solar_years() {
+        use crate::chart::Readings;
+        use crate::eval::Evaluator;
+        use crate::longevity::{AshtakavargaAyusRules, Bindus, ChakrayusRules};
+        use teistro_core::settings::Ekadhipatya;
+
+        let chart = crate::test_chart::chart();
+        let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+        let bindus = Bindus {
+            grahas: [[4; 12]; 7],
+            ekadhipatya: Ekadhipatya::Bphs,
+        };
+        let ashtakavarga = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+        let chakrayus = evaluator.chakrayus(ChakrayusRules::default());
+        let computed = Computed {
+            ashtakavarga: Some(&ashtakavarga),
+            chakrayus: Some(&chakrayus),
+            ..Computed::default()
+        };
+        let choice = span_choice(&strengths([None; 10]), Some(9.0), computed);
+        assert_eq!(choice.strongest, Some(Body::Lagna));
+        let of = |ayus: Ayus| {
+            let candidate = choice.candidates.iter().find(|c| c.ayus == ayus).unwrap();
+            (candidate.years.unwrap(), candidate.solar_years.unwrap())
+        };
+        assert_eq!(
+            of(Ayus::Samudaya),
+            (ashtakavarga.samudaya, ashtakavarga.samudaya_solar)
+        );
+        assert_eq!(
+            of(Ayus::Bhinnashtakavarga),
+            (ashtakavarga.bhinna, ashtakavarga.bhinna_solar)
+        );
+        let (years, solar) = of(Ayus::Kalachakra);
+        assert_eq!(years, chakrayus.years);
+        assert!((solar - years * 360.0 / 365.0).abs() < 1e-12);
     }
 }

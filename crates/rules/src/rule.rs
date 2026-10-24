@@ -996,6 +996,7 @@ mod tests {
             "{plain}"
         );
         assert!(plain["severityRule"].get("planet").is_none(), "{plain}");
+        assert!(plain.get("timing").is_none(), "{plain}");
         let set = written(format!(
             r#"{{{HEAD}, "applicableTo": "all", {}, {}}}"#,
             group(r#", "weight": 2"#),

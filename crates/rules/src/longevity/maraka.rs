@@ -591,4 +591,51 @@ mod tests {
         assert_eq!(age_span(LifeClass::Medium), (32.0, Some(64.0)));
         assert_eq!(age_span(LifeClass::Unlimited), (100.0, None));
     }
+
+    /// Aries rising, Jupiter the twelfth lord with the other benefics and
+    /// Saturn in the lagna, and Rahu in the eighth: Venus beside Jupiter is
+    /// a benefic related to the twelfth lord, Saturn beside him is not, nor
+    /// Jupiter himself; Rahu in the eighth is a maraka untouched by a
+    /// benefic, and no longer once Jupiter aspects him from the second.
+    #[test]
+    fn rahu_in_a_dusthana_counts_only_untouched_and_the_twelfth_lord_s_benefics() {
+        let body = |graha| Body::Graha(graha);
+        let mut c = chart();
+        place(&mut c, body(Graha::Sun), Rashi::Leo);
+        place(&mut c, body(Graha::Mars), Rashi::Gemini);
+        place(&mut c, body(Graha::Rahu), Rashi::Scorpio);
+        place(&mut c, body(Graha::Ketu), Rashi::Taurus);
+        let evaluator = Evaluator::new(&c, Readings::TEXTS);
+        let marakas = evaluator.marakas();
+        let has = |graha, reason| marakas.of(graha).contains(reason);
+        let related = Reason::BeneficRelatedToTwelfthLord;
+        assert!(has(Graha::Venus, related));
+        assert!(!has(Graha::Saturn, related) && !has(Graha::Jupiter, related));
+        assert!(has(Graha::Rahu, Reason::RahuInDusthana));
+        // Only the grahas with a reason, each with its own.
+        let listed: Vec<(Graha, Reasons)> = marakas.iter().collect();
+        let with_any = NINE
+            .iter()
+            .filter(|graha| !marakas.of(**graha).is_empty())
+            .count();
+        assert_eq!(listed.len(), with_any);
+        assert!(with_any > 0);
+        for (graha, reasons) in listed {
+            assert_eq!(reasons, marakas.of(graha));
+        }
+
+        place(&mut c, body(Graha::Jupiter), Rashi::Taurus);
+        let aspected = Evaluator::new(&c, Readings::TEXTS).marakas();
+        assert!(!aspected.of(Graha::Rahu).contains(Reason::RahuInDusthana));
+    }
+
+    #[test]
+    fn a_set_holds_each_reason_once_and_names_its_class() {
+        let once = Reasons::NONE.with(Reason::LordOfSecond);
+        assert_eq!(once.with(Reason::LordOfSecond), once);
+        assert!(Reasons::NONE.is_empty() && !once.is_empty());
+        assert_eq!(Reason::PratyakStarLord.class(), Some(LifeClass::Medium));
+        assert_eq!(Reason::VadhaStarLord.class(), Some(LifeClass::Long));
+        assert_eq!(Reason::LordOfSecond.class(), None);
+    }
 }

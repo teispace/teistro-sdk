@@ -120,6 +120,8 @@ impl Evaluator<'_> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests unwrap what they built")]
+
     use super::*;
 
     #[test]
@@ -136,5 +138,20 @@ mod tests {
         assert!((5.0 * left - 2.653).abs() < 1e-3);
         // The pada's own quarter: 24.5 of its 200 minutes left.
         assert!((untraversed(sun, ChakraPortion::Pada) - 24.5 / 200.0).abs() < 1e-12);
+    }
+
+    /// Every graha at Aries 15°, 100 of Bharani's 800 minutes gone, gives
+    /// seven eighths of its years: 63 of the 72.
+    #[test]
+    fn each_graha_gives_its_years_by_what_is_left_of_its_star() {
+        let chart = crate::test_chart::chart();
+        let span = crate::eval::Evaluator::new(&chart, crate::chart::Readings::TEXTS)
+            .chakrayus(ChakrayusRules::default());
+        for giver in &span.grahas {
+            let full = chakra_years(giver.graha).unwrap();
+            assert!((giver.untraversed - 0.875).abs() < 1e-12, "{giver:?}");
+            assert!((giver.years - full * 0.875).abs() < 1e-12, "{giver:?}");
+        }
+        assert!((span.years - 63.0).abs() < 1e-12);
     }
 }
