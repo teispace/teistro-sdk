@@ -1,6 +1,7 @@
 # Interleaved A/B against the baseline engine
 
-Status: `draft`, 2026-10-25. The quality bar's row "interleaved A/B
+Status: `implemented`, 2026-10-25: the record is
+[`05-testing/ab-measured.md`](../05-testing/ab-measured.md). The quality bar's row "interleaved A/B
 against the baseline engine" ([`05-testing/01-quality-bar.md`](../05-testing/01-quality-bar.md)):
 the SDK through Node is not slower than the engine it replaces on the same
 inputs. The performance page asks the same
@@ -33,7 +34,10 @@ The adapter's contract is four exports, all synchronous:
 
 The inputs are the golden corpus's (`fixtures/baseline/manifest.json`):
 the same 55 births both engines were compared on for accuracy, read by
-the runner and handed to both sides, so neither chooses its own case.
+the runner and handed to both sides, so neither chooses its own case. An
+input carries the birth's UT Julian day, the same instant as an ISO-8601
+UTC string and its IANA zone (the baseline's birth record takes both),
+the place, the clock's offset and the civil date.
 
 ## 2. The same work on both sides
 
@@ -54,6 +58,28 @@ the performance page's budgets are written for. The baseline reads the
 same Swiss Ephemeris files it was exported with. Both run in one Node
 process, warmed, after their contexts are open: opening is a separate
 figure and is not compared, since the baseline has no context to open.
+
+Each request asks the SDK for what the baseline's answer holds, since
+a bare request would time less work:
+
+| request | the baseline's answer holds | the SDK is asked for |
+|---|---|---|
+| chart | the grahas, the lagna and its houses, drishti, upagrahas, dignities, arudhas, the birth's panchanga and sunrises, and the Vimshottari to depth 3 | the founded chart with `aspects`, `points`, `houses`, `state` and `jaimini`, and the Vimshottari to depth 3 |
+| day | the five limbs, the kaalas, choghadiya, horas, moonrise and moonset, and the muhurta yogas | the almanac day, which computes every one of those |
+
+An SDK answer decodes on read and the baseline's comes back built, so the
+SDK side reads every part it asked for inside the timing. The baseline
+runs a polar day from civil midnight to civil midnight, so the SDK side
+does too (`day.polar_day_policy: CIVIL_MIDNIGHT`), and the corpus's polar
+birth is timed under the same rule on both sides.
+
+A side may refuse a request, and the runner reports it with the side and
+the reason and keeps that input out of that request alone. The gate
+accepts that only for a birth the corpus tags `range-start` or
+`range-end`. There an ephemeris's data ends: the day of 2 January 1800
+needs the Moon and Sun before 0h on 1 January 1800, where the planet
+file starts, and the SDK refuses rather than answer from an analytic
+fallback, as the golden tests already accept at those births.
 
 ## 3. Interleaving
 
@@ -77,8 +103,9 @@ fails:
 - a request where the SDK is slower and the two ranges are apart: a
   claim of "not slower" that `within spread` meets but a measured ratio
   above one does not;
-- an input count below the corpus's, so a record over a hand-picked few
-  is no claim.
+- an input count below the corpus's less the births that request was
+  refused for, so a record over a hand-picked few is no claim;
+- a refusal of a birth that is not at a range edge.
 
 A CI runner has no baseline, so the record is taken on a maintainer's
 machine, as the FFI-cost and micro records are.

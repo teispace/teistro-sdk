@@ -23,6 +23,8 @@ import { Calendar, Context, DashaSystem, date } from '../lib/index.js';
  * @typedef {object} Input
  * @property {string} id the corpus's chart id
  * @property {number} jdUt the birth's instant, a UT Julian day
+ * @property {string} utc the same instant as an ISO-8601 UTC string
+ * @property {string} iana the birth's time zone, as the corpus resolved it
  * @property {{latitude: number, longitude: number, altitude: number}} place
  * @property {number} utcOffsetSeconds the civil clock's offset at the birth
  * @property {{year: number, month: number, day: number}} civilDate the birth's civil date
@@ -63,6 +65,8 @@ export function inputs(dir = join(root, 'fixtures/baseline/charts')) {
       return {
         id,
         jdUt: input.resolved.jd_ut,
+        utc: input.resolved.utc,
+        iana: input.resolved.iana,
         place: {
           latitude: input.place.latitude,
           longitude: input.place.longitude,
@@ -72,6 +76,11 @@ export function inputs(dir = join(root, 'fixtures/baseline/charts')) {
         civilDate: { year, month, day },
       };
     });
+}
+
+/** Takes values only so that reading them, which decodes them, is done. */
+function decoded(...values) {
+  return values.length;
 }
 
 /**
@@ -84,51 +93,121 @@ export function inputs(dir = join(root, 'fixtures/baseline/charts')) {
 export function sdkSide(ctx, version) {
   return {
     version,
-    chart: (input) =>
-      ctx.chart.found({
+    // The baseline's birth chart comes with its drishti, upagrahas,
+    // houses, dignities and arudhas, so this one asks for theirs
+    // (`03-design/ab-baseline.md` §2). An answer decodes on read, and the
+    // baseline's comes back built, so each request reads what it asked
+    // for: the timing is of the same work, decoding included.
+    chart: (input) => {
+      const chart = ctx.chart.found({
         instant: input.jdUt,
         place: input.place,
         utcOffsetSeconds: input.utcOffsetSeconds,
         dashas: [DashaSystem.Vimshottari],
-      }),
-    day: (input) =>
-      ctx.almanac.day({
+        aspects: true,
+        points: true,
+        houses: true,
+        state: true,
+        jaimini: true,
+      });
+      decoded(
+        chart.grahas,
+        chart.lagnaDeg,
+        chart.dashas,
+        chart.aspects,
+        chart.points,
+        chart.houses,
+        chart.states,
+        chart.jaimini,
+      );
+      return chart;
+    },
+    day: (input) => {
+      const day = ctx.almanac.day({
         date: date(Calendar.Gregorian, input.civilDate.year, input.civilDate.month, input.civilDate.day),
         place: input.place,
         utcOffsetSeconds: input.utcOffsetSeconds,
-      }),
+      });
+      decoded(
+        day.window,
+        day.tithi,
+        day.nakshatra,
+        day.yoga,
+        day.karana,
+        day.kaalas,
+        day.choghadiya,
+        day.horas,
+        day.moonEvents,
+        day.muhurtaYogas,
+      );
+      return day;
+    },
     sun: (answer) => answer.grahas.find((placed) => placed.graha === 'graha.SUN').longitudeDeg,
   };
 }
 
+/** The two sides, in the order every list here holds them. */
+export const SIDES = ['sdk', 'baseline'];
+
+/** The requests both sides answer, in the order they are timed. */
+export const REQUESTS = ['chart', 'day'];
+
 /**
- * The inputs on which the two sides computed the same sky, and the ones
- * they did not, each with both Suns.
+ * Which inputs each request is timed over: the ones both sides answered
+ * and, for every request, computed the same sky for. An input a side
+ * refuses (the corpus's range edges, where an ephemeris's data ends) is
+ * kept out of that request, with the side and the reason; an input whose
+ * two Suns stand apart is kept out of every request, since its instant
+ * or place was not the same on both sides.
+ *
+ * @returns {{kept: Record<string, Input[]>, differ: {id: string, a: number, b: number}[],
+ *   refused: {id: string, side: number, request: string, reason: string}[]}}
  */
 export function agreeing(a, b, all) {
-  const kept = [];
+  const kept = Object.fromEntries(REQUESTS.map((request) => [request, []]));
   const differ = [];
+  const refused = [];
   for (const input of all) {
-    const sa = a.sun(a.chart(input));
-    const sb = b.sun(b.chart(input));
-    const apart = Math.abs(((sa - sb + 540) % 360) - 180);
-    if (apart <= SAME_SKY_DEG) kept.push(input);
-    else differ.push({ id: input.id, a: sa, b: sb });
+    const answers = {};
+    for (const request of REQUESTS) {
+      answers[request] = [a, b].map((side, at) => {
+        try {
+          return side[request](input);
+        } catch (error) {
+          refused.push({ id: input.id, side: at, request, reason: error.message });
+          return undefined;
+        }
+      });
+    }
+    const [ca, cb] = answers.chart;
+    if (ca !== undefined && cb !== undefined) {
+      const sa = a.sun(ca);
+      const sb = b.sun(cb);
+      if (Math.abs(((sa - sb + 540) % 360) - 180) > SAME_SKY_DEG) {
+        differ.push({ id: input.id, a: sa, b: sb });
+        continue;
+      }
+    }
+    for (const request of REQUESTS) {
+      if (answers[request].every((answer) => answer !== undefined)) kept[request].push(input);
+    }
   }
-  return { kept, differ };
+  return { kept, differ, refused };
 }
 
 /**
  * Both sides over every input, `rounds` times, alternating which goes
  * first, for each request. A round's figure is its time over the inputs,
- * per input, in microseconds.
+ * per input, in microseconds. `inputs` is one list for every request, or
+ * a list per request as {@link agreeing} keeps them.
  *
  * @returns {{side: string, request: string, rounds: number, inputs: number,
  *   median_us: number, min_us: number, max_us: number}[]}
  */
-export function interleaved(sides, all, rounds = ROUNDS) {
+export function interleaved(sides, inputs, rounds = ROUNDS) {
   const out = [];
-  for (const request of ['chart', 'day']) {
+  for (const request of REQUESTS) {
+    const all = Array.isArray(inputs) ? inputs : inputs[request];
     const runs = sides.map(() => []);
     // Warm each side's paths before anything is timed.
     for (const side of sides) for (const input of all) side[request](input);
@@ -144,7 +223,7 @@ export function interleaved(sides, all, rounds = ROUNDS) {
     sides.forEach((side, at) => {
       const sorted = [...runs[at]].sort((x, y) => x - y);
       out.push({
-        side: at === 0 ? 'sdk' : 'baseline',
+        side: SIDES[at],
         version: side.version,
         request,
         rounds,
@@ -168,13 +247,23 @@ async function main() {
   }
   const baseline = await import(pathToFileURL(adapter).href);
   const { version } = JSON.parse(readFileSync(join(root, 'bindings/node/package.json'), 'utf8'));
-  const ctx = new Context({ profile: 'parashari-classical', ephemeris: { plugin } });
+  // The baseline runs a polar day from civil midnight to civil midnight,
+  // and the SDK refuses one unless told to: the corpus's polar input
+  // (c028) is timed under the same policy on both sides.
+  const ctx = new Context({
+    profile: 'parashari-classical',
+    ephemeris: { plugin },
+    settings: { day: { polar_day_policy: 'CIVIL_MIDNIGHT' } },
+  });
   try {
     const sdk = sdkSide(ctx, `teistro ${version}`);
     const all = inputs();
-    const { kept, differ } = agreeing(sdk, baseline, all);
+    const { kept, differ, refused } = agreeing(sdk, baseline, all);
     for (const d of differ) {
       console.log(JSON.stringify({ differs: d.id, sdk: d.a, baseline: d.b }));
+    }
+    for (const r of refused) {
+      console.log(JSON.stringify({ refused: r.id, side: SIDES[r.side], request: r.request, reason: r.reason }));
     }
     for (const line of interleaved([sdk, baseline], kept)) {
       console.log(JSON.stringify({ ...line, corpus: all.length }));

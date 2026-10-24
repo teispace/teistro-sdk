@@ -16,6 +16,8 @@ test('every golden input is read, with its instant, place and civil date', () =>
   assert.equal(first.civilDate.year, 1990);
   assert.equal(first.utcOffsetSeconds, 345 * 60);
   assert.ok(Math.abs(first.jdUt - 2447995.4895833335) < 1e-9);
+  assert.equal(first.utc, '1990-04-13T23:45:00.000Z');
+  assert.equal(first.iana, 'Asia/Kathmandu');
 });
 
 test('a side that computed another sky is kept out of the timing', () => {
@@ -28,9 +30,44 @@ test('a side that computed another sky is kept out of the timing', () => {
     const few = inputs().slice(0, 3);
     assert.deepEqual(agreeing(sdk, same, few).differ, []);
     const { kept, differ } = agreeing(sdk, late, few);
-    assert.equal(kept.length, 0);
+    assert.deepEqual([kept.chart.length, kept.day.length], [0, 0]);
     assert.equal(differ.length, 3);
     assert.ok(Math.abs(differ[0].a - differ[0].b) > SAME_SKY_DEG);
+  } finally {
+    ctx.dispose();
+  }
+});
+
+test('a request a side refuses keeps that input out of that request alone', () => {
+  const ctx = new Context({ profile: 'parashari-classical', ephemeris: 'BUILTIN' });
+  try {
+    const sdk = sdkSide(ctx, 'sdk');
+    const inner = sdkSide(ctx, 'stand-in');
+    const few = inputs().slice(0, 3);
+    const edge = few[1].id;
+    const refusing = {
+      ...inner,
+      day: (input) => {
+        if (input.id === edge) throw new Error('past the data');
+        return inner.day(input);
+      },
+    };
+    const { kept, differ, refused } = agreeing(sdk, refusing, few);
+    assert.deepEqual(differ, []);
+    assert.deepEqual(refused, [{ id: edge, side: 1, request: 'day', reason: 'past the data' }]);
+    assert.deepEqual(
+      kept.chart.map((input) => input.id),
+      few.map((input) => input.id),
+    );
+    assert.deepEqual(
+      kept.day.map((input) => input.id),
+      [few[0].id, few[2].id],
+    );
+    const lines = interleaved([sdk, refusing], kept, 1);
+    assert.deepEqual(
+      lines.map((l) => `${l.request} ${l.inputs}`),
+      ['chart 3', 'chart 3', 'day 2', 'day 2'],
+    );
   } finally {
     ctx.dispose();
   }
