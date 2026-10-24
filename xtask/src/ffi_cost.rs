@@ -95,7 +95,7 @@ impl Record {
 }
 
 fn recorded(root: &Path) -> Result<Vec<(String, Record)>, String> {
-    crate::measured::records(root, RECORDED, "measure-ffi-cost")
+    crate::measured::records(root, RECORDED, "cargo xtask measure-ffi-cost")
 }
 
 /// Every figure that is no claim and every one a record lacks, as

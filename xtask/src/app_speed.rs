@@ -176,30 +176,7 @@ impl Record {
 }
 
 fn recorded(root: &Path) -> Result<Vec<(String, Record)>, String> {
-    let dir = root.join(RECORDED);
-    let mut names: Vec<String> = std::fs::read_dir(&dir)
-        .map_err(|e| format!("{RECORDED}: {e}"))?
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
-        .filter_map(|path| Some(path.file_stem()?.to_string_lossy().into_owned()))
-        .collect();
-    names.sort();
-    if names.is_empty() {
-        return Err(format!(
-            "{RECORDED} holds no record; run `teistro-ephemeris-teimeris-app-speed`"
-        ));
-    }
-    names
-        .into_iter()
-        .map(|name| {
-            let path = dir.join(format!("{name}.json"));
-            let text = std::fs::read_to_string(&path).map_err(|e| format!("{name}.json: {e}"))?;
-            let record: Record =
-                serde_json::from_str(&text).map_err(|e| format!("{RECORDED}/{name}.json: {e}"))?;
-            Ok((name, record))
-        })
-        .collect()
+    crate::measured::records(root, RECORDED, "teistro-ephemeris-teimeris-app-speed")
 }
 
 /// Every median a gated setup holds past its ceiling, as sentences.
