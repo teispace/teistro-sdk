@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A reading with rules works out what the rules read once per rule set.**
+**Numbers:** none. A `RuleSet` now decides when it is built which sections
+its rules read (points, strength, limbs, the moment, the vargas), and
+`Rule::reads_points` searches a condition's compact JSON rather than
+building it into a tree. Before, every reading walked all 4,818 shipped
+rules again. One reading with the shipped rules took 16.6 ms on this
+machine and now takes 5.2 ms; the documents are the same.
+
 **Every golden birth's widest chart document reads back as itself**
 (`crates/sdk/tests/fixed_points.rs`). **Numbers:** none. Each is written
 as canonical JSON and read back to the same bytes and value. The
