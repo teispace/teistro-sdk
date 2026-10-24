@@ -670,8 +670,9 @@ impl ChartRequest {
     /// parity runner asks for: the widest document the SDK can produce for
     /// any chart. Every dasha system this build computes on every chart
     /// ([`teistro_dasha::systems_every_chart_gives`]): the Sthira dasa,
-    /// which a chart with no Brahma graha refuses, is asked for by name, and
-    /// so is the avakahada, which a tropical chart refuses
+    /// which a chart with no Brahma graha refuses, the Tara dasha and the
+    /// two Ayurdaya dashas are asked for by name, and so is the avakahada,
+    /// which a tropical chart refuses
     /// ([`with_avakahada`](Self::with_avakahada)). **No drawings**:
     /// those are named pairs, and every layout times every
     /// chart is a hundred and twenty-six placements nobody asked for.

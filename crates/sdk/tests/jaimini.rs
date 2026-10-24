@@ -230,10 +230,18 @@ fn the_sthira_dasa_starts_from_brahma_or_refuses_by_name() {
                 .iter()
                 .filter_map(|dasha| dasha.system.catalogued())
                 .collect();
-            // The Sthira dasa and the Tara dasha, which a chart with no
-            // graha in a kendra is not given, are asked for by name.
+            // The Sthira dasa, the Tara dasha, which a chart with no graha
+            // in a kendra is not given, and the two Ayurdaya dashas, which a
+            // chart with two equally strong starts is not, are asked for by
+            // name.
+            let by_name = [
+                DashaSystem::Sthira,
+                DashaSystem::Tara,
+                DashaSystem::Aayu,
+                DashaSystem::Ashtakavarga,
+            ];
             let every: Vec<DashaSystem> = teistro::dasha::systems()
-                .filter(|system| ![DashaSystem::Sthira, DashaSystem::Tara].contains(system))
+                .filter(|system| !by_name.contains(system))
                 .collect();
             assert_eq!(asked, every);
         }

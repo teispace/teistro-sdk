@@ -121,13 +121,21 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
 /// dasa, from a Brahma graha the verses often do not find) is left to be
 /// asked for by name, where its refusal says which setting supplies one;
 /// so is the Tara dasha, which a chart with no graha in a kendra is not
-/// given (BPHS ch. 46 v. 209).
+/// given (BPHS ch. 46 v. 209), and the two Ayurdaya dashas (the Aayu and
+/// the Ashtakavarga), which begin from the one strongest of the lagna,
+/// the Sun and the Moon (v. 202) and are refused where two are equally
+/// strong, as a Cancer lagna's own Bhava bala can equal the Moon's
+/// shadbala exactly.
 pub fn systems_every_chart_gives() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
     systems().filter(|system| {
-        *system != teistro_core::catalogue::DashaSystem::Tara
-            && RASHI_ROWS
-                .iter()
-                .filter(|row| row.system.catalogued() == Some(*system))
-                .all(|row| row.start.every_chart_gives())
+        !matches!(
+            *system,
+            teistro_core::catalogue::DashaSystem::Tara
+                | teistro_core::catalogue::DashaSystem::Aayu
+                | teistro_core::catalogue::DashaSystem::Ashtakavarga
+        ) && RASHI_ROWS
+            .iter()
+            .filter(|row| row.system.catalogued() == Some(*system))
+            .all(|row| row.start.every_chart_gives())
     })
 }
