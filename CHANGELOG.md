@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The SDK is timed against the baseline engine, on the same work**
+(`docs/05-testing/ab-measured.md`). **Numbers:** none. `cargo xtask
+measure-ab` runs both through Node on all 55 golden births, interleaved
+over 15 rounds. Each request asks the SDK for what the baseline's answer
+holds and reads it inside the timing. `check-ab` (fast check) fails a
+request measurably slower through the SDK. On the first record a birth
+chart takes 1.23 ms against 7.28 ms (0.17×) and an almanac day 0.62 ms
+against 11.9 ms (0.05×). The SDK refuses the day at the corpus's two
+range-edge births, where the data's years end.
+
 **A Teimeris data set now serves its last day whole.** **Numbers:** none
 moved; instants that were refused are now answered. A set's coverage
 ended at 0h of its last year's 31 December, so with the default
