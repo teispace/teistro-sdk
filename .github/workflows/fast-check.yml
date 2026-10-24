@@ -255,6 +255,8 @@ jobs:
         run: cargo xtask check-app-speed
       - name: FFI cost page (what each binding pays to cross, every figure held to the results schema)
         run: cargo xtask check-ffi-cost
+      - name: Micro budgets page (the kernels' criterion figures, every median inside twice the performance page's budget)
+        run: cargo xtask check-micro
       - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
         run: cargo xtask check-arudhas
       - name: Reception page (Lilly's worked receptions held to the shipped tables, and each kind counted over the corpus)

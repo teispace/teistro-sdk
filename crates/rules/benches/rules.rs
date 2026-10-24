@@ -1,7 +1,10 @@
 //! The rules kernel's budget (`docs/03-design/rules-engine.md`,
-//! "Performance"): 900 rules under 2 milliseconds on the native path. This
-//! times the recording engine's 597 written rules over one recorded chart,
-//! the evaluator's construction included, and the construction alone.
+//! "Performance"): 900 rules under 2 milliseconds on the native path, a
+//! rate of 2.22 µs a rule. This times every rule the crate ships
+//! (`shipped::packs`) that is evaluable, over one recorded chart, with the
+//! evaluator's construction included, and counts them as the group's
+//! elements, so `cargo xtask measure-micro` holds it to the rate times the
+//! count (`03-design/micro-budgets.md`). The construction is timed alone too.
 
 #![allow(
     missing_docs,
@@ -12,21 +15,30 @@
 #[path = "../tests/common/mod.rs"]
 mod common;
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
-use teistro_rules::{Evaluator, Readings, Rule};
+use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
+use teistro_rules::{Evaluator, Readings, Rule, RuleChart};
 
-fn bench(c: &mut Criterion) {
-    let rules: Vec<Rule> = common::rules()
+/// Every shipped rule the evaluator can read, and one recorded chart.
+fn fixture() -> (Vec<&'static Rule>, RuleChart) {
+    let rules = teistro_rules::shipped::packs()
         .into_iter()
-        .filter(Rule::is_evaluable)
+        .flatten()
+        .filter(|rule| rule.is_evaluable())
         .collect();
     let (_, file) = common::files().swap_remove(0);
-    let chart = common::chart(&file["inputs"]);
+    (rules, common::chart(&file["inputs"]))
+}
 
+fn bench(c: &mut Criterion) {
+    let (rules, chart) = fixture();
     c.bench_function("evaluator construction", |b| {
         b.iter(|| Evaluator::new(black_box(&chart), Readings::RECORDING_ENGINE));
     });
-    c.bench_function("597 rules over one chart", |b| {
+    let mut group = c.benchmark_group("rules");
+    group.throughput(Throughput::Elements(
+        u64::try_from(rules.len()).unwrap_or(u64::MAX),
+    ));
+    group.bench_function("the shipped set over one chart", |b| {
         b.iter(|| {
             let evaluator = Evaluator::new(black_box(&chart), Readings::RECORDING_ENGINE);
             rules
@@ -35,16 +47,7 @@ fn bench(c: &mut Criterion) {
                 .count()
         });
     });
-}
-
-fn explain(c: &mut Criterion) {
-    let rules: Vec<Rule> = common::rules()
-        .into_iter()
-        .filter(Rule::is_evaluable)
-        .collect();
-    let (_, file) = common::files().swap_remove(0);
-    let chart = common::chart(&file["inputs"]);
-    c.bench_function("597 rules explained over one chart", |b| {
+    group.bench_function("the shipped set explained over one chart", |b| {
         b.iter(|| {
             let evaluator = Evaluator::new(black_box(&chart), Readings::RECORDING_ENGINE);
             rules
@@ -53,7 +56,8 @@ fn explain(c: &mut Criterion) {
                 .count()
         });
     });
+    group.finish();
 }
 
-criterion_group!(benches, bench, explain);
+criterion_group!(benches, bench);
 criterion_main!(benches);
