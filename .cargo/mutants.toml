@@ -8,6 +8,12 @@
 # why it is equivalent. A mutant that is merely hard to catch is not listed
 # here: it gets its test.
 exclude_re = [
+  # Two stored spans are alike within a millionth of a day, and a third
+  # level's period is a cycle's 129 days within one: spans a millionth
+  # apart to the bit are never written, so the bound's own point reads the
+  # same either side.
+  'crates/dasha/src/reading\.rs:306:63: replace < with <= in DashaReading::graha_division',
+  'crates/dasha/src/reading\.rs:398:55: replace < with <= in DashaReading::decennial_division',
   # The step either side of a lattice boundary is a hundredth or a hundred
   # times the tolerance: both put the two readings on either side of it,
   # and the parts are degrees wide.
@@ -18,9 +24,6 @@ exclude_re = [
   # When the occupied sign's number equals the empty one's, what is left
   # the empty one is their difference, nothing, either way.
   'crates/strength/src/ashtakavarga\.rs:362:65: replace < with <= in ekadhipatya',
-  # At sunset itself the instant is in twilight, which `by_day` already
-  # refuses, so `instant <= sunset` reads the same.
-  'crates/strength/src/bhava_bala\.rs:293:48: replace < with <= in special',
   # At exactly 180° the shorter arc is 180 either way.
   'crates/strength/src/shadbala/mod\.rs:395:13: replace > with >= in apart',
   # Ketu is Rahu less 180° or plus 180°: the same point.
