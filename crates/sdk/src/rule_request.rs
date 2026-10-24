@@ -16,6 +16,8 @@ use teistro_rules::longevity::{
 };
 use teistro_rules::{HouseReading, Readings, Rule, RuleResult, Tables, check_references, shipped};
 
+use crate::reading::RuleNeeds;
+
 /// A set of rules the kernel ships.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -378,6 +380,7 @@ impl RuleRequest {
             }
         }
         Ok(RuleSet {
+            needs: RuleNeeds::of(&rules),
             rules,
             readings: self.readings,
             houses: self.houses,
@@ -406,6 +409,8 @@ pub(crate) struct LongevityRules {
 #[derive(Clone, Debug, PartialEq)]
 pub struct RuleSet {
     rules: Vec<Rule>,
+    /// What its rules read of a chart, decided once when the set is built.
+    needs: RuleNeeds,
     readings: RuleReadings,
     houses: bool,
     longevity: Option<LongevityRules>,
@@ -435,6 +440,11 @@ impl RuleSet {
     #[must_use]
     pub fn rules(&self) -> &[Rule] {
         &self.rules
+    }
+
+    /// What its rules read of a chart.
+    pub(crate) const fn needs(&self) -> &RuleNeeds {
+        &self.needs
     }
 
     /// The readings it is evaluated under.

@@ -233,24 +233,23 @@ impl ChartRequest {
         rules: impl IntoIterator<Item = &'r teistro_rules::Rule>,
         points: bool,
     ) -> ChartRequest {
-        let (mut named_points, mut strength, mut limbs, mut moment) = (false, false, false, false);
+        self.needed_by(&RuleNeeds::of(rules), points)
+    }
+
+    /// What a set of rules [`RuleNeeds`] read, the points only where
+    /// `points` allows.
+    pub(crate) fn needed_by(self, needs: &RuleNeeds, points: bool) -> ChartRequest {
         let mut asked = self.vargas.clone();
-        for rule in rules {
-            named_points |= rule.reads_points();
-            strength |= rule.reads_strength();
-            limbs |= rule.reads_panchanga();
-            moment |= rule.reads_moment();
-            for varga in rule.vargas() {
-                if !asked.contains(&varga) {
-                    asked.push(varga);
-                }
+        for varga in &needs.vargas {
+            if !asked.contains(varga) {
+                asked.push(*varga);
             }
         }
         let mut request = self.with_state().with_vargas(asked);
-        if named_points && points {
+        if needs.points && points {
             request = request.with_points();
         }
-        if strength {
+        if needs.strength {
             request = request.with_shadbala();
         }
         // The limb a rule reads is the one running at the birth, which the
@@ -258,12 +257,12 @@ impl ChartRequest {
         // 11 shipped rules that read a limb say "the chart has none" and a
         // consumer asking for exactly what the rules read has no way to
         // give them one (`rules_bridge::birth_limbs`).
-        if limbs {
+        if needs.limbs {
             request = request.with_panchanga();
         }
         // The lagna's span and the eclipse are the instant's rather than
         // the day's, and no almanac holds them.
-        if moment {
+        if needs.moment {
             request = request.with_moment();
         }
         request
@@ -747,5 +746,40 @@ impl ChartRequest {
     #[must_use]
     pub fn drawings(&self) -> &[(KeyId, Varga)] {
         &self.drawings
+    }
+}
+
+/// What a set of rules reads of a chart, worked out once: deciding it walks
+/// every condition of every rule, which over the shipped set is milliseconds,
+/// so a [`RuleSet`](crate::RuleSet) keeps it rather than a reading asking again.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "one flag a section a rule may read, each independent"
+)]
+pub(crate) struct RuleNeeds {
+    points: bool,
+    strength: bool,
+    limbs: bool,
+    moment: bool,
+    /// Each divisional chart a rule steps into, once, in the order first named.
+    vargas: Vec<Varga>,
+}
+
+impl RuleNeeds {
+    pub(crate) fn of<'r>(rules: impl IntoIterator<Item = &'r teistro_rules::Rule>) -> RuleNeeds {
+        let mut needs = RuleNeeds::default();
+        for rule in rules {
+            needs.points |= rule.reads_points();
+            needs.strength |= rule.reads_strength();
+            needs.limbs |= rule.reads_panchanga();
+            needs.moment |= rule.reads_moment();
+            for varga in rule.vargas() {
+                if !needs.vargas.contains(&varga) {
+                    needs.vargas.push(varga);
+                }
+            }
+        }
+        needs
     }
 }

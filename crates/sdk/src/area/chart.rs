@@ -431,7 +431,7 @@ impl<'a> ChartArea<'a> {
         // ashtakavarga spans the chart's bindus.
         let vimshottari = KeyId::from(DashaSystem::Vimshottari);
         let inputs = |points: bool| {
-            let asked = request.clone().rule_inputs(set.rules(), points);
+            let asked = request.clone().needed_by(set.needs(), points);
             if !set.longevity() {
                 return asked;
             }

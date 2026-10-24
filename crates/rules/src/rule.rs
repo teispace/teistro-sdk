@@ -497,6 +497,9 @@ pub struct Rule {
     pub timing: Timing,
 }
 
+/// How a reference to a point is keyed in a condition's compact JSON.
+const POINT_KEY: &[u8] = b"\"point\":";
+
 impl Rule {
     /// A rule with nothing in it yet, natal, to be filled in:
     /// `Rule { conditions, ..Rule::new(key, category, source) }`.
@@ -584,18 +587,16 @@ impl Rule {
     #[must_use]
     pub fn reads_points(&self) -> bool {
         // A reference is what its serialisation holds, and a point is written
-        // `{"point": …}` wherever a sign can stand.
-        fn names(value: &serde_json::Value) -> bool {
-            match value {
-                serde_json::Value::Array(items) => items.iter().any(names),
-                serde_json::Value::Object(fields) => {
-                    fields.contains_key("point") || fields.values().any(names)
-                }
-                _ => false,
-            }
-        }
-        self.top_conditions()
-            .any(|condition| serde_json::to_value(condition).is_ok_and(|value| names(&value)))
+        // `{"point": …}` wherever a sign can stand. In compact JSON an
+        // unescaped `"point":` is only ever a key (a string holding the
+        // quotes writes them escaped), so the text is searched, not built
+        // into a tree: a rule set's worth of trees cost a request 9 ms.
+        let mut text = Vec::new();
+        self.top_conditions().any(|condition| {
+            text.clear();
+            serde_json::to_writer(&mut text, condition).is_ok()
+                && text.windows(POINT_KEY.len()).any(|at| at == POINT_KEY)
+        })
     }
 
     /// The divisional charts its conditions read, each once, in the order they
