@@ -25,12 +25,17 @@ with the nano zone on or off and the memo off, while `heap(1)` counted
 the same 34 241 blocks after 500 calls and after 4500, and the library's
 own counting-allocator test (`crates/ffi/tests/leaks.rs`) got every byte
 back on the same runner. The same build reads flat on Apple silicon.
+
+And under a sanitizer gate (`$TEISTRO_SANITIZER`), whose runtime owns
+`malloc` and holds freed blocks back on purpose, so they never read as
+given back.
 """
 
 from __future__ import annotations
 
 import ctypes
 import gc
+import os
 import platform
 import sys
 import unittest
@@ -116,6 +121,10 @@ IN_USE = _reader()
 
 
 @unittest.skipIf(IN_USE is None, "the allocator's bytes in use cannot be read faithfully here")
+@unittest.skipIf(
+    bool(os.environ.get("TEISTRO_SANITIZER")),
+    "a sanitizer's runtime holds freed blocks back",
+)
 class NothingIsKept(WithLibrary):
     def assert_gives_back(self, cycle: Callable[[], None]) -> None:
         """At least one of `RUNS` runs grows the bytes in use within `BUDGET`.

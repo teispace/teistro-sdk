@@ -116,16 +116,19 @@ catalogue member as serde does, `BIKRAM_SAMBAT` rather than
 coverage job, keeps it so: it runs rustdoc's missing-examples lint as an
 error over the crates it lists.
 
-**The Node addon runs its suite under AddressSanitizer.** **Numbers:**
-all six test files pass with every access the addon and the SDK make
-checked; a one-byte heap over-read planted in the addon failed each of
-the five that load it. `cargo xtask check-node-asan`, a new step in
-verify's `sanitizers` job, builds the addon with the sanitizer and
-refuses one that is not instrumented. It runs the Node suite in a stock
-`node` with the sanitizer's runtime loaded first. The Node layer still
-refuses a sanitizer build, unless its path is named with `TEISTRO_ADDON`
-and `TEISTRO_SANITIZER` names the same sanitizer. That refusal now says
-"an address sanitizer build" in every binding, not "a address build".
+**The Node and Python suites run with the SDK under AddressSanitizer.**
+**Numbers:** Node's six files and Python's 200 tests pass with every access
+the SDK makes checked. A one-byte heap over-read planted in the addon,
+then in the C library, failed every Node file that loads the addon and
+the Python suite. `cargo xtask check-asan`, a new step in verify's
+`sanitizers` job, builds both with the sanitizer and refuses a build
+that is not instrumented. It runs each suite in a stock interpreter with
+the sanitizer's runtime loaded first. The Node and Python loaders still
+refuse a sanitizer build, unless its path is named and
+`TEISTRO_SANITIZER` names the same sanitizer. That refusal now says "an
+address sanitizer build" in every binding, not "a address build".
+Python now counts a library named by `$TEISTRO_LIBRARY` as named, as its
+own refusal of a debug build already told the reader to do.
 
 **The Node loader opens an addon Cargo built where Cargo left it.**
 **Numbers:** none. The loader's last two places to look,

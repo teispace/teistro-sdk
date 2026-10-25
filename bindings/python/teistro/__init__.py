@@ -385,6 +385,7 @@ __all__ = [
     "local_mean_zone",
     "message_parts",
     "message_warnings",
+    "refuse_build",
     "when_unknown",
     # The divisional charts: the catalogue member a caller names and the
     # three shapes a chart's `vargas` answers with.
@@ -1295,7 +1296,9 @@ class BuildInfo:
         )
 
 
-def refuse_build(info: BuildInfo, *, named: bool) -> Optional[str]:
+def refuse_build(
+    info: BuildInfo, *, named: bool, sanitizer: str = ""
+) -> Optional[str]:
     """Why this library may not be loaded, or `None` when it may.
 
     The language half and the native half must be from the same build
@@ -1303,6 +1306,11 @@ def refuse_build(info: BuildInfo, *, named: bool) -> Optional[str]:
     identity"): another ABI or version is a different API, a sanitizer
     build is not what a consumer meant to run, and an unoptimised build is
     refused only when it was searched out rather than named outright.
+
+    A sanitizer build is loaded only when `sanitizer` names the same
+    sanitizer: the caller passes `$TEISTRO_SANITIZER` only for a library
+    it named, outright or by `$TEISTRO_LIBRARY`, so the two together are
+    how a sanitizer gate says it means one.
     """
     if info.abi != GENERATED_ABI_VERSION:
         return (
@@ -1314,11 +1322,12 @@ def refuse_build(info: BuildInfo, *, named: bool) -> Optional[str]:
             f"the library is SDK {info.sdk} and this package was generated "
             f"for {GENERATED_SDK_VERSION}"
         )
-    if info.sanitizer:
+    if info.sanitizer and sanitizer != info.sanitizer:
         article = "an" if info.sanitizer[0] in "aeiou" else "a"
         return (
             f"the library is {article} {info.sanitizer} sanitizer build, "
-            "which is not for use"
+            "which is not for use; a sanitizer gate names it with "
+            f"${PATH_VARIABLE} and $TEISTRO_SANITIZER={info.sanitizer}"
         )
     if not named and not info.optimised:
         return (
@@ -1407,17 +1416,26 @@ class Teistro:
         `$TEISTRO_LIBRARY`, then in this package's own `_lib` directory,
         then at what `teistro-install` wrote, then in the workspace's
         `target/release` and `target/debug`, and finally asks the
-        platform's loader for the bare name.
+        platform's loader for the bare name. A library the variable names
+        is named outright, as `path` is.
 
         Raises `TeistroError` with `Status.UNSUPPORTED` when the library is
         not that build, and `FileNotFoundError` naming every place it
         looked when there is nothing to open.
         """
-        named = path is not None
-        opened = ctypes.CDLL(str(path)) if named else _search()
+        # A library named by the variable is named outright too: the
+        # refusal of a searched-out debug build tells the reader to name
+        # it that way.
+        named = path is not None or bool(os.environ.get(PATH_VARIABLE))
+        opened = ctypes.CDLL(str(path)) if path is not None else _search()
         library = TeistroLibrary(opened)
         build = BuildInfo.of(build_info(library))
-        refusal = refuse_build(build, named=named)
+        # A sanitizer build is acknowledged only for a library named.
+        refusal = refuse_build(
+            build,
+            named=named,
+            sanitizer=os.environ.get("TEISTRO_SANITIZER", "") if named else "",
+        )
         if refusal is not None:
             raise TeistroError(Status.UNSUPPORTED, refusal)
         return cls(library, build)

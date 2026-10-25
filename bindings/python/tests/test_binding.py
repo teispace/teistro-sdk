@@ -15,6 +15,7 @@ import unittest
 from typing import Any, Dict, Optional, Union
 
 from teistro import (
+    refuse_build,
     Air,
     Context,
     nepal_official,
@@ -122,9 +123,21 @@ class TheLibrary(WithLibrary):
         build = self.teistro.build
         self.assertEqual(build.abi, self.teistro.abi)
         self.assertEqual(build.sdk, self.teistro.version)
-        self.assertEqual(build.sanitizer, "")
+        # A sanitizer gate runs this suite on its own build, and says so.
+        self.assertEqual(build.sanitizer, os.environ.get("TEISTRO_SANITIZER", ""))
         self.assertTrue(build.target)
         self.assertTrue(build.commit)
+
+    def test_a_sanitizer_build_is_loaded_only_when_acknowledged(self) -> None:
+        asan = dataclasses.replace(self.teistro.build, sanitizer="address")
+        for named in (True, False):
+            refused = refuse_build(asan, named=named)
+            self.assertIsNotNone(refused)
+            self.assertIn("an address sanitizer build", refused or "")
+        self.assertIsNone(refuse_build(asan, named=True, sanitizer="address"))
+        self.assertIsNotNone(refuse_build(asan, named=True, sanitizer="thread"))
+        thread = dataclasses.replace(asan, sanitizer="thread")
+        self.assertIn("a thread sanitizer build", refuse_build(thread, named=True) or "")
 
     def test_a_library_that_is_not_there_names_where_it_looked(self) -> None:
         with self.assertRaises(OSError):
