@@ -9,6 +9,17 @@ use super::{Auspiciousness, Graha};
 /// The twenty-seven nitya yogas of the Sun and Moon.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Yoga;
+///
+/// let member: Yoga = "VISHKAMBHA".parse()?;
+/// assert_eq!(member, Yoga::Vishkambha);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("yoga.VISHKAMBHA".parse::<Yoga>(), Ok(Yoga::Vishkambha));
+/// assert_eq!(member.to_string(), "VISHKAMBHA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -70,6 +81,18 @@ pub enum Yoga {
 }
 
 /// The attributes of a `yoga` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Yoga::Vishkambha.attributes(),
+///     &YogaAttributes {
+///         lord: Some(Graha::Saturn),
+///         auspiciousness: Auspiciousness::Inauspicious,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct YogaAttributes {
     /// `lord`.
@@ -178,6 +201,12 @@ impl Yoga {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// assert_eq!(Yoga::Vishkambha.key(), "VISHKAMBHA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -212,6 +241,12 @@ impl Yoga {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// assert_eq!(Yoga::Vishkambha.full_key(), "yoga.VISHKAMBHA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -246,6 +281,12 @@ impl Yoga {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// assert_eq!(Yoga::Vishkambha.doc(), "Vishkambha");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -280,6 +321,12 @@ impl Yoga {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// assert_eq!(Yoga::Vishkambha.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -314,6 +361,12 @@ impl Yoga {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Yoga};
+    ///
+    /// assert_eq!(Yoga::Vishkambha.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -348,6 +401,12 @@ impl Yoga {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// assert!(!Yoga::Vishkambha.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -382,6 +441,13 @@ impl Yoga {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// let first = &Yoga::Vishkambha.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -416,6 +482,12 @@ impl Yoga {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// assert_eq!(Yoga::Vishkambha.unverified(), ["lord"]);
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -450,24 +522,54 @@ impl Yoga {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// assert_eq!(Yoga::Vishkambha.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Yoga};
+    ///
+    /// let packed = Yoga::Vishkambha.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Yoga), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Yoga, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// assert_eq!(Yoga::from_key("VISHKAMBHA"), Some(Yoga::Vishkambha));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Yoga::from_key("yoga.VISHKAMBHA"), None);
+    /// // A former key still reads.
+    /// assert_eq!(Yoga::from_key("VISHKAMBA"), Some(Yoga::Vishkambha));
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Yoga> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    ///
+    /// assert_eq!(Yoga::from_id(0), Some(Yoga::Vishkambha));
+    /// assert_eq!(Yoga::from_id(27), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Yoga> {
         match id {
@@ -503,6 +605,18 @@ impl Yoga {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Yoga::Vishkambha.attributes(),
+    ///     &YogaAttributes {
+    ///         lord: Some(Graha::Saturn),
+    ///         auspiciousness: Auspiciousness::Inauspicious,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static YogaAttributes {

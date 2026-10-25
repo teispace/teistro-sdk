@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Vaiseshikamsa;
+///
+/// let member: Vaiseshikamsa = "KIMSHUKA".parse()?;
+/// assert_eq!(member, Vaiseshikamsa::Kimshuka);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("vaiseshikamsa.KIMSHUKA".parse::<Vaiseshikamsa>(), Ok(Vaiseshikamsa::Kimshuka));
+/// assert_eq!(member.to_string(), "KIMSHUKA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -75,6 +86,17 @@ pub enum Vaiseshikamsa {
 }
 
 /// The attributes of a `vaiseshikamsa` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Vaiseshikamsa::Kimshuka.attributes(),
+///     &VaiseshikamsaAttributes {
+///         good_vargas: 2,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct VaiseshikamsaAttributes {
     /// `good_vargas`.
@@ -189,6 +211,12 @@ impl Vaiseshikamsa {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// assert_eq!(Vaiseshikamsa::Kimshuka.key(), "KIMSHUKA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -226,6 +254,12 @@ impl Vaiseshikamsa {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// assert_eq!(Vaiseshikamsa::Kimshuka.full_key(), "vaiseshikamsa.KIMSHUKA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -263,6 +297,12 @@ impl Vaiseshikamsa {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// assert_eq!(Vaiseshikamsa::Kimshuka.doc(), "Kimshuka");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -300,6 +340,12 @@ impl Vaiseshikamsa {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// assert_eq!(Vaiseshikamsa::Kimshuka.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -337,6 +383,12 @@ impl Vaiseshikamsa {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Vaiseshikamsa};
+    ///
+    /// assert_eq!(Vaiseshikamsa::Kimshuka.mark(), Mark::Traditional);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -374,6 +426,12 @@ impl Vaiseshikamsa {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// assert!(!Vaiseshikamsa::Kimshuka.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -411,6 +469,13 @@ impl Vaiseshikamsa {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// let first = &Vaiseshikamsa::Kimshuka.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("BPHS", "6.42-53"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -448,6 +513,12 @@ impl Vaiseshikamsa {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// assert!(Vaiseshikamsa::Kimshuka.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -485,24 +556,52 @@ impl Vaiseshikamsa {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// assert_eq!(Vaiseshikamsa::Kimshuka.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Vaiseshikamsa};
+    ///
+    /// let packed = Vaiseshikamsa::Kimshuka.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Vaiseshikamsa), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Vaiseshikamsa, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// assert_eq!(Vaiseshikamsa::from_key("KIMSHUKA"), Some(Vaiseshikamsa::Kimshuka));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Vaiseshikamsa::from_key("vaiseshikamsa.KIMSHUKA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Vaiseshikamsa> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vaiseshikamsa;
+    ///
+    /// assert_eq!(Vaiseshikamsa::from_id(0), Some(Vaiseshikamsa::Kimshuka));
+    /// assert_eq!(Vaiseshikamsa::from_id(30), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Vaiseshikamsa> {
         match id {
@@ -541,6 +640,17 @@ impl Vaiseshikamsa {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Vaiseshikamsa::Kimshuka.attributes(),
+    ///     &VaiseshikamsaAttributes {
+    ///         good_vargas: 2,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static VaiseshikamsaAttributes {

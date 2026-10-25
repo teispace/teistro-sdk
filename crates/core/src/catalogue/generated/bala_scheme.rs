@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The strength schemes; rows live in the strength kernel.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::BalaScheme;
+///
+/// let member: BalaScheme = "PARASHARA".parse()?;
+/// assert_eq!(member, BalaScheme::Parashara);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("bala_scheme.PARASHARA".parse::<BalaScheme>(), Ok(BalaScheme::Parashara));
+/// assert_eq!(member.to_string(), "PARASHARA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -37,6 +48,12 @@ impl BalaScheme {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// assert_eq!(BalaScheme::Parashara.key(), "PARASHARA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -46,6 +63,12 @@ impl BalaScheme {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// assert_eq!(BalaScheme::Parashara.full_key(), "bala_scheme.PARASHARA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -55,6 +78,12 @@ impl BalaScheme {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// assert_eq!(BalaScheme::Parashara.doc(), "Parashara");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -64,6 +93,12 @@ impl BalaScheme {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// assert_eq!(BalaScheme::Parashara.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -73,6 +108,12 @@ impl BalaScheme {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, BalaScheme};
+    ///
+    /// assert_eq!(BalaScheme::Parashara.mark(), Mark::Traditional);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -82,6 +123,12 @@ impl BalaScheme {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// assert!(!BalaScheme::Parashara.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -91,6 +138,13 @@ impl BalaScheme {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// let first = &BalaScheme::Parashara.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("strength-schemes", "docs/03-design/strength-schemes.md"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -100,6 +154,12 @@ impl BalaScheme {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// assert!(BalaScheme::Parashara.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -109,24 +169,52 @@ impl BalaScheme {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// assert_eq!(BalaScheme::Parashara.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, BalaScheme};
+    ///
+    /// let packed = BalaScheme::Parashara.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::BalaScheme), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::BalaScheme, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// assert_eq!(BalaScheme::from_key("PARASHARA"), Some(BalaScheme::Parashara));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(BalaScheme::from_key("bala_scheme.PARASHARA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<BalaScheme> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BalaScheme;
+    ///
+    /// assert_eq!(BalaScheme::from_id(0), Some(BalaScheme::Parashara));
+    /// assert_eq!(BalaScheme::from_id(2), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<BalaScheme> {
         match id {

@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::BlackoutKind;
+///
+/// let member: BlackoutKind = "CHATURMAS".parse()?;
+/// assert_eq!(member, BlackoutKind::Chaturmas);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("blackout_kind.CHATURMAS".parse::<BlackoutKind>(), Ok(BlackoutKind::Chaturmas));
+/// assert_eq!(member.to_string(), "CHATURMAS");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -77,6 +88,12 @@ impl BlackoutKind {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// assert_eq!(BlackoutKind::Chaturmas.key(), "CHATURMAS");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -96,6 +113,12 @@ impl BlackoutKind {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// assert_eq!(BlackoutKind::Chaturmas.full_key(), "blackout_kind.CHATURMAS");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -115,6 +138,12 @@ impl BlackoutKind {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// assert_eq!(BlackoutKind::Chaturmas.doc(), "Chaturmas: from the bright eleventh of (nija) Ashadha to that of Kartika, the four months Vishnu sleeps");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -134,6 +163,12 @@ impl BlackoutKind {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// assert_eq!(BlackoutKind::Chaturmas.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -153,6 +188,12 @@ impl BlackoutKind {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, BlackoutKind};
+    ///
+    /// assert_eq!(BlackoutKind::Chaturmas.mark(), Mark::Traditional);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -172,6 +213,12 @@ impl BlackoutKind {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// assert!(!BlackoutKind::Chaturmas.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -191,6 +238,13 @@ impl BlackoutKind {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// let first = &BlackoutKind::Chaturmas.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "muhurta blackouts"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -210,6 +264,12 @@ impl BlackoutKind {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// assert!(BlackoutKind::Chaturmas.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -229,24 +289,52 @@ impl BlackoutKind {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// assert_eq!(BlackoutKind::Chaturmas.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, BlackoutKind};
+    ///
+    /// let packed = BlackoutKind::Chaturmas.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::BlackoutKind), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::BlackoutKind, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// assert_eq!(BlackoutKind::from_key("CHATURMAS"), Some(BlackoutKind::Chaturmas));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(BlackoutKind::from_key("blackout_kind.CHATURMAS"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<BlackoutKind> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BlackoutKind;
+    ///
+    /// assert_eq!(BlackoutKind::from_id(0), Some(BlackoutKind::Chaturmas));
+    /// assert_eq!(BlackoutKind::from_id(12), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<BlackoutKind> {
         match id {

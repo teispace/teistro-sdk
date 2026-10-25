@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// Which kernel a dasha system runs on.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::DashaFamily;
+///
+/// let member: DashaFamily = "UDU".parse()?;
+/// assert_eq!(member, DashaFamily::Udu);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("dasha_family.UDU".parse::<DashaFamily>(), Ok(DashaFamily::Udu));
+/// assert_eq!(member.to_string(), "UDU");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -73,6 +84,12 @@ impl DashaFamily {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// assert_eq!(DashaFamily::Udu.key(), "UDU");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -91,6 +108,12 @@ impl DashaFamily {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// assert_eq!(DashaFamily::Udu.full_key(), "dasha_family.UDU");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -109,6 +132,12 @@ impl DashaFamily {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// assert_eq!(DashaFamily::Udu.doc(), "Udu");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -127,6 +156,12 @@ impl DashaFamily {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// assert_eq!(DashaFamily::Udu.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -145,6 +180,12 @@ impl DashaFamily {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, DashaFamily};
+    ///
+    /// assert_eq!(DashaFamily::Udu.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -163,6 +204,12 @@ impl DashaFamily {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// assert!(!DashaFamily::Udu.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -181,6 +228,13 @@ impl DashaFamily {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// let first = &DashaFamily::Udu.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("dasha-kernels", "docs/03-design/dasha-kernels.md"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -199,6 +253,12 @@ impl DashaFamily {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// assert!(DashaFamily::Udu.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -217,24 +277,52 @@ impl DashaFamily {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// assert_eq!(DashaFamily::Udu.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, DashaFamily};
+    ///
+    /// let packed = DashaFamily::Udu.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::DashaFamily), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::DashaFamily, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// assert_eq!(DashaFamily::from_key("UDU"), Some(DashaFamily::Udu));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(DashaFamily::from_key("dasha_family.UDU"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<DashaFamily> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaFamily;
+    ///
+    /// assert_eq!(DashaFamily::from_id(0), Some(DashaFamily::Udu));
+    /// assert_eq!(DashaFamily::from_id(11), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<DashaFamily> {
         match id {

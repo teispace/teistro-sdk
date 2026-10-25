@@ -34,6 +34,14 @@
 //! ```
 
 /// The sine of `x` radians.
+///
+/// ```
+/// use core::f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, PI};
+/// use teistro_core::math;
+///
+/// assert!((math::sin(FRAC_PI_6) - 0.5).abs() < 1e-15);
+/// assert_eq!(math::sin(0.0), 0.0);
+/// ```
 #[inline]
 #[must_use]
 pub fn sin(x: f64) -> f64 {
@@ -41,6 +49,14 @@ pub fn sin(x: f64) -> f64 {
 }
 
 /// The cosine of `x` radians.
+///
+/// ```
+/// use core::f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, PI};
+/// use teistro_core::math;
+///
+/// assert!(math::cos(FRAC_PI_2).abs() < 1e-15);
+/// assert_eq!(math::cos(0.0), 1.0);
+/// ```
 #[inline]
 #[must_use]
 pub fn cos(x: f64) -> f64 {
@@ -48,6 +64,15 @@ pub fn cos(x: f64) -> f64 {
 }
 
 /// The sine and cosine of `x` radians, as one call.
+///
+/// ```
+/// use core::f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, PI};
+/// use teistro_core::math;
+///
+/// let (sin, cos) = math::sin_cos(PI / 3.0);
+/// // The same bits as the two calls apart.
+/// assert_eq!((sin.to_bits(), cos.to_bits()), (math::sin(PI / 3.0).to_bits(), math::cos(PI / 3.0).to_bits()));
+/// ```
 #[inline]
 #[must_use]
 pub fn sin_cos(x: f64) -> (f64, f64) {
@@ -55,6 +80,13 @@ pub fn sin_cos(x: f64) -> (f64, f64) {
 }
 
 /// The tangent of `x` radians.
+///
+/// ```
+/// use core::f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, PI};
+/// use teistro_core::math;
+///
+/// assert!((math::tan(FRAC_PI_4) - 1.0).abs() < 1e-15);
+/// ```
 #[inline]
 #[must_use]
 pub fn tan(x: f64) -> f64 {
@@ -62,6 +94,14 @@ pub fn tan(x: f64) -> f64 {
 }
 
 /// The arcsine of `x`, in radians from −π/2 to π/2; NaN outside [−1, 1].
+///
+/// ```
+/// use core::f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, PI};
+/// use teistro_core::math;
+///
+/// assert!((math::asin(0.5) - FRAC_PI_6).abs() < 1e-15);
+/// assert!(math::asin(1.5).is_nan());
+/// ```
 #[inline]
 #[must_use]
 pub fn asin(x: f64) -> f64 {
@@ -69,6 +109,14 @@ pub fn asin(x: f64) -> f64 {
 }
 
 /// The arccosine of `x`, in radians from 0 to π; NaN outside [−1, 1].
+///
+/// ```
+/// use core::f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, PI};
+/// use teistro_core::math;
+///
+/// assert!((math::acos(-1.0) - PI).abs() < 1e-15);
+/// assert!(math::acos(-1.5).is_nan());
+/// ```
 #[inline]
 #[must_use]
 pub fn acos(x: f64) -> f64 {
@@ -76,6 +124,13 @@ pub fn acos(x: f64) -> f64 {
 }
 
 /// The arctangent of `x`, in radians from −π/2 to π/2.
+///
+/// ```
+/// use core::f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, PI};
+/// use teistro_core::math;
+///
+/// assert!((math::atan(1.0) - FRAC_PI_4).abs() < 1e-15);
+/// ```
 #[inline]
 #[must_use]
 pub fn atan(x: f64) -> f64 {
@@ -84,6 +139,14 @@ pub fn atan(x: f64) -> f64 {
 
 /// The angle of the point (`x`, `y`) from the positive x axis, in radians
 /// from −π to π; `y` first, as `f64::atan2` takes it.
+///
+/// ```
+/// use core::f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, PI};
+/// use teistro_core::math;
+///
+/// // The third quadrant, which `atan(y / x)` cannot tell from the first.
+/// assert!((math::atan2(-1.0, -1.0) + 3.0 * FRAC_PI_4).abs() < 1e-15);
+/// ```
 #[inline]
 #[must_use]
 pub fn atan2(y: f64, x: f64) -> f64 {
@@ -91,6 +154,13 @@ pub fn atan2(y: f64, x: f64) -> f64 {
 }
 
 /// e raised to `x`.
+///
+/// ```
+/// use teistro_core::math;
+///
+/// assert_eq!(math::exp(0.0), 1.0);
+/// assert!((math::exp(1.0) - core::f64::consts::E).abs() < 1e-15);
+/// ```
 #[inline]
 #[must_use]
 pub fn exp(x: f64) -> f64 {
@@ -98,6 +168,13 @@ pub fn exp(x: f64) -> f64 {
 }
 
 /// The natural logarithm of `x`.
+///
+/// ```
+/// use teistro_core::math;
+///
+/// assert_eq!(math::ln(1.0), 0.0);
+/// assert!((math::ln(core::f64::consts::E) - 1.0).abs() < 1e-15);
+/// ```
 #[inline]
 #[must_use]
 pub fn ln(x: f64) -> f64 {
@@ -107,6 +184,13 @@ pub fn ln(x: f64) -> f64 {
 /// The natural logarithm of the gamma function's magnitude, |Γ(x)|; at a
 /// whole number `n + 1` it is ln n!. The research statistics' binomial
 /// coefficients and beta function are built from it.
+///
+/// ```
+/// use teistro_core::math;
+///
+/// // ln 5! = ln 120.
+/// assert!((math::ln_gamma(6.0) - math::ln(120.0)).abs() < 1e-13);
+/// ```
 #[inline]
 #[must_use]
 pub fn ln_gamma(x: f64) -> f64 {
@@ -116,6 +200,15 @@ pub fn ln_gamma(x: f64) -> f64 {
 /// The complementary error function, 1 − erf(x), accurate in the tail
 /// where 1 − erf(x) would round to zero; the normal distribution's tail
 /// is ½·erfc(x/√2).
+///
+/// ```
+/// use teistro_core::math;
+///
+/// assert_eq!(math::erfc(0.0), 1.0);
+/// // The normal tail beyond 1.96 sigma, about 2.5 %.
+/// let tail = 0.5 * math::erfc(1.96 / 2f64.sqrt());
+/// assert!((tail - 0.025).abs() < 1e-4);
+/// ```
 #[inline]
 #[must_use]
 pub fn erfc(x: f64) -> f64 {
@@ -123,6 +216,12 @@ pub fn erfc(x: f64) -> f64 {
 }
 
 /// The base-10 logarithm of `x`.
+///
+/// ```
+/// use teistro_core::math;
+///
+/// assert!((math::log10(1000.0) - 3.0).abs() < 1e-15);
+/// ```
 #[inline]
 #[must_use]
 pub fn log10(x: f64) -> f64 {
@@ -130,6 +229,13 @@ pub fn log10(x: f64) -> f64 {
 }
 
 /// `x` raised to the power `y`.
+///
+/// ```
+/// use teistro_core::math;
+///
+/// assert!((math::powf(2.0, 0.5) - 2f64.sqrt()).abs() < 1e-15);
+/// assert!((math::powf(10.0, -2.0) - 0.01).abs() < 1e-17);
+/// ```
 #[inline]
 #[must_use]
 pub fn powf(x: f64, y: f64) -> f64 {
@@ -138,6 +244,14 @@ pub fn powf(x: f64, y: f64) -> f64 {
 
 /// The length of the hypotenuse, √(x² + y²), without overflowing on the
 /// way.
+///
+/// ```
+/// use teistro_core::math;
+///
+/// assert_eq!(math::hypot(3.0, 4.0), 5.0);
+/// // Squaring 1e300 would overflow; the hypotenuse does not.
+/// assert!(math::hypot(1e300, 1e300).is_finite());
+/// ```
 #[inline]
 #[must_use]
 pub fn hypot(x: f64, y: f64) -> f64 {
@@ -151,6 +265,14 @@ pub fn hypot(x: f64, y: f64) -> f64 {
 /// the order written here, and every step is one IEEE multiplication, so
 /// it is the same everywhere. A negative power is the reciprocal of the
 /// positive one.
+///
+/// ```
+/// use teistro_core::math;
+///
+/// assert_eq!(math::powi(2.0, 10), 1024.0);
+/// assert_eq!(math::powi(2.0, -2), 0.25);
+/// assert_eq!(math::powi(7.0, 0), 1.0);
+/// ```
 #[inline]
 #[must_use]
 pub fn powi(x: f64, n: i32) -> f64 {

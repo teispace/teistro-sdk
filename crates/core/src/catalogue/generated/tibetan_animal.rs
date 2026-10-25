@@ -9,6 +9,17 @@ use super::{Gender};
 /// The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::TibetanAnimal;
+///
+/// let member: TibetanAnimal = "MOUSE".parse()?;
+/// assert_eq!(member, TibetanAnimal::Mouse);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("tibetan_animal.MOUSE".parse::<TibetanAnimal>(), Ok(TibetanAnimal::Mouse));
+/// assert_eq!(member.to_string(), "MOUSE");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -40,6 +51,18 @@ pub enum TibetanAnimal {
 }
 
 /// The attributes of a `tibetan_animal` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     TibetanAnimal::Mouse.attributes(),
+///     &TibetanAnimalAttributes {
+///         tibetan: "byi ba",
+///         gender: Gender::Male,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TibetanAnimalAttributes {
     /// `tibetan`.
@@ -102,6 +125,12 @@ impl TibetanAnimal {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// assert_eq!(TibetanAnimal::Mouse.key(), "MOUSE");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -121,6 +150,12 @@ impl TibetanAnimal {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// assert_eq!(TibetanAnimal::Mouse.full_key(), "tibetan_animal.MOUSE");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -140,6 +175,12 @@ impl TibetanAnimal {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// assert_eq!(TibetanAnimal::Mouse.doc(), "Mouse");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -159,6 +200,12 @@ impl TibetanAnimal {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// assert_eq!(TibetanAnimal::Mouse.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -178,6 +225,12 @@ impl TibetanAnimal {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, TibetanAnimal};
+    ///
+    /// assert_eq!(TibetanAnimal::Mouse.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -197,6 +250,12 @@ impl TibetanAnimal {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// assert!(!TibetanAnimal::Mouse.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -216,6 +275,13 @@ impl TibetanAnimal {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// let first = &TibetanAnimal::Mouse.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014", "§4, table 3"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -235,6 +301,12 @@ impl TibetanAnimal {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// assert!(TibetanAnimal::Mouse.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -254,24 +326,52 @@ impl TibetanAnimal {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// assert_eq!(TibetanAnimal::Mouse.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, TibetanAnimal};
+    ///
+    /// let packed = TibetanAnimal::Mouse.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::TibetanAnimal), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::TibetanAnimal, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// assert_eq!(TibetanAnimal::from_key("MOUSE"), Some(TibetanAnimal::Mouse));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(TibetanAnimal::from_key("tibetan_animal.MOUSE"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<TibetanAnimal> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanAnimal;
+    ///
+    /// assert_eq!(TibetanAnimal::from_id(0), Some(TibetanAnimal::Mouse));
+    /// assert_eq!(TibetanAnimal::from_id(12), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<TibetanAnimal> {
         match id {
@@ -292,6 +392,18 @@ impl TibetanAnimal {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     TibetanAnimal::Mouse.attributes(),
+    ///     &TibetanAnimalAttributes {
+    ///         tibetan: "byi ba",
+    ///         gender: Gender::Male,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static TibetanAnimalAttributes {

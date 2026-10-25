@@ -3,29 +3,41 @@
 //! the C boundary and every binding use.
 
 macro_rules! knob {
-    ($(#[$m:meta])* $name:ident { $( $(#[$vm:meta])* $variant:ident = $key:literal ),+ $(,)? }) => {
+    ($(#[$m:meta])* $name:ident {
+        $(#[$fm:meta])* $first:ident = $first_key:literal
+        $(, $(#[$vm:meta])* $variant:ident = $key:literal )* $(,)?
+    }) => {
         $(#[$m])*
+        ///
+        #[doc = concat!("```\nuse teistro_core::settings::knobs::", stringify!($name), ";\n\nlet value: ", stringify!($name), " = \"", $first_key, "\".parse()?;\nassert_eq!(value, ", stringify!($name), "::", stringify!($first), ");\n// The key is the JSON form too.\nassert_eq!(serde_json::to_string(&value).unwrap(), r#\"\"", $first_key, "\"\"#);\n# Ok::<(), teistro_core::quantity::InvalidValue>(())\n```")]
         #[non_exhaustive]
         #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
         #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         pub enum $name {
-            $( $(#[$vm])* #[serde(rename = $key)] $variant ),+
+            $(#[$fm])* #[serde(rename = $first_key)] $first,
+            $( $(#[$vm])* #[serde(rename = $key)] $variant ),*
         }
 
         impl $name {
             /// Every value, in declaration order.
-            pub const ALL: &'static [$name] = &[ $( $name::$variant ),+ ];
+            ///
+            #[doc = concat!("```\nuse teistro_core::settings::knobs::", stringify!($name), ";\n\nassert_eq!(", stringify!($name), "::ALL.first(), Some(&", stringify!($name), "::", stringify!($first), "));\n```")]
+            pub const ALL: &'static [$name] = &[ $name::$first, $( $name::$variant ),* ];
 
             /// The key form.
+            ///
+            #[doc = concat!("```\nuse teistro_core::settings::knobs::", stringify!($name), ";\n\nassert_eq!(", stringify!($name), "::", stringify!($first), ".key(), \"", $first_key, "\");\n```")]
             #[must_use]
             pub const fn key(self) -> &'static str {
-                match self { $( $name::$variant => $key ),+ }
+                match self { $name::$first => $first_key, $( $name::$variant => $key ),* }
             }
 
             /// The value with a key.
+            ///
+            #[doc = concat!("```\nuse teistro_core::settings::knobs::", stringify!($name), ";\n\nassert_eq!(", stringify!($name), "::from_key(\"", $first_key, "\"), Some(", stringify!($name), "::", stringify!($first), "));\n// The key form only, in its case.\nassert_eq!(", stringify!($name), "::from_key(\"not a key\"), None);\n```")]
             #[must_use]
             pub fn from_key(key: &str) -> Option<$name> {
-                match key { $( $key => Some($name::$variant), )+ _ => None }
+                match key { $first_key => Some($name::$first), $( $key => Some($name::$variant), )* _ => None }
             }
         }
 
@@ -42,7 +54,7 @@ macro_rules! knob {
                 $name::from_key(key).ok_or_else(|| crate::quantity::InvalidValue {
                     quantity: stringify!($name),
                     value: key.to_string(),
-                    accepted: concat!("one of ", $( $key, " " ),+),
+                    accepted: concat!("one of ", $first_key, " ", $( $key, " " ),*),
                     field: None,
                 })
             }
@@ -449,6 +461,14 @@ impl YearLength {
     /// month 29.530 589 days, of which the lunar year is twelve. The others
     /// are the counts their names state: the Julian 365.25, the savana 360,
     /// and the nakshatra year of twelve 27-day months, 324.
+    ///
+    /// ```
+    /// use teistro_core::settings::knobs::YearLength;
+    ///
+    /// assert_eq!(YearLength::Savana360.days(), 360.0);
+    /// // Twelve synodic months.
+    /// assert!((YearLength::Lunar.days() - 354.367_068).abs() < 1e-6);
+    /// ```
     #[must_use]
     pub const fn days(self) -> f64 {
         match self {

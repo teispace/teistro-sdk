@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The divisional charts the SDK ships; the kernel row of each lives in the vargas crate.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Varga;
+///
+/// let member: Varga = "D1".parse()?;
+/// assert_eq!(member, Varga::D1);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("varga.D1".parse::<Varga>(), Ok(Varga::D1));
+/// assert_eq!(member.to_string(), "D1");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -57,6 +68,17 @@ pub enum Varga {
 }
 
 /// The attributes of a `varga` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Varga::D1.attributes(),
+///     &VargaAttributes {
+///         divisions: 1,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct VargaAttributes {
     /// `divisions`.
@@ -144,6 +166,12 @@ impl Varga {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// assert_eq!(Varga::D1.key(), "D1");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -172,6 +200,12 @@ impl Varga {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// assert_eq!(Varga::D1.full_key(), "varga.D1");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -200,6 +234,12 @@ impl Varga {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// assert_eq!(Varga::D1.doc(), "Rashi");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -228,6 +268,12 @@ impl Varga {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// assert_eq!(Varga::D1.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -256,6 +302,12 @@ impl Varga {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Varga};
+    ///
+    /// assert_eq!(Varga::D1.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -284,6 +336,12 @@ impl Varga {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// assert!(!Varga::D1.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -312,6 +370,13 @@ impl Varga {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// let first = &Varga::D1.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -340,6 +405,12 @@ impl Varga {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// assert!(Varga::D1.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -368,24 +439,52 @@ impl Varga {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// assert_eq!(Varga::D1.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Varga};
+    ///
+    /// let packed = Varga::D1.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Varga), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Varga, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// assert_eq!(Varga::from_key("D1"), Some(Varga::D1));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Varga::from_key("varga.D1"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Varga> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// assert_eq!(Varga::from_id(0), Some(Varga::D1));
+    /// assert_eq!(Varga::from_id(21), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Varga> {
         match id {
@@ -415,6 +514,17 @@ impl Varga {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Varga::D1.attributes(),
+    ///     &VargaAttributes {
+    ///         divisions: 1,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static VargaAttributes {

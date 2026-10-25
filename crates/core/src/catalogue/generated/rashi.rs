@@ -9,6 +9,17 @@ use super::{Graha, Modality, Parity, Rising, Tatwa};
 /// The twelve signs.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+///
+/// let member: Rashi = "ARIES".parse()?;
+/// assert_eq!(member, Rashi::Aries);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("rashi.ARIES".parse::<Rashi>(), Ok(Rashi::Aries));
+/// assert_eq!(member.to_string(), "ARIES");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -40,6 +51,22 @@ pub enum Rashi {
 }
 
 /// The attributes of a `rashi` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Rashi::Aries.attributes(),
+///     &RashiAttributes {
+///         lord: Graha::Mars,
+///         co_lord: None,
+///         element: Tatwa::Agni,
+///         modality: Modality::Chara,
+///         parity: Parity::Odd,
+///         rising: Rising::Prishtodaya,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct RashiAttributes {
     /// `lord`.
@@ -110,6 +137,12 @@ impl Rashi {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(Rashi::Aries.key(), "ARIES");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -129,6 +162,12 @@ impl Rashi {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(Rashi::Aries.full_key(), "rashi.ARIES");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -148,6 +187,12 @@ impl Rashi {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(Rashi::Aries.doc(), "Aries");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -167,6 +212,12 @@ impl Rashi {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(Rashi::Aries.glyph(), Some("♈"));
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -186,6 +237,12 @@ impl Rashi {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Rashi};
+    ///
+    /// assert_eq!(Rashi::Aries.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -205,6 +262,12 @@ impl Rashi {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert!(!Rashi::Aries.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -224,6 +287,13 @@ impl Rashi {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// let first = &Rashi::Aries.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -243,6 +313,12 @@ impl Rashi {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(Rashi::Aries.unverified(), ["co_lord", "rising"]);
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -262,24 +338,52 @@ impl Rashi {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(Rashi::Aries.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Rashi};
+    ///
+    /// let packed = Rashi::Aries.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Rashi), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Rashi, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(Rashi::from_key("ARIES"), Some(Rashi::Aries));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Rashi::from_key("rashi.ARIES"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Rashi> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(Rashi::from_id(0), Some(Rashi::Aries));
+    /// assert_eq!(Rashi::from_id(12), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Rashi> {
         match id {
@@ -300,6 +404,22 @@ impl Rashi {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Rashi::Aries.attributes(),
+    ///     &RashiAttributes {
+    ///         lord: Graha::Mars,
+    ///         co_lord: None,
+    ///         element: Tatwa::Agni,
+    ///         modality: Modality::Chara,
+    ///         parity: Parity::Odd,
+    ///         rising: Rising::Prishtodaya,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static RashiAttributes {

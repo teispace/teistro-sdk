@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The Ashta Koota and the Dasha Koota extensions.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+///
+/// let member: Koota = "VARNA".parse()?;
+/// assert_eq!(member, Koota::Varna);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("koota.VARNA".parse::<Koota>(), Ok(Koota::Varna));
+/// assert_eq!(member.to_string(), "VARNA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -39,6 +50,17 @@ pub enum Koota {
 }
 
 /// The attributes of a `koota` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Koota::Varna.attributes(),
+///     &KootaAttributes {
+///         max_points: Some(1),
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct KootaAttributes {
     /// `max_points`.
@@ -99,6 +121,12 @@ impl Koota {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// assert_eq!(Koota::Varna.key(), "VARNA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -118,6 +146,12 @@ impl Koota {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// assert_eq!(Koota::Varna.full_key(), "koota.VARNA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -137,6 +171,12 @@ impl Koota {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// assert_eq!(Koota::Varna.doc(), "Varna");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -156,6 +196,12 @@ impl Koota {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// assert_eq!(Koota::Varna.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -175,6 +221,12 @@ impl Koota {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Koota};
+    ///
+    /// assert_eq!(Koota::Varna.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -194,6 +246,12 @@ impl Koota {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// assert!(!Koota::Varna.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -213,6 +271,13 @@ impl Koota {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// let first = &Koota::Varna.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -232,6 +297,12 @@ impl Koota {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// assert!(Koota::Varna.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -251,24 +322,52 @@ impl Koota {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// assert_eq!(Koota::Varna.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Koota};
+    ///
+    /// let packed = Koota::Varna.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Koota), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Koota, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// assert_eq!(Koota::from_key("VARNA"), Some(Koota::Varna));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Koota::from_key("koota.VARNA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Koota> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    ///
+    /// assert_eq!(Koota::from_id(0), Some(Koota::Varna));
+    /// assert_eq!(Koota::from_id(12), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Koota> {
         match id {
@@ -289,6 +388,17 @@ impl Koota {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Koota::Varna.attributes(),
+    ///     &KootaAttributes {
+    ///         max_points: Some(1),
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static KootaAttributes {

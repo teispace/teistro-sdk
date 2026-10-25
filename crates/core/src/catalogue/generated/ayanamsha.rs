@@ -9,6 +9,17 @@ use super::{AyanamshaCategory};
 /// The catalogued ayanamshas; a custom one is a settings value, not a member.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Ayanamsha;
+///
+/// let member: Ayanamsha = "FAGAN_BRADLEY".parse()?;
+/// assert_eq!(member, Ayanamsha::FaganBradley);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("ayanamsha.FAGAN_BRADLEY".parse::<Ayanamsha>(), Ok(Ayanamsha::FaganBradley));
+/// assert_eq!(member.to_string(), "FAGAN_BRADLEY");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -110,6 +121,18 @@ pub enum Ayanamsha {
 }
 
 /// The attributes of a `ayanamsha` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Ayanamsha::FaganBradley.attributes(),
+///     &AyanamshaAttributes {
+///         swiss_mode: 0,
+///         category: AyanamshaCategory::WesternSidereal,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct AyanamshaAttributes {
     /// `swiss_mode`.
@@ -277,6 +300,12 @@ impl Ayanamsha {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// assert_eq!(Ayanamsha::FaganBradley.key(), "FAGAN_BRADLEY");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -331,6 +360,12 @@ impl Ayanamsha {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// assert_eq!(Ayanamsha::FaganBradley.full_key(), "ayanamsha.FAGAN_BRADLEY");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -385,6 +420,12 @@ impl Ayanamsha {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// assert_eq!(Ayanamsha::FaganBradley.doc(), "Fagan and Bradley");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -439,6 +480,12 @@ impl Ayanamsha {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// assert_eq!(Ayanamsha::FaganBradley.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -493,6 +540,12 @@ impl Ayanamsha {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Ayanamsha};
+    ///
+    /// assert_eq!(Ayanamsha::FaganBradley.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -547,6 +600,12 @@ impl Ayanamsha {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// assert!(!Ayanamsha::FaganBradley.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -601,6 +660,13 @@ impl Ayanamsha {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// let first = &Ayanamsha::FaganBradley.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -655,6 +721,12 @@ impl Ayanamsha {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// assert!(Ayanamsha::FaganBradley.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -709,24 +781,52 @@ impl Ayanamsha {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// assert_eq!(Ayanamsha::FaganBradley.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Ayanamsha};
+    ///
+    /// let packed = Ayanamsha::FaganBradley.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Ayanamsha), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Ayanamsha, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// assert_eq!(Ayanamsha::from_key("FAGAN_BRADLEY"), Some(Ayanamsha::FaganBradley));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Ayanamsha::from_key("ayanamsha.FAGAN_BRADLEY"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Ayanamsha> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// assert_eq!(Ayanamsha::from_id(0), Some(Ayanamsha::FaganBradley));
+    /// assert_eq!(Ayanamsha::from_id(47), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Ayanamsha> {
         match id {
@@ -782,6 +882,18 @@ impl Ayanamsha {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Ayanamsha::FaganBradley.attributes(),
+    ///     &AyanamshaAttributes {
+    ///         swiss_mode: 0,
+    ///         category: AyanamshaCategory::WesternSidereal,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static AyanamshaAttributes {

@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The five elements.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Tatwa;
+///
+/// let member: Tatwa = "AGNI".parse()?;
+/// assert_eq!(member, Tatwa::Agni);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("tatwa.AGNI".parse::<Tatwa>(), Ok(Tatwa::Agni));
+/// assert_eq!(member.to_string(), "AGNI");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -49,6 +60,12 @@ impl Tatwa {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// assert_eq!(Tatwa::Agni.key(), "AGNI");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -61,6 +78,12 @@ impl Tatwa {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// assert_eq!(Tatwa::Agni.full_key(), "tatwa.AGNI");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -73,6 +96,12 @@ impl Tatwa {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// assert_eq!(Tatwa::Agni.doc(), "Fire");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -85,6 +114,12 @@ impl Tatwa {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// assert_eq!(Tatwa::Agni.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -97,6 +132,12 @@ impl Tatwa {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Tatwa};
+    ///
+    /// assert_eq!(Tatwa::Agni.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -109,6 +150,12 @@ impl Tatwa {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// assert!(!Tatwa::Agni.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -121,6 +168,13 @@ impl Tatwa {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// let first = &Tatwa::Agni.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -133,6 +187,12 @@ impl Tatwa {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// assert!(Tatwa::Agni.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -145,24 +205,52 @@ impl Tatwa {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// assert_eq!(Tatwa::Agni.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Tatwa};
+    ///
+    /// let packed = Tatwa::Agni.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Tatwa), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Tatwa, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// assert_eq!(Tatwa::from_key("AGNI"), Some(Tatwa::Agni));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Tatwa::from_key("tatwa.AGNI"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Tatwa> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tatwa;
+    ///
+    /// assert_eq!(Tatwa::from_id(0), Some(Tatwa::Agni));
+    /// assert_eq!(Tatwa::from_id(5), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Tatwa> {
         match id {

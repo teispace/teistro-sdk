@@ -9,6 +9,17 @@ use super::{BodyClass, Direction, Gender, Guna, Nature, Rashi, Tatwa, Varna};
 /// The nine grahas of the Parashari tradition and the three outer planets.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+///
+/// let member: Graha = "SUN".parse()?;
+/// assert_eq!(member, Graha::Sun);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("graha.SUN".parse::<Graha>(), Ok(Graha::Sun));
+/// assert_eq!(member.to_string(), "SUN");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -40,6 +51,12 @@ pub enum Graha {
 }
 
 /// A value type of the `graha` attributes.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(Graha::Sun.attributes().descriptors, Some(GrahaDescriptors { nature: Nature::Malefic, gender: Gender::Male, element: Tatwa::Agni, guna: Guna::Sattva, varna: Varna::Kshatriya, direction: Direction::East }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GrahaDescriptors {
     /// `nature`.
@@ -57,6 +74,12 @@ pub struct GrahaDescriptors {
 }
 
 /// A value type of the `graha` attributes.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(Graha::Sun.attributes().exaltation, Some(SignDegree { sign: Rashi::Aries, degree: 10 }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SignDegree {
     /// `sign`.
@@ -66,6 +89,12 @@ pub struct SignDegree {
 }
 
 /// A value type of the `graha` attributes.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(Graha::Sun.attributes().moolatrikona, Some(SignSpan { sign: Rashi::Leo, from: 0, to: 20 }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SignSpan {
     /// `sign`.
@@ -77,6 +106,25 @@ pub struct SignSpan {
 }
 
 /// The attributes of a `graha` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Graha::Sun.attributes(),
+///     &GrahaAttributes {
+///         body: BodyClass::Luminary,
+///         descriptors: Some(GrahaDescriptors { nature: Nature::Malefic, gender: Gender::Male, element: Tatwa::Agni, guna: Guna::Sattva, varna: Varna::Kshatriya, direction: Direction::East }),
+///         exaltation: Some(SignDegree { sign: Rashi::Aries, degree: 10 }),
+///         debilitation: Some(SignDegree { sign: Rashi::Libra, degree: 10 }),
+///         moolatrikona: Some(SignSpan { sign: Rashi::Leo, from: 0, to: 20 }),
+///         own: &[Rashi::Leo],
+///         friends: &[Graha::Moon, Graha::Mars, Graha::Jupiter],
+///         neutrals: &[Graha::Mercury],
+///         enemies: &[Graha::Venus, Graha::Saturn, Graha::Rahu, Graha::Ketu],
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GrahaAttributes {
     /// `body`.
@@ -153,6 +201,12 @@ impl Graha {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert_eq!(Graha::Sun.key(), "SUN");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -172,6 +226,12 @@ impl Graha {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert_eq!(Graha::Sun.full_key(), "graha.SUN");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -191,6 +251,12 @@ impl Graha {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert_eq!(Graha::Sun.doc(), "The Sun");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -210,6 +276,12 @@ impl Graha {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert_eq!(Graha::Sun.glyph(), Some("☉"));
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -229,6 +301,12 @@ impl Graha {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Graha};
+    ///
+    /// assert_eq!(Graha::Sun.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -248,6 +326,12 @@ impl Graha {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert!(!Graha::Sun.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -267,6 +351,13 @@ impl Graha {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let first = &Graha::Sun.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -286,6 +377,12 @@ impl Graha {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert_eq!(Graha::Rahu.unverified(), ["exaltation", "debilitation", "moolatrikona", "own", "friends", "neutrals", "enemies"]);
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -305,24 +402,52 @@ impl Graha {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert_eq!(Graha::Sun.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Graha};
+    ///
+    /// let packed = Graha::Sun.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Graha), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Graha, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert_eq!(Graha::from_key("SUN"), Some(Graha::Sun));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Graha::from_key("graha.SUN"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Graha> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert_eq!(Graha::from_id(0), Some(Graha::Sun));
+    /// assert_eq!(Graha::from_id(12), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Graha> {
         match id {
@@ -343,6 +468,25 @@ impl Graha {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Graha::Sun.attributes(),
+    ///     &GrahaAttributes {
+    ///         body: BodyClass::Luminary,
+    ///         descriptors: Some(GrahaDescriptors { nature: Nature::Malefic, gender: Gender::Male, element: Tatwa::Agni, guna: Guna::Sattva, varna: Varna::Kshatriya, direction: Direction::East }),
+    ///         exaltation: Some(SignDegree { sign: Rashi::Aries, degree: 10 }),
+    ///         debilitation: Some(SignDegree { sign: Rashi::Libra, degree: 10 }),
+    ///         moolatrikona: Some(SignSpan { sign: Rashi::Leo, from: 0, to: 20 }),
+    ///         own: &[Rashi::Leo],
+    ///         friends: &[Graha::Moon, Graha::Mars, Graha::Jupiter],
+    ///         neutrals: &[Graha::Mercury],
+    ///         enemies: &[Graha::Venus, Graha::Saturn, Graha::Rahu, Graha::Ketu],
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static GrahaAttributes {

@@ -9,6 +9,17 @@ use super::{Deity};
 /// The eleven karanas: seven movable, four fixed.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Karana;
+///
+/// let member: Karana = "BAVA".parse()?;
+/// assert_eq!(member, Karana::Bava);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("karana.BAVA".parse::<Karana>(), Ok(Karana::Bava));
+/// assert_eq!(member.to_string(), "BAVA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -38,6 +49,18 @@ pub enum Karana {
 }
 
 /// The attributes of a `karana` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Karana::Bava.attributes(),
+///     &KaranaAttributes {
+///         movable: true,
+///         deity: Some(Deity::Indra),
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct KaranaAttributes {
     /// `movable`.
@@ -97,6 +120,12 @@ impl Karana {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// assert_eq!(Karana::Bava.key(), "BAVA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -115,6 +144,12 @@ impl Karana {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// assert_eq!(Karana::Bava.full_key(), "karana.BAVA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -133,6 +168,12 @@ impl Karana {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// assert_eq!(Karana::Bava.doc(), "Bava");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -151,6 +192,12 @@ impl Karana {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// assert_eq!(Karana::Bava.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -169,6 +216,12 @@ impl Karana {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Karana};
+    ///
+    /// assert_eq!(Karana::Bava.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -187,6 +240,12 @@ impl Karana {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// assert!(!Karana::Bava.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -205,6 +264,13 @@ impl Karana {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// let first = &Karana::Bava.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -223,6 +289,12 @@ impl Karana {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// assert!(Karana::Bava.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -241,24 +313,52 @@ impl Karana {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// assert_eq!(Karana::Bava.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Karana};
+    ///
+    /// let packed = Karana::Bava.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Karana), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Karana, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// assert_eq!(Karana::from_key("BAVA"), Some(Karana::Bava));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Karana::from_key("karana.BAVA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Karana> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// assert_eq!(Karana::from_id(0), Some(Karana::Bava));
+    /// assert_eq!(Karana::from_id(11), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Karana> {
         match id {
@@ -278,6 +378,18 @@ impl Karana {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Karana::Bava.attributes(),
+    ///     &KaranaAttributes {
+    ///         movable: true,
+    ///         deity: Some(Deity::Indra),
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static KaranaAttributes {

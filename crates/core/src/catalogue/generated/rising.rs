@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// How a sign rises: head first, back first, or both.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Rising;
+///
+/// let member: Rising = "SIRSHODAYA".parse()?;
+/// assert_eq!(member, Rising::Sirshodaya);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("rising.SIRSHODAYA".parse::<Rising>(), Ok(Rising::Sirshodaya));
+/// assert_eq!(member.to_string(), "SIRSHODAYA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -41,6 +52,12 @@ impl Rising {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// assert_eq!(Rising::Sirshodaya.key(), "SIRSHODAYA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -51,6 +68,12 @@ impl Rising {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// assert_eq!(Rising::Sirshodaya.full_key(), "rising.SIRSHODAYA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -61,6 +84,12 @@ impl Rising {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// assert_eq!(Rising::Sirshodaya.doc(), "Sirshodaya");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -71,6 +100,12 @@ impl Rising {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// assert_eq!(Rising::Sirshodaya.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -81,6 +116,12 @@ impl Rising {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Rising};
+    ///
+    /// assert_eq!(Rising::Sirshodaya.mark(), Mark::Traditional);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -91,6 +132,12 @@ impl Rising {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// assert!(!Rising::Sirshodaya.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -101,6 +148,13 @@ impl Rising {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// let first = &Rising::Sirshodaya.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("BPHS", "4"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -111,6 +165,12 @@ impl Rising {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// assert!(Rising::Sirshodaya.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -121,24 +181,52 @@ impl Rising {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// assert_eq!(Rising::Sirshodaya.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Rising};
+    ///
+    /// let packed = Rising::Sirshodaya.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Rising), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Rising, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// assert_eq!(Rising::from_key("SIRSHODAYA"), Some(Rising::Sirshodaya));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Rising::from_key("rising.SIRSHODAYA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Rising> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rising;
+    ///
+    /// assert_eq!(Rising::from_id(0), Some(Rising::Sirshodaya));
+    /// assert_eq!(Rising::from_id(3), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Rising> {
         match id {

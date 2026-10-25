@@ -16,6 +16,15 @@
 /// digits catastrophically at high degree, and rather than two passes
 /// because the derivative's recurrence rides along with the value's for
 /// the cost of two more additions per term.
+///
+/// ```
+/// use teistro_core::chebyshev::evaluate;
+///
+/// // 1 + 2 T1(x) + 3 T2(x) at x = 0.5: 1 + 1 - 1.5, and its slope 2 + 12x.
+/// let (value, slope) = evaluate(&[1.0, 2.0, 3.0], 0.5);
+/// assert!((value - 0.5).abs() < 1e-15 && (slope - 8.0).abs() < 1e-15);
+/// assert_eq!(evaluate(&[], 0.5), (0.0, 0.0));
+/// ```
 #[must_use]
 pub fn evaluate(coefficients: &[f64], x: f64) -> (f64, f64) {
     let Some((first, rest)) = coefficients.split_first() else {
@@ -49,6 +58,18 @@ pub fn evaluate(coefficients: &[f64], x: f64) -> (f64, f64) {
 ///
 /// The cosines are the SDK's own ([`crate::math`]), so the same values
 /// give the same coefficients on every architecture.
+///
+/// ```
+/// use teistro_core::chebyshev::{evaluate, lobatto};
+///
+/// // t² over [0, 2] is 1.5 T0 + 2 T1 + 0.5 T2 in the segment's own x.
+/// let [series] = lobatto::<3, 1>(|t| [t * t], 0.0, 2.0);
+/// for (got, want) in series.iter().zip([1.5, 2.0, 0.5]) {
+///     assert!((got - want).abs() < 1e-14);
+/// }
+/// // It passes through every value it was given: t = 1 is x = 0.
+/// assert!((evaluate(&series, 0.0).0 - 1.0).abs() < 1e-14);
+/// ```
 #[must_use]
 pub fn lobatto<const N: usize, const C: usize>(
     mut at: impl FnMut(f64) -> [f64; C],
@@ -94,6 +115,13 @@ pub fn lobatto<const N: usize, const C: usize>(
 /// of its segments resident at two days each. At 64 a year's rounds
 /// evicted each other's segments and refitted every one of them each
 /// round, and a year of almanac days took twice as long as with no fit.
+///
+/// ```
+/// use teistro_core::chebyshev::SLOTS;
+///
+/// // A year of two-day segments fits with room to spare.
+/// assert!(SLOTS * 2 >= 366);
+/// ```
 pub const SLOTS: usize = 256;
 
 /// [`SLOTS`] as a segment number's modulus.
@@ -115,6 +143,19 @@ const EMPTY: i64 = i64::MIN;
 /// thread (a `thread_local!` of a `RefCell`), so threads share nothing.
 /// The slots are allocated on the first instant asked, so a thread that
 /// never asks pays nothing.
+///
+/// ```
+/// use teistro_core::chebyshev::Segments;
+///
+/// // Segments of two days from JD 0, three values each: exact for a quadratic.
+/// let mut store: Segments<3, 1> = Segments::new(0.0, 2.0);
+/// let mut fits = 0;
+/// for _ in 0..3 {
+///     store.at(3.0, |t| { fits += 1; [t * t] });
+/// }
+/// // Fitted once, then answered from the store.
+/// assert_eq!(fits, 3);
+/// ```
 #[derive(Clone, Debug)]
 pub struct Segments<const N: usize, const C: usize> {
     /// The first segment's start, a Julian day.
@@ -131,6 +172,14 @@ impl<const N: usize, const C: usize> Segments<N, C> {
     ///
     /// A length that is a power of two keeps an instant's place in its
     /// segment exact.
+    ///
+    /// ```
+    /// use teistro_core::chebyshev::Segments;
+    ///
+    /// // Segments of two days from JD 0, three values each: exact for a quadratic.
+    /// let mut store: Segments<3, 1> = Segments::new(0.0, 2.0);
+    /// assert_eq!(store.start_of(0), 0.0);
+    /// ```
     #[must_use]
     pub const fn new(origin: f64, length: f64) -> Segments<N, C> {
         Segments {
@@ -142,6 +191,14 @@ impl<const N: usize, const C: usize> Segments<N, C> {
 
     /// The number of the segment an instant falls in: the one that
     /// starts at or before it.
+    ///
+    /// ```
+    /// use teistro_core::chebyshev::Segments;
+    ///
+    /// // Segments of two days from JD 0, three values each: exact for a quadratic.
+    /// let mut store: Segments<3, 1> = Segments::new(0.0, 2.0);
+    /// assert_eq!((store.segment_of(3.0), store.segment_of(4.0), store.segment_of(-0.5)), (1, 2, -1));
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_possible_truncation,
@@ -152,6 +209,15 @@ impl<const N: usize, const C: usize> Segments<N, C> {
     }
 
     /// A segment's first instant.
+    ///
+    /// ```
+    /// use teistro_core::chebyshev::Segments;
+    ///
+    /// // Segments of two days from JD 0, three values each: exact for a quadratic.
+    /// let mut store: Segments<3, 1> = Segments::new(0.0, 2.0);
+    /// assert_eq!(store.start_of(1), 2.0);
+    /// assert_eq!(store.start_of(-1), -2.0);
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_precision_loss,
@@ -167,6 +233,17 @@ impl<const N: usize, const C: usize> Segments<N, C> {
     ///
     /// `None` for an instant that is not finite, which falls in no
     /// segment; the caller answers it from `at` itself.
+    ///
+    /// ```
+    /// use teistro_core::chebyshev::Segments;
+    ///
+    /// // Segments of two days from JD 0, three values each: exact for a quadratic.
+    /// let mut store: Segments<3, 1> = Segments::new(0.0, 2.0);
+    /// // t² and its rate 2t at t = 3, from the segment [2, 4].
+    /// let ([value], [rate]) = store.at(3.0, |t| [t * t]).unwrap();
+    /// assert!((value - 9.0).abs() < 1e-12 && (rate - 6.0).abs() < 1e-12);
+    /// assert_eq!(store.at(f64::NAN, |t| [t * t]), None);
+    /// ```
     pub fn at(&mut self, jd: f64, at: impl FnMut(f64) -> [f64; C]) -> Option<([f64; C], [f64; C])> {
         if !jd.is_finite() || self.length <= 0.0 {
             return None;

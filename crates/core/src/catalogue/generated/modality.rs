@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// Movable, fixed and dual signs.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Modality;
+///
+/// let member: Modality = "CHARA".parse()?;
+/// assert_eq!(member, Modality::Chara);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("modality.CHARA".parse::<Modality>(), Ok(Modality::Chara));
+/// assert_eq!(member.to_string(), "CHARA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -41,6 +52,12 @@ impl Modality {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// assert_eq!(Modality::Chara.key(), "CHARA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -51,6 +68,12 @@ impl Modality {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// assert_eq!(Modality::Chara.full_key(), "modality.CHARA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -61,6 +84,12 @@ impl Modality {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// assert_eq!(Modality::Chara.doc(), "Movable");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -71,6 +100,12 @@ impl Modality {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// assert_eq!(Modality::Chara.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -81,6 +116,12 @@ impl Modality {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Modality};
+    ///
+    /// assert_eq!(Modality::Chara.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -91,6 +132,12 @@ impl Modality {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// assert!(!Modality::Chara.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -101,6 +148,13 @@ impl Modality {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// let first = &Modality::Chara.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -111,6 +165,12 @@ impl Modality {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// assert!(Modality::Chara.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -121,24 +181,52 @@ impl Modality {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// assert_eq!(Modality::Chara.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Modality};
+    ///
+    /// let packed = Modality::Chara.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Modality), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Modality, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// assert_eq!(Modality::from_key("CHARA"), Some(Modality::Chara));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Modality::from_key("modality.CHARA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Modality> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Modality;
+    ///
+    /// assert_eq!(Modality::from_id(0), Some(Modality::Chara));
+    /// assert_eq!(Modality::from_id(3), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Modality> {
         match id {

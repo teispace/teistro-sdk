@@ -51,9 +51,26 @@ pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
 /// The settings document's schema version; a later knob appends and an
 /// old document still hashes the same under the old schema.
+///
+/// ```
+/// use teistro_core::settings::{SCHEMA, root};
+///
+/// assert_eq!(root().schema, SCHEMA);
+/// ```
 pub const SCHEMA: u16 = 1;
 
 /// Which ayanamsha: a catalogued one, or a custom definition.
+///
+/// ```
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_core::settings::AyanamshaChoice;
+///
+/// let lahiri: AyanamshaChoice = Ayanamsha::Lahiri.into();
+/// assert_eq!(serde_json::to_value(lahiri).unwrap(), serde_json::json!({"kind": "CATALOGUED", "id": "LAHIRI"}));
+/// // A consumer's own: 23.85° at J2000, moving 50.29″ a year.
+/// let own = AyanamshaChoice::Custom { epoch_jd_tt: 2_451_545.0, value_deg: 23.85, rate_deg_per_year: 50.29 / 3600.0 };
+/// assert_eq!(serde_json::to_value(own).unwrap()["kind"], "CUSTOM");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -111,6 +128,16 @@ impl From<Ayanamsha> for AyanamshaChoice {
 }
 
 /// The sunrise convention, with a custom altitude when asked.
+///
+/// ```
+/// use teistro_core::settings::{Sunrise, SunriseConvention};
+///
+/// let named: SunriseConvention = Sunrise::UpperLimbRefraction.into();
+/// assert_eq!(serde_json::to_value(named).unwrap(), serde_json::json!({"kind": "NAMED", "which": "UPPER_LIMB_REFRACTION"}));
+/// // The Sun's centre six degrees down: civil twilight.
+/// let dawn = SunriseConvention::Custom { altitude_deg: -6.0 };
+/// assert_eq!(serde_json::to_value(dawn).unwrap()["altitude_deg"], -6.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -159,11 +186,20 @@ impl From<Sunrise> for SunriseConvention {
 
 impl Sunrise {
     /// Whether the convention refracts, and so has an air to give it.
+    ///
+    /// ```
+    /// use teistro_core::settings::Sunrise;
+    ///
+    /// // The disc's centre with refraction, the convention Nepal's daily
+    /// // print is nearest, refracts as the limbs do.
+    /// assert!(Sunrise::CentreRefraction.refracts() && Sunrise::UpperLimbRefraction.refracts());
+    /// assert!(!Sunrise::CentreNoRefraction.refracts());
+    /// ```
     #[must_use]
     pub const fn refracts(self) -> bool {
         matches!(
             self,
-            Sunrise::UpperLimbRefraction | Sunrise::LowerLimbRefraction
+            Sunrise::UpperLimbRefraction | Sunrise::LowerLimbRefraction | Sunrise::CentreRefraction
         )
     }
 }
@@ -176,6 +212,15 @@ impl Sunrise {
 /// observer's height and the temperature is 15 °C, which is what the
 /// engines assume; so [`Atmosphere::STANDARD`] names their convention, and
 /// a weather report gives both.
+///
+/// ```
+/// use teistro_core::settings::Atmosphere;
+///
+/// // Either part may be left to the standard.
+/// let cold: Atmosphere = serde_json::from_str(r#"{"temperature_c": -10}"#).unwrap();
+/// assert_eq!((cold.pressure_hpa, cold.temperature_c), (None, Some(-10.0)));
+/// assert_eq!(serde_json::from_str::<Atmosphere>("{}").unwrap(), Atmosphere::STANDARD);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
@@ -189,24 +234,62 @@ pub struct Atmosphere {
 
 /// The pressures an air may name, hectopascals: the highest recorded at
 /// sea level is 1084, and 100 is far above any observer.
+///
+/// ```
+/// use teistro_core::settings::{AIR_PRESSURE_HPA, Atmosphere};
+///
+/// assert!(AIR_PRESSURE_HPA.contains(&1084.0));
+/// assert!(!Atmosphere::given(*AIR_PRESSURE_HPA.end() + 1.0, 15.0).is_valid());
+/// ```
 pub const AIR_PRESSURE_HPA: core::ops::RangeInclusive<f64> = 100.0..=1100.0;
 
 /// The temperatures an air may name, degrees Celsius: the recorded
 /// extremes at the surface are −89 and 57.
+///
+/// ```
+/// use teistro_core::settings::{AIR_TEMPERATURE_C, Atmosphere};
+///
+/// assert!(AIR_TEMPERATURE_C.contains(&-89.0));
+/// assert!(!Atmosphere::given(1013.25, *AIR_TEMPERATURE_C.start() - 1.0).is_valid());
+/// ```
 pub const AIR_TEMPERATURE_C: core::ops::RangeInclusive<f64> = -90.0..=60.0;
 
 /// The standard atmosphere's temperature at sea level, and the engines'
 /// at every height, degrees Celsius.
+///
+/// ```
+/// use teistro_core::quantity::Altitude;
+/// use teistro_core::settings::{Atmosphere, STANDARD_TEMPERATURE_C};
+///
+/// // The engines' temperature at every height.
+/// assert_eq!(Atmosphere::STANDARD.at(Altitude::literal(4000.0)).temperature_c, STANDARD_TEMPERATURE_C);
+/// ```
 pub const STANDARD_TEMPERATURE_C: f64 = 15.0;
 
 impl Atmosphere {
     /// The engines' standard air at the place: both parts left out.
+    ///
+    /// ```
+    /// use teistro_core::settings::Atmosphere;
+    ///
+    /// assert_eq!((Atmosphere::STANDARD.pressure_hpa, Atmosphere::STANDARD.temperature_c), (None, None));
+    /// assert!(Atmosphere::STANDARD.is_valid());
+    /// ```
     pub const STANDARD: Atmosphere = Atmosphere {
         pressure_hpa: None,
         temperature_c: None,
     };
 
     /// An air with both parts given, as a weather report gives them.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Altitude;
+    /// use teistro_core::settings::Atmosphere;
+    ///
+    /// // Given parts are kept whatever the height.
+    /// let air = Atmosphere::given(987.0, 4.5).at(Altitude::literal(1400.0));
+    /// assert_eq!((air.pressure_hpa, air.temperature_c), (987.0, 4.5));
+    /// ```
     #[must_use]
     pub const fn given(pressure_hpa: f64, temperature_c: f64) -> Atmosphere {
         Atmosphere {
@@ -248,6 +331,14 @@ impl Atmosphere {
 
     /// Whether each part given lies in its range (`AIR_PRESSURE_HPA`,
     /// `AIR_TEMPERATURE_C`).
+    ///
+    /// ```
+    /// use teistro_core::settings::Atmosphere;
+    ///
+    /// assert!(Atmosphere::given(860.0, 12.0).is_valid());
+    /// assert!(!Atmosphere::given(f64::NAN, 12.0).is_valid());
+    /// assert!(!Atmosphere::given(860.0, 70.0).is_valid());
+    /// ```
     #[must_use]
     pub fn is_valid(&self) -> bool {
         self.pressure_hpa
@@ -260,6 +351,14 @@ impl Atmosphere {
 
 /// An air resolved at a place: the pressure and the temperature a
 /// refraction is computed from.
+///
+/// ```
+/// use teistro_core::quantity::Altitude;
+/// use teistro_core::settings::Atmosphere;
+///
+/// let air = Atmosphere::STANDARD.at(Altitude::literal(0.0));
+/// assert_eq!(serde_json::to_value(air).unwrap(), serde_json::json!({"pressure_hpa": 1013.25, "temperature_c": 15.0}));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
@@ -275,6 +374,15 @@ pub struct Air {
 /// The settings **ask** and the ephemeris chain **supplies** (ADR-0029):
 /// `SURYA` needs a context opened over `SURYA_SIDDHANTA`, and the model
 /// that entry opens is the text with this bija applied.
+///
+/// ```
+/// use teistro_core::settings::{Siddhanta, SuryaBija};
+///
+/// assert_eq!(serde_json::to_value(Siddhanta::Drik).unwrap(), serde_json::json!({"kind": "DRIK"}));
+/// // The text's sunrise and planets are the defaults, so a document may leave them out.
+/// let surya: Siddhanta = serde_json::from_str(r#"{"kind": "SURYA", "bija": {"kind": "NEPAL_COMMITTEE"}}"#).unwrap();
+/// assert_eq!(surya, Siddhanta::surya(SuryaBija::NepalCommittee));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -400,6 +508,13 @@ pub enum SuryaBija {
 
 impl SuryaBija {
     /// The revolutions this bija adds to or takes from the text's counts.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Bija, SuryaBija};
+    ///
+    /// assert_eq!(SuryaBija::None.revolutions(), Bija::NONE);
+    /// assert_eq!(SuryaBija::NepalCommittee.revolutions(), Bija::NEPAL_COMMITTEE);
+    /// ```
     #[must_use]
     pub const fn revolutions(self) -> Bija {
         match self {
@@ -412,6 +527,15 @@ impl SuryaBija {
 
 /// A bija (seed) correction: the whole revolutions per age a tradition
 /// adds to or takes from the Surya Siddhanta's counts.
+///
+/// ```
+/// use teistro_core::settings::Bija;
+///
+/// // A part left out is no correction.
+/// let own: Bija = serde_json::from_str(r#"{"jupiter": -8}"#).unwrap();
+/// assert_eq!(own, Bija { jupiter: -8, ..Bija::NONE });
+/// assert!(serde_json::from_str::<Bija>(r#"{"pluto": 1}"#).is_err());
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -436,6 +560,12 @@ pub struct Bija {
 
 impl Bija {
     /// No correction: the text's own counts.
+    ///
+    /// ```
+    /// use teistro_core::settings::Bija;
+    ///
+    /// assert_eq!(Bija::NONE, Bija::default());
+    /// ```
     pub const NONE: Bija = Bija {
         moon: 0,
         moon_apsis: 0,
@@ -456,6 +586,12 @@ impl Bija {
     /// minute and a half (`03-design/nepal-day-measured.md`), where the
     /// text without it leaves them a quarter of an hour either way. The
     /// committee has not named the set (C28).
+    ///
+    /// ```
+    /// use teistro_core::settings::Bija;
+    ///
+    /// assert_eq!(Bija::NEPAL_COMMITTEE, Bija { moon_apsis: -4, ..Bija::NONE });
+    /// ```
     pub const NEPAL_COMMITTEE: Bija = Bija {
         moon_apsis: -4,
         ..Bija::NONE
@@ -463,6 +599,13 @@ impl Bija {
 }
 
 /// The rounding contract of serialised output.
+///
+/// ```
+/// use teistro_core::settings::root;
+///
+/// let precision = root().output.precision;
+/// assert!(precision.angle_decimals > 0 && precision.instant_decimals > 0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
@@ -483,41 +626,63 @@ pub struct Precision {
 /// a hundred bytes, which puts it at roughly six megabytes. The port's
 /// own default is this number — one value, in the place a consumer sets
 /// it.
+///
+/// ```
+/// use teistro_core::settings::{DEFAULT_CACHE_CELLS, root};
+///
+/// assert_eq!(root().provider.cache_cells, DEFAULT_CACHE_CELLS);
+/// ```
 pub const DEFAULT_CACHE_CELLS: u32 = 65_536;
 
 macro_rules! group {
-    ($(#[$m:meta])* $name:ident, $patch:ident { $( $(#[$fm:meta])* $field:ident : $ty:ty ),+ $(,)? }) => {
+    ($(#[$m:meta])* $name:ident, $patch:ident, $path:ident {
+        $(#[$ffm:meta])* $first:ident : $fty:ty
+        $(, $(#[$fm:meta])* $field:ident : $ty:ty )* $(,)?
+    }) => {
         $(#[$m])*
+        ///
+        #[doc = concat!("```\nuse teistro_core::settings::{", stringify!($name), ", root};\n\nlet group: ", stringify!($name), " = root().", stringify!($path), ";\n// The canonical document writes every knob.\nlet written = serde_json::to_value(&group).unwrap();\nassert_eq!(written.as_object().map(|knobs| knobs.len()), Some(", stringify!($name), "::KNOBS.len()));\n```")]
         #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
         #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(deny_unknown_fields)]
         pub struct $name {
-            $( $(#[$fm])* pub $field: $ty ),+
+            $(#[$ffm])* pub $first: $fty,
+            $( $(#[$fm])* pub $field: $ty ),*
         }
 
         #[doc = concat!("The patch of `", stringify!($name), "`: every knob optional.")]
+        ///
+        #[doc = concat!("```\nuse teistro_core::settings::", stringify!($patch), ";\n\nlet patch: ", stringify!($patch), " = serde_json::from_str(\"{}\").unwrap();\nassert!(patch.is_empty());\n// A knob the group does not have is refused, not ignored.\nassert!(serde_json::from_str::<", stringify!($patch), ">(r#\"{\"not_a_knob\": 1}\"#).is_err());\n```")]
         #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
         #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(default, deny_unknown_fields)]
         pub struct $patch {
-            $( $(#[$fm])* pub $field: Option<$ty> ),+
+            $(#[$ffm])* pub $first: Option<$fty>,
+            $( $(#[$fm])* pub $field: Option<$ty> ),*
         }
 
         impl $name {
             /// Applies every knob the patch sets.
+            ///
+            #[doc = concat!("```\nuse teistro_core::settings::{", stringify!($patch), ", root};\n\nlet mut group = root().", stringify!($path), ";\n// An empty patch changes nothing; a set knob takes the patch's value.\ngroup.apply(&", stringify!($patch), "::default());\nassert_eq!(group, root().", stringify!($path), ");\nlet patch = ", stringify!($patch), " { ", stringify!($first), ": Some(group.", stringify!($first), ".clone()), ..Default::default() };\ngroup.apply(&patch);\nassert_eq!(Some(group.", stringify!($first), "), patch.", stringify!($first), ");\n```")]
             pub fn apply(&mut self, patch: &$patch) {
-                $( if let Some(value) = &patch.$field { self.$field = value.clone(); } )+
+                if let Some(value) = &patch.$first { self.$first = value.clone(); }
+                $( if let Some(value) = &patch.$field { self.$field = value.clone(); } )*
             }
 
             /// The knob names, in document order.
-            pub const KNOBS: &'static [&'static str] = &[ $( stringify!($field) ),+ ];
+            ///
+            #[doc = concat!("```\nuse teistro_core::settings::{", stringify!($name), ", Settings};\n\nassert_eq!(", stringify!($name), "::KNOBS[0], \"", stringify!($first), "\");\nassert!(Settings::knob_paths().contains(&(\"", stringify!($path), "\", \"", stringify!($first), "\")));\n```")]
+            pub const KNOBS: &'static [&'static str] = &[ stringify!($first), $( stringify!($field) ),* ];
         }
 
         impl $patch {
             /// Whether the patch sets nothing.
+            ///
+            #[doc = concat!("```\nuse teistro_core::settings::{", stringify!($patch), ", root};\n\nlet mut patch = ", stringify!($patch), "::default();\nassert!(patch.is_empty());\npatch.", stringify!($first), " = Some(root().", stringify!($path), ".", stringify!($first), ");\nassert!(!patch.is_empty());\n```")]
             #[must_use]
             pub fn is_empty(&self) -> bool {
-                true $( && self.$field.is_none() )+
+                self.$first.is_none() $( && self.$field.is_none() )*
             }
         }
     };
@@ -525,7 +690,7 @@ macro_rules! group {
 
 group!(
     /// The frame positions are expressed in.
-    Frame, FramePatch {
+    Frame, FramePatch, frame {
         /// Tropical or sidereal.
         zodiac: Zodiac,
         /// Which ayanamsha, when sidereal.
@@ -553,7 +718,7 @@ group!(
 
 group!(
     /// House systems and their policy.
-    Houses, HousesPatch {
+    Houses, HousesPatch, houses {
         /// The system placements use.
         placement_system: HouseSystem,
         /// The Bhava-Chalit system.
@@ -567,7 +732,7 @@ group!(
 
 group!(
     /// The local day.
-    Day, DayPatch {
+    Day, DayPatch, day {
         /// The sunrise convention.
         sunrise: SunriseConvention,
         /// When the day begins.
@@ -589,7 +754,7 @@ group!(
     /// daily panchanga (`03-design/ritu-measured.md`). The window the day's
     /// limbs run over is `day.day_boundary`, and the arcs its periods
     /// divide are the `day.sunrise` ones, so neither is repeated here.
-    Panchanga, PanchangaPatch {
+    Panchanga, PanchangaPatch, panchanga {
         /// Which centre the day's limbs are computed from. An almanac is
         /// geocentric wherever the chart is: the lunar parallax reaches a
         /// degree, which is two hours of tithi boundary.
@@ -631,7 +796,7 @@ group!(
 
 group!(
     /// Time resolution.
-    Time, TimePatch {
+    Time, TimePatch, time {
         /// A civil time in a DST gap.
         dst_gap: DstGap,
         /// A civil time in a DST overlap.
@@ -645,7 +810,7 @@ group!(
 
 group!(
     /// Dasha computation.
-    Dasha, DashaPatch {
+    Dasha, DashaPatch, dasha {
         /// How the first period is balanced.
         balance: Balance,
         /// The year length per system.
@@ -708,7 +873,7 @@ group!(
 
 group!(
     /// Jaimini conventions.
-    Jaimini, JaiminiPatch {
+    Jaimini, JaiminiPatch, jaimini {
         /// Seven or eight chara karakas: which ranks the Atmakaraka the
         /// karakamsha is read from.
         chara_karakas: CharaKarakas,
@@ -725,7 +890,7 @@ group!(
 group!(
     /// Transits read from the natal Moon (Phaladeepika ch. 26;
     /// `03-design/gochar.md`).
-    Gochar, GocharPatch {
+    Gochar, GocharPatch, gochar {
         /// The nodes' vedha (crux C136).
         node_vedha: NodeVedha,
         /// Whether the nodes obstruct another graha's transit (crux C137).
@@ -738,7 +903,7 @@ group!(
 
 group!(
     /// Krishnamurti Paddhati (`03-design/kp.md`).
-    Kp, KpPatch {
+    Kp, KpPatch, kp {
         /// How many ruling planets are counted (crux C150).
         ruling_count: RulingCount,
         /// The day the ruling day lord belongs to (crux C151).
@@ -752,7 +917,7 @@ group!(
 
 group!(
     /// Aspects.
-    Aspect, AspectPatch {
+    Aspect, AspectPatch, aspect {
         /// The nodes' aspects.
         node_aspects: NodeAspects,
         /// The sphuta drishti table's key.
@@ -762,7 +927,7 @@ group!(
 
 group!(
     /// Planetary state.
-    State, StatePatch {
+    State, StatePatch, state {
         /// The combustion orb table's key.
         combustion_orbs: String,
         /// Which count of the ghatis of birth the Sayanadi avasthas add (crux C78).
@@ -774,7 +939,7 @@ group!(
 
 group!(
     /// Strength.
-    Strength, StrengthPatch {
+    Strength, StrengthPatch, strength {
         /// Which components the Shadbala counts: the six of BPHS ch. 27.
         bala_scheme: BalaScheme,
         /// How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign
@@ -830,7 +995,7 @@ group!(
 
 group!(
     /// Divisional charts.
-    Vargas, VargasPatch {
+    Vargas, VargasPatch, vargas {
         /// The convention for an unattested D-N.
         unattested_dn: UnattestedDn,
     }
@@ -838,7 +1003,7 @@ group!(
 
 group!(
     /// Calendars.
-    Calendars, CalendarsPatch {
+    Calendars, CalendarsPatch, calendars {
         /// The civil calendar of a request's dates.
         ///
         /// Read by `ts_chart_found`, which is what the deferral this knob
@@ -858,7 +1023,7 @@ group!(
 
 group!(
     /// The provider.
-    Provider, ProviderPatch {
+    Provider, ProviderPatch, provider {
         /// The override policy (ADR-0013).
         overrides: OverridePolicy,
         /// The built-in ephemeris tier.
@@ -886,13 +1051,22 @@ group!(
 
 group!(
     /// Output.
-    Output, OutputPatch {
+    Output, OutputPatch, output {
         /// The rounding contract.
         precision: Precision,
     }
 );
 
 /// Every knob, complete; built only by resolving a profile.
+///
+/// ```
+/// use teistro_core::settings::root;
+///
+/// let settings = root();
+/// // One document: it reads back from its own canonical form, to the hash.
+/// let back: teistro_core::settings::Settings = serde_json::from_str(&settings.canonical_json()).unwrap();
+/// assert_eq!(back.hash(), settings.hash());
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
@@ -944,6 +1118,14 @@ impl Settings {
     /// `every_group_of_the_document_is_in_the_knob_paths` holds this
     /// list to the document itself, so a group added without a line here
     /// fails rather than going unwatched.
+    ///
+    /// ```
+    /// use teistro_core::settings::Settings;
+    ///
+    /// let paths = Settings::knob_paths();
+    /// assert!(paths.contains(&("frame", "ayanamsha")) && paths.contains(&("day", "sunrise")));
+    /// assert_eq!(paths.first(), Some(&("frame", "zodiac")));
+    /// ```
     #[must_use]
     pub fn knob_paths() -> Vec<(&'static str, &'static str)> {
         let groups: [(&str, &[&str]); 16] = [
@@ -972,6 +1154,15 @@ impl Settings {
 }
 
 /// A patch: every group's knobs optional.
+///
+/// ```
+/// use teistro_core::settings::{Node, SettingsPatch};
+///
+/// // What a request sends: only the knobs it changes.
+/// let patch: SettingsPatch = serde_json::from_str(r#"{"frame": {"node": "TRUE"}}"#).unwrap();
+/// assert_eq!(patch.frame.node, Some(Node::True));
+/// assert!(serde_json::from_str::<SettingsPatch>(r#"{"frames": {}}"#).is_err());
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -1017,6 +1208,15 @@ impl SettingsPatch {
     /// it replaced had left out `panchanga`, so a patch setting only a
     /// panchanga knob called itself empty, and a comparison cannot miss a
     /// group added later.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Node, SettingsPatch};
+    ///
+    /// let mut patch = SettingsPatch::default();
+    /// assert!(patch.is_empty());
+    /// patch.frame.node = Some(Node::Mean);
+    /// assert!(!patch.is_empty());
+    /// ```
     #[must_use]
     pub fn is_empty(&self) -> bool {
         *self == SettingsPatch::default()
@@ -1025,6 +1225,17 @@ impl SettingsPatch {
 
 impl Settings {
     /// Applies a patch, knob by knob, and returns the result.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Node, SettingsPatch, root};
+    ///
+    /// let mut patch = SettingsPatch::default();
+    /// patch.frame.node = Some(Node::True);
+    /// let patched = root().patched(&patch);
+    /// assert_eq!(patched.frame.node, Node::True);
+    /// // Only what the patch names moves.
+    /// assert_eq!(patched.houses, root().houses);
+    /// ```
     #[must_use]
     pub fn patched(mut self, patch: &SettingsPatch) -> Settings {
         self.frame.apply(&patch.frame);
@@ -1048,18 +1259,48 @@ impl Settings {
 
     /// The canonical document: keys in code-point order, no whitespace,
     /// every knob present ([`crate::envelope::canonical_json`]).
+    ///
+    /// ```
+    /// use teistro_core::settings::root;
+    ///
+    /// let canonical = root().canonical_json();
+    /// // Keys in code-point order and no line breaks: one text for one value.
+    /// assert!(canonical.starts_with("{\"aspect\":{") && !canonical.contains('\n'));
+    /// ```
     #[must_use]
     pub fn canonical_json(&self) -> String {
         crate::envelope::canonical_json(self)
     }
 
     /// The hash of the canonical document.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Node, SettingsPatch, root};
+    ///
+    /// let mut patch = SettingsPatch::default();
+    /// patch.frame.node = Some(Node::True);
+    /// // A knob that differs is a hash that differs; equal settings hash alike.
+    /// assert_ne!(root().patched(&patch).hash(), root().hash());
+    /// assert_eq!(root().hash(), root().hash());
+    /// assert_eq!(root().hash().to_string().len(), 64);
+    /// ```
     #[must_use]
     pub fn hash(&self) -> Hash {
         Hash::of(self.canonical_json().as_bytes())
     }
 
     /// A settings document parsed and checked for coherence.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Settings, root};
+    ///
+    /// let resolved = Settings::from_json(&root().canonical_json())?;
+    /// assert_eq!(resolved.profile.as_str(), "document");
+    /// // A document of another schema is refused by rule.
+    /// let older = root().canonical_json().replace("\"schema\":1", "\"schema\":0");
+    /// assert_eq!(Settings::from_json(&older).unwrap_err().items[0].rule, "schema");
+    /// # Ok::<(), teistro_core::settings::Diagnostics>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1086,6 +1327,15 @@ impl Settings {
 
     /// Runs the coherence rules and splits them into errors and warnings.
     ///
+    /// ```
+    /// use teistro_core::settings::{ProfileId, SunriseConvention, root};
+    ///
+    /// let mut settings = root();
+    /// settings.day.sunrise = SunriseConvention::Custom { altitude_deg: 91.0 };
+    /// let refused = settings.validated(ProfileId::new("mine")).unwrap_err();
+    /// assert_eq!(refused.errors().map(|d| d.rule).collect::<Vec<_>>(), ["sunrise-altitude"]);
+    /// ```
+    ///
     /// # Errors
     ///
     /// The diagnostics when any rule is an error.
@@ -1103,6 +1353,12 @@ impl Settings {
 }
 
 /// How bad a finding is.
+///
+/// ```
+/// use teistro_core::settings::Severity;
+///
+/// assert_eq!(serde_json::to_string(&Severity::Warning).unwrap(), r#""WARNING""#);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -1114,6 +1370,17 @@ pub enum Severity {
 }
 
 /// One coherence finding.
+///
+/// ```
+/// use teistro_core::settings::{Severity, SunriseConvention, root};
+/// use teistro_core::settings::ProfileId;
+///
+/// let mut settings = root();
+/// settings.day.sunrise = SunriseConvention::Custom { altitude_deg: f64::NAN };
+/// let refused = settings.validated(ProfileId::new("mine")).unwrap_err();
+/// let finding = &refused.items[0];
+/// assert_eq!((finding.severity, finding.rule, finding.fields.as_slice()), (Severity::Error, "sunrise-altitude", ["day.sunrise"].as_slice()));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Diagnostic {
@@ -1156,6 +1423,18 @@ impl Diagnostic {
 }
 
 /// Every finding of a validation.
+///
+/// ```
+/// use teistro_core::error::Error;
+/// use teistro_core::settings::{ProfileId, SunriseConvention, root};
+///
+/// let mut settings = root();
+/// settings.day.sunrise = SunriseConvention::Custom { altitude_deg: 91.0 };
+/// let refused = settings.validated(ProfileId::new("mine")).unwrap_err();
+/// assert!(refused.to_string().starts_with("sunrise-altitude [day.sunrise]: "));
+/// // As an error, it names the first finding's knob.
+/// assert_eq!(Error::from(refused).field(), Some("day.sunrise"));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Diagnostics {
@@ -1165,6 +1444,16 @@ pub struct Diagnostics {
 
 impl Diagnostics {
     /// The errors.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Atmosphere, ProfileId, Sunrise, SunriseConvention, root};
+    ///
+    /// let mut settings = root();
+    /// // Two findings: no refraction to take the air, and an air no surface has.
+    /// settings.day.sunrise = SunriseConvention::Atmospheric { which: Sunrise::CentreNoRefraction, air: Atmosphere::given(50.0, 15.0) };
+    /// let refused = settings.validated(ProfileId::new("mine")).unwrap_err();
+    /// assert_eq!(refused.errors().count(), 2);
+    /// ```
     pub fn errors(&self) -> impl Iterator<Item = &Diagnostic> {
         self.items.iter().filter(|d| d.severity == Severity::Error)
     }
@@ -1197,6 +1486,14 @@ impl From<Diagnostics> for Error {
 }
 
 /// A resolved, validated settings value.
+///
+/// ```
+/// use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch};
+///
+/// let resolved = Profile::shipped(DEFAULT_PROFILE).unwrap().resolve(&SettingsPatch::default()).unwrap();
+/// assert_eq!(resolved.profile.as_str(), DEFAULT_PROFILE);
+/// assert!(resolved.warnings.is_empty());
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Resolved {
     /// The settings.
@@ -1277,7 +1574,7 @@ fn sunrise_coherence(convention: SunriseConvention, out: &mut Vec<Diagnostic>) {
             out.push(Diagnostic::error(
                 "sunrise-air-refracts",
                 format!(
-                    "{} does not refract, so it has no air to give; name UPPER_LIMB_REFRACTION or LOWER_LIMB_REFRACTION",
+                    "{} does not refract, so it has no air to give; name UPPER_LIMB_REFRACTION, LOWER_LIMB_REFRACTION or CENTRE_REFRACTION",
                     which.key()
                 ),
                 &["day.sunrise"],
@@ -1401,6 +1698,14 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
 }
 
 /// A citation on a profile's defaults.
+///
+/// ```
+/// use teistro_core::settings::{DEFAULT_PROFILE, Profile};
+///
+/// // Every default a shipped profile sets says why.
+/// let profile = Profile::shipped(DEFAULT_PROFILE).unwrap();
+/// assert!(profile.sources.iter().all(|cited| !cited.knob.is_empty() && !cited.source.text.is_empty()));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Citation {
     /// What the citation is for.
@@ -1411,6 +1716,14 @@ pub struct Citation {
 
 impl Citation {
     /// A citation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Source;
+    /// use teistro_core::settings::Citation;
+    ///
+    /// const CENTRE: Citation = Citation::new("frame.centre", Source::new("BPHS", "ch. 3"));
+    /// assert_eq!(CENTRE.source.to_string(), "BPHS ch. 3");
+    /// ```
     #[must_use]
     pub const fn new(knob: &'static str, source: Source) -> Citation {
         Citation { knob, source }
@@ -1418,6 +1731,14 @@ impl Citation {
 }
 
 /// A profile's confidence, for the root and the shipped ones.
+///
+/// ```
+/// use teistro_core::catalogue::Mark;
+/// use teistro_core::settings::{DEFAULT_PROFILE, Profile, ProfileMark};
+///
+/// let mark: ProfileMark = Profile::shipped(DEFAULT_PROFILE).unwrap().mark;
+/// assert_ne!(mark, Mark::Shape);
+/// ```
 pub type ProfileMark = Mark;
 
 #[cfg(test)]
@@ -1579,6 +1900,15 @@ mod tests {
                 Sunrise::LowerLimbRefraction,
                 Atmosphere::given(1100.0, -90.0)
             ))
+        );
+        // The centre with refraction takes an air as the limbs do: the
+        // horizon gives it one, so the settings must not refuse it.
+        assert_eq!(
+            sunrise_rules(air(
+                Sunrise::CentreRefraction,
+                Atmosphere::given(860.0, 12.0)
+            )),
+            Vec::<&str>::new()
         );
         assert_eq!(
             sunrise_rules(air(Sunrise::CentreNoRefraction, Atmosphere::STANDARD)),

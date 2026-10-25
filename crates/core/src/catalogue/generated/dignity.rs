@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The eleven levels of dignity.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Dignity;
+///
+/// let member: Dignity = "DEEP_EXALTED".parse()?;
+/// assert_eq!(member, Dignity::DeepExalted);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("dignity.DEEP_EXALTED".parse::<Dignity>(), Ok(Dignity::DeepExalted));
+/// assert_eq!(member.to_string(), "DEEP_EXALTED");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -73,6 +84,12 @@ impl Dignity {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// assert_eq!(Dignity::DeepExalted.key(), "DEEP_EXALTED");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -91,6 +108,12 @@ impl Dignity {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// assert_eq!(Dignity::DeepExalted.full_key(), "dignity.DEEP_EXALTED");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -109,6 +132,12 @@ impl Dignity {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// assert_eq!(Dignity::DeepExalted.doc(), "Deep Exalted");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -127,6 +156,12 @@ impl Dignity {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// assert_eq!(Dignity::DeepExalted.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -145,6 +180,12 @@ impl Dignity {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Dignity};
+    ///
+    /// assert_eq!(Dignity::DeepExalted.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -163,6 +204,12 @@ impl Dignity {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// assert!(!Dignity::DeepExalted.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -181,6 +228,13 @@ impl Dignity {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// let first = &Dignity::DeepExalted.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -199,6 +253,12 @@ impl Dignity {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// assert!(Dignity::DeepExalted.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -217,24 +277,52 @@ impl Dignity {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// assert_eq!(Dignity::DeepExalted.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Dignity};
+    ///
+    /// let packed = Dignity::DeepExalted.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Dignity), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Dignity, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// assert_eq!(Dignity::from_key("DEEP_EXALTED"), Some(Dignity::DeepExalted));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Dignity::from_key("dignity.DEEP_EXALTED"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Dignity> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Dignity;
+    ///
+    /// assert_eq!(Dignity::from_id(0), Some(Dignity::DeepExalted));
+    /// assert_eq!(Dignity::from_id(11), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Dignity> {
         match id {

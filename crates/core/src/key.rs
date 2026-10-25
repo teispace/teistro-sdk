@@ -22,9 +22,27 @@ pub use crate::catalogue::Kind;
 use crate::catalogue::{UnknownKey, key_of, resolve as resolve_in};
 
 /// The longest key name the grammar allows.
+///
+/// ```
+/// use teistro_core::key::{MAX_KEY_LEN, is_key_name};
+///
+/// assert!(is_key_name(&"A".repeat(MAX_KEY_LEN)));
+/// assert!(!is_key_name(&"A".repeat(MAX_KEY_LEN + 1)));
+/// ```
 pub const MAX_KEY_LEN: usize = 48;
 
 /// A kind number and an id packed as `(kind << 16) | id`.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Kind};
+/// use teistro_core::key::KeyId;
+///
+/// let mars = Graha::Mars.key_id();
+/// assert_eq!(format!("{mars:?}"), "KeyId(graha.MARS)");
+/// // It crosses JSON as its key, and reads back from it.
+/// assert_eq!(serde_json::to_string(&mars).unwrap(), r#""graha.MARS""#);
+/// assert_eq!(serde_json::from_str::<KeyId>(r#""graha.MARS""#).unwrap(), mars);
+/// ```
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct KeyId(u32);
 
@@ -35,36 +53,85 @@ impl KeyId {
     pub const REGISTERED_BASE: u16 = 0x8000;
 
     /// A packed id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Kind};
+    /// use teistro_core::key::KeyId;
+    ///
+    /// assert_eq!(KeyId::new(Kind::Graha, Graha::Mars.id()), Graha::Mars.key_id());
+    /// ```
     #[must_use]
     pub const fn new(kind: Kind, id: u16) -> KeyId {
         KeyId(((kind as u32) << 16) | id as u32)
     }
 
     /// The "none" id of a kind.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    /// use teistro_core::key::KeyId;
+    ///
+    /// let nothing = KeyId::none(Kind::Graha);
+    /// assert!(nothing.is_none());
+    /// assert_eq!(nothing.to_string(), "graha.NONE");
+    /// ```
     #[must_use]
     pub const fn none(kind: Kind) -> KeyId {
         KeyId::new(kind, KeyId::NONE_ID)
     }
 
     /// The raw packed value, for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Kind};
+    /// use teistro_core::key::KeyId;
+    ///
+    /// let bits = Graha::Mars.key_id().bits();
+    /// assert_eq!(bits, (u32::from(Kind::Graha.number()) << 16) | u32::from(Graha::Mars.id()));
+    /// ```
     #[must_use]
     pub const fn bits(self) -> u32 {
         self.0
     }
 
     /// From the raw packed value; the kind is checked on use, not here.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::key::KeyId;
+    ///
+    /// let mars = Graha::Mars.key_id();
+    /// assert_eq!(KeyId::from_bits(mars.bits()), mars);
+    /// // A kind this build does not know is kept, and printed by number.
+    /// let foreign = KeyId::from_bits(0x00FF_0001);
+    /// assert_eq!((foreign.kind(), foreign.to_string()), (None, String::from("255#1")));
+    /// ```
     #[must_use]
     pub const fn from_bits(bits: u32) -> KeyId {
         KeyId(bits)
     }
 
     /// The kind, when the number is one this build knows.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Kind};
+    /// use teistro_core::key::KeyId;
+    ///
+    /// assert_eq!(Graha::Mars.key_id().kind(), Some(Kind::Graha));
+    /// ```
     #[must_use]
     pub const fn kind(self) -> Option<Kind> {
         Kind::from_number(self.kind_number())
     }
 
     /// The kind's number.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Kind};
+    /// use teistro_core::key::KeyId;
+    ///
+    /// assert_eq!(Graha::Mars.key_id().kind_number(), Kind::Graha.number());
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
@@ -75,6 +142,13 @@ impl KeyId {
     }
 
     /// The id inside the kind.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Kind};
+    /// use teistro_core::key::KeyId;
+    ///
+    /// assert_eq!(Graha::Mars.key_id().id(), Graha::Mars.id());
+    /// ```
     #[must_use]
     #[allow(clippy::cast_possible_truncation, reason = "the low half is the id")]
     pub const fn id(self) -> u16 {
@@ -82,18 +156,45 @@ impl KeyId {
     }
 
     /// Whether this is the "none" id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Kind};
+    /// use teistro_core::key::KeyId;
+    ///
+    /// assert!(KeyId::none(Kind::Graha).is_none());
+    /// assert!(!Graha::Mars.key_id().is_none());
+    /// ```
     #[must_use]
     pub const fn is_none(self) -> bool {
         self.id() == KeyId::NONE_ID
     }
 
     /// Whether the id was handed out by a registry rather than the catalogue.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    /// use teistro_core::key::KeyId;
+    ///
+    /// let registered = KeyId::new(Kind::Varga, KeyId::REGISTERED_BASE + 1);
+    /// assert!(registered.is_registered());
+    /// assert_eq!(registered.to_string(), "varga#32769");
+    /// // The "none" id sits above the base and is not a registry's.
+    /// assert!(!KeyId::none(Kind::Varga).is_registered());
+    /// ```
     #[must_use]
     pub const fn is_registered(self) -> bool {
         self.id() >= KeyId::REGISTERED_BASE && !self.is_none()
     }
 
     /// The catalogued key, when the id is one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Kind};
+    /// use teistro_core::key::KeyId;
+    ///
+    /// assert_eq!(Graha::Mars.key_id().key(), Some("MARS"));
+    /// assert_eq!(KeyId::new(Kind::Graha, KeyId::REGISTERED_BASE).key(), None);
+    /// ```
     #[must_use]
     pub fn key(self) -> Option<&'static str> {
         key_of(self)
@@ -137,6 +238,13 @@ hand_schema!(KeyId, "KeyId", {
 });
 
 /// Whether `s` is a key name: `[A-Z][A-Z0-9_]{0,47}`.
+///
+/// ```
+/// use teistro_core::key::is_key_name;
+///
+/// assert!(is_key_name("PURVA_PHALGUNI") && is_key_name("D9"));
+/// assert!(!is_key_name("mars") && !is_key_name("9D") && !is_key_name(""));
+/// ```
 #[must_use]
 pub fn is_key_name(s: &str) -> bool {
     !s.is_empty()
@@ -147,12 +255,29 @@ pub fn is_key_name(s: &str) -> bool {
 }
 
 /// Splits `graha.SUN` into its kind name and key name.
+///
+/// ```
+/// use teistro_core::key::split_key;
+///
+/// assert_eq!(split_key("graha.SUN"), Some(("graha", "SUN")));
+/// assert_eq!(split_key("SUN"), None);
+/// ```
 #[must_use]
 pub fn split_key(full: &str) -> Option<(&str, &str)> {
     full.split_once('.')
 }
 
 /// Resolves a full key (`graha.SUN`) to its packed id.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::key::resolve;
+///
+/// assert_eq!(resolve("rashi.LEO")?, Rashi::Leo.key_id());
+/// // A key without its kind is refused, with nothing to suggest.
+/// assert_eq!(resolve("LEO").unwrap_err().kind, None);
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -174,6 +299,15 @@ pub fn resolve(full: &str) -> Result<KeyId, UnknownKey> {
 }
 
 /// The nearest catalogued key inside a kind, within two edits.
+///
+/// ```
+/// use teistro_core::catalogue::Kind;
+/// use teistro_core::key::suggest;
+///
+/// // Case is ignored, and two edits are the most a suggestion is.
+/// assert_eq!(suggest(Kind::Rashi, "virgoo"), Some("VIRGO"));
+/// assert_eq!(suggest(Kind::Rashi, "XYZXYZ"), None);
+/// ```
 #[must_use]
 pub fn suggest(kind: Kind, key: &str) -> Option<&'static str> {
     let upper = key.to_ascii_uppercase();
@@ -186,6 +320,16 @@ pub fn suggest(kind: Kind, key: &str) -> Option<&'static str> {
 }
 
 /// Parses either a full key or the `kind#id` form a registered id prints as.
+///
+/// ```
+/// use teistro_core::catalogue::{Kind, Rashi};
+/// use teistro_core::key::{KeyId, parse_key_id};
+///
+/// assert_eq!(parse_key_id("rashi.LEO")?, Rashi::Leo.key_id());
+/// assert_eq!(parse_key_id("varga#32769")?, KeyId::new(Kind::Varga, 32_769));
+/// assert!(parse_key_id("planet#1").is_err());
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 ///
 /// # Errors
 ///

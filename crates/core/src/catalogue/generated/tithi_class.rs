@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The five tithi classes.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::TithiClass;
+///
+/// let member: TithiClass = "NANDA".parse()?;
+/// assert_eq!(member, TithiClass::Nanda);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("tithi_class.NANDA".parse::<TithiClass>(), Ok(TithiClass::Nanda));
+/// assert_eq!(member.to_string(), "NANDA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -49,6 +60,12 @@ impl TithiClass {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// assert_eq!(TithiClass::Nanda.key(), "NANDA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -61,6 +78,12 @@ impl TithiClass {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// assert_eq!(TithiClass::Nanda.full_key(), "tithi_class.NANDA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -73,6 +96,12 @@ impl TithiClass {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// assert_eq!(TithiClass::Nanda.doc(), "Nanda");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -85,6 +114,12 @@ impl TithiClass {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// assert_eq!(TithiClass::Nanda.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -97,6 +132,12 @@ impl TithiClass {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, TithiClass};
+    ///
+    /// assert_eq!(TithiClass::Nanda.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -109,6 +150,12 @@ impl TithiClass {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// assert!(!TithiClass::Nanda.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -121,6 +168,13 @@ impl TithiClass {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// let first = &TithiClass::Nanda.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -133,6 +187,12 @@ impl TithiClass {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// assert!(TithiClass::Nanda.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -145,24 +205,52 @@ impl TithiClass {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// assert_eq!(TithiClass::Nanda.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, TithiClass};
+    ///
+    /// let packed = TithiClass::Nanda.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::TithiClass), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::TithiClass, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// assert_eq!(TithiClass::from_key("NANDA"), Some(TithiClass::Nanda));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(TithiClass::from_key("tithi_class.NANDA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<TithiClass> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    ///
+    /// assert_eq!(TithiClass::from_id(0), Some(TithiClass::Nanda));
+    /// assert_eq!(TithiClass::from_id(5), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<TithiClass> {
         match id {

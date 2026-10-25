@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::TibetanElement;
+///
+/// let member: TibetanElement = "WOOD".parse()?;
+/// assert_eq!(member, TibetanElement::Wood);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("tibetan_element.WOOD".parse::<TibetanElement>(), Ok(TibetanElement::Wood));
+/// assert_eq!(member.to_string(), "WOOD");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -25,6 +36,17 @@ pub enum TibetanElement {
 }
 
 /// The attributes of a `tibetan_element` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     TibetanElement::Wood.attributes(),
+///     &TibetanElementAttributes {
+///         tibetan: "shing",
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TibetanElementAttributes {
     /// `tibetan`.
@@ -64,6 +86,12 @@ impl TibetanElement {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// assert_eq!(TibetanElement::Wood.key(), "WOOD");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -76,6 +104,12 @@ impl TibetanElement {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// assert_eq!(TibetanElement::Wood.full_key(), "tibetan_element.WOOD");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -88,6 +122,12 @@ impl TibetanElement {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// assert_eq!(TibetanElement::Wood.doc(), "Wood");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -100,6 +140,12 @@ impl TibetanElement {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// assert_eq!(TibetanElement::Wood.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -112,6 +158,12 @@ impl TibetanElement {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, TibetanElement};
+    ///
+    /// assert_eq!(TibetanElement::Wood.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -124,6 +176,12 @@ impl TibetanElement {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// assert!(!TibetanElement::Wood.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -136,6 +194,13 @@ impl TibetanElement {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// let first = &TibetanElement::Wood.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014", "§4, table 2"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -148,6 +213,12 @@ impl TibetanElement {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// assert!(TibetanElement::Wood.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -160,24 +231,52 @@ impl TibetanElement {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// assert_eq!(TibetanElement::Wood.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, TibetanElement};
+    ///
+    /// let packed = TibetanElement::Wood.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::TibetanElement), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::TibetanElement, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// assert_eq!(TibetanElement::from_key("WOOD"), Some(TibetanElement::Wood));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(TibetanElement::from_key("tibetan_element.WOOD"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<TibetanElement> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TibetanElement;
+    ///
+    /// assert_eq!(TibetanElement::from_id(0), Some(TibetanElement::Wood));
+    /// assert_eq!(TibetanElement::from_id(5), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<TibetanElement> {
         match id {
@@ -191,6 +290,17 @@ impl TibetanElement {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     TibetanElement::Wood.attributes(),
+    ///     &TibetanElementAttributes {
+    ///         tibetan: "shing",
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static TibetanElementAttributes {

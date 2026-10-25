@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Kaala;
+///
+/// let member: Kaala = "RAHU_KAALA".parse()?;
+/// assert_eq!(member, Kaala::RahuKaala);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("kaala.RAHU_KAALA".parse::<Kaala>(), Ok(Kaala::RahuKaala));
+/// assert_eq!(member.to_string(), "RAHU_KAALA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -21,6 +32,17 @@ pub enum Kaala {
 }
 
 /// The attributes of a `kaala` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Kaala::RahuKaala.attributes(),
+///     &KaalaAttributes {
+///         eighth_by_vara: [8, 2, 7, 5, 6, 4, 3],
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct KaalaAttributes {
     /// `eighth_by_vara`.
@@ -54,6 +76,12 @@ impl Kaala {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// assert_eq!(Kaala::RahuKaala.key(), "RAHU_KAALA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -64,6 +92,12 @@ impl Kaala {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// assert_eq!(Kaala::RahuKaala.full_key(), "kaala.RAHU_KAALA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -74,6 +108,12 @@ impl Kaala {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// assert_eq!(Kaala::RahuKaala.doc(), "Rahu kaala. The eighth by vara, Sunday first, counted from one; the one row of the three that is not arithmetic.");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -84,6 +124,12 @@ impl Kaala {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// assert_eq!(Kaala::RahuKaala.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -94,6 +140,12 @@ impl Kaala {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Kaala};
+    ///
+    /// assert_eq!(Kaala::RahuKaala.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -104,6 +156,12 @@ impl Kaala {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// assert!(!Kaala::RahuKaala.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -114,6 +172,13 @@ impl Kaala {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// let first = &Kaala::RahuKaala.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "panchanga_day.rahu_kaal, measured on all 55 days"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -124,6 +189,12 @@ impl Kaala {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// assert!(Kaala::RahuKaala.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -134,24 +205,52 @@ impl Kaala {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// assert_eq!(Kaala::RahuKaala.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Kaala};
+    ///
+    /// let packed = Kaala::RahuKaala.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Kaala), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Kaala, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// assert_eq!(Kaala::from_key("RAHU_KAALA"), Some(Kaala::RahuKaala));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Kaala::from_key("kaala.RAHU_KAALA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Kaala> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    ///
+    /// assert_eq!(Kaala::from_id(0), Some(Kaala::RahuKaala));
+    /// assert_eq!(Kaala::from_id(3), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Kaala> {
         match id {
@@ -163,6 +262,17 @@ impl Kaala {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Kaala::RahuKaala.attributes(),
+    ///     &KaalaAttributes {
+    ///         eighth_by_vara: [8, 2, 7, 5, 6, 4, 3],
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static KaalaAttributes {

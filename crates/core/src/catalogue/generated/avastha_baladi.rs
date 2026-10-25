@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The five age states.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::AvasthaBaladi;
+///
+/// let member: AvasthaBaladi = "BALA".parse()?;
+/// assert_eq!(member, AvasthaBaladi::Bala);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("avastha_baladi.BALA".parse::<AvasthaBaladi>(), Ok(AvasthaBaladi::Bala));
+/// assert_eq!(member.to_string(), "BALA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -49,6 +60,12 @@ impl AvasthaBaladi {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// assert_eq!(AvasthaBaladi::Bala.key(), "BALA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -61,6 +78,12 @@ impl AvasthaBaladi {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// assert_eq!(AvasthaBaladi::Bala.full_key(), "avastha_baladi.BALA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -73,6 +96,12 @@ impl AvasthaBaladi {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// assert_eq!(AvasthaBaladi::Bala.doc(), "Bala");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -85,6 +114,12 @@ impl AvasthaBaladi {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// assert_eq!(AvasthaBaladi::Bala.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -97,6 +132,12 @@ impl AvasthaBaladi {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, AvasthaBaladi};
+    ///
+    /// assert_eq!(AvasthaBaladi::Bala.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -109,6 +150,12 @@ impl AvasthaBaladi {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// assert!(!AvasthaBaladi::Bala.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -121,6 +168,13 @@ impl AvasthaBaladi {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// let first = &AvasthaBaladi::Bala.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -133,6 +187,12 @@ impl AvasthaBaladi {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// assert!(AvasthaBaladi::Bala.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -145,24 +205,52 @@ impl AvasthaBaladi {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// assert_eq!(AvasthaBaladi::Bala.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, AvasthaBaladi};
+    ///
+    /// let packed = AvasthaBaladi::Bala.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::AvasthaBaladi), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::AvasthaBaladi, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// assert_eq!(AvasthaBaladi::from_key("BALA"), Some(AvasthaBaladi::Bala));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(AvasthaBaladi::from_key("avastha_baladi.BALA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<AvasthaBaladi> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaBaladi;
+    ///
+    /// assert_eq!(AvasthaBaladi::from_id(0), Some(AvasthaBaladi::Bala));
+    /// assert_eq!(AvasthaBaladi::from_id(5), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<AvasthaBaladi> {
         match id {

@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// What kind of body a graha is.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::BodyClass;
+///
+/// let member: BodyClass = "LUMINARY".parse()?;
+/// assert_eq!(member, BodyClass::Luminary);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("body_class.LUMINARY".parse::<BodyClass>(), Ok(BodyClass::Luminary));
+/// assert_eq!(member.to_string(), "LUMINARY");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -45,6 +56,12 @@ impl BodyClass {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// assert_eq!(BodyClass::Luminary.key(), "LUMINARY");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -56,6 +73,12 @@ impl BodyClass {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// assert_eq!(BodyClass::Luminary.full_key(), "body_class.LUMINARY");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -67,6 +90,12 @@ impl BodyClass {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// assert_eq!(BodyClass::Luminary.doc(), "Luminary");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -78,6 +107,12 @@ impl BodyClass {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// assert_eq!(BodyClass::Luminary.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -89,6 +124,12 @@ impl BodyClass {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, BodyClass};
+    ///
+    /// assert_eq!(BodyClass::Luminary.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -100,6 +141,12 @@ impl BodyClass {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// assert!(!BodyClass::Luminary.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -111,6 +158,13 @@ impl BodyClass {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// let first = &BodyClass::Luminary.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("structural", "design"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -122,6 +176,12 @@ impl BodyClass {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// assert!(BodyClass::Luminary.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -133,24 +193,52 @@ impl BodyClass {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// assert_eq!(BodyClass::Luminary.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, BodyClass};
+    ///
+    /// let packed = BodyClass::Luminary.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::BodyClass), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::BodyClass, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// assert_eq!(BodyClass::from_key("LUMINARY"), Some(BodyClass::Luminary));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(BodyClass::from_key("body_class.LUMINARY"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<BodyClass> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::BodyClass;
+    ///
+    /// assert_eq!(BodyClass::from_id(0), Some(BodyClass::Luminary));
+    /// assert_eq!(BodyClass::from_id(4), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<BodyClass> {
         match id {

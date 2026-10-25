@@ -39,6 +39,14 @@ use crate::quantity::{JulianDay, Utc};
 /// A day is divided into at most sixty karanas, and nothing an almanac
 /// reports divides an arc more finely; a caller asking for more has a
 /// bug rather than a requirement, and the refusal names the limit.
+///
+/// ```
+/// use teistro_core::interval::{Interval, MOST_PARTS};
+///
+/// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+/// assert_eq!(day.divided(1000).count(), usize::from(MOST_PARTS));
+/// assert!(day.part(0, MOST_PARTS + 1).is_err());
+/// ```
 pub const MOST_PARTS: u16 = 64;
 
 /// A half-open interval of time, `[from, to)`.
@@ -48,6 +56,15 @@ pub const MOST_PARTS: u16 = 64;
 /// part of a divided arc is the exception a reader expects — its `to` is
 /// the arc's own end, and [`Interval::contains`] is false there, so use
 /// [`Interval::contains_inclusive`] when the closing instant counts.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+///
+/// // 1 January 2024, midnight to midnight.
+/// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+/// assert_eq!(day.to_string(), "JD 2460310.5 UTC to JD 2460311.5 UTC");
+/// assert_eq!(day.hours(), 24.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Interval {
@@ -59,6 +76,20 @@ pub struct Interval {
 
 impl Interval {
     /// An interval from one instant to another.
+    ///
+    /// ```
+    /// use teistro_core::error::Status;
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let (dawn, dusk) = (JulianDay::<Utc>::literal(2_460_310.55), JulianDay::<Utc>::literal(2_460_311.0));
+    /// assert!(Interval::new(dawn, dusk).is_ok());
+    /// // An empty interval is an answer; a reversed one is refused.
+    /// assert!(Interval::new(dusk, dusk)?.is_empty());
+    /// let refused = Interval::new(dusk, dawn).unwrap_err();
+    /// assert_eq!((refused.status, refused.field()), (Status::InvalidArg, Some("to")));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -78,6 +109,13 @@ impl Interval {
 
     /// An interval written as a literal, in days.
     ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    ///
+    /// const DAY: Interval = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// assert_eq!(DAY.days(), 1.0);
+    /// ```
+    ///
     /// # Panics
     ///
     /// When either end is not finite, or `to` precedes `from`; in a
@@ -92,24 +130,63 @@ impl Interval {
     }
 
     /// Its length in days.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    ///
+    /// // 1 January 2024, midnight to midnight.
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// assert_eq!(day.days(), 1.0);
+    /// ```
     #[must_use]
     pub fn days(self) -> f64 {
         self.to.get() - self.from.get()
     }
 
     /// Its length in hours, which is how a period is read.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    ///
+    /// // 1 January 2024, midnight to midnight.
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// // A muhurta of a twelve-hour daylight is forty-eight minutes.
+    /// let daylight = Interval::literal(2_460_310.75, 2_460_311.25);
+    /// // Read back at Julian-day magnitude, where a day's last bit is 40 µs:
+    /// // so to a tenth of a millisecond.
+    /// assert!((daylight.part(0, 15).unwrap().hours() - 0.8).abs() < 1e-4 / 3600.0);
+    /// ```
     #[must_use]
     pub fn hours(self) -> f64 {
         self.days() * 24.0
     }
 
     /// Whether it holds no time at all, which a collapsed polar arc does.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    ///
+    /// assert!(Interval::literal(2_460_310.5, 2_460_310.5).is_empty());
+    /// assert!(!Interval::literal(2_460_310.5, 2_460_311.5).is_empty());
+    /// ```
     #[must_use]
     pub fn is_empty(self) -> bool {
         self.days() <= 0.0
     }
 
     /// Whether an instant lies in `[from, to)`.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// // 1 January 2024, midnight to midnight.
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// let noon = JulianDay::<Utc>::literal(2_460_311.0);
+    /// assert!(day.contains(noon));
+    /// // Half-open: the closing instant is the next day's.
+    /// assert!(!day.contains(day.to) && day.contains(day.from));
+    /// ```
     #[must_use]
     pub fn contains(self, instant: JulianDay<Utc>) -> bool {
         instant.get() >= self.from.get() && instant.get() < self.to.get()
@@ -117,6 +194,14 @@ impl Interval {
 
     /// Whether an instant lies in `[from, to]`, the closing instant
     /// included: what the last part of a divided arc needs.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    ///
+    /// // 1 January 2024, midnight to midnight.
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// assert!(day.contains_inclusive(day.to));
+    /// ```
     #[must_use]
     pub fn contains_inclusive(self, instant: JulianDay<Utc>) -> bool {
         instant.get() >= self.from.get() && instant.get() <= self.to.get()
@@ -128,6 +213,18 @@ impl Interval {
     /// which is the useful answer rather than a clamp — how far past the
     /// end something is is a question a caller asks. An empty interval
     /// gives 0, there being no "through" to be.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// // 1 January 2024, midnight to midnight.
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// let noon = JulianDay::<Utc>::literal(2_460_311.0);
+    /// assert_eq!(day.fraction_at(noon), 0.5);
+    /// // Past the end is more than one, not a clamp.
+    /// assert_eq!(day.fraction_at(day.to.plus_days(0.5).unwrap()), 1.5);
+    /// ```
     #[must_use]
     pub fn fraction_at(self, instant: JulianDay<Utc>) -> f64 {
         let length = self.days();
@@ -139,6 +236,16 @@ impl Interval {
     }
 
     /// The instant a fraction of the way through it.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    ///
+    /// // 1 January 2024, midnight to midnight.
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// assert_eq!(day.at_fraction(0.25)?.get(), 2_460_310.75);
+    /// assert!(day.at_fraction(f64::NAN).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -161,6 +268,16 @@ impl Interval {
     /// This is what clips a limb's own span to the day's window: a tithi
     /// that began yesterday evening is reported as beginning at sunrise,
     /// and its real bounds are kept beside the clipped ones.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    ///
+    /// // A tithi that began the evening before, clipped to the day.
+    /// let tithi = Interval::literal(2_460_310.25, 2_460_311.0);
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// assert_eq!(tithi.clipped_to(day), Some(Interval::literal(2_460_310.5, 2_460_311.0)));
+    /// assert_eq!(tithi.clipped_to(Interval::literal(2_460_312.0, 2_460_313.0)), None);
+    /// ```
     #[must_use]
     pub fn clipped_to(self, window: Interval) -> Option<Interval> {
         let from = self.from.get().max(window.from.get());
@@ -172,6 +289,16 @@ impl Interval {
     }
 
     /// Whether it overlaps another interval at all.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    ///
+    /// let morning = Interval::literal(2_460_310.5, 2_460_311.0);
+    /// let afternoon = Interval::literal(2_460_311.0, 2_460_311.5);
+    /// // Touching is not overlapping: the intervals are half-open.
+    /// assert!(!morning.overlaps(afternoon));
+    /// assert!(morning.overlaps(Interval::literal(2_460_310.75, 2_460_311.25)));
+    /// ```
     #[must_use]
     pub fn overlaps(self, other: Interval) -> bool {
         self.from.get() < other.to.get() && other.from.get() < self.to.get()
@@ -189,12 +316,34 @@ impl Interval {
     /// `parts` of zero yields nothing, and more than [`MOST_PARTS`] is
     /// truncated to it; [`Interval::part`] is the checked single-part
     /// form when a caller needs the refusal.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    ///
+    /// // 1 January 2024, midnight to midnight.
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// let eighths: Vec<Interval> = day.divided(8).collect();
+    /// assert_eq!(eighths[1], Interval::literal(2_460_310.625, 2_460_310.75));
+    /// assert_eq!(day.divided(0).count(), 0);
+    /// ```
     pub fn divided(self, parts: u16) -> impl Iterator<Item = Interval> {
         let parts = parts.min(MOST_PARTS);
         (0..parts).filter_map(move |index| self.part(index, parts).ok())
     }
 
     /// One part of an equal division, counted from zero.
+    ///
+    /// ```
+    /// use teistro_core::error::Status;
+    /// use teistro_core::interval::Interval;
+    ///
+    /// // 1 January 2024, midnight to midnight.
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// assert_eq!(day.part(3, 4)?, Interval::literal(2_460_311.25, 2_460_311.5));
+    /// assert_eq!(day.part(4, 4).unwrap_err().status, Status::OutOfRange);
+    /// assert_eq!(day.part(0, 0).unwrap_err().status, Status::InvalidArg);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -227,6 +376,20 @@ impl Interval {
     ///
     /// The closing instant belongs to the last part, so an instant at the
     /// very end of the day is in the last hora rather than in none.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// // 1 January 2024, midnight to midnight.
+    /// let day = Interval::literal(2_460_310.5, 2_460_311.5);
+    /// let noon = JulianDay::<Utc>::literal(2_460_311.0);
+    /// // Noon opens the second half of the day.
+    /// assert_eq!(day.part_at(noon, 2), Some(1));
+    /// // The closing instant is in the last part, not in none.
+    /// assert_eq!(day.part_at(day.to, 24), Some(23));
+    /// assert_eq!(day.part_at(day.to.plus_days(1.0).unwrap(), 24), None);
+    /// ```
     #[must_use]
     pub fn part_at(self, instant: JulianDay<Utc>, of: u16) -> Option<u16> {
         if of == 0 || of > MOST_PARTS || self.is_empty() || !self.contains_inclusive(instant) {
