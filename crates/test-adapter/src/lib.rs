@@ -23,6 +23,18 @@ use teistro_port_ephemeris::{ProviderError, TestProvider};
 
 /// Opens the provider from the adapter's configuration.
 ///
+/// ```
+/// use teistro_port_ephemeris::ProviderError;
+///
+/// // No options, written either way.
+/// assert!(teistro_test_adapter::open("").is_ok() && teistro_test_adapter::open(" {} ").is_ok());
+/// // Any option is the adapter's own refusal, its text passed through.
+/// let refused = teistro_test_adapter::open(r#"{"path": "/data"}"#).err().ok_or("refused")?;
+/// assert!(matches!(refused, ProviderError::Invalid { .. }));
+/// assert!(refused.to_string().contains("/data"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Errors
 ///
 /// `INVALID_ARG` on any configuration but empty or `{}`.
@@ -47,6 +59,14 @@ teistro_port_ephemeris::export_provider!(TestProvider, open);
 /// A test crate names this crate as a dev-dependency, which is what makes
 /// cargo build the library before the test runs, and calls this to find
 /// it.
+///
+/// ```
+/// // Found where cargo built it, or a refusal saying what was looked for.
+/// match teistro_test_adapter::library() {
+///     Ok(path) => assert!(path.is_file()),
+///     Err(why) => assert!(why.contains("teistro_test_adapter") && why.contains("dev-dependency")),
+/// }
+/// ```
 ///
 /// # Errors
 ///

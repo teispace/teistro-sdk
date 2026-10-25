@@ -23,6 +23,13 @@ use crate::support::{text, with_context, write_plain};
 /// *Muhurta Chintamani* VI.35 gives it (C295).
 ///
 /// Mirrors `teistro::matching::NameVarga` through an **exhaustive** match.
+///
+/// ```
+/// use teistro_ffi::naam::TsNameVarga;
+///
+/// // A member crosses the boundary as its number: `Garuda` is 0, `Sheep` 7.
+/// assert_eq!((TsNameVarga::Garuda as u8, TsNameVarga::Sheep as u8), (0, 7));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsNameVarga {
@@ -64,6 +71,13 @@ impl From<teistro::matching::NameVarga> for TsNameVarga {
 ///
 /// Mirrors `teistro::matching::VargaRelation` through an **exhaustive**
 /// match.
+///
+/// ```
+/// use teistro_ffi::naam::TsVargaRelation;
+///
+/// // A member crosses the boundary as its number: `Same` is 0, `Neutral` 2.
+/// assert_eq!((TsVargaRelation::Same as u8, TsVargaRelation::Neutral as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsVargaRelation {
@@ -148,6 +162,34 @@ fn encode(read: &teistro::NaamMilan) -> Result<Vec<u8>, Error> {
 /// `naam.groom`.
 ///
 /// `api: blob=naam`
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # fn bytes(mut blob: teistro_ffi::blob::TsBlob) -> Vec<u8> {
+/// #     // SAFETY: the library wrote `len` bytes at `data`.
+/// #     let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::blob::ts_blob_free(&raw mut blob) };
+/// #     bytes
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::blob::TsBlob;
+/// use teistro_ffi::naam::ts_naam_milan;
+/// use teistro_idl::blob::Reader;
+///
+/// // Two names' stars matched, as a chart's match reads two Moons.
+/// let request = c"{\"bride\": \"सीता\", \"groom\": \"जोशी\", \"rules\": {\"name\": {\"abhijit\": \"SHRAVANA\"}}}";
+/// let mut blob = TsBlob::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_naam_milan(&raw const ctx, request.as_ptr(), &raw mut blob) }, Status::Ok);
+/// let bytes = bytes(blob);
+/// let schema = teistro_ffi::schemas::naam();
+/// let reader = Reader::parse(&bytes, &schema)?;
+/// assert_eq!(reader.count("matchings"), Some(1));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///

@@ -3,6 +3,7 @@
 //! without the chart area refuses it unread (`03-design/wasm-profiles.md`).
 
 use core::ffi::c_char;
+use core::ptr;
 
 use crate::support::c_struct;
 
@@ -15,6 +16,26 @@ use crate::support::c_struct;
 /// from a local sunrise and its date is a civil date, and a longitude
 /// gives local *mean* time rather than a civil offset
 /// (`03-design/chart-at-the-boundary.md` §5).
+///
+/// ```
+/// use teistro_core::catalogue::{Catalogued, ChartKind};
+/// use teistro_ffi::chart_request::TsChartRequest;
+///
+/// // Two instants at Kathmandu on Nepal's clock; every other field at zero.
+/// let instants = [2_460_482.5, 2_460_600.25];
+/// let request = TsChartRequest {
+///     struct_size: u32::try_from(size_of::<TsChartRequest>())?,
+///     instants: instants.as_ptr(),
+///     instant_count: instants.len(),
+///     latitude_deg: 27.7172,
+///     longitude_deg: 85.324,
+///     utc_offset_seconds: 5 * 3600 + 45 * 60,
+///     ..TsChartRequest::default()
+/// };
+/// assert_eq!(ChartKind::from_id(request.kind), Some(ChartKind::Natal));
+/// assert!(request.rules_json.is_null());
+/// # Ok::<(), core::num::TryFromIntError>(())
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TsChartRequest {
@@ -587,3 +608,63 @@ pub struct TsChartRequest {
 // two were not, and they are the two biggest requests.
 // `check-lints`' `handshake-is-checked` holds the class now.
 c_struct!(TsChartRequest);
+
+/// Every field at zero: no instants, the equator at the prime meridian,
+/// UTC, a natal chart and nothing asked beside the positions. A Rust
+/// caller names the fields it means and takes the rest from here; the
+/// size is left for the call to check, so set `struct_size` too.
+impl Default for TsChartRequest {
+    fn default() -> TsChartRequest {
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            lilith: 0,
+            instants: ptr::null(),
+            instant_count: 0,
+            latitude_deg: 0.0,
+            longitude_deg: 0.0,
+            altitude_m: 0.0,
+            utc_offset_seconds: 0,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
+            hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
+            kp_json: ptr::null(),
+            dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
+            considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
+            parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
+            prashna_json: ptr::null(),
+            remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
+            sarvatobhadra_json: ptr::null(),
+            tithi_pravesha_json: ptr::null(),
+            dossier_json: ptr::null(),
+            masa_pravesha_json: ptr::null(),
+            western_configurations_json: ptr::null(),
+        }
+    }
+}

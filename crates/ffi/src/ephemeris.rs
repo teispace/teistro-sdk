@@ -53,6 +53,28 @@ fn native_of(context: &TsContext) -> Result<Native<'_>, Error> {
 /// `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
 /// engine describes nothing of its own.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::ephemeris::ts_ephemeris_manifest;
+/// use teistro_ffi::string::{TsString, ts_string_free};
+///
+/// // The test provider describes its two operations, as an engine would.
+/// let mut json = TsString::empty();
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_ephemeris_manifest(&raw const ctx, &raw mut json) }, Status::Ok);
+/// // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// let manifest = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(json.data, json.len) }).into_owned();
+/// // SAFETY: a descriptor the library wrote, freed once.
+/// unsafe { ts_string_free(&raw mut json) };
+/// let manifest: serde_json::Value = serde_json::from_str(&manifest)?;
+/// assert_eq!(manifest["engine"], "test-provider");
+/// assert!(manifest.to_string().contains("tp_echo"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_json` valid for a write.
@@ -80,6 +102,33 @@ pub unsafe extern "C" fn ts_ephemeris_manifest(
 /// `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
 /// engine describes nothing of its own or names no such operation, and
 /// `PROVIDER` when the engine itself refuses.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::ephemeris::ts_ephemeris_call;
+/// use teistro_ffi::string::{TsString, ts_string_free};
+///
+/// // An operation by the name its manifest gives, its arguments as JSON.
+/// let mut answer = TsString::empty();
+/// // SAFETY: a live context, NUL-terminated strings and a writable slot.
+/// let status = unsafe { ts_ephemeris_call(&raw const ctx, c"tp_echo".as_ptr(), c"{\"value\": 2.5}".as_ptr(), &raw mut answer) };
+/// assert_eq!(status, Status::Ok);
+/// // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// let said: serde_json::Value = serde_json::from_slice(unsafe { core::slice::from_raw_parts(answer.data, answer.len) })?;
+/// assert_eq!(said["value"], 2.5);
+/// // SAFETY: a descriptor the library wrote, freed once.
+/// unsafe { ts_string_free(&raw mut answer) };
+/// // One it does not have is refused, never guessed at.
+/// // SAFETY: as above.
+/// let status = unsafe { ts_ephemeris_call(&raw const ctx, c"no_such_operation".as_ptr(), c"{}".as_ptr(), &raw mut answer) };
+/// assert_ne!(status, Status::Ok);
+/// // SAFETY: the empty descriptor a refusal leaves.
+/// unsafe { ts_string_free(&raw mut answer) };
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///

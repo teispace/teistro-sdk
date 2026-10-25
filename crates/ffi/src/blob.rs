@@ -14,6 +14,14 @@ use core::ptr;
 /// under the schema the entry point names, both in `idl/api.json`.
 ///
 /// `api: role=blob`
+///
+/// ```
+/// use teistro_ffi::blob::TsBlob;
+///
+/// // What an entry point writes before it has anything to hand over.
+/// let blob = TsBlob::empty();
+/// assert!(blob.data.is_null() && blob.len == 0);
+/// ```
 #[repr(C)]
 #[derive(Debug)]
 pub struct TsBlob {
@@ -27,6 +35,12 @@ pub struct TsBlob {
 
 impl TsBlob {
     /// The empty blob, which frees as a no-op.
+    ///
+    /// ```
+    /// use teistro_ffi::blob::TsBlob;
+    ///
+    /// assert_eq!(TsBlob::empty().cap, 0);
+    /// ```
     #[must_use]
     pub const fn empty() -> TsBlob {
         TsBlob {
@@ -52,6 +66,19 @@ impl TsBlob {
 
 /// Frees a blob the library allocated and zeroes the descriptor; null or
 /// an empty blob is ignored.
+///
+/// ```
+/// use teistro_ffi::blob::{TsBlob, ts_blob_free};
+///
+/// // An empty blob frees as nothing, and so does null.
+/// let mut blob = TsBlob::empty();
+/// // SAFETY: a descriptor this library made, and null.
+/// unsafe {
+///     ts_blob_free(&raw mut blob);
+///     ts_blob_free(core::ptr::null_mut());
+/// }
+/// assert!(blob.data.is_null());
+/// ```
 ///
 /// # Safety
 ///

@@ -28,6 +28,43 @@ use crate::support::{with_context, write_plain};
 ///
 /// `api: blob=positions`
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn bytes(mut blob: teistro_ffi::blob::TsBlob) -> Vec<u8> {
+/// #     // SAFETY: the library wrote `len` bytes at `data`.
+/// #     let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::blob::ts_blob_free(&raw mut blob) };
+/// #     bytes
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::blob::TsBlob;
+/// use teistro_ffi::positions::ts_positions;
+/// use teistro_idl::blob::Reader;
+/// use teistro_port_ephemeris::vtable::ObserverC;
+/// use teistro_port_ephemeris::{Body, Frame, PositionRequestC, TimeScale};
+///
+/// // The Sun at J2000.0, apparent and tropical.
+/// let (jds, bodies) = ([2_451_545.0], [Body::Sun.id()]);
+/// let request = PositionRequestC {
+///     struct_size: u32::try_from(size_of::<PositionRequestC>())?,
+///     scale: TimeScale::Tt.id(), frame_bits: Frame::CANONICAL.to_bits(),
+///     speeds: 1, has_observer: 0, reserved: [0; 2], observer: ObserverC::default(),
+///     jds: jds.as_ptr(), jd_count: jds.len(), bodies: bodies.as_ptr(), body_count: bodies.len(),
+/// };
+/// let mut blob = TsBlob::empty();
+/// // SAFETY: a live context, a sized request and a writable slot.
+/// assert_eq!(unsafe { ts_positions(&raw const ctx, &raw const request, &raw mut blob) }, Status::Ok);
+/// let bytes = bytes(blob);
+/// let schema = teistro_ffi::schemas::positions();
+/// let reader = Reader::parse(&bytes, &schema)?;
+/// let sun = reader.column("cells", "lon")?[0].as_f64();
+/// assert!((280.0..281.0).contains(&sun), "{sun}");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `request` valid for a read, with its

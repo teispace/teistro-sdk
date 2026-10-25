@@ -79,10 +79,19 @@ use teistro_core::Status;
 /// library whose version it was not generated for.
 ///
 /// `api: constant`
+///
+/// ```
+/// assert_eq!(teistro_ffi::TS_ABI_VERSION, 1);
+/// ```
 pub const TS_ABI_VERSION: u32 = 1;
 
 /// The SDK version this crate was built as, the one `ts_sdk_version`
 /// returns and the description records.
+///
+/// ```
+/// // Three numbers, as Cargo wrote them.
+/// assert_eq!(teistro_ffi::SDK_VERSION.split('.').count(), 3);
+/// ```
 pub const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// A context flag: use the SDK's analytic test provider when no provider
@@ -90,6 +99,13 @@ pub const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
 /// astronomy.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::TS_CONTEXT_TEST_PROVIDER;
+///
+/// // A bit of a context's `flags`.
+/// assert_eq!(TS_CONTEXT_TEST_PROVIDER.count_ones(), 1);
+/// ```
 pub const TS_CONTEXT_TEST_PROVIDER: u32 = 1 << 0;
 
 /// A `TsError` flag: the record owns its strings, because the call that
@@ -97,9 +113,21 @@ pub const TS_CONTEXT_TEST_PROVIDER: u32 = 1 << 0;
 /// releases them.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::TS_ERROR_OWNED;
+///
+/// // A bit of a `TsError`'s `flags`.
+/// assert_eq!(TS_ERROR_OWNED, 1);
+/// ```
 pub const TS_ERROR_OWNED: u32 = 1 << 0;
 
 /// The ABI version this library implements.
+///
+/// ```
+/// // What a binding checks before anything else.
+/// assert_eq!(teistro_ffi::ts_abi_version(), teistro_ffi::TS_ABI_VERSION);
+/// ```
 #[unsafe(no_mangle)]
 #[allow(
     unsafe_code,
@@ -110,6 +138,13 @@ pub extern "C" fn ts_abi_version() -> u32 {
 }
 
 /// The SDK version as a static NUL-terminated string (`0.0.0`).
+///
+/// ```
+/// // SAFETY: a static NUL-terminated string.
+/// let version = unsafe { core::ffi::CStr::from_ptr(teistro_ffi::ts_sdk_version()) };
+/// assert_eq!(version.to_str()?, teistro_ffi::SDK_VERSION);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[unsafe(no_mangle)]
 #[allow(
     unsafe_code,
@@ -120,6 +155,10 @@ pub extern "C" fn ts_sdk_version() -> *const c_char {
 }
 
 /// The catalogue schema version every result's provenance stamps.
+///
+/// ```
+/// assert_eq!(teistro_ffi::ts_catalogue_version(), teistro_core::catalogue::SCHEMA_VERSION);
+/// ```
 #[unsafe(no_mangle)]
 #[allow(
     unsafe_code,
@@ -131,6 +170,13 @@ pub extern "C" fn ts_catalogue_version() -> u32 {
 
 /// The profile a context uses when its options name none, as a static
 /// NUL-terminated string.
+///
+/// ```
+/// // SAFETY: a static NUL-terminated string.
+/// let profile = unsafe { core::ffi::CStr::from_ptr(teistro_ffi::ts_default_profile()) };
+/// assert_eq!(profile.to_str()?, teistro_core::settings::DEFAULT_PROFILE);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[unsafe(no_mangle)]
 #[allow(
     unsafe_code,
@@ -151,6 +197,14 @@ pub extern "C" fn ts_default_profile() -> *const c_char {
 /// identity"). The document is written when the library is compiled, so
 /// it costs nothing to ask and cannot disagree with the library it
 /// describes.
+///
+/// ```
+/// // SAFETY: a static NUL-terminated string.
+/// let info = unsafe { core::ffi::CStr::from_ptr(teistro_ffi::ts_build_info()) };
+/// let info: serde_json::Value = serde_json::from_str(info.to_str()?)?;
+/// assert!(info.is_object());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[unsafe(no_mangle)]
 #[allow(
     unsafe_code,
@@ -169,6 +223,16 @@ pub extern "C" fn ts_build_info() -> *const c_char {
 /// status` for a code this build does not know.
 ///
 /// `api: status: enum=Status`
+///
+/// ```
+/// use teistro_core::Status;
+///
+/// // SAFETY: static NUL-terminated strings.
+/// let said = |code| unsafe { core::ffi::CStr::from_ptr(teistro_ffi::ts_status_message(code)) };
+/// assert_eq!(said(Status::OutOfRange.code()).to_str()?, "out of range");
+/// assert_eq!(said(-999).to_str()?, "unknown status");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[unsafe(no_mangle)]
 #[allow(
     unsafe_code,

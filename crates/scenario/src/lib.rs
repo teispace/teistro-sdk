@@ -77,6 +77,15 @@ use teistro_siddhanta::SuryaSiddhanta;
 /// One section of the scenario: its name and the values it computed. A
 /// value is kept as its bits, so an integer is hashed as an integer and a
 /// double as a double, and neither is squeezed through the other.
+///
+/// ```
+/// use teistro_scenario::section;
+///
+/// let calendar = section("calendar").ok_or("a section")?;
+/// assert_eq!(calendar.name, "calendar");
+/// assert!(!calendar.values.is_empty());
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Section {
     /// What the section is called in every report.
@@ -112,6 +121,17 @@ impl Section {
 /// a value nowhere near the one written, and every distance taken over it
 /// is meaningless.
 ///
+/// ```
+/// use teistro_scenario::{Section, write_values};
+///
+/// // One line a value: the section, the index, the bits as sixteen hex digits.
+/// let one = Section { name: "example", values: vec![1.0_f64.to_bits(), 42] };
+/// let mut out = Vec::new();
+/// write_values(&[one], &mut out)?;
+/// assert_eq!(String::from_utf8(out)?, "example\t0\t3ff0000000000000\nexample\t1\t000000000000002a\n");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Errors
 ///
 /// Whatever writing to `out` refuses.
@@ -125,6 +145,13 @@ pub fn write_values(sections: &[Section], out: &mut impl std::io::Write) -> std:
 }
 
 /// The sections in the order every report lists them.
+///
+/// ```
+/// use teistro_scenario::{SECTIONS, section};
+///
+/// // Every name listed is a section.
+/// assert!(SECTIONS.iter().all(|name| section(name).is_some()));
+/// ```
 pub const SECTIONS: [&str; 9] = [
     "calendar",
     "astro",
@@ -138,6 +165,14 @@ pub const SECTIONS: [&str; 9] = [
 ];
 
 /// One section by name, or `None` when nothing is called that.
+///
+/// ```
+/// use teistro_scenario::section;
+///
+/// // The same section twice is the same bits: the scenario is deterministic.
+/// assert_eq!(section("houses"), section("houses"));
+/// assert_eq!(section("horoscope"), None);
+/// ```
 #[must_use]
 pub fn section(name: &str) -> Option<Section> {
     match name {
@@ -155,6 +190,13 @@ pub fn section(name: &str) -> Option<Section> {
 }
 
 /// Every section, in order.
+///
+/// ```
+/// use teistro_scenario::{SECTIONS, all};
+///
+/// let names: Vec<&str> = all().iter().map(|section| section.name).collect();
+/// assert_eq!(names, SECTIONS);
+/// ```
 #[must_use]
 pub fn all() -> Vec<Section> {
     SECTIONS.iter().filter_map(|name| section(name)).collect()

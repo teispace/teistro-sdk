@@ -10,6 +10,13 @@ use teistro_idl::blob::FixedValue;
 use teistro_time::local_day::{DayState, PolarKind};
 
 /// Which arc of its day an instant falls in.
+///
+/// ```
+/// use teistro_ffi::day::TsDayPart;
+///
+/// // A member crosses the boundary as its number: `Daylight` is 0, `Night` 1.
+/// assert_eq!((TsDayPart::Daylight as u8, TsDayPart::Night as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsDayPart {
@@ -35,6 +42,13 @@ impl From<DayPart> for TsDayPart {
 /// a blob carries that as its altitude beside this, because a variant
 /// with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
 /// §8).
+///
+/// ```
+/// use teistro_ffi::day::TsSunrise;
+///
+/// // A member crosses the boundary as its number: `CentreNoRefraction` is 0, `CentreRefraction` 3.
+/// assert_eq!((TsSunrise::CentreNoRefraction as u8, TsSunrise::CentreRefraction as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSunrise {
@@ -52,6 +66,13 @@ impl TsSunrise {
     /// The id this build gives a member, or `None` for one it does
     /// not know — a member added to the knob since this was written,
     /// which is refused by name rather than defaulted.
+    ///
+    /// ```
+    /// use teistro_core::settings::Sunrise;
+    /// use teistro_ffi::day::TsSunrise;
+    ///
+    /// assert_eq!(TsSunrise::of(Sunrise::LowerLimbRefraction), Some(TsSunrise::LowerLimbRefraction));
+    /// ```
     #[must_use]
     pub fn of(sunrise: Sunrise) -> Option<TsSunrise> {
         match sunrise {
@@ -65,6 +86,13 @@ impl TsSunrise {
 }
 
 /// How the sixty ghatis of a day are measured.
+///
+/// ```
+/// use teistro_ffi::day::TsGhatiReckoning;
+///
+/// // A member crosses the boundary as its number: `Civil` is 0, `Proportional` 1.
+/// assert_eq!((TsGhatiReckoning::Civil as u8, TsGhatiReckoning::Proportional as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsGhatiReckoning {
@@ -78,6 +106,13 @@ impl TsGhatiReckoning {
     /// The id this build gives a member, or `None` for one it does
     /// not know — a member added to the knob since this was written,
     /// which is refused by name rather than defaulted.
+    ///
+    /// ```
+    /// use teistro_core::settings::GhatiReckoning;
+    /// use teistro_ffi::day::TsGhatiReckoning;
+    ///
+    /// assert_eq!(TsGhatiReckoning::of(GhatiReckoning::Proportional), Some(TsGhatiReckoning::Proportional));
+    /// ```
     #[must_use]
     pub fn of(reckoning: GhatiReckoning) -> Option<TsGhatiReckoning> {
         match reckoning {
@@ -89,6 +124,13 @@ impl TsGhatiReckoning {
 }
 
 /// How the twenty-four horas of a day are measured.
+///
+/// ```
+/// use teistro_ffi::day::TsHoraReckoning;
+///
+/// // A member crosses the boundary as its number: `Proportional` is 0, `Equal` 1.
+/// assert_eq!((TsHoraReckoning::Proportional as u8, TsHoraReckoning::Equal as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsHoraReckoning {
@@ -102,6 +144,13 @@ impl TsHoraReckoning {
     /// The id this build gives a member, or `None` for one it does
     /// not know — a member added to the knob since this was written,
     /// which is refused by name rather than defaulted.
+    ///
+    /// ```
+    /// use teistro_core::settings::HoraReckoning;
+    /// use teistro_ffi::day::TsHoraReckoning;
+    ///
+    /// assert_eq!(TsHoraReckoning::of(HoraReckoning::Equal), Some(TsHoraReckoning::Equal));
+    /// ```
     #[must_use]
     pub fn of(reckoning: HoraReckoning) -> Option<TsHoraReckoning> {
         match reckoning {
@@ -118,6 +167,13 @@ impl TsHoraReckoning {
 /// state it was and which policy was applied, in `state_polar_kind` and
 /// `state_polar_policy` beside it, because a variant with a payload
 /// cannot be an id (`03-design/chart-at-the-boundary.md` §8).
+///
+/// ```
+/// use teistro_ffi::day::TsDayState;
+///
+/// // A member crosses the boundary as its number: `Normal` is 0, `Polar` 1.
+/// assert_eq!((TsDayState::Normal as u8, TsDayState::Polar as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsDayState {
@@ -128,6 +184,13 @@ pub enum TsDayState {
 }
 
 /// Which polar state a day without a sunrise was in.
+///
+/// ```
+/// use teistro_ffi::day::TsPolarKind;
+///
+/// // A member crosses the boundary as its number: `Day` is 0, `Night` 1.
+/// assert_eq!((TsPolarKind::Day as u8, TsPolarKind::Night as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsPolarKind {
@@ -147,6 +210,13 @@ impl From<PolarKind> for TsPolarKind {
 }
 
 /// What the settings say a day without a sunrise is.
+///
+/// ```
+/// use teistro_ffi::day::TsPolarDayPolicy;
+///
+/// // A member crosses the boundary as its number: `Undefined` is 0, `CivilMidnight` 2.
+/// assert_eq!((TsPolarDayPolicy::Undefined as u8, TsPolarDayPolicy::CivilMidnight as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsPolarDayPolicy {
@@ -162,6 +232,13 @@ impl TsPolarDayPolicy {
     /// The id this build gives a member, or `None` for one it does not
     /// know — a member added to the knob since this was written, which
     /// is refused by name rather than defaulted.
+    ///
+    /// ```
+    /// use teistro_core::settings::PolarDayPolicy;
+    /// use teistro_ffi::day::TsPolarDayPolicy;
+    ///
+    /// assert_eq!(TsPolarDayPolicy::of(PolarDayPolicy::NearestEvent), Some(TsPolarDayPolicy::NearestEvent));
+    /// ```
     #[must_use]
     pub fn of(policy: PolarDayPolicy) -> Option<TsPolarDayPolicy> {
         match policy {
@@ -176,6 +253,16 @@ impl TsPolarDayPolicy {
 impl TsDayState {
     /// A day's state split into the three scalars a blob carries: the
     /// kind, and the polar kind and policy that only a polar day has.
+    ///
+    /// ```
+    /// use teistro_core::settings::PolarDayPolicy;
+    /// use teistro_ffi::day::{TsDayState, TsPolarDayPolicy, TsPolarKind};
+    /// use teistro_time::local_day::{DayState, PolarKind};
+    ///
+    /// assert_eq!(TsDayState::split(DayState::Normal), (TsDayState::Normal, 0, 0));
+    /// let polar = DayState::Polar { kind: PolarKind::Night, policy: PolarDayPolicy::CivilMidnight };
+    /// assert_eq!(TsDayState::split(polar), (TsDayState::Polar, TsPolarKind::Night as u8, TsPolarDayPolicy::CivilMidnight as u8));
+    /// ```
     #[must_use]
     pub fn split(state: DayState) -> (TsDayState, u8, u8) {
         match state {
@@ -196,6 +283,34 @@ impl TsDayState {
 /// panchanga blob writes the same day the same way rather than a second
 /// copy of the same arithmetic
 /// (`03-design/chart-at-the-boundary.md` §8).
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Vara};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{Sunrise, SunriseConvention};
+/// # use teistro_time::local_day::{DayState, LocalDay};
+/// #
+/// # let day = LocalDay {
+/// #     place: Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0)),
+/// #     date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1),
+/// #     vara: Vara::Somavara,
+/// #     sunrise: JulianDay::literal(2_460_310.553),
+/// #     sunset: JulianDay::literal(2_460_310.973),
+/// #     next_sunrise: JulianDay::literal(2_460_311.553),
+/// #     state: DayState::Normal,
+/// #     convention: SunriseConvention::Named { which: Sunrise::UpperLimbRefraction },
+/// #     model: String::from("an example"),
+/// # };
+/// use teistro_idl::blob::FixedValue;
+/// use teistro_ffi::day::{TsSunrise, day_values};
+///
+/// // Monday 1 January 2024 at Kathmandu: sunrise first, the convention named.
+/// let values = day_values(&day);
+/// assert_eq!(values.len(), 20);
+/// assert_eq!(values[0], FixedValue::Float(2_460_310.553));
+/// assert_eq!(values[16], FixedValue::Uint(TsSunrise::UpperLimbRefraction as u64));
+/// ```
 #[must_use]
 pub fn day_values(local: &teistro_time::local_day::LocalDay) -> Vec<FixedValue> {
     let (state, polar_kind, polar_policy) = TsDayState::split(local.state);

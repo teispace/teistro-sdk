@@ -38,6 +38,32 @@ use crate::support::with_context;
 /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
 /// `pakshi` family out.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::string::TsString;
+/// use teistro_ffi::pakshi::ts_pakshi;
+///
+/// let request = c"{\"first\": {\"year\": 1984, \"month\": 10, \"day\": 30}, \"last\": {\"year\": 1984, \"month\": 11, \"day\": 1}, \"latitudeDeg\": 13.0827, \"longitudeDeg\": 80.2707, \"altitudeM\": 6, \"utcOffsetSeconds\": 19800, \"native\": {\"nakshatra\": \"nakshatra.UTTARA_ASHADHA\", \"paksha\": \"paksha.SHUKLA\"}}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_pakshi(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // Three days of the native's bird, one entry each.
+/// assert_eq!(answer["value"].as_array().map(Vec::len), Some(3));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;

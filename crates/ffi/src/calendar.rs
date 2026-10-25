@@ -19,6 +19,13 @@ use crate::context::TsContext;
 use crate::support::{c_struct, read_in, with_context, write_out, write_plain};
 
 /// How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
+///
+/// ```
+/// use teistro_ffi::calendar::TsResolution;
+///
+/// // A member crosses the boundary as its number: `Defined` is 0, `Divergent` 3.
+/// assert_eq!((TsResolution::Defined as u8, TsResolution::Divergent as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsResolution {
@@ -36,6 +43,13 @@ pub enum TsResolution {
 /// Which part of a date is the first of a repeated pair, in a calendar
 /// that repeats them (the Tibetan). A date marked neither holds
 /// [`TsLeap::NONE`].
+///
+/// ```
+/// use teistro_ffi::calendar::TsLeap;
+///
+/// // A member crosses the boundary as its number: `Month` is 1, `MonthAndDay` 3.
+/// assert_eq!((TsLeap::Month as u8, TsLeap::MonthAndDay as u8), (1, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsLeap {
@@ -51,9 +65,26 @@ impl TsLeap {
     /// What a date marked neither holds, as a nullable catalogue field
     /// holds `0xFFFF`; `0`, what a caller compiled before the field
     /// existed left in its reserved byte, is read as none too.
+    ///
+    /// ```
+    /// use teistro_ffi::calendar::TsLeap;
+    ///
+    /// // Read as neither, as a zero is.
+    /// assert_eq!(TsLeap::read(TsLeap::NONE)?, None);
+    /// assert_eq!(TsLeap::read(0)?, None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const NONE: u8 = 0xFF;
 
     /// The boundary form of a date's mark.
+    ///
+    /// ```
+    /// use teistro_calendar::Leap;
+    /// use teistro_ffi::calendar::TsLeap;
+    ///
+    /// assert_eq!(TsLeap::of(Some(Leap::Day)), 2);
+    /// assert_eq!(TsLeap::of(None), TsLeap::NONE);
+    /// ```
     #[must_use]
     pub const fn of(leap: Option<Leap>) -> u8 {
         match leap {
@@ -65,6 +96,16 @@ impl TsLeap {
     }
 
     /// The mark a byte names.
+    ///
+    /// ```
+    /// use teistro_calendar::Leap;
+    /// use teistro_core::Status;
+    /// use teistro_ffi::calendar::TsLeap;
+    ///
+    /// assert_eq!(TsLeap::read(3)?, Some(Leap::MonthAndDay));
+    /// assert_eq!(TsLeap::read(4).map_err(|error| error.status), Err(Status::InvalidArg));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -96,6 +137,16 @@ impl From<&CalendarResolution> for TsResolution {
 
 /// A date in a calendar. Years are astronomical (1 BCE is 0); the era view
 /// is presentation only and is filled by the library, ignored on input.
+///
+/// ```
+/// use teistro_calendar::CalendarDate;
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_ffi::calendar::TsCalendarDate;
+///
+/// let date = TsCalendarDate::of(&CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6));
+/// assert_eq!((date.year, date.month, date.day), (2026, 9, 6));
+/// assert_eq!(date.calendar, Calendar::Gregorian.id());
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TsCalendarDate {
@@ -140,6 +191,18 @@ c_struct!(TsCalendarDate);
 
 impl TsCalendarDate {
     /// The boundary form of a date.
+    ///
+    /// ```
+    /// use teistro_calendar::CalendarDate;
+    /// use teistro_core::catalogue::Calendar;
+    /// use teistro_ffi::calendar::TsCalendarDate;
+    ///
+    /// use teistro_ffi::calendar::{TsLeap, TsResolution};
+    ///
+    /// let date = TsCalendarDate::of(&CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6));
+    /// assert_eq!(date.resolution, TsResolution::Defined as u8);
+    /// assert_eq!(date.leap, TsLeap::NONE);
+    /// ```
     #[must_use]
     pub fn of(date: &CalendarDate) -> TsCalendarDate {
         let resolution = TsResolution::from(&date.resolution);
@@ -164,6 +227,16 @@ impl TsCalendarDate {
     }
 
     /// The date this struct names, its resolution taken as defined.
+    ///
+    /// ```
+    /// use teistro_calendar::CalendarDate;
+    /// use teistro_core::catalogue::Calendar;
+    /// use teistro_ffi::calendar::TsCalendarDate;
+    ///
+    /// let date = CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6);
+    /// assert_eq!(TsCalendarDate::of(&date).to_date()?, date);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -220,6 +293,30 @@ pub(crate) fn system_of(id: u16) -> Result<&'static dyn CalendarSystem, Error> {
 ///
 /// `api: calendar: enum=Calendar`
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Catalogued};
+/// # use teistro_ffi::calendar::TsCalendarDate;
+/// #
+/// # let sized = |date: CalendarDate| -> Result<TsCalendarDate, core::num::TryFromIntError> {
+/// #     Ok(TsCalendarDate { struct_size: u32::try_from(size_of::<TsCalendarDate>())?, ..TsCalendarDate::of(&date) })
+/// # };
+/// use teistro_core::Status;
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+/// use teistro_ffi::calendar::ts_calendar_from_fixed;
+///
+/// let fixed = Gregorian.to_fixed_ymd(2026, 9, 6)?.get();
+/// let mut date = sized(CalendarDate::defined(Calendar::Gregorian, 1, 1, 1))?;
+/// // SAFETY: a live context and a sized, writable date.
+/// let status = unsafe { ts_calendar_from_fixed(&raw const ctx, Calendar::Gregorian.id(), fixed, &raw mut date) };
+/// assert_eq!(status, Status::Ok);
+/// assert_eq!((date.year, date.month, date.day), (2026, 9, 6));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_date` valid for a read of its
@@ -240,6 +337,33 @@ pub unsafe extern "C" fn ts_calendar_from_fixed(
 
 /// The fixed day of a date, validated: a date the calendar does not have
 /// is `INVALID_ARG` with the `NONEXISTENT_DATE` detail.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Catalogued};
+/// # use teistro_ffi::calendar::TsCalendarDate;
+/// #
+/// # let sized = |date: CalendarDate| -> Result<TsCalendarDate, core::num::TryFromIntError> {
+/// #     Ok(TsCalendarDate { struct_size: u32::try_from(size_of::<TsCalendarDate>())?, ..TsCalendarDate::of(&date) })
+/// # };
+/// use teistro_core::Status;
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+/// use teistro_ffi::calendar::ts_calendar_to_fixed;
+///
+/// let date = sized(CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6))?;
+/// let mut fixed = 0_i64;
+/// // SAFETY: a live context, a sized date and a writable slot.
+/// assert_eq!(unsafe { ts_calendar_to_fixed(&raw const ctx, &raw const date, &raw mut fixed) }, Status::Ok);
+/// assert_eq!(fixed, Gregorian.to_fixed_ymd(2026, 9, 6)?.get());
+/// // The 30th of February is no date.
+/// let none = sized(CalendarDate::defined(Calendar::Gregorian, 2026, 2, 30))?;
+/// // SAFETY: as above.
+/// assert_eq!(unsafe { ts_calendar_to_fixed(&raw const ctx, &raw const none, &raw mut fixed) }, Status::InvalidArg);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -263,6 +387,30 @@ pub unsafe extern "C" fn ts_calendar_to_fixed(
 /// Converts a date into another calendar.
 ///
 /// `api: into: enum=Calendar`
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Catalogued};
+/// # use teistro_ffi::calendar::TsCalendarDate;
+/// #
+/// # let sized = |date: CalendarDate| -> Result<TsCalendarDate, core::num::TryFromIntError> {
+/// #     Ok(TsCalendarDate { struct_size: u32::try_from(size_of::<TsCalendarDate>())?, ..TsCalendarDate::of(&date) })
+/// # };
+/// use teistro_core::Status;
+/// use teistro_ffi::calendar::ts_calendar_convert;
+///
+/// // 14 April 2026 is the first of Baisakh, 2083, the Bikram Sambat's new year.
+/// let april = sized(CalendarDate::defined(Calendar::Gregorian, 2026, 4, 14))?;
+/// let mut baisakh = sized(CalendarDate::defined(Calendar::Gregorian, 1, 1, 1))?;
+/// // SAFETY: a live context and two sized dates.
+/// let status = unsafe { ts_calendar_convert(&raw const ctx, &raw const april, Calendar::BikramSambat.id(), &raw mut baisakh) };
+/// assert_eq!(status, Status::Ok);
+/// assert_eq!((baisakh.year, baisakh.month, baisakh.day), (2083, 1, 1));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -288,6 +436,27 @@ pub unsafe extern "C" fn ts_calendar_convert(
 ///
 /// `api: calendar: enum=Calendar`
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Catalogued};
+/// # use teistro_ffi::calendar::TsCalendarDate;
+/// #
+/// # let sized = |date: CalendarDate| -> Result<TsCalendarDate, core::num::TryFromIntError> {
+/// #     Ok(TsCalendarDate { struct_size: u32::try_from(size_of::<TsCalendarDate>())?, ..TsCalendarDate::of(&date) })
+/// # };
+/// use teistro_core::Status;
+/// use teistro_ffi::calendar::ts_calendar_month_length;
+///
+/// let mut length = 0_u8;
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_calendar_month_length(&raw const ctx, Calendar::Gregorian.id(), 2024, 2, &raw mut length) }, Status::Ok);
+/// assert_eq!(length, 29);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_length` valid for a write.
@@ -310,6 +479,27 @@ pub unsafe extern "C" fn ts_calendar_month_length(
 ///
 /// `api: calendar: enum=Calendar`
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Catalogued};
+/// # use teistro_ffi::calendar::TsCalendarDate;
+/// #
+/// # let sized = |date: CalendarDate| -> Result<TsCalendarDate, core::num::TryFromIntError> {
+/// #     Ok(TsCalendarDate { struct_size: u32::try_from(size_of::<TsCalendarDate>())?, ..TsCalendarDate::of(&date) })
+/// # };
+/// use teistro_core::Status;
+/// use teistro_ffi::calendar::ts_calendar_is_leap;
+///
+/// let mut leap = 9_u8;
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_calendar_is_leap(&raw const ctx, Calendar::Gregorian.id(), 1900, &raw mut leap) }, Status::Ok);
+/// assert_eq!(leap, 0, "a century not divisible by 400");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_leap` valid for a write.
@@ -328,6 +518,29 @@ pub unsafe extern "C" fn ts_calendar_is_leap(
 }
 
 /// The weekday of a date as its ISO number: Monday is `1`, Sunday `7`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Catalogued};
+/// # use teistro_ffi::calendar::TsCalendarDate;
+/// #
+/// # let sized = |date: CalendarDate| -> Result<TsCalendarDate, core::num::TryFromIntError> {
+/// #     Ok(TsCalendarDate { struct_size: u32::try_from(size_of::<TsCalendarDate>())?, ..TsCalendarDate::of(&date) })
+/// # };
+/// use teistro_core::Status;
+/// use teistro_ffi::calendar::ts_calendar_weekday;
+///
+/// // 6 September 2026 is a Sunday: ISO's 7.
+/// let date = sized(CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6))?;
+/// let mut weekday = 0_u8;
+/// // SAFETY: a live context, a sized date and a writable slot.
+/// assert_eq!(unsafe { ts_calendar_weekday(&raw const ctx, &raw const date, &raw mut weekday) }, Status::Ok);
+/// assert_eq!(weekday, 7);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -359,6 +572,30 @@ pub unsafe extern "C" fn ts_calendar_weekday(
 ///
 /// `api: year: example=2026`
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::calendar::ts_calendar_tibetan_year;
+/// use teistro_ffi::string::TsString;
+///
+/// let mut json = TsString::empty();
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_calendar_tibetan_year(&raw const ctx, 2026, &raw mut json) }, Status::Ok);
+/// let year: serde_json::Value = serde_json::from_str(&owned(json))?;
+/// assert_eq!((year["rabjung"].as_u64(), year["yearInRabjung"].as_u64()), (Some(17), Some(40)));
+/// assert_eq!(year["samvatsara"], "samvatsara.PARABHAVA");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_json` valid for a write.
@@ -381,6 +618,13 @@ pub unsafe extern "C" fn ts_calendar_tibetan_year(
 /// 1 is Monday, 1 January 1 CE; the relation is `fixed + 1721424.5`).
 ///
 /// `api: fixed: example=735702`
+///
+/// ```
+/// use teistro_ffi::calendar::ts_calendar_jd_of_fixed;
+///
+/// // Fixed day 1, Monday 1 January 1 CE, begins at this Julian day.
+/// assert_eq!(ts_calendar_jd_of_fixed(1), 1_721_425.5);
+/// ```
 #[unsafe(no_mangle)]
 #[allow(clippy::cast_precision_loss, reason = "days are far below 2^53")]
 pub extern "C" fn ts_calendar_jd_of_fixed(fixed: i64) -> f64 {
@@ -389,6 +633,19 @@ pub extern "C" fn ts_calendar_jd_of_fixed(fixed: i64) -> f64 {
 
 /// The fixed day a Julian day falls in, and, when `out_fraction` is not
 /// null, the fraction of that day elapsed since its midnight.
+///
+/// ```
+/// use teistro_ffi::calendar::{ts_calendar_fixed_of_jd, ts_calendar_jd_of_fixed};
+///
+/// // Noon is half a day in.
+/// let noon = ts_calendar_jd_of_fixed(735_702) + 0.5;
+/// let mut fraction = 0.0;
+/// // SAFETY: a writable slot.
+/// assert_eq!(unsafe { ts_calendar_fixed_of_jd(noon, &raw mut fraction) }, 735_702);
+/// assert_eq!(fraction, 0.5);
+/// // SAFETY: a null fraction is allowed.
+/// assert_eq!(unsafe { ts_calendar_fixed_of_jd(noon, core::ptr::null_mut()) }, 735_702);
+/// ```
 ///
 /// # Safety
 ///

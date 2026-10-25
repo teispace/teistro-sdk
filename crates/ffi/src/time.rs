@@ -28,6 +28,13 @@ use crate::context::TsContext;
 use crate::support::{c_struct, optional_text, read_in, with_context, write_out};
 
 /// A time scale of the conversions; the first two ids are the port's.
+///
+/// ```
+/// use teistro_ffi::time::TsScale;
+///
+/// // A member crosses the boundary as its number: `Ut1` is 0, `Utc` 2.
+/// assert_eq!((TsScale::Ut1 as u32, TsScale::Utc as u32), (0, 2));
+/// ```
 #[repr(u32)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsScale {
@@ -55,6 +62,13 @@ impl TsScale {
 }
 
 /// What a zone specification names.
+///
+/// ```
+/// use teistro_ffi::time::TsZoneKind;
+///
+/// // A member crosses the boundary as its number: `Iana` is 0, `LocalMean` 2.
+/// assert_eq!((TsZoneKind::Iana as u8, TsZoneKind::LocalMean as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsZoneKind {
@@ -67,6 +81,13 @@ pub enum TsZoneKind {
 }
 
 /// Where a resolution's offset came from.
+///
+/// ```
+/// use teistro_ffi::time::TsZoneSource;
+///
+/// // A member crosses the boundary as its number: `Iana` is 0, `Manual` 2.
+/// assert_eq!((TsZoneSource::Iana as u8, TsZoneSource::Manual as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsZoneSource {
@@ -89,6 +110,13 @@ impl From<ZoneSource> for TsZoneSource {
 }
 
 /// Which rules produced the offset.
+///
+/// ```
+/// use teistro_ffi::time::TsZoneEra;
+///
+/// // A member crosses the boundary as its number: `Current` is 0, `BeforeRules` 2.
+/// assert_eq!((TsZoneEra::Current as u8, TsZoneEra::BeforeRules as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsZoneEra {
@@ -111,6 +139,13 @@ impl From<ZoneEra> for TsZoneEra {
 }
 
 /// What the daylight-saving policy did.
+///
+/// ```
+/// use teistro_ffi::time::TsDst;
+///
+/// // A member crosses the boundary as its number: `None` is 0, `Overlap` 2.
+/// assert_eq!((TsDst::None as u8, TsDst::Overlap as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsDst {
@@ -133,6 +168,13 @@ impl From<DstOutcome> for TsDst {
 }
 
 /// Which occurrence an overlap resolved to.
+///
+/// ```
+/// use teistro_ffi::time::TsChosen;
+///
+/// // A member crosses the boundary as its number: `Earlier` is 0, `Later` 1.
+/// assert_eq!((TsChosen::Earlier as u8, TsChosen::Later as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsChosen {
@@ -153,6 +195,13 @@ impl From<Chosen> for TsChosen {
 
 /// A warning of a resolution; `warnings` in the resolution is a bit set,
 /// bit `n` for the warning with value `n`.
+///
+/// ```
+/// use teistro_ffi::time::TsZoneWarning;
+///
+/// // A member crosses the boundary as its number: `OffsetDiffersFromCurrentRules` is 0, `TimeUnknownFallback` 5.
+/// assert_eq!((TsZoneWarning::OffsetDiffersFromCurrentRules as u8, TsZoneWarning::TimeUnknownFallback as u8), (0, 5));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsZoneWarning {
@@ -184,6 +233,13 @@ impl From<Warning> for TsZoneWarning {
 }
 
 /// What produced a Delta T value.
+///
+/// ```
+/// use teistro_ffi::time::TsDeltaTSource;
+///
+/// // A member crosses the boundary as its number: `Table` is 0, `Custom` 3.
+/// assert_eq!((TsDeltaTSource::Table as u8, TsDeltaTSource::Custom as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsDeltaTSource {
@@ -209,6 +265,20 @@ impl From<DeltaTSource> for TsDeltaTSource {
 }
 
 /// A time of day, or none when the birth time is unknown.
+///
+/// ```
+/// use teistro_calendar::CalendarDate;
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_ffi::time::TsCivilDateTime;
+/// use teistro_time::{CivilDateTime, CivilTime};
+///
+/// // A date alone crosses with no time, which the context's policy then supplies.
+/// let date_only = TsCivilDateTime::of(&CivilDateTime::date_only(CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6)));
+/// assert_eq!(date_only.time.has_time, 0);
+/// let dawn = TsCivilDateTime::of(&CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6), CivilTime::new(6, 15, 0)?));
+/// assert_eq!((dawn.time.has_time, dawn.time.hour, dawn.time.minute), (1, 6, 15));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TsCivilTime {
@@ -233,6 +303,18 @@ pub struct TsCivilTime {
 }
 
 /// A civil date and time in a calendar.
+///
+/// ```
+/// use teistro_calendar::CalendarDate;
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_ffi::time::TsCivilDateTime;
+/// use teistro_time::{CivilDateTime, CivilTime};
+///
+/// let civil = CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6), CivilTime::new(6, 15, 0)?);
+/// let crossed = TsCivilDateTime::of(&civil);
+/// assert_eq!((crossed.date.year, crossed.date.month, crossed.date.day), (2026, 9, 6));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TsCivilDateTime {
@@ -247,6 +329,15 @@ pub struct TsCivilDateTime {
 }
 
 /// A zone: an IANA name, a fixed offset, or local mean time at a longitude.
+///
+/// ```
+/// use teistro_ffi::time::{TsZoneKind, TsZoneSpec};
+///
+/// // Nepal's clock as a fixed offset: kind and offset, the rest zero.
+/// let nepal = TsZoneSpec { kind: TsZoneKind::Fixed as u8, offset_seconds: 5 * 3600 + 45 * 60, ..TsZoneSpec::default() };
+/// assert!(nepal.zone.is_null());
+/// assert_eq!(nepal.offset_seconds, 20_700);
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct TsZoneSpec {
@@ -272,6 +363,42 @@ pub struct TsZoneSpec {
 
 /// What a resolution applied, enough to reproduce it after the zone
 /// database changes.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// # use teistro_ffi::time::TsZoneResolution;
+/// #
+/// # let mut resolution = TsZoneResolution {
+/// #     struct_size: u32::try_from(size_of::<TsZoneResolution>())?,
+/// #     offset_seconds: 0, dst_shift_seconds: 0, warnings: 0, instant_jd_utc: 0.0,
+/// #     tzdb_version: core::ptr::null(), abbreviation: core::ptr::null(),
+/// #     source: 0, era: 0, dst: 0, chosen: 0, time_known: 0, reserved: [0; 3],
+/// # };
+/// use teistro_calendar::CalendarDate;
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_ffi::time::TsCivilDateTime;
+/// use teistro_time::{CivilDateTime, CivilTime};
+///
+/// use teistro_ffi::time::{TsZoneSpec, ts_time_resolve};
+///
+/// // 00:20 on 1 January 1986 in Kathmandu: the first night of +05:45, which
+/// // the database applies from that midnight.
+/// let name = c"Asia/Kathmandu";
+/// let zone = TsZoneSpec { struct_size: u32::try_from(size_of::<TsZoneSpec>())?, zone: name.as_ptr(), ..TsZoneSpec::default() };
+/// let mut birth = TsCivilDateTime::of(&CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, 1986, 1, 1), CivilTime::new(0, 20, 0)?));
+/// // `of` leaves every size for the caller, who knows what it compiled.
+/// birth.struct_size = u32::try_from(size_of::<TsCivilDateTime>())?;
+/// birth.date.struct_size = u32::try_from(size_of::<teistro_ffi::calendar::TsCalendarDate>())?;
+/// birth.time.struct_size = u32::try_from(size_of::<teistro_ffi::time::TsCivilTime>())?;
+/// // SAFETY: a live context, and records sized for this build.
+/// let status = unsafe { ts_time_resolve(&raw const ctx, &raw const birth, &raw const zone, &raw mut resolution) };
+/// assert_eq!(status, teistro_core::Status::Ok);
+/// assert_eq!(resolution.offset_seconds, 20_700);
+/// assert!((resolution.instant_jd_utc - 2_446_431.274_305_6).abs() < 1e-6);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct TsZoneResolution {
@@ -317,6 +444,27 @@ pub struct TsZoneResolution {
 }
 
 /// A conversion between time scales with what it applied.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_ffi::time::{TsDeltaTSource, TsScale, TsTimeConversion, ts_time_convert};
+///
+/// let mut conversion = TsTimeConversion {
+///     struct_size: u32::try_from(size_of::<TsTimeConversion>())?,
+///     from: 0, to: 0, delta_t_source: 0, proleptic_utc: 0, has_uncertainty: 0, reserved: 0,
+///     jd: 0.0, delta_t_seconds: 0.0, uncertainty_seconds: 0.0, dut1_seconds: 0.0,
+///     delta_t_model: core::ptr::null(),
+/// };
+/// // 1 January 2000, 00:00 UTC, on TT: thirty-two leap seconds and 32.184 s.
+/// // SAFETY: a live context, and a record sized for this build.
+/// let status = unsafe { ts_time_convert(&raw const ctx, 2_451_544.5, TsScale::Utc as u32, TsScale::Tt as u32, &raw mut conversion) };
+/// assert_eq!(status, teistro_core::Status::Ok);
+/// assert!((conversion.delta_t_seconds - 64.184).abs() < 1e-9);
+/// assert_eq!(conversion.delta_t_source, TsDeltaTSource::LeapSeconds as u8);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct TsTimeConversion {
@@ -358,6 +506,25 @@ pub struct TsTimeConversion {
 }
 
 /// Delta T at an instant with what produced it.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_ffi::time::{TsDeltaT, TsDeltaTSource, ts_time_delta_t};
+///
+/// let mut delta = TsDeltaT {
+///     struct_size: u32::try_from(size_of::<TsDeltaT>())?,
+///     source: 0, has_uncertainty: 0, reserved: [0; 2],
+///     seconds: 0.0, uncertainty_seconds: 0.0, model: core::ptr::null(),
+/// };
+/// // SAFETY: a live context, and a record sized for this build.
+/// let status = unsafe { ts_time_delta_t(&raw const ctx, 2_451_544.5, &raw mut delta) };
+/// assert_eq!(status, teistro_core::Status::Ok);
+/// assert!((delta.seconds - 63.83).abs() < 0.02);
+/// assert_eq!(delta.source, TsDeltaTSource::Table as u8);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct TsDeltaT {
@@ -392,6 +559,17 @@ c_struct!(
 
 impl TsCivilDateTime {
     /// The boundary form of a civil date-time.
+    ///
+    /// ```
+    /// use teistro_calendar::CalendarDate;
+    /// use teistro_core::catalogue::Calendar;
+    /// use teistro_ffi::time::TsCivilDateTime;
+    /// use teistro_time::{CivilDateTime, CivilTime};
+    ///
+    /// let civil = CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6), CivilTime::new(23, 59, 60)?);
+    /// assert_eq!(TsCivilDateTime::of(&civil).time.second, 60);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn of(civil: &CivilDateTime) -> TsCivilDateTime {
         TsCivilDateTime {
@@ -421,6 +599,21 @@ impl TsCivilDateTime {
 
     /// The civil date-time this struct names.
     ///
+    /// ```
+    /// use teistro_calendar::CalendarDate;
+    /// use teistro_core::catalogue::Calendar;
+    /// use teistro_ffi::time::TsCivilDateTime;
+    /// use teistro_time::{CivilDateTime, CivilTime};
+    ///
+    /// let civil = CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6), CivilTime::new(6, 15, 0)?);
+    /// assert_eq!(TsCivilDateTime::of(&civil).to_civil()?, civil);
+    /// // An hour out of range is refused.
+    /// let mut bad = TsCivilDateTime::of(&civil);
+    /// bad.time.hour = 24;
+    /// assert!(bad.to_civil().is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A date or time field outside its range.
@@ -437,6 +630,19 @@ impl TsCivilDateTime {
 
 impl TsZoneSpec {
     /// The zone this struct names.
+    ///
+    /// ```
+    /// use teistro_ffi::time::{TsZoneKind, TsZoneSpec};
+    ///
+    /// let name = c"Asia/Kathmandu";
+    /// let iana = TsZoneSpec { kind: TsZoneKind::Iana as u8, zone: name.as_ptr(), ..TsZoneSpec::default() };
+    /// // SAFETY: `zone` is a NUL-terminated string.
+    /// assert!(unsafe { iana.to_spec() }.is_ok());
+    /// // An IANA zone without its name is refused, naming the field.
+    /// let nameless = TsZoneSpec { zone: core::ptr::null(), ..iana };
+    /// // SAFETY: a null name is allowed, and refused.
+    /// assert_eq!(unsafe { nameless.to_spec() }.unwrap_err().field(), Some("zone.zone"));
+    /// ```
     ///
     /// # Safety
     ///
@@ -510,6 +716,39 @@ impl TsZoneResolution {
 /// names as the hint; a civil time inside a gap under the `error` policy
 /// is `INVALID_ARG` with the `DST_GAP` detail.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// # use teistro_ffi::time::TsZoneResolution;
+/// #
+/// # let mut resolution = TsZoneResolution {
+/// #     struct_size: u32::try_from(size_of::<TsZoneResolution>())?,
+/// #     offset_seconds: 0, dst_shift_seconds: 0, warnings: 0, instant_jd_utc: 0.0,
+/// #     tzdb_version: core::ptr::null(), abbreviation: core::ptr::null(),
+/// #     source: 0, era: 0, dst: 0, chosen: 0, time_known: 0, reserved: [0; 3],
+/// # };
+/// use teistro_calendar::CalendarDate;
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_ffi::time::{TsCivilDateTime, TsZoneSpec, ts_time_resolve};
+/// use teistro_time::{CivilDateTime, CivilTime};
+///
+/// // 06:15 on 6 September 2026 in Kathmandu.
+/// let zone = TsZoneSpec { struct_size: u32::try_from(size_of::<TsZoneSpec>())?, zone: c"Asia/Kathmandu".as_ptr(), ..TsZoneSpec::default() };
+/// let mut civil = TsCivilDateTime::of(&CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, 2026, 9, 6), CivilTime::new(6, 15, 0)?));
+/// civil.struct_size = u32::try_from(size_of::<TsCivilDateTime>())?;
+/// civil.date.struct_size = u32::try_from(size_of::<teistro_ffi::calendar::TsCalendarDate>())?;
+/// civil.time.struct_size = u32::try_from(size_of::<teistro_ffi::time::TsCivilTime>())?;
+/// // SAFETY: a live context and sized records.
+/// assert_eq!(unsafe { ts_time_resolve(&raw const ctx, &raw const civil, &raw const zone, &raw mut resolution) }, Status::Ok);
+/// assert_eq!(resolution.offset_seconds, 20_700);
+/// // 00:30 UTC: 06:15 less 5 h 45 min.
+/// let utc_day_start = 2_461_289.5;
+/// assert!((resolution.instant_jd_utc - (utc_day_start + 0.5 / 24.0)).abs() < 1e-6);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `civil` and `zone` valid for reads;
@@ -542,6 +781,37 @@ pub unsafe extern "C" fn ts_time_resolve(
 ///
 /// `api: calendar: enum=Calendar`
 /// `api: jd_utc: unit=jd`
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// # use teistro_ffi::time::{TsCivilDateTime, TsZoneResolution};
+/// # use teistro_calendar::CalendarDate;
+/// #
+/// # let mut resolution = TsZoneResolution {
+/// #     struct_size: u32::try_from(size_of::<TsZoneResolution>())?,
+/// #     offset_seconds: 0, dst_shift_seconds: 0, warnings: 0, instant_jd_utc: 0.0,
+/// #     tzdb_version: core::ptr::null(), abbreviation: core::ptr::null(),
+/// #     source: 0, era: 0, dst: 0, chosen: 0, time_known: 0, reserved: [0; 3],
+/// # };
+/// # let mut civil = TsCivilDateTime::of(&teistro_time::CivilDateTime::date_only(CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 1, 1, 1)));
+/// # civil.struct_size = u32::try_from(size_of::<TsCivilDateTime>())?;
+/// # civil.date.struct_size = u32::try_from(size_of::<teistro_ffi::calendar::TsCalendarDate>())?;
+/// # civil.time.struct_size = u32::try_from(size_of::<teistro_ffi::time::TsCivilTime>())?;
+/// use teistro_core::catalogue::{Calendar, Catalogued};
+/// use teistro_ffi::time::{TsZoneKind, TsZoneSpec, ts_time_civil};
+///
+/// // 00:30 UTC on 6 September 2026, read on Nepal's clock.
+/// let nepal = TsZoneSpec { struct_size: u32::try_from(size_of::<TsZoneSpec>())?, kind: TsZoneKind::Fixed as u8, offset_seconds: 20_700, ..TsZoneSpec::default() };
+/// let instant = 2_461_289.5 + 0.5 / 24.0;
+/// // SAFETY: a live context and sized records.
+/// let status = unsafe { ts_time_civil(&raw const ctx, instant, &raw const nepal, Calendar::Gregorian.id(), &raw mut civil, &raw mut resolution) };
+/// assert_eq!(status, Status::Ok);
+/// assert_eq!((civil.date.day, civil.time.hour, civil.time.minute), (6, 6, 15));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -670,6 +940,26 @@ fn convert(jd: f64, from: TsScale, to: TsScale, ctx: &TsContext) -> Result<(f64,
 /// `api: to: enum=TsScale`
 /// `api: jd: unit=jd`
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::time::{TsScale, TsTimeConversion, ts_time_convert};
+///
+/// let mut conversion = TsTimeConversion {
+///     struct_size: u32::try_from(size_of::<TsTimeConversion>())?,
+///     from: 0, to: 0, delta_t_source: 0, proleptic_utc: 0, has_uncertainty: 0, reserved: 0,
+///     jd: 0.0, delta_t_seconds: 0.0, uncertainty_seconds: 0.0, dut1_seconds: 0.0,
+///     delta_t_model: core::ptr::null(),
+/// };
+/// // TT back to UTC at J2000.0: the 64.184 s taken off again.
+/// // SAFETY: a live context and a sized record.
+/// assert_eq!(unsafe { ts_time_convert(&raw const ctx, 2_451_545.0, TsScale::Tt as u32, TsScale::Utc as u32, &raw mut conversion) }, Status::Ok);
+/// assert!((conversion.jd - (2_451_545.0 - 64.184 / 86_400.0)).abs() < 1e-9);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_conversion` valid for a read of
@@ -718,6 +1008,27 @@ pub unsafe extern "C" fn ts_time_convert(
 /// what produced it and its uncertainty where the source has one.
 ///
 /// `api: jd_ut1: unit=jd`
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::time::{TsDeltaT, ts_time_delta_t};
+///
+/// let mut delta = TsDeltaT {
+///     struct_size: u32::try_from(size_of::<TsDeltaT>())?,
+///     source: 0, has_uncertainty: 0, reserved: [0; 2],
+///     seconds: 0.0, uncertainty_seconds: 0.0, model: core::ptr::null(),
+/// };
+/// // SAFETY: a live context and a sized record.
+/// assert_eq!(unsafe { ts_time_delta_t(&raw const ctx, 2_451_544.5, &raw mut delta) }, Status::Ok);
+/// assert!((delta.seconds - 63.83).abs() < 0.02);
+/// // The model's key, lent until the next call.
+/// // SAFETY: a NUL-terminated string the context lent.
+/// assert_eq!(unsafe { core::ffi::CStr::from_ptr(delta.model) }.to_str()?, "TABLE_THEN_MODEL");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
