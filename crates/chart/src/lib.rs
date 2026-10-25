@@ -34,6 +34,7 @@ pub mod bhava;
 pub mod day;
 pub mod foundation;
 pub mod moment;
+pub mod sample;
 pub mod zodiac;
 
 pub use bhava::{Bhavas, Chalit, Placement, Reading};
