@@ -20,10 +20,11 @@
 use teistro_calendar::CalendarDate;
 use teistro_core::catalogue::Calendar;
 use teistro_core::error::{Detail, Error, Status};
+use teistro_core::quantity::{JulianDay, Longitude, Utc};
 use teistro_core::settings::{DstGap, DstOverlap, UnknownTime};
 use teistro_time::{
     Chosen, CivilDateTime, CivilTime, DstOutcome, EmbeddedTzdb, Policy, Resolved, UtcOffset,
-    Warning, ZoneSource, ZoneSpec, resolve,
+    Warning, ZoneSource, ZoneSpec, civil_of, resolve,
 };
 
 /// A hundredth of a second, in days.
@@ -246,9 +247,7 @@ fn a_leap_second_folds_onto_midnight_only_where_one_was_added() {
     assert!(local.zone.has(Warning::LeapSecondFolded));
 
     let refused = at(&civil(2017, 6, 30, (23, 59, 60)), &utc).unwrap_err();
-    assert_eq!(refused.status, Status::InvalidArg);
-    assert_eq!(refused.detail, Some(Detail::NonexistentDate));
-    assert_eq!(refused.field(), Some("time"));
+    assert_refused(&refused, Some(Detail::NonexistentDate), "time");
 }
 
 /// A fixed offset reads the clock as given, with no database behind it.
@@ -285,5 +284,46 @@ fn a_calendar_that_needs_an_ephemeris_is_refused_by_resolve() {
         refused.message.contains("resolve_with"),
         "{}",
         refused.message
+    );
+}
+
+/// A local mean clock is no whole number of minutes off UTC, so its
+/// 23:59:60 cannot be the second a leap adds at a UTC midnight.
+#[test]
+fn a_leap_second_on_a_clock_off_the_minute_is_refused() {
+    let kathmandu_mean = ZoneSpec::LocalMean {
+        longitude: Longitude::literal(85.324),
+    };
+    let refused = resolve(
+        &civil(2016, 12, 31, (23, 59, 60)),
+        &kathmandu_mean,
+        &Policy::default(),
+        EmbeddedTzdb::shared(),
+    )
+    .unwrap_err();
+    assert_refused(&refused, Some(Detail::NonexistentDate), "time");
+}
+
+/// Reading an instant back past the leap table's word warns.
+#[test]
+fn an_instant_read_back_past_the_leap_table_warns() {
+    let utc = ZoneSpec::Fixed {
+        offset: UtcOffset::UTC,
+    };
+    let tzdb = EmbeddedTzdb::shared();
+    // 1 January 2200, 00:00 UTC.
+    let far = JulianDay::<Utc>::try_new(2_524_593.5).unwrap();
+    assert!(
+        civil_of(far, &utc, tzdb)
+            .unwrap()
+            .1
+            .has(Warning::LeapTableExpired)
+    );
+    let j2000 = JulianDay::<Utc>::try_new(2_451_545.0).unwrap();
+    assert!(
+        !civil_of(j2000, &utc, tzdb)
+            .unwrap()
+            .1
+            .has(Warning::LeapTableExpired)
     );
 }

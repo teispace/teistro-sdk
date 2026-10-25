@@ -399,9 +399,11 @@ mod tests {
         assert!((same.get() - utc.get()).abs() < f64::EPSILON);
         assert!(basis.dut1_applied_seconds.abs() < f64::EPSILON);
         // A value the definition forbids is refused.
-        let error = ut1_from_utc_with(utc, &Bulletin(1.5)).unwrap_err();
-        assert_eq!(error.status, Status::Provider);
-        assert_eq!(error.field(), Some("dut1"));
+        for forbidden in [1.5, f64::NAN, f64::INFINITY] {
+            let error = ut1_from_utc_with(utc, &Bulletin(forbidden)).unwrap_err();
+            assert_eq!(error.status, Status::Provider, "{forbidden}");
+            assert_eq!(error.field(), Some("dut1"));
+        }
     }
 
     #[test]
