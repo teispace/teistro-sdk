@@ -19,6 +19,16 @@ use teistro_core::catalogue::Graha;
 use teistro_dasha::{VIMSHOTTARI_LORDS, VIMSHOTTARI_YEARS};
 
 /// The span the dashas give from birth.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rules::longevity::dasayus;
+///
+/// // Born as the Moon's dasha begins: the whole cycle.
+/// let span = dasayus(Graha::Moon, 1.0).ok_or("the Moon lords a dasha")?;
+/// assert_eq!((span.first_lord, span.balance, span.years), (Graha::Moon, 10.0, 120.0));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Dasayus {

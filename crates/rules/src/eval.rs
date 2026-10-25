@@ -25,6 +25,56 @@ static NO_TABLES: Tables = Tables::EMPTY;
 
 /// The bodies a rule consulted, in the order they were first consulted, each
 /// once. A fixed array: evaluating a rule allocates nothing for it.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+/// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+/// # let rule: Rule = serde_json::from_str(r#"{
+/// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+/// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+/// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+/// #     "outcomes": [{"type": "effect", "text": "renown"}]
+/// # }"#)?;
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let result = evaluator.evaluate(&rule);
+///
+/// use teistro_rules::Participants;
+///
+/// let condition: teistro_rules::Condition = serde_json::from_str(r#"{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}"#)?;
+/// let mut into = Participants::default();
+/// assert!(evaluator.holds(&condition, &mut into));
+/// // Each body consulted once, in the order consulted.
+/// assert_eq!(into.iter().collect::<Vec<_>>(), [Body::Graha(Graha::Jupiter), Body::Graha(Graha::Moon)]);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(into = "Vec<Body>")]
@@ -63,17 +113,111 @@ impl Participants {
     }
 
     /// The bodies, in the order they were first consulted.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+    /// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+    /// # let rule: Rule = serde_json::from_str(r#"{
+    /// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+    /// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+    /// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+    /// #     "outcomes": [{"type": "effect", "text": "renown"}]
+    /// # }"#)?;
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let result = evaluator.evaluate(&rule);
+    ///
+    /// assert!(result.participants.iter().any(|body| body == Body::Graha(Graha::Moon)));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     pub fn iter(&self) -> impl Iterator<Item = Body> + '_ {
         self.bodies.iter().take(self.len).flatten().copied()
     }
 
     /// How many.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+    /// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+    /// # let rule: Rule = serde_json::from_str(r#"{
+    /// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+    /// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+    /// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+    /// #     "outcomes": [{"type": "effect", "text": "renown"}]
+    /// # }"#)?;
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let result = evaluator.evaluate(&rule);
+    ///
+    /// assert_eq!(result.participants.len(), 2);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn len(&self) -> usize {
         self.len
     }
 
     /// Whether there are none.
+    ///
+    /// ```
+    /// use teistro_rules::Participants;
+    ///
+    /// assert!(Participants::default().is_empty());
+    /// ```
     #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.len == 0
@@ -106,6 +250,57 @@ impl From<Participants> for Vec<Body> {
 }
 
 /// What a rule answers for a chart.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+/// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+/// # let rule: Rule = serde_json::from_str(r#"{
+/// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+/// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+/// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+/// #     "outcomes": [{"type": "effect", "text": "renown"}]
+/// # }"#)?;
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let result = evaluator.evaluate(&rule);
+///
+/// use teistro_rules::{Found, NetStatus};
+///
+/// assert!(result.present);
+/// // The Moon in the second, Jupiter in the fifth, counted from Aries rising.
+/// let houses: Vec<u8> = result.houses.iter().map(|house| house.get()).collect();
+/// assert_eq!(houses, [2, 5]);
+/// assert_eq!(result.found_from, [Found::Conditions]);
+/// assert_eq!(result.status, Some(NetStatus::Active));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RuleResult {
@@ -131,6 +326,49 @@ pub struct RuleResult {
 }
 
 /// A place a rule was found from.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rules::{Evaluator, Found, Readings, Rule};
+///
+/// // Mars in the seventh from the Moon in Libra, not from the lagna: the second group.
+/// place(&mut chart, Body::Graha(Graha::Moon), Rashi::Libra);
+/// let rule: Rule = serde_json::from_str(r#"{
+///     "key": "EXAMPLE", "category": "example", "source": {"text": "an example"},
+///     "referenceConditions": [
+///         {"reference": "lagna", "label": "from the lagna", "conditions": [{"type": "planet-in-house", "planet": "MARS", "houses": [7]}]},
+///         {"reference": "moon", "label": "from the Moon", "conditions": [{"type": "planet-in-house-from", "planet": "MARS", "reference": "MOON", "houses": [7]}]}
+///     ]
+/// }"#)?;
+/// let result = Evaluator::new(&chart, Readings::TEXTS).evaluate(&rule);
+/// assert_eq!(result.found_from, [Found::Group(1)]);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", content = "group", rename_all = "kebab-case")]
@@ -143,24 +381,204 @@ pub enum Found {
 
 impl RuleResult {
     /// Whether a cancellation held.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+    /// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+    /// # let rule: Rule = serde_json::from_str(r#"{
+    /// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+    /// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+    /// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+    /// #     "outcomes": [{"type": "effect", "text": "renown"}]
+    /// # }"#)?;
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let result = evaluator.evaluate(&rule);
+    ///
+    /// assert!(!result.is_cancelled());
+    /// // Jupiter burnt by the Sun: the cancellation holds.
+    /// chart.placements[Body::Graha(Graha::Jupiter).index()].combust = true;
+    /// assert!(Evaluator::new(&chart, Readings::TEXTS).evaluate(&rule).is_cancelled());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn is_cancelled(&self) -> bool {
         !self.cancellations.is_empty()
     }
 
     /// The span of life the rule's verse gives, in days, when it gives one.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+    /// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+    /// # let rule: Rule = serde_json::from_str(r#"{
+    /// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+    /// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+    /// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+    /// #     "outcomes": [{"type": "effect", "text": "renown"}]
+    /// # }"#)?;
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let result = evaluator.evaluate(&rule);
+    ///
+    /// // Its verse says what follows in words, not as a span.
+    /// assert_eq!(result.life_span(), None);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn life_span(&self) -> Option<f64> {
         self.outcomes.iter().find_map(Outcome::days)
     }
 
     /// What the rule's verse says follows, in words, when it says it in words.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+    /// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+    /// # let rule: Rule = serde_json::from_str(r#"{
+    /// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+    /// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+    /// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+    /// #     "outcomes": [{"type": "effect", "text": "renown"}]
+    /// # }"#)?;
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let result = evaluator.evaluate(&rule);
+    ///
+    /// assert_eq!(result.effect(), Some("renown"));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn effect(&self) -> Option<&str> {
         self.outcomes.iter().find_map(Outcome::text)
     }
 
     /// The class of life the verse gives, when present and it gives one.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+    /// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+    /// # let rule: Rule = serde_json::from_str(r#"{
+    /// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+    /// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+    /// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+    /// #     "outcomes": [{"type": "effect", "text": "renown"}]
+    /// # }"#)?;
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let result = evaluator.evaluate(&rule);
+    ///
+    /// assert_eq!(result.life_class(), None);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn life_class(&self) -> Option<crate::rule::LifeClass> {
         self.outcomes.iter().find_map(Outcome::class)
@@ -168,6 +586,52 @@ impl RuleResult {
 }
 
 /// A chart read under a choice at every open place, ready to evaluate rules.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+/// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+/// # let rule: Rule = serde_json::from_str(r#"{
+/// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+/// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+/// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+/// #     "outcomes": [{"type": "effect", "text": "renown"}]
+/// # }"#)?;
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let result = evaluator.evaluate(&rule);
+///
+/// // One evaluator answers any number of rules over its chart.
+/// assert!(result.present);
+/// assert_eq!(evaluator.chart().lagna(), Rashi::Aries);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Evaluator<'a> {
     chart: &'a RuleChart,
@@ -200,6 +664,39 @@ const fn graha_body(graha: Graha) -> Body {
 
 impl<'a> Evaluator<'a> {
     /// A chart under readings.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// assert_eq!(evaluator.house_sign(House::try_new(7)?), Rashi::Libra);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn new(chart: &'a RuleChart, readings: Readings) -> Evaluator<'a> {
         let mut benefic = [false; 10];
@@ -280,6 +777,42 @@ impl<'a> Evaluator<'a> {
     /// The same evaluator, looking tables up in `tables`; without, a table
     /// predicate never holds. Check rules against the set first with
     /// [`Tables::check`].
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// use teistro_rules::Tables;
+    ///
+    /// // Without tables a table predicate never holds; these are none.
+    /// let none = Tables::EMPTY;
+    /// let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_tables(&none);
+    /// assert_eq!(evaluator.chart().lagna(), Rashi::Aries);
+    /// ```
     #[must_use]
     pub const fn with_tables(self, tables: &'a Tables) -> Evaluator<'a> {
         Evaluator { tables, ..self }
@@ -289,6 +822,46 @@ impl<'a> Evaluator<'a> {
     /// the natal chart; without one, a `transit-in-house` condition never
     /// holds. Evaluate a rule that [reads transits](Rule::reads_transits)
     /// with the sky of each instant it is asked at.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::{Condition, Participants, TransitSky};
+    ///
+    /// // Saturn transiting Pisces, the twelfth from the natal Moon in Aries.
+    /// let sade_sati: Condition = serde_json::from_str(r#"{"type": "transit-in-house", "planet": "SATURN", "houses": [12, 1, 2], "from": "MOON"}"#)?;
+    /// let sky = TransitSky::new([(Graha::Saturn, Rashi::Pisces)]);
+    /// let natal = Evaluator::new(&chart, Readings::TEXTS);
+    /// assert!(!natal.holds(&sade_sati, &mut Participants::default()));
+    /// assert!(natal.with_transits(&sky).holds(&sade_sati, &mut Participants::default()));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_transits(self, sky: &'a TransitSky) -> Evaluator<'a> {
         Evaluator {
@@ -299,6 +872,44 @@ impl<'a> Evaluator<'a> {
 
     /// The same evaluator, able to read `in-varga` conditions in these
     /// divisional charts; without the one a condition names, it never holds.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_rules::{Condition, Participants};
+    ///
+    /// let vargottama: Condition = serde_json::from_str(r#"{"type": "in-varga", "varga": "D9", "condition": {"type": "lagna-in-sign", "signs": ["ARIES"]}}"#)?;
+    /// let navamsha = [chart.varga_signs(Varga::D9, |_| Rashi::Aries)];
+    /// let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_vargas(&navamsha);
+    /// assert!(evaluator.holds(&vargottama, &mut Participants::default()));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_vargas(self, vargas: &'a [VargaSigns]) -> Evaluator<'a> {
         Evaluator { vargas, ..self }
@@ -306,6 +917,42 @@ impl<'a> Evaluator<'a> {
 
     /// The same evaluator, able to resolve these points; a point it was not
     /// given resolves to nothing, and the condition reading it never holds.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// use teistro_core::catalogue::Point;
+    /// use teistro_rules::PointAt;
+    ///
+    /// let points = [PointAt { point: Point::Gulika, longitude: 200.0, sign: Rashi::Libra }];
+    /// let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_points(&points);
+    /// assert_eq!(evaluator.points().len(), 1);
+    /// ```
     #[must_use]
     pub const fn with_points(self, points: &'a [PointAt]) -> Evaluator<'a> {
         Evaluator { points, ..self }
@@ -315,6 +962,45 @@ impl<'a> Evaluator<'a> {
     /// key the set does not hold never holds; a rule that reaches itself is
     /// refused when the set is checked
     /// ([`Rule::references`](crate::Rule::references)).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// use teistro_rules::Rule;
+    ///
+    /// let named = |json: &str| serde_json::from_str::<Rule>(json);
+    /// let rules = [named(r#"{"key": "BY_DAY", "category": "example", "source": {"text": "an example"}, "conditions": [{"type": "planet-in-kendra", "planet": "JUPITER"}]}"#)?];
+    /// let asks = named(r#"{"key": "ASKS", "category": "example", "source": {"text": "an example"}, "conditions": [{"type": "rule", "key": "BY_DAY"}]}"#)?;
+    /// // A key the evaluator was not given never holds.
+    /// assert!(!Evaluator::new(&chart, Readings::TEXTS).evaluate(&asks).present);
+    /// assert!(Evaluator::new(&chart, Readings::TEXTS).with_rules(&rules).evaluate(&asks).present);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_rules(self, rules: &'a [Rule]) -> Evaluator<'a> {
         Evaluator { rules, ..self }
@@ -325,6 +1011,45 @@ impl<'a> Evaluator<'a> {
     /// makes the nodes co-lords counts a two-lorded sign to (BPHS ch. 29
     /// v. 7; crux C135). The façade names them under the settings'
     /// `jaimini.node_co_lordship`; under its default they are the catalogue's.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Scorpio's and Aquarius's padas counted to the nodes, the rest to their own lords.
+    /// let mut lords = Rashi::ALL.map(|sign| sign.attributes().lord);
+    /// lords[Rashi::Scorpio as usize] = Graha::Ketu;
+    /// lords[Rashi::Aquarius as usize] = Graha::Rahu;
+    /// let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_pada_lords(&lords);
+    /// assert_eq!(evaluator.house_sign(House::try_new(8)?), Rashi::Scorpio);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn with_pada_lords(self, lords: &'a [Graha; 12]) -> Evaluator<'a> {
         Evaluator {
@@ -591,18 +1316,116 @@ impl<'a> Evaluator<'a> {
     }
 
     /// The chart it reads.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// assert_eq!(evaluator.chart(), &chart);
+    /// ```
     #[must_use]
     pub const fn chart(&self) -> &RuleChart {
         self.chart
     }
 
     /// The points it was given.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// assert!(Evaluator::new(&chart, Readings::TEXTS).points().is_empty());
+    /// ```
     #[must_use]
     pub const fn points(&self) -> &[PointAt] {
         self.points
     }
 
     /// The sign a house falls in, whole signs from the lagna.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// place(&mut chart, Body::Lagna, Rashi::Capricorn);
+    /// let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// // Whole signs from the lagna, whatever house the chart records.
+    /// assert_eq!(evaluator.house_sign(House::try_new(4)?), Rashi::Aries);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn house_sign(&self, house: House) -> Rashi {
         step(self.chart.lagna(), house.get() - 1)
@@ -610,6 +1433,43 @@ impl<'a> Evaluator<'a> {
 
     /// What the chart says of strength, or nothing at all: a chart that
     /// carries none answers false to every question of strength.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// use teistro_rules::{Evaluator, Readings};
+    ///
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Strengths;
+    ///
+    /// // A chart that carries none answers as one that is silent.
+    /// let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// assert_eq!(evaluator.strengths(), Strengths::NONE);
+    /// assert!(!evaluator.strengths().is_strong(Body::Graha(Graha::Sun)));
+    /// ```
     #[must_use]
     pub fn strengths(&self) -> Strengths {
         self.chart.strengths.unwrap_or(Strengths::NONE)
@@ -675,6 +1535,56 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Whether a condition holds, adding the bodies it consulted.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+    /// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+    /// # let rule: Rule = serde_json::from_str(r#"{
+    /// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+    /// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+    /// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+    /// #     "outcomes": [{"type": "effect", "text": "renown"}]
+    /// # }"#)?;
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let result = evaluator.evaluate(&rule);
+    ///
+    /// use teistro_rules::{Condition, Participants};
+    ///
+    /// // Jupiter in the fourth from the Moon, not the second.
+    /// let second: Condition = serde_json::from_str(r#"{"type": "planet-in-house-from", "planet": "JUPITER", "reference": "MOON", "houses": [2]}"#)?;
+    /// let fourth: Condition = serde_json::from_str(r#"{"type": "planet-in-house-from", "planet": "JUPITER", "reference": "MOON", "houses": [4]}"#)?;
+    /// assert!(!evaluator.holds(&second, &mut Participants::default()));
+    /// assert!(evaluator.holds(&fourth, &mut Participants::default()));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     pub fn holds(&self, condition: &Condition, into: &mut Participants) -> bool {
         self.check(condition, into, &mut NoTrace)
     }
@@ -1394,6 +2304,53 @@ impl<'a> Evaluator<'a> {
     ///
     /// A rule the language cannot evaluate answers not present; ask
     /// [`Rule::is_evaluable`] to tell the two apart.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+    /// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+    /// # let rule: Rule = serde_json::from_str(r#"{
+    /// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+    /// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+    /// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+    /// #     "outcomes": [{"type": "effect", "text": "renown"}]
+    /// # }"#)?;
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let result = evaluator.evaluate(&rule);
+    ///
+    /// assert!(result.present);
+    /// // Jupiter carried to Gemini, the second from the Moon: no longer a kendra.
+    /// place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Gemini);
+    /// assert!(!Evaluator::new(&chart, Readings::TEXTS).evaluate(&rule).present);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn evaluate(&self, rule: &Rule) -> RuleResult {
         self.run(rule, &mut NoTrace, &mut Vec::new(), &mut NoTrace)
@@ -1406,6 +2363,54 @@ impl<'a> Evaluator<'a> {
     ///
     /// It allocates the trace; [`Evaluator::evaluate`] answers the same without
     /// one.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+    /// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+    /// # let rule: Rule = serde_json::from_str(r#"{
+    /// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+    /// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}],
+    /// #     "cancellations": [{"type": "planet-combust", "planet": "JUPITER"}],
+    /// #     "outcomes": [{"type": "effect", "text": "renown"}]
+    /// # }"#)?;
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let result = evaluator.evaluate(&rule);
+    ///
+    /// // The same answer, with each step that reached it.
+    /// let explanation = evaluator.explain(&rule);
+    /// assert_eq!(explanation.result, result);
+    /// assert_eq!(explanation.conditions.len(), 1);
+    /// assert_eq!(explanation.cancellations.len(), 1);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn explain<'c>(&self, rule: &'c Rule) -> Explanation<'c> {
         let (mut conditions, mut groups, mut cancellations) =

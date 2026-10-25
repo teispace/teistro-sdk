@@ -368,6 +368,14 @@ fn link(rules: &mut [Rule], other: &[Rule]) {
 }
 
 /// The seventeen doshas the recording engine computes in code, as rules.
+///
+/// ```
+/// use teistro_rules::shipped;
+///
+/// let doshas = shipped::computed_doshas();
+/// assert_eq!(doshas.len(), 17);
+/// assert!(doshas.iter().any(|rule| rule.key == "KALSARPA"));
+/// ```
 #[must_use]
 pub fn computed_doshas() -> &'static [Rule] {
     &DOSHAS
@@ -380,6 +388,15 @@ pub fn computed_doshas() -> &'static [Rule] {
 /// read from the text rather than from any implementation. Ch. 85's other
 /// inauspicious births, which say what follows in words, are in
 /// [`nabhasas`].
+///
+/// ```
+/// use teistro_rules::shipped;
+///
+/// // Three gandantas and the Abhukta Moola, each measured in ghatikas.
+/// let gandantas = shipped::gandantas();
+/// assert_eq!(gandantas.len(), 4);
+/// assert!(gandantas.iter().all(|rule| rule.is_evaluable()));
+/// ```
 #[must_use]
 pub fn gandantas() -> &'static [Rule] {
     &GANDANTAS
@@ -392,6 +409,15 @@ pub fn gandantas() -> &'static [Rule] {
 /// the evils they cancel. A verse that turns on a graha being strong or
 /// weak reads the chart's strength measure, so on a chart that carries none
 /// it never holds, and neither does a cancellation that asks for strength.
+///
+/// ```
+/// use teistro_rules::shipped;
+///
+/// let arishtas = shipped::arishtas();
+/// // Every evil and antidote cites its text.
+/// assert!(!arishtas.is_empty());
+/// assert!(arishtas.iter().all(|rule| !rule.source.text.is_empty()));
+/// ```
 #[must_use]
 pub fn arishtas() -> &'static [Rule] {
     &ARISHTAS
@@ -405,6 +431,13 @@ pub fn arishtas() -> &'static [Rule] {
 /// and Saravali's graha in each sign, alone and under each aspect, in each
 /// bhava, in pairs in the angles, and the part of a sign that rises. None of them grades anything, so each carries what its reading says in
 /// words and nothing else.
+///
+/// ```
+/// use teistro_rules::shipped;
+///
+/// // None grades anything: each says what its reading says, in words.
+/// assert!(shipped::readings().iter().all(|rule| rule.effect().is_some() && rule.severity.is_none()));
+/// ```
 #[must_use]
 pub fn readings() -> &'static [Rule] {
     &READINGS
@@ -421,6 +454,14 @@ pub fn readings() -> &'static [Rule] {
 /// inauspicious births with what chs. 86 to 94 say of each.
 /// Each carries what its verse says and nothing the SDK invented: a
 /// description, a span of life, or both.
+///
+/// ```
+/// use teistro_rules::shipped;
+///
+/// // Each carries what its verse says: a description, a span of life, or both.
+/// let nabhasas = shipped::nabhasas();
+/// assert!(nabhasas.iter().all(|rule| rule.effect().is_some() || rule.life_span().is_some() || rule.life_class().is_some()));
+/// ```
 #[must_use]
 pub fn nabhasas() -> &'static [Rule] {
     &NABHASAS
@@ -428,6 +469,13 @@ pub fn nabhasas() -> &'static [Rule] {
 
 /// The eight yogas it computes in code, the Neecha Bhanga family, as rules:
 /// the aggregate and its seven cancellations, each over any debilitated graha.
+///
+/// ```
+/// use teistro_rules::shipped;
+///
+/// // The Neecha Bhanga family: the aggregate and its seven cancellations.
+/// assert_eq!(shipped::computed_yogas().len(), 8);
+/// ```
 #[must_use]
 pub fn computed_yogas() -> &'static [Rule] {
     &YOGAS
@@ -436,6 +484,18 @@ pub fn computed_yogas() -> &'static [Rule] {
 /// Every rule the crate ships, pack by pack: the one list of them, so a
 /// consumer that reads them all (a timing, an audit) cannot miss one a
 /// later chapter adds.
+///
+/// ```
+/// use teistro_rules::{Tables, check_references, shipped};
+///
+/// // Every rule the crate ships names only rules and tables it ships.
+/// let every: Vec<_> = shipped::packs().into_iter().flatten().cloned().collect();
+/// check_references(&every)?;
+/// for rule in &every {
+///     Tables::classical().check(rule)?;
+/// }
+/// # Ok::<(), String>(())
+/// ```
 #[must_use]
 pub fn packs() -> [&'static [Rule]; 6] {
     [

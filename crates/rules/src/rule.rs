@@ -54,6 +54,22 @@ use crate::language::{Body, Condition, House, Source};
 use crate::timing::Timing;
 
 /// Where a rule applies.
+///
+/// ```
+/// # use teistro_rules::Rule;
+/// #
+/// # let rule = |body: &str| {
+/// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+/// # };
+///
+/// use teistro_rules::Scope;
+///
+/// // The engine's `applicableTo`; a rule that says nothing is natal.
+/// let milan = rule(r#""applicableTo": "milan", "conditions": [{"type": "birth-by-day"}]"#)?;
+/// assert_eq!(milan.scope, Scope::Milan);
+/// assert_eq!(rule(r#""conditions": [{"type": "birth-by-day"}]"#)?.scope, Scope::Natal);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -70,6 +86,24 @@ pub enum Scope {
 }
 
 /// A group of conditions found from one reference point.
+///
+/// ```
+/// # use teistro_rules::Rule;
+/// #
+/// # let rule = |body: &str| {
+/// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+/// # };
+///
+/// use teistro_rules::Body;
+///
+/// let manglik = rule(r#""referenceConditions": [
+///     {"reference": "lagna", "label": "from the lagna", "conditions": [{"type": "planet-in-house", "planet": "MARS", "houses": [1, 4, 7, 8, 12]}]},
+///     {"reference": "moon", "label": "from the Moon", "weight": 2, "conditions": [{"type": "planet-in-house-from", "planet": "MARS", "reference": "MOON", "houses": [1, 4, 7, 8, 12]}]}
+/// ]"#)?;
+/// assert_eq!(manglik.groups[0].reference, Body::Lagna);
+/// assert_eq!((manglik.groups[0].weight, manglik.groups[1].weight), (1, 2));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RuleGroup"))]
@@ -92,6 +126,17 @@ pub struct Group {
 
 /// A condition that cancels a present rule, with the label a result names it
 /// by when it has one.
+///
+/// ```
+/// use teistro_rules::{Cancellation, Condition};
+///
+/// let burnt: Condition = serde_json::from_str(r#"{"type": "planet-combust", "planet": "MARS"}"#)?;
+/// let cancellation = Cancellation { label: Some(String::from("Mars burnt")), ..Cancellation::from(burnt) };
+/// // The label is written beside the condition's own parts.
+/// let written = serde_json::to_value(&cancellation)?;
+/// assert_eq!((written["type"].as_str(), written["label"].as_str()), (Some("planet-combust"), Some("Mars burnt")));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Cancellation {
     /// Its label.
@@ -154,6 +199,17 @@ impl<'de> Deserialize<'de> for Cancellation {
 
 /// How grave a present rule is, out of the scale its values use (the engine's
 /// is 100).
+///
+/// ```
+/// use teistro_rules::Severity;
+///
+/// let fixed: Severity = serde_json::from_str(r#"{"type": "fixed", "value": 60}"#)?;
+/// assert_eq!(fixed, Severity::Fixed { value: 60 });
+/// // A house-weighted severity reads Mars unless it names another.
+/// let weighted: Severity = serde_json::from_str(r#"{"type": "house-weighted", "weights": {"7": 100}, "default": 50}"#)?;
+/// assert!(matches!(weighted, Severity::HouseWeighted { default: 50, .. }));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
@@ -241,6 +297,15 @@ fn is_mars(body: &Body) -> bool {
 /// trade and a temper, not a number. A consumer therefore reads a span or a
 /// class where a text gives one and the verse's own statement where it does
 /// not, and the SDK invents none of them.
+///
+/// ```
+/// use teistro_rules::{Outcome, Unit};
+///
+/// let span: Outcome = serde_json::from_str(r#"{"type": "life-span", "count": 32, "unit": "years"}"#)?;
+/// assert_eq!(span, Outcome::LifeSpan { count: 32.0, unit: Unit::Years });
+/// assert_eq!(span.days(), Some(32.0 * 365.25));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RuleOutcome"))]
@@ -272,6 +337,13 @@ pub enum Outcome {
 }
 
 /// The unit a span is counted in, as the verse counts it.
+///
+/// ```
+/// use teistro_rules::Unit;
+///
+/// assert_eq!(serde_json::to_string(&Unit::Months)?, r#""months""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
@@ -321,6 +393,12 @@ impl LifeClass {
     ///
     /// One list, not two: a test holds it against what serde writes, so a
     /// class renamed in one place is refused rather than half-renamed.
+    ///
+    /// ```
+    /// use teistro_rules::LifeClass;
+    ///
+    /// assert_eq!(LifeClass::Medium.key(), "medium");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -335,6 +413,14 @@ impl LifeClass {
     }
 
     /// Every class, from the shortest up.
+    ///
+    /// ```
+    /// use teistro_rules::LifeClass;
+    ///
+    /// // From the shortest up, which is also their order.
+    /// assert!(LifeClass::ALL.windows(2).all(|pair| pair[0] < pair[1]));
+    /// assert_eq!(LifeClass::ALL[0], LifeClass::Balarishta);
+    /// ```
     pub const ALL: [LifeClass; 7] = [
         LifeClass::Balarishta,
         LifeClass::Yogarishta,
@@ -346,6 +432,13 @@ impl LifeClass {
     ];
 
     /// The span the class is given, in years; none for the illimitable.
+    ///
+    /// ```
+    /// use teistro_rules::LifeClass;
+    ///
+    /// assert_eq!(LifeClass::Long.years(), Some(120));
+    /// assert_eq!(LifeClass::Short.years(), Some(32));
+    /// ```
     #[must_use]
     pub const fn years(self) -> Option<u16> {
         match self {
@@ -361,6 +454,13 @@ impl LifeClass {
 
     /// The class one step longer, as Jupiter raises it (BPHS ch. 43 vv. 48 to
     /// 50); the longest stays itself.
+    ///
+    /// ```
+    /// use teistro_rules::LifeClass;
+    ///
+    /// assert_eq!(LifeClass::Short.raised(), LifeClass::Medium);
+    /// assert_eq!(LifeClass::Unlimited.raised(), LifeClass::Unlimited);
+    /// ```
     #[must_use]
     pub fn raised(self) -> LifeClass {
         self.step(1)
@@ -368,6 +468,12 @@ impl LifeClass {
 
     /// The class one step shorter, as Saturn lowers it (vv. 47, 49 to 50); the
     /// shortest stays itself.
+    ///
+    /// ```
+    /// use teistro_rules::LifeClass;
+    ///
+    /// assert_eq!(LifeClass::Long.lowered(), LifeClass::Medium);
+    /// ```
     #[must_use]
     pub fn lowered(self) -> LifeClass {
         self.step(-1)
@@ -388,6 +494,14 @@ impl LifeClass {
 impl Outcome {
     /// The span in days when the outcome is a span, a month being thirty and a
     /// year 365.25; none when the verse states its effect in words or a class.
+    ///
+    /// ```
+    /// use teistro_rules::{Outcome, Unit};
+    ///
+    /// // A month is thirty days.
+    /// assert_eq!(Outcome::LifeSpan { count: 6.0, unit: Unit::Months }.days(), Some(180.0));
+    /// assert_eq!(Outcome::Effect { text: String::from("a warrior") }.days(), None);
+    /// ```
     #[must_use]
     pub fn days(&self) -> Option<f64> {
         match self {
@@ -404,6 +518,13 @@ impl Outcome {
     }
 
     /// What the verse says follows, when it says it in words.
+    ///
+    /// ```
+    /// use teistro_rules::Outcome;
+    ///
+    /// let effect = Outcome::Effect { text: String::from("a warrior") };
+    /// assert_eq!(effect.text(), Some("a warrior"));
+    /// ```
     #[must_use]
     pub fn text(&self) -> Option<&str> {
         match self {
@@ -413,6 +534,14 @@ impl Outcome {
     }
 
     /// The class of life, when the verse gives one.
+    ///
+    /// ```
+    /// use teistro_rules::{LifeClass, Outcome};
+    ///
+    /// let class: Outcome = serde_json::from_str(r#"{"type": "life-class", "class": "long"}"#)?;
+    /// assert_eq!(class.class(), Some(LifeClass::Long));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn class(&self) -> Option<LifeClass> {
         match self {
@@ -433,6 +562,49 @@ fn effect(outcomes: &[Outcome]) -> Option<&str> {
 }
 
 /// Whether a present rule stands, after its cancellations.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rules::{Evaluator, NetStatus, Readings, Rule};
+///
+/// // Saturn in the first, Mars combust: one of two cancellations holds.
+/// chart.placements[Body::Graha(Graha::Mars).index()].combust = true;
+/// let rule: Rule = serde_json::from_str(r#"{
+///     "key": "EXAMPLE", "category": "example", "source": {"text": "an example"},
+///     "conditions": [{"type": "planet-in-house", "planet": "SATURN", "houses": [1]}],
+///     "cancellations": [{"type": "planet-combust", "planet": "MARS"}, {"type": "planet-retrograde", "planet": "MARS"}],
+///     "fullCancellationThreshold": 2
+/// }"#)?;
+/// let result = Evaluator::new(&chart, Readings::RECORDING_ENGINE).evaluate(&rule);
+/// assert_eq!(result.cancellations, [0]);
+/// assert_eq!(result.status, Some(NetStatus::PartiallyCancelled));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -449,6 +621,12 @@ impl NetStatus {
     /// Its key, as a result writes it and as a message selects on it.
     ///
     /// One list, not two: a test holds it against what serde writes.
+    ///
+    /// ```
+    /// use teistro_rules::NetStatus;
+    ///
+    /// assert_eq!(NetStatus::FullyCancelled.key(), "fully-cancelled");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -460,6 +638,47 @@ impl NetStatus {
 }
 
 /// A rule.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rules::{Evaluator, Readings, Rule};
+///
+/// let rule: Rule = serde_json::from_str(r#"{
+///     "key": "GURU_IN_KENDRA", "category": "example", "source": {"text": "an example"},
+///     "conditions": [{"type": "planet-in-kendra", "planet": "JUPITER"}]
+/// }"#)?;
+/// let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
+/// assert!(evaluator.evaluate(&rule).present);
+/// // Jupiter carried to Taurus, the second house: not a kendra.
+/// place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Taurus);
+/// assert!(!Evaluator::new(&chart, Readings::RECORDING_ENGINE).evaluate(&rule).present);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RuleDefinition"))]
@@ -503,6 +722,16 @@ const POINT_KEY: &[u8] = b"\"point\":";
 impl Rule {
     /// A rule with nothing in it yet, natal, to be filled in:
     /// `Rule { conditions, ..Rule::new(key, category, source) }`.
+    ///
+    /// ```
+    /// use teistro_rules::{Condition, Rule, Scope, Source};
+    ///
+    /// let by_day: Condition = serde_json::from_str(r#"{"type": "birth-by-day"}"#)?;
+    /// let rule = Rule { conditions: vec![by_day], ..Rule::new("BY_DAY", "example", Source::text("an example")) };
+    /// assert_eq!(rule.scope, Scope::Natal);
+    /// assert!(rule.is_evaluable());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn new(key: impl Into<String>, category: impl Into<String>, source: Source) -> Rule {
         Rule {
@@ -524,6 +753,19 @@ impl Rule {
 
     /// Whether the language can evaluate it: it has conditions or groups, and
     /// its author does not compute it in code.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// // Nothing to evaluate, or computed in its author's code.
+    /// assert!(!teistro_rules::Rule::new("EMPTY", "example", teistro_rules::Source::text("an example")).is_evaluable());
+    /// assert!(!rule(r#""customResultKey": "KALSARPA", "conditions": [{"type": "birth-by-day"}]"#)?.is_evaluable());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn is_evaluable(&self) -> bool {
         self.computed.is_none() && !(self.conditions.is_empty() && self.groups.is_empty())
@@ -531,6 +773,20 @@ impl Rule {
 
     /// The conditions it holds outright: its own, its groups' and its
     /// cancellations', each the root of its tree.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// let rule = rule(r#""conditions": [{"type": "and", "conditions": [{"type": "birth-by-day"}, {"type": "planet-in-kendra", "planet": "MARS"}]}],
+    ///     "cancellations": [{"type": "planet-combust", "planet": "MARS"}]"#)?;
+    /// // The `and` and the cancellation; not what is inside the `and`.
+    /// assert_eq!(rule.top_conditions().count(), 2);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     pub fn top_conditions(&self) -> impl Iterator<Item = &Condition> {
         self.conditions
             .iter()
@@ -539,11 +795,35 @@ impl Rule {
     }
 
     /// Every condition it holds, and every one inside them.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// let rule = rule(r#""conditions": [{"type": "and", "conditions": [{"type": "birth-by-day"}, {"type": "planet-in-kendra", "planet": "MARS"}]}]"#)?;
+    /// assert_eq!(rule.every_condition().count(), 3);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     pub fn every_condition(&self) -> impl Iterator<Item = &Condition> {
         self.top_conditions().flat_map(Condition::walk)
     }
 
     /// Every rule it names by key, in the order it names them.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// let rule = rule(r#""conditions": [{"type": "rule", "key": "GAJA_KESARI"}, {"type": "not", "condition": {"type": "rule", "key": "KEMADRUMA"}}]"#)?;
+    /// assert_eq!(rule.references().collect::<Vec<_>>(), ["GAJA_KESARI", "KEMADRUMA"]);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     pub fn references(&self) -> impl Iterator<Item = &str> {
         self.every_condition()
             .filter_map(|condition| match condition {
@@ -554,6 +834,18 @@ impl Rule {
 
     /// The span of life its verse gives, in days, when one of its outcomes is
     /// a span.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// let rule = rule(r#""conditions": [{"type": "birth-by-day"}], "outcomes": [{"type": "life-span", "count": 36, "unit": "years"}]"#)?;
+    /// assert_eq!(rule.life_span(), Some(36.0 * 365.25));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn life_span(&self) -> Option<f64> {
         life_span(&self.outcomes)
@@ -561,12 +853,39 @@ impl Rule {
 
     /// What its verse says follows, in words, when one of its outcomes says it
     /// in words.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// let rule = rule(r#""conditions": [{"type": "birth-by-day"}], "outcomes": [{"type": "effect", "text": "a warrior"}]"#)?;
+    /// assert_eq!(rule.effect(), Some("a warrior"));
+    /// assert_eq!(rule.life_span(), None);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn effect(&self) -> Option<&str> {
         effect(&self.outcomes)
     }
 
     /// The class of life its verse gives, when one of its outcomes is one.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// use teistro_rules::LifeClass;
+    ///
+    /// let rule = rule(r#""conditions": [{"type": "birth-by-day"}], "outcomes": [{"type": "life-class", "class": "short"}]"#)?;
+    /// assert_eq!(rule.life_class(), Some(LifeClass::Short));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn life_class(&self) -> Option<LifeClass> {
         self.outcomes.iter().find_map(Outcome::class)
@@ -576,6 +895,18 @@ impl Rule {
     /// knows to give the chart [`Strengths`](crate::Strengths). An
     /// intervention counts: it reads a strength when the numbers of grahas do
     /// not settle it (BPHS ch. 31 v. 4).
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// assert!(rule(r#""conditions": [{"type": "planet-strong", "planet": "JUPITER"}]"#)?.reads_strength());
+    /// assert!(!rule(r#""conditions": [{"type": "planet-in-kendra", "planet": "JUPITER"}]"#)?.reads_strength());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn reads_strength(&self) -> bool {
         self.every_condition().any(Condition::reads_strength)
@@ -584,6 +915,18 @@ impl Rule {
     /// Whether any of its conditions names a point — an upagraha, a special
     /// lagna, a sphuta — so a caller knows to give the evaluator the chart's
     /// points.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// assert!(rule(r#""conditions": [{"type": "same-sign", "of": {"point": "GULIKA"}, "as": 1}]"#)?.reads_points());
+    /// assert!(!rule(r#""conditions": [{"type": "birth-by-day"}]"#)?.reads_points());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn reads_points(&self) -> bool {
         // A reference is what its serialisation holds, and a point is written
@@ -601,6 +944,25 @@ impl Rule {
 
     /// The divisional charts its conditions read, each once, in the order they
     /// are first named, so a caller knows which to compute.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// use teistro_core::catalogue::Varga;
+    ///
+    /// // The navamsha named twice is asked for once.
+    /// let rule = rule(r#""conditions": [
+    ///     {"type": "in-varga", "varga": "D9", "condition": {"type": "planet-in-kendra", "planet": "MARS"}},
+    ///     {"type": "in-varga", "varga": "D10", "condition": {"type": "planet-in-kendra", "planet": "SUN"}},
+    ///     {"type": "in-varga", "varga": "D9", "condition": {"type": "planet-in-kendra", "planet": "VENUS"}}
+    /// ]"#)?;
+    /// assert_eq!(rule.vargas().collect::<Vec<_>>(), [Varga::D9, Varga::D10]);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     pub fn vargas(&self) -> impl Iterator<Item = Varga> + '_ {
         // A catalogue id is a varga's bit; the catalogue holds 21.
         let mut seen = 0_u64;
@@ -618,6 +980,17 @@ impl Rule {
 
     /// Whether any of its conditions reads the chart's panchanga, so a caller
     /// knows to give the chart one.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// assert!(rule(r#""conditions": [{"type": "panchanga-vara", "varas": ["SHANIVARA"]}]"#)?.reads_panchanga());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn reads_panchanga(&self) -> bool {
         self.every_condition().any(Condition::reads_panchanga)
@@ -626,6 +999,18 @@ impl Rule {
     /// Whether any of its conditions reads the sky in transit, so a caller
     /// knows to evaluate it at an instant with that instant's sky
     /// ([`Evaluator::with_transits`](crate::Evaluator::with_transits)).
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// let sade_sati = rule(r#""conditions": [{"type": "transit-in-house", "planet": "SATURN", "houses": [12, 1, 2], "from": "MOON"}]"#)?;
+    /// assert!(sade_sati.reads_transits());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn reads_transits(&self) -> bool {
         self.every_condition().any(Condition::reads_transits)
@@ -633,6 +1018,19 @@ impl Rule {
 
     /// Whether any of its conditions reads what the instant falls in, so a
     /// caller knows to give the chart its moment.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// assert!(rule(r#""conditions": [{"type": "birth-during-eclipse"}]"#)?.reads_moment());
+    /// // The tithi's part is the panchanga's; the lagna's would be the moment's.
+    /// assert!(!rule(r#""conditions": [{"type": "limb-part", "limb": "tithi", "of": 6, "parts": [2]}]"#)?.reads_moment());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn reads_moment(&self) -> bool {
         self.every_condition().any(Condition::reads_moment)
@@ -640,6 +1038,23 @@ impl Rule {
 
     /// The status a present rule stands at when `cancelled` of its
     /// cancellations held and it was found from `found` places.
+    ///
+    /// ```
+    /// # use teistro_rules::Rule;
+    /// #
+    /// # let rule = |body: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "EXAMPLE", "category": "example", "source": {{"text": "an example"}}, {body}}}"#))
+    /// # };
+    ///
+    /// use teistro_rules::NetStatus;
+    ///
+    /// // Unset, the threshold is as many places as it was found from.
+    /// let rule = rule(r#""conditions": [{"type": "birth-by-day"}]"#)?;
+    /// assert_eq!(rule.net_status(0, 3), NetStatus::Active);
+    /// assert_eq!(rule.net_status(2, 3), NetStatus::PartiallyCancelled);
+    /// assert_eq!(rule.net_status(3, 3), NetStatus::FullyCancelled);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn net_status(&self, cancelled: usize, found: usize) -> NetStatus {
         let threshold = self
@@ -881,6 +1296,19 @@ fn walk_references<'r>(
 /// A rule written as its key, where the rule itself is the set's and a result
 /// need only name it.
 ///
+/// ```
+/// use teistro_rules::{Rule, Source, key_of};
+///
+/// #[derive(serde::Serialize)]
+/// struct Named<'a> {
+///     #[serde(serialize_with = "key_of")]
+///     rule: &'a Rule,
+/// }
+/// let rule = Rule::new("GAJA_KESARI", "yoga", Source::text("an example"));
+/// assert_eq!(serde_json::to_string(&Named { rule: &rule })?, r#"{"rule":"GAJA_KESARI"}"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// The serialiser's.
@@ -894,6 +1322,19 @@ pub fn key_of<S: serde::Serializer>(rule: &&Rule, serializer: S) -> Result<S::Ok
 
 /// Whether every rule a set names is in it and no rule reaches itself, so an
 /// evaluator given the set cannot loop.
+///
+/// ```
+/// use teistro_rules::{Rule, check_references};
+///
+/// let named = |key: &str, names: &str| {
+///     serde_json::from_str::<Rule>(&format!(r#"{{"key": "{key}", "category": "example", "source": {{"text": "an example"}}, "conditions": [{{"type": "rule", "key": "{names}"}}]}}"#))
+/// };
+/// // A names B and B names A: a loop.
+/// assert!(check_references(&[named("A", "B")?, named("B", "A")?]).is_err());
+/// // A names a key the set lacks.
+/// assert!(check_references(&[named("A", "MISSING")?]).unwrap_err().contains("MISSING"));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 ///
 /// # Errors
 ///

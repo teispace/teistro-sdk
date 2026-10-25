@@ -304,6 +304,14 @@ pub const fn opening(condition: &Condition) -> Opening<'_> {
 }
 
 /// What [`opening`] writes.
+///
+/// ```
+/// use teistro_rules::{Condition, prose};
+///
+/// let either: Condition = serde_json::from_str(r#"{"type": "or", "conditions": [{"type": "birth-by-day"}]}"#)?;
+/// assert_eq!(prose::opening(&either).to_string(), "one of these");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Opening<'c>(&'c Condition);
 

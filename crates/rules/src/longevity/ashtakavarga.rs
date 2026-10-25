@@ -53,6 +53,14 @@ const GRAHAS: [Graha; 7] = [
 
 /// Each sign's measure as *Jataka Parijata* ch. 10 v. 44 prints it, Aries
 /// to Pisces: Virgo 5.
+///
+/// ```
+/// use teistro_rules::longevity::{PARIJATA_RASHI_MEASURES, SignMeasures};
+///
+/// // Virgo 5, where BPHS's translator reads 6.
+/// assert_eq!(PARIJATA_RASHI_MEASURES[5], 5);
+/// assert_eq!(SignMeasures::Bphs.table()[5], 6);
+/// ```
 pub const PARIJATA_RASHI_MEASURES: [u16; 12] = [7, 10, 8, 4, 10, 5, 7, 8, 9, 5, 11, 12];
 
 /// The nine, whose company v. 49 and Balabhadra's reductions count.
@@ -77,6 +85,14 @@ const SAVANA_YEAR: f64 = 360.0;
 const SOLAR_YEAR: f64 = 365.0;
 
 /// Which table the signs are measured by (C311).
+///
+/// ```
+/// use teistro_rules::longevity::SignMeasures;
+///
+/// assert_eq!(SignMeasures::default(), SignMeasures::Parijata);
+/// assert_eq!(serde_json::from_str::<SignMeasures>(r#""bphs""#)?, SignMeasures::Bphs);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -90,6 +106,14 @@ pub enum SignMeasures {
 
 impl SignMeasures {
     /// The twelve measures, Aries to Pisces.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::SignMeasures;
+    ///
+    /// // The two tables differ only in Virgo.
+    /// let (parijata, bphs) = (SignMeasures::Parijata.table(), SignMeasures::Bphs.table());
+    /// assert_eq!(parijata.iter().zip(bphs).filter(|(one, other)| **one != *other).count(), 1);
+    /// ```
     #[must_use]
     pub const fn table(self) -> [u16; 12] {
         match self {
@@ -100,6 +124,14 @@ impl SignMeasures {
 }
 
 /// How a graha's pinda becomes years (C312).
+///
+/// ```
+/// use teistro_rules::longevity::{Divisor, pinda_years};
+///
+/// // 252 over 30 is 8.4 years; times 7 over 27, 65.33, less two twenty-sevens.
+/// assert!((pinda_years(252, Divisor::Thirty) - 8.4).abs() < 1e-12);
+/// assert!((pinda_years(252, Divisor::SevenOverTwentySeven) - (252.0 * 7.0 / 27.0 - 54.0)).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -113,6 +145,49 @@ pub enum Divisor {
 }
 
 /// How each graha's ashtakavarga years are reduced (C317).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::settings::Ekadhipatya;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus};
+/// #
+/// # let bindus = Bindus { grahas: [[4; 12]; 7], ekadhipatya: Ekadhipatya::Bphs };
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+///
+/// use teistro_rules::longevity::AshtakaReductions;
+///
+/// // Under the note's reductions the factor is never more than a whole.
+/// let balabhadra = AshtakavargaAyusRules { reductions: AshtakaReductions::Balabhadra, ..AshtakavargaAyusRules::default() };
+/// let reduced = evaluator.ashtakavarga_ayus(&bindus, balabhadra);
+/// assert!(reduced.grahas.iter().all(|giver| giver.factor <= 1.0));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -129,6 +204,51 @@ pub enum AshtakaReductions {
 }
 
 /// Which bindus v. 50's span counts in the seven's signs (C318).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::settings::Ekadhipatya;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus};
+/// #
+/// # let bindus = Bindus { grahas: [[4; 12]; 7], ekadhipatya: Ekadhipatya::Bphs };
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+///
+/// use teistro_rules::longevity::OccupiedBindus;
+///
+/// // The raw bindus are no fewer than the reduced.
+/// let raw = AshtakavargaAyusRules { occupied: OccupiedBindus::Raw, ..AshtakavargaAyusRules::default() };
+/// let unreduced = evaluator.ashtakavarga_ayus(&bindus, raw);
+/// for (raw, reduced) in unreduced.grahas.iter().zip(&spans.grahas) {
+///     assert!(raw.occupied_bindus >= reduced.occupied_bindus);
+/// }
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -145,6 +265,13 @@ pub enum OccupiedBindus {
 /// (p. 693): the houses from the Sun, the Moon, Mars, Mercury, Jupiter,
 /// Venus, Saturn and the lagna itself in which each gives the lagna a
 /// bindu, 49 in all.
+///
+/// ```
+/// use teistro_rules::longevity::LAGNA_ASHTAKAVARGA;
+///
+/// // 49 bindus in all (p. 693).
+/// assert_eq!(LAGNA_ASHTAKAVARGA.iter().map(|houses| houses.len()).sum::<usize>(), 49);
+/// ```
 pub const LAGNA_ASHTAKAVARGA: [&[u8]; 8] = [
     &[3, 4, 6, 10, 11, 12],
     &[3, 6, 10, 11, 12],
@@ -183,6 +310,16 @@ pub fn lagna_bindus(signs: &[Rashi; 7], lagna: Rashi) -> [u8; 12] {
 }
 
 /// The choices the ashtakavarga spans are read under.
+///
+/// ```
+/// use teistro_rules::longevity::{AshtakavargaAyusRules, Divisor};
+///
+/// // Every field may be left out.
+/// let rules: AshtakavargaAyusRules = serde_json::from_str(r#"{"divisor": "seven-over-twenty-seven"}"#)?;
+/// assert_eq!(rules.divisor, Divisor::SevenOverTwentySeven);
+/// assert_eq!(rules.measures, AshtakavargaAyusRules::default().measures);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -198,6 +335,46 @@ pub struct AshtakavargaAyusRules {
 }
 
 /// A chart's raw ashtakavargas and how they are reduced.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::settings::Ekadhipatya;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus};
+/// #
+/// # let bindus = Bindus { grahas: [[4; 12]; 7], ekadhipatya: Ekadhipatya::Bphs };
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+///
+/// // Each of the seven reduced from its own raw row.
+/// assert_eq!(spans.grahas.len(), 7);
+/// assert_eq!(spans.grahas[0].graha, Graha::Sun);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Bindus {
     /// Each graha's bindus by sign, the Sun to Saturn, Aries to Pisces.
@@ -224,6 +401,47 @@ impl From<&AshtakavargaReading> for Bindus {
 }
 
 /// One graha's years from its ashtakavarga, step by step.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::settings::Ekadhipatya;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus};
+/// #
+/// # let bindus = Bindus { grahas: [[4; 12]; 7], ekadhipatya: Ekadhipatya::Bphs };
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+///
+/// let sun = spans.grahas[0];
+/// // Exalted in Aries, the Sun's years are doubled (v. 46) or near it.
+/// assert!(sun.factor > 1.0);
+/// assert!((sun.years - sun.basic * sun.factor).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AshtakaGiver {
@@ -247,6 +465,50 @@ pub struct AshtakaGiver {
 }
 
 /// The lagna's years from its own ashtakavarga (v. 48), as a graha's are.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::settings::Ekadhipatya;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus};
+/// #
+/// # let bindus = Bindus { grahas: [[4; 12]; 7], ekadhipatya: Ekadhipatya::Bphs };
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+///
+/// use teistro_rules::longevity::lagna_bindus;
+///
+/// // The lagna's own table, everything in Aries.
+/// assert_eq!(spans.lagna.bindus, lagna_bindus(&[Rashi::Aries; 7], Rashi::Aries));
+/// // Reported beside the seven's, never added to them.
+/// let seven: f64 = spans.grahas.iter().map(|giver| giver.years).sum();
+/// assert!((spans.bhinna - seven).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct LagnaAshtaka {
@@ -261,6 +523,46 @@ pub struct LagnaAshtaka {
 }
 
 /// When v. 49 calls for the ashtakavarga span, clause by clause.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::settings::Ekadhipatya;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus};
+/// #
+/// # let bindus = Bindus { grahas: [[4; 12]; 7], ekadhipatya: Ekadhipatya::Bphs };
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+///
+/// // The Moon is in the lagna, a kendra, and the tenth is empty.
+/// assert!(!spans.called_for.moon_joined_outside_a_kendra);
+/// assert!(!spans.called_for.tenth_benefic_and_malefic);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CalledFor {
@@ -272,6 +574,47 @@ pub struct CalledFor {
 }
 
 /// The ashtakavarga spans of a chart.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::settings::Ekadhipatya;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus};
+/// #
+/// # let bindus = Bindus { grahas: [[4; 12]; 7], ekadhipatya: Ekadhipatya::Bphs };
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+///
+/// // Samudaya's solar years are its nakshatra years by 324 over 365.
+/// assert!((spans.samudaya_solar - spans.samudaya * 324.0 / 365.0).abs() < 1e-9);
+/// assert!(spans.samudaya <= spans.samudaya_product);
+/// assert_eq!(spans.rules, AshtakavargaAyusRules::default());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AshtakavargaAyus {
@@ -340,6 +683,14 @@ pub fn pindas(row: &[u16; 12], signs: &[Rashi; 7], measures: SignMeasures) -> (u
 }
 
 /// A pinda as years under a divisor, its cycles cast out.
+///
+/// ```
+/// use teistro_rules::longevity::{Divisor, pinda_years};
+///
+/// // Twelve years is kept whole; past it, the twelves are cast out.
+/// assert_eq!(pinda_years(360, Divisor::Thirty), 12.0);
+/// assert!((pinda_years(390, Divisor::Thirty) - 1.0).abs() < 1e-12);
+/// ```
 #[must_use]
 pub fn pinda_years(pinda: u32, divisor: Divisor) -> f64 {
     let pinda = f64::from(pinda);
@@ -361,6 +712,48 @@ fn cast_out(years: f64, cycle: f64) -> f64 {
 impl Evaluator<'_> {
     /// The ashtakavarga spans of the chart from its raw `bindus`, under
     /// `rules` (*Jataka Parijata* ch. 10 vv. 44 to 46, 70 and 71).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_core::settings::Ekadhipatya;
+    /// # use teistro_rules::{Evaluator, Readings};
+    /// # use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus};
+    /// #
+    /// # let bindus = Bindus { grahas: [[4; 12]; 7], ekadhipatya: Ekadhipatya::Bphs };
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let spans = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+    ///
+    /// // No bindus, no years.
+    /// let none = Bindus { grahas: [[0; 12]; 7], ..bindus };
+    /// let empty = evaluator.ashtakavarga_ayus(&none, AshtakavargaAyusRules::default());
+    /// assert_eq!(empty.bhinna, 0.0);
+    /// assert!(empty.grahas.iter().all(|giver| giver.rashi_pinda == 0));
+    /// ```
     #[must_use]
     pub fn ashtakavarga_ayus(
         &self,

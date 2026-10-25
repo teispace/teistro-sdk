@@ -19,6 +19,57 @@ use crate::language::{Body, EvidenceRank, House, Source};
 use crate::rule::Rule;
 
 /// Everything of a chart that bears on one house.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # for graha in [Graha::Mars, Graha::Jupiter, Graha::Venus] {
+/// #     place(&mut chart, Body::Graha(graha), Rashi::Cancer);
+/// # }
+/// # let named = |key: &str, condition: &str| {
+/// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "{key}", "category": "example", "source": {{"text": "an example"}}, "conditions": [{condition}]}}"#))
+/// # };
+/// # let rules = [
+/// #     named("JUPITER_IN_KENDRA", r#"{"type": "planet-in-kendra", "planet": "JUPITER"}"#)?,
+/// #     named("VENUS_IN_THE_FIFTH", r#"{"type": "planet-in-house", "planet": "VENUS", "houses": [5]}"#)?,
+/// #     named("MARS_WITH_JUPITER", r#"{"type": "planet-conjunct", "planets": ["MARS", "JUPITER"]}"#)?,
+/// # ];
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let fourth = evaluator.house_reading(House::try_new(4)?, &rules);
+///
+/// // Mars, Jupiter and Venus in Cancer; two of the three rules stand there.
+/// assert_eq!(fourth.sign, Rashi::Cancer);
+/// assert_eq!(fourth.occupants.len(), 3);
+/// let held: Vec<&str> = fourth.held.iter().map(|one| one.rule.key.as_str()).collect();
+/// assert_eq!(held, ["JUPITER_IN_KENDRA", "MARS_WITH_JUPITER"]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct HouseReading<'r> {
@@ -36,6 +87,56 @@ pub struct HouseReading<'r> {
 }
 
 /// A rule that held, and what it answered.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # for graha in [Graha::Mars, Graha::Jupiter, Graha::Venus] {
+/// #     place(&mut chart, Body::Graha(graha), Rashi::Cancer);
+/// # }
+/// # let named = |key: &str, condition: &str| {
+/// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "{key}", "category": "example", "source": {{"text": "an example"}}, "conditions": [{condition}]}}"#))
+/// # };
+/// # let rules = [
+/// #     named("JUPITER_IN_KENDRA", r#"{"type": "planet-in-kendra", "planet": "JUPITER"}"#)?,
+/// #     named("VENUS_IN_THE_FIFTH", r#"{"type": "planet-in-house", "planet": "VENUS", "houses": [5]}"#)?,
+/// #     named("MARS_WITH_JUPITER", r#"{"type": "planet-conjunct", "planets": ["MARS", "JUPITER"]}"#)?,
+/// # ];
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let fourth = evaluator.house_reading(House::try_new(4)?, &rules);
+///
+/// let jupiter = &fourth.held[0];
+/// assert!(jupiter.result.present);
+/// // Written as its key, the rule being the set's.
+/// assert_eq!(serde_json::to_value(jupiter)?["rule"], "JUPITER_IN_KENDRA");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Held<'r> {
@@ -53,6 +154,55 @@ pub struct Held<'r> {
 /// readings that held are to be taken — or, where a text declines to give a
 /// reading at all, that it declines. Each carries its verse, so a consumer can
 /// show the authority for combining as readily as for the readings combined.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # for graha in [Graha::Mars, Graha::Jupiter, Graha::Venus] {
+/// #     place(&mut chart, Body::Graha(graha), Rashi::Cancer);
+/// # }
+/// # let named = |key: &str, condition: &str| {
+/// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "{key}", "category": "example", "source": {{"text": "an example"}}, "conditions": [{condition}]}}"#))
+/// # };
+/// # let rules = [
+/// #     named("JUPITER_IN_KENDRA", r#"{"type": "planet-in-kendra", "planet": "JUPITER"}"#)?,
+/// #     named("VENUS_IN_THE_FIFTH", r#"{"type": "planet-in-house", "planet": "VENUS", "houses": [5]}"#)?,
+/// #     named("MARS_WITH_JUPITER", r#"{"type": "planet-conjunct", "planets": ["MARS", "JUPITER"]}"#)?,
+/// # ];
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let fourth = evaluator.house_reading(House::try_new(4)?, &rules);
+///
+/// // Three grahas in an angle: compose by pairs, and the refusal for an angle.
+/// let keys: Vec<&str> = fourth.composition.iter().map(|one| one.key).collect();
+/// assert!(keys.contains(&"COMPOSE_BY_PAIRS") && keys.contains(&"REFUSE_THREE_OR_MORE_IN_AN_ANGLE"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Composition {
@@ -79,6 +229,16 @@ pub struct Composition {
 impl Composition {
     /// Its citation, as a rule's would be: rank 1, every one of these being
     /// read from a verse rather than from a translator's note.
+    ///
+    /// ```
+    /// use teistro_rules::{COMPOSITIONS, House, Kind};
+    ///
+    /// let refuse = COMPOSITIONS.iter().find(|one| one.kind == Kind::Refuse).ok_or("the refusal")?;
+    /// let source = refuse.source();
+    /// assert_eq!((source.text.as_str(), source.chapter.as_deref(), source.verse.as_deref()), ("Saravali", Some("31"), Some("87")));
+    /// assert_eq!(source.rank.map(|rank| rank.get()), Some(1));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn source(&self) -> Source {
         Source {
@@ -92,6 +252,17 @@ impl Composition {
 
     /// Whether it bears on a house that so many grahas share, so many of them
     /// strong.
+    ///
+    /// ```
+    /// use teistro_rules::{COMPOSITIONS, House, Kind};
+    ///
+    /// let refuse = COMPOSITIONS.iter().find(|one| one.kind == Kind::Refuse).ok_or("the refusal")?;
+    /// // Three in the seventh, an angle; not three in the fifth, nor two in the seventh.
+    /// assert!(refuse.bears_on(House::try_new(7)?, 3, 0));
+    /// assert!(!refuse.bears_on(House::try_new(5)?, 3, 0));
+    /// assert!(!refuse.bears_on(House::try_new(7)?, 2, 0));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn bears_on(&self, house: House, occupants: usize, strong: usize) -> bool {
         let enough = if self.strong { strong } else { occupants };
@@ -101,6 +272,15 @@ impl Composition {
 }
 
 /// What kind of instruction a composition is.
+///
+/// ```
+/// use teistro_rules::{COMPOSITIONS, Kind};
+///
+/// let arbitrate = COMPOSITIONS.iter().filter(|one| one.kind == Kind::Arbitrate).count();
+/// assert_eq!(arbitrate, 3);
+/// assert_eq!(serde_json::to_string(&Kind::Modulate)?, r#""modulate""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -120,6 +300,14 @@ pub enum Kind {
 /// They are few, and that is the finding: for three or more grahas in a
 /// *named* house the corpus gives no reading at all, and says so
 /// (`REFUSE_THREE_OR_MORE_IN_AN_ANGLE`).
+///
+/// ```
+/// use teistro_rules::COMPOSITIONS;
+///
+/// // Every one cites its verse.
+/// assert!(COMPOSITIONS.iter().all(|one| !one.verse.is_empty() && !one.says.is_empty()));
+/// assert_eq!(COMPOSITIONS[0].key, "COMPOSE_BY_PAIRS");
+/// ```
 pub const COMPOSITIONS: [Composition; 6] = [
     Composition {
         key: "COMPOSE_BY_PAIRS",
@@ -208,6 +396,55 @@ impl Evaluator<'_> {
     /// include it, which is what a result already reports; a rule with no
     /// participants — the lagna rising in a sign, a rule of the panchanga —
     /// bears on no house, and is left out rather than assigned to one.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # for graha in [Graha::Mars, Graha::Jupiter, Graha::Venus] {
+    /// #     place(&mut chart, Body::Graha(graha), Rashi::Cancer);
+    /// # }
+    /// # let named = |key: &str, condition: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "{key}", "category": "example", "source": {{"text": "an example"}}, "conditions": [{condition}]}}"#))
+    /// # };
+    /// # let rules = [
+    /// #     named("JUPITER_IN_KENDRA", r#"{"type": "planet-in-kendra", "planet": "JUPITER"}"#)?,
+    /// #     named("VENUS_IN_THE_FIFTH", r#"{"type": "planet-in-house", "planet": "VENUS", "houses": [5]}"#)?,
+    /// #     named("MARS_WITH_JUPITER", r#"{"type": "planet-conjunct", "planets": ["MARS", "JUPITER"]}"#)?,
+    /// # ];
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let fourth = evaluator.house_reading(House::try_new(4)?, &rules);
+    ///
+    /// // The first house is empty, and nothing held there.
+    /// let first = evaluator.house_reading(House::try_new(1)?, &rules);
+    /// assert!(first.held.is_empty());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn house_reading<'r>(&self, house: House, rules: &'r [Rule]) -> HouseReading<'r> {
         let held: Vec<Held<'r>> = rules
@@ -225,6 +462,56 @@ impl Evaluator<'_> {
     /// its participants stand in, which is what a caller wanting the whole
     /// chart should use: asking twelve houses one at a time would evaluate
     /// every rule twelve times.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings, Rule};
+    /// #
+    /// # for graha in [Graha::Mars, Graha::Jupiter, Graha::Venus] {
+    /// #     place(&mut chart, Body::Graha(graha), Rashi::Cancer);
+    /// # }
+    /// # let named = |key: &str, condition: &str| {
+    /// #     serde_json::from_str::<Rule>(&format!(r#"{{"key": "{key}", "category": "example", "source": {{"text": "an example"}}, "conditions": [{condition}]}}"#))
+    /// # };
+    /// # let rules = [
+    /// #     named("JUPITER_IN_KENDRA", r#"{"type": "planet-in-kendra", "planet": "JUPITER"}"#)?,
+    /// #     named("VENUS_IN_THE_FIFTH", r#"{"type": "planet-in-house", "planet": "VENUS", "houses": [5]}"#)?,
+    /// #     named("MARS_WITH_JUPITER", r#"{"type": "planet-conjunct", "planets": ["MARS", "JUPITER"]}"#)?,
+    /// # ];
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let fourth = evaluator.house_reading(House::try_new(4)?, &rules);
+    ///
+    /// // Each rule evaluated once, its result handed to each house it stands in.
+    /// let every = evaluator.house_readings(&rules);
+    /// assert_eq!(every.len(), 12);
+    /// assert_eq!(every[3], fourth);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn house_readings<'r>(&self, rules: &'r [Rule]) -> Vec<HouseReading<'r>> {
         let mut by_house: [Vec<Held<'r>>; 12] = Default::default();

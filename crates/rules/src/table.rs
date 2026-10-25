@@ -45,6 +45,14 @@ use crate::language::{Body, Condition, Source};
 use crate::rule::Rule;
 
 /// A degree of a sign, 1 to 30: the first degree runs from 0° to 1°.
+///
+/// ```
+/// use teistro_rules::SignDegree;
+///
+/// assert_eq!(SignDegree::try_new(30)?.get(), 30);
+/// assert!(SignDegree::try_new(0).is_err());
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u8", into = "u8")]
@@ -52,6 +60,15 @@ pub struct SignDegree(u8);
 
 impl SignDegree {
     /// A degree.
+    ///
+    /// ```
+    /// use teistro_rules::SignDegree;
+    ///
+    /// assert_eq!(SignDegree::try_new(31).unwrap_err(), "degree 31 of a sign is not 1 to 30");
+    /// // As a table writes it: a bare number.
+    /// assert_eq!(serde_json::from_str::<SignDegree>("8")?, SignDegree::try_new(8)?);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -65,6 +82,13 @@ impl SignDegree {
     }
 
     /// Its number, 1 to 30.
+    ///
+    /// ```
+    /// use teistro_rules::SignDegree;
+    ///
+    /// assert_eq!(SignDegree::try_new(1)?.get(), 1);
+    /// # Ok::<(), String>(())
+    /// ```
     #[must_use]
     pub const fn get(self) -> u8 {
         self.0
@@ -86,6 +110,14 @@ impl From<SignDegree> for u8 {
 }
 
 /// A table's key: capital letters, digits and underscores, a letter first.
+///
+/// ```
+/// use teistro_rules::TableKey;
+///
+/// assert_eq!(TableKey::try_new("MRITYU_BHAGA")?.as_str(), "MRITYU_BHAGA");
+/// assert!(TableKey::try_new("mrityu").is_err());
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "String", into = "String")]
@@ -93,6 +125,14 @@ pub struct TableKey(String);
 
 impl TableKey {
     /// A key.
+    ///
+    /// ```
+    /// use teistro_rules::TableKey;
+    ///
+    /// // A letter first.
+    /// assert!(TableKey::try_new("2ND").is_err());
+    /// assert!(TableKey::try_new("D2_TABLE").is_ok());
+    /// ```
     ///
     /// # Errors
     ///
@@ -112,6 +152,14 @@ impl TableKey {
     }
 
     /// The key.
+    ///
+    /// ```
+    /// use teistro_rules::TableKey;
+    ///
+    /// let key = TableKey::try_new("DAGDHA_RASHI")?;
+    /// assert_eq!(key.as_str(), key.to_string());
+    /// # Ok::<(), String>(())
+    /// ```
     #[must_use]
     pub fn as_str(&self) -> &str {
         &self.0
@@ -139,6 +187,25 @@ impl core::fmt::Display for TableKey {
 }
 
 /// A table, of one of the kinds a predicate reads.
+///
+/// ```
+/// # use std::collections::BTreeMap;
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Body, SignDegree, Source, Table, TableKey};
+/// #
+/// # let mine = Table::DegreesBySign {
+/// #     key: TableKey::try_new("MOON_EIGHTH")?,
+/// #     source: Source::text("an example"),
+/// #     rows: BTreeMap::from([(Body::Graha(Graha::Moon), [SignDegree::try_new(8)?; 12])]),
+/// # };
+///
+/// use teistro_core::catalogue::Rashi;
+///
+/// assert_eq!(mine.kind(), "degrees-by-sign");
+/// assert_eq!(mine.degree(Body::Graha(Graha::Moon), Rashi::Leo), Some(SignDegree::try_new(8)?));
+/// assert_eq!(mine.degree(Body::Graha(Graha::Sun), Rashi::Leo), None);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
@@ -171,6 +238,21 @@ pub enum Table {
 
 impl Table {
     /// Its key.
+    ///
+    /// ```
+    /// # use std::collections::BTreeMap;
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Body, SignDegree, Source, Table, TableKey};
+    /// #
+    /// # let mine = Table::DegreesBySign {
+    /// #     key: TableKey::try_new("MOON_EIGHTH")?,
+    /// #     source: Source::text("an example"),
+    /// #     rows: BTreeMap::from([(Body::Graha(Graha::Moon), [SignDegree::try_new(8)?; 12])]),
+    /// # };
+    ///
+    /// assert_eq!(mine.key().as_str(), "MOON_EIGHTH");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn key(&self) -> &TableKey {
         match self {
@@ -179,6 +261,14 @@ impl Table {
     }
 
     /// Where it comes from.
+    ///
+    /// ```
+    /// use teistro_rules::Tables;
+    ///
+    /// let mrityu = Tables::classical().get("PUSHKARA_BHAGA_MOON").ok_or("shipped")?;
+    /// assert!(mrityu.source().text.contains("Jataka Parijata"));
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub const fn source(&self) -> &Source {
         match self {
@@ -187,6 +277,15 @@ impl Table {
     }
 
     /// Its kind, as a table writes it.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    /// use teistro_rules::Tables;
+    ///
+    /// let dagdha = Tables::classical().get("DAGDHA_RASHI").ok_or("shipped")?;
+    /// assert_eq!(dagdha.kind(), "signs-by-tithi");
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub const fn kind(&self) -> &'static str {
         match self {
@@ -196,6 +295,16 @@ impl Table {
     }
 
     /// The degree a body's row gives a sign, if the table has the row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_rules::{Body, SignDegree, Tables};
+    ///
+    /// let mrityu = Tables::classical().get("MRITYU_BHAGA").ok_or("shipped")?;
+    /// // The Moon's Mrityu Bhaga in Mesha is her eighth degree (Jataka Parijata ch. 1 v. 57).
+    /// assert_eq!(mrityu.degree(Body::Graha(Graha::Moon), Rashi::Aries), SignDegree::try_new(8).ok());
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn degree(&self, body: Body, sign: Rashi) -> Option<SignDegree> {
         match self {
@@ -208,6 +317,17 @@ impl Table {
     }
 
     /// The signs a tithi's row gives, by its number in its paksha.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    /// use teistro_rules::Tables;
+    ///
+    /// let dagdha = Tables::classical().get("DAGDHA_RASHI").ok_or("shipped")?;
+    /// // One row serves both pakshas: a tithi is read by its number in its fortnight.
+    /// assert_eq!(dagdha.signs(Tithi::ShuklaDvitiya), dagdha.signs(Tithi::KrishnaDvitiya));
+    /// assert!(!dagdha.signs(Tithi::ShuklaDvitiya).is_empty());
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn signs(&self, tithi: Tithi) -> &[Rashi] {
         match self {
@@ -223,6 +343,14 @@ const DEGREES_BY_SIGN: &str = "degrees-by-sign";
 const SIGNS_BY_TITHI: &str = "signs-by-tithi";
 
 /// A set of tables, each key once.
+///
+/// ```
+/// use teistro_rules::Tables;
+///
+/// let keys: Vec<&str> = Tables::classical().iter().map(|table| table.key().as_str()).collect();
+/// assert!(keys.contains(&"MRITYU_BHAGA") && keys.contains(&"DAGDHA_RASHI"));
+/// assert!(Tables::EMPTY.get("MRITYU_BHAGA").is_none());
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Tables {
     /// Sorted by key.
@@ -252,9 +380,36 @@ static CLASSICAL_TABLES: LazyLock<Tables> = LazyLock::new(|| {
 
 impl Tables {
     /// No tables.
+    ///
+    /// ```
+    /// use teistro_rules::Tables;
+    ///
+    /// assert_eq!(Tables::EMPTY.iter().count(), 0);
+    /// assert_eq!(Tables::EMPTY, Tables::default());
+    /// ```
     pub const EMPTY: Tables = Tables { tables: Vec::new() };
 
     /// A set of tables.
+    ///
+    /// ```
+    /// # use std::collections::BTreeMap;
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Body, SignDegree, Source, Table, TableKey};
+    /// #
+    /// # let mine = Table::DegreesBySign {
+    /// #     key: TableKey::try_new("MOON_EIGHTH")?,
+    /// #     source: Source::text("an example"),
+    /// #     rows: BTreeMap::from([(Body::Graha(Graha::Moon), [SignDegree::try_new(8)?; 12])]),
+    /// # };
+    ///
+    /// use teistro_rules::Tables;
+    ///
+    /// let tables = Tables::new(vec![mine.clone()])?;
+    /// assert!(tables.get("MOON_EIGHTH").is_some());
+    /// // One key twice is refused.
+    /// assert!(Tables::new(vec![mine.clone(), mine]).unwrap_err().contains("MOON_EIGHTH"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -272,12 +427,39 @@ impl Tables {
     }
 
     /// The tables the SDK ships, each with its citation.
+    ///
+    /// ```
+    /// use teistro_rules::Tables;
+    ///
+    /// // Every shipped table cites its text.
+    /// assert!(Tables::classical().iter().all(|table| !table.source().text.is_empty()));
+    /// ```
     #[must_use]
     pub fn classical() -> &'static Tables {
         &CLASSICAL_TABLES
     }
 
     /// These tables and `other`'s, a key in both refused.
+    ///
+    /// ```
+    /// # use std::collections::BTreeMap;
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Body, SignDegree, Source, Table, TableKey};
+    /// #
+    /// # let mine = Table::DegreesBySign {
+    /// #     key: TableKey::try_new("MOON_EIGHTH")?,
+    /// #     source: Source::text("an example"),
+    /// #     rows: BTreeMap::from([(Body::Graha(Graha::Moon), [SignDegree::try_new(8)?; 12])]),
+    /// # };
+    ///
+    /// use teistro_rules::Tables;
+    ///
+    /// let both = Tables::classical().with(&Tables::new(vec![mine])?)?;
+    /// assert!(both.get("MOON_EIGHTH").is_some() && both.get("MRITYU_BHAGA").is_some());
+    /// // The shipped set again is refused, every key being in both.
+    /// assert!(both.with(Tables::classical()).is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -287,6 +469,13 @@ impl Tables {
     }
 
     /// The table under a key.
+    ///
+    /// ```
+    /// use teistro_rules::Tables;
+    ///
+    /// assert!(Tables::classical().get("MRITYU_BHAGA_LAGNA_PHALADEEPIKA").is_some());
+    /// assert!(Tables::classical().get("NONE").is_none());
+    /// ```
     #[must_use]
     pub fn get(&self, key: &str) -> Option<&Table> {
         self.tables
@@ -296,12 +485,40 @@ impl Tables {
     }
 
     /// Every table, by key.
+    ///
+    /// ```
+    /// use teistro_rules::Tables;
+    ///
+    /// // By key.
+    /// let keys: Vec<&str> = Tables::classical().iter().map(|table| table.key().as_str()).collect();
+    /// assert!(keys.windows(2).all(|pair| pair[0] < pair[1]));
+    /// ```
     pub fn iter(&self) -> impl Iterator<Item = &Table> {
         self.tables.iter()
     }
 
     /// Whether every table a rule names is here and of the kind its predicate
     /// reads.
+    ///
+    /// ```
+    /// # use std::collections::BTreeMap;
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Body, SignDegree, Source, Table, TableKey};
+    /// #
+    /// # let mine = Table::DegreesBySign {
+    /// #     key: TableKey::try_new("MOON_EIGHTH")?,
+    /// #     source: Source::text("an example"),
+    /// #     rows: BTreeMap::from([(Body::Graha(Graha::Moon), [SignDegree::try_new(8)?; 12])]),
+    /// # };
+    ///
+    /// use teistro_rules::Tables;
+    ///
+    /// let rule: teistro_rules::Rule = serde_json::from_str(r#"{"key": "EXAMPLE", "category": "example", "source": {"text": "an example"}, "conditions": [{"type": "planet-at-table-degree", "planet": "MOON", "table": "MOON_EIGHTH"}]}"#)?;
+    /// // A table the set lacks is refused before anything is evaluated.
+    /// assert!(Tables::classical().check(&rule).unwrap_err().contains("MOON_EIGHTH"));
+    /// assert!(Tables::new(vec![mine])?.check(&rule).is_ok());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///

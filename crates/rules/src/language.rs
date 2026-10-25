@@ -17,6 +17,16 @@ use crate::reference::{BodyRef, BodySubject, Class, SignRef, Subject};
 use crate::table::TableKey;
 
 /// What a rule can name: one of the nine grahas, or the lagna.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rules::Body;
+///
+/// // Written as its key.
+/// assert_eq!(serde_json::to_string(&Body::Graha(Graha::Saturn))?, r#""SATURN""#);
+/// assert_eq!(serde_json::from_str::<Body>(r#""LAGNA""#)?, Body::Lagna);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Body {
     /// A graha, the Sun to Ketu.
@@ -28,6 +38,15 @@ pub enum Body {
 impl Body {
     /// Every body a rule can name, in the order the kernel walks them: the Sun
     /// to Ketu, then the lagna.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    ///
+    /// assert_eq!(Body::ALL[0], Body::Graha(Graha::Sun));
+    /// assert_eq!(Body::ALL[9], Body::Lagna);
+    /// assert!(Body::ALL.iter().enumerate().all(|(at, body)| body.index() == at));
+    /// ```
     pub const ALL: [Body; 10] = [
         Body::Graha(Graha::Sun),
         Body::Graha(Graha::Moon),
@@ -42,18 +61,44 @@ impl Body {
     ];
 
     /// The nine grahas, as a list a rule may leave out.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    ///
+    /// let nine = Body::nine();
+    /// assert_eq!(nine.len(), 9);
+    /// assert!(!nine.contains(&Body::Lagna));
+    /// ```
     #[must_use]
     pub fn nine() -> Vec<Body> {
         Body::ALL[..9].to_vec()
     }
 
     /// Whether a list is the nine grahas.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    ///
+    /// assert!(Body::is_nine(&Body::nine()));
+    /// assert!(!Body::is_nine(&Body::SEVEN));
+    /// ```
     #[must_use]
     pub fn is_nine(planets: &[Body]) -> bool {
         planets == &Body::ALL[..9]
     }
 
     /// The seven classical grahas, the Sun to Saturn.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    ///
+    /// // Neither node.
+    /// assert!(Body::SEVEN.iter().all(|body| !body.is_node()));
+    /// assert_eq!(Body::SEVEN[6], Body::Graha(Graha::Saturn));
+    /// ```
     pub const SEVEN: [Body; 7] = [
         Body::Graha(Graha::Sun),
         Body::Graha(Graha::Moon),
@@ -65,6 +110,14 @@ impl Body {
     ];
 
     /// Its place in [`Body::ALL`].
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    ///
+    /// assert_eq!(Body::Graha(Graha::Moon).index(), 1);
+    /// assert_eq!(Body::Lagna.index(), 9);
+    /// ```
     #[must_use]
     pub const fn index(self) -> usize {
         match self {
@@ -74,6 +127,14 @@ impl Body {
     }
 
     /// Its key, as a rule spells it.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    ///
+    /// assert_eq!(Body::Graha(Graha::Rahu).key(), "RAHU");
+    /// assert_eq!(Body::Lagna.key(), "LAGNA");
+    /// ```
     #[must_use]
     pub fn key(self) -> &'static str {
         match self {
@@ -83,6 +144,14 @@ impl Body {
     }
 
     /// Whether it is Rahu or Ketu.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    ///
+    /// assert!(Body::Graha(Graha::Ketu).is_node());
+    /// assert!(!Body::Graha(Graha::Saturn).is_node() && !Body::Lagna.is_node());
+    /// ```
     #[must_use]
     pub const fn is_node(self) -> bool {
         matches!(self, Body::Graha(Graha::Rahu | Graha::Ketu))
@@ -119,6 +188,17 @@ impl<'de> Deserialize<'de> for Body {
 impl Body {
     /// The body a key names.
     ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    ///
+    /// assert_eq!(Body::from_key("VENUS")?, Body::Graha(Graha::Venus));
+    /// assert_eq!(Body::from_key("LAGNA")?, Body::Lagna);
+    /// // The outer planets are not bodies a rule names.
+    /// assert!(Body::from_key("URANUS").is_err());
+    /// # Ok::<(), String>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A key that is not one of the nine grahas or `LAGNA`, named.
@@ -145,6 +225,16 @@ pub use teistro_core::house::House;
 
 /// A chara karaka as a rule spells it: `AK`, `AmK`, `BK`, `MK`, `PK`, `GK`,
 /// `DK` or `PiK`.
+///
+/// ```
+/// use teistro_core::catalogue::CharaKaraka;
+/// use teistro_rules::Karaka;
+///
+/// let darakaraka: Karaka = serde_json::from_str(r#""DK""#)?;
+/// assert_eq!(darakaraka, Karaka(CharaKaraka::Darakaraka));
+/// assert_eq!(serde_json::to_string(&darakaraka)?, r#""DK""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Karaka(pub CharaKaraka);
 
@@ -192,6 +282,14 @@ impl<'de> Deserialize<'de> for Karaka {
 
 impl Karaka {
     /// Its abbreviation, as a rule writes it.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    /// use teistro_rules::Karaka;
+    ///
+    /// assert_eq!(Karaka(CharaKaraka::Amatyakaraka).abbreviation(), "AmK");
+    /// assert_eq!(Karaka(CharaKaraka::Pitrikaraka).abbreviation(), "PiK");
+    /// ```
     #[must_use]
     pub fn abbreviation(self) -> &'static str {
         KARAKAS
@@ -201,6 +299,16 @@ impl Karaka {
     }
 
     /// The karaka an abbreviation names.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    /// use teistro_rules::Karaka;
+    ///
+    /// assert_eq!(Karaka::from_abbreviation("AK")?, Karaka(CharaKaraka::Atmakaraka));
+    /// // Spelt as a rule writes it, case and all.
+    /// assert!(Karaka::from_abbreviation("ak").is_err());
+    /// # Ok::<(), String>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -219,6 +327,16 @@ impl Karaka {
 }
 
 /// Which chara karaka scheme a rule reads: seven grahas, or eight with Rahu.
+///
+/// ```
+/// use teistro_rules::KarakaScheme;
+///
+/// // Written as its number of karakas.
+/// assert_eq!(serde_json::from_str::<KarakaScheme>("8")?, KarakaScheme::Eight);
+/// assert_eq!(serde_json::to_string(&KarakaScheme::default())?, "7");
+/// assert!(serde_json::from_str::<KarakaScheme>("9").is_err());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u8", into = "u8")]
@@ -349,6 +467,17 @@ pub const KINDS: [&str; 67] = [
 ];
 
 /// A condition: a predicate over the chart, or a combination of conditions.
+///
+/// ```
+/// use teistro_rules::Condition;
+///
+/// let either: Condition = serde_json::from_str(r#"{"type": "or", "conditions": [{"type": "planet-strong", "planet": "JUPITER"}, {"type": "birth-by-day"}]}"#)?;
+/// assert_eq!(either.kind(), "or");
+/// assert_eq!(either.children().len(), 2);
+/// // A field a condition does not have is refused.
+/// assert!(serde_json::from_str::<Condition>(r#"{"type": "planet-strong", "planet": "JUPITER", "strong": true}"#).is_err());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
@@ -911,6 +1040,13 @@ pub enum Condition {
 }
 
 /// A natural relationship between two grahas.
+///
+/// ```
+/// use teistro_rules::Relation;
+///
+/// assert_eq!(serde_json::from_str::<Relation>(r#""enemy""#)?, Relation::Enemy);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -926,6 +1062,17 @@ pub enum Relation {
 impl Relation {
     /// How `of` regards `to` by the catalogue's natural relationships; none
     /// for a graha and itself, or one the catalogue relates to nothing.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Relation;
+    ///
+    /// // The Sun's friends, neutral and enemies (BPHS ch. 3).
+    /// assert_eq!(Relation::between(Graha::Sun, Graha::Moon), Some(Relation::Friend));
+    /// assert_eq!(Relation::between(Graha::Sun, Graha::Mercury), Some(Relation::Neutral));
+    /// assert_eq!(Relation::between(Graha::Sun, Graha::Saturn), Some(Relation::Enemy));
+    /// assert_eq!(Relation::between(Graha::Sun, Graha::Sun), None);
+    /// ```
     #[must_use]
     pub fn between(of: Graha, to: Graha) -> Option<Relation> {
         let attributes = of.attributes();
@@ -943,6 +1090,13 @@ impl Relation {
 
 /// Where an intervention comes from, and what obstructs it (BPHS ch. 31
 /// v. 9's table: 4 2 11 5 over 10 12 3 9).
+///
+/// ```
+/// use teistro_rules::ArgalaPlace;
+///
+/// assert_eq!(serde_json::from_str::<ArgalaPlace>(r#""eleventh""#)?, ArgalaPlace::Eleventh);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -959,6 +1113,14 @@ pub enum ArgalaPlace {
 
 impl ArgalaPlace {
     /// The house it intervenes from, and the house that obstructs it.
+    ///
+    /// ```
+    /// use teistro_rules::ArgalaPlace;
+    ///
+    /// // From the fourth, obstructed from the tenth.
+    /// assert_eq!(ArgalaPlace::Fourth.houses(), (4, 10));
+    /// assert_eq!(ArgalaPlace::Eleventh.houses(), (11, 3));
+    /// ```
     #[must_use]
     pub const fn houses(self) -> (u8, u8) {
         match self {
@@ -971,9 +1133,27 @@ impl ArgalaPlace {
 }
 
 /// How `SELF`, the body a `for-any` binds, is written.
+///
+/// ```
+/// use teistro_rules::Condition;
+///
+/// use teistro_rules::language::SELF;
+///
+/// let each: Condition = serde_json::from_str(r#"{"type": "for-any", "then": {"type": "planet-in-kendra", "planet": "SELF"}}"#)?;
+/// assert!(each.children()[0].names_self());
+/// assert_eq!(SELF, "SELF");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 pub const SELF: &str = "SELF";
 
 /// Which node's side the seven stand on.
+///
+/// ```
+/// use teistro_rules::NodeSide;
+///
+/// assert_eq!(serde_json::from_str::<NodeSide>(r#""ketu""#)?, NodeSide::Ketu);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
@@ -985,6 +1165,15 @@ pub enum NodeSide {
 }
 
 /// A nakshatra's pada, 1 to 4.
+///
+/// ```
+/// use teistro_rules::Pada;
+///
+/// // Written as its number.
+/// assert_eq!(serde_json::from_str::<Pada>("3")?.get(), 3);
+/// assert!(serde_json::from_str::<Pada>("5").is_err());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u8", into = "u8")]
@@ -992,6 +1181,13 @@ pub struct Pada(u8);
 
 impl Pada {
     /// A pada.
+    ///
+    /// ```
+    /// use teistro_rules::Pada;
+    ///
+    /// assert!(Pada::try_new(4).is_ok());
+    /// assert_eq!(Pada::try_new(0).unwrap_err(), "pada 0 is not 1 to 4");
+    /// ```
     ///
     /// # Errors
     ///
@@ -1005,6 +1201,13 @@ impl Pada {
     }
 
     /// Its number, 1 to 4.
+    ///
+    /// ```
+    /// use teistro_rules::Pada;
+    ///
+    /// assert_eq!(Pada::try_new(2)?.get(), 2);
+    /// # Ok::<(), String>(())
+    /// ```
     #[must_use]
     pub const fn get(self) -> u8 {
         self.0
@@ -1026,6 +1229,13 @@ impl From<Pada> for u8 {
 }
 
 /// Which end of a limb a condition measures.
+///
+/// ```
+/// use teistro_rules::language::Edge;
+///
+/// assert_eq!(serde_json::from_str::<Edge>(r#""last""#)?, Edge::Last);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
@@ -1037,6 +1247,13 @@ pub enum Edge {
 }
 
 /// Which eclipse.
+///
+/// ```
+/// use teistro_rules::EclipseKind;
+///
+/// assert_eq!(serde_json::from_str::<EclipseKind>(r#""any""#)?, EclipseKind::Any);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
@@ -1077,6 +1294,17 @@ mod paksha {
 
 impl Condition {
     /// The predicate's name, as a rule spells its `type`.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let strong: Condition = serde_json::from_str(r#"{"type": "planet-strong", "planet": "JUPITER"}"#)?;
+    /// assert_eq!(strong.kind(), "planet-strong");
+    /// // An alias reads as the name it stands for.
+    /// let both: Condition = serde_json::from_str(r#"{"type": "dosha-and", "conditions": []}"#)?;
+    /// assert_eq!(both.kind(), "and");
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn kind(&self) -> &'static str {
         match self {
@@ -1151,6 +1379,16 @@ impl Condition {
     }
 
     /// The conditions a combinator combines, and none for a predicate.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let ninth: Condition = serde_json::from_str(r#"{"type": "in-varga", "varga": "D9", "condition": {"type": "planet-in-kendra", "planet": "JUPITER"}}"#)?;
+    /// assert_eq!(ninth.children()[0].kind(), "planet-in-kendra");
+    /// // A predicate has none.
+    /// assert!(ninth.children()[0].children().is_empty());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn children(&self) -> &[Condition] {
         match self {
@@ -1170,6 +1408,15 @@ impl Condition {
     }
 
     /// The conditions a combinator combines, to change in place.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let mut ninth: Condition = serde_json::from_str(r#"{"type": "in-varga", "varga": "D9", "condition": {"type": "planet-in-kendra", "planet": "JUPITER"}}"#)?;
+    /// ninth.children_mut()[0] = serde_json::from_str(r#"{"type": "planet-strong", "planet": "JUPITER"}"#)?;
+    /// assert_eq!(ninth.children()[0].kind(), "planet-strong");
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     pub fn children_mut(&mut self) -> &mut [Condition] {
         match self {
             Condition::And { conditions }
@@ -1188,12 +1435,31 @@ impl Condition {
     }
 
     /// Whether it binds `SELF` for the conditions inside it.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let each: Condition = serde_json::from_str(r#"{"type": "for-any", "then": {"type": "planet-in-kendra", "planet": "SELF"}}"#)?;
+    /// assert!(each.binds_self());
+    /// assert!(!each.children()[0].binds_self());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn binds_self(&self) -> bool {
         matches!(self, Condition::ForAny { .. } | Condition::CountOf { .. })
     }
 
     /// Whether any reference it names is `SELF`, itself and not inside it.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let each: Condition = serde_json::from_str(r#"{"type": "for-any", "then": {"type": "planet-in-kendra", "planet": "SELF"}}"#)?;
+    /// // The `for-any` binds it and its child names it.
+    /// assert!(!each.names_self());
+    /// assert!(each.children()[0].names_self());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn names_self(&self) -> bool {
         // A condition's references are what its own serialisation holds, and
@@ -1220,6 +1486,16 @@ impl Condition {
     /// Whether it reads a body's longitude, which a divisional chart does not
     /// move, or the sky in transit, which no divisional chart holds: such a
     /// condition is refused inside an `in-varga`.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let degrees: Condition = serde_json::from_str(r#"{"type": "planet-in-degrees", "planet": "MOON", "from": 0.0, "to": 10.0}"#)?;
+    /// let strong: Condition = serde_json::from_str(r#"{"type": "planet-strong", "planet": "JUPITER"}"#)?;
+    /// assert!(degrees.reads_a_longitude());
+    /// assert!(!strong.reads_a_longitude());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn reads_a_longitude(&self) -> bool {
         matches!(
@@ -1237,6 +1513,17 @@ impl Condition {
 
     /// The first condition inside it, itself included, that reads a longitude
     /// under an `in-varga`.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let moved: Condition = serde_json::from_str(r#"{"type": "in-varga", "varga": "D9", "condition": {"type": "planet-in-degrees", "planet": "MOON", "from": 0.0, "to": 10.0}}"#)?;
+    /// // A divisional chart does not move a longitude, so this is refused.
+    /// assert_eq!(moved.longitude_in_varga(), Some("planet-in-degrees"));
+    /// let ninth: Condition = serde_json::from_str(r#"{"type": "in-varga", "varga": "D9", "condition": {"type": "planet-in-kendra", "planet": "JUPITER"}}"#)?;
+    /// assert_eq!(ninth.longitude_in_varga(), None);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn longitude_in_varga(&self) -> Option<&'static str> {
         fn walk(condition: &Condition, within: bool) -> Option<&'static str> {
@@ -1255,6 +1542,16 @@ impl Condition {
     /// The first `limb-part` inside it, itself included, that divides a
     /// limb into fewer than two parts or names a part it does not have,
     /// with what is wrong.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let fifth: Condition = serde_json::from_str(r#"{"type": "not", "condition": {"type": "limb-part", "limb": "tithi", "of": 4, "parts": [5]}}"#)?;
+    /// assert_eq!(fifth.malformed_part().as_deref(), Some("`limb-part` names part 5 of 4; the parts are 1 to 4"));
+    /// let first: Condition = serde_json::from_str(r#"{"type": "limb-part", "limb": "tithi", "of": 4, "parts": [1]}"#)?;
+    /// assert_eq!(first.malformed_part(), None);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn malformed_part(&self) -> Option<String> {
         if let Condition::LimbPart { of, parts, .. } = self {
@@ -1277,6 +1574,18 @@ impl Condition {
 
     /// Whether it asks a question of strength, so a caller knows to give the
     /// chart [`Strengths`](crate::Strengths); without them it answers false.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let strong: Condition = serde_json::from_str(r#"{"type": "planet-strong", "planet": "JUPITER"}"#)?;
+    /// assert!(strong.reads_strength());
+    /// // Only itself: an `and` around it reads nothing of its own.
+    /// let both: Condition = serde_json::from_str(r#"{"type": "and", "conditions": [{"type": "planet-strong", "planet": "JUPITER"}]}"#)?;
+    /// assert!(!both.reads_strength());
+    /// assert!(both.walk().any(Condition::reads_strength));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn reads_strength(&self) -> bool {
         matches!(
@@ -1290,12 +1599,30 @@ impl Condition {
 
     /// Whether this condition itself reads the sky in transit, so a caller
     /// knows to give the evaluator one; without it the condition is false.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let transit: Condition = serde_json::from_str(r#"{"type": "transit-in-house", "planet": "SATURN", "houses": [8], "from": "MOON"}"#)?;
+    /// assert!(transit.reads_transits());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn reads_transits(&self) -> bool {
         matches!(self, Condition::TransitInHouse { .. })
     }
 
     /// Whether this condition itself reads the chart's panchanga.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let day: Condition = serde_json::from_str(r#"{"type": "birth-by-day"}"#)?;
+    /// let strong: Condition = serde_json::from_str(r#"{"type": "planet-strong", "planet": "JUPITER"}"#)?;
+    /// assert!(day.reads_panchanga());
+    /// assert!(!strong.reads_panchanga());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn reads_panchanga(&self) -> bool {
         matches!(
@@ -1318,6 +1645,17 @@ impl Condition {
     /// Whether this condition itself reads what the chart's instant falls in
     /// rather than its day: the rising sign's edge or an eclipse. Each also
     /// reads the panchanga, which carries both to the evaluator.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let lagna: Condition = serde_json::from_str(r#"{"type": "limb-part", "limb": "lagna", "of": 3, "parts": [1]}"#)?;
+    /// let tithi: Condition = serde_json::from_str(r#"{"type": "limb-part", "limb": "tithi", "of": 3, "parts": [1]}"#)?;
+    /// // The rising sign's part is the instant's; the tithi's is the day's.
+    /// assert!(lagna.reads_moment() && lagna.reads_panchanga());
+    /// assert!(!tithi.reads_moment());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn reads_moment(&self) -> bool {
         matches!(
@@ -1336,6 +1674,17 @@ impl Condition {
 
     /// The first condition inside it, itself included, that names `SELF` with
     /// no `for-any` above it to bind one.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let bare: Condition = serde_json::from_str(r#"{"type": "planet-in-kendra", "planet": "SELF"}"#)?;
+    /// let each: Condition = serde_json::from_str(r#"{"type": "for-any", "then": {"type": "planet-in-kendra", "planet": "SELF"}}"#)?;
+    /// // `SELF` with nothing to bind it.
+    /// assert_eq!(bare.unbound_self(), Some("planet-in-kendra"));
+    /// assert_eq!(each.unbound_self(), None);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn unbound_self(&self) -> Option<&'static str> {
         fn walk(condition: &Condition, bound: bool) -> Option<&'static str> {
@@ -1352,6 +1701,15 @@ impl Condition {
     }
 
     /// This condition and every one inside it, depth first.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    ///
+    /// let tree: Condition = serde_json::from_str(r#"{"type": "and", "conditions": [{"type": "in-varga", "varga": "D9", "condition": {"type": "planet-in-kendra", "planet": "JUPITER"}}, {"type": "planet-strong", "planet": "JUPITER"}]}"#)?;
+    /// let kinds: Vec<&str> = tree.walk().map(Condition::kind).collect();
+    /// assert_eq!(kinds, ["and", "in-varga", "planet-in-kendra", "planet-strong"]);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     pub fn walk(&self) -> impl Iterator<Item = &Condition> {
         let mut stack = vec![self];
         core::iter::from_fn(move || {
@@ -1366,6 +1724,15 @@ impl Condition {
 /// (`01-research/feature-universe/19-verification-cruxes.md`): 1 a classical
 /// text or a faithful translation, 2 an implementation, 3 a secondary source,
 /// 4 nothing found.
+///
+/// ```
+/// use teistro_rules::EvidenceRank;
+///
+/// // A classical text outranks an implementation.
+/// assert!(EvidenceRank::try_new(1)? < EvidenceRank::try_new(2)?);
+/// assert_eq!(serde_json::to_string(&EvidenceRank::try_new(3)?).map_err(|e| e.to_string())?, "3");
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u8", into = "u8")]
@@ -1373,6 +1740,13 @@ pub struct EvidenceRank(u8);
 
 impl EvidenceRank {
     /// A rank.
+    ///
+    /// ```
+    /// use teistro_rules::EvidenceRank;
+    ///
+    /// assert!(EvidenceRank::try_new(4).is_ok());
+    /// assert_eq!(EvidenceRank::try_new(5).unwrap_err(), "evidence rank 5 is not 1 to 4");
+    /// ```
     ///
     /// # Errors
     ///
@@ -1386,6 +1760,13 @@ impl EvidenceRank {
     }
 
     /// Its number, 1 to 4.
+    ///
+    /// ```
+    /// use teistro_rules::EvidenceRank;
+    ///
+    /// assert_eq!(EvidenceRank::try_new(1)?.get(), 1);
+    /// # Ok::<(), String>(())
+    /// ```
     #[must_use]
     pub const fn get(self) -> u8 {
         self.0
@@ -1407,6 +1788,16 @@ impl From<EvidenceRank> for u8 {
 }
 
 /// Where a rule or a table comes from.
+///
+/// ```
+/// use teistro_rules::Source;
+///
+/// let source: Source = serde_json::from_str(r#"{"text": "Saravali", "chapter": "31", "verse": "87", "rank": 1}"#)?;
+/// assert_eq!(source.rank.map(|rank| rank.get()), Some(1));
+/// // Only these fields.
+/// assert!(serde_json::from_str::<Source>(r#"{"text": "Saravali", "page": 4}"#).is_err());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RuleSource"))]
@@ -1430,6 +1821,16 @@ pub struct Source {
 
 impl Source {
     /// A text, with no chapter, verse, note or rank.
+    ///
+    /// ```
+    /// use teistro_rules::Source;
+    ///
+    /// let source = Source::text("Brihat Jataka");
+    /// assert_eq!(source.chapter, None);
+    /// // Written with its text alone.
+    /// assert_eq!(serde_json::to_string(&source)?, r#"{"text":"Brihat Jataka"}"#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn text(text: impl Into<String>) -> Source {
         Source {

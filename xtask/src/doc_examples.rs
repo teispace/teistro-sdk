@@ -50,6 +50,7 @@ const EXAMPLED: &[&str] = &[
     "teistro-remedies",
     "teistro-render-svg",
     "teistro-research",
+    "teistro-rules",
     "teistro-serial",
     "teistro-siddhanta",
     "teistro-state",

@@ -66,6 +66,56 @@ use crate::rule::{NetStatus, Rule};
 use crate::table::{SignDegree, TableKey};
 
 /// A reference resolved while a condition was checked.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+/// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+/// # let rule: Rule = serde_json::from_str(r#"{
+/// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+/// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}]
+/// # }"#)?;
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let result = evaluator.evaluate(&rule);
+///
+/// use teistro_rules::{Resolved, SignRef};
+///
+/// // The Moon's sign, resolved on the way to Jupiter's kendra from it.
+/// let step = &evaluator.explain(&rule).conditions[0];
+/// let moon = step.resolved.iter().find_map(|resolved| match resolved {
+///     Resolved::Sign { reference, place } if *reference == SignRef::from(Graha::Moon) => Some(*place),
+///     _ => None,
+/// });
+/// assert_eq!(moon, Some(Some((Rashi::Taurus, House::try_new(2)?))));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
@@ -123,6 +173,53 @@ pub enum Resolved {
 }
 
 /// One condition as it was checked.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+/// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+/// # let rule: Rule = serde_json::from_str(r#"{
+/// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+/// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}]
+/// # }"#)?;
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let result = evaluator.evaluate(&rule);
+///
+/// let step = &evaluator.explain(&rule).conditions[0];
+/// assert!(step.held);
+/// assert_eq!(step.condition, &rule.conditions[0]);
+/// assert!(step.added.contains(&Body::Graha(Graha::Jupiter)));
+/// // Written with the condition's kind.
+/// assert_eq!(serde_json::to_value(step)?["type"], "planet-in-kendra-from");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -142,6 +239,51 @@ pub struct Step<'c> {
 }
 
 /// A rule's answer and how it was reached.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+/// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+/// # let rule: Rule = serde_json::from_str(r#"{
+/// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+/// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}]
+/// # }"#)?;
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let result = evaluator.evaluate(&rule);
+///
+/// let explanation = evaluator.explain(&rule);
+/// assert_eq!(explanation.result, result);
+/// assert!(explanation.groups.is_empty() && explanation.cancellations.is_empty());
+/// assert_eq!(serde_json::to_value(&explanation)?["rule"], "GAJA_KESARI");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -180,13 +322,47 @@ fn key<S: Serializer>(rule: &&Rule, serializer: S) -> Result<S::Ok, S::Error> {
 
 /// What the evaluator tells as it checks. Not implemented outside the crate:
 /// the two recorders are the evaluator's own.
+///
+/// ```
+/// use teistro_rules::trace::{NoTrace, Recorder, Tracer};
+///
+/// // The evaluator's own two, and no others.
+/// fn records<'c>(_: &impl Recorder<'c>) {}
+/// records(&NoTrace);
+/// records(&Tracer::default());
+/// ```
 pub trait Recorder<'c>: sealed::Sealed {
     /// A condition is about to be checked.
+    ///
+    /// ```
+    /// use teistro_rules::trace::{NoTrace, Recorder};
+    ///
+    /// let mut none = NoTrace;
+    /// none.enter();
+    /// ```
     fn enter(&mut self);
     /// A reference resolved, built only if the recorder keeps it.
+    ///
+    /// ```
+    /// use teistro_rules::trace::{NoTrace, Recorder};
+    ///
+    /// // `evaluate` keeps nothing, so nothing is built.
+    /// NoTrace.resolved(|| unreachable!("never built"));
+    /// ```
     fn resolved(&mut self, resolved: impl FnOnce() -> Resolved);
     /// The condition entered last was checked, adding the bodies `added`
     /// gives, built only if the recorder keeps them.
+    ///
+    /// ```
+    /// use teistro_rules::Condition;
+    /// use teistro_rules::trace::{NoTrace, Recorder};
+    ///
+    /// let day: Condition = serde_json::from_str(r#"{"type": "birth-by-day"}"#)?;
+    /// let mut none = NoTrace;
+    /// none.enter();
+    /// none.leave(&day, true, || unreachable!("never built"));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     fn leave(&mut self, condition: &'c Condition, held: bool, added: impl FnOnce() -> Vec<Body>);
 }
 
@@ -197,6 +373,13 @@ mod sealed {
 }
 
 /// The recorder that keeps nothing.
+///
+/// ```
+/// use teistro_rules::trace::NoTrace;
+///
+/// // What `evaluate` records with: nothing, at no cost.
+/// assert_eq!(std::mem::size_of::<NoTrace>(), 0);
+/// ```
 #[derive(Clone, Copy, Debug, Default)]
 pub struct NoTrace;
 
@@ -212,6 +395,50 @@ impl Recorder<'_> for NoTrace {
 }
 
 /// The recorder that builds the tree.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings, Rule};
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Moon), Rashi::Taurus);
+/// # place(&mut chart, Body::Graha(Graha::Jupiter), Rashi::Leo);
+/// # let rule: Rule = serde_json::from_str(r#"{
+/// #     "key": "GAJA_KESARI", "category": "yoga", "source": {"text": "an example"},
+/// #     "conditions": [{"type": "planet-in-kendra-from", "planet": "JUPITER", "reference": "MOON"}]
+/// # }"#)?;
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let result = evaluator.evaluate(&rule);
+///
+/// // What `explain` records with: the tree of each condition checked.
+/// let explanation = evaluator.explain(&rule);
+/// assert_eq!(explanation.conditions.len(), 1);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, Default)]
 pub struct Tracer<'c> {
     /// The steps finished at each open depth, the outermost first, with the

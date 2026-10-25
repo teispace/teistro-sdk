@@ -42,6 +42,45 @@ const NINE: [Graha; 9] = [
 ];
 
 /// Why a graha is a maraka.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let marakas = evaluator.marakas();
+///
+/// use teistro_rules::longevity::{Reason, Reasons};
+///
+/// assert!(marakas.of(Graha::Venus).contains(Reason::LordOfSecond));
+/// assert_eq!(serde_json::to_string(&Reason::VadhaStarLord)?, r#""vadha-star-lord""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -95,6 +134,13 @@ pub enum Reason {
 
 impl Reason {
     /// Every reason, in the verses' order.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::Reason;
+    ///
+    /// assert_eq!(Reason::ALL[0], Reason::LordOfSecond);
+    /// assert_eq!(Reason::ALL[19], Reason::TwentySecondDecanateLord);
+    /// ```
     pub const ALL: [Reason; 20] = [
         Reason::LordOfSecond,
         Reason::LordOfSeventh,
@@ -120,6 +166,14 @@ impl Reason {
 
     /// The six reasons of vv. 3 to 5, which make a graha a maraka in the class
     /// a rule names `any-maraka`.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Brings, Reason};
+    ///
+    /// // Every one of vv. 3 to 5's reasons brings death.
+    /// assert!(Reason::PRIME.iter().all(|reason| reason.brings() == Brings::Death));
+    /// assert!(!Reason::PRIME.contains(&Reason::LordOfEighth));
+    /// ```
     pub const PRIME: [Reason; 6] = [
         Reason::LordOfSecond,
         Reason::LordOfSeventh,
@@ -130,6 +184,14 @@ impl Reason {
     ];
 
     /// What the verses say its periods bring.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Brings, Reason};
+    ///
+    /// // A benefic lording the second from the Moon brings illness, not death (v. 18).
+    /// assert_eq!(Reason::BeneficLordFromMoon.brings(), Brings::Difficulty);
+    /// assert_eq!(Reason::LordOfSeventh.brings(), Brings::Death);
+    /// ```
     #[must_use]
     pub const fn brings(self) -> Brings {
         match self {
@@ -140,6 +202,16 @@ impl Reason {
 
     /// The class of life whose span this reason's periods belong to, where the
     /// verse ties it to one (v. 15).
+    ///
+    /// ```
+    /// use teistro_rules::LifeClass;
+    /// use teistro_rules::longevity::Reason;
+    ///
+    /// // The third, fifth and seventh stars for short, medium and long lives (v. 15).
+    /// assert_eq!(Reason::VipatStarLord.class(), Some(LifeClass::Short));
+    /// assert_eq!(Reason::VadhaStarLord.class(), Some(LifeClass::Long));
+    /// assert_eq!(Reason::LordOfSecond.class(), None);
+    /// ```
     #[must_use]
     pub const fn class(self) -> Option<LifeClass> {
         match self {
@@ -156,6 +228,13 @@ impl Reason {
 }
 
 /// What a maraka's periods bring, as the verses grade it.
+///
+/// ```
+/// use teistro_rules::longevity::Brings;
+///
+/// // Death is the graver.
+/// assert!(Brings::Death > Brings::Difficulty);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -167,32 +246,77 @@ pub enum Brings {
 }
 
 /// A set of reasons.
+///
+/// ```
+/// use teistro_rules::longevity::{Reason, Reasons};
+///
+/// let reasons = Reasons::NONE.with(Reason::LordOfSixth).with(Reason::LordOfSecond);
+/// // In the verses' order, and written as a list.
+/// assert_eq!(reasons.iter().collect::<Vec<_>>(), [Reason::LordOfSecond, Reason::LordOfSixth]);
+/// assert_eq!(serde_json::to_string(&reasons)?, r#"["lord-of-second","lord-of-sixth"]"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Reasons(u32);
 
 impl Reasons {
     /// No reason.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::Reasons;
+    ///
+    /// assert!(Reasons::NONE.is_empty());
+    /// assert_eq!(Reasons::NONE.brings(), None);
+    /// ```
     pub const NONE: Reasons = Reasons(0);
 
     /// The same set and `reason`.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Reason, Reasons};
+    ///
+    /// let once = Reasons::NONE.with(Reason::NodePlaced);
+    /// assert_eq!(once.with(Reason::NodePlaced), once);
+    /// ```
     #[must_use]
     pub const fn with(self, reason: Reason) -> Reasons {
         Reasons(self.0 | reason.bit())
     }
 
     /// Whether it holds `reason`.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Reason, Reasons};
+    ///
+    /// let reasons = Reasons::NONE.with(Reason::LordOfEighth);
+    /// assert!(reasons.contains(Reason::LordOfEighth));
+    /// assert!(!reasons.contains(Reason::LordOfSixth));
+    /// ```
     #[must_use]
     pub const fn contains(self, reason: Reason) -> bool {
         self.0 & reason.bit() != 0
     }
 
     /// Whether it holds none.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Reason, Reasons};
+    ///
+    /// assert!(!Reasons::NONE.with(Reason::LordOfSixth).is_empty());
+    /// ```
     #[must_use]
     pub const fn is_empty(self) -> bool {
         self.0 == 0
     }
 
     /// The reasons it holds, in the verses' order.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Reason, Reasons};
+    ///
+    /// assert_eq!(Reasons::NONE.with(Reason::RahuForItsLagnas).iter().count(), 1);
+    /// assert_eq!(Reasons::NONE.iter().next(), None);
+    /// ```
     pub fn iter(self) -> impl Iterator<Item = Reason> {
         Reason::ALL
             .into_iter()
@@ -200,12 +324,29 @@ impl Reasons {
     }
 
     /// The gravest thing its reasons bring, when it holds any.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Brings, Reason, Reasons};
+    ///
+    /// // The gravest of them.
+    /// let both = Reasons::NONE.with(Reason::RahuInDusthana).with(Reason::LordOfSixth);
+    /// assert_eq!(both.brings(), Some(Brings::Death));
+    /// assert_eq!(Reasons::NONE.with(Reason::RahuInDusthana).brings(), Some(Brings::Difficulty));
+    /// ```
     #[must_use]
     pub fn brings(self) -> Option<Brings> {
         self.iter().map(Reason::brings).max()
     }
 
     /// Whether it holds one of the six reasons of vv. 3 to 5.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Reason, Reasons};
+    ///
+    /// assert!(Reasons::NONE.with(Reason::MaleficInSeventh).is_prime());
+    /// // The eighth lord kills, and is not one of the six.
+    /// assert!(!Reasons::NONE.with(Reason::LordOfEighth).is_prime());
+    /// ```
     #[must_use]
     pub fn is_prime(self) -> bool {
         Reason::PRIME.iter().any(|reason| self.contains(*reason))
@@ -235,6 +376,45 @@ impl Serialize for Reasons {
 }
 
 /// Every graha's reasons for being a maraka on a chart.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let marakas = evaluator.marakas();
+///
+/// use teistro_rules::longevity::Reason;
+///
+/// // Aries rising: Mars lords the eighth, Mercury the sixth.
+/// assert!(marakas.of(Graha::Mars).contains(Reason::LordOfEighth));
+/// assert!(marakas.of(Graha::Mercury).contains(Reason::LordOfSixth));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Marakas {
@@ -244,6 +424,45 @@ pub struct Marakas {
 
 impl Marakas {
     /// A graha's reasons.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings};
+    /// #
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let marakas = evaluator.marakas();
+    ///
+    /// use teistro_rules::longevity::Reason;
+    ///
+    /// let venus = marakas.of(Graha::Venus);
+    /// assert!(venus.contains(Reason::LordOfSecond) && venus.contains(Reason::LordOfSeventh));
+    /// assert!(venus.is_prime());
+    /// ```
     #[must_use]
     pub fn of(&self, graha: Graha) -> Reasons {
         NINE.iter()
@@ -254,6 +473,44 @@ impl Marakas {
     }
 
     /// The grahas with any reason, and their reasons.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings};
+    /// #
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let marakas = evaluator.marakas();
+    ///
+    /// // Only the grahas with a reason, in the catalogue's order.
+    /// let grahas: Vec<Graha> = marakas.iter().map(|(graha, _)| graha).collect();
+    /// assert!(grahas.contains(&Graha::Venus));
+    /// assert!(marakas.iter().all(|(_, reasons)| !reasons.is_empty()));
+    /// ```
     pub fn iter(&self) -> impl Iterator<Item = (Graha, Reasons)> + '_ {
         NINE.into_iter()
             .zip(self.by_graha)
@@ -263,6 +520,13 @@ impl Marakas {
 
 /// How a period is to be presented: always as a vulnerability to be read with
 /// the span of life, never as a date. A consumer rendering one honours it.
+///
+/// ```
+/// use teistro_rules::longevity::Presentation;
+///
+/// assert_eq!(serde_json::to_string(&Presentation::Vulnerability)?, r#""vulnerability""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -272,6 +536,49 @@ pub enum Presentation {
 }
 
 /// What the running periods of a dasha are, as marakas.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let marakas = evaluator.marakas();
+///
+/// use teistro_rules::Running;
+/// use teistro_rules::longevity::{Brings, Presentation};
+///
+/// // Venus's mahadasha, Mercury's antardasha: the sixth lord's sub-period.
+/// let periods = evaluator.vulnerability(&marakas, [Running::graha(Graha::Venus), Running::graha(Graha::Mercury)]);
+/// assert_eq!(periods.depth, 2);
+/// assert!(periods.dusthana_sub_period);
+/// assert_eq!(periods.brings, Some(Brings::Death));
+/// assert_eq!(periods.presentation, Presentation::Vulnerability);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Vulnerability {
@@ -293,6 +600,15 @@ pub struct Vulnerability {
 
 /// The ages a class of life's span runs to (vv. 10 to 11): short to 32,
 /// medium to 64, long to 100, and past that the supreme; in years from birth.
+///
+/// ```
+/// use teistro_rules::LifeClass;
+/// use teistro_rules::longevity::age_span;
+///
+/// assert_eq!(age_span(LifeClass::Medium), (32.0, Some(64.0)));
+/// // Past a hundred, the supreme: no end.
+/// assert_eq!(age_span(LifeClass::Divine), (100.0, None));
+/// ```
 #[must_use]
 pub const fn age_span(class: LifeClass) -> (f64, Option<f64>) {
     match class {
@@ -308,6 +624,47 @@ impl Evaluator<'_> {
     /// whole signs from the lagna, a malefic is one under the readings as
     /// every rule's is, and "related" a shared sign or a mutual aspect (crux
     /// C105).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings};
+    /// #
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let marakas = evaluator.marakas();
+    ///
+    /// use teistro_rules::longevity::Reason;
+    ///
+    /// // Taurus rising instead: Mercury lords the second, Mars the seventh.
+    /// chart.placements[teistro_rules::Body::Lagna.index()].sign = Rashi::Taurus;
+    /// let taurus = Evaluator::new(&chart, Readings::TEXTS).marakas();
+    /// assert!(taurus.of(Graha::Mercury).contains(Reason::LordOfSecond));
+    /// assert!(taurus.of(Graha::Mars).contains(Reason::LordOfSeventh));
+    /// ```
     #[must_use]
     pub fn marakas(&self) -> Marakas {
         let chart = self.chart();
@@ -408,6 +765,46 @@ impl Evaluator<'_> {
     /// What the running periods are, as marakas: each level's lord's reasons,
     /// v. 8's malefic major period in a malefic sub-period, and v. 19's
     /// sub-period of a dusthana lord.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings};
+    /// #
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let marakas = evaluator.marakas();
+    ///
+    /// use teistro_rules::Running;
+    ///
+    /// // Nothing running, nothing read.
+    /// let none = evaluator.vulnerability(&marakas, []);
+    /// assert_eq!((none.depth, none.brings), (0, None));
+    /// assert!(!none.malefic_in_malefic);
+    /// ```
     #[must_use]
     pub fn vulnerability(
         &self,
