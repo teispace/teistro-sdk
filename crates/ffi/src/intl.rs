@@ -521,6 +521,7 @@ pub fn params_from_json(text: &str) -> Result<Params, Error> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

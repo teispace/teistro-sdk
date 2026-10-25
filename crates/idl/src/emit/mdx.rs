@@ -718,6 +718,7 @@ fn plural(count: usize) -> &'static str {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{group_slug, group_title, list, one_line, summary, text};
 

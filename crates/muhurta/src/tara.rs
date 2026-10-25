@@ -249,6 +249,7 @@ fn count_from(from: u16, to: u16, n: u16) -> u8 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{ChandraBala, Tara, chandra_house, tara};
     use teistro_core::catalogue::{Nakshatra, Rashi};

@@ -7519,6 +7519,7 @@ pub unsafe extern "C" fn ts_chart_found(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

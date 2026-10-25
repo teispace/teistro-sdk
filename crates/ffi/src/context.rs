@@ -1183,6 +1183,7 @@ pub unsafe extern "C" fn ts_context_settings_hash(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

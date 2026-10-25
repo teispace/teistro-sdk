@@ -292,6 +292,7 @@ fn civil(days: i64) -> (i64, u32, u32) {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[allow(clippy::unwrap_used, reason = "a test fails by panicking")]
 mod tests {
     use super::*;

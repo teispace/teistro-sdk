@@ -2058,6 +2058,7 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{ctypes_scalar, format_code, identifier, member, python_scalar, struct_name};
     use crate::model::{EnumValue, Scalar};

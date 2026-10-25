@@ -33,6 +33,7 @@
 //! # Ok::<(), teistro_core::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 /// The module name KP's house system is overridden under,
@@ -54,4 +55,5 @@ pub use ruling::{Agency, Reason, Rejection, Ruler, RulingPlanets, RulingRules};
 pub use significators::{HouseSignificators, NodeAgency, Significators, Signified};
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;

@@ -155,6 +155,7 @@ pub unsafe extern "C" fn ts_ephemeris_call(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

@@ -196,6 +196,7 @@ pub fn arudha_padas_by(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::*;
 

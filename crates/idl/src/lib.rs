@@ -45,6 +45,8 @@
 //! assert_eq!(reader.column("rows", "x").expect("a column").iter().map(|v| v.as_f64()).collect::<Vec<_>>(), [1.5, 2.5]);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod blob;
 pub mod emit;
 #[cfg(feature = "extract")]

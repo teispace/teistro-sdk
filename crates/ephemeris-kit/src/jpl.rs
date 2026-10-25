@@ -483,6 +483,7 @@ pub const KNOWN: [Divergence; 3] = [
 ];
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{TARGETS, path, separation_deg, tdb_minus_tt};
 

@@ -976,6 +976,7 @@ fn combinations(bodies: &[Body], size: usize) -> Vec<Vec<Body>> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::expect_used,

@@ -206,6 +206,7 @@ fn at_bearing(radius: f64, degrees: f64) -> Point {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

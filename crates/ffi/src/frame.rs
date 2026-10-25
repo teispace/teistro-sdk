@@ -283,6 +283,7 @@ pub unsafe extern "C" fn ts_frame_unpack(bits: u32, out_frame: *mut TsFrame) -> 
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
 

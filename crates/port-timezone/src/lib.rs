@@ -10,6 +10,8 @@
 //! policies that choose among candidates, and the metadata a chart
 //! keeps, live in the time layer, not here.
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 use core::fmt;
 
 use teistro_core::error::Error;
@@ -364,6 +366,7 @@ impl TimeZoneProvider for FixedZone {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 

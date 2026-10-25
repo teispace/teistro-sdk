@@ -400,6 +400,7 @@ fn root_variable(message: &Message, variable: &str) -> Option<String> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

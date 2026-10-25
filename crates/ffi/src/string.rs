@@ -156,6 +156,7 @@ pub unsafe extern "C" fn ts_string_free(string: *mut TsString) {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::*;
 

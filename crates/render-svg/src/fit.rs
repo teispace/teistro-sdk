@@ -162,6 +162,7 @@ pub(crate) const fn to_unit(count: usize) -> f64 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

@@ -42,6 +42,8 @@
 //! assert!(is_dusthana(6) && teistro_houses::classify::is_upachaya(6));
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod chart;
 pub mod classify;
 pub mod system;

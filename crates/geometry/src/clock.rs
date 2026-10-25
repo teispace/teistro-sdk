@@ -68,6 +68,7 @@ pub fn at(centre: Point, radius: f64, half_hours: u32) -> Point {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::float_cmp, reason = "the quarter hours are exact in binary")]
 

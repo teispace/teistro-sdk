@@ -467,6 +467,7 @@ pub fn sign_of(longitude_deg: f64) -> Option<Rashi> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

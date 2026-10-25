@@ -40,6 +40,8 @@
 //! assert_eq!(columns.frame, Frame::CANONICAL);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod angles;
 pub mod body;
 pub mod caching;

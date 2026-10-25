@@ -94,6 +94,7 @@ fn first_entry(spell: &Spell) -> f64 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use teistro_core::catalogue::Rashi;
     use teistro_gochar::Reference;

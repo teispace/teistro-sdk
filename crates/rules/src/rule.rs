@@ -1351,6 +1351,7 @@ pub fn check_references(rules: &[Rule]) -> Result<(), String> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

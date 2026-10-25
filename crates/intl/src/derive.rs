@@ -318,6 +318,7 @@ fn pretty(value: &Json) -> Result<String, String> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

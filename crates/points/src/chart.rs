@@ -254,6 +254,7 @@ fn longitude(foundation: &ChartFoundation, graha: Graha) -> Result<f64, Error> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

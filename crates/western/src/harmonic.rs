@@ -451,6 +451,7 @@ fn multiple_of(radical_deg: f64, harmonic: u16) -> u16 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

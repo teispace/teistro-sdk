@@ -927,6 +927,7 @@ impl From<teistro::Chosen> for TsVarsheshaChosen {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{graha_bits, graha_mask};
     use teistro::catalogue::Graha;

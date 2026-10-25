@@ -364,6 +364,7 @@ pub fn moon_weakness(sky: &AnnualSky, rules: MoonRules) -> Result<MoonWeakness, 
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

@@ -826,6 +826,7 @@ fn raman_marriage_day() -> DayRules {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[allow(clippy::expect_used, reason = "tests fail by panicking")]
 mod tests {
     use super::{ActivityRules, Bar, BlackoutKind, Pada};

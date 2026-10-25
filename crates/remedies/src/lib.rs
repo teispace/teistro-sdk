@@ -27,6 +27,7 @@
 //! assert_eq!(taurus.row(Graha::Jupiter).map(|row| row.nature), Some(Nature::Malefic));
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 mod dasha;
@@ -36,14 +37,19 @@ mod shanti;
 mod subjects;
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod dasha_tests;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod devata_tests;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod shanti_tests;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod subjects_tests;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
 
 pub use dasha::{Condition, DashaShanti, Remedy, dasha_shanti, dasha_shantis};

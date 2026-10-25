@@ -359,6 +359,7 @@ fn check_body(body: Moving, field: &str) -> Result<(), Error> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

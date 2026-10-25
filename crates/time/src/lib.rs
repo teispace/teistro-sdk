@@ -43,6 +43,8 @@
 //! assert!((resolved.instant.get() - 2_446_431.274_305_6).abs() < 1e-6);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod civil;
 pub mod ghati;
 pub mod hora;

@@ -4,6 +4,8 @@
 //! positions are not astronomy, so it has no corpus class; `sdk-only` is
 //! checked all the same.
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 use std::process::ExitCode;
 
 use teistro_ephemeris_kit::runner::{self, Grid};

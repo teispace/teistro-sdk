@@ -1766,6 +1766,7 @@ impl<'b, 's> Reader<'b, 's> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

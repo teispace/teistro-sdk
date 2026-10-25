@@ -18,6 +18,8 @@
 //! assert!(report.passed, "{}", report.markdown());
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod bench;
 pub mod corpus;
 pub mod jpl;

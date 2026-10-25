@@ -578,6 +578,7 @@ hand_schema!(Nas, "Nas", {
 });
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

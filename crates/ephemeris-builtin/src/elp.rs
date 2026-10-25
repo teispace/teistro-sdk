@@ -1048,6 +1048,7 @@ pub fn to_rectangular_and_rate(sums: [f64; 3], rates: [f64; 3], jd: f64) -> ([f6
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,
@@ -1326,6 +1327,7 @@ pub mod ingest {
     }
 
     #[cfg(test)]
+    #[cfg_attr(coverage_nightly, coverage(off))]
     mod tests {
         #![allow(
             clippy::unwrap_used,

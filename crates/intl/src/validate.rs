@@ -861,6 +861,7 @@ fn check_parity(findings: &mut Findings, tag: &str, key: &str, this: &Signature,
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::panic, reason = "tests fail by panicking")]
 

@@ -209,6 +209,7 @@ fn items<'v>(value: &'v mut Value, field: &str) -> impl Iterator<Item = &'v mut 
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[allow(clippy::expect_used, clippy::panic, reason = "tests fail by panicking")]
 mod tests {
     use std::collections::BTreeSet;

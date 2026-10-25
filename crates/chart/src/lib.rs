@@ -30,6 +30,8 @@
 //! to compute, never what is computed.** A field belongs here when more
 //! than one module above needs it and no module above can produce it.
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod bhava;
 pub mod day;
 pub mod foundation;

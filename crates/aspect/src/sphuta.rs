@@ -109,6 +109,7 @@ pub fn drishti(graha: Graha, aspecting: f64, aspected: f64) -> f64 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::float_cmp, reason = "the construction's corners are exact")]
 

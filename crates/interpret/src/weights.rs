@@ -102,6 +102,7 @@ pub fn vimshopaka(reading: &VimshopakaReading) -> Plan {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

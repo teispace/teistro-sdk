@@ -12,6 +12,7 @@
 //! `INVALID_ARG` with the text it was given, which is how a test sees an
 //! adapter's own refusal pass through the loader unchanged.
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![allow(
     unsafe_code,
     reason = "`export_provider!` expands the plugin's `no_mangle` C entry points here"

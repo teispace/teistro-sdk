@@ -123,6 +123,7 @@ fn to_edge(longitude: Nas, width: i64) -> f64 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

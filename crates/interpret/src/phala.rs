@@ -166,6 +166,7 @@ pub fn phala(chart: &RuleChart, vocabulary: &dyn Vocabulary) -> Plan {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

@@ -41,6 +41,8 @@
 //! and `Longitude`. Eight of the boundary's forty-six entry points are
 //! that marshalling and nothing else.
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 mod area;
 mod asked;
 #[cfg(feature = "western")]

@@ -40,6 +40,8 @@
 //! unsafe { ts_context_free(context) };
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod blob;
 pub mod calendar;
 #[cfg(feature = "chart")]
@@ -257,6 +259,7 @@ pub extern "C" fn ts_status_message(status: i32) -> *const c_char {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         unsafe_code,

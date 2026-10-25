@@ -17,6 +17,7 @@
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 mod ashta;
@@ -53,12 +54,17 @@ pub use porutham::{
 pub use role::MatchRole;
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod doshas_tests;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod kuja_tests;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod name_tests;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod porutham_tests;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;

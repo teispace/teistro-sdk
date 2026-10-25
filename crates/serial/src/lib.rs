@@ -52,6 +52,8 @@
 //! assert_ne!(sealed.content_hash(), Hash::of(&[]));
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod canonical;
 pub mod document;
 pub mod dossier;

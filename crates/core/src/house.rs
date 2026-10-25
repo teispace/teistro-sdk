@@ -345,6 +345,7 @@ pub fn sripati_mid_points(lagna_deg: f64, midheaven_deg: f64) -> [f64; 12] {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

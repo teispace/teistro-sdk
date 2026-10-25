@@ -342,6 +342,7 @@ pub fn polygon_contains(points: &[Point], point: Point) -> bool {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::float_cmp, reason = "the values are exact in binary")]
 

@@ -907,6 +907,7 @@ fn step(from: Rashi, house: u8) -> Rashi {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::*;
     use crate::chart::Readings;

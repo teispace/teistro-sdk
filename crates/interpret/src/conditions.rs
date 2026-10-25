@@ -124,6 +124,7 @@ fn say_state(plan: &mut Plan, state: State, vocabulary: &dyn Vocabulary) {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

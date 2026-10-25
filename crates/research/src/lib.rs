@@ -37,6 +37,7 @@
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 use std::collections::BTreeMap;
@@ -55,6 +56,7 @@ mod recombined;
 mod rng;
 mod special;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
 
 pub use bits::{Cell, Matrix};

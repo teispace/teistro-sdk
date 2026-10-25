@@ -19,6 +19,8 @@
 //! tables; it has no use for a parser of a 5.7 MB text file, and paying
 //! for one in a wasm binary would be the opposite of the point.
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod chebyshev;
 pub mod elp;
 pub mod fitted;

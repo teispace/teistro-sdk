@@ -35,6 +35,8 @@
 //! assert_eq!(longitude.nakshatra().key(), "ANURADHA");
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 /// Implements `schemars::JsonSchema` for a type that serialises itself by
 /// hand, with the schema its hand-written reader accepts. The derive covers
 /// every type serde's own attributes describe; these are the few it cannot

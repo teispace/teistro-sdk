@@ -48,6 +48,10 @@ required-features = ["load"]
 # the workspace's `forbid` here, and the rest of the workspace table is
 # kept (docs/04-implementation/README.md, coding standards).
 [lints.rust]
+# verify's coverage job measures shipped code only: cargo-llvm-cov sets
+# `coverage_nightly` on the nightly, under which every test module is
+# `coverage(off)` (`xtask/src/coverage.rs`).
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 unsafe_code = "deny"
 missing_docs = "warn"
 missing_debug_implementations = "warn"

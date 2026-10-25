@@ -727,6 +727,7 @@ pub fn parts<C: HostCallback + Send + Sync>(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

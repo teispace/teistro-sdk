@@ -21,6 +21,7 @@
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 /// The module name the accidental fortitudes' house division is overridden

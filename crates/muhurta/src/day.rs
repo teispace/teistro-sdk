@@ -335,6 +335,7 @@ pub(crate) const fn reported(grade: Grade) -> Option<Grade> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::DayRules;
     use teistro_core::catalogue::{Tithi, Vara};

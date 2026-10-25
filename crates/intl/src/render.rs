@@ -2764,6 +2764,7 @@ impl<'a> Eval<'a> {
 static EMPTY: Pattern = Pattern(Vec::new());
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::panic, reason = "tests fail by panicking")]
 

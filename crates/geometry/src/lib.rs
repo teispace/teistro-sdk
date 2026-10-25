@@ -48,6 +48,8 @@
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod clock;
 pub mod drawing;
 pub mod layout;

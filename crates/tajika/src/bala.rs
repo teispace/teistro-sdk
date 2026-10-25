@@ -987,6 +987,7 @@ pub(crate) fn parashari_drekkana_lord(longitude_deg: f64) -> Graha {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

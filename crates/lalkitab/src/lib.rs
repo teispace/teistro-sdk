@@ -26,6 +26,8 @@
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod aspects;
 pub mod cycle;
 mod life;
@@ -35,6 +37,7 @@ mod teva;
 mod varshphal;
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
 
 pub use cycle::{CycleStart, Period};

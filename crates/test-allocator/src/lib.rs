@@ -42,6 +42,8 @@
 //! assert_eq!((outer.bytes, outer.peak, outer.retained()), (150, 150, 0));
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;
 

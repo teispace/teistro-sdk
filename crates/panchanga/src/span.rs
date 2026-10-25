@@ -304,6 +304,7 @@ pub fn at<T>(spans: &[Span<T>], instant: JulianDay<Utc>) -> Option<&Span<T>> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

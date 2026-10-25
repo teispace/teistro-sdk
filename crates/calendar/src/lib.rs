@@ -14,6 +14,8 @@
 //! assert_eq!(day.weekday().to_string(), "Tuesday");
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod bangladeshi;
 pub mod bikram_sambat;
 pub mod date;

@@ -273,6 +273,7 @@ pub fn sayanadi(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::unwrap_used, reason = "tests unwrap what they built")]
 

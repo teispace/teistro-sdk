@@ -1738,6 +1738,7 @@ fn render_free_function(out: &mut String, api: &Api, f: &FunctionDef, b: Backend
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
 

@@ -1188,6 +1188,7 @@ fn kinds_over(span: Interval, season: &[Blackout]) -> Vec<BlackoutKind> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{covered, same_day};
     use crate::season::{Blackout, BlackoutKind};

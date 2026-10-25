@@ -29,6 +29,7 @@
 //! assert!(sun.fruitful_now);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 use serde::{Deserialize, Serialize};
@@ -592,4 +593,5 @@ pub mod sade_sati;
 pub mod sarvatobhadra;
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;

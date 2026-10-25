@@ -58,6 +58,7 @@ pub fn within(first_deg: f64, second_deg: f64, orb_deg: f64) -> bool {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{together, within};
     use teistro_core::catalogue::Rashi;

@@ -1506,6 +1506,7 @@ fn transition(previous: &Visibility, current: &Visibility) -> Option<HeliacalEve
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

@@ -745,6 +745,7 @@ pub fn part_of(group: &Group, longitude: Nas, divisions: u16) -> u16 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

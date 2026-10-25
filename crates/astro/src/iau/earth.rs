@@ -262,6 +262,7 @@ pub fn pvtob(elong: f64, phi: f64, hm: f64, xp: f64, yp: f64, sp: f64, theta: f6
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

@@ -349,6 +349,7 @@ pub fn check(open: Open<'_>) -> Check {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::first_difference;
     use serde_json::json;

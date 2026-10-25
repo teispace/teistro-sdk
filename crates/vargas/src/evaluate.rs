@@ -138,6 +138,7 @@ pub fn table(scheme: &Scheme) -> Vec<Vec<Rashi>> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

@@ -14,6 +14,7 @@
 //! teistro-scenario values      # every value of every section, as the hash matrix compares them
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 // A measurement binary: it reports through stdout and exits on a name it
 // does not know, so the library lints against printing are allowed here
 // and in no library crate.
