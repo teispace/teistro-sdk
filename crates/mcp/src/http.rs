@@ -47,9 +47,29 @@ const LINGER_BYTES: usize = 1 << 20;
 const LOOK: Duration = Duration::from_millis(50);
 
 /// Builds the server a worker thread answers with.
+///
+/// ```
+/// use std::sync::Arc;
+/// use teistro_mcp::http::MakeServer;
+/// use teistro_mcp::{Detail, Engine, Server};
+///
+/// // Each worker builds its own: a context is neither `Send` nor `Sync`.
+/// let make: Arc<MakeServer> = Arc::new(|| Ok(Server::new(Engine::Builtin).with_detail(Detail::Full)));
+/// assert!(make().is_ok());
+/// ```
 pub type MakeServer = dyn Fn() -> Result<Server, teistro::Error> + Send + Sync;
 
 /// How the HTTP transport serves.
+///
+/// ```
+/// use teistro_mcp::http::Http;
+///
+/// let shipped = Http::default();
+/// assert_eq!((shipped.path.as_str(), shipped.workers, shipped.rate), ("/mcp", 4, Some(50)));
+/// // A browser app allowed beside the loopback origins.
+/// let http = Http { origins: vec![String::from("https://app.example")], ..Http::default() };
+/// # let _ = http;
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Http {
     /// The path the endpoint answers at.
@@ -85,6 +105,34 @@ impl Default for Http {
 /// worker builds its server with `make` before the first connection is
 /// taken, so a server that cannot be built is reported here rather than
 /// to a caller.
+///
+/// ```
+/// use std::io::{Read as _, Write as _};
+/// use std::net::{TcpListener, TcpStream};
+/// use std::sync::Arc;
+/// use teistro_mcp::http::{self, Http, MakeServer};
+/// use teistro_mcp::{Engine, Server};
+///
+/// // Served on a loopback port of its own, one POST a message.
+/// let listener = TcpListener::bind("127.0.0.1:0")?;
+/// let address = listener.local_addr()?;
+/// let make: Arc<MakeServer> = Arc::new(|| Ok(Server::new(Engine::None)));
+/// std::thread::spawn(move || http::serve(&listener, &Http::default(), &make));
+///
+/// let body = r#"{"jsonrpc":"2.0","id":1,"method":"ping","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}}}"#;
+/// let mut stream = TcpStream::connect(address)?;
+/// write!(
+///     stream,
+///     "POST /mcp HTTP/1.1\r\nHost: localhost\r\nContent-Length: {}\r\nContent-Type: application/json\r\n\
+///      Accept: application/json, text/event-stream\r\nMCP-Protocol-Version: 2026-07-28\r\nMcp-Method: ping\r\n\r\n{body}",
+///     body.len()
+/// )?;
+/// let mut response = String::new();
+/// stream.read_to_string(&mut response)?;
+/// assert!(response.starts_with("HTTP/1.1 200"), "{response}");
+/// assert!(response.ends_with(r#""result":{}}"#), "{response}");
+/// # Ok::<(), std::io::Error>(())
+/// ```
 ///
 /// # Errors
 ///

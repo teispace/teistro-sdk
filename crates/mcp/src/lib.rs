@@ -60,13 +60,65 @@ pub use tool::{Call, Handler, Tool};
 pub use watch::{Interrupt, Notify};
 
 /// The stateless revision the server speaks.
+///
+/// ```
+/// # use serde_json::{Value, json};
+/// # use teistro_mcp::{Engine, Server};
+/// #
+/// # // One request under the stateless revision, its reply read back.
+/// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+/// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+/// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+/// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+/// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+/// # }
+/// # // The tool called `name` as `tools/list` states it.
+/// # fn listed(server: &mut Server, name: &str) -> Value {
+/// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+/// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+/// # }
+///
+/// use teistro_mcp::MODERN;
+///
+/// // A request naming the revision in its `_meta` is answered statelessly.
+/// let mut server = Server::new(Engine::None);
+/// assert_eq!(ask(&mut server, "ping", json!({}))["result"], json!({}));
+/// assert_eq!(MODERN, "2026-07-28");
+/// ```
 pub const MODERN: &str = "2026-07-28";
 /// The handshake revision the server speaks after `initialize`.
+///
+/// ```
+/// use serde_json::{Value, json};
+/// use teistro_mcp::{Engine, LEGACY, Server};
+///
+/// // `initialize` chooses the handshake revision for the process.
+/// let mut server = Server::new(Engine::None);
+/// let hello = json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+///     "protocolVersion": LEGACY, "capabilities": {}, "clientInfo": { "name": "acme", "version": "1" } } });
+/// let reply: Value = serde_json::from_str(&server.handle(&hello.to_string()).ok_or("answered")?)?;
+/// assert_eq!(reply["result"]["protocolVersion"], LEGACY);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const LEGACY: &str = "2025-11-25";
 /// How long a call is waited on before it is handed back as a task, unless
 /// the operator says otherwise ([`Server::with_task_patience`]).
+///
+/// ```
+/// use std::time::Duration;
+/// use teistro_mcp::TASK_PATIENCE;
+///
+/// assert_eq!(TASK_PATIENCE, Duration::from_secs(2));
+/// ```
 pub const TASK_PATIENCE: Duration = tasks::PATIENCE;
 /// Every revision the server speaks, newest first.
+///
+/// ```
+/// use teistro_mcp::{LEGACY, MODERN, SUPPORTED};
+///
+/// // Newest first.
+/// assert_eq!(SUPPORTED, [MODERN, LEGACY]);
+/// ```
 pub const SUPPORTED: [&str; 2] = [MODERN, LEGACY];
 
 const VERSION_META: &str = "io.modelcontextprotocol/protocolVersion";
@@ -104,6 +156,30 @@ field, the accepted range and a hint: fix that field and call again.";
 
 /// The ephemeris every context computes with, chosen on the server's
 /// command line and never by a tool argument (D6).
+///
+/// ```
+/// # use serde_json::{Value, json};
+/// # use teistro_mcp::{Engine, Server};
+/// #
+/// # // One request under the stateless revision, its reply read back.
+/// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+/// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+/// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+/// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+/// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+/// # }
+/// # // The tool called `name` as `tools/list` states it.
+/// # fn listed(server: &mut Server, name: &str) -> Value {
+/// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+/// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+/// # }
+///
+/// // With no ephemeris, numerology still answers.
+/// let mut server = Server::new(Engine::None);
+/// let reply = ask(&mut server, "tools/call", json!({ "name": "numerology.profile", "arguments": { "request":
+///     { "name": "Henry Elder", "date": { "year": 1872, "month": 1, "day": 17 } } } }));
+/// assert_eq!(reply["result"]["isError"], false, "{reply}");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Engine {
     /// The analytic ephemeris the SDK carries.
@@ -116,9 +192,23 @@ pub enum Engine {
 
 impl Engine {
     /// The names [`Engine::from_name`] reads, as every binding names them.
+    ///
+    /// ```
+    /// use teistro_mcp::Engine;
+    ///
+    /// assert!(Engine::NAMES.iter().all(|name| Engine::from_name(name).is_some()));
+    /// ```
     pub const NAMES: [&'static str; 3] = ["BUILTIN", "SURYA_SIDDHANTA", "NONE"];
 
     /// The engine called `name`.
+    ///
+    /// ```
+    /// use teistro_mcp::Engine;
+    ///
+    /// assert_eq!(Engine::from_name("SURYA_SIDDHANTA"), Some(Engine::SuryaSiddhanta));
+    /// // As the bindings spell it, and no other way.
+    /// assert_eq!(Engine::from_name("builtin"), None);
+    /// ```
     #[must_use]
     pub fn from_name(name: &str) -> Option<Engine> {
         match name {
@@ -200,6 +290,20 @@ type ContextKey = (String, String, String);
 
 /// Opens the engine a context computes with first: one provider per
 /// context, all over the one engine.
+///
+/// ```
+/// use teistro_mcp::{Engine, OpenEngine, Server};
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// // One provider for each context the server builds.
+/// let open: OpenEngine = Box::new(|| {
+///     let provider: Box<dyn EphemerisProvider> = Box::new(TestProvider::new());
+///     Ok(provider)
+/// });
+/// let server = Server::with_engine(Engine::Builtin, open)?;
+/// # let _ = server;
+/// # Ok::<(), teistro::Error>(())
+/// ```
 pub type OpenEngine = Box<dyn Fn() -> Result<Box<dyn EphemerisProvider>, Error> + Send + Sync>;
 
 /// The engine ahead of the server's own, and the operations of its own
@@ -271,6 +375,32 @@ impl Own {
 ///
 /// The contexts are a cache and not state: no answer depends on what was
 /// asked before (D5).
+///
+/// ```
+/// # use serde_json::{Value, json};
+/// # use teistro_mcp::{Engine, Server};
+/// #
+/// # // One request under the stateless revision, its reply read back.
+/// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+/// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+/// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+/// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+/// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+/// # }
+/// # // The tool called `name` as `tools/list` states it.
+/// # fn listed(server: &mut Server, name: &str) -> Value {
+/// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+/// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+/// # }
+///
+/// // No answer depends on what was asked before.
+/// let mut server = Server::new(Engine::None);
+/// let first = ask(&mut server, "tools/call", json!({ "name": "numerology.profile", "arguments": { "request":
+///     { "name": "Henry Elder", "date": { "year": 1872, "month": 1, "day": 17 } } } }));
+/// let again = ask(&mut server, "tools/call", json!({ "name": "numerology.profile", "arguments": { "request":
+///     { "name": "Henry Elder", "date": { "year": 1872, "month": 1, "day": 17 } } } }));
+/// assert_eq!(first, again);
+/// ```
 pub struct Server {
     engine: Engine,
     plugin: Option<Plugin>,
@@ -320,6 +450,27 @@ impl core::fmt::Debug for Server {
 
 impl Server {
     /// A server computing with `engine`.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    ///
+    /// let mut server = Server::new(Engine::Builtin);
+    /// assert_eq!(listed(&mut server, "settings.describe")["annotations"]["readOnlyHint"], true);
+    /// ```
     #[must_use]
     pub fn new(engine: Engine) -> Server {
         Server {
@@ -345,6 +496,43 @@ impl Server {
     ///
     /// Call it after [`Server::with_engine`] or [`Server::with_plugin`],
     /// which build a server afresh.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    /// # use teistro_mcp::Tool;
+    /// #
+    /// # let greet = Tool::new(
+    /// #     "acme.greet",
+    /// #     "Greets a querent by name.",
+    /// #     json!({ "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] }),
+    /// #     |call| {
+    /// #         let name: String = call.argument("name")?.unwrap_or_default();
+    /// #         Ok(json!({ "greeting": format!("Namaste, {name}") }))
+    /// #     },
+    /// # );
+    ///
+    /// let mut server = Server::new(Engine::None).with_tool(greet.clone())?;
+    /// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.greet", "arguments": { "name": "Sita" } }));
+    /// assert_eq!(reply["result"]["structuredContent"]["greeting"], "Namaste, Sita");
+    /// // A name already listed is refused at registration.
+    /// let twice = server.with_tool(greet).unwrap_err();
+    /// assert_eq!(twice.field(), Some("tool.name"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -381,6 +569,22 @@ impl Server {
     /// them, so a file that is not a pack fails the server's start rather
     /// than a call.
     ///
+    /// ```
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // The repository's English entity names, built into a pack.
+    /// # let states = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/states");
+    /// # let tree = teistro::Tree::load(&states)?;
+    /// # let english = tree.locales.get("en-Latn").ok_or("an English corpus")?;
+    /// # let bytes = teistro::pack::build(english, "sdk.entity")?;
+    ///
+    /// let server = Server::new(Engine::None).with_pack(bytes)?;
+    /// assert_eq!(server.packs()[0].namespaces, ["sdk.entity"]);
+    /// // Bytes that are not a pack fail the start, not a call.
+    /// assert!(Server::new(Engine::None).with_pack(&b"TPK1 not a pack"[..]).is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `PACK` naming `bytes`: bytes that are not a pack, a pack built for
@@ -397,6 +601,22 @@ impl Server {
     }
 
     /// What each pack reported when it was loaded, in the order given.
+    ///
+    /// ```
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // The repository's English entity names, built into a pack.
+    /// # let states = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/states");
+    /// # let tree = teistro::Tree::load(&states)?;
+    /// # let english = tree.locales.get("en-Latn").ok_or("an English corpus")?;
+    /// # let bytes = teistro::pack::build(english, "sdk.entity")?;
+    ///
+    /// let server = Server::new(Engine::None).with_pack(bytes)?;
+    /// let loaded = server.packs();
+    /// assert_eq!((loaded.len(), loaded[0].locale.as_str()), (1, "en-Latn"));
+    /// assert!(Server::new(Engine::None).packs().is_empty());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn packs(&self) -> Vec<&Loaded> {
         self.own.packs.iter().map(|pack| &pack.loaded).collect()
@@ -438,6 +658,22 @@ impl Server {
     ///
     /// Checked now, as [`Server::with_layout`] checks a layout.
     ///
+    /// ```
+    /// use teistro::catalogue::Nakshatra;
+    /// use teistro::dasha::{UduDefinition, VIMSHOTTARI};
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// // Vimshottari's table under the operator's own key.
+    /// let twin = UduDefinition {
+    ///     lords: VIMSHOTTARI.lords.to_vec(),
+    ///     ..UduDefinition::of("ACME_VIMSHOTTARI", Nakshatra::Ashwini)
+    /// };
+    /// let server = Server::new(Engine::Builtin).with_dasha_system(twin.clone())?;
+    /// // The same key twice is refused, naming where.
+    /// assert!(server.with_dasha_system(twin).unwrap_err().field().is_some());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// What the context's builder refuses, naming the system by its place
@@ -462,6 +698,32 @@ impl Server {
     /// The same server, its tool list stating each record's schema in
     /// `detail`: [`Detail::Lean`] unless a client validating structured
     /// content asks for [`Detail::Full`].
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    ///
+    /// use teistro_mcp::Detail;
+    ///
+    /// // Full detail states each record's answer schema; lean leaves it out.
+    /// let mut full = Server::new(Engine::None).with_detail(Detail::Full);
+    /// let mut lean = Server::new(Engine::None);
+    /// assert!(listed(&mut full, "numerology.profile").get("outputSchema").is_some());
+    /// assert!(listed(&mut lean, "numerology.profile").get("outputSchema").is_none());
+    /// ```
     #[must_use]
     pub fn with_detail(self, detail: Detail) -> Server {
         Server {
@@ -473,6 +735,33 @@ impl Server {
 
     /// The same server, each request held to `limits` rather than the
     /// shipped [`Limits::default`].
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    ///
+    /// use teistro_mcp::Limits;
+    ///
+    /// // A message past the bound is refused unread, naming the bound.
+    /// let limits = Limits { message_bytes: Some(64), ..Limits::default() };
+    /// let mut server = Server::new(Engine::None).with_limits(limits);
+    /// let refused = ask(&mut server, "tools/call", json!({ "name": "numerology.profile", "arguments": { "request":
+    ///     { "name": "Henry Elder", "date": { "year": 1872, "month": 1, "day": 17 } } } }));
+    /// assert_eq!((refused["error"]["code"].as_i64(), refused["error"]["data"]["limit"].as_u64()), (Some(-32_600), Some(64)));
+    /// ```
     #[must_use]
     pub fn with_limits(self, limits: Limits) -> Server {
         Server { limits, ..self }
@@ -481,6 +770,28 @@ impl Server {
     /// The same server, sending each progress notification to `notify`
     /// as a line of JSON while a call carrying a `progressToken` runs.
     /// Without one, a token is accepted and nothing is sent.
+    ///
+    /// ```
+    /// use std::sync::{Arc, Mutex};
+    /// use serde_json::{Value, json};
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// // Every line the sink hears is a progress notification for the token.
+    /// let heard = Arc::new(Mutex::new(Vec::new()));
+    /// let sink = Arc::clone(&heard);
+    /// let mut server = Server::new(Engine::None).with_notify(move |line| sink.lock().map(|mut lines| lines.push(line)).unwrap_or(()));
+    /// let call = json!({ "jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+    ///     "_meta": { "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    ///                "io.modelcontextprotocol/clientCapabilities": {}, "progressToken": "p1" },
+    ///     "name": "numerology.profile", "arguments": { "request":
+    ///         { "name": "Henry Elder", "date": { "year": 1872, "month": 1, "day": 17 } } } } });
+    /// assert!(server.handle(&call.to_string()).is_some());
+    /// for line in heard.lock().map(|lines| lines.clone()).unwrap_or_default() {
+    ///     let note: Value = serde_json::from_str(&line)?;
+    ///     assert_eq!((note["method"].as_str(), note["params"]["progressToken"].as_str()), (Some("notifications/progress"), Some("p1")));
+    /// }
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn with_notify(self, notify: impl Fn(String) + Send + Sync + 'static) -> Server {
         self.watch.set_notify(Arc::new(notify));
@@ -493,6 +804,30 @@ impl Server {
     /// A zero patience makes every such call a task, however quick.
     /// The shipped patience is [`TASK_PATIENCE`], two seconds. A wasm32
     /// server makes no tasks, having no thread to run one on.
+    ///
+    /// ```
+    /// use std::time::Duration;
+    /// use serde_json::{Value, json};
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// // No patience at all: a call from a client declaring tasks is one.
+    /// let mut server = Server::new(Engine::None).with_task_patience(Some(Duration::ZERO));
+    /// let call = |tasks: bool| {
+    ///     let capabilities = if tasks { json!({ "extensions": { "io.modelcontextprotocol/tasks": {} } }) } else { json!({}) };
+    ///     json!({ "jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+    ///         "_meta": { "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    ///                    "io.modelcontextprotocol/clientCapabilities": capabilities },
+    ///         "name": "numerology.profile", "arguments": { "request":
+    ///             { "name": "Henry Elder", "date": { "year": 1872, "month": 1, "day": 17 } } } } })
+    ///     .to_string()
+    /// };
+    /// let result = |reply: Option<String>| -> Value {
+    ///     reply.and_then(|reply| serde_json::from_str::<Value>(&reply).ok()).map(|reply| reply["result"].clone()).unwrap_or_default()
+    /// };
+    /// assert_eq!(result(server.handle(&call(true)))["resultType"], "task");
+    /// // One that does not declare them is answered inline.
+    /// assert_eq!(result(server.handle(&call(false)))["resultType"], "complete");
+    /// ```
     #[must_use]
     pub fn with_task_patience(self, patience: Option<Duration>) -> Server {
         Server {
@@ -514,6 +849,20 @@ impl Server {
     /// A handle that cancels a request while the server computes it, for
     /// the thread a transport reads its input on. A
     /// `notifications/cancelled` the server itself reads does the same.
+    ///
+    /// ```
+    /// use serde_json::json;
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// // Cancelled before it begins, a request is never answered.
+    /// let mut server = Server::new(Engine::None);
+    /// server.interrupt().cancel(&json!("five"));
+    /// let ping = json!({ "jsonrpc": "2.0", "id": "five", "method": "ping", "params": { "_meta": {
+    ///     "io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {} } } });
+    /// assert_eq!(server.handle(&ping.to_string()), None);
+    /// // The cancellation is spent once.
+    /// assert!(server.handle(&ping.to_string()).is_some());
+    /// ```
     #[must_use]
     pub fn interrupt(&self) -> Interrupt {
         self.watch.interrupt()
@@ -526,6 +875,34 @@ impl Server {
     /// of the engine's own is listed as a tool, `engine.<name>`, with its
     /// parameters as the input schema; one whose name an SDK tool already
     /// holds is reached through `engine.call` instead.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    ///
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// // The test provider first, the built-in where it does not answer.
+    /// let mut server = Server::with_engine(Engine::Builtin, Box::new(|| {
+    ///     let provider: Box<dyn EphemerisProvider> = Box::new(TestProvider::new());
+    ///     Ok(provider)
+    /// }))?;
+    /// assert_eq!(listed(&mut server, "chart.found")["name"], "chart.found");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -552,6 +929,18 @@ impl Server {
     /// `fallback` behind it: [`Server::with_engine`] over the adapter's
     /// providers.
     ///
+    /// ```no_run
+    /// use teistro_mcp::{Adapter, Engine, Server};
+    ///
+    /// // An adapter the operator installed, the built-in behind it; each
+    /// // operation of the engine's own is a tool, `engine.<name>`.
+    /// // SAFETY: the adapter is a file this program installed and trusts.
+    /// let adapter = unsafe { Adapter::load("/opt/adapters/libteimeris_teistro.so", None) }?;
+    /// let server = Server::with_plugin(Engine::Builtin, adapter)?;
+    /// # let _ = server;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A vtable the adapter wrote that does not bind, or a manifest the
@@ -568,6 +957,14 @@ impl Server {
     }
 
     /// The reply to one JSON-RPC message, or `None` for a notification.
+    ///
+    /// ```
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// // A notification has no reply.
+    /// let mut server = Server::new(Engine::None);
+    /// assert_eq!(server.handle(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#), None);
+    /// ```
     pub fn handle(&mut self, message: &str) -> Option<String> {
         self.handle_bytes(message.as_bytes())
     }
@@ -576,6 +973,17 @@ impl Server {
     /// or `None` for a notification. A message longer than the limit is
     /// refused unread, so a transport may stop reading one a byte past
     /// it.
+    ///
+    /// ```
+    /// use serde_json::Value;
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// // Bytes that are not JSON are a parse error under a null id.
+    /// let mut server = Server::new(Engine::None);
+    /// let reply: Value = serde_json::from_str(&server.handle_bytes(b"{not json").ok_or("answered")?)?;
+    /// assert_eq!((reply["id"].is_null(), reply["error"]["code"].as_i64()), (true, Some(-32_700)));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn handle_bytes(&mut self, message: &[u8]) -> Option<String> {
         self.handle_coded(message).map(|(reply, _)| reply)
     }

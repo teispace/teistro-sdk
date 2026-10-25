@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`teistro-mcp` has a run example on every public item.**
+**Numbers:** none. Its 35 items join the crates `check-doc-examples`
+holds there, thirty-six in all. Each server example asks under the
+stateless revision and reads the reply back: a program's own tool
+answered and refused, a pack and a dasha system registered, tasks,
+cancellation before a request begins, a message past its bound, and
+one POST through the HTTP transport on a loopback port. Loading an
+adapter needs a file the operator installed, so that one example is
+compiled and not run.
+
 **`teistro-ephemeris-kit` has a run example on every public item.**
 **Numbers:** none. Its 73 items join the crates `check-doc-examples`
 holds there, thirty-five in all. The kit's checks run over the analytic
