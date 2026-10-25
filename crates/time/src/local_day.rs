@@ -691,6 +691,53 @@ mod tests {
         }
     }
 
+    /// A light carried for another day or another place is not taken:
+    /// the answer is that day's own.
+    #[test]
+    fn a_light_carried_for_another_day_or_place_is_recomputed() {
+        const POKHARA: Place = Place::new(
+            Latitude::literal(28.2096),
+            Longitude::literal(83.9856),
+            Altitude::literal(820.0),
+        );
+        let text = SuryaSiddhanta::text();
+        let clock = UtcOffset::literal(5, 45, 0);
+        let policy = PolarDayPolicy::Undefined;
+        let kathmandu = Place::new(
+            Latitude::literal(27.7172),
+            Longitude::literal(85.324),
+            Altitude::literal(1400.0),
+        );
+        let first = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 21);
+        let far = CalendarDate::defined(Calendar::Gregorian, 2024, 9, 1);
+        let next = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 22);
+        for (place, date) in [(kathmandu, &far), (POKHARA, &next)] {
+            let mut carried = Carried::default();
+            local_day_carrying(
+                &text,
+                &Gregorian,
+                &clock,
+                &kathmandu,
+                &first,
+                policy,
+                &mut carried,
+            )
+            .unwrap();
+            let ranged = local_day_carrying(
+                &text,
+                &Gregorian,
+                &clock,
+                &place,
+                date,
+                policy,
+                &mut carried,
+            )
+            .unwrap();
+            let alone = local_day(&text, &Gregorian, &clock, &place, date, policy).unwrap();
+            assert_eq!(ranged, alone, "{date}");
+        }
+    }
+
     #[test]
     fn a_normal_day_at_kathmandu() {
         let text = SuryaSiddhanta::text();

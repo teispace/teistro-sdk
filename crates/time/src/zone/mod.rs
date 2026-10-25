@@ -966,7 +966,10 @@ fn fold_leap_second(
             "{civil} names a leap second, but no leap second ended that UTC day"
         ))
         .with_detail(Detail::NonexistentDate)
-        .with_field("time"));
+        .with_field("time")
+        .with_hint(
+            "a leap second is 23:59:60 UTC at the end of a day the table ends with one; give 23:59:59 or the next day's first second",
+        ));
     }
     Ok(leap_day.plus_days(1).jd_at_midnight()?)
 }

@@ -91,3 +91,28 @@ fn a_date_without_a_time_resolves_to_the_sunrise_of_the_local_day() {
         assert!(!at.zone.time_known);
     }
 }
+
+/// A date without a time under another policy takes that policy's hour,
+/// not the place's sunrise, even where a sunrise could be found.
+#[test]
+fn a_date_without_a_time_at_a_place_follows_a_policy_other_than_sunrise() {
+    let text = SuryaSiddhanta::text();
+    let civil = CivilDateTime::date_only(CalendarDate::defined(Calendar::Gregorian, 1990, 4, 14));
+    let zone = ZoneSpec::iana("Asia/Kathmandu");
+    let noon = Policy {
+        unknown_time: UnknownTime::Noon,
+        ..Policy::default()
+    };
+    let day = DayContext {
+        model: &text,
+        place: KATHMANDU,
+        polar_day_policy: PolarDayPolicy::Undefined,
+    };
+    let tzdb = EmbeddedTzdb::shared();
+    let at = resolve_at_place(&civil, &zone, &noon, tzdb, day).unwrap();
+    assert_eq!(
+        at.instant,
+        resolve(&civil, &zone, &noon, tzdb).unwrap().instant
+    );
+    assert!(at.zone.has(Warning::TimeUnknownFallback));
+}
