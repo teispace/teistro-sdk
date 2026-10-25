@@ -26,6 +26,9 @@ use teistro_dasha::{
 
 const BIRTH: f64 = 2_451_545.0;
 
+/// More mahadashas than any firdaria order has.
+const FIRDARIA_SPAN: usize = 16;
+
 /// The float just below a positive one: `f64::next_down`, which the
 /// workspace's MSRV predates.
 fn below(x: f64) -> f64 {
@@ -109,6 +112,25 @@ fn holds(name: &str, timeline: &impl Timeline, cycles: u32, levels: usize) {
     }
 }
 
+/// Under `END` the birth cycle is the whole timeline: no mahadasha of a
+/// later cycle, and none found after the last one ends.
+fn ends(name: &str, timeline: &impl Timeline) {
+    assert!(
+        timeline.mahadasha(1, 0).is_none(),
+        "{name}: a second cycle under END"
+    );
+    let last = (0..=usize::from(u8::MAX))
+        .map_while(|index| timeline.mahadasha(0, index))
+        .last()
+        .unwrap();
+    assert!(
+        timeline
+            .mahadasha_at(last.interval.to.get() + 1.0)
+            .is_none(),
+        "{name}: a day past the end under END"
+    );
+}
+
 /// Every child of `parent` follows the last, the first from the parent's
 /// start and the last to its end, each found by the chain at its start,
 /// and so on down to `levels`.
@@ -179,12 +201,11 @@ fn every_nakshatra_dasha_keeps_the_contract() {
                     ..rules(after_cycle)
                 };
                 let dasha = Dasha::new(row, &moon(123.456), rules).unwrap();
-                holds(
-                    &format!("{system:?} {after_cycle:?} {birth_period:?}"),
-                    &dasha,
-                    3,
-                    3,
-                );
+                let name = format!("{system:?} {after_cycle:?} {birth_period:?}");
+                holds(&name, &dasha, 3, 3);
+                if after_cycle == AfterCycle::End {
+                    ends(&name, &dasha);
+                }
             }
         }
     }
@@ -226,7 +247,15 @@ fn every_sign_dasha_keeps_the_contract() {
                 RashiRules::RECORDING_ENGINE,
             )
             .unwrap();
-            holds(&format!("{system:?} {after_cycle:?}"), &dasha, 3, 3);
+            let name = format!("{system:?} {after_cycle:?}");
+            holds(&name, &dasha, 3, 3);
+            // A row whose text runs it again for life (the Sudarshana
+            // chakra, BPHS ch. 74 v. 26) does so under END too.
+            match (after_cycle, rashi_row(system).unwrap().recurs) {
+                (AfterCycle::End, false) => ends(&name, &dasha),
+                (_, true) => assert!(dasha.mahadasha(1, 0).is_some(), "{name} recurs"),
+                _ => {}
+            }
         }
     }
 }
@@ -242,12 +271,11 @@ fn the_kalachakra_keeps_the_contract() {
                 ..KalachakraRules::of(&root())
             };
             let dasha = KalachakraDasha::new(&moon(degrees), rules).unwrap();
-            holds(
-                &format!("Kalachakra at {degrees} {after_cycle:?}"),
-                &dasha,
-                3,
-                2,
-            );
+            let name = format!("Kalachakra at {degrees} {after_cycle:?}");
+            holds(&name, &dasha, 3, 2);
+            if after_cycle == AfterCycle::End {
+                ends(&name, &dasha);
+            }
         }
     }
 }
@@ -263,7 +291,19 @@ fn the_hellenistic_time_lords_keep_the_contract() {
     for first in [Graha::Sun, Graha::Moon] {
         for nodes in [FirdariaNodes::AfterMars, FirdariaNodes::End] {
             let dasha = FirdariaDasha::new(first, birth(), YearLength::Julian36525, nodes).unwrap();
-            holds(&format!("firdaria from {first:?} {nodes:?}"), &dasha, 3, 2);
+            let name = format!("firdaria from {first:?} {nodes:?}");
+            holds(&name, &dasha, 3, 2);
+            // A seventh is the deepest level al-Biruni gives (§439).
+            for maha in (0..FIRDARIA_SPAN).map_while(|index| dasha.mahadasha(0, index)) {
+                for seventh in dasha.children(&maha) {
+                    assert_eq!(
+                        dasha.children(&seventh).count(),
+                        0,
+                        "{name} {}",
+                        seventh.path
+                    );
+                }
+            }
         }
     }
     let places = [

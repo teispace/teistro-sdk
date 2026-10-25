@@ -278,11 +278,35 @@ mod tests {
 
         let chart = crate::test_chart::chart();
         let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+        // Uneven bindus, so the reductions leave a samudaya to convert, and
+        // 7 over 27, whose nakshatra years part from a savana year's.
+        let mut grahas = [[0_u8; 12]; 7];
+        for (g, row) in grahas.iter_mut().enumerate() {
+            for (sign, cell) in row.iter_mut().enumerate() {
+                *cell = u8::try_from((g * 5 + sign * 3) % 9).unwrap();
+            }
+        }
         let bindus = Bindus {
-            grahas: [[4; 12]; 7],
+            grahas,
             ekadhipatya: Ekadhipatya::Bphs,
         };
-        let ashtakavarga = evaluator.ashtakavarga_ayus(&bindus, AshtakavargaAyusRules::default());
+        let ashtakavarga = evaluator.ashtakavarga_ayus(
+            &bindus,
+            AshtakavargaAyusRules {
+                divisor: crate::longevity::Divisor::SevenOverTwentySeven,
+                ..AshtakavargaAyusRules::default()
+            },
+        );
+        assert!(ashtakavarga.samudaya > 0.0 && ashtakavarga.bhinna > 0.0);
+        for (span, solar) in [
+            (ashtakavarga.samudaya, ashtakavarga.samudaya_solar),
+            (ashtakavarga.bhinna, ashtakavarga.bhinna_solar),
+        ] {
+            assert!(
+                (solar - span * 324.0 / 365.0).abs() < 1e-9,
+                "nakshatra years, not savana"
+            );
+        }
         let chakrayus = evaluator.chakrayus(ChakrayusRules::default());
         let computed = Computed {
             ashtakavarga: Some(&ashtakavarga),

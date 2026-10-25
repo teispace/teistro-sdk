@@ -12,6 +12,28 @@
 all_features = true
 
 exclude_re = [
+  # The samudaya product is (rashi + graha) * 7 / 27 over whole pindas,
+  # which is exactly 100 only at a sum of 2700 / 7, not a whole number.
+  'crates/rules/src/longevity/ashtakavarga\.rs:426:35: replace > with >= in Evaluator<._>::ashtakavarga_ayus',
+  # A child's end is `from + days * s / total`; at `s == total` the
+  # product's rounding is an ulp of a period's days (about 1e-12 for
+  # 7000), below a JD's own ulp (4.7e-10 near 2.4e6), so the sum lands on
+  # the parent's end either way. Only a period as long as the JD itself
+  # could part the two.
+  'crates/dasha/src/tree\.rs:603:22: replace match guard s == total with false in <impl Timeline for Dasha>::child',
+  # Under END `mahadasha` refuses every later cycle itself, and no row
+  # has a cycle of no days, so the guard's second clause decides nothing.
+  'crates/dasha/src/tree\.rs:635:58: replace \|\| with && in <impl Timeline for Dasha>::mahadasha_at',
+  # The search runs in order and the first period still running ends past
+  # the instant, so its start is already at or before it: the lower bound
+  # confirms what the upper one found and never decides.
+  'crates/dasha/src/tree\.rs:654:41: replace \+ with - in <impl Timeline for Dasha>::mahadasha_at',
+  # Before birth `within` is negative, which the search's `*from <= within`
+  # refuses on its own.
+  'crates/dasha/src/rashi\.rs:1142:23: replace \|\| with && in <impl Timeline for RashiDasha>::mahadasha_at',
+  # `offsets` has one entry more than the running mahadashas, so an index
+  # past them finds no end and answers nothing whatever the guard says.
+  'crates/dasha/src/kalachakra\.rs:331:36: replace \|\| with && in <impl Timeline for KalachakraDasha>::mahadasha',
   # A body on either node's sign has already ended the count, so `from`
   # never equals `arc` where the side is chosen.
   'crates/rules/src/eval\.rs:853:72: replace > with >= in Evaluator<.a>::predicate',
