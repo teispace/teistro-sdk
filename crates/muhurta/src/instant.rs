@@ -49,6 +49,22 @@ pub(crate) const MALEFICS: [Graha; 5] = [
 const UPACHAYA_MALEFICS: [Graha; 3] = [Graha::Sun, Graha::Mars, Graha::Saturn];
 
 /// The sky at an instant, in the chart's zodiac.
+///
+/// ```
+/// # use teistro_muhurta::instant::Sky;
+/// #
+/// # // Libra rising; Mars in Taurus, Venus in Pisces, Jupiter in Libra, the
+/// # // Sun in Aquarius with Mercury, the Moon and Saturn in Capricorn, and
+/// # // the nodes opposite. Saturn is retrograde.
+/// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+/// # let mut speeds = [1.0; 9];
+/// # speeds[6] = -0.05;
+/// # let sky = Sky { lagna_deg: 185.0, grahas, speeds };
+/// use teistro_core::catalogue::{Graha, Rashi};
+///
+/// assert_eq!((sky.lagna(), sky.sign(Graha::Jupiter)), (Rashi::Libra, Rashi::Libra));
+/// assert_eq!(sky.house_of(Graha::Ketu), 10);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -63,6 +79,15 @@ pub struct Sky {
 }
 
 /// The limbs running at the instant, which the panchaka remainder reads.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
+/// use teistro_muhurta::instant::Limbs;
+///
+/// let limbs = Limbs { tithi: Tithi::ShuklaPanchami, vara: Vara::Guruvara, nakshatra: Nakshatra::Rohini };
+/// assert_eq!(serde_json::to_value(limbs)?["vara"], "GURUVARA");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Limbs {
@@ -76,6 +101,21 @@ pub struct Limbs {
 
 impl Sky {
     /// The lagna's sign.
+    ///
+    /// ```
+    /// # use teistro_muhurta::instant::Sky;
+    /// #
+    /// # // Libra rising; Mars in Taurus, Venus in Pisces, Jupiter in Libra, the
+    /// # // Sun in Aquarius with Mercury, the Moon and Saturn in Capricorn, and
+    /// # // the nodes opposite. Saturn is retrograde.
+    /// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+    /// # let mut speeds = [1.0; 9];
+    /// # speeds[6] = -0.05;
+    /// # let sky = Sky { lagna_deg: 185.0, grahas, speeds };
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(sky.lagna(), Rashi::Libra);
+    /// ```
     #[must_use]
     pub fn lagna(&self) -> Rashi {
         sign_of(self.lagna_deg)
@@ -83,12 +123,43 @@ impl Sky {
 
     /// The lagna's navamsa sign: the ninths of the zodiac counted on from
     /// Aries, which is the Parashari D9.
+    ///
+    /// ```
+    /// # use teistro_muhurta::instant::Sky;
+    /// #
+    /// # // Libra rising; Mars in Taurus, Venus in Pisces, Jupiter in Libra, the
+    /// # // Sun in Aquarius with Mercury, the Moon and Saturn in Capricorn, and
+    /// # // the nodes opposite. Saturn is retrograde.
+    /// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+    /// # let mut speeds = [1.0; 9];
+    /// # speeds[6] = -0.05;
+    /// # let sky = Sky { lagna_deg: 185.0, grahas, speeds };
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// // 5° Libra is the second ninth of Libra, Scorpio's navamsa.
+    /// assert_eq!(sky.navamsa(), Rashi::Scorpio);
+    /// ```
     #[must_use]
     pub fn navamsa(&self) -> Rashi {
         sign_of(self.lagna_deg * 9.0)
     }
 
     /// A graha's longitude, degrees.
+    ///
+    /// ```
+    /// # use teistro_muhurta::instant::Sky;
+    /// #
+    /// # // Libra rising; Mars in Taurus, Venus in Pisces, Jupiter in Libra, the
+    /// # // Sun in Aquarius with Mercury, the Moon and Saturn in Capricorn, and
+    /// # // the nodes opposite. Saturn is retrograde.
+    /// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+    /// # let mut speeds = [1.0; 9];
+    /// # speeds[6] = -0.05;
+    /// # let sky = Sky { lagna_deg: 185.0, grahas, speeds };
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert_eq!(sky.longitude(Graha::Mars), 45.0);
+    /// ```
     #[must_use]
     pub fn longitude(&self, graha: Graha) -> f64 {
         self.grahas
@@ -99,6 +170,21 @@ impl Sky {
 
     /// A graha's speed in longitude, degrees a day; negative while it is
     /// retrograde.
+    ///
+    /// ```
+    /// # use teistro_muhurta::instant::Sky;
+    /// #
+    /// # // Libra rising; Mars in Taurus, Venus in Pisces, Jupiter in Libra, the
+    /// # // Sun in Aquarius with Mercury, the Moon and Saturn in Capricorn, and
+    /// # // the nodes opposite. Saturn is retrograde.
+    /// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+    /// # let mut speeds = [1.0; 9];
+    /// # speeds[6] = -0.05;
+    /// # let sky = Sky { lagna_deg: 185.0, grahas, speeds };
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert!(sky.speed(Graha::Saturn) < 0.0, "Saturn retrograde");
+    /// ```
     #[must_use]
     pub fn speed(&self, graha: Graha) -> f64 {
         self.speeds
@@ -108,6 +194,21 @@ impl Sky {
     }
 
     /// The sign a graha stands in.
+    ///
+    /// ```
+    /// # use teistro_muhurta::instant::Sky;
+    /// #
+    /// # // Libra rising; Mars in Taurus, Venus in Pisces, Jupiter in Libra, the
+    /// # // Sun in Aquarius with Mercury, the Moon and Saturn in Capricorn, and
+    /// # // the nodes opposite. Saturn is retrograde.
+    /// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+    /// # let mut speeds = [1.0; 9];
+    /// # speeds[6] = -0.05;
+    /// # let sky = Sky { lagna_deg: 185.0, grahas, speeds };
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    ///
+    /// assert_eq!(sky.sign(Graha::Venus), Rashi::Pisces);
+    /// ```
     #[must_use]
     pub fn sign(&self, graha: Graha) -> Rashi {
         sign_of(self.longitude(graha))
@@ -115,6 +216,22 @@ impl Sky {
 
     /// The house a graha stands in, counted by sign from the lagna's, 1
     /// to 12.
+    ///
+    /// ```
+    /// # use teistro_muhurta::instant::Sky;
+    /// #
+    /// # // Libra rising; Mars in Taurus, Venus in Pisces, Jupiter in Libra, the
+    /// # // Sun in Aquarius with Mercury, the Moon and Saturn in Capricorn, and
+    /// # // the nodes opposite. Saturn is retrograde.
+    /// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+    /// # let mut speeds = [1.0; 9];
+    /// # speeds[6] = -0.05;
+    /// # let sky = Sky { lagna_deg: 185.0, grahas, speeds };
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Mars in the eighth, Venus in the sixth.
+    /// assert_eq!((sky.house_of(Graha::Mars), sky.house_of(Graha::Venus)), (8, 6));
+    /// ```
     #[must_use]
     pub fn house_of(&self, graha: Graha) -> u8 {
         let steps = (self.sign(graha).id() + 12 - self.lagna().id()) % 12;
@@ -143,11 +260,9 @@ impl Sky {
 /// use teistro_muhurta::instant::{Sky, clauses};
 ///
 /// // Libra rising, Mars in Taurus (the 8th), Venus in Pisces (the 6th),
-/// // Jupiter in Libra (the lagna); everyone else in Capricorn.
-/// let mut grahas = [285.0; 9];
-/// grahas[2] = 45.0; // Mars
-/// grahas[5] = 345.0; // Venus
-/// grahas[4] = 190.0; // Jupiter
+/// // Jupiter in Libra (the lagna); the Sun in Aquarius with Mercury
+/// // behind him, the Moon and Saturn in Capricorn, the nodes opposite.
+/// let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
 /// let sky = Sky { lagna_deg: 185.0, grahas, speeds: [1.0; 9] };
 /// let found = clauses(&sky, None, None, Interval::literal(0.0, 1.0));
 /// assert!(found.iter().any(|c| c.kind == ClauseKind::MarsInEighth {}));

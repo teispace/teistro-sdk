@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A muhurta search's ingresses lie inside the day they were asked of.**
+**Numbers:** none. `Sources::ingresses` over a day returned, for each
+slow graha that held its sign through it, the two ends of the search's
+own reach, a day either side: twelve instants outside the window, none
+of them an ingress. `ProviderSources` now keeps the instants inside
+the window, as the method says. The search cut its windows only inside
+the day, so no answer changes; a caller of the method itself sees the
+sixteen instants become four.
+
+**`teistro-muhurta` has a run example on every public item.**
+**Numbers:** none. Its 127 items join the crates `check-doc-examples`
+holds there, thirty-one in all. The examples search Kathmandu's late
+November 2026 over the built-in ephemeris, and the doc example of
+`Sources::ingresses` is what found the instants above.
+
 **Two more crates have a run example on every public item.**
 **Numbers:** none. `teistro-hellenistic` (94) and
 `teistro-rectification` (176) join the crates `check-doc-examples`

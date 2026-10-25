@@ -13,6 +13,14 @@ use teistro_core::catalogue::{Nakshatra, Rashi};
 
 /// The nine taras, in the order a count from the birth star reaches
 /// them.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_muhurta::tara::{Tara, tara};
+///
+/// // Born in Mrigashira, a day ruled by Bharani: Raman's second example, Naidhana.
+/// assert_eq!(tara(Nakshatra::Mrigashira, Nakshatra::Bharani).tara, Tara::Naidhana);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -39,6 +47,13 @@ pub enum Tara {
 
 impl Tara {
     /// Every tara, in order.
+    ///
+    /// ```
+    /// use teistro_muhurta::tara::Tara;
+    ///
+    /// let bad: Vec<u8> = Tara::ALL.iter().filter(|t| !t.favourable()).map(|t| t.number()).collect();
+    /// assert_eq!(bad, [1, 3, 5, 7]);
+    /// ```
     pub const ALL: [Tara; 9] = [
         Tara::Janma,
         Tara::Sampat,
@@ -52,6 +67,12 @@ impl Tara {
     ];
 
     /// Its place in the nine, 1 to 9.
+    ///
+    /// ```
+    /// use teistro_muhurta::tara::Tara;
+    ///
+    /// assert_eq!((Tara::Janma.number(), Tara::ParamaMitra.number()), (1, 9));
+    /// ```
     #[must_use]
     pub const fn number(self) -> u8 {
         self as u8 + 1
@@ -62,6 +83,13 @@ impl Tara {
     ///
     /// Janma's own exceptions — favourable for some rites and not others
     /// — belong to an activity's rules, not to the tara.
+    ///
+    /// ```
+    /// use teistro_muhurta::tara::Tara;
+    ///
+    /// assert!(Tara::Sadhana.favourable());
+    /// assert!(!Tara::Pratyak.favourable());
+    /// ```
     #[must_use]
     pub const fn favourable(self) -> bool {
         !matches!(
@@ -74,6 +102,13 @@ impl Tara {
     /// tara spoils, when the day is otherwise good: 1 for Janma, 7 for
     /// Vipat, 3 for Pratyak and 8 for Naidhana (Raman, ch. III, p. 22).
     /// `None` for a favourable tara.
+    ///
+    /// ```
+    /// use teistro_muhurta::tara::Tara;
+    ///
+    /// assert_eq!(Tara::Naidhana.spoiled_ghatis(), Some(8));
+    /// assert_eq!(Tara::Mitra.spoiled_ghatis(), None);
+    /// ```
     #[must_use]
     pub const fn spoiled_ghatis(self) -> Option<u8> {
         match self {
@@ -87,6 +122,15 @@ impl Tara {
 }
 
 /// A day's star counted from a birth star.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_muhurta::tara::{Tara, tara};
+///
+/// // The last star of the zodiac from the first: the third round's ninth.
+/// let last = tara(Nakshatra::Ashwini, Nakshatra::Revati);
+/// assert_eq!((last.count, last.tara, last.cycle), (27, Tara::ParamaMitra, 3));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct TaraReading {
@@ -138,6 +182,14 @@ pub fn chandra_house(birth: Rashi, day: Rashi) -> u8 {
 }
 
 /// Which houses from the birth Moon sign spoil a day (crux C160).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_muhurta::tara::{ChandraBala, chandra_house};
+///
+/// // Raman's second example: the 12th from a Taurus Moon gives no Chandrabala.
+/// assert!(!ChandraBala::raman().holds(chandra_house(Rashi::Taurus, Rashi::Aries)));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChandraBala {
@@ -147,6 +199,12 @@ pub struct ChandraBala {
 
 impl ChandraBala {
     /// Raman's: the 6th, 8th and 12th (ch. III).
+    ///
+    /// ```
+    /// use teistro_muhurta::tara::ChandraBala;
+    ///
+    /// assert_eq!(ChandraBala::raman().avoid, [6, 8, 12]);
+    /// ```
     #[must_use]
     pub fn raman() -> ChandraBala {
         ChandraBala {
@@ -156,6 +214,13 @@ impl ChandraBala {
 
     /// The baseline engine's: good in 1, 3, 6, 7, 10 and 11, so avoided
     /// in the other six.
+    ///
+    /// ```
+    /// use teistro_muhurta::tara::ChandraBala;
+    ///
+    /// // The two tables part on the 6th: Raman avoids it, the baseline holds it good.
+    /// assert!(ChandraBala::baseline().holds(6) && !ChandraBala::raman().holds(6));
+    /// ```
     #[must_use]
     pub fn baseline() -> ChandraBala {
         ChandraBala {
@@ -164,6 +229,13 @@ impl ChandraBala {
     }
 
     /// Whether the Moon in a house gives Chandrabala.
+    ///
+    /// ```
+    /// use teistro_muhurta::tara::ChandraBala;
+    ///
+    /// assert!(ChandraBala::raman().holds(11));
+    /// assert!(!ChandraBala::baseline().holds(2));
+    /// ```
     #[must_use]
     pub fn holds(&self, house: u8) -> bool {
         !self.avoid.contains(&house)

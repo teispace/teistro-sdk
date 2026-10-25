@@ -41,6 +41,37 @@ use teistro_port_ephemeris::{Body, EphemerisProvider, Lattice, Quantity};
 pub use teistro_core::catalogue::BlackoutKind;
 
 /// A blackout and the interval it holds over, clipped to the range asked.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::settings::{AyanamshaBasis, OverridePolicy};
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac::of(
+/// #     Some(Ayanamsha::Lahiri.into()),
+/// #     AyanamshaBasis::True,
+/// #     PrecessionModel::Vondrak2011,
+/// #     DeltaTModel::TableThenModel,
+/// # );
+/// use teistro_muhurta::season::{BlackoutKind, blackouts};
+///
+/// // 2026-09-01 to 2026-12-01, 00:00 UTC.
+/// let autumn = Interval::literal(2_461_284.5, 2_461_375.5);
+/// let found = blackouts(&longitudes, zodiac, autumn)?;
+/// // Pitru paksha 2026 opens on the Purnima of 26 September (civil date).
+/// let pitru = found.iter().find(|b| b.kind == BlackoutKind::PitruPaksha).ok_or("found")?;
+/// assert!((2_461_308.5..2_461_310.5).contains(&pitru.at.from.get()));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Blackout {
@@ -51,6 +82,39 @@ pub struct Blackout {
 }
 
 /// A lunar month: new moon to new moon, named and marked.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::settings::{AyanamshaBasis, OverridePolicy};
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac::of(
+/// #     Some(Ayanamsha::Lahiri.into()),
+/// #     AyanamshaBasis::True,
+/// #     PrecessionModel::Vondrak2011,
+/// #     DeltaTModel::TableThenModel,
+/// # );
+/// use teistro_calendar::lunisolar::MonthKind;
+/// use teistro_core::catalogue::Masa;
+/// use teistro_muhurta::season::months;
+///
+/// // 2026-05-01 to 2026-07-01, 00:00 UTC.
+/// let found = months(&longitudes, zodiac, Interval::literal(2_461_161.5, 2_461_222.5))?;
+/// // 2026's Jyeshtha is adhika, from the new moon of 16 May.
+/// let adhika = found.iter().find(|m| m.kind == MonthKind::Adhika).ok_or("found")?;
+/// assert_eq!(adhika.masa, Masa::Jyeshtha);
+/// assert!((adhika.at.from.get() - 2_461_177.334).abs() < 0.01);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Month {
@@ -82,6 +146,37 @@ const SYNODIC_MONTH_DAYS: f64 = 29.530_588_9;
 
 /// The lunar months that open inside a window, each closed by the next
 /// new moon.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::settings::{AyanamshaBasis, OverridePolicy};
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac::of(
+/// #     Some(Ayanamsha::Lahiri.into()),
+/// #     AyanamshaBasis::True,
+/// #     PrecessionModel::Vondrak2011,
+/// #     DeltaTModel::TableThenModel,
+/// # );
+/// use teistro_calendar::lunisolar::MonthKind;
+/// use teistro_core::catalogue::Masa;
+/// use teistro_muhurta::season::months;
+///
+/// // 2026-05-01 to 2026-07-01, 00:00 UTC.
+/// let found = months(&longitudes, zodiac, Interval::literal(2_461_161.5, 2_461_222.5))?;
+/// // The months tile the span without a gap.
+/// assert!(found.windows(2).all(|pair| pair[0].at.to == pair[1].at.from));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -152,6 +247,38 @@ fn month_of(sun: &[Span<Rashi>], from: f64, to: f64) -> Result<Month, Error> {
 
 /// The blackouts the Sun and the Moon make over a range, in order of
 /// their start, each clipped to the range.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::settings::{AyanamshaBasis, OverridePolicy};
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac::of(
+/// #     Some(Ayanamsha::Lahiri.into()),
+/// #     AyanamshaBasis::True,
+/// #     PrecessionModel::Vondrak2011,
+/// #     DeltaTModel::TableThenModel,
+/// # );
+/// use teistro_muhurta::season::{BlackoutKind, blackouts};
+///
+/// // 2026-09-01 to 2026-12-01, 00:00 UTC.
+/// let autumn = Interval::literal(2_461_284.5, 2_461_375.5);
+/// let found = blackouts(&longitudes, zodiac, autumn)?;
+/// // Chaturmas closes on Kartika's bright eleventh, 20 November 2026.
+/// assert!(found.iter().any(|b| b.kind == BlackoutKind::Chaturmas
+///     && (2_461_363.5..2_461_365.5).contains(&b.at.to.get())));
+/// assert!(found.windows(2).all(|pair| pair[0].at.from.get() <= pair[1].at.from.get()));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -270,6 +397,45 @@ fn elongation_in<S: Longitudes + ?Sized>(
 /// Each end is the instant the sighting was read at — the dawn or the
 /// dusk the criterion looks at — so a window runs from the last dawn or
 /// dusk the body was seen at to the first it is seen at again.
+///
+/// ```
+/// # use teistro_astro::visibility::{HeliacalEvent, HeliacalKind, Motion, Side, Visibility};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # let state = |at: f64, visible: bool| Visibility {
+/// #     body: Body::Venus,
+/// #     day_start: JulianDay::literal(at.floor() - 0.5),
+/// #     instant: JulianDay::literal(at),
+/// #     side: Side::East,
+/// #     motion: Motion::Direct,
+/// #     measure_deg: 0.0,
+/// #     threshold_deg: 0.0,
+/// #     visible,
+/// #     evaluations: 0,
+/// # };
+/// # let event = |kind, at| HeliacalEvent {
+/// #     kind,
+/// #     day: state(at, kind == HeliacalKind::MorningFirst || kind == HeliacalKind::EveningFirst),
+/// # };
+/// # let events = [
+/// #     event(HeliacalKind::EveningFirst, 110.2),
+/// #     event(HeliacalKind::EveningLast, 150.8),
+/// #     event(HeliacalKind::MorningFirst, 160.2),
+/// #     event(HeliacalKind::MorningLast, 250.3),
+/// # ];
+/// # let range = Interval::literal(100.0, 300.0);
+/// use teistro_muhurta::season::{BlackoutKind, asta};
+///
+/// // Unseen at the start: the first stretch opens at the range's start, and
+/// // the last runs to its end.
+/// let found = asta(BlackoutKind::ShukraAsta, &state(100.2, false), &events, range);
+/// let spans: Vec<(f64, f64)> = found.iter().map(|b| (b.at.from.get(), b.at.to.get())).collect();
+/// assert_eq!(spans, [(100.0, 110.2), (150.8, 160.2), (250.3, 300.0)]);
+/// // Seen at the start, the first appearance closes nothing.
+/// assert_eq!(asta(BlackoutKind::ShukraAsta, &state(100.2, true), &events, range).len(), 2);
+/// ```
 #[must_use]
 pub fn asta(
     kind: BlackoutKind,
@@ -302,6 +468,45 @@ pub fn asta(
 /// Guru or Shukra asta over a range: the body's state on the range's
 /// first day and its heliacal events inside it, paired by [`asta`].
 ///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::settings::{AyanamshaBasis, OverridePolicy};
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac::of(
+/// #     Some(Ayanamsha::Lahiri.into()),
+/// #     AyanamshaBasis::True,
+/// #     PrecessionModel::Vondrak2011,
+/// #     DeltaTModel::TableThenModel,
+/// # );
+///
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_port_ephemeris::Horizon;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+/// use teistro_muhurta::season::{BlackoutKind, asta_over};
+/// use teistro_port_ephemeris::Body;
+///
+/// // Venus meets the Sun once in October and November 2026, unseen from Kathmandu.
+/// let autumn = Interval::literal(2_461_314.5, 2_461_375.5);
+/// let found = asta_over(&heliacal, Body::Venus, autumn)?;
+/// assert_eq!(found.len(), 1);
+/// assert_eq!(found[0].kind, BlackoutKind::ShukraAsta);
+/// // Asta is Jupiter's or Venus's alone.
+/// assert_eq!(asta_over(&heliacal, Body::Mars, autumn).unwrap_err().field(), Some("body"));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A body other than Jupiter and Venus (`INVALID_ARG`), and whatever the
@@ -330,6 +535,28 @@ pub fn asta_over<P: EphemerisProvider + ?Sized>(
 }
 
 /// Which eclipse the season reads, as far as the vedha's count asks.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::season::{SeenEclipse, SeenKind};
+///
+/// // A lunar eclipse seen from a tenth of the way into a night: twelve-hour
+/// // days, sunrise at 0.25 and sunset at 0.75 of each.
+/// let eclipse = SeenEclipse {
+///     kind: SeenKind::Lunar,
+///     greatest: 0.85,
+///     seen: Interval::literal(0.80, 0.90),
+///     rose_eclipsed: false,
+///     set_eclipsed: false,
+/// };
+/// use teistro_core::settings::EclipseVedha;
+/// use teistro_muhurta::season::vedha_praharas;
+///
+/// // A total lunar eclipse counts four under the rule that says so.
+/// let total = SeenEclipse { kind: SeenKind::TotalLunar, ..eclipse };
+/// assert_eq!(vedha_praharas(&total, EclipseVedha::FullLunarFour), 4);
+/// assert_eq!(vedha_praharas(&total, EclipseVedha::Dharmasindhu), 3);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SeenKind {
     /// A solar eclipse.
@@ -342,6 +569,27 @@ pub enum SeenKind {
 
 /// An eclipse as the season reads it: one the place sees, a lunar one by
 /// its umbral phase (`muhurta.md` §4.1.1, crux C190).
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::season::{SeenEclipse, SeenKind};
+///
+/// // A lunar eclipse seen from a tenth of the way into a night: twelve-hour
+/// // days, sunrise at 0.25 and sunset at 0.75 of each.
+/// let eclipse = SeenEclipse {
+///     kind: SeenKind::Lunar,
+///     greatest: 0.85,
+///     seen: Interval::literal(0.80, 0.90),
+///     rose_eclipsed: false,
+///     set_eclipsed: false,
+/// };
+/// use teistro_core::settings::EclipseVedha;
+/// use teistro_muhurta::season::vedha_praharas;
+///
+/// // A Moon that rises eclipsed counts four praharas back, not three.
+/// let risen = SeenEclipse { rose_eclipsed: true, ..eclipse };
+/// assert_eq!(vedha_praharas(&risen, EclipseVedha::Dharmasindhu), 4);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SeenEclipse {
     /// Which.
@@ -364,6 +612,15 @@ impl SeenEclipse {
     /// The eclipses of a window that the place sees, in order of their
     /// greatest moment; a penumbral eclipse, which the eye does not see,
     /// is none of them.
+    ///
+    /// ```
+    /// use teistro_astro::eclipse::EclipsesHere;
+    /// use teistro_muhurta::season::SeenEclipse;
+    ///
+    /// // No eclipse found, none seen.
+    /// assert!(SeenEclipse::all_of(&EclipsesHere::default())?.is_empty());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -406,9 +663,23 @@ impl SeenEclipse {
 
 /// How long an eclipse's star stays barred, in synodic months: Raman's
 /// six for a marriage (crux C191).
+///
+/// ```
+/// use teistro_muhurta::season::{ECLIPSE_STAR_MONTHS, ECLIPSE_STAR_REACH_DAYS};
+///
+/// assert_eq!(ECLIPSE_STAR_MONTHS, 6.0);
+/// assert!((ECLIPSE_STAR_REACH_DAYS - 177.18).abs() < 0.01);
+/// ```
 pub const ECLIPSE_STAR_MONTHS: f64 = 6.0;
 
 /// How far before a range an eclipse can still bar a star inside it, days.
+///
+/// ```
+/// use teistro_muhurta::season::ECLIPSE_STAR_REACH_DAYS;
+///
+/// // Six synodic months, under half a year.
+/// assert!(ECLIPSE_STAR_REACH_DAYS < 182.6);
+/// ```
 pub const ECLIPSE_STAR_REACH_DAYS: f64 = ECLIPSE_STAR_MONTHS * SYNODIC_MONTH_DAYS;
 
 /// A nakshatra's width, degrees.
@@ -421,6 +692,44 @@ const NAKSHATRA_DEG: f64 = 360.0 / 27.0;
 /// The star is the Moon's sidereal nakshatra at the greatest eclipse. The
 /// passage the eclipse falls in is barred from the eclipse on, and every
 /// later passage whole.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::settings::{AyanamshaBasis, OverridePolicy};
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac::of(
+/// #     Some(Ayanamsha::Lahiri.into()),
+/// #     AyanamshaBasis::True,
+/// #     PrecessionModel::Vondrak2011,
+/// #     DeltaTModel::TableThenModel,
+/// # );
+/// use teistro_muhurta::season::{BlackoutKind, SeenEclipse, SeenKind, eclipse_stars};
+///
+/// // The partial lunar eclipse of 28 August 2026: each month after, the Moon
+/// // returns to its star for about a day.
+/// let eclipse = SeenEclipse {
+///     kind: SeenKind::Lunar,
+///     greatest: 2_461_280.676,
+///     seen: Interval::literal(2_461_280.6, 2_461_280.75),
+///     rose_eclipsed: false,
+///     set_eclipsed: false,
+/// };
+/// let autumn = Interval::literal(2_461_284.5, 2_461_375.5);
+/// let found = eclipse_stars(&longitudes, zodiac, &[eclipse], autumn)?;
+/// assert_eq!(found.len(), 3);
+/// assert!(found.iter().all(|b| b.kind == BlackoutKind::EclipseStar && (0.8..1.4).contains(&b.at.days())));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -469,6 +778,27 @@ pub fn eclipse_stars<S: Longitudes + ?Sized>(
 /// (`panchanga.eclipse_vedha`): four for a solar eclipse and for a Moon
 /// that rises eclipsed, three for any other lunar eclipse, or four for a
 /// total one under `FULL_LUNAR_FOUR`.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::season::{SeenEclipse, SeenKind};
+///
+/// // A lunar eclipse seen from a tenth of the way into a night: twelve-hour
+/// // days, sunrise at 0.25 and sunset at 0.75 of each.
+/// let eclipse = SeenEclipse {
+///     kind: SeenKind::Lunar,
+///     greatest: 0.85,
+///     seen: Interval::literal(0.80, 0.90),
+///     rose_eclipsed: false,
+///     set_eclipsed: false,
+/// };
+/// use teistro_core::settings::EclipseVedha;
+/// use teistro_muhurta::season::vedha_praharas;
+///
+/// assert_eq!(vedha_praharas(&eclipse, EclipseVedha::Dharmasindhu), 3);
+/// let solar = SeenEclipse { kind: SeenKind::Solar, ..eclipse };
+/// assert_eq!(vedha_praharas(&solar, EclipseVedha::Dharmasindhu), 4);
+/// ```
 #[must_use]
 pub fn vedha_praharas(eclipse: &SeenEclipse, rule: EclipseVedha) -> u8 {
     let solar = eclipse.kind == SeenKind::Solar;
@@ -496,6 +826,31 @@ const FIXED_PRAHARA_DAYS: f64 = 3.0 / 24.0;
 /// [`EclipseVedha::FixedHours`] the praharas are three hours each,
 /// counted back from the first moment seen itself, and `turns` is not
 /// read.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::season::{SeenEclipse, SeenKind};
+///
+/// // A lunar eclipse seen from a tenth of the way into a night: twelve-hour
+/// // days, sunrise at 0.25 and sunset at 0.75 of each.
+/// let eclipse = SeenEclipse {
+///     kind: SeenKind::Lunar,
+///     greatest: 0.85,
+///     seen: Interval::literal(0.80, 0.90),
+///     rose_eclipsed: false,
+///     set_eclipsed: false,
+/// };
+/// let turns: Vec<f64> = (-2..=2).flat_map(|d| [f64::from(d) + 0.25, f64::from(d) + 0.75]).chain([3.25]).collect();
+/// use teistro_core::settings::EclipseVedha;
+/// use teistro_muhurta::season::{BlackoutKind, eclipse_vedha};
+///
+/// // Seen in the night's first prahara: the vedha opens at the day's second
+/// // (Dharmasindhu p. 28) and closes as the eclipse ends.
+/// let vedha = eclipse_vedha(&eclipse, &turns, 9.0, EclipseVedha::Dharmasindhu)?;
+/// assert_eq!(vedha.kind, BlackoutKind::EclipseVedha);
+/// assert_eq!((vedha.at.from.get(), vedha.at.to.get()), (0.375, 0.90));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///

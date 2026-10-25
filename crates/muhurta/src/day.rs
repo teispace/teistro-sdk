@@ -15,6 +15,65 @@ use crate::grade::{Grade, Graded};
 use crate::tara::{ChandraBala, chandra_house, tara};
 
 /// The native a day is read against.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_chart::foundation::Founder;
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_muhurta::sources::Over;
+/// # use teistro_muhurta::{ProviderSources, Sources};
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::Horizon;
+/// #
+/// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = Builtin::new();
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+/// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+/// # let over = Over {
+/// #     almanac: &almanac,
+/// #     founder: &founder,
+/// #     completion: &completion,
+/// #     heliacal: &heliacal,
+/// #     calendar: &Gregorian,
+/// #     clock: &clock,
+/// #     settings: &resolved.settings,
+/// #     precession,
+/// #     delta_t,
+/// # };
+/// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+/// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// // 25 November 2026, after Devuthani.
+/// let day = sources.day(&date(11, 25))?;
+/// use teistro_core::catalogue::{Nakshatra, Rashi};
+/// use teistro_muhurta::clause::ClauseKey;
+/// use teistro_muhurta::{DayRules, Native, clauses};
+///
+/// // Against a native, the day's Tarabala and Chandrabala are read too.
+/// let native = Native { star: Nakshatra::Pushya, moon_sign: Rashi::Cancer, lagna: None };
+/// let read = clauses(&day, Some(&native), &DayRules::raman());
+/// assert!(read.iter().any(|c| c.kind.key() == ClauseKey::Tarabala));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "MuhurtaNative"))]
@@ -35,6 +94,15 @@ pub struct Native {
 ///
 /// Data rather than code, so a caller's own tradition is a value and not
 /// a fork: [`DayRules::raman`] is one such value.
+///
+/// ```
+/// use teistro_core::catalogue::{Karana, Nakshatra};
+/// use teistro_muhurta::{DayRules, Grade};
+///
+/// let rules = DayRules::raman();
+/// assert_eq!(rules.karanas.grade(&Karana::Vishti), Grade::Rejected);
+/// assert_eq!(rules.nakshatras.grade(&Nakshatra::Rohini), Grade::Middling);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DayRules {
@@ -64,6 +132,17 @@ impl DayRules {
     /// list on p. 13, so the yogas are taken by name; and chapter II
     /// lists the 4th, 8th, 12th and 14th tithis while chapter V adds the
     /// 6th, full and new Moon, so the fuller list is taken.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Tithi, Vara};
+    /// use teistro_muhurta::{DayRules, Grade};
+    ///
+    /// // The riktas of either half, and Tuesday and Saturday.
+    /// let rules = DayRules::raman();
+    /// assert_eq!(rules.tithis.grade(&Tithi::KrishnaChaturthi), Grade::Rejected);
+    /// assert_eq!(rules.varas.grade(&Vara::Shanivara), Grade::Rejected);
+    /// assert_eq!(rules.tithis.rejected.len(), 12);
+    /// ```
     #[must_use]
     pub fn raman() -> DayRules {
         let per_paksha = [4_u16, 6, 8, 12, 14];
@@ -95,6 +174,64 @@ impl DayRules {
 ///
 /// Without a native, Tarabala and Chandrabala are not read: they count
 /// from a birth and there is none to count from.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_chart::foundation::Founder;
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_muhurta::sources::Over;
+/// # use teistro_muhurta::{ProviderSources, Sources};
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::Horizon;
+/// #
+/// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = Builtin::new();
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+/// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+/// # let over = Over {
+/// #     almanac: &almanac,
+/// #     founder: &founder,
+/// #     completion: &completion,
+/// #     heliacal: &heliacal,
+/// #     calendar: &Gregorian,
+/// #     clock: &clock,
+/// #     settings: &resolved.settings,
+/// #     precession,
+/// #     delta_t,
+/// # };
+/// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+/// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// // 25 November 2026, after Devuthani.
+/// let day = sources.day(&date(11, 25))?;
+/// use teistro_muhurta::clause::ClauseKey;
+/// use teistro_muhurta::{DayRules, clauses};
+///
+/// // Without a native no Tarabala is read; the day's kaalas always are.
+/// let read = clauses(&day, None, &DayRules::raman());
+/// assert!(!read.iter().any(|c| c.kind.key() == ClauseKey::Tarabala));
+/// assert!(read.iter().any(|c| c.kind.key() == ClauseKey::Kaala));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn clauses(day: &Panchanga, native: Option<&Native>, rules: &DayRules) -> Vec<Clause> {
     let mut found = Vec::new();

@@ -25,6 +25,15 @@ impl ClauseKey {
     /// Where a clause of this kind names catalogue members, and of which
     /// kind: a field, or a field of a field (`pada.nakshatra`). A list's
     /// members are each written in full.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    /// use teistro_muhurta::clause::ClauseKey;
+    ///
+    /// // A pada clause names its star a field down; Abhijit names nothing.
+    /// assert_eq!(ClauseKey::Pada.members(), [("pada.nakshatra", Kind::Nakshatra)]);
+    /// assert!(ClauseKey::Abhijit.members().is_empty());
+    /// ```
     #[must_use]
     pub const fn members(self) -> &'static [(&'static str, Kind)] {
         match self {
@@ -73,6 +82,74 @@ const OUTSIDE_CLAUSES: [(&str, &str, Kind); 4] = [
 ];
 
 /// The answer as JSON, every catalogue member written as its full key.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_chart::foundation::Founder;
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_muhurta::sources::Over;
+/// # use teistro_muhurta::{ProviderSources, Sources};
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::Horizon;
+/// #
+/// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = Builtin::new();
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+/// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+/// # let over = Over {
+/// #     almanac: &almanac,
+/// #     founder: &founder,
+/// #     completion: &completion,
+/// #     heliacal: &heliacal,
+/// #     calendar: &Gregorian,
+/// #     clock: &clock,
+/// #     settings: &resolved.settings,
+/// #     precession,
+/// #     delta_t,
+/// # };
+/// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+/// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// use teistro_muhurta::{ActivityRules, Ranking, Request, search};
+///
+/// let request = Request {
+///     rules: ActivityRules::raman_marriage(),
+///     from: date(11, 25),
+///     to: date(11, 27),
+///     native: None,
+///     ranking: Ranking::Texts,
+///     days_with_windows: 1,
+///     most: 5,
+/// };
+/// let answer = search(&sources, &request)?;
+/// use teistro_muhurta::spelling::in_full;
+///
+/// // Every catalogue member is written as its full key.
+/// let json = in_full(&answer)?;
+/// assert_eq!(json["ranking"], "TEXTS");
+/// let text = json.to_string();
+/// assert!(!text.contains("\"RAHU_KAALA\""));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

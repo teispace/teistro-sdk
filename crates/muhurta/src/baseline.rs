@@ -24,6 +24,16 @@ use crate::day::Native;
 use crate::instant::Sky;
 
 /// What the engine's weights take for one activity.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Vara};
+/// use teistro_muhurta::BaselineEvent;
+///
+/// let marriage = BaselineEvent::marriage();
+/// assert_eq!(marriage.karakas, [Graha::Venus, Graha::Jupiter]);
+/// assert_eq!(marriage.avoided_varas, [Vara::Mangalavara]);
+/// assert!(marriage.seventh_empty && marriage.abhijit_forbidden);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -51,6 +61,15 @@ impl BaselineEvent {
     /// Thursday and Friday favoured, Tuesday avoided; the 2nd, 3rd, 5th,
     /// 7th, 10th, 11th and 13th of either paksha favoured; Venus and
     /// Jupiter the karakas; the 7th empty; Abhijit forbidden.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_muhurta::BaselineEvent;
+    ///
+    /// let stars = BaselineEvent::marriage().stars;
+    /// assert_eq!(stars.len(), 11);
+    /// assert!(stars.contains(&Nakshatra::Rohini));
+    /// ```
     #[must_use]
     pub fn marriage() -> BaselineEvent {
         BaselineEvent {
@@ -82,6 +101,29 @@ impl BaselineEvent {
 }
 
 /// What a weight was given for.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Rashi, Tithi, Vara, Yoga};
+/// use teistro_muhurta::BaselineEvent;
+/// use teistro_muhurta::baseline::{DayReading, day};
+///
+/// // A Friday on the bright eleventh in Rohini with Siddhi.
+/// let friday = DayReading {
+///     tithi: Tithi::ShuklaEkadashi,
+///     star: Nakshatra::Rohini,
+///     vara: Vara::Shukravara,
+///     yoga: Some(Yoga::Siddhi),
+///     moon_sign: Some(Rashi::Taurus),
+///     noon_in_rahu_kaala: false,
+///     vishti: false,
+///     panchaka: false,
+///     special_yogas: 0,
+/// };
+/// use teistro_muhurta::baseline::Dimension;
+///
+/// let score = day(&friday, None, &BaselineEvent::marriage());
+/// assert_eq!(score.factors[0].dimension, Dimension::TithiQuality);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -140,6 +182,13 @@ pub enum Dimension {
 impl Dimension {
     /// Whether a weight against the time on this dimension is a Mahadosha,
     /// which caps the score.
+    ///
+    /// ```
+    /// use teistro_muhurta::baseline::Dimension;
+    ///
+    /// assert!(Dimension::KarakaCombust.mahadosha());
+    /// assert!(!Dimension::Choghadiya.mahadosha());
+    /// ```
     #[must_use]
     pub const fn mahadosha(self) -> bool {
         matches!(
@@ -153,6 +202,30 @@ impl Dimension {
 }
 
 /// One weight and what it was given for.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Rashi, Tithi, Vara, Yoga};
+/// use teistro_muhurta::BaselineEvent;
+/// use teistro_muhurta::baseline::{DayReading, day};
+///
+/// // A Friday on the bright eleventh in Rohini with Siddhi.
+/// let friday = DayReading {
+///     tithi: Tithi::ShuklaEkadashi,
+///     star: Nakshatra::Rohini,
+///     vara: Vara::Shukravara,
+///     yoga: Some(Yoga::Siddhi),
+///     moon_sign: Some(Rashi::Taurus),
+///     noon_in_rahu_kaala: false,
+///     vishti: false,
+///     panchaka: false,
+///     special_yogas: 0,
+/// };
+/// // The day part 60, then Siddhi 8, the Moon's brightness 8, the event's
+/// // weekday 8 and tithi 6: 90.
+/// let score = day(&friday, None, &BaselineEvent::marriage());
+/// assert_eq!(score.factors.iter().map(|f| f.weight).sum::<i32>(), 90);
+/// assert!(score.factors.iter().all(|f| f.graha.is_none()));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Factor {
@@ -165,6 +238,27 @@ pub struct Factor {
 }
 
 /// A score under the engine's weights.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Rashi, Tithi, Vara, Yoga};
+/// use teistro_muhurta::BaselineEvent;
+/// use teistro_muhurta::baseline::{DayReading, day};
+///
+/// // A Friday on the bright eleventh in Rohini with Siddhi.
+/// let friday = DayReading {
+///     tithi: Tithi::ShuklaEkadashi,
+///     star: Nakshatra::Rohini,
+///     vara: Vara::Shukravara,
+///     yoga: Some(Yoga::Siddhi),
+///     moon_sign: Some(Rashi::Taurus),
+///     noon_in_rahu_kaala: false,
+///     vishti: false,
+///     panchaka: false,
+///     special_yogas: 0,
+/// };
+/// let score = day(&friday, None, &BaselineEvent::marriage());
+/// assert_eq!((score.value, score.capped_at), (90, None));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -269,6 +363,28 @@ impl Tally {
 
 /// What the engine reads of a day: its limbs at sunrise, and three
 /// facts of the whole day.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Rashi, Tithi, Vara, Yoga};
+/// use teistro_muhurta::BaselineEvent;
+/// use teistro_muhurta::baseline::{DayReading, day};
+///
+/// // A Friday on the bright eleventh in Rohini with Siddhi.
+/// let friday = DayReading {
+///     tithi: Tithi::ShuklaEkadashi,
+///     star: Nakshatra::Rohini,
+///     vara: Vara::Shukravara,
+///     yoga: Some(Yoga::Siddhi),
+///     moon_sign: Some(Rashi::Taurus),
+///     noon_in_rahu_kaala: false,
+///     vishti: false,
+///     panchaka: false,
+///     special_yogas: 0,
+/// };
+/// // Vyatipata in place of Siddhi: −25 where Siddhi gave +8.
+/// let vyatipata = DayReading { yoga: Some(Yoga::Vyatipata), ..friday };
+/// assert_eq!(day(&vyatipata, None, &BaselineEvent::marriage()).value, 57);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -296,6 +412,61 @@ pub struct DayReading {
 impl DayReading {
     /// A day as the engine reads it, or `None` for a day with no tithi or
     /// star at its sunrise, which the engine cannot score either.
+    ///
+    /// ```
+    /// # use teistro_astro::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_chart::foundation::Founder;
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_ephemeris_builtin::provider::Builtin;
+    /// # use teistro_muhurta::sources::Over;
+    /// # use teistro_muhurta::{ProviderSources, Sources};
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::Horizon;
+    /// #
+    /// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = Builtin::new();
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+    /// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+    /// # let over = Over {
+    /// #     almanac: &almanac,
+    /// #     founder: &founder,
+    /// #     completion: &completion,
+    /// #     heliacal: &heliacal,
+    /// #     calendar: &Gregorian,
+    /// #     clock: &clock,
+    /// #     settings: &resolved.settings,
+    /// #     precession,
+    /// #     delta_t,
+    /// # };
+    /// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+    /// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// // 25 November 2026, after Devuthani.
+    /// let day = sources.day(&date(11, 25))?;
+    /// use teistro_muhurta::baseline::DayReading;
+    ///
+    /// let reading = DayReading::of(&day).ok_or("a tithi and a star at sunrise")?;
+    /// assert_eq!(reading.vara, day.vara());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn of(day: &Panchanga) -> Option<DayReading> {
         let sunrise = day.day.sunrise;
@@ -326,6 +497,34 @@ impl DayReading {
 }
 
 /// The day's score: what the engine hands its window assembler.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Rashi, Tithi, Vara, Yoga};
+/// use teistro_muhurta::BaselineEvent;
+/// use teistro_muhurta::baseline::{DayReading, day};
+///
+/// // A Friday on the bright eleventh in Rohini with Siddhi.
+/// let friday = DayReading {
+///     tithi: Tithi::ShuklaEkadashi,
+///     star: Nakshatra::Rohini,
+///     vara: Vara::Shukravara,
+///     yoga: Some(Yoga::Siddhi),
+///     moon_sign: Some(Rashi::Taurus),
+///     noon_in_rahu_kaala: false,
+///     vishti: false,
+///     panchaka: false,
+///     special_yogas: 0,
+/// };
+/// use teistro_muhurta::Native;
+///
+/// // Two special yogas add 12, clamped at 100.
+/// let yogas = DayReading { special_yogas: 2, ..friday };
+/// assert_eq!(day(&yogas, None, &BaselineEvent::marriage()).value, 100);
+/// // Read against a native, the tara and the Moon's house weigh too.
+/// let native = Native { star: Nakshatra::Pushya, moon_sign: Rashi::Cancer, lagna: None };
+/// let read = day(&friday, Some(&native), &BaselineEvent::marriage());
+/// assert!(read.factors.len() > day(&friday, None, &BaselineEvent::marriage()).factors.len());
+/// ```
 #[must_use]
 pub fn day(day: &DayReading, native: Option<&Native>, event: &BaselineEvent) -> Score {
     let mut tally = Tally::default();
@@ -396,6 +595,26 @@ pub fn day(day: &DayReading, native: Option<&Native>, event: &BaselineEvent) -> 
 }
 
 /// What the engine reads of a window's time of day.
+///
+/// ```
+/// # use teistro_core::catalogue::Choghadiya;
+/// # use teistro_muhurta::instant::Sky;
+/// # use teistro_muhurta::{BaselineEvent, Score};
+/// # use teistro_muhurta::baseline::{Period, window};
+/// #
+/// # // Libra rising; Mars in Taurus, Venus in Pisces, Jupiter in Libra, the
+/// # // Sun in Aquarius with Mercury, the Moon and Saturn in Capricorn, the
+/// # // nodes opposite.
+/// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+/// # let sky = Sky { lagna_deg: 185.0, grahas, speeds: [1.0; 9] };
+/// # let event = BaselineEvent::marriage();
+/// # let today = Score { value: 50, factors: Vec::new(), capped_at: None };
+/// // A window in Rog is not offered; one in Amrit is.
+/// let rog = Period { choghadiya: Some(Choghadiya::Rog), daytime: true, abhijit: false };
+/// assert!(window(&today, rog, &sky, &event).is_none());
+/// let amrit = Period { choghadiya: Some(Choghadiya::Amrit), ..rog };
+/// assert!(window(&today, amrit, &sky, &event).is_some());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Period {
@@ -410,6 +629,64 @@ pub struct Period {
 
 impl Period {
     /// The period of a window, read at its middle.
+    ///
+    /// ```
+    /// # use teistro_astro::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_chart::foundation::Founder;
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_ephemeris_builtin::provider::Builtin;
+    /// # use teistro_muhurta::sources::Over;
+    /// # use teistro_muhurta::{ProviderSources, Sources};
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::Horizon;
+    /// #
+    /// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = Builtin::new();
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+    /// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+    /// # let over = Over {
+    /// #     almanac: &almanac,
+    /// #     founder: &founder,
+    /// #     completion: &completion,
+    /// #     heliacal: &heliacal,
+    /// #     calendar: &Gregorian,
+    /// #     clock: &clock,
+    /// #     settings: &resolved.settings,
+    /// #     precession,
+    /// #     delta_t,
+    /// # };
+    /// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+    /// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// // 25 November 2026, after Devuthani.
+    /// let day = sources.day(&date(11, 25))?;
+    /// use teistro_core::interval::Interval;
+    /// use teistro_muhurta::baseline::Period;
+    ///
+    /// // An hour after sunrise is in daylight.
+    /// let sunrise = day.day.sunrise.get();
+    /// let period = Period::of(&day, Interval::literal(sunrise + 1.0 / 24.0, sunrise + 1.1 / 24.0));
+    /// assert!(period.daytime && period.choghadiya.is_some());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn of(day: &Panchanga, at: Interval) -> Period {
         let middle = f64::midpoint(at.from.get(), at.to.get());
@@ -429,6 +706,29 @@ impl Period {
 ///
 /// `sky` is the sky at the window's start, where the engine reads the
 /// lagna and the karakas.
+///
+/// ```
+/// # use teistro_core::catalogue::Choghadiya;
+/// # use teistro_muhurta::instant::Sky;
+/// # use teistro_muhurta::{BaselineEvent, Score};
+/// # use teistro_muhurta::baseline::{Period, window};
+/// #
+/// # // Libra rising; Mars in Taurus, Venus in Pisces, Jupiter in Libra, the
+/// # // Sun in Aquarius with Mercury, the Moon and Saturn in Capricorn, the
+/// # // nodes opposite.
+/// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+/// # let sky = Sky { lagna_deg: 185.0, grahas, speeds: [1.0; 9] };
+/// # let event = BaselineEvent::marriage();
+/// # let today = Score { value: 50, factors: Vec::new(), capped_at: None };
+/// use teistro_muhurta::baseline::Dimension;
+///
+/// // Amrit weighs 18, and the window is scored over the day's 50.
+/// let amrit = Period { choghadiya: Some(Choghadiya::Amrit), daytime: true, abhijit: false };
+/// let scored = window(&today, amrit, &sky, &event).ok_or("offered")?;
+/// assert!(scored.factors.contains(&teistro_muhurta::baseline::Factor { dimension: Dimension::Choghadiya, weight: 18, graha: None }));
+/// assert!(scored.value <= 100);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn window(day: &Score, period: Period, sky: &Sky, event: &BaselineEvent) -> Option<Score> {
     let mut tally = Tally {

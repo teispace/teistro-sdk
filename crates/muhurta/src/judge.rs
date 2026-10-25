@@ -17,6 +17,27 @@ use crate::baseline::Score;
 use crate::clause::Clause;
 
 /// Every clause that held over one window.
+///
+/// ```
+/// # use teistro_core::catalogue::Kaala;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Judgement};
+/// #
+/// # const T: f64 = 2_460_000.5;
+/// # let at = |from: f64, to: f64| Interval::literal(T + from, T + to);
+/// # let rules = ActivityRules::raman_marriage();
+/// // Mars in the eighth early on, Abhijit across noon, Rahu kaala after.
+/// let held = [
+///     Clause { kind: ClauseKind::MarsInEighth {}, at: at(0.0, 0.2) },
+///     Clause { kind: ClauseKind::Abhijit {}, at: at(0.1, 0.3) },
+///     Clause { kind: ClauseKind::Kaala { kaala: Kaala::RahuKaala }, at: at(0.3, 0.4) },
+/// ];
+/// let early = Judgement::of(at(0.1, 0.2), &held, &rules);
+/// // Mars in the eighth covers it whole, and Raman's marriage rules bar him.
+/// assert_eq!(early.clauses.len(), 2);
+/// assert!(!early.open());
+/// assert_eq!(early.score, None);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -44,6 +65,27 @@ impl Judgement {
     /// every clause's edges (`search.rs`). For a whole day they are not:
     /// a day with Rahu kaala in it holds the clause, and is not barred by
     /// it — its windows in Rahu kaala are.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Kaala;
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Judgement};
+    /// #
+    /// # const T: f64 = 2_460_000.5;
+    /// # let at = |from: f64, to: f64| Interval::literal(T + from, T + to);
+    /// # let rules = ActivityRules::raman_marriage();
+    /// // Mars in the eighth early on, Abhijit across noon, Rahu kaala after.
+    /// let held = [
+    ///     Clause { kind: ClauseKind::MarsInEighth {}, at: at(0.0, 0.2) },
+    ///     Clause { kind: ClauseKind::Abhijit {}, at: at(0.1, 0.3) },
+    ///     Clause { kind: ClauseKind::Kaala { kaala: Kaala::RahuKaala }, at: at(0.3, 0.4) },
+    /// ];
+    /// let early = Judgement::of(at(0.1, 0.2), &held, &rules);
+    /// // Touching at an end is not overlapping: only Rahu kaala holds later.
+    /// let late = Judgement::of(at(0.3, 0.4), &held, &rules);
+    /// assert_eq!(late.clauses.len(), 1);
+    /// assert!(late.open());
+    /// ```
     #[must_use]
     pub fn of<'c>(
         at: Interval,
@@ -82,18 +124,78 @@ impl Judgement {
     }
 
     /// Whether the rules let the rite be held in it.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Kaala;
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Judgement};
+    /// #
+    /// # const T: f64 = 2_460_000.5;
+    /// # let at = |from: f64, to: f64| Interval::literal(T + from, T + to);
+    /// # let rules = ActivityRules::raman_marriage();
+    /// // Mars in the eighth early on, Abhijit across noon, Rahu kaala after.
+    /// let held = [
+    ///     Clause { kind: ClauseKind::MarsInEighth {}, at: at(0.0, 0.2) },
+    ///     Clause { kind: ClauseKind::Abhijit {}, at: at(0.1, 0.3) },
+    ///     Clause { kind: ClauseKind::Kaala { kaala: Kaala::RahuKaala }, at: at(0.3, 0.4) },
+    /// ];
+    /// let early = Judgement::of(at(0.1, 0.2), &held, &rules);
+    /// use teistro_muhurta::Bar;
+    /// use teistro_muhurta::clause::ClauseKey;
+    ///
+    /// assert_eq!(early.barred_by, [Bar::Key(ClauseKey::MarsInEighth)]);
+    /// assert!(!early.open());
+    /// ```
     #[must_use]
     pub fn open(&self) -> bool {
         self.barred_by.is_empty()
     }
 
     /// How many clauses count for the time.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Kaala;
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Judgement};
+    /// #
+    /// # const T: f64 = 2_460_000.5;
+    /// # let at = |from: f64, to: f64| Interval::literal(T + from, T + to);
+    /// # let rules = ActivityRules::raman_marriage();
+    /// // Mars in the eighth early on, Abhijit across noon, Rahu kaala after.
+    /// let held = [
+    ///     Clause { kind: ClauseKind::MarsInEighth {}, at: at(0.0, 0.2) },
+    ///     Clause { kind: ClauseKind::Abhijit {}, at: at(0.1, 0.3) },
+    ///     Clause { kind: ClauseKind::Kaala { kaala: Kaala::RahuKaala }, at: at(0.3, 0.4) },
+    /// ];
+    /// let early = Judgement::of(at(0.1, 0.2), &held, &rules);
+    /// // Abhijit for it.
+    /// assert_eq!(early.for_count(), 1);
+    /// ```
     #[must_use]
     pub fn for_count(&self) -> usize {
         self.clauses.iter().filter(|c| c.favourable()).count()
     }
 
     /// How many count against it.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Kaala;
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Judgement};
+    /// #
+    /// # const T: f64 = 2_460_000.5;
+    /// # let at = |from: f64, to: f64| Interval::literal(T + from, T + to);
+    /// # let rules = ActivityRules::raman_marriage();
+    /// // Mars in the eighth early on, Abhijit across noon, Rahu kaala after.
+    /// let held = [
+    ///     Clause { kind: ClauseKind::MarsInEighth {}, at: at(0.0, 0.2) },
+    ///     Clause { kind: ClauseKind::Abhijit {}, at: at(0.1, 0.3) },
+    ///     Clause { kind: ClauseKind::Kaala { kaala: Kaala::RahuKaala }, at: at(0.3, 0.4) },
+    /// ];
+    /// let early = Judgement::of(at(0.1, 0.2), &held, &rules);
+    /// // Mars in the eighth against it.
+    /// assert_eq!(early.against_count(), 1);
+    /// ```
     #[must_use]
     pub fn against_count(&self) -> usize {
         self.clauses.len() - self.for_count()
@@ -106,6 +208,13 @@ fn covers(outer: Interval, inner: Interval) -> bool {
 }
 
 /// How windows are ordered (crux C162); the texts' order by default.
+///
+/// ```
+/// use teistro_muhurta::Ranking;
+///
+/// assert_eq!(Ranking::default(), Ranking::Texts);
+/// assert!(Ranking::Baseline.scores() && !Ranking::Texts.scores());
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -128,6 +237,30 @@ pub enum Ranking {
 
 impl Ranking {
     /// The order of two judgements, the better first.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Kaala;
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Judgement};
+    /// #
+    /// # const T: f64 = 2_460_000.5;
+    /// # let at = |from: f64, to: f64| Interval::literal(T + from, T + to);
+    /// # let rules = ActivityRules::raman_marriage();
+    /// // Mars in the eighth early on, Abhijit across noon, Rahu kaala after.
+    /// let held = [
+    ///     Clause { kind: ClauseKind::MarsInEighth {}, at: at(0.0, 0.2) },
+    ///     Clause { kind: ClauseKind::Abhijit {}, at: at(0.1, 0.3) },
+    ///     Clause { kind: ClauseKind::Kaala { kaala: Kaala::RahuKaala }, at: at(0.3, 0.4) },
+    /// ];
+    /// let early = Judgement::of(at(0.1, 0.2), &held, &rules);
+    /// use core::cmp::Ordering;
+    /// use teistro_muhurta::Ranking;
+    ///
+    /// // An open window ranks before a barred one, under either ranking.
+    /// let late = Judgement::of(at(0.3, 0.4), &held, &rules);
+    /// assert_eq!(Ranking::Texts.compare(&late, &early), Ordering::Less);
+    /// assert_eq!(Ranking::Baseline.compare(&late, &early), Ordering::Less);
+    /// ```
     #[must_use]
     pub fn compare(self, a: &Judgement, b: &Judgement) -> Ordering {
         let open = b.open().cmp(&a.open());
@@ -146,6 +279,12 @@ impl Ranking {
 
     /// Whether the ranking scores, and so computes a [`Score`] for each
     /// judgement.
+    ///
+    /// ```
+    /// use teistro_muhurta::Ranking;
+    ///
+    /// assert!(!Ranking::Texts.scores());
+    /// ```
     #[must_use]
     pub const fn scores(self) -> bool {
         matches!(self, Ranking::Baseline)
