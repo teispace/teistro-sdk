@@ -480,10 +480,14 @@ struct Flags {
 
 /// The doc lines of an item, the `api:` metadata pulled out of them, and
 /// the flags; rustdoc links are flattened to plain text.
+///
+/// A fenced block is left out: it is a Rust example, compiled as a
+/// doctest, and means nothing in a C header or a Java comment.
 fn doc_of(attrs: &[Attribute]) -> (String, Meta, Flags) {
-    let mut lines = Vec::new();
+    let mut lines: Vec<String> = Vec::new();
     let mut meta = Meta::default();
     let mut flags = Flags::default();
+    let mut fenced = false;
     for attr in attrs {
         if attr.path().is_ident("deprecated") {
             flags.deprecated = true;
@@ -499,6 +503,13 @@ fn doc_of(attrs: &[Attribute]) -> (String, Meta, Flags) {
         let Lit::Str(s) = &lit.lit else { continue };
         let line = s.value();
         let trimmed = line.trim();
+        if trimmed.starts_with("```") {
+            fenced = !fenced;
+            continue;
+        }
+        if fenced {
+            continue;
+        }
         if let Some(rest) = trimmed.strip_prefix("`api:") {
             let rest = rest.trim_end_matches('`').trim();
             match rest.split_once(':') {
@@ -509,7 +520,7 @@ fn doc_of(attrs: &[Attribute]) -> (String, Meta, Flags) {
                 }
                 _ => parse_meta(rest, &mut meta, &mut flags),
             }
-        } else {
+        } else if !trimmed.is_empty() || !lines.last().is_some_and(String::is_empty) {
             lines.push(clean_doc(trimmed));
         }
     }
@@ -996,6 +1007,29 @@ pub extern "C" fn ts_abi_version() -> u32 { TS_ABI_VERSION }
             extra_enums: vec![],
             blobs: vec![],
         }
+    }
+
+    /// A Rust example is a doctest, not documentation a binding carries:
+    /// the fence and everything in it are left out, along with the blank
+    /// line it leaves doubled.
+    #[test]
+    fn a_rust_example_stays_out_of_the_description() {
+        let item: syn::ItemConst = syn::parse_quote! {
+            /// The scale.
+            ///
+            /// ```
+            /// `api: unit=deg`
+            /// assert_eq!(1, 1);
+            /// ```
+            ///
+            /// # Errors
+            ///
+            /// `api: unit=day`
+            const SCALE: u32 = 1;
+        };
+        let (doc, meta, _) = doc_of(&item.attrs);
+        assert_eq!(doc, "The scale.\n\n# Errors");
+        assert_eq!(meta.unit.as_deref(), Some("day"));
     }
 
     #[test]

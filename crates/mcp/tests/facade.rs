@@ -465,6 +465,21 @@ fn every_tool_states_its_schemas_and_the_unstated_parts_are_exactly_these() {
     assert_eq!(unstated, Vec::<String>::new());
 }
 
+/// A description is the doc comment without its Rust examples: no schema
+/// in the full list carries a fence, though the types' doc comments do.
+#[test]
+fn no_schema_carries_a_doctest() {
+    let tools = listed(&mut Server::new(Engine::Builtin).with_detail(Detail::Full));
+    for tool in &tools {
+        let text = tool.to_string();
+        assert!(
+            !text.contains("```"),
+            "{} carries a fenced block",
+            tool["name"]
+        );
+    }
+}
+
 /// **What a chart record's reader takes, `chart.found`'s schema takes**
 /// (P1, "never stricter than the reader"): each record by its name, at
 /// the least its reader needs and, where the record has more to say, in
