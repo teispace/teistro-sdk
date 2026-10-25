@@ -2065,7 +2065,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// use teistro_chart::sample::{self, Sample};
     /// let sample = Sample::new();
     /// let founder = sample.founder();
-    /// let ascendant = founder.lagna_table_ascendant(sample::INSTANT, &sample::place())?;
+    /// let place = sample::place();
+    /// let ascendant = founder.lagna_table_ascendant(sample::INSTANT, &place)?;
     /// let lagna = ascendant(sample::INSTANT)?;
     /// // The sample's table is the chart's own, so it reads the chart's lagna.
     /// assert!((lagna - sample::foundation()?.lagna_deg).abs() < 1e-9);
