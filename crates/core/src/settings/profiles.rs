@@ -32,6 +32,14 @@ use super::{
 use crate::quantity::Depth;
 
 /// A profile's id.
+///
+/// ```
+/// use teistro_core::settings::ProfileId;
+///
+/// let id: ProfileId = serde_json::from_str(r#""nepali-default""#).unwrap();
+/// assert_eq!(id, ProfileId::new("nepali-default"));
+/// assert_eq!(id.to_string(), "nepali-default");
+/// ```
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
 )]
@@ -41,12 +49,24 @@ pub struct ProfileId(String);
 
 impl ProfileId {
     /// An id.
+    ///
+    /// ```
+    /// use teistro_core::settings::ProfileId;
+    ///
+    /// assert_eq!(ProfileId::new("mine").as_str(), "mine");
+    /// ```
     #[must_use]
     pub fn new(id: &str) -> ProfileId {
         ProfileId(id.to_string())
     }
 
     /// The id.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DEFAULT_PROFILE, Profile};
+    ///
+    /// assert_eq!(Profile::shipped(DEFAULT_PROFILE).unwrap().id.as_str(), DEFAULT_PROFILE);
+    /// ```
     #[must_use]
     pub fn as_str(&self) -> &str {
         &self.0
@@ -60,6 +80,16 @@ impl core::fmt::Display for ProfileId {
 }
 
 /// A named, versioned patch over a base.
+///
+/// ```
+/// use teistro_core::settings::{Profile, SettingsPatch};
+///
+/// let committee = Profile::shipped("nepali-committee").unwrap();
+/// // One level of base at most, and a citation for what it sets.
+/// assert!(committee.base.as_ref().is_none_or(|base| Profile::shipped(base.as_str()).is_some()));
+/// assert!(!committee.sources.is_empty());
+/// assert!(committee.resolve(&SettingsPatch::default()).is_ok());
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Profile {
     /// The id.
@@ -87,9 +117,25 @@ pub struct Profile {
 /// convenience. The choice matters — the centre alone moves the Moon by
 /// up to 39 arcminutes, which changes a Vimshottari mahadasha lord in one
 /// of the six charts the corpus records both ways.
+///
+/// ```
+/// use teistro_core::settings::{DEFAULT_PROFILE, SHIPPED_PROFILES};
+///
+/// assert_eq!(DEFAULT_PROFILE, "parashari-classical");
+/// assert!(SHIPPED_PROFILES.contains(&DEFAULT_PROFILE));
+/// ```
 pub const DEFAULT_PROFILE: &str = "parashari-classical";
 
 /// The ids of the shipped profiles.
+///
+/// ```
+/// use teistro_core::settings::{Profile, SettingsPatch, SHIPPED_PROFILES};
+///
+/// // Every one resolves, with nothing patched.
+/// for id in SHIPPED_PROFILES {
+///     assert!(Profile::shipped(id).unwrap().resolve(&SettingsPatch::default()).is_ok(), "{id}");
+/// }
+/// ```
 pub const SHIPPED_PROFILES: [&str; 7] = [
     "nepali-default",
     "nepali-committee",
@@ -163,6 +209,14 @@ fn root_panchanga() -> Panchanga {
 }
 
 /// The root: every knob set and cited; never selected directly.
+///
+/// ```
+/// use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch, root};
+///
+/// // Every profile is a patch over the root.
+/// let resolved = Profile::shipped(DEFAULT_PROFILE).unwrap().resolve(&SettingsPatch::default()).unwrap();
+/// assert_eq!(resolved.settings.schema, root().schema);
+/// ```
 #[must_use]
 pub fn root() -> Settings {
     Settings {
@@ -768,6 +822,13 @@ fn conformance_baseline() -> Profile {
 
 impl Profile {
     /// A shipped profile by id.
+    ///
+    /// ```
+    /// use teistro_core::settings::Profile;
+    ///
+    /// assert_eq!(Profile::shipped("kp-default").map(|p| p.id.to_string()), Some(String::from("kp-default")));
+    /// assert!(Profile::shipped("kp").is_none());
+    /// ```
     #[must_use]
     pub fn shipped(id: &str) -> Option<Profile> {
         match id {
@@ -784,6 +845,19 @@ impl Profile {
 
     /// Resolves the profile with a request's patch: root, then the base,
     /// then this profile, then the patch; validated once.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Node, Profile, SettingsPatch, SunriseConvention};
+    ///
+    /// let profile = Profile::shipped("nepali-default").unwrap();
+    /// let mut patch = SettingsPatch::default();
+    /// // The patch is applied last, over the profile.
+    /// patch.frame.node = Some(Node::Mean);
+    /// assert_eq!(profile.resolve(&patch).unwrap().settings.frame.node, Node::Mean);
+    /// // Every coherence error is returned, not the first alone.
+    /// patch.day.sunrise = Some(SunriseConvention::Custom { altitude_deg: 95.0 });
+    /// assert!(profile.resolve(&patch).unwrap_err().errors().count() >= 1);
+    /// ```
     ///
     /// # Errors
     ///

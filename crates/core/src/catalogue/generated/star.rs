@@ -9,6 +9,17 @@ use super::{Nakshatra, StarClass};
 /// The fixed stars and fixed directions the SDK places: the anchors of the star-anchored ayanamshas, the yogataras of the nakshatras, the bright stars of the fixed-star tradition, the galactic centre and the galactic poles, each with its ICRS astrometry at epoch J2000.0 (`03-design/astro-star-table.md`).
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Star;
+///
+/// let member: Star = "SHERATAN".parse()?;
+/// assert_eq!(member, Star::Sheratan);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("star.SHERATAN".parse::<Star>(), Ok(Star::Sheratan));
+/// assert_eq!(member.to_string(), "SHERATAN");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -272,6 +283,12 @@ pub enum Star {
 }
 
 /// A value type of the `star` attributes.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(Star::Sheratan.attributes().astrometry, Astrometry { ra_deg: 28.66004578884514, dec_deg: 20.808031471916408, pm_ra_mas_yr: 98.74, pm_dec_mas_yr: -110.41, parallax_mas: 55.6, radial_velocity_km_s: -3.1 });
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Astrometry {
     /// `ra_deg`.
@@ -289,6 +306,22 @@ pub struct Astrometry {
 }
 
 /// The attributes of a `star` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Star::Sheratan.attributes(),
+///     &StarAttributes {
+///         designation: "beta Arietis",
+///         class: StarClass::Star,
+///         hip: Some(8903),
+///         magnitude: Some(2.65),
+///         astrometry: Astrometry { ra_deg: 28.66004578884514, dec_deg: 20.808031471916408, pm_ra_mas_yr: 98.74, pm_dec_mas_yr: -110.41, parallax_mas: 55.6, radial_velocity_km_s: -3.1 },
+///         yogatara_of: Some(Nakshatra::Ashwini),
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct StarAttributes {
     /// `designation`.
@@ -707,6 +740,12 @@ impl Star {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert_eq!(Star::Sheratan.key(), "SHERATAN");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -842,6 +881,12 @@ impl Star {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert_eq!(Star::Sheratan.full_key(), "star.SHERATAN");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -977,6 +1022,12 @@ impl Star {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert_eq!(Star::Sheratan.doc(), "Sheratan, beta Arietis: the yogatara of Ashwini");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -1112,6 +1163,12 @@ impl Star {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert_eq!(Star::Sheratan.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -1247,6 +1304,12 @@ impl Star {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Star};
+    ///
+    /// assert_eq!(Star::Sheratan.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -1382,6 +1445,12 @@ impl Star {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert!(!Star::Sheratan.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -1517,6 +1586,13 @@ impl Star {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// let first = &Star::Sheratan.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("SIMBAD Astronomical Database, CDS Strasbourg: ICRS coordinates at epoch J2000.0, proper motion, parallax, radial velocity and V magnitude, TAP query of 2026-09-05", "coordinates 2007A&A...474..653V (Hipparcos, the new reduction (van Leeuwen 2007)); proper motion 2007A&A...474..653V; parallax 2007A&A...474..653V; radial velocity 2004A&A...424..727P"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -1652,6 +1728,12 @@ impl Star {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert!(Star::Sheratan.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -1787,24 +1869,52 @@ impl Star {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert_eq!(Star::Sheratan.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Star};
+    ///
+    /// let packed = Star::Sheratan.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Star), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Star, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert_eq!(Star::from_key("SHERATAN"), Some(Star::Sheratan));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Star::from_key("star.SHERATAN"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Star> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert_eq!(Star::from_id(0), Some(Star::Sheratan));
+    /// assert_eq!(Star::from_id(128), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Star> {
         match id {
@@ -1941,6 +2051,22 @@ impl Star {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Star::Sheratan.attributes(),
+    ///     &StarAttributes {
+    ///         designation: "beta Arietis",
+    ///         class: StarClass::Star,
+    ///         hip: Some(8903),
+    ///         magnitude: Some(2.65),
+    ///         astrometry: Astrometry { ra_deg: 28.66004578884514, dec_deg: 20.808031471916408, pm_ra_mas_yr: 98.74, pm_dec_mas_yr: -110.41, parallax_mas: 55.6, radial_velocity_km_s: -3.1 },
+    ///         yogatara_of: Some(Nakshatra::Ashwini),
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static StarAttributes {

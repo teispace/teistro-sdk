@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// Odd and even signs.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Parity;
+///
+/// let member: Parity = "ODD".parse()?;
+/// assert_eq!(member, Parity::Odd);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("parity.ODD".parse::<Parity>(), Ok(Parity::Odd));
+/// assert_eq!(member.to_string(), "ODD");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -37,6 +48,12 @@ impl Parity {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// assert_eq!(Parity::Odd.key(), "ODD");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -46,6 +63,12 @@ impl Parity {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// assert_eq!(Parity::Odd.full_key(), "parity.ODD");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -55,6 +78,12 @@ impl Parity {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// assert_eq!(Parity::Odd.doc(), "Odd");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -64,6 +93,12 @@ impl Parity {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// assert_eq!(Parity::Odd.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -73,6 +108,12 @@ impl Parity {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Parity};
+    ///
+    /// assert_eq!(Parity::Odd.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -82,6 +123,12 @@ impl Parity {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// assert!(!Parity::Odd.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -91,6 +138,13 @@ impl Parity {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// let first = &Parity::Odd.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("BPHS", "4"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -100,6 +154,12 @@ impl Parity {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// assert!(Parity::Odd.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -109,24 +169,52 @@ impl Parity {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// assert_eq!(Parity::Odd.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Parity};
+    ///
+    /// let packed = Parity::Odd.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Parity), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Parity, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// assert_eq!(Parity::from_key("ODD"), Some(Parity::Odd));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Parity::from_key("parity.ODD"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Parity> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Parity;
+    ///
+    /// assert_eq!(Parity::from_id(0), Some(Parity::Odd));
+    /// assert_eq!(Parity::from_id(2), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Parity> {
         match id {

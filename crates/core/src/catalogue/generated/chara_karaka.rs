@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The Jaimini significators, in rank order.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::CharaKaraka;
+///
+/// let member: CharaKaraka = "ATMAKARAKA".parse()?;
+/// assert_eq!(member, CharaKaraka::Atmakaraka);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("chara_karaka.ATMAKARAKA".parse::<CharaKaraka>(), Ok(CharaKaraka::Atmakaraka));
+/// assert_eq!(member.to_string(), "ATMAKARAKA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -61,6 +72,12 @@ impl CharaKaraka {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// assert_eq!(CharaKaraka::Atmakaraka.key(), "ATMAKARAKA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -76,6 +93,12 @@ impl CharaKaraka {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// assert_eq!(CharaKaraka::Atmakaraka.full_key(), "chara_karaka.ATMAKARAKA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -91,6 +114,12 @@ impl CharaKaraka {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// assert_eq!(CharaKaraka::Atmakaraka.doc(), "Atmakaraka");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -106,6 +135,12 @@ impl CharaKaraka {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// assert_eq!(CharaKaraka::Atmakaraka.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -121,6 +156,12 @@ impl CharaKaraka {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, CharaKaraka};
+    ///
+    /// assert_eq!(CharaKaraka::Atmakaraka.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -136,6 +177,12 @@ impl CharaKaraka {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// assert!(!CharaKaraka::Atmakaraka.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -151,6 +198,13 @@ impl CharaKaraka {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// let first = &CharaKaraka::Atmakaraka.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -166,6 +220,12 @@ impl CharaKaraka {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// assert!(CharaKaraka::Atmakaraka.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -181,24 +241,52 @@ impl CharaKaraka {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// assert_eq!(CharaKaraka::Atmakaraka.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, CharaKaraka};
+    ///
+    /// let packed = CharaKaraka::Atmakaraka.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::CharaKaraka), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::CharaKaraka, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// assert_eq!(CharaKaraka::from_key("ATMAKARAKA"), Some(CharaKaraka::Atmakaraka));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(CharaKaraka::from_key("chara_karaka.ATMAKARAKA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<CharaKaraka> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    ///
+    /// assert_eq!(CharaKaraka::from_id(0), Some(CharaKaraka::Atmakaraka));
+    /// assert_eq!(CharaKaraka::from_id(8), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<CharaKaraka> {
         match id {

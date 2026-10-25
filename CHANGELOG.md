@@ -12,6 +12,35 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every public item of `teistro-core` has a run example, and an example
+no longer reaches what a binding or a model reads.** **Numbers:** none;
+rustdoc counts 887 such items, and all 887 have one. The catalogue's
+generator writes the examples for every kind it emits, so a member added
+to a kind is documented with the same examples as the others. Each kind's
+enum, attributes and resolver shows a real member: Yoni's Horse is
+hostile to the Buffalo. The settings macros give every group, its
+patch and every knob an example. The hand-written ones cover the
+quantities, `Nas` (280.5° is Capricorn, Shravana, pada 84 of 108),
+canonical JSON (`1e-6` written `0.000001`, `-0` written `0`) and the
+answer key, which moves with the provider's data and not with its
+flags. All 1731 doctests run in about five seconds, merged.
+
+Two generators used to copy a doc comment whole. The API description
+did, so the Rust examples on `TimeScale`, `ProviderCode` and `Body`
+were in `idl/api.json` and the C and Java reference pages. The MCP
+server did too, so a tool list in full detail carried every type's
+doctest. Both now leave fenced blocks out, and a test holds each to it.
+`teistro-core` joins `check-doc-examples`' list.
+
+**The settings accept `CENTRE_REFRACTION` with an air of its own.**
+**Numbers:** none for a profile that ships. `Sunrise::refracts()`
+counted only the two limbs. So a sunrise taken at the disc's centre
+with refraction was refused an `Atmosphere`, though the horizon applies
+one to it as it does to the limbs, and a consumer could not ask for
+that sunrise at a local pressure and temperature. The refusal now names
+the three conventions that refract, and `CENTRE_NO_REFRACTION` is still
+refused one.
+
 **One validator corpus holds every binding and the Rust newtypes alike**
 (`docs/03-design/validator-corpus.md`). **Numbers:** none. `cargo xtask
 gen ffi` writes `idl/validators.json` from the description's branded

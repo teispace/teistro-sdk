@@ -31,9 +31,24 @@ pub use spelling::write_in_full;
 /// The catalogue's schema version (`teistro-catalogue/1` in
 /// `catalogue/catalogue.json`), stamped as `catalogue_version` in every
 /// result's provenance; a kind's own version lives in its source file.
+///
+/// ```
+/// use teistro_core::catalogue::SCHEMA_VERSION;
+///
+/// assert_eq!(format!("teistro-catalogue/{SCHEMA_VERSION}"), "teistro-catalogue/1");
+/// ```
 pub const SCHEMA_VERSION: u32 = 1;
 
 /// How well a catalogue row is sourced (ADR-0018).
+///
+/// ```
+/// use teistro_core::catalogue::{Mark, Rashi};
+///
+/// assert_eq!(Rashi::Leo.mark(), Mark::Verified);
+/// assert_eq!(Mark::Traditional.to_string(), "traditional");
+/// // Ordered best first.
+/// assert!(Mark::Verified < Mark::Shape);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Mark {
     /// Verified against a text or the baseline engine's validated data.
@@ -46,6 +61,12 @@ pub enum Mark {
 
 impl Mark {
     /// The one-letter form used in the sources: V, T or S.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Mark;
+    ///
+    /// assert_eq!([Mark::Verified, Mark::Traditional, Mark::Shape].map(Mark::letter), ['V', 'T', 'S']);
+    /// ```
     #[must_use]
     pub const fn letter(self) -> char {
         match self {
@@ -67,6 +88,15 @@ impl fmt::Display for Mark {
 }
 
 /// A citation: a text and the place in it.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+///
+/// let cited = Rashi::Leo.sources();
+/// assert!(!cited.is_empty());
+/// // Displayed as the text, then where in it.
+/// assert_eq!(cited[0].to_string(), format!("{} {}", cited[0].text, cited[0].reference));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Source {
     /// The text: `BPHS`, `baseline-engine`, `Muhurta Chintamani`.
@@ -77,6 +107,13 @@ pub struct Source {
 
 impl Source {
     /// A citation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Source;
+    ///
+    /// const VERSE: Source = Source::new("BPHS", "ch. 44 v. 2");
+    /// assert_eq!(VERSE.to_string(), "BPHS ch. 44 v. 2");
+    /// ```
     #[must_use]
     pub const fn new(text: &'static str, reference: &'static str) -> Source {
         Source { text, reference }
@@ -91,6 +128,18 @@ impl fmt::Display for Source {
 
 /// What every catalogued kind offers, for generic code; the generated
 /// enums add typed attributes on top.
+///
+/// ```
+/// use teistro_core::catalogue::{Catalogued, Graha, Kind};
+///
+/// /// What any catalogued kind can answer, written once.
+/// fn describe<T: Catalogued>(member: T) -> String {
+///     format!("{} #{} ({})", member.full_key(), member.id(), member.mark())
+/// }
+///
+/// assert_eq!(describe(Graha::Mars), "graha.MARS #2 (verified)");
+/// assert_eq!(<Graha as Catalogued>::KIND, Kind::Graha);
+/// ```
 pub trait Catalogued:
     Copy + Eq + Ord + core::hash::Hash + fmt::Debug + fmt::Display + core::str::FromStr + 'static
 {
@@ -98,21 +147,57 @@ pub trait Catalogued:
     const KIND: Kind;
 
     /// Every member, in id order.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha};
+    ///
+    /// assert_eq!(<Graha as Catalogued>::all().first(), Some(&Graha::Sun));
+    /// ```
     fn all() -> &'static [Self];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha};
+    ///
+    /// assert_eq!(<Graha as Catalogued>::key(Graha::Moon), "MOON");
+    /// ```
     fn key(self) -> &'static str;
 
     /// The catalogue id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha};
+    ///
+    /// assert_eq!(<Graha as Catalogued>::id(Graha::Sun), 0);
+    /// ```
     fn id(self) -> u16;
 
     /// The confidence mark.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha, Mark};
+    ///
+    /// assert_eq!(<Graha as Catalogued>::mark(Graha::Sun), Mark::Verified);
+    /// ```
     fn mark(self) -> Mark;
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha};
+    ///
+    /// assert_eq!(<Graha as Catalogued>::from_key("JUPITER"), Some(Graha::Jupiter));
+    /// ```
     fn from_key(key: &str) -> Option<Self>;
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha};
+    ///
+    /// assert_eq!(<Graha as Catalogued>::from_id(1), Some(Graha::Moon));
+    /// ```
     fn from_id(id: u16) -> Option<Self>;
 
     /// The member a request names: by its key or a former key (`SUN`), or
@@ -121,6 +206,16 @@ pub trait Catalogued:
     ///
     /// The prefix must be this kind's: `yoga.SIDDHI` is not a
     /// `muhurta_yoga`, whatever the key after it.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha};
+    ///
+    /// assert_eq!(Graha::from_either_key("SUN"), Ok(Graha::Sun));
+    /// assert_eq!(Graha::from_either_key("graha.SUN"), Ok(Graha::Sun));
+    /// // Another kind's prefix is not stripped.
+    /// assert!(Graha::from_either_key("rashi.SUN").is_err());
+    /// assert_eq!(Graha::from_either_key("SUNN").unwrap_err().suggestion, Some("SUN"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -134,17 +229,36 @@ pub trait Catalogued:
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha};
+    ///
+    /// assert_eq!(<Graha as Catalogued>::full_key(Graha::Venus), "graha.VENUS");
+    /// ```
     fn full_key(self) -> String {
         format!("{}.{}", Self::KIND.name(), self.key())
     }
 
     /// The packed id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha};
+    ///
+    /// assert_eq!(<Graha as Catalogued>::key_id(Graha::Venus), Graha::Venus.key_id());
+    /// ```
     fn key_id(self) -> KeyId {
         KeyId::new(Self::KIND, self.id())
     }
 
     /// The nearest key to `key` among the members, within two edits, for
     /// the message a wrong key gets.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Catalogued, Graha};
+    ///
+    /// assert_eq!(Graha::suggest("satrun"), Some("SATURN"));
+    /// assert_eq!(Graha::suggest("PLUTONIUM"), None);
+    /// ```
     #[must_use]
     fn suggest(key: &str) -> Option<&'static str> {
         let upper = key.to_ascii_uppercase();
@@ -158,6 +272,14 @@ pub trait Catalogued:
 }
 
 /// A key or id nobody has.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Kind};
+///
+/// let unknown = "MARZ".parse::<Graha>().unwrap_err();
+/// assert_eq!((unknown.kind, unknown.key.as_str(), unknown.suggestion), (Some(Kind::Graha), "MARZ", Some("MARS")));
+/// assert_eq!(unknown.to_string(), "unknown graha key `MARZ`; did you mean `MARS`?");
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UnknownKey {
     /// The kind searched, when known.
@@ -170,6 +292,12 @@ pub struct UnknownKey {
 
 impl UnknownKey {
     /// A key that is not a member of `T`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Rashi, UnknownKey};
+    ///
+    /// assert_eq!(UnknownKey::in_kind::<Rashi>("LIBRAA").suggestion, Some("LIBRA"));
+    /// ```
     #[must_use]
     pub fn in_kind<T: Catalogued>(key: &str) -> UnknownKey {
         UnknownKey {
@@ -180,6 +308,15 @@ impl UnknownKey {
     }
 
     /// An id that resolves to nothing.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Kind, UnknownKey};
+    /// use teistro_core::key::KeyId;
+    ///
+    /// let missing = UnknownKey::id(KeyId::new(Kind::Graha, 999));
+    /// assert_eq!(missing.to_string(), format!("unknown graha key `{}#999`", Kind::Graha.number()));
+    /// assert!(Graha::try_from(KeyId::new(Kind::Graha, 999)).is_err());
+    /// ```
     #[must_use]
     pub fn id(id: KeyId) -> UnknownKey {
         UnknownKey {
@@ -190,6 +327,13 @@ impl UnknownKey {
     }
 
     /// A kind name nobody has.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::UnknownKey;
+    ///
+    /// let unknown = UnknownKey::kind_name("GRAHAS");
+    /// assert_eq!(unknown.to_string(), "unknown key `GRAHAS`; did you mean `graha`?");
+    /// ```
     #[must_use]
     pub fn kind_name(name: &str) -> UnknownKey {
         let lower = name.to_ascii_lowercase();
@@ -293,6 +437,15 @@ pub(crate) fn lookup<T: Copy>(table: &[(&str, T)], key: &str) -> Option<T> {
 /// a length difference beyond the suggestion threshold of two is
 /// answered at once with that difference, a lower bound on the distance
 /// that is still above the threshold.
+///
+/// ```
+/// use teistro_core::catalogue::distance;
+///
+/// assert_eq!(distance("ROHINI", "ROHNI"), 1);
+/// assert_eq!(distance("KRITTIKA", "KRTTKA"), 2);
+/// // Past the threshold, the length difference is the answer.
+/// assert_eq!(distance("A", "ASHVINI"), 6);
+/// ```
 #[must_use]
 pub fn distance(a: &str, b: &str) -> usize {
     let a: Vec<char> = a.chars().collect();

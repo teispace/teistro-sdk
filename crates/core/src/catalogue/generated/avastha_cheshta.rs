@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The three sub-states of a Sayanadi state, a remainder of three.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::AvasthaCheshta;
+///
+/// let member: AvasthaCheshta = "DRISHTI".parse()?;
+/// assert_eq!(member, AvasthaCheshta::Drishti);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("avastha_cheshta.DRISHTI".parse::<AvasthaCheshta>(), Ok(AvasthaCheshta::Drishti));
+/// assert_eq!(member.to_string(), "DRISHTI");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -21,6 +32,17 @@ pub enum AvasthaCheshta {
 }
 
 /// The attributes of a `avastha_cheshta` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     AvasthaCheshta::Drishti.attributes(),
+///     &AvasthaCheshtaAttributes {
+///         remainder: 1,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct AvasthaCheshtaAttributes {
     /// `remainder`.
@@ -54,6 +76,12 @@ impl AvasthaCheshta {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// assert_eq!(AvasthaCheshta::Drishti.key(), "DRISHTI");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -64,6 +92,12 @@ impl AvasthaCheshta {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// assert_eq!(AvasthaCheshta::Drishti.full_key(), "avastha_cheshta.DRISHTI");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -74,6 +108,12 @@ impl AvasthaCheshta {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// assert_eq!(AvasthaCheshta::Drishti.doc(), "Drishti, a remainder of one: the state's effects middling");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -84,6 +124,12 @@ impl AvasthaCheshta {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// assert_eq!(AvasthaCheshta::Drishti.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -94,6 +140,12 @@ impl AvasthaCheshta {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, AvasthaCheshta};
+    ///
+    /// assert_eq!(AvasthaCheshta::Drishti.mark(), Mark::Traditional);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -104,6 +156,12 @@ impl AvasthaCheshta {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// assert!(!AvasthaCheshta::Drishti.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -114,6 +172,13 @@ impl AvasthaCheshta {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// let first = &AvasthaCheshta::Drishti.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("BPHS", "45.30-39"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -124,6 +189,12 @@ impl AvasthaCheshta {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// assert!(AvasthaCheshta::Drishti.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -134,24 +205,52 @@ impl AvasthaCheshta {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// assert_eq!(AvasthaCheshta::Drishti.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, AvasthaCheshta};
+    ///
+    /// let packed = AvasthaCheshta::Drishti.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::AvasthaCheshta), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::AvasthaCheshta, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// assert_eq!(AvasthaCheshta::from_key("DRISHTI"), Some(AvasthaCheshta::Drishti));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(AvasthaCheshta::from_key("avastha_cheshta.DRISHTI"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<AvasthaCheshta> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaCheshta;
+    ///
+    /// assert_eq!(AvasthaCheshta::from_id(0), Some(AvasthaCheshta::Drishti));
+    /// assert_eq!(AvasthaCheshta::from_id(3), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<AvasthaCheshta> {
         match id {
@@ -163,6 +262,17 @@ impl AvasthaCheshta {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     AvasthaCheshta::Drishti.attributes(),
+    ///     &AvasthaCheshtaAttributes {
+    ///         remainder: 1,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static AvasthaCheshtaAttributes {

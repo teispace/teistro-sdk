@@ -25,6 +25,15 @@ use crate::quantity::{InvalidValue, JulianDay, Longitude, Utc};
 /// An offset from UTC in whole seconds, east positive, within ±18 hours
 /// (the bound `java.time` and RFC 3339 implementations share; tzdb's
 /// widest offsets are inside it).
+///
+/// ```
+/// use teistro_core::time::UtcOffset;
+///
+/// // Seconds east, as JSON carries it.
+/// let india: UtcOffset = serde_json::from_str("19800").unwrap();
+/// assert_eq!(india.to_string(), "+05:30");
+/// assert!(serde_json::from_str::<UtcOffset>("100000").is_err());
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
@@ -32,13 +41,41 @@ pub struct UtcOffset(i32);
 
 impl UtcOffset {
     /// The widest offset either side of UTC, in seconds.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    ///
+    /// assert!(UtcOffset::try_from_seconds(UtcOffset::MAX_SECONDS).is_ok());
+    /// assert!(UtcOffset::try_from_seconds(-UtcOffset::MAX_SECONDS - 1).is_err());
+    /// ```
     pub const MAX_SECONDS: i32 = 18 * 3600;
     /// UTC itself.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    ///
+    /// assert_eq!(UtcOffset::UTC.to_string(), "+00:00");
+    /// ```
     pub const UTC: UtcOffset = UtcOffset(0);
     /// What the quantity is called in messages.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    ///
+    /// assert!(UtcOffset::try_from_seconds(i32::MAX).unwrap_err().to_string().starts_with(UtcOffset::NAME));
+    /// ```
     pub const NAME: &'static str = "UTC offset";
 
     /// Accepts an offset inside ±18 hours.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    ///
+    /// assert_eq!(UtcOffset::try_from_seconds(-12_600)?.to_string(), "-03:30");
+    /// let refused = UtcOffset::try_from_seconds(19 * 3600).unwrap_err();
+    /// assert_eq!(refused.to_string(), "UTC offset 68400 is outside -64800 to 64800 seconds");
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -58,6 +95,14 @@ impl UtcOffset {
 
     /// An offset written as a literal in a constant: hours, minutes and
     /// seconds east of UTC, negated for a western offset.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    ///
+    /// const NEPAL: UtcOffset = UtcOffset::literal(5, 45, 0);
+    /// const NEWFOUNDLAND: UtcOffset = UtcOffset::literal(-3, 30, 0);
+    /// assert_eq!((NEPAL.seconds(), NEWFOUNDLAND.seconds()), (20_700, -12_600));
+    /// ```
     ///
     /// # Panics
     ///
@@ -80,12 +125,24 @@ impl UtcOffset {
     }
 
     /// The offset in seconds, east positive.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    ///
+    /// assert_eq!(UtcOffset::literal(5, 41, 16).seconds(), 20_476);
+    /// ```
     #[must_use]
     pub const fn seconds(self) -> i32 {
         self.0
     }
 
     /// The offset in days, for Julian-day arithmetic.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    ///
+    /// assert_eq!(UtcOffset::literal(6, 0, 0).days(), 0.25);
+    /// ```
     #[must_use]
     pub fn days(self) -> f64 {
         f64::from(self.0) / 86_400.0
@@ -115,17 +172,63 @@ impl<'de> serde::Deserialize<'de> for UtcOffset {
 /// A clock: which offset from UTC applied at an instant. A fixed offset,
 /// local mean time and a zone's history all answer the same question, so
 /// a calendar that places an instant on a civil day takes any of them.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_core::time::{LocalClock, UtcOffset};
+///
+/// /// A clock that moved from +05:30 to +05:45 at the start of 1986.
+/// struct Nepal;
+///
+/// impl LocalClock for Nepal {
+///     fn offset_at(&self, instant: JulianDay<Utc>) -> UtcOffset {
+///         if instant.get() < 2_446_431.5 - 5.5 / 24.0 { UtcOffset::literal(5, 30, 0) } else { UtcOffset::literal(5, 45, 0) }
+///     }
+///     fn describe(&self) -> String {
+///         String::from("Nepal, by hand")
+///     }
+/// }
+///
+/// assert_eq!(Nepal.offset_at(JulianDay::literal(2_446_000.5)).to_string(), "+05:30");
+/// assert_eq!(Nepal.offset_at(JulianDay::literal(2_460_310.5)).to_string(), "+05:45");
+/// ```
 pub trait LocalClock: Send + Sync {
     /// The offset in force at the instant.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_core::time::{LocalClock, UtcOffset};
+    ///
+    /// // A fixed offset is a clock that never changes.
+    /// let nepal = UtcOffset::literal(5, 45, 0);
+    /// assert_eq!(nepal.offset_at(JulianDay::<Utc>::J2000), nepal);
+    /// ```
     fn offset_at(&self, instant: JulianDay<Utc>) -> UtcOffset;
 
     /// The clock's name for provenance stamps (`+05:45`, `LMT 85.324°E`,
     /// `Asia/Kathmandu tzdb 2026a`).
+    ///
+    /// ```
+    /// use teistro_core::quantity::Longitude;
+    /// use teistro_core::time::{LocalClock, LocalMeanTime, UtcOffset};
+    ///
+    /// assert_eq!(UtcOffset::literal(5, 45, 0).describe(), "+05:45");
+    /// assert_eq!(LocalMeanTime::new(Longitude::literal(85.324)).describe(), "LMT 85.324°");
+    /// ```
     fn describe(&self) -> String;
 
     /// The local Julian day of the instant: the UTC value plus the offset,
     /// so that its integer part and fraction are the local civil day and
     /// the time of day.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_core::time::{LocalClock, UtcOffset};
+    ///
+    /// // 18:00 UTC on 31 December 2023 is a quarter to midnight in Kathmandu.
+    /// let local = UtcOffset::literal(5, 45, 0).local_jd(JulianDay::<Utc>::literal(2_460_310.25));
+    /// assert!((local - 2_460_310.489_583_333).abs() < 1e-8);
+    /// ```
     fn local_jd(&self, instant: JulianDay<Utc>) -> f64 {
         instant.get() + self.offset_at(instant).days()
     }
@@ -155,6 +258,17 @@ impl<C: LocalClock + ?Sized> LocalClock for &C {
 /// rounded to the second (`docs/03-design/time-and-timezone.md`, §4), which
 /// is the time a classical almanac reckons in and the basis tzdb's own
 /// pre-zone stubs use.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_core::time::LocalClock;
+/// use teistro_core::quantity::Longitude;
+/// use teistro_core::time::LocalMeanTime;
+///
+/// let kathmandu = LocalMeanTime::new(Longitude::literal(85.324));
+/// // Four minutes a degree, whatever the date.
+/// assert_eq!(kathmandu.offset_at(JulianDay::<Utc>::J2000), kathmandu.offset());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct LocalMeanTime {
     longitude: Longitude,
@@ -162,18 +276,43 @@ pub struct LocalMeanTime {
 
 impl LocalMeanTime {
     /// The clock of a longitude.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Longitude;
+    /// use teistro_core::time::LocalMeanTime;
+    ///
+    /// let kathmandu = LocalMeanTime::new(Longitude::literal(85.324));
+    /// assert_eq!(kathmandu.offset().to_string(), "+05:41:18");
+    /// ```
     #[must_use]
     pub const fn new(longitude: Longitude) -> LocalMeanTime {
         LocalMeanTime { longitude }
     }
 
     /// The longitude.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Longitude;
+    /// use teistro_core::time::LocalMeanTime;
+    ///
+    /// let kathmandu = LocalMeanTime::new(Longitude::literal(85.324));
+    /// assert_eq!(kathmandu.longitude().get(), 85.324);
+    /// ```
     #[must_use]
     pub const fn longitude(self) -> Longitude {
         self.longitude
     }
 
     /// The offset: the longitude in degrees times 240 seconds, rounded.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Longitude;
+    /// use teistro_core::time::LocalMeanTime;
+    ///
+    /// let kathmandu = LocalMeanTime::new(Longitude::literal(85.324));
+    /// // 85.324 x 240 s is 20477.76 s, rounded to the second.
+    /// assert_eq!(kathmandu.offset().seconds(), 20_478);
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,

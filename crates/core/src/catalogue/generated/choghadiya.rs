@@ -9,6 +9,17 @@ use super::{Graha};
 /// The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Choghadiya;
+///
+/// let member: Choghadiya = "UDVEG".parse()?;
+/// assert_eq!(member, Choghadiya::Udveg);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("choghadiya.UDVEG".parse::<Choghadiya>(), Ok(Choghadiya::Udveg));
+/// assert_eq!(member.to_string(), "UDVEG");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -30,6 +41,18 @@ pub enum Choghadiya {
 }
 
 /// The attributes of a `choghadiya` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Choghadiya::Udveg.attributes(),
+///     &ChoghadiyaAttributes {
+///         lord: Graha::Sun,
+///         auspicious: false,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ChoghadiyaAttributes {
     /// `lord`.
@@ -77,6 +100,12 @@ impl Choghadiya {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// assert_eq!(Choghadiya::Udveg.key(), "UDVEG");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -91,6 +120,12 @@ impl Choghadiya {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// assert_eq!(Choghadiya::Udveg.full_key(), "choghadiya.UDVEG");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -105,6 +140,12 @@ impl Choghadiya {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// assert_eq!(Choghadiya::Udveg.doc(), "Udveg, the Sun's: anxiety, and the eighth a Sunday's daylight opens with");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -119,6 +160,12 @@ impl Choghadiya {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// assert_eq!(Choghadiya::Udveg.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -133,6 +180,12 @@ impl Choghadiya {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Choghadiya};
+    ///
+    /// assert_eq!(Choghadiya::Udveg.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -147,6 +200,12 @@ impl Choghadiya {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// assert!(!Choghadiya::Udveg.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -161,6 +220,13 @@ impl Choghadiya {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// let first = &Choghadiya::Udveg.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "panchanga_day.day_choghadiya, measured over 880 eighths"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -175,6 +241,12 @@ impl Choghadiya {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// assert!(Choghadiya::Udveg.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -189,24 +261,52 @@ impl Choghadiya {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// assert_eq!(Choghadiya::Udveg.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Choghadiya};
+    ///
+    /// let packed = Choghadiya::Udveg.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Choghadiya), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Choghadiya, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// assert_eq!(Choghadiya::from_key("UDVEG"), Some(Choghadiya::Udveg));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Choghadiya::from_key("choghadiya.UDVEG"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Choghadiya> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Choghadiya;
+    ///
+    /// assert_eq!(Choghadiya::from_id(0), Some(Choghadiya::Udveg));
+    /// assert_eq!(Choghadiya::from_id(7), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Choghadiya> {
         match id {
@@ -222,6 +322,18 @@ impl Choghadiya {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Choghadiya::Udveg.attributes(),
+    ///     &ChoghadiyaAttributes {
+    ///         lord: Graha::Sun,
+    ///         auspicious: false,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static ChoghadiyaAttributes {

@@ -9,6 +9,17 @@ use super::{Masa};
 /// The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178).
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Ritu;
+///
+/// let member: Ritu = "VASANTA".parse()?;
+/// assert_eq!(member, Ritu::Vasanta);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("ritu.VASANTA".parse::<Ritu>(), Ok(Ritu::Vasanta));
+/// assert_eq!(member.to_string(), "VASANTA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -28,6 +39,17 @@ pub enum Ritu {
 }
 
 /// The attributes of a `ritu` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Ritu::Vasanta.attributes(),
+///     &RituAttributes {
+///         masas: &[Masa::Chaitra, Masa::Vaishakha],
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct RituAttributes {
     /// `masas`.
@@ -70,6 +92,12 @@ impl Ritu {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// assert_eq!(Ritu::Vasanta.key(), "VASANTA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -83,6 +111,12 @@ impl Ritu {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// assert_eq!(Ritu::Vasanta.full_key(), "ritu.VASANTA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -96,6 +130,12 @@ impl Ritu {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// assert_eq!(Ritu::Vasanta.doc(), "Vasanta");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -109,6 +149,12 @@ impl Ritu {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// assert_eq!(Ritu::Vasanta.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -122,6 +168,12 @@ impl Ritu {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Ritu};
+    ///
+    /// assert_eq!(Ritu::Vasanta.mark(), Mark::Traditional);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -135,6 +187,12 @@ impl Ritu {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// assert!(!Ritu::Vasanta.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -148,6 +206,13 @@ impl Ritu {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// let first = &Ritu::Vasanta.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("Surya Siddhanta", "14"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -161,6 +226,12 @@ impl Ritu {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// assert!(Ritu::Vasanta.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -174,24 +245,52 @@ impl Ritu {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// assert_eq!(Ritu::Vasanta.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Ritu};
+    ///
+    /// let packed = Ritu::Vasanta.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Ritu), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Ritu, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// assert_eq!(Ritu::from_key("VASANTA"), Some(Ritu::Vasanta));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Ritu::from_key("ritu.VASANTA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Ritu> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ritu;
+    ///
+    /// assert_eq!(Ritu::from_id(0), Some(Ritu::Vasanta));
+    /// assert_eq!(Ritu::from_id(6), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Ritu> {
         match id {
@@ -206,6 +305,17 @@ impl Ritu {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Ritu::Vasanta.attributes(),
+    ///     &RituAttributes {
+    ///         masas: &[Masa::Chaitra, Masa::Vaishakha],
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static RituAttributes {

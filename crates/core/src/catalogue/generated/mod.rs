@@ -142,6 +142,15 @@ pub use tibetan_animal::*;
 use crate::key::KeyId;
 
 /// Resolves a key inside a kind to its id, over every catalogued kind.
+///
+/// ```
+/// use teistro_core::catalogue::{resolve, Kind, Graha};
+///
+/// assert_eq!(resolve(Kind::Graha, "SUN"), Some(Graha::Sun.key_id()));
+/// assert_eq!(resolve(Kind::Graha, "NOT_A_KEY"), None);
+/// // An open kind's members arrive at runtime, so none resolves here.
+/// assert_eq!(resolve(Kind::Rule, "SUN"), None);
+/// ```
 #[must_use]
 pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
     match kind {
@@ -217,6 +226,12 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
 }
 
 /// The key of a catalogued id, over every catalogued kind.
+///
+/// ```
+/// use teistro_core::catalogue::{key_of, Kind, Graha};
+///
+/// assert_eq!(key_of(Graha::Sun.key_id()), Some("SUN"));
+/// ```
 #[must_use]
 pub fn key_of(id: KeyId) -> Option<&'static str> {
     match id.kind()? {

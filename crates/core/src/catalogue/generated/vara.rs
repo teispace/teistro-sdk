@@ -9,6 +9,17 @@ use super::{Graha};
 /// The seven weekdays with their lords.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+///
+/// let member: Vara = "RAVIVARA".parse()?;
+/// assert_eq!(member, Vara::Ravivara);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("vara.RAVIVARA".parse::<Vara>(), Ok(Vara::Ravivara));
+/// assert_eq!(member.to_string(), "RAVIVARA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -30,6 +41,18 @@ pub enum Vara {
 }
 
 /// The attributes of a `vara` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Vara::Ravivara.attributes(),
+///     &VaraAttributes {
+///         lord: Graha::Sun,
+///         weekday: 0,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct VaraAttributes {
     /// `lord`.
@@ -77,6 +100,12 @@ impl Vara {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert_eq!(Vara::Ravivara.key(), "RAVIVARA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -91,6 +120,12 @@ impl Vara {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert_eq!(Vara::Ravivara.full_key(), "vara.RAVIVARA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -105,6 +140,12 @@ impl Vara {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert_eq!(Vara::Ravivara.doc(), "Sunday");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -119,6 +160,12 @@ impl Vara {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert_eq!(Vara::Ravivara.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -133,6 +180,12 @@ impl Vara {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Vara};
+    ///
+    /// assert_eq!(Vara::Ravivara.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -147,6 +200,12 @@ impl Vara {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert!(!Vara::Ravivara.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -161,6 +220,13 @@ impl Vara {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// let first = &Vara::Ravivara.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -175,6 +241,12 @@ impl Vara {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert!(Vara::Ravivara.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -189,24 +261,52 @@ impl Vara {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert_eq!(Vara::Ravivara.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Vara};
+    ///
+    /// let packed = Vara::Ravivara.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Vara), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Vara, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert_eq!(Vara::from_key("RAVIVARA"), Some(Vara::Ravivara));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Vara::from_key("vara.RAVIVARA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Vara> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert_eq!(Vara::from_id(0), Some(Vara::Ravivara));
+    /// assert_eq!(Vara::from_id(7), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Vara> {
         match id {
@@ -222,6 +322,18 @@ impl Vara {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Vara::Ravivara.attributes(),
+    ///     &VaraAttributes {
+    ///         lord: Graha::Sun,
+    ///         weekday: 0,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static VaraAttributes {

@@ -59,6 +59,17 @@ impl House {
 
     /// A house.
     ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::try_new(12)?, House::VYAYA);
+    /// let refused = House::try_new(0).unwrap_err();
+    /// assert_eq!((refused.message.as_str(), refused.field()), ("house 0 is not 1 to 12", Some("house")));
+    /// // JSON reads through the same check.
+    /// assert!(serde_json::from_str::<House>("13").is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A number outside 1 to 12, named, with the field `house`.
@@ -72,6 +83,13 @@ impl House {
     }
 
     /// Its number, 1 to 12.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::try_new(10)?.get(), 10);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn get(self) -> u8 {
         self.0
@@ -96,6 +114,16 @@ impl House {
     ///
     /// The inverse of [`House::between`], which every whole-sign reader
     /// needs and which each of them used to write out as a `% 12`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_core::house::House;
+    ///
+    /// // The seventh from a Capricorn lagna is Cancer.
+    /// assert_eq!(House::try_new(7)?.sign_from(Rashi::Capricorn), Rashi::Cancer);
+    /// assert_eq!(House::between(Rashi::Capricorn, Rashi::Cancer).get(), 7);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn sign_from(self, from: Rashi) -> Rashi {
         let index = (from.id() + u16::from(self.0) - 1) % 12;
@@ -107,40 +135,114 @@ impl House {
     }
 
     /// The twelfth, *vyaya*, the house of loss and of liberation.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::VYAYA.get(), 12);
+    /// ```
     pub const VYAYA: House = House(12);
     /// The four kendras.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::KENDRAS.map(House::get), [1, 4, 7, 10]);
+    /// ```
     pub const KENDRAS: [House; 4] = [House(1), House(4), House(7), House(10)];
     /// The three trikonas.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::TRIKONAS.map(House::get), [1, 5, 9]);
+    /// ```
     pub const TRIKONAS: [House; 3] = [House(1), House(5), House(9)];
     /// The two maraka houses, the second and the seventh (BPHS ch. 44 v. 2).
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::MARAKAS.map(House::get), [2, 7]);
+    /// ```
     pub const MARAKAS: [House; 2] = [House(2), House(7)];
     /// The three **trika** houses, the sixth, eighth and twelfth, which
     /// the Tajika yogas call a planet weak for standing in.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::TRIKA.map(House::get), [6, 8, 12]);
+    /// ```
     pub const TRIKA: [House; 3] = [House(6), House(8), House(12)];
     /// The four **panaphara**, the succedent houses.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::PANAPHARA.map(House::get), [2, 5, 8, 11]);
+    /// ```
     pub const PANAPHARA: [House; 4] = [House(2), House(5), House(8), House(11)];
     /// The four **apoklima**, the cadent houses.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::APOKLIMA.map(House::get), [3, 6, 9, 12]);
+    /// ```
     pub const APOKLIMA: [House; 4] = [House(3), House(6), House(9), House(12)];
 
     /// Whether it is one of the four kendras.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert!(House::try_new(4)?.is_kendra());
+    /// assert!(!House::try_new(5)?.is_kendra());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_kendra(self) -> bool {
         House::KENDRAS.contains(&self)
     }
 
     /// Whether it is one of the four panapharas.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert!(House::try_new(11)?.is_panaphara());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_panaphara(self) -> bool {
         House::PANAPHARA.contains(&self)
     }
 
     /// Whether it is one of the four apoklimas.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// // Kendra, panaphara and apoklima partition the twelve.
+    /// assert_eq!(House::ALL.iter().filter(|h| h.is_kendra() || h.is_panaphara() || h.is_apoklima()).count(), 12);
+    /// assert!(House::try_new(9)?.is_apoklima());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_apoklima(self) -> bool {
         House::APOKLIMA.contains(&self)
     }
 
     /// Whether it is one of the three trika houses.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert!(House::VYAYA.is_trika());
+    /// assert!(!House::try_new(7)?.is_trika());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_trika(self) -> bool {
         House::TRIKA.contains(&self)

@@ -9,6 +9,17 @@ use super::{DashaFamily};
 /// The dasha systems the catalogue names; each row of the kernel lives in the dasha crate, and only V rows are implemented.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+///
+/// let member: DashaSystem = "VIMSHOTTARI".parse()?;
+/// assert_eq!(member, DashaSystem::Vimshottari);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("dasha_system.VIMSHOTTARI".parse::<DashaSystem>(), Ok(DashaSystem::Vimshottari));
+/// assert_eq!(member.to_string(), "VIMSHOTTARI");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -106,6 +117,17 @@ pub enum DashaSystem {
 }
 
 /// The attributes of a `dasha_system` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     DashaSystem::Vimshottari.attributes(),
+///     &DashaSystemAttributes {
+///         family: DashaFamily::Udu,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DashaSystemAttributes {
     /// `family`.
@@ -265,6 +287,12 @@ impl DashaSystem {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// assert_eq!(DashaSystem::Vimshottari.key(), "VIMSHOTTARI");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -317,6 +345,12 @@ impl DashaSystem {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// assert_eq!(DashaSystem::Vimshottari.full_key(), "dasha_system.VIMSHOTTARI");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -369,6 +403,12 @@ impl DashaSystem {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// assert_eq!(DashaSystem::Vimshottari.doc(), "Vimshottari");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -421,6 +461,12 @@ impl DashaSystem {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// assert_eq!(DashaSystem::Vimshottari.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -473,6 +519,12 @@ impl DashaSystem {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, DashaSystem};
+    ///
+    /// assert_eq!(DashaSystem::Vimshottari.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -525,6 +577,12 @@ impl DashaSystem {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// assert!(!DashaSystem::Vimshottari.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -577,6 +635,13 @@ impl DashaSystem {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// let first = &DashaSystem::Vimshottari.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("dasha-kernels", "docs/03-design/dasha-kernels.md"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -629,6 +694,12 @@ impl DashaSystem {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// assert!(DashaSystem::Vimshottari.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -681,24 +752,52 @@ impl DashaSystem {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// assert_eq!(DashaSystem::Vimshottari.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, DashaSystem};
+    ///
+    /// let packed = DashaSystem::Vimshottari.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::DashaSystem), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::DashaSystem, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// assert_eq!(DashaSystem::from_key("VIMSHOTTARI"), Some(DashaSystem::Vimshottari));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(DashaSystem::from_key("dasha_system.VIMSHOTTARI"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<DashaSystem> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    ///
+    /// assert_eq!(DashaSystem::from_id(0), Some(DashaSystem::Vimshottari));
+    /// assert_eq!(DashaSystem::from_id(45), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<DashaSystem> {
         match id {
@@ -752,6 +851,17 @@ impl DashaSystem {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     DashaSystem::Vimshottari.attributes(),
+    ///     &DashaSystemAttributes {
+    ///         family: DashaFamily::Udu,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static DashaSystemAttributes {

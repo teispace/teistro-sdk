@@ -4,6 +4,14 @@
 
 /// A kind: a family of entities sharing one key type. The number is part of
 /// the C boundary and is never reused.
+///
+/// ```
+/// use teistro_core::catalogue::Kind;
+///
+/// let kind: Kind = Kind::from_name("graha").unwrap();
+/// assert_eq!(kind, Kind::Graha);
+/// assert_eq!(kind.to_string(), "graha");
+/// ```
 #[repr(u8)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -303,6 +311,12 @@ impl Kind {
     ];
 
     /// The kind's name, the first segment of its members' full keys.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    ///
+    /// assert_eq!(Kind::Graha.name(), "graha");
+    /// ```
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
@@ -381,12 +395,25 @@ impl Kind {
     }
 
     /// The kind's number at the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    ///
+    /// assert_eq!(Kind::Graha.number(), 1);
+    /// ```
     #[must_use]
     pub const fn number(self) -> u8 {
         self as u8
     }
 
     /// The number of catalogued members; zero for an open kind.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    ///
+    /// assert_eq!(Kind::Graha.count(), 12);
+    /// assert_eq!(Kind::Rule.count(), 0);
+    /// ```
     #[must_use]
     pub const fn count(self) -> usize {
         match self {
@@ -465,12 +492,26 @@ impl Kind {
     }
 
     /// Whether members arrive at runtime rather than from the catalogue.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    ///
+    /// assert!(!Kind::Graha.is_open());
+    /// assert!(Kind::Rule.is_open());
+    /// ```
     #[must_use]
     pub const fn is_open(self) -> bool {
         self.count() == 0
     }
 
     /// The kind with a number.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    ///
+    /// assert_eq!(Kind::from_number(1), Some(Kind::Graha));
+    /// assert_eq!(Kind::from_number(0), None);
+    /// ```
     #[must_use]
     pub const fn from_number(number: u8) -> Option<Kind> {
         match number {
@@ -550,6 +591,13 @@ impl Kind {
     }
 
     /// The kind with a name.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    ///
+    /// assert_eq!(Kind::from_name("graha"), Some(Kind::Graha));
+    /// assert_eq!(Kind::from_name("not_a_kind"), None);
+    /// ```
     #[must_use]
     pub fn from_name(name: &str) -> Option<Kind> {
         crate::catalogue::lookup(&BY_NAME, name)

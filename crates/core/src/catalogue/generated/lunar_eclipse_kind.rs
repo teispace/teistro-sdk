@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3).
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::LunarEclipseKind;
+///
+/// let member: LunarEclipseKind = "PENUMBRAL".parse()?;
+/// assert_eq!(member, LunarEclipseKind::Penumbral);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("lunar_eclipse_kind.PENUMBRAL".parse::<LunarEclipseKind>(), Ok(LunarEclipseKind::Penumbral));
+/// assert_eq!(member.to_string(), "PENUMBRAL");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -41,6 +52,12 @@ impl LunarEclipseKind {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// assert_eq!(LunarEclipseKind::Penumbral.key(), "PENUMBRAL");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -51,6 +68,12 @@ impl LunarEclipseKind {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// assert_eq!(LunarEclipseKind::Penumbral.full_key(), "lunar_eclipse_kind.PENUMBRAL");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -61,6 +84,12 @@ impl LunarEclipseKind {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// assert_eq!(LunarEclipseKind::Penumbral.doc(), "The penumbra only");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -71,6 +100,12 @@ impl LunarEclipseKind {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// assert_eq!(LunarEclipseKind::Penumbral.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -81,6 +116,12 @@ impl LunarEclipseKind {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, LunarEclipseKind};
+    ///
+    /// assert_eq!(LunarEclipseKind::Penumbral.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -91,6 +132,12 @@ impl LunarEclipseKind {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// assert!(!LunarEclipseKind::Penumbral.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -101,6 +148,13 @@ impl LunarEclipseKind {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// let first = &LunarEclipseKind::Penumbral.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("Espenak and Meeus, Five Millennium Canon of Lunar Eclipses", "NASA/TP-2009-214172, eclipse types"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -111,6 +165,12 @@ impl LunarEclipseKind {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// assert!(LunarEclipseKind::Penumbral.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -121,24 +181,52 @@ impl LunarEclipseKind {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// assert_eq!(LunarEclipseKind::Penumbral.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, LunarEclipseKind};
+    ///
+    /// let packed = LunarEclipseKind::Penumbral.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::LunarEclipseKind), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::LunarEclipseKind, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// assert_eq!(LunarEclipseKind::from_key("PENUMBRAL"), Some(LunarEclipseKind::Penumbral));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(LunarEclipseKind::from_key("lunar_eclipse_kind.PENUMBRAL"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<LunarEclipseKind> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::LunarEclipseKind;
+    ///
+    /// assert_eq!(LunarEclipseKind::from_id(0), Some(LunarEclipseKind::Penumbral));
+    /// assert_eq!(LunarEclipseKind::from_id(3), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<LunarEclipseKind> {
         match id {

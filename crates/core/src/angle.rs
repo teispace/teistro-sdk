@@ -108,6 +108,18 @@ pub fn declination_deg(longitude_deg: f64, latitude_deg: f64, obliquity_deg: f64
 
 /// A canonical angle in nanoarcseconds, `0 ..< CIRCLE`. Exact, ordered,
 /// hashable; the value every classification reads.
+///
+/// ```
+/// use teistro_core::angle::Nas;
+///
+/// // 280°30′: ten and a half degrees into Capricorn.
+/// let moon = Nas::try_from_degrees(280.5)?;
+/// assert_eq!(moon.to_string(), "280°30′00.000000000″");
+/// assert_eq!(format!("{moon:?}"), "Nas(1009800000000000 = 280°30′00.000000000″)");
+/// // Exact arithmetic, wrapping round the circle.
+/// assert_eq!((moon + Nas::try_from_degrees(90.0)?).to_degrees(), 10.5);
+/// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+/// ```
 #[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Nas(i64);
 
@@ -128,12 +140,26 @@ impl Nas {
     pub const ZERO: Nas = Nas(0);
 
     /// From a raw count, normalised into the circle.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// assert_eq!(Nas::new(-1).get(), Nas::CIRCLE - 1);
+    /// assert_eq!(Nas::new(Nas::CIRCLE), Nas::ZERO);
+    /// ```
     #[must_use]
     pub const fn new(nas: i64) -> Nas {
         Nas(nas.rem_euclid(Nas::CIRCLE))
     }
 
     /// The raw count.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// assert_eq!(Nas::try_from_degrees(1.0)?.get(), Nas::PER_DEGREE);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn get(self) -> i64 {
         self.0
@@ -141,6 +167,16 @@ impl Nas {
 
     /// The one conversion from floating point in the workspace: normalise
     /// to `[0, 360)`, scale, round half to even.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    /// use teistro_core::quantity::Degrees;
+    ///
+    /// // Any finite angle, normalised into the circle.
+    /// assert_eq!(Nas::from_degrees(Degrees::try_new(-90.0)?).to_degrees(), 270.0);
+    /// assert_eq!(Nas::from_degrees(Degrees::try_new(720.0)?), Nas::ZERO);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub fn from_degrees(degrees: Degrees) -> Nas {
         let normalised = degrees.get().rem_euclid(360.0);
@@ -155,6 +191,14 @@ impl Nas {
 
     /// From a bare `f64`, refusing a non-finite value.
     ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// assert!(Nas::try_from_degrees(f64::NAN).is_err());
+    /// assert_eq!(Nas::try_from_degrees(30.0)?.get(), Nas::PER_SIGN);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A NaN or infinite input.
@@ -164,6 +208,15 @@ impl Nas {
 
     /// Decimal degrees, for presentation and for feeding a value back into
     /// floating-point astronomy, never for classification.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// assert_eq!(moon.to_degrees(), 280.5);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     #[allow(clippy::cast_precision_loss, reason = "a presentation value")]
     pub fn to_degrees(self) -> f64 {
@@ -173,6 +226,17 @@ impl Nas {
     /// The index of the division this angle falls in when the circle is
     /// cut into `divisions` equal parts. Exact for any divisor: the product
     /// is taken in `i128` and boundaries are lower-inclusive.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// assert_eq!(moon.division_index(12), 9);
+    /// // Lower-inclusive: an angle on a boundary is in the division it opens.
+    /// assert_eq!(Nas::try_from_degrees(30.0)?.division_index(12), 1);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
@@ -184,12 +248,31 @@ impl Nas {
     }
 
     /// The sign.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// assert_eq!(moon.sign(), Rashi::Capricorn);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub fn sign(self) -> Rashi {
         Rashi::from_id(self.sign_index().get().into()).unwrap_or(Rashi::Aries)
     }
 
     /// The sign as an index, 0 for Aries.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// assert_eq!(moon.sign_index().get(), 9);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     #[allow(clippy::cast_possible_truncation, reason = "below twelve")]
     pub const fn sign_index(self) -> SignIndex {
@@ -197,12 +280,32 @@ impl Nas {
     }
 
     /// The nakshatra in the 27-scheme.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// // Shravana opens at 280°, the 22nd of 27 spans of 13°20′.
+    /// assert_eq!(moon.nakshatra(), Nakshatra::Shravana);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub fn nakshatra(self) -> Nakshatra {
         Nakshatra::from_id(self.nakshatra_index().get().into()).unwrap_or(Nakshatra::Ashwini)
     }
 
     /// The nakshatra as an index, 0 for Ashwini.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// assert_eq!(moon.nakshatra_index().get(), 21);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     #[allow(clippy::cast_possible_truncation, reason = "below twenty-seven")]
     pub const fn nakshatra_index(self) -> NakshatraIndex {
@@ -210,6 +313,16 @@ impl Nas {
     }
 
     /// The pada inside the nakshatra, 0 to 3.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// // Half a degree into Shravana: its first pada, of 3°20′ each.
+    /// assert_eq!(moon.pada().get(), 0);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     #[allow(clippy::cast_possible_truncation, reason = "below four")]
     pub const fn pada(self) -> PadaIndex {
@@ -217,18 +330,45 @@ impl Nas {
     }
 
     /// The pada counted around the whole circle, 0 to 107.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// assert_eq!(moon.pada_global(), 84);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn pada_global(self) -> u32 {
         self.division_index(108)
     }
 
     /// The angle inside its sign.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// assert_eq!(moon.in_sign().to_degrees(), 10.5);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn in_sign(self) -> Nas {
         Nas(self.0 % Nas::PER_SIGN)
     }
 
     /// The angle inside its nakshatra.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// assert_eq!(moon.in_nakshatra().to_degrees(), 0.5);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn in_nakshatra(self) -> Nas {
         Nas(self.0 % Nas::PER_NAKSHATRA)
@@ -236,6 +376,16 @@ impl Nas {
 
     /// The part index inside the sign when the sign is cut into `n` equal
     /// parts, for a varga of equal spans.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// // 280°30′: ten and a half degrees into Capricorn.
+    /// let moon = Nas::try_from_degrees(280.5)?;
+    /// // The navamsha: 10°30′ of a 30° sign cut in nine is the fourth part.
+    /// assert_eq!(moon.part(9), 3);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
@@ -247,6 +397,15 @@ impl Nas {
     }
 
     /// The forward arc from `self` to `other`, in `[0, CIRCLE)`.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// let (late, early) = (Nas::try_from_degrees(350.0)?, Nas::try_from_degrees(10.0)?);
+    /// assert_eq!(late.arc_to(early).to_degrees(), 20.0);
+    /// assert_eq!(early.arc_to(late).to_degrees(), 340.0);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn arc_to(self, other: Nas) -> Nas {
         Nas::new(other.0 - self.0)
@@ -254,6 +413,15 @@ impl Nas {
 
     /// The signed shortest difference `other − self`, in
     /// `(−CIRCLE/2, CIRCLE/2]` nanoarcseconds.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    ///
+    /// let (late, early) = (Nas::try_from_degrees(350.0)?, Nas::try_from_degrees(10.0)?);
+    /// assert_eq!(late.signed_difference(early), 20 * Nas::PER_DEGREE);
+    /// assert_eq!(early.signed_difference(late), -20 * Nas::PER_DEGREE);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn signed_difference(self, other: Nas) -> i64 {
         let forward = self.arc_to(other).0;
@@ -265,6 +433,13 @@ impl Nas {
     }
 
     /// Degrees, minutes, seconds and nanoseconds of arc, exactly.
+    ///
+    /// ```
+    /// use teistro_core::angle::{Dms, Nas};
+    ///
+    /// let angle = Nas::new(123 * Nas::PER_DEGREE + 4 * Nas::PER_ARCMINUTE + 56 * Nas::PER_ARCSECOND + 7);
+    /// assert_eq!(angle.dms(), Dms { degrees: 123, minutes: 4, seconds: 56, nanos: 7 });
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
@@ -282,6 +457,15 @@ impl Nas {
 }
 
 /// An angle split into its sexagesimal parts.
+///
+/// ```
+/// use teistro_core::angle::Nas;
+///
+/// // 359.999° is 359°59′56.4″.
+/// let parts = Nas::try_from_degrees(359.999)?.dms();
+/// assert_eq!((parts.degrees, parts.minutes, parts.seconds, parts.nanos), (359, 59, 56, 400_000_000));
+/// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Dms {
     /// Whole degrees, 0 to 359.
@@ -295,6 +479,12 @@ pub struct Dms {
 }
 
 /// One microarcsecond, in the nanoarcseconds a [`Nas`] counts.
+///
+/// ```
+/// use teistro_core::angle::{MICROARCSECOND, Nas};
+///
+/// assert_eq!(Nas::PER_ARCSECOND / MICROARCSECOND, 1_000_000);
+/// ```
 pub const MICROARCSECOND: i64 = 1_000;
 
 /// Every boundary of the circle cut into `divisions` equal parts, each as

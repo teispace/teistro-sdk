@@ -9,6 +9,17 @@ use super::{Nakshatra, Rashi, Ritu};
 /// The twelve lunar months, each named for the nakshatra of its full moon, with the solar month that shares its name.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Masa;
+///
+/// let member: Masa = "CHAITRA".parse()?;
+/// assert_eq!(member, Masa::Chaitra);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("masa.CHAITRA".parse::<Masa>(), Ok(Masa::Chaitra));
+/// assert_eq!(member.to_string(), "CHAITRA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -40,6 +51,19 @@ pub enum Masa {
 }
 
 /// The attributes of a `masa` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Masa::Chaitra.attributes(),
+///     &MasaAttributes {
+///         solar_sign: Rashi::Pisces,
+///         full_moon_nakshatra: Nakshatra::Chitra,
+///         ritu: Ritu::Vasanta,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MasaAttributes {
     /// `solar_sign`.
@@ -104,6 +128,12 @@ impl Masa {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// assert_eq!(Masa::Chaitra.key(), "CHAITRA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -123,6 +153,12 @@ impl Masa {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// assert_eq!(Masa::Chaitra.full_key(), "masa.CHAITRA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -142,6 +178,12 @@ impl Masa {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// assert_eq!(Masa::Chaitra.doc(), "Chaitra");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -161,6 +203,12 @@ impl Masa {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// assert_eq!(Masa::Chaitra.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -180,6 +228,12 @@ impl Masa {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Masa};
+    ///
+    /// assert_eq!(Masa::Chaitra.mark(), Mark::Traditional);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -199,6 +253,12 @@ impl Masa {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// assert!(!Masa::Chaitra.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -218,6 +278,13 @@ impl Masa {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// let first = &Masa::Chaitra.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("Surya Siddhanta", "14"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -237,6 +304,12 @@ impl Masa {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// assert!(Masa::Chaitra.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -256,24 +329,52 @@ impl Masa {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// assert_eq!(Masa::Chaitra.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Masa};
+    ///
+    /// let packed = Masa::Chaitra.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Masa), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Masa, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// assert_eq!(Masa::from_key("CHAITRA"), Some(Masa::Chaitra));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Masa::from_key("masa.CHAITRA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Masa> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Masa;
+    ///
+    /// assert_eq!(Masa::from_id(0), Some(Masa::Chaitra));
+    /// assert_eq!(Masa::from_id(12), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Masa> {
         match id {
@@ -294,6 +395,19 @@ impl Masa {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Masa::Chaitra.attributes(),
+    ///     &MasaAttributes {
+    ///         solar_sign: Rashi::Pisces,
+    ///         full_moon_nakshatra: Nakshatra::Chitra,
+    ///         ritu: Ritu::Vasanta,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static MasaAttributes {

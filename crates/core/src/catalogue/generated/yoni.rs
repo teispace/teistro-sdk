@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The fourteen yoni animals of the nakshatras, each with its hostile pair.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Yoni;
+///
+/// let member: Yoni = "HORSE".parse()?;
+/// assert_eq!(member, Yoni::Horse);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("yoni.HORSE".parse::<Yoni>(), Ok(Yoni::Horse));
+/// assert_eq!(member.to_string(), "HORSE");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -43,6 +54,17 @@ pub enum Yoni {
 }
 
 /// The attributes of a `yoni` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Yoni::Horse.attributes(),
+///     &YoniAttributes {
+///         hostile: Yoni::Buffalo,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct YoniAttributes {
     /// `hostile`.
@@ -109,6 +131,12 @@ impl Yoni {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// assert_eq!(Yoni::Horse.key(), "HORSE");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -130,6 +158,12 @@ impl Yoni {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// assert_eq!(Yoni::Horse.full_key(), "yoni.HORSE");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -151,6 +185,12 @@ impl Yoni {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// assert_eq!(Yoni::Horse.doc(), "Horse");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -172,6 +212,12 @@ impl Yoni {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// assert_eq!(Yoni::Horse.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -193,6 +239,12 @@ impl Yoni {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Yoni};
+    ///
+    /// assert_eq!(Yoni::Horse.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -214,6 +266,12 @@ impl Yoni {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// assert!(!Yoni::Horse.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -235,6 +293,13 @@ impl Yoni {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// let first = &Yoni::Horse.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -256,6 +321,12 @@ impl Yoni {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// assert_eq!(Yoni::Horse.unverified(), ["hostile"]);
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -277,24 +348,52 @@ impl Yoni {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// assert_eq!(Yoni::Horse.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Yoni};
+    ///
+    /// let packed = Yoni::Horse.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Yoni), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Yoni, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// assert_eq!(Yoni::from_key("HORSE"), Some(Yoni::Horse));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Yoni::from_key("yoni.HORSE"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Yoni> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoni;
+    ///
+    /// assert_eq!(Yoni::from_id(0), Some(Yoni::Horse));
+    /// assert_eq!(Yoni::from_id(14), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Yoni> {
         match id {
@@ -317,6 +416,17 @@ impl Yoni {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Yoni::Horse.attributes(),
+    ///     &YoniAttributes {
+    ///         hostile: Yoni::Buffalo,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static YoniAttributes {

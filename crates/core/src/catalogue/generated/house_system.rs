@@ -9,6 +9,17 @@ use super::{Degeneracy};
 /// The house systems; the cusp arithmetic lives in the astro layer.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::HouseSystem;
+///
+/// let member: HouseSystem = "WHOLE_SIGN".parse()?;
+/// assert_eq!(member, HouseSystem::WholeSign);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("house_system.WHOLE_SIGN".parse::<HouseSystem>(), Ok(HouseSystem::WholeSign));
+/// assert_eq!(member.to_string(), "WHOLE_SIGN");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -60,6 +71,18 @@ pub enum HouseSystem {
 }
 
 /// The attributes of a `house_system` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     HouseSystem::WholeSign.attributes(),
+///     &HouseSystemAttributes {
+///         swiss_letter: "W",
+///         degeneracy: Degeneracy::None,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct HouseSystemAttributes {
     /// `swiss_letter`.
@@ -152,6 +175,12 @@ impl HouseSystem {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// assert_eq!(HouseSystem::WholeSign.key(), "WHOLE_SIGN");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -181,6 +210,12 @@ impl HouseSystem {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// assert_eq!(HouseSystem::WholeSign.full_key(), "house_system.WHOLE_SIGN");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -210,6 +245,12 @@ impl HouseSystem {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// assert_eq!(HouseSystem::WholeSign.doc(), "Whole Sign");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -239,6 +280,12 @@ impl HouseSystem {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// assert_eq!(HouseSystem::WholeSign.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -268,6 +315,12 @@ impl HouseSystem {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, HouseSystem};
+    ///
+    /// assert_eq!(HouseSystem::WholeSign.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -297,6 +350,12 @@ impl HouseSystem {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// assert!(!HouseSystem::WholeSign.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -326,6 +385,13 @@ impl HouseSystem {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// let first = &HouseSystem::WholeSign.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -355,6 +421,12 @@ impl HouseSystem {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// assert_eq!(HouseSystem::WholeSign.unverified(), ["degeneracy"]);
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -384,24 +456,52 @@ impl HouseSystem {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// assert_eq!(HouseSystem::WholeSign.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, HouseSystem};
+    ///
+    /// let packed = HouseSystem::WholeSign.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::HouseSystem), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::HouseSystem, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// assert_eq!(HouseSystem::from_key("WHOLE_SIGN"), Some(HouseSystem::WholeSign));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(HouseSystem::from_key("house_system.WHOLE_SIGN"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<HouseSystem> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// assert_eq!(HouseSystem::from_id(0), Some(HouseSystem::WholeSign));
+    /// assert_eq!(HouseSystem::from_id(22), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<HouseSystem> {
         match id {
@@ -432,6 +532,18 @@ impl HouseSystem {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     HouseSystem::WholeSign.attributes(),
+    ///     &HouseSystemAttributes {
+    ///         swiss_letter: "W",
+    ///         degeneracy: Degeneracy::None,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static HouseSystemAttributes {

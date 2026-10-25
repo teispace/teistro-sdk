@@ -52,6 +52,18 @@ use crate::error::Error;
 /// Reads a value from JSON text, refusing JSON that is not one, and any key
 /// the value does not read, by its path under `root`.
 ///
+/// ```
+/// use teistro_core::strict::read;
+///
+/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// struct Ring { inner: f64, outer: f64 }
+///
+/// let refused = read::<Ring>("[0.2, 0.4]", "ring").unwrap_err();
+/// // serde would read a struct from a list; a consumer's record is an object.
+/// assert_eq!(refused.field(), Some("ring"));
+/// assert!(read::<Ring>("{\"inner\": 0.2, \"outer\": 0.4} x", "ring").is_err());
+/// ```
+///
 /// # Errors
 ///
 /// Text that is not JSON, JSON that is not the type, or a key the type does
@@ -62,6 +74,16 @@ pub fn read<T: Serialize + DeserializeOwned>(text: &str, root: &str) -> Result<T
 
 /// Parses JSON text into a value, refusing text that is not one JSON value
 /// and a key given twice in one object, by its path under `root`.
+///
+/// ```
+/// use teistro_core::strict::parse;
+///
+/// let value = parse(r#"{"rings": [{"inner": 1}]}"#, "layout")?;
+/// assert_eq!(value["rings"][0]["inner"], 1);
+/// let twice = parse(r#"{"rings": [{"inner": 1, "inner": 2}]}"#, "layout").unwrap_err();
+/// assert_eq!(twice.field(), Some("layout.rings[0].inner"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -166,6 +188,19 @@ impl<'de> Visitor<'de> for Unique<'_> {
 
 /// As [`read`], from JSON already parsed.
 ///
+/// ```
+/// use teistro_core::strict::{parse, read_value};
+///
+/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// struct Ring { inner: f64, outer: f64 }
+///
+/// let given = parse(r#"[{"inner": 0.1, "outer": 0.2}, {"inner": 0.3, "outr": 0.4}]"#, "rings")?;
+/// let refused = read_value::<Vec<Ring>>(&given, "rings").unwrap_err();
+/// // Named down to the element that failed.
+/// assert!(refused.field().is_some_and(|field| field.starts_with("rings[1]")));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`read`].
@@ -242,6 +277,21 @@ fn unread(given: &Value, read: &Value, path: &str) -> Option<String> {
 /// patch that leaves out what it does not change, and which refuses an
 /// unknown key itself with `deny_unknown_fields`.
 ///
+/// ```
+/// use teistro_core::strict::{deserialize, parse};
+///
+/// /// A patch: what it leaves out it does not change.
+/// #[derive(Debug, serde::Deserialize)]
+/// #[serde(deny_unknown_fields)]
+/// struct Patch { outer: Option<f64> }
+///
+/// let patch: Patch = deserialize(&parse("{}", "patch")?, "patch")?;
+/// assert_eq!(patch.outer, None);
+/// let refused = deserialize::<Patch>(&parse(r#"{"outer": "wide"}"#, "patch")?, "patch").unwrap_err();
+/// assert_eq!(refused.field(), Some("patch.outer"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// JSON that is not the type, named where it failed.
@@ -253,6 +303,15 @@ pub fn deserialize<T: DeserializeOwned>(given: &Value, root: &str) -> Result<T, 
 }
 
 /// As [`deserialize`], from JSON text.
+///
+/// ```
+/// use teistro_core::strict::deserialize_str;
+///
+/// let values: Vec<u8> = deserialize_str("[1, 2, 3]", "values")?;
+/// assert_eq!(values, [1, 2, 3]);
+/// assert_eq!(deserialize_str::<Vec<u8>>("[1, 300]", "values").unwrap_err().field(), Some("values[1]"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

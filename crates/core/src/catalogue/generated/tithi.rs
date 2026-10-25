@@ -9,6 +9,17 @@ use super::{Deity, Paksha, TithiClass};
 /// The thirty tithis of the lunar month.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Tithi;
+///
+/// let member: Tithi = "SHUKLA_PRATIPADA".parse()?;
+/// assert_eq!(member, Tithi::ShuklaPratipada);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("tithi.SHUKLA_PRATIPADA".parse::<Tithi>(), Ok(Tithi::ShuklaPratipada));
+/// assert_eq!(member.to_string(), "SHUKLA_PRATIPADA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -76,6 +87,20 @@ pub enum Tithi {
 }
 
 /// The attributes of a `tithi` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Tithi::ShuklaPratipada.attributes(),
+///     &TithiAttributes {
+///         paksha: Paksha::Shukla,
+///         number: 1,
+///         deity: Deity::Brahma,
+///         class: TithiClass::Nanda,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TithiAttributes {
     /// `paksha`.
@@ -196,6 +221,12 @@ impl Tithi {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// assert_eq!(Tithi::ShuklaPratipada.key(), "SHUKLA_PRATIPADA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -233,6 +264,12 @@ impl Tithi {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// assert_eq!(Tithi::ShuklaPratipada.full_key(), "tithi.SHUKLA_PRATIPADA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -270,6 +307,12 @@ impl Tithi {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// assert_eq!(Tithi::ShuklaPratipada.doc(), "Shukla Pratipada");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -307,6 +350,12 @@ impl Tithi {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// assert_eq!(Tithi::ShuklaPratipada.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -344,6 +393,12 @@ impl Tithi {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Tithi};
+    ///
+    /// assert_eq!(Tithi::ShuklaPratipada.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -381,6 +436,12 @@ impl Tithi {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// assert!(!Tithi::ShuklaPratipada.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -418,6 +479,13 @@ impl Tithi {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// let first = &Tithi::ShuklaPratipada.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -455,6 +523,12 @@ impl Tithi {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// assert_eq!(Tithi::Amavasya.unverified(), ["deity"]);
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -492,24 +566,52 @@ impl Tithi {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// assert_eq!(Tithi::ShuklaPratipada.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Tithi};
+    ///
+    /// let packed = Tithi::ShuklaPratipada.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Tithi), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Tithi, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// assert_eq!(Tithi::from_key("SHUKLA_PRATIPADA"), Some(Tithi::ShuklaPratipada));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Tithi::from_key("tithi.SHUKLA_PRATIPADA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Tithi> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    ///
+    /// assert_eq!(Tithi::from_id(0), Some(Tithi::ShuklaPratipada));
+    /// assert_eq!(Tithi::from_id(30), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Tithi> {
         match id {
@@ -548,6 +650,20 @@ impl Tithi {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Tithi::ShuklaPratipada.attributes(),
+    ///     &TithiAttributes {
+    ///         paksha: Paksha::Shukla,
+    ///         number: 1,
+    ///         deity: Deity::Brahma,
+    ///         class: TithiClass::Nanda,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static TithiAttributes {

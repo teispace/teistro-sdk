@@ -15,6 +15,12 @@ use sha2::{Digest, Sha256};
 /// The calculation version (ADR-0020): bumped, with a **Numbers** entry
 /// in the changelog, whenever any computed number moves; consumers cache
 /// on `(input_hash, settings_hash, calculation_version)`.
+///
+/// ```
+/// use teistro_core::envelope::CALCULATION_VERSION;
+///
+/// assert!(CALCULATION_VERSION >= 1);
+/// ```
 pub const CALCULATION_VERSION: u32 = 1;
 
 /// The most decimals a **rendering** may ask a number to be written to.
@@ -26,9 +32,22 @@ pub const CALCULATION_VERSION: u32 = 1;
 /// It is not what the **hash** form writes, which is
 /// [`Digits::Shortest`] — a fixed count is not a fixed point, and
 /// `03-design/schema-measured.md` §9 measured where it stops being one.
+///
+/// ```
+/// use teistro_core::envelope::{CANONICAL_DECIMALS, canonical_json_at};
+///
+/// assert_eq!(canonical_json_at(&(1.0_f64 / 3.0), CANONICAL_DECIMALS), "0.333333333333");
+/// ```
 pub const CANONICAL_DECIMALS: u8 = 12;
 
 /// How a number is written in the canonical form.
+///
+/// ```
+/// use teistro_core::envelope::{Digits, decimal};
+///
+/// assert_eq!(decimal(0.1 + 0.2, Digits::Shortest), "0.30000000000000004");
+/// assert_eq!(decimal(0.1 + 0.2, Digits::Rounded(3)), "0.3");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Digits {
     /// The shortest decimal that reads back as the very same double.
@@ -79,6 +98,13 @@ pub enum Digits {
 /// bytes again. A form that rounded would be lossy in a way that is
 /// worse than useless here — it would make the hash unreproducible by
 /// the consumer storing it (`03-design/schema-measured.md` §9).
+///
+/// ```
+/// use teistro_core::envelope::canonical_json;
+///
+/// let value = serde_json::json!({"b": 1e-6, "a": [true, null, -0.0]});
+/// assert_eq!(canonical_json(&value), r#"{"a":[true,null,0],"b":0.000001}"#);
+/// ```
 #[must_use]
 pub fn canonical_json<T: serde::Serialize + ?Sized>(value: &T) -> String {
     written(value, Digits::Shortest)
@@ -86,6 +112,12 @@ pub fn canonical_json<T: serde::Serialize + ?Sized>(value: &T) -> String {
 
 /// The same, at a chosen number of decimals: what a **rendering** uses,
 /// which is never hashed.
+///
+/// ```
+/// use teistro_core::envelope::canonical_json_at;
+///
+/// assert_eq!(canonical_json_at(&[2.5_f64, 1.0 / 3.0], 2), "[2.5,0.33]");
+/// ```
 #[must_use]
 pub fn canonical_json_at<T: serde::Serialize + ?Sized>(value: &T, decimals: u8) -> String {
     written(value, Digits::Rounded(decimals))
@@ -111,6 +143,13 @@ fn written<T: serde::Serialize + ?Sized>(value: &T, digits: Digits) -> String {
 }
 
 /// The hash of a value's canonical JSON.
+///
+/// ```
+/// use teistro_core::envelope::{Hash, canonical_json, content_hash};
+///
+/// let value = serde_json::json!({"tithi": 3, "paksha": "SHUKLA"});
+/// assert_eq!(content_hash(&value), Hash::of(canonical_json(&value).as_bytes()));
+/// ```
 #[must_use]
 pub fn content_hash<T: serde::Serialize + ?Sized>(value: &T) -> Hash {
     Hash::of(canonical_json(value).as_bytes())
@@ -223,6 +262,15 @@ fn push_number(number: &serde_json::Number, digits: Digits, out: &mut String) {
 }
 
 /// A double as a plain decimal.
+///
+/// ```
+/// use teistro_core::envelope::{Digits, decimal};
+///
+/// assert_eq!(decimal(1e21, Digits::Shortest), "1000000000000000000000");
+/// assert_eq!(decimal(-0.0, Digits::Shortest), "0");
+/// assert_eq!(decimal(-0.0004, Digits::Rounded(3)), "0");
+/// assert_eq!(decimal(f64::NAN, Digits::Shortest), "0");
+/// ```
 #[must_use]
 pub fn decimal(value: f64, digits: Digits) -> String {
     let mut out = String::new();
@@ -292,6 +340,13 @@ fn push_string(text: &str, out: &mut String) {
 }
 
 /// A semantic version.
+///
+/// ```
+/// use teistro_core::envelope::Version;
+///
+/// assert!(Version::new(1, 10, 0) > Version::new(1, 9, 9));
+/// assert_eq!(Version::new(0, 4, 2).to_string(), "0.4.2");
+/// ```
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
 )]
@@ -307,6 +362,13 @@ pub struct Version {
 
 impl Version {
     /// A version.
+    ///
+    /// ```
+    /// use teistro_core::envelope::Version;
+    ///
+    /// let version = Version::new(2, 0, 1);
+    /// assert_eq!((version.major, version.minor, version.patch), (2, 0, 1));
+    /// ```
     #[must_use]
     pub const fn new(major: u16, minor: u16, patch: u16) -> Version {
         Version {
@@ -318,6 +380,14 @@ impl Version {
 
     /// A version from `major.minor.patch`, as Cargo prints it; a
     /// pre-release or build suffix after `-` or `+` is ignored.
+    ///
+    /// ```
+    /// use teistro_core::envelope::Version;
+    ///
+    /// assert_eq!(Version::parse("1.2.3-rc.1+build"), Some(Version::new(1, 2, 3)));
+    /// assert_eq!(Version::parse("1.2"), None);
+    /// assert_eq!(Version::parse("1.2.3.4"), None);
+    /// ```
     #[must_use]
     pub fn parse(text: &str) -> Option<Version> {
         let core = text.split(['-', '+']).next()?;
@@ -334,23 +404,55 @@ impl fmt::Display for Version {
 }
 
 /// A SHA-256, rendered as sixty-four hex digits.
+///
+/// ```
+/// use teistro_core::envelope::Hash;
+///
+/// let hash = Hash::of(b"abc");
+/// assert_eq!(
+///     hash.to_string(),
+///     "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+/// );
+/// assert_eq!(serde_json::to_value(hash).unwrap(), hash.to_string());
+/// ```
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Hash([u8; 32]);
 
 impl Hash {
     /// The hash of some bytes.
+    ///
+    /// ```
+    /// use teistro_core::envelope::Hash;
+    ///
+    /// assert!(Hash::of(&[]).to_string().starts_with("e3b0c442"));
+    /// ```
     #[must_use]
     pub fn of(bytes: &[u8]) -> Hash {
         Hash(Sha256::digest(bytes).into())
     }
 
     /// The bytes.
+    ///
+    /// ```
+    /// use teistro_core::envelope::Hash;
+    ///
+    /// assert_eq!(Hash::of(b"abc").bytes()[..2], [0xba, 0x78]);
+    /// ```
     #[must_use]
     pub const fn bytes(&self) -> &[u8; 32] {
         &self.0
     }
 
     /// From sixty-four hex digits.
+    ///
+    /// ```
+    /// use teistro_core::envelope::Hash;
+    ///
+    /// let hash = Hash::of(b"abc");
+    /// assert_eq!(Hash::from_hex(&hash.to_string()), Some(hash));
+    /// assert_eq!(Hash::from_hex(&hash.to_string().to_uppercase()), Some(hash));
+    /// assert_eq!(Hash::from_hex("ba78"), None);
+    /// ```
     #[must_use]
     pub fn from_hex(hex: &str) -> Option<Hash> {
         if hex.len() != 64 {
@@ -400,6 +502,16 @@ hand_schema!(Hash, "Hash", {
 });
 
 /// What the provider was.
+///
+/// ```
+/// # use teistro_core::envelope::{Hash, Provenance, Version};
+/// # let provenance = Provenance::new(
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Hash::of(b"settings"), Hash::of(b"input"),
+/// # );
+/// assert!(provenance.provider.name.is_empty());
+/// assert!(provenance.provider.data_hashes.is_empty());
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ProviderStamp {
@@ -420,6 +532,17 @@ pub struct ProviderStamp {
 }
 
 /// A pack that took part.
+///
+/// ```
+/// use teistro_core::envelope::{Hash, PackStamp};
+///
+/// let pack = PackStamp {
+///     id: "festivals".into(),
+///     version: "1.0.0".into(),
+///     hash: Hash::of(b"pack"),
+/// };
+/// assert_eq!(serde_json::to_value(&pack).unwrap()["hash"], Hash::of(b"pack").to_string());
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PackStamp {
@@ -432,6 +555,14 @@ pub struct PackStamp {
 }
 
 /// What the time layer applied.
+///
+/// ```
+/// use teistro_core::envelope::TimeStamp;
+///
+/// let time = TimeStamp::default();
+/// assert_eq!(time.delta_t_seconds, 0.0);
+/// assert_eq!(time.uncertainty_seconds, None);
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct TimeStamp {
@@ -456,6 +587,17 @@ pub struct TimeStamp {
 /// calendar of the consumer's own names its source: a date read from the
 /// Bikram Sambat table allocates nothing, and the type still carries
 /// whatever another calendar wants to say.
+///
+/// ```
+/// use teistro_core::envelope::{CalendarResolution, MonthDay};
+///
+/// let divergent = CalendarResolution::Divergent {
+///     tabular: MonthDay { month: 1, day: 32 },
+///     computed: MonthDay { month: 2, day: 1 },
+///     model: "SURYA_SIDDHANTA".into(),
+/// };
+/// assert_eq!(serde_json::to_value(&divergent).unwrap()["kind"], "DIVERGENT");
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -486,6 +628,12 @@ pub enum CalendarResolution {
 }
 
 /// A month and a day inside a year, for a divergence report.
+///
+/// ```
+/// use teistro_core::envelope::MonthDay;
+///
+/// assert_eq!(MonthDay { month: 4, day: 9 }.to_string(), "04-09");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct MonthDay {
@@ -502,6 +650,16 @@ impl fmt::Display for MonthDay {
 }
 
 /// A classical model answered rather than the modern one.
+///
+/// ```
+/// use teistro_core::envelope::Deviation;
+///
+/// let deviation = Deviation {
+///     model: "SURYA_SIDDHANTA".into(),
+///     detail: "the Sun's longitude".into(),
+/// };
+/// assert_eq!(deviation.model, "SURYA_SIDDHANTA");
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Deviation {
@@ -512,6 +670,16 @@ pub struct Deviation {
 }
 
 /// A convention the SDK had to choose to terminate.
+///
+/// ```
+/// # use teistro_core::envelope::{Hash, Provenance, Version};
+/// # let mut provenance = Provenance::new(
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Hash::of(b"settings"), Hash::of(b"input"),
+/// # );
+/// provenance.convention("frame.ayanamsha", "LAHIRI", "the profile's default");
+/// assert_eq!(provenance.applied_conventions[0].value, "LAHIRI");
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Convention {
@@ -524,6 +692,13 @@ pub struct Convention {
 }
 
 /// Whether every row that took part is verified (ADR-0018).
+///
+/// ```
+/// use teistro_core::envelope::Confidence;
+///
+/// assert_eq!(Confidence::default(), Confidence::Verified);
+/// assert_eq!(serde_json::to_value(Confidence::Unverified).unwrap(), "UNVERIFIED");
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -536,6 +711,16 @@ pub enum Confidence {
 }
 
 /// A fallback that was used.
+///
+/// ```
+/// use teistro_core::envelope::Fallback;
+///
+/// let fallback = Fallback {
+///     what: "tzdb".into(),
+///     reason: "no rule before 1920".into(),
+/// };
+/// assert_eq!(fallback.what, "tzdb");
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Fallback {
@@ -550,6 +735,16 @@ pub struct Fallback {
 /// Its schema is named `ProvenanceWarning`, because every binding types it
 /// by that name and Python's own `Warning` is a builtin a module should not
 /// shadow; the wire is unchanged.
+///
+/// ```
+/// # use teistro_core::envelope::{Hash, Provenance, Version};
+/// # let mut provenance = Provenance::new(
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Hash::of(b"settings"), Hash::of(b"input"),
+/// # );
+/// provenance.warn("DEPRECATED_KEY", Some("warning.deprecated"), vec![("key".into(), "OLD".into())]);
+/// assert_eq!(provenance.warnings[0].code, "DEPRECATED_KEY");
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "ProvenanceWarning"))]
@@ -563,6 +758,17 @@ pub struct Warning {
 }
 
 /// Everything that reproduces a result.
+///
+/// ```
+/// # use teistro_core::envelope::{Hash, Provenance, Version};
+/// # let provenance = Provenance::new(
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Hash::of(b"settings"), Hash::of(b"input"),
+/// # );
+/// assert_eq!(provenance.profile, "nepali-default");
+/// let json = serde_json::to_value(&provenance).unwrap();
+/// assert_eq!(json["confidence"], "VERIFIED");
+/// ```
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Provenance {
@@ -604,6 +810,16 @@ pub struct Provenance {
 
 impl Provenance {
     /// A provenance with the identifying fields set and the rest empty.
+    ///
+    /// ```
+    /// # use teistro_core::envelope::{Hash, Provenance, Version};
+    /// # let provenance = Provenance::new(
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Hash::of(b"settings"), Hash::of(b"input"),
+    /// # );
+    /// assert_eq!(provenance.content_hash, Hash::of(&[]));
+    /// assert!(provenance.packs.is_empty() && provenance.warnings.is_empty());
+    /// ```
     #[must_use]
     pub fn new(
         sdk_version: Version,
@@ -635,6 +851,16 @@ impl Provenance {
     }
 
     /// The cache key every binding documents.
+    ///
+    /// ```
+    /// # use teistro_core::envelope::{Hash, Provenance, Version};
+    /// # let provenance = Provenance::new(
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Hash::of(b"settings"), Hash::of(b"input"),
+    /// # );
+    /// let (input, settings, version) = provenance.cache_key();
+    /// assert_eq!((input, settings, version), (Hash::of(b"input"), Hash::of(b"settings"), 1));
+    /// ```
     #[must_use]
     pub fn cache_key(&self) -> (Hash, Hash, u32) {
         (
@@ -657,6 +883,22 @@ impl Provenance {
     /// recomputes it when the engine, its data, a pack or the SDK changes
     /// and at no other time. The frame and the flags are left out: they
     /// follow from the settings and the provider.
+    ///
+    /// ```
+    /// # use teistro_core::envelope::{Hash, Provenance, Version};
+    /// # let provenance = Provenance::new(
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Hash::of(b"settings"), Hash::of(b"input"),
+    /// # );
+    /// let mut newer_data = provenance.clone();
+    /// newer_data.provider.data_version = "2".into();
+    /// assert_ne!(provenance.answer_key(), newer_data.answer_key());
+    ///
+    /// // The flags are not part of it: they follow from the settings.
+    /// let mut flagged = provenance.clone();
+    /// flagged.provider.flags_used.push("SPEED".into());
+    /// assert_eq!(provenance.answer_key(), flagged.answer_key());
+    /// ```
     #[must_use]
     pub fn answer_key(&self) -> Hash {
         let ProviderStamp {
@@ -685,6 +927,16 @@ impl Provenance {
     }
 
     /// Records a convention.
+    ///
+    /// ```
+    /// # use teistro_core::envelope::{Hash, Provenance, Version};
+    /// # let mut provenance = Provenance::new(
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Hash::of(b"settings"), Hash::of(b"input"),
+    /// # );
+    /// provenance.convention("time.delta_t", "ESPENAK_MEEUS", "outside the table");
+    /// assert_eq!(provenance.applied_conventions.len(), 1);
+    /// ```
     pub fn convention(&mut self, knob: &str, value: &str, reason: &str) {
         self.applied_conventions.push(Convention {
             knob: knob.to_string(),
@@ -694,6 +946,16 @@ impl Provenance {
     }
 
     /// Records a warning.
+    ///
+    /// ```
+    /// # use teistro_core::envelope::{Hash, Provenance, Version};
+    /// # let mut provenance = Provenance::new(
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Hash::of(b"settings"), Hash::of(b"input"),
+    /// # );
+    /// provenance.warn("DEEP_TIME", None, Vec::new());
+    /// assert_eq!(provenance.warnings[0].key, None);
+    /// ```
     pub fn warn(&mut self, code: &str, key: Option<&str>, slots: Vec<(String, String)>) {
         self.warnings.push(Warning {
             code: code.to_string(),
@@ -704,6 +966,18 @@ impl Provenance {
 }
 
 /// A value with its provenance.
+///
+/// ```
+/// # use teistro_core::envelope::{Hash, Provenance, Version};
+/// # let provenance = Provenance::new(
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Hash::of(b"settings"), Hash::of(b"input"),
+/// # );
+/// use teistro_core::envelope::Envelope;
+///
+/// let envelope = Envelope::sealing(42_u32, provenance);
+/// assert_eq!(envelope.value, 42);
+/// ```
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "{T}Envelope"))]
@@ -716,6 +990,18 @@ pub struct Envelope<T> {
 
 impl<T> Envelope<T> {
     /// Wraps a value.
+    ///
+    /// ```
+    /// # use teistro_core::envelope::{Hash, Provenance, Version};
+    /// # let provenance = Provenance::new(
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Hash::of(b"settings"), Hash::of(b"input"),
+    /// # );
+    /// use teistro_core::envelope::Envelope;
+    ///
+    /// let envelope = Envelope::new("value", provenance);
+    /// assert_eq!(envelope.provenance.content_hash, Hash::of(&[]));
+    /// ```
     #[must_use]
     pub const fn new(value: T, provenance: Provenance) -> Envelope<T> {
         Envelope { value, provenance }
@@ -744,6 +1030,18 @@ impl<T> Envelope<T> {
     /// must have a true hash. So the boundary seals, the façade's areas
     /// seal, and a crate calling a producer directly pays for what it
     /// uses.
+    ///
+    /// ```
+    /// # use teistro_core::envelope::{Hash, Provenance, Version};
+    /// # let provenance = Provenance::new(
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Hash::of(b"settings"), Hash::of(b"input"),
+    /// # );
+    /// use teistro_core::envelope::{Envelope, content_hash};
+    ///
+    /// let envelope = Envelope::sealing([1, 2, 3], provenance);
+    /// assert_eq!(envelope.provenance.content_hash, content_hash(&[1, 2, 3]));
+    /// ```
     #[must_use]
     pub fn sealing(value: T, provenance: Provenance) -> Envelope<T>
     where
@@ -762,6 +1060,19 @@ impl<T> Envelope<T> {
     /// A batch sealed with its own hash, and every member's hash beside
     /// it, from one serialisation ([`content_hashes`]): what a caller that
     /// hands out members one at a time stamps each with.
+    ///
+    /// ```
+    /// # use teistro_core::envelope::{Hash, Provenance, Version};
+    /// # let provenance = Provenance::new(
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Hash::of(b"settings"), Hash::of(b"input"),
+    /// # );
+    /// use teistro_core::envelope::{Envelope, content_hash};
+    ///
+    /// let (batch, each) = Envelope::sealing_each(vec!["a", "b"], provenance);
+    /// assert_eq!(batch.provenance.content_hash, content_hash(&["a", "b"]));
+    /// assert_eq!(each[1], content_hash("b"));
+    /// ```
     #[must_use]
     pub fn sealing_each<I>(value: T, provenance: Provenance) -> (Envelope<T>, Vec<Hash>)
     where
@@ -780,6 +1091,18 @@ impl<T> Envelope<T> {
     }
 
     /// Maps the value, keeping the provenance.
+    ///
+    /// ```
+    /// # use teistro_core::envelope::{Hash, Provenance, Version};
+    /// # let provenance = Provenance::new(
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Hash::of(b"settings"), Hash::of(b"input"),
+    /// # );
+    /// use teistro_core::envelope::Envelope;
+    ///
+    /// let envelope = Envelope::sealing(21_u32, provenance).map(|value| value * 2);
+    /// assert_eq!(envelope.value, 42);
+    /// ```
     pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Envelope<U> {
         Envelope {
             value: f(self.value),

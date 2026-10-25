@@ -9,6 +9,17 @@ use super::{Deity, Gana, Graha, MuhurtaNature, Nadi, Sex, Tatwa, Varna, Yoni};
 /// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299).
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+///
+/// let member: Nakshatra = "ASHWINI".parse()?;
+/// assert_eq!(member, Nakshatra::Ashwini);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("nakshatra.ASHWINI".parse::<Nakshatra>(), Ok(Nakshatra::Ashwini));
+/// assert_eq!(member.to_string(), "ASHWINI");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -70,6 +81,12 @@ pub enum Nakshatra {
 }
 
 /// A value type of the `nakshatra` attributes.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(Nakshatra::Ashwini.attributes().padas[0], Pada { akshara: "cū", devanagari: "च\u{942}" });
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Pada {
     /// `akshara`.
@@ -79,6 +96,26 @@ pub struct Pada {
 }
 
 /// The attributes of a `nakshatra` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     Nakshatra::Ashwini.attributes(),
+///     &NakshatraAttributes {
+///         vimshottari_lord: Graha::Ketu,
+///         deity: Deity::AshwiniKumara,
+///         gana: Gana::Deva,
+///         nadi: Nadi::Aadi,
+///         yoni: Yoni::Horse,
+///         yoni_sex: Sex::Male,
+///         varna: Varna::Vaishya,
+///         element: Tatwa::Prithvi,
+///         muhurta_nature: MuhurtaNature::Kshipra,
+///         padas: [Pada { akshara: "cū", devanagari: "च\u{942}" }, Pada { akshara: "ce", devanagari: "च\u{947}" }, Pada { akshara: "co", devanagari: "चो" }, Pada { akshara: "lā", devanagari: "ला" }],
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct NakshatraAttributes {
     /// `vimshottari_lord`.
@@ -202,6 +239,12 @@ impl Nakshatra {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert_eq!(Nakshatra::Ashwini.key(), "ASHWINI");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -236,6 +279,12 @@ impl Nakshatra {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert_eq!(Nakshatra::Ashwini.full_key(), "nakshatra.ASHWINI");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -270,6 +319,12 @@ impl Nakshatra {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert_eq!(Nakshatra::Ashwini.doc(), "Ashwini");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -304,6 +359,12 @@ impl Nakshatra {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert_eq!(Nakshatra::Ashwini.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -338,6 +399,12 @@ impl Nakshatra {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Nakshatra};
+    ///
+    /// assert_eq!(Nakshatra::Ashwini.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -372,6 +439,12 @@ impl Nakshatra {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert!(!Nakshatra::Ashwini.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -406,6 +479,13 @@ impl Nakshatra {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// let first = &Nakshatra::Ashwini.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -440,6 +520,12 @@ impl Nakshatra {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert!(Nakshatra::Ashwini.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -474,24 +560,52 @@ impl Nakshatra {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert_eq!(Nakshatra::Ashwini.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Nakshatra};
+    ///
+    /// let packed = Nakshatra::Ashwini.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Nakshatra), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Nakshatra, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert_eq!(Nakshatra::from_key("ASHWINI"), Some(Nakshatra::Ashwini));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Nakshatra::from_key("nakshatra.ASHWINI"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Nakshatra> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert_eq!(Nakshatra::from_id(0), Some(Nakshatra::Ashwini));
+    /// assert_eq!(Nakshatra::from_id(27), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Nakshatra> {
         match id {
@@ -527,6 +641,26 @@ impl Nakshatra {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     Nakshatra::Ashwini.attributes(),
+    ///     &NakshatraAttributes {
+    ///         vimshottari_lord: Graha::Ketu,
+    ///         deity: Deity::AshwiniKumara,
+    ///         gana: Gana::Deva,
+    ///         nadi: Nadi::Aadi,
+    ///         yoni: Yoni::Horse,
+    ///         yoni_sex: Sex::Male,
+    ///         varna: Varna::Vaishya,
+    ///         element: Tatwa::Prithvi,
+    ///         muhurta_nature: MuhurtaNature::Kshipra,
+    ///         padas: [Pada { akshara: "cū", devanagari: "च\u{942}" }, Pada { akshara: "ce", devanagari: "च\u{947}" }, Pada { akshara: "co", devanagari: "चो" }, Pada { akshara: "lā", devanagari: "ला" }],
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static NakshatraAttributes {

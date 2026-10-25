@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The eight directions.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::Direction;
+///
+/// let member: Direction = "EAST".parse()?;
+/// assert_eq!(member, Direction::East);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("direction.EAST".parse::<Direction>(), Ok(Direction::East));
+/// assert_eq!(member.to_string(), "EAST");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -61,6 +72,12 @@ impl Direction {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// assert_eq!(Direction::East.key(), "EAST");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -76,6 +93,12 @@ impl Direction {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// assert_eq!(Direction::East.full_key(), "direction.EAST");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -91,6 +114,12 @@ impl Direction {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// assert_eq!(Direction::East.doc(), "East");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -106,6 +135,12 @@ impl Direction {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// assert_eq!(Direction::East.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -121,6 +156,12 @@ impl Direction {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, Direction};
+    ///
+    /// assert_eq!(Direction::East.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -136,6 +177,12 @@ impl Direction {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// assert!(!Direction::East.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -151,6 +198,13 @@ impl Direction {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// let first = &Direction::East.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "core data"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -166,6 +220,12 @@ impl Direction {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// assert!(Direction::East.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -181,24 +241,52 @@ impl Direction {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// assert_eq!(Direction::East.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, Direction};
+    ///
+    /// let packed = Direction::East.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::Direction), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::Direction, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// assert_eq!(Direction::from_key("EAST"), Some(Direction::East));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(Direction::from_key("direction.EAST"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Direction> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Direction;
+    ///
+    /// assert_eq!(Direction::from_id(0), Some(Direction::East));
+    /// assert_eq!(Direction::from_id(8), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Direction> {
         match id {

@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::MuhurtaYoga;
+///
+/// let member: MuhurtaYoga = "AMRIT_SIDDHI".parse()?;
+/// assert_eq!(member, MuhurtaYoga::AmritSiddhi);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("muhurta_yoga.AMRIT_SIDDHI".parse::<MuhurtaYoga>(), Ok(MuhurtaYoga::AmritSiddhi));
+/// assert_eq!(member.to_string(), "AMRIT_SIDDHI");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -25,6 +36,17 @@ pub enum MuhurtaYoga {
 }
 
 /// The attributes of a `muhurta_yoga` member.
+///
+/// ```
+/// use teistro_core::catalogue::*;
+///
+/// assert_eq!(
+///     MuhurtaYoga::AmritSiddhi.attributes(),
+///     &MuhurtaYogaAttributes {
+///         auspicious: true,
+///     }
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MuhurtaYogaAttributes {
     /// `auspicious`.
@@ -64,6 +86,12 @@ impl MuhurtaYoga {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// assert_eq!(MuhurtaYoga::AmritSiddhi.key(), "AMRIT_SIDDHI");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -76,6 +104,12 @@ impl MuhurtaYoga {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// assert_eq!(MuhurtaYoga::AmritSiddhi.full_key(), "muhurta_yoga.AMRIT_SIDDHI");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -88,6 +122,12 @@ impl MuhurtaYoga {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// assert_eq!(MuhurtaYoga::AmritSiddhi.doc(), "Amrit Siddhi yoga: one vara and nakshatra pair each");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -100,6 +140,12 @@ impl MuhurtaYoga {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// assert_eq!(MuhurtaYoga::AmritSiddhi.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -112,6 +158,12 @@ impl MuhurtaYoga {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, MuhurtaYoga};
+    ///
+    /// assert_eq!(MuhurtaYoga::AmritSiddhi.mark(), Mark::Traditional);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -124,6 +176,12 @@ impl MuhurtaYoga {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// assert!(!MuhurtaYoga::AmritSiddhi.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -136,6 +194,13 @@ impl MuhurtaYoga {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// let first = &MuhurtaYoga::AmritSiddhi.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("baseline-engine", "panchanga_day.muhurta_yogas.amrit_siddhi"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -148,6 +213,12 @@ impl MuhurtaYoga {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// assert!(MuhurtaYoga::AmritSiddhi.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -160,24 +231,52 @@ impl MuhurtaYoga {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// assert_eq!(MuhurtaYoga::AmritSiddhi.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, MuhurtaYoga};
+    ///
+    /// let packed = MuhurtaYoga::AmritSiddhi.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::MuhurtaYoga), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::MuhurtaYoga, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// assert_eq!(MuhurtaYoga::from_key("AMRIT_SIDDHI"), Some(MuhurtaYoga::AmritSiddhi));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(MuhurtaYoga::from_key("muhurta_yoga.AMRIT_SIDDHI"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<MuhurtaYoga> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::MuhurtaYoga;
+    ///
+    /// assert_eq!(MuhurtaYoga::from_id(0), Some(MuhurtaYoga::AmritSiddhi));
+    /// assert_eq!(MuhurtaYoga::from_id(5), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<MuhurtaYoga> {
         match id {
@@ -191,6 +290,17 @@ impl MuhurtaYoga {
     }
 
     /// The member's attributes.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::*;
+    ///
+    /// assert_eq!(
+    ///     MuhurtaYoga::AmritSiddhi.attributes(),
+    ///     &MuhurtaYogaAttributes {
+    ///         auspicious: true,
+    ///     }
+    /// );
+    /// ```
     #[must_use]
     #[allow(clippy::indexing_slicing, reason = "the discriminants are dense from zero")]
     pub fn attributes(self) -> &'static MuhurtaYogaAttributes {

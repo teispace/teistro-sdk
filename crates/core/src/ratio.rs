@@ -20,6 +20,16 @@ use core::fmt;
 
 /// A rational number `num / den` with `den > 0`, in lowest terms, both
 /// parts below [`Ratio::LIMIT`] in magnitude.
+///
+/// ```
+/// use teistro_core::ratio::Ratio;
+///
+/// // Sun's Vimshottari dasha: 6 of the cycle's 120 years.
+/// let sun = Ratio::new(6, 120)?;
+/// assert_eq!(sun.to_string(), "1/20");
+/// assert!(sun < Ratio::new(7, 120)?);
+/// # Ok::<(), teistro_core::ratio::RatioError>(())
+/// ```
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Ratio {
     num: i128,
@@ -27,6 +37,14 @@ pub struct Ratio {
 }
 
 /// Why a rational could not be made.
+///
+/// ```
+/// use teistro_core::ratio::{Ratio, RatioError};
+///
+/// assert_eq!(Ratio::new(1, 0), Err(RatioError::ZeroDenominator));
+/// assert_eq!(Ratio::new(Ratio::LIMIT, 1), Err(RatioError::Overflow));
+/// assert_eq!(RatioError::Overflow.to_string(), "the rational exceeds the exact range");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RatioError {
     /// A zero denominator.
@@ -66,6 +84,15 @@ impl Ratio {
 
     /// `num / den` reduced to lowest terms with a positive denominator.
     ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// // Lowest terms, the sign on the numerator.
+    /// let half = Ratio::new(3, -6)?;
+    /// assert_eq!((half.numerator(), half.denominator()), (-1, 2));
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A zero denominator, or parts beyond the bound after reduction.
@@ -88,6 +115,13 @@ impl Ratio {
     }
 
     /// A whole number.
+    ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// assert_eq!(Ratio::from_integer(120), Ratio::new(240, 2)?);
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
     #[must_use]
     pub const fn from_integer(n: i64) -> Ratio {
         Ratio {
@@ -97,24 +131,54 @@ impl Ratio {
     }
 
     /// The numerator.
+    ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// assert_eq!(Ratio::new(10, 4)?.numerator(), 5);
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
     #[must_use]
     pub const fn numerator(self) -> i128 {
         self.num
     }
 
     /// The denominator, always positive.
+    ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// assert_eq!(Ratio::new(10, -4)?.denominator(), 2);
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
     #[must_use]
     pub const fn denominator(self) -> i128 {
         self.den
     }
 
     /// Whether the value is zero.
+    ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// assert!(Ratio::new(0, 7)?.is_zero());
+    /// assert_eq!(Ratio::new(0, 7)?, Ratio::ZERO);
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
     #[must_use]
     pub const fn is_zero(self) -> bool {
         self.num == 0
     }
 
     /// `self + other`.
+    ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// let third = Ratio::new(1, 3)?;
+    /// assert_eq!(third.checked_add(third)?.checked_add(third)?, Ratio::ONE);
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -128,6 +192,13 @@ impl Ratio {
 
     /// `self − other`.
     ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// assert_eq!(Ratio::ONE.checked_sub(Ratio::new(1, 20)?)?, Ratio::new(19, 20)?);
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Beyond the exact range.
@@ -140,6 +211,15 @@ impl Ratio {
 
     /// `self × other`.
     ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// // The Moon's antardasha inside Sun's mahadasha: 10/120 of 6/120.
+    /// let sub = Ratio::new(6, 120)?.checked_mul(Ratio::new(10, 120)?)?;
+    /// assert_eq!(sub, Ratio::new(1, 240)?);
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Beyond the exact range.
@@ -148,6 +228,14 @@ impl Ratio {
     }
 
     /// `self ÷ other`.
+    ///
+    /// ```
+    /// use teistro_core::ratio::{Ratio, RatioError};
+    ///
+    /// assert_eq!(Ratio::ONE.checked_div(Ratio::new(1, 4)?)?, Ratio::from_integer(4));
+    /// assert_eq!(Ratio::ONE.checked_div(Ratio::ZERO), Err(RatioError::ZeroDenominator));
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -160,6 +248,13 @@ impl Ratio {
     }
 
     /// The value as `f64`, for presentation only.
+    ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// assert_eq!(Ratio::new(1, 4)?.to_f64(), 0.25);
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
     #[must_use]
     #[allow(clippy::cast_precision_loss, reason = "a presentation value")]
     pub fn to_f64(self) -> f64 {
@@ -168,6 +263,15 @@ impl Ratio {
 
     /// `floor(self × scale)` as an integer: a fraction of a span in some
     /// unit, rounded down, for materialising a period boundary.
+    ///
+    /// ```
+    /// use teistro_core::ratio::Ratio;
+    ///
+    /// // Seven thirds of ten units, rounded down: towards minus infinity.
+    /// assert_eq!(Ratio::new(7, 3)?.scaled_floor(10)?, 23);
+    /// assert_eq!(Ratio::new(-7, 3)?.scaled_floor(10)?, -24);
+    /// # Ok::<(), teistro_core::ratio::RatioError>(())
+    /// ```
     ///
     /// # Errors
     ///

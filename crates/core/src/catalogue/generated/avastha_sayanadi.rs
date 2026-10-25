@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::AvasthaSayanadi;
+///
+/// let member: AvasthaSayanadi = "SHAYANA".parse()?;
+/// assert_eq!(member, AvasthaSayanadi::Shayana);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("avastha_sayanadi.SHAYANA".parse::<AvasthaSayanadi>(), Ok(AvasthaSayanadi::Shayana));
+/// assert_eq!(member.to_string(), "SHAYANA");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -77,6 +88,12 @@ impl AvasthaSayanadi {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// assert_eq!(AvasthaSayanadi::Shayana.key(), "SHAYANA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -96,6 +113,12 @@ impl AvasthaSayanadi {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// assert_eq!(AvasthaSayanadi::Shayana.full_key(), "avastha_sayanadi.SHAYANA");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -115,6 +138,12 @@ impl AvasthaSayanadi {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// assert_eq!(AvasthaSayanadi::Shayana.doc(), "Shayana");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -134,6 +163,12 @@ impl AvasthaSayanadi {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// assert_eq!(AvasthaSayanadi::Shayana.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -153,6 +188,12 @@ impl AvasthaSayanadi {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, AvasthaSayanadi};
+    ///
+    /// assert_eq!(AvasthaSayanadi::Shayana.mark(), Mark::Traditional);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -172,6 +213,12 @@ impl AvasthaSayanadi {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// assert!(!AvasthaSayanadi::Shayana.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -191,6 +238,13 @@ impl AvasthaSayanadi {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// let first = &AvasthaSayanadi::Shayana.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("BPHS", "45.30-37"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -210,6 +264,12 @@ impl AvasthaSayanadi {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// assert!(AvasthaSayanadi::Shayana.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -229,24 +289,52 @@ impl AvasthaSayanadi {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// assert_eq!(AvasthaSayanadi::Shayana.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, AvasthaSayanadi};
+    ///
+    /// let packed = AvasthaSayanadi::Shayana.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::AvasthaSayanadi), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::AvasthaSayanadi, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// assert_eq!(AvasthaSayanadi::from_key("SHAYANA"), Some(AvasthaSayanadi::Shayana));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(AvasthaSayanadi::from_key("avastha_sayanadi.SHAYANA"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<AvasthaSayanadi> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    ///
+    /// assert_eq!(AvasthaSayanadi::from_id(0), Some(AvasthaSayanadi::Shayana));
+    /// assert_eq!(AvasthaSayanadi::from_id(12), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<AvasthaSayanadi> {
         match id {

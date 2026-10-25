@@ -82,9 +82,11 @@ the *Nautical Almanac*), which the three agree with at the reference air.
 
 It is a refracted named convention whose refraction comes from the given
 air rather than the almanac's 34′. `which` must be a convention that
-refracts (`UPPER_LIMB_REFRACTION` or `LOWER_LIMB_REFRACTION`); the
-settings refuse one that does not, since there is nothing for the air to
-act on. A variant rather than a knob, so every existing settings document
+refracts (`UPPER_LIMB_REFRACTION`, `LOWER_LIMB_REFRACTION` or
+`CENTRE_REFRACTION`); the settings refuse one that does not, since there
+is nothing for the air to act on. `CENTRE_REFRACTION` came later and was
+left out of that check at first, which refused an air the horizon would
+have applied. A variant rather than a knob, so every existing settings document
 hashes as it did.
 
 **Each part of the air may be left out**, and what fills it is the

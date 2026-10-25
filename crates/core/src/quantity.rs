@@ -21,6 +21,14 @@ use core::marker::PhantomData;
 
 /// A value refused at construction: the quantity, the value, the accepted
 /// range, and the field it came from when the caller says.
+///
+/// ```
+/// use teistro_core::quantity::Latitude;
+///
+/// let refused = Latitude::try_new(95.0).unwrap_err();
+/// assert_eq!((refused.quantity, refused.value.as_str(), refused.accepted), ("latitude", "95", "-90 to 90 degrees"));
+/// assert_eq!(refused.field, None);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InvalidValue {
     /// The quantity's name (`latitude`).
@@ -35,6 +43,13 @@ pub struct InvalidValue {
 
 impl InvalidValue {
     /// Names the field the value came from.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Latitude;
+    ///
+    /// let refused = Latitude::try_new(95.0).unwrap_err().with_field("place.latitude");
+    /// assert_eq!(refused.to_string(), "latitude 95 is outside -90 to 90 degrees (field `place.latitude`)");
+    /// ```
     #[must_use]
     pub fn with_field(mut self, field: &str) -> InvalidValue {
         self.field = Some(field.to_string());
@@ -61,6 +76,8 @@ impl std::error::Error for InvalidValue {}
 macro_rules! bounded_float {
     ($(#[$doc:meta])* $name:ident, $quantity:literal, $min:expr, $max:expr, $accepted:literal, $unit:literal) => {
         $(#[$doc])*
+        ///
+        #[doc = concat!("```\nuse teistro_core::quantity::", stringify!($name), ";\n\nlet value = ", stringify!($name), "::try_new(0.0)?;\nassert_eq!(value.get(), 0.0);\nassert_eq!(", stringify!($name), "::NAME, \"", $quantity, "\");\n# Ok::<(), teistro_core::quantity::InvalidValue>(())\n```")]
         #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd, serde::Serialize)]
         #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(transparent)]
@@ -75,6 +92,8 @@ macro_rules! bounded_float {
             pub const NAME: &'static str = $quantity;
 
             /// Accepts a finite value inside the range.
+            ///
+            #[doc = concat!("```\nuse teistro_core::quantity::", stringify!($name), ";\n\nassert_eq!(", stringify!($name), "::try_new(0.0).map(", stringify!($name), "::get), Ok(0.0));\nlet refused = ", stringify!($name), "::try_new(f64::NAN).unwrap_err();\nassert_eq!(refused.to_string(), \"", $quantity, " NaN is outside ", $accepted, "\");\n```")]
             ///
             /// # Errors
             ///
@@ -94,6 +113,8 @@ macro_rules! bounded_float {
 
             /// A value written as a literal in a constant.
             ///
+            #[doc = concat!("```\nuse teistro_core::quantity::", stringify!($name), ";\n\nconst NOUGHT: ", stringify!($name), " = ", stringify!($name), "::literal(0.0);\nassert_eq!(NOUGHT, ", stringify!($name), "::default());\n```")]
+            ///
             /// # Panics
             ///
             /// When the value is outside the range; in a constant that is a
@@ -109,6 +130,8 @@ macro_rules! bounded_float {
             }
 
             /// The value.
+            ///
+            #[doc = concat!("```\nuse teistro_core::quantity::", stringify!($name), ";\n\nassert_eq!(", stringify!($name), "::MIN.get(), ", stringify!($min), ");\n```")]
             #[must_use]
             pub const fn get(self) -> f64 {
                 self.0
@@ -133,6 +156,8 @@ macro_rules! bounded_float {
 macro_rules! bounded_int {
     ($(#[$doc:meta])* $name:ident, $inner:ty, $quantity:literal, $min:expr, $max:expr, $accepted:literal) => {
         $(#[$doc])*
+        ///
+        #[doc = concat!("```\nuse teistro_core::quantity::", stringify!($name), ";\n\nlet value = ", stringify!($name), "::try_new(", stringify!($max), ")?;\nassert_eq!((value, value.to_string()), (", stringify!($name), "::MAX, String::from(\"", stringify!($max), "\")));\nassert_eq!(", stringify!($name), "::NAME, \"", $quantity, "\");\n# Ok::<(), teistro_core::quantity::InvalidValue>(())\n```")]
         #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
         #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(transparent)]
@@ -147,6 +172,8 @@ macro_rules! bounded_int {
             pub const NAME: &'static str = $quantity;
 
             /// Accepts a value inside the range.
+            ///
+            #[doc = concat!("```\nuse teistro_core::quantity::", stringify!($name), ";\n\nassert!(", stringify!($name), "::try_new(", stringify!($min), ").is_ok());\nlet refused = ", stringify!($name), "::try_new(", stringify!($max), " + 1).unwrap_err();\nassert_eq!(refused.accepted, \"", $accepted, "\");\n```")]
             ///
             /// # Errors
             ///
@@ -173,6 +200,8 @@ macro_rules! bounded_int {
             }
 
             /// The value.
+            ///
+            #[doc = concat!("```\nuse teistro_core::quantity::", stringify!($name), ";\n\nassert_eq!(", stringify!($name), "::MIN.get(), ", stringify!($min), ");\n```")]
             #[must_use]
             pub const fn get(self) -> $inner {
                 self.0
@@ -243,6 +272,13 @@ bounded_int!(
 
 impl HouseNumber {
     /// The house as a 0-based offset from the first.
+    ///
+    /// ```
+    /// use teistro_core::quantity::HouseNumber;
+    ///
+    /// assert_eq!(HouseNumber::MIN.offset(), 0);
+    /// assert_eq!(HouseNumber::MAX.offset(), 11);
+    /// ```
     #[must_use]
     pub const fn offset(self) -> u8 {
         self.0 - 1
@@ -250,6 +286,15 @@ impl HouseNumber {
 }
 
 /// A place on Earth.
+///
+/// ```
+/// use teistro_core::quantity::Place;
+///
+/// let place: Place = serde_json::from_str(r#"{"latitude": -33.8688, "longitude": 151.2093, "altitude": 58}"#).unwrap();
+/// assert_eq!(place.to_string(), "33.8688°S 151.2093°E 58 m");
+/// // Each part is checked as it is read.
+/// assert!(serde_json::from_str::<Place>(r#"{"latitude": 91, "longitude": 0, "altitude": 0}"#).is_err());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "GeoPlace"))]
@@ -265,6 +310,13 @@ pub struct Place {
 impl Place {
     /// A place from validated parts; the types make a swapped latitude and
     /// longitude a compile error.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    ///
+    /// const KATHMANDU: Place = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// assert_eq!(KATHMANDU.latitude.get(), 27.7172);
+    /// ```
     #[must_use]
     pub const fn new(latitude: Latitude, longitude: Longitude, altitude: Altitude) -> Place {
         Place {
@@ -275,6 +327,15 @@ impl Place {
     }
 
     /// A place from bare degrees and metres, each named in its error.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Place;
+    ///
+    /// assert!(Place::try_from_degrees(27.7172, 85.324, 1400.0).is_ok());
+    /// // The refusal names the argument that was wrong.
+    /// let refused = Place::try_from_degrees(27.7172, 185.0, 1400.0).unwrap_err();
+    /// assert_eq!(refused.field.as_deref(), Some("lon_deg"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -309,18 +370,43 @@ mod sealed {
 }
 
 /// A time scale, as a type so a UT1 instant cannot be passed as TT.
+///
+/// ```
+/// use teistro_core::quantity::{Scale, Tt, Ut1, Utc};
+///
+/// assert_eq!([Ut1::NAME, Tt::NAME, Utc::NAME], ["UT1", "TT", "UTC"]);
+/// ```
 pub trait Scale: sealed::Sealed + Copy + fmt::Debug + Default + 'static {
     /// The scale's name in stamps and field names.
     const NAME: &'static str;
 }
 
 /// Universal Time, the scale of civil time and of rise and set.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Ut1};
+///
+/// let sunrise: JulianDay<Ut1> = JulianDay::literal(2_460_310.55);
+/// assert_eq!(sunrise.to_string(), "JD 2460310.55 UT1");
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Ut1;
 /// Terrestrial Time, the scale of the ephemerides.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// assert_eq!(JulianDay::<Tt>::J2000.to_string(), "JD 2451545 TT");
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Tt;
 /// Coordinated Universal Time, the scale of clocks.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// assert_eq!(JulianDay::<Utc>::UNIX_EPOCH.get(), 2_440_587.5);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Utc;
 
@@ -339,6 +425,14 @@ impl Scale for Utc {
 }
 
 /// A Julian day on one time scale.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// let jd: JulianDay<Tt> = serde_json::from_str("2451545.25").unwrap();
+/// assert_eq!(jd.get(), 2_451_545.25);
+/// assert_eq!(serde_json::to_string(&jd).unwrap(), "2451545.25");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
@@ -363,6 +457,13 @@ impl<S: Scale> JulianDay<S> {
 
     /// Accepts a finite Julian day.
     ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    ///
+    /// assert!(JulianDay::<Ut1>::try_new(2_460_310.5).is_ok());
+    /// assert_eq!(JulianDay::<Ut1>::try_new(f64::INFINITY).unwrap_err().accepted, "a finite number of days");
+    /// ```
+    ///
     /// # Errors
     ///
     /// A NaN or infinite value.
@@ -384,6 +485,13 @@ impl<S: Scale> JulianDay<S> {
 
     /// A Julian day written as a literal in a constant.
     ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// const J2000: JulianDay<Tt> = JulianDay::literal(2_451_545.0);
+    /// assert_eq!(J2000, JulianDay::J2000);
+    /// ```
+    ///
     /// # Panics
     ///
     /// When the value is not finite; in a constant that is a compile
@@ -399,12 +507,27 @@ impl<S: Scale> JulianDay<S> {
     }
 
     /// The value in days.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// assert_eq!(JulianDay::<Utc>::literal(2_460_310.5).get(), 2_460_310.5);
+    /// ```
     #[must_use]
     pub const fn get(self) -> f64 {
         self.jd
     }
 
     /// The same instant shifted by `days`; a non-finite result is refused.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    ///
+    /// let noon = JulianDay::<Ut1>::J2000;
+    /// assert_eq!(noon.plus_days(-0.5)?.get(), 2_451_544.5);
+    /// assert!(noon.plus_days(f64::NAN).is_err());
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -415,6 +538,13 @@ impl<S: Scale> JulianDay<S> {
 
     /// The whole day and the fraction since its start at noon, for
     /// sub-millisecond arithmetic.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// // Six hours after noon on 1 January 2000.
+    /// assert_eq!(JulianDay::<Tt>::literal(2_451_545.25).split(), (2_451_545.0, 0.25));
+    /// ```
     #[must_use]
     pub fn split(self) -> (f64, f64) {
         let day = self.jd.floor();
@@ -423,6 +553,15 @@ impl<S: Scale> JulianDay<S> {
 
     /// Reinterprets the value on another scale after a conversion has been
     /// applied by the caller; the conversion functions live in `time`.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Tt, Ut1};
+    ///
+    /// // The caller has applied Delta T; the type now says so.
+    /// let ut1 = JulianDay::<Ut1>::literal(2_460_310.5);
+    /// let tt: JulianDay<Tt> = ut1.plus_days(69.2 / 86_400.0).unwrap().relabel();
+    /// assert!(tt.get() > ut1.get());
+    /// ```
     #[must_use]
     pub const fn relabel<T: Scale>(self) -> JulianDay<T> {
         JulianDay {

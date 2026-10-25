@@ -21,6 +21,14 @@ use crate::quantity::InvalidValue;
 use crate::ratio::RatioError;
 
 /// The status of a call, with the code it has at the C boundary.
+///
+/// ```
+/// use teistro_core::error::{Error, Status};
+///
+/// // Every status crosses JSON by its C name.
+/// assert_eq!(serde_json::to_string(&Status::OutOfRange).unwrap(), r#""OUT_OF_RANGE""#);
+/// assert_eq!(Status::Limit.to_string(), "LIMIT");
+/// ```
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -53,12 +61,25 @@ pub enum Status {
 
 impl Status {
     /// The stable numeric code.
+    ///
+    /// ```
+    /// use teistro_core::error::Status;
+    ///
+    /// assert_eq!((Status::Ok.code(), Status::Internal.code()), (0, -10));
+    /// ```
     #[must_use]
     pub const fn code(self) -> i32 {
         self as i32
     }
 
     /// The status with a code.
+    ///
+    /// ```
+    /// use teistro_core::error::Status;
+    ///
+    /// assert_eq!(Status::from_code(-6), Some(Status::Unsupported));
+    /// assert_eq!(Status::from_code(-11), None);
+    /// ```
     #[must_use]
     pub const fn from_code(code: i32) -> Option<Status> {
         Some(match code {
@@ -78,6 +99,12 @@ impl Status {
     }
 
     /// The name at the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::error::Status;
+    ///
+    /// assert_eq!(Status::NotConverged.name(), "NOT_CONVERGED");
+    /// ```
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
@@ -96,6 +123,13 @@ impl Status {
     }
 
     /// The phrase an error message opens with.
+    ///
+    /// ```
+    /// use teistro_core::error::{Error, Status};
+    ///
+    /// assert_eq!(Status::Pack.phrase(), "pack rejected");
+    /// assert_eq!(Error::new(Status::Pack, "no rules").to_string(), "pack rejected: no rules");
+    /// ```
     #[must_use]
     pub const fn phrase(self) -> &'static str {
         match self {
@@ -121,6 +155,12 @@ impl fmt::Display for Status {
 }
 
 /// What, more precisely, went wrong; appended as the modules need.
+///
+/// ```
+/// use teistro_core::error::Detail;
+///
+/// assert_eq!(serde_json::to_string(&Detail::DstGap).unwrap(), r#""DST_GAP""#);
+/// ```
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -150,6 +190,12 @@ pub enum Detail {
 impl Detail {
     /// The key it is serialised as, and the one every binding reads:
     /// `UNKNOWN_KEY`, `DST_GAP`.
+    ///
+    /// ```
+    /// use teistro_core::error::Detail;
+    ///
+    /// assert_eq!(Detail::BatchTooLarge.key(), "BATCH_TOO_LARGE");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -167,6 +213,14 @@ impl Detail {
 }
 
 /// A reference to a localisable message: a key and its slots.
+///
+/// ```
+/// use teistro_core::error::{Error, Status};
+///
+/// let error = Error::invalid_arg("no such day").with_key("sdk.error.dstGap", vec![(String::from("zone"), String::from("Asia/Kathmandu"))]);
+/// let key = error.key().unwrap();
+/// assert_eq!((key.key.as_str(), key.slots.len()), ("sdk.error.dstGap", 1));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct MessageRef {
@@ -179,6 +233,17 @@ pub struct MessageRef {
 /// An error. The status, the detail and the message are always present;
 /// the field, the hint and the localisable form live behind one pointer so
 /// that a `Result` stays small on the success path.
+///
+/// ```
+/// use teistro_core::error::{Detail, Error, Status};
+///
+/// let error = Error::new(Status::OutOfRange, "JD 1e7 is past the data").with_field("instant").with_hint("load a longer ephemeris");
+/// assert_eq!(error.to_string(), "out of range: JD 1e7 is past the data (field `instant`); load a longer ephemeris");
+/// // It crosses JSON whole, and reads back the same.
+/// let json = serde_json::to_string(&error).unwrap();
+/// assert_eq!(serde_json::from_str::<Error>(&json).unwrap(), error);
+/// assert_eq!(error.with_detail(Detail::Overflow).detail, Some(Detail::Overflow));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Error {
     /// The status.
@@ -211,6 +276,13 @@ struct ErrorRepr {
 
 impl Error {
     /// An error with a status and a message.
+    ///
+    /// ```
+    /// use teistro_core::error::{Error, Status};
+    ///
+    /// let error = Error::new(Status::NotConverged, "the search stopped at 64 steps");
+    /// assert_eq!((error.status, error.detail, error.field()), (Status::NotConverged, None, None));
+    /// ```
     #[must_use]
     pub fn new(status: Status, message: impl Into<String>) -> Error {
         Error {
@@ -222,12 +294,24 @@ impl Error {
     }
 
     /// `INVALID_ARG`.
+    ///
+    /// ```
+    /// use teistro_core::error::{Error, Status};
+    ///
+    /// assert_eq!(Error::invalid_arg("x").status, Status::InvalidArg);
+    /// ```
     #[must_use]
     pub fn invalid_arg(message: impl Into<String>) -> Error {
         Error::new(Status::InvalidArg, message)
     }
 
     /// `UNSUPPORTED`.
+    ///
+    /// ```
+    /// use teistro_core::error::{Error, Status};
+    ///
+    /// assert_eq!(Error::unsupported("x").status, Status::Unsupported);
+    /// ```
     #[must_use]
     pub fn unsupported(message: impl Into<String>) -> Error {
         Error::new(Status::Unsupported, message)
@@ -235,6 +319,15 @@ impl Error {
 
     /// `CAPABILITY`: a module family this build leaves out (`kp`,
     /// `western`, …), with the build that has it as the hint.
+    ///
+    /// ```
+    /// use teistro_core::error::{Error, Status};
+    ///
+    /// let error = Error::left_out("kp");
+    /// assert_eq!(error.status, Status::Capability);
+    /// assert_eq!(error.message, "this build leaves out the `kp` module family");
+    /// assert!(error.hint().unwrap().contains("`full`"));
+    /// ```
     #[must_use]
     pub fn left_out(family: &str) -> Error {
         Error::new(
@@ -247,12 +340,24 @@ impl Error {
     }
 
     /// `LIMIT`.
+    ///
+    /// ```
+    /// use teistro_core::error::{Error, Status};
+    ///
+    /// assert_eq!(Error::limit("x").status.code(), -8);
+    /// ```
     #[must_use]
     pub fn limit(message: impl Into<String>) -> Error {
         Error::new(Status::Limit, message)
     }
 
     /// `INTERNAL`.
+    ///
+    /// ```
+    /// use teistro_core::error::{Error, Status};
+    ///
+    /// assert_eq!(Error::internal("x").status.code(), -10);
+    /// ```
     #[must_use]
     pub fn internal(message: impl Into<String>) -> Error {
         Error::new(Status::Internal, message)
@@ -263,6 +368,13 @@ impl Error {
     }
 
     /// Adds the detail.
+    ///
+    /// ```
+    /// use teistro_core::error::{Detail, Error};
+    ///
+    /// let error = Error::invalid_arg("02:30 did not happen").with_detail(Detail::DstGap);
+    /// assert_eq!(error.detail, Some(Detail::DstGap));
+    /// ```
     #[must_use]
     pub fn with_detail(mut self, detail: Detail) -> Error {
         self.detail = Some(detail);
@@ -270,6 +382,12 @@ impl Error {
     }
 
     /// Names the field.
+    ///
+    /// ```
+    /// use teistro_core::error::Error;
+    ///
+    /// assert_eq!(Error::invalid_arg("x").with_field("place.latitude").field(), Some("place.latitude"));
+    /// ```
     #[must_use]
     pub fn with_field(mut self, field: impl Into<String>) -> Error {
         self.extra_mut().field = Some(field.into());
@@ -283,6 +401,16 @@ impl Error {
     /// A field that begins with an index is joined without a dot:
     /// `drawings` under `request` is `request.drawings`, `[1]` is
     /// `request[1]`.
+    ///
+    /// ```
+    /// use teistro_core::error::Error;
+    ///
+    /// let inner = Error::invalid_arg("x").with_field("shape.rings");
+    /// assert_eq!(inner.under("layouts_json[2]").field(), Some("layouts_json[2].shape.rings"));
+    /// // An index joins without a dot; no field at all takes the root.
+    /// assert_eq!(Error::invalid_arg("x").with_field("[1]").under("request").field(), Some("request[1]"));
+    /// assert_eq!(Error::invalid_arg("x").under("request").field(), Some("request"));
+    /// ```
     #[must_use]
     pub fn under(self, root: &str) -> Error {
         let field = match self.field() {
@@ -294,6 +422,13 @@ impl Error {
     }
 
     /// Adds a hint.
+    ///
+    /// ```
+    /// use teistro_core::error::Error;
+    ///
+    /// let error = Error::invalid_arg("no zone `Asia/Kathmandoo`").with_hint("did you mean `Asia/Kathmandu`?");
+    /// assert_eq!(error.hint(), Some("did you mean `Asia/Kathmandu`?"));
+    /// ```
     #[must_use]
     pub fn with_hint(mut self, hint: impl Into<String>) -> Error {
         self.extra_mut().hint = Some(hint.into());
@@ -301,6 +436,13 @@ impl Error {
     }
 
     /// Adds the localisable form.
+    ///
+    /// ```
+    /// use teistro_core::error::Error;
+    ///
+    /// let error = Error::invalid_arg("x").with_key("sdk.error.timeUnknown", Vec::new());
+    /// assert_eq!(error.key().map(|key| key.key.as_str()), Some("sdk.error.timeUnknown"));
+    /// ```
     #[must_use]
     pub fn with_key(mut self, key: impl Into<String>, slots: Vec<(String, String)>) -> Error {
         self.extra_mut().key = Some(MessageRef {
@@ -311,18 +453,39 @@ impl Error {
     }
 
     /// The field involved, when known.
+    ///
+    /// ```
+    /// use teistro_core::error::Error;
+    /// use teistro_core::quantity::Place;
+    ///
+    /// // A refused value names its field when it becomes an error.
+    /// let error: Error = Place::try_from_degrees(91.0, 0.0, 0.0).unwrap_err().into();
+    /// assert_eq!(error.field(), Some("lat_deg"));
+    /// ```
     #[must_use]
     pub fn field(&self) -> Option<&str> {
         self.extra.as_ref().and_then(|e| e.field.as_deref())
     }
 
     /// The hint, when there is one.
+    ///
+    /// ```
+    /// use teistro_core::error::Error;
+    ///
+    /// assert_eq!(Error::invalid_arg("x").hint(), None);
+    /// ```
     #[must_use]
     pub fn hint(&self) -> Option<&str> {
         self.extra.as_ref().and_then(|e| e.hint.as_deref())
     }
 
     /// The localisable form, when there is one.
+    ///
+    /// ```
+    /// use teistro_core::error::Error;
+    ///
+    /// assert!(Error::invalid_arg("x").key().is_none());
+    /// ```
     #[must_use]
     pub fn key(&self) -> Option<&MessageRef> {
         self.extra.as_ref().and_then(|e| e.key.as_ref())

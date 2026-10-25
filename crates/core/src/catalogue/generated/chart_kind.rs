@@ -8,6 +8,17 @@ use crate::key::{Kind, KeyId};
 /// What a chart is a chart of.
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
+///
+/// ```
+/// use teistro_core::catalogue::ChartKind;
+///
+/// let member: ChartKind = "NATAL".parse()?;
+/// assert_eq!(member, ChartKind::Natal);
+/// // The full key reads too; a member prints as its key.
+/// assert_eq!("chart_kind.NATAL".parse::<ChartKind>(), Ok(ChartKind::Natal));
+/// assert_eq!(member.to_string(), "NATAL");
+/// # Ok::<(), teistro_core::catalogue::UnknownKey>(())
+/// ```
 #[repr(u16)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -57,6 +68,12 @@ impl ChartKind {
     ];
 
     /// The key inside the kind (`SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// assert_eq!(ChartKind::Natal.key(), "NATAL");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -71,6 +88,12 @@ impl ChartKind {
     }
 
     /// The full key (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// assert_eq!(ChartKind::Natal.full_key(), "chart_kind.NATAL");
+    /// ```
     #[must_use]
     pub const fn full_key(self) -> &'static str {
         match self {
@@ -85,6 +108,12 @@ impl ChartKind {
     }
 
     /// The member's documentation.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// assert_eq!(ChartKind::Natal.doc(), "Natal");
+    /// ```
     #[must_use]
     pub const fn doc(self) -> &'static str {
         match self {
@@ -99,6 +128,12 @@ impl ChartKind {
     }
 
     /// The glyph, when the member has one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// assert_eq!(ChartKind::Natal.glyph(), None);
+    /// ```
     #[must_use]
     pub const fn glyph(self) -> Option<&'static str> {
         match self {
@@ -113,6 +148,12 @@ impl ChartKind {
     }
 
     /// The confidence mark (ADR-0018).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Mark, ChartKind};
+    ///
+    /// assert_eq!(ChartKind::Natal.mark(), Mark::Verified);
+    /// ```
     #[must_use]
     pub const fn mark(self) -> Mark {
         match self {
@@ -127,6 +168,12 @@ impl ChartKind {
     }
 
     /// Whether the member is deprecated; it still resolves.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// assert!(!ChartKind::Natal.deprecated());
+    /// ```
     #[must_use]
     pub const fn deprecated(self) -> bool {
         match self {
@@ -141,6 +188,13 @@ impl ChartKind {
     }
 
     /// The sources the member cites.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// let first = &ChartKind::Natal.sources()[0];
+    /// assert_eq!((first.text, first.reference), ("structural", "design"));
+    /// ```
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
@@ -155,6 +209,12 @@ impl ChartKind {
     }
 
     /// Attributes whose values are traditional inside a verified row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// assert!(ChartKind::Natal.unverified().is_empty());
+    /// ```
     #[must_use]
     pub const fn unverified(self) -> &'static [&'static str] {
         match self {
@@ -169,24 +229,52 @@ impl ChartKind {
     }
 
     /// The catalogue id: the discriminant.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// assert_eq!(ChartKind::Natal.id(), 0);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The packed key id for the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Kind, ChartKind};
+    ///
+    /// let packed = ChartKind::Natal.key_id();
+    /// assert_eq!((packed.kind(), packed.id()), (Some(Kind::ChartKind), 0));
+    /// ```
     #[must_use]
     pub const fn key_id(self) -> KeyId {
         KeyId::new(Kind::ChartKind, self as u16)
     }
 
     /// The member with a key or a former key.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// assert_eq!(ChartKind::from_key("NATAL"), Some(ChartKind::Natal));
+    /// // The key inside the kind; `parse` reads the full key as well.
+    /// assert_eq!(ChartKind::from_key("chart_kind.NATAL"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<ChartKind> {
         crate::catalogue::lookup(&BY_KEY, key).or_else(|| crate::catalogue::lookup(&ALIASES, key))
     }
 
     /// The member with an id.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// assert_eq!(ChartKind::from_id(0), Some(ChartKind::Natal));
+    /// assert_eq!(ChartKind::from_id(7), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<ChartKind> {
         match id {

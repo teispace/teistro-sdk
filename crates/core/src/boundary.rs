@@ -26,6 +26,19 @@ use crate::angle::Nas;
 
 /// How far a body stands from the nearest boundary of each division,
 /// degrees.
+///
+/// ```
+/// use teistro_core::angle::Nas;
+/// use teistro_core::boundary::Boundaries;
+///
+/// // 29°59′30″: half an arcminute short of Taurus.
+/// let late_aries = Boundaries::of(Nas::try_from_degrees(29.0 + 59.5 / 60.0)?);
+/// assert!((late_aries.sign_deg - 0.5 / 60.0).abs() < 1e-12);
+/// // 30° also ends Krittika's first pada; the nakshatra's own edges are farther.
+/// assert_eq!(late_aries.pada_deg, late_aries.sign_deg);
+/// assert!(late_aries.nakshatra_deg > late_aries.sign_deg);
+/// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Boundaries {
@@ -39,6 +52,17 @@ pub struct Boundaries {
 
 impl Boundaries {
     /// The distances for a longitude.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    /// use teistro_core::boundary::Boundaries;
+    ///
+    /// // The middle of Ashwini's second pada: 3°20′ + 1°40′.
+    /// let middle = Boundaries::of(Nas::try_from_degrees(5.0)?);
+    /// assert!((middle.pada_deg - 5.0 / 3.0).abs() < 1e-12);
+    /// assert!((middle.nakshatra_deg - 5.0).abs() < 1e-12);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub fn of(longitude: Nas) -> Boundaries {
         Boundaries {
@@ -50,6 +74,16 @@ impl Boundaries {
 
     /// The nearest of the three, degrees: what a caller checking "is this
     /// classification safe at all" wants.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    /// use teistro_core::boundary::Boundaries;
+    ///
+    /// // 29°59′30″: half an arcminute short of Taurus.
+    /// let late_aries = Boundaries::of(Nas::try_from_degrees(29.0 + 59.5 / 60.0)?);
+    /// assert_eq!(late_aries.nearest_deg(), late_aries.sign_deg);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub fn nearest_deg(&self) -> f64 {
         self.sign_deg.min(self.nakshatra_deg).min(self.pada_deg)
@@ -58,6 +92,18 @@ impl Boundaries {
     /// Whether any classification is inside a caller's own tolerance,
     /// degrees — which is the caller's to state, because it is the
     /// provider's accuracy and not a constant of the tradition.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    /// use teistro_core::boundary::Boundaries;
+    ///
+    /// // 29°59′30″: half an arcminute short of Taurus.
+    /// let late_aries = Boundaries::of(Nas::try_from_degrees(29.0 + 59.5 / 60.0)?);
+    /// // Inside a provider that claims a minute of arc, outside one that claims ten seconds.
+    /// assert!(late_aries.is_near(1.0 / 60.0));
+    /// assert!(!late_aries.is_near(10.0 / 3600.0));
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub fn is_near(&self, tolerance_deg: f64) -> bool {
         self.nearest_deg() <= tolerance_deg
