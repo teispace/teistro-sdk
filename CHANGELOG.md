@@ -112,7 +112,9 @@ example, up from 39. The eight new ones are the JSON record entry points
 `jd_of_fixed` and `fixed_of_jd`. Each runs as a doctest. The record
 examples convert a date to Bikram Sambat and show that an answer spells a
 catalogue member as serde does, `BIKRAM_SAMBAT` rather than
-`calendar.BIKRAM_SAMBAT`.
+`calendar.BIKRAM_SAMBAT`. `cargo xtask check-doc-examples`, in verify's
+coverage job, keeps it so: it runs rustdoc's missing-examples lint as an
+error over the crates it lists.
 
 **The Node addon runs its suite under AddressSanitizer.** **Numbers:**
 all six test files pass with every access the addon and the SDK make
