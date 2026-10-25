@@ -36,6 +36,16 @@ use crate::bala::{AnnualSky, Panchavargiya, SEVEN};
 use crate::drishti::speed_rank;
 
 /// The annual dashas this build computes, in the catalogue's order.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_tajika::{ANNUAL_DASHAS, natal_row};
+///
+/// assert_eq!(ANNUAL_DASHAS[0], DashaSystem::Patyayini);
+/// // Two of the three are read from the birth nakshatra.
+/// let nakshatra_years = ANNUAL_DASHAS.iter().filter(|system| natal_row(**system).is_some());
+/// assert_eq!(nakshatra_years.count(), 2);
+/// ```
 pub const ANNUAL_DASHAS: [DashaSystem; 3] = [
     DashaSystem::Patyayini,
     DashaSystem::Mudda,
@@ -44,9 +54,24 @@ pub const ANNUAL_DASHAS: [DashaSystem; 3] = [
 
 /// The units the sources divide a year into: 360 "solar days", each the
 /// Sun's motion through one degree.
+///
+/// ```
+/// use teistro_tajika::{YEAR_UNITS, YearClock};
+///
+/// assert_eq!(YearClock::SunDegrees.divisions(), Some(YEAR_UNITS));
+/// ```
 pub const YEAR_UNITS: u16 = 360;
 
 /// What a unit of the year is (crux C122).
+///
+/// ```
+/// use teistro_tajika::{AnnualDashaRules, YearClock};
+///
+/// assert_eq!(AnnualDashaRules::default().clock, YearClock::SunDegrees);
+/// // Charak's printed Patyayini runs 365 civil days.
+/// assert!(YearClock::Days(365.0).check().is_ok());
+/// assert_eq!(YearClock::Days(365.0).divisions(), None);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -66,6 +91,16 @@ pub enum YearClock {
 }
 
 /// Where the balance a nakshatra year opens with comes from (crux C123).
+///
+/// ```
+/// use teistro_core::settings::Balance;
+/// use teistro_tajika::{AnnualDashaRules, MuddaBalance};
+///
+/// assert_eq!(AnnualDashaRules::default().balance, MuddaBalance::NatalMoon);
+/// // The appendix's Moon at the return counts ghatis, by time.
+/// let entry = AnnualDashaRules { balance: MuddaBalance::EntryMoon, ..AnnualDashaRules::default() };
+/// assert_eq!(entry.measure(), Balance::Temporal);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -83,6 +118,18 @@ pub enum MuddaBalance {
 }
 
 /// The readings an annual dasha is computed under.
+///
+/// ```
+/// use teistro_core::quantity::Depth;
+/// use teistro_core::settings::BirthPeriod;
+/// use teistro_tajika::AnnualDashaRules;
+///
+/// // Mahadashas and antardashas, as both sources tabulate.
+/// let rules = AnnualDashaRules::default();
+/// assert_eq!(rules.depth, Depth::try_new(2)?);
+/// assert_eq!(rules.birth_period, BirthPeriod::Compressed);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase")]
@@ -119,6 +166,18 @@ impl Default for AnnualDashaRules {
 impl AnnualDashaRules {
     /// How the balance is measured under these rules: the one asked for,
     /// or the source's own.
+    ///
+    /// ```
+    /// use teistro_core::settings::Balance;
+    /// use teistro_tajika::{AnnualDashaRules, MuddaBalance};
+    ///
+    /// // Charak's birth Moon is measured by arc unless asked otherwise.
+    /// let rules = AnnualDashaRules::default();
+    /// assert_eq!(rules.measure(), Balance::Spatial);
+    /// let timed = AnnualDashaRules { measure: Some(Balance::Temporal), ..rules };
+    /// assert_eq!(timed.measure(), Balance::Temporal);
+    /// assert_eq!(AnnualDashaRules { balance: MuddaBalance::Whole, ..rules }.measure(), Balance::Spatial);
+    /// ```
     #[must_use]
     pub fn measure(&self) -> Balance {
         self.measure.unwrap_or(match self.balance {
@@ -130,6 +189,16 @@ impl AnnualDashaRules {
 
 /// The natal row a nakshatra year is read over: Vimshottari for the Mudda,
 /// Yogini for the Varsha Yogini; nothing for any other system.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_tajika::natal_row;
+///
+/// // Vimshottari's nine lords and Yogini's eight; the Patyayini reads no nakshatra.
+/// assert_eq!(natal_row(DashaSystem::Mudda).map(|row| row.lords.len()), Some(9));
+/// assert_eq!(natal_row(DashaSystem::VarshaYogini).map(|row| row.lords.len()), Some(8));
+/// assert!(natal_row(DashaSystem::Patyayini).is_none());
+/// ```
 #[must_use]
 pub fn natal_row(system: DashaSystem) -> Option<&'static UduRow> {
     match system {
@@ -193,6 +262,20 @@ pub fn nakshatra_ring(
 }
 
 /// What remains of a Moon's nakshatra by arc, 0 to 1.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::{DashaSystem, Graha};
+/// # use teistro_core::quantity::Degrees;
+/// #
+/// # let moon = Nas::from_degrees(Degrees::try_new(137.0 + 8.0 / 60.0)?);
+///
+/// use teistro_tajika::remaining_by_arc;
+///
+/// // 3°48′ into Purva Phalguni: 9°32′ of its 13°20′ remain.
+/// assert!((remaining_by_arc(moon) - 572.0 / 800.0).abs() < 1e-12);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 #[expect(
     clippy::cast_precision_loss,
@@ -204,6 +287,19 @@ pub fn remaining_by_arc(moon: Nas) -> f64 {
 
 /// What remains of a Moon's stay in its nakshatra by time, 0 to 1: from
 /// `at` to its leaving, over the whole stay.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_tajika::remaining_by_time;
+///
+/// // A day's stay, a quarter of it gone.
+/// let day = |jd: f64| JulianDay::<Utc>::literal(jd);
+/// let stay = Interval::new(day(2_445_932.0), day(2_445_933.0))?;
+/// assert!((remaining_by_time(day(2_445_932.25), stay)? - 0.75).abs() < 1e-9);
+/// assert_eq!(remaining_by_time(day(2_445_934.0), stay).unwrap_err().field(), Some("moon_span"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -231,6 +327,38 @@ enum Owner {
 /// is the graha itself the graha runs first, which the verse does not
 /// decide. The second of a tie has a patyamsha of nothing and keeps its
 /// place in the order.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_tajika::{AnnualSky, panchavargiya, patyayini_ring};
+/// #
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(0.0, 3.0, 50.0),
+/// #     mars_deg: at(1.0, 7.0, 42.0),
+/// #     jupiter_deg: at(3.0, 9.0, 38.0),
+/// #     moon_deg: at(4.0, 9.0, 40.0),
+/// #     saturn_deg: at(5.0, 17.0, 13.0),
+/// #     mercury_deg: at(6.0, 18.0, 20.0),
+/// #     venus_deg: at(7.0, 21.0, 45.0),
+/// # };
+/// # let lagna = at(2.0, 9.0, 26.0);
+///
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_core::settings::BirthPeriod;
+/// use teistro_dasha::{Timeline, YearDasha};
+/// use teistro_tajika::{YearClock, year_clock};
+///
+/// let ring = patyayini_ring(&sky, lagna, &panchavargiya(&sky)?)?;
+/// // The lagna runs third, under its lord.
+/// assert_eq!((ring.ring[2].lord, ring.ring[2].sign), (Graha::Mercury, Some(Rashi::Gemini)));
+/// // On Charak's 365 days the Sun opens with 64.33 of them.
+/// let clock = year_clock(YearClock::Days(365.0), JulianDay::literal(2_445_932.5), None)?;
+/// let first = YearDasha::new(ring, clock, BirthPeriod::Compressed)?.mahadashas().next().ok_or("a period")?;
+/// assert_eq!(first.lord, Graha::Sun);
+/// assert!((first.interval.days() - 64.33).abs() < 0.005);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -354,6 +482,46 @@ const MEAN_ROUNDS: usize = 6;
 /// zodiac, as the return was. How the knots are found, in two batched
 /// passes over the Sun rather than a search for each, is
 /// `KNOT_STEP_DAYS`'s to say.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+///
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::sidereal::Zodiac;
+/// # use teistro_astro::Completion;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let tropical = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(Ayanamsha::Lahiri.into()),
+/// #     basis: Basis::True,
+/// #     precession: PrecessionModel::default(),
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+///
+/// use teistro_tajika::sun_knots;
+///
+/// // The year from birth, a knot for each degree of the Sun.
+/// let knots = sun_knots(&tropical, zodiac, natal.instant, natal.sidereal_sun_deg, 360)?;
+/// assert_eq!(knots.len(), 361);
+/// let year = knots[360] - knots[0];
+/// assert!((year - 365.256).abs() < 0.05, "{year}");
+/// assert_eq!(sun_knots(&tropical, zodiac, natal.instant, 0.0, 0).unwrap_err().field(), Some("divisions"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -573,6 +741,14 @@ impl YearClock {
     /// How many arcs of the Sun its knots divide the year into: 360 for
     /// the Sun's degrees, one for an even spread between the returns, and
     /// nothing for days, which read no sky.
+    ///
+    /// ```
+    /// use teistro_tajika::YearClock;
+    ///
+    /// assert_eq!(YearClock::SunDegrees.divisions(), Some(360));
+    /// assert_eq!(YearClock::Even.divisions(), Some(1));
+    /// assert_eq!(YearClock::Days(360.0).divisions(), None);
+    /// ```
     #[must_use]
     pub const fn divisions(self) -> Option<u16> {
         match self {
@@ -610,6 +786,18 @@ impl YearClock {
 /// The clock a year runs on: from `opens` for so many days, or through
 /// the Sun's knots ([`sun_knots`] with [`YearClock::divisions`]).
 ///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_tajika::{YearClock, year_clock};
+///
+/// let opens = JulianDay::literal(2_445_932.5);
+/// let clock = year_clock(YearClock::Days(360.0), opens, None)?;
+/// assert_eq!(clock.year().days(), 360.0);
+/// // A clock that reads the Sun needs its knots.
+/// assert_eq!(year_clock(YearClock::SunDegrees, opens, None).unwrap_err().field(), Some("knots"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A [`YearClock::Days`] of no length or not a number, named `clock`;
@@ -631,6 +819,32 @@ pub fn year_clock(
 }
 
 /// One year's annual dasha, as an answer carries it.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::{DashaSystem, Graha};
+/// # use teistro_core::quantity::Degrees;
+/// #
+/// # let moon = Nas::from_degrees(Degrees::try_new(137.0 + 8.0 / 60.0)?);
+///
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::BirthPeriod;
+/// # use teistro_dasha::{Timeline, YearDasha};
+/// # use teistro_tajika::{YearClock, nakshatra_ring, remaining_by_arc, year_clock};
+/// #
+/// # let ring = nakshatra_ring(DashaSystem::Mudda, moon, 40, Some(remaining_by_arc(moon)))?;
+/// # let clock = year_clock(YearClock::Days(360.0), JulianDay::literal(2_445_932.5), None)?;
+/// # let dasha = YearDasha::new(ring, clock, BirthPeriod::Compressed)?;
+///
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_tajika::{AnnualDasha, AnnualDashaRules};
+///
+/// let rules = AnnualDashaRules { clock: YearClock::Days(360.0), ..AnnualDashaRules::default() };
+/// let answer = AnnualDasha::of(&dasha, DashaSystem::Mudda, 40, rules, Some(Nakshatra::PurvaPhalguni));
+/// assert_eq!(answer.ring.ring[answer.ring.first].lord, Graha::Rahu);
+/// assert_eq!(answer.year.days(), 360.0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -660,6 +874,33 @@ pub struct AnnualDasha {
 
 impl AnnualDasha {
     /// The answer for a year's dasha under `rules`.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::Degrees;
+    /// #
+    /// # let moon = Nas::from_degrees(Degrees::try_new(137.0 + 8.0 / 60.0)?);
+    ///
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::BirthPeriod;
+    /// # use teistro_dasha::{Timeline, YearDasha};
+    /// # use teistro_tajika::{YearClock, nakshatra_ring, remaining_by_arc, year_clock};
+    /// #
+    /// # let ring = nakshatra_ring(DashaSystem::Mudda, moon, 40, Some(remaining_by_arc(moon)))?;
+    /// # let clock = year_clock(YearClock::Days(360.0), JulianDay::literal(2_445_932.5), None)?;
+    /// # let dasha = YearDasha::new(ring, clock, BirthPeriod::Compressed)?;
+    ///
+    /// use teistro_tajika::{AnnualDasha, AnnualDashaRules};
+    ///
+    /// // Table V-2: Rahu's 38.61 days open the year, his 15.39 close it.
+    /// let answer = AnnualDasha::of(&dasha, DashaSystem::Mudda, 40, AnnualDashaRules::default(), None);
+    /// let mahadashas: Vec<_> = answer.periods.iter().filter(|row| !row.path.contains('/')).collect();
+    /// assert_eq!(mahadashas.len(), 10);
+    /// assert!((mahadashas[0].interval.days() - 38.61).abs() < 0.005);
+    /// assert_eq!(mahadashas[9].lord, Graha::Rahu);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn of(
         dasha: &YearDasha,

@@ -54,6 +54,24 @@ use crate::bala::{
 };
 
 /// One of the four offices, best first.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::Adhikara;
+///
+/// assert_eq!(offices(Graha::Moon, &sky, OfficeRules::default())?.adhikara, Adhikara::Uttama);
+/// assert_eq!(offices(Graha::Mars, &sky, OfficeRules::default())?.adhikara, Adhikara::Adhama);
+/// // Best first.
+/// assert!(Adhikara::Uttama < Adhikara::Adhama);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -71,6 +89,12 @@ pub enum Adhikara {
 impl Adhikara {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `UTTAMA`.
+    ///
+    /// ```
+    /// use teistro_tajika::Adhikara;
+    ///
+    /// assert_eq!(Adhikara::Madhyama.key(), "MADHYAMA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -82,6 +106,13 @@ impl Adhikara {
     }
 
     /// Every office, best first.
+    ///
+    /// ```
+    /// use teistro_tajika::Adhikara;
+    ///
+    /// let keys = Adhikara::ALL.map(Adhikara::key);
+    /// assert_eq!(keys, ["UTTAMA", "MADHYAMA", "SAMA", "ADHAMA"]);
+    /// ```
     pub const ALL: [Adhikara; 4] = [
         Adhikara::Uttama,
         Adhikara::Madhyama,
@@ -91,6 +122,24 @@ impl Adhikara {
 }
 
 /// One clause of the gloss's definition that a graha meets.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::OfficeClause;
+///
+/// // Mars in Cancer, his debilitation.
+/// let mars = offices(Graha::Mars, &sky, OfficeRules::default())?;
+/// assert!(mars.held.contains(&OfficeClause::Debilitated));
+/// assert!(!mars.held.contains(&OfficeClause::OwnSign));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -115,6 +164,12 @@ pub enum OfficeClause {
 impl OfficeClause {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `OWN_SIGN`.
+    ///
+    /// ```
+    /// use teistro_tajika::OfficeClause;
+    ///
+    /// assert_eq!(OfficeClause::OwnNavamsha.key(), "OWN_NAVAMSHA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -129,6 +184,14 @@ impl OfficeClause {
     }
 
     /// Every clause, in the definition's order.
+    ///
+    /// ```
+    /// use teistro_tajika::{Adhikara, OfficeClause};
+    ///
+    /// // Two give uttama, three madhyama, two adhama; none gives sama.
+    /// let giving = |office| OfficeClause::ALL.iter().filter(|clause| clause.office() == office).count();
+    /// assert_eq!([Adhikara::Uttama, Adhikara::Madhyama, Adhikara::Sama, Adhikara::Adhama].map(giving), [2, 3, 0, 2]);
+    /// ```
     pub const ALL: [OfficeClause; 7] = [
         OfficeClause::OwnSign,
         OfficeClause::Exalted,
@@ -140,6 +203,14 @@ impl OfficeClause {
     ];
 
     /// The office the clause gives on its own.
+    ///
+    /// ```
+    /// use teistro_tajika::{Adhikara, OfficeClause};
+    ///
+    /// assert_eq!(OfficeClause::Exalted.office(), Adhikara::Uttama);
+    /// assert_eq!(OfficeClause::OwnHudda.office(), Adhikara::Madhyama);
+    /// assert_eq!(OfficeClause::EnemySign.office(), Adhikara::Adhama);
+    /// ```
     #[must_use]
     pub const fn office(self) -> Adhikara {
         match self {
@@ -153,6 +224,26 @@ impl OfficeClause {
 }
 
 /// Which office counts when a graha holds more than one (crux C371).
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::{Adhikara, OfficeOrder};
+///
+/// let early = AnnualSky { moon_deg: 91.0, ..sky };
+/// let read = |order| offices(Graha::Moon, &early, OfficeRules { order, ..OfficeRules::default() });
+/// // The gloss's vv. 40-41: the division counts before her own sign.
+/// assert_eq!(read(OfficeOrder::Gloss)?.adhikara, Adhikara::Madhyama);
+/// assert_eq!(read(OfficeOrder::Highest)?.adhikara, Adhikara::Uttama);
+/// assert_eq!(read(OfficeOrder::Lowest)?.adhikara, Adhikara::Madhyama);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -174,6 +265,12 @@ pub enum OfficeOrder {
 impl OfficeOrder {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `GLOSS`.
+    ///
+    /// ```
+    /// use teistro_tajika::OfficeOrder;
+    ///
+    /// assert_eq!(OfficeOrder::default().key(), "GLOSS");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -185,6 +282,25 @@ impl OfficeOrder {
 }
 
 /// Which drekkāṇa a graha's own is read in.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::{DrekkanaReading, OfficeClause};
+///
+/// let early = AnnualSky { moon_deg: 91.0, ..sky };
+/// // Cancer's first drekkana is Venus's by the weekday cycle, the Moon's by Parashara.
+/// let read = |drekkana| offices(Graha::Moon, &early, OfficeRules { drekkana, ..OfficeRules::default() });
+/// assert!(!read(DrekkanaReading::Tajika)?.held.contains(&OfficeClause::OwnDrekkana));
+/// assert!(read(DrekkanaReading::Parashari)?.held.contains(&OfficeClause::OwnDrekkana));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -202,6 +318,12 @@ pub enum DrekkanaReading {
 impl DrekkanaReading {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `TAJIKA`.
+    ///
+    /// ```
+    /// use teistro_tajika::DrekkanaReading;
+    ///
+    /// assert_eq!(DrekkanaReading::Parashari.key(), "PARASHARI");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -220,6 +342,24 @@ impl DrekkanaReading {
 }
 
 /// Whether an enemy's sign makes a graha adhama.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::{EnemySign, OfficeClause};
+///
+/// let ignored = OfficeRules { enemy: EnemySign::Ignored, ..OfficeRules::default() };
+/// for graha in teistro_tajika::SEVEN {
+///     assert!(!offices(graha, &sky, ignored)?.held.contains(&OfficeClause::EnemySign));
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -238,6 +378,12 @@ pub enum EnemySign {
 impl EnemySign {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `TAJIKA`.
+    ///
+    /// ```
+    /// use teistro_tajika::EnemySign;
+    ///
+    /// assert_eq!(EnemySign::Ignored.key(), "IGNORED");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -248,6 +394,25 @@ impl EnemySign {
 }
 
 /// How the offices are read where the gloss leaves a choice.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::{HuddaTable, OfficeClause};
+///
+/// // Venus at 10° Aquarius: in her own hudda by the gloss's table, not by Charak's.
+/// let aquarius = AnnualSky { venus_deg: 310.0, ..sky };
+/// let charak = OfficeRules { hudda: HuddaTable::Charak, ..OfficeRules::default() };
+/// assert!(offices(Graha::Venus, &aquarius, OfficeRules::default())?.held.contains(&OfficeClause::OwnHudda));
+/// assert!(!offices(Graha::Venus, &aquarius, charak)?.held.contains(&OfficeClause::OwnHudda));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -265,6 +430,26 @@ pub struct OfficeRules {
 }
 
 /// The offices one graha holds.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::{Adhikara, OfficeClause};
+///
+/// let early = AnnualSky { moon_deg: 91.0, ..sky };
+/// let moon = offices(Graha::Moon, &early, OfficeRules::default())?;
+/// assert_eq!(moon.graha, Graha::Moon);
+/// assert_eq!(&moon.held[..1], [OfficeClause::OwnSign]);
+/// assert!(moon.held.contains(&OfficeClause::OwnNavamsha));
+/// assert_eq!(moon.adhikara, Adhikara::Madhyama);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "TajikaOffices"))]
@@ -280,6 +465,24 @@ pub struct Offices {
 }
 
 /// A Kamboola's grade: the Moon's office and the pair's.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::{Adhikara, kamboola_grade};
+///
+/// let grade = kamboola_grade(Graha::Venus, Graha::Mars, &sky, OfficeRules::default())?;
+/// assert_eq!((grade.lagnesha.graha, grade.karyesha.graha), (Graha::Venus, Graha::Mars));
+/// assert_eq!(grade.pair, Some(Adhikara::Adhama));
+/// assert_eq!(grade.moon.adhikara, Adhikara::Uttama);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -301,6 +504,24 @@ impl KamboolaGrade {
     /// The cell the gloss names, the Moon's office first and the pair's
     /// second (`[Uttama, Madhyama]` is *uttama-madhyama*), when the pair
     /// has one.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+    /// #
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+    /// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+    /// # };
+    ///
+    /// use teistro_tajika::{Adhikara, kamboola_grade};
+    ///
+    /// // Uttama-adhama; with the Moon for a lord the two differ and no cell is named.
+    /// let grade = kamboola_grade(Graha::Venus, Graha::Mars, &sky, OfficeRules::default())?;
+    /// assert_eq!(grade.cell(), Some([Adhikara::Uttama, Adhikara::Adhama]));
+    /// assert_eq!(kamboola_grade(Graha::Moon, Graha::Mars, &sky, OfficeRules::default())?.cell(), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn cell(&self) -> Option<[Adhikara; 2]> {
         self.pair.map(|pair| [self.moon.adhikara, pair])
@@ -308,6 +529,22 @@ impl KamboolaGrade {
 }
 
 /// The offices `graha`, one of the seven, holds in `sky`.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::Adhikara;
+///
+/// assert_eq!(offices(Graha::Venus, &sky, OfficeRules::default())?.adhikara, Adhikara::Adhama);
+/// assert_eq!(offices(Graha::Rahu, &sky, OfficeRules::default()).unwrap_err().field(), Some("graha"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -324,6 +561,22 @@ pub fn offices(graha: Graha, sky: &AnnualSky, rules: OfficeRules) -> Result<Offi
 /// Whether the Kamboola holds is [`crate::year_yogas`]'s question; this
 /// grades the three as they stand, which is also what a reader weighing a
 /// Kamboola that will form wants.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeRules, offices};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 15.0, moon_deg: 102.0, mars_deg: 105.0, mercury_deg: 195.0,
+/// #     jupiter_deg: 15.0, venus_deg: 160.0, saturn_deg: 15.0,
+/// # };
+///
+/// use teistro_tajika::kamboola_grade;
+///
+/// let refused = kamboola_grade(Graha::Venus, Graha::Ketu, &sky, OfficeRules::default()).unwrap_err();
+/// assert_eq!(refused.field(), Some("karyesha"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

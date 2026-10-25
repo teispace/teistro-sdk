@@ -33,6 +33,52 @@ use crate::muntha::MunthaDegree;
 use crate::office::sign_at;
 
 /// Which sign of the two lords the month's dasha is read in (crux C477).
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_tajika::{MasaDashaRules, MonthClock, masa_dasha};
+///
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_tajika::MasaDashaSign;
+///
+/// // Jupiter, the Muntha's lord, is the stronger and stands in Sagittarius,
+/// // which is also the Muntha's sign: both readings read Sagittarius here.
+/// let opens = [JulianDay::literal(2_461_000.0)];
+/// let rules = MasaDashaRules { clock: MonthClock::Days, ..MasaDashaRules::default() };
+/// for sign in [MasaDashaSign::Occupied, MasaDashaSign::Owned] {
+///     let dasha = masa_dasha(&charts, &strengths, &opens, MunthaDegree::default(), MasaDashaRules { sign, ..rules })?;
+///     assert_eq!((dasha.graha, dasha.sign), (Graha::Jupiter, Rashi::Sagittarius));
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -47,6 +93,50 @@ pub enum MasaDashaSign {
 }
 
 /// What a degree of a Hudda is in time (crux C477).
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_tajika::{MasaDashaRules, MonthClock, masa_dasha};
+///
+///
+/// // Thirty-one solar-day knots, a little longer than a civil day each.
+/// let knots: Vec<JulianDay<_>> = (0..=30).map(|degree| JulianDay::literal(2_461_000.0 + f64::from(degree) * 1.016)).collect();
+/// let under = |clock| masa_dasha(&charts, &strengths, &knots, MunthaDegree::default(), MasaDashaRules { clock, ..MasaDashaRules::default() });
+/// // The first Hudda is Jupiter's twelve degrees: twelve knots, or twelve civil days.
+/// let by_sun = under(MonthClock::SunDegrees)?.periods[0];
+/// let by_days = under(MonthClock::Days)?.periods[0];
+/// assert_eq!(by_sun.ends, knots[12]);
+/// assert_eq!(by_days.ends.get() - by_days.starts.get(), 12.0);
+/// assert!((under(MonthClock::Even)?.periods[0].ends.get() - knots[12].get()).abs() < 1e-6);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -65,6 +155,13 @@ pub enum MonthClock {
 }
 
 /// The readings the month's dasha is computed under.
+///
+/// ```
+/// use teistro_tajika::{HuddaTable, MasaDashaRules, MasaDashaSign, MonthClock};
+///
+/// let rules = MasaDashaRules::default();
+/// assert_eq!((rules.sign, rules.clock, rules.table), (MasaDashaSign::Occupied, MonthClock::SunDegrees, HuddaTable::Nilakanthi));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase")]
@@ -78,6 +175,47 @@ pub struct MasaDashaRules {
 }
 
 /// One lord's run of the month.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_tajika::{MasaDashaRules, MonthClock, masa_dasha};
+///
+///
+/// let opens = [JulianDay::literal(2_461_000.0)];
+/// let rules = MasaDashaRules { clock: MonthClock::Days, ..MasaDashaRules::default() };
+/// let dasha = masa_dasha(&charts, &strengths, &opens, MunthaDegree::default(), rules)?;
+/// // The five fill the month's thirty degrees, each beginning where the last ends.
+/// assert_eq!(dasha.periods.iter().map(|period| u32::from(period.degrees)).sum::<u32>(), 30);
+/// assert!(dasha.periods.windows(2).all(|pair| pair[0].ends == pair[1].starts));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -93,6 +231,49 @@ pub struct MasaDashaPeriod {
 }
 
 /// One month's dasha.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_tajika::{MasaDashaRules, MonthClock, masa_dasha};
+///
+/// use teistro_tajika::{HuddaTable, MonthOffice, hudda_terms};
+///
+/// let opens = [JulianDay::literal(2_461_000.0)];
+/// let rules = MasaDashaRules { clock: MonthClock::Days, ..MasaDashaRules::default() };
+/// let dasha = masa_dasha(&charts, &strengths, &opens, MunthaDegree::default(), rules)?;
+/// assert_eq!((dasha.office, dasha.graha), (MonthOffice::Muntha, Graha::Jupiter));
+/// let lords: Vec<Graha> = dasha.periods.iter().map(|period| period.lord).collect();
+/// assert_eq!(lords, hudda_terms(HuddaTable::Nilakanthi, dasha.sign).map(|(_, lord)| lord));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -117,6 +298,48 @@ pub struct MasaDasha {
 /// thirty-one instants the Sun stands none to thirty degrees on from the
 /// month's opening, which [`MonthClock::SunDegrees`] and
 /// [`MonthClock::Even`] read; [`MonthClock::Days`] reads the first only.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_tajika::{MasaDashaRules, MonthClock, masa_dasha};
+///
+///
+/// let opens = [JulianDay::literal(2_461_000.0)];
+/// let rules = MasaDashaRules { clock: MonthClock::Days, ..MasaDashaRules::default() };
+/// assert_eq!(masa_dasha(&charts, &strengths, &opens, MunthaDegree::default(), rules)?.periods.len(), 5);
+/// // The solar-day clock reads thirty-one knots; a strength table must carry both lords.
+/// let short = masa_dasha(&charts, &strengths, &opens, MunthaDegree::default(), MasaDashaRules::default());
+/// assert_eq!(short.unwrap_err().field(), Some("knots"));
+/// assert_eq!(masa_dasha(&charts, &[], &opens, MunthaDegree::default(), rules).unwrap_err().field(), Some("strengths"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

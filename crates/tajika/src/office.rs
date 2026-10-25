@@ -22,6 +22,27 @@ use teistro_core::error::Error;
 use crate::muntha::{MunthaDegree, muntha};
 
 /// The five portfolios, in the order the source lists them.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{Office, YearCharts, office_bearers};
+/// #
+/// # // Charak's worked year: Leo rising at birth, forty years complete, and
+/// # // Scorpio rising in the annual chart by day with the Sun in Leo.
+/// # let charts = YearCharts {
+/// #     natal_lagna_deg: 134.6,
+/// #     completed_years: 40,
+/// #     annual_lagna_deg: 219.43,
+/// #     annual_sun_deg: 123.83,
+/// #     annual_moon_deg: 39.67,
+/// #     by_day: true,
+/// # };
+/// # let year = office_bearers(&charts)?;
+/// // Mars holds the annual lagna's lordship and the Tri-Rashi.
+/// assert_eq!(year.holder(Office::VarshaLagna), Graha::Mars);
+/// assert_eq!(year.holder(Office::TriRashi), Graha::Mars);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -42,6 +63,13 @@ pub enum Office {
 
 impl Office {
     /// All five, in the source's order.
+    ///
+    /// ```
+    /// use teistro_tajika::Office;
+    ///
+    /// assert_eq!(Office::ALL.len(), 5);
+    /// assert_eq!((Office::ALL[0], Office::ALL[4]), (Office::Muntha, Office::DinaRatri));
+    /// ```
     pub const ALL: [Office; 5] = [
         Office::Muntha,
         Office::JanmaLagna,
@@ -56,6 +84,28 @@ impl Office {
 ///
 /// A struct rather than six positional arguments, because four of them
 /// are longitudes and a caller swapping two would get an answer.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Office, YearCharts, office_bearers};
+///
+/// // Charak's worked year: Leo rising at birth, forty years complete, and
+/// // Scorpio rising in the annual chart by day with the Sun in Leo.
+/// let charts = YearCharts {
+///     natal_lagna_deg: 134.6,
+///     completed_years: 40,
+///     annual_lagna_deg: 219.43,
+///     annual_sun_deg: 123.83,
+///     annual_moon_deg: 39.67,
+///     by_day: true,
+/// };
+/// let year = office_bearers(&charts)?;
+/// assert_eq!(year.dina_ratri, Graha::Sun);
+/// // Opened by night, the Moon's sign (Taurus) and Scorpio's night lord answer.
+/// let by_night = office_bearers(&YearCharts { by_day: false, ..charts })?;
+/// assert_eq!((by_night.dina_ratri, by_night.tri_rashi), (Graha::Venus, Graha::Venus));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct YearCharts {
@@ -76,6 +126,29 @@ pub struct YearCharts {
 }
 
 /// The five office-bearers of one year.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{Office, YearCharts, office_bearers};
+/// #
+/// # // Charak's worked year: Leo rising at birth, forty years complete, and
+/// # // Scorpio rising in the annual chart by day with the Sun in Leo.
+/// # let charts = YearCharts {
+/// #     natal_lagna_deg: 134.6,
+/// #     completed_years: 40,
+/// #     annual_lagna_deg: 219.43,
+/// #     annual_sun_deg: 123.83,
+/// #     annual_moon_deg: 39.67,
+/// #     by_day: true,
+/// # };
+/// # let year = office_bearers(&charts)?;
+/// assert_eq!(
+///     (year.muntha, year.janma_lagna, year.varsha_lagna, year.tri_rashi, year.dina_ratri),
+///     (Graha::Jupiter, Graha::Sun, Graha::Mars, Graha::Mars, Graha::Sun)
+/// );
+/// assert!(year.by_day);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct OfficeBearers {
@@ -95,6 +168,26 @@ pub struct OfficeBearers {
 
 impl OfficeBearers {
     /// Who holds one portfolio.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{Office, YearCharts, office_bearers};
+    /// #
+    /// # // Charak's worked year: Leo rising at birth, forty years complete, and
+    /// # // Scorpio rising in the annual chart by day with the Sun in Leo.
+    /// # let charts = YearCharts {
+    /// #     natal_lagna_deg: 134.6,
+    /// #     completed_years: 40,
+    /// #     annual_lagna_deg: 219.43,
+    /// #     annual_sun_deg: 123.83,
+    /// #     annual_moon_deg: 39.67,
+    /// #     by_day: true,
+    /// # };
+    /// # let year = office_bearers(&charts)?;
+    /// assert_eq!(year.holder(Office::Muntha), Graha::Jupiter);
+    /// assert_eq!(year.holder(Office::JanmaLagna), Graha::Sun);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn holder(&self, office: Office) -> Graha {
         match office {
@@ -112,6 +205,27 @@ impl OfficeBearers {
     /// One planet may hold several — the source's own worked year gives
     /// the Sun two and Mars two — and the count is the year lord's
     /// tie-break when strength and aspect cannot decide.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{Office, YearCharts, office_bearers};
+    /// #
+    /// # // Charak's worked year: Leo rising at birth, forty years complete, and
+    /// # // Scorpio rising in the annual chart by day with the Sun in Leo.
+    /// # let charts = YearCharts {
+    /// #     natal_lagna_deg: 134.6,
+    /// #     completed_years: 40,
+    /// #     annual_lagna_deg: 219.43,
+    /// #     annual_sun_deg: 123.83,
+    /// #     annual_moon_deg: 39.67,
+    /// #     by_day: true,
+    /// # };
+    /// # let year = office_bearers(&charts)?;
+    /// assert_eq!(year.portfolios(Graha::Sun), [Office::JanmaLagna, Office::DinaRatri]);
+    /// assert_eq!(year.portfolios(Graha::Jupiter), [Office::Muntha]);
+    /// assert!(year.portfolios(Graha::Saturn).is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn portfolios(&self, graha: Graha) -> Vec<Office> {
         Office::ALL
@@ -125,6 +239,26 @@ impl OfficeBearers {
     ///
     /// These are the **claimants** to the year's lordship: between one
     /// and five of them.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{Office, YearCharts, office_bearers};
+    /// #
+    /// # // Charak's worked year: Leo rising at birth, forty years complete, and
+    /// # // Scorpio rising in the annual chart by day with the Sun in Leo.
+    /// # let charts = YearCharts {
+    /// #     natal_lagna_deg: 134.6,
+    /// #     completed_years: 40,
+    /// #     annual_lagna_deg: 219.43,
+    /// #     annual_sun_deg: 123.83,
+    /// #     annual_moon_deg: 39.67,
+    /// #     by_day: true,
+    /// # };
+    /// # let year = office_bearers(&charts)?;
+    /// // Five portfolios, three planets: Jupiter first, as the Muntha's lord.
+    /// assert_eq!(year.claimants(), [Graha::Jupiter, Graha::Sun, Graha::Mars]);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn claimants(&self) -> Vec<Graha> {
         let mut out: Vec<Graha> = Vec::with_capacity(5);
@@ -172,6 +306,18 @@ const fn triplicity(element: Tatwa) -> Option<Triplicity> {
 /// takes them the other way round, and the **third** takes the
 /// participating lord by day and by night alike. The rule ships and the
 /// printed table is its test, which is the only way either can fail.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_tajika::tri_rashi_lord;
+///
+/// // The fire signs: Aries takes the day and night lords in order, Leo the
+/// // other way round, and Sagittarius the participating lord by day and night.
+/// assert_eq!((tri_rashi_lord(Rashi::Aries, true), tri_rashi_lord(Rashi::Aries, false)), (Graha::Sun, Graha::Jupiter));
+/// assert_eq!((tri_rashi_lord(Rashi::Leo, true), tri_rashi_lord(Rashi::Leo, false)), (Graha::Jupiter, Graha::Sun));
+/// assert_eq!(tri_rashi_lord(Rashi::Sagittarius, true), Graha::Saturn);
+/// assert_eq!(tri_rashi_lord(Rashi::Sagittarius, false), Graha::Saturn);
+/// ```
 #[must_use]
 pub fn tri_rashi_lord(lagna: Rashi, by_day: bool) -> Graha {
     // Every sign has one of the four elements a triplicity has, which a

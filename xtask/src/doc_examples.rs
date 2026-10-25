@@ -54,6 +54,7 @@ const EXAMPLED: &[&str] = &[
     "teistro-siddhanta",
     "teistro-state",
     "teistro-strength",
+    "teistro-tajika",
     "teistro-time",
     "teistro-vargas",
     "teistro-western",

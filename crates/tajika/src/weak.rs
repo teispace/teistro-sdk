@@ -43,6 +43,28 @@ use crate::yoga::MALEFICS;
 const NAVAMSHA_DEG: f64 = 30.0 / 9.0;
 
 /// What the Sun's setting part is (crux C377).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{AnnualSky, GrahaClause, SettingPart, WeaknessRules, graha_weakness};
+///
+/// // The Sun at Cancer 10°, in the Aries navamsha's opposite: Venus at Leo 1°
+/// // stands in the very navamsha seven on, the Moon at Aries 1° only in a
+/// // navamsha of the seventh sign from the Sun's.
+/// let sky = AnnualSky {
+///     sun_deg: 100.0, moon_deg: 1.0, mars_deg: 300.0, mercury_deg: 110.0,
+///     jupiter_deg: 45.0, venus_deg: 121.0, saturn_deg: 190.0,
+/// };
+/// let setting = |graha, setting| -> Result<bool, teistro_core::error::Error> {
+///     let weak = graha_weakness(graha, 10.0, &sky, WeaknessRules { setting })?;
+///     Ok(weak.clauses.contains(&GrahaClause::SettingPart))
+/// };
+///
+/// assert!(setting(Graha::Venus, SettingPart::NavamshaSign)? && setting(Graha::Venus, SettingPart::NavamshaArc)?);
+/// assert!(setting(Graha::Moon, SettingPart::NavamshaSign)?);
+/// assert!(!setting(Graha::Moon, SettingPart::NavamshaArc)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -60,6 +82,14 @@ pub enum SettingPart {
 impl SettingPart {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `NAVAMSHA_SIGN`.
+    ///
+    /// ```
+    /// use teistro_tajika::SettingPart;
+    ///
+    /// assert_eq!(SettingPart::NavamshaArc.key(), "NAVAMSHA_ARC");
+    /// assert_eq!(serde_json::to_string(&SettingPart::default())?, "\"NAVAMSHA_SIGN\"");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -90,6 +120,12 @@ impl SettingPart {
 }
 
 /// The readings v. 72 leaves to a reader.
+///
+/// ```
+/// use teistro_tajika::{SettingPart, WeaknessRules};
+///
+/// assert_eq!(WeaknessRules::default().setting, SettingPart::NavamshaSign);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -99,6 +135,27 @@ pub struct WeaknessRules {
 }
 
 /// A clause of v. 72, in the verse's order.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{AnnualSky, GrahaClause, SettingPart, WeaknessRules, graha_weakness};
+///
+/// // The Sun at Cancer 10°, in the Aries navamsha's opposite: Venus at Leo 1°
+/// // stands in the very navamsha seven on, the Moon at Aries 1° only in a
+/// // navamsha of the seventh sign from the Sun's.
+/// let sky = AnnualSky {
+///     sun_deg: 100.0, moon_deg: 1.0, mars_deg: 300.0, mercury_deg: 110.0,
+///     jupiter_deg: 45.0, venus_deg: 121.0, saturn_deg: 190.0,
+/// };
+/// let setting = |graha, setting| -> Result<bool, teistro_core::error::Error> {
+///     let weak = graha_weakness(graha, 10.0, &sky, WeaknessRules { setting })?;
+///     Ok(weak.clauses.contains(&GrahaClause::SettingPart))
+/// };
+///
+/// // The Sun never stands in his own setting part.
+/// assert!(!setting(Graha::Sun, SettingPart::NavamshaSign)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "TajikaGrahaClause"))]
@@ -119,6 +176,12 @@ pub enum GrahaClause {
 impl GrahaClause {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `UNSEEN_LAGNA`.
+    ///
+    /// ```
+    /// use teistro_tajika::GrahaClause;
+    ///
+    /// assert_eq!(GrahaClause::MaleficIshrafa.key(), "MALEFIC_ISHRAFA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -130,6 +193,12 @@ impl GrahaClause {
     }
 
     /// Every clause, in the verse's order.
+    ///
+    /// ```
+    /// use teistro_tajika::GrahaClause;
+    ///
+    /// assert_eq!(GrahaClause::ALL.map(GrahaClause::key), ["UNSEEN_LAGNA", "SETTING_PART", "OFFICELESS", "MALEFIC_ISHRAFA"]);
+    /// ```
     pub const ALL: [GrahaClause; 4] = [
         GrahaClause::UnseenLagna,
         GrahaClause::SettingPart,
@@ -139,6 +208,30 @@ impl GrahaClause {
 }
 
 /// The clauses of v. 72 that hold for one graha.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{AnnualSky, GrahaClause, SettingPart, WeaknessRules, graha_weakness};
+///
+/// // The Sun at Cancer 10°, in the Aries navamsha's opposite: Venus at Leo 1°
+/// // stands in the very navamsha seven on, the Moon at Aries 1° only in a
+/// // navamsha of the seventh sign from the Sun's.
+/// let sky = AnnualSky {
+///     sun_deg: 100.0, moon_deg: 1.0, mars_deg: 300.0, mercury_deg: 110.0,
+///     jupiter_deg: 45.0, venus_deg: 121.0, saturn_deg: 190.0,
+/// };
+/// let setting = |graha, setting| -> Result<bool, teistro_core::error::Error> {
+///     let weak = graha_weakness(graha, 10.0, &sky, WeaknessRules { setting })?;
+///     Ok(weak.clauses.contains(&GrahaClause::SettingPart))
+/// };
+///
+/// let venus = graha_weakness(Graha::Venus, 10.0, &sky, WeaknessRules::default())?;
+/// assert_eq!(venus.graha, Graha::Venus);
+/// // Clauses come in the verse's order.
+/// let order = |clause| GrahaClause::ALL.iter().position(|one| *one == clause);
+/// assert!(venus.clauses.windows(2).all(|pair| order(pair[0]) < order(pair[1])));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -151,6 +244,28 @@ pub struct GrahaWeakness {
 
 /// The clauses of v. 72 that hold for `graha`, one of the seven, with the
 /// lagna at `lagna_deg`.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{AnnualSky, GrahaClause, SettingPart, WeaknessRules, graha_weakness};
+///
+/// // The Sun at Cancer 10°, in the Aries navamsha's opposite: Venus at Leo 1°
+/// // stands in the very navamsha seven on, the Moon at Aries 1° only in a
+/// // navamsha of the seventh sign from the Sun's.
+/// let sky = AnnualSky {
+///     sun_deg: 100.0, moon_deg: 1.0, mars_deg: 300.0, mercury_deg: 110.0,
+///     jupiter_deg: 45.0, venus_deg: 121.0, saturn_deg: 190.0,
+/// };
+/// let setting = |graha, setting| -> Result<bool, teistro_core::error::Error> {
+///     let weak = graha_weakness(graha, 10.0, &sky, WeaknessRules { setting })?;
+///     Ok(weak.clauses.contains(&GrahaClause::SettingPart))
+/// };
+///
+/// assert!(setting(Graha::Venus, SettingPart::default())?);
+/// assert_eq!(graha_weakness(Graha::Rahu, 10.0, &sky, WeaknessRules::default()).unwrap_err().field(), Some("graha"));
+/// assert_eq!(graha_weakness(Graha::Venus, f64::NAN, &sky, WeaknessRules::default()).unwrap_err().field(), Some("lagna_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -202,6 +317,30 @@ pub fn graha_weakness(
 }
 
 /// [`graha_weakness`] for each of the seven, the Sun first.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{AnnualSky, GrahaClause, SettingPart, WeaknessRules, graha_weakness};
+///
+/// // The Sun at Cancer 10°, in the Aries navamsha's opposite: Venus at Leo 1°
+/// // stands in the very navamsha seven on, the Moon at Aries 1° only in a
+/// // navamsha of the seventh sign from the Sun's.
+/// let sky = AnnualSky {
+///     sun_deg: 100.0, moon_deg: 1.0, mars_deg: 300.0, mercury_deg: 110.0,
+///     jupiter_deg: 45.0, venus_deg: 121.0, saturn_deg: 190.0,
+/// };
+/// let setting = |graha, setting| -> Result<bool, teistro_core::error::Error> {
+///     let weak = graha_weakness(graha, 10.0, &sky, WeaknessRules { setting })?;
+///     Ok(weak.clauses.contains(&GrahaClause::SettingPart))
+/// };
+/// use teistro_tajika::weaknesses;
+///
+/// let all = weaknesses(10.0, &sky, WeaknessRules::default())?;
+/// assert_eq!(all.len(), 7);
+/// assert_eq!(all[0].graha, Graha::Sun);
+/// assert!(!all[0].clauses.contains(&GrahaClause::SettingPart));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

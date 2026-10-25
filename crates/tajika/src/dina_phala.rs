@@ -44,6 +44,40 @@ use crate::yoga::Strength;
 
 /// The Moon's twelve states in a sign, 2°30′ each, in the gloss's order
 /// (vv. 31–33).
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let lords = DayLords {
+/// #     dinesha: Graha::Saturn,
+/// #     varshesha: Graha::Sun,
+/// #     masesha: Graha::Mars,
+/// #     muntha: Graha::Jupiter,
+/// # };
+/// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+/// # let day = read(&sky)?;
+///
+/// use teistro_tajika::MoonState;
+///
+/// // The Moon at Taurus 9°40′ has passed three states: the fourth, Jaya.
+/// assert_eq!(day.moon_state, MoonState::Jaya);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -76,6 +110,15 @@ pub enum MoonState {
 
 impl MoonState {
     /// All twelve, in the gloss's order.
+    ///
+    /// ```
+    /// use teistro_tajika::MoonState;
+    ///
+    /// // Each holds 2°30′ of a sign.
+    /// for (passed, state) in MoonState::ALL.into_iter().enumerate() {
+    ///     assert_eq!(MoonState::of_longitude(2.5 * passed as f64 + 1.0), state);
+    /// }
+    /// ```
     pub const ALL: [MoonState; 12] = [
         MoonState::Pravasa,
         MoonState::Nashta,
@@ -92,6 +135,12 @@ impl MoonState {
     ];
 
     /// The member's key, as serde writes it: `PRAVASA`.
+    ///
+    /// ```
+    /// use teistro_tajika::MoonState;
+    ///
+    /// assert_eq!(MoonState::Susthita.key(), "SUSTHITA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -113,6 +162,15 @@ impl MoonState {
     /// The state a Moon at `longitude_deg` is in: v. 31's degrees within
     /// the sign doubled and divided by five give the states passed, and
     /// the next is hers.
+    ///
+    /// ```
+    /// use teistro_tajika::MoonState;
+    ///
+    /// assert_eq!(MoonState::of_longitude(0.0), MoonState::Pravasa);
+    /// // Only the degrees within the sign count.
+    /// assert_eq!(MoonState::of_longitude(359.9), MoonState::Susthita);
+    /// assert_eq!(MoonState::of_longitude(-0.1), MoonState::of_longitude(359.9));
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_possible_truncation,
@@ -129,6 +187,40 @@ impl MoonState {
 }
 
 /// The day's lords v. 19 judges, in its order.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let lords = DayLords {
+/// #     dinesha: Graha::Saturn,
+/// #     varshesha: Graha::Sun,
+/// #     masesha: Graha::Mars,
+/// #     muntha: Graha::Jupiter,
+/// # };
+/// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+/// # let day = read(&sky)?;
+///
+/// use teistro_tajika::DayLord;
+///
+/// let offices: Vec<DayLord> = day.lords.iter().map(|lord| lord.office).collect();
+/// assert_eq!(offices, DayLord::ALL);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -145,6 +237,12 @@ pub enum DayLord {
 
 impl DayLord {
     /// All four, in the verse's order.
+    ///
+    /// ```
+    /// use teistro_tajika::DayLord;
+    ///
+    /// assert_eq!((DayLord::ALL[0], DayLord::ALL[3]), (DayLord::Dinesha, DayLord::Muntha));
+    /// ```
     pub const ALL: [DayLord; 4] = [
         DayLord::Dinesha,
         DayLord::Varshesha,
@@ -153,6 +251,12 @@ impl DayLord {
     ];
 
     /// The member's key, as serde writes it: `DINESHA`.
+    ///
+    /// ```
+    /// use teistro_tajika::DayLord;
+    ///
+    /// assert_eq!(DayLord::Varshesha.key(), "VARSHESHA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -165,6 +269,40 @@ impl DayLord {
 }
 
 /// Who holds each of v. 19's four offices this day.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let lords = DayLords {
+/// #     dinesha: Graha::Saturn,
+/// #     varshesha: Graha::Sun,
+/// #     masesha: Graha::Mars,
+/// #     muntha: Graha::Jupiter,
+/// # };
+/// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+/// # let day = read(&sky)?;
+///
+/// // A lord outside the seven is refused by its office.
+/// let nodal = DayLords { masesha: Graha::Rahu, ..lords };
+/// let refused = dina_phala(lagna, &sky, &AnnualStates::default(), &nodal, MasaPhalaRules::default()).unwrap_err();
+/// assert_eq!(refused.field(), Some("lords.masesha"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -181,6 +319,15 @@ pub struct DayLords {
 
 impl DayLords {
     /// Who holds one office.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::{DayLord, DayLords};
+    ///
+    /// let lords = DayLords { dinesha: Graha::Saturn, varshesha: Graha::Sun, masesha: Graha::Mars, muntha: Graha::Jupiter };
+    /// assert_eq!(lords.holder(DayLord::Masesha), Graha::Mars);
+    /// assert_eq!(DayLord::ALL.map(|office| lords.holder(office))[0], Graha::Saturn);
+    /// ```
     #[must_use]
     pub const fn holder(&self, office: DayLord) -> Graha {
         match office {
@@ -195,6 +342,43 @@ impl DayLords {
 /// Where one of the day's lords stands, with the clauses of the month's
 /// lords: v. 19 reads `TRIKA`, `WITH_MALEFIC`, `MALEFIC_INIMICAL` and
 /// `WELL_PLACED` of them.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let lords = DayLords {
+/// #     dinesha: Graha::Saturn,
+/// #     varshesha: Graha::Sun,
+/// #     masesha: Graha::Mars,
+/// #     muntha: Graha::Jupiter,
+/// # };
+/// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+/// # let day = read(&sky)?;
+///
+/// use teistro_core::house::House;
+/// use teistro_tajika::LordClause;
+///
+/// // The year's lord, the Sun, in Leo: the tenth from Scorpio.
+/// let sun = &day.lords[1];
+/// assert_eq!((sun.graha, sun.house), (Graha::Sun, House::try_new(10)?));
+/// assert!(sun.clauses.contains(&LordClause::WellPlaced));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -212,6 +396,40 @@ pub struct DayLordPlace {
 impl DayLordPlace {
     /// Whether v. 19's ill holds: in the 6th, 8th or 12th with a malefic,
     /// or aspected by one inimically, as the gloss reads "joined".
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+    /// #
+    /// # let lagna = at(7.0, 9.0, 26.0);
+    /// # let lords = DayLords {
+    /// #     dinesha: Graha::Saturn,
+    /// #     varshesha: Graha::Sun,
+    /// #     masesha: Graha::Mars,
+    /// #     muntha: Graha::Jupiter,
+    /// # };
+    /// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+    /// # let day = read(&sky)?;
+    ///
+    /// // Saturn in Libra, the twelfth, alone and unharmed; Mars beside him afflicts him.
+    /// assert!(!day.lords[0].afflicted());
+    /// let joined = AnnualSky { mars_deg: at(6.0, 2.0, 0.0), ..sky };
+    /// assert!(read(&joined)?.lords[0].afflicted());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn afflicted(&self) -> bool {
         self.clauses.contains(&LordClause::Trika)
@@ -220,6 +438,39 @@ impl DayLordPlace {
     }
 
     /// Whether v. 19's good holds: in a kendra, a trikona or the 11th.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+    /// #
+    /// # let lagna = at(7.0, 9.0, 26.0);
+    /// # let lords = DayLords {
+    /// #     dinesha: Graha::Saturn,
+    /// #     varshesha: Graha::Sun,
+    /// #     masesha: Graha::Mars,
+    /// #     muntha: Graha::Jupiter,
+    /// # };
+    /// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+    /// # let day = read(&sky)?;
+    ///
+    /// // The Sun in the tenth prospers; Saturn in the twelfth does not.
+    /// assert!(day.lords[1].prospers());
+    /// assert!(!day.lords[0].prospers());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn prospers(&self) -> bool {
         self.clauses.contains(&LordClause::WellPlaced)
@@ -228,6 +479,42 @@ impl DayLordPlace {
 
 /// A clause of vv. 20–21 about one house's navamsha lord, in the verses'
 /// order.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let lords = DayLords {
+/// #     dinesha: Graha::Saturn,
+/// #     varshesha: Graha::Sun,
+/// #     masesha: Graha::Mars,
+/// #     muntha: Graha::Jupiter,
+/// # };
+/// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+/// # let day = read(&sky)?;
+///
+/// use teistro_tajika::DayHouseClause;
+///
+/// // Every clause any house holds is one of the verses'.
+/// for house in &day.houses {
+///     assert!(house.clauses.iter().all(|clause| DayHouseClause::ALL.contains(clause)));
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -247,6 +534,12 @@ pub enum DayHouseClause {
 
 impl DayHouseClause {
     /// Every clause, in the verses' order.
+    ///
+    /// ```
+    /// use teistro_tajika::DayHouseClause;
+    ///
+    /// assert_eq!(DayHouseClause::ALL[2], DayHouseClause::MoonFriendly);
+    /// ```
     pub const ALL: [DayHouseClause; 5] = [
         DayHouseClause::WithBenefic,
         DayHouseClause::BeneficFriendly,
@@ -256,6 +549,12 @@ impl DayHouseClause {
     ];
 
     /// The member's key, as serde writes it: `WITH_BENEFIC`.
+    ///
+    /// ```
+    /// use teistro_tajika::DayHouseClause;
+    ///
+    /// assert_eq!(DayHouseClause::MaleficInimical.key(), "MALEFIC_INIMICAL");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -269,6 +568,42 @@ impl DayHouseClause {
 }
 
 /// One house of the day, read through its navamsha lord.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let lords = DayLords {
+/// #     dinesha: Graha::Saturn,
+/// #     varshesha: Graha::Sun,
+/// #     masesha: Graha::Mars,
+/// #     muntha: Graha::Jupiter,
+/// # };
+/// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+/// # let day = read(&sky)?;
+///
+/// use teistro_core::house::House;
+///
+/// // The first house's point is the lagna, Scorpio 9°26′, in Virgo's navamsha.
+/// let first = &day.houses[0];
+/// assert_eq!((first.house, first.amsha_lord), (House::try_new(1)?, Graha::Mercury));
+/// assert_eq!(day.houses.len(), 12);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -284,6 +619,42 @@ pub struct DayHouse {
 
 /// A clause of vv. 18 and 26–29 about the day's chart as a whole, in the
 /// verses' order.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let lords = DayLords {
+/// #     dinesha: Graha::Saturn,
+/// #     varshesha: Graha::Sun,
+/// #     masesha: Graha::Mars,
+/// #     muntha: Graha::Jupiter,
+/// # };
+/// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+/// # let day = read(&sky)?;
+///
+/// use teistro_tajika::DayClause;
+///
+/// // Jupiter carried into Cancer, the ninth from Scorpio.
+/// assert!(!day.clauses.contains(&DayClause::BeneficNinth));
+/// let ninth = AnnualSky { jupiter_deg: at(3.0, 10.0, 0.0), ..sky };
+/// assert!(read(&ninth)?.clauses.contains(&DayClause::BeneficNinth));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -324,6 +695,14 @@ pub enum DayClause {
 
 impl DayClause {
     /// Every clause, in the verses' order.
+    ///
+    /// ```
+    /// use teistro_tajika::DayClause;
+    ///
+    /// // v. 18's four first, v. 29's three last.
+    /// assert_eq!(DayClause::ALL[0], DayClause::BeneficsWellPlacedFromLagna);
+    /// assert_eq!(DayClause::ALL[13], DayClause::BeneficNinth);
+    /// ```
     pub const ALL: [DayClause; 14] = [
         DayClause::BeneficsWellPlacedFromLagna,
         DayClause::BeneficsWellPlacedFromMoon,
@@ -342,6 +721,12 @@ impl DayClause {
     ];
 
     /// The member's key, as serde writes it: `PAPA_KARTARI`.
+    ///
+    /// ```
+    /// use teistro_tajika::DayClause;
+    ///
+    /// assert_eq!(DayClause::ShubhaKartari.key(), "SHUBHA_KARTARI");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -365,6 +750,39 @@ impl DayClause {
 
 /// The day's results: the Moon's state, the twelve houses, the four lords
 /// and the clauses about the chart as a whole.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let lords = DayLords {
+/// #     dinesha: Graha::Saturn,
+/// #     varshesha: Graha::Sun,
+/// #     masesha: Graha::Mars,
+/// #     muntha: Graha::Jupiter,
+/// # };
+/// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+/// # let day = read(&sky)?;
+///
+/// assert_eq!((day.houses.len(), day.lords.len()), (12, 4));
+/// // The clauses hold in the verses' order.
+/// assert!(day.clauses.windows(2).all(|pair| pair[0] < pair[1]));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -383,6 +801,38 @@ pub struct DinaPhala {
 /// The day's results from its chart: `day_lagna_deg` and `sky` are the
 /// day chart's, `states` its combust and retrograde planets, `lords` who
 /// holds v. 19's offices this day.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualStates, DayLords, MasaPhalaRules, dina_phala};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let lords = DayLords {
+/// #     dinesha: Graha::Saturn,
+/// #     varshesha: Graha::Sun,
+/// #     masesha: Graha::Mars,
+/// #     muntha: Graha::Jupiter,
+/// # };
+/// # let read = |sky: &AnnualSky| dina_phala(lagna, sky, &AnnualStates::default(), &lords, MasaPhalaRules::default());
+/// # let day = read(&sky)?;
+///
+/// let refused = dina_phala(f64::NAN, &sky, &AnnualStates::default(), &lords, MasaPhalaRules::default()).unwrap_err();
+/// assert_eq!(refused.field(), Some("day_lagna_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

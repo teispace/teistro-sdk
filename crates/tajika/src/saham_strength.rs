@@ -36,6 +36,16 @@ use crate::saham::{Saham, SahamPlace, SahamRules, SahamSky, sahams};
 use crate::yoga::{BENEFICS, qualification};
 
 /// Which planets a saham's clauses call benefic and malefic.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::SahamNatures;
+///
+/// // The chapter counts Mercury a benefic; Parashara's catalogue calls him neither.
+/// assert!(SahamNatures::Chapter.is_benefic(Graha::Mercury));
+/// let parashari = SahamNatures::Parashari;
+/// assert!(!parashari.is_benefic(Graha::Mercury) && !parashari.is_malefic(Graha::Mercury));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -53,6 +63,15 @@ pub enum SahamNatures {
 
 impl SahamNatures {
     /// Whether `graha` is a benefic under this reading.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::SahamNatures;
+    ///
+    /// assert!(SahamNatures::Chapter.is_benefic(Graha::Jupiter));
+    /// assert!(SahamNatures::Parashari.is_benefic(Graha::Jupiter));
+    /// assert!(!SahamNatures::Chapter.is_benefic(Graha::Rahu));
+    /// ```
     #[must_use]
     pub fn is_benefic(self, graha: Graha) -> bool {
         match self {
@@ -62,6 +81,15 @@ impl SahamNatures {
     }
 
     /// Whether `graha` is a malefic under this reading.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::SahamNatures;
+    ///
+    /// // The chapter's forty-seventh year calls the Sun "another malefic".
+    /// assert!(SahamNatures::Chapter.is_malefic(Graha::Sun));
+    /// assert!(SahamNatures::Parashari.is_malefic(Graha::Saturn));
+    /// ```
     #[must_use]
     pub fn is_malefic(self, graha: Graha) -> bool {
         match self {
@@ -76,6 +104,38 @@ fn nature(graha: Graha) -> Option<Nature> {
 }
 
 /// Whose friendship the "friend" and "inimical planet" clauses read.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// # let punya = saham_strength(&chart, &[Saham::Punya], Some(Graha::Sun), SahamStrengthRules::default())?[0];
+///
+/// use teistro_tajika::{Friendship, Relation};
+///
+/// // Mercury shares the Sun's sign: an enemy by position, a neutral by nature.
+/// assert_eq!(punya.relations[3], Relation::Enemy);
+/// let natural = SahamStrengthRules { friendship: Friendship::Natural, ..SahamStrengthRules::default() };
+/// let by_nature = saham_strength(&chart, &[Saham::Punya], None, natural)?[0];
+/// assert_eq!(by_nature.relations[3], Relation::Neutral);
+/// assert_eq!(by_nature.relations[0], Relation::Own);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "SahamFriendship"))]
@@ -115,6 +175,14 @@ impl Friendship {
 }
 
 /// The readings a saham's strength is judged under.
+///
+/// ```
+/// use teistro_tajika::{Bala, SahamNatures, SahamStrengthRules};
+///
+/// let rules = SahamStrengthRules::default();
+/// assert_eq!(rules.weak_below, Bala::new(5, 0, 0));
+/// assert_eq!(rules.natures, SahamNatures::Chapter);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase")]
@@ -146,6 +214,37 @@ impl Default for SahamStrengthRules {
 
 /// One saham's strength: every clause of the source's two lists, and the
 /// facts they were read from.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// # let punya = saham_strength(&chart, &[Saham::Punya], Some(Graha::Sun), SahamStrengthRules::default())?[0];
+///
+/// use teistro_tajika::Drishti;
+///
+/// assert_eq!((punya.saham, punya.place.lord), (Saham::Punya, Graha::Sun));
+/// // The Sun, Mercury and Venus keep it company, in the catalogue's order.
+/// assert_eq!(punya.company, [true, false, false, true, false, true, false]);
+/// assert_eq!(punya.aspects[0], Drishti::Inimical);
+/// assert!(punya.lord_conjoins && punya.with_benefic && punya.with_year_lord);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[expect(
@@ -214,6 +313,34 @@ pub struct SahamStrength {
 }
 
 /// A clause of the source's **strong** list (ch. XI, 1 A), in its order.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// # let punya = saham_strength(&chart, &[Saham::Punya], Some(Graha::Sun), SahamStrengthRules::default())?[0];
+///
+/// use teistro_tajika::StrongClause;
+///
+/// assert!(punya.holds_strong(StrongClause::LordConjoins));
+/// assert!(punya.holds_strong(StrongClause::WithBenefic));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -247,6 +374,12 @@ pub enum StrongClause {
 impl StrongClause {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `LORD_EXALTED`.
+    ///
+    /// ```
+    /// use teistro_tajika::StrongClause;
+    ///
+    /// assert_eq!(StrongClause::WithYearLord.key(), "WITH_YEAR_LORD");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -266,6 +399,14 @@ impl StrongClause {
     }
 
     /// Every clause, in the source's order.
+    ///
+    /// ```
+    /// use teistro_tajika::StrongClause;
+    ///
+    /// // The three (a) to (c) groups, the lord's dignity first.
+    /// assert_eq!(StrongClause::ALL[0], StrongClause::LordExalted);
+    /// assert_eq!(StrongClause::ALL[11], StrongClause::LordAspectsLagna);
+    /// ```
     pub const ALL: [StrongClause; 12] = [
         StrongClause::LordExalted,
         StrongClause::LordOwnSign,
@@ -282,6 +423,12 @@ impl StrongClause {
     ];
 
     /// The clause in words.
+    ///
+    /// ```
+    /// use teistro_tajika::StrongClause;
+    ///
+    /// assert_eq!(StrongClause::LordConjoins.name(), "its lord conjoins it");
+    /// ```
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
@@ -302,6 +449,35 @@ impl StrongClause {
 }
 
 /// A clause of the source's **weak** list (ch. XI, 2), in its order.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// # let punya = saham_strength(&chart, &[Saham::Punya], Some(Graha::Sun), SahamStrengthRules::default())?[0];
+///
+/// use teistro_tajika::WeakClause;
+///
+/// // Its lord is in its sign, so it is not apart; its company holds enemies of the Sun.
+/// assert!(!punya.holds_weak(WeakClause::LordApart));
+/// assert!(punya.holds_weak(WeakClause::WithEnemy));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -321,6 +497,12 @@ pub enum WeakClause {
 impl WeakClause {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `LORD_WEAK_VISHWA`.
+    ///
+    /// ```
+    /// use teistro_tajika::WeakClause;
+    ///
+    /// assert_eq!(WeakClause::LordApart.key(), "LORD_APART");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -333,6 +515,12 @@ impl WeakClause {
     }
 
     /// Every clause, in the source's order.
+    ///
+    /// ```
+    /// use teistro_tajika::WeakClause;
+    ///
+    /// assert_eq!((WeakClause::ALL[0], WeakClause::ALL[4]), (WeakClause::LordWeakVishwa, WeakClause::WithMalefic));
+    /// ```
     pub const ALL: [WeakClause; 5] = [
         WeakClause::LordWeakVishwa,
         WeakClause::LordLacksHarsha,
@@ -342,6 +530,12 @@ impl WeakClause {
     ];
 
     /// The clause in words.
+    ///
+    /// ```
+    /// use teistro_tajika::WeakClause;
+    ///
+    /// assert_eq!(WeakClause::WithEnemy.name(), "it is with an enemy of its lord");
+    /// ```
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
@@ -356,6 +550,36 @@ impl WeakClause {
 
 impl SahamStrength {
     /// Whether one clause of the strong list holds.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+    /// #
+    /// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+    ///
+    /// # let punya = saham_strength(&chart, &[Saham::Punya], Some(Graha::Sun), SahamStrengthRules::default())?[0];
+    ///
+    /// use teistro_tajika::StrongClause;
+    ///
+    /// // A birth chart has no year lord, so the clause never holds there.
+    /// assert!(punya.holds_strong(StrongClause::WithYearLord));
+    /// let natal = saham_strength(&chart, &[Saham::Punya], None, SahamStrengthRules::default())?[0];
+    /// assert!(!natal.holds_strong(StrongClause::WithYearLord));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn holds_strong(&self, clause: StrongClause) -> bool {
         match clause {
@@ -375,6 +599,36 @@ impl SahamStrength {
     }
 
     /// Whether one clause of the weak list holds.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+    /// #
+    /// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+    ///
+    /// # let punya = saham_strength(&chart, &[Saham::Punya], Some(Graha::Sun), SahamStrengthRules::default())?[0];
+    ///
+    /// use teistro_tajika::WeakClause;
+    ///
+    /// // "Apart" is read from the two strong clauses, not a field of its own.
+    /// let apart = !punya.lord_conjoins && !punya.lord_aspects_saham;
+    /// assert_eq!(punya.holds_weak(WeakClause::LordApart), apart);
+    /// assert_eq!(punya.holds_weak(WeakClause::WithMalefic), punya.with_malefic);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn holds_weak(&self, clause: WeakClause) -> bool {
         match clause {
@@ -388,6 +642,35 @@ impl SahamStrength {
 
     /// The source's strong list, in its order, each clause and whether it
     /// holds.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+    /// #
+    /// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+    ///
+    /// # let punya = saham_strength(&chart, &[Saham::Punya], Some(Graha::Sun), SahamStrengthRules::default())?[0];
+    ///
+    /// use teistro_tajika::StrongClause;
+    ///
+    /// let strong = punya.strong();
+    /// assert_eq!(strong[9], (StrongClause::LordConjoins, true));
+    /// assert!(strong.iter().filter(|(_, holds)| *holds).count() >= 3);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn strong(&self) -> [(StrongClause, bool); 12] {
         StrongClause::ALL.map(|clause| (clause, self.holds_strong(clause)))
@@ -395,6 +678,34 @@ impl SahamStrength {
 
     /// The source's weak list, in its order, each clause and whether it
     /// holds.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+    /// #
+    /// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+    ///
+    /// # let punya = saham_strength(&chart, &[Saham::Punya], Some(Graha::Sun), SahamStrengthRules::default())?[0];
+    ///
+    /// use teistro_tajika::WeakClause;
+    ///
+    /// let clauses = punya.weak().map(|(clause, _)| clause);
+    /// assert_eq!(clauses, WeakClause::ALL);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn weak(&self) -> [(WeakClause, bool); 5] {
         WeakClause::ALL.map(|clause| (clause, self.holds_weak(clause)))
@@ -402,6 +713,34 @@ impl SahamStrength {
 
     /// In the 6th, 8th or 12th, where the source says a saham "is
     /// handicapped, and generally gives adverse results".
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+    /// #
+    /// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+    ///
+    /// // Punya in the tenth is not; whichever fell in a dusthana is.
+    /// let every = saham_strength(&chart, &Saham::ALL, None, SahamStrengthRules::default())?;
+    /// assert!(!every[Saham::Punya.index()].is_handicapped());
+    /// for one in &every {
+    ///     assert_eq!(one.is_handicapped(), [6, 8, 12].contains(&one.place.house.get()));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_handicapped(&self) -> bool {
         matches!(self.place.house.get(), 6 | 8 | 12)
@@ -413,6 +752,30 @@ impl SahamStrength {
 ///
 /// `year_lord` is `None` for a birth chart, which has none; the year-lord
 /// clause then never holds.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{Saham, SahamSky, SahamStrengthRules, saham_strength};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// let refused = saham_strength(&chart, &[Saham::Punya], Some(Graha::Rahu), SahamStrengthRules::default()).unwrap_err();
+/// assert_eq!(refused.field(), Some("year_lord"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

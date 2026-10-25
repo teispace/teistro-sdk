@@ -24,12 +24,126 @@ use teistro_port_ephemeris::Body;
 use crate::varsha::{Natal, Pravesha, Reading, SIDEREAL_YEAR_DAYS};
 
 /// The months a year divides into, the Sun a sign further each.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::sidereal::Zodiac;
+/// # use teistro_astro::Completion;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let tropical = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(Ayanamsha::Lahiri.into()),
+/// #     basis: Basis::True,
+/// #     precession: PrecessionModel::default(),
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # use teistro_tajika::{Reading, masa_praveshas, praveshas};
+/// #
+/// # let first = praveshas(&tropical, zodiac, &natal, Reading::Sidereal, 1)?[0];
+/// # let months = masa_praveshas(&tropical, zodiac, &natal, &first)?;
+/// use teistro_tajika::MONTHS;
+///
+/// assert_eq!(months.len(), usize::from(MONTHS));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const MONTHS: u8 = 12;
 
 /// The days a month divides into, the Sun a degree further each.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::sidereal::Zodiac;
+/// # use teistro_astro::Completion;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let tropical = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(Ayanamsha::Lahiri.into()),
+/// #     basis: Basis::True,
+/// #     precession: PrecessionModel::default(),
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # use teistro_tajika::{Reading, masa_praveshas, praveshas};
+/// #
+/// # let first = praveshas(&tropical, zodiac, &natal, Reading::Sidereal, 1)?[0];
+/// # let months = masa_praveshas(&tropical, zodiac, &natal, &first)?;
+/// use teistro_tajika::{DAYS, dina_praveshas};
+///
+/// let days = dina_praveshas(&tropical, zodiac, Reading::Sidereal, &months[0])?;
+/// assert_eq!(days.len(), usize::from(DAYS));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const DAYS: u8 = 30;
 
 /// One month's chart's instant.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::sidereal::Zodiac;
+/// # use teistro_astro::Completion;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let tropical = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(Ayanamsha::Lahiri.into()),
+/// #     basis: Basis::True,
+/// #     precession: PrecessionModel::default(),
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # use teistro_tajika::{Reading, masa_praveshas, praveshas};
+/// #
+/// # let first = praveshas(&tropical, zodiac, &natal, Reading::Sidereal, 1)?[0];
+/// # let months = masa_praveshas(&tropical, zodiac, &natal, &first)?;
+/// // The second month opens with the Sun a sign on from the annual Sun.
+/// let second = months[1];
+/// assert_eq!((second.year, second.month), (1, 2));
+/// assert!((second.sun_deg - (months[0].sun_deg + 30.0)).abs() < 1e-9);
+/// assert!((28.0..32.0).contains(&(second.at.get() - months[0].at.get())));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -46,6 +160,47 @@ pub struct MasaPravesha {
 }
 
 /// One day's chart's instant.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::sidereal::Zodiac;
+/// # use teistro_astro::Completion;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let tropical = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(Ayanamsha::Lahiri.into()),
+/// #     basis: Basis::True,
+/// #     precession: PrecessionModel::default(),
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # use teistro_tajika::{Reading, masa_praveshas, praveshas};
+/// #
+/// # let first = praveshas(&tropical, zodiac, &natal, Reading::Sidereal, 1)?[0];
+/// # let months = masa_praveshas(&tropical, zodiac, &natal, &first)?;
+/// use teistro_tajika::{DinaPravesha, dina_praveshas};
+///
+/// let days = dina_praveshas(&tropical, zodiac, Reading::Sidereal, &months[3])?;
+/// // The month's own chart is its first day's, and each day the Sun is a degree on.
+/// assert_eq!(days[0], DinaPravesha::from(months[3]));
+/// assert_eq!((days[8].month, days[8].day), (4, 9));
+/// assert!((days[8].sun_deg - (months[3].sun_deg + 8.0)).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -86,6 +241,48 @@ const MONTH_STEP_DAYS: f64 = 10.0;
 const DAY_STEP_DAYS: f64 = 0.5;
 
 /// The twelve months of `year`, the first its own instant.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::sidereal::Zodiac;
+/// # use teistro_astro::Completion;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let tropical = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(Ayanamsha::Lahiri.into()),
+/// #     basis: Basis::True,
+/// #     precession: PrecessionModel::default(),
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # use teistro_tajika::{Reading, masa_praveshas, praveshas};
+/// #
+/// # let first = praveshas(&tropical, zodiac, &natal, Reading::Sidereal, 1)?[0];
+/// # let months = masa_praveshas(&tropical, zodiac, &natal, &first)?;
+/// use teistro_tajika::mean_praveshas;
+///
+/// // The first month is the annual chart, and the months run in order.
+/// assert_eq!(months[0].at, first.at);
+/// assert!(months.windows(2).all(|pair| pair[0].at.get() < pair[1].at.get()));
+/// // The mean year places no Sun to divide.
+/// let mean = mean_praveshas(&natal, 1)?[0];
+/// assert_eq!(masa_praveshas(&tropical, zodiac, &natal, &mean).unwrap_err().field(), Some("reading"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -128,6 +325,46 @@ pub fn masa_praveshas<S: Longitudes + ?Sized>(
 
 /// The thirty days of `month`, the first its own instant.
 ///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::sidereal::Zodiac;
+/// # use teistro_astro::Completion;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let tropical = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(Ayanamsha::Lahiri.into()),
+/// #     basis: Basis::True,
+/// #     precession: PrecessionModel::default(),
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # use teistro_tajika::{Reading, masa_praveshas, praveshas};
+/// #
+/// # let first = praveshas(&tropical, zodiac, &natal, Reading::Sidereal, 1)?[0];
+/// # let months = masa_praveshas(&tropical, zodiac, &natal, &first)?;
+/// use teistro_tajika::dina_praveshas;
+///
+/// let days = dina_praveshas(&tropical, zodiac, Reading::Sidereal, &months[0])?;
+/// // About a day apart, all inside the month.
+/// assert!(days.windows(2).all(|pair| (0.9..1.1).contains(&(pair[1].at.get() - pair[0].at.get()))));
+/// assert!(days[29].at.get() < months[1].at.get());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`masa_praveshas`].
@@ -147,6 +384,47 @@ pub fn dina_praveshas<S: Longitudes + ?Sized>(
 /// first is the month's own instant and the last the next month's, or the
 /// next year's return after the twelfth; a degree between is a "solar
 /// day", which is what the month's dasha counts its lords' degrees in.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::sidereal::Zodiac;
+/// # use teistro_astro::Completion;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let tropical = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(Ayanamsha::Lahiri.into()),
+/// #     basis: Basis::True,
+/// #     precession: PrecessionModel::default(),
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # use teistro_tajika::{Reading, masa_praveshas, praveshas};
+/// #
+/// # let first = praveshas(&tropical, zodiac, &natal, Reading::Sidereal, 1)?[0];
+/// # let months = masa_praveshas(&tropical, zodiac, &natal, &first)?;
+/// use teistro_tajika::month_knots;
+///
+/// // Thirty-one knots: the month's own instant to the next month's.
+/// let knots = month_knots(&tropical, zodiac, Reading::Sidereal, &months[0])?;
+/// assert_eq!(knots.len(), 31);
+/// assert_eq!(knots[0], months[0].at);
+/// assert!((knots[30].get() - months[1].at.get()).abs() < 1e-5);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -216,6 +494,14 @@ fn degrees_on<S: Longitudes + ?Sized>(
 
 /// The reading a division is read in: the year's own, refused for the
 /// mean year, which places no Sun.
+///
+/// ```
+/// use teistro_tajika::{Reading, divided};
+///
+/// assert_eq!(divided(Reading::Tropical)?, Reading::Tropical);
+/// assert_eq!(divided(Reading::Mean).unwrap_err().field(), Some("reading"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

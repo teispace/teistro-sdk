@@ -49,6 +49,34 @@ use crate::states::AnnualStates;
 /// Named in the table's order. Only [`YearYoga::Ikabala`] and
 /// [`YearYoga::Induvara`] are facts about a chart alone; the other
 /// fourteen are judgements about the lagnesha and the karyesha.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// # use teistro_core::house::House;
+/// # use teistro_tajika::{YearYoga, year_yogas};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+///
+/// // The Sun at Leo 3°50′ comes to Mars at Scorpio 7°42′, the tenth sign from him.
+/// assert_eq!(tenth.holds(YearYoga::Ithasala), Some(true));
+/// assert_eq!(tenth.holds(YearYoga::Ishrafa), Some(false));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -95,6 +123,12 @@ pub enum YearYoga {
 impl YearYoga {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `IKABALA`.
+    ///
+    /// ```
+    /// use teistro_tajika::YearYoga;
+    ///
+    /// assert_eq!(YearYoga::DuhphaliKuttha.key(), "DUHPHALI_KUTTHA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -118,6 +152,14 @@ impl YearYoga {
     }
 
     /// All sixteen, in the source's own table order.
+    ///
+    /// ```
+    /// use teistro_tajika::YearYoga;
+    ///
+    /// assert_eq!(YearYoga::ALL[0], YearYoga::Ikabala);
+    /// // Two are facts about the chart, fourteen judge the pair.
+    /// assert_eq!(YearYoga::ALL.iter().filter(|yoga| yoga.is_chart_fact()).count(), 2);
+    /// ```
     pub const ALL: [YearYoga; 16] = [
         YearYoga::Ikabala,
         YearYoga::Induvara,
@@ -143,6 +185,13 @@ impl YearYoga {
     /// Matched exhaustively on purpose: a yoga added to [`YearYoga::ALL`]
     /// cannot compile until somebody has said which side of this it
     /// falls on, and `check-muntha` prints both sets with these reasons.
+    ///
+    /// ```
+    /// use teistro_tajika::YearYoga;
+    ///
+    /// // This build answers for all sixteen.
+    /// assert!(YearYoga::ALL.iter().all(|yoga| yoga.awaiting().is_none()));
+    /// ```
     #[must_use]
     pub const fn awaiting(self) -> Option<&'static str> {
         match self {
@@ -176,6 +225,35 @@ impl YearYoga {
     /// lord must go on **into** the next sign, and a retrograde one at a
     /// sign's end is going back (crux C120). Gairi-Kamboola is not, since
     /// the Moon it moves never turns.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// # use teistro_core::house::House;
+    /// # use teistro_tajika::{YearYoga, year_yogas};
+    /// #
+    /// # let lagna = at(7.0, 9.0, 26.0);
+    /// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+    ///
+    /// // Without the chart's states the four are left unanswered, not denied.
+    /// let needing: Vec<YearYoga> = YearYoga::ALL.into_iter().filter(|yoga| yoga.needs_states()).collect();
+    /// assert_eq!(tenth.unanswered, needing);
+    /// assert_eq!(tenth.holds(YearYoga::Rudda), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn needs_states(self) -> bool {
         matches!(
@@ -191,6 +269,37 @@ impl YearYoga {
     /// A fact about the definition and not the build, so it answers for
     /// the unbuilt Gairi-Kamboola too; the measured page holds every
     /// count of these under the Ithasala's own.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// # use teistro_core::house::House;
+    /// # use teistro_tajika::{YearYoga, year_yogas};
+    /// #
+    /// # let lagna = at(7.0, 9.0, 26.0);
+    /// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+    ///
+    /// // Each can hold only where an Ithasala stands.
+    /// let ithasala = tenth.holds(YearYoga::Ithasala) == Some(true);
+    /// for yoga in YearYoga::ALL.into_iter().filter(|yoga| yoga.judges_an_ithasala()) {
+    ///     assert!(ithasala || tenth.holds(yoga) != Some(true));
+    /// }
+    /// assert!(YearYoga::Kamboola.judges_an_ithasala());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn judges_an_ithasala(self) -> bool {
         matches!(
@@ -208,6 +317,35 @@ impl YearYoga {
     /// light carried or gathered by a third (Nakta, Yamaya), or completed
     /// from the next sign (Tambira) -- each the source's answer to a pair
     /// that cannot meet on its own.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// # use teistro_core::house::House;
+    /// # use teistro_tajika::{YearYoga, year_yogas};
+    /// #
+    /// # let lagna = at(7.0, 9.0, 26.0);
+    /// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+    ///
+    /// // The Sun and Mars aspect, so none of the three holds.
+    /// for yoga in YearYoga::ALL.into_iter().filter(|yoga| yoga.needs_no_aspect()) {
+    ///     assert_ne!(tenth.holds(yoga), Some(true));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn needs_no_aspect(self) -> bool {
         matches!(self, YearYoga::Nakta | YearYoga::Yamaya | YearYoga::Tambira)
@@ -215,6 +353,35 @@ impl YearYoga {
 
     /// Whether it is a fact about the **chart** rather than a judgement
     /// about a pair, and so holds in every matter of a chart or in none.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_core::house::House;
+    /// use teistro_tajika::{YearYoga, year_yogas};
+    ///
+    /// let lagna = at(7.0, 9.0, 26.0);
+    /// // The same answer whichever matter is asked.
+    /// let ask = |house| year_yogas(lagna, House::try_new(house)?, &sky);
+    /// for yoga in [YearYoga::Ikabala, YearYoga::Induvara] {
+    ///     assert!(yoga.is_chart_fact());
+    ///     assert_eq!(ask(7)?.holds(yoga), ask(10)?.holds(yoga));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn is_chart_fact(self) -> bool {
         matches!(self, YearYoga::Ikabala | YearYoga::Induvara)
@@ -222,6 +389,13 @@ impl YearYoga {
 
     /// Whether it needs **both** lords weak before asking anything else,
     /// and so can hold only where they are.
+    ///
+    /// ```
+    /// use teistro_tajika::YearYoga;
+    ///
+    /// assert!(YearYoga::Durapha.needs_a_weak_pair());
+    /// assert!(!YearYoga::Kuttha.needs_a_weak_pair());
+    /// ```
     #[must_use]
     pub const fn needs_a_weak_pair(self) -> bool {
         matches!(self, YearYoga::DutthotthaDavira | YearYoga::Durapha)
@@ -229,12 +403,25 @@ impl YearYoga {
 
     /// Whether it needs **both** lords strong, and so can hold only where
     /// they are: the mirror of [`YearYoga::needs_a_weak_pair`].
+    ///
+    /// ```
+    /// use teistro_tajika::YearYoga;
+    ///
+    /// let strong: Vec<YearYoga> = YearYoga::ALL.into_iter().filter(|yoga| yoga.needs_a_strong_pair()).collect();
+    /// assert_eq!(strong, [YearYoga::Kuttha]);
+    /// ```
     #[must_use]
     pub const fn needs_a_strong_pair(self) -> bool {
         matches!(self, YearYoga::Kuttha)
     }
 
     /// Whether this build answers for it.
+    ///
+    /// ```
+    /// use teistro_tajika::YearYoga;
+    ///
+    /// assert!(YearYoga::ALL.iter().all(|yoga| yoga.is_built()));
+    /// ```
     #[must_use]
     pub const fn is_built(self) -> bool {
         self.awaiting().is_none()
@@ -248,6 +435,14 @@ impl YearYoga {
 /// source's Table X-3 names two planets for this yoga and naming them
 /// here is the only way that stays true when the catalogue's own list is
 /// read for some other purpose (crux C114).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::MALEFICS;
+///
+/// // Not the Sun, whom Parashara counts.
+/// assert!(!MALEFICS.contains(&Graha::Sun));
+/// ```
 pub const MALEFICS: [Graha; 2] = [Graha::Mars, Graha::Saturn];
 
 /// Tajika's own benefics, as Kuttha reads them: **the Moon, Mercury,
@@ -260,6 +455,15 @@ pub const MALEFICS: [Graha; 2] = [Graha::Mars, Graha::Saturn];
 /// Parashari `Nature` marks it neither, which is why this is its own
 /// list, as [`MALEFICS`] is. Whether the Moon must also be *full* is a
 /// reading, [`YogaRules::moon_benefic`].
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{BENEFICS, MALEFICS};
+///
+/// assert!(BENEFICS.contains(&Graha::Mercury));
+/// // The Sun is neither.
+/// assert!(!BENEFICS.contains(&Graha::Sun) && !MALEFICS.contains(&Graha::Sun));
+/// ```
 pub const BENEFICS: [Graha; 4] = [Graha::Moon, Graha::Mercury, Graha::Jupiter, Graha::Venus];
 
 /// Why a planet is not **unqualified**, clause by clause.
@@ -270,6 +474,32 @@ pub const BENEFICS: [Graha; 4] = [Graha::Moon, Graha::Mercury, Graha::Jupiter, G
 /// rather than collapsed into the bool, because a reader asking why a
 /// Khallasara did not hold wants the clause and not the verdict — and
 /// because a pass can then count which clause does the disqualifying.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// use teistro_tajika::qualification;
+///
+/// // The Moon in Taurus, her exaltation.
+/// let moon = qualification(Graha::Moon, &sky)?;
+/// assert!(moon.exalted && !moon.debilitated);
+/// // The luminaries rule no Hudda.
+/// assert!(!moon.own_hudda);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[expect(
@@ -318,6 +548,30 @@ impl Qualification {
     /// naming the fields, so a clause cannot be relabelled by being
     /// moved — which is what a pass indexing a fixed-length array of
     /// counts would otherwise risk every time the struct is edited.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::qualification;
+    ///
+    /// // The Sun shares Leo with Mercury and Venus: aspected.
+    /// let sun = qualification(Graha::Sun, &sky)?;
+    /// assert_eq!(sun.clauses()[2], ("aspected or associated by another of the seven", true));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn clauses(self) -> [(&'static str, bool); 6] {
         [
@@ -335,6 +589,32 @@ impl Qualification {
 
     /// Whether every clause is false, which is what the source calls
     /// **unqualified**.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::qualification;
+    ///
+    /// assert!(!qualification(Graha::Moon, &sky)?.is_unqualified());
+    /// for graha in teistro_tajika::SEVEN {
+    ///     let read = qualification(graha, &sky)?;
+    ///     assert_eq!(read.is_unqualified(), read.clauses().iter().all(|(_, holds)| !holds));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_unqualified(self) -> bool {
         self.clauses().iter().all(|(_, holds)| !*holds)
@@ -343,6 +623,29 @@ impl Qualification {
 
 /// How a planet of an annual chart stands to the source's definition of
 /// **unqualified**.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// use teistro_tajika::qualification;
+///
+/// assert_eq!(qualification(Graha::Saturn, &sky)?.graha, Graha::Saturn);
+/// assert_eq!(qualification(Graha::Rahu, &sky).unwrap_err().field(), Some("graha"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -394,6 +697,12 @@ pub fn qualification(graha: Graha, sky: &AnnualSky) -> Result<Qualification, Err
 /// planet is weak for a yoga — and an alias would let a later reading
 /// of one silently move the other. A test asserts the coincidence, so
 /// parting them is a decision somebody has to make on purpose.
+///
+/// ```
+/// use teistro_tajika::{YOGA_WEAK_BELOW, YogaRules};
+///
+/// assert_eq!(YogaRules::default().weak_below, YOGA_WEAK_BELOW);
+/// ```
 pub const YOGA_WEAK_BELOW: Bala = Bala::new(5, 0, 0);
 
 /// The Vishwa bala from which a planet is **strong** on its bala alone,
@@ -407,6 +716,13 @@ pub const YOGA_WEAK_BELOW: Bala = Bala::new(5, 0, 0);
 /// grading is a second book's and not Charak's, which is why this too
 /// is a [`YogaRules`] field (crux C116); setting it equal to
 /// [`YOGA_WEAK_BELOW`] recovers the reading with no middle at all.
+///
+/// ```
+/// use teistro_tajika::{YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YogaRules};
+///
+/// assert_eq!(YogaRules::default().strong_from, YOGA_STRONG_FROM);
+/// assert!(YOGA_WEAK_BELOW < YOGA_STRONG_FROM);
+/// ```
 pub const YOGA_STRONG_FROM: Bala = Bala::new(10, 0, 0);
 
 /// How the sixteen are read where the source leaves a choice.
@@ -415,6 +731,15 @@ pub const YOGA_STRONG_FROM: Bala = Bala::new(10, 0, 0);
 /// question: the readings the yogas need are not all about aspects, and
 /// a caller that wants to move a strength floor should not have to
 /// learn which of them travels in `DrishtiRules`.
+///
+/// ```
+/// use teistro_tajika::{DrishtiRules, SubDegree, YogaRules};
+///
+/// // A reading of the aspects alone, the rest left as the source's.
+/// let rules = YogaRules::from(DrishtiRules { sub_degree: SubDegree::Ishrafa });
+/// assert_eq!(rules.drishti.sub_degree, SubDegree::Ishrafa);
+/// assert_eq!(rules.weak_below, YogaRules::default().weak_below);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase")]
@@ -452,6 +777,12 @@ impl Default for YogaRules {
 /// karyesha, and its comment adds that "according to some authorities,
 /// either of the lagnesha and karyesha may be at the end of a sign" and
 /// complete the Ithasala from the next.
+///
+/// ```
+/// use teistro_tajika::{TambiraMover, YogaRules};
+///
+/// assert_eq!(YogaRules::default().tambira, TambiraMover::Karyesha);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -468,6 +799,30 @@ pub enum TambiraMover {
 ///
 /// Charak's list names the Moon with no condition. The *Nilakanthi*'s
 /// commentary names the **full** Moon, which needs a reading of *full*.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// use teistro_tajika::MoonBenefic;
+///
+/// // The Moon 276° past the Sun is waning.
+/// assert!(MoonBenefic::Always.holds(&sky));
+/// assert!(!MoonBenefic::Waxing.holds(&sky));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -482,6 +837,29 @@ pub enum MoonBenefic {
 
 impl MoonBenefic {
     /// Whether the Moon of `sky` counts as a benefic under this reading.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::MoonBenefic;
+    ///
+    /// let waxing = AnnualSky { moon_deg: sky.sun_deg + 90.0, ..sky };
+    /// assert!(MoonBenefic::Waxing.holds(&waxing));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn holds(self, sky: &AnnualSky) -> bool {
         match self {
@@ -503,6 +881,14 @@ impl From<DrishtiRules> for YogaRules {
 impl YogaRules {
     /// Refuses floors that would let a planet be strong and weak at
     /// once, naming the field to move.
+    ///
+    /// ```
+    /// use teistro_tajika::{Bala, YogaRules};
+    ///
+    /// assert!(YogaRules::default().check().is_ok());
+    /// let both = YogaRules { strong_from: Bala::new(1, 0, 0), ..YogaRules::default() };
+    /// assert_eq!(both.check().unwrap_err().field(), Some("strong_from"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -541,6 +927,30 @@ impl YogaRules {
 /// traditions share a word and nothing else, and the SDK root exports
 /// both under their own names, because a type a signature names must be
 /// found by the name the signature gives it.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// use teistro_tajika::strength;
+///
+/// // Saturn in Libra, his exaltation: strong whatever his bala.
+/// let saturn = strength(Graha::Saturn, &sky)?;
+/// assert!(saturn.exalted && !saturn.own_sign && saturn.is_strong());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Strength {
@@ -567,6 +977,30 @@ impl Strength {
     /// Walked rather than named, for the same reason
     /// [`Qualification::clauses`] is: a clause cannot then be
     /// relabelled by being moved.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::strength;
+    ///
+    /// // The Sun in Leo, a sign he rules.
+    /// let sun = strength(Graha::Sun, &sky)?;
+    /// assert_eq!(sun.clauses()[1], ("in a sign it rules", true));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn clauses(self) -> [(&'static str, bool); 3] {
         [
@@ -581,6 +1015,28 @@ impl Strength {
 
     /// Whether any clause holds, which is what the source calls
     /// **strong**.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::strength;
+    ///
+    /// assert!(strength(Graha::Mars, &sky)?.is_strong());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_strong(self) -> bool {
         self.clauses().iter().any(|(_, holds)| *holds)
@@ -588,12 +1044,62 @@ impl Strength {
 
     /// Whether no clause holds **and** the bala is under the lower
     /// floor, which is what the source calls **weak**.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::strength;
+    ///
+    /// // A strong planet is never weak, however low its bala.
+    /// let sun = strength(Graha::Sun, &sky)?;
+    /// assert!(!sun.is_weak());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_weak(self) -> bool {
         !self.is_strong() && self.vishwa < self.weak_below
     }
 
     /// Neither: no dignity, and a bala between the floors.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::strength;
+    ///
+    /// // Each of the seven is exactly one of the three.
+    /// for graha in teistro_tajika::SEVEN {
+    ///     let one = strength(graha, &sky)?;
+    ///     assert_eq!([one.is_strong(), one.is_weak(), one.is_middling()].iter().filter(|holds| **holds).count(), 1);
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_middling(self) -> bool {
         !self.is_strong() && !self.is_weak()
@@ -627,6 +1133,30 @@ pub(crate) fn strengths(sky: &AnnualSky, rules: YogaRules) -> Result<[Strength; 
 /// How a planet of an annual chart stands to **strong** and **weak**,
 /// under the default floors.
 ///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// use teistro_tajika::{YOGA_WEAK_BELOW, strength};
+///
+/// let venus = strength(Graha::Venus, &sky)?;
+/// assert_eq!(venus.weak_below, YOGA_WEAK_BELOW);
+/// assert_eq!(strength(Graha::Ketu, &sky).unwrap_err().field(), Some("graha"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A body outside the seven, named `graha`; an annual chart that does
@@ -636,6 +1166,30 @@ pub fn strength(graha: Graha, sky: &AnnualSky) -> Result<Strength, Error> {
 }
 
 /// How a planet stands to strong and weak, with the floors chosen.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// use teistro_tajika::{Bala, YogaRules, strength_with_rules};
+///
+/// // With no floor to reach, every planet is fully strong.
+/// let none = YogaRules { weak_below: Bala::new(0, 0, 0), strong_from: Bala::new(0, 0, 0), ..YogaRules::default() };
+/// assert!(strength_with_rules(Graha::Venus, &sky, none)?.is_strong());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -691,6 +1245,31 @@ fn malefic_reaches(from: Rashi, to: Rashi) -> bool {
 /// 12th, or under malefic influence" — of which Durapha reads three.
 /// Carried as clauses, as [`Qualification`] and [`Strength`] are, so a
 /// reader asking *why* a Rudda held gets the clause that made it.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// use teistro_tajika::{AnnualStates, affliction};
+///
+/// let lagna = at(7.0, 9.0, 26.0);
+/// // Saturn in Libra, the twelfth from Scorpio.
+/// let saturn = affliction(Graha::Saturn, lagna, &sky, &AnnualStates::default())?;
+/// assert!(saturn.trika && !saturn.retrograde && !saturn.debilitated);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[expect(
     clippy::struct_excessive_bools,
     reason = "five named clauses of one definition, each read on its own"
@@ -718,6 +1297,31 @@ pub struct Affliction {
 impl Affliction {
     /// The five clauses, each with the source's own words for it, in the
     /// order it states them.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::{AnnualStates, affliction};
+    ///
+    /// let lagna = at(7.0, 9.0, 26.0);
+    /// // Venus in Leo, Mars in Scorpio the tenth sign from her.
+    /// let venus = affliction(Graha::Venus, lagna, &sky, &AnnualStates::default())?;
+    /// assert_eq!(venus.clauses()[4], ("under malefic influence", true));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn clauses(self) -> [(&'static str, bool); 5] {
         [
@@ -730,6 +1334,31 @@ impl Affliction {
     }
 
     /// Whether any clause holds.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::{AnnualStates, affliction};
+    ///
+    /// let lagna = at(7.0, 9.0, 26.0);
+    /// let backwards = AnnualStates { retrograde: vec![Graha::Jupiter], combust: Vec::new() };
+    /// let jupiter = affliction(Graha::Jupiter, lagna, &sky, &backwards)?;
+    /// assert!(jupiter.retrograde && jupiter.is_afflicted());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_afflicted(self) -> bool {
         self.clauses().iter().any(|(_, holds)| *holds)
@@ -737,6 +1366,29 @@ impl Affliction {
 }
 
 /// How a planet of an annual chart stands to the source's afflictions.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// use teistro_tajika::{AnnualStates, affliction};
+///
+/// let refused = affliction(Graha::Saturn, f64::NAN, &sky, &AnnualStates::default()).unwrap_err();
+/// assert_eq!(refused.field(), Some("annual_lagna_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -798,6 +1450,32 @@ fn afflicted(graha: Graha, lagna: Rashi, sky: &AnnualSky, states: &AnnualStates)
 /// them (crux C117). Carried as clauses, as [`Affliction`] is for
 /// Rudda, so a reader asking why a Kuttha did not hold gets the clause
 /// that stopped it.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// use teistro_tajika::{YogaRules, favour};
+///
+/// let lagna = at(7.0, 9.0, 26.0);
+/// // The Sun: strong, in the tenth, with Mercury and Venus; but Mars reaches him.
+/// let sun = favour(Graha::Sun, lagna, &sky, YogaRules::default())?;
+/// assert!(sun.strength.is_strong() && sun.well_placed && sun.benefic_aspect);
+/// assert!(!sun.free_of_malefics);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Favour {
@@ -821,6 +1499,30 @@ pub struct Favour {
 impl Favour {
     /// The four clauses, each with the source's own words for it, in the
     /// order it states them.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::{YogaRules, favour};
+    ///
+    /// let lagna = at(7.0, 9.0, 26.0);
+    /// let sun = favour(Graha::Sun, lagna, &sky, YogaRules::default())?;
+    /// assert_eq!(sun.clauses()[3], ("under no malefic's aspect", false));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn clauses(self) -> [(&'static str, bool); 4] {
         [
@@ -832,6 +1534,29 @@ impl Favour {
     }
 
     /// Whether every clause holds: what Kuttha asks of each lord.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// use teistro_tajika::{YogaRules, favour};
+    ///
+    /// let lagna = at(7.0, 9.0, 26.0);
+    /// assert!(!favour(Graha::Sun, lagna, &sky, YogaRules::default())?.is_favoured());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_favoured(self) -> bool {
         self.clauses().iter().all(|(_, holds)| *holds)
@@ -904,6 +1629,35 @@ fn favoured(strength: Strength, lagna: Rashi, sky: &AnnualSky, moon: MoonBenefic
 }
 
 /// One of the sixteen, found holding, with what made it hold.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// # use teistro_core::house::House;
+/// # use teistro_tajika::{YearYoga, year_yogas};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+///
+/// let ithasala = tenth.held.iter().find(|held| held.yoga == YearYoga::Ithasala).ok_or("held")?;
+/// let pair = ithasala.between.ok_or("a pair")?;
+/// assert_eq!((pair.faster, pair.slower), (Graha::Sun, Graha::Mars));
+/// assert!(ithasala.through.is_none());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "TajikaYogaHeld"))]
@@ -946,6 +1700,35 @@ impl Held {
 }
 
 /// Every one of the sixteen this build can answer for, for one matter.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// # use teistro_core::house::House;
+/// # use teistro_tajika::{YearYoga, year_yogas};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+///
+/// use teistro_core::catalogue::Rashi;
+///
+/// assert_eq!((tenth.sign, tenth.lagnesha, tenth.karyesha), (Rashi::Leo, Graha::Mars, Graha::Sun));
+/// assert!(!tenth.same_lord && tenth.states.is_none());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -997,6 +1780,34 @@ impl YearYogas {
     /// `None` where this build cannot say, which is not the same answer
     /// as `Some(false)` and is why this returns an option rather than a
     /// bool.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// # use teistro_core::house::House;
+    /// # use teistro_tajika::{YearYoga, year_yogas};
+    /// #
+    /// # let lagna = at(7.0, 9.0, 26.0);
+    /// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+    ///
+    /// assert_eq!(tenth.holds(YearYoga::Ithasala), Some(true));
+    /// // Unanswered is not denied.
+    /// assert_eq!(tenth.holds(YearYoga::Durapha), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn holds(&self, yoga: YearYoga) -> Option<bool> {
         // Asked of this call's own list and not of the build: a yoga the
@@ -1014,6 +1825,33 @@ impl YearYogas {
     /// those that read retrograde and combustion
     /// ([`YearYoga::needs_states`]), that this call was not given them —
     /// two different remedies, so two different answers.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_core::catalogue::Graha;
+    ///
+    /// # use teistro_core::house::House;
+    /// # use teistro_tajika::{YearYoga, year_yogas};
+    /// #
+    /// # let lagna = at(7.0, 9.0, 26.0);
+    /// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+    ///
+    /// assert!(tenth.why(YearYoga::Tambira).is_some_and(|why| why.starts_with("retrograde and combustion")));
+    /// assert_eq!(tenth.why(YearYoga::Ithasala), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn why(&self, yoga: YearYoga) -> Option<&'static str> {
         if !self.unanswered.contains(&yoga) {
@@ -1028,6 +1866,35 @@ impl YearYogas {
 
 /// The sixteen yogas of an annual chart, for one matter, under the
 /// readings this module defaults to.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// # use teistro_core::house::House;
+/// # use teistro_tajika::{YearYoga, year_yogas};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+///
+/// // The first house's lord is the lagna's own: one lord.
+/// let first = year_yogas(lagna, House::try_new(1)?, &sky)?;
+/// assert!(first.same_lord);
+/// assert_eq!(year_yogas(f64::NAN, House::try_new(1)?, &sky).unwrap_err().field(), Some("annual_lagna_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -1047,6 +1914,35 @@ pub fn year_yogas(
 /// listed under [`YearYogas::unanswered`]; [`year_yogas_with_states`]
 /// answers them too.
 ///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// # use teistro_core::house::House;
+/// # use teistro_tajika::{YearYoga, year_yogas};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+///
+/// use teistro_tajika::{YogaRules, year_yogas_with_rules};
+///
+/// let same = year_yogas_with_rules(lagna, House::try_new(10)?, &sky, YogaRules::default())?;
+/// assert_eq!(same, tenth);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`year_yogas`]; and floors that would let a planet be strong and
@@ -1063,6 +1959,38 @@ pub fn year_yogas_with_rules(
 
 /// The sixteen yogas for one matter, with the chart's retrograde and
 /// combust planets, so every yoga the build computes is answered.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_core::catalogue::Graha;
+///
+/// # use teistro_core::house::House;
+/// # use teistro_tajika::{YearYoga, year_yogas};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let tenth = year_yogas(lagna, House::try_new(10)?, &sky)?;
+///
+/// use teistro_tajika::{AnnualStates, YogaRules, year_yogas_with_states};
+///
+/// // Given the states, every yoga is answered.
+/// let states = AnnualStates::default();
+/// let answered = year_yogas_with_states(lagna, House::try_new(10)?, &sky, &states, YogaRules::default())?;
+/// assert!(answered.unanswered.is_empty());
+/// assert!(answered.holds(YearYoga::Rudda).is_some());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
