@@ -1472,6 +1472,7 @@ pub unsafe extern "C" fn ts_almanac_festival_calendar(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

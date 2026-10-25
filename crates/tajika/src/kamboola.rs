@@ -679,6 +679,7 @@ fn counted(held: &[OfficeClause], order: OfficeOrder) -> Adhikara {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::unwrap_used, reason = "tests")]
 

@@ -2,6 +2,8 @@
 //! and one reply a line out, or over Streamable HTTP with `--http`;
 //! anything it logs goes to stderr (`03-design/mcp-server.md`).
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 use std::io::{BufRead, Write as _};
 use std::net::TcpListener;
 use std::process::ExitCode;

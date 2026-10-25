@@ -100,6 +100,7 @@ pub unsafe extern "C" fn ts_blob_free(blob: *mut TsBlob) {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::*;
 

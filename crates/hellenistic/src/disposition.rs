@@ -363,6 +363,7 @@ fn slowness(planet: Graha) -> usize {
         .unwrap_or(usize::MAX)
 }
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

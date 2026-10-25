@@ -60,6 +60,8 @@
 //! assert!((apart - (186.0 + 40.0 / 60.0)).abs() < 1e-9);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod arudha;
 pub mod chart;
 pub mod derived;

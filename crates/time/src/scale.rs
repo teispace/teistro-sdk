@@ -333,6 +333,7 @@ pub fn stamp(delta_t: &DeltaT, basis: &TimeBasis, tzdb_version: &str) -> TimeSta
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 

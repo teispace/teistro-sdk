@@ -26,6 +26,8 @@
 //! assert!(reply.contains(r#""supportedVersions":["2026-07-28","2025-11-25"]"#));
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::sync::Arc;

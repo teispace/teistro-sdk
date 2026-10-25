@@ -37,6 +37,7 @@
 //! # Ok::<(), teistro_core::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 use std::cmp::Ordering;
@@ -55,6 +56,7 @@ mod baseline;
 mod graded;
 mod link;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
 
 pub use baseline::{Answer, Factor, FactorKind, Score, ScoreRule, number_sign};

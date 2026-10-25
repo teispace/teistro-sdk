@@ -931,6 +931,7 @@ fn factor(graha: Graha, longitude: f64, retrograde: bool, combust: bool) -> f64 
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::indexing_slicing, reason = "tests index the rows they built")]
 

@@ -161,6 +161,7 @@ pub fn earth(jd: f64, theory: impl FnMut(f64) -> [f64; 3]) -> Option<([f64; 3], 
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::float_cmp,

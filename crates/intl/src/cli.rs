@@ -1128,6 +1128,7 @@ pub fn report(tree: &Tree, out: &Path) -> Result<Results, Box<dyn std::error::Er
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

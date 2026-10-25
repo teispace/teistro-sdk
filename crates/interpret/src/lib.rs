@@ -41,6 +41,8 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 use serde::{Deserialize, Serialize};
 use teistro_intl::messages::sdk::reason::dasha;
 use teistro_intl::messages::sdk::reason::panchanga as panchanga_messages;

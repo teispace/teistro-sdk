@@ -23,6 +23,7 @@
 //! assert!(ChandraBala::raman().holds(chandra_house(Rashi::Cancer, Rashi::Leo)));
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 pub mod activity;

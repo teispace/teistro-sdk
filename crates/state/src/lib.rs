@@ -52,6 +52,8 @@
 //! );
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod avastha;
 pub mod boundary;
 pub mod burn;

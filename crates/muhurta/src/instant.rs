@@ -376,6 +376,7 @@ fn sign_of(deg: f64) -> Rashi {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[allow(clippy::expect_used, reason = "tests fail by panicking")]
 mod tests {
     use super::{Limbs, Sky, clauses};

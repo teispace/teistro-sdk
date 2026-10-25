@@ -422,6 +422,7 @@ pub fn svarodaya_runs(sky: &dyn Sky, window: Window) -> Result<Vec<SvarodayaRun>
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[allow(clippy::expect_used, clippy::indexing_slicing, reason = "tests")]
 mod tests {
     use teistro_core::catalogue::Vara;

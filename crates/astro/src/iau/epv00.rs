@@ -9992,6 +9992,7 @@ const S2Z: [[f64; 3]; 2] = [
 ];
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

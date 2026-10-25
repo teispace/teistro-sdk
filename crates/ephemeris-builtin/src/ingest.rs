@@ -226,6 +226,7 @@ pub fn load(dir: &Path) -> Result<BTreeMap<&'static str, BodySeries>, IngestErro
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

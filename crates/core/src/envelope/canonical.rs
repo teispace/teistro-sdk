@@ -851,6 +851,7 @@ impl ser::Serializer for KeySink<'_> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::panic, reason = "tests fail by panicking")]
 

@@ -406,6 +406,7 @@ pub(crate) fn sign_at(field: &str, longitude: f64) -> Result<Rashi, Error> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

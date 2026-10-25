@@ -101,6 +101,7 @@ pub fn placements(chart: &RuleChart) -> Plan {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub(crate) mod tests {
     #![allow(
         clippy::unwrap_used,

@@ -1014,6 +1014,7 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::obscuration;
 

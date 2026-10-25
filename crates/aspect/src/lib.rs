@@ -52,6 +52,8 @@
 //! assert!(rashi::aspects(Rashi::Leo, Rashi::Aries));
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod chart;
 pub mod conjunction;
 pub mod drishti;

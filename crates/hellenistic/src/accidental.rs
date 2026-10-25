@@ -962,6 +962,7 @@ fn check_sky(longitudes_deg: &[f64; 7], sky: &AccidentalSky) -> Result<(), Error
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

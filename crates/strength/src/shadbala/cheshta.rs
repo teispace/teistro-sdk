@@ -91,6 +91,7 @@ pub(crate) fn of(graha: Graha, chart: &ShadbalaChart, rules: &ShadbalaRules) -> 
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::*;
 

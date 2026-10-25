@@ -139,6 +139,10 @@ teistro-test-allocator = { path = "../test-allocator" }
 # crosses the boundary allows it explicitly, and every block carries a
 # SAFETY comment (docs/05-testing/01-quality-bar.md, "unsafe confinement").
 [lints.rust]
+# verify's coverage job measures shipped code only: cargo-llvm-cov sets
+# `coverage_nightly` on the nightly, under which every test module is
+# `coverage(off)` (`xtask/src/coverage.rs`).
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 unsafe_code = "deny"
 missing_docs = "warn"
 missing_debug_implementations = "warn"

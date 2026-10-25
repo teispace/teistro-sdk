@@ -22,6 +22,15 @@
 //! counted it ([`COUNTED_BY`], the one verify runs), and a record counted
 //! by another is re-based on the next run rather than raised or compared.
 //!
+//! A floor is a share of the code a crate ships, not of its tests: a test
+//! module's own `assert!(a && b)` is two branches llvm counts, which its
+//! passing takes one way, so `houses` read 60% of its branches covered
+//! when every branch it ships was taken both ways. Under the nightly,
+//! `cargo llvm-cov` sets `coverage_nightly`, and every test module is
+//! `coverage(off)` under it; `check-coverage` refuses one that is not.
+//! The record says what it counted ([`COUNTS`]), and one that counted
+//! otherwise is re-based as one another toolchain counted is.
+//!
 //! The floors are whole percents of lines and of branches. A crate is the files under its
 //! `crates/<name>/src/` but its generated tables; tests, examples and
 //! benches are not measured, and neither is a crate in [`NOT_MEASURED`].
@@ -45,6 +54,11 @@ const SCHEMA: &str = "teistro-coverage/1";
 /// The toolchain verify's `coverage` job measures with; `check-coverage`
 /// holds the workflow to it.
 pub(crate) const COUNTED_BY: &str = "nightly-2026-10-21";
+/// What the floors count: the code each crate ships, its test modules
+/// left out.
+const COUNTS: &str = "shipped code";
+/// The attribute that leaves a test module out of the count.
+const COVERAGE_OFF: &str = "#[cfg_attr(coverage_nightly, coverage(off))]";
 /// The workflow that runs the measurement.
 const WORKFLOW: &str = ".github/workflows/verify.yml";
 /// The line coverage the quality bar asks of a computation crate.
@@ -58,13 +72,15 @@ const NOT_MEASURED: [(&str, &str); 1] = [(
 
 /// The floors, a whole percent of lines to a crate and a whole percent of
 /// branches. A record from before branches were measured has no branch
-/// floors, and one from before the toolchain was named was counted by
-/// stable.
+/// floors, one from before the toolchain was named was counted by stable,
+/// and one from before it said what it counted counted the tests too.
 #[derive(Debug, Serialize, Deserialize)]
 struct Record {
     schema: String,
     #[serde(default = "stable")]
     counted_by: String,
+    #[serde(default = "with_tests")]
+    counts: String,
     floors: BTreeMap<String, u8>,
     #[serde(default)]
     branch_floors: BTreeMap<String, u8>,
@@ -73,6 +89,24 @@ struct Record {
 /// What counted a record from before the toolchain was named.
 fn stable() -> String {
     String::from("stable")
+}
+
+/// What a record from before it said what it counted counted.
+fn with_tests() -> String {
+    String::from("shipped code and its tests")
+}
+
+impl Record {
+    /// Whether the record counts as a run here does, so its floors can be
+    /// raised or compared rather than re-based.
+    fn counted_here(&self) -> bool {
+        self.counted_by == COUNTED_BY && self.counts == COUNTS
+    }
+
+    /// Whether `other` counted as this record did.
+    fn counted_as(&self, other: &Record) -> bool {
+        self.counted_by == other.counted_by && self.counts == other.counts
+    }
 }
 
 /// What a run measured of a crate.
@@ -279,17 +313,16 @@ fn findings(
 
 fn record(root: &Path, from: &Path) -> Result<i32, String> {
     let run = read_export(from)?;
-    // A record another toolchain counted says nothing of this count, so
-    // the run re-bases every floor.
-    let old = read_record(root)
-        .ok()
-        .filter(|old| old.counted_by == COUNTED_BY);
+    // A record another toolchain counted, or that counted other code, says
+    // nothing of this count, so the run re-bases every floor.
+    let old = read_record(root).ok().filter(Record::counted_here);
     let exists = |name: &str| root.join("crates").join(name).is_dir();
     let (old_lines, old_branches) =
         old.map_or_else(Default::default, |old| (old.floors, old.branch_floors));
     let record = Record {
         schema: SCHEMA.to_owned(),
         counted_by: COUNTED_BY.to_owned(),
+        counts: COUNTS.to_owned(),
         floors: raised(&old_lines, &lines_of(&run), exists),
         branch_floors: raised(&old_branches, &branches_of(&run), exists),
     };
@@ -332,6 +365,14 @@ fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
             record.counted_by
         ));
     }
+    if record.counts != COUNTS {
+        fail(format!(
+            "{RECORD} counted {}, and verify counts {COUNTS}: record a run with `cargo xtask \
+             coverage --from FILE`",
+            record.counts
+        ));
+    }
+    unmarked(root)?.into_iter().for_each(&mut fail);
     match fs::read_to_string(root.join(WORKFLOW)) {
         Ok(workflow) if workflow.contains(&format!("+{COUNTED_BY} llvm-cov")) => {}
         Ok(_) => fail(format!(
@@ -341,11 +382,11 @@ fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
         Err(e) => fail(format!("{WORKFLOW}: {e}")),
     }
     match on_main(root, RECORD).map(|text| parse_record(&text)) {
-        Some(Ok(main)) if main.counted_by != record.counted_by => {
+        Some(Ok(main)) if !main.counted_as(&record) => {
             println!(
-                "note  main's floors were counted by `{}` and these by `{}`, so they are \
+                "note  main's floors counted {} by `{}` and these {} by `{}`, so they are \
                  re-based and none is compared with main's",
-                main.counted_by, record.counted_by
+                main.counts, main.counted_by, record.counts, record.counted_by
             );
         }
         Some(Ok(main)) => {
@@ -385,6 +426,77 @@ fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
     Ok(i32::from(failures != 0))
 }
 
+/// Every test module of a measured crate that its tests' branches would be
+/// counted in: one under `#[cfg(test)]` without [`COVERAGE_OFF`], by file
+/// and line. A crate's generated tables are not measured, so their test
+/// modules need no mark.
+fn unmarked(root: &Path) -> Result<Vec<String>, String> {
+    let mut found = Vec::new();
+    let crates = root.join("crates");
+    let mut files = Vec::new();
+    for entry in fs::read_dir(&crates).map_err(|e| format!("crates: {e}"))? {
+        let src = entry.map_err(|e| e.to_string())?.path().join("src");
+        if src.is_dir() {
+            rust_files(&src, &mut files)?;
+        }
+    }
+    files.sort();
+    for file in files {
+        let shown = file
+            .strip_prefix(root)
+            .unwrap_or(&file)
+            .display()
+            .to_string()
+            .replace('\\', "/");
+        if crate_of(&format!("/{shown}")).is_none() {
+            continue;
+        }
+        let text = fs::read_to_string(&file).map_err(|e| format!("{shown}: {e}"))?;
+        found.extend(
+            unmarked_in(&text)
+                .into_iter()
+                .map(|line| format!("{shown}:{line}: a test module without `{COVERAGE_OFF}`, whose tests' own branches the floors would count")),
+        );
+    }
+    Ok(found)
+}
+
+/// The `.rs` files under `dir`, recursively.
+fn rust_files(dir: &Path, out: &mut Vec<std::path::PathBuf>) -> Result<(), String> {
+    for entry in fs::read_dir(dir).map_err(|e| format!("{}: {e}", dir.display()))? {
+        let path = entry.map_err(|e| e.to_string())?.path();
+        if path.is_dir() {
+            rust_files(&path, out)?;
+        } else if path.extension().is_some_and(|ext| ext == "rs") {
+            out.push(path);
+        }
+    }
+    Ok(())
+}
+
+/// The lines of each `#[cfg(test)]` that opens a module without
+/// [`COVERAGE_OFF`] among its attributes, counted from 1.
+fn unmarked_in(text: &str) -> Vec<usize> {
+    let lines: Vec<&str> = text.lines().map(str::trim).collect();
+    let mut found = Vec::new();
+    for (at, line) in lines.iter().enumerate() {
+        if *line != "#[cfg(test)]" {
+            continue;
+        }
+        let attributes = lines[at + 1..]
+            .iter()
+            .take_while(|line| line.starts_with("#["))
+            .collect::<Vec<_>>();
+        let item = lines.get(at + 1 + attributes.len()).copied().unwrap_or("");
+        let module =
+            item.starts_with("mod ") || (item.starts_with("pub") && item.contains(" mod "));
+        if module && !attributes.iter().any(|line| **line == COVERAGE_OFF) {
+            found.push(at + 1);
+        }
+    }
+    found
+}
+
 fn render(record: &Record) -> String {
     let at = |name: &str, floor: u8| {
         floor >= TARGET
@@ -414,9 +526,11 @@ fn render(record: &Record) -> String {
          holds every run to the floors.\n\n\
          Each crate has two floors: the share of its lines its tests run and the share of its \
          branches, each rounded down to a whole percent, from the last run recorded. Both are \
-         counted by `{counted_by}`, the pinned nightly `cargo llvm-cov --branch` needs; each \
-         llvm counts lines its own way, so a record another toolchain counted is re-based on \
-         the next run. A crate's \
+         counted by `{counted_by}`, the pinned nightly `cargo llvm-cov --branch` needs, over \
+         {counts}; each llvm counts lines its own way, so a record another toolchain counted, \
+         or one that counted other code, is re-based on the next run. A test module is \
+         `coverage(off)` under the nightly, since its own assertions are branches its passing \
+         takes one way. A crate's \
          generated tables are not counted, since their generators' checks hold them{skipped} \
          ([`01-quality-bar.md`](01-quality-bar.md), \"coverage floors\"). A floor only rises: a \
          run below it fails, recording raises it to what the run reached, and a floor lowered \
@@ -426,6 +540,7 @@ fn render(record: &Record) -> String {
          | crate | lines | branches | at {TARGET}% |\n|---|---:|---:|---|\n{rows}",
         total = record.floors.len(),
         counted_by = record.counted_by,
+        counts = record.counts,
         skipped = NOT_MEASURED
             .iter()
             .fold(String::new(), |mut out, (name, why)| {
@@ -547,15 +662,43 @@ mod tests {
         assert_eq!(findings("lines", &floors, &run), Vec::<String>::new());
     }
 
-    /// A record from before the toolchain was named reads as stable's, so
-    /// the next run re-bases it.
+    /// A record from before the toolchain was named reads as stable's, and
+    /// one from before it said what it counted as counting the tests too,
+    /// so the next run re-bases either.
     #[test]
     fn a_record_without_its_toolchain_was_counted_by_stable() {
         let old = parse_record(r#"{"schema": "teistro-coverage/1", "floors": {"a": 90}}"#).unwrap();
         assert_eq!(old.counted_by, "stable");
-        assert_ne!(old.counted_by, COUNTED_BY);
+        assert!(!old.counted_here());
         let page = render(&old);
         assert!(page.contains("counted by `stable`"), "{page}");
+        let old = parse_record(&format!(
+            r#"{{"schema": "teistro-coverage/1", "counted_by": "{COUNTED_BY}", "floors": {{}}}}"#
+        ))
+        .unwrap();
+        assert_eq!(old.counts, "shipped code and its tests");
+        assert!(!old.counted_here());
+        assert!(page.contains("over shipped code and its tests"), "{page}");
+    }
+
+    /// A test module is found by its `#[cfg(test)]`, whatever attributes
+    /// follow, and passes with the mark among them; a test function is not
+    /// a module.
+    #[test]
+    fn a_test_module_without_the_mark_is_found() {
+        let text = "fn a() {}\n\
+                    #[cfg(test)]\n\
+                    mod tests {}\n\
+                    #[cfg(test)]\n\
+                    #[allow(clippy::unwrap_used)]\n\
+                    #[cfg_attr(coverage_nightly, coverage(off))]\n\
+                    mod marked {}\n\
+                    #[cfg(test)]\n\
+                    #[path = \"x.rs\"]\n\
+                    pub(crate) mod helpers;\n\
+                    #[cfg(test)]\n\
+                    fn only_in_tests() {}\n";
+        assert_eq!(unmarked_in(text), [2, 8]);
     }
 
     /// The page says which crates have both floors at the target, and that
@@ -565,6 +708,7 @@ mod tests {
         let record = Record {
             schema: SCHEMA.into(),
             counted_by: COUNTED_BY.into(),
+            counts: COUNTS.into(),
             floors: [("a".into(), 95), ("b".into(), 95), ("c".into(), 95)].into(),
             branch_floors: [("a".into(), 91), ("b".into(), 85)].into(),
         };

@@ -44,6 +44,8 @@
 //! assert_eq!(text.trig(), Trig::Table);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod equation;
 pub mod lagna;
 pub mod mean;

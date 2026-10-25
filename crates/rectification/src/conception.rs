@@ -2144,6 +2144,7 @@ pub fn conception<S: Sky>(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub(crate) mod tests_support {
     use super::{PranapadaHouse, PranapadaHouseRules, Rashi, house, judged_house};
 

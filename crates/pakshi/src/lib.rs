@@ -21,10 +21,13 @@
 //! assert_eq!(doing, Activity::Sleeping);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 mod day;
 pub mod tables;
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
 
 pub use day::{Clock, Day, Now, Reading, Rules, Span, SubPeriod, Yama, now, read_day};

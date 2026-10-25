@@ -965,6 +965,7 @@ pub(crate) const fn station(kind: StationKind) -> HitEvent {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

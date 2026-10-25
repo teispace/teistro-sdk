@@ -1799,6 +1799,7 @@ fn render_decode_function(out: &mut String, name: &str, schema: &BlobSchema) {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
 

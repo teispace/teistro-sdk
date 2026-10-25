@@ -887,6 +887,7 @@ fn pushkara(vara: Vara, at_sunrise: &Span<Nakshatra>, tithis: &[Span<Tithi>]) ->
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

@@ -327,6 +327,7 @@ pub fn renamed(name: &str, list: &[&str], suffix: &str) -> String {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{
         DART, JAVA, PYTHON, PYTHON_ENUM, PYTHON_SOFT, RUST, TYPESCRIPT, is_reserved, renamed,

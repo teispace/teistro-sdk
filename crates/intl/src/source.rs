@@ -1341,6 +1341,7 @@ pub fn sdk_root() -> PathBuf {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::panic, reason = "tests fail by panicking")]
 

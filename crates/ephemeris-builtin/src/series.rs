@@ -221,6 +221,7 @@ pub fn millennia(jd: f64) -> f64 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,
@@ -290,6 +291,7 @@ mod tests {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod rate_tests {
     #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
 

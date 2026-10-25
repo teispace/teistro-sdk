@@ -39,6 +39,8 @@
 //! assert_eq!(reading.sarva.iter().map(|b| u32::from(*b)).sum::<u32>(), 337);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod ashtakavarga;
 pub mod bhava_bala;
 pub mod dasha_phala;

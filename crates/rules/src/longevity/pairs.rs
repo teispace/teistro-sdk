@@ -817,6 +817,7 @@ fn touched(of: Graha, by: BodySubject) -> Condition {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

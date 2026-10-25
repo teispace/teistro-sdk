@@ -44,6 +44,8 @@
 //! adding the two to `dashas` read as 46% more instructions for a kernel
 //! whose cost per dasha had not moved. A new section is reported as new.
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 use teistro_astro::ayanamsha::{self, Basis};
 use teistro_astro::delta_t::{DeltaTModel, delta_t};
 use teistro_astro::houses::{self, Input};

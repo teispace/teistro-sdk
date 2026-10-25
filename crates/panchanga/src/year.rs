@@ -485,6 +485,7 @@ fn new_moon_near<S: Longitudes + ?Sized>(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

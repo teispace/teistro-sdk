@@ -290,6 +290,7 @@ pub fn powi(x: f64, n: i32) -> f64 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::*;
 

@@ -2027,6 +2027,7 @@ pub fn java(model: &Model, package: &str) -> String {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::panic, reason = "tests fail by panicking")]
 

@@ -85,6 +85,10 @@ rust-version = "1.85"
 # (ADR-0019, ADR-0022); a tooling binary may allow them at crate level with
 # a comment saying why.
 [workspace.lints.rust]
+# verify's coverage job measures shipped code only: cargo-llvm-cov sets
+# `coverage_nightly` on the nightly, under which every test module is
+# `coverage(off)` (`xtask/src/coverage.rs`).
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 unsafe_code = "forbid"
 missing_docs = "warn"
 missing_debug_implementations = "warn"

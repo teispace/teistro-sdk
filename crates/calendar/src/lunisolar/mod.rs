@@ -385,6 +385,7 @@ fn forward(at: JulianDay<Utc>, days: f64) -> Result<JulianDay<Utc>, Error> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::expect_used,

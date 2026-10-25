@@ -117,6 +117,7 @@ pub fn corpus(api: &Api) -> Result<String, String> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::float_cmp, reason = "the neighbours are exact doubles")]
     #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]

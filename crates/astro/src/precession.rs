@@ -296,6 +296,7 @@ pub fn ecliptic_to_equatorial(v: Vector3, obliquity_rad: f64) -> Vector3 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

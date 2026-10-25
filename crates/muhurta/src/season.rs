@@ -923,6 +923,7 @@ fn interval(from: f64, to: f64) -> Result<Interval, Error> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

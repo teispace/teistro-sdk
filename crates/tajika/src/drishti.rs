@@ -822,6 +822,7 @@ pub fn all_with_rules(sky: &AnnualSky, rules: DrishtiRules) -> Result<Vec<Betwee
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

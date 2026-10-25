@@ -308,6 +308,7 @@ pub fn c_type(api: &Api, ty: &TypeRef) -> String {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::too_many_lines, reason = "one description built by hand")]
 

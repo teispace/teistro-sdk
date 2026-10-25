@@ -519,6 +519,7 @@ pub(crate) fn refused(field: &str, message: impl Into<String>, hint: &str) -> Er
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

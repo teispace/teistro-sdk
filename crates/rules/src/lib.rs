@@ -36,6 +36,8 @@
 //! # Ok::<(), serde_json::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod chart;
 mod dwigraha;
 pub mod eval;
@@ -48,6 +50,7 @@ pub mod rule;
 pub mod shipped;
 pub mod table;
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod test_chart;
 pub mod timing;
 pub mod trace;

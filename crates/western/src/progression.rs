@@ -453,6 +453,7 @@ impl NoonRule {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
 

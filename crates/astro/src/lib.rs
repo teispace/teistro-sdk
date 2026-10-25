@@ -48,6 +48,8 @@
 //! assert!((dt.seconds - 63.83).abs() < 0.02);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod ayanamsha;
 pub mod completion;
 pub mod delta_t;

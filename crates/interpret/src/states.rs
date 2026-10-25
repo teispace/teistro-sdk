@@ -148,6 +148,7 @@ fn say_what_a_corpus_carries(plan: &mut Plan, state: &GrahaState, vocabulary: &d
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

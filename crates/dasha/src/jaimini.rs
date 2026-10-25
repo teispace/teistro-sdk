@@ -625,6 +625,7 @@ pub fn graha_arudhas(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub(crate) mod tests {
     #![allow(clippy::unwrap_used, clippy::indexing_slicing, reason = "tests")]
 

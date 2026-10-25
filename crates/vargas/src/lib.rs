@@ -46,6 +46,8 @@
 //! assert_eq!(place(&d37, longitude).part, 14);
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 pub mod change;
 pub mod chart;
 pub mod evaluate;

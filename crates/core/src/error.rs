@@ -594,6 +594,7 @@ impl From<RatioError> for Error {
 pub type Result<T, E = Error> = core::result::Result<T, E>;
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

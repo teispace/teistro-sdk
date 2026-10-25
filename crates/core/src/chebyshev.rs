@@ -273,6 +273,7 @@ impl<const N: usize, const C: usize> Segments<N, C> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::float_cmp,

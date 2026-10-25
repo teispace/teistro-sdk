@@ -46,6 +46,7 @@
 //! # Ok::<(), teistro_core::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 pub mod baseline;
@@ -56,6 +57,7 @@ pub mod purifier;
 pub mod svarodaya;
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
 
 use serde::{Deserialize, Serialize};

@@ -2212,6 +2212,7 @@ fn hold_out(request: &BaselineRequest, pass: &Pass, mode: usize) -> Vec<HoldOut>
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::expect_used,

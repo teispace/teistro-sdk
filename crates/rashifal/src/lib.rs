@@ -13,6 +13,8 @@
 //! The crate reads no clock and no ephemeris: the façade founds the
 //! snapshot and finds the events.
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::house::House;
@@ -24,6 +26,7 @@ pub mod baseline;
 pub use baseline::{BaselineScore, Period};
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
 
 /// The readings a rashifal is given under.

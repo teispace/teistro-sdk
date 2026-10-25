@@ -84,6 +84,7 @@ pub fn houses(bhavas: &[Bhava; 12]) -> Plan {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

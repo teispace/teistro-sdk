@@ -362,6 +362,7 @@ const fn most() -> usize {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
 

@@ -966,6 +966,7 @@ fn cap(factors: &[Factor]) -> Option<i32> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[allow(clippy::indexing_slicing, reason = "tests index fixed lists")]
 mod tests {
     use super::{

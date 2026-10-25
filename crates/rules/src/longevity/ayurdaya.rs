@@ -1160,6 +1160,7 @@ pub(crate) fn drekkana_of(longitude: f64) -> Rashi {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

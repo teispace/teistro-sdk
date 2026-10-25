@@ -621,6 +621,7 @@ fn assemble(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,
@@ -994,6 +995,7 @@ mod tests {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod native_tests {
     #![allow(
         clippy::unwrap_used,

@@ -1465,6 +1465,7 @@ fn by_point(grahas: &[GrahaVedha; 9], native: &NativePoints) -> Vec<PointVedha> 
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

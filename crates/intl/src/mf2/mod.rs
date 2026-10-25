@@ -8,6 +8,7 @@ pub mod display;
 pub mod parser;
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
 
 pub use ast::Message;

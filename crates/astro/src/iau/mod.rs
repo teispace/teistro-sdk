@@ -889,6 +889,7 @@ pub fn refco(phpa: f64, tc: f64, rh: f64, wl: f64) -> (f64, f64) {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

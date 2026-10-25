@@ -18,6 +18,7 @@
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
 
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
 use serde::{Deserialize, Serialize};
@@ -25,6 +26,7 @@ use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
 
 /// Balliett's cycle (*The Philosophy of Numbers*, 1908, p. 17): a to i,

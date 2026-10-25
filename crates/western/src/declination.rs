@@ -321,6 +321,7 @@ pub(crate) fn refuse_past_a_pole(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::unwrap_used,

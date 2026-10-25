@@ -1059,6 +1059,7 @@ pub fn check_houses(houses: &[u8]) -> Result<(), Error> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(
         clippy::panic,

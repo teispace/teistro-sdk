@@ -71,6 +71,7 @@ pub fn dasayus(first_lord: Graha, remaining: f64) -> Option<Dasayus> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::*;
 

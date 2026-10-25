@@ -465,6 +465,7 @@ pub fn karaka_bhavas(chart: &RashiChart) -> [KarakaBhava; 7] {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::indexing_slicing, reason = "tests")]
 

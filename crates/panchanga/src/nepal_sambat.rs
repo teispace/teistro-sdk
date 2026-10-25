@@ -240,6 +240,7 @@ pub const fn month_of(amanta: Masa) -> u8 {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::*;
 
