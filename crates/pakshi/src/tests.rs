@@ -370,8 +370,14 @@ fn the_yamas_meet_to_the_bit_and_every_instant_is_in_one() {
     // Lengths whose fifths and sums do not round alike: 0.7 + 0.1 is not 0.8.
     let days = [
         Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla).unwrap(),
-        Day::new(2_460_482.245, 2_460_482.807, 2_460_483.246, Vara::Shukravara, Paksha::Krishna)
-            .unwrap(),
+        Day::new(
+            2_460_482.245,
+            2_460_482.807,
+            2_460_483.246,
+            Vara::Shukravara,
+            Paksha::Krishna,
+        )
+        .unwrap(),
     ];
     for day in &days {
         for clock in [Clock::Stretched, Clock::Nazhigai] {
