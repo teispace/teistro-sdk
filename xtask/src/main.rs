@@ -296,6 +296,7 @@ mod dasha_coverage;
 mod dasha_systems;
 mod dashas;
 mod declinations;
+mod doc_examples;
 mod document_schema;
 mod doshas;
 mod dossier_measured;
@@ -767,6 +768,7 @@ fn main() {
         Some("check-abi") => abi_stability::check(&repo_root(), &args),
         Some("coverage") => coverage::command(&repo_root(), "coverage", &args),
         Some("check-coverage") => coverage::command(&repo_root(), "check-coverage", &args),
+        Some("check-doc-examples") => doc_examples::check(&repo_root()),
         Some("mutants") => mutants::command(&repo_root(), "mutants", &args),
         Some("check-mutants") => mutants::command(&repo_root(), "check-mutants", &args),
         Some("check-tag") => match args.as_slice() {
@@ -848,7 +850,7 @@ fn usage() -> i32 {
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | measure-mobile [ROW...] | measure-ffi-cost | measure-micro | measure-ab | app-speed-device ROW | \
          conformance --from DIR | check-conformance --from DIR | \
-         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | check-coverage [--from FILE] | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-teimeris-adapter | check-properties | check-tag TAG | version [X] | changelog-entry X | \
+         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | check-coverage [--from FILE] | check-doc-examples | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-teimeris-adapter | check-properties | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
          publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
          compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \

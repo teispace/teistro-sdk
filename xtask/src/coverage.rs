@@ -44,7 +44,7 @@ const PAGE: &str = "docs/05-testing/coverage-measured.md";
 const SCHEMA: &str = "teistro-coverage/1";
 /// The toolchain verify's `coverage` job measures with; `check-coverage`
 /// holds the workflow to it.
-const COUNTED_BY: &str = "nightly-2026-10-21";
+pub(crate) const COUNTED_BY: &str = "nightly-2026-10-21";
 /// The workflow that runs the measurement.
 const WORKFLOW: &str = ".github/workflows/verify.yml";
 /// The line coverage the quality bar asks of a computation crate.
