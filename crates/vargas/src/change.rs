@@ -26,6 +26,13 @@ use crate::scheme::{Scheme, Spans};
 
 /// How closely a change is placed, days: a hundredth of a second, the
 /// tolerance the boundary solver stops at (`astro::events`).
+///
+/// ```
+/// use teistro_vargas::change::TOLERANCE_DAYS;
+///
+/// // A hundredth of a second.
+/// assert!((TOLERANCE_DAYS * 86_400.0 - 0.008_64).abs() < 1e-12);
+/// ```
 pub const TOLERANCE_DAYS: f64 = 1e-7;
 
 /// The most halvings the unequal-span search takes.
@@ -36,6 +43,26 @@ pub const TOLERANCE_DAYS: f64 = 1e-7;
 const MOST_HALVINGS: u32 = 64;
 
 /// A body leaving one sign of a divisional chart for another.
+///
+/// ```
+/// use teistro_astro::completion::Completion;
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_core::catalogue::Varga;
+/// use teistro_core::settings::OverridePolicy;
+/// use teistro_core::quantity::{JulianDay, Ut1};
+/// use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// use teistro_vargas::Scheme;
+/// use teistro_vargas::change::changes;
+///
+/// let provider = TestProvider::new();
+/// let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// let sky = completion.longitudes(Frame::CANONICAL);
+/// let (from, to) = (JulianDay::<Ut1>::literal(2_460_482.5), JulianDay::<Ut1>::literal(2_460_512.5));
+/// let navamshas = changes(&sky, Body::Sun, &Scheme::of(Varga::D9), from, to)?;
+/// let first = navamshas.first().ok_or("the Sun moves")?;
+/// assert_ne!(first.from, first.into);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Change {
@@ -48,6 +75,29 @@ pub struct Change {
 }
 
 /// Every change of a body's divisional sign inside a window, in order.
+///
+/// ```
+/// use teistro_astro::completion::Completion;
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_core::catalogue::Varga;
+/// use teistro_core::settings::OverridePolicy;
+/// use teistro_core::quantity::{JulianDay, Ut1};
+/// use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// use teistro_vargas::Scheme;
+/// use teistro_vargas::change::changes;
+///
+/// let provider = TestProvider::new();
+/// let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// let sky = completion.longitudes(Frame::CANONICAL);
+/// let (from, to) = (JulianDay::<Ut1>::literal(2_460_482.5), JulianDay::<Ut1>::literal(2_460_512.5));
+/// // The Sun crosses a navamsha's 3° 20′ about every three and a third days.
+/// let navamshas = changes(&sky, Body::Sun, &Scheme::of(Varga::D9), from, to)?;
+/// assert!((8..=10).contains(&navamshas.len()));
+/// assert!(navamshas.windows(2).all(|pair| pair[0].into == pair[1].from));
+/// // The trimshamsha's uneven parts, found by bisection.
+/// assert!(!changes(&sky, Body::Sun, &Scheme::of(Varga::D30), from, to)?.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -17,6 +17,24 @@ use crate::theme::refused;
 
 /// What a drawing writes: a title, each cell's label, each body's name,
 /// and the lagna's.
+///
+/// ```
+/// # use std::collections::BTreeMap;
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_geometry::{Body, Placements, place, rows};
+/// # let chart = Placements::new(Rashi::Leo).with(Body::in_sign(Graha::Sun.key_id(), Rashi::Leo));
+/// # let placed = place(&rows::north_indian(), &chart)?;
+/// use teistro_render_svg::Labels;
+///
+/// let labels = Labels {
+///     title: Some(String::from("A Leo lagna")),
+///     cells: placed.cells.iter().map(|cell| cell.sign.id().to_string()).collect(),
+///     bodies: BTreeMap::from([(Graha::Sun.key_id(), String::from("Su"))]),
+///     lagna: Some(String::from("As")),
+/// };
+/// assert!(labels.check(&placed).is_ok());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Labels {
@@ -35,6 +53,29 @@ pub struct Labels {
 impl Labels {
     /// Refuses labels that do not fit the chart: a cell count that differs,
     /// a body with no name, or a character XML cannot carry.
+    ///
+    /// ```
+    /// # use std::collections::BTreeMap;
+    /// # use teistro_core::catalogue::{Graha, Rashi};
+    /// # use teistro_geometry::{Body, Placements, place, rows};
+    /// # let chart = Placements::new(Rashi::Leo).with(Body::in_sign(Graha::Sun.key_id(), Rashi::Leo));
+    /// # let placed = place(&rows::north_indian(), &chart)?;
+    /// use teistro_render_svg::Labels;
+    ///
+    /// let labels = Labels {
+    ///     title: Some(String::from("A Leo lagna")),
+    ///     cells: placed.cells.iter().map(|cell| cell.sign.id().to_string()).collect(),
+    ///     bodies: BTreeMap::from([(Graha::Sun.key_id(), String::from("Su"))]),
+    ///     lagna: Some(String::from("As")),
+    /// };
+    /// assert!(labels.check(&placed).is_ok());
+    /// // A body the labels do not name is refused by the field.
+    /// let unnamed = Labels { bodies: BTreeMap::new(), ..labels.clone() };
+    /// assert_eq!(unnamed.check(&placed).unwrap_err().field(), Some("labels.bodies"));
+    /// let short = Labels { cells: Vec::new(), ..labels };
+    /// assert_eq!(short.check(&placed).unwrap_err().field(), Some("labels.cells"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///

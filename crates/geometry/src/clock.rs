@@ -12,6 +12,16 @@ use crate::path::Point;
 /// The unit direction `half_hours` half-hours clockwise from twelve o'clock,
 /// in the unit square's axes (x right, y down): twelve o'clock is `(0, -1)`,
 /// three o'clock `(1, 0)`.
+///
+/// ```
+/// use teistro_geometry::clock::direction;
+///
+/// assert_eq!(direction(0), (0.0, -1.0)); // twelve o'clock
+/// assert_eq!(direction(6), (1.0, 0.0)); // three
+/// assert_eq!(direction(30), direction(6)); // a full turn is 24 half hours
+/// let (x, y) = direction(3); // half past one: 45°
+/// assert_eq!((x, -y), (2.0_f64.sqrt() / 2.0, 2.0_f64.sqrt() / 2.0));
+/// ```
 #[must_use]
 pub fn direction(half_hours: u32) -> (f64, f64) {
     let (root2, root3, root6) = (2.0_f64.sqrt(), 3.0_f64.sqrt(), 6.0_f64.sqrt());
@@ -42,6 +52,15 @@ pub fn direction(half_hours: u32) -> (f64, f64) {
 }
 
 /// The point at `radius` from `centre`, `half_hours` clockwise from twelve.
+///
+/// ```
+/// use teistro_geometry::Point;
+/// use teistro_geometry::clock::at;
+///
+/// let centre = Point::new(0.5, 0.5);
+/// assert_eq!(at(centre, 0.5, 0), Point::new(0.5, 0.0));
+/// assert_eq!(at(centre, 0.25, 18), Point::new(0.25, 0.5));
+/// ```
 #[must_use]
 pub fn at(centre: Point, radius: f64, half_hours: u32) -> Point {
     let (x, y) = direction(half_hours);

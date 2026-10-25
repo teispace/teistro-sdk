@@ -41,6 +41,22 @@ use teistro_core::catalogue::HouseSystem;
 use teistro_core::settings::Settings;
 
 /// What a house system is being asked for.
+///
+/// ```
+/// use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch};
+/// use teistro_houses::system::{Purpose, system_for};
+///
+/// let settings = Profile::shipped(DEFAULT_PROFILE)
+///     .expect("the default profile")
+///     .resolve(&SettingsPatch::default())
+///     .expect("it resolves")
+///     .settings;
+/// // Two purposes, and under the default profile two answers.
+/// assert_ne!(
+///     system_for(&settings, Purpose::Placement, None),
+///     system_for(&settings, Purpose::Chalit, None)
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -56,6 +72,25 @@ pub enum Purpose {
 ///
 /// A module's override wins over the purpose's own system; a module with
 /// no override, or no module at all, takes the purpose's.
+///
+/// ```
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch};
+/// use teistro_houses::system::{Purpose, system_for};
+///
+/// let mut settings = Profile::shipped(DEFAULT_PROFILE)
+///     .expect("the default profile")
+///     .resolve(&SettingsPatch::default())
+///     .expect("it resolves")
+///     .settings;
+/// settings.houses.module_overrides.insert(String::from("tajika"), HouseSystem::Campanus);
+/// // The module's override wins; another module takes the purpose's own.
+/// assert_eq!(system_for(&settings, Purpose::Placement, Some("tajika")), HouseSystem::Campanus);
+/// assert_eq!(
+///     system_for(&settings, Purpose::Placement, Some("jaimini")),
+///     settings.houses.placement_system
+/// );
+/// ```
 #[must_use]
 pub fn system_for(settings: &Settings, purpose: Purpose, module: Option<&str>) -> HouseSystem {
     if let Some(override_for) = module.and_then(|module| override_of(settings, module)) {
@@ -71,6 +106,22 @@ pub fn system_for(settings: &Settings, purpose: Purpose, module: Option<&str>) -
 ///
 /// The name is matched without regard to case, because a settings
 /// document is written by hand and `KP` and `kp` are the same module.
+///
+/// ```
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch};
+/// use teistro_houses::system::override_of;
+///
+/// let mut settings = Profile::shipped(DEFAULT_PROFILE)
+///     .expect("the default profile")
+///     .resolve(&SettingsPatch::default())
+///     .expect("it resolves")
+///     .settings;
+/// settings.houses.module_overrides.insert(String::from("tajika"), HouseSystem::Campanus);
+/// // Matched without regard to case.
+/// assert_eq!(override_of(&settings, "TAJIKA"), Some(HouseSystem::Campanus));
+/// assert_eq!(override_of(&settings, "jaimini"), None);
+/// ```
 #[must_use]
 pub fn override_of(settings: &Settings, module: &str) -> Option<HouseSystem> {
     settings
@@ -83,6 +134,20 @@ pub fn override_of(settings: &Settings, module: &str) -> Option<HouseSystem> {
 
 /// Every module the settings name an override for, in the settings'
 /// own order.
+///
+/// ```
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch};
+/// use teistro_houses::system::overridden;
+///
+/// let mut settings = Profile::shipped(DEFAULT_PROFILE)
+///     .expect("the default profile")
+///     .resolve(&SettingsPatch::default())
+///     .expect("it resolves")
+///     .settings;
+/// settings.houses.module_overrides.insert(String::from("tajika"), HouseSystem::Campanus);
+/// assert!(overridden(&settings).any(|(module, system)| module == "tajika" && system == HouseSystem::Campanus));
+/// ```
 pub fn overridden(settings: &Settings) -> impl Iterator<Item = (&str, HouseSystem)> {
     settings
         .houses

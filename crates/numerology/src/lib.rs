@@ -29,6 +29,14 @@ mod tests;
 
 /// Balliett's cycle (*The Philosophy of Numbers*, 1908, p. 17): a to i,
 /// j to r and s to z against 1 to 9.
+///
+/// ```
+/// use teistro_numerology::BALLIETT;
+///
+/// // A, J and S are 1; I and R are 9.
+/// assert_eq!((BALLIETT[0], BALLIETT[9], BALLIETT[18]), (1, 1, 1));
+/// assert_eq!((BALLIETT[8], BALLIETT[17]), (9, 9));
+/// ```
 pub const BALLIETT: [u8; 26] = [
     1, 2, 3, 4, 5, 6, 7, 8, 9, // a-i
     1, 2, 3, 4, 5, 6, 7, 8, 9, // j-r
@@ -37,11 +45,28 @@ pub const BALLIETT: [u8; 26] = [
 
 /// Cheiro's table (*Cheiro's Book of Numbers*, p. 70), the system he
 /// calls Chaldean. No letter is 9.
+///
+/// ```
+/// use teistro_numerology::CHEIRO;
+///
+/// assert_eq!(CHEIRO[5], 8); // F
+/// assert!(!CHEIRO.contains(&9));
+/// ```
 pub const CHEIRO: [u8; 26] = [
     1, 2, 3, 4, 5, 8, 3, 5, 1, 1, 2, 3, 4, 5, 7, 8, 1, 2, 3, 4, 6, 6, 6, 5, 1, 7,
 ];
 
 /// Which system reads the name.
+///
+/// ```
+/// use teistro_numerology::{NumerologyRules, System, name_number};
+///
+/// // Cheiro's Lloyd is 18, so 9 (p. 71); Balliett's is 23, so 5.
+/// let rules = NumerologyRules::default();
+/// assert_eq!(name_number("Lloyd", System::Chaldean, &rules)?.total, 9);
+/// assert_eq!(name_number("Lloyd", System::Pythagorean, &rules)?.total, 5);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -55,6 +80,13 @@ pub enum System {
 
 impl System {
     /// The letter table this system reads, A to Z.
+    ///
+    /// ```
+    /// use teistro_numerology::{BALLIETT, CHEIRO, System};
+    ///
+    /// assert_eq!(System::Pythagorean.table(), &BALLIETT);
+    /// assert_eq!(System::Chaldean.table(), &CHEIRO);
+    /// ```
     #[must_use]
     pub const fn table(self) -> &'static [u8; 26] {
         match self {
@@ -65,6 +97,15 @@ impl System {
 }
 
 /// The numbers that stop a reduction (C-new-8).
+///
+/// ```
+/// use teistro_numerology::{Masters, reduce};
+///
+/// // Balliett's Orange is 33, so 6 (p. 30).
+/// assert_eq!(reduce(33, Masters::default()).number, 6);
+/// assert_eq!(reduce(33, Masters::ElevenTwentyTwoThirtyThree).number, 33);
+/// assert_eq!(reduce(29, Masters::None).steps, [29, 11, 2]);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -90,6 +131,17 @@ impl Masters {
 }
 
 /// Where a name of several words is reduced (C-new-17).
+///
+/// ```
+/// use teistro_numerology::{NameReduction, NumerologyRules, System, name_number};
+///
+/// // Henry 7 and Elder 8 make 15 by word; their letters make 60.
+/// let by_word = NumerologyRules::default();
+/// let whole = NumerologyRules { name_reduction: NameReduction::Whole, ..by_word };
+/// assert_eq!(name_number("Henry Elder", System::Pythagorean, &by_word)?.total, 15);
+/// assert_eq!(name_number("Henry Elder", System::Pythagorean, &whole)?.total, 60);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -103,6 +155,18 @@ pub enum NameReduction {
 }
 
 /// What a Chaldean name's compound number is (C-new-18).
+///
+/// ```
+/// use teistro_numerology::{ChaldeanCompound, NumerologyRules, System, name_number};
+///
+/// // Cheiro adds Lloyd's 9 and George's 7 to 16 (pp. 71-72).
+/// let rules = NumerologyRules::default();
+/// let name = name_number("Lloyd George", System::Chaldean, &rules)?;
+/// assert_eq!(name.compound, Some(16));
+/// let letters = NumerologyRules { chaldean_compound: ChaldeanCompound::LetterTotal, ..rules };
+/// assert_eq!(name_number("Lloyd George", System::Chaldean, &letters)?.compound, Some(43));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -116,6 +180,18 @@ pub enum ChaldeanCompound {
 }
 
 /// How a birth date becomes the Pythagorean birth number (C-new-19).
+///
+/// ```
+/// use teistro_numerology::{BirthDate, BirthReduction, NumerologyRules, pythagorean_birth};
+///
+/// let date = BirthDate::new(1872, 1, 17)?;
+/// let by_part = pythagorean_birth(date, &NumerologyRules::default());
+/// assert_eq!(by_part.year.steps, [1872, 18, 9]);
+/// let rules = NumerologyRules { birth_reduction: BirthReduction::DigitSum, ..NumerologyRules::default() };
+/// // One digit sum of each part, and the total reduced: 1 + 8 + 18.
+/// assert_eq!(pythagorean_birth(date, &rules).sum.map(|sum| sum.steps), Some(vec![27, 9]));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -132,6 +208,18 @@ pub enum BirthReduction {
 
 /// What is done with a character that is not one of the 26 Latin letters
 /// (C-new-23).
+///
+/// ```
+/// use teistro_numerology::{NonLatin, NumerologyRules, System, name_number};
+///
+/// let rules = NumerologyRules::default();
+/// let refused = name_number("José", System::Pythagorean, &rules).unwrap_err();
+/// assert_eq!(refused.field(), Some("name"));
+/// let skip = NumerologyRules { non_latin: NonLatin::Skip, ..rules };
+/// // J, O and S: 1 + 6 + 1.
+/// assert_eq!(name_number("José", System::Pythagorean, &skip)?.total, 8);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -147,6 +235,15 @@ pub enum NonLatin {
 /// The readings numerology is taken under. Each default is what the
 /// text that defines the system prints; [`NumerologyRules::baseline`] is
 /// the baseline engine's, value for value.
+///
+/// ```
+/// use teistro_numerology::{Masters, NumerologyRules};
+///
+/// let rules: NumerologyRules = serde_json::from_str(r#"{"masters": "NONE"}"#).unwrap();
+/// assert_eq!(rules.masters, Masters::None);
+/// // What a document leaves out is the text's default.
+/// assert_eq!(rules.name_reduction, NumerologyRules::default().name_reduction);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -167,6 +264,14 @@ impl NumerologyRules {
     /// The baseline engine's readings, every one of them; a profile taken
     /// under these also carries the baseline's own numbers
     /// ([`Profile::baseline`]).
+    ///
+    /// ```
+    /// use teistro_numerology::{Masters, NumerologyRules};
+    ///
+    /// let baseline = NumerologyRules::baseline();
+    /// assert_eq!(baseline.masters, Masters::ElevenTwentyTwoThirtyThree);
+    /// assert_ne!(baseline, NumerologyRules::default());
+    /// ```
     #[must_use]
     pub const fn baseline() -> NumerologyRules {
         NumerologyRules {
@@ -181,6 +286,14 @@ impl NumerologyRules {
 
 /// A number reduced: every sum from the first to the last, so that
 /// "33, so 6" and "38, so 11" can both be read back.
+///
+/// ```
+/// use teistro_numerology::{Masters, reduce};
+///
+/// let reduction = reduce(38, Masters::default());
+/// // 38, so 11, which stands.
+/// assert_eq!((reduction.steps, reduction.number), (vec![38, 11], 11));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -193,6 +306,13 @@ pub struct Reduction {
 
 /// Reduces a number by adding its digits until one digit is left or a
 /// master the rules keep is reached. Zero stays zero.
+///
+/// ```
+/// use teistro_numerology::{Masters, reduce};
+///
+/// assert_eq!(reduce(1872, Masters::None).steps, [1872, 18, 9]);
+/// assert_eq!(reduce(0, Masters::None).number, 0);
+/// ```
 #[must_use]
 pub fn reduce(n: u32, masters: Masters) -> Reduction {
     let mut steps = vec![n];
@@ -214,6 +334,14 @@ fn digit_sum(mut n: u32) -> u32 {
 }
 
 /// One letter of a word and what the system's table makes it worth.
+///
+/// ```
+/// use teistro_numerology::{Letter, NumerologyRules, System, name_number};
+///
+/// let name = name_number("ab", System::Pythagorean, &NumerologyRules::default())?;
+/// assert_eq!(name.words[0].letters[0], Letter { letter: 'A', value: 1 });
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -225,6 +353,15 @@ pub struct Letter {
 }
 
 /// One word of a name.
+///
+/// ```
+/// use teistro_numerology::{NumerologyRules, System, name_number};
+///
+/// let name = name_number("Henry Elder", System::Pythagorean, &NumerologyRules::default())?;
+/// let henry = &name.words[0];
+/// assert_eq!((henry.text.as_str(), henry.total, henry.reduction.number), ("Henry", 34, 7));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -240,6 +377,16 @@ pub struct WordNumber {
 }
 
 /// A name read under one system.
+///
+/// ```
+/// use teistro_numerology::{NumerologyRules, System, name_number};
+///
+/// let name = name_number("Henry Elder", System::Pythagorean, &NumerologyRules::default())?;
+/// assert_eq!(name.words.len(), 2);
+/// // Only the Chaldean has a compound.
+/// assert_eq!(name.compound, None);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -261,6 +408,17 @@ pub struct NameNumber {
 ///
 /// Words are separated by spaces, hyphens and apostrophes, which are
 /// never refused. Letters are read without regard to case.
+///
+/// ```
+/// use teistro_numerology::{NumerologyRules, System, name_number};
+///
+/// let rules = NumerologyRules::default();
+/// // Hyphens and apostrophes separate words and are never refused.
+/// let name = name_number("Jean-Paul O'Neil", System::Pythagorean, &rules)?;
+/// assert_eq!(name.words.len(), 4);
+/// assert!(name_number("--", System::Pythagorean, &rules).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -364,6 +522,16 @@ fn words(
 /// A Gregorian birth date, validated: read from JSON through
 /// [`BirthDate::new`], so a date the calendar does not have is refused
 /// where it is read.
+///
+/// ```
+/// use teistro_numerology::BirthDate;
+///
+/// let date: BirthDate = serde_json::from_str(r#"{"year": 1838, "month": 7, "day": 11}"#).unwrap();
+/// assert_eq!(date, BirthDate::new(1838, 7, 11)?);
+/// // A date the calendar does not have is refused where it is read.
+/// assert!(serde_json::from_str::<BirthDate>(r#"{"year": 2023, "month": 2, "day": 29}"#).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "DateParts")]
@@ -396,6 +564,15 @@ impl TryFrom<DateParts> for BirthDate {
 
 impl BirthDate {
     /// A Gregorian date, held to the calendar.
+    ///
+    /// ```
+    /// use teistro_numerology::BirthDate;
+    ///
+    /// assert!(BirthDate::new(2024, 2, 29).is_ok());
+    /// assert_eq!(BirthDate::new(2023, 2, 29).unwrap_err().field(), Some("day"));
+    /// assert_eq!(BirthDate::new(0, 1, 1).unwrap_err().field(), Some("year"));
+    /// assert_eq!(BirthDate::new(2024, 13, 1).unwrap_err().field(), Some("month"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -430,6 +607,16 @@ impl BirthDate {
 }
 
 /// The Pythagorean birth number.
+///
+/// ```
+/// use teistro_numerology::{BirthDate, NumerologyRules, pythagorean_birth};
+///
+/// // Balliett's 11 July 1838 is "9, 11" (p. 90): the day stands apart.
+/// let birth = pythagorean_birth(BirthDate::new(1838, 7, 11)?, &NumerologyRules::default());
+/// assert_eq!(birth.apart, [11]);
+/// assert_eq!(birth.sum.map(|sum| sum.number), Some(9));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -449,6 +636,16 @@ pub struct BirthNumber {
 }
 
 /// The Pythagorean birth number of a date.
+///
+/// ```
+/// use teistro_numerology::{BirthDate, NumerologyRules, pythagorean_birth};
+///
+/// // 17 January 1872 is 1 + 8 + 9 = 18, so 9 (Balliett p. 19).
+/// let birth = pythagorean_birth(BirthDate::new(1872, 1, 17)?, &NumerologyRules::default());
+/// assert_eq!((birth.month.number, birth.day.number, birth.year.number), (1, 8, 9));
+/// assert_eq!(birth.sum.map(|sum| sum.steps), Some(vec![18, 9]));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn pythagorean_birth(date: BirthDate, rules: &NumerologyRules) -> BirthNumber {
     let masters = rules.masters;
@@ -504,6 +701,15 @@ fn digits(n: u32) -> Reduction {
 
 /// Cheiro's numbers of a date: the day and the year, each its own, which
 /// are "not added together" (p. 93).
+///
+/// ```
+/// use teistro_numerology::{BirthDate, chaldean_birth};
+///
+/// let date = chaldean_birth(BirthDate::new(1872, 1, 17)?);
+/// // The two are "not added together".
+/// assert_eq!((date.birth.number, date.year.number), (8, 9));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -515,6 +721,16 @@ pub struct ChaldeanDate {
 }
 
 /// Cheiro's numbers of a date.
+///
+/// ```
+/// use teistro_numerology::{BirthDate, chaldean_birth};
+///
+/// // The 29th is 11, so 2: the Chaldean keeps no master.
+/// let date = chaldean_birth(BirthDate::new(2000, 1, 29)?);
+/// assert_eq!(date.birth.steps, [29, 11, 2]);
+/// assert_eq!(date.year.number, 2);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn chaldean_birth(date: BirthDate) -> ChaldeanDate {
     ChaldeanDate {
@@ -526,6 +742,16 @@ pub fn chaldean_birth(date: BirthDate) -> ChaldeanDate {
 /// The compound number whose meaning Cheiro gives a compound (pp. 78-85):
 /// 10 to 32 their own, and from 33 the number nine below, but for 37,
 /// 43 and 51, which have meanings of their own. `None` outside 10 to 52.
+///
+/// ```
+/// use teistro_numerology::compound_class;
+///
+/// assert_eq!(compound_class(16), Some(16));
+/// assert_eq!(compound_class(40), Some(31));
+/// assert_eq!(compound_class(43), Some(43));
+/// assert_eq!(compound_class(9), None);
+/// assert_eq!(compound_class(53), None);
+/// ```
 #[must_use]
 pub const fn compound_class(n: u32) -> Option<u32> {
     match n {
@@ -537,6 +763,15 @@ pub const fn compound_class(n: u32) -> Option<u32> {
 
 /// The planets Cheiro gives a single number (p. 22): the Sun is 1 and 4,
 /// the Moon 2 and 7, Uranus 4 and Neptune 7. Empty outside 1 to 9.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_numerology::planets_of;
+///
+/// assert_eq!(planets_of(4), [Graha::Uranus, Graha::Sun]);
+/// assert_eq!(planets_of(9), [Graha::Mars]);
+/// assert!(planets_of(10).is_empty());
+/// ```
 #[must_use]
 pub const fn planets_of(n: u32) -> &'static [Graha] {
     match n {
@@ -556,6 +791,15 @@ pub const fn planets_of(n: u32) -> &'static [Graha] {
 /// The baseline engine's number for a graha, which gives Rahu 4 and Ketu
 /// 7 where Cheiro gives Uranus and Neptune; no public-domain text in hand
 /// prints it. `None` for a graha it does not number.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_numerology::baseline_anka;
+///
+/// assert_eq!(baseline_anka(Graha::Rahu), Some(4));
+/// assert_eq!(baseline_anka(Graha::Ketu), Some(7));
+/// assert_eq!(baseline_anka(Graha::Uranus), None);
+/// ```
 #[must_use]
 pub const fn baseline_anka(graha: Graha) -> Option<u32> {
     match graha {
@@ -574,6 +818,13 @@ pub const fn baseline_anka(graha: Graha) -> Option<u32> {
 
 /// The days of a month whose single number is `n` (Cheiro p. 49: the
 /// 5th, 14th and 23rd for 5).
+///
+/// ```
+/// use teistro_numerology::days_of;
+///
+/// assert_eq!(days_of(5), [5, 14, 23]);
+/// assert_eq!(days_of(1), [1, 10, 19, 28]);
+/// ```
 #[must_use]
 pub fn days_of(n: u32) -> Vec<u8> {
     (1..=31u8)
@@ -582,6 +833,16 @@ pub fn days_of(n: u32) -> Vec<u8> {
 }
 
 /// Everything numerology says of a name and a birth date.
+///
+/// ```
+/// use teistro_numerology::{BirthDate, NumerologyRules, profile};
+///
+/// let read = profile("Henry Elder", BirthDate::new(1872, 1, 17)?, &NumerologyRules::default())?;
+/// assert_eq!(read.pythagorean_name.reduction.number, 6);
+/// assert_eq!(read.chaldean_birth.birth.number, 8);
+/// assert!(read.baseline.is_none());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -602,6 +863,17 @@ pub struct Profile {
 
 /// The numbers only the baseline engine computes, with no public-domain
 /// source in hand.
+///
+/// ```
+/// use teistro_numerology::{BirthDate, NumerologyRules, profile};
+///
+/// let read = profile("Henry Elder", BirthDate::new(1872, 1, 17)?, &NumerologyRules::baseline())?;
+/// let baseline = read.baseline.expect("under the baseline's rules");
+/// // Three Es make 15, so 6; the rest make 45, so 9.
+/// assert_eq!((baseline.soul.number, baseline.personality.number), (6, 9));
+/// assert_eq!(baseline.chaldean_destiny.steps, [27, 9]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -615,6 +887,15 @@ pub struct BaselineProfile {
 }
 
 /// Everything numerology says of a name and a birth date.
+///
+/// ```
+/// use teistro_numerology::{BirthDate, NumerologyRules, profile};
+///
+/// let date = BirthDate::new(1872, 1, 17)?;
+/// assert!(profile("Henry Elder", date, &NumerologyRules::default()).is_ok());
+/// assert!(profile("Ж", date, &NumerologyRules::default()).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

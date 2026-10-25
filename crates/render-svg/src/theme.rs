@@ -14,6 +14,15 @@ use teistro_core::error::Error;
 ///
 /// Sizes are fractions of [`Style::size`], so one theme draws the same
 /// chart at any size.
+///
+/// ```
+/// use teistro_render_svg::Style;
+///
+/// let style = Style { accent: String::from("#0b57d0"), ..Style::light() };
+/// assert!(style.validate().is_ok());
+/// // Sizes are fractions of the drawing's, so one style draws any size.
+/// assert!(style.body_size < 1.0 && style.size == 1000.0);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -52,6 +61,16 @@ pub struct Style {
 
 /// What a drawing says: read when the labels are composed, never by the
 /// renderer itself.
+///
+/// ```
+/// use teistro_render_svg::{BodyForm, CellLabel, Content};
+///
+/// // A record names only what it changes.
+/// let content: Content = serde_json::from_str(r#"{"body_form": "GLYPH"}"#).unwrap();
+/// assert_eq!(content.body_form, BodyForm::Glyph);
+/// assert_eq!(content.cell_label, CellLabel::Auto);
+/// assert_eq!(Content::default().retrograde_mark.as_deref(), Some("(R)"));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -71,6 +90,13 @@ pub struct Content {
 }
 
 /// The locale form a body is written in.
+///
+/// ```
+/// use teistro_render_svg::BodyForm;
+///
+/// assert_eq!(BodyForm::default(), BodyForm::Short);
+/// assert_eq!(serde_json::to_value(BodyForm::Glyph).unwrap(), "GLYPH");
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -83,6 +109,13 @@ pub enum BodyForm {
 }
 
 /// What a cell's label shows.
+///
+/// ```
+/// use teistro_render_svg::CellLabel;
+///
+/// assert_eq!(CellLabel::default(), CellLabel::Auto);
+/// assert_eq!(serde_json::to_value(CellLabel::SignShort).unwrap(), "SIGN_SHORT");
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -125,9 +158,23 @@ pub enum ShippedTheme {
 
 impl ShippedTheme {
     /// Every shipped theme.
+    ///
+    /// ```
+    /// use teistro_render_svg::ShippedTheme;
+    ///
+    /// let keys: Vec<&str> = ShippedTheme::ALL.iter().map(|theme| theme.key()).collect();
+    /// assert_eq!(keys, ["LIGHT", "DARK"]);
+    /// ```
     pub const ALL: [ShippedTheme; 2] = [ShippedTheme::Light, ShippedTheme::Dark];
 
     /// Its key, as serde writes it and a request names it.
+    ///
+    /// ```
+    /// use teistro_render_svg::ShippedTheme;
+    ///
+    /// assert_eq!(ShippedTheme::Light.key(), "LIGHT");
+    /// assert_eq!(serde_json::to_value(ShippedTheme::Light).unwrap(), ShippedTheme::Light.key());
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -137,6 +184,12 @@ impl ShippedTheme {
     }
 
     /// The theme.
+    ///
+    /// ```
+    /// use teistro_render_svg::{ShippedTheme, Theme};
+    ///
+    /// assert_eq!(ShippedTheme::Light.theme(), Theme::light());
+    /// ```
     #[must_use]
     pub fn theme(self) -> Theme {
         match self {
@@ -156,6 +209,13 @@ impl ShippedTheme {
 }
 
 /// A whole theme: one [`Style`] and one [`Content`].
+///
+/// ```
+/// use teistro_render_svg::{Content, Style, Theme};
+///
+/// let theme = Theme::default();
+/// assert_eq!((theme.style, theme.content), (Style::light(), Content::default()));
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -186,6 +246,14 @@ impl Default for Content {
 
 impl Style {
     /// Dark ink on white, as a printed patrika.
+    ///
+    /// ```
+    /// use teistro_render_svg::Style;
+    ///
+    /// let light = Style::light();
+    /// assert_eq!((light.background.as_str(), light.ink.as_str()), ("#ffffff", "#1f1f1f"));
+    /// assert!(light.validate().is_ok());
+    /// ```
     #[must_use]
     pub fn light() -> Style {
         Style {
@@ -207,6 +275,15 @@ impl Style {
     }
 
     /// Light ink on a dark page.
+    ///
+    /// ```
+    /// use teistro_render_svg::Style;
+    ///
+    /// let dark = Style::dark();
+    /// assert_eq!(dark.background, "#121212");
+    /// // Only the colours change; the sizes are the light style's.
+    /// assert_eq!(dark.body_size, Style::light().body_size);
+    /// ```
     #[must_use]
     pub fn dark() -> Style {
         Style {
@@ -220,6 +297,16 @@ impl Style {
     }
 
     /// Refuses a style that cannot be drawn, naming the field.
+    ///
+    /// ```
+    /// use teistro_render_svg::Style;
+    ///
+    /// assert!(Style::light().validate().is_ok());
+    /// let empty = Style { font_family: String::from(" "), ..Style::light() };
+    /// assert_eq!(empty.validate().unwrap_err().field(), Some("style.font_family"));
+    /// let huge = Style { stroke: 2.0, ..Style::light() };
+    /// assert_eq!(huge.validate().unwrap_err().field(), Some("style.stroke"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -269,12 +356,25 @@ impl Style {
 
 impl Theme {
     /// The light style with the default content.
+    ///
+    /// ```
+    /// use teistro_render_svg::{Style, Theme};
+    ///
+    /// assert_eq!(Theme::light().style, Style::light());
+    /// ```
     #[must_use]
     pub fn light() -> Theme {
         Theme::default()
     }
 
     /// The dark style with the default content.
+    ///
+    /// ```
+    /// use teistro_render_svg::{Content, Style, Theme};
+    ///
+    /// let dark = Theme::dark();
+    /// assert_eq!((dark.style, dark.content), (Style::dark(), Content::default()));
+    /// ```
     #[must_use]
     pub fn dark() -> Theme {
         Theme {
@@ -284,6 +384,13 @@ impl Theme {
     }
 
     /// A shipped theme by its key: `LIGHT` or `DARK`.
+    ///
+    /// ```
+    /// use teistro_render_svg::Theme;
+    ///
+    /// assert_eq!(Theme::shipped("LIGHT"), Some(Theme::light()));
+    /// assert_eq!(Theme::shipped("SEPIA"), None);
+    /// ```
     #[must_use]
     pub fn shipped(key: &str) -> Option<Theme> {
         ShippedTheme::ALL

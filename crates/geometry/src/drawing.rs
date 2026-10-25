@@ -16,6 +16,17 @@ use crate::layout::{Layout, Reference, Shape};
 use crate::place::{Placed, Placements, place};
 
 /// One chart placed in one layout.
+///
+/// ```
+/// # let foundation = teistro_chart::sample::foundation()?;
+/// use teistro_core::catalogue::Varga;
+/// use teistro_geometry::{draw, rows};
+///
+/// let drawing = draw(&rows::north_indian(), &foundation, Varga::D9)?;
+/// assert_eq!(drawing.varga, Varga::D9);
+/// assert_eq!(drawing.placed.cells.len(), 12);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Drawing {
@@ -29,6 +40,15 @@ impl Layout {
     /// Whether the layout draws by longitude, as a wheel does, and so
     /// needs a chart with degrees and cusps: a founded chart, never a
     /// divisional one.
+    ///
+    /// ```
+    /// use teistro_geometry::rows;
+    ///
+    /// assert!(rows::western_wheel().draws_by_longitude());
+    /// // The chakra's rings count from signs, so any chart can fill them.
+    /// assert!(!rows::sudarshan_chakra().draws_by_longitude());
+    /// assert!(!rows::north_indian().draws_by_longitude());
+    /// ```
     #[must_use]
     pub fn draws_by_longitude(&self) -> bool {
         match &self.shape {
@@ -42,6 +62,18 @@ impl Layout {
 }
 
 /// Draws a founded chart, or one of its divisional charts, in a layout.
+///
+/// ```
+/// # let foundation = teistro_chart::sample::foundation()?;
+/// use teistro_core::catalogue::Varga;
+/// use teistro_geometry::{draw, rows};
+///
+/// assert!(draw(&rows::western_wheel(), &foundation, Varga::D1).is_ok());
+/// // A divisional chart has no degrees for a wheel, and is refused by name.
+/// let refused = draw(&rows::western_wheel(), &foundation, Varga::D9).unwrap_err();
+/// assert_eq!(refused.field(), Some("varga"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

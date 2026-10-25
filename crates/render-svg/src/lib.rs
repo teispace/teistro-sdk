@@ -65,6 +65,34 @@ use crate::svg::{number, path_data, text, width_in_chars};
 /// The same chart, labels and style give the same bytes on every platform
 /// (§5).
 ///
+/// ```
+/// # use std::collections::BTreeMap;
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_geometry::{Body, Placements, place, rows};
+/// # let chart = Placements::new(Rashi::Leo).with(Body::in_sign(Graha::Sun.key_id(), Rashi::Leo));
+/// # let placed = place(&rows::north_indian(), &chart)?;
+/// use teistro_render_svg::Labels;
+///
+/// let labels = Labels {
+///     title: Some(String::from("A Leo lagna")),
+///     cells: placed.cells.iter().map(|cell| cell.sign.id().to_string()).collect(),
+///     bodies: BTreeMap::from([(Graha::Sun.key_id(), String::from("Su"))]),
+///     lagna: Some(String::from("As")),
+/// };
+/// use teistro_render_svg::{Style, render};
+///
+/// // The same chart, labels and style give the same bytes.
+/// let svg = render(&placed, &labels, &Style::dark())?;
+/// assert_eq!(svg, render(&placed, &labels, &Style::dark())?);
+/// assert!(svg.contains("<title>A Leo lagna</title>"));
+/// // No stylesheet: presentation attributes only.
+/// assert!(!svg.contains("<style"));
+/// // A style that cannot be drawn is refused before anything is written.
+/// let broken = Style { ink: String::from("black"), ..Style::light() };
+/// assert_eq!(render(&placed, &labels, &broken).unwrap_err().field(), Some("style.ink"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A style [`Style::validate`] refuses, or labels [`Labels::check`] refuses.

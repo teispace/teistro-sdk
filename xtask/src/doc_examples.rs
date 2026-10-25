@@ -22,9 +22,18 @@ use crate::coverage::COUNTED_BY;
 const EXAMPLED: &[&str] = &[
     "teistro",
     "teistro-calendar",
+    "teistro-chart",
     "teistro-core",
+    "teistro-geometry",
+    "teistro-houses",
+    "teistro-numerology",
+    "teistro-pakshi",
     "teistro-port-ephemeris",
+    "teistro-port-timezone",
+    "teistro-rashifal",
+    "teistro-render-svg",
     "teistro-time",
+    "teistro-vargas",
 ];
 
 pub(crate) fn check(root: &Path) -> i32 {

@@ -13,6 +13,19 @@ use teistro_core::quantity::Degrees;
 use crate::classify::{self, HOUSES, Quadrant};
 
 /// One bhava of a chart: where it is, whose it is, and what kind it is.
+///
+/// ```
+/// # let foundation = teistro_chart::sample::foundation()?;
+/// use teistro_houses::Houses;
+///
+/// let houses = Houses::of(&foundation)?;
+/// let first = houses.bhava(1).expect("the first bhava");
+/// assert_eq!(first.number, 1);
+/// // The lord is the lord of the sign the middle falls in.
+/// assert_eq!(first.lord, first.sign.attributes().lord);
+/// assert!((0.0..360.0).contains(&first.madhya_deg));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Bhava {
@@ -34,18 +47,46 @@ pub struct Bhava {
 
 impl Bhava {
     /// Whether it is a trine.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// assert!(houses.bhava(5).is_some_and(|bhava| bhava.is_trikona()));
+    /// assert!(!houses.bhava(4).is_some_and(|bhava| bhava.is_trikona()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_trikona(&self) -> bool {
         classify::is_trikona(self.number)
     }
 
     /// Whether it is a house of difficulty.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// assert!(houses.bhava(8).is_some_and(|bhava| bhava.is_dusthana()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_dusthana(&self) -> bool {
         classify::is_dusthana(self.number)
     }
 
     /// Whether it grows better with time.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// assert!(houses.bhava(11).is_some_and(|bhava| bhava.is_upachaya()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_upachaya(&self) -> bool {
         classify::is_upachaya(self.number)
@@ -53,6 +94,14 @@ impl Bhava {
 }
 
 /// Where one body stands under both readings of a chart.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_houses::Placed;
+///
+/// let placed = Placed { graha: Graha::Mars, placement: 3, chalit: 3 };
+/// assert!(!placed.shifted());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "HousesPlaced"))]
@@ -68,6 +117,15 @@ pub struct Placed {
 impl Placed {
     /// Whether the two readings disagree, which is what the recording
     /// engine records as a "shifted" body.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_houses::Placed;
+    ///
+    /// // Placed in the 10th, and read in the 11th by the chalit.
+    /// let saturn = Placed { graha: Graha::Saturn, placement: 10, chalit: 11 };
+    /// assert!(saturn.shifted());
+    /// ```
     #[must_use]
     pub const fn shifted(&self) -> bool {
         self.placement != self.chalit
@@ -75,6 +133,16 @@ impl Placed {
 }
 
 /// The houses of one founded chart, under both readings.
+///
+/// ```
+/// # let foundation = teistro_chart::sample::foundation()?;
+/// use teistro_houses::Houses;
+///
+/// let houses = Houses::of(&foundation)?;
+/// assert_eq!(houses.all().len(), 12);
+/// assert!(houses.is_defined());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Houses {
@@ -95,6 +163,15 @@ impl Houses {
     /// and not about the foundation itself; [`Houses::of`] takes
     /// [`Outcome::Defined`] for a chart that came back without trouble.
     ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// assert_eq!(houses.outcome(), teistro_astro::houses::Outcome::Defined);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` for a foundation carrying a longitude that is not
@@ -109,6 +186,21 @@ impl Houses {
     /// and the caller decides whether to trust it, which is what makes
     /// the polar policy mean anything
     /// (`03-design/houses-service.md` §5).
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_astro::houses::Outcome;
+    /// use teistro_core::catalogue::HouseSystem;
+    /// use teistro_houses::Houses;
+    ///
+    /// // Inside the polar circle a quadrant system can be substituted; the
+    /// // houses carry the fact, and the caller decides whether to trust them.
+    /// let substituted = Outcome::Substituted { asked: HouseSystem::Placidus };
+    /// let houses = Houses::with_outcome(&foundation, substituted)?;
+    /// assert_eq!(houses.outcome(), substituted);
+    /// assert!(!houses.is_defined());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -133,24 +225,69 @@ impl Houses {
     }
 
     /// The twelve bhavas, the first one first.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// for (index, bhava) in houses.all().iter().enumerate() {
+    ///     assert_eq!(usize::from(bhava.number), index + 1);
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn all(&self) -> &[Bhava; 12] {
         &self.bhavas
     }
 
     /// One bhava, or `None` outside the twelve.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// assert_eq!(houses.bhava(12).map(|bhava| bhava.number), Some(12));
+    /// // Nothing outside the twelve is a bhava.
+    /// assert_eq!(houses.bhava(0), None);
+    /// assert_eq!(houses.bhava(13), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn bhava(&self, number: u8) -> Option<&Bhava> {
         self.bhavas.get(usize::from(number.checked_sub(1)?))
     }
 
     /// Where a body stands under both readings.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// let moon = houses.placed(Graha::Moon).expect("the Moon is placed");
+    /// assert!((1..=12).contains(&moon.placement));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn placed(&self, graha: Graha) -> Option<&Placed> {
         self.placed.iter().find(|placed| placed.graha == graha)
     }
 
     /// Every body, under both readings.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// // The nine grahas at least, each under both readings.
+    /// assert!(houses.bodies().len() >= 9);
+    /// assert!(houses.bodies().iter().all(|placed| (1..=12).contains(&placed.chalit)));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn bodies(&self) -> &[Placed] {
         &self.placed
@@ -159,36 +296,95 @@ impl Houses {
     /// The bodies the chalit moves out of their placement house, which
     /// is what a chart display draws differently and what the recording
     /// engine records as its `shifted` list.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// assert!(houses.moved().all(|placed| placed.placement != placed.chalit));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn moved(&self) -> impl Iterator<Item = &Placed> {
         self.placed.iter().filter(|placed| placed.shifted())
     }
 
     /// Whether the system asked for was computed, substituted or
     /// clamped.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// assert_eq!(houses.outcome(), teistro_astro::houses::Outcome::Defined);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn outcome(&self) -> Outcome {
         self.outcome
     }
 
     /// Whether the chart's houses are the ones asked for.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// assert!(houses.is_defined());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_defined(&self) -> bool {
         self.outcome == Outcome::Defined
     }
 
     /// The system the placements were made under.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// use teistro_houses::system::{Purpose, system_for};
+    ///
+    /// assert_eq!(houses.placement_system(), system_for(&teistro_chart::sample::resolved().settings, Purpose::Placement, None));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn placement_system(&self) -> HouseSystem {
         self.placement_system
     }
 
     /// The chalit the second reading was made under.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_core::catalogue::HouseSystem;
+    /// use teistro_houses::Houses;
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// // The default profile reads the chalit by Sripati.
+    /// assert_eq!(houses.chalit_system(), HouseSystem::Sripati);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn chalit_system(&self) -> HouseSystem {
         self.chalit_system
     }
 
     /// The bhavas of a kind, in order.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_houses::{Houses, Quadrant};
+    ///
+    /// let houses = Houses::of(&foundation)?;
+    /// let kendras: Vec<u8> = houses.quadrant(Quadrant::Kendra).map(|bhava| bhava.number).collect();
+    /// assert_eq!(kendras, [1, 4, 7, 10]);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn quadrant(&self, quadrant: Quadrant) -> impl Iterator<Item = &Bhava> {
         self.bhavas
             .iter()

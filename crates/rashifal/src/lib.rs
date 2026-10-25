@@ -27,6 +27,16 @@ pub use baseline::{BaselineScore, Period};
 mod tests;
 
 /// The readings a rashifal is given under.
+///
+/// ```
+/// use teistro_gochar::GocharRules;
+/// use teistro_rashifal::RashifalRules;
+///
+/// let rules = RashifalRules { spells: vec![8], ..RashifalRules::default() };
+/// assert_eq!(rules.gochar, GocharRules::TEXT);
+/// let read: RashifalRules = serde_json::from_value(serde_json::to_value(&rules).unwrap()).unwrap();
+/// assert_eq!(read, rules);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -41,6 +51,12 @@ pub struct RashifalRules {
 impl Default for RashifalRules {
     /// The text read whole ([`GocharRules::TEXT`]), with the 4th and the
     /// 8th as the spells.
+    ///
+    /// ```
+    /// use teistro_rashifal::RashifalRules;
+    ///
+    /// assert_eq!(RashifalRules::default().spells, [4, 8]);
+    /// ```
     fn default() -> Self {
         RashifalRules {
             gochar: GocharRules::TEXT,
@@ -51,6 +67,23 @@ impl Default for RashifalRules {
 
 /// One event of the period: a hit, and the sign it happens in — the sign
 /// entered, or the one a graha stations in.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_gochar::hits::{Hit, HitEvent, Motion};
+/// # use teistro_rashifal::PeriodEvent;
+/// # let jupiter_enters_taurus = PeriodEvent {
+/// #     hit: Hit {
+/// #         instant: JulianDay::literal(2_460_676.5),
+/// #         graha: Graha::Jupiter,
+/// #         event: HitEvent::SignIngress { into: Rashi::Taurus, motion: Motion::Direct },
+/// #     },
+/// #     sign: Rashi::Taurus,
+/// # };
+/// assert_eq!(jupiter_enters_taurus.sign, Rashi::Taurus);
+/// assert_eq!(jupiter_enters_taurus.hit.graha, Graha::Jupiter);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PeriodEvent {
@@ -61,6 +94,35 @@ pub struct PeriodEvent {
 }
 
 /// An event counted from one sign.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_gochar::Transit;
+/// # // Saturn in Pisces, the nodes opposite, the rest in Aries.
+/// # let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
+/// # transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
+/// # transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
+/// # transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_gochar::hits::{Hit, HitEvent, Motion};
+/// # use teistro_rashifal::PeriodEvent;
+/// # let jupiter_enters_taurus = PeriodEvent {
+/// #     hit: Hit {
+/// #         instant: JulianDay::literal(2_460_676.5),
+/// #         graha: Graha::Jupiter,
+/// #         event: HitEvent::SignIngress { into: Rashi::Taurus, motion: Motion::Direct },
+/// #     },
+/// #     sign: Rashi::Taurus,
+/// # };
+/// use teistro_rashifal::{RashifalRules, rashifal};
+///
+/// let read = rashifal(&transits, &[jupiter_enters_taurus], &RashifalRules::default());
+/// // Taurus is the 2nd from Aries, a house v. 2 makes good for Jupiter.
+/// let from_aries = read[0].events[0];
+/// assert_eq!((from_aries.house, from_aries.good_house), (2, true));
+/// // And the 1st from Taurus, which it does not.
+/// assert_eq!((read[1].events[0].house, read[1].events[0].good_house), (1, false));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -75,6 +137,25 @@ pub struct EventFrom {
 }
 
 /// Saturn's standing from one sign.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_gochar::Transit;
+/// # // Saturn in Pisces, the nodes opposite, the rest in Aries.
+/// # let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
+/// # transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
+/// # transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
+/// # transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
+/// # use teistro_rashifal::{RashifalRules, rashifal};
+/// # let read = rashifal(&transits, &[], &RashifalRules::default());
+/// use teistro_gochar::sade_sati::Phase;
+///
+/// // Pisces is the 12th from Aries: Sade Sati rising.
+/// assert_eq!(read[0].saturn.sade_sati, Some(Phase::Rising));
+/// // And the 8th from Leo: a smaller spell.
+/// let leo = &read[Rashi::Leo as usize].saturn;
+/// assert_eq!((leo.house, leo.sade_sati, leo.spell), (8, None, true));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -88,6 +169,21 @@ pub struct SaturnStanding {
 }
 
 /// One sign's reading of the period.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_gochar::Transit;
+/// # // Saturn in Pisces, the nodes opposite, the rest in Aries.
+/// # let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
+/// # transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
+/// # transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
+/// # transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
+/// # use teistro_rashifal::{RashifalRules, rashifal};
+/// # let read = rashifal(&transits, &[], &RashifalRules::default());
+/// assert!(read.iter().map(|reading| reading.rashi).eq(Rashi::ALL));
+/// // Every graha's transit counted from the sign, the Sun to Ketu.
+/// assert_eq!(read[0].gochar.grahas.len(), 9);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -173,6 +269,15 @@ pub const fn reference_day(days: u32) -> u32 {
 
 /// Whether an event is a sign ingress or a station, the two a period
 /// reports.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_gochar::hits::{HitEvent, Motion};
+/// use teistro_rashifal::is_period_event;
+///
+/// assert!(is_period_event(HitEvent::SignIngress { into: Rashi::Leo, motion: Motion::Direct }));
+/// assert!(is_period_event(HitEvent::Station { turns: Motion::Retrograde }));
+/// ```
 #[must_use]
 pub const fn is_period_event(event: HitEvent) -> bool {
     matches!(

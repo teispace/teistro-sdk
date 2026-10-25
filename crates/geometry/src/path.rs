@@ -16,6 +16,14 @@ use teistro_core::math;
 ///
 /// Its schema is named `UnitPoint`, because a document also carries the
 /// catalogue's `Point`, the derived points, and the schema has one namespace.
+///
+/// ```
+/// use teistro_geometry::Point;
+///
+/// // y runs downwards: the top-left corner is the origin.
+/// let top_left = Point::new(0.0, 0.0);
+/// assert_eq!(serde_json::to_value(top_left).unwrap(), serde_json::json!({"x": 0.0, "y": 0.0}));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "UnitPoint"))]
@@ -28,12 +36,26 @@ pub struct Point {
 
 impl Point {
     /// A point.
+    ///
+    /// ```
+    /// use teistro_geometry::Point;
+    ///
+    /// let centre = Point::new(0.5, 0.5);
+    /// assert_eq!((centre.x, centre.y), (0.5, 0.5));
+    /// ```
     #[must_use]
     pub const fn new(x: f64, y: f64) -> Point {
         Point { x, y }
     }
 
     /// Whether the point lies in the closed unit square.
+    ///
+    /// ```
+    /// use teistro_geometry::Point;
+    ///
+    /// assert!(Point::new(1.0, 0.0).in_unit_square());
+    /// assert!(!Point::new(1.01, 0.5).in_unit_square());
+    /// ```
     #[must_use]
     pub fn in_unit_square(self) -> bool {
         (0.0..=1.0).contains(&self.x) && (0.0..=1.0).contains(&self.y)
@@ -47,6 +69,13 @@ impl Point {
 }
 
 /// One step of an outline, from wherever the previous step ended.
+///
+/// ```
+/// use teistro_geometry::{Point, Segment};
+///
+/// let curve = Segment::Quad { control: Point::new(0.5, 1.0), to: Point::new(1.0, 0.0) };
+/// assert_eq!(serde_json::to_value(curve).unwrap()["kind"], "QUAD");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -78,6 +107,13 @@ pub enum Segment {
 
 impl Segment {
     /// Where the segment ends.
+    ///
+    /// ```
+    /// use teistro_geometry::{Point, Segment};
+    ///
+    /// let arc = Segment::Arc { centre: Point::new(0.5, 0.5), clockwise: true, to: Point::new(1.0, 0.5) };
+    /// assert_eq!(arc.end(), Point::new(1.0, 0.5));
+    /// ```
     #[must_use]
     pub const fn end(self) -> Point {
         match self {
@@ -91,6 +127,18 @@ impl Segment {
 /// The closing step is implied, as SVG's `Z` implies it, so an outline
 /// whose last segment does not end at its start is closed by a straight
 /// line.
+///
+/// ```
+/// use teistro_geometry::{Path, Point, Segment};
+///
+/// // A petal: a chord and a curve back over it. The closing line is implied.
+/// let petal = Path {
+///     start: Point::new(0.0, 0.0),
+///     segments: vec![Segment::Quad { control: Point::new(0.5, 1.0), to: Point::new(1.0, 0.0) }],
+/// };
+/// // A parabolic segment encloses two thirds of its triangle.
+/// assert!((petal.area() - 1.0 / 3.0).abs() < 1e-3);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Path {
@@ -107,6 +155,19 @@ pub const CURVE_PIECES: u32 = 32;
 
 impl Path {
     /// A closed polygon through the given points.
+    ///
+    /// ```
+    /// use teistro_geometry::{Path, Point};
+    ///
+    /// let square = Path::polygon(&[
+    ///     Point::new(0.0, 0.0),
+    ///     Point::new(1.0, 0.0),
+    ///     Point::new(1.0, 1.0),
+    ///     Point::new(0.0, 1.0),
+    /// ]);
+    /// assert_eq!(square.segments.len(), 3);
+    /// assert_eq!(square.area(), 1.0);
+    /// ```
     #[must_use]
     pub fn polygon(points: &[Point]) -> Path {
         let (start, rest) = points
@@ -122,6 +183,20 @@ impl Path {
 
     /// Every point the outline passes through, as a polygon, curves cut
     /// into [`CURVE_PIECES`] straight pieces.
+    ///
+    /// ```
+    /// use teistro_geometry::path::CURVE_PIECES;
+    /// use teistro_geometry::{Path, Point, Segment};
+    ///
+    /// let petal = Path {
+    ///     start: Point::new(0.0, 0.0),
+    ///     segments: vec![Segment::Quad { control: Point::new(0.5, 1.0), to: Point::new(1.0, 0.0) }],
+    /// };
+    /// let points = petal.flatten();
+    /// assert_eq!(points.len(), 1 + CURVE_PIECES as usize);
+    /// // The curve's middle is halfway to its control.
+    /// assert_eq!(points[CURVE_PIECES as usize / 2], Point::new(0.5, 0.5));
+    /// ```
     #[must_use]
     pub fn flatten(&self) -> Vec<Point> {
         let mut points = vec![self.start];
@@ -169,6 +244,17 @@ impl Path {
 
     /// The enclosed area, by the shoelace formula over the flattened
     /// outline; positive whichever way the outline runs.
+    ///
+    /// ```
+    /// use teistro_geometry::{Path, Point};
+    ///
+    /// let triangle = [Point::new(0.0, 0.0), Point::new(1.0, 0.0), Point::new(0.0, 1.0)];
+    /// assert_eq!(Path::polygon(&triangle).area(), 0.5);
+    /// // Positive whichever way the outline runs.
+    /// let mut reversed = triangle;
+    /// reversed.reverse();
+    /// assert_eq!(Path::polygon(&reversed).area(), 0.5);
+    /// ```
     #[must_use]
     pub fn area(&self) -> f64 {
         let points = self.flatten();
@@ -181,6 +267,18 @@ impl Path {
     }
 
     /// The centroid of the enclosed region.
+    ///
+    /// ```
+    /// use teistro_geometry::{Path, Point};
+    ///
+    /// let square = Path::polygon(&[
+    ///     Point::new(0.0, 0.0),
+    ///     Point::new(1.0, 0.0),
+    ///     Point::new(1.0, 1.0),
+    ///     Point::new(0.0, 1.0),
+    /// ]);
+    /// assert_eq!(square.centroid(), Point::new(0.5, 0.5));
+    /// ```
     #[must_use]
     pub fn centroid(&self) -> Point {
         let points = self.flatten();
@@ -200,6 +298,19 @@ impl Path {
     /// Whether a point lies strictly inside the outline, by the even-odd
     /// rule over the flattened polygon. A point exactly on an edge may
     /// answer either way, which is why the checks sample off the grid.
+    ///
+    /// ```
+    /// use teistro_geometry::{Path, Point};
+    ///
+    /// let square = Path::polygon(&[
+    ///     Point::new(0.0, 0.0),
+    ///     Point::new(1.0, 0.0),
+    ///     Point::new(1.0, 1.0),
+    ///     Point::new(0.0, 1.0),
+    /// ]);
+    /// assert!(square.contains(Point::new(0.25, 0.75)));
+    /// assert!(!square.contains(Point::new(1.5, 0.5)));
+    /// ```
     #[must_use]
     pub fn contains(&self, point: Point) -> bool {
         polygon_contains(&self.flatten(), point)
@@ -209,6 +320,15 @@ impl Path {
 /// Whether a point lies inside a closed polygon, by the even-odd rule: the
 /// test [`Path::contains`] makes on the flattened outline, for a caller that
 /// asks many points of one outline and flattens it once.
+///
+/// ```
+/// use teistro_geometry::Point;
+/// use teistro_geometry::path::polygon_contains;
+///
+/// let triangle = [Point::new(0.0, 0.0), Point::new(1.0, 0.0), Point::new(0.0, 1.0)];
+/// assert!(polygon_contains(&triangle, Point::new(0.2, 0.2)));
+/// assert!(!polygon_contains(&triangle, Point::new(0.8, 0.8)));
+/// ```
 #[must_use]
 pub fn polygon_contains(points: &[Point], point: Point) -> bool {
     let mut inside = false;

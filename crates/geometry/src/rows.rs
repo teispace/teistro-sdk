@@ -21,6 +21,15 @@ use crate::path::{Path, Point, Segment};
 
 /// Every layout the SDK ships, in catalogue order; a test holds the two to
 /// the same list both ways.
+///
+/// ```
+/// use teistro_core::catalogue::ChartLayout;
+/// use teistro_geometry::rows;
+///
+/// let keys: Vec<String> = rows::shipped().into_iter().map(|layout| layout.key).collect();
+/// let catalogue: Vec<&str> = ChartLayout::ALL.iter().map(|member| member.key()).collect();
+/// assert_eq!(keys, catalogue);
+/// ```
 #[must_use]
 pub fn shipped() -> Vec<Layout> {
     vec![
@@ -87,6 +96,16 @@ fn house_cell(house: u8, outline: Path) -> Cell {
 /// The North Indian chart: a square, its diagonals and the diamond through
 /// its midpoints. The houses are fixed, house 1 the top diamond, and they run
 /// anticlockwise; the signs turn with the lagna.
+///
+/// ```
+/// use teistro_geometry::{Holds, rows};
+///
+/// let layout = rows::north_indian();
+/// let grid = layout.shape.as_grid().unwrap();
+/// // House 1 is the top diamond, centred on the square's top half.
+/// assert_eq!(grid.cells[0].holds, Holds::House(1));
+/// assert!(grid.cells[0].label.y < 0.5);
+/// ```
 #[must_use]
 pub fn north_indian() -> Layout {
     let (tl, tr, br, bl) = (p(0.0, 0.0), p(1.0, 0.0), p(1.0, 1.0), p(0.0, 1.0));
@@ -124,6 +143,18 @@ pub fn north_indian() -> Layout {
 /// The South Indian chart: the ring of twelve cells around a 4×4 grid's
 /// empty centre. The signs are fixed, Pisces top-left and Aries beside it,
 /// running clockwise; the houses turn with the lagna.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_geometry::{Holds, Point, rows};
+///
+/// let layout = rows::south_indian();
+/// let grid = layout.shape.as_grid().unwrap();
+/// // Pisces is the top-left cell, and the centre holds nothing.
+/// let pisces = grid.cells.iter().find(|cell| cell.holds == Holds::Sign(Rashi::Pisces)).unwrap();
+/// assert!(pisces.outline.contains(Point::new(0.1, 0.1)));
+/// assert!(grid.cells.iter().all(|cell| !cell.outline.contains(Point::new(0.5, 0.5))));
+/// ```
 #[must_use]
 pub fn south_indian() -> Layout {
     // (column, row) of Aries, Taurus, ... Pisces, clockwise from the top.
@@ -167,6 +198,17 @@ pub fn south_indian() -> Layout {
 /// The East Indian (Bengali, Odia, Assamese) chart: a 3×3 grid with an empty
 /// centre, each corner cut from its outer corner to its inner one into two
 /// signs. The signs are fixed, Aries top-centre, running anticlockwise.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_geometry::{Holds, Point, rows};
+///
+/// let layout = rows::east_indian();
+/// let grid = layout.shape.as_grid().unwrap();
+/// // Aries is the top-centre cell.
+/// let aries = grid.cells.iter().find(|cell| cell.holds == Holds::Sign(Rashi::Aries)).unwrap();
+/// assert!(aries.outline.contains(Point::new(0.5, 0.15)));
+/// ```
 #[must_use]
 pub fn east_indian() -> Layout {
     let (t, u) = (1.0 / 3.0, 2.0 / 3.0);
@@ -220,6 +262,14 @@ pub fn east_indian() -> Layout {
 /// start (house 1 beginning at twelve o'clock) and direction (clockwise)
 /// have no second source, so they are this row's declared properties rather
 /// than the chakra's (crux C47).
+///
+/// ```
+/// use teistro_geometry::{Direction, rows};
+///
+/// let layout = rows::sudarshan_chakra();
+/// let radial = layout.shape.as_radial().unwrap();
+/// assert_eq!((radial.starts_at, radial.direction), (12, Direction::Clockwise));
+/// ```
 #[must_use]
 pub fn sudarshan_chakra() -> Layout {
     // The application's radii, 50, 110, 165 and 220 in a 480 square.
@@ -255,6 +305,16 @@ pub fn sudarshan_chakra() -> Layout {
 /// source agrees on. The bodies are drawn at their own longitudes
 /// ([`crate::place::Mark`]), and the hub is left for the aspects a renderer
 /// draws across it.
+///
+/// ```
+/// use teistro_geometry::{Direction, Reference, rows};
+///
+/// let layout = rows::western_wheel();
+/// let radial = layout.shape.as_radial().unwrap();
+/// assert_eq!((radial.starts_at, radial.direction), (9, Direction::Anticlockwise));
+/// let rings: Vec<Reference> = radial.rings.iter().map(|ring| ring.counts_from).collect();
+/// assert_eq!(rings, [Reference::Cusps, Reference::Zodiac]);
+/// ```
 #[must_use]
 pub fn western_wheel() -> Layout {
     Layout {
@@ -350,6 +410,16 @@ const LOTUS_THIRDS: [(f64, f64); 6] = [
 
 /// The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as
 /// petals, their edges quadratic curves.
+///
+/// ```
+/// use teistro_geometry::{Holds, Segment, rows};
+///
+/// let lotus = rows::nepali_lotus();
+/// let grid = lotus.shape.as_grid().unwrap();
+/// // The North Indian houses, drawn with curved edges.
+/// assert_eq!(grid.cells[0].holds, Holds::House(1));
+/// assert!(grid.cells.iter().any(|cell| cell.outline.segments.iter().any(|step| matches!(step, Segment::Quad { .. }))));
+/// ```
 #[must_use]
 pub fn nepali_lotus() -> Layout {
     let cells = LOTUS_PETALS

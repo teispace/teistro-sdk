@@ -24,30 +24,79 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 
 /// The houses of a chart.
+///
+/// ```
+/// use teistro_houses::classify::{HOUSES, quadrant};
+///
+/// assert!((1..=HOUSES).all(|house| quadrant(house).is_some()));
+/// ```
 pub const HOUSES: u8 = 12;
 
 /// The angular houses, where a body is most able to act.
+///
+/// ```
+/// use teistro_houses::classify::{KENDRA, Quadrant};
+///
+/// assert_eq!(Quadrant::Kendra.houses(), KENDRA);
+/// ```
 pub const KENDRA: [u8; 4] = [1, 4, 7, 10];
 
 /// The succedent houses.
+///
+/// ```
+/// use teistro_houses::classify::{PANAPARA, Quadrant, quadrant};
+///
+/// assert!(PANAPARA.iter().all(|&house| quadrant(house) == Some(Quadrant::Panapara)));
+/// ```
 pub const PANAPARA: [u8; 4] = [2, 5, 8, 11];
 
 /// The cadent houses.
+///
+/// ```
+/// use teistro_houses::classify::{APOKLIMA, Quadrant};
+///
+/// assert_eq!(Quadrant::Apoklima.houses(), APOKLIMA);
+/// ```
 pub const APOKLIMA: [u8; 4] = [3, 6, 9, 12];
 
 /// The trines, which the tradition counts most fortunate.
+///
+/// ```
+/// use teistro_houses::classify::{TRIKONA, is_trikona};
+///
+/// assert!(TRIKONA.iter().all(|&house| is_trikona(house)));
+/// ```
 pub const TRIKONA: [u8; 3] = [1, 5, 9];
 
 /// The houses of difficulty.
+///
+/// ```
+/// use teistro_houses::classify::{DUSTHANA, is_dusthana};
+///
+/// assert!(DUSTHANA.iter().all(|&house| is_dusthana(house)));
+/// ```
 pub const DUSTHANA: [u8; 3] = [6, 8, 12];
 
 /// The houses that grow better with time.
+///
+/// ```
+/// use teistro_houses::classify::{UPACHAYA, is_dusthana};
+///
+/// // The sixth is both: difficult, and better with time.
+/// assert!(UPACHAYA.contains(&6) && is_dusthana(6));
+/// ```
 pub const UPACHAYA: [u8; 4] = [3, 6, 10, 11];
 
 /// Which third of the wheel a house stands in.
 ///
 /// These three **partition** the twelve, which is why they are one enum
 /// and the overlapping classifications are predicates.
+///
+/// ```
+/// use teistro_houses::Quadrant;
+///
+/// assert_eq!(serde_json::to_value(Quadrant::Kendra).unwrap(), "KENDRA");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -62,11 +111,27 @@ pub enum Quadrant {
 
 impl Quadrant {
     /// Every quadrant, in the order the wheel meets them.
+    ///
+    /// ```
+    /// use teistro_houses::Quadrant;
+    ///
+    /// // The three partition the twelve.
+    /// let mut every: Vec<u8> = Quadrant::ALL.iter().flat_map(|quadrant| quadrant.houses()).collect();
+    /// every.sort_unstable();
+    /// assert_eq!(every, (1..=12).collect::<Vec<u8>>());
+    /// ```
     pub const ALL: [Quadrant; 3] = [Quadrant::Kendra, Quadrant::Panapara, Quadrant::Apoklima];
 
     /// The key the document and the settings spell it with, as serde
     /// writes it: the spelling every domain enum's `key()` uses. The
     /// bindings' boundary enums spell the same member in kebab case.
+    ///
+    /// ```
+    /// use teistro_houses::Quadrant;
+    ///
+    /// assert_eq!(Quadrant::Panapara.key(), "PANAPARA");
+    /// assert_eq!(serde_json::to_value(Quadrant::Panapara).unwrap(), Quadrant::Panapara.key());
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -77,6 +142,12 @@ impl Quadrant {
     }
 
     /// The houses this quadrant holds.
+    ///
+    /// ```
+    /// use teistro_houses::Quadrant;
+    ///
+    /// assert_eq!(Quadrant::Apoklima.houses(), [3, 6, 9, 12]);
+    /// ```
     #[must_use]
     pub const fn houses(self) -> [u8; 4] {
         match self {
@@ -91,6 +162,14 @@ impl Quadrant {
 ///
 /// A number outside 1 to 12 is not an error: it is arithmetic that
 /// cannot arise from a chart, and a predicate has nowhere to report one.
+///
+/// ```
+/// use teistro_houses::classify::{Quadrant, quadrant};
+///
+/// assert_eq!(quadrant(10), Some(Quadrant::Kendra));
+/// assert_eq!(quadrant(11), Some(Quadrant::Panapara));
+/// assert_eq!(quadrant(0), None);
+/// ```
 #[must_use]
 pub fn quadrant(house: u8) -> Option<Quadrant> {
     match house {
@@ -102,18 +181,37 @@ pub fn quadrant(house: u8) -> Option<Quadrant> {
 }
 
 /// Whether a house is a trine.
+///
+/// ```
+/// use teistro_houses::classify::is_trikona;
+///
+/// assert!(is_trikona(1) && is_trikona(5) && is_trikona(9));
+/// assert!(!is_trikona(4));
+/// ```
 #[must_use]
 pub fn is_trikona(house: u8) -> bool {
     TRIKONA.contains(&house)
 }
 
 /// Whether a house is one of difficulty.
+///
+/// ```
+/// use teistro_houses::classify::is_dusthana;
+///
+/// assert!(is_dusthana(12) && !is_dusthana(11));
+/// ```
 #[must_use]
 pub fn is_dusthana(house: u8) -> bool {
     DUSTHANA.contains(&house)
 }
 
 /// Whether a house grows better with time.
+///
+/// ```
+/// use teistro_houses::classify::is_upachaya;
+///
+/// assert!(is_upachaya(3) && is_upachaya(10) && !is_upachaya(9));
+/// ```
 #[must_use]
 pub fn is_upachaya(house: u8) -> bool {
     UPACHAYA.contains(&house)
@@ -126,6 +224,14 @@ pub fn is_upachaya(house: u8) -> bool {
 /// the sign it is centred in that the tradition means by "the house's
 /// sign". Nothing in the corpus records a house lord, so this is stated
 /// rather than measured (`03-design/houses-service.md` §6).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_houses::classify::lord_of;
+///
+/// assert_eq!(lord_of(Rashi::Aries), Graha::Mars);
+/// assert_eq!(lord_of(Rashi::Aquarius), Graha::Saturn);
+/// ```
 #[must_use]
 pub fn lord_of(sign: Rashi) -> Graha {
     sign.attributes().lord
