@@ -1315,7 +1315,11 @@ def refuse_build(info: BuildInfo, *, named: bool) -> Optional[str]:
             f"for {GENERATED_SDK_VERSION}"
         )
     if info.sanitizer:
-        return f"the library is a {info.sanitizer} build, which is not for use"
+        article = "an" if info.sanitizer[0] in "aeiou" else "a"
+        return (
+            f"the library is {article} {info.sanitizer} sanitizer build, "
+            "which is not for use"
+        )
     if not named and not info.optimised:
         return (
             "the library found is an unoptimised build; name it outright with "

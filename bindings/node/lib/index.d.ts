@@ -9479,8 +9479,14 @@ export declare function platformPackage(): string;
  *
  * @param info what the addon reported
  * @param named whether its path was given rather than searched for
+ * @param sanitizer the sanitizer the caller says it is loading, which
+ *   admits a sanitizer build of that kind whose path was named
  */
-export declare function refuseBuild(info: BuildInfo, named: boolean): string | null;
+export declare function refuseBuild(
+  info: BuildInfo,
+  named: boolean,
+  sanitizer?: string,
+): string | null;
 
 /** The ABI the addon implements. */
 export declare function abiVersion(): number;
