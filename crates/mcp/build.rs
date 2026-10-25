@@ -6,10 +6,20 @@
 //! build time (§7, P2).
 
 use std::fmt::Write as _;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+/// The repository's file at `relative`, from where cargo runs this
+/// script. Read when it runs, not compiled in with `env!`: a compiler
+/// cache hands one build script's binary to another checkout of the same
+/// source, which would then read the first checkout's files.
+fn repository(relative: &str) -> Result<PathBuf, std::env::VarError> {
+    Ok(Path::new(&std::env::var("CARGO_MANIFEST_DIR")?)
+        .join("../..")
+        .join(relative))
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let api = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../idl/api.json");
+    let api = repository("idl/api.json")?;
     println!("cargo::rerun-if-changed={}", api.display());
     let api: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&api)?)?;
     let functions = api
@@ -38,7 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// line of documentation, whether consumers register its members, and
 /// the kind's own JSON.
 fn catalogue() -> Result<(), Box<dyn std::error::Error>> {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../catalogue/catalogue.json");
+    let path = repository("catalogue/catalogue.json")?;
     println!("cargo::rerun-if-changed={}", path.display());
     let catalogue: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&path)?)?;
     let schema = catalogue
