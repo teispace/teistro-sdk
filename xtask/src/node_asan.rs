@@ -117,7 +117,7 @@ fn suite(root: &Path) -> Result<Vec<String>, ()> {
     Ok(files)
 }
 
-/// The addon built with the address sanitizer for the host, its `.node` copy's path
+/// The addon built with the address sanitizer for the host, its path
 /// returned once it is shown to be instrumented.
 ///
 /// Built for the host's triple named explicitly, so the flag reaches the
@@ -149,13 +149,7 @@ fn build(root: &Path, host: &Platform) -> Result<PathBuf, ()> {
         return Err(());
     }
     println!("ok    the Node addon is instrumented by AddressSanitizer");
-    // Node loads a native addon only from a `.node` file, and reads any
-    // other name as JavaScript.
-    let named = addon.with_file_name(format!("{ADDON_STEM}_asan.node"));
-    std::fs::copy(&addon, &named).map_err(|why| {
-        println!("FAIL  {} could not be copied: {why}", named.display());
-    })?;
-    Ok(named)
+    Ok(addon)
 }
 
 /// The compiler flags that instrument the addon.

@@ -81,7 +81,24 @@ function loadAddon() {
       )}\nInstall the prebuilt addon with \`npm install ${platformPackage()}\` (npm normally does that for you), build it with \`cargo build --release -p teistro-node\`, or set TEISTRO_ADDON to its path.`,
     );
   }
-  return [require(found), found === named];
+  return [openAddon(found), found, found === named];
+}
+
+/**
+ * The addon in the file at `path`, whatever the file is called.
+ *
+ * Not `require`: it opens a native addon only from a file ending `.node`
+ * and reads any other as JavaScript, so the `target/` builds above, which
+ * Cargo names `libteistro_node.dylib` and the like, failed to load as a
+ * syntax error. `process.dlopen` is what `require` calls for a `.node`
+ * file, given the path as it is.
+ *
+ * @param {string} path the addon's file
+ */
+export function openAddon(path) {
+  const module = { exports: {} };
+  process.dlopen(module, path);
+  return module.exports;
 }
 
 function addonName() {
@@ -90,7 +107,7 @@ function addonName() {
   return 'libteistro_node.so';
 }
 
-const [loaded, wasNamed] = loadAddon();
+const [loaded, foundAt, wasNamed] = loadAddon();
 
 /** The addon's exports: the native object the layer calls. */
 export const native = loaded;
@@ -100,3 +117,6 @@ export const native = loaded;
  * deliberate choice, which may load a development build.
  */
 export const named = wasNamed;
+
+/** The file the addon was loaded from. */
+export const path = foundAt;
