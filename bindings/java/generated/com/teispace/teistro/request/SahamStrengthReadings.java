@@ -17,6 +17,15 @@ import java.util.Objects;
  */
 public record SahamStrengthReadings(SahamFriendship friendship, SahamNatures natures, Long weakBelow) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public SahamStrengthReadings() {
+        this(null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

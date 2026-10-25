@@ -28,6 +28,16 @@ public record BatchAsked(Period baseline, List<PeriodAsked> periods) implements 
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param periods One period as a binding writes it, camel-cased as every request record is: the days, the place and the offset, and optionally the snapshot, the grahas whose events are reported and Saturn's spells.
+     */
+    public BatchAsked(List<PeriodAsked> periods) {
+        this(null, periods);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

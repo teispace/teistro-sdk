@@ -27,6 +27,16 @@ public record HarmonicRequest(int number, Double orbDeg) implements RequestJson 
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param number Which harmonic, 1 to `MAX_HARMONIC`: the number every longitude is multiplied by.
+     */
+    public HarmonicRequest(int number) {
+        this(number, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

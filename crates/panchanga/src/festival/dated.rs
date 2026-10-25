@@ -761,6 +761,10 @@ pub struct DatedObservance {
     /// The same day in the rule's calendar; for a rule kept on the Sun's
     /// entry, the day the Sun entered, in the range's calendar.
     pub on: CalendarDate,
+    /// What a published entry did to it; absent when none touched it,
+    /// so the day is the rule's (`03-design/published-overrides.md`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub published: Option<super::Published>,
 }
 
 /// The observances each dated rule gives over `days`, in the order of
@@ -809,6 +813,7 @@ pub fn dated(rules: &[DatedRule], days: &[FestivalDay]) -> Result<Observances, E
                     rule: rule.key.clone(),
                     day: day.date.clone(),
                     on,
+                    published: None,
                 });
             }
         }

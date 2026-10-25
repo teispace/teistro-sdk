@@ -48,6 +48,24 @@ public record AshauchTable(List<AshauchBand> bands, List<AshauchLateRow> late, L
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param bands The bands of a death before the last rite, in order of age, the first of the deceased's sex whose mark is not reached answering.
+     * @param late News of a full period past it, by days since the event, in order; a bath past the last row.
+     * @param lateAbroad The same, for an observer abroad.
+     * @param losses A loss's rows, in order of month.
+     * @param name Its name, which every answer repeats.
+     * @param night Which day a night event belongs to.
+     * @param overlap The overlap rules.
+     * @param pakshiniAtNight Where a pakṣiṇī begun at night ends.
+     * @param relations The lengths by relation, the first row that matches answering.
+     */
+    public AshauchTable(List<AshauchBand> bands, List<AshauchLateRow> late, List<AshauchLateRow> lateAbroad, List<AshauchLossRow> losses, String name, NightRule night, AshauchOverlap overlap, PakshiniNight pakshiniAtNight, List<AshauchRelationRow> relations) {
+        this(bands, late, lateAbroad, losses, null, name, night, overlap, pakshiniAtNight, relations);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

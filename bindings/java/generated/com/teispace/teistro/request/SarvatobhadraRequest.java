@@ -30,6 +30,16 @@ public record SarvatobhadraRequest(List<Double> instants, SarvatobhadraMotion mo
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param instants The {@code instants} field.
+     */
+    public SarvatobhadraRequest(List<Double> instants) {
+        this(instants, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

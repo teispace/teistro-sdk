@@ -1787,11 +1787,27 @@ const ownFollowing = {
   after: 'LAKSHMI_PUJA',
   days: 2,
 };
-for (const [name, rules] of [
+// One published set with each action, as every runner asks it: a SET
+// moving Lakshmi puja, a WITHDRAW, an ADD and a SET no occurrence takes.
+const day2024 = (month, day) => ({ calendar: 'GREGORIAN', year: 2024, month, day });
+const publishedSet = {
+  format: 'teistro.published/1',
+  publisher: 'a patro printed in Nepal',
+  id: 'np-2081',
+  version: 3,
+  entries: [
+    { action: 'SET', rule: 'LAKSHMI_PUJA', day: day2024(11, 2), source: 'p. 1' },
+    { action: 'WITHDRAW', rule: 'VIJAYA_DASHAMI', day: day2024(10, 12), source: 'p. 2' },
+    { action: 'ADD', key: 'MINE', day: day2024(10, 20), names: { 'en-Latn': 'Mine' }, source: 'p. 3' },
+    { action: 'SET', rule: 'HOLIKA', day: day2024(10, 25), source: 'p. 4' },
+  ],
+};
+for (const [name, rules, published] of [
   ['shipped', 'DHARMASINDHU'],
   ['amended', ['DHARMASINDHU', ownRule]],
   ['nepal', ['NEPAL', ownFollowing]],
   ['dated', ['NEPAL', ...ownDated]],
+  ['published', 'DHARMASINDHU', [publishedSet]],
 ]) {
   // The shipped pack is asked of the lean call, the others of the
   // almanac's: the two answer alike, so the report cannot tell.
@@ -1800,7 +1816,7 @@ for (const [name, rules] of [
     to: gregorian(2024, 11, 3),
     place,
     utcOffsetSeconds: 20700,
-    festivals: { rules },
+    festivals: published ? { rules, published } : { rules },
   };
   const festivals =
     name === 'shipped' ? geo.almanac.festivals(asked) : geo.almanac.of(asked).festivals;
@@ -1861,6 +1877,23 @@ for (const [name, rules] of [
       key(`-dated-${k}`),
       `${kept.rule} ${kept.day.month}-${kept.day.day} ${kept.on.calendar} ${kept.on.month}-${kept.on.day}`,
     );
+  });
+  // What published sets did, printed only where they did it, so an answer
+  // asked without sets prints as it did.
+  festivals.observances.forEach((observance, k) => {
+    const p = observance.published;
+    if (!p) return;
+    const computed = p.computed ? `${p.computed.month}-${p.computed.day}` : '-';
+    put(key(`-published-${k}`), `${observance.rule} ${p.status} ${p.set} ${p.version} ${computed}`);
+  });
+  festivals.added.forEach((added, k) => {
+    put(key(`-added-${k}`), `${added.key} ${added.day.month}-${added.day.day} ${added.published.set}`);
+  });
+  festivals.unplaced.forEach((u, k) => {
+    put(key(`-unplaced-${k}`), `${u.set} ${u.entry} ${u.rule} ${u.day.month}-${u.day.day}`);
+  });
+  festivals.applied.forEach((a, k) => {
+    put(key(`-applied-${k}`), `${a.id} ${a.version} ${a.hash}`);
   });
 }
 

@@ -30,6 +30,17 @@ public record ResolveAsked(com.teispace.teistro.Calendar calendar, DayAsked date
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param date A civil day as a request names it.
+     * @param zone How a zone is given.
+     */
+    public ResolveAsked(DayAsked date, ZoneSpec zone) {
+        this(null, date, null, zone);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

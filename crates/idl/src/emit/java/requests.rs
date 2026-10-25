@@ -408,6 +408,7 @@ impl<'a> Types<'a> {
         }
         Self::checks(&mut out, name, fields);
         if fields.iter().any(|f| f.nullable) {
+            self.required_only(&mut out, name, fields);
             self.builder(&mut out, name, fields);
         }
         self.decoder(&mut out, name, fields, parent, external);
@@ -489,6 +490,42 @@ impl<'a> Types<'a> {
             out,
             "    /**\n     * Checks a required field is present and a whole number fits its width, and\n     * copies a list or a map so the record's own cannot change.\n     *\n     * @throws IllegalArgumentException naming the field that is out of range\n     * @throws NullPointerException naming the required field that is missing\n     */\n    public {name} {{\n{}\n    }}\n",
             lines.join("\n")
+        );
+    }
+
+    /// The required fields alone, every optional one left out: what a
+    /// caller writes when it changes no default, and what keeps compiling
+    /// when a later release adds an optional field.
+    fn required_only(&self, out: &mut String, name: &str, fields: &[RecordField]) {
+        let required: Vec<&RecordField> = fields.iter().filter(|f| !f.nullable).collect();
+        let params: Vec<String> = required
+            .iter()
+            .map(|f| format!("{} {}", self.java_type(&f.ty, false), identifier(&f.name)))
+            .collect();
+        let docs = required.iter().fold(String::new(), |mut docs, f| {
+            let _ = writeln!(
+                docs,
+                "     * @param {} {}",
+                identifier(&f.name),
+                javadoc_line(&self.field_doc(f))
+            );
+            docs
+        });
+        let args: Vec<String> = fields
+            .iter()
+            .map(|f| {
+                if f.nullable {
+                    String::from("null")
+                } else {
+                    identifier(&f.name)
+                }
+            })
+            .collect();
+        let _ = writeln!(
+            out,
+            "    /**\n     * The required fields alone: every optional field is left out, and the SDK's\n     * default stands.\n     *\n{docs}     */\n    public {name}({}) {{\n        this({});\n    }}\n",
+            params.join(", "),
+            args.join(", ")
         );
     }
 

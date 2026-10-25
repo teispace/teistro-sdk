@@ -37,6 +37,18 @@ public record ConditionCountInHouses(int atLeast, List<Object> except, Object fr
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param atLeast How many there must be at least.
+     * @param houses Which houses.
+     * @param planets Who is counted: a body, or every benefic or every malefic.
+     */
+    public ConditionCountInHouses(int atLeast, List<Integer> houses, Object planets) {
+        this(atLeast, null, null, houses, planets);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

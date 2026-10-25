@@ -27,6 +27,16 @@ public record TithiPraveshaRequest(TithiRule rule, int through) implements Reque
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param through The last year, one to two hundred, counted as `TithiPravesha::year` counts it.
+     */
+    public TithiPraveshaRequest(int through) {
+        this(null, through);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

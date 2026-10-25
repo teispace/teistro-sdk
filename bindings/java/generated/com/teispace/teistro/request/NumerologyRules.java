@@ -19,6 +19,15 @@ import java.util.Objects;
  */
 public record NumerologyRules(BirthReduction birthReduction, ChaldeanCompound chaldeanCompound, Masters masters, NameReduction nameReduction, NonLatin nonLatin) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public NumerologyRules() {
+        this(null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

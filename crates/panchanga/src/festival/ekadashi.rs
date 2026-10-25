@@ -647,6 +647,10 @@ pub struct EkadashiFast {
     /// without one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub parana: Option<Parana>,
+    /// What a published entry did to it; absent when none touched it,
+    /// so the day is the rule's (`03-design/published-overrides.md`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub published: Option<super::Published>,
     /// The mahadvadashi that set `day`, when the rule keeps them and one
     /// held; `choice` stays the table's, so a reader sees what the table
     /// alone gave.
@@ -838,6 +842,7 @@ impl<'d> Facts<'d> {
             margin_seconds: margin * SECONDS_PER_DAY,
             parana,
             mahadvadashi: held.map(|held| held.mahadvadashi),
+            published: None,
         })
     }
 

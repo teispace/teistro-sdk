@@ -17,6 +17,15 @@ import java.util.Objects;
  */
 public record DignityRequest(DignityRules rules, Scores scores, com.teispace.teistro.SectRule sectRule) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public DignityRequest() {
+        this(null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

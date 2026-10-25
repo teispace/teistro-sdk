@@ -29,6 +29,17 @@ public record MuhurtaNative(com.teispace.teistro.Rashi lagna, com.teispace.teist
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param moonSign The birth Moon sign.
+     * @param star The birth nakshatra: the Moon's at birth, or the name's when the birth is not known (Raman, ch. II).
+     */
+    public MuhurtaNative(com.teispace.teistro.Rashi moonSign, com.teispace.teistro.Nakshatra star) {
+        this(null, moonSign, star);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

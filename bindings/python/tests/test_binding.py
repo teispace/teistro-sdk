@@ -4517,6 +4517,172 @@ class AnEngine(WithLibrary):
                     ctx.almanac.of(**days, festivals=bad)
                 self.assertEqual(refused.exception.field, field)
 
+    def test_a_published_set_lays_its_days_over_the_rules(self) -> None:
+        """A published set over the rules' answer
+        (`03-design/published-overrides.md`): a `SET` moves an occurrence
+        and keeps the rule's day, a `WITHDRAW` marks one, an `ADD` keeps a
+        day no rule computes, an entry no occurrence takes is reported,
+        and the answer names the set it applied."""
+        from teistro import Published, PublishedAdded, PublishedDayAsked, PublishedSetAsked, date
+        from teistro.catalogue import Calendar
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        days: dict[str, Any] = {
+            "from_date": date(Calendar.GREGORIAN, 2025, 9, 26),
+            "to_date": date(Calendar.GREGORIAN, 2025, 10, 6),
+            "place": observer,
+            "utc_offset_seconds": 20700,
+        }
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            plain = ctx.almanac.festivals(**days, festivals={"rules": "DHARMASINDHU"})
+            self.assertEqual((plain.added, plain.unplaced, plain.applied), ((), (), ()))
+            self.assertTrue(all(o.published is None for o in plain.observances))
+            navami = next(o for o in plain.observances if o.rule == "MAHA_NAVAMI")
+            visarjana = next(o for o in plain.observances if o.rule == "DEVI_VISARJAN")
+
+            def day(of: Any, by: int = 0) -> PublishedDayAsked:
+                moved = ctx.calendar.convert(of, Calendar.GREGORIAN)
+                return {"calendar": "GREGORIAN", "year": moved.year, "month": moved.month, "day": moved.day + by}
+
+            published: PublishedSetAsked = {
+                "format": "teistro.published/1",
+                "publisher": "a patro printed in Nepal",
+                "id": "np-2082",
+                "version": 2,
+                "entries": [
+                    {"action": "SET", "rule": "MAHA_NAVAMI", "day": day(navami.day, 1), "source": "p. 1"},
+                    {"action": "WITHDRAW", "rule": "DEVI_VISARJAN", "day": day(visarjana.day), "source": "p. 2"},
+                    {"action": "ADD", "key": "MINE", "day": day(navami.day), "names": {"en-Latn": "Mine"}, "source": "p. 3"},
+                    {"action": "SET", "rule": "HOLIKA", "day": day(navami.day, 2), "source": "p. 4"},
+                ],
+            }
+            answer = ctx.almanac.festivals(**days, festivals={"rules": "DHARMASINDHU", "published": [published]})
+            moved = next(o for o in answer.observances if o.rule == "MAHA_NAVAMI")
+            self.assertEqual(
+                moved.published,
+                Published("PUBLISHED", "a patro printed in Nepal", "np-2082", 2, "p. 1", navami.day, None),
+            )
+            self.assertEqual(moved.day.day, navami.day.day + 1)
+            self.assertEqual(moved.parana, ())
+            withdrawn = next(o for o in answer.observances if o.rule == "DEVI_VISARJAN")
+            assert withdrawn.published is not None
+            self.assertEqual((withdrawn.published.status, withdrawn.day), ("WITHDRAWN", visarjana.day))
+            (added,) = answer.added
+            self.assertIsInstance(added, PublishedAdded)
+            self.assertEqual((added.key, added.day, dict(added.names)), ("MINE", navami.day, {"en-Latn": "Mine"}))
+            (unplaced,) = answer.unplaced
+            self.assertEqual((unplaced.set, unplaced.entry, unplaced.rule), ("np-2082", 3, "HOLIKA"))
+            (applied,) = answer.applied
+            self.assertEqual((applied.id, applied.version, len(applied.hash)), ("np-2082", 2, 64))
+            self.assertNotEqual(answer.provenance.input_hash, plain.provenance.input_hash)
+
+            # A SET naming a rule the request does not carry is refused by
+            # where it stands.
+            stray: PublishedSetAsked = {**published, "entries": [{**published["entries"][0], "rule": "NO_SUCH_RULE"}]}
+            with self.assertRaises(TeistroError) as refused:
+                ctx.almanac.festivals(**days, festivals={"rules": "DHARMASINDHU", "published": [stray]})
+            self.assertEqual(refused.exception.field, "festivals.published[0].entries[0].rule")
+
+    def test_a_published_day_is_explained_by_the_change_that_gives_it(self) -> None:
+        """`almanac.published_reasons` (`03-design/published-overrides.md`
+        §4): the committee's day published over the modern sky is the
+        committee's sky, and a day no change gives is the publisher's
+        own, every change tried listed."""
+        from teistro import FestivalRequest, PublishedReasons, ReckonedPlace, date
+        from teistro.catalogue import Calendar
+
+        kathmandu = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        days: dict[str, Any] = {
+            "from_date": date(Calendar.GREGORIAN, 2027, 9, 1),
+            "to_date": date(Calendar.GREGORIAN, 2027, 11, 30),
+            "place": kathmandu,
+            "utc_offset_seconds": 20700,
+        }
+        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as modern, self.teistro.context(
+            profile="nepali-committee", ephemeris=Ephemeris.SURYA_SIDDHANTA
+        ) as committee:
+            ours = modern.almanac.festivals(**days, festivals={"rules": "NEPAL"})
+            theirs = committee.almanac.festivals(**days, festivals={"rules": "NEPAL"})
+            parted = next(
+                (o, t)
+                for o in ours.observances
+                for t in theirs.observances
+                if o.rule == t.rule
+                and 0 < abs(modern.calendar.fixed_of(o.day) - modern.calendar.fixed_of(t.day)) <= 3
+            )
+            observance, committees = parted
+
+            def published(day: Any) -> FestivalRequest:
+                return {
+                    "rules": "NEPAL",
+                    "published": [
+                        {
+                            "format": "teistro.published/1",
+                            "publisher": "a patro printed in Nepal",
+                            "id": "np",
+                            "version": 1,
+                            "entries": [
+                                {
+                                    "action": "SET",
+                                    "rule": observance.rule,
+                                    "source": "p. 1",
+                                    "day": {"calendar": "GREGORIAN", "year": day.year, "month": day.month, "day": day.day},
+                                }
+                            ],
+                        }
+                    ],
+                }
+
+            found = modern.almanac.published_reasons(**days, festivals=published(committees.day), sky=committee)
+            self.assertIsInstance(found, PublishedReasons)
+            (reason,) = found.reasons
+            self.assertEqual((reason.rule, reason.day, reason.computed), (observance.rule, committees.day, observance.day))
+            self.assertEqual((reason.reason.by, reason.reason.profile), ("SKY", "nepali-committee"))
+
+            delhi = ReckonedPlace(
+                "Delhi",
+                Observer(latitude_deg=Latitude(28.6139), longitude_deg=Longitude(77.209), altitude_m=Altitude(216)),
+                19800,
+            )
+            far = modern.calendar.date_of(Calendar.GREGORIAN, modern.calendar.fixed_of(observance.day) + 5)
+            (own,) = modern.almanac.published_reasons(**days, festivals=published(far), places=[delhi]).reasons
+            self.assertEqual(own.reason.by, "PUBLISHER")
+            self.assertEqual(own.tried[0].change.by, "PLACE")
+            self.assertTrue(all(not t.reproduces for t in own.tried))
+
+    def test_a_signed_pack_answers_its_set_or_is_refused_by_name(self) -> None:
+        """A signed pack verified against the publisher's key
+        (`03-design/published-overrides.md` §5), with the vector the Rust
+        suite pins (`crates/sdk/tests/signed_pack.rs`): the set it covers,
+        and a refusal for a tampered byte, a replayed version and a short
+        key."""
+        pack = (
+            b'{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,'
+            b'"entries":[{"action":"SET","rule":"GHATASTHAPANA","day":{"calendar":"GREGORIAN","year":2026,'
+            b'"month":10,"day":11},"source":"p. 41"}]}'
+        )
+        key = bytes.fromhex("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c")
+        signature = bytes.fromhex(
+            "cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e213"
+            "32fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e"
+        )
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            published = ctx.almanac.published_from_signed(pack, signature, key, at_least=3)
+            self.assertEqual((published["id"], published["version"]), ("np-2083", 3))
+            self.assertEqual(published["entries"][0]["rule"], "GHATASTHAPANA")
+            for bad, field in [
+                ((pack.replace(b'"day":11', b'"day":12'), signature, key, 0), "signature"),
+                ((pack, signature, key, 4), "version"),
+                ((pack, signature, key[:31], 0), "key"),
+            ]:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.almanac.published_from_signed(*bad)
+                self.assertEqual(refused.exception.field, field)
+
     def test_a_chart_carries_its_transits_each_verdict_its_own_house_and_vedha(self) -> None:
         """A chart's transits cross whole: a reading an instant in the order
         asked, counted from what was asked, nine grahas each whose verdict

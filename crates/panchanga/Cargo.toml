@@ -17,6 +17,10 @@ publish = false
 # Derives `schemars::JsonSchema` on the types a chart document carries,
 # so `cargo xtask gen document-schema` can describe it
 # (`docs/03-design/document-schema.md`).
+# Reads a published set from a signed pack: its exact bytes, a detached
+# Ed25519 signature and the publisher's key, which the caller supplies
+# (`docs/03-design/published-overrides.md` §5).
+signed-packs = ["dep:ed25519-dalek"]
 schema = ["dep:schemars", "teistro-astro/schema", "teistro-calendar/schema", "teistro-chart/schema", "teistro-core/schema", "teistro-port-ephemeris/schema", "teistro-time/schema"]
 
 [dependencies]
@@ -29,8 +33,14 @@ teistro-time = { path = "../time" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = { version = "1.2", optional = true }
+# Verification only: no precomputed tables (they speed signing and key
+# generation, not one verification) and nothing to zeroize, since the
+# SDK holds no secret.
+ed25519-dalek = { version = "3", default-features = false, optional = true }
 
 [dev-dependencies]
+# Signs the test packs with a key made in the test.
+ed25519-dalek = { version = "3", default-features = false }
 teistro-test-allocator = { path = "../test-allocator" }
 
 [lints]

@@ -56,6 +56,15 @@ public record Scores(Integer detriment, Integer exaltation, Integer face, Intege
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public Scores() {
+        this(null, null, null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

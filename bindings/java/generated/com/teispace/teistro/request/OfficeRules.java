@@ -18,6 +18,15 @@ import java.util.Objects;
  */
 public record OfficeRules(DrekkanaReading drekkana, EnemySign enemy, HuddaTable hudda, OfficeOrder order) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public OfficeRules() {
+        this(null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

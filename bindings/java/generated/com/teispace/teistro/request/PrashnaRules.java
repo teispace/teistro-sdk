@@ -24,6 +24,15 @@ import java.util.Objects;
  */
 public record PrashnaRules(GradedRule graded, MookRule mook, MoonRules moon, MoonScope moonScope, OfficeRules offices, PiscesRising pisces, RisingVarga risingVarga, ScoreRule score, TimingRule timing, WeaknessRules weakness) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public PrashnaRules() {
+        this(null, null, null, null, null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

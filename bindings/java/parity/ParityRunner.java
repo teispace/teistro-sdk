@@ -706,6 +706,32 @@ public final class ParityRunner {
             put(prefix + "-dated-" + k, kept.rule() + " " + kept.day().month() + "-" + kept.day().day() + " "
                     + kept.on().calendar().fullKey() + " " + kept.on().month() + "-" + kept.on().day());
         }
+        // What published sets did, printed only where they did it, so an
+        // answer asked without sets prints as it did.
+        for (int k = 0; k < answer.observances().size(); k += 1) {
+            FestivalObservance observance = answer.observances().get(k);
+            Published p = observance.published();
+            if (p == null) {
+                continue;
+            }
+            String computed = p.computed() == null ? "-" : p.computed().month() + "-" + p.computed().day();
+            put(prefix + "-published-" + k, observance.rule() + " " + p.status() + " " + p.set() + " "
+                    + p.version() + " " + computed);
+        }
+        for (int k = 0; k < answer.added().size(); k += 1) {
+            Published.Added added = answer.added().get(k);
+            put(prefix + "-added-" + k, added.key() + " " + added.day().month() + "-" + added.day().day() + " "
+                    + added.published().set());
+        }
+        for (int k = 0; k < answer.unplaced().size(); k += 1) {
+            Published.Unplaced u = answer.unplaced().get(k);
+            put(prefix + "-unplaced-" + k, u.set() + " " + u.entry() + " " + u.rule() + " " + u.day().month() + "-"
+                    + u.day().day());
+        }
+        for (int k = 0; k < answer.applied().size(); k += 1) {
+            Published.Applied a = answer.applied().get(k);
+            put(prefix + "-applied-" + k, a.id() + " " + a.version() + " " + a.hash());
+        }
     }
 
     /** An Ashta Koota as every runner prints it, under {@code prefix}. */
@@ -2756,6 +2782,24 @@ public final class ParityRunner {
         packs.put("amended", map("rules", List.<Object>of("DHARMASINDHU", ownRule)));
         packs.put("nepal", map("rules", List.<Object>of("NEPAL", ownFollowing)));
         packs.put("dated", map("rules", List.<Object>of("NEPAL", kartikFirst, lastSunday)));
+        // One published set with each action, as every runner asks it: a SET
+        // moving Lakshmi puja, a WITHDRAW, an ADD and a SET no occurrence
+        // takes.
+        java.util.function.BiFunction<Integer, Integer, Map<String, Object>> day2024 =
+                (month, day) -> map("calendar", "calendar.GREGORIAN", "year", 2024, "month", month, "day", day);
+        Map<String, Object> publishedSet = map(
+                "format", "teistro.published/1",
+                "publisher", "a patro printed in Nepal",
+                "id", "np-2081",
+                "version", 3,
+                "entries", List.<Object>of(
+                        map("action", "SET", "rule", "LAKSHMI_PUJA", "day", day2024.apply(11, 2), "source", "p. 1"),
+                        map("action", "WITHDRAW", "rule", "VIJAYA_DASHAMI", "day", day2024.apply(10, 12),
+                                "source", "p. 2"),
+                        map("action", "ADD", "key", "MINE", "day", day2024.apply(10, 20),
+                                "names", map("en-Latn", "Mine"), "source", "p. 3"),
+                        map("action", "SET", "rule", "HOLIKA", "day", day2024.apply(10, 25), "source", "p. 4")));
+        packs.put("published", map("rules", "DHARMASINDHU", "published", List.<Object>of(publishedSet)));
         // The shipped pack is asked of the lean call, the others of the
         // almanac's: the two answer alike, so the report cannot tell.
         for (Map.Entry<String, Map<String, Object>> pack : packs.entrySet()) {

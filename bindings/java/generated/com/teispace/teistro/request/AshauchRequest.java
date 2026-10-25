@@ -39,6 +39,18 @@ public record AshauchRequest(Boolean abroad, List<AshauchRunning> during, Ashauc
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param event What happened.
+     * @param key The consumer's own key, which the answer repeats.
+     * @param relation Who the observer is to it.
+     */
+    public AshauchRequest(AshauchEvent event, String key, AshauchRelation relation) {
+        this(null, null, event, null, null, key, null, relation);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

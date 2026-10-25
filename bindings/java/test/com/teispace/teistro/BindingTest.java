@@ -1476,6 +1476,134 @@ public final class BindingTest {
                         && f.parana().kept().span().fromJd() < f.parana().kept().span().toJd()
                         && f.parana().kept().at().window().equals("PART")),
                         "each Ekadashi fast says when it is broken");
+                // A signed pack, with the vector the Rust suite pins
+                // (crates/sdk/tests/signed_pack.rs).
+                {
+                    byte[] signedPack = ("{\"format\":\"teistro.published/1\",\"publisher\":\"a patro printed in Nepal\","
+                            + "\"id\":\"np-2083\",\"version\":3,\"entries\":[{\"action\":\"SET\",\"rule\":\"GHATASTHAPANA\","
+                            + "\"day\":{\"calendar\":\"GREGORIAN\",\"year\":2026,\"month\":10,\"day\":11},"
+                            + "\"source\":\"p. 41\"}]}").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    java.util.HexFormat hex = java.util.HexFormat.of();
+                    byte[] publisherKey = hex.parseHex("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c");
+                    byte[] packSignature = hex.parseHex("cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e213"
+                            + "32fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e");
+                    var verified = sky.almanac().publishedFromSigned(signedPack, packSignature, publisherKey, 3);
+                    same("np-2083", verified.id(), "the set the signature covers");
+                    same(3L, verified.version(), "at its version");
+                    byte[] tampered = signedPack.clone();
+                    tampered[tampered.length - 20] ^= 1;
+                    same("signature", refusal(() -> sky.almanac().publishedFromSigned(tampered, packSignature,
+                            publisherKey, 0)).field(), "a tampered byte");
+                    same("version", refusal(() -> sky.almanac().publishedFromSigned(signedPack, packSignature,
+                            publisherKey, 4)).field(), "a replayed version");
+                    same("key", refusal(() -> sky.almanac().publishedFromSigned(signedPack, packSignature,
+                            java.util.Arrays.copyOf(publisherKey, 31), 0)).field(), "a short key");
+                }
+                // A published set over the rules (published-overrides.md): a
+                // SET moves an occurrence and keeps the rule's day, a
+                // WITHDRAW marks one, an ADD keeps a day no rule computes, an
+                // entry no occurrence takes is reported, and the answer
+                // names the set.
+                {
+                    CalendarDate navamiFrom = Civil.date(Calendar.GREGORIAN, 2025, 9, 26);
+                    CalendarDate navamiTo = Civil.date(Calendar.GREGORIAN, 2025, 10, 6);
+                    FestivalAnswer plain = sky.almanac().festivals(navamiFrom, navamiTo, kathmandu, 20_700, pack);
+                    check(plain.added().isEmpty() && plain.unplaced().isEmpty() && plain.applied().isEmpty()
+                            && plain.observances().stream().allMatch(o -> o.published() == null),
+                            "no set, nothing published");
+                    FestivalObservance navami = plain.observances().stream()
+                            .filter(o -> o.rule().equals("MAHA_NAVAMI")).findFirst().orElseThrow();
+                    FestivalObservance visarjana = plain.observances().stream()
+                            .filter(o -> o.rule().equals("DEVI_VISARJAN")).findFirst().orElseThrow();
+                    java.util.function.BiFunction<CalendarDate, Integer, com.teispace.teistro.request.PublishedDay> on =
+                            (of, by) -> new com.teispace.teistro.request.PublishedDay(
+                                    Calendar.GREGORIAN, of.day() + by, of.month(), of.year());
+                    var entries = List.<com.teispace.teistro.request.PublishedEntry>of(
+                            new com.teispace.teistro.request.PublishedEntrySet(on.apply(navami.day(), 1), "MAHA_NAVAMI", "p. 1"),
+                            new com.teispace.teistro.request.PublishedEntryWithdraw(on.apply(visarjana.day(), 0), "DEVI_VISARJAN", "p. 2"),
+                            com.teispace.teistro.request.PublishedEntryAdd.builder().day(on.apply(navami.day(), 0))
+                                    .key("MINE").names(Map.of("en-Latn", "Mine")).source("p. 3").build(),
+                            new com.teispace.teistro.request.PublishedEntrySet(on.apply(navami.day(), 2), "HOLIKA", "p. 4"));
+                    var set = new com.teispace.teistro.request.PublishedSet(entries, "teistro.published/1", "np-2082",
+                            "a patro printed in Nepal", 2);
+                    FestivalAnswer answer = sky.almanac().festivals(navamiFrom, navamiTo, kathmandu, 20_700,
+                            new com.teispace.teistro.request.FestivalRequest(List.of(set), "DHARMASINDHU"));
+                    FestivalObservance moved = answer.observances().stream()
+                            .filter(o -> o.rule().equals("MAHA_NAVAMI")).findFirst().orElseThrow();
+                    same(new Published("PUBLISHED", "a patro printed in Nepal", "np-2082", 2, "p. 1", navami.day(), null),
+                            moved.published(), "the SET keeps the rule's day");
+                    same(navami.day().day() + 1, moved.day().day(), "the published day");
+                    check(moved.parana().isEmpty(), "a moved day keeps no computed parana");
+                    FestivalObservance withdrawn = answer.observances().stream()
+                            .filter(o -> o.rule().equals("DEVI_VISARJAN")).findFirst().orElseThrow();
+                    same("WITHDRAWN", withdrawn.published().status(), "the WITHDRAW marks it");
+                    same(visarjana.day(), withdrawn.day(), "and keeps its day");
+                    same(1, answer.added().size(), "one day added");
+                    same("MINE", answer.added().get(0).key(), "under its key");
+                    same(navami.day(), answer.added().get(0).day(), "on its day");
+                    same(Map.of("en-Latn", "Mine"), answer.added().get(0).names(), "with its names");
+                    same(List.of(new Published.Unplaced("np-2082", 3, "HOLIKA", answer.unplaced().get(0).day())),
+                            answer.unplaced(), "the entry no occurrence took");
+                    same(1, answer.applied().size(), "one set applied");
+                    same(64, answer.applied().get(0).hash().length(), "with its SHA-256");
+                    check(!answer.provenance().inputHash().equals(plain.provenance().inputHash()), "another input");
+                    var stray = new com.teispace.teistro.request.PublishedSet(
+                            List.of(new com.teispace.teistro.request.PublishedEntrySet(on.apply(navami.day(), 1),
+                                    "NO_SUCH_RULE", "p. 1")),
+                            "teistro.published/1", "np-2082", "a patro printed in Nepal", 2);
+                    TeistroException strayed = refusal(() -> sky.almanac().festivals(navamiFrom, navamiTo, kathmandu,
+                            20_700, new com.teispace.teistro.request.FestivalRequest(List.of(stray), "DHARMASINDHU")));
+                    same("festivals.published[0].entries[0].rule", strayed.field(), "a SET naming no carried rule");
+                }
+                // Why a published day differs (published-overrides.md §4): the
+                // committee's day published over the modern sky is the
+                // committee's sky, and a day no change gives is the publisher's.
+                try (Context committee = teistro.context(ContextOptions.builder().profile("nepali-committee")
+                        .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
+                    CalendarDate reasonsFrom = Civil.date(Calendar.GREGORIAN, 2027, 9, 1);
+                    CalendarDate reasonsTo = Civil.date(Calendar.GREGORIAN, 2027, 11, 30);
+                    var nepal = new com.teispace.teistro.request.FestivalRequest("NEPAL");
+                    List<FestivalObservance> theirs = committee.almanac()
+                            .festivals(reasonsFrom, reasonsTo, kathmandu, 20_700, nepal).observances();
+                    java.util.function.ToLongFunction<CalendarDate> fixed = d -> sky.calendar().fixedOf(d);
+                    FestivalObservance[] parted = sky.almanac().festivals(reasonsFrom, reasonsTo, kathmandu, 20_700, nepal)
+                            .observances().stream()
+                            .flatMap(o -> theirs.stream().map(t -> new FestivalObservance[] {o, t}))
+                            .filter(p -> p[0].rule().equals(p[1].rule())
+                                    && fixed.applyAsLong(p[0].day()) != fixed.applyAsLong(p[1].day())
+                                    && Math.abs(fixed.applyAsLong(p[0].day()) - fixed.applyAsLong(p[1].day())) <= 3)
+                            .findFirst().orElseThrow();
+                    java.util.function.Function<CalendarDate, com.teispace.teistro.request.FestivalRequest> published =
+                            d -> new com.teispace.teistro.request.FestivalRequest(List.of(
+                                    new com.teispace.teistro.request.PublishedSet(List.of(
+                                            new com.teispace.teistro.request.PublishedEntrySet(
+                                                    new com.teispace.teistro.request.PublishedDay(Calendar.GREGORIAN,
+                                                            d.day(), d.month(), d.year()),
+                                                    parted[0].rule(), "p. 1")),
+                                            "teistro.published/1", "np", "a patro printed in Nepal", 1)),
+                                    "NEPAL");
+                    PublishedReasons found = sky.almanac().publishedReasons(reasonsFrom, reasonsTo, kathmandu, 20_700,
+                            published.apply(parted[1].day()), List.of(), committee);
+                    same(1, found.reasons().size(), "one published day");
+                    PublishedReasons.Reason reason = found.reasons().get(0);
+                    same(List.of(parted[0].rule(), fixed.applyAsLong(parted[1].day()),
+                            fixed.applyAsLong(parted[0].day())),
+                            List.of(reason.rule(), fixed.applyAsLong(reason.day()),
+                                    fixed.applyAsLong(reason.computed())),
+                            "the published day and the rule's");
+                    same(List.of("SKY", "nepali-committee"),
+                            List.of(reason.reason().by(), reason.reason().profile()), "the committee's sky");
+                    CalendarDate far = sky.calendar().dateOf(Calendar.GREGORIAN,
+                            fixed.applyAsLong(parted[0].day()) + 5);
+                    var delhi = new PublishedReasons.Place("Delhi",
+                            new Observer(new Longitude(77.209), new Latitude(28.6139), new Altitude(216)), 19_800);
+                    PublishedReasons.Reason own = sky.almanac().publishedReasons(reasonsFrom, reasonsTo, kathmandu, 20_700,
+                            published.apply(far), List.of(delhi), null).reasons().get(0);
+                    same("PUBLISHER", own.reason().by(), "no change gives it");
+                    same(new PublishedReasons.Cause("PLACE", "Delhi", null, null, null), own.tried().get(0).change(),
+                            "the place tried reasonsFrom");
+                    check(own.tried().stream().noneMatch(PublishedReasons.Tried::reproduces), "none reproduces");
+                }
                 // A vrata's parana (§8.7): Shivaratri 2026, inside the 14th
                 // within three yamas, then at its end.
                 FestivalObservance shivaratri = sky.almanac().festivals(

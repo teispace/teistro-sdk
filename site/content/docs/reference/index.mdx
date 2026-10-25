@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 59 entry points over 27 structs and 166 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 61 entry points over 27 structs and 166 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -113,6 +113,7 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 |---|---|
 | [`ts_panchanga_days`](panchanga/ts_panchanga_days) | Founds the almanac of every day in a range at one place and answers with its blob: the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what each day is said to be. |
 | [`ts_almanac_disagreements`](panchanga/ts_almanac_disagreements) | Compares this context's reckoning of a range with another's at one place (`03-design/setup-disagreements.md`) and answers with `{days, festivals}` as canonical JSON, each the `{value, provenance}` of one comparison asked, sealed by this context's provenance, and null when not asked. |
+| [`ts_almanac_published_reasons`](panchanga/ts_almanac_published_reasons) | Says why each published day of a festival answer differs from the rule's (`03-design/published-overrides.md` §4) and answers with `{value, provenance}` as canonical JSON, sealed by this context's provenance, every catalogue member a full key. |
 | [`ts_almanac_sankalpa`](panchanga/ts_almanac_sankalpa) | The time a sankalpa recites at an instant and a place (`03-design/sankalpa.md`), answered with `{value, provenance}` as canonical JSON, every catalogue member a full key. |
 | [`ts_almanac_ashauch`](panchanga/ts_almanac_ashauch) | The period of impurity after a birth or a death at a place (`03-design/ashauch.md`), answered with `{value, provenance}` as canonical JSON. |
 | [`ts_almanac_first_year`](panchanga/ts_almanac_first_year) | A death's first year at a place (`03-design/shraddha.md` §3.3), answered with `{value, provenance}` as canonical JSON. |
@@ -163,6 +164,12 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 | [`ts_context_new_with_provider`](provider/ts_context_new_with_provider) | Creates a context that computes with a **loaded** provider. |
 | [`ts_provider_free`](provider/ts_provider_free) | Frees a loaded provider; null is ignored. |
 
+### Published
+
+| entry point | what it does |
+|---|---|
+| [`ts_published_verify`](published/ts_published_verify) | Verifies a signed pack and answers with its published set as canonical JSON. |
+
 ## The rules every entry point follows
 
 - Every struct begins with `struct_size`, which the caller sets to `sizeof` before the call: a library built from a newer description can tell how much of the struct the caller knows about.
@@ -198,3 +205,4 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 - `crates/ffi/src/research.rs`
 - `crates/ffi/src/ephemeris.rs`
 - `crates/ffi/src/provider.rs`
+- `crates/ffi/src/published.rs`

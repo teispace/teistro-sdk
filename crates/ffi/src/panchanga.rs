@@ -1178,6 +1178,96 @@ pub unsafe extern "C" fn ts_almanac_disagreements(
     })
 }
 
+/// Says why each published day of a festival answer differs from the
+/// rule's (`03-design/published-overrides.md` §4) and answers with
+/// `{value, provenance}` as canonical JSON, sealed by this context's
+/// provenance, every catalogue member a full key.
+///
+/// `value` is `{reasons}`: one per occurrence a `SET` moved, each `{rule,
+/// set, day, computed, reason, tried}`, `day` the published day and
+/// `computed` the rule's here. `tried` lists each change in the order
+/// tried, `{change, day, reproduces}`, `day` the rule's day under the
+/// change (absent when it gives none within seven days), and `reason` is
+/// the first change that reproduces the published day, or `{"by":
+/// "PUBLISHER"}`, the publisher's own choice, when none does. A change is
+/// `{"by": "PLACE", "name"}`, `{"by": "SKY", "profile", "settingsHash"}`
+/// (`other`'s) or `{"by": "RULE", "pack"}` (each shipped pack whose rule
+/// of the key differs).
+///
+/// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+/// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+/// "places"}`: the days as `{"year", "month", "day"}`, `festivals` a
+/// festival request with its `published` sets, and `places` the places
+/// the publisher may have reckoned at, each `{"name", "latitudeDeg",
+/// "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`. `other` is the
+/// publisher's sky, another context; `context` itself, or null, tries
+/// none. A key it does
+/// not read, a place or offset out of range or a festival request its
+/// reader refuses is `INVALID_ARG`, named under `publishedReasons`.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_published_reasons;
+/// use teistro_ffi::string::TsString;
+///
+/// // October 2026 at Kathmandu with no set: nothing moved, nothing to say.
+/// let month = c"{\"first\": {\"year\": 2026, \"month\": 10, \"day\": 1}, \"last\": {\"year\": 2026, \"month\": 10, \"day\": 31}, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700, \"festivals\": {\"rules\": \"NEPAL\"}}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, no other, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_published_reasons(&raw const modern, core::ptr::null(), month.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// assert_eq!(answer["value"]["reasons"], serde_json::json!([]));
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `other` null or a live handle, which
+/// may be `context`; `request_json` NUL-terminated; `out_json` valid for
+/// a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_almanac_published_reasons(
+    context: *const TsContext,
+    other: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // This context itself names no other sky.
+        let other = if core::ptr::eq(other, context) {
+            None
+        } else {
+            // SAFETY: the caller promises null or a live handle.
+            unsafe { crate::support::context(other) }
+        };
+        // SAFETY: the entry point's contract.
+        let asked = teistro::PublishedReasonsRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let skies: Vec<&teistro::Context> = other.map(TsContext::sdk).into_iter().collect();
+        let answer = ctx
+            .sdk()
+            .almanac()
+            .published_reasons_request(&skies, &asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// The time a sankalpa recites at an instant and a place
 /// (`03-design/sankalpa.md`), answered with `{value, provenance}` as
 /// canonical JSON, every catalogue member a full key.

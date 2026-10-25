@@ -28,6 +28,17 @@ public record CivilAsked(com.teispace.teistro.Calendar calendar, double instant,
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param instant The {@code instant} field.
+     * @param zone How a zone is given.
+     */
+    public CivilAsked(double instant, ZoneSpec zone) {
+        this(null, instant, zone);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

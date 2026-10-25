@@ -143,6 +143,31 @@ public final class AlmanacArea {
                 .orElseThrow(() -> Reads.internal("a request with festivals answered none"));
     }
 
+    /**
+     * A published set read from a signed pack
+     * ({@code 03-design/published-overrides.md} §5), ready for a
+     * {@code FestivalRequest}'s {@code published}. The publisher's key is the
+     * app's to fix at its own build; the SDK embeds none. A version under
+     * {@code atLeast}, the newest the app has applied, is refused, so a
+     * replayed pack cannot roll a correction back.
+     *
+     * @param pack the set's exact bytes
+     * @param signature the publisher's detached Ed25519 signature over them, 64 bytes
+     * @param key the publisher's public key, 32 bytes
+     * @param atLeast the newest version applied; 0 takes any
+     * @return the set
+     * @throws TeistroException {@code INVALID_ARG} naming {@code key}, {@code signature},
+     *     {@code version} or the set's own field
+     */
+    public com.teispace.teistro.request.PublishedSet publishedFromSigned(byte[] pack, byte[] signature, byte[] key,
+            long atLeast) {
+        byte[] bytes = pack.clone();
+        byte[] signed = signature.clone();
+        byte[] publisher = key.clone();
+        String json = context.locked((lib, raw) -> Calls.publishedVerify(lib, raw, bytes, signed, publisher, atLeast));
+        return com.teispace.teistro.request.PublishedSet.of(Json.object(json));
+    }
+
     private Almanac asked(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
             com.teispace.teistro.request.MuhurtaRequest muhurta,
             com.teispace.teistro.request.FestivalRequest festivals, long sections) {
@@ -437,6 +462,60 @@ public final class AlmanacArea {
         String json = Json.write(asked);
         return AlmanacReads.disagreements(context.lockedWith(other,
                 (lib, ours, theirs) -> Calls.almanacDisagreements(lib, ours, theirs, json)));
+    }
+
+    /**
+     * <b>Why each published day differs from the rule's</b> ({@code 03-design/published-overrides.md} §4).
+     * The festival request, with its {@code published} sets, is asked again under one change at a time:
+     * each of {@code places} the publisher may have reckoned at, then {@code sky} (another context: the
+     * committee's Surya Siddhanta beside a modern sky), then each shipped pack's rule of the same key. The
+     * first change whose rule's day is the published one is the reason, else {@code PUBLISHER}; every
+     * change tried is listed.
+     *
+     * <pre>{@code
+     * PublishedReasons found = modern.almanac().publishedReasons(first, last, kathmandu, 20_700,
+     *         new FestivalRequest(List.of(set), "NEPAL"), List.of(), committee);
+     * }</pre>
+     *
+     * @param from the first day
+     * @param to the last day, both ends included
+     * @param place where the days are reckoned
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param festivals the festival request with the published sets to explain
+     * @param places the places tried, in order
+     * @param sky the publisher's sky, or null to try none
+     * @return each published day explained, sealed by this context's provenance
+     */
+    public PublishedReasons publishedReasons(CalendarDate from, CalendarDate to, Observer place,
+            int utcOffsetSeconds, com.teispace.teistro.request.FestivalRequest festivals,
+            List<PublishedReasons.Place> places, Context sky) {
+        if (from == null || to == null) {
+            throw Reads.invalid("from and to are CalendarDates", from == null ? "from" : "to");
+        }
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        if (festivals == null) {
+            throw Reads.invalid("festivals is a FestivalRequest", "festivals");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("calendar", from.calendar().key());
+        asked.put("first", Map.of("year", from.year(), "month", from.month(), "day", from.day()));
+        asked.put("last", Map.of("year", to.year(), "month", to.month(), "day", to.day()));
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.put("festivals", festivals);
+        asked.put("places", (places == null ? List.<PublishedReasons.Place>of() : places).stream()
+                .map(p -> Map.of("name", p.name(), "latitudeDeg", p.place().latitudeDeg().value(),
+                        "longitudeDeg", p.place().longitudeDeg().value(), "altitudeM", p.place().altitudeM().value(),
+                        "utcOffsetSeconds", p.utcOffsetSeconds()))
+                .toList());
+        String json = Json.write(asked);
+        // This context as the other tries no sky.
+        return AlmanacReads.publishedReasons(context.lockedWith(sky == null ? context : sky,
+                (lib, ours, theirs) -> Calls.almanacPublishedReasons(lib, ours, theirs, json)));
     }
 
     /**

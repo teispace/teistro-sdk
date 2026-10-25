@@ -5968,12 +5968,22 @@ function festivalsFrom(json) {
     observances: value.observances.map(observanceFrom),
     ekadashis: value.ekadashis.map(fastFrom),
     unjudged: value.unjudged,
-    dated: (value.dated ?? []).map((kept) => ({ ...kept, day: dateFrom(kept.day), on: dateFrom(kept.on) })),
+    dated: (value.dated ?? []).map((kept) =>
+      withPublished(kept, { ...kept, day: dateFrom(kept.day), on: dateFrom(kept.on) }),
+    ),
     anniversaries: (value.anniversaries ?? []).map((kept) => ({
       ...kept,
       origin: { candidates: [], ...kept.origin },
       observance: observanceFrom(kept.observance),
     })),
+    added: (value.added ?? []).map((day) => ({
+      ...day,
+      day: dateFrom(day.day),
+      names: day.names ?? {},
+      published: publishedFrom(day.published),
+    })),
+    unplaced: (value.unplaced ?? []).map((entry) => ({ ...entry, day: dateFrom(entry.day) })),
+    applied: value.applied ?? [],
     provenance: decodeProvenance(provenance),
   });
 }
@@ -5992,7 +6002,30 @@ function observanceFrom(observance) {
     extents: observance.extents.map((extent) => ({ ...extent, day: dateFrom(extent.day) })),
   };
   if (observance.parana) shaped.parana = observance.parana.map((time) => ({ ...time, day: dateFrom(time.day) }));
-  return shaped;
+  return withPublished(observance, shaped);
+}
+
+/**
+ * What a published entry did to a day, its rule's own day in the shape
+ * every other date here has (`03-design/published-overrides.md`).
+ *
+ * @param {object} published
+ * @returns {object}
+ */
+function publishedFrom(published) {
+  return published.computed ? { ...published, computed: dateFrom(published.computed) } : published;
+}
+
+/**
+ * A shaped day with its `published` shaped too, when an entry touched it.
+ *
+ * @template T
+ * @param {{published?: object}} written the day as the answer writes it
+ * @param {T} shaped
+ * @returns {T}
+ */
+function withPublished(written, shaped) {
+  return written.published ? { ...shaped, published: publishedFrom(written.published) } : shaped;
 }
 
 /**
@@ -6005,7 +6038,7 @@ function observanceFrom(observance) {
 function fastFrom(fast) {
   const shaped = { ...fast, days: fast.days.map(dateFrom), day: dateFrom(fast.day) };
   if (fast.parana) shaped.parana = { ...fast.parana, day: dateFrom(fast.parana.day) };
-  return shaped;
+  return withPublished(fast, shaped);
 }
 
 /**
@@ -7062,6 +7095,32 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * A published set read from a signed pack
+   * (`03-design/published-overrides.md` §5), ready for a festival
+   * request's `published`. The publisher's key is the app's to fix at its
+   * own build; the SDK embeds none. A version under `atLeast`, the newest
+   * the app has applied, is refused, so a replayed pack cannot roll a
+   * correction back.
+   *
+   * @param {Uint8Array} pack the set's exact bytes
+   * @param {Uint8Array} signature the publisher's detached Ed25519
+   *   signature over them, 64 bytes
+   * @param {Uint8Array} key the publisher's public key, 32 bytes
+   * @param {number} [atLeast] the newest version applied; 0 takes any
+   * @returns {object} the set, as `published` takes it
+   * @throws {TeistroError} `INVALID_ARG` naming `key`, `signature`,
+   *   `version` or the set's own field
+   */
+  publishedFromSigned(pack, signature, key, atLeast = 0) {
+    const [bytes, signed, publisher] = [
+      bytesOf(pack, 'pack'),
+      bytesOf(signature, 'signature'),
+      bytesOf(key, 'key'),
+    ];
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.publishedVerify(bytes, signed, publisher, atLeast))));
+  }
+
+  /**
    * The almanac of one day, which is the range of one unwrapped.
    *
    * @param {object} request
@@ -7385,6 +7444,74 @@ export class AlmanacArea extends Area {
     return deepFreeze({
       days: answer.days === null ? null : dayDisagreementsFrom(answer.days),
       festivals: answer.festivals === null ? null : festivalDisagreementsFrom(answer.festivals),
+    });
+  }
+
+  /**
+   * **Why each published day differs from the rule's**
+   * (`03-design/published-overrides.md` §4). The festival request, with
+   * its `published` sets, is asked again under one change at a time: each
+   * of `places` the publisher may have reckoned at, then `sky` (another
+   * Context: the committee's Surya Siddhanta beside a modern sky), then
+   * each shipped pack's rule of the same key. The first change whose rule's
+   * day is the published one is the `reason`, else `{ by: 'PUBLISHER' }`;
+   * every change tried is listed with the day it gave.
+   *
+   * @param {object} request `{ from, to, place, utcOffsetSeconds,
+   *   festivals, places, sky }`, `places` each `{ name, place,
+   *   utcOffsetSeconds }`
+   * @returns {object} `{ reasons, provenance }`
+   */
+  publishedReasons(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('publishedReasons: expected a request, e.g. { from, to, place, utcOffsetSeconds, festivals }');
+    }
+    const { from: given, to, place: where, utcOffsetSeconds, festivals, places = [], sky } = request;
+    let theirs;
+    if (sky !== undefined && sky !== null) {
+      theirs = natives.get(sky);
+      if (theirs === undefined) throw new TypeError('publishedReasons: sky is another Context');
+    }
+    const day = (at, what) => ({
+      year: finite(at?.year, `${what}.year`),
+      month: finite(at?.month, `${what}.month`),
+      day: finite(at?.day, `${what}.day`),
+    });
+    const at = (place, what) => ({
+      latitudeDeg: finite(place?.latitude, `${what}.latitude`),
+      longitudeDeg: finite(place?.longitude, `${what}.longitude`),
+      altitudeM: finite(place?.altitude ?? 0, `${what}.altitude`),
+    });
+    const from = given ?? {};
+    const asked = {
+      first: day(from, 'from'),
+      ...at(where, 'place'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      festivals: JSON.parse(
+        recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }") ?? 'null',
+      ),
+      places: places.map((p, k) => ({
+        name: String(p?.name),
+        ...at(p?.place, `places[${k}].place`),
+        utcOffsetSeconds: finite(p?.utcOffsetSeconds, `places[${k}].utcOffsetSeconds`),
+      })),
+    };
+    if (from.calendar !== undefined) asked.calendar = from.calendar;
+    if (to !== undefined && to !== null) asked.last = day(to, 'to');
+    // This context as the other tries no sky.
+    const text = JSON.stringify(asked);
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacPublishedReasons(theirs ? theirs() : inner, text)),
+    );
+    const tried = ({ day: on, ...rest }) => (on ? { ...rest, day: dateFrom(on) } : rest);
+    return deepFreeze({
+      reasons: value.reasons.map((r) => ({
+        ...r,
+        day: dateFrom(r.day),
+        computed: dateFrom(r.computed),
+        tried: r.tried.map(tried),
+      })),
+      provenance: decodeProvenance(provenance),
     });
   }
 

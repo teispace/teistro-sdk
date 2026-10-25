@@ -32,6 +32,16 @@ public record ConditionPanchangaNakshatra(List<com.teispace.teistro.Nakshatra> n
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param nakshatras Which.
+     */
+    public ConditionPanchangaNakshatra(List<com.teispace.teistro.Nakshatra> nakshatras) {
+        this(nakshatras, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

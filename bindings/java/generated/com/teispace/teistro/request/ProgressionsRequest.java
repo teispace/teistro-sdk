@@ -20,6 +20,15 @@ import java.util.Objects;
  */
 public record ProgressionsRequest(AngleMethod angles, Double at, ContactsAsked contacts, DirectionAsked direction, ProgressionRate rate, YearMeasure year) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public ProgressionsRequest() {
+        this(null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

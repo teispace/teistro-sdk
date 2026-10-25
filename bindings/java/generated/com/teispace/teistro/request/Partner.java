@@ -28,6 +28,17 @@ public record Partner(double instant, GeoPlace place, Integer utcOffsetSeconds) 
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param instant The birth's instant.
+     * @param place Where it happened.
+     */
+    public Partner(double instant, GeoPlace place) {
+        this(instant, place, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

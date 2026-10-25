@@ -670,6 +670,18 @@ __all__ = [
     "AnniversaryDay",
     "AnniversaryOrigin",
     "FestivalAnswer",
+    "Published",
+    "PublishedAdded",
+    "PublishedApplied",
+    "PublishedCause",
+    "PublishedChangeTried",
+    "PublishedReason",
+    "PublishedReasons",
+    "ReckonedPlace",
+    "PublishedDayAsked",
+    "PublishedEntryAsked",
+    "PublishedSetAsked",
+    "PublishedUnplaced",
     "DayDisagreement",
     "DayDisagreements",
     "Disagreements",
@@ -2564,6 +2576,25 @@ class AlmanacArea(_Area):
             raise TeistroError(Status.INTERNAL, "a request with festivals answered none")
         return answer
 
+    def published_from_signed(
+        self, pack: bytes, signature: bytes, key: bytes, at_least: int = 0
+    ) -> PublishedSetAsked:
+        """A published set read from a signed pack
+        (`03-design/published-overrides.md` §5), ready for a
+        :class:`FestivalRequest`'s `published`: `pack` the set's exact
+        bytes, `signature` the publisher's detached Ed25519 signature over
+        them (64 bytes) and `key` the publisher's public key (32 bytes),
+        which the app fixes at its own build; the SDK embeds none. A version
+        under `at_least`, the newest the app has applied, is refused, so a
+        replayed pack cannot roll a correction back.
+
+        Raises :class:`TeistroError` `INVALID_ARG` on `key`, `signature`,
+        `version` or the set's own field, naming what is wrong."""
+        verified: PublishedSetAsked = json.loads(
+            self._context.inner.published_verify(pack, signature, key, at_least)
+        )
+        return verified
+
     def day(
         self,
         *,
@@ -2787,6 +2818,64 @@ class AlmanacArea(_Area):
             lambda: other._through_provider(lambda: self._context.inner.almanac_disagreements(theirs, json.dumps(asked)))
         )
         return _disagreements_answer(answered)
+
+    def published_reasons(
+        self,
+        *,
+        from_date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        festivals: FestivalRequest,
+        to_date: Optional[CalendarDate] = None,
+        places: Sequence[ReckonedPlace] = (),
+        sky: Optional["Context"] = None,
+    ) -> PublishedReasons:
+        """**Why each published day differs from the rule's**
+        (`03-design/published-overrides.md` §4). The festival request, with
+        its `published` sets, is asked again under one change at a time:
+        each of `places` the publisher may have reckoned at, then `sky`
+        (another context: the committee's Surya Siddhanta beside a modern
+        sky), then each shipped pack's rule of the same key. The first
+        change whose rule's day is the published one is the reason, else
+        `PUBLISHER`; every change tried is listed with the day it gave."""
+        if sky is not None and not isinstance(sky, Context):
+            raise TeistroError(Status.INVALID_ARG, "the publisher's sky is another Context", field="sky")
+
+        def parts(day: CalendarDate) -> Dict[str, int]:
+            return {"year": day.year, "month": day.month, "day": day.day}
+
+        asked: Dict[str, Any] = {
+            "calendar": from_date.calendar.key,
+            "first": parts(from_date),
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "festivals": json.loads(_festivals_json(festivals) or "null"),
+            "places": [
+                {
+                    "name": at.name,
+                    "latitudeDeg": at.place.latitude_deg,
+                    "longitudeDeg": at.place.longitude_deg,
+                    "altitudeM": at.place.altitude_m,
+                    "utcOffsetSeconds": at.utc_offset_seconds,
+                }
+                for at in places
+            ],
+        }
+        if to_date is not None:
+            asked["last"] = parts(to_date)
+        text = json.dumps(asked)
+        if sky is None:
+            # This context as the other tries no sky.
+            ours = self._context.inner
+            answered = self._context._through_provider(lambda: ours.almanac_published_reasons(ours, text))
+        else:
+            theirs = sky.inner
+            answered = self._context._through_provider(
+                lambda: sky._through_provider(lambda: self._context.inner.almanac_published_reasons(theirs, text))
+            )
+        return _published_reasons_answer(answered)
 
     def festival_calendar(
         self,
@@ -7367,7 +7456,54 @@ the panchanga prints, each rule fitted to the committee's editions and
 citing its page (§10)."""
 
 
-class FestivalRequest(TypedDict):
+class PublishedDayAsked(TypedDict, total=False):
+    """A published day in any calendar the SDK ships, converted to the
+    range's: `calendar` (a member, or its key such as `"GREGORIAN"`),
+    `year` (astronomical), `month` and `day` required;
+    `era` (`{"era": "VIKRAMA", "year": 2082}`) for presentation and `leap`
+    (`"MONTH"`, `"DAY"` or `"MONTH_AND_DAY"`) as the calendar needs it."""
+
+    calendar: Required[Union[Calendar, str]]
+    year: Required[int]
+    month: Required[int]
+    day: Required[int]
+    era: Mapping[str, Any]
+    leap: Literal["MONTH", "DAY", "MONTH_AND_DAY"]
+
+
+class PublishedEntryAsked(TypedDict, total=False):
+    """One entry of a published set, by its `action`: `SET` moves a rule's
+    occurrence nearest `day` (within seven days) to it, `ADD` keeps a day
+    no rule computes under its own `key` and `names`, and `WITHDRAW` marks
+    an occurrence the publisher does not keep. `month` and `adhika` tell
+    apart two occurrences that near; `window` is a published time."""
+
+    action: Required[Literal["SET", "ADD", "WITHDRAW"]]
+    rule: str
+    key: str
+    day: Required[PublishedDayAsked]
+    month: Masa
+    adhika: bool
+    names: Mapping[str, str]
+    window: Mapping[str, float]
+    source: Required[str]
+
+
+class PublishedSetAsked(TypedDict):
+    """A set of days an authority decides (`03-design/published-overrides.md`),
+    laid over the rules' answer in the order given.
+
+    >>> published: PublishedSetAsked = {"format": "teistro.published/1", "publisher": "a patro printed in Nepal", "id": "np-2084", "version": 1, "entries": []}
+    """
+
+    format: Literal["teistro.published/1"]
+    publisher: str
+    id: str
+    version: int
+    entries: Sequence[PublishedEntryAsked]
+
+
+class FestivalRequest(TypedDict, total=False):
     """Festival rules to reckon over an almanac's days
     (`03-design/festival-rules.md` §7): `rules`, a :data:`FestivalPack` the
     SDK ships, or a list whose items each name a pack or spell a rule out as
@@ -7391,7 +7527,10 @@ class FestivalRequest(TypedDict):
     >>> asked: FestivalRequest = {"rules": ["NEPAL", {"key": "TWO_AFTER", "source": "mine", "after": "LAKSHMI_PUJA", "days": 2}]}
     """
 
-    rules: Union[FestivalPack, Sequence[Union[FestivalPack, Mapping[str, Any]]]]
+    rules: Required[Union[FestivalPack, Sequence[Union[FestivalPack, Mapping[str, Any]]]]]
+    published: Sequence[PublishedSetAsked]
+    """Published sets laid over the answer, a later one's entry replacing an
+    earlier one's for the same occurrence."""
 
 
 @dataclass(frozen=True)
@@ -7462,6 +7601,10 @@ class FestivalObservance:
     """When the fast kept on the day is broken, under each of the rule's
     readings in order (`03-design/festival-rules.md` §8.7); empty when
     the rule has none."""
+
+    published: Optional["Published"] = None
+    """What a published entry did to the day; None when none touched it,
+    so the day is the rule's (`03-design/published-overrides.md`)."""
 
 
 @dataclass(frozen=True)
@@ -7572,6 +7715,10 @@ class EkadashiFast:
     mahadvadashi: Optional["Mahadvadashi"] = None
     """The mahadvadashi that set `day`, when the rule keeps them and one
     held (`GAUDIYA`'s rule); `choice` stays the table's."""
+
+    published: Optional["Published"] = None
+    """What a published entry did to the fast; None when none touched it.
+    A fast a `SET` moved has no `parana` unless the entry gave a window."""
 
 
 MahadvadashiKind = Literal[
@@ -7712,6 +7859,66 @@ class DatedObservance:
     on: CalendarDate
     """The same day in the rule's own calendar."""
 
+    published: Optional["Published"] = None
+    """What a published entry did to the day; None when none touched it."""
+
+
+@dataclass(frozen=True)
+class Published:
+    """What a published entry did to a day (`03-design/published-overrides.md`)."""
+
+    status: Literal["PUBLISHED", "WITHDRAWN"]
+    publisher: str
+    """The set's publisher."""
+
+    set: str
+    """The set's id."""
+
+    version: int
+    source: str
+    """Where the publisher says it."""
+
+    computed: Optional[CalendarDate] = None
+    """The rule's own day, when the publisher's differs."""
+
+    window: Optional[Interval] = None
+    """A published time."""
+
+
+@dataclass(frozen=True)
+class PublishedAdded:
+    """A day a published set added, which no rule computes."""
+
+    key: str
+    day: CalendarDate
+    names: Mapping[str, str]
+    """Its names, by locale."""
+
+    published: Published
+
+
+@dataclass(frozen=True)
+class PublishedUnplaced:
+    """A published entry inside the range that no occurrence took."""
+
+    set: str
+    entry: int
+    """The entry's index in its set."""
+
+    rule: str
+    day: CalendarDate
+
+
+@dataclass(frozen=True)
+class PublishedApplied:
+    """A published set laid over the answer."""
+
+    id: str
+    version: int
+    publisher: str
+    hash: str
+    """The SHA-256 of its canonical JSON, in hex."""
+
 
 @dataclass(frozen=True)
 class AnniversaryOrigin:
@@ -7784,6 +7991,15 @@ class FestivalAnswer:
     provenance: Provenance
     """What computed it: the widened days among the applied conventions as
     `festival.days`, and the hash of the value."""
+
+    added: Tuple[PublishedAdded, ...] = ()
+    """The days published sets added; empty when none."""
+
+    unplaced: Tuple[PublishedUnplaced, ...] = ()
+    """The published entries in range no occurrence took."""
+
+    applied: Tuple[PublishedApplied, ...] = ()
+    """The published sets laid over the answer, in order."""
 
 
 @dataclass(frozen=True)
@@ -7914,6 +8130,78 @@ class FestivalDisagreements:
 
     observances: Tuple[FestivalDisagreement, ...]
     ekadashis: Tuple[EkadashiDisagreement, ...]
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
+class ReckonedPlace:
+    """A place a publisher may have reckoned its days at, for
+    `almanac.published_reasons`."""
+
+    name: str
+    """What the answer calls it."""
+
+    place: "Observer"
+    utc_offset_seconds: int
+    """The clock its civil days run on."""
+
+
+@dataclass(frozen=True)
+class PublishedCause:
+    """One change a published day was tried under, or the reason it
+    differs: `PLACE` (with `name`), `SKY` (another context, with `profile`
+    and `settings_hash`), `RULE` (a shipped pack's rule of the key, with
+    `pack`), or `PUBLISHER`, the publisher's own choice, which is never a
+    change tried."""
+
+    by: Literal["PLACE", "SKY", "RULE", "PUBLISHER"]
+    name: Optional[str] = None
+    profile: Optional[str] = None
+    settings_hash: Optional[str] = None
+    pack: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class PublishedChangeTried:
+    """One change tried, and the rule's day under it."""
+
+    change: PublishedCause
+    day: Optional[CalendarDate]
+    """The rule's day under it; None when it gives no occurrence within
+    seven days of the published one."""
+
+    reproduces: bool
+    """Whether that is the published day."""
+
+
+@dataclass(frozen=True)
+class PublishedReason:
+    """Why one published day differs from the rule's here."""
+
+    rule: str
+    set: str
+    """The set that published it."""
+
+    day: CalendarDate
+    """The published day."""
+
+    computed: CalendarDate
+    """The rule's own day, here and under this context."""
+
+    reason: PublishedCause
+    """The first change that gives the published day; `PUBLISHER` when
+    none does."""
+
+    tried: Tuple[PublishedChangeTried, ...]
+    """Every change tried, in order, with the day each gave."""
+
+
+@dataclass(frozen=True)
+class PublishedReasons:
+    """What `almanac.published_reasons` answers: one reason per occurrence
+    a `SET` moved."""
+
+    reasons: Tuple[PublishedReason, ...]
     provenance: Provenance
 
 
@@ -15098,6 +15386,26 @@ def _festival_observance(raw: Mapping[str, Any]) -> FestivalObservance:
         choice=raw["choice"],
         margin_seconds=float(raw["marginSeconds"]),
         parana=tuple(_vrata_parana(time) for time in raw.get("parana", ())),
+        published=_published(raw),
+    )
+
+
+def _published(holder: Mapping[str, Any]) -> Optional[Published]:
+    """What a published entry did to a day, or None when none touched it."""
+    raw = holder.get("published")
+    return None if raw is None else _published_record(raw)
+
+
+def _published_record(raw: Mapping[str, Any]) -> Published:
+    """A published entry's record as a festival answer writes it."""
+    return Published(
+        status=raw["status"],
+        publisher=raw["publisher"],
+        set=raw["set"],
+        version=int(raw["version"]),
+        source=raw["source"],
+        computed=_serde_date(raw["computed"]) if raw.get("computed") is not None else None,
+        window=_interval(raw["window"]) if raw.get("window") is not None else None,
     )
 
 def _festival_window(raw: Mapping[str, Any]) -> FestivalWindow:
@@ -15148,6 +15456,7 @@ def _ekadashi_fast(raw: Mapping[str, Any]) -> EkadashiFast:
         margin_seconds=float(raw["marginSeconds"]),
         parana=_parana(raw["parana"]) if raw.get("parana") is not None else None,
         mahadvadashi=_mahadvadashi(raw["mahadvadashi"]) if raw.get("mahadvadashi") is not None else None,
+        published=_published(raw),
     )
 
 
@@ -15244,10 +15553,66 @@ def _festivals_answer(text: str) -> FestivalAnswer:
             FestivalUnjudged(rule=u["rule"], tithi=_interval(u["tithi"]), why=u["why"]) for u in value["unjudged"]
         ),
         dated=tuple(
-            DatedObservance(rule=d["rule"], day=_serde_date(d["day"]), on=_serde_date(d["on"]))
+            DatedObservance(
+                rule=d["rule"], day=_serde_date(d["day"]), on=_serde_date(d["on"]), published=_published(d)
+            )
             for d in value.get("dated", ())
         ),
         anniversaries=tuple(_anniversary_day(a) for a in value.get("anniversaries", ())),
+        provenance=decode_provenance(envelope["provenance"]),
+        added=tuple(
+            PublishedAdded(
+                key=a["key"],
+                day=_serde_date(a["day"]),
+                names=dict(a.get("names", {})),
+                published=_published_record(a["published"]),
+            )
+            for a in value.get("added", ())
+        ),
+        unplaced=tuple(
+            PublishedUnplaced(set=u["set"], entry=int(u["entry"]), rule=u["rule"], day=_serde_date(u["day"]))
+            for u in value.get("unplaced", ())
+        ),
+        applied=tuple(
+            PublishedApplied(id=a["id"], version=int(a["version"]), publisher=a["publisher"], hash=a["hash"])
+            for a in value.get("applied", ())
+        ),
+    )
+
+
+def _published_reasons_answer(text: str) -> PublishedReasons:
+    """`ts_almanac_published_reasons`'s answer as frozen records, dates in
+    this binding's shape, with the provenance beside them."""
+    envelope = json.loads(text)
+
+    def cause(raw: Mapping[str, Any]) -> PublishedCause:
+        return PublishedCause(
+            by=raw["by"],
+            name=raw.get("name"),
+            profile=raw.get("profile"),
+            settings_hash=raw.get("settingsHash"),
+            pack=raw.get("pack"),
+        )
+
+    return PublishedReasons(
+        reasons=tuple(
+            PublishedReason(
+                rule=r["rule"],
+                set=r["set"],
+                day=_serde_date(r["day"]),
+                computed=_serde_date(r["computed"]),
+                reason=cause(r["reason"]),
+                tried=tuple(
+                    PublishedChangeTried(
+                        change=cause(t["change"]),
+                        day=None if t.get("day") is None else _serde_date(t["day"]),
+                        reproduces=t["reproduces"],
+                    )
+                    for t in r["tried"]
+                ),
+            )
+            for r in envelope["value"]["reasons"]
+        ),
         provenance=decode_provenance(envelope["provenance"]),
     )
 

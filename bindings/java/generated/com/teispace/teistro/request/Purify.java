@@ -16,6 +16,16 @@ import java.util.Objects;
  */
 public record Purify(double minutes, RectificationRules rules) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param minutes How far either side of the chart's instant the window runs, minutes: more than none, and at most half of `teistro_rectification::LONGEST_HOURS`.
+     */
+    public Purify(double minutes) {
+        this(minutes, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

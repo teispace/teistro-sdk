@@ -34,6 +34,17 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param from The {@code from} field.
+     * @param to The {@code to} field.
+     */
+    public ContactsAsked(double from, double to) {
+        this(null, from, null, null, null, null, to);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

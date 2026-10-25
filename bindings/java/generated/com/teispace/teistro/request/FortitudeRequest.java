@@ -18,6 +18,15 @@ import java.util.Objects;
  */
 public record FortitudeRequest(AlmutenRules almuten, DignityRequest dignities, AccidentalRules rules, AccidentalScores scores) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public FortitudeRequest() {
+        this(null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

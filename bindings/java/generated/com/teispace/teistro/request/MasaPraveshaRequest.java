@@ -35,6 +35,16 @@ public record MasaPraveshaRequest(MasaDashaRules dasha, MaseshaRules masesha, In
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param year The year divided, one to two hundred, counted as `Pravesha::year` counts it.
+     */
+    public MasaPraveshaRequest(int year) {
+        this(null, null, null, null, null, null, year);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

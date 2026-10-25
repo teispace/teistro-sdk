@@ -49,6 +49,18 @@ public record RuleDefinition(Scope applicableTo, List<Cancellation> cancellation
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param category The {@code category} field.
+     * @param key The {@code key} field.
+     * @param source Where a rule or a table comes from.
+     */
+    public RuleDefinition(String category, String key, RuleSource source) {
+        this(null, null, category, null, null, null, null, key, null, null, null, null, source, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

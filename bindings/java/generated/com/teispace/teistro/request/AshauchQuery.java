@@ -32,6 +32,19 @@ public record AshauchQuery(Double altitudeM, double latitudeDeg, double longitud
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param latitudeDeg The place's latitude, degrees north positive.
+     * @param longitudeDeg The place's longitude, degrees east positive.
+     * @param request The event, the observer and the periods already running.
+     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+     */
+    public AshauchQuery(double latitudeDeg, double longitudeDeg, AshauchRequest request, int utcOffsetSeconds) {
+        this(null, latitudeDeg, longitudeDeg, request, null, null, utcOffsetSeconds);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

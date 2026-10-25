@@ -20,6 +20,15 @@ import java.util.Objects;
  */
 public record DashaAsked(AfterCycle afterCycle, AshtottariGrouping ashtottariGrouping, com.teispace.teistro.Balance balance, BirthPeriod birthPeriod, SeedOverflow seedOverflow, YearLength yearLength) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public DashaAsked() {
+        this(null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

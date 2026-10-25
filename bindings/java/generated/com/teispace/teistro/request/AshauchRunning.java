@@ -39,6 +39,21 @@ public record AshauchRunning(Integer days, double end, String key, AshauchKind k
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param end When it ends.
+     * @param key The earlier answer's key, which an overlap names.
+     * @param kind A birth's or a death's.
+     * @param length Its length.
+     * @param relation The earlier request's relation.
+     * @param start When it began.
+     */
+    public AshauchRunning(double end, String key, AshauchKind kind, AshauchLength length, AshauchRelation relation, double start) {
+        this(null, end, key, kind, length, relation, null, start);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

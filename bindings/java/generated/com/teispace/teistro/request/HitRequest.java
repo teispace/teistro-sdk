@@ -38,6 +38,17 @@ public record HitRequest(List<Integer> aspects, Double eclipseOrbDeg, double fro
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param from The {@code from} field.
+     * @param to The {@code to} field.
+     */
+    public HitRequest(double from, double to) {
+        this(null, null, from, null, null, null, null, to, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

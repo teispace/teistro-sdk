@@ -19,6 +19,15 @@ import java.util.Objects;
  */
 public record CircumstanceRules(BetweenBy betweenBy, MoonSees moonSees, OutsideHalf outside, PresentationBy presentationBy, SunFallen sunFallen) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public CircumstanceRules() {
+        this(null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

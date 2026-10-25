@@ -21,7 +21,7 @@ use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::ashauch::{Ashauch, AshauchRequest, AshauchTable};
 use teistro_panchanga::festival::{
     DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, InSamsarpa, Observances, Origin,
-    anniversaries, dated, ekadashis, following, observances,
+    anniversaries, apply_published, dated, ekadashis, following, observances,
 };
 use teistro_panchanga::first_year::{FirstYear, FirstYearSchedule};
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
@@ -57,6 +57,7 @@ mod disagreement;
 mod feed;
 #[cfg(feature = "muhurta")]
 mod muhurta;
+mod reasons;
 
 pub use disagreement::{
     DayDisagreement, DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement,
@@ -65,6 +66,10 @@ pub use disagreement::{
 #[cfg(feature = "schema")]
 pub(crate) use feed::FestivalCalendarAsked;
 pub use feed::{FeedOptions, FestivalCalendarRequest};
+pub use reasons::{
+    ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
+    ReckonedPlace,
+};
 
 impl<'a> AlmanacArea<'a> {
     pub(crate) fn of_context(context: &'a Context) -> AlmanacArea<'a> {
@@ -384,6 +389,14 @@ impl<'a> AlmanacArea<'a> {
             .merged(ekadashis(request.ekadashis(), &viewed)?)
             .merged(dated(request.dated(), &viewed)?)
             .merged(self.kept_anniversaries(from.calendar, offset, place, request, &viewed)?);
+        // Laid over before the trim, so a day published across the
+        // range's edge moves in or out with its occurrence.
+        apply_published(
+            &mut found,
+            request.published(),
+            from.calendar,
+            (first, last),
+        )?;
         let inside = |date: &CalendarDate| {
             calendar
                 .fixed_of(date)

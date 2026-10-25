@@ -31,6 +31,17 @@ public record PartnerMatching(KujaRules kuja, Partner partner, com.teispace.teis
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param partner Whose birth every chart is matched with.
+     * @param partnerRole The side the partner stands on; every chart stands on the other.
+     */
+    public PartnerMatching(Partner partner, com.teispace.teistro.MatchRole partnerRole) {
+        this(null, partner, partnerRole, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

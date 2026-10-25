@@ -33,6 +33,17 @@ public record FirstYearRequest(double at, FirstAbdika firstAbdika, FirstYearAdhi
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param at The death, a UTC Julian day.
+     * @param key The consumer's own key, `"GRANDFATHER"`.
+     */
+    public FirstYearRequest(double at, String key) {
+        this(at, null, null, key, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

@@ -27,6 +27,15 @@ public record ConsiderationRules(Double moonLateFromDeg, List<Double> orbsDeg) i
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public ConsiderationRules() {
+        this(null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

@@ -33,6 +33,15 @@ public record DossierOptions(Double at, Integer dashaDepth, DossierPreset preset
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public DossierOptions() {
+        this(null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

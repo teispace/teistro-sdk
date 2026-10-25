@@ -29,6 +29,17 @@ public record NaamRequest(String bride, String groom, NaamRules rules) implement
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param bride The bride's name, in Devanagari or, when `rules.name.latin` says so, IAST.
+     * @param groom The groom's.
+     */
+    public NaamRequest(String bride, String groom) {
+        this(bride, groom, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

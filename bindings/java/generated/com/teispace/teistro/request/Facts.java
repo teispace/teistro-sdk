@@ -19,6 +19,15 @@ import java.util.Objects;
  */
 public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil, Presentation presentation, LampLevel wick) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public Facts() {
+        this(null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

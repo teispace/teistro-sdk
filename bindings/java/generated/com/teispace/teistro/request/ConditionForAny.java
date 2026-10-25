@@ -31,6 +31,16 @@ public record ConditionForAny(List<String> planets, Condition then) implements R
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param then What one of them must meet.
+     */
+    public ConditionForAny(Condition then) {
+        this(null, then);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

@@ -1947,6 +1947,8 @@ typedef TsPanchangaDaysNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poi
 typedef TsPanchangaDaysDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsAlmanacDisagreementsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacDisagreementsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacPublishedReasonsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacPublishedReasonsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSankalpaNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSankalpaDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacAshauchNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -1975,6 +1977,8 @@ typedef TsContextNewWithProviderNative = ffi.Int32 Function(ffi.Pointer<ContextO
 typedef TsContextNewWithProviderDart = int Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<Provider>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<ErrorStruct>);
 typedef TsProviderFreeNative = ffi.Void Function(ffi.Pointer<Provider>);
 typedef TsProviderFreeDart = void Function(ffi.Pointer<Provider>);
+typedef TsPublishedVerifyNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Uint32, ffi.Pointer<StringStruct>);
+typedef TsPublishedVerifyDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Uint8>, int, ffi.Pointer<ffi.Uint8>, int, ffi.Pointer<ffi.Uint8>, int, int, ffi.Pointer<StringStruct>);
 
 /// The C surface, every entry point looked up once when the library
 /// opens rather than on each call.
@@ -2026,6 +2030,7 @@ final class TeistroLibrary {
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions'),
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
         ts_almanac_disagreements = library.lookupFunction<TsAlmanacDisagreementsNative, TsAlmanacDisagreementsDart>('ts_almanac_disagreements'),
+        ts_almanac_published_reasons = library.lookupFunction<TsAlmanacPublishedReasonsNative, TsAlmanacPublishedReasonsDart>('ts_almanac_published_reasons'),
         ts_almanac_sankalpa = library.lookupFunction<TsAlmanacSankalpaNative, TsAlmanacSankalpaDart>('ts_almanac_sankalpa'),
         ts_almanac_ashauch = library.lookupFunction<TsAlmanacAshauchNative, TsAlmanacAshauchDart>('ts_almanac_ashauch'),
         ts_almanac_first_year = library.lookupFunction<TsAlmanacFirstYearNative, TsAlmanacFirstYearDart>('ts_almanac_first_year'),
@@ -2039,7 +2044,8 @@ final class TeistroLibrary {
         ts_ephemeris_call = library.lookupFunction<TsEphemerisCallNative, TsEphemerisCallDart>('ts_ephemeris_call'),
         ts_provider_load = library.lookupFunction<TsProviderLoadNative, TsProviderLoadDart>('ts_provider_load'),
         ts_context_new_with_provider = library.lookupFunction<TsContextNewWithProviderNative, TsContextNewWithProviderDart>('ts_context_new_with_provider'),
-        ts_provider_free = library.lookupFunction<TsProviderFreeNative, TsProviderFreeDart>('ts_provider_free');
+        ts_provider_free = library.lookupFunction<TsProviderFreeNative, TsProviderFreeDart>('ts_provider_free'),
+        ts_published_verify = library.lookupFunction<TsPublishedVerifyNative, TsPublishedVerifyDart>('ts_published_verify');
 
   /// The open library, for a finaliser that needs its symbols.
   final ffi.DynamicLibrary library;
@@ -2327,6 +2333,34 @@ final class TeistroLibrary {
   /// context's reckoning is recorded on this one.
   final TsAlmanacDisagreementsDart ts_almanac_disagreements;
 
+  /// Says why each published day of a festival answer differs from the
+  /// rule's (`03-design/published-overrides.md` §4) and answers with
+  /// `{value, provenance}` as canonical JSON, sealed by this context's
+  /// provenance, every catalogue member a full key.
+  ///
+  /// `value` is `{reasons}`: one per occurrence a `SET` moved, each `{rule,
+  /// set, day, computed, reason, tried}`, `day` the published day and
+  /// `computed` the rule's here. `tried` lists each change in the order
+  /// tried, `{change, day, reproduces}`, `day` the rule's day under the
+  /// change (absent when it gives none within seven days), and `reason` is
+  /// the first change that reproduces the published day, or `{"by":
+  /// "PUBLISHER"}`, the publisher's own choice, when none does. A change is
+  /// `{"by": "PLACE", "name"}`, `{"by": "SKY", "profile", "settingsHash"}`
+  /// (`other`'s) or `{"by": "RULE", "pack"}` (each shipped pack whose rule
+  /// of the key differs).
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+  /// "places"}`: the days as `{"year", "month", "day"}`, `festivals` a
+  /// festival request with its `published` sets, and `places` the places
+  /// the publisher may have reckoned at, each `{"name", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`. `other` is the
+  /// publisher's sky, another context; `context` itself, or null, tries
+  /// none. A key it does
+  /// not read, a place or offset out of range or a festival request its
+  /// reader refuses is `INVALID_ARG`, named under `publishedReasons`.
+  final TsAlmanacPublishedReasonsDart ts_almanac_published_reasons;
+
   /// The time a sankalpa recites at an instant and a place
   /// (`03-design/sankalpa.md`), answered with `{value, provenance}` as
   /// canonical JSON, every catalogue member a full key.
@@ -2570,6 +2604,21 @@ final class TeistroLibrary {
   /// still using it keeps it alive and the order of these calls does not
   /// matter.
   final TsProviderFreeDart ts_provider_free;
+
+  /// Verifies a signed pack and answers with its published set as canonical
+  /// JSON. `pack` is the set's exact bytes, `signature` the publisher's
+  /// detached Ed25519 signature over them (64 bytes) and `key` the
+  /// publisher's public key (32 bytes), which the caller fixes at its own
+  /// build: the library embeds none. A set whose `version` is under
+  /// `at_least`, the newest the caller has applied, is refused, so a replayed
+  /// pack cannot roll a correction back; 0 takes any.
+  ///
+  /// A key that is no curve point is `INVALID_ARG` on `key`; a signature
+  /// that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+  /// bytes that are not a set, `INVALID_ARG` on the field that is wrong; an
+  /// older version, `INVALID_ARG` on `version`. A build without
+  /// `signed-packs` answers `CAPABILITY`.
+  final TsPublishedVerifyDart ts_published_verify;
 
 }
 
@@ -5789,6 +5838,44 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
+  /// Says why each published day of a festival answer differs from the
+  /// rule's (`03-design/published-overrides.md` §4) and answers with
+  /// `{value, provenance}` as canonical JSON, sealed by this context's
+  /// provenance, every catalogue member a full key.
+  ///
+  /// `value` is `{reasons}`: one per occurrence a `SET` moved, each `{rule,
+  /// set, day, computed, reason, tried}`, `day` the published day and
+  /// `computed` the rule's here. `tried` lists each change in the order
+  /// tried, `{change, day, reproduces}`, `day` the rule's day under the
+  /// change (absent when it gives none within seven days), and `reason` is
+  /// the first change that reproduces the published day, or `{"by":
+  /// "PUBLISHER"}`, the publisher's own choice, when none does. A change is
+  /// `{"by": "PLACE", "name"}`, `{"by": "SKY", "profile", "settingsHash"}`
+  /// (`other`'s) or `{"by": "RULE", "pack"}` (each shipped pack whose rule
+  /// of the key differs).
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+  /// "places"}`: the days as `{"year", "month", "day"}`, `festivals` a
+  /// festival request with its `published` sets, and `places` the places
+  /// the publisher may have reckoned at, each `{"name", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`. `other` is the
+  /// publisher's sky, another context; `context` itself, or null, tries
+  /// none. A key it does
+  /// not read, a place or offset out of range or a festival request its
+  /// reader refuses is `INVALID_ARG`, named under `publishedReasons`.
+  String almanacPublishedReasons(TeistroContext other, String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        other._alive();
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_published_reasons(_handle, other._handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
   /// The time a sankalpa recites at an instant and a place
   /// (`03-design/sankalpa.md`), answered with `{value, provenance}` as
   /// canonical JSON, every catalogue member a full key.
@@ -6095,6 +6182,35 @@ final class TeistroContext implements ffi.Finalizable {
         final rawargumentsJson = argumentsJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_ephemeris_call(_handle, rawfunction, rawargumentsJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Verifies a signed pack and answers with its published set as canonical
+  /// JSON. `pack` is the set's exact bytes, `signature` the publisher's
+  /// detached Ed25519 signature over them (64 bytes) and `key` the
+  /// publisher's public key (32 bytes), which the caller fixes at its own
+  /// build: the library embeds none. A set whose `version` is under
+  /// `at_least`, the newest the caller has applied, is refused, so a replayed
+  /// pack cannot roll a correction back; 0 takes any.
+  ///
+  /// A key that is no curve point is `INVALID_ARG` on `key`; a signature
+  /// that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+  /// bytes that are not a set, `INVALID_ARG` on the field that is wrong; an
+  /// older version, `INVALID_ARG` on `version`. A build without
+  /// `signed-packs` answers `CAPABILITY`.
+  String publishedVerify(Uint8List pack, Uint8List signature, Uint8List key, int atLeast) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawpack = arena<ffi.Uint8>(pack.length);
+        rawpack.asTypedList(pack.length).setAll(0, pack);
+        final rawsignature = arena<ffi.Uint8>(signature.length);
+        rawsignature.asTypedList(signature.length).setAll(0, signature);
+        final rawkey = arena<ffi.Uint8>(key.length);
+        rawkey.asTypedList(key.length).setAll(0, key);
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_published_verify(_handle, rawpack, pack.length, rawsignature, signature.length, rawkey, key.length, atLeast, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

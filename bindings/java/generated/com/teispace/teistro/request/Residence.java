@@ -18,6 +18,18 @@ import java.util.Objects;
  */
 public record Residence(Double altitudeM, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param latitudeDeg The {@code latitudeDeg} field.
+     * @param longitudeDeg The {@code longitudeDeg} field.
+     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+     */
+    public Residence(double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
+        this(null, latitudeDeg, longitudeDeg, utcOffsetSeconds);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

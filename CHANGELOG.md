@@ -12,6 +12,42 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A day an authority decides is laid over the rules, and explained.**
+**Numbers:** none. A festival answer asked without published sets is
+byte-identical, hash included: every new field and list is left out when
+empty. A feed asked without sets writes the same bytes.
+- *Published sets* (`03-design/published-overrides.md`, the brief's
+  P2-4). `FestivalRequest.published` takes sets of `SET`, `WITHDRAW` and
+  `ADD` entries, each day in any calendar, placed on its rule's
+  occurrence within seven days and refused by name when it names no
+  carried rule, lands on two occurrences or reuses a key. A decided day
+  carries `published` (status, publisher, set, version, source and the
+  rule's own day when it differs); the answer gains `added`, `unplaced`
+  and `applied`, the last with each set's SHA-256, so a stored answer
+  says which data made it. In every binding, through the parity runners.
+- *Signed packs* (feature `signed-packs`, in `full`).
+  `PublishedSet::from_signed` checks a detached Ed25519 signature over the
+  pack's exact bytes with `verify_strict` (`ed25519-dalek` 3, default
+  features off) against a key the app fixes at its build: the SDK embeds
+  none. A version under the newest applied is refused, so a replayed pack
+  cannot roll a correction back. `ts_published_verify`, and
+  `publishedFromSigned` in every binding, against one vector made from a
+  fixed seed.
+- *Why a published day differs.* `AlmanacArea::published_reasons` asks
+  again under each of the caller's places, then another sky (the
+  committee's Surya Siddhanta beside a modern one), then each shipped
+  pack's rule of the same key, and names the first change that gives the
+  published day, else the publisher's own choice, listing every change
+  tried. `ts_almanac_published_reasons`, and `publishedReasons` in every
+  binding.
+- *The feed* says "Published by" its publisher, set, version and source
+  for a decided day, leaves a withdrawn one out with its parana, and
+  writes an added day as an event.
+- *Measured against the print* (`festival-measured.md` §7): the
+  committee's 589 printed VS 2082–2083 rows laid as a set over the modern
+  sky give every placed day as printed; 11 are unplaced, and the
+  committee's sky is the reason for 48 of the 49 days the set moved.
+
 **The defaults follow the sources they name.**
 **Numbers:** every shipped profile's hash moves and its version is bumped
 (nepali-default and nepali-committee 5, parashari-classical 3,

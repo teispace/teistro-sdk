@@ -10,7 +10,7 @@ use serde::Serialize;
 use serde_json::Value;
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
-    Anniversary, DatedRule, EkadashiRule, FestivalRule, FollowingRule,
+    Anniversary, DatedRule, EkadashiRule, FestivalRule, FollowingRule, PublishedEntry, PublishedSet,
 };
 
 /// A pack of rules the SDK ships, which a request may name rather than
@@ -166,6 +166,10 @@ pub struct FestivalRequest {
     /// Left out when none, as `dated` is.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     anniversaries: Vec<Anniversary>,
+    /// The published sets laid over the answer, in order; left out when
+    /// none, as `dated` is (`03-design/published-overrides.md`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    published: Vec<PublishedSet>,
 }
 
 impl From<FestivalPack> for FestivalRequest {
@@ -232,6 +236,7 @@ impl FestivalRequest {
             following: Vec::new(),
             dated: Vec::new(),
             anniversaries: Vec::new(),
+            published: Vec::new(),
         }
     }
 
@@ -316,6 +321,35 @@ impl FestivalRequest {
             self.anniversaries.push(anniversary);
         }
         self
+    }
+
+    /// The same request with a publisher's days laid over its answer,
+    /// after the sets it already has: a later set's entry for an
+    /// occurrence replaces an earlier one's
+    /// (`03-design/published-overrides.md`).
+    ///
+    /// ```
+    /// use teistro::{FestivalPack, FestivalRequest};
+    /// use teistro::festival::PublishedSet;
+    ///
+    /// let set = PublishedSet::from_json(r#"{"format": "teistro.published/1", "publisher": "a patro printed in Nepal",
+    ///     "id": "np-2083", "version": 1, "entries": [{"action": "SET", "rule": "HOLIKA",
+    ///     "day": {"calendar": "GREGORIAN", "year": 2027, "month": 3, "day": 21}, "source": "p. 12"}]}"#)?;
+    /// let asked = FestivalRequest::from(FestivalPack::Nepal).with_published(set);
+    /// assert_eq!(asked.published().len(), 1);
+    /// asked.check()?;
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_published(mut self, set: PublishedSet) -> FestivalRequest {
+        self.published.push(set);
+        self
+    }
+
+    /// The published sets, in the order they are laid over the answer.
+    #[must_use]
+    pub fn published(&self) -> &[PublishedSet] {
+        &self.published
     }
 
     /// The same request with every rule of a pack, each as its kind's
@@ -425,6 +459,7 @@ impl FestivalRequest {
                 }
             }
         }
+        self.check_published()?;
         for (index, rule) in self.following.iter().enumerate() {
             if !self.rules.iter().any(|held| held.key == rule.after) {
                 return Err(Error::invalid_arg(format!(
@@ -432,6 +467,44 @@ impl FestivalRequest {
                     rule.key, rule.after
                 ))
                 .with_field(format!("following[{index}].after")));
+            }
+        }
+        Ok(())
+    }
+
+    /// Each set read as [`PublishedSet::check`] reads it, each `SET` and
+    /// `WITHDRAW` naming a rule the request carries and each `ADD` a key
+    /// none of its rules uses.
+    fn check_published(&self) -> Result<(), Error> {
+        let carried = |key: &str| {
+            self.rules.iter().any(|r| r.key == key)
+                || self.ekadashis.iter().any(|r| r.key == key)
+                || self.following.iter().any(|r| r.key == key)
+                || self.dated.iter().any(|r| r.key == key)
+                || self.anniversaries.iter().any(|r| r.key == key)
+        };
+        for (index, set) in self.published.iter().enumerate() {
+            let at = format!("published[{index}]");
+            set.check().map_err(|why| why.under(&at))?;
+            for (entry_at, entry) in set.entries.iter().enumerate() {
+                let field = format!("{at}.entries[{entry_at}]");
+                match entry {
+                    PublishedEntry::Set { rule, .. } | PublishedEntry::Withdraw { rule, .. }
+                        if !carried(rule) =>
+                    {
+                        return Err(Error::invalid_arg(format!(
+                            "`{rule}` is no rule of the request; a published day is laid over a rule's, so the request carries the rule it names"
+                        ))
+                        .with_field(format!("{field}.rule")));
+                    }
+                    PublishedEntry::Add { key, .. } if carried(key) => {
+                        return Err(Error::invalid_arg(format!(
+                            "`{key}` is a rule of the request; publish its day with `SET`, since `ADD` is for a day no rule computes"
+                        ))
+                        .with_field(format!("{field}.key")));
+                    }
+                    _ => {}
+                }
             }
         }
         Ok(())
@@ -510,6 +583,11 @@ impl FestivalRequest {
                 }
             }
         }
+        for (index, set) in asked.published.iter().enumerate() {
+            let field = format!("{FESTIVALS}.published[{index}]");
+            let set: PublishedSet = teistro_core::strict::read_value(set, &field)?;
+            request = request.with_published(set);
+        }
         request.check().map_err(|why| why.under(FESTIVALS))?;
         Ok(request)
     }
@@ -541,6 +619,10 @@ fn pack(name: &str, field: &str) -> Result<FestivalPack, Error> {
 #[cfg_attr(feature = "schema", schemars(rename = "FestivalRequest"))]
 pub(crate) struct Asked {
     rules: Value,
+    /// The published sets, each read in a second step as `rules` is.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[cfg_attr(feature = "schema", schemars(with = "Vec<PublishedSet>"))]
+    published: Vec<Value>,
 }
 
 #[cfg(test)]

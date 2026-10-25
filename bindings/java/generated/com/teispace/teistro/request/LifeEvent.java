@@ -32,6 +32,17 @@ public record LifeEvent(Confidence confidence, Boolean heldOut, String id, Event
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param kind What happened.
+     * @param on When it began, as an instant (UTC).
+     */
+    public LifeEvent(EventKind kind, double on) {
+        this(null, null, null, kind, on, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

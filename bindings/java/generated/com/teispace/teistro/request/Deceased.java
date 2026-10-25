@@ -21,6 +21,15 @@ import java.util.Objects;
  */
 public record Deceased(Boolean betrothed, Double born, Boolean buried, Boolean chudakarana, Boolean married, AshauchSex sex, Upanayana upanayana) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public Deceased() {
+        this(null, null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

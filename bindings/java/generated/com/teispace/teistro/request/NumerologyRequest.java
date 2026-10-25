@@ -29,6 +29,17 @@ public record NumerologyRequest(BirthDate date, String name, NumerologyRules rul
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param date The Gregorian birth date, `{"year", "month", "day"}`.
+     * @param name The name, in the 26 Latin letters.
+     */
+    public NumerologyRequest(BirthDate date, String name) {
+        this(date, name, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

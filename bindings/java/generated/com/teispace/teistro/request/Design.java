@@ -29,6 +29,16 @@ public record Design(List<Integer> groups, List<Long> strata) implements Request
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param groups Each chart's group, `0..groups`, in the matrix's order.
+     */
+    public Design(List<Integer> groups) {
+        this(groups, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

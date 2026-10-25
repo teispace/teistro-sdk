@@ -16,6 +16,15 @@ import java.util.Objects;
  */
 public record LotRequest(com.teispace.teistro.FortuneRule fortune, com.teispace.teistro.SectRule sectRule) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public LotRequest() {
+        this(null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

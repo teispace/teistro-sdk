@@ -18,6 +18,15 @@ import java.util.Objects;
  */
 public record NativeAsked(Bird bird, com.teispace.teistro.Nakshatra nakshatra, com.teispace.teistro.Paksha paksha, BirthBird rule) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public NativeAsked() {
+        this(null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

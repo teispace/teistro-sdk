@@ -29,6 +29,16 @@ public record GocharRequest(Boolean ashtakavarga, com.teispace.teistro.GocharFro
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param instants The {@code instants} field.
+     */
+    public GocharRequest(List<Double> instants) {
+        this(null, null, instants);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

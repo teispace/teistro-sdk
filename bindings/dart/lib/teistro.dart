@@ -1311,6 +1311,86 @@ final class AlmanacArea extends _Area {
       ).festivals ??
       (throw StateError('a request with festivals answered none'));
 
+  /// A published set read from a signed pack
+  /// (`03-design/published-overrides.md` §5), ready for a
+  /// [FestivalRequest.published]: [pack] the set's exact bytes,
+  /// [signature] the publisher's detached Ed25519 signature over them (64
+  /// bytes) and [key] the publisher's public key (32 bytes), which the app
+  /// fixes at its own build; the SDK embeds none. A version under
+  /// [atLeast], the newest the app has applied, is refused, so a replayed
+  /// pack cannot roll a correction back.
+  ///
+  /// Throws a [TeistroException] `INVALID_ARG` naming `key`, `signature`,
+  /// `version` or the set's own field.
+  Map<String, Object?> publishedFromSigned(
+    Uint8List pack,
+    Uint8List signature,
+    Uint8List key, {
+    int atLeast = 0,
+  }) => Map.unmodifiable(
+    jsonDecode(_context._inner.publishedVerify(pack, signature, key, atLeast))
+        as Map<String, Object?>,
+  );
+
+  /// **Why each published day differs from the rule's**
+  /// (`03-design/published-overrides.md` §4). The festival request, with
+  /// its `published` sets, is asked again under one change at a time: each
+  /// of [places] the publisher may have reckoned at, then [sky] (another
+  /// context: the committee's Surya Siddhanta beside a modern sky), then
+  /// each shipped pack's rule of the same key. The first change whose
+  /// rule's day is the published one is the reason, else
+  /// [PublishedCause.by] `PUBLISHER`; every change tried is listed.
+  ///
+  /// ```dart
+  /// final found = modern.almanac.publishedReasons(
+  ///   from: Calendar.gregorian.date(2027, 9, 1),
+  ///   to: Calendar.gregorian.date(2027, 11, 30),
+  ///   place: kathmandu, utcOffsetSeconds: 20700,
+  ///   festivals: FestivalRequest(rules: FestivalPack.nepal, published: [set]),
+  ///   sky: committee,
+  /// );
+  /// final why = found.reasons.first.reason.by; // 'SKY'
+  /// ```
+  PublishedReasons publishedReasons({
+    required CalendarDate from,
+    CalendarDate? to,
+    required Observer place,
+    required int utcOffsetSeconds,
+    required FestivalRequest festivals,
+    List<ReckonedPlace> places = const [],
+    Context? sky,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'calendar': from.calendar.key,
+      'first': _dayParts(from),
+      if (to != null) 'last': _dayParts(to),
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      'festivals': jsonDecode(festivals._json),
+      'places': [
+        for (final p in places)
+          {
+            'name': p.name,
+            'latitudeDeg': p.place.latitudeDeg,
+            'longitudeDeg': p.place.longitudeDeg,
+            'altitudeM': p.place.altitudeM,
+            'utcOffsetSeconds': p.utcOffsetSeconds,
+          },
+      ],
+    });
+    // This context as the other tries no sky.
+    final other = sky ?? _context;
+    return _publishedReasons(
+      _context._guarded(
+        () => other._guarded(
+          () => _context._inner.almanacPublishedReasons(other._inner, asked),
+        ),
+      ),
+    );
+  }
+
   /// The almanac of one day, which is the range of one unwrapped.
   AlmanacDay day({
     required CalendarDate date,
@@ -14400,10 +14480,27 @@ enum FestivalPack {
 /// final first = almanac.festivals?.observances.first;
 /// ```
 final class FestivalRequest {
-  const FestivalRequest({required this.rules});
+  const FestivalRequest({required this.rules, this.published = const []});
 
   /// A [FestivalPack], or a list of packs and rules spelt out.
   final Object rules;
+
+  /// Published sets laid over the rules' answer in order, each spelt as its
+  /// JSON (`03-design/published-overrides.md`): `format`
+  /// (`teistro.published/1`), `publisher`, `id`, `version` and `entries`,
+  /// each a `SET`, `ADD` or `WITHDRAW` with its `day`. A later set's entry
+  /// replaces an earlier one's for the same occurrence.
+  ///
+  /// ```dart
+  /// const FestivalRequest(rules: FestivalPack.nepal, published: [
+  ///   {'format': 'teistro.published/1', 'publisher': 'a patro printed in Nepal',
+  ///    'id': 'np-2082', 'version': 1, 'entries': [
+  ///      {'action': 'SET', 'rule': 'MAHA_NAVAMI', 'source': 'p. 41',
+  ///       'day': {'calendar': 'GREGORIAN', 'year': 2025, 'month': 10, 'day': 2}},
+  ///    ]},
+  /// ]);
+  /// ```
+  final List<Map<String, Object?>> published;
 
   String get _json => jsonEncode(<String, Object?>{
     'rules': switch (rules) {
@@ -14413,6 +14510,8 @@ final class FestivalRequest {
       ],
       final one => _item(one, 'festivals.rules'),
     },
+    if (published.isNotEmpty)
+      'published': [for (final set in published) _written(set)],
   });
 
   static Object? _item(Object? item, String field) => switch (item) {
@@ -14486,6 +14585,7 @@ final class FestivalObservance extends _Value {
     required this.choice,
     required this.marginSeconds,
     this.parana = const [],
+    this.published,
   });
 
   /// The rule's key.
@@ -14525,6 +14625,10 @@ final class FestivalObservance extends _Value {
   /// the rule has none.
   final List<VrataParanaTime> parana;
 
+  /// What a published entry did to the day; null when none touched it, so
+  /// the day is the rule's. A moved day keeps no computed [parana].
+  final Published? published;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -14540,7 +14644,264 @@ final class FestivalObservance extends _Value {
     choice,
     marginSeconds,
     ...parana,
+    published,
   ];
+}
+
+/// What a published entry did to a day (`03-design/published-overrides.md`).
+final class Published extends _Value {
+  const Published({
+    required this.status,
+    required this.publisher,
+    required this.set,
+    required this.version,
+    required this.source,
+    this.computed,
+    this.window,
+  });
+
+  /// `PUBLISHED` or `WITHDRAWN`.
+  final String status;
+
+  /// The set's publisher.
+  final String publisher;
+
+  /// The set's id.
+  final String set;
+  final int version;
+
+  /// Where the publisher says it.
+  final String source;
+
+  /// The rule's own day, when the publisher's differs.
+  final CalendarDate? computed;
+
+  /// A published time.
+  final Interval? window;
+
+  @override
+  List<Object?> get _fields => [
+    status,
+    publisher,
+    set,
+    version,
+    source,
+    if (computed case final day?) ..._dateFields(day) else null,
+    window?.from,
+    window?.to,
+  ];
+}
+
+/// A day a published set added, which no rule computes.
+final class PublishedAdded extends _Value {
+  const PublishedAdded({
+    required this.key,
+    required this.day,
+    required this.names,
+    required this.published,
+  });
+
+  final String key;
+  final CalendarDate day;
+
+  /// Its names, by locale.
+  final Map<String, String> names;
+  final Published published;
+
+  @override
+  List<Object?> get _fields => [
+    key,
+    ..._dateFields(day),
+    for (final MapEntry(:key, :value) in names.entries) ...[key, value],
+    published,
+  ];
+}
+
+/// A published entry inside the range that no occurrence took.
+final class PublishedUnplaced extends _Value {
+  const PublishedUnplaced({
+    required this.set,
+    required this.entry,
+    required this.rule,
+    required this.day,
+  });
+
+  /// The set's id.
+  final String set;
+
+  /// The entry's index in it.
+  final int entry;
+  final String rule;
+  final CalendarDate day;
+
+  @override
+  List<Object?> get _fields => [set, entry, rule, ..._dateFields(day)];
+}
+
+/// A published set laid over the answer.
+final class PublishedApplied extends _Value {
+  const PublishedApplied({
+    required this.id,
+    required this.version,
+    required this.publisher,
+    required this.hash,
+  });
+
+  final String id;
+  final int version;
+  final String publisher;
+
+  /// The SHA-256 of its canonical JSON, in hex.
+  final String hash;
+
+  @override
+  List<Object?> get _fields => [id, version, publisher, hash];
+}
+
+/// A place a publisher may have reckoned its days at, tried by
+/// [AlmanacArea.publishedReasons].
+final class ReckonedPlace extends _Value {
+  const ReckonedPlace({
+    required this.name,
+    required this.place,
+    required this.utcOffsetSeconds,
+  });
+
+  /// How the reason names it.
+  final String name;
+  final Observer place;
+
+  /// Its civil days' offset from UTC, east positive.
+  final int utcOffsetSeconds;
+
+  @override
+  List<Object?> get _fields => [name, place, utcOffsetSeconds];
+}
+
+/// One change a published day was tried under, or the reason it differs:
+/// [by] `PLACE` with its [name], `SKY` with its [profile] and
+/// [settingsHash], `RULE` with its [pack], or `PUBLISHER`, the
+/// publisher's own choice, when no change gives the day.
+final class PublishedCause extends _Value {
+  const PublishedCause({
+    required this.by,
+    this.name,
+    this.profile,
+    this.settingsHash,
+    this.pack,
+  });
+
+  final String by;
+  final String? name;
+  final String? profile;
+  final String? settingsHash;
+  final String? pack;
+
+  @override
+  List<Object?> get _fields => [by, name, profile, settingsHash, pack];
+}
+
+/// A change tried: the rule's [day] under it, null when it gives none
+/// within seven days, and whether that is the published day.
+final class PublishedChangeTried extends _Value {
+  const PublishedChangeTried({
+    required this.change,
+    required this.day,
+    required this.reproduces,
+  });
+
+  final PublishedCause change;
+  final CalendarDate? day;
+  final bool reproduces;
+
+  @override
+  List<Object?> get _fields => [
+    change,
+    if (day case final on?) ..._dateFields(on) else null,
+    reproduces,
+  ];
+}
+
+/// Why one published day differs from its rule's [computed] day.
+final class PublishedReason extends _Value {
+  const PublishedReason({
+    required this.rule,
+    required this.set,
+    required this.day,
+    required this.computed,
+    required this.reason,
+    required this.tried,
+  });
+
+  final String rule;
+
+  /// The set that published it.
+  final String set;
+
+  /// The published day.
+  final CalendarDate day;
+
+  /// The rule's own day here.
+  final CalendarDate computed;
+
+  /// The first change that gives [day], else `PUBLISHER`.
+  final PublishedCause reason;
+
+  /// Every change tried, in order.
+  final List<PublishedChangeTried> tried;
+
+  @override
+  List<Object?> get _fields => [
+    rule,
+    set,
+    ..._dateFields(day),
+    ..._dateFields(computed),
+    reason,
+    tried,
+  ];
+}
+
+/// [AlmanacArea.publishedReasons]'s answer: one reason per published day
+/// a `SET` moved.
+final class PublishedReasons {
+  const PublishedReasons({required this.reasons, required this.provenance});
+
+  final List<PublishedReason> reasons;
+  final Provenance provenance;
+}
+
+PublishedReasons _publishedReasons(String json) {
+  final answer = jsonDecode(json) as Map<String, Object?>;
+  PublishedCause cause(Map<String, Object?> raw) => PublishedCause(
+    by: raw['by']! as String,
+    name: raw['name'] as String?,
+    profile: raw['profile'] as String?,
+    settingsHash: raw['settingsHash'] as String?,
+    pack: raw['pack'] as String?,
+  );
+  final value = _festivalAt(answer['value']);
+  return PublishedReasons(
+    reasons: List.unmodifiable([
+      for (final r in _festivalEach(value['reasons']))
+        PublishedReason(
+          rule: r['rule']! as String,
+          set: r['set']! as String,
+          day: _serdeDate(_festivalAt(r['day'])),
+          computed: _serdeDate(_festivalAt(r['computed'])),
+          reason: cause(_festivalAt(r['reason'])),
+          tried: List.unmodifiable([
+            for (final t in _festivalEach(r['tried']))
+              PublishedChangeTried(
+                change: cause(_festivalAt(t['change'])),
+                day:
+                    t['day'] == null ? null : _serdeDate(_festivalAt(t['day'])),
+                reproduces: t['reproduces']! as bool,
+              ),
+          ]),
+        ),
+    ]),
+    provenance: Provenance.fromJson(_festivalAt(answer['provenance'])),
+  );
 }
 
 /// A rite's window as a rule spells it: `SUNRISE`, `SUNSET`, `PRADOSHA`,
@@ -14672,6 +15033,7 @@ final class DatedObservance extends _Value {
     required this.rule,
     required this.day,
     required this.on,
+    this.published,
   });
 
   /// The rule's key.
@@ -14683,8 +15045,16 @@ final class DatedObservance extends _Value {
   /// The same day in the rule's own calendar.
   final CalendarDate on;
 
+  /// What a published entry did to the day; null when none touched it.
+  final Published? published;
+
   @override
-  List<Object?> get _fields => [rule, ..._dateFields(day), ..._dateFields(on)];
+  List<Object?> get _fields => [
+    rule,
+    ..._dateFields(day),
+    ..._dateFields(on),
+    published,
+  ];
 }
 
 /// An anniversary's origin as found (`03-design/shraddha.md` §2.1): the
@@ -14796,6 +15166,7 @@ final class EkadashiFast extends _Value {
     required this.marginSeconds,
     required this.parana,
     this.mahadvadashi,
+    this.published,
   });
 
   /// The rule's key.
@@ -14847,6 +15218,10 @@ final class EkadashiFast extends _Value {
   /// held (`GAUDIYA`'s rule).
   final Mahadvadashi? mahadvadashi;
 
+  /// What a published entry did to the fast; null when none touched it. A
+  /// moved fast has no [parana] unless the entry gave a window.
+  final Published? published;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -14864,6 +15239,7 @@ final class EkadashiFast extends _Value {
     marginSeconds,
     parana,
     mahadvadashi,
+    published,
   ];
 }
 
@@ -15041,6 +15417,9 @@ final class FestivalAnswer {
     required this.unjudged,
     required this.dated,
     this.anniversaries = const [],
+    this.added = const [],
+    this.unplaced = const [],
+    this.applied = const [],
     required this.provenance,
   });
 
@@ -15057,6 +15436,15 @@ final class FestivalAnswer {
   /// Each anniversary's days, in the order of the tithis; empty when none
   /// was asked.
   final List<AnniversaryDay> anniversaries;
+
+  /// The days published sets added; empty when none.
+  final List<PublishedAdded> added;
+
+  /// The published entries in range no occurrence took.
+  final List<PublishedUnplaced> unplaced;
+
+  /// The published sets laid over the answer, in order.
+  final List<PublishedApplied> applied;
 
   /// What computed it: the widened days among the applied conventions as
   /// `festival.days`, and the hash of the value.
@@ -15413,6 +15801,7 @@ FestivalObservance _festivalObservance(Map<String, Object?> raw) =>
         for (final time in _festivalEach(raw['parana'] ?? const <Object?>[]))
           _vrataParana(time),
       ]),
+      published: _published(raw['published']),
     );
 
 /// A rite's window as a rule writes it.
@@ -15480,6 +15869,7 @@ EkadashiFast _ekadashiFast(Map<String, Object?> raw) => EkadashiFast(
     null => null,
     final great => _mahadvadashi(_festivalAt(great)),
   },
+  published: _published(raw['published']),
 );
 
 Mahadvadashi _mahadvadashi(Map<String, Object?> raw) {
@@ -15571,6 +15961,7 @@ FestivalAnswer _festivalAnswer(String json) {
           rule: raw['rule']! as String,
           day: _serdeDate(_festivalAt(raw['day'])),
           on: _serdeDate(_festivalAt(raw['on'])),
+          published: _published(raw['published']),
         ),
     ]),
     anniversaries: List.unmodifiable([
@@ -15579,9 +15970,63 @@ FestivalAnswer _festivalAnswer(String json) {
       ))
         _anniversaryDay(raw),
     ]),
+    added: List.unmodifiable([
+      for (final raw in _festivalEach(value['added'] ?? const <Object?>[]))
+        PublishedAdded(
+          key: raw['key']! as String,
+          day: _serdeDate(_festivalAt(raw['day'])),
+          names: Map.unmodifiable({
+            for (final MapEntry(:key, :value)
+                in ((raw['names'] as Map<String, Object?>?) ?? const {})
+                    .entries)
+              key: value! as String,
+          }),
+          published: _published(raw['published'])!,
+        ),
+    ]),
+    unplaced: List.unmodifiable([
+      for (final raw in _festivalEach(value['unplaced'] ?? const <Object?>[]))
+        PublishedUnplaced(
+          set: raw['set']! as String,
+          entry: raw['entry']! as int,
+          rule: raw['rule']! as String,
+          day: _serdeDate(_festivalAt(raw['day'])),
+        ),
+    ]),
+    applied: List.unmodifiable([
+      for (final raw in _festivalEach(value['applied'] ?? const <Object?>[]))
+        PublishedApplied(
+          id: raw['id']! as String,
+          version: raw['version']! as int,
+          publisher: raw['publisher']! as String,
+          hash: raw['hash']! as String,
+        ),
+    ]),
     provenance: Provenance.fromJson(_festivalAt(envelope['provenance'])),
   );
 }
+
+/// What a published entry did to a day, as a festival answer writes it;
+/// null when none touched it.
+Published? _published(Object? raw) => switch (raw) {
+  null => null,
+  final Map<String, Object?> published => Published(
+    status: published['status']! as String,
+    publisher: published['publisher']! as String,
+    set: published['set']! as String,
+    version: published['version']! as int,
+    source: published['source']! as String,
+    computed: switch (published['computed']) {
+      null => null,
+      final day => _serdeDate(_festivalAt(day)),
+    },
+    window: switch (published['window']) {
+      null => null,
+      final window => _festivalInterval(window),
+    },
+  ),
+  final other => throw StateError('a published record, not $other'),
+};
 
 /// An anniversary's day as a festival answer writes it.
 AnniversaryDay _anniversaryDay(Map<String, Object?> raw) => AnniversaryDay(

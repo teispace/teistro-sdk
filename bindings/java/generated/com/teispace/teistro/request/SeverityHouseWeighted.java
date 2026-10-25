@@ -33,6 +33,17 @@ public record SeverityHouseWeighted(int defaultValue, String planet, Map<String,
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param defaultValue Every other house's.
+     * @param weights Each weighted house's severity.
+     */
+    public SeverityHouseWeighted(int defaultValue, Map<String, Integer> weights) {
+        this(defaultValue, null, weights);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

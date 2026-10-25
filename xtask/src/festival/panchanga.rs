@@ -13,8 +13,12 @@
 
 use std::fmt::Write as _;
 
-use teistro::festival::{Observance, Observances};
-use teistro::{FestivalPack, FestivalRequest};
+use std::collections::BTreeMap;
+
+use teistro::festival::{
+    Observance, Observances, PUBLISHED_FORMAT, PublishedDay, PublishedEntry, PublishedSet,
+};
+use teistro::{FestivalPack, FestivalRequest, PublishedCause};
 
 use crate::measure::{Claim, table};
 
@@ -2050,5 +2054,188 @@ pub(super) fn render(out: &mut String, rows: &[Row]) {
             |d| spell((d.1, d.2)),
         );
         let _ = writeln!(out, "- VS {year} {rule} ({given}): {why}");
+    }
+}
+
+/// The print laid over the modern sky as a published set
+/// (`03-design/published-overrides.md` §6), and why each printed day the
+/// set moved differs from the modern sky's.
+pub(super) struct Laid {
+    /// The printed rows, one entry each.
+    rows: usize,
+    /// The rows whose rule falls on the printed day once the set is laid.
+    on_print: usize,
+    /// The entries no occurrence took, `(year, rule, printed)`.
+    unplaced: Vec<(i32, &'static str, Day)>,
+    /// The days the set moved, by the first change that gives each.
+    by_sky: usize,
+    by_rule: BTreeMap<&'static str, usize>,
+    /// The days no change gives, `(rule, printed, modern)`.
+    publishers: Vec<(String, Day, Day)>,
+}
+
+/// Each printed Vikram year's days as one range: its rows' first and last
+/// printed days, three days wider each side, inside the 366 a range
+/// holds. A row outside its year's range is a problem.
+const PRINTED_YEARS: [(i32, Day, Day); 2] = [
+    (2082, (2025, 4, 17), (2026, 4, 16)),
+    (2083, (2026, 4, 12), (2027, 4, 12)),
+];
+
+/// The printed rows as one set over `NEPAL_PANCHANGA` on the modern sky,
+/// a Vikram year at a time: every printed day must be the answer's, and
+/// each moved one is explained with the committee's sky tried. A problem
+/// for every row the set does not put on its printed day.
+pub(super) fn laid(problems: &mut Vec<String>) -> Result<Laid, String> {
+    let (place, clock) = kathmandu();
+    let modern = Sky::Modern.context()?;
+    let committee = Sky::Committee.context()?;
+    let mut laid = Laid {
+        rows: PRINTED.len(),
+        on_print: 0,
+        unplaced: Vec::new(),
+        by_sky: 0,
+        by_rule: BTreeMap::new(),
+        publishers: Vec::new(),
+    };
+    for (year, first, last) in PRINTED_YEARS {
+        let rows: Vec<_> = PRINTED.iter().filter(|row| row.0 == year).collect();
+        for &&(_, rule, printed, _) in &rows {
+            if !(first..=last).contains(&printed) {
+                problems.push(format!(
+                    "VS {year} {rule} printed {printed:?} lies outside panchanga::PRINTED_YEARS"
+                ));
+            }
+        }
+        let entries = rows
+            .iter()
+            .map(|&&(_, rule, printed, page)| PublishedEntry::Set {
+                rule: rule.to_owned(),
+                day: PublishedDay::from(&gregorian(printed)),
+                month: None,
+                adhika: None,
+                window: None,
+                source: page.to_owned(),
+            })
+            .collect();
+        let request =
+            FestivalRequest::from(FestivalPack::NepalPanchanga).with_published(PublishedSet {
+                format: PUBLISHED_FORMAT.to_owned(),
+                publisher: "a patro printed in Nepal".to_owned(),
+                id: format!("np-panchanga-{year}"),
+                version: 1,
+                entries,
+            });
+        let (from, to) = (gregorian(first), gregorian(last));
+        let answer = modern
+            .almanac()
+            .festivals(&from, &to, &place, clock, &request)
+            .map_err(|e| format!("VS {year}: {e}"))?
+            .value;
+        // An entry no occurrence took is reported, not laid: the rule
+        // gives no day within a week of the print under this sky.
+        let unplaced: Vec<usize> = answer.unplaced.iter().map(|u| u.entry).collect();
+        for (k, &&(_, rule, printed, _)) in rows.iter().enumerate() {
+            if unplaced.contains(&k) {
+                laid.unplaced.push((year, rule, printed));
+            } else if on(near(&answer, rule, printed).as_ref(), printed) {
+                laid.on_print += 1;
+            } else {
+                problems.push(format!(
+                    "VS {year} {rule}: the print laid over the modern sky as a set does not give its printed day {printed:?}"
+                ));
+            }
+        }
+        let reasons = modern
+            .almanac()
+            .published_reasons((&from, &to), (&place, clock), &request, &[], &[&committee])
+            .map_err(|e| format!("VS {year}: {e}"))?
+            .value
+            .reasons;
+        for reason in reasons {
+            match reason.reason {
+                PublishedCause::Sky { .. } => laid.by_sky += 1,
+                PublishedCause::Rule { pack } => *laid.by_rule.entry(pack).or_default() += 1,
+                PublishedCause::Place { .. } => {}
+                PublishedCause::Publisher => laid.publishers.push((
+                    reason.rule,
+                    (reason.day.year, reason.day.month, reason.day.day),
+                    (
+                        reason.computed.year,
+                        reason.computed.month,
+                        reason.computed.day,
+                    ),
+                )),
+            }
+        }
+    }
+    Ok(laid)
+}
+
+/// §7 of the page.
+pub(super) fn render_laid(out: &mut String, laid: &Laid) {
+    out.push_str(
+        "\n## 7. The print as a published set\n\n\
+         The same printed rows written as one published set\n\
+         (`published-overrides.md` §6) over the `NEPAL_PANCHANGA` pack on the\n\
+         modern sky, as an app showing the print over its own reckoning would:\n\
+         each row a `SET` on its printed day, each Vikram year asked as one\n\
+         range. The pass holds every printed day to the answer's. Each day the\n\
+         set moved is then explained (`published_reasons`) with the committee's\n\
+         sky tried, then each shipped pack's rule of the same key; a day neither\n\
+         gives is the publisher's own.\n\n",
+    );
+    let moved = laid.by_sky + laid.by_rule.values().sum::<usize>() + laid.publishers.len();
+    out.push_str(&table(&[
+        Claim::counted(
+            "the set laid over the modern sky gives every printed day it places",
+            laid.rows - laid.unplaced.len() - laid.on_print,
+            laid.rows - laid.unplaced.len(),
+        ),
+        Claim::counted(
+            "every entry is placed on its rule's occurrence",
+            laid.unplaced.len(),
+            laid.rows,
+        ),
+        Claim::counted(
+            "the committee's sky gives every day the set moved",
+            moved - laid.by_sky,
+            moved,
+        )
+        .with_note("the others' reasons are below"),
+    ]));
+    let _ = write!(
+        out,
+        "\nOf the {moved} days the set moved, the committee's sky gives {}",
+        laid.by_sky
+    );
+    for (pack, count) in &laid.by_rule {
+        let _ = write!(out, ", `{pack}`'s rule of the same key {count}");
+    }
+    let _ = writeln!(out, ", and no change tried {}.", laid.publishers.len());
+    if !laid.publishers.is_empty() {
+        out.push_str("\nThe publisher's own days, which no change tried gives:\n\n");
+        for (rule, printed, modern) in &laid.publishers {
+            let _ = writeln!(
+                out,
+                "- {rule}: printed {}, the modern sky {}",
+                spell((printed.1, printed.2)),
+                spell((modern.1, modern.2))
+            );
+        }
+    }
+    if !laid.unplaced.is_empty() {
+        out.push_str(
+            "\nThe entries no occurrence took, the rule giving no day within a week\n\
+             of the print under the modern sky (a weekday the sky does not meet, or\n\
+             a month the committee reckons otherwise, §6):\n\n",
+        );
+        for (year, rule, printed) in &laid.unplaced {
+            let _ = writeln!(
+                out,
+                "- VS {year} {rule}, printed {}",
+                spell((printed.1, printed.2))
+            );
+        }
     }
 }

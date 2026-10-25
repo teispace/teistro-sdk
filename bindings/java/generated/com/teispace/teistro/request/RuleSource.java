@@ -33,6 +33,16 @@ public record RuleSource(String chapter, String note, Integer rank, String text,
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param text The text.
+     */
+    public RuleSource(String text) {
+        this(null, null, null, text, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

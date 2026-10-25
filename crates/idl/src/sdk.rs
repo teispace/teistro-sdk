@@ -46,7 +46,7 @@ pub const ABI_VERSION_CONSTANT: &str = "TS_ABI_VERSION";
 /// assert_eq!(SOURCES[0], "crates/core/src/error.rs");
 /// assert!(SOURCES.iter().all(|relative| root.join(relative).is_file()));
 /// ```
-pub const SOURCES: [&str; 26] = [
+pub const SOURCES: [&str; 27] = [
     "crates/core/src/error.rs",
     "crates/port-ephemeris/src/body.rs",
     "crates/port-ephemeris/src/capabilities.rs",
@@ -73,6 +73,7 @@ pub const SOURCES: [&str; 26] = [
     "crates/ffi/src/research.rs",
     "crates/ffi/src/ephemeris.rs",
     "crates/ffi/src/provider.rs",
+    "crates/ffi/src/published.rs",
 ];
 
 /// The catalogue's generated JSON, relative to the repository root.

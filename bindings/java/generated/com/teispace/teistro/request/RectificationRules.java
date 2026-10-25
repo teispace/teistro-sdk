@@ -23,6 +23,15 @@ import java.util.Objects;
  */
 public record RectificationRules(Boolean gulika, GulikaAt gulikaAt, GulikaExtension gulikaExtension, Boolean moon, RectificationSpecies nativeValue, Boolean pranapada, PranapadaRule pranapadaRule, PurifyAs purifyAs, Double seedMinutes) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public RectificationRules() {
+        this(null, null, null, null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

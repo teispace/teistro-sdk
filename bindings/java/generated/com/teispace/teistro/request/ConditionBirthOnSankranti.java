@@ -18,6 +18,15 @@ public record ConditionBirthOnSankranti(Double windowHours) implements RequestJs
     public static final String TYPE = "birth-on-sankranti";
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public ConditionBirthOnSankranti() {
+        this(null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

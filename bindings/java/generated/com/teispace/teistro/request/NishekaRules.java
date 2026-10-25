@@ -19,6 +19,15 @@ import java.util.Objects;
  */
 public record NishekaRules(InvisibleHalf invisibleHalf, NishekaMandi mandiAt, NishekaMonth month, NinthBhava ninth, SaturnTerm saturn) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public NishekaRules() {
+        this(null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

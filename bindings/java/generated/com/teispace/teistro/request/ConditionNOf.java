@@ -36,6 +36,17 @@ public record ConditionNOf(int atLeast, Integer atMost, List<Condition> conditio
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param atLeast How many must hold at least.
+     * @param conditions The conditions counted.
+     */
+    public ConditionNOf(int atLeast, List<Condition> conditions) {
+        this(atLeast, null, conditions);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

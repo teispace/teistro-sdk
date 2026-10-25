@@ -31,6 +31,16 @@ public record ConditionPlanetConjunct(Double maxOrb, List<Object> planets) imple
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param planets Who.
+     */
+    public ConditionPlanetConjunct(List<Object> planets) {
+        this(null, planets);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *
