@@ -418,6 +418,7 @@ fn page() -> Result<String, String> {
     let nepal = nepal::compare(&mut problems)?;
     let full_moons = purnima::compare(&mut problems)?;
     let fitted = panchanga::compare(&mut problems)?;
+    let laid = panchanga::laid(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -426,6 +427,7 @@ fn page() -> Result<String, String> {
     nepal::render(&mut out, &nepal);
     purnima::render(&mut out, &full_moons);
     panchanga::render(&mut out, &fitted);
+    panchanga::render_laid(&mut out, &laid);
     Ok(out)
 }
 

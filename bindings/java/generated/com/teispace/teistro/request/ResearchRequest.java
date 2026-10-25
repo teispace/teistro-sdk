@@ -46,6 +46,17 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param rules The {@code rules} field.
+     * @param study The four studies, as a request names them.
+     */
+    public ResearchRequest(Object rules, StudyKind study) {
+        this(null, null, null, null, null, null, null, rules, null, null, study, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

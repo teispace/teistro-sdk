@@ -4377,6 +4377,157 @@ test('an almanac carries the festivals it was asked for', () => {
   ctx.dispose();
 });
 
+test('a signed pack answers its set or is refused by name', () => {
+  // The vector the Rust suite pins (crates/sdk/tests/signed_pack.rs).
+  const pack = new TextEncoder().encode(
+    '{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,' +
+      '"entries":[{"action":"SET","rule":"GHATASTHAPANA","day":{"calendar":"GREGORIAN","year":2026,' +
+      '"month":10,"day":11},"source":"p. 41"}]}',
+  );
+  const hex = (text) => Uint8Array.from(text.match(/../gu).map((pair) => Number.parseInt(pair, 16)));
+  const key = hex('ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c');
+  const signature = hex(
+    'cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e213' +
+      '32fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e',
+  );
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const set = ctx.almanac.publishedFromSigned(pack, signature, key, 3);
+  assert.deepEqual([set.id, set.version, set.entries[0].rule], ['np-2083', 3, 'GHATASTHAPANA']);
+  const tampered = pack.slice();
+  tampered[tampered.length - 20] ^= 1;
+  for (const [args, field] of [
+    [[tampered, signature, key, 0], 'signature'],
+    [[pack, signature, key, 4], 'version'],
+    [[pack, signature, key.slice(0, 31), 0], 'key'],
+  ]) {
+    assert.throws(
+      () => ctx.almanac.publishedFromSigned(...args),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
+/**
+ * `almanac.publishedReasons` (`03-design/published-overrides.md` §4): the
+ * committee's day published over the modern sky is the committee's sky,
+ * and a day no change gives is the publisher's own, every change tried
+ * listed.
+ */
+test('a published day is explained by the change that gives it', () => {
+  const modern = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const committee = new Context({ profile: 'nepali-committee', ephemeris: 'SURYA_SIDDHANTA' });
+  const days = {
+    from: date(Calendar.Gregorian, 2027, 9, 1),
+    to: date(Calendar.Gregorian, 2027, 11, 30),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const fixed = (on) => modern.calendar.fixedOf(on);
+  const ours = modern.almanac.festivals({ ...days, festivals: { rules: 'NEPAL' } });
+  const theirs = committee.almanac.festivals({ ...days, festivals: { rules: 'NEPAL' } });
+  const [observance, committees] = ours.observances
+    .flatMap((o) => theirs.observances.map((t) => [o, t]))
+    .find(([o, t]) => o.rule === t.rule && fixed(o.day) !== fixed(t.day) && Math.abs(fixed(o.day) - fixed(t.day)) <= 3);
+  const published = (on) => ({
+    rules: 'NEPAL',
+    published: [
+      {
+        format: 'teistro.published/1',
+        publisher: 'a patro printed in Nepal',
+        id: 'np',
+        version: 1,
+        entries: [
+          {
+            action: 'SET',
+            rule: observance.rule,
+            source: 'p. 1',
+            day: { calendar: 'GREGORIAN', year: on.year, month: on.month, day: on.day },
+          },
+        ],
+      },
+    ],
+  });
+  const found = modern.almanac.publishedReasons({ ...days, festivals: published(committees.day), sky: committee });
+  assert.equal(found.reasons.length, 1);
+  const [reason] = found.reasons;
+  assert.deepEqual(
+    [reason.rule, fixed(reason.day), fixed(reason.computed)],
+    [observance.rule, fixed(committees.day), fixed(observance.day)],
+  );
+  assert.deepEqual([reason.reason.by, reason.reason.profile], ['SKY', 'nepali-committee']);
+
+  const far = modern.calendar.dateOf(Calendar.Gregorian, fixed(observance.day) + 5);
+  const delhi = { name: 'Delhi', place: { latitude: 28.6139, longitude: 77.209, altitude: 216 }, utcOffsetSeconds: 19800 };
+  const [own] = modern.almanac.publishedReasons({ ...days, festivals: published(far), places: [delhi] }).reasons;
+  assert.equal(own.reason.by, 'PUBLISHER');
+  assert.deepEqual(own.tried[0].change, { by: 'PLACE', name: 'Delhi' });
+  assert.ok(own.tried.every((t) => !t.reproduces));
+  assert.throws(() => modern.almanac.publishedReasons({ ...days, festivals: published(far), sky: {} }), TypeError);
+  modern.dispose();
+  committee.dispose();
+});
+
+test('a published set lays its days over the rules', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const days = {
+    from: date(Calendar.Gregorian, 2025, 9, 26),
+    to: date(Calendar.Gregorian, 2025, 10, 6),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const plain = ctx.almanac.festivals({ ...days, festivals: { rules: 'DHARMASINDHU' } });
+  assert.deepEqual([plain.added, plain.unplaced, plain.applied], [[], [], []]);
+  assert.ok(plain.observances.every((o) => o.published === undefined));
+  const navami = plain.observances.find((o) => o.rule === 'MAHA_NAVAMI');
+  const visarjana = plain.observances.find((o) => o.rule === 'DEVI_VISARJAN');
+  const on = (of, by = 0) => ({ calendar: 'GREGORIAN', year: of.year, month: of.month, day: of.day + by });
+  const set = {
+    format: 'teistro.published/1',
+    publisher: 'a patro printed in Nepal',
+    id: 'np-2082',
+    version: 2,
+    entries: [
+      { action: 'SET', rule: 'MAHA_NAVAMI', day: on(navami.day, 1), source: 'p. 1' },
+      { action: 'WITHDRAW', rule: 'DEVI_VISARJAN', day: on(visarjana.day), source: 'p. 2' },
+      { action: 'ADD', key: 'MINE', day: on(navami.day), names: { 'en-Latn': 'Mine' }, source: 'p. 3' },
+      { action: 'SET', rule: 'HOLIKA', day: on(navami.day, 2), source: 'p. 4' },
+    ],
+  };
+  const answer = ctx.almanac.festivals({ ...days, festivals: { rules: 'DHARMASINDHU', published: [set] } });
+  const moved = answer.observances.find((o) => o.rule === 'MAHA_NAVAMI');
+  assert.deepEqual(moved.published, {
+    status: 'PUBLISHED',
+    publisher: 'a patro printed in Nepal',
+    set: 'np-2082',
+    version: 2,
+    source: 'p. 1',
+    computed: navami.day,
+  });
+  assert.equal(moved.day.day, navami.day.day + 1);
+  assert.equal(moved.parana, undefined);
+  const withdrawn = answer.observances.find((o) => o.rule === 'DEVI_VISARJAN');
+  assert.deepEqual([withdrawn.published.status, withdrawn.day], ['WITHDRAWN', visarjana.day]);
+  assert.equal(answer.added.length, 1);
+  assert.deepEqual([answer.added[0].key, answer.added[0].day, answer.added[0].names], ['MINE', navami.day, { 'en-Latn': 'Mine' }]);
+  assert.deepEqual(
+    answer.unplaced.map((u) => [u.set, u.entry, u.rule]),
+    [['np-2082', 3, 'HOLIKA']],
+  );
+  assert.deepEqual(
+    answer.applied.map((a) => [a.id, a.version, a.hash.length]),
+    [['np-2082', 2, 64]],
+  );
+  assert.notEqual(answer.provenance.inputHash, plain.provenance.inputHash);
+  const stray = { ...set, entries: [{ ...set.entries[0], rule: 'NO_SUCH_RULE' }] };
+  assert.throws(
+    () => ctx.almanac.festivals({ ...days, festivals: { rules: 'DHARMASINDHU', published: [stray] } }),
+    (error) => error instanceof TeistroError && error.field === 'festivals.published[0].entries[0].rule',
+  );
+  ctx.dispose();
+});
+
 test('a chart carries its dasha phala, and the Shadbala its rays', () => {
   const ctx = context();
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };

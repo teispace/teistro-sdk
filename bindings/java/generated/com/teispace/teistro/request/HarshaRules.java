@@ -15,6 +15,15 @@ import java.util.Objects;
  */
 public record HarshaRules(VenusPlace venus) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public HarshaRules() {
+        this(null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

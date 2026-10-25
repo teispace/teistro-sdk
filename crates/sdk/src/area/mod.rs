@@ -92,6 +92,10 @@ pub use almanac::{
     FestivalDays, FestivalDisagreement, FestivalDisagreements, LimbChange, LimbDisagreement,
     ReckonedLimb,
 };
+pub use almanac::{
+    ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
+    ReckonedPlace,
+};
 pub use calendar::CalendarArea;
 #[cfg(feature = "chart")]
 pub use chart::{ChartArea, Interpreted};

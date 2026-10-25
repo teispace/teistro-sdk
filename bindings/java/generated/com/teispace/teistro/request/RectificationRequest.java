@@ -19,6 +19,15 @@ import java.util.Objects;
  */
 public record RectificationRequest(BaselineAsked baseline, CircumstanceAsked circumstance, ConceptionRules conception, Purify purify, SvarodayaAsked svarodaya) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public RectificationRequest() {
+        this(null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

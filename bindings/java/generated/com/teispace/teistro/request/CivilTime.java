@@ -34,6 +34,18 @@ public record CivilTime(int hour, int minute, Long nanos, int second) implements
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param hour The {@code hour} field.
+     * @param minute The {@code minute} field.
+     * @param second The {@code second} field.
+     */
+    public CivilTime(int hour, int minute, int second) {
+        this(hour, minute, null, second);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

@@ -35,6 +35,19 @@ public record AshauchRelationRow(String clause, AshauchLength heardLate, Ashauch
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param clause The clause, with its source.
+     * @param kind A birth's or a death's.
+     * @param length Its length.
+     * @param relation Whose.
+     */
+    public AshauchRelationRow(String clause, AshauchKind kind, AshauchLength length, AshauchRelation relation) {
+        this(clause, null, kind, length, null, null, relation);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

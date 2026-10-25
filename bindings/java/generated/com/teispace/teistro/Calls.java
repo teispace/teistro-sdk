@@ -631,6 +631,46 @@ final class Calls {
     }
 
     /**
+     * `ts_almanac_published_reasons`: Says why each published day of a festival answer differs from the
+     * rule's (`03-design/published-overrides.md` §4) and answers with
+     * `{value, provenance}` as canonical JSON, sealed by this context's
+     * provenance, every catalogue member a full key.
+     *
+     * `value` is `{reasons}`: one per occurrence a `SET` moved, each `{rule,
+     * set, day, computed, reason, tried}`, `day` the published day and
+     * `computed` the rule's here. `tried` lists each change in the order
+     * tried, `{change, day, reproduces}`, `day` the rule's day under the
+     * change (absent when it gives none within seven days), and `reason` is
+     * the first change that reproduces the published day, or `{"by":
+     * "PUBLISHER"}`, the publisher's own choice, when none does. A change is
+     * `{"by": "PLACE", "name"}`, `{"by": "SKY", "profile", "settingsHash"}`
+     * (`other`'s) or `{"by": "RULE", "pack"}` (each shipped pack whose rule
+     * of the key differs).
+     *
+     * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+     * "places"}`: the days as `{"year", "month", "day"}`, `festivals` a
+     * festival request with its `published` sets, and `places` the places
+     * the publisher may have reckoned at, each `{"name", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`. `other` is the
+     * publisher's sky, another context; `context` itself, or null, tries
+     * none. A key it does
+     * not read, a place or offset out of range or a festival request its
+     * reader refuses is `INVALID_ARG`, named under `publishedReasons`.
+     */
+    static String almanacPublishedReasons(Native lib, MemorySegment context, MemorySegment other, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_published_reasons.invokeExact(context, other, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_almanac_sankalpa`: The time a sankalpa recites at an instant and a place
      * (`03-design/sankalpa.md`), answered with `{value, provenance}` as
      * canonical JSON, every catalogue member a full key.
@@ -967,6 +1007,36 @@ final class Calls {
             MemorySegment argumentsJsonRaw = Boundary.cString(arena, Objects.requireNonNull(argumentsJson, "argumentsJson"));
             MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
             int status = Boundary.call(() -> (int) lib.ts_ephemeris_call.invokeExact(context, functionRaw, argumentsJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
+     * `ts_published_verify`: Verifies a signed pack and answers with its published set as canonical
+     * JSON. `pack` is the set's exact bytes, `signature` the publisher's
+     * detached Ed25519 signature over them (64 bytes) and `key` the
+     * publisher's public key (32 bytes), which the caller fixes at its own
+     * build: the library embeds none. A set whose `version` is under
+     * `at_least`, the newest the caller has applied, is refused, so a replayed
+     * pack cannot roll a correction back; 0 takes any.
+     *
+     * A key that is no curve point is `INVALID_ARG` on `key`; a signature
+     * that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+     * bytes that are not a set, `INVALID_ARG` on the field that is wrong; an
+     * older version, `INVALID_ARG` on `version`. A build without
+     * `signed-packs` answers `CAPABILITY`.
+     */
+    static String publishedVerify(Native lib, MemorySegment context, byte[] pack, byte[] signature, byte[] key, long atLeast) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment packRaw = arena.allocateFrom(JAVA_BYTE, Objects.requireNonNull(pack, "pack"));
+            MemorySegment signatureRaw = arena.allocateFrom(JAVA_BYTE, Objects.requireNonNull(signature, "signature"));
+            MemorySegment keyRaw = arena.allocateFrom(JAVA_BYTE, Objects.requireNonNull(key, "key"));
+            int atLeastRaw = Values.u32("atLeast", atLeast);
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_published_verify.invokeExact(context, packRaw, (long) pack.length, signatureRaw, (long) signature.length, keyRaw, (long) key.length, atLeastRaw, outJson));
             if (status != 0) {
                 throw refused(lib, context, status);
             }

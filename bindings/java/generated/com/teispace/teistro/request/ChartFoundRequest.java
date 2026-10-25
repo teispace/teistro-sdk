@@ -83,6 +83,18 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param latitudeDeg The {@code latitudeDeg} field.
+     * @param longitudeDeg The {@code longitudeDeg} field.
+     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+     */
+    public ChartFoundRequest(double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
+        this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, latitudeDeg, longitudeDeg, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, utcOffsetSeconds, null, null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

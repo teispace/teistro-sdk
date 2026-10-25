@@ -20,6 +20,15 @@ import java.util.Objects;
  */
 public record AyurdayaRules(Boolean amsayuMultiplied, Combine combine, EnemyExempt enemyExempt, Enmity enmity, Nisarga nisarga, RisingTakes rising) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public AyurdayaRules() {
+        this(null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

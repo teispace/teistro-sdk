@@ -7,5 +7,18 @@ package com.teispace.teistro;
  * @param rule the rule's key
  * @param day the day
  * @param on the same day in the rule's own calendar
+ * @param published what a published entry did to the day; null when none
+ *     touched it
  */
-public record DatedObservance(String rule, CalendarDate day, CalendarDate on) {}
+public record DatedObservance(String rule, CalendarDate day, CalendarDate on, Published published) {
+    /**
+     * A day no published entry touched.
+     *
+     * @param rule as the record's
+     * @param day as the record's
+     * @param on as the record's
+     */
+    public DatedObservance(String rule, CalendarDate day, CalendarDate on) {
+        this(rule, day, on, null);
+    }
+}

@@ -32,6 +32,15 @@ import java.util.Objects;
  */
 public record PlanRequest(Boolean ashtakavarga, Boolean aspects, Boolean bhavaBala, Boolean chalit, Boolean conditions, Boolean dashaPhala, Boolean gochar, Boolean houses, Boolean karakas, Boolean panchanga, Boolean phala, Boolean placements, Boolean positions, Boolean readings, Boolean sadeSati, Boolean states, Boolean strength, Boolean vimshopaka) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public PlanRequest() {
+        this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

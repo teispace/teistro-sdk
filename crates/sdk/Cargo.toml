@@ -73,12 +73,17 @@ teistro-intl = { path = "../intl", default-features = false }
 # `standard`; the tier test in `crates/ffi/tests/tier.rs` now holds it.
 [features]
 default = ["builtin-standard", "full"]
+# Reads a published set from a signed pack, verified against the key the
+# caller fixes at its own build (`03-design/published-overrides.md` §5):
+# `PublishedSet::from_signed`. Off, a consumer verifies with its own
+# transport and passes the set.
+signed-packs = ["teistro-panchanga/signed-packs"]
 # A module family: a crate, its methods here and its re-exports, left out
 # of a build that does not name it (`03-design/wasm-profiles.md`). A build
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "signed-packs", "svg", "tajika", "western"]
 # The chart area: `ChartArea`, the interpretation area and the crates only
 # they reach. Every family read off a chart requires it.
 chart = [
@@ -152,6 +157,8 @@ builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]
 builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
 
 [dev-dependencies]
+# Signs the test packs with a key made in the test; the SDK embeds none.
+ed25519-dalek = { version = "3", default-features = false }
 teistro-state = { path = "../state" }
 teistro-test-allocator = { path = "../test-allocator" }
 

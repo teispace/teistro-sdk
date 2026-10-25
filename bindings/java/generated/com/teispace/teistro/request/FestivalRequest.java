@@ -11,9 +11,10 @@ import java.util.Objects;
 /**
  * `FestivalRequest` as the bindings write it. `rules` is read in a second step, because each item is a name or a rule and the refusal should say which item was wrong rather than that no shape matched.
  *
+ * @param published The published sets, each read in a second step as `rules` is. Null leaves the SDK's default.
  * @param rules The {@code rules} field.
  */
-public record FestivalRequest(Object rules) implements RequestJson {
+public record FestivalRequest(List<PublishedSet> published, Object rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -22,7 +23,68 @@ public record FestivalRequest(Object rules) implements RequestJson {
      * @throws NullPointerException naming the required field that is missing
      */
     public FestivalRequest {
+        published = published == null ? null : List.copyOf(published);
         Objects.requireNonNull(rules, "`FestivalRequest.rules` is required");
+    }
+
+    /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param rules The {@code rules} field.
+     */
+    public FestivalRequest(Object rules) {
+        this(null, rules);
+    }
+
+    /**
+     * A builder, every field unset: an unset optional field is left out, and the
+     * SDK's default stands.
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /** Builds a {@link FestivalRequest} a field at a time. */
+    public static final class Builder {
+        private List<PublishedSet> published;
+        private Object rules;
+
+        private Builder() {}
+
+        /**
+         * Sets {@code published}.
+         *
+         * @param published The published sets, each read in a second step as `rules` is. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder published(List<PublishedSet> published) {
+            this.published = published;
+            return this;
+        }
+
+        /**
+         * Sets {@code rules}.
+         *
+         * @param rules The {@code rules} field.
+         * @return this builder
+         */
+        public Builder rules(Object rules) {
+            this.rules = rules;
+            return this;
+        }
+
+        /**
+         * The record.
+         *
+         * @return the record
+         * @throws NullPointerException naming a required field left unset
+         */
+        public FestivalRequest build() {
+            return new FestivalRequest(published, rules);
+        }
     }
 
     /**
@@ -35,12 +97,16 @@ public record FestivalRequest(Object rules) implements RequestJson {
     public static FestivalRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "FestivalRequest");
         return new FestivalRequest(
+            Read.orNull(json.get("published"), present -> Read.list(present, "FestivalRequest.published", item0 -> PublishedSet.of(item0))),
             Read.required(json.get("rules"), "FestivalRequest.rules"));
     }
 
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (published != null) {
+            json.put("published", published.stream().map(item0 -> item0.toJson()).toList());
+        }
         json.put("rules", rules);
         return json;
     }

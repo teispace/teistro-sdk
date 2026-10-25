@@ -176,11 +176,12 @@ fn requests() -> teistro_idl::records::Requests {
 /// name. Each is checked to have the enum's keys, and a request key set
 /// named like a boundary enum and not listed is refused, so the two never
 /// drift apart unseen.
-const REUSED_ENUMS: [&str; 13] = [
+const REUSED_ENUMS: [&str; 14] = [
     "Balance",
     "FortuneRule",
     "GocharFrom",
     "HitKind",
+    "Leap",
     "MatchRole",
     "PlaceReading",
     "Reckoning",
@@ -197,12 +198,13 @@ const REUSED_ENUMS: [&str; 13] = [
 /// almuten's rules as asked, a natal point as named). Java keeps them
 /// apart by package; any other shared name is refused, so a request type
 /// never silently reads like an unrelated answer type.
-const SHARED_NAMES: [&str; 11] = [
+const SHARED_NAMES: [&str; 12] = [
     "AccidentalRules",
     "AccidentalScores",
     "AlmutenRules",
     "CivilTime",
     "ConsiderationRules",
+    "Interval",
     "NatalPoint",
     "Partile",
     "PerfectionRules",

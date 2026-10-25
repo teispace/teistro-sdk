@@ -90,14 +90,54 @@ final class AlmanacReads {
                         ? Reads.each(value, "dated", raw -> {
                             Map<?, ?> d = Reads.object(raw);
                             return new DatedObservance(Reads.string(d, "rule"),
-                                    Reads.serdeDate(Reads.field(d, "day")), Reads.serdeDate(Reads.field(d, "on")));
+                                    Reads.serdeDate(Reads.field(d, "day")), Reads.serdeDate(Reads.field(d, "on")),
+                                    published(d));
                         })
                         : java.util.List.of(),
                 // Left out of the answer when none was asked.
                 value.containsKey("anniversaries")
                         ? Reads.each(value, "anniversaries", AlmanacReads::anniversary)
                         : java.util.List.of(),
+                // Each left out when no published set was laid over the answer.
+                value.containsKey("added")
+                        ? Reads.each(value, "added", raw -> {
+                            Map<?, ?> a = Reads.object(raw);
+                            Map<String, String> names = new java.util.TreeMap<>();
+                            if (a.get("names") != null) {
+                                Reads.object(a, "names").forEach((k, v) -> names.put(Reads.string(k), Reads.string(v)));
+                            }
+                            return new Published.Added(Reads.string(a, "key"), Reads.serdeDate(Reads.field(a, "day")),
+                                    names, published(a));
+                        })
+                        : java.util.List.of(),
+                value.containsKey("unplaced")
+                        ? Reads.each(value, "unplaced", raw -> {
+                            Map<?, ?> u = Reads.object(raw);
+                            return new Published.Unplaced(Reads.string(u, "set"), Reads.integer(u, "entry"),
+                                    Reads.string(u, "rule"), Reads.serdeDate(Reads.field(u, "day")));
+                        })
+                        : java.util.List.of(),
+                value.containsKey("applied")
+                        ? Reads.each(value, "applied", raw -> {
+                            Map<?, ?> a = Reads.object(raw);
+                            return new Published.Applied(Reads.string(a, "id"), Reads.integer(a, "version"),
+                                    Reads.string(a, "publisher"), Reads.string(a, "hash"));
+                        })
+                        : java.util.List.of(),
                 provenance(envelope));
+    }
+
+    /** What a published entry did to a day, or null when none touched it. */
+    private static Published published(Map<?, ?> holder) {
+        Object raw = holder.get("published");
+        if (raw == null) {
+            return null;
+        }
+        Map<?, ?> p = Reads.object(raw);
+        return new Published(Reads.string(p, "status"), Reads.string(p, "publisher"), Reads.string(p, "set"),
+                Reads.integer(p, "version"), Reads.string(p, "source"),
+                p.get("computed") == null ? null : Reads.serdeDate(Reads.field(p, "computed")),
+                p.get("window") == null ? null : Reads.interval(Reads.field(p, "window")));
     }
 
     private static AnniversaryDay anniversary(Object raw) {
@@ -128,6 +168,31 @@ final class AlmanacReads {
                             return Reads.member(Tithi.byKey(text), "Tithi", text);
                         })
                         : List.of());
+    }
+
+    /** {@code ts_almanac_published_reasons}'s answer, with the provenance beside it. */
+    static PublishedReasons publishedReasons(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        Map<?, ?> value = Reads.object(envelope, "value");
+        return new PublishedReasons(Reads.each(value, "reasons", raw -> {
+            Map<?, ?> r = Reads.object(raw);
+            return new PublishedReasons.Reason(Reads.string(r, "rule"), Reads.string(r, "set"),
+                    Reads.serdeDate(Reads.field(r, "day")), Reads.serdeDate(Reads.field(r, "computed")),
+                    cause(Reads.object(r, "reason")),
+                    Reads.each(r, "tried", t -> {
+                        Map<?, ?> tried = Reads.object(t);
+                        // Absent when the change gives no day within seven.
+                        Object day = tried.get("day");
+                        return new PublishedReasons.Tried(cause(Reads.object(tried, "change")),
+                                day == null ? null : Reads.serdeDate(day), Reads.flag(tried, "reproduces"));
+                    }));
+        }), provenance(envelope));
+    }
+
+    private static PublishedReasons.Cause cause(Map<?, ?> raw) {
+        return new PublishedReasons.Cause(Reads.string(raw, "by"), Reads.optionalString(raw, "name"),
+                Reads.optionalString(raw, "profile"), Reads.optionalString(raw, "settingsHash"),
+                Reads.optionalString(raw, "pack"));
     }
 
     /** {@code ts_almanac_disagreements}'s answer: each comparison asked, its members resolved, or null. */
@@ -225,7 +290,8 @@ final class AlmanacReads {
                         Reads.optionalString(decided, "rule"), Reads.optionalInteger(decided, "days")),
                 Reads.string(o, "choice"),
                 Reads.number(o, "marginSeconds"),
-                o.get("parana") == null ? List.of() : Reads.each(o, "parana", AlmanacReads::vrataParana));
+                o.get("parana") == null ? List.of() : Reads.each(o, "parana", AlmanacReads::vrataParana),
+                published(o));
     }
 
     /** A vrata's parana under one reading, as a festival answer writes it. */
@@ -280,7 +346,8 @@ final class AlmanacReads {
                 Reads.serdeDate(Reads.field(f, "day")),
                 Reads.number(f, "marginSeconds"),
                 f.get("parana") == null ? null : parana(Reads.object(f, "parana")),
-                f.get("mahadvadashi") == null ? null : mahadvadashi(Reads.object(f, "mahadvadashi")));
+                f.get("mahadvadashi") == null ? null : mahadvadashi(Reads.object(f, "mahadvadashi")),
+                published(f));
     }
 
     /** A fast's mahadvadashi as a festival answer writes it. */

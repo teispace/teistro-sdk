@@ -67,6 +67,8 @@ from teistro import (
     LocalDay,
     FestivalAnswer,
     FestivalRequest,
+    PublishedDayAsked,
+    PublishedSetAsked,
     MuhurtaAnswer,
     MuhurtaNative,
     MuhurtaRequest,
@@ -114,6 +116,27 @@ from teistro import (
 
 report: dict[str, str] = {}
 
+
+
+def gregorian_day(month: int, day: int) -> PublishedDayAsked:
+    """A day of 2024 as a published entry spells it."""
+    return {"calendar": "GREGORIAN", "year": 2024, "month": month, "day": day}
+
+
+# One published set with each action, as every runner asks it: a SET
+# moving Lakshmi puja, a WITHDRAW, an ADD and a SET no occurrence takes.
+PUBLISHED_SET: PublishedSetAsked = {
+    "format": "teistro.published/1",
+    "publisher": "a patro printed in Nepal",
+    "id": "np-2081",
+    "version": 3,
+    "entries": [
+        {"action": "SET", "rule": "LAKSHMI_PUJA", "day": gregorian_day(11, 2), "source": "p. 1"},
+        {"action": "WITHDRAW", "rule": "VIJAYA_DASHAMI", "day": gregorian_day(10, 12), "source": "p. 2"},
+        {"action": "ADD", "key": "MINE", "day": gregorian_day(10, 20), "names": {"en-Latn": "Mine"}, "source": "p. 3"},
+        {"action": "SET", "rule": "HOLIKA", "day": gregorian_day(10, 25), "source": "p. 4"},
+    ],
+}
 
 
 def lilith_line(lilith: Optional[LilithPosition]) -> str:
@@ -660,6 +683,22 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
             f"{prefix}-dated-{k}",
             f"{kept.rule} {kept.day.month}-{kept.day.day} {kept.on.calendar.full_key} {kept.on.month}-{kept.on.day}",
         )
+    # What published sets did, printed only where they did it, so an answer
+    # asked without sets prints as it did.
+    for k, observance in enumerate(answer.observances):
+        if observance.published is not None:
+            p = observance.published
+            computed = "-" if p.computed is None else f"{p.computed.month}-{p.computed.day}"
+            put(f"{prefix}-published-{k}", f"{observance.rule} {p.status} {p.set} {p.version} {computed}")
+    for k, added in enumerate(answer.added):
+        put(f"{prefix}-added-{k}", f"{added.key} {added.day.month}-{added.day.day} {added.published.set}")
+    for k, unplaced in enumerate(answer.unplaced):
+        put(
+            f"{prefix}-unplaced-{k}",
+            f"{unplaced.set} {unplaced.entry} {unplaced.rule} {unplaced.day.month}-{unplaced.day.day}",
+        )
+    for k, applied in enumerate(answer.applied):
+        put(f"{prefix}-applied-{k}", f"{applied.id} {applied.version} {applied.hash}")
 
 
 def put_ashta(prefix: str, matched: AshtaKoota) -> None:
@@ -2670,6 +2709,7 @@ def main() -> None:
             ("amended", {"rules": ["DHARMASINDHU", own_rule]}),
             ("nepal", {"rules": ["NEPAL", own_following]}),
             ("dated", {"rules": ["NEPAL", *own_dated]}),
+            ("published", {"rules": "DHARMASINDHU", "published": [PUBLISHED_SET]}),
         )
         # The shipped pack is asked of the lean call, the others of the
         # almanac's: the two answer alike, so the report cannot tell.

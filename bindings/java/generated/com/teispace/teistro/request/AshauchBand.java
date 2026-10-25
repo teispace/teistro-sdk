@@ -37,6 +37,20 @@ public record AshauchBand(AshauchMark before, Boolean buried, Boolean chudakaran
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param before The band holds while this mark is not yet reached.
+     * @param clause The clause, with its source.
+     * @param parents The parents' length, a step-child's too.
+     * @param sapindas The sapiṇḍas'.
+     * @param sex A son's band or a daughter's.
+     */
+    public AshauchBand(AshauchMark before, String clause, AshauchLength parents, AshauchLength sapindas, AshauchSex sex) {
+        this(before, null, null, clause, parents, null, sapindas, sex);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

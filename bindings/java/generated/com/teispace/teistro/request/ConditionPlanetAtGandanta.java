@@ -30,6 +30,16 @@ public record ConditionPlanetAtGandanta(Double orbDegrees, String planet) implem
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param planet Who.
+     */
+    public ConditionPlanetAtGandanta(String planet) {
+        this(null, planet);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

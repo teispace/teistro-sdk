@@ -30,11 +30,14 @@ import java.util.List;
  *     without one
  * @param mahadvadashi the mahadvadashi that set {@code day}, when the rule keeps
  *     them and one held; null otherwise
+ * @param published what a published entry did to the fast; null when none
+ *     touched it. A moved fast has no {@code parana}: the computed one was
+ *     the computed day's
  */
 public record EkadashiFast(
         String rule, Tithi tithi, Masa month, boolean adhika, List<Interval> tithis, List<CalendarDate> days,
         String piercedAt, boolean pierced, String excess, String choice, CalendarDate day,
-        double marginSeconds, Parana parana, Mahadvadashi mahadvadashi) {
+        double marginSeconds, Parana parana, Mahadvadashi mahadvadashi, Published published) {
     /** Keeps the lists unmodifiable. */
     public EkadashiFast {
         tithis = List.copyOf(tithis);
@@ -42,7 +45,35 @@ public record EkadashiFast(
     }
 
     /**
-     * A fast no mahadvadashi set, as before rules kept them.
+     * A fast no published entry touched, as one was written before sets
+     * were laid over answers.
+     *
+     * @param rule as the record's
+     * @param tithi as the record's
+     * @param month as the record's
+     * @param adhika as the record's
+     * @param tithis as the record's
+     * @param days as the record's
+     * @param piercedAt as the record's
+     * @param pierced as the record's
+     * @param excess as the record's
+     * @param choice as the record's
+     * @param day as the record's
+     * @param marginSeconds as the record's
+     * @param parana as the record's
+     * @param mahadvadashi as the record's
+     */
+    public EkadashiFast(
+            String rule, Tithi tithi, Masa month, boolean adhika, List<Interval> tithis, List<CalendarDate> days,
+            String piercedAt, boolean pierced, String excess, String choice, CalendarDate day,
+            double marginSeconds, Parana parana, Mahadvadashi mahadvadashi) {
+        this(rule, tithi, month, adhika, tithis, days, piercedAt, pierced, excess, choice, day, marginSeconds,
+                parana, mahadvadashi, null);
+    }
+
+    /**
+     * A fast no mahadvadashi set and no published entry touched, as before
+     * rules kept them.
      *
      * @param rule as the record's
      * @param tithi as the record's
@@ -63,6 +94,6 @@ public record EkadashiFast(
             String piercedAt, boolean pierced, String excess, String choice, CalendarDate day,
             double marginSeconds, Parana parana) {
         this(rule, tithi, month, adhika, tithis, days, piercedAt, pierced, excess, choice, day, marginSeconds,
-                parana, null);
+                parana, null, null);
     }
 }

@@ -17,6 +17,15 @@ import java.util.Objects;
  */
 public record PranapadaHouseRules(HouseCount count, Boolean firstAuspicious, PranapadaRule pranapada) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public PranapadaHouseRules() {
+        this(null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

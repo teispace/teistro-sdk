@@ -18,6 +18,15 @@ public record ConditionAllPlanetsBetweenNodes(NodeSide side) implements RequestJ
     public static final String TYPE = "all-planets-between-nodes";
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public ConditionAllPlanetsBetweenNodes() {
+        this(null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

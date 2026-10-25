@@ -31,6 +31,16 @@ public record ConditionAllClassicalGrahasInHouses(List<Integer> houses, Boolean 
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param houses Where.
+     */
+    public ConditionAllClassicalGrahasInHouses(List<Integer> houses) {
+        this(houses, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

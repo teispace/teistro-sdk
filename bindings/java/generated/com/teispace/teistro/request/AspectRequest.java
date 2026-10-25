@@ -27,6 +27,15 @@ public record AspectRequest(List<com.teispace.teistro.WesternAspect> aspects, Or
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public AspectRequest() {
+        this(null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

@@ -31,6 +31,16 @@ public record BaselineAsked(Accuracy accuracy, Double coverage, DashaAsked dasha
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param uncertaintyMinutes The window's half-width, minutes, 1 to 720.
+     */
+    public BaselineAsked(double uncertaintyMinutes) {
+        this(null, null, null, null, null, uncertaintyMinutes);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

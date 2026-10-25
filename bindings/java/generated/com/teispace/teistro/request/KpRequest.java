@@ -30,6 +30,15 @@ public record KpRequest(Boolean anyAyanamsha, Integer clock, Integer number) imp
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public KpRequest() {
+        this(null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

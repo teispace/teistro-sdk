@@ -4563,6 +4563,61 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Says why each published day of a festival answer differs from the
+    /// rule's (`03-design/published-overrides.md` §4) and answers with
+    /// `{value, provenance}` as canonical JSON, sealed by this context's
+    /// provenance, every catalogue member a full key.
+    ///
+    /// `value` is `{reasons}`: one per occurrence a `SET` moved, each `{rule,
+    /// set, day, computed, reason, tried}`, `day` the published day and
+    /// `computed` the rule's here. `tried` lists each change in the order
+    /// tried, `{change, day, reproduces}`, `day` the rule's day under the
+    /// change (absent when it gives none within seven days), and `reason` is
+    /// the first change that reproduces the published day, or `{"by":
+    /// "PUBLISHER"}`, the publisher's own choice, when none does. A change is
+    /// `{"by": "PLACE", "name"}`, `{"by": "SKY", "profile", "settingsHash"}`
+    /// (`other`'s) or `{"by": "RULE", "pack"}` (each shipped pack whose rule
+    /// of the key differs).
+    ///
+    /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+    /// "places"}`: the days as `{"year", "month", "day"}`, `festivals` a
+    /// festival request with its `published` sets, and `places` the places
+    /// the publisher may have reckoned at, each `{"name", "latitudeDeg",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`. `other` is the
+    /// publisher's sky, another context; `context` itself, or null, tries
+    /// none. A key it does
+    /// not read, a place or offset out of range or a festival request its
+    /// reader refuses is `INVALID_ARG`, named under `publishedReasons`.
+    #[napi]
+    pub fn almanac_published_reasons(
+        &self,
+        env: Env,
+        other: &Context,
+        request_json: String,
+    ) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        other.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_published_reasons(
+                self.handle,
+                other.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        let left = self.leave();
+        let other_left = other.leave();
+        left?;
+        other_left?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// The time a sankalpa recites at an instant and a place
     /// (`03-design/sankalpa.md`), answered with `{value, provenance}` as
     /// canonical JSON, every catalogue member a full key.
@@ -4939,6 +4994,49 @@ impl Context {
                 self.handle,
                 function.as_ptr(),
                 arguments_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// Verifies a signed pack and answers with its published set as canonical
+    /// JSON. `pack` is the set's exact bytes, `signature` the publisher's
+    /// detached Ed25519 signature over them (64 bytes) and `key` the
+    /// publisher's public key (32 bytes), which the caller fixes at its own
+    /// build: the library embeds none. A set whose `version` is under
+    /// `at_least`, the newest the caller has applied, is refused, so a replayed
+    /// pack cannot roll a correction back; 0 takes any.
+    ///
+    /// A key that is no curve point is `INVALID_ARG` on `key`; a signature
+    /// that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+    /// bytes that are not a set, `INVALID_ARG` on the field that is wrong; an
+    /// older version, `INVALID_ARG` on `version`. A build without
+    /// `signed-packs` answers `CAPABILITY`.
+    #[napi]
+    pub fn published_verify(
+        &self,
+        env: Env,
+        pack: Uint8Array,
+        signature: Uint8Array,
+        key: Uint8Array,
+        at_least: u32,
+    ) -> Result<String> {
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::published::ts_published_verify(
+                self.handle,
+                pack.as_ptr(),
+                pack.len(),
+                signature.as_ptr(),
+                signature.len(),
+                key.as_ptr(),
+                key.len(),
+                at_least as u32,
                 &raw mut out_json,
             )
         };

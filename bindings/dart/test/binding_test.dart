@@ -3300,6 +3300,301 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  // `almanac.publishedReasons` (`03-design/published-overrides.md` §4):
+  // the committee's day published over the modern sky is the committee's
+  // sky, and a day no change gives is the publisher's own.
+  test('a published day is explained by the change that gives it', () {
+    final modern = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final committee = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    FestivalAnswer of(Context ctx) => ctx.almanac.festivals(
+      from: gregorian(2027, 9, 1),
+      to: gregorian(2027, 11, 30),
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      festivals: const FestivalRequest(rules: FestivalPack.nepal),
+    );
+    int fixed(CalendarDate on) => modern.calendar.fixedOf(on);
+    final theirs = of(committee).observances;
+    final (observance, committees) =
+        [
+          for (final o in of(modern).observances)
+            for (final t in theirs)
+              if (o.rule == t.rule &&
+                  fixed(o.day) != fixed(t.day) &&
+                  (fixed(o.day) - fixed(t.day)).abs() <= 3)
+                (o, t),
+        ].first;
+    FestivalRequest published(CalendarDate on) => FestivalRequest(
+      rules: FestivalPack.nepal,
+      published: [
+        {
+          'format': 'teistro.published/1',
+          'publisher': 'a patro printed in Nepal',
+          'id': 'np',
+          'version': 1,
+          'entries': [
+            {
+              'action': 'SET',
+              'rule': observance.rule,
+              'source': 'p. 1',
+              'day': {
+                'calendar': 'GREGORIAN',
+                'year': on.year,
+                'month': on.month,
+                'day': on.day,
+              },
+            },
+          ],
+        },
+      ],
+    );
+    PublishedReasons reasons(
+      CalendarDate on, {
+      Context? sky,
+      List<ReckonedPlace> places = const [],
+    }) => modern.almanac.publishedReasons(
+      from: gregorian(2027, 9, 1),
+      to: gregorian(2027, 11, 30),
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      festivals: published(on),
+      sky: sky,
+      places: places,
+    );
+    final [reason] = reasons(committees.day, sky: committee).reasons;
+    expect(
+      [reason.rule, fixed(reason.day), fixed(reason.computed)],
+      [observance.rule, fixed(committees.day), fixed(observance.day)],
+    );
+    expect(
+      [reason.reason.by, reason.reason.profile],
+      ['SKY', 'nepali-committee'],
+    );
+    final far = modern.calendar.dateOf(
+      Calendar.gregorian,
+      fixed(observance.day) + 5,
+    );
+    final delhi = ReckonedPlace(
+      name: 'Delhi',
+      place: Observer(
+        latitudeDeg: Latitude(28.6139),
+        longitudeDeg: Longitude(77.209),
+        altitudeM: Altitude(216),
+      ),
+      utcOffsetSeconds: 19800,
+    );
+    final [own] = reasons(far, places: [delhi]).reasons;
+    expect(own.reason.by, 'PUBLISHER');
+    expect(
+      own.tried.first.change,
+      const PublishedCause(by: 'PLACE', name: 'Delhi'),
+    );
+    expect(own.tried.every((t) => !t.reproduces), isTrue);
+    modern.dispose();
+    committee.dispose();
+  });
+
+  test('a signed pack answers its set or is refused by name', () {
+    // The vector the Rust suite pins (crates/sdk/tests/signed_pack.rs).
+    final pack = Uint8List.fromList(
+      utf8.encode(
+        '{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,'
+        '"entries":[{"action":"SET","rule":"GHATASTHAPANA","day":{"calendar":"GREGORIAN","year":2026,'
+        '"month":10,"day":11},"source":"p. 41"}]}',
+      ),
+    );
+    Uint8List hex(String text) => Uint8List.fromList([
+      for (var at = 0; at < text.length; at += 2)
+        int.parse(text.substring(at, at + 2), radix: 16),
+    ]);
+    final key = hex(
+      'ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c',
+    );
+    final signature = hex(
+      'cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e213'
+      '32fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e',
+    );
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final set = ctx.almanac.publishedFromSigned(
+      pack,
+      signature,
+      key,
+      atLeast: 3,
+    );
+    expect(set['id'], 'np-2083');
+    expect(set['version'], 3);
+    final tampered = Uint8List.fromList(pack)..[pack.length - 20] ^= 1;
+    for (final (call, field) in <(Map<String, Object?> Function(), String)>[
+      (
+        () => ctx.almanac.publishedFromSigned(tampered, signature, key),
+        'signature',
+      ),
+      (
+        () => ctx.almanac.publishedFromSigned(pack, signature, key, atLeast: 4),
+        'version',
+      ),
+      (
+        () => ctx.almanac.publishedFromSigned(
+          pack,
+          signature,
+          Uint8List.sublistView(key, 0, 31),
+        ),
+        'key',
+      ),
+    ]) {
+      expect(
+        call,
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+        reason: field,
+      );
+    }
+    ctx.dispose();
+  });
+
+  test('a published set lays its days over the rules', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    FestivalAnswer asked([List<Map<String, Object?>> published = const []]) =>
+        ctx.almanac.festivals(
+          from: gregorian(2025, 9, 26),
+          to: gregorian(2025, 10, 6),
+          place: place,
+          utcOffsetSeconds: 20700,
+          festivals: FestivalRequest(
+            rules: FestivalPack.dharmasindhu,
+            published: published,
+          ),
+        );
+    final plain = asked();
+    expect(plain.added, isEmpty);
+    expect(plain.unplaced, isEmpty);
+    expect(plain.applied, isEmpty);
+    expect(plain.observances.every((o) => o.published == null), isTrue);
+    final navami = plain.observances.firstWhere((o) => o.rule == 'MAHA_NAVAMI');
+    final visarjana = plain.observances.firstWhere(
+      (o) => o.rule == 'DEVI_VISARJAN',
+    );
+    Map<String, Object?> on(CalendarDate of, [int by = 0]) => {
+      'calendar': 'GREGORIAN',
+      'year': of.year,
+      'month': of.month,
+      'day': of.day + by,
+    };
+    final set = <String, Object?>{
+      'format': 'teistro.published/1',
+      'publisher': 'a patro printed in Nepal',
+      'id': 'np-2082',
+      'version': 2,
+      'entries': [
+        {
+          'action': 'SET',
+          'rule': 'MAHA_NAVAMI',
+          'day': on(navami.day, 1),
+          'source': 'p. 1',
+        },
+        {
+          'action': 'WITHDRAW',
+          'rule': 'DEVI_VISARJAN',
+          'day': on(visarjana.day),
+          'source': 'p. 2',
+        },
+        {
+          'action': 'ADD',
+          'key': 'MINE',
+          'day': on(navami.day),
+          'names': {'en-Latn': 'Mine'},
+          'source': 'p. 3',
+        },
+        {
+          'action': 'SET',
+          'rule': 'HOLIKA',
+          'day': on(navami.day, 2),
+          'source': 'p. 4',
+        },
+      ],
+    };
+    final answer = asked([set]);
+    final moved = answer.observances.firstWhere((o) => o.rule == 'MAHA_NAVAMI');
+    expect(
+      moved.published,
+      Published(
+        status: 'PUBLISHED',
+        publisher: 'a patro printed in Nepal',
+        set: 'np-2082',
+        version: 2,
+        source: 'p. 1',
+        computed: navami.day,
+      ),
+    );
+    expect(moved.day.day, navami.day.day + 1);
+    expect(moved.parana, isEmpty);
+    final withdrawn = answer.observances.firstWhere(
+      (o) => o.rule == 'DEVI_VISARJAN',
+    );
+    expect(withdrawn.published!.status, 'WITHDRAWN');
+    expect(_dateKey(withdrawn.day), _dateKey(visarjana.day));
+    expect(answer.added, hasLength(1));
+    expect(answer.added.single.key, 'MINE');
+    expect(_dateKey(answer.added.single.day), _dateKey(navami.day));
+    expect(answer.added.single.names, {'en-Latn': 'Mine'});
+    expect(
+      [
+        for (final u in answer.unplaced) [u.set, u.entry, u.rule],
+      ],
+      [
+        ['np-2082', 3, 'HOLIKA'],
+      ],
+    );
+    expect(
+      [
+        for (final a in answer.applied) [a.id, a.version, a.hash.length],
+      ],
+      [
+        ['np-2082', 2, 64],
+      ],
+    );
+    expect(answer.provenance.inputHash, isNot(plain.provenance.inputHash));
+    final stray = {
+      ...set,
+      'entries': [
+        {
+          ...(set['entries']! as List<Object?>).first! as Map<String, Object?>,
+          'rule': 'NO_SUCH_RULE',
+        },
+      ],
+    };
+    expect(
+      () => asked([stray]),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'festivals.published[0].entries[0].rule',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its dispositors', () {
     // Each chain the sign lords followed from the planet's own sign until one
     // repeats, its end one of the chart's ends, and the final dispositor
@@ -8476,3 +8771,12 @@ void _engineTests() {
     ctx.dispose();
   });
 }
+
+/// A date's calendar, year, month and day, which [CalendarDate] does not
+/// compare by.
+List<Object?> _dateKey(CalendarDate on) => [
+  on.calendar,
+  on.year,
+  on.month,
+  on.day,
+];

@@ -8,15 +8,15 @@ design written from it is [`python-binding.md`](python-binding.md).
 ## 1. What a binding must marshal
 
 The description carries 22 exported constants, 166 enums of 1405 members
-in all, 2 opaque handle types, 10 callback types, 27 structs, 59 entry
-points and 5 result-blob schemas, extracted from 26 source files. A
+in all, 2 opaque handle types, 10 callback types, 27 structs, 61 entry
+points and 5 result-blob schemas, extracted from 27 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
 point, which is why a third binding costs what it costs.
 
 | parameter role | how often |
 |---|---|
-| `value` | 20 |
-| `handle` | 44 |
+| `value` | 21 |
+| `handle` | 47 |
 | `handle_out` | 3 |
 | `struct_in` | 12 |
 | `struct_out` | 15 |
@@ -24,14 +24,14 @@ point, which is why a third binding costs what it costs.
 | `user_data` | 1 |
 | `blob_out` | 5 |
 | `blob_free` | 1 |
-| `string_in` | 24 |
-| `string_out` | 14 |
+| `string_in` | 25 |
+| `string_out` | 16 |
 | `string_free` | 1 |
 | `str_out` | 5 |
 | `error_free` | 1 |
-| `bytes_in` | 1 |
+| `bytes_in` | 4 |
 | `array_in` | **none** |
-| `length` | 1 |
+| `length` | 4 |
 | `scalar_out` | 8 |
 
 | struct role | how many |
@@ -69,21 +69,21 @@ a call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1852 | 2 | 0 | 0 | 0 |
-| TypeScript | 447 | 0 | 0 | 1 | 0 |
-| Python | 1852 | 0 | 1 | 2 | 0 |
-| Java | 1852 | 0 | 1 | 0 | 0 |
+| Dart | 1867 | 2 | 0 | 0 | 0 |
+| TypeScript | 462 | 0 | 0 | 1 | 0 |
+| Python | 1867 | 0 | 1 | 2 | 0 |
+| Java | 1867 | 0 | 1 | 0 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 2 caught and renamed, 0 left; 1852 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 447 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1852 looked at |
-| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1852 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1852 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 447 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1852 disagree |
-| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1852 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 2 caught and renamed, 0 left; 1867 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 462 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1867 looked at |
+| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1867 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1867 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 462 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1867 disagree |
+| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1867 disagree |
 
 What Dart renames:
 
@@ -179,9 +179,9 @@ the class of mistake a generated binding exists to make impossible.
 
 | scalar | `ctypes` | format | at the boundary | in a column |
 |---|---|---|---|---|
-| `u8` | `c_uint8` | `B` | 68 | 463 |
+| `u8` | `c_uint8` | `B` | 71 | 463 |
 | `u16` | `c_uint16` | `H` | 20 | 277 |
-| `u32` | `c_uint32` | `I` | 50 | 68 |
+| `u32` | `c_uint32` | `I` | 51 | 68 |
 | `u64` | `c_uint64` | `Q` | 1 | 0 |
 | `i8` | `c_int8` | `b` | 0 | 36 |
 | `i16` | `c_int16` | `h` | 0 | 13 |
@@ -189,7 +189,7 @@ the class of mistake a generated binding exists to make impossible.
 | `i64` | `c_int64` | `q` | 4 | 0 |
 | `f32` | `c_float` | `f` | 0 | 0 |
 | `f64` | `c_double` | `d` | 51 | 331 |
-| `usize` | `c_size_t` | `n` | 16 | 0 |
+| `usize` | `c_size_t` | `n` | 19 | 0 |
 | `isize` | `c_ssize_t` | `N` | 0 | 0 |
 | `bool` | `c_bool` | `?` | 0 | 0 |
 

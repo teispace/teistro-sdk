@@ -11,6 +11,7 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_intl::messages::sdk::calendar::Parana;
+use teistro_panchanga::festival::{Published, PublishedStatus};
 
 use super::AlmanacArea;
 use crate::area::system_of;
@@ -206,7 +207,13 @@ impl AlmanacArea<'_> {
     ///   rule's key when the locale and its fallbacks name it not.
     /// - `DESCRIPTION` gives the rule's source and the answer's
     ///   provenance: the SDK's version, the profile, the ephemeris and the
-    ///   festival answer's content hash.
+    ///   festival answer's content hash. A day a published set decides
+    ///   (`03-design/published-overrides.md` §3) says "Published by" its
+    ///   publisher, set, version and source, and the rule's own day when
+    ///   it differs, in place of "Computed by"; a withdrawn one writes no
+    ///   event, and an added one is an event like any other, named in the
+    ///   context's locale from the set's names (its language's, then the
+    ///   first given, then its key).
     /// - `UID` is the first 32 hex digits of SHA-256 over the rule, the
     ///   day's fixed number and the place's three numbers in the canonical
     ///   grammar, then `@teistro`: a feed published again updates an
@@ -249,25 +256,15 @@ impl AlmanacArea<'_> {
         options: &FeedOptions,
     ) -> Result<Envelope<String>, Error> {
         let Envelope { value, provenance } = self.festivals(from, to, place, offset, festivals)?;
-        let about = format!(
-            "Computed by the Teistro SDK {} under the {} profile with the {} ephemeris; answer {}.",
+        let answered = format!(
+            "the Teistro SDK {} under the {} profile with the {} ephemeris; answer {}.",
             provenance.sdk_version,
             provenance.profile,
             provenance.provider.name,
             provenance.content_hash,
         );
-        let occurrences = value
-            .observances
-            .iter()
-            .map(|observance| (&observance.rule, &observance.day))
-            .chain(value.ekadashis.iter().map(|fast| (&fast.rule, &fast.day)))
-            .chain(value.dated.iter().map(|kept| (&kept.rule, &kept.day)))
-            .chain(
-                value
-                    .anniversaries
-                    .iter()
-                    .map(|kept| (&kept.key, &kept.observance.day)),
-            );
+        let about = format!("Computed by {answered}");
+        let occurrences = kept_days(&value);
         let describe = |rule: &str| match source_of(festivals, rule) {
             Some(source) => format!("{source}\n{about}"),
             None => about.clone(),
@@ -275,25 +272,44 @@ impl AlmanacArea<'_> {
         // Each event, keyed by its day, its start (a whole day's first)
         // and its rule, the order the feed lists them in.
         let mut events: Vec<(FixedDay, Option<i64>, &str, Event)> = Vec::new();
-        for (rule, day) in occurrences {
+        for (rule, day, published) in occurrences {
             let fixed = system_of(day.calendar)?.fixed_of(day)?;
             let event = Event {
                 uid: uid(rule, fixed, place),
                 summary: self.festival_name(rule),
-                description: Some(describe(rule)),
+                description: Some(match published {
+                    Some(published) => published_by(published, &answered)?,
+                    None => describe(rule),
+                }),
                 when: When::Day(fixed),
             };
             events.push((fixed, None, rule, event));
+        }
+        for added in &value.added {
+            let fixed = system_of(added.day.calendar)?.fixed_of(&added.day)?;
+            let event = Event {
+                uid: uid(&added.key, fixed, place),
+                summary: self.added_name(&added.key, &added.names),
+                description: Some(published_by(&added.published, &answered)?),
+                when: When::Day(fixed),
+            };
+            events.push((fixed, None, &added.key, event));
         }
         // An Ekadashi's kept window, and a vrata's first reading when it
         // has an end: an open reading ("from the 8th's end") has no window
         // to write.
         let fasts = value.ekadashis.iter().filter_map(|fast| {
+            if withdrawn(fast.published.as_ref()) {
+                return None;
+            }
             let parana = fast.parana.as_ref()?;
             let kept = parana.kept?;
             Some((&fast.rule, &parana.day, kept.span.from, kept.span.to))
         });
         let vratas = value.observances.iter().filter_map(|observance| {
+            if withdrawn(observance.published.as_ref()) {
+                return None;
+            }
             let first = observance.parana.first()?;
             Some((&observance.rule, &first.day, first.from, first.to?))
         });
@@ -352,6 +368,24 @@ impl AlmanacArea<'_> {
         )
     }
 
+    /// An added day's name in the context's locale: the locale's own,
+    /// then its language's, then the first the set gives, then its key.
+    fn added_name(self, key: &str, names: &std::collections::BTreeMap<String, String>) -> String {
+        let engine = self.context.locale_engine();
+        let locale = engine.locale();
+        let language = locale.split('-').next().unwrap_or(locale);
+        names
+            .get(locale)
+            .or_else(|| {
+                names
+                    .iter()
+                    .find(|(tag, _)| tag.split('-').next() == Some(language))
+                    .map(|(_, name)| name)
+            })
+            .or_else(|| names.values().next())
+            .map_or_else(|| key.to_owned(), String::clone)
+    }
+
     /// A rule's name in the context's locale, or its key.
     fn festival_name(self, rule: &str) -> String {
         let engine = self.context.locale_engine();
@@ -360,6 +394,65 @@ impl AlmanacArea<'_> {
             .and_then(|entity| entity.form("name"))
             .map_or_else(|| rule.to_owned(), str::to_owned)
     }
+}
+
+/// Every whole day the answer keeps, with what published it: the
+/// observances, the Ekadashi fasts, the dated rules' days and the
+/// anniversaries. A withdrawn day is not kept, so a subscriber's calendar
+/// drops it.
+fn kept_days(
+    value: &teistro_panchanga::festival::Observances,
+) -> impl Iterator<Item = (&String, &CalendarDate, &Option<Published>)> {
+    value
+        .observances
+        .iter()
+        .map(|observance| (&observance.rule, &observance.day, &observance.published))
+        .chain(
+            value
+                .ekadashis
+                .iter()
+                .map(|fast| (&fast.rule, &fast.day, &fast.published)),
+        )
+        .chain(
+            value
+                .dated
+                .iter()
+                .map(|kept| (&kept.rule, &kept.day, &kept.published)),
+        )
+        .chain(
+            value
+                .anniversaries
+                .iter()
+                .map(|kept| (&kept.key, &kept.observance.day, &kept.observance.published)),
+        )
+        .filter(|(_, _, published)| !withdrawn(published.as_ref()))
+}
+
+/// Whether a published set withdrew the day, which the feed then leaves
+/// out, its parana with it.
+fn withdrawn(published: Option<&Published>) -> bool {
+    published.is_some_and(|p| p.status == PublishedStatus::Withdrawn)
+}
+
+/// A published day's `DESCRIPTION`: who published it, in which set and
+/// version, its source, the rule's own day when it differs, and the
+/// answer's provenance after "Answered by".
+fn published_by(published: &Published, answered: &str) -> Result<String, Error> {
+    use std::fmt::Write as _;
+    let mut said = format!(
+        "Published by {} in {} version {}: {}.",
+        published.publisher, published.set, published.version, published.source
+    );
+    if let Some(computed) = &published.computed {
+        let fixed = system_of(computed.calendar)?.fixed_of(computed)?;
+        let rules = system_of(Calendar::Gregorian)?.date_of(fixed)?;
+        let _ = write!(
+            said,
+            " The rule's own day is {:04}-{:02}-{:02}.",
+            rules.year, rules.month, rules.day
+        );
+    }
+    Ok(format!("{said}\nAnswered by {answered}"))
 }
 
 /// The source a request's rule of this key cites, of whichever kind.

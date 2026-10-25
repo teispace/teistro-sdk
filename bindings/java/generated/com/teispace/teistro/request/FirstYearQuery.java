@@ -30,6 +30,19 @@ public record FirstYearQuery(Double altitudeM, double latitudeDeg, double longit
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param latitudeDeg The place's latitude, degrees north positive.
+     * @param longitudeDeg The place's longitude, degrees east positive.
+     * @param request The death, a UTC Julian day, and the readings.
+     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+     */
+    public FirstYearQuery(double latitudeDeg, double longitudeDeg, FirstYearRequest request, int utcOffsetSeconds) {
+        this(null, latitudeDeg, longitudeDeg, request, utcOffsetSeconds);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

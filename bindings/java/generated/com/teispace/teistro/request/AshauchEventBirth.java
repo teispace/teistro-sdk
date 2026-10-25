@@ -19,6 +19,16 @@ public record AshauchEventBirth(double at, AshauchSex child) implements RequestJ
     public static final String EVENT = "BIRTH";
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param at When, a UTC Julian day.
+     */
+    public AshauchEventBirth(double at) {
+        this(at, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

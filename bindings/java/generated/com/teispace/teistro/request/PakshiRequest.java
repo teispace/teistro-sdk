@@ -35,6 +35,20 @@ public record PakshiRequest(Double altitudeM, com.teispace.teistro.Calendar cale
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param first A civil day as a request names it.
+     * @param latitudeDeg The {@code latitudeDeg} field.
+     * @param longitudeDeg The {@code longitudeDeg} field.
+     * @param nativeValue Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`.
+     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+     */
+    public PakshiRequest(DayAsked first, double latitudeDeg, double longitudeDeg, NativeAsked nativeValue, int utcOffsetSeconds) {
+        this(null, null, first, null, latitudeDeg, longitudeDeg, nativeValue, null, utcOffsetSeconds);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

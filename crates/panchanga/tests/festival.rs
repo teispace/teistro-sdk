@@ -1877,6 +1877,7 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
         rule: "JANMASHTAMI".to_owned(),
         day: day.clone(),
         on: day,
+        published: None,
     });
     // An anniversary whose origin is written whole.
     let mut observance = answer.observances[0].clone();

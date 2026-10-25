@@ -36,6 +36,15 @@ public record RuleRequest(AshtakavargaAyusRules ashtakavarga, AyurdayaRules ayur
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public RuleRequest() {
+        this(null, null, null, null, null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

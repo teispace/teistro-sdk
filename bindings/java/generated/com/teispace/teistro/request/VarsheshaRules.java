@@ -19,6 +19,15 @@ import java.util.Objects;
  */
 public record VarsheshaRules(DrishtiRules drishti, MoonMayRule moon, MoonPartner moonPartner, NoneAspects noneAspects, Tied tied) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public VarsheshaRules() {
+        this(null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

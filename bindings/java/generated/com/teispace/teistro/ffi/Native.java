@@ -3946,6 +3946,7 @@ public final class Native {
         "ts_positions",
         "ts_panchanga_days",
         "ts_almanac_disagreements",
+        "ts_almanac_published_reasons",
         "ts_almanac_sankalpa",
         "ts_almanac_ashauch",
         "ts_almanac_first_year",
@@ -3959,7 +3960,8 @@ public final class Native {
         "ts_ephemeris_call",
         "ts_provider_load",
         "ts_context_new_with_provider",
-        "ts_provider_free"
+        "ts_provider_free",
+        "ts_published_verify"
     );
 
     /**
@@ -4336,6 +4338,36 @@ public final class Native {
     public final MethodHandle ts_almanac_disagreements;
 
     /**
+     * Says why each published day of a festival answer differs from the
+     * rule's (`03-design/published-overrides.md` §4) and answers with
+     * `{value, provenance}` as canonical JSON, sealed by this context's
+     * provenance, every catalogue member a full key.
+     *
+     * `value` is `{reasons}`: one per occurrence a `SET` moved, each `{rule,
+     * set, day, computed, reason, tried}`, `day` the published day and
+     * `computed` the rule's here. `tried` lists each change in the order
+     * tried, `{change, day, reproduces}`, `day` the rule's day under the
+     * change (absent when it gives none within seven days), and `reason` is
+     * the first change that reproduces the published day, or `{"by":
+     * "PUBLISHER"}`, the publisher's own choice, when none does. A change is
+     * `{"by": "PLACE", "name"}`, `{"by": "SKY", "profile", "settingsHash"}`
+     * (`other`'s) or `{"by": "RULE", "pack"}` (each shipped pack whose rule
+     * of the key differs).
+     *
+     * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+     * "places"}`: the days as `{"year", "month", "day"}`, `festivals` a
+     * festival request with its `published` sets, and `places` the places
+     * the publisher may have reckoned at, each `{"name", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`. `other` is the
+     * publisher's sky, another context; `context` itself, or null, tries
+     * none. A key it does
+     * not read, a place or offset out of range or a festival request its
+     * reader refuses is `INVALID_ARG`, named under `publishedReasons`.
+     */
+    public final MethodHandle ts_almanac_published_reasons;
+
+    /**
      * The time a sankalpa recites at an instant and a place
      * (`03-design/sankalpa.md`), answered with `{value, provenance}` as
      * canonical JSON, every catalogue member a full key.
@@ -4608,6 +4640,23 @@ public final class Native {
     public final MethodHandle ts_provider_free;
 
     /**
+     * Verifies a signed pack and answers with its published set as canonical
+     * JSON. `pack` is the set's exact bytes, `signature` the publisher's
+     * detached Ed25519 signature over them (64 bytes) and `key` the
+     * publisher's public key (32 bytes), which the caller fixes at its own
+     * build: the library embeds none. A set whose `version` is under
+     * `at_least`, the newest the caller has applied, is refused, so a replayed
+     * pack cannot roll a correction back; 0 takes any.
+     *
+     * A key that is no curve point is `INVALID_ARG` on `key`; a signature
+     * that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+     * bytes that are not a set, `INVALID_ARG` on the field that is wrong; an
+     * older version, `INVALID_ARG` on `version`. A build without
+     * `signed-packs` answers `CAPABILITY`.
+     */
+    public final MethodHandle ts_published_verify;
+
+    /**
      * Every entry point, bound in a library.
      *
      * @param symbols the library's symbols
@@ -4663,6 +4712,7 @@ public final class Native {
         ts_positions = linker.downcallHandle(symbols.find("ts_positions").orElseThrow(() -> missing("ts_positions")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_panchanga_days = linker.downcallHandle(symbols.find("ts_panchanga_days").orElseThrow(() -> missing("ts_panchanga_days")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_disagreements = linker.downcallHandle(symbols.find("ts_almanac_disagreements").orElseThrow(() -> missing("ts_almanac_disagreements")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_published_reasons = linker.downcallHandle(symbols.find("ts_almanac_published_reasons").orElseThrow(() -> missing("ts_almanac_published_reasons")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_sankalpa = linker.downcallHandle(symbols.find("ts_almanac_sankalpa").orElseThrow(() -> missing("ts_almanac_sankalpa")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_ashauch = linker.downcallHandle(symbols.find("ts_almanac_ashauch").orElseThrow(() -> missing("ts_almanac_ashauch")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_first_year = linker.downcallHandle(symbols.find("ts_almanac_first_year").orElseThrow(() -> missing("ts_almanac_first_year")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
@@ -4677,6 +4727,7 @@ public final class Native {
         ts_provider_load = linker.downcallHandle(symbols.find("ts_provider_load").orElseThrow(() -> missing("ts_provider_load")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_context_new_with_provider = linker.downcallHandle(symbols.find("ts_context_new_with_provider").orElseThrow(() -> missing("ts_context_new_with_provider")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_provider_free = linker.downcallHandle(symbols.find("ts_provider_free").orElseThrow(() -> missing("ts_provider_free")), FunctionDescriptor.ofVoid(ADDRESS));
+        ts_published_verify = linker.downcallHandle(symbols.find("ts_published_verify").orElseThrow(() -> missing("ts_published_verify")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, JAVA_INT, ADDRESS));
     }
 
     private static IllegalStateException missing(String symbol) {

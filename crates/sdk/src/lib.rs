@@ -73,6 +73,10 @@ pub use area::{
 };
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, Plans};
+pub use area::{
+    ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
+    ReckonedPlace,
+};
 #[cfg(feature = "western")]
 mod antiscia;
 mod ashauch_request;

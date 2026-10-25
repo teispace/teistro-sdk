@@ -17,6 +17,15 @@ import java.util.Objects;
  */
 public record PoruthamRules(DeerghaBeyond deerghaBeyond, LordsFriendship lordsFriendship, TwoSignStar twoSignStar) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public PoruthamRules() {
+        this(null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

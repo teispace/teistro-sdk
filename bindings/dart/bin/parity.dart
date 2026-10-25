@@ -566,6 +566,35 @@ void putFestivals(String prefix, FestivalAnswer answer) {
           '${kept.on.calendar.fullKey} ${kept.on.month}-${kept.on.day}',
     );
   }
+  // What published sets did, printed only where they did it, so an answer
+  // asked without sets prints as it did.
+  for (final (k, observance) in answer.observances.indexed) {
+    final p = observance.published;
+    if (p == null) continue;
+    final computed = switch (p.computed) {
+      null => '-',
+      final day => '${day.month}-${day.day}',
+    };
+    put(
+      '$prefix-published-$k',
+      '${observance.rule} ${p.status} ${p.set} ${p.version} $computed',
+    );
+  }
+  for (final (k, added) in answer.added.indexed) {
+    put(
+      '$prefix-added-$k',
+      '${added.key} ${added.day.month}-${added.day.day} ${added.published.set}',
+    );
+  }
+  for (final (k, u) in answer.unplaced.indexed) {
+    put(
+      '$prefix-unplaced-$k',
+      '${u.set} ${u.entry} ${u.rule} ${u.day.month}-${u.day.day}',
+    );
+  }
+  for (final (k, a) in answer.applied.indexed) {
+    put('$prefix-applied-$k', '${a.id} ${a.version} ${a.hash}');
+  }
 }
 
 /// A muhurta answer's counts, hash and every window, as every runner
@@ -2831,12 +2860,55 @@ void main() {
     'after': 'LAKSHMI_PUJA',
     'days': 2,
   };
-  for (final (name, rules) in <(String, Object)>[
-    ('shipped', FestivalPack.dharmasindhu),
-    ('amended', [FestivalPack.dharmasindhu, ownRule]),
-    ('nepal', [FestivalPack.nepal, ownFollowing]),
-    ('dated', [FestivalPack.nepal, ...ownDated]),
-  ]) {
+  // One published set with each action, as every runner asks it: a SET
+  // moving Lakshmi puja, a WITHDRAW, an ADD and a SET no occurrence takes.
+  Map<String, Object?> day2024(int month, int day) => {
+    'calendar': 'GREGORIAN',
+    'year': 2024,
+    'month': month,
+    'day': day,
+  };
+  final publishedSet = <String, Object?>{
+    'format': 'teistro.published/1',
+    'publisher': 'a patro printed in Nepal',
+    'id': 'np-2081',
+    'version': 3,
+    'entries': [
+      {
+        'action': 'SET',
+        'rule': 'LAKSHMI_PUJA',
+        'day': day2024(11, 2),
+        'source': 'p. 1',
+      },
+      {
+        'action': 'WITHDRAW',
+        'rule': 'VIJAYA_DASHAMI',
+        'day': day2024(10, 12),
+        'source': 'p. 2',
+      },
+      {
+        'action': 'ADD',
+        'key': 'MINE',
+        'day': day2024(10, 20),
+        'names': {'en-Latn': 'Mine'},
+        'source': 'p. 3',
+      },
+      {
+        'action': 'SET',
+        'rule': 'HOLIKA',
+        'day': day2024(10, 25),
+        'source': 'p. 4',
+      },
+    ],
+  };
+  for (final (name, rules, published)
+      in <(String, Object, List<Map<String, Object?>>)>[
+        ('shipped', FestivalPack.dharmasindhu, const []),
+        ('amended', [FestivalPack.dharmasindhu, ownRule], const []),
+        ('nepal', [FestivalPack.nepal, ownFollowing], const []),
+        ('dated', [FestivalPack.nepal, ...ownDated], const []),
+        ('published', FestivalPack.dharmasindhu, [publishedSet]),
+      ]) {
     // The shipped pack is asked of the lean call, the others of the
     // almanac's: the two answer alike, so the report cannot tell.
     final festivals =
@@ -2846,7 +2918,7 @@ void main() {
               to: Calendar.gregorian.date(2024, 11, 3),
               place: place,
               utcOffsetSeconds: 20700,
-              festivals: FestivalRequest(rules: rules),
+              festivals: FestivalRequest(rules: rules, published: published),
             )
             : geo.almanac
                 .of(
@@ -2854,7 +2926,10 @@ void main() {
                   to: Calendar.gregorian.date(2024, 11, 3),
                   place: place,
                   utcOffsetSeconds: 20700,
-                  festivals: FestivalRequest(rules: rules),
+                  festivals: FestivalRequest(
+                    rules: rules,
+                    published: published,
+                  ),
                 )
                 .festivals!;
     putFestivals('festivals-$name', festivals);

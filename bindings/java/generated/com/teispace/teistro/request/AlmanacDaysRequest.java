@@ -38,6 +38,19 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param first A civil day as a request names it.
+     * @param latitudeDeg The {@code latitudeDeg} field.
+     * @param longitudeDeg The {@code longitudeDeg} field.
+     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+     */
+    public AlmanacDaysRequest(DayAsked first, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
+        this(null, null, null, null, first, null, null, latitudeDeg, longitudeDeg, null, null, utcOffsetSeconds, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

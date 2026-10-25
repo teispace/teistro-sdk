@@ -36,6 +36,17 @@ public record ConditionCharaKarakaInHouse(List<Integer> houses, Karaka karaka, I
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param houses Where.
+     * @param karaka Which karaka.
+     */
+    public ConditionCharaKarakaInHouse(List<Integer> houses, Karaka karaka) {
+        this(houses, karaka, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

@@ -20,6 +20,7 @@ import type {
   Body,
   Burning,
   Calendar,
+  Era,
   Leap,
   ChartKind,
   ChartLayout,
@@ -6556,6 +6557,121 @@ export interface FestivalRequest {
   readonly rules:
     | FestivalPack
     | readonly (FestivalPack | FestivalRule | EkadashiRule | FollowingRule | DatedRule | Anniversary)[];
+  /**
+   * Published sets laid over the rules' answer in order, a later set's
+   * entry replacing an earlier one's for the same occurrence
+   * (`03-design/published-overrides.md`).
+   */
+  readonly published?: readonly PublishedSet[];
+}
+
+/**
+ * Days an authority decides, as data: a national panchanga's choice, a
+ * gazette holiday, a correction after printing.
+ *
+ * @example
+ * const set: PublishedSet = {
+ *   format: 'teistro.published/1', publisher: 'a patro printed in Nepal', id: 'np-2082', version: 1,
+ *   entries: [{ action: 'SET', rule: 'MAHA_NAVAMI', day: { calendar: 'GREGORIAN', year: 2025, month: 10, day: 2 }, source: 'p. 41' }],
+ * };
+ */
+export interface PublishedSet {
+  /** The format this SDK reads. */
+  readonly format: 'teistro.published/1';
+  /** Who publishes it. */
+  readonly publisher: string;
+  /** Its id, which a stored answer names. */
+  readonly id: string;
+  /** Its version. */
+  readonly version: number;
+  /** Its days. */
+  readonly entries: readonly PublishedEntry[];
+}
+
+/**
+ * A published day in any calendar the SDK ships, converted to the range's.
+ * The year is astronomical; the era is for presentation.
+ */
+export interface PublishedDay {
+  readonly calendar: Calendar;
+  readonly year: number;
+  readonly month: number;
+  readonly day: number;
+  readonly era?: { readonly era: Era; readonly year: number };
+  readonly leap?: Leap;
+}
+
+/** One entry of a published set. */
+export type PublishedEntry =
+  /** A rule's occurrence nearest `day`, within seven days, moved to it; `month` and `adhika` tell apart two that near. */
+  | {
+      readonly action: 'SET';
+      readonly rule: string;
+      readonly day: PublishedDay;
+      readonly month?: Masa;
+      readonly adhika?: boolean;
+      /** A published time (a parana, a sait); a moved fast keeps no computed parana. */
+      readonly window?: Interval;
+      readonly source: string;
+    }
+  /** A day no rule computes, under a key no rule of the request uses. */
+  | {
+      readonly action: 'ADD';
+      readonly key: string;
+      readonly day: PublishedDay;
+      /** Its name by locale; a missing one falls back as every name does. */
+      readonly names?: Readonly<Record<string, string>>;
+      readonly window?: Interval;
+      readonly source: string;
+    }
+  /** A rule's occurrence the publisher does not keep: marked, never dropped. */
+  | {
+      readonly action: 'WITHDRAW';
+      readonly rule: string;
+      readonly day: PublishedDay;
+      readonly month?: Masa;
+      readonly adhika?: boolean;
+      readonly source: string;
+    };
+
+/** One change a published day was tried under, or the reason it differs. */
+export type PublishedCause =
+  | { readonly by: 'PLACE'; readonly name: string }
+  | { readonly by: 'SKY'; readonly profile: string; readonly settingsHash: string }
+  | { readonly by: 'RULE'; readonly pack: string }
+  /** No change tried gives the day: the publisher's own choice. */
+  | { readonly by: 'PUBLISHER' };
+
+/** Why each published day an answer moved differs from the rule's. */
+export interface PublishedReasons {
+  readonly reasons: readonly {
+    readonly rule: string;
+    /** The set that published it. */
+    readonly set: string;
+    /** The published day. */
+    readonly day: CalendarDate;
+    /** The rule's own day here. */
+    readonly computed: CalendarDate;
+    readonly reason: PublishedCause;
+    /** Every change tried, in order: the rule's day under it, absent when it gives none within seven days. */
+    readonly tried: readonly { readonly change: PublishedCause; readonly day?: CalendarDate; readonly reproduces: boolean }[];
+  }[];
+  readonly provenance: Provenance;
+}
+
+/** What a published entry did to a day; absent on a day no entry touched, which is the rule's. */
+export interface Published {
+  readonly status: 'PUBLISHED' | 'WITHDRAWN';
+  readonly publisher: string;
+  /** The set's id. */
+  readonly set: string;
+  readonly version: number;
+  /** Where the publisher says it. */
+  readonly source: string;
+  /** The rule's own day, when the publisher's differs. */
+  readonly computed?: CalendarDate;
+  /** A published time. */
+  readonly window?: Interval;
 }
 
 /**
@@ -6724,6 +6840,8 @@ export interface DatedObservance {
   readonly day: CalendarDate;
   /** The same day in the rule's own calendar. */
   readonly on: CalendarDate;
+  /** What a published entry did to the day. */
+  readonly published?: Published;
 }
 
 /** A fifth of the daylight (*Dharmasindhu*, p. 6). */
@@ -6995,6 +7113,8 @@ export interface EkadashiFast {
   readonly parana?: Parana;
   /** The mahadvadashi that set `day`, when the rule keeps them and one held. */
   readonly mahadvadashi?: Mahadvadashi;
+  /** What a published entry did to the fast; a moved fast has no `parana` unless the entry gave a window. */
+  readonly published?: Published;
 }
 
 /** A day's window for the rite, and the fraction of it the tithi held. */
@@ -7035,6 +7155,8 @@ export interface FestivalObservance {
   readonly marginSeconds: number;
   /** When the fast kept on the day is broken, under each of the rule's readings in order (`03-design/festival-rules.md` §8.7); absent when the rule has none. */
   readonly parana?: readonly VrataParanaTime[];
+  /** What a published entry did to the day; a moved day has no `parana` unless the entry gave a window. */
+  readonly published?: Published;
 }
 
 /**
@@ -7266,6 +7388,17 @@ export interface FestivalAnswer {
   readonly dated: readonly DatedObservance[];
   /** Each anniversary's days, in the order of the tithis; empty when none was asked. */
   readonly anniversaries: readonly AnniversaryDay[];
+  /** The days published sets added; empty when none. */
+  readonly added: readonly {
+    readonly key: string;
+    readonly day: CalendarDate;
+    readonly names: Readonly<Record<string, string>>;
+    readonly published: Published;
+  }[];
+  /** The published entries in range no occurrence took. */
+  readonly unplaced: readonly { readonly set: string; readonly entry: number; readonly rule: string; readonly day: CalendarDate }[];
+  /** The published sets laid over the answer, in order, each with the SHA-256 of its canonical JSON. */
+  readonly applied: readonly { readonly id: string; readonly version: number; readonly publisher: string; readonly hash: string }[];
   /** What computed it: the widened days among the applied conventions as `festival.days`, and the hash of this value. */
   readonly provenance: Provenance;
 }
@@ -8365,6 +8498,23 @@ export declare class AlmanacArea {
     },
   ): FestivalAnswer;
   /**
+   * A published set read from a signed pack
+   * (`03-design/published-overrides.md` §5), ready for a festival
+   * request's `published`: `pack` the set's exact bytes, `signature` the
+   * publisher's detached Ed25519 signature over them (64 bytes), `key` the
+   * publisher's public key (32 bytes), which the app fixes at its own
+   * build. A version under `atLeast` is refused, so a replayed pack cannot
+   * roll a correction back.
+   *
+   * @throws {TeistroError} `INVALID_ARG` naming `key`, `signature`, `version` or the set's own field
+   */
+  publishedFromSigned(
+    pack: Uint8Array | ArrayBuffer | readonly number[],
+    signature: Uint8Array | ArrayBuffer | readonly number[],
+    key: Uint8Array | ArrayBuffer | readonly number[],
+    atLeast?: number,
+  ): PublishedSet;
+  /**
    * A native's bird read over every day of a range under Pancha Pakshi
    * (`03-design/pakshi.md`). A day the Sun does not both rise and set has
    * a `null` reading. The answer is the envelope: the days, and the
@@ -8444,6 +8594,26 @@ export declare class AlmanacArea {
    * });
    */
   disagreements(other: Context, request: DisagreementRequest): Disagreements;
+  /**
+   * **Why each published day differs from the rule's**
+   * (`03-design/published-overrides.md` §4): the request asked again under
+   * each of `places`, then `sky`, then each shipped pack's rule of the
+   * same key; the first change that gives the published day is the
+   * reason, else `PUBLISHER`.
+   */
+  publishedReasons(request: {
+    readonly from: CalendarDate;
+    readonly to?: CalendarDate;
+    readonly place: AlmanacRequest['place'];
+    readonly utcOffsetSeconds: number;
+    readonly festivals: FestivalRequest;
+    readonly places?: readonly {
+      readonly name: string;
+      readonly place: AlmanacRequest['place'];
+      readonly utcOffsetSeconds: number;
+    }[];
+    readonly sky?: Context;
+  }): PublishedReasons;
 
   /**
    * A range's observances and Ekadashi fasts as an iCalendar feed (RFC

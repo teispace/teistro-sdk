@@ -41,6 +41,21 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param festivals The festivals, as a festival request.
+     * @param first A civil day as a request names it.
+     * @param latitudeDeg The {@code latitudeDeg} field.
+     * @param longitudeDeg The {@code longitudeDeg} field.
+     * @param stampUnixSeconds The {@code stampUnixSeconds} field.
+     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+     */
+    public FestivalCalendarRequest(FestivalRequest festivals, DayAsked first, double latitudeDeg, double longitudeDeg, long stampUnixSeconds, int utcOffsetSeconds) {
+        this(null, null, festivals, first, null, latitudeDeg, longitudeDeg, null, null, null, stampUnixSeconds, utcOffsetSeconds);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

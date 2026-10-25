@@ -20,6 +20,19 @@ import java.util.Objects;
  */
 public record BirthAsked(Double altitudeM, double instant, double latitudeDeg, double longitudeDeg, Double uncertaintyMinutes, int utcOffsetSeconds) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param instant The {@code instant} field.
+     * @param latitudeDeg The {@code latitudeDeg} field.
+     * @param longitudeDeg The {@code longitudeDeg} field.
+     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+     */
+    public BirthAsked(double instant, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
+        this(null, instant, latitudeDeg, longitudeDeg, null, utcOffsetSeconds);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

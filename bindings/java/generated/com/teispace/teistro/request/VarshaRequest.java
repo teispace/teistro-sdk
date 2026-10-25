@@ -38,6 +38,16 @@ public record VarshaRequest(AnnualDashaRules dashaRules, VarshaRequestDashas das
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param through The last year of life wanted, 1 to 200.
+     */
+    public VarshaRequest(int through) {
+        this(null, null, null, null, null, null, null, null, null, null, through, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

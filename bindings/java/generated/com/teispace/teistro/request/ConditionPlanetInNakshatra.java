@@ -34,6 +34,17 @@ public record ConditionPlanetInNakshatra(List<com.teispace.teistro.Nakshatra> na
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param nakshatras Which.
+     * @param planet Who.
+     */
+    public ConditionPlanetInNakshatra(List<com.teispace.teistro.Nakshatra> nakshatras, Object planet) {
+        this(nakshatras, null, planet);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

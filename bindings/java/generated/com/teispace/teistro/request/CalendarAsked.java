@@ -29,6 +29,17 @@ public record CalendarAsked(com.teispace.teistro.Calendar calendar, DayAsked dat
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param date A civil day as a request names it.
+     * @param into The {@code into} field.
+     */
+    public CalendarAsked(DayAsked date, com.teispace.teistro.Calendar into) {
+        this(null, date, into);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

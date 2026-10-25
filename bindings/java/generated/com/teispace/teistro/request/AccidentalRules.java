@@ -34,6 +34,15 @@ public record AccidentalRules(Double beamsDeg, Double cazimiDeg, Double combusti
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public AccidentalRules() {
+        this(null, null, null, null, null, null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

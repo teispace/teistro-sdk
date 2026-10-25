@@ -15,6 +15,15 @@ import java.util.Objects;
  */
 public record ChakrayusRules(ChakraPortion portion) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public ChakrayusRules() {
+        this(null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

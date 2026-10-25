@@ -37,6 +37,17 @@ public record ConditionCountOf(int atLeast, Integer atMost, List<String> planets
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param atLeast How many there must be at least.
+     * @param then What each counted must meet.
+     */
+    public ConditionCountOf(int atLeast, Condition then) {
+        this(atLeast, null, null, then);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

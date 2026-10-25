@@ -31,6 +31,16 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, Long
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param rules The {@code rules} field.
+     */
+    public MuhurtaRequest(Object rules) {
+        this(null, null, null, null, null, rules);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

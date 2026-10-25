@@ -18,6 +18,15 @@ public record ConditionBirthDuringEclipse(EclipseKind kind) implements RequestJs
     public static final String TYPE = "birth-during-eclipse";
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public ConditionBirthDuringEclipse() {
+        this(null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

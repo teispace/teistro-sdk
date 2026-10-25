@@ -34,6 +34,17 @@ public record ConditionNoPlanetInHousesFrom(List<String> except, List<Integer> h
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param houses Where.
+     * @param reference From whom.
+     */
+    public ConditionNoPlanetInHousesFrom(List<Integer> houses, Object reference) {
+        this(null, houses, reference);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

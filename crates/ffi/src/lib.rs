@@ -66,6 +66,7 @@ pub mod pakshi;
 pub mod panchanga;
 pub mod positions;
 pub mod provider;
+pub mod published;
 pub mod rashifal;
 pub mod research;
 pub mod schemas;

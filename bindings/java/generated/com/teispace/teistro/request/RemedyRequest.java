@@ -16,6 +16,15 @@ import java.util.Objects;
  */
 public record RemedyRequest(Double at, RemedyRules rules) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public RemedyRequest() {
+        this(null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

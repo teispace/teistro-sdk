@@ -20,6 +20,19 @@ import java.util.Objects;
  */
 public record SankalpaRequest(Double altitudeM, double at, AyanaReckoning ayana, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param at The instant of the rite, a UTC Julian day.
+     * @param latitudeDeg The place's latitude, degrees north positive.
+     * @param longitudeDeg The place's longitude, degrees east positive.
+     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+     */
+    public SankalpaRequest(double at, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
+        this(null, at, null, latitudeDeg, longitudeDeg, utcOffsetSeconds);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

@@ -36,6 +36,7 @@ mod ekadashi;
 mod following;
 mod mahalaya;
 mod nepal_panchanga;
+mod published;
 mod vrata;
 
 pub use anniversary::{
@@ -50,6 +51,10 @@ pub use ekadashi::{
     ekadashis,
 };
 pub use following::{FollowingRule, following};
+pub use published::{
+    AddedDay, AppliedSet, NEAREST_DAYS, PUBLISHED_FORMAT, Published, PublishedDay, PublishedEntry,
+    PublishedSet, PublishedStatus, Unplaced, apply as apply_published,
+};
 use vrata::RiteAt;
 pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
 
@@ -2351,6 +2356,10 @@ pub struct Observance {
     /// order (§8.7); left out when the rule has none.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub parana: Vec<VrataParanaTime>,
+    /// What a published entry did to it; absent when none touched it,
+    /// so the day is the rule's (`03-design/published-overrides.md`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub published: Option<published::Published>,
 }
 
 /// An occurrence a rule could not judge, and why.
@@ -2540,6 +2549,17 @@ pub struct Observances {
     /// none was asked.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub anniversaries: Vec<AnniversaryDay>,
+    /// The days published sets added; left out when none.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub added: Vec<published::AddedDay>,
+    /// The published entries in range no occurrence took; left out when
+    /// none.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub unplaced: Vec<published::Unplaced>,
+    /// The published sets laid over the answer, in order; left out when
+    /// none, so an answer asked without them is the one it was.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub applied: Vec<published::AppliedSet>,
 }
 
 impl Observances {
@@ -2554,7 +2574,7 @@ impl Observances {
     ///
     /// assert_eq!(Observances::MEMBERS[0], ("observances", "month", Kind::Masa));
     /// ```
-    pub const MEMBERS: [(&'static str, &'static str, Kind); 33] = [
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 43] = [
         ("observances", "month", Kind::Masa),
         ("observances", "day.calendar", Kind::Calendar),
         ("observances", "day.era.era", Kind::Era),
@@ -2592,6 +2612,16 @@ impl Observances {
             Kind::Calendar,
         ),
         ("anniversaries", "observance.extents.day.era.era", Kind::Era),
+        ("observances", "published.computed.calendar", Kind::Calendar),
+        ("observances", "published.computed.era.era", Kind::Era),
+        ("ekadashis", "published.computed.calendar", Kind::Calendar),
+        ("ekadashis", "published.computed.era.era", Kind::Era),
+        ("dated", "published.computed.calendar", Kind::Calendar),
+        ("dated", "published.computed.era.era", Kind::Era),
+        ("added", "day.calendar", Kind::Calendar),
+        ("added", "day.era.era", Kind::Era),
+        ("unplaced", "day.calendar", Kind::Calendar),
+        ("unplaced", "day.era.era", Kind::Era),
     ];
 
     /// Both answers as one, the occurrences no day was given to in the
@@ -2679,6 +2709,9 @@ impl Observances {
         self.unjudged.extend(other.unjudged);
         self.dated.extend(other.dated);
         self.anniversaries.extend(other.anniversaries);
+        self.added.extend(other.added);
+        self.unplaced.extend(other.unplaced);
+        self.applied.extend(other.applied);
         self.anniversaries.sort_by(|a, b| {
             a.observance
                 .tithi
@@ -3241,6 +3274,7 @@ fn judge(
         choice,
         margin_seconds,
         parana,
+        published: None,
     })))
 }
 

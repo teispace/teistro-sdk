@@ -16,6 +16,15 @@ import java.util.Objects;
  */
 public record DignityRules(Terms terms, com.teispace.teistro.Triplicities triplicities) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public DignityRules() {
+        this(null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

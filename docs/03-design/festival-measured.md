@@ -836,3 +836,42 @@ Where the pack over the committee's sky parts from the print, and why:
 - VS 2083 GAURA_SAPTAMI (18 Sep): the committee prints Shravana's dark 7th, inside the solar Bhadra, where Bhadrapada's bright 7th falls in the solar Ashwin (C608)
 - VS 2083 HILE_JATRA (20 Sep): the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)
 - VS 2083 NUWAKOT_DUPCHESHWAR_MELA (23 Dec): the committee prints the mela on the full moon, a day after Dattatreya's 14th (C611)
+
+## 7. The print as a published set
+
+The same printed rows written as one published set
+(`published-overrides.md` §6) over the `NEPAL_PANCHANGA` pack on the
+modern sky, as an app showing the print over its own reckoning would:
+each row a `SET` on its printed day, each Vikram year asked as one
+range. The pass holds every printed day to the answer's. Each day the
+set moved is then explained (`published_reasons`) with the committee's
+sky tried, then each shipped pack's rule of the same key; a day neither
+gives is the publisher's own.
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| the set laid over the modern sky gives every printed day it places | **holds** | 0 of 578 disagree |
+| every entry is placed on its rule's occurrence | falsified | 11 of 589 disagree |
+| the committee's sky gives every day the set moved | falsified | 1 of 49 disagree; the others' reasons are below |
+
+Of the 49 days the set moved, the committee's sky gives 48, and no change tried 1.
+
+The publisher's own days, which no change tried gives:
+
+- NUWAKOT_DUPCHESHWAR_MELA: printed 24 Dec, the modern sky 23 Dec
+
+The entries no occurrence took, the rule giving no day within a week
+of the print under the modern sky (a weekday the sky does not meet, or
+a month the committee reckons otherwise, §6):
+
+- VS 2082 HILE_JATRA, printed 17 Aug
+- VS 2082 RAVI_SAPTAMI, printed 14 Sep
+- VS 2082 BUDHASHTAMI, printed 29 Oct
+- VS 2083 GAURA_SAPTAMI, printed 3 Sep
+- VS 2083 AMUKTABHARANA_SAPTAMI, printed 3 Sep
+- VS 2083 DURVA_ASHTAMI, printed 4 Sep
+- VS 2083 HILE_JATRA, printed 5 Sep
+- VS 2083 MANGALA_CHATURTHI, printed 21 Apr
+- VS 2083 MANGALA_CHATURTHI, printed 5 May
+- VS 2083 BUDHASHTAMI, printed 22 Jul
+- VS 2083 MANGALA_CHATURTHI, printed 26 Jan

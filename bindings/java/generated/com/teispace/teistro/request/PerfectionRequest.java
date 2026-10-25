@@ -31,6 +31,15 @@ public record PerfectionRequest(Integer house, com.teispace.teistro.Graha queren
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public PerfectionRequest() {
+        this(null, null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

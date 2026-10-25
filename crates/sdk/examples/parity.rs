@@ -6418,6 +6418,11 @@ const OWN_FOLLOWING: &str =
 /// Two dated rules of a consumer's own the runners hand in beside the
 /// Nepal pack: the first of Kartik, a Bikram Sambat date, and October's
 /// last Sunday, a weekday counted back from a Gregorian month's end.
+/// One published set with each action, as every runner asks it: a `SET`
+/// moving Lakshmi puja, a `WITHDRAW`, an `ADD` and a `SET` no occurrence
+/// takes.
+const PUBLISHED_SET: &str = r#"{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2081","version":3,"entries":[{"action":"SET","rule":"LAKSHMI_PUJA","day":{"calendar":"GREGORIAN","year":2024,"month":11,"day":2},"source":"p. 1"},{"action":"WITHDRAW","rule":"VIJAYA_DASHAMI","day":{"calendar":"GREGORIAN","year":2024,"month":10,"day":12},"source":"p. 2"},{"action":"ADD","key":"MINE","day":{"calendar":"GREGORIAN","year":2024,"month":10,"day":20},"names":{"en-Latn":"Mine"},"source":"p. 3"},{"action":"SET","rule":"HOLIKA","day":{"calendar":"GREGORIAN","year":2024,"month":10,"day":25},"source":"p. 4"}]}"#;
+
 const OWN_DATED: &str = r#"{"key":"KARTIK_FIRST","source":"the first of Kartik","civilDate":{"calendar":"calendar.BIKRAM_SAMBAT","month":7,"day":1}},{"key":"LAST_SUNDAY","source":"October's last Sunday","civilWeekday":{"calendar":"calendar.GREGORIAN","month":10,"weekday":"vara.RAVIVARA","nth":-1}}"#;
 
 /// An Ekadashi fast's parana as one parity column, "-" for none.
@@ -6456,6 +6461,62 @@ fn parana(parana: Option<&teistro::festival::Parana>) -> String {
 /// fast's vedha and excess cross every layer, and the amended pack proves
 /// a rule is replaced by its key; the Nepal pack's counted day proves a
 /// following rule's `after` and `days` cross too.
+/// What published sets did to a festival answer, printed only where they
+/// did it, so an answer asked without sets prints as it did.
+fn put_published(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    answer: &teistro::festival::Observances,
+) {
+    for (k, observance) in answer.observances.iter().enumerate() {
+        let Some(p) = &observance.published else {
+            continue;
+        };
+        let computed = p.computed.as_ref().map_or_else(
+            || "-".to_owned(),
+            |day| format!("{}-{}", day.month, day.day),
+        );
+        put(
+            report,
+            &key(&format!("-published-{k}")),
+            format!(
+                "{} {} {} {} {computed}",
+                observance.rule,
+                tag(&p.status),
+                p.set,
+                p.version
+            ),
+        );
+    }
+    for (k, added) in answer.added.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-added-{k}")),
+            format!(
+                "{} {}-{} {}",
+                added.key, added.day.month, added.day.day, added.published.set
+            ),
+        );
+    }
+    for (k, unplaced) in answer.unplaced.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-unplaced-{k}")),
+            format!(
+                "{} {} {} {}-{}",
+                unplaced.set, unplaced.entry, unplaced.rule, unplaced.day.month, unplaced.day.day
+            ),
+        );
+    }
+    for (k, applied) in answer.applied.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-applied-{k}")),
+            format!("{} {} {}", applied.id, applied.version, applied.hash),
+        );
+    }
+}
+
 fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
     let from = CalendarDate::defined(Calendar::Gregorian, 2024, 10, 10);
     let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3);
@@ -6464,6 +6525,10 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
         ("amended", format!(r#"["DHARMASINDHU",{OWN_RULE}]"#)),
         ("nepal", format!(r#"["NEPAL",{OWN_FOLLOWING}]"#)),
         ("dated", format!(r#"["NEPAL",{OWN_DATED}]"#)),
+        (
+            "published",
+            format!(r#""DHARMASINDHU","published":[{PUBLISHED_SET}]"#),
+        ),
     ] {
         let asked = teistro::FestivalRequest::from_json(&format!(r#"{{"rules":{rules}}}"#))
             .expect("a festival request");
@@ -6547,6 +6612,7 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
                 ),
             );
         }
+        put_published(report, &key, &answer);
     }
 }
 

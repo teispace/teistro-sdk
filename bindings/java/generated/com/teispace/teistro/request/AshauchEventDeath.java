@@ -21,6 +21,16 @@ public record AshauchEventDeath(Boolean ahitagni, double at, Double crematedAt, 
     public static final String EVENT = "DEATH";
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param at When.
+     */
+    public AshauchEventDeath(double at) {
+        this(null, at, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

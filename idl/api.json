@@ -29,7 +29,8 @@
     "crates/ffi/src/rashifal.rs",
     "crates/ffi/src/research.rs",
     "crates/ffi/src/ephemeris.rs",
-    "crates/ffi/src/provider.rs"
+    "crates/ffi/src/provider.rs",
+    "crates/ffi/src/published.rs"
   ],
   "constants": [
     {
@@ -15983,6 +15984,70 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_published_reasons",
+      "doc": "Says why each published day of a festival answer differs from the\nrule's (`03-design/published-overrides.md` §4) and answers with\n`{value, provenance}` as canonical JSON, sealed by this context's\nprovenance, every catalogue member a full key.\n\n`value` is `{reasons}`: one per occurrence a `SET` moved, each `{rule,\nset, day, computed, reason, tried}`, `day` the published day and\n`computed` the rule's here. `tried` lists each change in the order\ntried, `{change, day, reproduces}`, `day` the rule's day under the\nchange (absent when it gives none within seven days), and `reason` is\nthe first change that reproduces the published day, or `{\"by\":\n\"PUBLISHER\"}`, the publisher's own choice, when none does. A change is\n`{\"by\": \"PLACE\", \"name\"}`, `{\"by\": \"SKY\", \"profile\", \"settingsHash\"}`\n(`other`'s) or `{\"by\": \"RULE\", \"pack\"}` (each shipped pack whose rule\nof the key differs).\n\n`request_json` is `{\"calendar\", \"first\", \"last\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\", \"festivals\",\n\"places\"}`: the days as `{\"year\", \"month\", \"day\"}`, `festivals` a\nfestival request with its `published` sets, and `places` the places\nthe publisher may have reckoned at, each `{\"name\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\"}`. `other` is the\npublisher's sky, another context; `context` itself, or null, tries\nnone. A key it does\nnot read, a place or offset out of range or a festival request its\nreader refuses is `INVALID_ARG`, named under `publishedReasons`.",
+      "safety": "`context` must be a live handle; `other` null or a live handle, which\nmay be `context`; `request_json` NUL-terminated; `out_json` valid for\na write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "other",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_almanac_sankalpa",
       "doc": "The time a sankalpa recites at an instant and a place\n(`03-design/sankalpa.md`), answered with `{value, provenance}` as\ncanonical JSON, every catalogue member a full key.\n\n`value` is `{at, day, year, ayana, ayanaReckoning, ritu,\nrituReckoning, month, paksha, tithi, nakshatra, yoga, karana, sun,\nmoon, jupiter}`: `day` the civil day whose sunrise the instant follows,\nso a rite before dawn is the day before's; `year`, `ayana`, `ritu`\nand `month` as that day's sunrise has them, the lunar year with its\nsamvatsara, Vikrama and Shaka numbers and the month under both\nconventions; the limbs and the Sun's, Moon's and Jupiter's sidereal\nsigns as they stand at the instant.\n\n`request_json` is `{\"at\", \"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"ayana\"}`: `at` a UTC Julian day, `altitudeM` 0\nand `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when\nleft out, or `TROPICAL` (at the solstices). A key it does not read or\nan instant, place or offset out of range is `INVALID_ARG`, named under\n`sankalpa`; a context without an ephemeris is `CAPABILITY`, and an\ninstant in no day's window (a polar day the policy leaves undefined)\n`OUT_OF_RANGE`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
@@ -16705,6 +16770,120 @@
       "meta": {},
       "native_only": true,
       "source": "crates/ffi/src/provider.rs"
+    },
+    {
+      "name": "ts_published_verify",
+      "doc": "Verifies a signed pack and answers with its published set as canonical\nJSON. `pack` is the set's exact bytes, `signature` the publisher's\ndetached Ed25519 signature over them (64 bytes) and `key` the\npublisher's public key (32 bytes), which the caller fixes at its own\nbuild: the library embeds none. A set whose `version` is under\n`at_least`, the newest the caller has applied, is refused, so a replayed\npack cannot roll a correction back; 0 takes any.\n\nA key that is no curve point is `INVALID_ARG` on `key`; a signature\nthat is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;\nbytes that are not a set, `INVALID_ARG` on the field that is wrong; an\nolder version, `INVALID_ARG` on `version`. A build without\n`signed-packs` answers `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `pack`, `signature` and `key` valid\nfor their lengths' reads; `out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "pack",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u8"
+            },
+            "mutable": false
+          },
+          "role": "bytes_in",
+          "meta": {}
+        },
+        {
+          "name": "pack_len",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "length",
+          "meta": {}
+        },
+        {
+          "name": "signature",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u8"
+            },
+            "mutable": false
+          },
+          "role": "bytes_in",
+          "meta": {}
+        },
+        {
+          "name": "signature_len",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "length",
+          "meta": {}
+        },
+        {
+          "name": "key",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u8"
+            },
+            "mutable": false
+          },
+          "role": "bytes_in",
+          "meta": {}
+        },
+        {
+          "name": "key_len",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "length",
+          "meta": {}
+        },
+        {
+          "name": "at_least",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "role": "value",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/published.rs"
     }
   ],
   "blobs": [

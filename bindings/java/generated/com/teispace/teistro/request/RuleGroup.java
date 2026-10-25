@@ -35,6 +35,18 @@ public record RuleGroup(List<Condition> conditions, String label, String referen
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param conditions What must all hold.
+     * @param label What a result says it was found from.
+     * @param reference The point its houses are counted from, which a house-weighted severity reads: a body's key, or the engine's `lagna`, `moon` or `venus`.
+     */
+    public RuleGroup(List<Condition> conditions, String label, String reference) {
+        this(conditions, label, reference, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *

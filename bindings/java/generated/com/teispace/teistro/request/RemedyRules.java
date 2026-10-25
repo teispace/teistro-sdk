@@ -17,6 +17,15 @@ import java.util.Objects;
  */
 public record RemedyRules(DevataRules devata, FunctionalRules functional, ShantiRules shanti) implements RequestJson {
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public RemedyRules() {
+        this(null, null, null);
+    }
+
+    /**
      * A builder, every field unset: an unset optional field is left out, and the
      * SDK's default stands.
      *
