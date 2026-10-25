@@ -293,6 +293,11 @@ enum Cause {
     /// day. *Dharmasindhu* states no such rule. The pass founds the
     /// fortnight and checks that it is so.
     PakshaVardhini,
+    /// The day is decided within a minute of an edge it reads (the fast's
+    /// `margin_seconds`), finer than the minute the reference prints its
+    /// tithis to: a few seconds of ephemeris or sunrise move it. The pass
+    /// checks the margin.
+    WithinTheMinute,
 }
 
 impl Cause {
@@ -300,6 +305,9 @@ impl Cause {
         match self {
             Cause::PakshaVardhini => {
                 "the ISKCON list's Paksha Vardhini Mahadvadashi: the fortnight's new or full moon holds two sunrises, which the pass finds so, and the fast moves to the 12th's day, a rule *Dharmasindhu* does not state"
+            }
+            Cause::WithinTheMinute => {
+                "the day is decided within a minute of an edge it reads, which the pass finds so, finer than the minute the list prints its tithis to"
             }
         }
     }
@@ -336,7 +344,7 @@ impl Excuse {
 /// Why a rule parts from the record. The pass fails on a parting with no
 /// entry, on an entry whose parting is gone, and on a cause that does not
 /// hold.
-const PARTS: [Excuse; 3] = [
+const PARTS: [Excuse; 4] = [
     Excuse {
         year: 2023,
         rule: "EKADASHI_VAISHNAVA",
@@ -357,6 +365,14 @@ const PARTS: [Excuse; 3] = [
         published: (12, 16),
         found: (12, 15),
         cause: Cause::PakshaVardhini,
+    },
+    // 11 seconds at the upper limb's sunrise, 243 at the centre's.
+    Excuse {
+        year: 2026,
+        rule: "EKADASHI_GAUDIYA",
+        published: (6, 25),
+        found: (6, 26),
+        cause: Cause::WithinTheMinute,
     },
 ];
 
@@ -462,7 +478,16 @@ pub(super) fn compare(
                     "{year} {rule} {want:?} → {got:?} is excused in ekadashi::PARTS and no longer parts: remove the entry"
                 ));
             }
-            if let Err(why) = holds(context, cause, year, got) {
+            let margin = years
+                .get(&year)
+                .into_iter()
+                .flat_map(|y| &y.ekadashis)
+                .find(|fast| {
+                    fast.rule == rule
+                        && (fast.day.year, fast.day.month, fast.day.day) == (year, got.0, got.1)
+                })
+                .map(|fast| fast.margin_seconds);
+            if let Err(why) = holds(context, cause, year, got, margin) {
                 problems.push(format!("{year} {rule} {got:?}: {why}"));
             }
         }
@@ -477,8 +502,23 @@ pub(super) fn compare(
 }
 
 /// Whether a cause holds for the fast found on `day`.
-fn holds(context: &Context, cause: Cause, year: i32, day: MonthDay) -> Result<(), String> {
+fn holds(
+    context: &Context,
+    cause: Cause,
+    year: i32,
+    day: MonthDay,
+    margin: Option<f64>,
+) -> Result<(), String> {
     match cause {
+        Cause::WithinTheMinute => match margin {
+            Some(seconds) if seconds < 60.0 => Ok(()),
+            Some(seconds) => Err(format!(
+                "is excused as decided within the minute, but its margin is {seconds:.0} seconds"
+            )),
+            None => Err(String::from(
+                "is excused as decided within the minute, but no fast was found on it",
+            )),
+        },
         Cause::PakshaVardhini => {
             // The fortnight's last tithi falls within five days of its 11th.
             let at = |ahead: i32| {

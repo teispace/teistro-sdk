@@ -24,11 +24,11 @@ use teistro_core::interval::Interval;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
-use teistro_core::settings::Balance;
 use teistro_core::settings::{
     AyurdayaReadings, AyurdayaSpan, CharaKarakas, DecennialDivision, GrahaDivision,
     NaisargikaDivision, ReleasingSharedSign, StrongestGraha,
 };
+use teistro_core::settings::{Balance, BhavaBalaDivision};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
     JaiminiReading, brahma, graha_arudhas, karaka_bhavas, karakamsha, pada_lord, pada_lords,
@@ -3139,6 +3139,10 @@ impl<'a> ChartArea<'a> {
         settings: &teistro_core::settings::Settings,
         shadbala: &ShadbalaReading,
     ) -> Result<BhavaBalaReading, Error> {
+        let bhavas = match settings.strength.bhava_division {
+            BhavaBalaDivision::Placement => &foundation.houses,
+            _ => &foundation.chalit,
+        };
         let mut grahas = [BhavaGraha {
             longitude: 0.0,
             house: 1,
@@ -3149,12 +3153,12 @@ impl<'a> ChartArea<'a> {
             })?;
             *slot = BhavaGraha {
                 longitude: at.longitude_deg,
-                house: at.house.bhava,
+                house: bhavas.place(at.longitude_deg).bhava,
             };
         }
         let day = &foundation.day.day;
         let chart = BhavaBalaChart {
-            madhya: foundation.houses.madhya,
+            madhya: bhavas.madhya,
             grahas,
             shadbala: BhavaBalaChart::strengths(shadbala),
             instant: foundation.instant.get(),

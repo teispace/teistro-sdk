@@ -167,8 +167,10 @@ fn each_barred_share_is_where_a_modern_ephemeris_puts_the_moon() {
     }
 }
 
-/// Over 36 years each place keeps 91 fasts a share meets, 6 of them with
-/// the bar set aside; every kept window lies outside a bar not set aside,
+/// Over 36 years Delhi keeps 91 fasts a share meets and Kathmandu 90, 6
+/// of them with the bar set aside at each (Kathmandu's 2031-11-25
+/// Vaishnava parana met its bar at the centre's sunrise and misses it at
+/// the upper limb's, a few minutes earlier); every kept window lies outside a bar not set aside,
 /// and a bar is set aside only when it outlasts the tithi the meal is
 /// kept in. One parana keeps no window: on 2032-09-16 the hari vasara
 /// outlasts the morning, Shravana's middle third holds the afternoon, and
@@ -176,7 +178,7 @@ fn each_barred_share_is_where_a_modern_ephemeris_puts_the_moon() {
 /// leave nothing.
 #[test]
 fn a_bar_keeps_the_meal_outside_its_share_unless_it_outlasts_the_tithi() {
-    for place in [delhi(), kathmandu()] {
+    for (place, met) in [(delhi(), 91), (kathmandu(), 90)] {
         let fasts = fasts(place, &NakshatraBar::dharmasindhu());
         let barred: Vec<_> = fasts
             .iter()
@@ -186,7 +188,7 @@ fn a_bar_keeps_the_meal_outside_its_share_unless_it_outlasts_the_tithi() {
             })
             .collect();
         let aside = barred.iter().filter(|(_, barred)| barred.set_aside).count();
-        assert_eq!((barred.len(), aside), (91, 6));
+        assert_eq!((barred.len(), aside), (met, 6));
         let none: Vec<_> = barred
             .iter()
             .filter(|(parana, _)| parana.kept.is_none())

@@ -10,15 +10,15 @@ use crate::catalogue::{
 
 use super::knobs::{
     AfterCycle, AmritKalam, AntardashaPlace, AshtakavargaGoodFrom, AshtottariGrouping,
-    AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaDig, BhavaDrishti,
-    BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta, DayBoundary,
-    DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap,
-    DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
+    AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
+    BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
+    DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
+    DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
     GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NaisargikaDivision, NakshatraScheme,
-    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
-    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    LunarMonth, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
+    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
+    NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
     RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
     RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
     ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
@@ -240,7 +240,12 @@ pub fn root() -> Settings {
             polar_policy: PolarPolicy::Error,
         },
         day: Day {
-            sunrise: Sunrise::CentreNoRefraction.into(),
+            // The observable rise: the upper limb on the horizon with
+            // standard refraction, which Drik Panchang and Swiss
+            // Ephemeris default to and astronomical almanacs print, and
+            // which the eclipse horizon already reads
+            // (`03-design/sunrise-convention.md`).
+            sunrise: Sunrise::UpperLimbRefraction.into(),
             day_boundary: DayBoundary::Sunrise,
             polar_day_policy: PolarDayPolicy::Undefined,
             ghati_reckoning: GhatiReckoning::Civil,
@@ -342,7 +347,8 @@ pub fn root() -> Settings {
     }
 }
 
-/// The strength measures' defaults: BPHS wherever a rank-1 text decides.
+/// The strength measures' defaults: BPHS wherever a rank-1 text decides,
+/// and Sripati's Shadbala and Bhava bala as Raman works them.
 fn strength() -> Strength {
     Strength {
         bala_scheme: BalaScheme::Parashara,
@@ -354,29 +360,35 @@ fn strength() -> Strength {
         // alone reads the 2nd (C144).
         moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
         vimshopaka: Vimshopaka::Bphs,
-        // BPHS ch. 27 wherever it decides (`03-design/shadbala-measured.md`).
+        // Sripati's Shadbala and Bhava bala, as B.V. Raman works them in
+        // *Graha and Bhava Balas*: the one reading with a worked example,
+        // which the SDK reproduces to 0.2 virupas, and the one printed
+        // tables and software give. BPHS ch. 27 as the Sanskrit reads it
+        // stands a median 40 virupas from it and is `ShadbalaRules::BPHS`
+        // (`03-design/shadbala-measured.md`, cruxes C64 to C75).
         saptavargaja: Saptavargaja::Compound,
         nathonnatha: Nathonnatha::Midnight,
         pre_dawn_night: PreDawnNight::PreviousEvening,
         sun_ayana: SunAyana::Doubled,
-        luminary_cheshta: LuminaryCheshta::AyanaAndPaksha,
-        kranti: Kranti::True,
+        moon_paksha: MoonPaksha::Doubled,
+        luminary_cheshta: LuminaryCheshta::None,
+        kranti: Kranti::HinduTable,
         kaala_lords: KaalaLords::Ahargana,
         dig: DigKendras::Angles,
-        drik: Drik::QuarterWithJupiterMercury,
+        drik: Drik::Quarter,
         naisargika: Naisargika::Exact,
-        required_rupas: RequiredRupas::Bphs,
-        drekkana: Drekkana::MaleFemaleNeuter,
+        required_rupas: RequiredRupas::Sripati,
+        drekkana: Drekkana::MaleNeuterFemale,
         benefics: Benefics::Conditional,
         // The only mean elements a source gives (crux C70).
         cheshta: Cheshta::Sripati,
         yuddha: Yuddha::Sripati,
-        // BPHS ch. 28 vv. 2 to 6.
-        ishta_kashta: IshtaKashta::Rays,
-        // BPHS ch. 27 vv. 26 to 31 as translated (`03-design/bhava-bala-measured.md`).
-        bhava_dig: BhavaDig::Bphs,
-        bhava_drishti: BhavaDrishti::QuarterOfDig,
-        bhava_special_rules: BhavaSpecialRules::Bphs,
+        ishta_kashta: IshtaKashta::SquareRoots,
+        // The bhavas are the chalit's, from the angles (Raman, Art. 29).
+        bhava_division: BhavaBalaDivision::Chalit,
+        bhava_dig: BhavaDig::Sripati,
+        bhava_drishti: BhavaDrishti::Sphuta,
+        bhava_special_rules: BhavaSpecialRules::None,
     }
 }
 
@@ -385,6 +397,9 @@ fn nepali_default() -> Profile {
     patch.frame.centre = Some(Centre::Topocentric);
     patch.houses.chalit_system = Some(HouseSystem::Vehlow);
     patch.day.polar_day_policy = Some(PolarDayPolicy::NearestEvent);
+    // Nepal's daily print: the disc's centre with standard refraction,
+    // a median 0.4 minutes off over 333 days (C39).
+    patch.day.sunrise = Some(Sunrise::CentreRefraction.into());
     patch.calendars.civil_calendar = Some(Calendar::BikramSambat);
     patch.calendars.lunar_month = Some(LunarMonth::Purnimanta);
     patch.panchanga.solar_month_start = Some(SolarMonthStart::BikramSambat);
@@ -399,7 +414,7 @@ fn nepali_default() -> Profile {
         // 2: the lunar month leads purnimanta, as Nepal names it.
         // 3: the season follows the civil calendar's solar months.
         // 4: an eclipse's vedha is the committee's fixed hours.
-        version: 4,
+        version: 5,
         base: None,
         patch,
         sources: vec![
@@ -488,7 +503,7 @@ fn nepali_committee() -> Profile {
     let committee = |what: &'static str| Source::new("Nepal Panchanga Nirnayak Vikas Samiti", what);
     Profile {
         id: ProfileId::new("nepali-committee"),
-        version: 4,
+        version: 5,
         base: Some(ProfileId::new("nepali-default")),
         patch,
         sources: vec![
@@ -548,7 +563,7 @@ fn parashari_classical() -> Profile {
         // centre became geocentric, the civil calendar Gregorian, the
         // eras the three pan-Indic ones and a polar day undefined
         // (ADR-0024).
-        version: 2,
+        version: 3,
         base: None,
         patch,
         sources: vec![
@@ -594,10 +609,13 @@ fn surya_siddhanta() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.siddhanta = Some(Siddhanta::surya(SuryaBija::None));
     patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
+    // The text's sunrise: the centre on the geometric horizon (III.34 to
+    // 35), whatever the root's modern one is.
+    patch.day.sunrise = Some(Sunrise::CentreNoRefraction.into());
     let burgess = |what: &'static str| Source::new("Surya Siddhanta", what);
     Profile {
         id: ProfileId::new("surya-siddhanta"),
-        version: 1,
+        version: 2,
         base: Some(ProfileId::new("parashari-classical")),
         patch,
         sources: vec![
@@ -646,7 +664,7 @@ fn kp_default() -> Profile {
     patch.dasha.year_length = Some(year_lengths());
     Profile {
         id: ProfileId::new("kp-default"),
-        version: 1,
+        version: 2,
         base: None,
         patch,
         sources: vec![
@@ -682,7 +700,7 @@ fn western_tropical_default() -> Profile {
     patch.calendars.eras = Some(BTreeSet::new());
     Profile {
         id: ProfileId::new("western-tropical-default"),
-        version: 2,
+        version: 3,
         base: None,
         patch,
         sources: vec![Citation::new(
@@ -729,6 +747,7 @@ fn conformance_baseline() -> Profile {
     patch.strength.nathonnatha = Some(Nathonnatha::Arc);
     patch.strength.pre_dawn_night = Some(PreDawnNight::SameEvening);
     patch.strength.sun_ayana = Some(SunAyana::NotInKaala);
+    patch.strength.moon_paksha = Some(MoonPaksha::Doubled);
     patch.strength.luminary_cheshta = Some(LuminaryCheshta::AyanaAndElongation);
     patch.strength.kranti = Some(Kranti::Ecliptic);
     patch.strength.kaala_lords = Some(KaalaLords::Sankranti);
@@ -742,6 +761,7 @@ fn conformance_baseline() -> Profile {
     patch.strength.yuddha = Some(Yuddha::None);
     patch.strength.ishta_kashta = Some(IshtaKashta::ShadbalaCheshta);
     // The engine's Bhava bala (cruxes C73 to C75).
+    patch.strength.bhava_division = Some(BhavaBalaDivision::Placement);
     patch.strength.bhava_dig = Some(BhavaDig::WholeSign);
     patch.strength.bhava_drishti = Some(BhavaDrishti::QuarterOfDig);
     patch.strength.bhava_special_rules = Some(BhavaSpecialRules::None);
@@ -762,7 +782,7 @@ fn conformance_baseline() -> Profile {
         // 9: the Ishta and Kashta phalas became the engine's (crux C76).
         // 10: the rashi dashas' dual lord and start became the engine's
         // (cruxes C51, C53).
-        version: 10,
+        version: 11,
         base: None,
         patch,
         sources: vec![

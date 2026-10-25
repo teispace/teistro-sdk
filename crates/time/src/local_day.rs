@@ -508,7 +508,7 @@ pub fn local_day_lit(
             (
                 arc.sunrise,
                 arc.sunset,
-                next,
+                not_before(next, arc.sunset, policy),
                 DayState::Polar { kind, policy },
             )
         }
@@ -518,16 +518,28 @@ pub fn local_day_lit(
             // The last day of a polar season under `CIVIL_MIDNIGHT` runs to
             // the first real sunrise, not to midnight: the real day begins
             // at that sunrise, so ending at midnight left the small hours
-            // between in no day at all. The first day of a season needs no
-            // such care, since its predecessor's next sunrise is this day's
-            // synthesised midnight.
+            // between in no day at all. That sunrise can come before the
+            // midnight (a day's sunrise is found by its own rule, not the
+            // clock's date), so the synthesised sunset stops at it.
             let next_sunrise = match (policy, next) {
                 (PolarDayPolicy::CivilMidnight, DayLight::Arc(arc)) => arc.sunrise,
                 _ => bounds.next_sunrise,
             };
+            // The first day of a season begins at its midnight, which is
+            // its predecessor's next sunrise; but not before that day's
+            // real sunset, which can fall after the midnight.
+            let sunrise = match policy {
+                PolarDayPolicy::CivilMidnight => {
+                    match civil_day_light(model, clock, place, day.plus_days(-1))? {
+                        DayLight::Arc(before) => not_before(bounds.sunrise, before.sunset, policy),
+                        _ => bounds.sunrise,
+                    }
+                }
+                _ => bounds.sunrise,
+            };
             (
-                bounds.sunrise,
-                bounds.sunset,
+                sunrise,
+                not_after(bounds.sunset, next_sunrise, policy),
                 next_sunrise,
                 DayState::Polar { kind, policy },
             )
@@ -544,6 +556,34 @@ pub fn local_day_lit(
         convention: model.convention(),
         model: model.describe(),
     })
+}
+
+/// Under `CIVIL_MIDNIGHT`, a synthesised bound moved past a real event
+/// it would otherwise precede (later of the two).
+fn not_before(
+    synthesised: JulianDay<Utc>,
+    real: JulianDay<Utc>,
+    policy: PolarDayPolicy,
+) -> JulianDay<Utc> {
+    if policy == PolarDayPolicy::CivilMidnight && real.get() > synthesised.get() {
+        real
+    } else {
+        synthesised
+    }
+}
+
+/// Under `CIVIL_MIDNIGHT`, a synthesised bound held back to a real event
+/// it would otherwise follow (earlier of the two).
+fn not_after(
+    synthesised: JulianDay<Utc>,
+    real: JulianDay<Utc>,
+    policy: PolarDayPolicy,
+) -> JulianDay<Utc> {
+    if policy == PolarDayPolicy::CivilMidnight && real.get() < synthesised.get() {
+        real
+    } else {
+        synthesised
+    }
 }
 
 fn polar_kind(light: DayLight) -> PolarKind {
@@ -791,6 +831,85 @@ mod tests {
         fn convention(&self) -> SunriseConvention {
             teistro_core::settings::Sunrise::CentreNoRefraction.into()
         }
+    }
+
+    /// A midnight sun from day 100 to day 199 whose seams cross civil
+    /// midnight, as Tromsø's and Rovaniemi's do: day 99 sets after day
+    /// 100's midnight, and day 200 rises before its own.
+    struct SeamsPastMidnight;
+
+    impl SolarModel for SeamsPastMidnight {
+        fn sidereal_sun_deg(&self, _jd_ut: f64) -> Result<f64, Error> {
+            Ok(0.0)
+        }
+
+        fn day_light(&self, day: FixedDay, _place: &Place) -> Result<DayLight, Error> {
+            let midnight = day.jd_at_midnight()?;
+            let (rise, set) = match day.get() {
+                100..200 => return Ok(DayLight::AlwaysUp),
+                99 => (0.05, 1.02),
+                200 => (-0.01, 0.9),
+                _ => (0.25, 0.75),
+            };
+            Ok(DayLight::Arc(DayArc {
+                sunrise: midnight.plus_days(rise)?,
+                sunset: midnight.plus_days(set)?,
+            }))
+        }
+
+        fn describe(&self) -> String {
+            String::from("seams past midnight")
+        }
+
+        fn convention(&self) -> SunriseConvention {
+            teistro_core::settings::Sunrise::CentreNoRefraction.into()
+        }
+    }
+
+    /// Under `CIVIL_MIDNIGHT` the days run in order and touch at both seams:
+    /// a synthesised midnight gave way to neither the real sunset after it
+    /// nor the real sunrise before it, so a night ended before it began.
+    #[test]
+    fn civil_midnight_days_touch_across_seams_past_midnight() {
+        let place = Place::new(
+            Latitude::literal(69.0),
+            Longitude::literal(0.0),
+            Altitude::literal(0.0),
+        );
+        let day = |n: i64| {
+            let date = Gregorian.date_of(FixedDay::new(n)).unwrap();
+            local_day(
+                &SeamsPastMidnight,
+                &Gregorian,
+                &UtcOffset::UTC,
+                &place,
+                &date,
+                PolarDayPolicy::CivilMidnight,
+            )
+            .unwrap_or_else(|e| panic!("day {n}: {e}"))
+        };
+        for n in 97..203 {
+            let (this, next) = (day(n), day(n + 1));
+            let (rise, set, ends) = (
+                this.sunrise.get(),
+                this.sunset.get(),
+                this.next_sunrise.get(),
+            );
+            assert!(rise <= set && set <= ends, "day {n}: {rise} {set} {ends}");
+            assert_eq!(ends, next.sunrise.get(), "day {n} and the next touch");
+        }
+        // The real events stand; the synthesised midnights give way.
+        assert!(
+            (day(99).sunset.get() - (FixedDay::new(99).jd_at_midnight().unwrap().get() + 1.02))
+                .abs()
+                < 1e-9
+        );
+        assert!(
+            (day(199).next_sunrise.get()
+                - (FixedDay::new(200).jd_at_midnight().unwrap().get() - 0.01))
+                .abs()
+                < 1e-9
+        );
     }
 
     #[test]

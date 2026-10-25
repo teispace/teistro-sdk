@@ -632,7 +632,11 @@ knob!(
         Compound = "COMPOUND", /// The conformance corpus's recording engine: exaltation 45,
         /// moolatrikona or the own sign 30, then 15, 7.5 or 3.75 by natural
         /// friendship alone, debilitation nothing.
-        Natural = "NATURAL" }
+        Natural = "NATURAL", /// BPHS ch. 27 vv. 2 to 4 as the Sanskrit reads: the moolatrikona
+        /// 45 in each of the seven ("evam", v. 4), the own sign 30, then 20,
+        /// 15, 10, 4 or 2 by the compound relationship (bhutabdhayah, khagni,
+        /// nakhah, tithyah, dasha, yugah, karah).
+        Text = "TEXT" }
 );
 knob!(
     /// How the Shadbala's Nathonnatha measures the hour (crux C65).
@@ -655,9 +659,28 @@ knob!(
 knob!(
     /// Whether the Sun's Ayana bala is counted, doubled, in the Shadbala's
     /// Kaala (crux C66).
-    SunAyana { /// BPHS ch. 27 v. 17 and Sripati: doubled in Kaala.
+    SunAyana { /// Sripati, as B.V. Raman works it, and BPHS ch. 27 v. 17 as
+        /// translated: doubled in Kaala.
         Doubled = "DOUBLED", /// The recording engine: not in Kaala at all.
-        NotInKaala = "NOT_IN_KAALA" }
+        NotInKaala = "NOT_IN_KAALA", /// BPHS ch. 27 v. 17 as the Sanskrit reads: once, as every graha's;
+        /// v. 18 makes it the Sun's Cheshta besides.
+        Once = "ONCE" }
+);
+knob!(
+    /// Whether the Moon's Paksha bala is doubled in the Shadbala's Kaala
+    /// (crux C66).
+    MoonPaksha { /// Sripati, as B.V. Raman works it: doubled.
+        Doubled = "DOUBLED", /// BPHS ch. 27 vv. 10 and 11 as the Sanskrit reads: once, as every
+        /// graha's; v. 18 makes it the Moon's Cheshta besides.
+        Once = "ONCE" }
+);
+knob!(
+    /// Which division's bhavas the Bhava bala measures, and places the
+    /// grahas in (crux C73).
+    BhavaBalaDivision { /// The chart's chalit, its middles from the angles under Sripati,
+        /// the lagna the first's (B.V. Raman, Art. 29, after Sripati).
+        Chalit = "CHALIT", /// The placement division's, which the recording engine reads.
+        Placement = "PLACEMENT" }
 );
 knob!(
     /// The Cheshta bala of the Sun and the Moon, which never retrogress
@@ -678,7 +701,9 @@ knob!(
         /// an obliquity of 23.4393°.
         Ecliptic = "ECLIPTIC", /// Sripati, as B.V. Raman works it: the Hindu table of 362′, 341′,
         /// 299′, 236′, 150′ and 52′ a 15° step of the sayana bhuja, on 24°.
-        HinduTable = "HINDU_TABLE" }
+        HinduTable = "HINDU_TABLE", /// BPHS ch. 27 vv. 15 and 16 as the Sanskrit reads: khandas of 45,
+        /// 33 and 12 for each sign of the sayana bhuja, out of 90.
+        Khanda = "KHANDA" }
 );
 knob!(
     /// Whose weekdays the Shadbala's Abda and Masa lords are (crux C67).

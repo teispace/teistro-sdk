@@ -34,8 +34,8 @@ use teistro_core::catalogue::{BalaScheme, Graha, Rashi, Varga};
 use teistro_core::error::Error;
 use teistro_core::settings::{
     Benefics, Cheshta, DigKendras, Drekkana, Drik, IshtaKashta, KaalaLords, Kranti,
-    LuminaryCheshta, Naisargika, Nathonnatha, PreDawnNight, RequiredRupas, Saptavargaja, Settings,
-    SunAyana, Yuddha,
+    LuminaryCheshta, MoonPaksha, Naisargika, Nathonnatha, PreDawnNight, RequiredRupas,
+    Saptavargaja, Settings, SunAyana, Yuddha,
 };
 
 use crate::ashtakavarga::GRAHAS;
@@ -173,6 +173,8 @@ pub struct ShadbalaRules {
     pub kranti: Kranti,
     /// Whether the Sun's Ayana is doubled in Kaala.
     pub sun_ayana: SunAyana,
+    /// Whether the Moon's Paksha is doubled in Kaala.
+    pub moon_paksha: MoonPaksha,
     /// Whether grahas at war gain and lose the Yuddha bala.
     pub yuddha: Yuddha,
     /// The Sun's and the Moon's Cheshta.
@@ -190,18 +192,26 @@ pub struct ShadbalaRules {
 }
 
 impl ShadbalaRules {
-    /// BPHS ch. 27's reading as translated, at every fork it decides, and
-    /// Sripati's where it does not (the Cheshta's mean elements, the Yuddha).
+    /// BPHS ch. 27's reading as the Sanskrit reads it, at every fork it
+    /// decides, and Sripati's where it does not (the Cheshta's mean
+    /// elements, the Yuddha): the Saptavargaja's 45 to 2 (vv. 2 to 4), the
+    /// male, neuter and female decanates (v. 6), the fortnight and the
+    /// Ayana once each (vv. 10, 11 and 17), the khandas of the sayana
+    /// bhuja (vv. 15 and 16), the luminaries' Cheshta their Ayana and
+    /// Paksha (v. 18), and the drishtis with Mercury's and Jupiter's added
+    /// (v. 19). The translation reads the Sun's Ayana doubled and the
+    /// decanates male, female and neuter, which the Sanskrit does not.
     pub const BPHS: ShadbalaRules = ShadbalaRules {
-        saptavargaja: Saptavargaja::Compound,
-        drekkana: Drekkana::MaleFemaleNeuter,
+        saptavargaja: Saptavargaja::Text,
+        drekkana: Drekkana::MaleNeuterFemale,
         dig: DigKendras::Angles,
         nathonnatha: Nathonnatha::Midnight,
         pre_dawn_night: PreDawnNight::PreviousEvening,
         benefics: Benefics::Conditional,
         kaala_lords: KaalaLords::Ahargana,
-        kranti: Kranti::True,
-        sun_ayana: SunAyana::Doubled,
+        kranti: Kranti::Khanda,
+        sun_ayana: SunAyana::Once,
+        moon_paksha: MoonPaksha::Once,
         yuddha: Yuddha::Sripati,
         luminary_cheshta: LuminaryCheshta::AyanaAndPaksha,
         cheshta: Cheshta::Sripati,
@@ -222,6 +232,7 @@ impl ShadbalaRules {
         kaala_lords: KaalaLords::Ahargana,
         kranti: Kranti::HinduTable,
         sun_ayana: SunAyana::Doubled,
+        moon_paksha: MoonPaksha::Doubled,
         yuddha: Yuddha::Sripati,
         luminary_cheshta: LuminaryCheshta::None,
         cheshta: Cheshta::Sripati,
@@ -242,6 +253,7 @@ impl ShadbalaRules {
         kaala_lords: KaalaLords::Sankranti,
         kranti: Kranti::Ecliptic,
         sun_ayana: SunAyana::NotInKaala,
+        moon_paksha: MoonPaksha::Doubled,
         yuddha: Yuddha::None,
         luminary_cheshta: LuminaryCheshta::AyanaAndElongation,
         cheshta: Cheshta::RecordingEngine,
@@ -283,6 +295,7 @@ impl ShadbalaRules {
             kaala_lords: settings.strength.kaala_lords,
             kranti: settings.strength.kranti,
             sun_ayana: settings.strength.sun_ayana,
+            moon_paksha: settings.strength.moon_paksha,
             yuddha: settings.strength.yuddha,
             luminary_cheshta: settings.strength.luminary_cheshta,
             cheshta: settings.strength.cheshta,

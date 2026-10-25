@@ -12,6 +12,55 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The defaults follow the sources they name.**
+**Numbers:** every shipped profile's hash moves and its version is bumped
+(nepali-default and nepali-committee 5, parashari-classical 3,
+surya-siddhanta 2, kp-default 2, western-tropical-default 3,
+conformance-baseline 11), because the settings gain `strength.moon_paksha`
+and `strength.bhava_division`. What else moves, by profile:
+- *Sunrise.* The root's modern sunrise is the upper limb with standard
+  refraction (`UPPER_LIMB_REFRACTION`), the observable rise that Drik
+  Panchang, Swiss Ephemeris and the almanacs print, where it was the
+  centre on the geometric horizon: every sunrise is 3 to 4 minutes
+  earlier at low and middle latitudes (0.83° of depression), and every sunset later, so a day part, a
+  tithi at sunrise or a festival day that sat within those minutes of a
+  sunrise can move. nepali-default takes the centre with refraction, the
+  convention Nepal's daily print matches to a median 0.4 minutes (C39):
+  2 to 3 minutes earlier than before (0.57°). nepali-committee,
+  conformance-baseline and the text's sunrise under surya-siddhanta are
+  unchanged; surya-siddhanta now pins the text's convention instead of
+  inheriting it. Measured moves: one of 91 Vaishnava paranas over 36
+  years at Kathmandu (2031-11-25) no longer meets its nakshatra bar, and
+  Delhi's sunrise on 16 June 2025 now falls before Gemini rises, so 15
+  June has 12 lagna cuts, not 13.
+- *Shadbala.* The root is Sripati's reading as B.V. Raman works it (the
+  Hindu kranti table, the Sun's Ayana and the Moon's Paksha doubled with
+  no luminary Cheshta, the plain quarter Drik, Sripati's required rupas,
+  male–neuter–female drekkanas, Ishta and Kashta as square roots), which
+  reproduces Raman's Example 56 to a median 0.0 and a worst 0.2 virupas.
+  The former root counted the Sun's Ayana three times and the Moon's
+  Paksha four. `ShadbalaRules::BPHS` is rebuilt to ch. 27 as the Sanskrit
+  reads it: 45/30/20/15/10/4/2 for the vargas with the moolatrikona in
+  each (`saptavargaja: TEXT`), the luminaries' Ayana and Paksha once
+  (`sun_ayana: ONCE`, the new `moon_paksha: ONCE`) and repeated as their
+  Cheshta, and the khanda kranti 45/33/12 (`kranti: KHANDA`). A request
+  that spells its strength knobs out answers as before.
+- *Bhava bala.* The root reads the bhavas of the chalit, from the
+  angles (Raman, Art. 29; `bhava_division: CHALIT`), with Sripati's Dig
+  and the sphuta Drishti, where it read the placement division's
+  madhyas (whole signs at the root). conformance-baseline keeps the
+  placement division (`PLACEMENT`).
+
+**A polar season's seams keep their days in order.** **Numbers:** none
+outside a polar season's two edge days. Under `CIVIL_MIDNIGHT` a day's
+sunrise is found by its own rule, not the clock's date, so the sunset
+before a midnight sun can fall after the synthesised midnight that
+begins it, and the sunrise after one before the midnight that ends it;
+the day between then ended before it began, and every almanac call over
+it was refused with `INVALID_ARG` (Rovaniemi, 3 June 2027; Tromsø, 29
+July 2027 under the new sunrise). The synthesised bound now gives way to
+the real event, so consecutive days touch across both seams.
+
 **A polar birth keeps its points.**
 **Numbers:** none for any chart that answered before. A birth under the
 midnight sun or the polar night counted from its nearest sunrise is more

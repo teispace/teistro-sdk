@@ -472,8 +472,13 @@ fn the_default_table_cuts_where_swiss_ephemeris_does() {
         .skip(1)
         .map(|span| (span.member, span.whole.from.get()))
         .collect();
-    assert_eq!(starts.len(), SWISS.len());
-    for ((sign, at), (index, swiss)) in starts.into_iter().zip(SWISS) {
+    // The day ends at the next sunrise, which the upper limb puts a few
+    // seconds before the last cut (Gemini's): only the cuts inside it.
+    let end = day.day.next_sunrise.get();
+    let inside: Vec<(usize, f64)> = SWISS.into_iter().filter(|(_, at)| *at < end).collect();
+    assert_eq!(inside.len(), 12);
+    assert_eq!(starts.len(), inside.len());
+    for ((sign, at), (index, swiss)) in starts.into_iter().zip(inside) {
         assert_eq!(sign, Rashi::ALL[index]);
         assert!(
             (at - swiss).abs() * 86_400.0 < 2.0,

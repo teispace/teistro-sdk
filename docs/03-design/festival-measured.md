@@ -74,9 +74,9 @@ one a year did reach.
 | UPAKARMA_MADHYANDINA | LaterOnly 10 | otherwise: 4, guard 1: 6 |
 | UPAKARMA_TAITTIRIYA | LaterOnly 10 | otherwise: 3, guard 1: 7 |
 | UPAKARMA_SAMAVEDI | EarlierOnly 5, LaterOnly 4, UnequalParts 1 | otherwise: 5, guard 0: 5 |
-| SANKASHTA_CHATURTHI | Both 2, EarlierOnly 57, LaterOnly 22, Neither 10 | otherwise: 32, guard 0: 57, guard 1: 2 |
+| SANKASHTA_CHATURTHI | Both 2, EarlierOnly 57, LaterOnly 23, Neither 9 | otherwise: 32, guard 0: 57, guard 1: 2 |
 | KARAKA_CHATURTHI | EarlierOnly 2, LaterOnly 7, Neither 1 | otherwise: 8, guard 0: 2 |
-| MAHA_NAVAMI | EarlierOnly 5, LaterOnly 5 | otherwise: 6, guard 0: 4 |
+| MAHA_NAVAMI | EarlierOnly 5, LaterOnly 4, UnequalParts 1 | otherwise: 6, guard 0: 4 |
 | DEVI_VISARJAN | LaterOnly 5, UnequalParts 5 | otherwise: 9, guard 0: 1 |
 
 The guards no year reached, and why:
@@ -105,13 +105,14 @@ mahadvadashis, which the Vaishnava's partings are.
 | EKADASHI_SMARTA falls on the Smarta list's day | **holds** | 0 of 99 disagree |
 | EKADASHI_SMARTA_RENUNCIANT falls on the Gauna list's day | **holds** | 0 of 99 disagree |
 | EKADASHI_VAISHNAVA falls on the ISKCON list's day | falsified | 3 of 99 disagree; each parting is named below with its cause |
-| EKADASHI_GAUDIYA falls on the ISKCON list's day | **holds** | 0 of 99 disagree |
+| EKADASHI_GAUDIYA falls on the ISKCON list's day | falsified | 1 of 99 disagree; each parting is named below with its cause |
 
 Where a rule parts from the record, and why:
 
 - 2023 EKADASHI_VAISHNAVA: published 11 Sep, found 10 Sep: the ISKCON list's Paksha Vardhini Mahadvadashi: the fortnight's new or full moon holds two sunrises, which the pass finds so, and the fast moves to the 12th's day, a rule *Dharmasindhu* does not state
 - 2024 EKADASHI_VAISHNAVA: published 30 Aug, found 29 Aug: the ISKCON list's Paksha Vardhini Mahadvadashi: the fortnight's new or full moon holds two sunrises, which the pass finds so, and the fast moves to the 12th's day, a rule *Dharmasindhu* does not state
 - 2025 EKADASHI_VAISHNAVA: published 16 Dec, found 15 Dec: the ISKCON list's Paksha Vardhini Mahadvadashi: the fortnight's new or full moon holds two sunrises, which the pass finds so, and the fast moves to the 12th's day, a rule *Dharmasindhu* does not state
+- 2026 EKADASHI_GAUDIYA: published 25 Jun, found 26 Jun: the day is decided within a minute of an edge it reads, which the pass finds so, finer than the minute the list prints its tithis to
 
 ## 4. Against Nepal's national panchanga
 

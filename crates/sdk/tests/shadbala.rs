@@ -70,7 +70,7 @@ fn a_reading_carries_the_shadbala_the_corpus_recorded() {
 #[test]
 fn the_text_s_reading_counts_the_chapter_s_strengths() {
     let (_, document) = reading(
-        r#"{"strength": {"saptavargaja": "COMPOUND", "drekkana": "MALE_FEMALE_NEUTER", "nathonnatha": "MIDNIGHT", "pre_dawn_night": "PREVIOUS_EVENING", "benefics": "CONDITIONAL", "sun_ayana": "DOUBLED", "luminary_cheshta": "AYANA_AND_PAKSHA", "kranti": "TRUE", "kaala_lords": "AHARGANA", "dig": "ANGLES", "yuddha": "SRIPATI", "cheshta": "SRIPATI", "drik": "QUARTER_WITH_JUPITER_MERCURY", "naisargika": "EXACT", "required_rupas": "BPHS", "ishta_kashta": "RAYS"}}"#,
+        r#"{"strength": {"saptavargaja": "TEXT", "drekkana": "MALE_NEUTER_FEMALE", "nathonnatha": "MIDNIGHT", "pre_dawn_night": "PREVIOUS_EVENING", "benefics": "CONDITIONAL", "sun_ayana": "ONCE", "moon_paksha": "ONCE", "luminary_cheshta": "AYANA_AND_PAKSHA", "kranti": "KHANDA", "kaala_lords": "AHARGANA", "dig": "ANGLES", "yuddha": "SRIPATI", "cheshta": "SRIPATI", "drik": "QUARTER_WITH_JUPITER_MERCURY", "naisargika": "EXACT", "required_rupas": "BPHS", "ishta_kashta": "RAYS"}}"#,
         teistro::ChartRequest::with_shadbala,
     );
     let shadbala = document.shadbala.expect("the section asked for");
@@ -78,7 +78,7 @@ fn the_text_s_reading_counts_the_chapter_s_strengths() {
     let natural: f64 = shadbala.grahas.iter().map(|g| g.naisargika).sum();
     assert!((natural - 4.0 * VIRUPAS_PER_RUPA).abs() < 1e-9);
     let (sun, moon) = (shadbala.grahas[0], shadbala.grahas[1]);
-    assert!((sun.kaala.ayana - 2.0 * sun.cheshta).abs() < 1e-12);
+    assert!((sun.kaala.ayana - sun.cheshta).abs() < 1e-12);
     assert!((moon.cheshta - moon.kaala.paksha).abs() < 1e-12);
     // One of the lords of the year, the month, the day and the hour each.
     let lords = |f: fn(&teistro::strength::GrahaShadbala) -> f64, value: f64| {
