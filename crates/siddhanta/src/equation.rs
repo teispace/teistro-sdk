@@ -351,6 +351,17 @@ mod tests {
     const SUN: Epicycle = Epicycle::new(14 * 60, 13 * 60 + 40);
 
     #[test]
+    fn a_hypotenuse_that_vanishes_leaves_no_equation_and_the_equated_motion() {
+        // An epicycle as large as the orbit, at opposition: the kotiphala
+        // takes the whole radius away and the planet sits on the observer.
+        let whole = Epicycle::new(360 * 60, 360 * 60);
+        let at_observer = sighra_equation(Trig::Exact, whole, 180.0);
+        assert!(at_observer.karna.abs() < 1e-9, "{}", at_observer.karna);
+        assert!(at_observer.equation_deg.abs() < 1e-9);
+        assert!((sighra_motion_deg_per_day(0.5, 1.0, 0.0) - 0.5).abs() < f64::EPSILON);
+    }
+
+    #[test]
     fn the_sighra_motion_follows_burgess_worked_mars() {
         // Burgess under II.50 to 51, midnight of 1 January 1860 at
         // Washington: Mars's motion equated for the apsis 27′45″, the

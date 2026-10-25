@@ -1440,4 +1440,22 @@ mod tests {
             prop_assert!(sun.speed_deg_per_day > 0.94 && sun.speed_deg_per_day < 1.03);
         }
     }
+
+    #[test]
+    fn a_bija_is_described_as_adjusted_and_a_sun_at_the_pole_has_no_day_radius() {
+        let committee = SuryaSiddhanta::new(
+            Parameters::TEXT.with_bija(&crate::params::Bija::NEPAL_COMMITTEE),
+            Trig::Exact,
+        );
+        assert_eq!(
+            committee.describe(),
+            "Surya Siddhanta (adjusted parameters, exact trigonometry)"
+        );
+        // A declination of a right angle leaves the day circle no radius.
+        let text = SuryaSiddhanta::text();
+        assert_eq!(
+            text.ascensional_difference_deg(Latitude::literal(27.7), 90.0),
+            None
+        );
+    }
 }
