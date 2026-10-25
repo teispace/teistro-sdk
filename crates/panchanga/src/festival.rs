@@ -37,6 +37,7 @@ mod following;
 mod mahalaya;
 mod nepal_panchanga;
 mod published;
+mod sait;
 mod vrata;
 
 pub use anniversary::{
@@ -54,6 +55,10 @@ pub use following::{FollowingRule, following};
 pub use published::{
     AddedDay, AppliedSet, NEAREST_DAYS, PUBLISHED_FORMAT, Published, PublishedDay, PublishedEntry,
     PublishedSet, PublishedStatus, Unplaced, apply as apply_published,
+};
+pub use sait::{
+    Navamsas, RisingOf, Sait, SaitAvoid, SaitCandidate, SaitChoice, SaitRising, SaitRule,
+    SaitWindow, SaitWindowRule,
 };
 use vrata::RiteAt;
 pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
@@ -2360,6 +2365,10 @@ pub struct Observance {
     /// so the day is the rule's (`03-design/published-overrides.md`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub published: Option<published::Published>,
+    /// When the rite is done on the day, for a rule the request carries a
+    /// sait for (`03-design/festival-sait.md`); absent otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sait: Option<Sait>,
 }
 
 /// An occurrence a rule could not judge, and why.
@@ -2574,7 +2583,7 @@ impl Observances {
     ///
     /// assert_eq!(Observances::MEMBERS[0], ("observances", "month", Kind::Masa));
     /// ```
-    pub const MEMBERS: [(&'static str, &'static str, Kind); 43] = [
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 45] = [
         ("observances", "month", Kind::Masa),
         ("observances", "day.calendar", Kind::Calendar),
         ("observances", "day.era.era", Kind::Era),
@@ -2612,6 +2621,8 @@ impl Observances {
             Kind::Calendar,
         ),
         ("anniversaries", "observance.extents.day.era.era", Kind::Era),
+        ("observances", "sait.candidates.lagna", Kind::Rashi),
+        ("observances", "sait.candidates.navamsa", Kind::Rashi),
         ("observances", "published.computed.calendar", Kind::Calendar),
         ("observances", "published.computed.era.era", Kind::Era),
         ("ekadashis", "published.computed.calendar", Kind::Calendar),
@@ -3275,6 +3286,7 @@ fn judge(
         margin_seconds,
         parana,
         published: None,
+        sait: None,
     })))
 }
 

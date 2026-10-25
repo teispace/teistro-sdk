@@ -2517,3 +2517,20 @@ function theMuhurta(almanac: Almanac): string {
 }
 
 void theMuhurta;
+
+// A sait rule is a festival request's item, its members full keys
+// (`03-design/festival-sait.md`).
+import type { SaitRule } from '../lib/index.js';
+const abhijit: SaitRule = {
+  rule: 'NAVARATRA_ARAMBHA',
+  source: 'mine',
+  windows: [{ within: { window: 'DAY_MUHURTA', from: 8, to: 8 }, avoid: [{ avoid: 'KAALA', kaala: 'kaala.RAHU_KAALA' }] }],
+  rising: { of: 'NAVAMSA', modalities: ['modality.DWISWABHAVA'], freeOf: ['graha.SUN'] },
+  choose: 'EARLIEST',
+};
+const withSait: FestivalRequest = { rules: ['NEPAL', abhijit] };
+// @ts-expect-error a window is one the rule language names
+const notAWindow: SaitRule = { rule: 'X', source: '', windows: [{ within: { window: 'NOON' } }] };
+void withSait;
+void notAWindow;
+

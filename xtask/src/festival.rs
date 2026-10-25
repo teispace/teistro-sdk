@@ -38,6 +38,7 @@ mod ekadashi;
 mod nepal;
 mod panchanga;
 mod purnima;
+mod sait;
 
 const PAGE: &str = "docs/03-design/festival-measured.md";
 
@@ -419,6 +420,7 @@ fn page() -> Result<String, String> {
     let full_moons = purnima::compare(&mut problems)?;
     let fitted = panchanga::compare(&mut problems)?;
     let laid = panchanga::laid(&mut problems)?;
+    let saits = sait::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -428,6 +430,7 @@ fn page() -> Result<String, String> {
     purnima::render(&mut out, &full_moons);
     panchanga::render(&mut out, &fitted);
     panchanga::render_laid(&mut out, &laid);
+    sait::render(&mut out, &saits);
     Ok(out)
 }
 

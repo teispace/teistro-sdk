@@ -29,11 +29,13 @@ import java.util.List;
  *     empty when the rule has none
  * @param published what a published entry did to the day; null when none
  *     touched it, so the day is the rule's
+ * @param sait the rite's time on the day, elected by the rule's sait
+ *     ({@code 03-design/festival-sait.md}); null for a rule with none
  */
 public record FestivalObservance(
         String rule, CalendarDate day, Interval tithi, Masa month, boolean adhika, String caseHeld,
         List<FestivalExtent> extents, FestivalDecided decidedBy, String choice,
-        double marginSeconds, List<VrataParanaTime> parana, Published published) {
+        double marginSeconds, List<VrataParanaTime> parana, Published published, FestivalSait sait) {
     /** Keeps the pair and the readings unmodifiable. */
     public FestivalObservance {
         extents = List.copyOf(extents);
@@ -61,5 +63,30 @@ public record FestivalObservance(
             List<FestivalExtent> extents, FestivalDecided decidedBy, String choice,
             double marginSeconds, List<VrataParanaTime> parana) {
         this(rule, day, tithi, month, adhika, caseHeld, extents, decidedBy, choice, marginSeconds, parana, null);
+    }
+
+    /**
+     * An observance with no sait, as one was written before saits were
+     * elected.
+     *
+     * @param rule as the record's
+     * @param day as the record's
+     * @param tithi as the record's
+     * @param month as the record's
+     * @param adhika as the record's
+     * @param caseHeld as the record's
+     * @param extents as the record's
+     * @param decidedBy as the record's
+     * @param choice as the record's
+     * @param marginSeconds as the record's
+     * @param parana as the record's
+     * @param published as the record's
+     */
+    public FestivalObservance(
+            String rule, CalendarDate day, Interval tithi, Masa month, boolean adhika, String caseHeld,
+            List<FestivalExtent> extents, FestivalDecided decidedBy, String choice,
+            double marginSeconds, List<VrataParanaTime> parana, Published published) {
+        this(rule, day, tithi, month, adhika, caseHeld, extents, decidedBy, choice, marginSeconds, parana,
+                published, null);
     }
 }

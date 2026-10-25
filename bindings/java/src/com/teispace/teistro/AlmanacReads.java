@@ -291,7 +291,25 @@ final class AlmanacReads {
                 Reads.string(o, "choice"),
                 Reads.number(o, "marginSeconds"),
                 o.get("parana") == null ? List.of() : Reads.each(o, "parana", AlmanacReads::vrataParana),
-                published(o));
+                published(o),
+                o.get("sait") == null ? null : sait(Reads.object(o, "sait")));
+    }
+
+    /** A sait as a festival answer writes it. */
+    private static FestivalSait sait(Map<?, ?> s) {
+        return new FestivalSait(
+                Reads.integer(s, "window"),
+                Reads.interval(Reads.field(s, "within")),
+                Reads.each(s, "candidates", raw -> {
+                    Map<?, ?> c = Reads.object(raw);
+                    return new FestivalSait.Candidate(
+                            Reads.interval(Reads.field(c, "span")),
+                            Reads.flag(c, "whole"),
+                            c.get("lagna") == null ? null : member(c, "lagna", "Rashi", Rashi::byKey),
+                            c.get("navamsa") == null ? null : member(c, "navamsa", "Rashi", Rashi::byKey));
+                }),
+                Reads.optionalInteger(s, "chosen"),
+                s.get("at") == null ? null : Reads.number(s, "at"));
     }
 
     /** A vrata's parana under one reading, as a festival answer writes it. */

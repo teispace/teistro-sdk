@@ -14586,6 +14586,7 @@ final class FestivalObservance extends _Value {
     required this.marginSeconds,
     this.parana = const [],
     this.published,
+    this.sait,
   });
 
   /// The rule's key.
@@ -14629,6 +14630,10 @@ final class FestivalObservance extends _Value {
   /// the day is the rule's. A moved day keeps no computed [parana].
   final Published? published;
 
+  /// The rite's time on the day, elected by the rule's sait
+  /// (`03-design/festival-sait.md`); null for a rule with none.
+  final FestivalSait? sait;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -14645,7 +14650,72 @@ final class FestivalObservance extends _Value {
     marginSeconds,
     ...parana,
     published,
+    sait,
   ];
+}
+
+/// A festival day's sait: the window it was found in, every candidate
+/// there, and the one chosen.
+final class FestivalSait extends _Value {
+  const FestivalSait({
+    required this.window,
+    required this.within,
+    required this.candidates,
+    this.chosen,
+    this.at,
+  });
+
+  /// Which of the rule's windows gave it, from 0; the last when none did.
+  final int window;
+
+  /// That window on the day.
+  final Interval within;
+
+  /// Every candidate in it, in order.
+  final List<FestivalSaitCandidate> candidates;
+
+  /// The chosen candidate's index; null when the window holds none.
+  final int? chosen;
+
+  /// The chosen candidate's middle, a UTC Julian day: the instant an
+  /// almanac prints.
+  final double? at;
+
+  @override
+  List<Object?> get _fields => [
+    window,
+    within.from,
+    within.to,
+    ...candidates,
+    chosen,
+    at,
+  ];
+}
+
+/// A stretch a sait may be in.
+final class FestivalSaitCandidate extends _Value {
+  const FestivalSaitCandidate({
+    required this.span,
+    required this.whole,
+    this.lagna,
+    this.navamsa,
+  });
+
+  /// When.
+  final Interval span;
+
+  /// Whether its navamsa lies wholly inside the free window; always for a
+  /// rule reading no rising sign.
+  final bool whole;
+
+  /// The lagna's sign, when the rule reads a rising sign.
+  final Rashi? lagna;
+
+  /// The navamsa's sign, when the rule reads a rising sign.
+  final Rashi? navamsa;
+
+  @override
+  List<Object?> get _fields => [span.from, span.to, whole, lagna, navamsa];
 }
 
 /// What a published entry did to a day (`03-design/published-overrides.md`).
@@ -15802,7 +15872,32 @@ FestivalObservance _festivalObservance(Map<String, Object?> raw) =>
           _vrataParana(time),
       ]),
       published: _published(raw['published']),
+      sait: switch (raw['sait']) {
+        null => null,
+        final sait => _sait(_festivalAt(sait)),
+      },
     );
+
+/// A sait as a festival answer writes it.
+FestivalSait _sait(Map<String, Object?> raw) {
+  Rashi? sign(Object? key) =>
+      key == null ? null : _key(key, Rashi.byKey, Rashi.unknown);
+  return FestivalSait(
+    window: raw['window']! as int,
+    within: _festivalInterval(raw['within']),
+    candidates: List.unmodifiable([
+      for (final candidate in _festivalEach(raw['candidates']))
+        FestivalSaitCandidate(
+          span: _festivalInterval(candidate['span']),
+          whole: candidate['whole']! as bool,
+          lagna: sign(candidate['lagna']),
+          navamsa: sign(candidate['navamsa']),
+        ),
+    ]),
+    chosen: raw['chosen'] as int?,
+    at: (raw['at'] as num?)?.toDouble(),
+  );
+}
 
 /// A rite's window as a rule writes it.
 FestivalWindow _festivalWindow(Map<String, Object?> raw) => FestivalWindow(

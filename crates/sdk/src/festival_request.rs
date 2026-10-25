@@ -10,7 +10,8 @@ use serde::Serialize;
 use serde_json::Value;
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
-    Anniversary, DatedRule, EkadashiRule, FestivalRule, FollowingRule, PublishedEntry, PublishedSet,
+    Anniversary, DatedRule, EkadashiRule, FestivalRule, FollowingRule, PublishedEntry,
+    PublishedSet, SaitRule,
 };
 
 /// A pack of rules the SDK ships, which a request may name rather than
@@ -106,6 +107,23 @@ impl FestivalPack {
         }
     }
 
+    /// The saits it elects on its rules' days
+    /// (`03-design/festival-sait.md`).
+    #[must_use]
+    pub fn saits(self) -> Vec<SaitRule> {
+        match self {
+            FestivalPack::Dharmasindhu | FestivalPack::PitriPaksha | FestivalPack::Gaudiya => {
+                Vec::new()
+            }
+            FestivalPack::Nepal => SaitRule::nepal(),
+            FestivalPack::NepalPanchanga => {
+                let mut saits = SaitRule::nepal();
+                saits.extend(SaitRule::nepal_panchanga());
+                saits
+            }
+        }
+    }
+
     /// Its rules counted from another's day.
     #[must_use]
     pub fn following(self) -> Vec<FollowingRule> {
@@ -170,6 +188,10 @@ pub struct FestivalRequest {
     /// none, as `dated` is (`03-design/published-overrides.md`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     published: Vec<PublishedSet>,
+    /// The saits elected on the observances' days, by their rule's key;
+    /// left out when none, as `dated` is (`03-design/festival-sait.md`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    saits: Vec<SaitRule>,
 }
 
 impl From<FestivalPack> for FestivalRequest {
@@ -237,6 +259,7 @@ impl FestivalRequest {
             dated: Vec::new(),
             anniversaries: Vec::new(),
             published: Vec::new(),
+            saits: Vec::new(),
         }
     }
 
@@ -346,6 +369,35 @@ impl FestivalRequest {
         self
     }
 
+    /// The same request with a sait elected on its rule's days, or put in
+    /// place of the one for that rule.
+    ///
+    /// ```
+    /// use teistro::{FestivalPack, FestivalRequest};
+    /// use teistro::festival::{SaitChoice, SaitRule};
+    ///
+    /// let mut earliest = SaitRule::nepal().remove(0);
+    /// earliest.choose = SaitChoice::Earliest;
+    /// let asked = FestivalRequest::from(FestivalPack::Nepal).with_sait(earliest.clone());
+    /// assert_eq!(asked.saits().iter().filter(|s| s.rule == earliest.rule).count(), 1);
+    /// asked.check()?;
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_sait(mut self, sait: SaitRule) -> FestivalRequest {
+        match self.saits.iter_mut().find(|held| held.rule == sait.rule) {
+            Some(held) => *held = sait,
+            None => self.saits.push(sait),
+        }
+        self
+    }
+
+    /// The saits, in order.
+    #[must_use]
+    pub fn saits(&self) -> &[SaitRule] {
+        &self.saits
+    }
+
     /// The published sets, in the order they are laid over the answer.
     #[must_use]
     pub fn published(&self) -> &[PublishedSet] {
@@ -365,9 +417,13 @@ impl FestivalRequest {
             .following()
             .into_iter()
             .fold(request, FestivalRequest::with_following);
-        pack.dated()
+        let request = pack
+            .dated()
             .into_iter()
-            .fold(request, FestivalRequest::with_dated)
+            .fold(request, FestivalRequest::with_dated);
+        pack.saits()
+            .into_iter()
+            .fold(request, FestivalRequest::with_sait)
     }
 
     /// The same request with each of these Ekadashi rules, as
@@ -460,6 +516,19 @@ impl FestivalRequest {
             }
         }
         self.check_published()?;
+        for (index, sait) in self.saits.iter().enumerate() {
+            let at = format!("saits[{index}]");
+            sait.check().map_err(|why| why.under(&at))?;
+            let observed = self.rules.iter().any(|r| r.key == sait.rule)
+                || self.following.iter().any(|r| r.key == sait.rule);
+            if !observed {
+                return Err(Error::invalid_arg(format!(
+                    "`{}` is no karmakala or following rule of the request; a sait is elected on the day of a rule the request carries",
+                    sait.rule
+                ))
+                .with_field(format!("{at}.rule")));
+            }
+        }
         for (index, rule) in self.following.iter().enumerate() {
             if !self.rules.iter().any(|held| held.key == rule.after) {
                 return Err(Error::invalid_arg(format!(
@@ -517,7 +586,8 @@ impl FestivalRequest {
     /// [`EkadashiRule`] when it has a `vedha`, a [`FollowingRule`] when it
     /// has an `after`, a [`DatedRule`] when it has a `civilDate`, a
     /// `civilWeekday`, a `sunEnters` or an `easter`, an [`Anniversary`] when it has an
-    /// `origin`, else a [`FestivalRule`]. A
+    /// `origin`, a [`SaitRule`] when it has `windows`, else a
+    /// [`FestivalRule`]. A
     /// later rule replaces an earlier one with its key. A
     /// catalogue member anywhere in it may be written bare or in full
     /// (`masa.ASHWINA`), as every binding reads one back.
@@ -543,6 +613,11 @@ impl FestivalRequest {
             match item {
                 Value::String(name) => {
                     request = request.with_pack(pack(name, &field)?);
+                }
+                Value::Object(spelt) if listed && spelt.contains_key("windows") => {
+                    let sait: SaitRule = teistro_core::strict::read_value(item, &field)?;
+                    sait.check().map_err(|why| why.under(&field))?;
+                    request = request.with_sait(sait);
                 }
                 Value::Object(spelt) if listed && spelt.contains_key("vedha") => {
                     let rule: EkadashiRule = teistro_core::strict::read_value(item, &field)?;

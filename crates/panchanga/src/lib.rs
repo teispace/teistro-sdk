@@ -49,6 +49,7 @@ pub mod month;
 pub mod nepal_sambat;
 pub mod omen;
 pub mod period;
+pub mod rising;
 pub mod sankalpa;
 pub mod sky;
 pub mod span;
