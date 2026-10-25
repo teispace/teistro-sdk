@@ -36,7 +36,8 @@ use crate::support::with_context;
 /// use teistro_ffi::published::ts_published_verify;
 /// use teistro_ffi::string::TsString;
 ///
-/// // A key with no curve point is refused, and nothing is read.
+/// // A key with no curve point is refused, and nothing is read; a build
+/// // without `signed-packs` refuses the call itself.
 /// let (pack, signature) = (b"{}", [0_u8; 64]);
 /// let mut key = [0_u8; 32];
 /// key[0] = 2;
@@ -52,7 +53,7 @@ use crate::support::with_context;
 ///         &raw mut out,
 ///     )
 /// };
-/// assert_eq!(status, Status::InvalidArg);
+/// assert!(matches!(status, Status::InvalidArg | Status::Capability));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
