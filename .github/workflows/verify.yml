@@ -508,9 +508,9 @@ jobs:
   # threads share under ThreadSanitizer, the standard library rebuilt
   # instrumented: the ephemeris memo four threads ask at once, and the
   # surface tests, whose workers each build a context over the SDK's
-  # lazily built tables. Last, the Node binding's suite against the addon
-  # built with ASan, clang's runtime loaded ahead of an unchanged Node, so
-  # the generated glue between Node's values and the C ABI is checked too.
+  # lazily built tables. Last, the Node and Python suites against the addon
+  # and the C library built with ASan, clang's runtime loaded ahead of an
+  # unchanged interpreter, so each binding's own crossing is checked too.
   sanitizers:
     name: no memory errors, leaks or data races (ASan, TSan)
     runs-on: ubuntu-latest
@@ -541,10 +541,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: The Node binding's suite with the addon under ASan
+      - name: The Node and Python suites with the SDK under ASan
         env:
           TEISTRO_STRICT: "1"
-        run: cargo xtask check-node-asan
+        run: cargo xtask check-asan
 
   # The C ABI's leak test again, under valgrind's memcheck: the counting
   # allocator proves every byte comes back, and memcheck adds what it
