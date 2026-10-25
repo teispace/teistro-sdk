@@ -97,11 +97,29 @@ final class BytesInUse {
         return Optional.empty();
     }
 
-    /** Collects what is unreachable and lets the cleaner free what it held. */
-    private static void settle() throws InterruptedException {
-        for (int pass = 0; pass < 3; pass += 1) {
+    /** How little the bytes in use may move between two reads to count as settled. */
+    private static final long QUIET = 4 * 1024;
+    /** The most collections one settling waits through. */
+    private static final int SETTLE_PASSES = 100;
+
+    /**
+     * Collects what is unreachable and waits until the cleaner has freed what
+     * it held: until two reads a collection apart agree to {@link #QUIET}.
+     *
+     * <p><b>Not a fixed wait.</b> The cleaner is a thread of its own, and three
+     * collections 20 ms apart were too short on a loaded macOS runner: one
+     * run read 35 MB still held, the next 90 KB, the next 2.1 MB, with the
+     * library giving back every byte.
+     */
+    private static void settle(LongSupplier inUse) throws InterruptedException {
+        long last = inUse.getAsLong();
+        int quiet = 0;
+        for (int pass = 0; pass < SETTLE_PASSES && quiet < 2; pass += 1) {
             System.gc();
             Thread.sleep(20);
+            long now = inUse.getAsLong();
+            quiet = Math.abs(now - last) <= QUIET ? quiet + 1 : 0;
+            last = now;
         }
     }
 
@@ -115,12 +133,12 @@ final class BytesInUse {
         long[] grown = new long[RUNS];
         java.util.function.IntToLongFunction run = count -> {
             try {
-                settle();
+                settle(inUse);
                 long before = inUse.getAsLong();
                 for (int at = 0; at < count; at += 1) {
                     cycle.run();
                 }
-                settle();
+                settle(inUse);
                 return inUse.getAsLong() - before;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

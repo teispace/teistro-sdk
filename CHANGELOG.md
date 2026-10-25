@@ -157,6 +157,12 @@ dropped and collected, and a chart with positions. Dart's leak file
 starts the VM's own service and asks it for a full collection, so its
 finaliser path is measured too.
 
+**The Java and Node leak tests wait for the cleaner, not for a set
+time.** **Numbers:** a verify run on macOS read 35 MB, 90 KB and 2.1 MB
+held over three runs with nothing leaked, because three collections 20 ms
+apart left Java's cleaner thread behind. Both tests now collect until two
+reads agree within 4 KiB, up to 100 collections.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:
