@@ -530,11 +530,21 @@ fn workflows(root: &Path) -> Vec<PathBuf> {
 /// whole word rather than as a substring, because `check-doc` is a
 /// prefix of `check-docs`: a substring test would let a renamed gate
 /// pass while nothing ran it, which is the failure the rule exists for.
+///
+/// A toolchain named before `xtask` (`cargo +nightly-2026-10-21 xtask`,
+/// as the coverage job runs its gates) is the same runner.
 fn gate_run_by(line: &str) -> Option<&str> {
-    let rest = line.split_once("cargo xtask ")?.1;
-    rest.split([' ', '"', '\''])
-        .next()
-        .filter(|name| name.starts_with("check-"))
+    line.match_indices("cargo ").find_map(|(at, _)| {
+        let after = line.get(at + "cargo ".len()..)?;
+        let rest = match after.strip_prefix('+') {
+            Some(pinned) => pinned.split_once(' ')?.1,
+            None => after,
+        };
+        rest.strip_prefix("xtask ")?
+            .split([' ', '"', '\''])
+            .next()
+            .filter(|name| name.starts_with("check-"))
+    })
 }
 
 /// The gate an arm of `xtask`'s entry point declares.
@@ -3239,6 +3249,16 @@ mod tests {
             gate_run_by(r#"        run: cargo xtask check-tag "${GITHUB_REF_NAME}""#),
             Some("check-tag")
         );
+        // After another command on the same line.
+        assert_eq!(
+            gate_run_by("        run: cargo build -p xtask && cargo xtask check-docs"),
+            Some("check-docs")
+        );
+        // With the toolchain pinned, as the coverage job runs its gates.
+        assert_eq!(
+            gate_run_by("        run: cargo +nightly-2026-10-21 xtask check-doc-examples"),
+            Some("check-doc-examples")
+        );
     }
 
     #[test]
@@ -3259,6 +3279,10 @@ mod tests {
     fn a_line_that_runs_no_gate_names_none() {
         assert_eq!(gate_run_by("        run: cargo xtask gen ffi"), None);
         assert_eq!(gate_run_by("        run: cargo test --workspace"), None);
+        assert_eq!(
+            gate_run_by("        run: cargo +nightly test -p teistro"),
+            None
+        );
     }
 
     #[test]
