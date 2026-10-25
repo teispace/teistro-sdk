@@ -40,6 +40,15 @@ const VISESHA: [Visesha; 3] = [
 ];
 
 /// The general drishti at an aspect angle, degrees, in virupas.
+///
+/// ```
+/// use teistro_aspect::sphuta::general;
+///
+/// // Full at the opposition, three quarters at the square (Raman, Art. 115).
+/// assert_eq!(general(180.0), 60.0);
+/// assert_eq!(general(90.0), 45.0);
+/// assert_eq!(general(20.0), 0.0);
+/// ```
 #[must_use]
 pub fn general(angle: f64) -> f64 {
     let k = angle.rem_euclid(360.0);
@@ -64,6 +73,15 @@ pub fn general(angle: f64) -> f64 {
 
 /// What a graha's special aspect adds at an aspect angle, in virupas; nothing
 /// for a graha without one.
+///
+/// ```
+/// use teistro_aspect::sphuta::visesha;
+/// use teistro_core::catalogue::Graha;
+///
+/// assert_eq!(visesha(Graha::Saturn, 75.0), 45.0);
+/// assert_eq!(visesha(Graha::Mars, 100.0), 15.0);
+/// assert_eq!(visesha(Graha::Venus, 100.0), 0.0);
+/// ```
 #[must_use]
 pub fn visesha(graha: Graha, angle: f64) -> f64 {
     let k = angle.rem_euclid(360.0);
@@ -76,6 +94,14 @@ pub fn visesha(graha: Graha, angle: f64) -> f64 {
 
 /// A graha's drishti, in virupas, from its longitude on another longitude:
 /// the general value and its special aspect's.
+///
+/// ```
+/// use teistro_aspect::sphuta::drishti;
+/// use teistro_core::catalogue::Graha;
+///
+/// // Jupiter at 10° on a point at 140°: a 130° angle, 20 general and 30 special.
+/// assert_eq!(drishti(Graha::Jupiter, 10.0, 140.0), 50.0);
+/// ```
 #[must_use]
 pub fn drishti(graha: Graha, aspecting: f64, aspected: f64) -> f64 {
     let angle = aspected - aspecting;

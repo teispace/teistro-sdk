@@ -22,6 +22,14 @@ use teistro_core::catalogue::Rashi;
 
 /// Whether two bodies share a sign, which is what the tradition means by
 /// a conjunction.
+///
+/// ```
+/// use teistro_aspect::conjunction::together;
+/// use teistro_core::catalogue::Rashi;
+///
+/// assert!(together(Rashi::Leo, Rashi::Leo));
+/// assert!(!together(Rashi::Leo, Rashi::Virgo));
+/// ```
 #[must_use]
 pub const fn together(first: Rashi, second: Rashi) -> bool {
     first as u16 == second as u16
@@ -33,6 +41,15 @@ pub const fn together(first: Rashi, second: Rashi) -> bool {
 /// A negative or non-finite orb is `false` rather than an error, because
 /// this is a predicate and there is no answer to report an error
 /// through; [`crate::orb::hits`] is the form that refuses one by name.
+///
+/// ```
+/// use teistro_aspect::conjunction::within;
+///
+/// // 29° Leo and 2° Virgo are three degrees apart across the sign line.
+/// assert!(within(149.0, 152.0, 5.0));
+/// assert!(within(359.0, 1.0, 2.0));
+/// assert!(!within(149.0, 152.0, -1.0));
+/// ```
 #[must_use]
 pub fn within(first_deg: f64, second_deg: f64, orb_deg: f64) -> bool {
     orb_deg.is_finite()

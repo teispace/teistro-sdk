@@ -53,6 +53,20 @@ pub const CHAIN: [Point; 5] = [
 
 /// The five upagrahas the Sun casts, in the order the chain builds them.
 ///
+/// ```
+/// use teistro_core::catalogue::Point;
+/// use teistro_points::solar::{CHAIN, chain};
+///
+/// let found = chain(10.0)?;
+/// assert_eq!(found.map(|point| point.point), CHAIN);
+/// // Dhuma 133° 20′ ahead, Upaketu 16° 40′ past Indrachapa.
+/// assert!((found[0].longitude_deg - 143.0 - 20.0 / 60.0).abs() < 1e-9);
+/// let past = (found[4].longitude_deg - found[3].longitude_deg).rem_euclid(360.0);
+/// assert!((past - 16.0 - 40.0 / 60.0).abs() < 1e-9);
+/// assert_eq!(found[0].point, Point::Dhuma);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// `INVALID_ARG` for a longitude that is not a finite number.
@@ -81,6 +95,15 @@ fn reflected(degrees: f64) -> f64 {
 /// it: two reflections make two of them run backwards.
 ///
 /// `None` for a point that is not in the chain.
+///
+/// ```
+/// use teistro_core::catalogue::Point;
+/// use teistro_points::solar::advances;
+///
+/// assert_eq!(advances(Point::Upaketu), Some(true));
+/// assert_eq!(advances(Point::Parivesha), Some(false));
+/// assert_eq!(advances(Point::Gulika), None);
+/// ```
 #[must_use]
 pub fn advances(point: Point) -> Option<bool> {
     match point {

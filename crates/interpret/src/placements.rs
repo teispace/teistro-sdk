@@ -27,6 +27,32 @@ use crate::Plan;
 /// The order is the catalogue's — the Sun to Ketu, each in its sign and then
 /// in its house — and then the shared signs in zodiac order, so the same
 /// chart always gives the same plan.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Rashi};
+/// use teistro_rules::{House, Placement, RuleChart};
+///
+/// // Every body at 15° Aries in the first house.
+/// let placement = Placement {
+///     longitude: 15.0,
+///     sign: Rashi::Aries,
+///     house: House::try_new(1)?,
+///     dignity: Dignity::Neutral,
+///     retrograde: false,
+///     combust: false,
+///     karaka7: None,
+///     karaka8: None,
+///     navamsha: Rashi::Aries,
+/// };
+/// let chart = RuleChart { placements: [placement; 10], panchanga: None, strengths: None };
+/// use teistro_interpret::placements;
+///
+/// let plan = placements(&chart);
+/// // The lagna, each graha in its sign and its house, and the one shared sign.
+/// assert_eq!(plan.len(), 1 + 9 * 2 + 1);
+/// assert_eq!(plan.items[plan.len() - 1].key, "sdk.reason.occupants");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn placements(chart: &RuleChart) -> Plan {
     let mut plan = Plan::default();

@@ -46,6 +46,39 @@ const NAMAKARANA_FORM: &str = "namakarana";
 /// varna and element. Nothing is said for a subject the base locale
 /// carries no reading of, so the plan grows with the packs a consumer
 /// loads and with nothing else.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Rashi};
+/// use teistro_rules::{House, Placement, RuleChart};
+///
+/// // Every body at 15° Aries in the first house.
+/// let placement = Placement {
+///     longitude: 15.0,
+///     sign: Rashi::Aries,
+///     house: House::try_new(1)?,
+///     dignity: Dignity::Neutral,
+///     retrograde: false,
+///     combust: false,
+///     karaka7: None,
+///     karaka8: None,
+///     navamsha: Rashi::Aries,
+/// };
+/// let chart = RuleChart { placements: [placement; 10], panchanga: None, strengths: None };
+/// use teistro_interpret::{NoReadings, Vocabulary, phala};
+///
+/// /// A vocabulary carrying every form of every record.
+/// struct Everything;
+/// impl Vocabulary for Everything {
+///     fn has_form(&self, _key: &str, _form: &str) -> bool {
+///         true
+///     }
+/// }
+/// // It says only what a loaded pack has words for.
+/// assert!(phala(&chart, &NoReadings).is_empty());
+/// let plan = phala(&chart, &Everything);
+/// assert_eq!(plan.items[0].key, "sdk.phala.grahaInBhava");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn phala(chart: &RuleChart, vocabulary: &dyn Vocabulary) -> Plan {
     let mut plan = Plan::default();

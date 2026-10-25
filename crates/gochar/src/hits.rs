@@ -23,6 +23,13 @@ use teistro_core::catalogue::{Graha, LunarEclipseKind, Nakshatra, Rashi, SolarEc
 use teistro_core::quantity::{JulianDay, Utc};
 
 /// Which way a graha was moving, through a line or out of a station.
+///
+/// ```
+/// use teistro_gochar::hits::{Motion, entered};
+///
+/// // Backward over a line enters the division before it.
+/// assert_eq!(entered(30.0, Motion::Retrograde, 12), 0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "HitMotion"))]
@@ -37,6 +44,17 @@ pub enum Motion {
 /// A natal point a transit can aspect, ordered as a tie between hits is
 /// broken: the grahas in the catalogue's order, then the lagna, then the
 /// midheaven.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_gochar::hits::NatalPoint;
+///
+/// let moon = NatalPoint::Graha { graha: Graha::Moon };
+/// assert_eq!(serde_json::to_string(&moon)?, r#"{"point":"GRAHA","graha":"MOON"}"#);
+/// // Grahas order before the lagna, the lagna before the midheaven.
+/// assert!(moon < NatalPoint::Lagna && NatalPoint::Lagna < NatalPoint::Midheaven);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "point", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -100,6 +118,12 @@ impl MoonPhase {
     ];
 
     /// The elongation the phase is reached at, degrees: 0, 90, 180 or 270.
+    ///
+    /// ```
+    /// use teistro_gochar::hits::MoonPhase;
+    ///
+    /// assert_eq!(MoonPhase::ALL.map(MoonPhase::elongation_deg), [0, 90, 180, 270]);
+    /// ```
     #[must_use]
     pub const fn elongation_deg(self) -> u16 {
         match self {
@@ -113,6 +137,12 @@ impl MoonPhase {
     /// The phase whose line `line_deg` is, rounded to the nearest quarter
     /// of the circle: a line the search reports a hair either side of its
     /// quarter is still that quarter.
+    ///
+    /// ```
+    /// use teistro_gochar::hits::MoonPhase;
+    ///
+    /// assert_eq!(MoonPhase::at_line(270.000_001), MoonPhase::LastQuarter);
+    /// ```
     #[must_use]
     pub fn at_line(line_deg: f64) -> MoonPhase {
         MoonPhase::ALL
@@ -123,6 +153,16 @@ impl MoonPhase {
 }
 
 /// Where in an aspect's window a hit falls (C146).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_gochar::hits::{AspectPhase, Edge, HitEvent, Motion, NatalPoint, aspect_hit};
+///
+/// let sun = (NatalPoint::Graha { graha: Graha::Sun }, 10.0);
+/// // Moving forward, into the opposition's 5° orb.
+/// let hit = aspect_hit(sun, (185.0, Edge::Before, 5.0), Motion::Direct, &[180]);
+/// assert_eq!(hit, Some(HitEvent::Aspect { to: sun.0, angle: 180, phase: AspectPhase::Entering, motion: Motion::Direct }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -137,6 +177,16 @@ pub enum AspectPhase {
 
 /// Which line of an aspect a lattice holds: the exact one, or the orb's
 /// edge before or past it in the zodiac's order.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_gochar::hits::{AspectPhase, Edge, HitEvent, Motion, NatalPoint, aspect_hit};
+///
+/// let sun = (NatalPoint::Graha { graha: Graha::Sun }, 10.0);
+/// // The same line backwards is where the transit leaves the orb.
+/// let hit = aspect_hit(sun, (185.0, Edge::Before, 5.0), Motion::Retrograde, &[180]);
+/// assert!(matches!(hit, Some(HitEvent::Aspect { phase: AspectPhase::Leaving, .. })));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Edge {
     /// The exact line.
@@ -148,6 +198,15 @@ pub enum Edge {
 }
 
 /// What a hit was.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_gochar::hits::{HitEvent, Motion};
+///
+/// let event = HitEvent::SignIngress { into: Rashi::Leo, motion: Motion::Direct };
+/// assert_eq!(serde_json::to_string(&event)?, r#"{"kind":"SIGN_INGRESS","into":"LEO","motion":"DIRECT"}"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -256,6 +315,17 @@ impl HitEvent {
 }
 
 /// One event of a transit window.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_gochar::hits::{Hit, HitEvent, Motion, sign_ingress, sort};
+///
+/// let ingress = |jd, graha, line| Hit { instant: JulianDay::literal(jd), graha, event: sign_ingress(line, Motion::Direct) };
+/// let hit = ingress(2_460_000.5, Graha::Jupiter, 60.0);
+/// assert_eq!(hit.event, HitEvent::SignIngress { into: Rashi::Gemini, motion: Motion::Direct });
+/// # let _ = sort;
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Hit {
@@ -270,6 +340,19 @@ pub struct Hit {
 /// Hits in their one order: by instant, then by graha, then by kind, then
 /// by the natal point or the divisional chart, so two runs over the same
 /// window list them identically.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_gochar::hits::{Hit, HitEvent, Motion, sign_ingress, sort};
+///
+/// let ingress = |jd, graha, line| Hit { instant: JulianDay::literal(jd), graha, event: sign_ingress(line, Motion::Direct) };
+/// let mut hits = [ingress(2.0, Graha::Sun, 0.0), ingress(1.0, Graha::Mars, 30.0), ingress(1.0, Graha::Moon, 60.0)];
+/// sort(&mut hits);
+/// // By instant, then the catalogue's graha order: the Moon before Mars.
+/// assert_eq!(hits.map(|hit| hit.graha), [Graha::Moon, Graha::Mars, Graha::Sun]);
+/// # let _ = (Rashi::Aries, HitEvent::PhaseReturn);
+/// ```
 pub fn sort(hits: &mut [Hit]) {
     hits.sort_by(|a, b| {
         a.instant
@@ -284,6 +367,14 @@ pub fn sort(hits: &mut [Hit]) {
 /// The division a crossing of the line at `boundary_deg` entered, of
 /// `divisions` equal parts of the circle: the one past the line when the
 /// graha was moving forward, the one before it when it was moving back.
+///
+/// ```
+/// use teistro_gochar::hits::{Motion, entered};
+///
+/// // A line a hair short of 13° 20′ is still Bharani's start.
+/// assert_eq!(entered(13.333_333, Motion::Direct, 27), 1);
+/// assert_eq!(entered(0.0, Motion::Retrograde, 27), 26);
+/// ```
 #[must_use]
 pub fn entered(boundary_deg: f64, motion: Motion, divisions: u16) -> usize {
     let width = 360.0 / f64::from(divisions);
@@ -302,6 +393,14 @@ pub fn entered(boundary_deg: f64, motion: Motion, divisions: u16) -> usize {
 }
 
 /// A sign ingress at a crossing of the sign lattice.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_gochar::hits::{HitEvent, Motion, sign_ingress};
+///
+/// // Back over Aries's first degree is a re-entry into Pisces.
+/// assert_eq!(sign_ingress(0.0, Motion::Retrograde), HitEvent::SignIngress { into: Rashi::Pisces, motion: Motion::Retrograde });
+/// ```
 #[must_use]
 pub fn sign_ingress(boundary_deg: f64, motion: Motion) -> HitEvent {
     HitEvent::SignIngress {
@@ -314,6 +413,16 @@ pub fn sign_ingress(boundary_deg: f64, motion: Motion) -> HitEvent {
 }
 
 /// A nakshatra ingress at a crossing of the nakshatra lattice.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_gochar::hits::{HitEvent, Motion, nakshatra_ingress};
+///
+/// assert_eq!(
+///     nakshatra_ingress(120.0, Motion::Direct),
+///     HitEvent::NakshatraIngress { into: Nakshatra::Magha, motion: Motion::Direct }
+/// );
+/// ```
 #[must_use]
 pub fn nakshatra_ingress(boundary_deg: f64, motion: Motion) -> HitEvent {
     HitEvent::NakshatraIngress {
@@ -433,6 +542,18 @@ pub fn aspect_step_deg(angles: &[u16]) -> f64 {
 /// natal point; only the `angles` asked for, from either side, are aspects.
 /// Moving forward, the transit enters an orb at the edge before the line
 /// and leaves at the edge past it; moving back, the reverse.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_gochar::hits::{AspectPhase, Edge, HitEvent, Motion, NatalPoint, aspect_hit};
+///
+/// let sun = (NatalPoint::Graha { graha: Graha::Sun }, 10.0);
+/// // Exactly opposite the natal Sun.
+/// let hit = aspect_hit(sun, (190.0, Edge::Exact, 5.0), Motion::Direct, &[0, 180]);
+/// assert!(matches!(hit, Some(HitEvent::Aspect { angle: 180, phase: AspectPhase::Exact, .. })));
+/// // A square nobody asked for is no hit.
+/// assert_eq!(aspect_hit(sun, (100.0, Edge::Exact, 5.0), Motion::Direct, &[0, 180]), None);
+/// ```
 #[must_use]
 pub fn aspect_hit(
     (to, natal_deg): (NatalPoint, f64),

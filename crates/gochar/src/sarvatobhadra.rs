@@ -56,6 +56,15 @@ use crate::{GRAHAS, Transit};
 
 /// A star of the chakra's 28: one of the 27, or Abhijit, which the chakra
 /// sets between Uttarashadha and Shravana (v. 4).
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_gochar::sarvatobhadra::{Star, StarPlace};
+///
+/// assert_eq!(StarPlace::at(45.0).star, Star::of(Nakshatra::Rohini));
+/// assert_eq!(serde_json::to_string(&Star::Abhijit)?, r#"{"star":"ABHIJIT"}"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "ChakraStar"))]
@@ -78,6 +87,13 @@ impl Star {
     /// use teistro_gochar::sarvatobhadra::Star;
     ///
     /// assert_ne!(Star::of(Nakshatra::Rohini), Star::Abhijit);
+    /// ```
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_gochar::sarvatobhadra::Star;
+    ///
+    /// assert_eq!(Star::of(Nakshatra::Swati), Star::Nakshatra { nakshatra: Nakshatra::Swati });
     /// ```
     #[must_use]
     pub const fn of(nakshatra: Nakshatra) -> Star {
@@ -119,6 +135,13 @@ const STARS: [Star; 28] = [
 ];
 
 /// The sixteen vowels in the order v. 3 lays them, a to the visarga.
+///
+/// ```
+/// use teistro_gochar::sarvatobhadra::Vowel;
+///
+/// assert_eq!(Vowel::ALL.len(), 16);
+/// assert_eq!(Vowel::ALL[0], Vowel::A);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -187,6 +210,15 @@ impl Vowel {
     /// assert_eq!(Vowel::A.pair(), Vowel::Aa);
     /// assert_eq!(Vowel::Ah.pair(), Vowel::Am);
     /// ```
+    ///
+    /// ```
+    /// use teistro_gochar::sarvatobhadra::Vowel;
+    ///
+    /// // Short and long go together, both ways.
+    /// assert_eq!(Vowel::A.pair(), Vowel::Aa);
+    /// assert_eq!(Vowel::Aa.pair(), Vowel::A);
+    /// assert_eq!(Vowel::Ah.pair(), Vowel::Am);
+    /// ```
     #[must_use]
     pub fn pair(self) -> Vowel {
         let at = Vowel::ALL.iter().position(|v| *v == self).unwrap_or(0);
@@ -211,6 +243,16 @@ const TITHI_SIDES: [TithiClass; 4] = [
 ];
 
 /// One cell of the chakra.
+///
+/// ```
+/// use teistro_core::catalogue::TithiClass;
+/// use teistro_gochar::sarvatobhadra::{Cell, chakra};
+///
+/// let grid = chakra();
+/// assert_eq!(grid[4][4], Cell::Tithi { class: TithiClass::Purna });
+/// assert_eq!(serde_json::to_string(&grid[4][4])?, r#"{"cell":"TITHI","class":"PURNA"}"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "ChakraCell"))]
@@ -345,6 +387,15 @@ pub fn chakra() -> [[Cell; SIDE]; SIDE] {
 
 /// One of a graha's three lines of sight (v. 13), named as the graha sees
 /// them standing in its star and facing the chakra's centre (C429).
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_gochar::sarvatobhadra::{Cell, Line, Star, sight};
+///
+/// // Rohini's front runs straight across to Abhijit.
+/// let front = sight(Star::of(Nakshatra::Rohini), Line::Front);
+/// assert_eq!(front.last(), Some(&Cell::Star { star: Star::Abhijit }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "VedhaLine"))]
@@ -425,6 +476,13 @@ pub fn sight(star: Star, line: Line) -> Vec<Cell> {
 }
 
 /// What a graha's front strikes (C429).
+///
+/// ```
+/// use teistro_gochar::sarvatobhadra::{FrontVedha, SarvatobhadraRules};
+///
+/// let literal = SarvatobhadraRules { front: FrontVedha::EveryCell, ..SarvatobhadraRules::TEXT };
+/// assert_ne!(literal, SarvatobhadraRules::TEXT);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -439,6 +497,33 @@ pub enum FrontVedha {
 }
 
 /// Which of the three lines a graha looks along (C430).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Tithi, Vara};
+/// use teistro_gochar::Transit;
+/// use teistro_gochar::sarvatobhadra::{Motion, NativePoints, SarvatobhadraRules, sarvatobhadra};
+///
+/// // Every graha in Rohini but Ketu, opposite Rahu; Saturn mean, so ahead only.
+/// let mut sky = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// sky[Graha::Ketu as usize] = Transit::new(Rashi::Scorpio, 15.0);
+/// let motions = [Motion::Fast, Motion::Fast, Motion::Fast, Motion::Fast, Motion::Mean];
+/// let native = NativePoints {
+///     nakshatra: Nakshatra::Swati,
+///     rashi: Rashi::Libra,
+///     tithi: Tithi::ShuklaPratipada,
+///     vara: Vara::Ravivara,
+///     name: None,
+/// };
+/// let reading = sarvatobhadra(&sky, &motions, &native, SarvatobhadraRules::TEXT)?;
+/// use teistro_gochar::sarvatobhadra::{Line, Sight};
+///
+/// // Under the text Saturn looks ahead; read v. 13 alone, along all three.
+/// assert_eq!(reading.grahas[Graha::Saturn as usize].lines, [Line::Front]);
+/// let every = SarvatobhadraRules { sight: Sight::AllThree, ..SarvatobhadraRules::TEXT };
+/// let wider = sarvatobhadra(&sky, &motions, &native, every)?;
+/// assert_eq!(wider.grahas[Graha::Saturn as usize].lines, Line::ALL);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -456,6 +541,12 @@ pub enum Sight {
 }
 
 /// Which vowels a graha at a corner's juncture strikes (v. 26, C431).
+///
+/// ```
+/// use teistro_gochar::sarvatobhadra::{CornerVedha, SarvatobhadraRules};
+///
+/// assert_eq!(SarvatobhadraRules::TEXT.corner, CornerVedha::FourVowels);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -472,6 +563,13 @@ pub enum CornerVedha {
 
 /// The readings the texts leave open, each defaulting to the one
 /// `03-design/gochar.md` §8 decides.
+///
+/// ```
+/// use teistro_gochar::sarvatobhadra::{FrontVedha, SarvatobhadraRules, Sight};
+///
+/// let rules = SarvatobhadraRules::TEXT;
+/// assert_eq!((rules.front, rules.sight), (FrontVedha::StarOnly, Sight::Text));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -494,6 +592,13 @@ impl SarvatobhadraRules {
 }
 
 /// A graha's motion as v. 15 sorts it (C430).
+///
+/// ```
+/// use teistro_gochar::sarvatobhadra::{Line, Motion};
+///
+/// assert_eq!(Motion::Fast.line(), Line::Left);
+/// assert_eq!(Motion::by_the_sun(3), Some(Motion::Mean));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "VedhaMotion"))]
@@ -578,6 +683,14 @@ impl Motion {
 
 /// Where a graha stands among the stars: the chakra's star, and the star
 /// and pada of the 27 that v. 26's junctures are counted in.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_gochar::sarvatobhadra::{Star, StarPlace};
+///
+/// let place = StarPlace::at(45.0);
+/// assert_eq!((place.star, place.nakshatra, place.pada), (Star::of(Nakshatra::Rohini), Nakshatra::Rohini, 2));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -653,6 +766,32 @@ fn juncture(place: StarPlace) -> Option<usize> {
 }
 
 /// A graha's nature in the chakra (v. 12, v. 30; C432).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Tithi, Vara};
+/// use teistro_gochar::Transit;
+/// use teistro_gochar::sarvatobhadra::{Motion, NativePoints, SarvatobhadraRules, sarvatobhadra};
+///
+/// // Every graha in Rohini but Ketu, opposite Rahu; Saturn mean, so ahead only.
+/// let mut sky = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// sky[Graha::Ketu as usize] = Transit::new(Rashi::Scorpio, 15.0);
+/// let motions = [Motion::Fast, Motion::Fast, Motion::Fast, Motion::Fast, Motion::Mean];
+/// let native = NativePoints {
+///     nakshatra: Nakshatra::Swati,
+///     rashi: Rashi::Libra,
+///     tithi: Tithi::ShuklaPratipada,
+///     vara: Vara::Ravivara,
+///     name: None,
+/// };
+/// let reading = sarvatobhadra(&sky, &motions, &native, SarvatobhadraRules::TEXT)?;
+/// use teistro_gochar::sarvatobhadra::Nature;
+///
+/// // Jupiter joined by malefics in its sign is malefic too (v. 30).
+/// let jupiter = &reading.grahas[Graha::Jupiter as usize];
+/// assert_eq!(jupiter.nature, Nature::Malefic);
+/// assert!(jupiter.joined_by.contains(&Graha::Saturn));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "VedhaNature"))]
@@ -665,6 +804,15 @@ pub enum Nature {
 }
 
 /// How a graha reaches what it strikes.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_gochar::sarvatobhadra::{Cell, Line, Reach, Star};
+///
+/// let cell = Cell::Star { star: Star::of(Nakshatra::Bharani) };
+/// assert_eq!(Reach::Line { line: Line::Right, cell }.cell(), Some(cell));
+/// assert_eq!(Reach::Stands.cell(), None);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "by", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -688,6 +836,14 @@ pub enum Reach {
 
 impl Reach {
     /// The cell struck, when there is one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::TithiClass;
+    /// use teistro_gochar::sarvatobhadra::{Cell, Reach};
+    ///
+    /// let purna = Cell::Tithi { class: TithiClass::Purna };
+    /// assert_eq!(Reach::Corner { cell: purna }.cell(), Some(purna));
+    /// ```
     #[must_use]
     pub const fn cell(self) -> Option<Cell> {
         match self {
@@ -700,6 +856,31 @@ impl Reach {
 /// A native's point that a vedha can strike; v. 28 names the first five
 /// and the effect of each, and *Svara Chintamani* (quoted under
 /// Phaladeepika ch. 26 v. 48) the weekday.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Tithi, Vara};
+/// use teistro_gochar::Transit;
+/// use teistro_gochar::sarvatobhadra::{Motion, NativePoints, SarvatobhadraRules, sarvatobhadra};
+///
+/// // Every graha in Rohini but Ketu, opposite Rahu; Saturn mean, so ahead only.
+/// let mut sky = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// sky[Graha::Ketu as usize] = Transit::new(Rashi::Scorpio, 15.0);
+/// let motions = [Motion::Fast, Motion::Fast, Motion::Fast, Motion::Fast, Motion::Mean];
+/// let native = NativePoints {
+///     nakshatra: Nakshatra::Swati,
+///     rashi: Rashi::Libra,
+///     tithi: Tithi::ShuklaPratipada,
+///     vara: Vara::Ravivara,
+///     name: None,
+/// };
+/// let reading = sarvatobhadra(&sky, &motions, &native, SarvatobhadraRules::TEXT)?;
+/// use teistro_gochar::sarvatobhadra::VedhaPoint;
+///
+/// // Without a name the letter and the vowel are not read.
+/// let points: Vec<VedhaPoint> = reading.points.iter().map(|point| point.point).collect();
+/// assert_eq!(points, [VedhaPoint::Nakshatra, VedhaPoint::Tithi, VedhaPoint::Rashi, VedhaPoint::Vara]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -719,6 +900,14 @@ pub enum VedhaPoint {
 }
 
 /// A name's sounds as the chakra reads them.
+///
+/// ```
+/// use teistro_gochar::sarvatobhadra::{NameSounds, Vowel};
+///
+/// // Krishna: क, and the vowel ऋ of its first syllable.
+/// let name = NameSounds { letter: 'क', vowel: Vowel::Ri };
+/// assert_eq!(name.vowel.pair(), Vowel::Rii);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -733,6 +922,27 @@ pub struct NameSounds {
 /// The native's points (C431): the star and sign the caller counts from
 /// (the birth's, or the name's where the birth is not known), the tithi
 /// and weekday of birth, and the name when given.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Tithi, Vara};
+/// use teistro_gochar::Transit;
+/// use teistro_gochar::sarvatobhadra::{Motion, NativePoints, SarvatobhadraRules, sarvatobhadra};
+///
+/// // Every graha in Rohini but Ketu, opposite Rahu; Saturn mean, so ahead only.
+/// let mut sky = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// sky[Graha::Ketu as usize] = Transit::new(Rashi::Scorpio, 15.0);
+/// let motions = [Motion::Fast, Motion::Fast, Motion::Fast, Motion::Fast, Motion::Mean];
+/// let native = NativePoints {
+///     nakshatra: Nakshatra::Swati,
+///     rashi: Rashi::Libra,
+///     tithi: Tithi::ShuklaPratipada,
+///     vara: Vara::Ravivara,
+///     name: None,
+/// };
+/// let reading = sarvatobhadra(&sky, &motions, &native, SarvatobhadraRules::TEXT)?;
+/// assert_eq!(reading.native, native);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -796,6 +1006,33 @@ fn letter_reach(letter: char) -> Option<LetterReach> {
 }
 
 /// What one graha strikes.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Tithi, Vara};
+/// use teistro_gochar::Transit;
+/// use teistro_gochar::sarvatobhadra::{Motion, NativePoints, SarvatobhadraRules, sarvatobhadra};
+///
+/// // Every graha in Rohini but Ketu, opposite Rahu; Saturn mean, so ahead only.
+/// let mut sky = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// sky[Graha::Ketu as usize] = Transit::new(Rashi::Scorpio, 15.0);
+/// let motions = [Motion::Fast, Motion::Fast, Motion::Fast, Motion::Fast, Motion::Mean];
+/// let native = NativePoints {
+///     nakshatra: Nakshatra::Swati,
+///     rashi: Rashi::Libra,
+///     tithi: Tithi::ShuklaPratipada,
+///     vara: Vara::Ravivara,
+///     name: None,
+/// };
+/// let reading = sarvatobhadra(&sky, &motions, &native, SarvatobhadraRules::TEXT)?;
+/// use teistro_gochar::sarvatobhadra::{Line, Star};
+///
+/// let sun = &reading.grahas[Graha::Sun as usize];
+/// assert_eq!(sun.place.star, Star::of(Nakshatra::Rohini));
+/// // The Sun looks along all three lines (v. 19).
+/// assert_eq!(sun.lines, Line::ALL);
+/// assert!(!sun.cells.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -823,6 +1060,31 @@ pub struct GrahaVedha {
 }
 
 /// A native's point one graha strikes, with every way it does.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Tithi, Vara};
+/// use teistro_gochar::Transit;
+/// use teistro_gochar::sarvatobhadra::{Motion, NativePoints, SarvatobhadraRules, sarvatobhadra};
+///
+/// // Every graha in Rohini but Ketu, opposite Rahu; Saturn mean, so ahead only.
+/// let mut sky = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// sky[Graha::Ketu as usize] = Transit::new(Rashi::Scorpio, 15.0);
+/// let motions = [Motion::Fast, Motion::Fast, Motion::Fast, Motion::Fast, Motion::Mean];
+/// let native = NativePoints {
+///     nakshatra: Nakshatra::Swati,
+///     rashi: Rashi::Libra,
+///     tithi: Tithi::ShuklaPratipada,
+///     vara: Vara::Ravivara,
+///     name: None,
+/// };
+/// let reading = sarvatobhadra(&sky, &motions, &native, SarvatobhadraRules::TEXT)?;
+/// use teistro_gochar::sarvatobhadra::VedhaPoint;
+///
+/// // The Sun's left diagonal ends at Swati, the native's star.
+/// let sun = &reading.grahas[Graha::Sun as usize];
+/// assert!(sun.points.iter().any(|strike| strike.point == VedhaPoint::Nakshatra && !strike.by.is_empty()));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -834,6 +1096,30 @@ pub struct PointStrike {
 }
 
 /// Who strikes one of the native's points.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Tithi, Vara};
+/// use teistro_gochar::Transit;
+/// use teistro_gochar::sarvatobhadra::{Motion, NativePoints, SarvatobhadraRules, sarvatobhadra};
+///
+/// // Every graha in Rohini but Ketu, opposite Rahu; Saturn mean, so ahead only.
+/// let mut sky = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// sky[Graha::Ketu as usize] = Transit::new(Rashi::Scorpio, 15.0);
+/// let motions = [Motion::Fast, Motion::Fast, Motion::Fast, Motion::Fast, Motion::Mean];
+/// let native = NativePoints {
+///     nakshatra: Nakshatra::Swati,
+///     rashi: Rashi::Libra,
+///     tithi: Tithi::ShuklaPratipada,
+///     vara: Vara::Ravivara,
+///     name: None,
+/// };
+/// let reading = sarvatobhadra(&sky, &motions, &native, SarvatobhadraRules::TEXT)?;
+/// use teistro_gochar::sarvatobhadra::VedhaPoint;
+///
+/// let star = reading.points.iter().find(|point| point.point == VedhaPoint::Nakshatra);
+/// assert!(star.is_some_and(|star| star.malefics.contains(&Graha::Sun)));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -848,6 +1134,28 @@ pub struct PointVedha {
 }
 
 /// The chakra's vedha over one sky and one native.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra, Rashi, Tithi, Vara};
+/// use teistro_gochar::Transit;
+/// use teistro_gochar::sarvatobhadra::{Motion, NativePoints, SarvatobhadraRules, sarvatobhadra};
+///
+/// // Every graha in Rohini but Ketu, opposite Rahu; Saturn mean, so ahead only.
+/// let mut sky = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// sky[Graha::Ketu as usize] = Transit::new(Rashi::Scorpio, 15.0);
+/// let motions = [Motion::Fast, Motion::Fast, Motion::Fast, Motion::Fast, Motion::Mean];
+/// let native = NativePoints {
+///     nakshatra: Nakshatra::Swati,
+///     rashi: Rashi::Libra,
+///     tithi: Tithi::ShuklaPratipada,
+///     vara: Vara::Ravivara,
+///     name: None,
+/// };
+/// let reading = sarvatobhadra(&sky, &motions, &native, SarvatobhadraRules::TEXT)?;
+/// assert_eq!(reading.rules, SarvatobhadraRules::TEXT);
+/// assert!(reading.malefic_points <= 5);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

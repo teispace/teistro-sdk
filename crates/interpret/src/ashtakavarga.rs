@@ -51,6 +51,40 @@ use crate::Plan;
 /// chart come from one founding, so it cannot happen, and a composer
 /// that would have to invent a sign to say a number says nothing
 /// instead.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Rashi};
+/// use teistro_rules::{House, Placement, RuleChart};
+///
+/// // Every body at 15° Aries in the first house.
+/// let placement = Placement {
+///     longitude: 15.0,
+///     sign: Rashi::Aries,
+///     house: House::try_new(1)?,
+///     dignity: Dignity::Neutral,
+///     retrograde: false,
+///     combust: false,
+///     karaka7: None,
+///     karaka8: None,
+///     navamsha: Rashi::Aries,
+/// };
+/// let chart = RuleChart { placements: [placement; 10], panchanga: None, strengths: None };
+/// use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana};
+/// use teistro_interpret::ashtakavarga;
+/// use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
+///
+/// let rules = AshtakavargaRules {
+///     shodhana: Shodhana::EachGraha,
+///     ekadhipatya: Ekadhipatya::Bphs,
+///     moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
+/// };
+/// let reading = AshtakavargaReading::of(&AshtakavargaChart { lagna: Rashi::Aries, signs: [Rashi::Aries; 7] }, rules);
+/// let plan = ashtakavarga(&reading, &chart);
+/// // Seven grahas where they stand, then twelve signs' sarva.
+/// assert_eq!(plan.len(), 7 + 12);
+/// assert_eq!(plan.items[7].key, "sdk.reason.sarvashtakavarga");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn ashtakavarga(reading: &AshtakavargaReading, chart: &RuleChart) -> Plan {
     let mut plan = Plan::default();

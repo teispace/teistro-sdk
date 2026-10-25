@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Six more crates have a run example on every public item.**
+**Numbers:** none. `teistro-aspect` (60), `teistro-gochar` (110),
+`teistro-interpret` (34), `teistro-points` (54), `teistro-state` (52)
+and `teistro-strength` (50) join the crates `check-doc-examples` holds
+there, twenty in all. The strength examples quote Raman's printed
+answers for his Standard Horoscope (Mercury's Shadbala 537.02 virupas,
+Mars alone short of Sripati's requirement, the first bhava's 473.39);
+the gochar ones Phaladeepika ch. 26's houses and vedhas.
+
+**`teistro_strength::sample` holds Raman's Standard Horoscope.** 16
+October 1918, 2h 6m 16s p.m. LMT at 77° 35′ E, Makara rising, as
+*Graha and Bhava Balas* works every component on it:
+`standard_horoscope()` for the Shadbala and `standard_bhavas()` for the
+Bhava bala. The crate's own Sripati test reads it from there rather
+than building its own.
+
+**A Dart leak test waits for the finalisers.** The test of a context
+dropped undisposed read the allocator once after a collection, and on a
+loaded machine read 1.2 MB, 4.2 MB and 2.8 MB with nothing leaked. It
+now collects until two reads agree within 4 KiB, as the Java and Node
+tests do.
+
 **Nine more crates have a run example on every public item.**
 **Numbers:** none. `teistro-chart` (87), `teistro-geometry` (59),
 `teistro-houses` (42), `teistro-numerology` (31), `teistro-pakshi` (34),

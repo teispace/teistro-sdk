@@ -49,6 +49,14 @@ pub const GRAHAS: [Graha; 9] = [
 ];
 
 /// What gochar counts the houses from (crux C139).
+///
+/// ```
+/// use teistro_gochar::GocharFrom;
+///
+/// assert_eq!(GocharFrom::default(), GocharFrom::Moon);
+/// assert_eq!(serde_json::to_string(&GocharFrom::Lagna)?, r#""LAGNA""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -70,6 +78,14 @@ impl GocharFrom {
 
 /// The sign the houses are counted from, and which natal point's it is:
 /// a reading says both, so it can be told from one counted otherwise.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_gochar::{GocharFrom, Reference};
+///
+/// let reference = Reference::moon(Rashi::Cancer);
+/// assert_eq!((reference.from, reference.sign), (GocharFrom::Moon, Rashi::Cancer));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Reference {
@@ -81,6 +97,13 @@ pub struct Reference {
 
 impl Reference {
     /// The natal Moon in `sign`, v. 1's reference.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_gochar::{GocharFrom, Reference};
+    ///
+    /// assert_eq!(Reference::moon(Rashi::Leo).from, GocharFrom::Moon);
+    /// ```
     #[must_use]
     pub const fn moon(sign: Rashi) -> Reference {
         Reference {
@@ -90,6 +113,13 @@ impl Reference {
     }
 
     /// The natal lagna in `sign`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_gochar::{GocharFrom, Reference};
+    ///
+    /// assert_eq!(Reference::lagna(Rashi::Leo).from, GocharFrom::Lagna);
+    /// ```
     #[must_use]
     pub const fn lagna(sign: Rashi) -> Reference {
         Reference {
@@ -100,6 +130,14 @@ impl Reference {
 }
 
 /// A graha in transit: the sign it stands in and its degrees within it.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_gochar::Transit;
+///
+/// let transit = Transit::new(Rashi::Taurus, 12.5);
+/// assert_eq!(transit, Transit::at_longitude(42.5));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Transit {
@@ -111,12 +149,28 @@ pub struct Transit {
 
 impl Transit {
     /// A graha in `sign`, `degrees` into it.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_gochar::Transit;
+    ///
+    /// assert_eq!(Transit::new(Rashi::Leo, 3.0).degrees, 3.0);
+    /// ```
     #[must_use]
     pub const fn new(sign: Rashi, degrees: f64) -> Transit {
         Transit { sign, degrees }
     }
 
     /// A graha at a sidereal longitude, in degrees.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_gochar::Transit;
+    ///
+    /// assert_eq!(Transit::at_longitude(42.5), Transit::new(Rashi::Taurus, 12.5));
+    /// // A longitude round the circle reads as the same.
+    /// assert_eq!(Transit::at_longitude(-15.0), Transit::new(Rashi::Pisces, 15.0));
+    /// ```
     #[must_use]
     pub fn at_longitude(longitude_deg: f64) -> Transit {
         let at = longitude_deg.rem_euclid(360.0);
@@ -137,6 +191,14 @@ impl Transit {
 }
 
 /// The readings the text leaves open, from the settings' `gochar` group.
+///
+/// ```
+/// use teistro_gochar::GocharRules;
+/// use teistro_core::settings::NodeObstruction;
+///
+/// let rules = GocharRules { node_obstruction: NodeObstruction::None, ..GocharRules::TEXT };
+/// assert_eq!(rules.ashtakavarga_threshold(), 5);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -162,6 +224,17 @@ impl GocharRules {
     };
 
     /// The readings the settings' `gochar` group gives.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch};
+    /// use teistro_gochar::GocharRules;
+    ///
+    /// let profile = Profile::shipped(DEFAULT_PROFILE).ok_or("the default profile ships")?;
+    /// let settings = profile.resolve(&SettingsPatch::default())?.settings;
+    /// let rules = GocharRules::of(&settings);
+    /// assert_eq!(rules.node_vedha, settings.gochar.node_vedha);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn of(settings: &Settings) -> GocharRules {
         GocharRules {
@@ -173,6 +246,15 @@ impl GocharRules {
 
     /// The fewest bindus that make a transit good: five by the text, since
     /// Phaladeepika ch. 23 v. 11 makes four a fear.
+    ///
+    /// ```
+    /// use teistro_core::settings::AshtakavargaGoodFrom;
+    /// use teistro_gochar::GocharRules;
+    ///
+    /// assert_eq!(GocharRules::TEXT.ashtakavarga_threshold(), 5);
+    /// let four = GocharRules { ashtakavarga_good_from: AshtakavargaGoodFrom::Four, ..GocharRules::TEXT };
+    /// assert_eq!(four.ashtakavarga_threshold(), 4);
+    /// ```
     #[must_use]
     pub const fn ashtakavarga_threshold(self) -> u8 {
         match self.ashtakavarga_good_from {
@@ -184,6 +266,21 @@ impl GocharRules {
 }
 
 /// What a transit comes to.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_gochar::{GocharRules, Reference, Transit, Verdict, gochar};
+///
+/// // The natal Moon in Aries; the Sun transiting Gemini, its good 3rd, and the
+/// // Moon Sagittarius, the 9th that obstructs it.
+/// let mut transits = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// transits[Graha::Sun as usize] = Transit::new(Rashi::Gemini, 5.0);
+/// transits[Graha::Moon as usize] = Transit::new(Rashi::Sagittarius, 5.0);
+/// let reading = gochar(Reference::moon(Rashi::Aries), &transits, GocharRules::TEXT);
+/// let sun = &reading.grahas[Graha::Sun as usize];
+/// assert_eq!(sun.verdict, Verdict::Obstructed);
+/// assert_eq!(sun.obstructed_by, [Graha::Moon]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -197,6 +294,14 @@ pub enum Verdict {
 }
 
 /// Where in a sign a graha's transit bears fruit (v. 25).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_gochar::Fruition;
+///
+/// assert_eq!(Fruition::of(Graha::Saturn), Fruition::Last);
+/// assert_eq!(Fruition::of(Graha::Ketu), Fruition::Throughout);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -213,6 +318,13 @@ pub enum Fruition {
 
 impl Fruition {
     /// A graha's decanate of fruition.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_gochar::Fruition;
+    ///
+    /// assert_eq!(Fruition::of(Graha::Venus), Fruition::Middle);
+    /// ```
     #[must_use]
     pub const fn of(graha: Graha) -> Fruition {
         match graha {
@@ -224,6 +336,14 @@ impl Fruition {
     }
 
     /// Whether `degrees` into a sign fall in this part of it.
+    ///
+    /// ```
+    /// use teistro_gochar::Fruition;
+    ///
+    /// assert!(Fruition::Middle.holds(10.0));
+    /// assert!(!Fruition::Middle.holds(20.0));
+    /// assert!(Fruition::Throughout.holds(29.9));
+    /// ```
     #[must_use]
     pub fn holds(self, degrees: f64) -> bool {
         match self {
@@ -236,6 +356,20 @@ impl Fruition {
 }
 
 /// One graha's transit read from the reference sign.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_gochar::{GocharRules, Reference, Transit, Verdict, gochar};
+///
+/// // The natal Moon in Aries; the Sun transiting Gemini, its good 3rd, and the
+/// // Moon Sagittarius, the 9th that obstructs it.
+/// let mut transits = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// transits[Graha::Sun as usize] = Transit::new(Rashi::Gemini, 5.0);
+/// transits[Graha::Moon as usize] = Transit::new(Rashi::Sagittarius, 5.0);
+/// let reading = gochar(Reference::moon(Rashi::Aries), &transits, GocharRules::TEXT);
+/// let sun = &reading.grahas[Graha::Sun as usize];
+/// assert_eq!((sun.house, sun.good_house, sun.vedha_house), (3, true, Some(9)));
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -263,6 +397,22 @@ pub struct GrahaGochar {
 }
 
 /// Every graha's transit read from one reference sign.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_gochar::{GocharRules, Reference, Transit, Verdict, gochar};
+///
+/// // The natal Moon in Aries; the Sun transiting Gemini, its good 3rd, and the
+/// // Moon Sagittarius, the 9th that obstructs it.
+/// let mut transits = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// transits[Graha::Sun as usize] = Transit::new(Rashi::Gemini, 5.0);
+/// transits[Graha::Moon as usize] = Transit::new(Rashi::Sagittarius, 5.0);
+/// let reading = gochar(Reference::moon(Rashi::Aries), &transits, GocharRules::TEXT);
+/// let sun = &reading.grahas[Graha::Sun as usize];
+/// assert_eq!(reading.reference, Reference::moon(Rashi::Aries));
+/// assert!(reading.ashtakavarga.is_none());
+/// # let _ = (sun, Verdict::Good);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -374,6 +524,22 @@ fn house(reference: Rashi, sign: Rashi) -> u8 {
 
 /// Every graha's transit read from `reference`, the Sun to Ketu, under the
 /// settings' readings of what the text leaves open.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_gochar::{GocharRules, Reference, Transit, Verdict, gochar};
+///
+/// // The natal Moon in Aries; the Sun transiting Gemini, its good 3rd, and the
+/// // Moon Sagittarius, the 9th that obstructs it.
+/// let mut transits = [Transit::new(Rashi::Taurus, 15.0); 9];
+/// transits[Graha::Sun as usize] = Transit::new(Rashi::Gemini, 5.0);
+/// transits[Graha::Moon as usize] = Transit::new(Rashi::Sagittarius, 5.0);
+/// let reading = gochar(Reference::moon(Rashi::Aries), &transits, GocharRules::TEXT);
+/// let sun = &reading.grahas[Graha::Sun as usize];
+/// assert_eq!(sun.verdict, Verdict::Obstructed);
+/// // The Moon's own transit of the 9th is not one v. 2 makes good.
+/// assert_eq!(reading.grahas[Graha::Moon as usize].verdict, Verdict::NotGood);
+/// ```
 #[must_use]
 pub fn gochar(reference: Reference, transits: &[Transit; 9], rules: GocharRules) -> GocharReading {
     let houses = transits.map(|transit| house(reference.sign, transit.sign));

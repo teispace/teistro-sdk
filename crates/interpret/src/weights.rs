@@ -39,6 +39,17 @@ const SCHEMES: [&str; 4] = ["shadvarga", "saptavarga", "dashavarga", "shodashava
 /// The reading's own order, which is the wheel's, so a consumer reading a
 /// plan walks the houses rather than a ranking. `strength` sorts because a
 /// graha's weight is read against the others; a bhava's is read in place.
+///
+/// ```
+/// use teistro_interpret::bhava_bala;
+/// use teistro_intl::Value;
+/// use teistro_strength::{BhavaBalaReading, BhavaBalaRules, sample};
+///
+/// let reading = BhavaBalaReading::of(&sample::standard_bhavas(), BhavaBalaRules::SRIPATI);
+/// let plan = bhava_bala(&reading);
+/// assert_eq!(plan.len(), 12);
+/// assert_eq!(plan.items[0].params.get("bhava"), Some(&Value::Int(1)));
+/// ```
 #[must_use]
 pub fn bhava_bala(reading: &BhavaBalaReading) -> Plan {
     let mut plan = Plan::default();
@@ -58,6 +69,17 @@ pub fn bhava_bala(reading: &BhavaBalaReading) -> Plan {
 /// for the consumer which varga group the reading is worth, which is the
 /// dead end the maintainer's rule forbids — and the four together are 28
 /// items, fewer than the conditions.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::settings::Vimshopaka;
+/// use teistro_interpret::vimshopaka;
+/// use teistro_strength::{VimshopakaChart, VimshopakaReading};
+///
+/// let reading = VimshopakaReading::of(&VimshopakaChart::from_fn(|_, _| Rashi::Aries), Vimshopaka::Bphs);
+/// // Seven grahas under four schemes each.
+/// assert_eq!(vimshopaka(&reading).len(), 28);
+/// ```
 #[must_use]
 pub fn vimshopaka(reading: &VimshopakaReading) -> Plan {
     let mut plan = Plan::default();

@@ -51,6 +51,17 @@ const PHALA_FORM: &str = "phala";
 /// The order is the section's, which is the catalogue's, so the same chart
 /// always gives the same plan. A state whose dispositor the catalogue does
 /// not give says nothing of its friendships rather than naming a default.
+///
+/// ```
+/// use teistro_chart::sample;
+/// use teistro_interpret::{NoReadings, states};
+///
+/// let graha_states = teistro_state::state(&sample::foundation()?, &sample::resolved().settings)?;
+/// let plan = states(&graha_states, &NoReadings);
+/// assert!(!plan.is_empty());
+/// assert!(plan.keys().iter().all(|key| key.starts_with("sdk.condition.")));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn states(states: &[GrahaState], vocabulary: &dyn Vocabulary) -> Plan {
     let mut plan = Plan::default();

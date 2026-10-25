@@ -15,6 +15,16 @@ use teistro_core::error::Error;
 use teistro_core::quantity::Degrees;
 
 /// Where a derived point stands.
+///
+/// ```
+/// use teistro_core::catalogue::{Point, Rashi};
+/// use teistro_points::Derived;
+///
+/// let yogi = Derived::at(Point::Yogi, 45.0)?;
+/// assert_eq!(yogi.sign, Rashi::Taurus);
+/// assert_eq!(yogi.boundaries.sign_deg, 15.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Derived {
@@ -31,6 +41,17 @@ pub struct Derived {
 
 impl Derived {
     /// A point at a longitude, which is wrapped into the circle.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Point, Rashi};
+    /// use teistro_points::Derived;
+    ///
+    /// // Wrapped into the circle.
+    /// let point = Derived::at(Point::Yogi, 370.0)?;
+    /// assert_eq!((point.longitude_deg, point.sign), (10.0, Rashi::Aries));
+    /// assert!(Derived::at(Point::Yogi, f64::NAN).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -53,6 +74,14 @@ impl Derived {
     }
 
     /// How far into its sign it stands, degrees.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Point;
+    /// use teistro_points::Derived;
+    ///
+    /// assert_eq!(Derived::at(Point::Yogi, 45.0)?.in_sign_deg(), 15.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn in_sign_deg(&self) -> f64 {
         self.longitude_deg - f64::from(self.sign as u16) * 30.0
@@ -64,6 +93,17 @@ impl Derived {
     /// The tolerance is the caller's because it is a property of its
     /// provider's accuracy and not of the tradition — the same argument
     /// `state::boundary` and `aspect` make.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Point;
+    /// use teistro_points::Derived;
+    ///
+    /// // Half a degree from the end of Aries: firm against a tenth, not a degree.
+    /// let near = Derived::at(Point::Yogi, 29.5)?;
+    /// assert!(near.is_firm(0.1));
+    /// assert!(!near.is_firm(1.0));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_firm(&self, tolerance_deg: f64) -> bool {
         self.boundaries.sign_deg > tolerance_deg

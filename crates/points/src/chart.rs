@@ -16,6 +16,27 @@ use crate::lagna;
 use crate::solar;
 
 /// Every derived point the SDK can compute for one founded chart.
+///
+/// ```
+/// use teistro_chart::{day::DayPart, sample};
+/// use teistro_core::interval::Interval;
+/// use teistro_points::Points;
+///
+/// let sample_parts = sample::Sample::new();
+/// let founder = sample_parts.founder();
+/// let foundation = sample::foundation()?;
+/// let (from, to) = foundation.day.part_bounds();
+/// let points = Points::of(
+///     &foundation,
+///     foundation.day.day.vara,
+///     Interval::new(from, to)?,
+///     foundation.day.part == DayPart::Daylight,
+///     &|at| founder.ascendant_at(at, &foundation.place, &foundation.zodiac),
+/// )?;
+/// // The thirteen a chart's longitudes decide, and six the day divides.
+/// assert_eq!(points.all().len(), 19);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Points {
@@ -30,6 +51,18 @@ impl Points {
     /// over a provider that cannot answer another instant, or a caller
     /// that does not want Gulika. [`Points::of`] adds the other six:
     /// Gulika and Mandi, and Kala, Mrityu, Yamaghantaka and Ardhaprahara.
+    ///
+    /// ```
+    /// use teistro_chart::sample;
+    /// use teistro_points::Points;
+    ///
+    /// let foundation = sample::foundation()?;
+    /// let points = Points::from_longitudes(&foundation)?;
+    /// // No Gulika without an ascendant to read it from.
+    /// assert_eq!(points.all().len(), 13);
+    /// assert!(points.at(teistro_core::catalogue::Point::Gulika).is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -61,6 +94,28 @@ impl Points {
     /// lords' eighths begin, the default of crux C405;
     /// [`eighth::lorded_at`] reads them at another moment.
     ///
+    /// ```
+    /// use teistro_chart::{day::DayPart, sample};
+    /// use teistro_core::interval::Interval;
+    /// use teistro_points::Points;
+    ///
+    /// let sample_parts = sample::Sample::new();
+    /// let founder = sample_parts.founder();
+    /// let foundation = sample::foundation()?;
+    /// let (from, to) = foundation.day.part_bounds();
+    /// let points = Points::of(
+    ///     &foundation,
+    ///     foundation.day.day.vara,
+    ///     Interval::new(from, to)?,
+    ///     foundation.day.part == DayPart::Daylight,
+    ///     &|at| founder.ascendant_at(at, &foundation.place, &foundation.zodiac),
+    /// )?;
+    /// use teistro_core::catalogue::Point;
+    ///
+    /// assert!(points.at(Point::Gulika).is_some() && points.at(Point::Mandi).is_some());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Points::from_longitudes`], plus `UNSUPPORTED` for a day with
@@ -84,18 +139,55 @@ impl Points {
     }
 
     /// Every point, in the order the families computed them.
+    ///
+    /// ```
+    /// use teistro_chart::sample;
+    /// use teistro_points::Points;
+    ///
+    /// let foundation = sample::foundation()?;
+    /// let points = Points::from_longitudes(&foundation)?;
+    /// assert_eq!(points.all()[0].point, teistro_core::catalogue::Point::Dhuma);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn all(&self) -> &[Derived] {
         &self.found
     }
 
     /// One point, if this chart has it.
+    ///
+    /// ```
+    /// use teistro_chart::sample;
+    /// use teistro_points::Points;
+    ///
+    /// let foundation = sample::foundation()?;
+    /// let points = Points::from_longitudes(&foundation)?;
+    /// use teistro_core::catalogue::{Graha, Point};
+    /// use teistro_points::lagna;
+    ///
+    /// let sun = foundation.graha(Graha::Sun).map_or(0.0, |sun| sun.longitude_deg);
+    /// assert_eq!(points.at(Point::Dhuma), Some(&teistro_points::solar::chain(sun)?[0]));
+    /// assert!(lagna::sign_of(sun).is_some());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn at(&self, point: Point) -> Option<&Derived> {
         self.found.iter().find(|found| found.point == point)
     }
 
     /// The points of one family.
+    ///
+    /// ```
+    /// use teistro_chart::sample;
+    /// use teistro_points::Points;
+    ///
+    /// let foundation = sample::foundation()?;
+    /// let points = Points::from_longitudes(&foundation)?;
+    /// use teistro_core::catalogue::PointFamily;
+    ///
+    /// assert_eq!(points.family(PointFamily::UpagrahaSolar).count(), 5);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn family(&self, family: PointFamily) -> impl Iterator<Item = &Derived> {
         self.found
             .iter()
@@ -103,12 +195,41 @@ impl Points {
     }
 
     /// The points standing in a sign.
+    ///
+    /// ```
+    /// use teistro_chart::sample;
+    /// use teistro_points::Points;
+    ///
+    /// let foundation = sample::foundation()?;
+    /// let points = Points::from_longitudes(&foundation)?;
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// // Every point is in one sign or another.
+    /// let counted: usize = Rashi::ALL.into_iter().map(|sign| points.in_sign(sign).count()).sum();
+    /// assert_eq!(counted, points.all().len());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn in_sign(&self, sign: Rashi) -> impl Iterator<Item = &Derived> {
         self.found.iter().filter(move |found| found.sign == sign)
     }
 
     /// Which bhava of a founded chart a point falls in, counting
     /// inclusively from the lagna's own sign.
+    ///
+    /// ```
+    /// use teistro_chart::sample;
+    /// use teistro_points::Points;
+    ///
+    /// let foundation = sample::foundation()?;
+    /// let points = Points::from_longitudes(&foundation)?;
+    /// use teistro_core::catalogue::Point;
+    ///
+    /// let house = points.house_of(Point::Yogi, &foundation);
+    /// assert!(house.is_some_and(|house| (1..=12).contains(&house)));
+    /// // A point the chart does not carry has no house.
+    /// assert_eq!(points.house_of(Point::Gulika, &foundation), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn house_of(&self, point: Point, foundation: &ChartFoundation) -> Option<u8> {
         let found = self.at(point)?;

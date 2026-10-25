@@ -103,6 +103,14 @@ pub const LONGEST_HOURS: f64 = 36.0;
 /// sunrise; this starts from the Sun at birth, as its three siblings do,
 /// which is the recording engine's convention for them (the module's notes).
 ///
+/// ```
+/// use teistro_points::lagna::bhava;
+///
+/// // Two hours after sunrise, a sign on from a Sun at 10°.
+/// assert!((bhava(10.0, 2.0)?.longitude_deg - 40.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`driven`].
@@ -118,6 +126,13 @@ pub fn bhava(sun_deg: f64, hours_after_sunrise: f64) -> Result<Derived, Error> {
 
 /// The hora lagna: the Sun advanced one sign for each hour since
 /// sunrise.
+///
+/// ```
+/// use teistro_points::lagna::hora;
+///
+/// assert!((hora(10.0, 1.5)?.longitude_deg - 55.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -135,6 +150,14 @@ pub fn hora(sun_deg: f64, hours_after_sunrise: f64) -> Result<Derived, Error> {
 /// The ghati lagna: the Sun advanced one sign for each ghati, which is
 /// two and a half signs an hour.
 ///
+/// ```
+/// use teistro_points::lagna::ghati;
+///
+/// // Twenty-four minutes is one ghati, one sign.
+/// assert!((ghati(0.0, 0.4)?.longitude_deg - 30.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`driven`].
@@ -150,6 +173,15 @@ pub fn ghati(sun_deg: f64, hours_after_sunrise: f64) -> Result<Derived, Error> {
 
 /// The pranapada lagna: two signs an hour, and a shift by the modality
 /// of the sign the Sun stands in.
+///
+/// ```
+/// use teistro_points::lagna::pranapada;
+///
+/// // A Sun in movable Aries adds nothing; in fixed Taurus, two thirds of the circle.
+/// assert!((pranapada(0.0, 1.0)?.longitude_deg - 60.0).abs() < 1e-9);
+/// assert!((pranapada(40.0, 0.0)?.longitude_deg - 280.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -167,6 +199,15 @@ pub fn pranapada(sun_deg: f64, hours_after_sunrise: f64) -> Result<Derived, Erro
 
 /// What the pranapada adds for a Sun in a given sign.
 ///
+/// ```
+/// use teistro_points::lagna::pranapada_shift;
+///
+/// assert_eq!(pranapada_shift(10.0)?, 0.0);
+/// assert_eq!(pranapada_shift(40.0)?, 240.0);
+/// assert_eq!(pranapada_shift(70.0)?, 120.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// `INVALID_ARG` for a longitude that is not a finite number.
@@ -180,6 +221,18 @@ pub fn pranapada_shift(sun_deg: f64) -> Result<f64, Error> {
 }
 
 /// One of the three lagnas the clock drives.
+///
+/// ```
+/// use teistro_core::catalogue::Point;
+/// use teistro_points::lagna::{HORA_RATE_DEG_PER_HOUR, driven, hora};
+///
+/// let point = driven(Point::HoraLagna, 10.0, 1.5, HORA_RATE_DEG_PER_HOUR, 0.0)?;
+/// assert_eq!(point, hora(10.0, 1.5)?);
+/// // Past a day and a half since sunrise is not a time the verses count.
+/// let late = driven(Point::HoraLagna, 10.0, 37.0, HORA_RATE_DEG_PER_HOUR, 0.0);
+/// assert_eq!(late.unwrap_err().field(), Some("points.hours_after_sunrise"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -218,6 +271,14 @@ pub fn driven(
 /// degrees over the corpus, so this is settled rather than chosen
 /// (`03-design/points-measured.md` §4).
 ///
+/// ```
+/// use teistro_points::lagna::sree;
+///
+/// // The Moon half through Ashwini: the lagna advanced half a circle.
+/// assert!((sree(100.0, 360.0 / 54.0)?.longitude_deg - 280.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// `INVALID_ARG` for a longitude that is not a finite number.
@@ -227,6 +288,14 @@ pub fn sree(lagna_deg: f64, moon_deg: f64) -> Result<Derived, Error> {
 }
 
 /// How far into its nakshatra a longitude stands, as a fraction of one.
+///
+/// ```
+/// use teistro_points::lagna::nakshatra_fraction;
+///
+/// // 20° is half through Bharani, which runs from 13° 20′ to 26° 40′.
+/// assert!((nakshatra_fraction(20.0)? - 0.5).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -239,6 +308,14 @@ pub fn nakshatra_fraction(longitude_deg: f64) -> Result<f64, Error> {
 
 /// The Yogi point: the two luminaries together, and seven nakshatras on.
 ///
+/// ```
+/// use teistro_points::lagna::yogi;
+///
+/// // The luminaries' 30°, and seven nakshatras on.
+/// assert!((yogi(10.0, 20.0)?.longitude_deg - (123.0 + 20.0 / 60.0)).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// `INVALID_ARG` for a longitude that is not a finite number.
@@ -247,6 +324,15 @@ pub fn yogi(sun_deg: f64, moon_deg: f64) -> Result<Derived, Error> {
 }
 
 /// The Avayogi: fourteen nakshatras past the Yogi.
+///
+/// ```
+/// use teistro_points::lagna::{avayogi, yogi};
+///
+/// let (yogi, avayogi) = (yogi(10.0, 20.0)?, avayogi(10.0, 20.0)?);
+/// // Fourteen nakshatras past the Yogi.
+/// assert!(((avayogi.longitude_deg - yogi.longitude_deg).rem_euclid(360.0) - (186.0 + 40.0 / 60.0)).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -343,6 +429,15 @@ pub fn indu(lagna_deg: f64, moon_deg: f64) -> Result<Derived, Error> {
 
 /// The nakshatra a point falls in, which for the Yogi is the "yogi
 /// nakshatra" an almanac prints beside it.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_points::lagna::{nakshatra_of, yogi};
+///
+/// // The Yogi at 123° 20′, in Magha: the almanac's yogi nakshatra.
+/// assert_eq!(nakshatra_of(&yogi(10.0, 20.0)?), Some(Nakshatra::Magha));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn nakshatra_of(point: &Derived) -> Option<Nakshatra> {
     let width = 360.0 / f64::from(u16::try_from(Nakshatra::ALL.len()).unwrap_or(27));
@@ -356,6 +451,14 @@ pub fn nakshatra_of(point: &Derived) -> Option<Nakshatra> {
 }
 
 /// The sign a longitude falls in, which the modality shift reads.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_points::lagna::sign_of;
+///
+/// assert_eq!(sign_of(45.0), Some(Rashi::Taurus));
+/// assert_eq!(sign_of(f64::INFINITY), None);
+/// ```
 #[must_use]
 pub fn sign_of(longitude_deg: f64) -> Option<Rashi> {
     Derived::at(Point::SreeLagna, longitude_deg)

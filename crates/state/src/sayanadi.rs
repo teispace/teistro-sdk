@@ -28,6 +28,16 @@ use teistro_time::ghati::GhatiPala;
 
 /// The anka of the first syllable of a name, 1 to 5 (the translator's note
 /// to BPHS ch. 45 v. 37).
+///
+/// ```
+/// use teistro_state::sayanadi::Anka;
+///
+/// assert_eq!(Anka::ALL.map(Anka::get), [1, 2, 3, 4, 5]);
+/// // Written as the number it is.
+/// assert_eq!(serde_json::to_string(&Anka::ALL[2])?, "3");
+/// assert!(serde_json::from_str::<Anka>("6").is_err());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u8", into = "u8")]
@@ -59,6 +69,12 @@ impl Anka {
     }
 
     /// Its value, 1 to 5.
+    ///
+    /// ```
+    /// use teistro_state::Anka;
+    ///
+    /// assert_eq!(Anka::ALL[4].get(), 5);
+    /// ```
     #[must_use]
     pub const fn get(self) -> u8 {
         self.0
@@ -80,6 +96,14 @@ impl From<Anka> for u8 {
 }
 
 /// A graha's Sayanadi state, with its sub-state for every anka.
+///
+/// ```
+/// use teistro_core::catalogue::{AvasthaSayanadi, Graha};
+/// use teistro_state::Sayanadi;
+///
+/// let sun = Sayanadi::of_state(Graha::Sun, AvasthaSayanadi::Shayana);
+/// assert_eq!(sun.cheshtas.len(), 5);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Sayanadi {
@@ -110,6 +134,16 @@ impl Sayanadi {
     }
 
     /// A graha's sub-states in a state, for every anka.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{AvasthaCheshta, AvasthaSayanadi, Graha};
+    /// use teistro_state::Sayanadi;
+    ///
+    /// // Nidra (12): 144 and the anka leave the anka, and the Moon's 2 is added.
+    /// let moon = Sayanadi::of_state(Graha::Moon, AvasthaSayanadi::Nidra);
+    /// assert_eq!(moon.cheshtas[0], AvasthaCheshta::Vicheshta);
+    /// assert_eq!(moon.cheshtas[1], AvasthaCheshta::Drishti);
+    /// ```
     #[must_use]
     pub fn of_state(graha: Graha, avastha: AvasthaSayanadi) -> Sayanadi {
         Sayanadi {
@@ -120,6 +154,19 @@ impl Sayanadi {
 }
 
 /// What a chart gives every graha's Sayanadi alike.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Rashi};
+/// use teistro_state::sayanadi::SayanadiChart;
+/// use teistro_time::ghati::GhatiPala;
+///
+/// let chart = SayanadiChart {
+///     moon: Nakshatra::Rohini,
+///     ishtakaal: GhatiPala { ghati: 5, pala: 0, vipala: 0 },
+///     lagna: Rashi::Leo,
+/// };
+/// assert_eq!(chart.lagna, Rashi::Leo);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SayanadiChart {
     /// The Moon's nakshatra.
@@ -131,6 +178,17 @@ pub struct SayanadiChart {
 }
 
 /// The sub-state a graha in a state is in under a name of an anka.
+///
+/// ```
+/// use teistro_core::catalogue::{AvasthaCheshta, AvasthaSayanadi, Graha};
+/// use teistro_state::Anka;
+/// use teistro_state::sayanadi::cheshta;
+///
+/// // Gamana (5): 25 + 2 is 27, a remainder of 3 by twelve; Saturn's 3 makes
+/// // 6, and nothing over three is Vicheshta.
+/// assert_eq!(cheshta(Graha::Saturn, AvasthaSayanadi::Gamana, Anka::try_new(2)?), AvasthaCheshta::Vicheshta);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn cheshta(graha: Graha, avastha: AvasthaSayanadi, anka: Anka) -> AvasthaCheshta {
     let number = u32::from(avastha.id()) + 1;
@@ -149,6 +207,27 @@ pub fn cheshta(graha: Graha, avastha: AvasthaSayanadi, anka: Anka) -> AvasthaChe
 
 /// A graha's Sayanadi, or `None` for a body BPHS gives no number: the
 /// outer planets.
+///
+/// ```
+/// use teistro_core::angle::Nas;
+/// use teistro_core::catalogue::{AvasthaSayanadi, Graha, Nakshatra, Rashi};
+/// use teistro_core::settings::{SayanadiGhatis, SayanadiNodes};
+/// use teistro_state::sayanadi::{SayanadiChart, sayanadi};
+/// use teistro_time::ghati::GhatiPala;
+///
+/// let chart = SayanadiChart {
+///     moon: Nakshatra::Rohini,
+///     ishtakaal: GhatiPala { ghati: 5, pala: 0, vipala: 0 },
+///     lagna: Rashi::Leo,
+/// };
+/// // The Sun at 11° of Aries: Ashwini (1), the Sun's 1, the fourth navamsha;
+/// // 4, with Rohini's 4, five ghatis and Leo's 5, is 18, a remainder of 6.
+/// let sun = sayanadi(Graha::Sun, Nas::try_from_degrees(11.0)?, &chart, SayanadiGhatis::Elapsed, SayanadiNodes::NineGrahaOrder);
+/// assert_eq!(sun.map(|sun| sun.avastha), Some(AvasthaSayanadi::Agamana));
+/// // The outer planets have no number.
+/// assert_eq!(sayanadi(Graha::Uranus, Nas::try_from_degrees(10.0)?, &chart, SayanadiGhatis::Elapsed, SayanadiNodes::NineGrahaOrder), None);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn sayanadi(
     graha: Graha,

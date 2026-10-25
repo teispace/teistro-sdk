@@ -21,6 +21,25 @@ use crate::drishti::{self, Strength};
 use crate::rashi;
 
 /// One body's gaze at another.
+///
+/// ```
+/// use teistro_aspect::{Drishti, Strength};
+/// use teistro_core::boundary::Boundaries;
+/// use teistro_core::catalogue::Graha;
+///
+/// // Saturn at 2° of its sign looks fully at Jupiter in the seventh, at 14°.
+/// let saturn = Boundaries { sign_deg: 2.0, nakshatra_deg: 2.0, pada_deg: 1.3 };
+/// let jupiter = Boundaries { sign_deg: 14.0, nakshatra_deg: 4.0, pada_deg: 0.7 };
+/// let drishti = Drishti {
+///     from: Graha::Saturn,
+///     to: Graha::Jupiter,
+///     houses: 7,
+///     strength: Strength::Full,
+///     from_edge: saturn,
+///     to_edge: jupiter,
+/// };
+/// assert!(drishti.strength.is_full());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Drishti {
@@ -50,6 +69,27 @@ impl Drishti {
     /// drishti is a step function: over the corpus, moving every body
     /// the recording engine flagged as near an edge across it changes 52
     /// of 6696 relations (`03-design/aspect-drishti-measured.md` §5).
+    ///
+    /// ```
+    /// use teistro_aspect::{Drishti, Strength};
+    /// use teistro_core::boundary::Boundaries;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Saturn at 2° of its sign looks fully at Jupiter in the seventh, at 14°.
+    /// let saturn = Boundaries { sign_deg: 2.0, nakshatra_deg: 2.0, pada_deg: 1.3 };
+    /// let jupiter = Boundaries { sign_deg: 14.0, nakshatra_deg: 4.0, pada_deg: 0.7 };
+    /// let drishti = Drishti {
+    ///     from: Graha::Saturn,
+    ///     to: Graha::Jupiter,
+    ///     houses: 7,
+    ///     strength: Strength::Full,
+    ///     from_edge: saturn,
+    ///     to_edge: jupiter,
+    /// };
+    /// // Firm against a one-degree doubt, not against a three-degree one.
+    /// assert!(drishti.is_firm(1.0));
+    /// assert!(!drishti.is_firm(3.0));
+    /// ```
     #[must_use]
     pub fn is_firm(&self, tolerance_deg: f64) -> bool {
         self.from_edge.sign_deg > tolerance_deg && self.to_edge.sign_deg > tolerance_deg
@@ -57,6 +97,25 @@ impl Drishti {
 
     /// How near either end stands to the sign edge that decides this,
     /// degrees.
+    ///
+    /// ```
+    /// use teistro_aspect::{Drishti, Strength};
+    /// use teistro_core::boundary::Boundaries;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Saturn at 2° of its sign looks fully at Jupiter in the seventh, at 14°.
+    /// let saturn = Boundaries { sign_deg: 2.0, nakshatra_deg: 2.0, pada_deg: 1.3 };
+    /// let jupiter = Boundaries { sign_deg: 14.0, nakshatra_deg: 4.0, pada_deg: 0.7 };
+    /// let drishti = Drishti {
+    ///     from: Graha::Saturn,
+    ///     to: Graha::Jupiter,
+    ///     houses: 7,
+    ///     strength: Strength::Full,
+    ///     from_edge: saturn,
+    ///     to_edge: jupiter,
+    /// };
+    /// assert_eq!(drishti.nearest_edge_deg(), 2.0);
+    /// ```
     #[must_use]
     pub fn nearest_edge_deg(&self) -> f64 {
         self.from_edge.sign_deg.min(self.to_edge.sign_deg)
@@ -64,6 +123,22 @@ impl Drishti {
 }
 
 /// Two bodies that look at each other.
+///
+/// ```
+/// use teistro_aspect::{Mutual, Strength};
+/// use teistro_core::catalogue::Graha;
+///
+/// // Mars looks at Saturn in its fourth fully, and Saturn back from Mars's
+/// // tenth, its own special house.
+/// let pair = Mutual {
+///     first: Graha::Mars,
+///     second: Graha::Saturn,
+///     houses: 4,
+///     outward: Strength::Full,
+///     back: Strength::Full,
+/// };
+/// assert!(pair.is_full());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Mutual {
@@ -81,6 +156,22 @@ pub struct Mutual {
 
 impl Mutual {
     /// Whether both look fully.
+    ///
+    /// ```
+    /// use teistro_aspect::{Mutual, Strength};
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // The Moon looks at the Sun in its fifth by half, and the Sun back from
+    /// // the ninth by half.
+    /// let trine = Mutual {
+    ///     first: Graha::Moon,
+    ///     second: Graha::Sun,
+    ///     houses: 5,
+    ///     outward: Strength::Half,
+    ///     back: Strength::Half,
+    /// };
+    /// assert!(!trine.is_full());
+    /// ```
     #[must_use]
     pub const fn is_full(&self) -> bool {
         self.outward.is_full() && self.back.is_full()
@@ -98,6 +189,18 @@ struct Placed {
 }
 
 /// Every relation of one founded chart.
+///
+/// ```
+/// use teistro_aspect::Aspects;
+/// use teistro_chart::sample;
+/// use teistro_core::catalogue::Graha;
+///
+/// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+/// // Every relation it holds is one of some strength.
+/// assert!(aspects.all().iter().all(|drishti| drishti.strength.is_any()));
+/// assert!(aspects.sign(Graha::Sun).is_some());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Aspects {
@@ -141,6 +244,22 @@ impl<'de> Deserialize<'de> for Aspects {
 
 impl Aspects {
     /// Every relation of a founded chart.
+    ///
+    /// ```
+    /// use teistro_aspect::{Aspects, drishti};
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let settings = sample::resolved().settings;
+    /// let aspects = Aspects::of(&sample::foundation()?, &settings)?;
+    /// // Each relation is the table's between the two signs.
+    /// let (sun, moon) = (aspects.sign(Graha::Sun), aspects.sign(Graha::Moon));
+    /// if let (Some(sun), Some(moon)) = (sun, moon) {
+    ///     let strength = drishti::between_under(Graha::Sun, sun, moon, settings.aspect.node_aspects);
+    ///     assert_eq!(aspects.between(Graha::Sun, Graha::Moon).map(|d| d.strength), strength.is_any().then_some(strength));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -191,18 +310,47 @@ impl Aspects {
 
     /// The drishti table these were computed under, which a value
     /// carries so a reader need not go back to the settings.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// assert_eq!(aspects.table(), teistro_aspect::drishti::PARASHARA);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn table(&self) -> &'static str {
         self.table
     }
 
     /// Every relation, strongest first among those a body casts.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// // No body looks at itself.
+    /// assert!(aspects.all().iter().all(|drishti| drishti.from != drishti.to));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn all(&self) -> &[Drishti] {
         &self.relations
     }
 
     /// The relations a body casts.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// assert!(aspects.cast_by(Graha::Jupiter).all(|drishti| drishti.from == Graha::Jupiter));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn cast_by(&self, graha: Graha) -> impl Iterator<Item = &Drishti> {
         self.relations
             .iter()
@@ -210,6 +358,16 @@ impl Aspects {
     }
 
     /// The relations a body receives.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// assert!(aspects.on(Graha::Moon).all(|drishti| drishti.to == Graha::Moon));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn on(&self, graha: Graha) -> impl Iterator<Item = &Drishti> {
         self.relations
             .iter()
@@ -217,6 +375,18 @@ impl Aspects {
     }
 
     /// The relation one body casts on another, if there is one.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// if let Some(drishti) = aspects.between(Graha::Saturn, Graha::Moon) {
+    ///     assert_eq!((drishti.from, drishti.to), (Graha::Saturn, Graha::Moon));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn between(&self, from: Graha, to: Graha) -> Option<&Drishti> {
         self.relations
@@ -225,12 +395,33 @@ impl Aspects {
     }
 
     /// Whether one body aspects another at all.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// assert_eq!(aspects.aspects(Graha::Mars, Graha::Venus), aspects.between(Graha::Mars, Graha::Venus).is_some());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn aspects(&self, from: Graha, to: Graha) -> bool {
         self.between(from, to).is_some()
     }
 
     /// Whether one body aspects another fully.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// // A full aspect is an aspect.
+    /// assert!(!aspects.aspects_fully(Graha::Mars, Graha::Venus) || aspects.aspects(Graha::Mars, Graha::Venus));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn aspects_fully(&self, from: Graha, to: Graha) -> bool {
         self.between(from, to)
@@ -239,6 +430,18 @@ impl Aspects {
 
     /// The strongest relation on a body, or `None` when nothing looks at
     /// it.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// if let Some(strongest) = aspects.strongest_on(Graha::Moon) {
+    ///     assert!(aspects.on(Graha::Moon).all(|drishti| drishti.strength <= strongest.strength));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn strongest_on(&self, graha: Graha) -> Option<&Drishti> {
         self.on(graha).max_by_key(|relation| relation.strength)
@@ -252,12 +455,35 @@ impl Aspects {
     /// over a slice and a reader that holds only the relations — a
     /// narrative composer, a pass measuring one — shares this answer
     /// rather than writing a second one.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// for pair in aspects.mutual() {
+    ///     assert!(aspects.aspects(pair.first, pair.second) && aspects.aspects(pair.second, pair.first));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn mutual(&self) -> impl Iterator<Item = Mutual> {
         mutual_pairs(&self.relations)
     }
 
     /// The bodies sharing a sign with this one, which is what the
     /// tradition means by a conjunction.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// // Rahu and Ketu are never in one sign.
+    /// assert!(aspects.conjunct(Graha::Rahu).all(|other| other != Graha::Ketu));
+    /// assert!(aspects.conjunct(Graha::Sun).all(|other| aspects.sign(other) == aspects.sign(Graha::Sun)));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn conjunct(&self, graha: Graha) -> impl Iterator<Item = Graha> {
         let here = self.sign(graha);
         self.placed.iter().filter_map(move |other| {
@@ -267,6 +493,17 @@ impl Aspects {
 
     /// Whether one body aspects another under the **rashi** drishti,
     /// which is a relation between their signs and is always mutual.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// // The rashi drishti is always mutual.
+    /// assert_eq!(aspects.rashi_aspects(Graha::Sun, Graha::Saturn), aspects.rashi_aspects(Graha::Saturn, Graha::Sun));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn rashi_aspects(&self, from: Graha, to: Graha) -> bool {
         match (self.sign(from), self.sign(to)) {
@@ -276,6 +513,20 @@ impl Aspects {
     }
 
     /// The sign a body stands in.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    ///
+    /// let foundation = sample::foundation()?;
+    /// let aspects = Aspects::of(&foundation, &sample::resolved().settings)?;
+    /// let moon = foundation.graha(Graha::Moon).map(|moon| u16::from(moon.sign_index()));
+    /// assert_eq!(aspects.sign(Graha::Moon), moon.and_then(Rashi::from_id));
+    /// // Only the nine are placed.
+    /// assert_eq!(aspects.sign(Graha::Uranus), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn sign(&self, graha: Graha) -> Option<Rashi> {
         self.placed

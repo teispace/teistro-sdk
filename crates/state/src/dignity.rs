@@ -37,12 +37,32 @@ pub const DEEP_EXALTATION_ORB_DEG: f64 = 1.0;
 
 /// Whether a graha is one of the two shadow grahas, which own no sign
 /// and whose dignity ends at neutral.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_state::dignity::is_shadow;
+///
+/// assert!(is_shadow(Graha::Ketu));
+/// assert!(!is_shadow(Graha::Saturn));
+/// ```
 #[must_use]
 pub const fn is_shadow(graha: Graha) -> bool {
     matches!(graha, Graha::Rahu | Graha::Ketu)
 }
 
 /// How a body stands to the lord of the sign it is in, three ways.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi, Relationship};
+/// use teistro_state::dignity::friendship;
+///
+/// // The Sun in Gemini, Mercury in Leo: Mercury is neutral to the Sun by
+/// // nature and a friend from the third, so a friend in all.
+/// let sign_of = |graha| (graha == Graha::Mercury).then_some(Rashi::Leo);
+/// let reading = friendship(Graha::Sun, Rashi::Gemini, sign_of);
+/// assert_eq!((reading.natural, reading.temporary, reading.compound), (Relationship::Neutral, Relationship::Friend, Relationship::Friend));
+/// assert_eq!(reading.dispositor, Some(Graha::Mercury));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Friendship {
@@ -62,12 +82,32 @@ pub struct Friendship {
 /// Both readings the catalogue offers: the graha's own list, and the
 /// sign's lordship, which agree for every shipped member and would catch
 /// a future one where they did not.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_state::dignity::in_own_sign;
+///
+/// assert!(in_own_sign(Graha::Mars, Rashi::Scorpio));
+/// assert!(!in_own_sign(Graha::Mars, Rashi::Leo));
+/// ```
 #[must_use]
 pub fn in_own_sign(graha: Graha, sign: Rashi) -> bool {
     graha.attributes().own.contains(&sign) || sign.attributes().lord == graha
 }
 
 /// The natural friendship a graha has with the lord of a sign.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi, Relationship};
+/// use teistro_state::dignity::natural;
+///
+/// // The Sun's friends are the Moon, Mars and Jupiter; Venus and Saturn its
+/// // enemies; Mercury neutral.
+/// assert_eq!(natural(Graha::Sun, Rashi::Aries), Relationship::Friend);
+/// assert_eq!(natural(Graha::Sun, Rashi::Taurus), Relationship::Enemy);
+/// assert_eq!(natural(Graha::Sun, Rashi::Gemini), Relationship::Neutral);
+/// assert_eq!(natural(Graha::Sun, Rashi::Leo), Relationship::Friend);
+/// ```
 #[must_use]
 pub fn natural(graha: Graha, sign: Rashi) -> Relationship {
     let lord = sign.attributes().lord;
@@ -91,6 +131,18 @@ pub fn natural(graha: Graha, sign: Rashi) -> Relationship {
 ///
 /// `None` when the chart does not carry the dispositor, which a partial
 /// chart may not.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi, Relationship};
+/// use teistro_state::dignity::temporary;
+///
+/// // The Sun in Aries: Mars in Gemini, the third, is a friend; in Libra, the
+/// // seventh, an enemy.
+/// assert_eq!(temporary(Graha::Sun, Rashi::Aries, |_| Some(Rashi::Gemini)), Some(Relationship::Friend));
+/// assert_eq!(temporary(Graha::Sun, Rashi::Aries, |_| Some(Rashi::Libra)), Some(Relationship::Enemy));
+/// // A chart that does not carry Mars cannot say.
+/// assert_eq!(temporary(Graha::Sun, Rashi::Aries, |_| None), None);
+/// ```
 #[must_use]
 pub fn temporary(
     graha: Graha,
@@ -106,6 +158,15 @@ pub fn temporary(
 ///
 /// [`temporary`] measures from the sign the graha stands in; a divisional
 /// chart's dignity measures from its rasi seat instead.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi, Relationship};
+/// use teistro_state::dignity::temporary_from;
+///
+/// // Venus seated in Pisces, Jupiter in Capricorn: the eleventh from it.
+/// let friend = temporary_from(Graha::Venus, Graha::Jupiter, Rashi::Pisces, |_| Some(Rashi::Capricorn));
+/// assert_eq!(friend, Some(Relationship::Friend));
+/// ```
 #[must_use]
 pub fn temporary_from(
     graha: Graha,
@@ -130,6 +191,18 @@ pub fn temporary_from(
 /// The classical table: two friendships make a great friend, two
 /// enmities a great enemy, and a disagreement is neutral whichever way
 /// round it falls.
+///
+/// ```
+/// use teistro_core::catalogue::Relationship::{Enemy, Friend, GreatEnemy, GreatFriend, Neutral};
+/// use teistro_state::dignity::compound;
+///
+/// assert_eq!(compound(Friend, Friend), GreatFriend);
+/// assert_eq!(compound(Enemy, Enemy), GreatEnemy);
+/// assert_eq!(compound(Neutral, Friend), Friend);
+/// // A disagreement is neutral whichever way round.
+/// assert_eq!(compound(Friend, Enemy), Neutral);
+/// assert_eq!(compound(Enemy, Friend), Neutral);
+/// ```
 #[must_use]
 pub const fn compound(natural: Relationship, temporary: Relationship) -> Relationship {
     match (natural, temporary) {
@@ -149,6 +222,18 @@ pub const fn compound(natural: Relationship, temporary: Relationship) -> Relatio
 /// friendship with the sign's lord, its temporary half read between the
 /// graha's and the lord's rasi seats as `rasi_sign_of` gives them (B.V.
 /// Raman, Art. 30). The shadow grahas stop at neutral, as in [`dignity`].
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_state::dignity::varga_dignity;
+///
+/// // By the sign alone: the Sun's navamsha in Libra is its debilitation.
+/// assert_eq!(varga_dignity(Graha::Sun, Rashi::Libra, |_| None), Dignity::Debilitated);
+/// // In Gemini, Mercury neutral by nature and a friend from the Sun's rasi
+/// // seat in Aries to its own in Pisces, the twelfth.
+/// let seats = |graha| Some(if graha == Graha::Sun { Rashi::Aries } else { Rashi::Pisces });
+/// assert_eq!(varga_dignity(Graha::Sun, Rashi::Gemini, seats), Dignity::Friend);
+/// ```
 #[must_use]
 pub fn varga_dignity(
     graha: Graha,
@@ -187,6 +272,15 @@ pub fn varga_dignity(
 }
 
 /// Every friendship reading for a graha in a chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi, Relationship};
+/// use teistro_state::dignity::friendship;
+///
+/// // A body in its own sign is its own friend, twice over.
+/// let own = friendship(Graha::Sun, Rashi::Leo, |_| Some(Rashi::Leo));
+/// assert_eq!(own.compound, Relationship::GreatFriend);
+/// ```
 #[must_use]
 pub fn friendship(
     graha: Graha,
@@ -207,6 +301,22 @@ pub fn friendship(
 ///
 /// `compound` is its five-fold friendship with the dispositor, which the
 /// ladder falls through to and the shadow grahas never reach.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
+/// use teistro_state::dignity::dignity;
+///
+/// let neutral = Relationship::Neutral;
+/// // The Sun is exalted in Aries, deeply within a degree of 10°.
+/// assert_eq!(dignity(Graha::Sun, Rashi::Aries, 10.5, neutral), Dignity::DeepExalted);
+/// assert_eq!(dignity(Graha::Sun, Rashi::Aries, 25.0, neutral), Dignity::Exalted);
+/// // Its moolatrikona is the first twenty degrees of Leo, its own sign after.
+/// assert_eq!(dignity(Graha::Sun, Rashi::Leo, 10.0, neutral), Dignity::Mooltrikona);
+/// assert_eq!(dignity(Graha::Sun, Rashi::Leo, 25.0, neutral), Dignity::OwnSign);
+/// assert_eq!(dignity(Graha::Sun, Rashi::Libra, 10.0, neutral), Dignity::DeepDebilitated);
+/// // Elsewhere the friendship decides.
+/// assert_eq!(dignity(Graha::Sun, Rashi::Gemini, 5.0, Relationship::Friend), Dignity::Friend);
+/// ```
 #[must_use]
 pub fn dignity(graha: Graha, sign: Rashi, degrees_in_sign: f64, compound: Relationship) -> Dignity {
     let attributes = graha.attributes();

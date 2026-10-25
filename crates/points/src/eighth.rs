@@ -99,8 +99,35 @@ pub const BESIDE_GULIKA: [Point; 4] = [
 /// from a founded chart. It takes them from whatever the caller has:
 /// `chart` implements this over `astro::houses`, and a test implements
 /// it over a straight line.
+///
+/// ```
+/// use teistro_core::error::Error;
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_points::Ascendant;
+///
+/// // Any closure from an instant to degrees is one.
+/// let rising = |at: JulianDay<Utc>| -> Result<f64, Error> { Ok((at.get() * 360.0).rem_euclid(360.0)) };
+/// assert!((rising.ascendant_deg(JulianDay::literal(2_460_000.5))? - 180.0).abs() < 1e-6);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub trait Ascendant {
     /// The ascendant at an instant, in the chart's own zodiac, degrees.
+    ///
+    /// ```
+    /// use teistro_core::error::Error;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_points::Ascendant;
+    ///
+    /// /// An ascendant fixed at one degree, for a test.
+    /// struct Fixed(f64);
+    /// impl Ascendant for Fixed {
+    ///     fn ascendant_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> {
+    ///         Ok(self.0)
+    ///     }
+    /// }
+    /// assert_eq!(Fixed(42.0).ascendant_deg(JulianDay::literal(2_460_000.5))?, 42.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -119,6 +146,19 @@ where
 }
 
 /// A lord's eighth of an arc: which part it is, and when it runs.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_core::interval::Interval;
+/// use teistro_points::eighth::saturns;
+///
+/// // A Sunday's daylight: Saturn's is the seventh eighth.
+/// let day = Interval::literal(2_460_000.25, 2_460_000.75);
+/// let portion = saturns(day, Vara::Ravivara, true)?;
+/// assert_eq!(portion.eighth, 7);
+/// assert!((portion.at.from.get() - 2_460_000.625).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Portion {
@@ -139,6 +179,12 @@ pub struct Portion {
 /// the instant is the caller's to change, and the start, which keeps the
 /// five portions one rule with the shipped Gulika, is the default (crux
 /// C405).
+///
+/// ```
+/// use teistro_points::Moment;
+///
+/// assert_eq!(Moment::default(), Moment::Start);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Moment {
     /// Where the portion begins, as the SDK's Gulika is read.
@@ -198,6 +244,17 @@ fn first_weekday(vara: Vara, is_day: bool) -> u8 {
 /// For Saturn this is the catalogue's measured table, which
 /// [`saturns_eighth`] reads, and a test holds the two to each other on
 /// all fourteen halves of the week.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Vara};
+/// use teistro_points::eighth::{lords_eighth, saturns_eighth};
+///
+/// // A Sunday's daylight begins with the Sun's own eighth.
+/// assert_eq!(lords_eighth(Graha::Sun, Vara::Ravivara, true), Some(1));
+/// assert_eq!(lords_eighth(Graha::Saturn, Vara::Ravivara, true), saturns_eighth(Vara::Ravivara, true));
+/// // The nodes lord no weekday.
+/// assert_eq!(lords_eighth(Graha::Rahu, Vara::Ravivara, true), None);
+/// ```
 #[must_use]
 pub fn lords_eighth(lord: Graha, vara: Vara, is_day: bool) -> Option<u8> {
     let own = Vara::ALL
@@ -231,6 +288,15 @@ pub fn lord_of(point: Point) -> Option<Graha> {
 ///
 /// The daylight takes the catalogue's table as it stands; the night
 /// takes it walked [`NIGHT_WALK`] weekdays on.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_points::eighth::saturns_eighth;
+///
+/// assert_eq!(saturns_eighth(Vara::Ravivara, true), Some(7));
+/// // The night's lords start from Thursday's Jupiter: Jupiter, Venus, Saturn.
+/// assert_eq!(saturns_eighth(Vara::Ravivara, false), Some(3));
+/// ```
 #[must_use]
 pub fn saturns_eighth(vara: Vara, is_day: bool) -> Option<u8> {
     Kaala::GulikaKaala
@@ -262,6 +328,16 @@ fn cut(arc: Interval, eighth: u8) -> Result<Portion, Error> {
 }
 
 /// Saturn's portion of an arc.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_core::interval::Interval;
+/// use teistro_points::eighth::saturns;
+///
+/// // A polar day has no eighths.
+/// let none = Interval::literal(2_460_000.25, 2_460_000.25);
+/// assert_eq!(saturns(none, Vara::Ravivara, true).unwrap_err().field(), Some("points.arc"));
+/// ```
 ///
 /// # Errors
 ///
@@ -312,6 +388,24 @@ pub fn lords(arc: Interval, lord: Graha, vara: Vara, is_day: bool) -> Result<Por
 
 /// Gulika and Mandi: the ascendant where Saturn's portion begins and
 /// where it ends.
+///
+/// ```
+/// use teistro_core::catalogue::{Point, Vara};
+/// use teistro_points::eighth::day_division;
+/// use teistro_core::error::Error;
+/// use teistro_core::interval::Interval;
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// // An ascendant that turns once a day, and a Sunday's twelve-hour daylight.
+/// let rising = |at: JulianDay<Utc>| -> Result<f64, Error> { Ok((at.get() * 360.0).rem_euclid(360.0)) };
+/// let day = Interval::literal(2_460_000.25, 2_460_000.75);
+/// // Saturn's seventh eighth runs from 0.625 to 0.6875 of the turn.
+/// let [gulika, mandi] = day_division(day, Vara::Ravivara, true, &rising)?;
+/// assert_eq!((gulika.point, mandi.point), (Point::Gulika, Point::Mandi));
+/// assert!((gulika.longitude_deg - 225.0).abs() < 1e-6);
+/// assert!((mandi.longitude_deg - 247.5).abs() < 1e-6);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -380,6 +474,25 @@ pub fn upagraha(
 /// Kala, Mrityu, Yamaghantaka and Ardhaprahara, each the ascendant where
 /// its lord's eighth begins — the default of crux C405.
 ///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_points::eighth::lorded;
+/// use teistro_core::error::Error;
+/// use teistro_core::interval::Interval;
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// // An ascendant that turns once a day, and a Sunday's twelve-hour daylight.
+/// let rising = |at: JulianDay<Utc>| -> Result<f64, Error> { Ok((at.get() * 360.0).rem_euclid(360.0)) };
+/// let day = Interval::literal(2_460_000.25, 2_460_000.75);
+/// // Kala at the Sun's first eighth, Mrityu at Mars's third, Yamaghantaka at
+/// // Jupiter's fifth and Ardhaprahara at Mercury's fourth.
+/// let found = lorded(day, Vara::Ravivara, true, &rising)?.map(|point| point.longitude_deg);
+/// for (got, expected) in found.into_iter().zip([90.0, 135.0, 180.0, 157.5]) {
+///     assert!((got - expected).abs() < 1e-6);
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`lorded_at`].
@@ -394,6 +507,22 @@ pub fn lorded(
 
 /// Kala, Mrityu, Yamaghantaka and Ardhaprahara, each read at a chosen
 /// moment of its lord's eighth.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_points::eighth::{Moment, lorded_at};
+/// use teistro_core::error::Error;
+/// use teistro_core::interval::Interval;
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// // An ascendant that turns once a day, and a Sunday's twelve-hour daylight.
+/// let rising = |at: JulianDay<Utc>| -> Result<f64, Error> { Ok((at.get() * 360.0).rem_euclid(360.0)) };
+/// let day = Interval::literal(2_460_000.25, 2_460_000.75);
+/// // Read where each eighth ends: Kala at the end of the first.
+/// let [kala, ..] = lorded_at(day, Vara::Ravivara, true, Moment::End, &rising)?;
+/// assert!((kala.longitude_deg - 112.5).abs() < 1e-6);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -67,6 +67,23 @@ const fn favour(favourable: bool, unfavourable: bool) -> Option<&'static str> {
 ///
 /// The order is the reading's, which is the catalogue's, so the same chart
 /// always gives the same plan.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_core::settings::ShantaSign;
+/// use teistro_interpret::{NoReadings, dasha_phala};
+/// use teistro_strength::{DashaPhalaChart, DashaPhalaGraha, DashaPhalaReading};
+///
+/// let sign = Rashi::Aries;
+/// let chart = DashaPhalaChart {
+///     grahas: [(); 9].map(|()| DashaPhalaGraha { longitude: 5.0, house: 1, dignity: Dignity::Neutral, retrograde: false }),
+///     vargas: [[sign; 9]; 7],
+/// };
+/// let plan = dasha_phala(&DashaPhalaReading::of(&chart, ShantaSign::Friendly), &NoReadings);
+/// assert_eq!(plan.items[0].key, "sdk.reason.dasha.phase");
+/// assert!(plan.keys().iter().all(|key| key.starts_with("sdk.reason.dasha.")));
+/// # let _ = Graha::Sun;
+/// ```
 #[must_use]
 pub fn dasha_phala(reading: &DashaPhalaReading, vocabulary: &dyn Vocabulary) -> Plan {
     let mut plan = Plan::default();

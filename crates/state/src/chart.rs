@@ -22,6 +22,16 @@ use crate::dignity::{self, Friendship};
 use crate::sayanadi::{self, Sayanadi, SayanadiChart};
 
 /// Which way a body is going, and how fast.
+///
+/// ```
+/// use teistro_chart::sample;
+/// use teistro_state::state;
+///
+/// let states = state(&sample::foundation()?, &sample::resolved().settings)?;
+/// // The motion is the foundation's, and its sign says which way.
+/// assert!(states.iter().all(|graha| graha.motion.retrograde == (graha.motion.speed_deg_per_day < 0.0)));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Motion {
@@ -32,6 +42,21 @@ pub struct Motion {
 }
 
 /// What one graha is, in one chart.
+///
+/// ```
+/// use teistro_state::avastha;
+/// use teistro_chart::sample;
+/// use teistro_state::state;
+///
+/// let states = state(&sample::foundation()?, &sample::resolved().settings)?;
+/// assert_eq!(states.len(), 9);
+/// // Each reading follows from the dignity it stands on.
+/// for graha in &states {
+///     assert_eq!(graha.wakefulness, avastha::wakefulness(graha.dignity));
+///     assert_eq!(graha.deeptadi, avastha::deeptadi(graha.dignity));
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaState {
@@ -68,12 +93,36 @@ pub struct GrahaState {
 
 impl GrahaState {
     /// Whether the Sun burns it at all.
+    ///
+    /// ```
+    /// use teistro_chart::sample;
+    /// use teistro_state::state;
+    ///
+    /// let states = state(&sample::foundation()?, &sample::resolved().settings)?;
+    /// // The Sun burns nothing, itself included.
+    /// assert!(!states[0].is_combust());
+    /// assert_eq!(states[0].combustion.from_sun_deg, None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn is_combust(&self) -> bool {
         self.combustion.is_combust()
     }
 
     /// Whether it stands in a sign it is at home in.
+    ///
+    /// ```
+    /// use teistro_state::avastha;
+    /// use teistro_chart::sample;
+    /// use teistro_state::state;
+    ///
+    /// let states = state(&sample::foundation()?, &sample::resolved().settings)?;
+    /// for graha in &states {
+    ///     // At home is where the bright state is decided.
+    ///     assert_eq!(graha.is_at_home(), avastha::deeptadi(graha.dignity).is_some());
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn is_at_home(&self) -> bool {
         matches!(
@@ -87,6 +136,18 @@ impl GrahaState {
     }
 
     /// Whether it lies in Shayana, the bad avastha BPHS ch. 6 v. 53 names.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::AvasthaSayanadi;
+    /// use teistro_chart::sample;
+    /// use teistro_state::state;
+    ///
+    /// let states = state(&sample::foundation()?, &sample::resolved().settings)?;
+    /// for graha in &states {
+    ///     assert_eq!(graha.is_shayana(), graha.sayanadi.map(|s| s.avastha) == Some(AvasthaSayanadi::Shayana));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_shayana(&self) -> bool {
         self.sayanadi
@@ -94,6 +155,16 @@ impl GrahaState {
     }
 
     /// Whether it lost a war it is in.
+    ///
+    /// ```
+    /// use teistro_chart::sample;
+    /// use teistro_state::state;
+    ///
+    /// let states = state(&sample::foundation()?, &sample::resolved().settings)?;
+    /// // A body at no war has lost none.
+    /// assert!(states.iter().filter(|graha| graha.war.is_none()).all(|graha| !graha.lost_its_war()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn lost_its_war(&self) -> bool {
         self.war.is_some_and(|war| !war.is_winner)
@@ -101,6 +172,19 @@ impl GrahaState {
 }
 
 /// What every graha of a founded chart is.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_chart::sample;
+/// use teistro_state::state;
+///
+/// let states = state(&sample::foundation()?, &sample::resolved().settings)?;
+/// let moon = states.iter().find(|graha| graha.graha == Graha::Moon).ok_or("the Moon")?;
+/// assert!((1..=12).contains(&moon.house));
+/// // The nine grahas each carry a Sayanadi.
+/// assert!(states.iter().all(|graha| graha.sayanadi.is_some()));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
