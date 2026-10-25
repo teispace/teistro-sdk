@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`PrecessionModel` is written as its key.**
+**Numbers:** none. serde spelt the four models `VONDRAK2011`,
+`IAU2006`, `IAU1976` and `NEWCOMB`, while `key()`, which provenance
+stamps, spells `VONDRAK_2011`, `IAU_2006` and `IAU_1976`. Nothing reads
+or writes the serde form yet, so the two are made one now, before
+something does: serde takes the key, and the type's example checks all
+four.
+
 **`teistro-rules` has a run example on every public item.**
 **Numbers:** none. Its 301 items join the crates `check-doc-examples`
 holds there, thirty-nine in all. The examples build their charts in

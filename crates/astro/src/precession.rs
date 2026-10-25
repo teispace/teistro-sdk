@@ -30,6 +30,18 @@ use crate::iau::vector::{Matrix3, Vector3, ir, rx, rxp, ry, rz, trxp};
 use crate::iau::{DAS2R, DJ00, DJC, DJY, RAD2DEG, ltp, obl06, obl80, p06};
 
 /// A precession model.
+///
+/// ```
+/// use teistro_astro::precession::PrecessionModel;
+///
+/// assert_eq!(PrecessionModel::default(), PrecessionModel::Vondrak2011);
+/// // Written as its key.
+/// for model in [PrecessionModel::Vondrak2011, PrecessionModel::Iau2006, PrecessionModel::Iau1976, PrecessionModel::Newcomb] {
+///     assert_eq!(serde_json::to_string(&model)?, format!("\"{}\"", model.key()));
+/// }
+/// assert_eq!(serde_json::from_str::<PrecessionModel>(r#""IAU_2006""#)?, PrecessionModel::Iau2006);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -37,11 +49,14 @@ pub enum PrecessionModel {
     /// Vondrák, Capitaine and Wallace (2011): the long-term model, the
     /// default.
     #[default]
+    #[serde(rename = "VONDRAK_2011")]
     Vondrak2011,
     /// IAU 2006 (Capitaine, Wallace and Chapront 2003, P03).
+    #[serde(rename = "IAU_2006")]
     Iau2006,
     /// IAU 1976 (Lieske, Lederle, Fricke and Morando 1977), the
     /// rotation-angle formulation.
+    #[serde(rename = "IAU_1976")]
     Iau1976,
     /// Newcomb's precession in Kinoshita's (1975) form, referred to B1850.
     Newcomb,
@@ -49,6 +64,12 @@ pub enum PrecessionModel {
 
 impl PrecessionModel {
     /// The stable key.
+    ///
+    /// ```
+    /// use teistro_astro::precession::PrecessionModel;
+    ///
+    /// assert_eq!(PrecessionModel::Newcomb.key(), "NEWCOMB");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -103,6 +124,17 @@ fn rotation_angles(model: PrecessionModel, tt: JulianDay<Tt>) -> (f64, f64, f64)
 
 /// The precession matrix from the mean equator and equinox of J2000.0 to
 /// the mean equator and equinox of a TT date, without the frame bias.
+///
+/// ```
+/// use teistro_astro::precession::{PrecessionModel, matrix};
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// // No precession at J2000.0 itself.
+/// let at_epoch = matrix(PrecessionModel::Vondrak2011, JulianDay::<Tt>::literal(2_451_545.0));
+/// for (row, unit) in at_epoch.iter().zip([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]) {
+///     assert!(row.iter().zip(unit).all(|(a, b)| (a - b).abs() < 1e-9));
+/// }
+/// ```
 #[must_use]
 pub fn matrix(model: PrecessionModel, tt: JulianDay<Tt>) -> Matrix3 {
     match model {
@@ -125,18 +157,57 @@ pub fn matrix(model: PrecessionModel, tt: JulianDay<Tt>) -> Matrix3 {
 
 /// A J2000.0 mean equatorial vector precessed to the mean equator and
 /// equinox of a TT date.
+///
+/// ```
+/// use teistro_astro::precession::{PrecessionModel, equatorial_to_ecliptic, mean_obliquity_rad, to_date};
+/// use teistro_astro::iau::{RAD2DEG, vector::c2s};
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// let j2000 = JulianDay::<Tt>::literal(2_451_545.0);
+/// let j2100 = JulianDay::<Tt>::literal(2_451_545.0 + 36_525.0);
+/// // The J2000.0 equinox a century on: about 1.397° of longitude, the general precession.
+/// let model = PrecessionModel::Vondrak2011;
+/// let of_date = to_date(model, j2100, [1.0, 0.0, 0.0]);
+/// let (longitude, _) = c2s(&equatorial_to_ecliptic(of_date, mean_obliquity_rad(model, j2100)));
+/// assert!((longitude * RAD2DEG - 1.397).abs() < 0.001);
+/// ```
 #[must_use]
 pub fn to_date(model: PrecessionModel, tt: JulianDay<Tt>, v: Vector3) -> Vector3 {
     rxp(&matrix(model, tt), &v)
 }
 
 /// A mean-of-date equatorial vector precessed back to J2000.0.
+///
+/// ```
+/// use teistro_astro::precession::{PrecessionModel, to_date, to_j2000};
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// let j2000 = JulianDay::<Tt>::literal(2_451_545.0);
+/// let j2100 = JulianDay::<Tt>::literal(2_451_545.0 + 36_525.0);
+/// // And back.
+/// let v = [0.6, 0.0, 0.8];
+/// let back = to_j2000(PrecessionModel::Iau2006, j2100, to_date(PrecessionModel::Iau2006, j2100, v));
+/// assert!(back.iter().zip(v).all(|(a, b)| (a - b).abs() < 1e-14));
+/// ```
 #[must_use]
 pub fn to_j2000(model: PrecessionModel, tt: JulianDay<Tt>, v: Vector3) -> Vector3 {
     trxp(&matrix(model, tt), &v)
 }
 
 /// A mean-of-date equatorial vector carried from one TT date to another.
+///
+/// ```
+/// use teistro_astro::precession::{PrecessionModel, between, to_date};
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// let j2000 = JulianDay::<Tt>::literal(2_451_545.0);
+/// let j2100 = JulianDay::<Tt>::literal(2_451_545.0 + 36_525.0);
+/// // From J2000.0, the same as to the date.
+/// let v = [0.6, 0.0, 0.8];
+/// let model = PrecessionModel::Iau1976;
+/// let carried = between(model, j2000, j2100, v);
+/// assert!(carried.iter().zip(to_date(model, j2100, v)).all(|(a, b)| (a - b).abs() < 1e-12));
+/// ```
 #[must_use]
 pub fn between(
     model: PrecessionModel,
@@ -150,6 +221,17 @@ pub fn between(
 /// The mean obliquity of the ecliptic consistent with a precession model,
 /// radians: Vondrák's own series, IAU 2006's polynomial, IAU 1980's for
 /// IAU 1976, and Newcomb's referred to 1850.
+///
+/// ```
+/// use teistro_astro::precession::{PrecessionModel, mean_obliquity_rad};
+/// use teistro_astro::iau::DAS2R;
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// let j2000 = JulianDay::<Tt>::literal(2_451_545.0);
+/// // 84381.406″ by IAU 2006 and 84381.448″ by IAU 1980.
+/// assert!((mean_obliquity_rad(PrecessionModel::Iau2006, j2000) / DAS2R - 84_381.406).abs() < 1e-6);
+/// assert!((mean_obliquity_rad(PrecessionModel::Iau1976, j2000) / DAS2R - 84_381.448).abs() < 1e-6);
+/// ```
 #[must_use]
 pub fn mean_obliquity_rad(model: PrecessionModel, tt: JulianDay<Tt>) -> f64 {
     let (date1, date2) = tt.split();
@@ -165,6 +247,14 @@ pub fn mean_obliquity_rad(model: PrecessionModel, tt: JulianDay<Tt>) -> f64 {
 }
 
 /// The mean obliquity consistent with a model, degrees.
+///
+/// ```
+/// use teistro_astro::precession::{PrecessionModel, mean_obliquity_deg};
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// let j2000 = JulianDay::<Tt>::literal(2_451_545.0);
+/// assert!((mean_obliquity_deg(PrecessionModel::Vondrak2011, j2000) - 23.439_279).abs() < 1e-5);
+/// ```
 #[must_use]
 pub fn mean_obliquity_deg(model: PrecessionModel, tt: JulianDay<Tt>) -> f64 {
     mean_obliquity_rad(model, tt) * RAD2DEG
@@ -172,6 +262,15 @@ pub fn mean_obliquity_deg(model: PrecessionModel, tt: JulianDay<Tt>) -> f64 {
 
 /// Rotates a mean equatorial vector of date into the ecliptic of the same
 /// date (about the x axis by the obliquity).
+///
+/// ```
+/// use teistro_astro::precession::equatorial_to_ecliptic;
+/// use teistro_astro::iau::DEG2RAD;
+///
+/// // The celestial pole lies the obliquity from the ecliptic's.
+/// let [_, y, z] = equatorial_to_ecliptic([0.0, 0.0, 1.0], 23.44 * DEG2RAD);
+/// assert!((z - (23.44 * DEG2RAD).cos()).abs() < 1e-15 && y > 0.0);
+/// ```
 #[must_use]
 pub fn equatorial_to_ecliptic(v: Vector3, obliquity_rad: f64) -> Vector3 {
     let mut r = ir();
@@ -181,6 +280,14 @@ pub fn equatorial_to_ecliptic(v: Vector3, obliquity_rad: f64) -> Vector3 {
 
 /// Rotates an ecliptic vector of date into the mean equator of the same
 /// date.
+///
+/// ```
+/// use teistro_astro::precession::{ecliptic_to_equatorial, equatorial_to_ecliptic};
+///
+/// let v = [0.3, -0.4, 0.866];
+/// let back = ecliptic_to_equatorial(equatorial_to_ecliptic(v, 0.409), 0.409);
+/// assert!(back.iter().zip(v).all(|(a, b)| (a - b).abs() < 1e-15));
+/// ```
 #[must_use]
 pub fn ecliptic_to_equatorial(v: Vector3, obliquity_rad: f64) -> Vector3 {
     let mut r = ir();
