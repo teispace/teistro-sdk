@@ -233,10 +233,9 @@ const READINGS: [Reading; 4] = [
         ephemeris: || Ephemeris::Builtin,
         shipped: false,
         ends_agree: false,
-        // The baseline's convention, the centre on the geometric horizon,
-        // which the conformance corpus records: two and a half minutes
-        // after the print's.
-        sunrise_agrees: false,
+        // The profile's own convention, the centre with refraction, which
+        // is the committee's: the print's sunrise within the bound.
+        sunrise_agrees: true,
     },
 ];
 

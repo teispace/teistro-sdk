@@ -4505,7 +4505,7 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   assert.equal(day.vara, 'vara.SHANIVARA');
   assert.ok(day.sunrise < day.sunset && day.sunset < 2451545 && 2451545 < day.nextSunrise);
   assert.equal(day.polar, null);
-  assert.equal(day.convention, 'CENTRE_NO_REFRACTION');
+  assert.equal(day.convention, 'CENTRE_REFRACTION');
   assert.equal(day.customAltitudeDeg, null);
   ctx.dispose();
 

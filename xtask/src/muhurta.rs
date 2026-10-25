@@ -31,7 +31,7 @@ use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::{Ayanamsha, Calendar, Choghadiya};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro_core::settings::{OverridePolicy, Profile, SettingsPatch, Sunrise};
+use teistro_core::settings::{Profile, SettingsPatch};
 use teistro_core::time::UtcOffset;
 use teistro_ephemeris_builtin::provider::Builtin;
 use teistro_muhurta::instant::clauses as instant_clauses;
@@ -164,8 +164,8 @@ fn page() -> Result<String, String> {
     let model = DrikSun::new(
         &provider,
         Ayanamsha::Lahiri,
-        Sunrise::CentreNoRefraction.into(),
-        OverridePolicy::PreferNative,
+        resolved.settings.day.sunrise,
+        resolved.settings.provider.overrides,
         delta_t,
     );
     let clock = clock();
@@ -181,7 +181,7 @@ fn page() -> Result<String, String> {
             &completion,
             place(),
             criterion,
-            Horizon::CENTRE_NO_REFRACTION,
+            Horizon::from_convention(resolved.settings.day.sunrise),
             delta_t,
         )
     };

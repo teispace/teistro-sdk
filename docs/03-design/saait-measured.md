@@ -148,7 +148,7 @@ days are day-clean, against 10 under his rules as shipped.
 | vivaha | 11-20 | 2027-03-04 | GURUVARA | each window by one of: TITHI KRISHNA_DWADASHI, TITHI KRISHNA_EKADASHI | each window by one of: TITHI KRISHNA_DWADASHI, TITHI KRISHNA_EKADASHI |
 | vivaha | 11-25 | 2027-03-09 | MANGALAVARA | VARA MANGALAVARA | VARA MANGALAVARA |
 | vivaha | 11-26 | 2027-03-10 | BUDHAVARA | day clean; MOON_JOINED | day clean; MOON_JOINED |
-| vivaha | 11-30 | 2027-03-14 | RAVIVARA | day clean; SEVENTH_OCCUPIED | day clean; SEVENTH_OCCUPIED, VENUS_IN_SIXTH |
+| vivaha | 11-30 | 2027-03-14 | RAVIVARA | day clean; SEVENTH_OCCUPIED | day clean; SEVENTH_OCCUPIED |
 | pasni | 1-07 | 2026-04-20 | SOMAVARA | day clean; UNWANTED_PLACEMENT 10 | day clean; each window by one of: LAGNA ARIES, UNWANTED_PLACEMENT 10 |
 | pasni | 1-10 | 2026-04-23 | GURUVARA | clean | day clean; each window by one of: LAGNA ARIES, UNWANTED_PLACEMENT 10 |
 | pasni | 1-21 | 2026-05-04 | SOMAVARA | day clean; each window by one of: LAGNA ARIES, UNWANTED_PLACEMENT 10 | day clean; each window by one of: LAGNA ARIES, UNWANTED_PLACEMENT 10 |

@@ -604,7 +604,7 @@ public final class BindingTest {
                 same(Vara.SHANIVARA, day.vara(), "a Saturday");
                 check(day.sunrise() < day.sunset() && day.sunset() < 2_451_545.0 && 2_451_545.0 < day.nextSunrise(),
                         "the instant is in the day's night");
-                same(Sunrise.CENTRE_NO_REFRACTION, day.convention(), "the profile's sunrise");
+                same(Sunrise.CENTRE_REFRACTION, day.convention(), "the profile's sunrise");
             }
         });
 

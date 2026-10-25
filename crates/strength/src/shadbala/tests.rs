@@ -537,6 +537,17 @@ fn the_bhava_bala_reads_each_graha_s_own_shadbala() {
 
 /// BPHS ch. 27 v. 15's khandas: 45 for the first sign of the bhuja, 78 by
 /// the second, the whole 90 at the solstice, south from Tula.
+/// The Ayana bala under the khandas reads them over their own 90: at a
+/// sayana 30° the Sun's 45 khandas give exactly 45 virupas, where the
+/// spherical declination over the obliquity gives less.
+#[test]
+fn the_khandas_scale_the_ayana_over_their_ninety() {
+    let mut at30 = chart();
+    at30.grahas[0].tropical = 30.0;
+    assert_eq!(ayana(Graha::Sun, &at30, Kranti::Khanda), 45.0);
+    assert!(ayana(Graha::Sun, &at30, Kranti::Ecliptic) < 44.9);
+}
+
 #[test]
 fn the_khandas_sum_to_ninety_at_the_solstice() {
     assert!((super::kaala::tabled_for_test(0.0) - 0.0).abs() < 1e-12);

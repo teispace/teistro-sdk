@@ -7197,7 +7197,7 @@ void _engineTests() {
     expect(day.sunrise < day.sunset && day.sunset < 2451545.0, isTrue);
     expect(2451545.0 < day.nextSunrise, isTrue);
     expect(day.polar, isNull);
-    expect(day.convention, Sunrise.centreNoRefraction);
+    expect(day.convention, Sunrise.centreRefraction);
     expect(day.customAltitudeDeg, isNull);
     ctx.dispose();
 
