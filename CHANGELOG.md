@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`check-mutants` holds each equivalent mutant to its line.**
+**Numbers:** none. `.cargo/mutants.toml` names each mutant no test can
+catch by line and column, and the doc examples added to dasha, vargas
+and strength had moved fourteen of them: their mutants were made again,
+and the pull request's own run found the one on a line it touched. All
+fourteen follow their code now, and fast-check's `check-mutants` reads
+every entry against the source, failing one whose column no longer
+starts its operator or whose line has left its function.
+
 **`teistro-ephemeris-builtin` has a run example on every public item.**
 **Numbers:** none. Its 68 items join the crates `check-doc-examples`
 holds there, thirty-seven in all. The tables and Pluto's fit are
