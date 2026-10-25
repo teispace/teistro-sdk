@@ -69,6 +69,6 @@ pub mod eighth;
 pub mod lagna;
 pub mod solar;
 
-pub use chart::Points;
+pub use chart::{Points, Withheld};
 pub use derived::Derived;
 pub use eighth::{Ascendant, Moment, Portion};

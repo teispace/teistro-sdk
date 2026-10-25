@@ -565,7 +565,8 @@ pub struct RulesReading<'r> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub longevity: Option<Longevity>,
     /// The inputs a rule named that this chart could not have — `points` for
-    /// a birth with no sunrise — every rule reading one having answered false.
+    /// a birth with no sunrise, or one whose points withhold a time lagna
+    /// (`Points::withheld`) — every rule reading one having answered false.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub unreadable: Vec<&'static str>,
 }

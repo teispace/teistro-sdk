@@ -7,7 +7,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::{Graha, Point, PointFamily, Rashi, Vara};
-use teistro_core::error::Error;
+use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 
 use crate::derived::Derived;
@@ -41,7 +41,50 @@ use crate::solar;
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Points {
     found: Vec<Derived>,
+    /// The points this chart cannot have, each with its reason; absent
+    /// when there are none.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    withheld: Vec<Withheld>,
 }
+
+/// A point a chart cannot have, and why: a time lagna whose birth is
+/// further from its sunrise than the verses count ([`lagna::LONGEST_HOURS`]),
+/// or a portion of a day with no arc to divide.
+///
+/// The chart keeps every other point; one that cannot be read does not
+/// take the rest with it.
+///
+/// ```
+/// use teistro_core::catalogue::Point;
+/// use teistro_core::error::Status;
+/// use teistro_points::Withheld;
+///
+/// let withheld = Withheld { point: Point::HoraLagna, status: Status::OutOfRange, reason: String::from("102 hours") };
+/// assert_eq!(serde_json::to_value(&withheld).unwrap()["status"], "OUT_OF_RANGE");
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Withheld {
+    /// Which point, by the catalogue's own key.
+    pub point: Point,
+    /// The refusal's status: `OUT_OF_RANGE` for a time lagna, `UNSUPPORTED`
+    /// for a portion of a day without an arc.
+    pub status: Status,
+    /// The refusal's message.
+    pub reason: String,
+}
+
+/// The time lagnas, each with its rule: the four a birth's distance from
+/// sunrise drives.
+type TimeLagna = (Point, fn(f64, f64) -> Result<Derived, Error>);
+
+/// The four time lagnas, in the order a chart lists them.
+const TIME_LAGNAS: [TimeLagna; 4] = [
+    (Point::BhavaLagna, lagna::bhava),
+    (Point::HoraLagna, lagna::hora),
+    (Point::GhatiLagna, lagna::ghati),
+    (Point::PranapadaLagna, lagna::pranapada),
+];
 
 impl Points {
     /// The points a chart's own longitudes decide, which is everything
@@ -74,17 +117,45 @@ impl Points {
         let moon = longitude(foundation, Graha::Moon)?;
         let lagna_deg = foundation.lagna_deg;
         let hours = foundation.timing.ishtakaal.to_hours();
-        let mut found = Vec::with_capacity(19);
-        found.extend(solar::chain(sun)?);
-        found.push(lagna::bhava(sun, hours)?);
-        found.push(lagna::hora(sun, hours)?);
-        found.push(lagna::ghati(sun, hours)?);
-        found.push(lagna::pranapada(sun, hours)?);
-        found.push(lagna::sree(lagna_deg, moon)?);
-        found.push(lagna::indu(lagna_deg, moon)?);
-        found.push(lagna::yogi(sun, moon)?);
-        found.push(lagna::avayogi(sun, moon)?);
-        Ok(Points { found })
+        let mut points = Points {
+            found: Vec::with_capacity(19),
+            withheld: Vec::new(),
+        };
+        points.found.extend(solar::chain(sun)?);
+        for (point, rule) in TIME_LAGNAS {
+            points.keep(
+                &[point],
+                Status::OutOfRange,
+                rule(sun, hours).map(|one| [one]),
+            )?;
+        }
+        points.found.push(lagna::sree(lagna_deg, moon)?);
+        points.found.push(lagna::indu(lagna_deg, moon)?);
+        points.found.push(lagna::yogi(sun, moon)?);
+        points.found.push(lagna::avayogi(sun, moon)?);
+        Ok(points)
+    }
+
+    /// Keeps what a family found, or withholds its points when it refused
+    /// for `withheld_for`; any other refusal is the chart's.
+    fn keep<const N: usize>(
+        &mut self,
+        points: &[Point; N],
+        withheld_for: Status,
+        found: Result<[Derived; N], Error>,
+    ) -> Result<(), Error> {
+        match found {
+            Ok(found) => self.found.extend(found),
+            Err(error) if error.status == withheld_for => {
+                self.withheld.extend(points.iter().map(|point| Withheld {
+                    point: *point,
+                    status: error.status,
+                    reason: error.message.clone(),
+                }));
+            }
+            Err(error) => return Err(error),
+        }
+        Ok(())
     }
 
     /// Every derived point of a founded chart, the six the day divides
@@ -129,12 +200,16 @@ impl Points {
         ascendant: &dyn Ascendant,
     ) -> Result<Points, Error> {
         let mut points = Points::from_longitudes(foundation)?;
-        points
-            .found
-            .extend(eighth::day_division(arc, vara, is_day, ascendant)?);
-        points
-            .found
-            .extend(eighth::lorded(arc, vara, is_day, ascendant)?);
+        points.keep(
+            &[Point::Gulika, Point::Mandi],
+            Status::Unsupported,
+            eighth::day_division(arc, vara, is_day, ascendant),
+        )?;
+        points.keep(
+            &eighth::BESIDE_GULIKA,
+            Status::Unsupported,
+            eighth::lorded(arc, vara, is_day, ascendant),
+        )?;
         Ok(points)
     }
 
@@ -152,6 +227,22 @@ impl Points {
     #[must_use]
     pub fn all(&self) -> &[Derived] {
         &self.found
+    }
+
+    /// The points this chart cannot have, each with its reason; empty for
+    /// a chart that has every point it was asked for.
+    ///
+    /// ```
+    /// use teistro_chart::sample;
+    /// use teistro_points::Points;
+    ///
+    /// let points = Points::from_longitudes(&sample::foundation()?)?;
+    /// assert!(points.withheld().is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub fn withheld(&self) -> &[Withheld] {
+        &self.withheld
     }
 
     /// One point, if this chart has it.
@@ -294,7 +385,10 @@ mod tests {
 
     #[test]
     fn an_empty_set_answers_nothing_rather_than_guessing() {
-        let none = Points { found: Vec::new() };
+        let none = Points {
+            found: Vec::new(),
+            withheld: Vec::new(),
+        };
         assert_eq!(none.all(), []);
         assert_eq!(none.at(Point::Dhuma), None);
         assert_eq!(none.family(PointFamily::UpagrahaSolar).count(), 0);

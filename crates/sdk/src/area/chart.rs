@@ -519,7 +519,7 @@ impl<'a> ChartArea<'a> {
                 present,
                 houses,
                 longevity,
-                unreadable: if unreadable {
+                unreadable: if unreadable || withholds_points(&document) {
                     vec!["points"]
                 } else {
                     Vec::new()
@@ -3266,6 +3266,15 @@ impl<'a> ChartArea<'a> {
             &|at| founder.ascendant_at(at, place, zodiac),
         )
     }
+}
+
+/// Whether a chart withholds a point (a polar birth's time lagnas), so
+/// that a rule reading one cannot answer, as on a chart with no points.
+fn withholds_points(document: &Document) -> bool {
+    document
+        .points
+        .as_ref()
+        .is_some_and(|points| !points.withheld().is_empty())
 }
 
 /// One chart of a batch [`ChartArea::interpreted`] sealed: its document,
