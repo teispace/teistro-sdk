@@ -39,6 +39,7 @@ use crate::support::with_context;
 /// `pakshi` family out.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
@@ -61,6 +62,7 @@ use crate::support::with_context;
 /// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
 /// // Three days of the native's bird, one entry each.
 /// assert_eq!(answer["value"].as_array().map(Vec::len), Some(3));
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///

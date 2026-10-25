@@ -40,6 +40,7 @@ use crate::support::with_context;
 /// a build that leaves the `rashifal` family out.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
@@ -63,6 +64,7 @@ use crate::support::with_context;
 /// // One period asked, one answered, sealed by its provenance.
 /// assert!(answer["provenance"]["input_hash"].is_string());
 /// assert_eq!(answer["value"].as_array().map(Vec::len), Some(1));
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
