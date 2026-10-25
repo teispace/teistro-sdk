@@ -42,8 +42,12 @@ const SURFACE: &str = "typecheck/surface.mjs";
 /// would be a broken package however green the SDK's own gate was. The
 /// generated façade is most of what it holds (ADR-0030).
 const ADAPTER_TSCONFIG: &str = "adapters/ephemeris-teimeris/node/tsconfig.json";
-/// Where the addon is loaded from: Node requires the `.node` suffix, so
-/// the cdylib Cargo builds is copied there.
+/// Where the leak test's foreign-function library is pinned and installed:
+/// Node has no FFI of its own to read the C allocator with, and the
+/// package must not depend on one.
+const LEAKS: &str = "bindings/node/leaks";
+/// Where the repository's own build is put, the first place in the tree
+/// the loader looks.
 pub(crate) const ADDON: &str = "bindings/node/native/index.node";
 
 /// The crate that builds the addon, as Cargo names its artefacts.
@@ -114,6 +118,28 @@ fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
     }
 }
 
+/// Installs the leak test's FFI library where the test reads the
+/// allocator: glibc Linux and Apple-silicon macOS, the hosts the Python,
+/// Java and Dart leak tests read. Elsewhere the test skips by design.
+fn leak_reader(root: &Path) {
+    let host = Platform::host();
+    let reads = matches!(
+        (host.os, host.cpu, host.libc),
+        ("darwin", "arm64", _) | ("linux", _, Some("glibc"))
+    );
+    if !reads {
+        crate::skip::excused(
+            format_args!("{LEAKS}: the leak test on {}", host.name()),
+            "the allocator's bytes in use are not read faithfully here",
+        );
+    } else if pinned_npm_tool(&root.join(LEAKS), "koffi").is_none() {
+        // The leak test then skips itself; a strict run counts the hole.
+        crate::skip::skip(format_args!(
+            "{LEAKS}: koffi is not installed and could not be (needs `npm`), so the leak test skips"
+        ));
+    }
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("node", "--version") {
         crate::skip::skip("no `node` on this machine; the Node binding's tests need it");
@@ -123,6 +149,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     if build_addon(root).is_err() {
         return 1;
     }
+    leak_reader(root);
     let outcome = blob_fixtures(root, &fixtures).and_then(|()| {
         step(
             Command::new("node")

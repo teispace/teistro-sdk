@@ -13,19 +13,23 @@
 // live (the Python test says why).
 //
 // A context dropped undisposed is freed by its `NativeFinalizer` when the VM
-// collects it, and a test cannot make the VM collect, so that path is held
-// by the Python and Java tests over the same C free, not here.
+// collects it. A test cannot ask the VM to collect directly, so the file
+// starts the VM's own service and asks it for an allocation profile taken
+// after a full collection, as the `leak_tracker` package does.
 //
 // Tagged `leaks`, so it runs alone (`dart_test.yaml`): another file run
 // beside it allocates from the same allocator.
 @Tags(['leaks'])
 library;
 
+import 'dart:developer';
 import 'dart:ffi';
+import 'dart:isolate';
 
 import 'package:ffi/ffi.dart';
 import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
+import 'package:vm_service/vm_service_io.dart';
 
 /// How far the bytes in use may move over a measured run.
 const budget = 64 * 1024;
@@ -107,27 +111,51 @@ int Function()? _reader() {
 
 final int Function()? inUse = _reader();
 
+/// A full collection through the VM's service, or null when the service
+/// will not start.
+Future<Future<void> Function()?> _collector() async {
+  final info = await Service.controlWebServer(
+    enable: true,
+    silenceOutput: true,
+  );
+  final uri = info.serverWebSocketUri;
+  final isolate = Service.getIsolateId(Isolate.current);
+  if (uri == null || isolate == null) {
+    return null;
+  }
+  final service = await vmServiceConnectUri(uri.toString());
+  return () async {
+    await service.getAllocationProfile(isolate, gc: true);
+  };
+}
+
 /// At least one of [runs] runs of [cycle] grows the bytes in use within
 /// [budget]. A failure names every run's growth and one run's over four
 /// times the cycles: a leak grows with the cycles, and what the allocator
-/// keeps for itself does not.
-void givesBack(void Function() cycle) {
+/// keeps for itself does not. With [collect], each run is read after a
+/// full collection, so what finalisers free is counted as freed.
+Future<void> givesBack(
+  void Function() cycle, {
+  Future<void> Function()? collect,
+}) async {
   final read = inUse!;
-  int run(int count) {
+  Future<int> run(int count) async {
+    await collect?.call();
     final before = read();
     for (var at = 0; at < count; at += 1) {
       cycle();
     }
+    await collect?.call();
     return read() - before;
   }
 
-  run(cycles);
-  final grown = [for (var at = 0; at < runs; at += 1) run(cycles)];
+  await run(cycles);
+  final grown = [for (var at = 0; at < runs; at += 1) await run(cycles)];
   final least = grown.reduce((a, b) => a < b ? a : b);
   if (least <= budget) {
     return;
   }
-  final longer = run(4 * cycles);
+  final longer = await run(4 * cycles);
   fail(
     'the bytes in use grew $grown over $runs runs of $cycles cycles '
     '(${least ~/ cycles} a cycle at least), and $longer over ${4 * cycles}; '
@@ -142,8 +170,8 @@ void main() {
           ? "the allocator's bytes in use cannot be read faithfully here"
           : null;
 
-  test('a context disposed gives back its native memory', skip: skip, () {
-    givesBack(() {
+  test('a context disposed gives back its native memory', skip: skip, () async {
+    await givesBack(() {
       final ctx = teistro.context(
         profile: 'nepali-default',
         testProvider: true,
@@ -153,7 +181,25 @@ void main() {
     });
   });
 
-  test('charts and positions give back their answers', skip: skip, () {
+  test(
+    'a context dropped undisposed is given back by its finaliser',
+    skip: skip,
+    () async {
+      final collect = await _collector();
+      if (collect == null) {
+        fail("the VM's service did not start, so nothing can collect");
+      }
+      await givesBack(collect: collect, () {
+        final ctx = teistro.context(
+          profile: 'nepali-default',
+          testProvider: true,
+        );
+        expect(ctx.profile, isNotEmpty);
+      });
+    },
+  );
+
+  test('charts and positions give back their answers', skip: skip, () async {
     final ctx = teistro.context(
       profile: 'nepali-default',
       locale: 'en-Latn',
@@ -165,7 +211,7 @@ void main() {
       altitudeM: Altitude(1400),
     );
     try {
-      givesBack(() {
+      await givesBack(() {
         ctx.chart.found(
           instant: 2451545.0,
           place: kathmandu,
