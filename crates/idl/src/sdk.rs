@@ -12,14 +12,40 @@ use crate::model::{Api, BlobSchema, EnumDef, EnumValue, Scalar};
 use crate::names::pascal;
 
 /// The symbol prefix.
+///
+/// ```
+/// use teistro_idl::names;
+/// use teistro_idl::sdk::PREFIX;
+///
+/// assert_eq!(names::c_type_name(PREFIX, "TsContext"), "ts_context");
+/// ```
 pub const PREFIX: &str = "ts_";
 
 /// The constant holding the ABI version.
+///
+/// ```
+/// use teistro_idl::sdk::{ABI_VERSION_CONSTANT, PREFIX};
+///
+/// // The prefix, upper-cased, then the words.
+/// assert!(ABI_VERSION_CONSTANT.starts_with(&PREFIX.to_ascii_uppercase()));
+/// ```
 pub const ABI_VERSION_CONSTANT: &str = "TS_ABI_VERSION";
 
 /// The sources the boundary is read from, repository-relative, in the
 /// order their items appear in the header: the status, the port's
 /// bodies, scales and vtable, then the C ABI crate module by module.
+///
+/// ```
+/// # use std::path::Path;
+/// #
+/// # let root = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+///
+/// use teistro_idl::sdk::SOURCES;
+///
+/// // The status first, and every one a file in the checkout.
+/// assert_eq!(SOURCES[0], "crates/core/src/error.rs");
+/// assert!(SOURCES.iter().all(|relative| root.join(relative).is_file()));
+/// ```
 pub const SOURCES: [&str; 26] = [
     "crates/core/src/error.rs",
     "crates/port-ephemeris/src/body.rs",
@@ -50,6 +76,18 @@ pub const SOURCES: [&str; 26] = [
 ];
 
 /// The catalogue's generated JSON, relative to the repository root.
+///
+/// ```
+/// # use std::path::Path;
+/// #
+/// # let root = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+///
+/// use teistro_idl::sdk::{CATALOGUE_JSON, kinds_from_catalogue};
+///
+/// let kinds = kinds_from_catalogue(&std::fs::read_to_string(root.join(CATALOGUE_JSON))?)?;
+/// assert_eq!(kinds[0].name, "Kind");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const CATALOGUE_JSON: &str = "catalogue/catalogue.json";
 
 #[derive(Deserialize)]
@@ -79,6 +117,22 @@ struct MemberRecord {
 /// then one `u16` enum per kind whose members are the catalogue's keys and
 /// ids, each marked with its kind so the emitters know which union a
 /// member belongs to (`docs/03-design/core-types-and-catalogue.md`, §3.6).
+///
+/// ```
+/// use teistro_idl::Scalar;
+/// use teistro_idl::sdk::kinds_from_catalogue;
+///
+/// let json = r#"{"kinds": [{"kind": "graha", "number": 1, "doc": "The grahas.", "members": [
+///     {"key": "SUN", "id": 0, "doc": "The Sun"}
+/// ]}]}"#;
+/// let enums = kinds_from_catalogue(json)?;
+/// // `Kind` over the kinds, then one enum per kind with members.
+/// assert_eq!((enums[0].name.as_str(), enums[0].repr), ("Kind", Scalar::U8));
+/// let graha = &enums[1];
+/// assert_eq!((graha.name.as_str(), graha.values[0].name.as_str(), graha.values[0].key.as_str()), ("Graha", "Sun", "SUN"));
+/// assert!(kinds_from_catalogue("[]").is_err());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -135,6 +189,22 @@ pub fn kinds_from_catalogue(json: &str) -> Result<Vec<EnumDef>, ExtractError> {
 
 /// The SDK's description from a checkout: the sources, the catalogue's
 /// kinds, the blob schemas the boundary crate declares, and its version.
+///
+/// ```
+/// # use std::path::Path;
+/// #
+/// # let root = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+///
+/// use teistro_idl::Api;
+/// use teistro_idl::sdk::describe;
+///
+/// // The checkout described again is the description it ships.
+/// let shipped: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+/// let api = describe(root, shipped.blobs.clone(), &shipped.sdk_version)?;
+/// assert_eq!(api.functions, shipped.functions);
+/// assert_eq!(api.structs, shipped.structs);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

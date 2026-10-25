@@ -8,9 +8,35 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 /// The schema of the description file.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::model::SCHEMA;
+///
+/// assert_eq!(api.schema, SCHEMA);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const SCHEMA: &str = "teistro-api/1";
 
 /// The whole description of the C ABI.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// assert_eq!(api.prefix, "ts_");
+/// assert!(api.functions.iter().all(|function| function.name.starts_with(&api.prefix)));
+/// // The ABI version is a constant of the description too.
+/// let abi = api.constants.iter().find(|constant| constant.name == "TS_ABI_VERSION").ok_or("declared")?;
+/// assert_eq!(abi.value, i64::from(api.abi_version));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Api {
     /// [`SCHEMA`].
@@ -56,42 +82,130 @@ pub struct Api {
 
 impl Api {
     /// The enum with a Rust name.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// let kind = api.enum_named("Kind").ok_or("declared")?;
+    /// assert_eq!((kind.values[0].name.as_str(), kind.values[0].key.as_str()), ("Graha", "graha"));
+    /// assert!(api.enum_named("Nothing").is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn enum_named(&self, name: &str) -> Option<&EnumDef> {
         self.enums.iter().find(|e| e.name == name)
     }
 
     /// The struct with a Rust name.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// use teistro_idl::model::StructRole;
+    ///
+    /// let observer = api.struct_named("ObserverC").ok_or("declared")?;
+    /// assert_eq!(observer.role, StructRole::Object);
+    /// // A unit and a brand on each field, so a latitude is not a longitude.
+    /// assert_eq!(observer.fields[1].meta.brand.as_deref(), Some("latitude"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn struct_named(&self, name: &str) -> Option<&StructDef> {
         self.structs.iter().find(|s| s.name == name)
     }
 
     /// The opaque type with a Rust name.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// assert!(api.opaque_named("TsContext").is_some());
+    /// assert!(api.opaque_named("ObserverC").is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn opaque_named(&self, name: &str) -> Option<&OpaqueDef> {
         self.opaques.iter().find(|o| o.name == name)
     }
 
     /// The callback type with a Rust name.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// use teistro_idl::model::Role;
+    ///
+    /// // A provider's Delta T: the seconds come back through a pointer.
+    /// let delta_t = api.callback_named("DeltaTFn").ok_or("declared")?;
+    /// assert_eq!(delta_t.params.last().map(|param| param.role), Some(Role::ScalarOut));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn callback_named(&self, name: &str) -> Option<&CallbackDef> {
         self.callbacks.iter().find(|c| c.name == name)
     }
 
     /// The record with a name.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// assert!(api.record_named("Provenance").is_some());
+    /// assert!(api.record_named("provenance").is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn record_named(&self, name: &str) -> Option<&crate::records::RecordDef> {
         self.records.iter().find(|r| r.name == name)
     }
 
     /// The blob schema with a name.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// let positions = api.blob_named("positions").ok_or("declared")?;
+    /// assert_eq!(positions.id, 1);
+    /// assert_eq!(positions.sections[0].name, "summary");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn blob_named(&self, name: &str) -> Option<&BlobSchema> {
         self.blobs.iter().find(|b| b.name == name)
     }
 
     /// The function with a symbol name.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// // The function says which blob it fills.
+    /// let positions = api.function_named("ts_positions").ok_or("declared")?;
+    /// assert_eq!(positions.meta.blob.as_deref(), Some("positions"));
+    /// assert!(api.blob_named("positions").is_some());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn function_named(&self, name: &str) -> Option<&FunctionDef> {
         self.functions.iter().find(|f| f.name == name)
@@ -99,6 +213,14 @@ impl Api {
 }
 
 /// A machine scalar at the boundary.
+///
+/// ```
+/// use teistro_idl::Scalar;
+///
+/// assert_eq!(serde_json::to_string(&Scalar::Usize)?, r#""usize""#);
+/// assert_eq!((Scalar::I32.c_name(), Scalar::I32.width(8)), ("int32_t", 4));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Scalar {
@@ -132,6 +254,13 @@ pub enum Scalar {
 
 impl Scalar {
     /// Every scalar.
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    ///
+    /// // Every scalar's Rust spelling reads back as that scalar.
+    /// assert!(Scalar::ALL.iter().all(|scalar| Scalar::from_rust(scalar.rust_name()) == Some(*scalar)));
+    /// ```
     pub const ALL: [Scalar; 13] = [
         Scalar::U8,
         Scalar::U16,
@@ -149,12 +278,25 @@ impl Scalar {
     ];
 
     /// The scalar with a Rust spelling.
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    ///
+    /// assert_eq!(Scalar::from_rust("f64"), Some(Scalar::F64));
+    /// assert_eq!(Scalar::from_rust("String"), None);
+    /// ```
     #[must_use]
     pub fn from_rust(name: &str) -> Option<Scalar> {
         Scalar::ALL.iter().copied().find(|s| s.rust_name() == name)
     }
 
     /// The Rust spelling.
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    ///
+    /// assert_eq!(Scalar::Bool.rust_name(), "bool");
+    /// ```
     #[must_use]
     pub const fn rust_name(self) -> &'static str {
         match self {
@@ -175,6 +317,13 @@ impl Scalar {
     }
 
     /// The C spelling (`<stdint.h>`, `<stddef.h>`, `<stdbool.h>`).
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    ///
+    /// assert_eq!(Scalar::Usize.c_name(), "size_t");
+    /// assert_eq!(Scalar::F32.c_name(), "float");
+    /// ```
     #[must_use]
     pub const fn c_name(self) -> &'static str {
         match self {
@@ -196,6 +345,14 @@ impl Scalar {
 
     /// The width in bytes on a target; `None` for the pointer-sized ones
     /// when no target is given.
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    ///
+    /// assert_eq!(Scalar::U16.width(8), 2);
+    /// // The pointer-sized ones take the target's width: wasm32 is 4.
+    /// assert_eq!(Scalar::Usize.width(4), 4);
+    /// ```
     #[must_use]
     pub const fn width(self, pointer_width: usize) -> usize {
         match self {
@@ -208,12 +365,27 @@ impl Scalar {
     }
 
     /// Whether the scalar is a floating-point number.
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    ///
+    /// assert!(Scalar::F32.is_float());
+    /// assert!(!Scalar::I64.is_float());
+    /// ```
     #[must_use]
     pub const fn is_float(self) -> bool {
         matches!(self, Scalar::F32 | Scalar::F64)
     }
 
     /// Whether the scalar is a signed integer.
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    ///
+    /// assert!(Scalar::Isize.is_signed());
+    /// // A float is not a signed integer.
+    /// assert!(!Scalar::F64.is_signed() && !Scalar::U8.is_signed());
+    /// ```
     #[must_use]
     pub const fn is_signed(self) -> bool {
         matches!(
@@ -224,6 +396,15 @@ impl Scalar {
 }
 
 /// A type as it appears at the boundary.
+///
+/// ```
+/// use teistro_idl::{Scalar, TypeRef};
+///
+/// // `*mut f64`, as the description writes it.
+/// let out = TypeRef::pointer(TypeRef::scalar(Scalar::F64), true);
+/// assert_eq!(serde_json::to_string(&out)?, r#"{"kind":"pointer","to":{"kind":"scalar","scalar":"f64"},"mutable":true}"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum TypeRef {
@@ -274,12 +455,25 @@ pub enum TypeRef {
 
 impl TypeRef {
     /// A scalar.
+    ///
+    /// ```
+    /// use teistro_idl::{Scalar, TypeRef};
+    ///
+    /// assert_eq!(TypeRef::scalar(Scalar::U32).as_scalar(), Some(Scalar::U32));
+    /// ```
     #[must_use]
     pub const fn scalar(scalar: Scalar) -> TypeRef {
         TypeRef::Scalar { scalar }
     }
 
     /// A pointer to a type.
+    ///
+    /// ```
+    /// use teistro_idl::{Scalar, TypeRef};
+    ///
+    /// let read = TypeRef::pointer(TypeRef::Char, false);
+    /// assert_eq!(read.pointee(), Some(&TypeRef::Char));
+    /// ```
     #[must_use]
     pub fn pointer(to: TypeRef, mutable: bool) -> TypeRef {
         TypeRef::Pointer {
@@ -289,6 +483,15 @@ impl TypeRef {
     }
 
     /// What a pointer points at, through one level.
+    ///
+    /// ```
+    /// use teistro_idl::{Scalar, TypeRef};
+    ///
+    /// // One level at a time.
+    /// let twice = TypeRef::pointer(TypeRef::pointer(TypeRef::Void, true), true);
+    /// assert_eq!(twice.pointee().and_then(TypeRef::pointee), Some(&TypeRef::Void));
+    /// assert_eq!(TypeRef::Void.pointee(), None);
+    /// ```
     #[must_use]
     pub fn pointee(&self) -> Option<&TypeRef> {
         match self {
@@ -298,6 +501,13 @@ impl TypeRef {
     }
 
     /// The scalar, when the type is one.
+    ///
+    /// ```
+    /// use teistro_idl::{Scalar, TypeRef};
+    ///
+    /// assert_eq!(TypeRef::scalar(Scalar::Bool).as_scalar(), Some(Scalar::Bool));
+    /// assert_eq!(TypeRef::pointer(TypeRef::scalar(Scalar::Bool), false).as_scalar(), None);
+    /// ```
     #[must_use]
     pub const fn as_scalar(&self) -> Option<Scalar> {
         match self {
@@ -307,6 +517,17 @@ impl TypeRef {
     }
 
     /// The name of the enum, struct, opaque or callback the type names.
+    ///
+    /// ```
+    /// use teistro_idl::TypeRef;
+    ///
+    /// let context = TypeRef::Opaque { name: "TsContext".into() };
+    /// assert_eq!(context.named(), Some("TsContext"));
+    /// // Through a pointer it is the pointee that is named.
+    /// let handle = TypeRef::pointer(context, false);
+    /// assert_eq!(handle.named(), None);
+    /// assert_eq!(handle.pointee().and_then(TypeRef::named), Some("TsContext"));
+    /// ```
     #[must_use]
     pub fn named(&self) -> Option<&str> {
         match self {
@@ -322,6 +543,19 @@ impl TypeRef {
 /// The metadata an `api:` doc line carries (ADR-0023): units, ranges and
 /// examples on fields, the enum an integer stands for, nullability, and
 /// on a function the blob schema it fills.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// let observer = api.struct_named("ObserverC").ok_or("declared")?;
+/// let longitude = &observer.fields[0].meta;
+/// assert_eq!((longitude.unit.as_deref(), longitude.range.as_deref()), (Some("deg"), Some("[-180,180]")));
+/// assert!(!longitude.nullable);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Meta {
     /// The unit, such as `deg` or `deg/day`.
@@ -367,6 +601,20 @@ pub struct Meta {
 }
 
 /// An exported integer constant.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::Scalar;
+///
+/// let test = api.constants.iter().find(|constant| constant.name == "TS_CONTEXT_TEST_PROVIDER").ok_or("declared")?;
+/// assert_eq!((test.ty, test.value), (Scalar::U32, 1));
+/// assert_eq!(test.source, "crates/ffi/src/lib.rs");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ConstantDef {
     /// The Rust name.
@@ -382,6 +630,19 @@ pub struct ConstantDef {
 }
 
 /// A C-like enum.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// // The catalogue's kinds name the kind they are; the kinds' own enum does not.
+/// let graha = api.enum_named("Graha").ok_or("declared")?;
+/// assert_eq!(graha.kind.as_deref(), Some("graha"));
+/// assert_eq!(api.enum_named("Kind").ok_or("declared")?.kind, None);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnumDef {
     /// The Rust name.
@@ -400,6 +661,19 @@ pub struct EnumDef {
 }
 
 /// One enum member.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// let graha = api.enum_named("Graha").ok_or("declared")?;
+/// let sun = graha.values.iter().find(|value| value.name == "Sun").ok_or("a member")?;
+/// // Spelled as the catalogue spells it.
+/// assert_eq!(sun.key, "SUN");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnumValue {
     /// The Rust variant name.
@@ -421,6 +695,20 @@ pub struct EnumValue {
 }
 
 /// What a struct is for, which decides how every binding marshals it.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::model::StructRole;
+///
+/// assert_eq!(api.struct_named("TsString").ok_or("declared")?.role, StructRole::OwnedString);
+/// assert_eq!(api.struct_named("ProviderVtable").ok_or("declared")?.role, StructRole::Vtable);
+/// assert_eq!(serde_json::to_string(&StructRole::BorrowedString)?, r#""borrowed_string""#);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum StructRole {
@@ -446,6 +734,18 @@ pub enum StructRole {
 }
 
 /// A `#[repr(C)]` struct.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// let string = api.struct_named("TsString").ok_or("declared")?;
+/// assert_eq!(string.fields[0].name, "data");
+/// assert!(string.source.starts_with("crates/"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct StructDef {
     /// The Rust name.
@@ -462,6 +762,21 @@ pub struct StructDef {
 }
 
 /// One struct field.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::{Scalar, TypeRef};
+///
+/// let altitude = &api.struct_named("ObserverC").ok_or("declared")?.fields[2];
+/// // Unit-suffixed, and the unit said again in its metadata.
+/// assert_eq!((altitude.name.as_str(), altitude.meta.unit.as_deref()), ("altitude_m", Some("m")));
+/// assert_eq!(altitude.ty, TypeRef::scalar(Scalar::F64));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FieldDef {
     /// The name, unit-suffixed where it holds a quantity.
@@ -476,6 +791,20 @@ pub struct FieldDef {
 }
 
 /// A function-pointer type.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::model::Role;
+///
+/// let delta_t = api.callback_named("DeltaTFn").ok_or("declared")?;
+/// assert_eq!(delta_t.params[0].role, Role::UserData);
+/// assert!(delta_t.returns.as_scalar().is_some());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CallbackDef {
     /// The Rust type alias name.
@@ -491,6 +820,17 @@ pub struct CallbackDef {
 }
 
 /// An opaque handle type.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// let names: Vec<&str> = api.opaques.iter().map(|opaque| opaque.name.as_str()).collect();
+/// assert!(names.contains(&"TsContext") && names.contains(&"TsProvider"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OpaqueDef {
     /// The Rust name.
@@ -502,6 +842,19 @@ pub struct OpaqueDef {
 }
 
 /// An exported function.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// // The plugin loader is native only: a wasm binding emits nothing for it.
+/// assert!(api.function_named("ts_provider_load").ok_or("declared")?.native_only);
+/// let new = api.function_named("ts_context_new").ok_or("declared")?;
+/// assert!(!new.native_only && new.safety.is_some());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FunctionDef {
     /// The symbol name.
@@ -530,6 +883,20 @@ pub struct FunctionDef {
 }
 
 /// One parameter with its inferred role.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::model::Role;
+///
+/// let positions = api.function_named("ts_positions").ok_or("declared")?;
+/// let roles: Vec<Role> = positions.params.iter().map(|param| param.role).collect();
+/// assert_eq!(roles, [Role::Handle, Role::StructIn, Role::BlobOut]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ParamDef {
     /// The name.
@@ -548,6 +915,15 @@ pub struct ParamDef {
 /// The role of a parameter, inferred from its type and name
 /// ([`crate::rules::infer_role`]); it decides how every binding marshals
 /// the parameter.
+///
+/// ```
+/// use teistro_idl::model::Role;
+///
+/// // As the description spells it.
+/// assert_eq!(serde_json::to_string(&Role::HandleOut)?, r#""handle_out""#);
+/// assert_eq!(serde_json::from_str::<Role>(r#""array_in""#)?, Role::ArrayIn);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Role {
@@ -592,6 +968,24 @@ pub enum Role {
 
 /// The layout of one result blob: the sections a blob-returning entry
 /// point writes, in the order they appear in the table of contents.
+///
+/// ```
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let day = |blob: &str, id: u32| BlobSchema {
+/// #     name: blob.into(),
+/// #     id,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "day", "one day", vec![ColumnDef::new("jd", Scalar::F64, "the instant")]).of_shape("day"),
+/// #     ],
+/// # };
+///
+/// let chart = day("charts", 3);
+/// assert_eq!(chart.section("day").map(|(index, _)| index), Some(0));
+/// assert_eq!(serde_json::to_value(&chart)?["sections"][0]["shape"], "day");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BlobSchema {
     /// The schema's name, which the function's `api: blob=` names.
@@ -606,6 +1000,20 @@ pub struct BlobSchema {
 
 impl BlobSchema {
     /// The section with a name.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// // The index is the section's place in the blob's table of contents.
+    /// let positions = api.blob_named("positions").ok_or("declared")?;
+    /// let (index, instants) = positions.section("instants").ok_or("a section")?;
+    /// assert_eq!((index, instants.id), (1, 2));
+    /// assert!(positions.section("nothing").is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn section(&self, name: &str) -> Option<(usize, &SectionSchema)> {
         self.sections
@@ -616,6 +1024,14 @@ impl BlobSchema {
 }
 
 /// How a section's bytes are laid out.
+///
+/// ```
+/// use teistro_idl::{SectionKind, SectionSchema};
+///
+/// assert_eq!(SectionSchema::bytes(1, "text", "UTF-8").kind, SectionKind::Bytes);
+/// assert_eq!(serde_json::to_string(&SectionKind::Columns)?, r#""columns""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum SectionKind {
@@ -629,6 +1045,13 @@ pub enum SectionKind {
 }
 
 /// One section of a blob.
+///
+/// ```
+/// use teistro_idl::{ColumnDef, Scalar, SectionKind, SectionSchema};
+///
+/// let rows = SectionSchema::columns(2, "rows", "one row per body", vec![ColumnDef::new("lon", Scalar::F64, "degrees")]);
+/// assert_eq!((rows.id, rows.kind, rows.shape), (2, SectionKind::Columns, None));
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SectionSchema {
     /// The section id in the table of contents, unique within the schema.
@@ -666,6 +1089,30 @@ pub struct SectionSchema {
 /// same order, of the same scalars and naming the same enums. Two that
 /// differ would emit whichever the generator reached first and decode
 /// the other one wrongly — silently, since both are valid blobs.
+///
+/// ```
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let day = |blob: &str, id: u32| BlobSchema {
+/// #     name: blob.into(),
+/// #     id,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "day", "one day", vec![ColumnDef::new("jd", Scalar::F64, "the instant")]).of_shape("day"),
+/// #     ],
+/// # };
+///
+/// use teistro_idl::model::check_shapes;
+///
+/// // Two blobs declaring one day alike agree.
+/// check_shapes(&[day("charts", 3), day("panchanga", 4)])?;
+/// // One that writes the instant as f32 does not.
+/// let mut other = day("panchanga", 4);
+/// other.sections[0].fields[0].scalar = Scalar::F32;
+/// let refused = check_shapes(&[day("charts", 3), other]).unwrap_err();
+/// assert!(refused.starts_with("shape `day`: `charts.day` and `panchanga.day` disagree on `jd`"));
+/// # Ok::<(), String>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -729,6 +1176,21 @@ pub fn check_shapes(schemas: &[BlobSchema]) -> Result<(), String> {
 
 impl SectionSchema {
     /// The field or column with a name.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// use teistro_idl::Scalar;
+    ///
+    /// let positions = api.blob_named("positions").ok_or("declared")?;
+    /// let (_, summary) = positions.section("summary").ok_or("a section")?;
+    /// let (index, count) = summary.field("jd_count").ok_or("a field")?;
+    /// assert_eq!((index, count.scalar), (1, Scalar::U32));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn field(&self, name: &str) -> Option<(usize, &ColumnDef)> {
         self.fields.iter().enumerate().find(|(_, f)| f.name == name)
@@ -736,6 +1198,15 @@ impl SectionSchema {
 }
 
 /// A field of a fixed section or a column of a column section.
+///
+/// ```
+/// use teistro_idl::{ColumnDef, Scalar};
+///
+/// let scale = ColumnDef::new("scale", Scalar::U32, "the time scale").of_enum("TimeScale");
+/// // Written with the description's own key.
+/// assert_eq!(serde_json::to_value(&scale)?["enum"], "TimeScale");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ColumnDef {
     /// The name.
@@ -751,6 +1222,13 @@ pub struct ColumnDef {
 
 impl ColumnDef {
     /// A column.
+    ///
+    /// ```
+    /// use teistro_idl::{ColumnDef, Scalar};
+    ///
+    /// let jd = ColumnDef::new("jd", Scalar::F64, "a Julian day");
+    /// assert_eq!((jd.name.as_str(), jd.enum_name), ("jd", None));
+    /// ```
     #[must_use]
     pub fn new(name: &str, scalar: Scalar, doc: &str) -> ColumnDef {
         ColumnDef {
@@ -762,6 +1240,13 @@ impl ColumnDef {
     }
 
     /// The same column standing for an enum.
+    ///
+    /// ```
+    /// use teistro_idl::{ColumnDef, Scalar};
+    ///
+    /// let body = ColumnDef::new("body", Scalar::U16, "the body").of_enum("Body");
+    /// assert_eq!(body.enum_name.as_deref(), Some("Body"));
+    /// ```
     #[must_use]
     pub fn of_enum(mut self, enum_name: &str) -> ColumnDef {
         self.enum_name = Some(enum_name.to_string());
@@ -771,6 +1256,14 @@ impl ColumnDef {
 
 impl SectionSchema {
     /// A fixed section.
+    ///
+    /// ```
+    /// use teistro_idl::{ColumnDef, Scalar, SectionKind, SectionSchema};
+    ///
+    /// let summary = SectionSchema::fixed(1, "summary", "the grid", vec![ColumnDef::new("count", Scalar::U32, "instants")]);
+    /// assert_eq!(summary.kind, SectionKind::Fixed);
+    /// assert!(summary.field("count").is_some());
+    /// ```
     #[must_use]
     pub fn fixed(id: u32, name: &str, doc: &str, fields: Vec<ColumnDef>) -> SectionSchema {
         SectionSchema {
@@ -784,6 +1277,13 @@ impl SectionSchema {
     }
 
     /// A column section.
+    ///
+    /// ```
+    /// use teistro_idl::{ColumnDef, Scalar, SectionKind, SectionSchema};
+    ///
+    /// let cells = SectionSchema::columns(4, "cells", "one per cell", vec![ColumnDef::new("lon", Scalar::F64, "degrees"), ColumnDef::new("lat", Scalar::F64, "degrees")]);
+    /// assert_eq!((cells.kind, cells.fields.len()), (SectionKind::Columns, 2));
+    /// ```
     #[must_use]
     pub fn columns(id: u32, name: &str, doc: &str, fields: Vec<ColumnDef>) -> SectionSchema {
         SectionSchema {
@@ -797,6 +1297,13 @@ impl SectionSchema {
     }
 
     /// A bytes section.
+    ///
+    /// ```
+    /// use teistro_idl::SectionSchema;
+    ///
+    /// // Bytes have a length and no fields.
+    /// assert!(SectionSchema::bytes(9, "provenance", "JSON text").fields.is_empty());
+    /// ```
     #[must_use]
     pub fn bytes(id: u32, name: &str, doc: &str) -> SectionSchema {
         SectionSchema {
@@ -814,6 +1321,13 @@ impl SectionSchema {
     /// Declaring the section once is a function call; this is what makes
     /// the two decode into one type rather than two identical ones
     /// (`03-design/chart-at-the-boundary.md` §8).
+    ///
+    /// ```
+    /// use teistro_idl::SectionSchema;
+    ///
+    /// let text = SectionSchema::bytes(1, "text", "UTF-8").of_shape("text");
+    /// assert_eq!(text.shape.as_deref(), Some("text"));
+    /// ```
     #[must_use]
     pub fn of_shape(mut self, shape: &str) -> SectionSchema {
         self.shape = Some(shape.to_string());

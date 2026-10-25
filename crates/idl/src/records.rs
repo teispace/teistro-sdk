@@ -47,6 +47,32 @@ use serde_json::{Map, Value};
 use crate::names::pascal;
 
 /// A record that crosses as JSON, named as its schema names it.
+///
+/// ```
+/// # use teistro_idl::records::{RecordShape, RecordType, from_schema};
+/// #
+/// # let schema = serde_json::json!({"$defs": {
+/// #     "Stamp": {"type": "object", "description": "A stamp.", "properties": {
+/// #         "hash": {"type": "string", "description": "Its hash."},
+/// #         "sure": {"$ref": "#/$defs/Sure"},
+/// #         "how": {"anyOf": [{"$ref": "#/$defs/How"}, {"type": "null"}]},
+/// #         "year": {"type": "integer", "format": "uint8"}
+/// #     }, "required": ["hash", "sure", "how", "year"]},
+/// #     "Sure": {"oneOf": [{"const": "VERIFIED", "type": "string", "description": "Checked."},
+/// #                        {"const": "UNVERIFIED", "type": "string"}]},
+/// #     "How": {"oneOf": [
+/// #         {"type": "object", "properties": {"kind": {"const": "DEFINED"}}, "required": ["kind"]},
+/// #         {"type": "object", "properties": {"kind": {"const": "TABULAR"}, "edition": {"type": "string"}}, "required": ["kind", "edition"]}
+/// #     ]}
+/// # }});
+/// # let records = from_schema(&schema, &["Stamp"])?;
+///
+/// // Roots first, then what they reach, field by field in name order.
+/// let names: Vec<&str> = records.iter().map(|record| record.name.as_str()).collect();
+/// assert_eq!(names, ["Stamp", "How", "Sure"]);
+/// assert_eq!(records[0].doc, "A stamp.");
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RecordDef {
     /// Its name, as the Rust type's schema names it (`Provenance`).
@@ -58,6 +84,31 @@ pub struct RecordDef {
 }
 
 /// What a record is made of.
+///
+/// ```
+/// # use teistro_idl::records::{RecordShape, RecordType, from_schema};
+/// #
+/// # let schema = serde_json::json!({"$defs": {
+/// #     "Stamp": {"type": "object", "description": "A stamp.", "properties": {
+/// #         "hash": {"type": "string", "description": "Its hash."},
+/// #         "sure": {"$ref": "#/$defs/Sure"},
+/// #         "how": {"anyOf": [{"$ref": "#/$defs/How"}, {"type": "null"}]},
+/// #         "year": {"type": "integer", "format": "uint8"}
+/// #     }, "required": ["hash", "sure", "how", "year"]},
+/// #     "Sure": {"oneOf": [{"const": "VERIFIED", "type": "string", "description": "Checked."},
+/// #                        {"const": "UNVERIFIED", "type": "string"}]},
+/// #     "How": {"oneOf": [
+/// #         {"type": "object", "properties": {"kind": {"const": "DEFINED"}}, "required": ["kind"]},
+/// #         {"type": "object", "properties": {"kind": {"const": "TABULAR"}, "edition": {"type": "string"}}, "required": ["kind", "edition"]}
+/// #     ]}
+/// # }});
+/// # let records = from_schema(&schema, &["Stamp"])?;
+///
+/// assert!(matches!(&records[0].shape, RecordShape::Object { fields } if fields.len() == 4));
+/// assert!(matches!(&records[1].shape, RecordShape::Tagged { tag, .. } if tag == "kind"));
+/// assert!(matches!(&records[2].shape, RecordShape::Keys { values } if values.len() == 2));
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RecordShape {
@@ -98,6 +149,21 @@ pub enum RecordShape {
 }
 
 /// One variant of a [`RecordShape::External`] record.
+///
+/// ```
+/// use teistro_idl::records::{RecordShape, RecordType, from_schema};
+///
+/// // How serde writes an enum by default: a bare key, or a key holding a value.
+/// let schema = serde_json::json!({"$defs": {"Orb": {"oneOf": [
+///     {"type": "string", "const": "SAME_DEGREE", "description": "Exact."},
+///     {"type": "object", "properties": {"DAYS": {"type": "number"}}, "required": ["DAYS"], "additionalProperties": false}
+/// ]}}});
+/// let records = from_schema(&schema, &["Orb"])?;
+/// let RecordShape::External { variants } = &records[0].shape else { return Err("external".into()) };
+/// assert_eq!((variants[0].key.as_str(), &variants[0].payload), ("SAME_DEGREE", &None));
+/// assert_eq!(variants[1].payload, Some(RecordType::Number));
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ExternalVariant {
     /// The key that names it (`WITHIN`).
@@ -109,6 +175,30 @@ pub struct ExternalVariant {
 }
 
 /// One key of a [`RecordShape::Keys`] record.
+///
+/// ```
+/// # use teistro_idl::records::{RecordShape, RecordType, from_schema};
+/// #
+/// # let schema = serde_json::json!({"$defs": {
+/// #     "Stamp": {"type": "object", "description": "A stamp.", "properties": {
+/// #         "hash": {"type": "string", "description": "Its hash."},
+/// #         "sure": {"$ref": "#/$defs/Sure"},
+/// #         "how": {"anyOf": [{"$ref": "#/$defs/How"}, {"type": "null"}]},
+/// #         "year": {"type": "integer", "format": "uint8"}
+/// #     }, "required": ["hash", "sure", "how", "year"]},
+/// #     "Sure": {"oneOf": [{"const": "VERIFIED", "type": "string", "description": "Checked."},
+/// #                        {"const": "UNVERIFIED", "type": "string"}]},
+/// #     "How": {"oneOf": [
+/// #         {"type": "object", "properties": {"kind": {"const": "DEFINED"}}, "required": ["kind"]},
+/// #         {"type": "object", "properties": {"kind": {"const": "TABULAR"}, "edition": {"type": "string"}}, "required": ["kind", "edition"]}
+/// #     ]}
+/// # }});
+/// # let records = from_schema(&schema, &["Stamp"])?;
+///
+/// let RecordShape::Keys { values } = &records[2].shape else { return Err("keys".into()) };
+/// assert_eq!((values[0].key.as_str(), values[0].doc.as_str()), ("VERIFIED", "Checked."));
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RecordKey {
     /// The key, as the wire writes it (`VERIFIED`).
@@ -118,6 +208,32 @@ pub struct RecordKey {
 }
 
 /// One variant of a [`RecordShape::Tagged`] record.
+///
+/// ```
+/// # use teistro_idl::records::{RecordShape, RecordType, from_schema};
+/// #
+/// # let schema = serde_json::json!({"$defs": {
+/// #     "Stamp": {"type": "object", "description": "A stamp.", "properties": {
+/// #         "hash": {"type": "string", "description": "Its hash."},
+/// #         "sure": {"$ref": "#/$defs/Sure"},
+/// #         "how": {"anyOf": [{"$ref": "#/$defs/How"}, {"type": "null"}]},
+/// #         "year": {"type": "integer", "format": "uint8"}
+/// #     }, "required": ["hash", "sure", "how", "year"]},
+/// #     "Sure": {"oneOf": [{"const": "VERIFIED", "type": "string", "description": "Checked."},
+/// #                        {"const": "UNVERIFIED", "type": "string"}]},
+/// #     "How": {"oneOf": [
+/// #         {"type": "object", "properties": {"kind": {"const": "DEFINED"}}, "required": ["kind"]},
+/// #         {"type": "object", "properties": {"kind": {"const": "TABULAR"}, "edition": {"type": "string"}}, "required": ["kind", "edition"]}
+/// #     ]}
+/// # }});
+/// # let records = from_schema(&schema, &["Stamp"])?;
+///
+/// let RecordShape::Tagged { variants, .. } = &records[1].shape else { return Err("tagged".into()) };
+/// // The tag is not among a variant's fields.
+/// assert!(variants[0].fields.is_empty());
+/// assert_eq!((variants[1].key.as_str(), variants[1].fields[0].name.as_str()), ("TABULAR", "edition"));
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RecordVariant {
     /// The tag's value that names it (`TABULAR`).
@@ -129,6 +245,34 @@ pub struct RecordVariant {
 }
 
 /// One field of a record.
+///
+/// ```
+/// # use teistro_idl::records::{RecordShape, RecordType, from_schema};
+/// #
+/// # let schema = serde_json::json!({"$defs": {
+/// #     "Stamp": {"type": "object", "description": "A stamp.", "properties": {
+/// #         "hash": {"type": "string", "description": "Its hash."},
+/// #         "sure": {"$ref": "#/$defs/Sure"},
+/// #         "how": {"anyOf": [{"$ref": "#/$defs/How"}, {"type": "null"}]},
+/// #         "year": {"type": "integer", "format": "uint8"}
+/// #     }, "required": ["hash", "sure", "how", "year"]},
+/// #     "Sure": {"oneOf": [{"const": "VERIFIED", "type": "string", "description": "Checked."},
+/// #                        {"const": "UNVERIFIED", "type": "string"}]},
+/// #     "How": {"oneOf": [
+/// #         {"type": "object", "properties": {"kind": {"const": "DEFINED"}}, "required": ["kind"]},
+/// #         {"type": "object", "properties": {"kind": {"const": "TABULAR"}, "edition": {"type": "string"}}, "required": ["kind", "edition"]}
+/// #     ]}
+/// # }});
+/// # let records = from_schema(&schema, &["Stamp"])?;
+///
+/// let RecordShape::Object { fields } = &records[0].shape else { return Err("an object".into()) };
+/// // In name order; a union with null is nullable.
+/// let names: Vec<&str> = fields.iter().map(|field| field.name.as_str()).collect();
+/// assert_eq!(names, ["hash", "how", "sure", "year"]);
+/// assert!(fields[1].nullable && !fields[0].nullable);
+/// assert_eq!(fields[2].ty, RecordType::Record { name: "Sure".into() });
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RecordField {
     /// Its name as the wire writes it (`settings_hash`); each emitter
@@ -143,6 +287,14 @@ pub struct RecordField {
 }
 
 /// The type of a record's field.
+///
+/// ```
+/// use teistro_idl::records::RecordType;
+///
+/// let grahas = RecordType::List { of: Box::new(RecordType::Member { catalogue: "graha".into() }) };
+/// assert_eq!(serde_json::to_string(&grahas)?, r#"{"kind":"LIST","of":{"kind":"MEMBER","catalogue":"graha"}}"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RecordType {
@@ -196,6 +348,33 @@ pub enum RecordType {
 }
 
 /// A whole number's width, as the schema's `format` states it.
+///
+/// ```
+/// # use teistro_idl::records::{RecordShape, RecordType, from_schema};
+/// #
+/// # let schema = serde_json::json!({"$defs": {
+/// #     "Stamp": {"type": "object", "description": "A stamp.", "properties": {
+/// #         "hash": {"type": "string", "description": "Its hash."},
+/// #         "sure": {"$ref": "#/$defs/Sure"},
+/// #         "how": {"anyOf": [{"$ref": "#/$defs/How"}, {"type": "null"}]},
+/// #         "year": {"type": "integer", "format": "uint8"}
+/// #     }, "required": ["hash", "sure", "how", "year"]},
+/// #     "Sure": {"oneOf": [{"const": "VERIFIED", "type": "string", "description": "Checked."},
+/// #                        {"const": "UNVERIFIED", "type": "string"}]},
+/// #     "How": {"oneOf": [
+/// #         {"type": "object", "properties": {"kind": {"const": "DEFINED"}}, "required": ["kind"]},
+/// #         {"type": "object", "properties": {"kind": {"const": "TABULAR"}, "edition": {"type": "string"}}, "required": ["kind", "edition"]}
+/// #     ]}
+/// # }});
+/// # let records = from_schema(&schema, &["Stamp"])?;
+///
+/// use teistro_idl::records::Width;
+///
+/// let RecordShape::Object { fields } = &records[0].shape else { return Err("an object".into()) };
+/// // The schema's `format: uint8`.
+/// assert_eq!(fields[3].ty, RecordType::Integer { width: Some(Width { signed: false, bits: 8 }) });
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Width {
     /// Whether it may be negative.
@@ -206,6 +385,14 @@ pub struct Width {
 
 /// The JSON request records a binding writes, read from the façade's own
 /// schemas of them, so a binding can type a request as serde reads it.
+///
+/// ```
+/// use teistro_idl::records::Requests;
+///
+/// // Handed to the emitters in memory and never written into `api.json`.
+/// let none = Requests::default();
+/// assert!(none.roots.is_empty() && none.records.is_empty() && none.enums.is_empty());
+/// ```
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Requests {
     /// Each record entry point's request.
@@ -219,6 +406,14 @@ pub struct Requests {
 }
 
 /// A record entry point and the record its request is.
+///
+/// ```
+/// use teistro_idl::records::RequestRoot;
+///
+/// let found = RequestRoot { record: "chart.found".into(), name: "ChartFoundRequest".into() };
+/// assert_eq!(serde_json::to_value(&found)?["name"], "ChartFoundRequest");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RequestRoot {
     /// The entry point (`chart.found`).
@@ -228,6 +423,20 @@ pub struct RequestRoot {
 }
 
 /// How a schema is read.
+///
+/// ```
+/// use teistro_idl::records::{RecordShape, RecordType, Reading, read};
+///
+/// let schema = serde_json::json!({"$defs": {"Rule": {"type": "object", "properties": {
+///     "key": {"type": "string"}, "body": true
+/// }, "required": ["key", "body"]}}});
+/// // `body` is any JSON value: refused unless it is listed raw.
+/// assert!(read(&schema, &["Rule"], Reading::default()).is_err());
+/// let records = read(&schema, &["Rule"], Reading { raw: &["Rule.body"] })?;
+/// let RecordShape::Object { fields } = &records[0].shape else { return Err("an object".into()) };
+/// assert_eq!(fields[0].ty, RecordType::Json);
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Reading<'a> {
     /// The parts read as a JSON value: a definition's name (`Subject`) or
@@ -242,6 +451,31 @@ pub struct Reading<'a> {
 /// A definition that is a bare scalar with a constraint (a hash's pattern)
 /// is not a record: a field referring to it takes the scalar's type.
 ///
+/// ```
+/// # use teistro_idl::records::{RecordShape, RecordType, from_schema};
+/// #
+/// # let schema = serde_json::json!({"$defs": {
+/// #     "Stamp": {"type": "object", "description": "A stamp.", "properties": {
+/// #         "hash": {"type": "string", "description": "Its hash."},
+/// #         "sure": {"$ref": "#/$defs/Sure"},
+/// #         "how": {"anyOf": [{"$ref": "#/$defs/How"}, {"type": "null"}]},
+/// #         "year": {"type": "integer", "format": "uint8"}
+/// #     }, "required": ["hash", "sure", "how", "year"]},
+/// #     "Sure": {"oneOf": [{"const": "VERIFIED", "type": "string", "description": "Checked."},
+/// #                        {"const": "UNVERIFIED", "type": "string"}]},
+/// #     "How": {"oneOf": [
+/// #         {"type": "object", "properties": {"kind": {"const": "DEFINED"}}, "required": ["kind"]},
+/// #         {"type": "object", "properties": {"kind": {"const": "TABULAR"}, "edition": {"type": "string"}}, "required": ["kind", "edition"]}
+/// #     ]}
+/// # }});
+/// # let records = from_schema(&schema, &["Stamp"])?;
+///
+/// // A root the schema lacks is named.
+/// assert_eq!(from_schema(&schema, &["Nothing"]).unwrap_err(), "Nothing: no such definition");
+/// assert_eq!(records.len(), 3);
+/// # Ok::<(), String>(())
+/// ```
+///
 /// # Errors
 ///
 /// A root the schema does not define, a reference to a definition that is
@@ -252,6 +486,33 @@ pub fn from_schema(schema: &Value, roots: &[&str]) -> Result<Vec<RecordDef>, Str
 }
 
 /// [`from_schema`] under a [`Reading`].
+///
+/// ```
+/// # use teistro_idl::records::{RecordShape, RecordType, from_schema};
+/// #
+/// # let schema = serde_json::json!({"$defs": {
+/// #     "Stamp": {"type": "object", "description": "A stamp.", "properties": {
+/// #         "hash": {"type": "string", "description": "Its hash."},
+/// #         "sure": {"$ref": "#/$defs/Sure"},
+/// #         "how": {"anyOf": [{"$ref": "#/$defs/How"}, {"type": "null"}]},
+/// #         "year": {"type": "integer", "format": "uint8"}
+/// #     }, "required": ["hash", "sure", "how", "year"]},
+/// #     "Sure": {"oneOf": [{"const": "VERIFIED", "type": "string", "description": "Checked."},
+/// #                        {"const": "UNVERIFIED", "type": "string"}]},
+/// #     "How": {"oneOf": [
+/// #         {"type": "object", "properties": {"kind": {"const": "DEFINED"}}, "required": ["kind"]},
+/// #         {"type": "object", "properties": {"kind": {"const": "TABULAR"}, "edition": {"type": "string"}}, "required": ["kind", "edition"]}
+/// #     ]}
+/// # }});
+/// # let records = from_schema(&schema, &["Stamp"])?;
+///
+/// use teistro_idl::records::{Reading, read};
+///
+/// // A part listed raw that nothing reaches is refused too.
+/// let unused = read(&schema, &["Stamp"], Reading { raw: &["Stamp.nothing"] }).unwrap_err();
+/// assert!(unused.starts_with("listed as raw and reached by nothing"));
+/// # Ok::<(), String>(())
+/// ```
 ///
 /// # Errors
 ///

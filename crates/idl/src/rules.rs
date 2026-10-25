@@ -11,15 +11,56 @@ use crate::model::{
 use crate::names;
 
 /// The one field every boundary struct carries for the size handshake.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules::STRUCT_SIZE_FIELD;
+///
+/// let request = api.struct_named("PositionRequestC").ok_or("declared")?;
+/// assert_eq!(request.fields[0].name, STRUCT_SIZE_FIELD);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const STRUCT_SIZE_FIELD: &str = "struct_size";
 
 /// Whether a field is the size handshake.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let request = api.struct_named("PositionRequestC").ok_or("declared")?;
+/// assert!(rules::is_struct_size(&request.fields[0]));
+/// assert!(!rules::is_struct_size(&request.fields[1]));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn is_struct_size(field: &FieldDef) -> bool {
     field.name == STRUCT_SIZE_FIELD
 }
 
 /// Whether a field is padding.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let request = api.struct_named("PositionRequestC").ok_or("declared")?;
+/// let reserved: Vec<&str> = request.fields.iter().filter(|field| rules::is_reserved(field)).map(|field| field.name.as_str()).collect();
+/// assert_eq!(reserved, ["reserved"]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn is_reserved(field: &FieldDef) -> bool {
     field.name.starts_with("reserved")
@@ -28,6 +69,21 @@ pub fn is_reserved(field: &FieldDef) -> bool {
 /// A field a binding shows: not the handshake, not padding, and not the
 /// bookkeeping another field's role absorbs (an element count, a presence
 /// flag).
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let request = api.struct_named("PositionRequestC").ok_or("declared")?;
+/// // Neither the handshake nor the padding.
+/// let hidden = request.fields.iter().filter(|field| !rules::is_visible(field)).count();
+/// assert_eq!(hidden, 2);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn is_visible(field: &FieldDef) -> bool {
     !is_struct_size(field) && !is_reserved(field)
@@ -36,6 +92,23 @@ pub fn is_visible(field: &FieldDef) -> bool {
 /// What a struct field is, which decides how every binding marshals it.
 /// Read once by [`field_roles`] so the C header, the TypeScript surface
 /// and the napi glue agree.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules::{self, FieldRole};
+///
+/// let request = api.struct_named("PositionRequestC").ok_or("declared")?;
+/// let roles = rules::field_roles(&api, request);
+/// // The observer is there when `has_observer` says so; `jd_count` counts `jds`.
+/// assert_eq!(roles[4], FieldRole::Presence { of: "observer".into() });
+/// assert_eq!(roles[6], FieldRole::Optional { flag: "has_observer".into() });
+/// assert_eq!(roles[8], FieldRole::Count { of: "jds".into() });
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FieldRole {
     /// The `struct_size` handshake; a binding sets it and never shows it.
@@ -90,6 +163,22 @@ pub enum FieldRole {
 impl FieldRole {
     /// Whether a binding shows the field: the bookkeeping roles another
     /// field absorbs are not part of any binding's surface.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// use teistro_idl::rules::{self, FieldRole};
+    ///
+    /// let request = api.struct_named("PositionRequestC").ok_or("declared")?;
+    /// // A count is absorbed by its array; the array is shown.
+    /// let roles = rules::field_roles(&api, request);
+    /// assert!(!roles[8].is_shown());
+    /// assert!(roles[7].is_shown() && matches!(roles[7], FieldRole::Array { .. }));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn is_shown(&self) -> bool {
         !matches!(
@@ -103,6 +192,22 @@ impl FieldRole {
 }
 
 /// Every field's role, in field order.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules::{self, FieldRole};
+///
+/// // A hash is its bytes, carried in the struct; a zone's warnings a bit set.
+/// let hash = api.struct_named("TsHash").ok_or("declared")?;
+/// assert_eq!(rules::field_roles(&api, hash), [FieldRole::FixedBytes { len: 32 }]);
+/// let zone = api.struct_named("TsZoneResolution").ok_or("declared")?;
+/// assert_eq!(rules::field_roles(&api, zone)[3], FieldRole::BitSet { enum_name: "TsZoneWarning".into() });
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn field_roles(api: &Api, s: &StructDef) -> Vec<FieldRole> {
     let counts: Vec<(&str, &str)> = s
@@ -194,12 +299,33 @@ fn field_role(
 }
 
 /// Whether a struct carries `struct_size`.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// assert!(rules::has_handshake(api.struct_named("TsContextOptions").ok_or("declared")?));
+/// // A hash is only ever written whole.
+/// assert!(!rules::has_handshake(api.struct_named("TsHash").ok_or("declared")?));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn has_handshake(s: &StructDef) -> bool {
     s.fields.iter().any(is_struct_size)
 }
 
 /// Whether a parameter name marks an output (`out_context`, `out`).
+///
+/// ```
+/// use teistro_idl::rules;
+///
+/// assert!(rules::is_out_name("out_context") && rules::is_out_name("out"));
+/// assert!(!rules::is_out_name("outer"));
+/// ```
 #[must_use]
 pub fn is_out_name(name: &str) -> bool {
     name == "out" || name.starts_with("out_")
@@ -207,6 +333,13 @@ pub fn is_out_name(name: &str) -> bool {
 
 /// Whether a parameter name marks an element count of the pointer before
 /// it (`len`, `jd_count`, `bytes_len`).
+///
+/// ```
+/// use teistro_idl::rules;
+///
+/// assert!(rules::is_length_name("bytes_len") && rules::is_length_name("jd_count"));
+/// assert!(!rules::is_length_name("length_deg"));
+/// ```
 #[must_use]
 pub fn is_length_name(name: &str) -> bool {
     name == "len" || name == "count" || name.ends_with("_len") || name.ends_with("_count")
@@ -215,6 +348,28 @@ pub fn is_length_name(name: &str) -> bool {
 /// The role of a parameter, from its type, its name and the description's
 /// knowledge of what its pointee is. `previous` is the parameter before
 /// it, which decides whether a count is a `Length`.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::model::Role;
+/// use teistro_idl::rules;
+/// use teistro_idl::{Scalar, TypeRef};
+///
+/// // The same pointer is an output or an input by its name.
+/// let hash = TypeRef::pointer(TypeRef::Struct { name: "TsHash".into() }, true);
+/// assert_eq!(rules::infer_role(&api, "out_hash", &hash, None), Role::StructOut);
+/// assert_eq!(rules::infer_role(&api, "hash", &hash, None), Role::StructIn);
+/// // A count is a length only after the pointer it counts.
+/// let bytes = api.function_named("ts_intl_load_pack").ok_or("declared")?;
+/// let count = TypeRef::scalar(Scalar::Usize);
+/// assert_eq!(rules::infer_role(&api, "bytes_len", &count, bytes.params.get(1)), Role::Length);
+/// assert_eq!(rules::infer_role(&api, "bytes_len", &count, None), Role::Value);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn infer_role(api: &Api, param_name: &str, ty: &TypeRef, previous: Option<&ParamDef>) -> Role {
     match ty {
@@ -263,6 +418,22 @@ pub fn infer_role(api: &Api, param_name: &str, ty: &TypeRef, previous: Option<&P
 }
 
 /// The struct behind a pointer parameter, if it points at one.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let positions = api.function_named("ts_positions").ok_or("declared")?;
+/// let request = rules::pointee_struct(&api, &positions.params[1]).ok_or("a struct")?;
+/// assert_eq!(request.name, "PositionRequestC");
+/// // A handle points at no struct.
+/// assert!(rules::pointee_struct(&api, &positions.params[0]).is_none());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn pointee_struct<'a>(api: &'a Api, p: &ParamDef) -> Option<&'a StructDef> {
     match p.ty.pointee()? {
@@ -272,6 +443,21 @@ pub fn pointee_struct<'a>(api: &'a Api, p: &ParamDef) -> Option<&'a StructDef> {
 }
 
 /// The opaque type behind a handle parameter, through one or two pointers.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let new = api.function_named("ts_context_new").ok_or("declared")?;
+/// // Through both pointers of the slot that receives the handle.
+/// let out = new.params.iter().find(|param| param.name == "out_context").ok_or("a slot")?;
+/// assert_eq!(rules::pointee_opaque(&api, out).map(|opaque| opaque.name.as_str()), Some("TsContext"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn pointee_opaque<'a>(api: &'a Api, p: &ParamDef) -> Option<&'a OpaqueDef> {
     fn walk(ty: &TypeRef) -> Option<&str> {
@@ -285,6 +471,19 @@ pub fn pointee_opaque<'a>(api: &'a Api, p: &ParamDef) -> Option<&'a OpaqueDef> {
 }
 
 /// A function with no handle in play: a static function of the module.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// assert!(rules::is_free_function(api.function_named("ts_status_message").ok_or("declared")?));
+/// assert!(!rules::is_free_function(api.function_named("ts_positions").ok_or("declared")?));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn is_free_function(f: &FunctionDef) -> bool {
     !f.params
@@ -293,6 +492,19 @@ pub fn is_free_function(f: &FunctionDef) -> bool {
 }
 
 /// The function that creates an opaque type's handle.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let context = api.opaque_named("TsContext").ok_or("declared")?;
+/// assert_eq!(rules::constructor(&api, context).map(|f| f.name.as_str()), Some("ts_context_new"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn constructor<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDef> {
     api.functions.iter().find(|f| {
@@ -317,6 +529,20 @@ pub fn constructor<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionD
 /// already has a constructor. It was described, generated into every
 /// `extern` declaration, and reachable from no binding —
 /// `check-lints`'s `entry-point-is-reachable` exists because of it.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let context = api.opaque_named("TsContext").ok_or("declared")?;
+/// let factories: Vec<&str> = rules::factories(&api, context).iter().map(|f| f.name.as_str()).collect();
+/// assert_eq!(factories, ["ts_context_new_with_provider"]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn factories<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
     let primary = constructor(api, opaque).map(|c| c.name.as_str());
@@ -334,6 +560,18 @@ pub fn factories<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
 
 /// The function that releases a failure record's owned strings, which a
 /// binding calls after reading what a failed way in wrote.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// assert_eq!(rules::error_free(&api).map(|f| f.name.as_str()), Some("ts_error_free"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn error_free(api: &Api) -> Option<&FunctionDef> {
     api.functions
@@ -342,6 +580,21 @@ pub fn error_free(api: &Api) -> Option<&FunctionDef> {
 }
 
 /// The failure record a way in writes when it refuses, if it takes one.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let new = api.function_named("ts_context_new").ok_or("declared")?;
+/// assert_eq!(rules::refusal_out(&api, new).map(|param| param.name.as_str()), Some("out_error"));
+/// // A hash is written out, but it is not a refusal.
+/// assert!(rules::refusal_out(&api, api.function_named("ts_context_settings_hash").ok_or("declared")?).is_none());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn refusal_out<'a>(api: &Api, f: &'a FunctionDef) -> Option<&'a ParamDef> {
     f.params.iter().find(|p| {
@@ -351,6 +604,21 @@ pub fn refusal_out<'a>(api: &Api, f: &'a FunctionDef) -> Option<&'a ParamDef> {
 }
 
 /// The function that frees an opaque type's handle.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let context = api.opaque_named("TsContext").ok_or("declared")?;
+/// assert_eq!(rules::destructor(&api, context).map(|f| f.name.as_str()), Some("ts_context_free"));
+/// let provider = api.opaque_named("TsProvider").ok_or("declared")?;
+/// assert_eq!(rules::destructor(&api, provider).map(|f| f.name.as_str()), Some("ts_provider_free"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn destructor<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDef> {
     api.functions.iter().find(|f| {
@@ -372,6 +640,21 @@ pub fn destructor<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDe
 /// reader that passed a provider handle to a function expecting a
 /// context, and the Node addon stopped compiling. A rule that reads the
 /// types cannot make that mistake.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let context = api.opaque_named("TsContext").ok_or("declared")?;
+/// assert_eq!(rules::last_error(&api, context).map(|f| f.name.as_str()), Some("ts_context_last_error"));
+/// // A provider has none of its own.
+/// assert!(rules::last_error(&api, api.opaque_named("TsProvider").ok_or("declared")?).is_none());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn last_error<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDef> {
     api.functions.iter().find(|f| {
@@ -385,6 +668,22 @@ pub fn last_error<'a>(api: &'a Api, opaque: &OpaqueDef) -> Option<&'a FunctionDe
 
 /// The methods of an opaque type, in declaration order: every function
 /// whose first parameter is its handle, the destructor excepted.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let context = api.opaque_named("TsContext").ok_or("declared")?;
+/// let methods: Vec<&str> = rules::methods(&api, context).iter().map(|f| f.name.as_str()).collect();
+/// assert!(methods.contains(&"ts_positions") && methods.contains(&"ts_context_profile"));
+/// // The destructor is not a method.
+/// assert!(!methods.contains(&"ts_context_free"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn methods<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
     api.functions
@@ -399,12 +698,39 @@ pub fn methods<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
 }
 
 /// The binding-facing method name of a handle function.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let context = api.opaque_named("TsContext").ok_or("declared")?;
+/// let settings = api.function_named("ts_context_settings_json").ok_or("declared")?;
+/// assert_eq!(rules::method_name(&api, context, settings), "settings_json");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn method_name(api: &Api, opaque: &OpaqueDef, f: &FunctionDef) -> String {
     names::method_name(&api.prefix, &opaque.name, &f.name)
 }
 
 /// The status enum: the one with an `Ok` member at zero.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let status = rules::status_enum(&api).ok_or("declared")?;
+/// assert_eq!((status.name.as_str(), status.values[0].key.as_str()), ("Status", "OK"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn status_enum(api: &Api) -> Option<&EnumDef> {
     api.enums
@@ -413,6 +739,20 @@ pub fn status_enum(api: &Api) -> Option<&EnumDef> {
 }
 
 /// Whether a function reports through the status enum.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// assert!(rules::returns_status(&api, api.function_named("ts_positions").ok_or("declared")?));
+/// // The ABI version is a number, not a status.
+/// assert!(!rules::returns_status(&api, api.function_named("ts_abi_version").ok_or("declared")?));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn returns_status(api: &Api, f: &FunctionDef) -> bool {
     match (&f.returns, status_enum(api)) {
@@ -422,6 +762,18 @@ pub fn returns_status(api: &Api, f: &FunctionDef) -> bool {
 }
 
 /// The function returning a static C string for a status, if any.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// assert_eq!(rules::message_function(&api).map(|f| f.name.as_str()), Some("ts_status_message"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn message_function(api: &Api) -> Option<&FunctionDef> {
     let status = status_enum(api)?;
@@ -435,6 +787,20 @@ pub fn message_function(api: &Api) -> Option<&FunctionDef> {
 /// Whether a parameter carries a named enum, whether the description kept
 /// the name in the type or lowered it to the integer the ABI passes and
 /// marked it `api:enum=<name>`.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let message = api.function_named("ts_status_message").ok_or("declared")?;
+/// assert!(rules::is_named(&message.params[0], "Status"));
+/// assert!(!rules::is_named(&message.params[0], "Kind"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn is_named(param: &ParamDef, name: &str) -> bool {
     match &param.ty {
@@ -447,6 +813,21 @@ pub fn is_named(param: &ParamDef, name: &str) -> bool {
 /// version, which each binding already states as the version it was
 /// generated for, and the failure record's flags, which describe a field
 /// no binding shows (see `field_role`).
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let names: Vec<&str> = rules::constants(&api).map(|constant| constant.name.as_str()).collect();
+/// // The provider ABI's version is rendered; the library's own, and the error flags, are not.
+/// assert!(names.contains(&"VTABLE_ABI_VERSION") && names.contains(&"TS_CONTEXT_TEST_PROVIDER"));
+/// assert!(!names.contains(&"TS_ABI_VERSION") && !names.contains(&"TS_ERROR_OWNED"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub fn constants(api: &Api) -> impl Iterator<Item = &crate::model::ConstantDef> {
     api.constants.iter().filter(|c| {
         (!c.name.ends_with("ABI_VERSION") || c.name.starts_with("VTABLE"))
@@ -458,6 +839,19 @@ pub fn constants(api: &Api) -> impl Iterator<Item = &crate::model::ConstantDef> 
 /// binding cases the same word: `TS_CONTEXT_TEST_PROVIDER` is
 /// `CONTEXT_TEST_PROVIDER` in TypeScript and `contextTestProvider` in
 /// Dart.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let test = api.constants.iter().find(|constant| constant.name == "TS_CONTEXT_TEST_PROVIDER").ok_or("declared")?;
+/// assert_eq!(rules::constant_key(test), "CONTEXT_TEST_PROVIDER");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn constant_key(c: &crate::model::ConstantDef) -> &str {
     c.name.trim_start_matches("TS_")
@@ -466,6 +860,21 @@ pub fn constant_key(c: &crate::model::ConstantDef) -> &str {
 /// What a call hands back: its returned scalar, when that is not a status,
 /// and every out parameter, in order. Every binding asks here, so the
 /// shape a call has in one language is the shape it has in the others.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let fixed = api.function_named("ts_calendar_fixed_of_jd").ok_or("declared")?;
+/// // The day it returns and the fraction it writes.
+/// let names: Vec<String> = rules::results(&api, fixed).iter().map(rules::Handed::name).collect();
+/// assert_eq!(names, ["value", "fraction"]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn results<'a>(api: &'a Api, f: &'a FunctionDef) -> Vec<Handed<'a>> {
     let mut out = Vec::new();
@@ -488,6 +897,21 @@ pub fn results<'a>(api: &'a Api, f: &'a FunctionDef) -> Vec<Handed<'a>> {
 }
 
 /// One thing a call hands back.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules::{self, Handed};
+///
+/// let positions = api.function_named("ts_positions").ok_or("declared")?;
+/// // A status is not handed back: the blob is.
+/// let handed = rules::results(&api, positions);
+/// assert!(matches!(handed.as_slice(), [Handed::Blob(param)] if param.name == "out_blob"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub enum Handed<'a> {
     /// The value the function returns, when it is not a status.
@@ -508,6 +932,20 @@ impl Handed<'_> {
     /// The name a binding hands it back under: `value` for the returned
     /// scalar, and the parameter's name without its `out_` prefix for the
     /// rest, so `out_fraction` is read back as `fraction`.
+    ///
+    /// ```
+    /// # use teistro_idl::Api;
+    /// #
+    /// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+    /// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    ///
+    /// use teistro_idl::rules;
+    ///
+    /// let settings = api.function_named("ts_context_settings_json").ok_or("declared")?;
+    /// let handed = rules::results(&api, settings);
+    /// assert_eq!(handed.iter().map(rules::Handed::name).collect::<Vec<_>>(), ["json"]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn name(&self) -> String {
         match self {
@@ -522,6 +960,20 @@ impl Handed<'_> {
 }
 
 /// The scalar a function returns, if it returns one.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::{Scalar, rules};
+///
+/// assert_eq!(rules::returned_scalar(api.function_named("ts_abi_version").ok_or("declared")?), Some(Scalar::U32));
+/// // A status is an enum, not a scalar.
+/// assert_eq!(rules::returned_scalar(api.function_named("ts_positions").ok_or("declared")?), None);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn returned_scalar(f: &FunctionDef) -> Option<crate::model::Scalar> {
     f.returns.as_ref().and_then(TypeRef::as_scalar)
@@ -530,6 +982,21 @@ pub fn returned_scalar(f: &FunctionDef) -> Option<crate::model::Scalar> {
 /// Whether the host writes a struct: a `StructIn` parameter or a
 /// callback's out struct. Only such structs need a "to C" conversion in a
 /// binding.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// // The host writes a request, and the observer inside it.
+/// assert!(rules::is_written_by_host(&api, api.struct_named("PositionRequestC").ok_or("declared")?));
+/// assert!(rules::is_written_by_host(&api, api.struct_named("ObserverC").ok_or("declared")?));
+/// assert!(!rules::is_written_by_host(&api, api.struct_named("TsHash").ok_or("declared")?));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn is_written_by_host(api: &Api, s: &StructDef) -> bool {
     let as_input = api.functions.iter().flat_map(|f| f.params.iter()).any(|p| {
@@ -543,6 +1010,19 @@ pub fn is_written_by_host(api: &Api, s: &StructDef) -> bool {
 
 /// Whether the host reads a struct back: a `StructOut` parameter of a
 /// function, or a struct nested in one.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// assert!(rules::is_read_by_host(&api, api.struct_named("TsHash").ok_or("declared")?));
+/// assert!(!rules::is_read_by_host(&api, api.struct_named("PositionRequestC").ok_or("declared")?));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn is_read_by_host(api: &Api, s: &StructDef) -> bool {
     api.functions.iter().flat_map(|f| f.params.iter()).any(|p| {

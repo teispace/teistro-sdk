@@ -10,6 +10,22 @@ use crate::model::{Api, Scalar, StructDef, TypeRef};
 /// What the layout depends on: the pointer width, which also decides
 /// `size_t` and the alignment of 64-bit scalars on the targets the SDK
 /// ships to (every one aligns `double` and `int64_t` to 8 bytes).
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::TypeRef;
+/// use teistro_idl::layout::{Target, layout_of};
+///
+/// // A `size_t` is as wide as a pointer.
+/// let size = TypeRef::scalar(teistro_idl::Scalar::Usize);
+/// assert_eq!(layout_of(&api, &size, Target::LP64)?.size, 8);
+/// assert_eq!(layout_of(&api, &size, Target::ILP32)?.size, 4);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Target {
     /// The pointer width in bytes.
@@ -18,11 +34,30 @@ pub struct Target {
 
 impl Target {
     /// Every 64-bit target the SDK builds for.
+    ///
+    /// ```
+    /// use teistro_idl::layout::Target;
+    ///
+    /// assert_eq!(Target::LP64.pointer_width, 8);
+    /// ```
     pub const LP64: Target = Target { pointer_width: 8 };
     /// The 32-bit targets (wasm32, 32-bit ARM).
+    ///
+    /// ```
+    /// use teistro_idl::layout::Target;
+    ///
+    /// // wasm32 among them.
+    /// assert_eq!(Target::ILP32.pointer_width, 4);
+    /// ```
     pub const ILP32: Target = Target { pointer_width: 4 };
 
     /// The target this build runs on.
+    ///
+    /// ```
+    /// use teistro_idl::layout::Target;
+    ///
+    /// assert_eq!(Target::host().pointer_width, std::mem::size_of::<usize>());
+    /// ```
     #[must_use]
     pub const fn host() -> Target {
         Target {
@@ -32,6 +67,21 @@ impl Target {
 }
 
 /// A size and an alignment in bytes.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::layout::{Layout, Target, layout_of};
+/// use teistro_idl::{Scalar, TypeRef};
+///
+/// // Eight doubles in an array: the size multiplies, the alignment does not.
+/// let eight = TypeRef::Array { of: Box::new(TypeRef::scalar(Scalar::F64)), len: 8 };
+/// assert_eq!(layout_of(&api, &eight, Target::LP64)?, Layout { size: 64, align: 8 });
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Layout {
     /// The size.
@@ -41,6 +91,20 @@ pub struct Layout {
 }
 
 /// A struct's layout: its size, alignment and every field's offset.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::layout::{Target, struct_layout};
+///
+/// // A borrowed string: a pointer and a length.
+/// let view = struct_layout(&api, api.struct_named("TsStr").ok_or("declared")?, Target::ILP32)?;
+/// assert_eq!((view.size, view.align, view.offsets), (8, 4, vec![0, 4]));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StructLayout {
     /// The size, padded to the alignment.
@@ -52,6 +116,23 @@ pub struct StructLayout {
 }
 
 /// Why a type has no layout.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::TypeRef;
+/// use teistro_idl::layout::{LayoutError, Target, layout_of};
+///
+/// let missing = TypeRef::Struct { name: "Nothing".into() };
+/// assert_eq!(layout_of(&api, &missing, Target::LP64), Err(LayoutError::Unknown("Nothing".into())));
+/// // A handle is only ever behind a pointer.
+/// let context = TypeRef::Opaque { name: "TsContext".into() };
+/// assert_eq!(layout_of(&api, &context, Target::LP64).unwrap_err().to_string(), "`TsContext` has no size; it lives behind a pointer");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LayoutError {
     /// A name the description does not define.
@@ -74,6 +155,24 @@ impl fmt::Display for LayoutError {
 impl std::error::Error for LayoutError {}
 
 /// The layout of a type on a target.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::TypeRef;
+/// use teistro_idl::layout::{Target, layout_of};
+///
+/// // An enum is its repr; a pointer, whatever it points at, is a pointer.
+/// let kind = TypeRef::Enum { name: "Kind".into() };
+/// let repr = api.enum_named("Kind").ok_or("declared")?.repr;
+/// assert_eq!(layout_of(&api, &kind, Target::LP64)?.size, repr.width(8));
+/// let handle = TypeRef::pointer(TypeRef::Opaque { name: "TsContext".into() }, false);
+/// assert_eq!(layout_of(&api, &handle, Target::ILP32)?.size, 4);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -113,6 +212,21 @@ pub fn layout_of(api: &Api, ty: &TypeRef, target: Target) -> Result<Layout, Layo
 
 /// The layout of a `#[repr(C)]` struct on a target: each field at the
 /// next offset aligned to its alignment, the whole padded to the largest.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::layout::{Target, struct_layout};
+///
+/// // An owned string: a pointer, a length and a capacity.
+/// let string = api.struct_named("TsString").ok_or("declared")?;
+/// assert_eq!(struct_layout(&api, string, Target::LP64)?.offsets, [0, 8, 16]);
+/// assert_eq!(struct_layout(&api, string, Target::ILP32)?.size, 12);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

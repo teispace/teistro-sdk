@@ -135,6 +135,19 @@ pub(crate) fn preamble(api: &Api, what: &str) -> String {
 /// `catalogue.py`: every enum as an `IntEnum` carrying the id the C
 /// boundary uses and the key every pack, fixture and serialised result
 /// spells.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::python;
+///
+/// // The Python binding's catalogue, as `cargo xtask gen ffi` writes it.
+/// assert_eq!(python::catalogue(&api), std::fs::read_to_string(root.join("bindings/python/teistro/catalogue.py"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn catalogue(api: &Api) -> String {
     let mut out = preamble(
@@ -355,6 +368,19 @@ fn blob_struct(api: &Api) -> String {
 
 /// `_ffi.py`: the declarations, the branded quantities, a value class per
 /// boundary struct, the exception, the sizes, and the context.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::python;
+///
+/// // The Python binding's raw layer.
+/// assert_eq!(python::declarations(&api), std::fs::read_to_string(root.join("bindings/python/teistro/_ffi.py"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn declarations(api: &Api) -> String {
     let mut out = preamble(
@@ -1605,6 +1631,19 @@ def _take_blob(lib: TeistroLibrary, raw: Any) -> bytes:
 // ── The decoders ───────────────────────────────────────────────────────────
 
 /// `_blob.py`: one decoder per result blob.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::python;
+///
+/// // The Python binding's blob decoders.
+/// assert_eq!(python::decoders(&api), std::fs::read_to_string(root.join("bindings/python/teistro/_blob.py"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn decoders(api: &Api) -> String {
     let mut out = preamble(

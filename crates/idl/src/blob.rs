@@ -27,17 +27,197 @@ use core::fmt;
 use crate::model::{BlobSchema, Scalar, SectionKind, SectionSchema};
 
 /// The bytes `TSRB` read as a little-endian word.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// # let mut writer = Writer::new(&schema);
+/// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+/// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+/// # writer.bytes("note", "two rows".as_bytes())?;
+/// # let bytes = writer.finish()?;
+/// # let reader = Reader::parse(&bytes, &schema)?;
+///
+/// use teistro_idl::blob::MAGIC;
+///
+/// // Every blob opens with `TSRB`.
+/// assert_eq!(&bytes[..4], b"TSRB");
+/// assert_eq!(MAGIC.to_le_bytes(), *b"TSRB");
+/// # Ok::<(), BlobError>(())
+/// ```
 pub const MAGIC: u32 = 0x4252_5354;
 /// The layout version this module writes and reads.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// # let mut writer = Writer::new(&schema);
+/// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+/// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+/// # writer.bytes("note", "two rows".as_bytes())?;
+/// # let bytes = writer.finish()?;
+/// # let reader = Reader::parse(&bytes, &schema)?;
+///
+/// use teistro_idl::blob::VERSION;
+///
+/// assert_eq!(bytes[4..8], VERSION.to_le_bytes());
+/// // A blob of another layout version is refused, not misread.
+/// let mut later = bytes.clone();
+/// later[4] = 2;
+/// assert!(matches!(Reader::parse(&later, &schema), Err(BlobError::Malformed(_))));
+/// # Ok::<(), BlobError>(())
+/// ```
 pub const VERSION: u32 = 1;
 /// The header's length in bytes.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// # let mut writer = Writer::new(&schema);
+/// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+/// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+/// # writer.bytes("note", "two rows".as_bytes())?;
+/// # let bytes = writer.finish()?;
+/// # let reader = Reader::parse(&bytes, &schema)?;
+///
+/// use teistro_idl::blob::{ENTRY_LEN, HEADER_LEN};
+///
+/// // The first section starts after the header and a table of three.
+/// assert_eq!(reader.entry("summary").map(|entry| entry.offset), Some(HEADER_LEN + 3 * ENTRY_LEN));
+/// # Ok::<(), BlobError>(())
+/// ```
 pub const HEADER_LEN: usize = 32;
 /// A table entry's length in bytes.
+///
+/// ```
+/// use teistro_idl::blob::ENTRY_LEN;
+///
+/// // Four words: id, offset, length and count.
+/// assert_eq!(ENTRY_LEN, 4 * 4);
+/// ```
 pub const ENTRY_LEN: usize = 16;
 /// The slot every fixed field occupies and every column starts on.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// # let mut writer = Writer::new(&schema);
+/// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+/// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+/// # writer.bytes("note", "two rows".as_bytes())?;
+/// # let bytes = writer.finish()?;
+/// # let reader = Reader::parse(&bytes, &schema)?;
+///
+/// use teistro_idl::blob::SLOT;
+///
+/// // A fixed field takes a slot whatever its scalar, and the blob ends on one.
+/// assert_eq!(reader.entry("summary").map(|entry| entry.length), Some(2 * SLOT));
+/// assert_eq!(bytes.len() % SLOT, 0);
+/// # Ok::<(), BlobError>(())
+/// ```
 pub const SLOT: usize = 8;
 
 /// What went wrong writing or reading a blob.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// let mut writer = Writer::new(&schema);
+/// assert_eq!(writer.bytes("nothing", &[]), Err(BlobError::UnknownSection("nothing".into())));
+/// // A float where the schema has a u8.
+/// let wrong = writer.columns("rows", 1, &[ColumnData::F64(&[1.0]), ColumnData::F64(&[1.0])]).unwrap_err();
+/// assert_eq!(wrong.to_string(), "`rows.n` takes u8 values");
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BlobError {
     /// A section name the schema lacks.
@@ -84,6 +264,40 @@ impl std::error::Error for BlobError {}
 
 /// One scalar read from a blob, widened to the largest representation of
 /// its family.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// # let mut writer = Writer::new(&schema);
+/// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+/// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+/// # writer.bytes("note", "two rows".as_bytes())?;
+/// # let bytes = writer.finish()?;
+/// # let reader = Reader::parse(&bytes, &schema)?;
+///
+/// // Widened by family: a u8 reads as an unsigned integer.
+/// assert_eq!(reader.column("rows", "n")?, [ScalarValue::Uint(1), ScalarValue::Uint(2)]);
+/// assert_eq!(reader.field("summary", "scale")?, ScalarValue::Float(0.5));
+/// # Ok::<(), BlobError>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ScalarValue {
     /// A signed integer.
@@ -96,6 +310,13 @@ pub enum ScalarValue {
 
 impl ScalarValue {
     /// The value as `f64`, converting integers.
+    ///
+    /// ```
+    /// use teistro_idl::blob::ScalarValue;
+    ///
+    /// assert_eq!(ScalarValue::Int(-3).as_f64(), -3.0);
+    /// assert_eq!(ScalarValue::Float(1.25).as_f64(), 1.25);
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_precision_loss,
@@ -110,6 +331,14 @@ impl ScalarValue {
     }
 
     /// The value as `i64`; a float is truncated.
+    ///
+    /// ```
+    /// use teistro_idl::blob::ScalarValue;
+    ///
+    /// assert_eq!(ScalarValue::Uint(7).as_i64(), 7);
+    /// // A float is truncated toward zero.
+    /// assert_eq!(ScalarValue::Float(-2.75).as_i64(), -2);
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
@@ -126,6 +355,15 @@ impl ScalarValue {
 }
 
 /// A column's values, borrowed from the caller with their native type.
+///
+/// ```
+/// use teistro_idl::Scalar;
+/// use teistro_idl::blob::ColumnData;
+///
+/// let longitudes = [10.0, 20.0, 30.0];
+/// let column = ColumnData::F64(&longitudes);
+/// assert_eq!((column.scalar(), column.len()), (Scalar::F64, 3));
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub enum ColumnData<'a> {
     /// `u8` values.
@@ -152,6 +390,13 @@ pub enum ColumnData<'a> {
 
 impl ColumnData<'_> {
     /// The scalar the data is.
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    /// use teistro_idl::blob::ColumnData;
+    ///
+    /// assert_eq!(ColumnData::I16(&[-1]).scalar(), Scalar::I16);
+    /// ```
     #[must_use]
     pub const fn scalar(&self) -> Scalar {
         match self {
@@ -169,6 +414,13 @@ impl ColumnData<'_> {
     }
 
     /// The element count.
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    /// use teistro_idl::blob::ColumnData;
+    ///
+    /// assert_eq!(ColumnData::U32(&[1, 2]).len(), 2);
+    /// ```
     #[must_use]
     pub const fn len(&self) -> usize {
         match self {
@@ -186,6 +438,14 @@ impl ColumnData<'_> {
     }
 
     /// Whether the column is empty.
+    ///
+    /// ```
+    /// use teistro_idl::Scalar;
+    /// use teistro_idl::blob::ColumnData;
+    ///
+    /// assert!(ColumnData::U8(&[]).is_empty());
+    /// assert!(!ColumnData::F32(&[0.0]).is_empty());
+    /// ```
     #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.len() == 0
@@ -336,6 +596,35 @@ impl OwnedColumn {
 
 /// The scalar a fixed field holds when a value is written: an integer or a
 /// float, checked against the schema.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// let mut writer = Writer::new(&schema);
+/// // An integer field takes either integer, a float field a float.
+/// writer.fixed("summary", &[FixedValue::Int(2), FixedValue::Float(0.5)])?;
+/// let mut other = Writer::new(&schema);
+/// assert!(matches!(other.fixed("summary", &[FixedValue::Float(2.0), FixedValue::Float(0.5)]), Err(BlobError::Type { .. })));
+/// # Ok::<(), BlobError>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FixedValue {
     /// An integer, for any integer field.
@@ -379,6 +668,37 @@ impl From<f64> for FixedValue {
 /// Encodes one blob against its schema. Sections may be written in any
 /// order and each exactly once; [`Writer::finish`] refuses a blob with a
 /// section missing.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// // Sections in any order, each once.
+/// let mut writer = Writer::new(&schema);
+/// writer.bytes("note", b"first")?;
+/// writer.rows("rows", &[vec![FixedValue::from(1.5), FixedValue::from(1u8)]])?;
+/// writer.fixed("summary", &[FixedValue::from(1u32), FixedValue::from(1.0)])?;
+/// let bytes = writer.finish()?;
+/// assert_eq!(Reader::parse(&bytes, &schema)?.text("note")?, "first");
+/// # Ok::<(), BlobError>(())
+/// ```
 #[derive(Debug)]
 pub struct Writer<'s> {
     schema: &'s BlobSchema,
@@ -388,6 +708,31 @@ pub struct Writer<'s> {
 
 impl<'s> Writer<'s> {
     /// A writer with the header and the table reserved.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// // Nothing written yet: finishing names the first section missing.
+    /// assert_eq!(Writer::new(&schema).finish(), Err(BlobError::Missing("summary".into())));
+    /// ```
     #[must_use]
     pub fn new(schema: &'s BlobSchema) -> Writer<'s> {
         let table_len = schema.sections.len() * ENTRY_LEN;
@@ -442,6 +787,37 @@ impl<'s> Writer<'s> {
 
     /// Writes a fixed section: one value per field, in field order.
     ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// let mut writer = Writer::new(&schema);
+    /// // One value per field.
+    /// let short = writer.fixed("summary", &[FixedValue::from(2u32)]).unwrap_err();
+    /// assert_eq!(short.to_string(), "section `summary` has 2 fields, 1 values given");
+    /// writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// // And only once.
+    /// assert!(matches!(writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)]), Err(BlobError::Shape(_))));
+    /// # Ok::<(), BlobError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An unknown or repeated section, a wrong value count, or a value of
@@ -477,6 +853,35 @@ impl<'s> Writer<'s> {
 
     /// Writes a column section: one column per field, each with `rows`
     /// elements of the field's scalar.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// let mut writer = Writer::new(&schema);
+    /// // Every column the row count long.
+    /// let ragged = writer.columns("rows", 2, &[ColumnData::F64(&[1.5]), ColumnData::U8(&[1, 2])]).unwrap_err();
+    /// assert_eq!(ragged.to_string(), "column `rows.x` has 1 elements, not 2");
+    /// writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+    /// # Ok::<(), BlobError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -536,6 +941,35 @@ impl<'s> Writer<'s> {
     /// schema declares, so a value too wide for its column is refused
     /// rather than wrapped.
     ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// let mut writer = Writer::new(&schema);
+    /// // 300 does not fit the u8 column, and is refused rather than wrapped.
+    /// let wide = writer.rows("rows", &[vec![FixedValue::from(1.5), FixedValue::from(300u32)]]);
+    /// assert!(matches!(wide, Err(BlobError::Type { expected: Scalar::U8, .. })));
+    /// writer.rows("rows", &[vec![FixedValue::from(1.5), FixedValue::from(3u8)]])?;
+    /// # Ok::<(), BlobError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An unknown or repeated section, a row of the wrong length, a
@@ -577,6 +1011,34 @@ impl<'s> Writer<'s> {
 
     /// Writes a bytes section.
     ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// let mut writer = Writer::new(&schema);
+    /// writer.bytes("note", "नमस्ते".as_bytes())?;
+    /// // A bytes section takes no columns.
+    /// assert!(matches!(writer.columns("note", 0, &[]), Err(BlobError::Shape(_))));
+    /// # Ok::<(), BlobError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An unknown or repeated section.
@@ -592,6 +1054,42 @@ impl<'s> Writer<'s> {
     /// that asked for none of it writes, and what a build that left the
     /// section's module out writes in its place, so a reader of the
     /// schema reads either as answering nothing.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// # let mut writer = Writer::new(&schema);
+    /// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// # writer.empty("rows")?;
+    /// # writer.bytes("note", "none".as_bytes())?;
+    /// # let bytes = writer.finish()?;
+    /// # let reader = Reader::parse(&bytes, &schema)?;
+    ///
+    /// // Read back as answering nothing.
+    /// assert_eq!(reader.count("rows"), Some(0));
+    /// assert!(reader.column("rows", "x")?.is_empty());
+    /// // A fixed section has no empty form.
+    /// assert!(Writer::new(&schema).empty("summary").is_err());
+    /// # Ok::<(), BlobError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -612,6 +1110,40 @@ impl<'s> Writer<'s> {
     }
 
     /// The bytes, once every section is written.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// # let mut writer = Writer::new(&schema);
+    /// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+    /// # writer.bytes("note", "two rows".as_bytes())?;
+    /// # let bytes = writer.finish()?;
+    /// # let reader = Reader::parse(&bytes, &schema)?;
+    ///
+    /// // The header records the length, so a cut blob is refused.
+    /// assert_eq!(bytes[12..16], u32::try_from(bytes.len()).map_err(|_| BlobError::Missing(String::new()))?.to_le_bytes());
+    /// assert!(Reader::parse(&bytes[..bytes.len() - 8], &schema).is_err());
+    /// # Ok::<(), BlobError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -650,6 +1182,41 @@ fn len_u32(len: usize) -> u32 {
 }
 
 /// One section as found in a blob's table.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// # let mut writer = Writer::new(&schema);
+/// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+/// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+/// # writer.bytes("note", "two rows".as_bytes())?;
+/// # let bytes = writer.finish()?;
+/// # let reader = Reader::parse(&bytes, &schema)?;
+///
+/// let rows = reader.entry("rows").ok_or(BlobError::Missing("rows".into()))?;
+/// assert_eq!((rows.id, rows.count), (2, 2));
+/// // The note's count is its length in bytes.
+/// assert_eq!(reader.entry("note").map(|entry| entry.count), Some(8));
+/// # Ok::<(), BlobError>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Entry {
     /// The section id.
@@ -664,6 +1231,41 @@ pub struct Entry {
 
 /// Decodes a blob against its schema, checking every offset before it is
 /// read; the reference every generated decoder is held to.
+///
+/// ```
+/// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+/// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+/// #
+/// # let schema = BlobSchema {
+/// #     name: "demo".into(),
+/// #     id: 7,
+/// #     doc: "an example".into(),
+/// #     sections: vec![
+/// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+/// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+/// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+/// #         ]),
+/// #         SectionSchema::columns(2, "rows", "one per row", vec![
+/// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+/// #             ColumnDef::new("n", Scalar::U8, "count"),
+/// #         ]),
+/// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+/// #     ],
+/// # };
+///
+/// # let mut writer = Writer::new(&schema);
+/// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+/// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+/// # writer.bytes("note", "two rows".as_bytes())?;
+/// # let bytes = writer.finish()?;
+/// # let reader = Reader::parse(&bytes, &schema)?;
+///
+/// assert_eq!(reader.field("summary", "count")?.as_i64(), 2);
+/// let x: Vec<f64> = reader.column("rows", "x")?.into_iter().map(ScalarValue::as_f64).collect();
+/// assert_eq!(x, [1.5, 2.5]);
+/// assert_eq!(reader.text("note")?, "two rows");
+/// # Ok::<(), BlobError>(())
+/// ```
 #[derive(Debug)]
 pub struct Reader<'b, 's> {
     bytes: &'b [u8],
@@ -673,6 +1275,42 @@ pub struct Reader<'b, 's> {
 
 impl<'b, 's> Reader<'b, 's> {
     /// Parses the header and the table.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// # let mut writer = Writer::new(&schema);
+    /// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+    /// # writer.bytes("note", "two rows".as_bytes())?;
+    /// # let bytes = writer.finish()?;
+    /// # let reader = Reader::parse(&bytes, &schema)?;
+    ///
+    /// // Read against another schema, the id disagrees.
+    /// let other = BlobSchema { id: 8, ..schema.clone() };
+    /// let refused = Reader::parse(&bytes, &other).unwrap_err();
+    /// assert_eq!(refused.to_string(), "not a well-formed blob: schema id 7, expected 8 (`demo`)");
+    /// assert!(Reader::parse(b"TSRB", &schema).is_err());
+    /// # Ok::<(), BlobError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -748,6 +1386,39 @@ impl<'b, 's> Reader<'b, 's> {
     }
 
     /// The table entry of a section by name, when the blob has it.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// # let mut writer = Writer::new(&schema);
+    /// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+    /// # writer.bytes("note", "two rows".as_bytes())?;
+    /// # let bytes = writer.finish()?;
+    /// # let reader = Reader::parse(&bytes, &schema)?;
+    ///
+    /// assert_eq!(reader.entry("note").map(|entry| entry.id), Some(3));
+    /// assert_eq!(reader.entry("nothing"), None);
+    /// # Ok::<(), BlobError>(())
+    /// ```
     #[must_use]
     pub fn entry(&self, name: &str) -> Option<Entry> {
         let (_, section) = self.schema.section(name)?;
@@ -755,12 +1426,79 @@ impl<'b, 's> Reader<'b, 's> {
     }
 
     /// The count of a section: records, rows or bytes.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// # let mut writer = Writer::new(&schema);
+    /// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+    /// # writer.bytes("note", "two rows".as_bytes())?;
+    /// # let bytes = writer.finish()?;
+    /// # let reader = Reader::parse(&bytes, &schema)?;
+    ///
+    /// // A fixed section is one record.
+    /// assert_eq!((reader.count("summary"), reader.count("rows")), (Some(1), Some(2)));
+    /// # Ok::<(), BlobError>(())
+    /// ```
     #[must_use]
     pub fn count(&self, name: &str) -> Option<usize> {
         self.entry(name).map(|e| e.count)
     }
 
     /// The values of a fixed section, in field order.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// # let mut writer = Writer::new(&schema);
+    /// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+    /// # writer.bytes("note", "two rows".as_bytes())?;
+    /// # let bytes = writer.finish()?;
+    /// # let reader = Reader::parse(&bytes, &schema)?;
+    ///
+    /// assert_eq!(reader.fixed("summary")?, [ScalarValue::Uint(2), ScalarValue::Float(0.5)]);
+    /// // A column section is not read as one.
+    /// assert!(matches!(reader.fixed("rows"), Err(BlobError::Shape(_))));
+    /// # Ok::<(), BlobError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -788,6 +1526,40 @@ impl<'b, 's> Reader<'b, 's> {
     /// The schema names its fields and a column section is already read
     /// by name; this is the same for a fixed one.
     ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// # let mut writer = Writer::new(&schema);
+    /// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+    /// # writer.bytes("note", "two rows".as_bytes())?;
+    /// # let bytes = writer.finish()?;
+    /// # let reader = Reader::parse(&bytes, &schema)?;
+    ///
+    /// // By name, so a field inserted ahead moves nothing that reads this.
+    /// assert_eq!(reader.field("summary", "scale")?.as_f64(), 0.5);
+    /// assert_eq!(reader.field("summary", "nothing"), Err(BlobError::UnknownSection("summary.nothing".into())));
+    /// # Ok::<(), BlobError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A section or field the schema lacks, or a truncated one.
@@ -800,6 +1572,39 @@ impl<'b, 's> Reader<'b, 's> {
     }
 
     /// One column of a column section, decoded.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// # let mut writer = Writer::new(&schema);
+    /// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+    /// # writer.bytes("note", "two rows".as_bytes())?;
+    /// # let bytes = writer.finish()?;
+    /// # let reader = Reader::parse(&bytes, &schema)?;
+    ///
+    /// let n: Vec<i64> = reader.column("rows", "n")?.into_iter().map(ScalarValue::as_i64).collect();
+    /// assert_eq!(n, [1, 2]);
+    /// # Ok::<(), BlobError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -821,6 +1626,38 @@ impl<'b, 's> Reader<'b, 's> {
 
     /// The bytes of a bytes section.
     ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// # let mut writer = Writer::new(&schema);
+    /// # writer.fixed("summary", &[FixedValue::from(2u32), FixedValue::from(0.5)])?;
+    /// # writer.columns("rows", 2, &[ColumnData::F64(&[1.5, 2.5]), ColumnData::U8(&[1, 2])])?;
+    /// # writer.bytes("note", "two rows".as_bytes())?;
+    /// # let bytes = writer.finish()?;
+    /// # let reader = Reader::parse(&bytes, &schema)?;
+    ///
+    /// assert_eq!(reader.bytes("note")?, b"two rows");
+    /// # Ok::<(), BlobError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A section the schema lacks or the blob lacks.
@@ -832,6 +1669,39 @@ impl<'b, 's> Reader<'b, 's> {
     }
 
     /// The text of a bytes section.
+    ///
+    /// ```
+    /// # use teistro_idl::blob::{BlobError, ColumnData, FixedValue, Reader, ScalarValue, Writer};
+    /// # use teistro_idl::{BlobSchema, ColumnDef, Scalar, SectionSchema};
+    /// #
+    /// # let schema = BlobSchema {
+    /// #     name: "demo".into(),
+    /// #     id: 7,
+    /// #     doc: "an example".into(),
+    /// #     sections: vec![
+    /// #         SectionSchema::fixed(1, "summary", "the grid", vec![
+    /// #             ColumnDef::new("count", Scalar::U32, "the rows"),
+    /// #             ColumnDef::new("scale", Scalar::F64, "a factor"),
+    /// #         ]),
+    /// #         SectionSchema::columns(2, "rows", "one per row", vec![
+    /// #             ColumnDef::new("x", Scalar::F64, "abscissa"),
+    /// #             ColumnDef::new("n", Scalar::U8, "count"),
+    /// #         ]),
+    /// #         SectionSchema::bytes(3, "note", "UTF-8 text"),
+    /// #     ],
+    /// # };
+    ///
+    /// let mut writer = Writer::new(&schema);
+    /// writer.fixed("summary", &[FixedValue::from(0u32), FixedValue::from(1.0)])?;
+    /// writer.empty("rows")?;
+    /// writer.bytes("note", &[0xff])?;
+    /// let bytes = writer.finish()?;
+    /// let reader = Reader::parse(&bytes, &schema)?;
+    /// // Bytes that are not UTF-8 are not text.
+    /// assert_eq!(reader.text("note"), Err(BlobError::Malformed("section `note` is not UTF-8".into())));
+    /// assert_eq!(reader.bytes("note")?, [0xff]);
+    /// # Ok::<(), BlobError>(())
+    /// ```
     ///
     /// # Errors
     ///

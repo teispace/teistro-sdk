@@ -24,6 +24,36 @@ use crate::names::{clean_doc, screaming};
 use crate::rules::infer_role;
 
 /// One Rust source file to read.
+///
+/// ```
+/// # use teistro_idl::extract::{ExtractError, Inputs, Source, extract};
+/// #
+/// # let source = Source {
+/// #     relative: "lib.rs".into(),
+/// #     text: r#"
+/// # /// The ABI version.
+/// # ///
+/// # /// `api: constant`
+/// # pub const TS_ABI_VERSION: u32 = 3;
+/// #
+/// # /// The version.
+/// # #[unsafe(no_mangle)]
+/// # pub extern "C" fn ts_abi_version() -> u32 { TS_ABI_VERSION }
+/// # "#.into(),
+/// # };
+/// # let inputs = Inputs {
+/// #     prefix: "ts_".into(),
+/// #     sdk_version: "0.0.0".into(),
+/// #     abi_version_constant: "TS_ABI_VERSION".into(),
+/// #     ..Inputs::default()
+/// # };
+///
+/// let api = extract(&[source], &inputs)?;
+/// // Every item records the file it came from.
+/// assert_eq!(api.sources, ["lib.rs"]);
+/// assert_eq!(api.functions[0].source, "lib.rs");
+/// # Ok::<(), ExtractError>(())
+/// ```
 #[derive(Debug, Clone)]
 pub struct Source {
     /// The repository-relative path, recorded on every item.
@@ -34,6 +64,20 @@ pub struct Source {
 
 impl Source {
     /// Reads a file.
+    ///
+    /// ```
+    /// # use std::path::Path;
+    /// #
+    /// # let root = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+    ///
+    /// use teistro_idl::extract::Source;
+    ///
+    /// let status = Source::read(root, "crates/core/src/error.rs")?;
+    /// assert!(status.text.contains("pub enum Status"));
+    /// // A missing file is named by its path.
+    /// assert_eq!(Source::read(root, "nothing.rs").unwrap_err().where_, "nothing.rs");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -51,6 +95,37 @@ impl Source {
 /// Everything the extractor needs beside the sources: the enums the
 /// catalogue contributes (with their kinds), the blob schemas the boundary
 /// crate declares, and the versions.
+///
+/// ```
+/// # use teistro_idl::extract::{ExtractError, Inputs, Source, extract};
+/// #
+/// # let source = Source {
+/// #     relative: "lib.rs".into(),
+/// #     text: r#"
+/// # /// The ABI version.
+/// # ///
+/// # /// `api: constant`
+/// # pub const TS_ABI_VERSION: u32 = 3;
+/// #
+/// # /// The version.
+/// # #[unsafe(no_mangle)]
+/// # pub extern "C" fn ts_abi_version() -> u32 { TS_ABI_VERSION }
+/// # "#.into(),
+/// # };
+/// # let inputs = Inputs {
+/// #     prefix: "ts_".into(),
+/// #     sdk_version: "0.0.0".into(),
+/// #     abi_version_constant: "TS_ABI_VERSION".into(),
+/// #     ..Inputs::default()
+/// # };
+///
+/// // The version is read from the constant the inputs name.
+/// let api = extract(&[source.clone()], &inputs)?;
+/// assert_eq!(api.abi_version, 3);
+/// let elsewhere = Inputs { abi_version_constant: "TS_VERSION".into(), ..inputs };
+/// assert!(extract(&[source], &elsewhere).is_err());
+/// # Ok::<(), ExtractError>(())
+/// ```
 #[derive(Debug, Clone, Default)]
 pub struct Inputs {
     /// The prefix every symbol carries.
@@ -66,6 +141,37 @@ pub struct Inputs {
 }
 
 /// Why extraction failed.
+///
+/// ```
+/// # use teistro_idl::extract::{ExtractError, Inputs, Source, extract};
+/// #
+/// # let source = Source {
+/// #     relative: "lib.rs".into(),
+/// #     text: r#"
+/// # /// The ABI version.
+/// # ///
+/// # /// `api: constant`
+/// # pub const TS_ABI_VERSION: u32 = 3;
+/// #
+/// # /// The version.
+/// # #[unsafe(no_mangle)]
+/// # pub extern "C" fn ts_abi_version() -> u32 { TS_ABI_VERSION }
+/// # "#.into(),
+/// # };
+/// # let inputs = Inputs {
+/// #     prefix: "ts_".into(),
+/// #     sdk_version: "0.0.0".into(),
+/// #     abi_version_constant: "TS_ABI_VERSION".into(),
+/// #     ..Inputs::default()
+/// # };
+///
+/// // A file that does not parse is named.
+/// let broken = Source { relative: "broken.rs".into(), text: "pub fn (".into() };
+/// let refused = extract(&[broken], &inputs).unwrap_err();
+/// assert_eq!(refused.where_, "broken.rs");
+/// assert!(refused.to_string().starts_with("broken.rs: "));
+/// # Ok::<(), ExtractError>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtractError {
     /// The source, or the item, the problem is in.
@@ -76,6 +182,13 @@ pub struct ExtractError {
 
 impl ExtractError {
     /// An error at a place.
+    ///
+    /// ```
+    /// use teistro_idl::extract::ExtractError;
+    ///
+    /// let refused = ExtractError::new("lib.rs", "no ABI version");
+    /// assert_eq!(refused.to_string(), "lib.rs: no ABI version");
+    /// ```
     #[must_use]
     pub fn new(where_: &str, detail: impl Into<String>) -> ExtractError {
         ExtractError {
@@ -94,6 +207,36 @@ impl fmt::Display for ExtractError {
 impl std::error::Error for ExtractError {}
 
 /// Extracts the description from the sources.
+///
+/// ```
+/// # use teistro_idl::extract::{ExtractError, Inputs, Source, extract};
+/// #
+/// # let source = Source {
+/// #     relative: "lib.rs".into(),
+/// #     text: r#"
+/// # /// The ABI version.
+/// # ///
+/// # /// `api: constant`
+/// # pub const TS_ABI_VERSION: u32 = 3;
+/// #
+/// # /// The version.
+/// # #[unsafe(no_mangle)]
+/// # pub extern "C" fn ts_abi_version() -> u32 { TS_ABI_VERSION }
+/// # "#.into(),
+/// # };
+/// # let inputs = Inputs {
+/// #     prefix: "ts_".into(),
+/// #     sdk_version: "0.0.0".into(),
+/// #     abi_version_constant: "TS_ABI_VERSION".into(),
+/// #     ..Inputs::default()
+/// # };
+///
+/// let api = extract(&[source], &inputs)?;
+/// assert_eq!(api.constants[0].name, "TS_ABI_VERSION");
+/// let version = api.function_named("ts_abi_version").ok_or_else(|| ExtractError::new("lib.rs", "described"))?;
+/// assert!(version.params.is_empty() && version.safety.is_none());
+/// # Ok::<(), ExtractError>(())
+/// ```
 ///
 /// # Errors
 ///

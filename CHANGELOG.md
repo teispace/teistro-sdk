@@ -23,6 +23,23 @@ parameters of every message it reaches through `:msg`, its own type
 winning where both name one; the ten affected accessors in Rust,
 TypeScript, Dart, Python and Java gain the Gregorian ones' fields.
 
+**`teistro-idl` writes its validator corpus in its own order.**
+**Numbers:** none; every checked-in file is unchanged. `validators::corpus`
+builds the corpus as a `serde_json::Value`, whose keys keep their order
+only under serde_json's `preserve_order`, and the crate never asked for
+it: `teistro-intl` turns it on in every build that ships, but built alone
+the crate wrote the corpus with its keys sorted, a different file from
+the one `cargo xtask gen ffi` checks in. The crate now asks for the
+feature itself.
+
+**`teistro-idl` has a run example on every public item.**
+**Numbers:** none. Its 217 items join the crates `check-doc-examples`
+holds there, forty-two in all. An emitter's example compares its output
+with the file `cargo xtask gen ffi` checks in, or, for Java's and Node's,
+whose files are written from more than the emitter, holds what it writes
+for a named member. Writing them found the corpus order
+above.
+
 **`teistro-intl` has a run example on every public item.**
 **Numbers:** none. Its 420 items join the crates `check-doc-examples`
 holds there, forty-one in all. The generated `messages` module carries

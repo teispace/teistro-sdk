@@ -46,6 +46,22 @@ const CRATES: [(&str, &str); 3] = [
 /// The toolkit the glue is written for. Everything that differs between
 /// the two is a method here, so the table in `03-design/wasm-binding.md`
 /// §3 is this `impl` and nowhere else.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::node::{self, Backend};
+///
+/// // The same calls, glued for napi-rs or for wasm-bindgen.
+/// let napi = node::render(&api, Backend::Napi);
+/// let wasm = node::render(&api, Backend::WasmBindgen);
+/// assert!(napi.contains("napi") && wasm.contains("wasm_bindgen"));
+/// assert_ne!(napi, wasm);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Backend {
     /// napi-rs, for the Node addon (`bindings/node/native`).
@@ -216,6 +232,20 @@ impl Backend {
 }
 
 /// Renders `generated.rs` for a backend's crate.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::node::{self, Backend};
+///
+/// // Every entry point the glue reaches is the description's.
+/// let glue = node::render(&api, Backend::Napi);
+/// assert!(glue.contains("ts_positions"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn render(api: &Api, backend: Backend) -> String {
     let b = backend;
