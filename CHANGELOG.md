@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A polar birth keeps its points.**
+**Numbers:** none for any chart that answered before. A birth under the
+midnight sun or the polar night counted from its nearest sunrise is more
+hours from it than the verses count a time lagna (36), and the whole
+points section, so the whole chart, was refused. The bhava, hora, ghati
+and pranapada lagnas are now `withheld`, each with its status and
+reason, and the other fifteen points answer; Gulika, Mandi and their
+four siblings are withheld the same way for a day with no arc to divide.
+A rules reading of such a chart lists `points` as unreadable, as it did
+for a chart read without them. `withheld` is absent when empty, so no
+existing document or hash moves. The elapsed-time refusal now says which
+polar-day policy counts the day from civil midnight.
+
 **The A/B against the baseline engine is in depth, and judges accuracy.**
 **Numbers:** on this machine, per request, the SDK takes 0.19× the
 baseline's time for a chart, 0.09× for a day, 0.64× for the whole chart,

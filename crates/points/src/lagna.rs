@@ -256,7 +256,13 @@ pub fn driven(
                 point.key()
             ),
         )
-        .with_field("points.hours_after_sunrise"));
+        .with_field("points.hours_after_sunrise")
+        .with_hint(if hours_after_sunrise > LONGEST_HOURS {
+            "a birth this far from its sunrise is a polar one counted from the nearest event; \
+             the CIVIL_MIDNIGHT polar-day policy counts its day from civil midnight instead"
+        } else {
+            "give the hours from the day's sunrise to the birth, at least 0"
+        }));
     }
     Derived::at(
         point,
