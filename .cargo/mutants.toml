@@ -20,20 +20,20 @@ exclude_re = [
   # 7000), below a JD's own ulp (4.7e-10 near 2.4e6), so the sum lands on
   # the parent's end either way. Only a period as long as the JD itself
   # could part the two.
-  'crates/dasha/src/tree\.rs:603:22: replace match guard s == total with false in <impl Timeline for Dasha>::child',
+  'crates/dasha/src/tree\.rs:1223:22: replace match guard s == total with false in <impl Timeline for Dasha>::child',
   # Under END `mahadasha` refuses every later cycle itself, and no row
   # has a cycle of no days, so the guard's second clause decides nothing.
-  'crates/dasha/src/tree\.rs:635:58: replace \|\| with && in <impl Timeline for Dasha>::mahadasha_at',
+  'crates/dasha/src/tree\.rs:1255:58: replace \|\| with && in <impl Timeline for Dasha>::mahadasha_at',
   # The search runs in order and the first period still running ends past
   # the instant, so its start is already at or before it: the lower bound
   # confirms what the upper one found and never decides.
-  'crates/dasha/src/tree\.rs:654:41: replace \+ with - in <impl Timeline for Dasha>::mahadasha_at',
+  'crates/dasha/src/tree\.rs:1274:41: replace \+ with - in <impl Timeline for Dasha>::mahadasha_at',
   # Before birth `within` is negative, which the search's `*from <= within`
   # refuses on its own.
-  'crates/dasha/src/rashi\.rs:1142:23: replace \|\| with && in <impl Timeline for RashiDasha>::mahadasha_at',
+  'crates/dasha/src/rashi\.rs:2015:23: replace \|\| with && in <impl Timeline for RashiDasha>::mahadasha_at',
   # `offsets` has one entry more than the running mahadashas, so an index
   # past them finds no end and answers nothing whatever the guard says.
-  'crates/dasha/src/kalachakra\.rs:331:36: replace \|\| with && in <impl Timeline for KalachakraDasha>::mahadasha',
+  'crates/dasha/src/kalachakra\.rs:520:36: replace \|\| with && in <impl Timeline for KalachakraDasha>::mahadasha',
   # A body on either node's sign has already ended the count, so `from`
   # never equals `arc` where the side is chosen.
   'crates/rules/src/eval\.rs:853:72: replace > with >= in Evaluator<.a>::predicate',
@@ -43,30 +43,30 @@ exclude_re = [
   'crates/rules/src/longevity/ayurdaya\.rs:290:67: replace < with <= in Ayurdaya::chosen',
   # Two distinct own signs stand at distinct counts from the graha, so
   # the greater count is never a tie.
-  'crates/dasha/src/jaimini\.rs:442:33: replace > with >= in graha_arudha',
+  'crates/dasha/src/jaimini\.rs:585:33: replace > with >= in graha_arudha',
   # A profected year has no children (`child` is always nothing), so a
   # breadth of one asks for a child that is never there.
-  'crates/dasha/src/releasing\.rs:448:9: replace <impl Timeline for ProfectionDasha>::breadth -> usize with 1',
+  'crates/dasha/src/releasing\.rs:592:9: replace <impl Timeline for ProfectionDasha>::breadth -> usize with 1',
   # Two stored spans are alike within a millionth of a day, and a third
   # level's period is a thirtieth of its mahadasha within a billionth:
   # spans that far apart to the bit are never written, so the bound's own
   # point reads the same either side.
-  'crates/dasha/src/reading\.rs:306:63: replace < with <= in DashaReading::graha_division',
-  'crates/dasha/src/reading\.rs:403:44: replace < with <= in DashaReading::decennial_division',
+  'crates/dasha/src/reading\.rs:632:63: replace < with <= in DashaReading::graha_division',
+  'crates/dasha/src/reading\.rs:866:44: replace < with <= in DashaReading::decennial_division',
   # The step either side of a lattice boundary is a hundredth or a hundred
   # times the tolerance: both put the two readings on either side of it,
   # and the parts are degrees wide.
-  'crates/vargas/src/change\.rs:200:35: replace \* with / in by_lattice',
+  'crates/vargas/src/change\.rs:250:35: replace \* with / in by_lattice',
   # `left <= to` loops once more at `left == to`, where `right` is `to`
   # again and the `right >= to` break ends it with nothing found.
-  'crates/vargas/src/change\.rs:231:16: replace < with <= in by_bisection',
+  'crates/vargas/src/change\.rs:281:16: replace < with <= in by_bisection',
   # When the occupied sign's number equals the empty one's, what is left
   # the empty one is their difference, nothing, either way.
-  'crates/strength/src/ashtakavarga\.rs:362:65: replace < with <= in ekadhipatya',
+  'crates/strength/src/ashtakavarga\.rs:469:65: replace < with <= in ekadhipatya',
   # At exactly 180° the shorter arc is 180 either way.
-  'crates/strength/src/shadbala/mod\.rs:395:13: replace > with >= in apart',
+  'crates/strength/src/shadbala/mod\.rs:496:13: replace > with >= in apart',
   # Ketu is Rahu less 180° or plus 180°: the same point.
-  'crates/strength/src/shadbala/mod\.rs:444:65: replace \+ with - in is_benefic',
+  'crates/strength/src/shadbala/mod\.rs:545:65: replace \+ with - in is_benefic',
   # An arc past 180° folded down by 360° or up by it puts half of it on
   # the same point once the madhyama is reduced past 360°.
   'crates/strength/src/shadbala/cheshta\.rs:54:13: replace -= with \+= in from_kendra',
