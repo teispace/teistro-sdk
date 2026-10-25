@@ -90,7 +90,7 @@ fn varga_sign(varga: Varga, longitude: f64) -> Rashi {
 ///
 /// # Panics
 ///
-/// Never; see [`varga_sign`].
+/// Never: every longitude here is a finite constant.
 #[must_use]
 pub fn standard_horoscope() -> ShadbalaChart {
     let longitudes = longitudes();
