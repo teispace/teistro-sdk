@@ -46,9 +46,39 @@ use crate::SEVEN;
 use crate::bala::{AnnualSky, Bala, finite_longitude, sign_of_longitude};
 
 /// What each of the four parts is worth, in whole units.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{HarshaRules, harsha};
+/// #
+/// # // Scorpio 9°26′ rising, by day.
+/// # let seven = harsha(&sky, at(7.0, 9.0, 26.0), true, HarshaRules::default())?;
+/// use teistro_tajika::HARSHA_PART_UNITS;
+///
+/// assert!(seven.iter().all(|one| one.total.units() == i64::from(one.held()) * HARSHA_PART_UNITS));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const HARSHA_PART_UNITS: i64 = 5;
 
 /// Where the sources differ on the Harsha bala, each a named reading.
+///
+/// ```
+/// use teistro_tajika::{HarshaRules, VenusPlace};
+///
+/// assert_eq!(HarshaRules::default().venus, VenusPlace::Fifth);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase")]
@@ -58,6 +88,33 @@ pub struct HarshaRules {
 }
 
 /// Venus's house of joy, which the Sthana part is read from.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{HarshaRules, VenusPlace, harsha};
+///
+/// // With Virgo rising, Venus in Leo stands in the twelfth: her joy under one
+/// // reading and not the other.
+/// let venus = |venus| -> Result<bool, teistro_core::error::Error> {
+///     Ok(harsha(&sky, 160.0, true, HarshaRules { venus })?[5].sthana)
+/// };
+/// assert!(!venus(VenusPlace::Fifth)?);
+/// assert!(venus(VenusPlace::Twelfth)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -73,6 +130,35 @@ pub enum VenusPlace {
 }
 
 /// What the source calls a planet by its Harsha bala.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{HarshaRules, harsha};
+/// #
+/// # // Scorpio 9°26′ rising, by day.
+/// # let seven = harsha(&sky, at(7.0, 9.0, 26.0), true, HarshaRules::default())?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::HarshaGrade;
+///
+/// // The Sun holds three parts, the Moon two, Venus none.
+/// let grade = |graha: Graha| seven.iter().find(|one| one.graha == graha).map(|one| one.grade);
+/// assert_eq!(grade(Graha::Sun), Some(HarshaGrade::PoornaBali));
+/// assert_eq!(grade(Graha::Moon), Some(HarshaGrade::MadhyaBali));
+/// assert_eq!(grade(Graha::Venus), Some(HarshaGrade::Nirbala));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -94,6 +180,14 @@ pub enum HarshaGrade {
 impl HarshaGrade {
     /// The grade of so many parts held, 0 to 4; anything above is the
     /// highest, since no planet holds more than four.
+    ///
+    /// ```
+    /// use teistro_tajika::HarshaGrade;
+    ///
+    /// assert_eq!(HarshaGrade::of_parts(1), HarshaGrade::Alpabali);
+    /// assert_eq!(HarshaGrade::of_parts(4), HarshaGrade::Extraordinary);
+    /// assert_eq!(HarshaGrade::of_parts(9), HarshaGrade::Extraordinary);
+    /// ```
     #[must_use]
     pub const fn of_parts(parts: u8) -> HarshaGrade {
         match parts {
@@ -108,6 +202,34 @@ impl HarshaGrade {
 
 /// One planet's Harsha bala: which of the four parts it holds, what they
 /// add to, and its grade.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{HarshaRules, harsha};
+/// #
+/// # // Scorpio 9°26′ rising, by day.
+/// # let seven = harsha(&sky, at(7.0, 9.0, 26.0), true, HarshaRules::default())?;
+/// use teistro_core::catalogue::Graha;
+///
+/// // The Sun in his own Leo, the tenth, a masculine house, in a day year; not in
+/// // his house of joy, the ninth.
+/// let sun = seven[0];
+/// assert_eq!((sun.graha, sun.house.get()), (Graha::Sun, 10));
+/// assert!(!sun.sthana && sun.uchcha_swakshetra && sun.stri_purusha && sun.dina_ratri);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[expect(
@@ -140,6 +262,31 @@ impl Harsha {
     /// The four parts in the source's order, each named and whether it is
     /// held: the order the source numbers them, first to fourth, so a part
     /// cannot be relabelled by being moved.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_tajika::{HarshaRules, harsha};
+    /// #
+    /// # // Scorpio 9°26′ rising, by day.
+    /// # let seven = harsha(&sky, at(7.0, 9.0, 26.0), true, HarshaRules::default())?;
+    ///
+    /// // Saturn in Libra, the twelfth: his joy and his exaltation, and neither of the rest.
+    /// let held: Vec<&str> = seven[6].parts().into_iter().filter(|(_, held)| *held).map(|(name, _)| name).collect();
+    /// assert_eq!(held, ["in its house of joy", "in its exaltation or own sign"]);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn parts(&self) -> [(&'static str, bool); 4] {
         [
@@ -154,6 +301,29 @@ impl Harsha {
     }
 
     /// How many of the four parts it holds, 0 to 4.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_tajika::{HarshaRules, harsha};
+    /// #
+    /// # // Scorpio 9°26′ rising, by day.
+    /// # let seven = harsha(&sky, at(7.0, 9.0, 26.0), true, HarshaRules::default())?;
+    ///
+    /// assert_eq!(seven.map(|one| one.held()), [3, 2, 2, 0, 2, 0, 2]);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn held(&self) -> u8 {
         self.sthana as u8
@@ -168,6 +338,29 @@ impl Harsha {
 /// `lagna_deg` is the annual chart's lagna, whose sign the houses are
 /// counted from, and `by_day` whether the year opened between sunrise and
 /// sunset.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{HarshaRules, harsha};
+/// #
+/// # // Scorpio 9°26′ rising, by day.
+/// # let seven = harsha(&sky, at(7.0, 9.0, 26.0), true, HarshaRules::default())?;
+/// assert_eq!(seven[0].total.units(), 15);
+/// assert_eq!(harsha(&sky, f64::NAN, true, HarshaRules::default()).unwrap_err().field(), Some("lagna_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

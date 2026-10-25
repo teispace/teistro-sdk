@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`teistro-tajika` has a run example on every public item.**
+**Numbers:** none. Its 192 items join the crates `check-doc-examples`
+holds there, thirty-eight in all. The examples read Charak's printed
+charts where he gives one: the Example Chart's forty-first year for the
+aspects, sahams, strengths and yogas, its Mudda and Patyayini tables
+for the annual dashas, and Chart VII-1 for the lord of the year, so a
+reader sees each function give the source's own answer.
+
 **`check-mutants` holds each equivalent mutant to its line.**
 **Numbers:** none. `.cargo/mutants.toml` names each mutant no test can
 catch by line and column, and the doc examples added to dasha, vargas

@@ -46,6 +46,32 @@ use crate::bala::{AnnualSky, SEVEN, sign_of_longitude};
 /// A planet at 29° or more "extends its influence to the next house
 /// also", and so can make an Ithasala it would otherwise be too far
 /// advanced for.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{RASHYANTA_DEG, Yoga, between};
+///
+/// // The Moon at 29°30′ Taurus acts from Gemini on Jupiter at 2° Virgo.
+/// let late = AnnualSky { moon_deg: at(1.0, 29.0, 30.0), jupiter_deg: at(5.0, 2.0, 0.0), ..sky };
+/// let pair = between(Graha::Moon, Graha::Jupiter, &late)?;
+/// assert!(pair.rashyanta && 29.5 >= RASHYANTA_DEG && !pair.within);
+/// assert_eq!(pair.yoga, Some(Yoga::IthasalaBhavishyat));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const RASHYANTA_DEG: f64 = 29.0;
 
 /// The Tajika aspect between two signs.
@@ -54,6 +80,32 @@ pub const RASHYANTA_DEG: f64 = 29.0;
 /// each of the two aspecting kinds in two — the wholehearted and the
 /// secret — and the year lord's rule ignores the division while the yogas
 /// do not, so it is carried rather than collapsed.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Drishti, between};
+///
+/// // Mercury and Venus share Leo; Saturn in Libra is Leo's third.
+/// assert_eq!(between(Graha::Mercury, Graha::Venus, &sky)?.drishti, Drishti::Inimical);
+/// assert_eq!(between(Graha::Venus, Graha::Saturn, &sky)?.drishti, Drishti::SecretlyFriendly);
+/// // Taurus and Sagittarius are six and eight apart: no aspect.
+/// assert_eq!(between(Graha::Moon, Graha::Jupiter, &sky)?.drishti, Drishti::None);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "TajikaDrishti"))]
@@ -78,6 +130,16 @@ impl Drishti {
     ///
     /// Symmetric, as every one of the four sets is: 3 and 11 are each
     /// other's, as are 5 and 9, 1 and 7, 4 and 10.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_tajika::Drishti;
+    ///
+    /// assert_eq!(Drishti::between_signs(Rashi::Aries, Rashi::Leo), Drishti::Friendly);
+    /// assert_eq!(Drishti::between_signs(Rashi::Leo, Rashi::Aries), Drishti::Friendly);
+    /// assert_eq!(Drishti::between_signs(Rashi::Aries, Rashi::Capricorn), Drishti::SecretlyInimical);
+    /// assert_eq!(Drishti::between_signs(Rashi::Aries, Rashi::Taurus), Drishti::None);
+    /// ```
     #[must_use]
     pub fn between_signs(from: Rashi, to: Rashi) -> Drishti {
         match (to.id() + 12 - from.id()) % 12 + 1 {
@@ -90,12 +152,27 @@ impl Drishti {
     }
 
     /// Whether this is an aspect at all.
+    ///
+    /// ```
+    /// use teistro_tajika::Drishti;
+    ///
+    /// // The same sign is an aspect, the inimical one.
+    /// assert!(Drishti::Inimical.is_aspect());
+    /// assert!(!Drishti::None.is_aspect());
+    /// ```
     #[must_use]
     pub const fn is_aspect(self) -> bool {
         !matches!(self, Drishti::None)
     }
 
     /// Whether it is one of the two friendly kinds.
+    ///
+    /// ```
+    /// use teistro_tajika::Drishti;
+    ///
+    /// assert!(Drishti::SecretlyFriendly.is_friendly());
+    /// assert!(!Drishti::SecretlyInimical.is_friendly());
+    /// ```
     #[must_use]
     pub const fn is_friendly(self) -> bool {
         matches!(self, Drishti::Friendly | Drishti::SecretlyFriendly)
@@ -122,6 +199,16 @@ const DEEPTAMSHA_DEG: [(Graha, f64); 7] = [
 
 /// One planet's orb of radiance, degrees; nothing for a body that has
 /// none, which is every body but the seven.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::deeptamsha;
+///
+/// // Table X-1: the Sun's 15°, the Moon's 12°.
+/// assert_eq!(deeptamsha(Graha::Sun), Some(15.0));
+/// assert_eq!(deeptamsha(Graha::Moon), Some(12.0));
+/// assert_eq!(deeptamsha(Graha::Rahu), None);
+/// ```
 #[must_use]
 pub fn deeptamsha(graha: Graha) -> Option<f64> {
     DEEPTAMSHA_DEG
@@ -131,6 +218,16 @@ pub fn deeptamsha(graha: Graha) -> Option<f64> {
 }
 
 /// The orb governing a pair: the mean of their two.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::orb_between;
+///
+/// // The mean of the Sun's 15° and Mars's 8°.
+/// assert_eq!(orb_between(Graha::Sun, Graha::Mars), Some(11.5));
+/// assert_eq!(orb_between(Graha::Mars, Graha::Sun), Some(11.5));
+/// assert_eq!(orb_between(Graha::Sun, Graha::Ketu), None);
+/// ```
 #[must_use]
 pub fn orb_between(a: Graha, b: Graha) -> Option<f64> {
     Some(f64::midpoint(deeptamsha(a)?, deeptamsha(b)?))
@@ -142,6 +239,15 @@ pub fn orb_between(a: Graha, b: Graha) -> Option<f64> {
 ///
 /// A ranking and not a measurement: the tradition treats the order as
 /// fixed, so a retrograde Mars is still slower than the Sun here.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::BY_SPEED;
+///
+/// assert_eq!((BY_SPEED[0], BY_SPEED[6]), (Graha::Moon, Graha::Saturn));
+/// // The Sun ranks faster than Mars, however Mars moves.
+/// assert!(BY_SPEED.iter().position(|g| *g == Graha::Sun) < BY_SPEED.iter().position(|g| *g == Graha::Mars));
+/// ```
 pub const BY_SPEED: [Graha; 7] = [
     Graha::Moon,
     Graha::Mercury,
@@ -154,6 +260,15 @@ pub const BY_SPEED: [Graha; 7] = [
 
 /// Where a planet stands in the speed order; nothing for a body outside
 /// the seven.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::speed_rank;
+///
+/// assert_eq!(speed_rank(Graha::Moon), Some(0));
+/// assert_eq!(speed_rank(Graha::Sun), Some(3));
+/// assert_eq!(speed_rank(Graha::Rahu), None);
+/// ```
 #[must_use]
 pub fn speed_rank(graha: Graha) -> Option<usize> {
     BY_SPEED.iter().position(|who| *who == graha)
@@ -165,6 +280,31 @@ pub fn speed_rank(graha: Graha) -> Option<usize> {
 /// the one within a single degree as immediate fulfilment; the same table
 /// puts the same degree on the far side of Ishrafa, which begins "one
 /// degree or more" past. One threshold, named once.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{POORNA_DEG, Yoga, between};
+///
+/// // Mercury 1°07′ past Saturn within their signs: past the degree, an Ishrafa.
+/// let pair = between(Graha::Mercury, Graha::Saturn, &sky)?;
+/// assert!(pair.apart_deg < -POORNA_DEG);
+/// assert_eq!(pair.yoga, Some(Yoga::Ishrafa));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const POORNA_DEG: f64 = 1.0;
 
 /// What two planets inside each other's orb are doing.
@@ -173,6 +313,31 @@ pub const POORNA_DEG: f64 = 1.0;
 /// Table X-3 enumerates them and [`Yoga::is_ithasala`] asks the question
 /// the other fifteen yogas actually ask, which is whether a pair is in an
 /// Ithasala of any kind.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Yoga, between};
+///
+/// // Mercury 18°20′ comes to Venus 21°45′ in Leo, inside their 7°.
+/// assert_eq!(between(Graha::Mercury, Graha::Venus, &sky)?.yoga, Some(Yoga::IthasalaVartamana));
+/// // Venus is 4°32′ past Saturn: drawing away.
+/// assert_eq!(between(Graha::Venus, Graha::Saturn, &sky)?.yoga, Some(Yoga::Ishrafa));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "TajikaAspectYoga"))]
@@ -213,6 +378,13 @@ impl Yoga {
     ///
     /// Fourteen of the sixteen yogas are built on "an Ithasala", without
     /// caring which; this is that question, asked once.
+    ///
+    /// ```
+    /// use teistro_tajika::Yoga;
+    ///
+    /// assert!(Yoga::IthasalaBhavishyat.is_ithasala());
+    /// assert!(!Yoga::Ishrafa.is_ithasala());
+    /// ```
     #[must_use]
     pub const fn is_ithasala(self) -> bool {
         matches!(
@@ -236,6 +408,32 @@ impl Yoga {
 /// three readings are carried and named rather than one being chosen
 /// silently. `03-design/tajika-yogas.md` holds the count and the
 /// argument.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{DrishtiRules, SubDegree, Yoga, between_with_rules};
+///
+/// let past = AnnualSky { mercury_deg: at(4.0, 22.0, 15.0), ..sky };
+/// let read = |sub_degree| between_with_rules(Graha::Mercury, Graha::Venus, &past, DrishtiRules { sub_degree });
+/// assert_eq!(read(SubDegree::Poorna)?.yoga, Some(Yoga::IthasalaPoorna));
+/// assert_eq!(read(SubDegree::Ishrafa)?.yoga, Some(Yoga::Ishrafa));
+/// assert_eq!(read(SubDegree::None)?.yoga, None);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -262,6 +460,12 @@ pub enum SubDegree {
 /// One field today. It is a struct rather than a bare enum so that a
 /// later disagreement costs callers nothing, as [`crate::VarsheshaRules`]
 /// already does for the lord of the year.
+///
+/// ```
+/// use teistro_tajika::{DrishtiRules, SubDegree};
+///
+/// assert_eq!(DrishtiRules::default().sub_degree, SubDegree::Poorna);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -271,6 +475,33 @@ pub struct DrishtiRules {
 }
 
 /// How two planets of an annual chart stand to each other.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Drishti, Yoga, between};
+///
+/// let pair = between(Graha::Venus, Graha::Mercury, &sky)?;
+/// assert_eq!((pair.faster, pair.slower), (Graha::Mercury, Graha::Venus));
+/// assert_eq!((pair.drishti, pair.orb_deg), (Drishti::Inimical, 7.0));
+/// assert!((pair.apart_deg - (3.0 + 25.0 / 60.0)).abs() < 1e-9);
+/// assert!(pair.within && !pair.rashyanta);
+/// assert_eq!(pair.yoga, Some(Yoga::IthasalaVartamana));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -305,6 +536,30 @@ impl Between {
     /// [`DrishtiRules::sub_degree`] said, and a reader who wants to show
     /// the judgement as contested can ask rather than reconstructing the
     /// range from [`Between::apart_deg`].
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    ///
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::between;
+    ///
+    /// let past = AnnualSky { mercury_deg: at(4.0, 22.0, 15.0), ..sky };
+    /// assert!(between(Graha::Mercury, Graha::Venus, &past)?.disputed());
+    /// assert!(!between(Graha::Mercury, Graha::Venus, &sky)?.disputed());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn disputed(&self) -> bool {
         self.drishti.is_aspect()
@@ -321,6 +576,32 @@ impl Between {
 /// [`between_with_rules`] takes the readings; this is that with
 /// [`DrishtiRules::default`].
 ///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Drishti, between};
+///
+/// // The Sun at 3°50′ Leo and Jupiter at 9°38′ Sagittarius: friendly, inside 12°.
+/// let pair = between(Graha::Sun, Graha::Jupiter, &sky)?;
+/// assert_eq!(pair.drishti, Drishti::Friendly);
+/// assert!(pair.within && pair.yoga.is_some_and(|yoga| yoga.is_ithasala()));
+/// assert_eq!(between(Graha::Sun, Graha::Rahu, &sky).unwrap_err().field(), Some("graha"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A body outside the seven, named `graha`; a longitude that is not a
@@ -330,6 +611,31 @@ pub fn between(a: Graha, b: Graha, sky: &AnnualSky) -> Result<Between, Error> {
 }
 
 /// How two of the seven stand to each other, under stated readings.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{DrishtiRules, SubDegree, between, between_with_rules};
+///
+/// // Away from the disputed band every reading agrees.
+/// let rules = DrishtiRules { sub_degree: SubDegree::Ishrafa };
+/// let pair = between_with_rules(Graha::Mercury, Graha::Venus, &sky, rules)?;
+/// assert_eq!(pair, between(Graha::Mercury, Graha::Venus, &sky)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -440,6 +746,33 @@ pub(crate) fn between_within(
 
 /// Every pair of the seven, in the catalogue's order: twenty-one of them.
 ///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::drishtis;
+///
+/// let pairs = drishtis(&sky)?;
+/// assert_eq!(pairs.len(), 21);
+/// // The Sun and the Moon come first, the catalogue's first two.
+/// assert_eq!((pairs[0].faster, pairs[0].slower), (Graha::Moon, Graha::Sun));
+/// let aspecting = pairs.iter().filter(|pair| pair.drishti.is_aspect()).count();
+/// assert!(aspecting < 21);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`between`].
@@ -448,6 +781,32 @@ pub fn all(sky: &AnnualSky) -> Result<Vec<Between>, Error> {
 }
 
 /// Every pair of the seven, under stated readings.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{DrishtiRules, SubDegree, Yoga, drishtis_with_rules};
+///
+/// let past = AnnualSky { mercury_deg: at(4.0, 22.0, 15.0), ..sky };
+/// let pairs = drishtis_with_rules(&past, DrishtiRules { sub_degree: SubDegree::None })?;
+/// let pair = pairs.iter().find(|pair| (pair.faster, pair.slower) == (Graha::Mercury, Graha::Venus)).ok_or("the pair")?;
+/// assert!(pair.disputed() && pair.yoga.is_none());
+/// assert!(!pairs.iter().any(|pair| pair.yoga == Some(Yoga::IthasalaPoorna)));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

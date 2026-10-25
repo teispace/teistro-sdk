@@ -26,6 +26,22 @@ use teistro_port_ephemeris::Body;
 
 /// The sidereal year, days (IERS 2010): what the [`Reading::Mean`] rival
 /// steps by, and what a true return averages.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// use teistro_tajika::{SIDEREAL_YEAR_DAYS, mean_praveshas};
+///
+/// let first = mean_praveshas(&natal, 1)?[0];
+/// assert_eq!(first.at.get(), natal.instant.get() + SIDEREAL_YEAR_DAYS);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const SIDEREAL_YEAR_DAYS: f64 = 365.256_363_004;
 
 /// The step the return's search samples at, days.
@@ -34,6 +50,13 @@ pub const SIDEREAL_YEAR_DAYS: f64 = 365.256_363_004;
 /// pass the one target twice between two samples. The default step is
 /// capped at one day, which samples a working lifetime of every chart for
 /// no gain: the measured page is byte-identical at one day and at ten.
+///
+/// ```
+/// use teistro_tajika::{SIDEREAL_YEAR_DAYS, STEP_DAYS};
+///
+/// // Under ten degrees of the Sun's travel between two samples.
+/// assert!(STEP_DAYS * 360.0 / SIDEREAL_YEAR_DAYS < 10.0);
+/// ```
 pub const STEP_DAYS: f64 = 10.0;
 
 /// The most returns one call will answer.
@@ -43,9 +66,35 @@ pub const STEP_DAYS: f64 = 10.0;
 ///
 /// Public because the Muntha is progressed over the same span and refuses
 /// by the same bound: one cap, one place.
+///
+/// ```
+/// use teistro_tajika::{MOST_YEARS, years};
+///
+/// assert_eq!(years(MOST_YEARS)?, 200);
+/// assert_eq!(years(MOST_YEARS + 1).unwrap_err().field(), Some("through"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const MOST_YEARS: u16 = 200;
 
 /// Which longitude a return returns to.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// use teistro_tajika::{Reading, mean_praveshas};
+///
+/// // The mean reading needs no ephemeris, and says which it is.
+/// let first = mean_praveshas(&natal, 1)?[0];
+/// assert_eq!(first.reading, Reading::Mean);
+/// assert_eq!(Reading::default(), Reading::Sidereal);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "ReturnLongitude"))]
@@ -72,10 +121,24 @@ pub enum Reading {
 
 impl Reading {
     /// Every reading, the tradition's first.
+    ///
+    /// ```
+    /// use teistro_tajika::Reading;
+    ///
+    /// assert_eq!(Reading::ALL.map(Reading::key), ["SIDEREAL", "TROPICAL", "MEAN"]);
+    /// ```
     pub const ALL: [Reading; 3] = [Reading::Sidereal, Reading::Tropical, Reading::Mean];
 
     /// The member's key, as serde writes it and every binding reads it
     /// back: `SIDEREAL`.
+    ///
+    /// ```
+    /// use teistro_tajika::Reading;
+    ///
+    /// assert_eq!(Reading::Tropical.key(), "TROPICAL");
+    /// assert_eq!(serde_json::to_string(&Reading::Tropical)?, format!("\"{}\"", Reading::Tropical.key()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -91,6 +154,19 @@ impl Reading {
 /// Both longitudes are taken rather than one and an ayanamsha, because
 /// the chart that founded them already holds both and recomputing either
 /// here would be a second answer to a question already answered.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_tajika::Natal;
+///
+/// // 14 April 1990: the Sun just into sidereal Aries, 23.72 degrees of ayanamsha behind.
+/// let natal = Natal {
+///     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+///     sidereal_sun_deg: 0.054_692,
+///     tropical_sun_deg: 23.779_197,
+/// };
+/// assert!((natal.tropical_sun_deg - natal.sidereal_sun_deg - 23.72).abs() < 0.01);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Natal {
     /// The birth, UTC.
@@ -103,6 +179,23 @@ pub struct Natal {
 
 impl Natal {
     /// The longitude a reading returns to.
+    ///
+    /// ```
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_tajika::Natal;
+    /// #
+    /// # let natal = Natal {
+    /// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+    /// #     sidereal_sun_deg: 0.054_692,
+    /// #     tropical_sun_deg: 23.779_197,
+    /// # };
+    /// use teistro_tajika::Reading;
+    ///
+    /// assert_eq!(natal.target_deg(Reading::Sidereal), 0.054_692);
+    /// assert_eq!(natal.target_deg(Reading::Tropical), 23.779_197);
+    /// // The mean reading steps from the sidereal Sun.
+    /// assert_eq!(natal.target_deg(Reading::Mean), 0.054_692);
+    /// ```
     #[must_use]
     pub const fn target_deg(&self, reading: Reading) -> f64 {
         match reading {
@@ -113,6 +206,24 @@ impl Natal {
 }
 
 /// One annual chart's instant.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// use teistro_tajika::mean_praveshas;
+///
+/// // Year 1 is the first return, a year after birth, which opens the second year of life.
+/// let returns = mean_praveshas(&natal, 3)?;
+/// assert_eq!(returns.iter().map(|pravesha| pravesha.year).collect::<Vec<_>>(), [1, 2, 3]);
+/// assert!(returns[0].at.get() > natal.instant.get());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Pravesha {
@@ -134,6 +245,47 @@ pub struct Pravesha {
 }
 
 /// The returns of a birth, in order, up to and including `through`.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::sidereal::Zodiac;
+/// # use teistro_astro::Completion;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::Frame;
+/// #
+/// # let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let tropical = completion.longitudes(Frame::CANONICAL);
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(Ayanamsha::Lahiri.into()),
+/// #     basis: Basis::True,
+/// #     precession: PrecessionModel::default(),
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// use teistro_tajika::{Reading, mean_praveshas, praveshas};
+///
+/// let true_returns = praveshas(&tropical, zodiac, &natal, Reading::Sidereal, 40)?;
+/// let tropical_returns = praveshas(&tropical, zodiac, &natal, Reading::Tropical, 40)?;
+/// let mean = mean_praveshas(&natal, 40)?;
+/// assert_eq!(true_returns.len(), 40);
+/// // Forty years on the tropical return is about fourteen hours earlier, and
+/// // the mean one a quarter of an hour from the true.
+/// let hours = (true_returns[39].at.get() - tropical_returns[39].at.get()) * 24.0;
+/// assert!((13.5..15.0).contains(&hours));
+/// assert!((true_returns[39].at.get() - mean[39].at.get()).abs() * 1440.0 < 30.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -202,6 +354,24 @@ pub fn praveshas<S: Longitudes + ?Sized>(
 /// that wants the old arithmetic should not have to hold a provider to
 /// get it.
 ///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_tajika::Natal;
+/// #
+/// # let natal = Natal {
+/// #     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+/// #     sidereal_sun_deg: 0.054_692,
+/// #     tropical_sun_deg: 23.779_197,
+/// # };
+/// use teistro_tajika::mean_praveshas;
+///
+/// assert_eq!(mean_praveshas(&natal, 40)?.len(), 40);
+/// assert_eq!(mean_praveshas(&natal, 0).unwrap_err().field(), Some("through"));
+/// let lost = teistro_tajika::Natal { sidereal_sun_deg: f64::NAN, ..natal };
+/// assert_eq!(mean_praveshas(&lost, 1).unwrap_err().field(), Some("natal"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`praveshas`], but nothing can be refused by a source.
@@ -224,6 +394,16 @@ pub fn mean_praveshas(natal: &Natal, through: u16) -> Result<Vec<Pravesha>, Erro
 /// coverage, say — must refuse a nonsense year before capping it, or a
 /// request for none comes back as an empty answer instead of a refusal.
 /// One rule, one place, whoever asks.
+///
+/// ```
+/// use teistro_tajika::years;
+///
+/// // A caller capping a request to its coverage refuses a nonsense one first.
+/// let covered = 30;
+/// assert_eq!(years(40)?.min(covered), 30);
+/// assert!(years(0).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

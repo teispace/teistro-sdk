@@ -41,12 +41,27 @@ use teistro_vargas::{Scheme, place};
 /// The source writes one as `14:20:15` — units, sub-units, sub-sub units,
 /// sixty of each in the next — and its worked chart's last figure is a
 /// sub-sub unit, so nothing here rounds.
+///
+/// ```
+/// use teistro_tajika::Bala;
+///
+/// // The Sun's Vishwa bala in the source's worked chart, as it writes it.
+/// let sun = Bala::new(14, 20, 15);
+/// assert_eq!(sun.to_string(), "14:20:15");
+/// assert!(sun < Bala::new(16, 47, 45), "Saturn's is greater");
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Bala(i64);
 
 impl Bala {
     /// The sub-sub units in one unit.
+    ///
+    /// ```
+    /// use teistro_tajika::Bala;
+    ///
+    /// assert_eq!(Bala::new(1, 0, 0).as_sub_sub(), Bala::UNIT);
+    /// ```
     pub const UNIT: i64 = 60 * 60;
 
     /// The same, as a float: the one place a strength meets floating
@@ -54,36 +69,76 @@ impl Bala {
     const UNIT_F64: f64 = 3600.0;
 
     /// A strength of that many sub-sub units.
+    ///
+    /// ```
+    /// use teistro_tajika::Bala;
+    ///
+    /// assert_eq!(Bala::of_sub_sub(51_615), Bala::new(14, 20, 15));
+    /// ```
     #[must_use]
     pub const fn of_sub_sub(sub_sub: i64) -> Bala {
         Bala(sub_sub)
     }
 
     /// A strength written as the source writes one.
+    ///
+    /// ```
+    /// use teistro_tajika::Bala;
+    ///
+    /// // Sixty of each in the next.
+    /// assert_eq!(Bala::new(0, 60, 0), Bala::new(1, 0, 0));
+    /// assert_eq!(Bala::new(14, 20, 15).as_sub_sub(), 14 * 3600 + 20 * 60 + 15);
+    /// ```
     #[must_use]
     pub const fn new(units: i64, sub_units: i64, sub_sub: i64) -> Bala {
         Bala(units * Bala::UNIT + sub_units * 60 + sub_sub)
     }
 
     /// Whole units, the figure a reader compares.
+    ///
+    /// ```
+    /// use teistro_tajika::Bala;
+    ///
+    /// assert_eq!(Bala::new(14, 20, 15).units(), 14);
+    /// ```
     #[must_use]
     pub const fn units(self) -> i64 {
         self.0 / Bala::UNIT
     }
 
     /// The sub-units after the units.
+    ///
+    /// ```
+    /// use teistro_tajika::Bala;
+    ///
+    /// assert_eq!(Bala::new(14, 20, 15).sub_units(), 20);
+    /// ```
     #[must_use]
     pub const fn sub_units(self) -> i64 {
         (self.0 % Bala::UNIT) / 60
     }
 
     /// The sub-sub units after those.
+    ///
+    /// ```
+    /// use teistro_tajika::Bala;
+    ///
+    /// assert_eq!(Bala::new(14, 20, 15).sub_sub(), 15);
+    /// ```
     #[must_use]
     pub const fn sub_sub(self) -> i64 {
         self.0 % 60
     }
 
     /// The whole of it in sub-sub units, which is what to compare and sum.
+    ///
+    /// ```
+    /// use teistro_tajika::Bala;
+    ///
+    /// // The exact figure to compare and to add.
+    /// let total = Bala::new(30, 0, 0).as_sub_sub() + Bala::new(7, 21, 0).as_sub_sub();
+    /// assert_eq!(Bala::of_sub_sub(total), Bala::new(37, 21, 0));
+    /// ```
     #[must_use]
     pub const fn as_sub_sub(self) -> i64 {
         self.0
@@ -91,6 +146,12 @@ impl Bala {
 
     /// As a decimal, for a caller that wants one; the exact value is
     /// [`Self::as_sub_sub`].
+    ///
+    /// ```
+    /// use teistro_tajika::Bala;
+    ///
+    /// assert_eq!(Bala::new(14, 20, 15).as_f64(), 14.3375);
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_precision_loss,
@@ -140,6 +201,29 @@ impl fmt::Display for Bala {
 /// as another is at house 1 from it, so **a planet sharing a sign with the
 /// lord of that sign is its enemy** — which surprises a reader who expects
 /// the Parashari answer and is what the source's worked chart does.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::Relation;
+///
+/// // Venus shares Leo with the Sun, so she is the Sun's enemy here; Jupiter, five
+/// // signs on in Sagittarius, is his friend.
+/// assert_eq!(Relation::between(Graha::Sun, Graha::Venus, &sky), Relation::Enemy);
+/// assert_eq!(Relation::between(Graha::Sun, Graha::Jupiter, &sky), Relation::Friend);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "TajikaRelation"))]
@@ -157,6 +241,13 @@ pub enum Relation {
 
 impl Relation {
     /// How many quarters of a division's maximum it gives.
+    ///
+    /// ```
+    /// use teistro_tajika::Relation;
+    ///
+    /// let quarters = [Relation::Own, Relation::Friend, Relation::Neutral, Relation::Enemy].map(Relation::quarters);
+    /// assert_eq!(quarters, [4, 3, 2, 1]);
+    /// ```
     #[must_use]
     pub const fn quarters(self) -> i64 {
         match self {
@@ -168,6 +259,31 @@ impl Relation {
     }
 
     /// How `graha` stands to `lord`, both placed in the annual chart.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::Relation;
+    ///
+    /// assert_eq!(Relation::between(Graha::Sun, Graha::Sun, &sky), Relation::Own);
+    /// // Saturn in Libra is third from the Sun's Leo, Mars in Scorpio fourth, the
+    /// // Moon in Taurus tenth.
+    /// assert_eq!(Relation::between(Graha::Sun, Graha::Saturn, &sky), Relation::Friend);
+    /// assert_eq!(Relation::between(Graha::Sun, Graha::Mars, &sky), Relation::Enemy);
+    /// assert_eq!(Relation::between(Graha::Sun, Graha::Moon, &sky), Relation::Enemy);
+    /// ```
     #[must_use]
     pub fn between(graha: Graha, lord: Graha, sky: &AnnualSky) -> Relation {
         if graha == lord {
@@ -189,6 +305,30 @@ fn houses_from(from: Rashi, to: Rashi) -> u16 {
 
 /// The seven the Panchavargiya bala is computed for; the nodes hold no
 /// division and take no strength here.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::panchavargiya;
+/// #
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_tajika::SEVEN;
+///
+/// // The strengths come back in this order.
+/// assert_eq!(strengths.map(|one| one.graha), SEVEN);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const SEVEN: [Graha; 7] = [
     Graha::Sun,
     Graha::Moon,
@@ -203,6 +343,26 @@ pub const SEVEN: [Graha; 7] = [
 ///
 /// Named fields and not an array: every one of them is a longitude, and a
 /// caller filling an array in the wrong order would get an answer.
+///
+/// ```
+/// use teistro_tajika::AnnualSky;
+///
+/// // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// let sky = AnnualSky {
+///     sun_deg: at(4.0, 3.0, 50.0),
+///     moon_deg: at(1.0, 9.0, 40.0),
+///     mars_deg: at(7.0, 7.0, 42.0),
+///     mercury_deg: at(4.0, 18.0, 20.0),
+///     jupiter_deg: at(8.0, 9.0, 38.0),
+///     venus_deg: at(4.0, 21.0, 45.0),
+///     saturn_deg: at(6.0, 17.0, 13.0),
+/// };
+/// use teistro_core::catalogue::{Graha, Rashi};
+///
+/// assert_eq!(sky.sign_of(Graha::Jupiter), Rashi::Sagittarius);
+/// assert_eq!(sky.sign_of(Graha::Venus), sky.sign_of(Graha::Sun));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AnnualSky {
@@ -224,6 +384,28 @@ pub struct AnnualSky {
 
 impl AnnualSky {
     /// Where one of the seven stands, degrees folded into a circle.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// assert!((sky.longitude_of(Graha::Moon) - 39.666_667).abs() < 1e-6);
+    /// // Folded into a circle.
+    /// let turned = teistro_tajika::AnnualSky { moon_deg: 399.5, ..sky };
+    /// assert!((turned.longitude_of(Graha::Moon) - 39.5).abs() < 1e-12);
+    /// ```
     #[must_use]
     pub fn longitude_of(&self, graha: Graha) -> f64 {
         let raw = match graha {
@@ -241,6 +423,26 @@ impl AnnualSky {
     }
 
     /// The sign one of the seven stands in.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    ///
+    /// assert_eq!(sky.sign_of(Graha::Saturn), Rashi::Libra);
+    /// assert_eq!(sky.sign_of(Graha::Mars), Rashi::Scorpio);
+    /// ```
     #[must_use]
     pub fn sign_of(&self, graha: Graha) -> Rashi {
         sign_of_longitude(self.longitude_of(graha))
@@ -311,6 +513,37 @@ pub(crate) fn sign_of_longitude(longitude_deg: f64) -> Rashi {
 }
 
 /// One planet's five parts, what they add to, and the Vishwa bala.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::panchavargiya;
+/// #
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_tajika::Bala;
+///
+/// // The Sun's row of Table VI-10: whole in his own Leo, a quarter of the
+/// // navamsha in Venus's Taurus, Venus being his enemy here.
+/// let sun = strengths[0];
+/// assert_eq!((sun.graha, sun.sign), (Graha::Sun, Rashi::Leo));
+/// assert_eq!(sun.griha, Bala::new(30, 0, 0));
+/// assert_eq!(sun.navamsha, Bala::new(1, 15, 0));
+/// assert_eq!(sun.total, Bala::new(57, 21, 0));
+/// assert_eq!(sun.vishwa, Bala::new(14, 20, 15));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Panchavargiya {
@@ -337,6 +570,34 @@ pub struct Panchavargiya {
 }
 
 /// The Panchavargiya bala of all seven, in the catalogue's order.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::panchavargiya;
+/// #
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::Bala;
+///
+/// // Saturn is the strongest of the seven, at 16:47:45.
+/// let strongest = strengths.iter().max_by_key(|one| one.vishwa).ok_or("seven")?;
+/// assert_eq!((strongest.graha, strongest.vishwa), (Graha::Saturn, Bala::new(16, 47, 45)));
+/// let lost = teistro_tajika::AnnualSky { venus_deg: f64::NAN, ..sky };
+/// assert!(panchavargiya(&lost).is_err());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -416,6 +677,19 @@ fn uchcha(graha: Graha, longitude_deg: f64) -> Bala {
 }
 
 /// Which printing of the Hudda table a lookup reads (crux C109).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_tajika::{HuddaTable, hudda_terms};
+///
+/// assert_eq!(HuddaTable::default(), HuddaTable::Nilakanthi);
+/// // The two printings part in Aquarius alone.
+/// let parted: Vec<Rashi> = Rashi::ALL
+///     .into_iter()
+///     .filter(|sign| hudda_terms(HuddaTable::Nilakanthi, *sign) != hudda_terms(HuddaTable::Charak, *sign))
+///     .collect();
+/// assert_eq!(parted, [Rashi::Aquarius]);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -556,6 +830,15 @@ const CHARAK_AQUARIUS: [(u8, Graha); 5] = [
 
 /// The lord of the Hudda a longitude falls in, by the *Tajika
 /// Nilakanthi*'s table.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::hudda_lord;
+///
+/// // Aries: Jupiter's first six degrees, then Venus's.
+/// assert_eq!(hudda_lord(3.0), Graha::Jupiter);
+/// assert_eq!(hudda_lord(7.0), Graha::Venus);
+/// ```
 #[must_use]
 pub fn hudda_lord(longitude_deg: f64) -> Graha {
     hudda_lord_in(HuddaTable::Nilakanthi, longitude_deg)
@@ -632,6 +915,16 @@ const DREKKANA_CYCLE: [Graha; 7] = [
 /// first decanate of Aries, the first decanates run through the cycle sign
 /// by sign, and each next decanate of Aries starts five along — which is
 /// `(sign + 5 × decanate) mod 7` and reproduces all 36 printed cells.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::drekkana_lord;
+///
+/// // Aries's three decanates run Mars, then five along the cycle: the Sun, then Venus.
+/// assert_eq!([5.0, 15.0, 25.0].map(drekkana_lord), [Graha::Mars, Graha::Sun, Graha::Venus]);
+/// // Taurus's first is the next in the cycle from Mars.
+/// assert_eq!(drekkana_lord(35.0), Graha::Mercury);
+/// ```
 #[must_use]
 pub fn drekkana_lord(longitude_deg: f64) -> Graha {
     let longitude = longitude_deg.rem_euclid(360.0);
@@ -654,6 +947,15 @@ pub fn drekkana_lord(longitude_deg: f64) -> Graha {
 ///
 /// The navamsha here is the Parashari one, which the source says outright,
 /// so it is taken from `teistro_vargas` rather than written again.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::navamsha_lord;
+///
+/// // Leo 3°50′ falls in the Taurus navamsha, a fire sign's second from Aries.
+/// assert_eq!(navamsha_lord(123.0 + 50.0 / 60.0), Graha::Venus);
+/// assert_eq!(navamsha_lord(1.0), Graha::Mars);
+/// ```
 #[must_use]
 pub fn navamsha_lord(longitude_deg: f64) -> Graha {
     let Ok(degrees) = Degrees::try_new(longitude_deg.rem_euclid(360.0)) else {

@@ -44,9 +44,77 @@ use crate::office::{Office, OfficeBearers};
 /// The source's own figure: "when the strength of the office-bearers is
 /// less than 5 units in the Panchavargiya chart, the Muntha lord is to be
 /// taken as the Varshesha".
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{VarsheshaRules, YearCharts, office_bearers, panchavargiya, varshesha};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let bearers = office_bearers(&YearCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     annual_lagna_deg: lagna,
+/// #     annual_sun_deg: sky.sun_deg,
+/// #     annual_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # })?;
+/// # let strengths = panchavargiya(&sky)?;
+/// # let year = varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules::default())?;
+/// use teistro_tajika::{Bala, WEAK_BELOW};
+///
+/// assert_eq!(WEAK_BELOW, Bala::new(5, 0, 0));
+/// // Every claimant of the worked year is strong enough to hold it.
+/// assert!(year.claims.iter().all(|claim| claim.vishwa >= WEAK_BELOW));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const WEAK_BELOW: Bala = Bala::new(5, 0, 0);
 
 /// What to do when no office-bearer aspects the annual lagna (crux C106).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{AnnualSky, Chosen, NoneAspects, OfficeBearers, VarsheshaRules, panchavargiya, varshesha};
+///
+/// // Aries rising: the Sun in Virgo, the Moon and Mars in Taurus, each in a
+/// // house that gives the lagna no aspect.
+/// let sky = AnnualSky {
+///     sun_deg: 155.0, moon_deg: 40.0, mars_deg: 35.0, mercury_deg: 158.0,
+///     jupiter_deg: 135.0, venus_deg: 120.0, saturn_deg: 230.0,
+/// };
+/// let bearers = OfficeBearers {
+///     muntha: Graha::Sun,
+///     janma_lagna: Graha::Moon,
+///     varsha_lagna: Graha::Mars,
+///     tri_rashi: Graha::Sun,
+///     dina_ratri: Graha::Sun,
+///     by_day: true,
+/// };
+/// let strengths = panchavargiya(&sky)?;
+/// let ask = |none_aspects| {
+///     varshesha(&bearers, &sky, &strengths, 1.0, VarsheshaRules { none_aspects, ..VarsheshaRules::default() })
+/// };
+///
+/// assert_eq!((ask(NoneAspects::MunthaLord)?.graha, ask(NoneAspects::MunthaLord)?.chosen), (Graha::Sun, Chosen::MunthaLordUnaspected));
+/// let lagna_lord = ask(NoneAspects::AnnualLagnaLord)?;
+/// assert_eq!((lagna_lord.graha, lagna_lord.chosen), (Graha::Mars, Chosen::AnnualLagnaLordUnaspected));
+/// // The strongest is the Moon, who may not hold the year: Jupiter, in
+/// // Ithasala with her, takes it.
+/// let strongest = ask(NoneAspects::Strongest)?;
+/// assert_eq!((strongest.graha, strongest.chosen), (Graha::Jupiter, Chosen::MoonsIthasala));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -62,6 +130,14 @@ pub enum NoneAspects {
 }
 
 /// Who takes the year when the office-bearers tie outright (crux C106).
+///
+/// ```
+/// use teistro_tajika::{Tied, VarsheshaRules};
+///
+/// // The Muntha's lord breaks an outright tie unless the rules name the Dina-Ratri Pati.
+/// assert_eq!(VarsheshaRules::default().tied, Tied::MunthaLord);
+/// assert_ne!(Tied::MunthaLord, Tied::DinaRatriPati);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -74,6 +150,42 @@ pub enum Tied {
 }
 
 /// Whether the Moon may hold the year, and who takes it when it may not.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, OfficeBearers, VarsheshaRules, panchavargiya, varshesha};
+/// #
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(7.0, 0.0, 40.0),
+/// #     moon_deg: at(2.0, 18.0, 57.0),
+/// #     mars_deg: at(6.0, 14.0, 43.0),
+/// #     mercury_deg: at(7.0, 4.0, 8.0),
+/// #     jupiter_deg: at(2.0, 16.0, 35.0),
+/// #     venus_deg: at(8.0, 17.0, 28.0),
+/// #     saturn_deg: at(8.0, 16.0, 57.0),
+/// # };
+/// # let bearers = OfficeBearers {
+/// #     muntha: Graha::Venus,
+/// #     janma_lagna: Graha::Moon,
+/// #     varsha_lagna: Graha::Mercury,
+/// #     tri_rashi: Graha::Mercury,
+/// #     dina_ratri: Graha::Mercury,
+/// #     by_day: false,
+/// # };
+/// # let lagna = at(2.0, 12.0, 53.0);
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_tajika::{Chosen, MoonMayRule};
+///
+/// let under = |moon| varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules { moon, ..VarsheshaRules::default() });
+/// // The Moon leads Chart VII-1. Charak steps down to Venus; the Nilakanthi
+/// // gives the year to the lord of the Moon's sign; or the Moon keeps it.
+/// assert_eq!(under(MoonMayRule::PassedOver)?.graha, Graha::Venus);
+/// let nilakanthi = under(MoonMayRule::Ithasala)?;
+/// assert_eq!((nilakanthi.graha, nilakanthi.chosen), (Graha::Mercury, Chosen::MoonsSignLord));
+/// assert_eq!(under(MoonMayRule::LikeAnyOther)?.graha, Graha::Moon);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -94,6 +206,12 @@ pub enum MoonMayRule {
 }
 
 /// Which planets may succeed the Moon through an Ithasala.
+///
+/// ```
+/// use teistro_tajika::{MoonPartner, VarsheshaRules};
+///
+/// assert_eq!(VarsheshaRules::default().moon_partner, MoonPartner::AnyPlanet);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -108,6 +226,16 @@ pub enum MoonPartner {
 }
 
 /// The readings the year lord's chain parts on.
+///
+/// ```
+/// use teistro_tajika::{MoonMayRule, NoneAspects, VarsheshaRules};
+///
+/// // Charak's reading throughout, unless a field names another.
+/// let rules = VarsheshaRules::default();
+/// assert_eq!((rules.none_aspects, rules.moon), (NoneAspects::MunthaLord, MoonMayRule::PassedOver));
+/// let nilakanthi = VarsheshaRules { none_aspects: NoneAspects::Strongest, moon: MoonMayRule::Ithasala, ..rules };
+/// assert_ne!(nilakanthi, rules);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase")]
@@ -126,6 +254,39 @@ pub struct VarsheshaRules {
 }
 
 /// Which step of the chain decided the year's lord.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{VarsheshaRules, YearCharts, office_bearers, panchavargiya, varshesha};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let bearers = office_bearers(&YearCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     annual_lagna_deg: lagna,
+/// #     annual_sun_deg: sky.sun_deg,
+/// #     annual_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # })?;
+/// # let strengths = panchavargiya(&sky)?;
+/// # let year = varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules::default())?;
+/// use teistro_tajika::Chosen;
+///
+/// assert_eq!(year.chosen, Chosen::Strongest);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "VarsheshaChosen"))]
@@ -164,6 +325,14 @@ pub enum Chosen {
 impl Chosen {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `STRONGEST`.
+    ///
+    /// ```
+    /// use teistro_tajika::Chosen;
+    ///
+    /// assert_eq!(Chosen::MoonsSignLord.key(), "MOONS_SIGN_LORD");
+    /// assert_eq!(serde_json::to_string(&Chosen::Strongest)?, "\"STRONGEST\"");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -181,6 +350,14 @@ impl Chosen {
     }
 
     /// Every step, in the chain's order.
+    ///
+    /// ```
+    /// use teistro_tajika::Chosen;
+    ///
+    /// let keys: std::collections::BTreeSet<&str> = Chosen::ALL.into_iter().map(Chosen::key).collect();
+    /// assert_eq!(keys.len(), 10);
+    /// assert_eq!(Chosen::ALL[0], Chosen::Strongest);
+    /// ```
     pub const ALL: [Chosen; 10] = [
         Chosen::Strongest,
         Chosen::MostPortfolios,
@@ -196,12 +373,26 @@ impl Chosen {
 
     /// Whether the year lord was chosen on its own strength rather than by
     /// a fallback.
+    ///
+    /// ```
+    /// use teistro_tajika::Chosen;
+    ///
+    /// assert!(Chosen::Strongest.on_strength() && Chosen::MostPortfolios.on_strength());
+    /// assert!(!Chosen::StrongestUnaspected.on_strength(), "a fallback, strong or not");
+    /// ```
     #[must_use]
     pub const fn on_strength(self) -> bool {
         matches!(self, Chosen::Strongest | Chosen::MostPortfolios)
     }
 
     /// Whether it was chosen in the Moon's place.
+    ///
+    /// ```
+    /// use teistro_tajika::Chosen;
+    ///
+    /// assert!(Chosen::MoonsIthasala.succeeds_the_moon());
+    /// assert!(!Chosen::MunthaLordUnaspected.succeeds_the_moon());
+    /// ```
     #[must_use]
     pub const fn succeeds_the_moon(self) -> bool {
         matches!(self, Chosen::MoonsIthasala | Chosen::MoonsSignLord)
@@ -209,6 +400,42 @@ impl Chosen {
 }
 
 /// One office-bearer's claim on the year.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{VarsheshaRules, YearCharts, office_bearers, panchavargiya, varshesha};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let bearers = office_bearers(&YearCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     annual_lagna_deg: lagna,
+/// #     annual_sun_deg: sky.sun_deg,
+/// #     annual_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # })?;
+/// # let strengths = panchavargiya(&sky)?;
+/// # let year = varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules::default())?;
+/// use teistro_core::catalogue::Graha;
+///
+/// // Jupiter is the strongest claimant and stands second from the lagna: no aspect.
+/// let jupiter = &year.claims[0];
+/// assert_eq!((jupiter.graha, jupiter.aspects_lagna, jupiter.portfolios), (Graha::Jupiter, false, 1));
+/// assert_eq!(jupiter.vishwa.to_string(), "14:46:00");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -224,6 +451,43 @@ pub struct Claim {
 }
 
 /// The lord of the year, and what made it so.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{VarsheshaRules, YearCharts, office_bearers, panchavargiya, varshesha};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let bearers = office_bearers(&YearCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     annual_lagna_deg: lagna,
+/// #     annual_sun_deg: sky.sun_deg,
+/// #     annual_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # })?;
+/// # let strengths = panchavargiya(&sky)?;
+/// # let year = varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules::default())?;
+/// use teistro_core::catalogue::Graha;
+///
+/// // The Sun holds the worked year, and every claimant is shown strongest first.
+/// assert_eq!((year.graha, year.vishwa.to_string()), (Graha::Sun, String::from("14:20:15")));
+/// let claims: Vec<(Graha, bool)> = year.claims.iter().map(|claim| (claim.graha, claim.aspects_lagna)).collect();
+/// assert_eq!(claims, [(Graha::Jupiter, false), (Graha::Sun, true), (Graha::Mars, true)]);
+/// assert!(!year.moon_passed_over);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -250,6 +514,43 @@ pub struct Varshesha {
 /// The chain reads only these four things of them, so one chain chooses
 /// every lord; the *Tajika Nilakanthi* says of the month's lord that the
 /// rest is "as for the year".
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{VarsheshaRules, YearCharts, office_bearers, panchavargiya, varshesha};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let bearers = office_bearers(&YearCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     annual_lagna_deg: lagna,
+/// #     annual_sun_deg: sky.sun_deg,
+/// #     annual_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # })?;
+/// # let strengths = panchavargiya(&sky)?;
+/// # let year = varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules::default())?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::Bearers;
+///
+/// // The chain reads these of the year's five, of the month's six, or of a consumer's own set.
+/// assert_eq!(Bearers::claimants(&bearers), [Graha::Jupiter, Graha::Sun, Graha::Mars]);
+/// assert_eq!(bearers.portfolio_count(Graha::Sun), 2);
+/// assert_eq!((bearers.muntha_lord(), bearers.lagna_lord(), bearers.dina_ratri_lord()), (Graha::Jupiter, Graha::Mars, Graha::Sun));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub trait Bearers {
     /// The distinct planets holding a portfolio, each once.
     fn claimants(&self) -> Vec<Graha>;
@@ -295,6 +596,16 @@ impl Bearers for OfficeBearers {
 /// not matter which of the two is counted from. The year lord's rule makes
 /// no distinction between a friendly aspect and an inimical one, which the
 /// source states in the same breath as the rule.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_tajika::aspects;
+///
+/// // The second from the lagna gives no aspect, the tenth does.
+/// assert!(!aspects(Rashi::Sagittarius, Rashi::Scorpio));
+/// assert!(aspects(Rashi::Leo, Rashi::Scorpio));
+/// assert_eq!(aspects(Rashi::Aries, Rashi::Leo), aspects(Rashi::Leo, Rashi::Aries));
+/// ```
 #[must_use]
 pub fn aspects(graha_sign: Rashi, lagna_sign: Rashi) -> bool {
     // One definition of the aspect, in `drishti`, which the yogas read
@@ -307,6 +618,43 @@ pub fn aspects(graha_sign: Rashi, lagna_sign: Rashi) -> bool {
 /// `sky` and `strengths` describe the same annual chart: the strengths
 /// rank the claimants, and the sky gives the Ithasala a Moon's successor
 /// is read from.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{VarsheshaRules, YearCharts, office_bearers, panchavargiya, varshesha};
+/// #
+/// # let lagna = at(7.0, 9.0, 26.0);
+/// # let bearers = office_bearers(&YearCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     annual_lagna_deg: lagna,
+/// #     annual_sun_deg: sky.sun_deg,
+/// #     annual_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # })?;
+/// # let strengths = panchavargiya(&sky)?;
+/// # let year = varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules::default())?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::Chosen;
+///
+/// assert_eq!((year.graha, year.chosen), (Graha::Sun, Chosen::Strongest));
+/// let refused = varshesha(&bearers, &sky, &strengths, f64::NAN, VarsheshaRules::default()).unwrap_err();
+/// assert_eq!(refused.field(), Some("annual_lagna_deg"));
+/// assert_eq!(varshesha(&bearers, &sky, &[], lagna, VarsheshaRules::default()).unwrap_err().field(), Some("strengths"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

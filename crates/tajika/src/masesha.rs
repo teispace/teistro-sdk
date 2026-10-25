@@ -36,6 +36,42 @@ use crate::office::{sign_at, tri_rashi_lord};
 use crate::varshesha::{Bearers, Varshesha, VarsheshaRules, varshesha};
 
 /// The six portfolios of a month, in the verse's order.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::MonthOffice;
+///
+/// // Mars rules both lagnas and the Tri-Rashi of the first month.
+/// assert_eq!(bearers.portfolios(Graha::Mars), [MonthOffice::MasaLagna, MonthOffice::TriRashi, MonthOffice::VarshaLagna]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -57,6 +93,13 @@ pub enum MonthOffice {
 
 impl MonthOffice {
     /// All six, in the verse's order.
+    ///
+    /// ```
+    /// use teistro_tajika::MonthOffice;
+    ///
+    /// assert_eq!(MonthOffice::ALL.len(), 6);
+    /// assert_eq!((MonthOffice::ALL[0], MonthOffice::ALL[5]), (MonthOffice::MasaLagna, MonthOffice::VarshaLagna));
+    /// ```
     pub const ALL: [MonthOffice; 6] = [
         MonthOffice::MasaLagna,
         MonthOffice::Muntha,
@@ -69,6 +112,43 @@ impl MonthOffice {
 
 /// What the six are read from: three charts, reduced to the numbers the
 /// rules touch.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+///
+/// // Carrying the natal degree, the Muntha leaves Sagittarius in the eighth month.
+/// let eighth = MonthCharts { month: 8, ..charts };
+/// assert_eq!(month_bearers(&eighth, MunthaDegree::NatalDegree)?.muntha, Graha::Saturn);
+/// assert_eq!(month_bearers(&eighth, MunthaDegree::SignStart)?.muntha, Graha::Jupiter);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct MonthCharts {
@@ -93,6 +173,44 @@ pub struct MonthCharts {
 }
 
 /// The six office-bearers of one month.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+///
+/// assert_eq!(
+///     (bearers.masa_lagna, bearers.muntha, bearers.janma_lagna, bearers.tri_rashi, bearers.dina_ratri, bearers.varsha_lagna),
+///     (Graha::Mars, Graha::Jupiter, Graha::Sun, Graha::Mars, Graha::Sun, Graha::Mars)
+/// );
+/// assert!(bearers.by_day);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -115,6 +233,42 @@ pub struct MonthBearers {
 
 impl MonthBearers {
     /// Who holds one portfolio.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+    /// #
+    /// # let charts = MonthCharts {
+    /// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+    /// #     completed_years: 40,
+    /// #     month: 1,
+    /// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+    /// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+    /// #     month_sun_deg: sky.sun_deg,
+    /// #     month_moon_deg: sky.moon_deg,
+    /// #     by_day: true,
+    /// # };
+    /// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+    /// # let strengths = panchavargiya(&sky)?;
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::MonthOffice;
+    ///
+    /// assert_eq!(bearers.holder(MonthOffice::Muntha), Graha::Jupiter);
+    /// assert_eq!(bearers.holder(MonthOffice::DinaRatri), Graha::Sun);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn holder(&self, office: MonthOffice) -> Graha {
         match office {
@@ -128,6 +282,42 @@ impl MonthBearers {
     }
 
     /// The portfolios one planet holds, in the verse's order.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+    /// #
+    /// # let charts = MonthCharts {
+    /// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+    /// #     completed_years: 40,
+    /// #     month: 1,
+    /// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+    /// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+    /// #     month_sun_deg: sky.sun_deg,
+    /// #     month_moon_deg: sky.moon_deg,
+    /// #     by_day: true,
+    /// # };
+    /// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+    /// # let strengths = panchavargiya(&sky)?;
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::MonthOffice;
+    ///
+    /// assert_eq!(bearers.portfolios(Graha::Sun), [MonthOffice::JanmaLagna, MonthOffice::DinaRatri]);
+    /// assert!(bearers.portfolios(Graha::Venus).is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn portfolios(&self, graha: Graha) -> Vec<MonthOffice> {
         MonthOffice::ALL
@@ -168,6 +358,42 @@ impl Bearers for MonthBearers {
 
 /// The six office-bearers of one month, the Muntha read in its sign by
 /// `muntha`.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+///
+/// assert_eq!(bearers.masa_lagna, Graha::Mars);
+/// let thirteenth = MonthCharts { month: 13, ..charts };
+/// assert_eq!(month_bearers(&thirteenth, MunthaDegree::default()).unwrap_err().field(), Some("month"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -214,6 +440,45 @@ pub(crate) fn muntha_sign(charts: &MonthCharts, muntha: MunthaDegree) -> Result<
 }
 
 /// Which reading makes a planet the month's lord.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{MaseshaReading, MaseshaRules, masesha};
+///
+/// // The chain gives the month to the Sun, as it gave the year; the other
+/// // reading gives it to the month lagna's lord.
+/// let chain = masesha(&charts, &sky, &strengths, MaseshaRules::default())?;
+/// let lagna_lord = masesha(&charts, &sky, &strengths, MaseshaRules { reading: MaseshaReading::LagnaLord, ..MaseshaRules::default() })?;
+/// assert_eq!((chain.graha, lagna_lord.graha), (Graha::Sun, Graha::Mars));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -229,9 +494,22 @@ pub enum MaseshaReading {
 
 impl MaseshaReading {
     /// Both readings, the verse's first.
+    ///
+    /// ```
+    /// use teistro_tajika::MaseshaReading;
+    ///
+    /// assert_eq!(MaseshaReading::ALL.map(MaseshaReading::key), ["CHAIN", "LAGNA_LORD"]);
+    /// ```
     pub const ALL: [MaseshaReading; 2] = [MaseshaReading::Chain, MaseshaReading::LagnaLord];
 
     /// The member's key, as serde writes it: `CHAIN`.
+    ///
+    /// ```
+    /// use teistro_tajika::MaseshaReading;
+    ///
+    /// assert_eq!(serde_json::to_string(&MaseshaReading::LagnaLord)?, format!("\"{}\"", MaseshaReading::LagnaLord.key()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -242,6 +520,13 @@ impl MaseshaReading {
 }
 
 /// The readings the month's lord parts on.
+///
+/// ```
+/// use teistro_tajika::{MaseshaReading, MaseshaRules, MunthaDegree, VarsheshaRules};
+///
+/// let rules = MaseshaRules::default();
+/// assert_eq!((rules.reading, rules.muntha, rules.chain), (MaseshaReading::Chain, MunthaDegree::SignStart, VarsheshaRules::default()));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase")]
@@ -256,6 +541,44 @@ pub struct MaseshaRules {
 }
 
 /// The lord of one month, and the chain it was read beside.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{MaseshaReading, MaseshaRules, masesha};
+///
+/// // Under either reading the chain is carried, so a reader sees where they part.
+/// let month = masesha(&charts, &sky, &strengths, MaseshaRules { reading: MaseshaReading::LagnaLord, ..MaseshaRules::default() })?;
+/// assert_eq!((month.graha, month.chain.graha), (Graha::Mars, Graha::Sun));
+/// assert_eq!(month.bearers, bearers);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Masesha {
@@ -275,6 +598,42 @@ pub struct Masesha {
 ///
 /// `sky` and `strengths` describe the **month** chart, the one whose lagna
 /// `charts` names.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{MonthCharts, MunthaDegree, month_bearers, panchavargiya};
+/// #
+/// # let charts = MonthCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     annual_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_lagna_deg: at(7.0, 9.0, 26.0),
+/// #     month_sun_deg: sky.sun_deg,
+/// #     month_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = month_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Chosen, MaseshaRules, masesha};
+///
+/// let month = masesha(&charts, &sky, &strengths, MaseshaRules::default())?;
+/// assert_eq!((month.graha, month.chain.chosen), (Graha::Sun, Chosen::Strongest));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

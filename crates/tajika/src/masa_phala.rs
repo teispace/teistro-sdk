@@ -56,6 +56,32 @@ use crate::states::AnnualStates;
 use crate::yoga::{Strength, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YogaRules, strengths};
 
 /// A clause of vv. 7–11 about one house, in the verses' order.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+/// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+/// # };
+/// # let lords = MonthLords {
+/// #     varsha_lagna: Graha::Jupiter,
+/// #     masesha: Graha::Mars,
+/// #     varshesha: Graha::Sun,
+/// #     masa_lagna: Graha::Mars,
+/// #     muntha: Graha::Saturn,
+/// # };
+/// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+/// # let month = read(&lords)?;
+///
+/// use teistro_tajika::HouseClause;
+///
+/// // Venus, the lagna's navamsha lord, in Leo; the Moon, its lord's, in Sagittarius: the fifth.
+/// assert!(month.houses[0].clauses.contains(&HouseClause::Friendly));
+/// assert!(!month.houses[0].clauses.contains(&HouseClause::OnePlanet));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -89,6 +115,13 @@ pub enum HouseClause {
 
 impl HouseClause {
     /// Every clause, in the verses' order.
+    ///
+    /// ```
+    /// use teistro_tajika::HouseClause;
+    ///
+    /// // v. 11's two close the list.
+    /// assert_eq!(&HouseClause::ALL[8..], [HouseClause::Strong, HouseClause::Weak]);
+    /// ```
     pub const ALL: [HouseClause; 10] = [
         HouseClause::Friendly,
         HouseClause::MoonFriendly,
@@ -103,6 +136,12 @@ impl HouseClause {
     ];
 
     /// The member's key, as serde writes it: `MOON_FRIENDLY`.
+    ///
+    /// ```
+    /// use teistro_tajika::HouseClause;
+    ///
+    /// assert_eq!(HouseClause::LowAndSet.key(), "LOW_AND_SET");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -121,6 +160,31 @@ impl HouseClause {
 }
 
 /// The month's lords the results read, in the order the verses name them.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+/// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+/// # };
+/// # let lords = MonthLords {
+/// #     varsha_lagna: Graha::Jupiter,
+/// #     masesha: Graha::Mars,
+/// #     varshesha: Graha::Sun,
+/// #     masa_lagna: Graha::Mars,
+/// #     muntha: Graha::Saturn,
+/// # };
+/// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+/// # let month = read(&lords)?;
+///
+/// use teistro_tajika::MonthLord;
+///
+/// let offices: Vec<MonthLord> = month.lords.iter().map(|lord| lord.office).collect();
+/// assert_eq!(offices, MonthLord::ALL);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -139,6 +203,12 @@ pub enum MonthLord {
 
 impl MonthLord {
     /// All five, in the verses' order.
+    ///
+    /// ```
+    /// use teistro_tajika::MonthLord;
+    ///
+    /// assert_eq!((MonthLord::ALL[0], MonthLord::ALL[4]), (MonthLord::VarshaLagna, MonthLord::Muntha));
+    /// ```
     pub const ALL: [MonthLord; 5] = [
         MonthLord::VarshaLagna,
         MonthLord::Masesha,
@@ -148,6 +218,14 @@ impl MonthLord {
     ];
 
     /// The four v. 10 asks the house's navamsha lord and the Moon to see.
+    ///
+    /// ```
+    /// use teistro_tajika::MonthLord;
+    ///
+    /// // Every lord but the Muntha's.
+    /// assert!(!MonthLord::SEEN.contains(&MonthLord::Muntha));
+    /// assert_eq!(MonthLord::SEEN, MonthLord::ALL[..4]);
+    /// ```
     pub const SEEN: [MonthLord; 4] = [
         MonthLord::VarshaLagna,
         MonthLord::Masesha,
@@ -156,6 +234,12 @@ impl MonthLord {
     ];
 
     /// The member's key, as serde writes it: `VARSHA_LAGNA`.
+    ///
+    /// ```
+    /// use teistro_tajika::MonthLord;
+    ///
+    /// assert_eq!(MonthLord::MasaLagna.key(), "MASA_LAGNA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -168,12 +252,27 @@ impl MonthLord {
     }
 
     /// Whether v. 12 judges this lord.
+    ///
+    /// ```
+    /// use teistro_tajika::MonthLord;
+    ///
+    /// assert!(MonthLord::Muntha.judged_by_affliction());
+    /// assert!(!MonthLord::MasaLagna.judged_by_affliction());
+    /// ```
     #[must_use]
     pub const fn judged_by_affliction(self) -> bool {
         !matches!(self, MonthLord::MasaLagna)
     }
 
     /// Whether v. 13 judges this lord.
+    ///
+    /// ```
+    /// use teistro_tajika::MonthLord;
+    ///
+    /// let judged = MonthLord::ALL.iter().filter(|lord| lord.judged_by_prosperity()).count();
+    /// assert_eq!(judged, 3);
+    /// assert!(!MonthLord::Muntha.judged_by_prosperity());
+    /// ```
     #[must_use]
     pub const fn judged_by_prosperity(self) -> bool {
         matches!(
@@ -184,6 +283,29 @@ impl MonthLord {
 }
 
 /// Who holds each of the five offices this month.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+/// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+/// # };
+/// # let lords = MonthLords {
+/// #     varsha_lagna: Graha::Jupiter,
+/// #     masesha: Graha::Mars,
+/// #     varshesha: Graha::Sun,
+/// #     masa_lagna: Graha::Mars,
+/// #     muntha: Graha::Saturn,
+/// # };
+/// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+/// # let month = read(&lords)?;
+///
+/// let nodal = MonthLords { varshesha: Graha::Ketu, ..lords };
+/// assert_eq!(read(&nodal).unwrap_err().field(), Some("lords.varshesha"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -202,6 +324,21 @@ pub struct MonthLords {
 
 impl MonthLords {
     /// Who holds one office.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::{MonthLord, MonthLords};
+    ///
+    /// let lords = MonthLords {
+    ///     varsha_lagna: Graha::Jupiter,
+    ///     masesha: Graha::Mars,
+    ///     varshesha: Graha::Sun,
+    ///     masa_lagna: Graha::Mars,
+    ///     muntha: Graha::Saturn,
+    /// };
+    /// assert_eq!(lords.holder(MonthLord::Varshesha), Graha::Sun);
+    /// assert_eq!(lords.holder(MonthLord::Masesha), lords.holder(MonthLord::MasaLagna));
+    /// ```
     #[must_use]
     pub const fn holder(&self, office: MonthLord) -> Graha {
         match office {
@@ -216,6 +353,35 @@ impl MonthLords {
 
 /// A clause of vv. 12–13 about one of the month's lords, in the verses'
 /// order.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+/// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+/// # };
+/// # let lords = MonthLords {
+/// #     varsha_lagna: Graha::Jupiter,
+/// #     masesha: Graha::Mars,
+/// #     varshesha: Graha::Sun,
+/// #     masa_lagna: Graha::Mars,
+/// #     muntha: Graha::Saturn,
+/// # };
+/// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+/// # let month = read(&lords)?;
+///
+/// use teistro_tajika::LordClause;
+///
+/// let mercury = MonthLords { muntha: Graha::Mercury, masa_lagna: Graha::Mercury, ..lords };
+/// let eighth = read(&mercury)?;
+/// let muntha = &eighth.lords[4];
+/// assert!(muntha.clauses.contains(&LordClause::Trika));
+/// assert!(muntha.clauses.contains(&LordClause::MaleficInimical));
+/// assert!(!muntha.clauses.contains(&LordClause::WithMalefic));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -236,6 +402,14 @@ pub enum LordClause {
 
 impl LordClause {
     /// Every clause, in the verses' order.
+    ///
+    /// ```
+    /// use teistro_tajika::LordClause;
+    ///
+    /// // v. 12's three, then v. 13's two.
+    /// assert_eq!(LordClause::ALL[0], LordClause::Trika);
+    /// assert_eq!(LordClause::ALL[4], LordClause::WellPlaced);
+    /// ```
     pub const ALL: [LordClause; 5] = [
         LordClause::Trika,
         LordClause::WithMalefic,
@@ -245,6 +419,12 @@ impl LordClause {
     ];
 
     /// The member's key, as serde writes it: `WITH_MALEFIC`.
+    ///
+    /// ```
+    /// use teistro_tajika::LordClause;
+    ///
+    /// assert_eq!(LordClause::WellPlaced.key(), "WELL_PLACED");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -258,6 +438,34 @@ impl LordClause {
 }
 
 /// One house of the month, read through its two planets.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+/// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+/// # };
+/// # let lords = MonthLords {
+/// #     varsha_lagna: Graha::Jupiter,
+/// #     masesha: Graha::Mars,
+/// #     varshesha: Graha::Sun,
+/// #     masa_lagna: Graha::Mars,
+/// #     muntha: Graha::Saturn,
+/// # };
+/// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+/// # let month = read(&lords)?;
+///
+/// use teistro_core::house::House;
+/// use teistro_tajika::MonthLord;
+///
+/// let first = &month.houses[0];
+/// assert_eq!((first.house, first.amsha_lord, first.lord_amsha_lord), (House::try_new(1)?, Graha::Venus, Graha::Moon));
+/// // The Moon in Sagittarius sees Jupiter in Aries and the Sun in Libra.
+/// assert_eq!(first.seen_by_moon, [MonthLord::VarshaLagna, MonthLord::Varshesha]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -281,6 +489,32 @@ pub struct MonthHouse {
 impl MonthHouse {
     /// Whether v. 11 reads good from the house's navamsha lord: weak for
     /// the 6th, 8th and 12th, strong for the others.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+    /// #
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+    /// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+    /// # };
+    /// # let lords = MonthLords {
+    /// #     varsha_lagna: Graha::Jupiter,
+    /// #     masesha: Graha::Mars,
+    /// #     varshesha: Graha::Sun,
+    /// #     masa_lagna: Graha::Mars,
+    /// #     muntha: Graha::Saturn,
+    /// # };
+    /// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+    /// # let month = read(&lords)?;
+    ///
+    /// use teistro_tajika::HouseClause;
+    ///
+    /// // The eighth is fruitful when its navamsha lord is weak.
+    /// let eighth = &month.houses[7];
+    /// assert_eq!(eighth.fruitful(), eighth.clauses.contains(&HouseClause::Weak));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn fruitful(&self) -> bool {
         let wanted = if self.house.is_trika() {
@@ -293,6 +527,31 @@ impl MonthHouse {
 
     /// Whether v. 11 reads ill: the reverse of [`MonthHouse::fruitful`].
     /// A middling lord is neither.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+    /// #
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+    /// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+    /// # };
+    /// # let lords = MonthLords {
+    /// #     varsha_lagna: Graha::Jupiter,
+    /// #     masesha: Graha::Mars,
+    /// #     varshesha: Graha::Sun,
+    /// #     masa_lagna: Graha::Mars,
+    /// #     muntha: Graha::Saturn,
+    /// # };
+    /// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+    /// # let month = read(&lords)?;
+    ///
+    /// // No house is both, and a middling lord is neither.
+    /// for house in &month.houses {
+    ///     assert!(!(house.fruitful() && house.unfruitful()));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn unfruitful(&self) -> bool {
         let wanted = if self.house.is_trika() {
@@ -305,6 +564,34 @@ impl MonthHouse {
 }
 
 /// Where one of the month's lords stands.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+/// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+/// # };
+/// # let lords = MonthLords {
+/// #     varsha_lagna: Graha::Jupiter,
+/// #     masesha: Graha::Mars,
+/// #     varshesha: Graha::Sun,
+/// #     masa_lagna: Graha::Mars,
+/// #     muntha: Graha::Saturn,
+/// # };
+/// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+/// # let month = read(&lords)?;
+///
+/// use teistro_core::house::House;
+/// use teistro_tajika::{LordClause, MonthLord};
+///
+/// // Jupiter, the year lagna's lord, in Aries: the first house.
+/// let jupiter = &month.lords[0];
+/// assert_eq!((jupiter.office, jupiter.graha, jupiter.house), (MonthLord::VarshaLagna, Graha::Jupiter, House::try_new(1)?));
+/// assert!(jupiter.clauses.contains(&LordClause::WellPlaced));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -322,6 +609,33 @@ pub struct MonthLordPlace {
 impl MonthLordPlace {
     /// Whether v. 12 holds: one of its four lords in the 6th, 8th or 12th
     /// with a malefic or aspected by one inimically (crux C457).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+    /// #
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+    /// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+    /// # };
+    /// # let lords = MonthLords {
+    /// #     varsha_lagna: Graha::Jupiter,
+    /// #     masesha: Graha::Mars,
+    /// #     varshesha: Graha::Sun,
+    /// #     masa_lagna: Graha::Mars,
+    /// #     muntha: Graha::Saturn,
+    /// # };
+    /// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+    /// # let month = read(&lords)?;
+    ///
+    /// let mercury = MonthLords { muntha: Graha::Mercury, masa_lagna: Graha::Mercury, ..lords };
+    /// let eighth = read(&mercury)?;
+    /// // The same Mercury afflicts the Muntha's office and not the month lagna's, which v. 12 does not judge.
+    /// assert!(eighth.lords[4].afflicted());
+    /// assert!(!eighth.lords[3].afflicted());
+    /// assert_eq!(eighth.lords[3].clauses, eighth.lords[4].clauses);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn afflicted(&self) -> bool {
         self.office.judged_by_affliction()
@@ -332,6 +646,34 @@ impl MonthLordPlace {
 
     /// Whether v. 13 holds: one of its three lords strong and in a kendra,
     /// a trikona or the 11th.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+    /// #
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+    /// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+    /// # };
+    /// # let lords = MonthLords {
+    /// #     varsha_lagna: Graha::Jupiter,
+    /// #     masesha: Graha::Mars,
+    /// #     varshesha: Graha::Sun,
+    /// #     masa_lagna: Graha::Mars,
+    /// #     muntha: Graha::Saturn,
+    /// # };
+    /// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+    /// # let month = read(&lords)?;
+    ///
+    /// use teistro_tajika::LordClause;
+    ///
+    /// let jupiter = &month.lords[0];
+    /// let both = jupiter.clauses.contains(&LordClause::Strong) && jupiter.clauses.contains(&LordClause::WellPlaced);
+    /// assert_eq!(jupiter.prospers(), both);
+    /// // v. 13 does not judge the month lagna's lord.
+    /// assert!(!month.lords[3].prospers());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn prospers(&self) -> bool {
         self.office.judged_by_prosperity()
@@ -341,6 +683,28 @@ impl MonthLordPlace {
 }
 
 /// The month's results: its twelve houses and its five lords.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+/// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+/// # };
+/// # let lords = MonthLords {
+/// #     varsha_lagna: Graha::Jupiter,
+/// #     masesha: Graha::Mars,
+/// #     varshesha: Graha::Sun,
+/// #     masa_lagna: Graha::Mars,
+/// #     muntha: Graha::Saturn,
+/// # };
+/// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+/// # let month = read(&lords)?;
+///
+/// assert_eq!((month.houses.len(), month.lords.len()), (12, 5));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct MasaPhala {
@@ -352,6 +716,13 @@ pub struct MasaPhala {
 
 /// The floors the month's and the day's results judge strong and weak by,
 /// the year yogas' own by default, and when the Moon is waning.
+///
+/// ```
+/// use teistro_tajika::{MasaPhalaRules, YOGA_STRONG_FROM, YOGA_WEAK_BELOW};
+///
+/// let rules = MasaPhalaRules::default();
+/// assert_eq!((rules.weak_below, rules.strong_from), (YOGA_WEAK_BELOW, YOGA_STRONG_FROM));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
@@ -379,6 +750,14 @@ impl Default for MasaPhalaRules {
 
 impl MasaPhalaRules {
     /// Refuses floors that would let a planet be strong and weak at once.
+    ///
+    /// ```
+    /// use teistro_tajika::{Bala, MasaPhalaRules};
+    ///
+    /// assert!(MasaPhalaRules::default().check().is_ok());
+    /// let both = MasaPhalaRules { strong_from: Bala::new(0, 0, 0), ..MasaPhalaRules::default() };
+    /// assert_eq!(both.check().unwrap_err().field(), Some("strongFrom"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -498,6 +877,29 @@ pub(crate) fn strength_of(graha: Graha, strengths: &[Strength; 7]) -> Option<Str
 /// The month's results from its chart: `month_lagna_deg` and `sky` are the
 /// month chart's, `states` its combust and retrograde planets, `lords` who
 /// holds the five offices this month.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_tajika::{AnnualSky, AnnualStates, MasaPhalaRules, MonthLords, masa_phala};
+/// #
+/// # let sky = AnnualSky {
+/// #     sun_deg: 200.0, moon_deg: 250.0, mars_deg: 91.0, mercury_deg: 210.0,
+/// #     jupiter_deg: 20.0, venus_deg: 130.0, saturn_deg: 300.0,
+/// # };
+/// # let lords = MonthLords {
+/// #     varsha_lagna: Graha::Jupiter,
+/// #     masesha: Graha::Mars,
+/// #     varshesha: Graha::Sun,
+/// #     masa_lagna: Graha::Mars,
+/// #     muntha: Graha::Saturn,
+/// # };
+/// # let read = |lords: &MonthLords| masa_phala(5.0, &sky, &AnnualStates::default(), lords, MasaPhalaRules::default());
+/// # let month = read(&lords)?;
+///
+/// let refused = masa_phala(f64::NAN, &sky, &AnnualStates::default(), &lords, MasaPhalaRules::default()).unwrap_err();
+/// assert_eq!(refused.field(), Some("month_lagna_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

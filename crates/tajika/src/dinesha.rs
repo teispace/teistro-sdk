@@ -37,6 +37,48 @@ use crate::office::{sign_at, tri_rashi_lord};
 use crate::varshesha::{Bearers, Varshesha, varshesha};
 
 /// The seven portfolios of a day, in the verse's order.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{DayCharts, MunthaDegree, day_bearers, panchavargiya};
+/// #
+/// # let scorpio = at(7.0, 9.0, 26.0);
+/// # let charts = DayCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     day: 1,
+/// #     annual_lagna_deg: scorpio,
+/// #     month_lagna_deg: scorpio,
+/// #     day_lagna_deg: scorpio,
+/// #     day_sun_deg: sky.sun_deg,
+/// #     day_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = day_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::DayOffice;
+///
+/// // Mars rules the day's, the month's and the year's lagna, and the Tri-Rashi.
+/// assert_eq!(
+///     bearers.portfolios(Graha::Mars),
+///     [DayOffice::TriRashi, DayOffice::DinaLagna, DayOffice::MasaLagna, DayOffice::VarshaLagna]
+/// );
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -60,6 +102,13 @@ pub enum DayOffice {
 
 impl DayOffice {
     /// All seven, in the verse's order.
+    ///
+    /// ```
+    /// use teistro_tajika::DayOffice;
+    ///
+    /// assert_eq!(DayOffice::ALL.len(), 7);
+    /// assert_eq!(DayOffice::ALL[0], DayOffice::Muntha);
+    /// ```
     pub const ALL: [DayOffice; 7] = [
         DayOffice::Muntha,
         DayOffice::JanmaLagna,
@@ -73,6 +122,47 @@ impl DayOffice {
 
 /// What the seven are read from: four charts, reduced to the numbers the
 /// rules touch.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{DayCharts, MunthaDegree, day_bearers, panchavargiya};
+/// #
+/// # let scorpio = at(7.0, 9.0, 26.0);
+/// # let charts = DayCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     day: 1,
+/// #     annual_lagna_deg: scorpio,
+/// #     month_lagna_deg: scorpio,
+/// #     day_lagna_deg: scorpio,
+/// #     day_sun_deg: sky.sun_deg,
+/// #     day_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = day_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+///
+/// // The Muntha moves 5′ a day: carrying the natal degree, it leaves
+/// // Sagittarius between the fifth and the sixth day of the seventh month.
+/// let day = |day| DayCharts { month: 7, day, ..charts };
+/// assert_eq!(day_bearers(&day(5), MunthaDegree::NatalDegree)?.muntha, Graha::Jupiter);
+/// assert_eq!(day_bearers(&day(6), MunthaDegree::NatalDegree)?.muntha, Graha::Saturn);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DayCharts {
@@ -101,6 +191,44 @@ pub struct DayCharts {
 }
 
 /// The seven office-bearers of one day.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{DayCharts, MunthaDegree, day_bearers, panchavargiya};
+/// #
+/// # let scorpio = at(7.0, 9.0, 26.0);
+/// # let charts = DayCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     day: 1,
+/// #     annual_lagna_deg: scorpio,
+/// #     month_lagna_deg: scorpio,
+/// #     day_lagna_deg: scorpio,
+/// #     day_sun_deg: sky.sun_deg,
+/// #     day_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = day_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+///
+/// assert_eq!((bearers.muntha, bearers.janma_lagna, bearers.dina_ratri), (Graha::Jupiter, Graha::Sun, Graha::Sun));
+/// assert_eq!((bearers.dina_lagna, bearers.masa_lagna, bearers.varsha_lagna), (Graha::Mars, Graha::Mars, Graha::Mars));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -125,6 +253,45 @@ pub struct DayBearers {
 
 impl DayBearers {
     /// Who holds one portfolio.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_tajika::{DayCharts, MunthaDegree, day_bearers, panchavargiya};
+    /// #
+    /// # let scorpio = at(7.0, 9.0, 26.0);
+    /// # let charts = DayCharts {
+    /// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+    /// #     completed_years: 40,
+    /// #     month: 1,
+    /// #     day: 1,
+    /// #     annual_lagna_deg: scorpio,
+    /// #     month_lagna_deg: scorpio,
+    /// #     day_lagna_deg: scorpio,
+    /// #     day_sun_deg: sky.sun_deg,
+    /// #     day_moon_deg: sky.moon_deg,
+    /// #     by_day: true,
+    /// # };
+    /// # let bearers = day_bearers(&charts, MunthaDegree::default())?;
+    /// # let strengths = panchavargiya(&sky)?;
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::DayOffice;
+    ///
+    /// assert_eq!(bearers.holder(DayOffice::Muntha), Graha::Jupiter);
+    /// assert_eq!(bearers.holder(DayOffice::TriRashi), Graha::Mars);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn holder(&self, office: DayOffice) -> Graha {
         match office {
@@ -139,6 +306,45 @@ impl DayBearers {
     }
 
     /// The portfolios one planet holds, in the verse's order.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_tajika::{DayCharts, MunthaDegree, day_bearers, panchavargiya};
+    /// #
+    /// # let scorpio = at(7.0, 9.0, 26.0);
+    /// # let charts = DayCharts {
+    /// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+    /// #     completed_years: 40,
+    /// #     month: 1,
+    /// #     day: 1,
+    /// #     annual_lagna_deg: scorpio,
+    /// #     month_lagna_deg: scorpio,
+    /// #     day_lagna_deg: scorpio,
+    /// #     day_sun_deg: sky.sun_deg,
+    /// #     day_moon_deg: sky.moon_deg,
+    /// #     by_day: true,
+    /// # };
+    /// # let bearers = day_bearers(&charts, MunthaDegree::default())?;
+    /// # let strengths = panchavargiya(&sky)?;
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::DayOffice;
+    ///
+    /// assert_eq!(bearers.portfolios(Graha::Sun), [DayOffice::JanmaLagna, DayOffice::DinaRatri]);
+    /// assert!(bearers.portfolios(Graha::Moon).is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn portfolios(&self, graha: Graha) -> Vec<DayOffice> {
         DayOffice::ALL
@@ -179,6 +385,44 @@ impl Bearers for DayBearers {
 
 /// The seven office-bearers of one day, the Muntha read in its sign by
 /// `muntha`.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{DayCharts, MunthaDegree, day_bearers, panchavargiya};
+/// #
+/// # let scorpio = at(7.0, 9.0, 26.0);
+/// # let charts = DayCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     day: 1,
+/// #     annual_lagna_deg: scorpio,
+/// #     month_lagna_deg: scorpio,
+/// #     day_lagna_deg: scorpio,
+/// #     day_sun_deg: sky.sun_deg,
+/// #     day_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = day_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+///
+/// assert!(bearers.by_day);
+/// let past = DayCharts { day: 31, ..charts };
+/// assert_eq!(day_bearers(&past, MunthaDegree::default()).unwrap_err().field(), Some("day"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -223,6 +467,48 @@ pub fn day_bearers(charts: &DayCharts, muntha: MunthaDegree) -> Result<DayBearer
 }
 
 /// The lord of one day, and the chain it was read beside.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{DayCharts, MunthaDegree, day_bearers, panchavargiya};
+/// #
+/// # let scorpio = at(7.0, 9.0, 26.0);
+/// # let charts = DayCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     day: 1,
+/// #     annual_lagna_deg: scorpio,
+/// #     month_lagna_deg: scorpio,
+/// #     day_lagna_deg: scorpio,
+/// #     day_sun_deg: sky.sun_deg,
+/// #     day_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = day_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{MaseshaReading, MaseshaRules, dinesha};
+///
+/// // The day lagna's lord under the other reading, the chain carried beside it.
+/// let rules = MaseshaRules { reading: MaseshaReading::LagnaLord, ..MaseshaRules::default() };
+/// let day = dinesha(&charts, &sky, &strengths, rules)?;
+/// assert_eq!((day.graha, day.chain.graha), (Graha::Mars, Graha::Sun));
+/// assert_eq!(day.bearers, bearers);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Dinesha {
@@ -241,6 +527,46 @@ pub struct Dinesha {
 /// `sky` and `strengths` describe the **day** chart, the one whose lagna
 /// `charts` names. `rules` are the month's lord's own, read for the day as
 /// the commentary reads the month "as for the year".
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{DayCharts, MunthaDegree, day_bearers, panchavargiya};
+/// #
+/// # let scorpio = at(7.0, 9.0, 26.0);
+/// # let charts = DayCharts {
+/// #     natal_lagna_deg: at(4.0, 14.0, 36.0),
+/// #     completed_years: 40,
+/// #     month: 1,
+/// #     day: 1,
+/// #     annual_lagna_deg: scorpio,
+/// #     month_lagna_deg: scorpio,
+/// #     day_lagna_deg: scorpio,
+/// #     day_sun_deg: sky.sun_deg,
+/// #     day_moon_deg: sky.moon_deg,
+/// #     by_day: true,
+/// # };
+/// # let bearers = day_bearers(&charts, MunthaDegree::default())?;
+/// # let strengths = panchavargiya(&sky)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Chosen, MaseshaRules, dinesha};
+///
+/// // The strongest of the seven that aspects the day lagna: the Sun, as for the year.
+/// let day = dinesha(&charts, &sky, &strengths, MaseshaRules::default())?;
+/// assert_eq!((day.graha, day.chain.chosen), (Graha::Sun, Chosen::Strongest));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

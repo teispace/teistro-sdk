@@ -52,6 +52,31 @@ use crate::bala::{AnnualSky, finite_longitude, sign_of_longitude};
 /// Serialised as its catalogue key in kebab case (`karya-siddhi`), the
 /// key every binding reads a saham back as, so a caller names one in a
 /// request exactly as an answer spelt it.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// // Punya at Leo 15°16′ and Raja at Aquarius 22°49′, as the source prints.
+/// let read = sahams(&chart, &[Saham::Punya, Saham::Raja], SahamRules::default())?;
+/// assert_eq!(read.points[0].point.longitude_deg.floor(), 135.0);
+/// assert_eq!(read.points[1].point.longitude_deg.floor(), 322.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -155,11 +180,28 @@ pub enum Saham {
 }
 
 /// Cancer 15°, Jalapatha's fixed first factor.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Saham, SahamRules, SahamTerm};
+///
+/// use teistro_tajika::CANCER_15_DEG;
+///
+/// let jalapatha = Saham::Jalapatha.formula(SahamRules::default());
+/// assert_eq!(jalapatha.day.a, SahamTerm::Degrees(CANCER_15_DEG));
+/// assert_eq!(jalapatha.day.b, SahamTerm::Graha(Graha::Saturn));
+/// ```
 pub const CANCER_15_DEG: f64 = 105.0;
 
 impl Saham {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `PUNYA`.
+    ///
+    /// ```
+    /// use teistro_tajika::Saham;
+    ///
+    /// assert_eq!(Saham::AnyaKarma.key(), "ANYA_KARMA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -208,6 +250,13 @@ impl Saham {
     }
 
     /// Every saham the source gives, in its order.
+    ///
+    /// ```
+    /// use teistro_tajika::Saham;
+    ///
+    /// assert_eq!((Saham::ALL[0], Saham::ALL[40]), (Saham::Punya, Saham::Labha));
+    /// assert!(Saham::ALL.iter().enumerate().all(|(place, saham)| saham.index() == place));
+    /// ```
     pub const ALL: [Saham; 41] = [
         Saham::Punya,
         Saham::Guru,
@@ -253,6 +302,13 @@ impl Saham {
     ];
 
     /// Its place in [`Saham::ALL`]: the source's number less one.
+    ///
+    /// ```
+    /// use teistro_tajika::Saham;
+    ///
+    /// // Raja is the source's No. 12.
+    /// assert_eq!(Saham::Raja.index(), 11);
+    /// ```
     #[must_use]
     pub const fn index(self) -> usize {
         self as usize
@@ -262,6 +318,14 @@ impl Saham {
     /// "according to some": Shatru, Roga, Kali and Mrityu — the sahams of
     /// enemies, disease, strife and death, "considered best when in
     /// debility".
+    ///
+    /// ```
+    /// use teistro_tajika::Saham;
+    ///
+    /// assert!(Saham::Mrityu.best_weak());
+    /// assert!(!Saham::Punya.best_weak());
+    /// assert_eq!(Saham::ALL.iter().filter(|saham| saham.best_weak()).count(), 4);
+    /// ```
     #[must_use]
     pub const fn best_weak(self) -> bool {
         matches!(
@@ -374,6 +438,20 @@ impl Saham {
 }
 
 /// One factor of a saham: a point the chart supplies.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Saham, SahamRules, SahamTerm};
+///
+/// use teistro_core::house::House;
+/// use teistro_tajika::SahamFormula;
+///
+/// // Labha: the eleventh house − its lord + lagna, day and night.
+/// let eleventh = House::try_new(11)?;
+/// let labha = SahamFormula::same(SahamTerm::House(eleventh), SahamTerm::HouseLord(eleventh), SahamTerm::Lagna);
+/// assert_eq!(Saham::Labha.formula(SahamRules::default()), labha);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -398,6 +476,18 @@ pub enum SahamTerm {
 }
 
 /// A saham's three factors, read as **a − b + c**.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Saham, SahamRules, SahamTerm};
+///
+/// let punya = Saham::Punya.formula(SahamRules::default());
+/// use teistro_tajika::SahamTriple;
+///
+/// // By day the Moon − the Sun + lagna.
+/// let day = SahamTriple::new(SahamTerm::Graha(Graha::Moon), SahamTerm::Graha(Graha::Sun), SahamTerm::Lagna);
+/// assert_eq!(punya.day, day);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SahamTriple {
@@ -412,6 +502,13 @@ pub struct SahamTriple {
 
 impl SahamTriple {
     /// `a − b + c`.
+    ///
+    /// ```
+    /// use teistro_tajika::{SahamTerm, SahamTriple};
+    ///
+    /// let fixed = SahamTriple::new(SahamTerm::Degrees(105.0), SahamTerm::Lagna, SahamTerm::Lagna);
+    /// assert_eq!(fixed.a, SahamTerm::Degrees(105.0));
+    /// ```
     #[must_use]
     pub const fn new(a: SahamTerm, b: SahamTerm, c: SahamTerm) -> SahamTriple {
         SahamTriple { a, b, c }
@@ -446,6 +543,14 @@ pub struct SahamFormula {
 
 impl SahamFormula {
     /// The same three factors by day and by night.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::{SahamFormula, SahamTerm};
+    ///
+    /// let formula = SahamFormula::same(SahamTerm::Graha(Graha::Saturn), SahamTerm::Graha(Graha::Moon), SahamTerm::Lagna);
+    /// assert_eq!(formula.day, formula.night);
+    /// ```
     #[must_use]
     pub const fn same(a: SahamTerm, b: SahamTerm, c: SahamTerm) -> SahamFormula {
         let triple = SahamTriple::new(a, b, c);
@@ -457,6 +562,17 @@ impl SahamFormula {
 
     /// `a − b + c` by day and `b − a + c` by night: the shape most of
     /// the source's sahams take.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::{Saham, SahamRules, SahamTerm};
+    ///
+    /// let punya = Saham::Punya.formula(SahamRules::default());
+    ///
+    /// // By night the Sun − the Moon + lagna.
+    /// assert_eq!((punya.night.a, punya.night.b), (punya.day.b, punya.day.a));
+    /// assert_eq!(punya.night.c, SahamTerm::Lagna);
+    /// ```
     #[must_use]
     pub const fn reversed_by_night(a: SahamTerm, b: SahamTerm, c: SahamTerm) -> SahamFormula {
         SahamFormula {
@@ -466,6 +582,16 @@ impl SahamFormula {
     }
 
     /// The triple a chart reads.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::{Saham, SahamRules, SahamTerm};
+    ///
+    /// let punya = Saham::Punya.formula(SahamRules::default());
+    ///
+    /// assert_eq!(punya.at(true), punya.day);
+    /// assert_eq!(punya.at(false).a, SahamTerm::Graha(Graha::Sun));
+    /// ```
     #[must_use]
     pub const fn at(&self, by_day: bool) -> SahamTriple {
         if by_day { self.day } else { self.night }
@@ -473,6 +599,13 @@ impl SahamFormula {
 }
 
 /// How a saham is read where the tradition divides.
+///
+/// ```
+/// use teistro_tajika::{AddSign, HousePoints, RogaReading, SahamRules};
+///
+/// let rules = SahamRules::default();
+/// assert_eq!((rules.add_sign, rules.houses, rules.roga), (AddSign::Degrees, HousePoints::Sripati, RogaReading::Lagna));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase")]
@@ -487,6 +620,34 @@ pub struct SahamRules {
 
 /// When a saham is carried one sign further: the source's "essential
 /// consideration".
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// use teistro_tajika::AddSign;
+///
+/// // Raja is carried a sign; never carried, it stands 30° short.
+/// let raja = |add_sign| sahams(&chart, &[Saham::Raja], SahamRules { add_sign, ..SahamRules::default() });
+/// let (added, bare) = (raja(AddSign::Degrees)?.points[0].point, raja(AddSign::Never)?.points[0].point);
+/// assert!(added.added_sign && !bare.added_sign);
+/// assert!((added.longitude_deg - bare.longitude_deg - 30.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -512,6 +673,35 @@ pub enum AddSign {
 }
 
 /// Where a house's point stands, for the sahams that read one.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// use teistro_tajika::HousePoints;
+///
+/// // A chart's own chalit is refused when it was not given.
+/// let chalit = SahamRules { houses: HousePoints::Chalit, ..SahamRules::default() };
+/// assert_eq!(sahams(&chart, &[Saham::Labha], chalit).unwrap_err().field(), Some("chalit_deg"));
+/// // Sahams that read no house are the same under every division.
+/// let equal = SahamRules { houses: HousePoints::Equal, ..SahamRules::default() };
+/// assert_eq!(sahams(&chart, &[Saham::Punya], equal)?.points, sahams(&chart, &[Saham::Punya], SahamRules::default())?.points);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -537,6 +727,19 @@ pub enum HousePoints {
 }
 
 /// Which of the source's two Roga sahams is meant.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{Saham, SahamRules, SahamTerm};
+///
+/// use teistro_tajika::RogaReading;
+///
+/// let lagna = Saham::Roga.formula(SahamRules::default());
+/// assert_eq!((lagna.day.a, lagna.day.b), (SahamTerm::Lagna, SahamTerm::Graha(Graha::Moon)));
+/// let saturn = Saham::Roga.formula(SahamRules { roga: RogaReading::Saturn, ..SahamRules::default() });
+/// assert_eq!(saturn.day.a, SahamTerm::Graha(Graha::Saturn));
+/// assert_eq!(saturn.night.a, SahamTerm::Graha(Graha::Moon));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -556,6 +759,30 @@ pub enum RogaReading {
 /// Any chart: the source reads the sahams of the annual chart **and** of
 /// the birth chart, since one weak at birth "cannot produce results"
 /// in a year however strong it stands there.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// assert!(chart.by_day && chart.chalit_deg.is_none() && chart.rahu_deg.is_none());
+/// let unplaced = SahamSky { lagna_deg: f64::NAN, ..chart };
+/// assert_eq!(sahams(&unplaced, &[Saham::Punya], SahamRules::default()).unwrap_err().field(), Some("lagna_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SahamSky {
@@ -580,6 +807,32 @@ pub struct SahamSky {
 impl SahamSky {
     /// A chart from its seven, its two angles and its day or night; its
     /// own chalit middles are [`SahamSky::with_chalit`]'s.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+    /// #
+    /// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+    ///
+    /// // The same chart cast by night reads its night formulas.
+    /// let night = SahamSky::new(chart.sky, chart.lagna_deg, chart.midheaven_deg, false);
+    /// let read = sahams(&night, &[Saham::Punya], SahamRules::default())?;
+    /// assert!(!read.by_day);
+    /// assert_ne!(read.points[0].point, sahams(&chart, &[Saham::Punya], SahamRules::default())?.points[0].point);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn new(sky: AnnualSky, lagna_deg: f64, midheaven_deg: f64, by_day: bool) -> SahamSky {
         SahamSky {
@@ -594,6 +847,34 @@ impl SahamSky {
 
     /// The same chart, carrying its own chalit middles for
     /// [`HousePoints::Chalit`].
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+    /// #
+    /// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+    ///
+    /// use teistro_tajika::HousePoints;
+    ///
+    /// // Equal houses handed in as the chart's chalit read as equal houses.
+    /// let equal: [f64; 12] = std::array::from_fn(|k| (chart.lagna_deg + 30.0 * k as f64).rem_euclid(360.0));
+    /// let rules = |houses| SahamRules { houses, ..SahamRules::default() };
+    /// let labha = |chart: &SahamSky, houses| sahams(chart, &[Saham::Labha], rules(houses));
+    /// assert_eq!(labha(&chart.with_chalit(equal), HousePoints::Chalit)?.points, labha(&chart, HousePoints::Equal)?.points);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_chalit(mut self, chalit_deg: [f64; 12]) -> SahamSky {
         self.chalit_deg = Some(chalit_deg);
@@ -601,6 +882,30 @@ impl SahamSky {
     }
 
     /// The same chart, carrying Rahu for a saham's strength.
+    ///
+    /// ```
+    /// # use teistro_tajika::AnnualSky;
+    /// #
+    /// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+    /// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+    /// # let sky = AnnualSky {
+    /// #     sun_deg: at(4.0, 3.0, 50.0),
+    /// #     moon_deg: at(1.0, 9.0, 40.0),
+    /// #     mars_deg: at(7.0, 7.0, 42.0),
+    /// #     mercury_deg: at(4.0, 18.0, 20.0),
+    /// #     jupiter_deg: at(8.0, 9.0, 38.0),
+    /// #     venus_deg: at(4.0, 21.0, 45.0),
+    /// #     saturn_deg: at(6.0, 17.0, 13.0),
+    /// # };
+    /// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+    /// #
+    /// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+    ///
+    /// assert_eq!(chart.with_rahu(100.0).rahu_deg, Some(100.0));
+    /// let refused = sahams(&chart.with_rahu(f64::INFINITY), &[Saham::Punya], SahamRules::default()).unwrap_err();
+    /// assert_eq!(refused.field(), Some("rahu_deg"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_rahu(mut self, rahu_deg: f64) -> SahamSky {
         self.rahu_deg = Some(rahu_deg);
@@ -653,6 +958,35 @@ fn equal_houses(lagna_deg: f64) -> [f64; 12] {
 }
 
 /// Where a saham fell, and what the source reads off it.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_core::house::House;
+///
+/// // Punya in Leo, the tenth from Scorpio, its lord the Sun.
+/// let punya = sahams(&chart, &[Saham::Punya], SahamRules::default())?.points[0].point;
+/// assert_eq!((punya.sign, punya.lord), (Rashi::Leo, Graha::Sun));
+/// assert_eq!(punya.house, House::try_new(10)?);
+/// assert!(!punya.added_sign);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SahamPlace {
@@ -672,6 +1006,31 @@ pub struct SahamPlace {
 }
 
 /// One of the source's sahams, where it fell.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// let read = sahams(&chart, &[Saham::Raja, Saham::Punya], SahamRules::default())?;
+/// // One per saham, in the order asked.
+/// let asked: Vec<Saham> = read.points.iter().map(|point| point.saham).collect();
+/// assert_eq!(asked, [Saham::Raja, Saham::Punya]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SahamPoint {
@@ -682,6 +1041,31 @@ pub struct SahamPoint {
 }
 
 /// The sahams a chart was asked for, and how it was read.
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// # use teistro_tajika::{Saham, SahamRules, SahamSky, sahams};
+/// #
+/// # let chart = SahamSky::new(sky, at(7.0, 9.0, 26.0), at(4.0, 13.0, 10.0), true);
+///
+/// let read = sahams(&chart, &Saham::ALL, SahamRules::default())?;
+/// assert!(read.by_day);
+/// assert_eq!(read.rules, SahamRules::default());
+/// assert_eq!(read.points.len(), 41);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SahamReading {

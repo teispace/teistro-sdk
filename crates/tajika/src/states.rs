@@ -50,18 +50,48 @@ pub struct AnnualStates {
 
 impl AnnualStates {
     /// Whether `graha` is retrograde.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::AnnualStates;
+    ///
+    /// let states = AnnualStates { retrograde: vec![Graha::Mars, Graha::Saturn], combust: vec![] };
+    /// assert!(states.is_retrograde(Graha::Mars));
+    /// assert!(!states.is_retrograde(Graha::Jupiter));
+    /// ```
     #[must_use]
     pub fn is_retrograde(&self, graha: Graha) -> bool {
         self.retrograde.contains(&graha)
     }
 
     /// Whether `graha` is combust.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::AnnualStates;
+    ///
+    /// let states = AnnualStates { retrograde: vec![], combust: vec![Graha::Mercury] };
+    /// assert!(states.is_combust(Graha::Mercury));
+    /// assert!(!AnnualStates::default().is_combust(Graha::Mercury));
+    /// ```
     #[must_use]
     pub fn is_combust(&self, graha: Graha) -> bool {
         self.combust.contains(&graha)
     }
 
     /// Refuses what no chart can hold, naming the field to correct.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_tajika::AnnualStates;
+    ///
+    /// let moon_backwards = AnnualStates { retrograde: vec![Graha::Moon], combust: vec![] };
+    /// assert_eq!(moon_backwards.check().unwrap_err().field(), Some("retrograde"));
+    /// let sun_burnt = AnnualStates { retrograde: vec![], combust: vec![Graha::Sun] };
+    /// assert_eq!(sun_burnt.check().unwrap_err().field(), Some("combust"));
+    /// let rahu = AnnualStates { retrograde: vec![Graha::Rahu], combust: vec![] };
+    /// assert!(rahu.check().is_err());
+    /// ```
     ///
     /// # Errors
     ///

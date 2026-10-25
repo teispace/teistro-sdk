@@ -43,6 +43,22 @@ use crate::kamboola::{OfficeRules, held};
 const NAVAMSHA_DEG: f64 = 30.0 / 9.0;
 
 /// Where the dark half's waning Moon is counted from and to.
+///
+/// ```
+/// use teistro_tajika::{AnnualSky, KshinaRule, MoonClause, MoonRules, moon_weakness};
+///
+/// // The Moon 280° past the Sun: waning by the gloss's reading, not by "some say".
+/// let sky = AnnualSky {
+///     sun_deg: 220.0, moon_deg: 140.0, mars_deg: 100.0, mercury_deg: 230.0,
+///     jupiter_deg: 10.0, venus_deg: 200.0, saturn_deg: 280.0,
+/// };
+/// let kshina = |kshina| -> Result<bool, teistro_core::error::Error> {
+///     Ok(moon_weakness(&sky, MoonRules { kshina })?.clauses.contains(&MoonClause::Kshina))
+/// };
+/// assert!(kshina(KshinaRule::DarkEighthToBrightEighth)?);
+/// assert!(!kshina(KshinaRule::DarkEleventhToNewMoon)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -59,6 +75,12 @@ pub enum KshinaRule {
 impl KshinaRule {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `DARK_EIGHTH_TO_BRIGHT_EIGHTH`.
+    ///
+    /// ```
+    /// use teistro_tajika::KshinaRule;
+    ///
+    /// assert_eq!(KshinaRule::DarkEleventhToNewMoon.key(), "DARK_ELEVENTH_TO_NEW_MOON");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -77,6 +99,12 @@ impl KshinaRule {
 }
 
 /// The choices the verses leave to a reader.
+///
+/// ```
+/// use teistro_tajika::{KshinaRule, MoonRules};
+///
+/// assert_eq!(MoonRules::default().kshina, KshinaRule::DarkEighthToBrightEighth);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -86,6 +114,24 @@ pub struct MoonRules {
 }
 
 /// A clause of vv. 73–74, in the verses' order.
+///
+/// ```
+/// # use teistro_tajika::{AnnualSky, MoonClause, MoonRules, moon_weakness};
+/// #
+/// # // The Moon at Libra 28°, twelfth from the Sun in Scorpio, Saturn in Capricorn.
+/// # let sky = AnnualSky {
+/// #     sun_deg: 220.0, moon_deg: 208.0, mars_deg: 100.0, mercury_deg: 230.0,
+/// #     jupiter_deg: 10.0, venus_deg: 200.0, saturn_deg: 280.0,
+/// # };
+/// # let weak = moon_weakness(&sky, MoonRules::default())?;
+///
+/// // Twelfth from the Sun, in Libra's last half, waning and at the sign's end.
+/// for clause in [MoonClause::TwelfthFromSun, MoonClause::LibraLastHalf, MoonClause::Kshina, MoonClause::Bhante] {
+///     assert!(weak.clauses.contains(&clause), "{clause:?}");
+/// }
+/// assert!(!weak.clauses.contains(&MoonClause::ScorpioFirstHalf));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "TajikaMoonClause"))]
@@ -116,6 +162,12 @@ pub enum MoonClause {
 impl MoonClause {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `TWELFTH_FROM_SUN`.
+    ///
+    /// ```
+    /// use teistro_tajika::MoonClause;
+    ///
+    /// assert_eq!(MoonClause::HungryAspect.key(), "HUNGRY_ASPECT");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -132,6 +184,13 @@ impl MoonClause {
     }
 
     /// Every clause, in the verses' order.
+    ///
+    /// ```
+    /// use teistro_tajika::MoonClause;
+    ///
+    /// assert_eq!(MoonClause::ALL.len(), 9);
+    /// assert_eq!(MoonClause::ALL.iter().filter(|clause| clause.verse() == 74).count(), 3);
+    /// ```
     pub const ALL: [MoonClause; 9] = [
         MoonClause::TwelfthFromSun,
         MoonClause::ScorpioFirstHalf,
@@ -145,6 +204,13 @@ impl MoonClause {
     ];
 
     /// The verse that states it.
+    ///
+    /// ```
+    /// use teistro_tajika::MoonClause;
+    ///
+    /// assert_eq!(MoonClause::LibraLastHalf.verse(), 73);
+    /// assert_eq!(MoonClause::Kshina.verse(), 74);
+    /// ```
     #[must_use]
     pub const fn verse(self) -> u8 {
         match self {
@@ -155,6 +221,23 @@ impl MoonClause {
 }
 
 /// The clauses of vv. 73–74 that hold for the Moon.
+///
+/// ```
+/// # use teistro_tajika::{AnnualSky, MoonClause, MoonRules, moon_weakness};
+/// #
+/// # // The Moon at Libra 28°, twelfth from the Sun in Scorpio, Saturn in Capricorn.
+/// # let sky = AnnualSky {
+/// #     sun_deg: 220.0, moon_deg: 208.0, mars_deg: 100.0, mercury_deg: 230.0,
+/// #     jupiter_deg: 10.0, venus_deg: 200.0, saturn_deg: 280.0,
+/// # };
+/// # let weak = moon_weakness(&sky, MoonRules::default())?;
+///
+/// assert_eq!(weak.rules, MoonRules::default());
+/// // In the verses' order.
+/// let order = |clause| MoonClause::ALL.iter().position(|one| *one == clause);
+/// assert!(weak.clauses.windows(2).all(|pair| order(pair[0]) < order(pair[1])));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -170,6 +253,29 @@ pub struct MoonWeakness {
 /// An aspect is Tajika's by sign, the conjunction included, as
 /// [`Drishti::between_signs`] reads it, and an enemy's sign is one whose
 /// lord stands to `graha` as [`Relation::Enemy`](crate::bala::Relation::Enemy).
+///
+/// ```
+/// # use teistro_tajika::AnnualSky;
+/// #
+/// # // Charak's Example Chart, the forty-first year's: signs counted from Aries as 0.
+/// # let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+/// # let sky = AnnualSky {
+/// #     sun_deg: at(4.0, 3.0, 50.0),
+/// #     moon_deg: at(1.0, 9.0, 40.0),
+/// #     mars_deg: at(7.0, 7.0, 42.0),
+/// #     mercury_deg: at(4.0, 18.0, 20.0),
+/// #     jupiter_deg: at(8.0, 9.0, 38.0),
+/// #     venus_deg: at(4.0, 21.0, 45.0),
+/// #     saturn_deg: at(6.0, 17.0, 13.0),
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::shunya_marga;
+///
+/// // The Sun in his own Leo is on no empty road.
+/// assert!(!shunya_marga(Graha::Sun, &sky)?);
+/// assert_eq!(shunya_marga(Graha::Ketu, &sky).unwrap_err().field(), Some("graha"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -203,6 +309,23 @@ fn aspected(graha: Graha, sky: &AnnualSky, by: impl Fn(Graha) -> bool) -> bool {
 }
 
 /// The clauses of vv. 73–74 that hold for the Moon of `sky`.
+///
+/// ```
+/// # use teistro_tajika::{AnnualSky, MoonClause, MoonRules, moon_weakness};
+/// #
+/// # // The Moon at Libra 28°, twelfth from the Sun in Scorpio, Saturn in Capricorn.
+/// # let sky = AnnualSky {
+/// #     sun_deg: 220.0, moon_deg: 208.0, mars_deg: 100.0, mercury_deg: 230.0,
+/// #     jupiter_deg: 10.0, venus_deg: 200.0, saturn_deg: 280.0,
+/// # };
+/// # let weak = moon_weakness(&sky, MoonRules::default())?;
+///
+/// // Saturn in the dark half, from the fourth: the hungry aspect.
+/// assert!(weak.clauses.contains(&MoonClause::HungryAspect));
+/// let lost = AnnualSky { moon_deg: f64::NAN, ..sky };
+/// assert!(moon_weakness(&lost, MoonRules::default()).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

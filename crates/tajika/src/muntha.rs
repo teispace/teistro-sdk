@@ -30,9 +30,23 @@ const SIGNS: u16 = 12;
 ///
 /// A sign a year over twelve months. The source gives this figure and the
 /// daily one, and gives them only for timing inside a year.
+///
+/// ```
+/// use teistro_tajika::MONTHLY_DEG;
+///
+/// // 2°30′ a month.
+/// assert_eq!(MONTHLY_DEG, 2.5);
+/// ```
 pub const MONTHLY_DEG: f64 = 30.0 / 12.0;
 
 /// How far the Muntha travels in a day, degrees: five arcminutes.
+///
+/// ```
+/// use teistro_tajika::DAILY_DEG;
+///
+/// // Five minutes of arc a day.
+/// assert!((DAILY_DEG * 60.0 - 5.0).abs() < 1e-12);
+/// ```
 pub const DAILY_DEG: f64 = MONTHLY_DEG / 30.0;
 
 /// Where the Muntha stands inside the sign it has reached (crux C107).
@@ -41,6 +55,17 @@ pub const DAILY_DEG: f64 = MONTHLY_DEG / 30.0;
 /// part over the course of the year, so they differ for a Tajika aspect
 /// taken to the Muntha and for nothing else. The sign — which is all the
 /// house-by-house readings want — is the same either way.
+///
+/// ```
+/// use teistro_tajika::{MunthaDegree, muntha};
+///
+/// // Leo 4°30′ rising, forty years complete: Sagittarius either way.
+/// let start = muntha(124.5, 40, MunthaDegree::SignStart)?;
+/// let carried = muntha(124.5, 40, MunthaDegree::NatalDegree)?;
+/// assert_eq!(start.sign, carried.sign);
+/// assert_eq!((start.longitude_deg, carried.longitude_deg), (240.0, 244.5));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -61,6 +86,17 @@ pub enum MunthaDegree {
 }
 
 /// The Muntha at one annual chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_tajika::{MunthaDegree, muntha};
+///
+/// // At birth the Muntha sits on the lagna, and the lagna's lord is the Munthesha.
+/// let at_birth = muntha(124.5, 0, MunthaDegree::default())?;
+/// assert_eq!((at_birth.completed_years, at_birth.sign, at_birth.lord), (0, Rashi::Leo, Graha::Sun));
+/// assert_eq!(at_birth.degree, MunthaDegree::SignStart);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Muntha {
@@ -92,6 +128,17 @@ impl Muntha {
     /// Outside `0.0..=1.0` it keeps progressing, because a caller
     /// comparing a monthly chart against its year wants the continuation
     /// rather than a refusal.
+    ///
+    /// ```
+    /// use teistro_tajika::{MunthaDegree, muntha};
+    ///
+    /// let start = muntha(124.5, 40, MunthaDegree::SignStart)?;
+    /// assert_eq!(start.during(0.5), 255.0);
+    /// // Carried from the natal degree, a full year runs past the sign's end.
+    /// let carried = muntha(124.5, 40, MunthaDegree::NatalDegree)?;
+    /// assert_eq!(carried.during(1.0), 274.5);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn during(&self, fraction_of_year: f64) -> f64 {
         (self.longitude_deg + 30.0 * fraction_of_year).rem_euclid(360.0)
