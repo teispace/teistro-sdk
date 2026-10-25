@@ -21,6 +21,7 @@ use teistro::Error;
 use teistro::records::Record;
 use teistro_core::envelope::Provenance;
 use teistro_core::settings::{DEFAULT_PROFILE, SHIPPED_PROFILES};
+use teistro_idl::emit::without_rust_examples;
 
 use crate::tools::annotations;
 
@@ -63,36 +64,17 @@ pub(crate) fn with(mut object: Value, key: &str, value: Value) -> Value {
 }
 
 /// A generator writing JSON Schema 2020-12, the revision's dialect, its
-/// definitions under `$defs` at the schema's root, with every description
-/// [`without_examples`].
+/// definitions under `$defs` at the schema's root. Every description is
+/// its doc comment without the Rust examples, which tell a model reading a
+/// tool list nothing about the JSON and cost it the tokens.
 pub(crate) fn generator() -> SchemaGenerator {
     SchemaSettings::draft2020_12()
         .with_transform(RecursiveTransform(|schema: &mut Schema| {
             if let Some(Value::String(text)) = schema.get_mut("description") {
-                *text = without_examples(text);
+                *text = without_rust_examples(text);
             }
         }))
         .into_generator()
-}
-
-/// A doc comment as a description: its fenced blocks left out. They are
-/// the Rust examples rustdoc runs as doctests, which tell a model reading
-/// a tool list nothing about the JSON and cost it the tokens.
-fn without_examples(doc: &str) -> String {
-    let mut kept: Vec<&str> = Vec::new();
-    let mut fenced = false;
-    for line in doc.lines() {
-        let blank = line.trim().is_empty();
-        if line.trim_start().starts_with("```") {
-            fenced = !fenced;
-        } else if !fenced && (!blank || kept.last().is_some_and(|last| !last.trim().is_empty())) {
-            kept.push(line);
-        }
-    }
-    while kept.last().is_some_and(|last| last.trim().is_empty()) {
-        kept.pop();
-    }
-    kept.join("\n")
 }
 
 /// A schema whose references point into `generator`'s definitions, made

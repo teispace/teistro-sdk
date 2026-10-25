@@ -13,6 +13,7 @@
 
 use serde_json::{Value, json};
 use teistro::{Context, Ephemeris};
+use teistro_idl::emit::without_rust_examples;
 use teistro_mcp::{Adapter, Detail, Engine, Server};
 
 /// The engine passthrough's tools ask an engine with operations of its
@@ -465,18 +466,28 @@ fn every_tool_states_its_schemas_and_the_unstated_parts_are_exactly_these() {
     assert_eq!(unstated, Vec::<String>::new());
 }
 
-/// A description is the doc comment without its Rust examples: no schema
-/// in the full list carries a fence, though the types' doc comments do.
+/// A description is the doc comment without its Rust examples: every one
+/// in the full list is already what dropping them would leave, though
+/// the types' doc comments carry doctests.
 #[test]
 fn no_schema_carries_a_doctest() {
+    fn walk(value: &Value, tool: &str) {
+        match value {
+            Value::Object(fields) => {
+                for (key, inner) in fields {
+                    if let ("description", Value::String(text)) = (key.as_str(), inner) {
+                        assert_eq!(*text, without_rust_examples(text), "{tool}");
+                    }
+                    walk(inner, tool);
+                }
+            }
+            Value::Array(items) => items.iter().for_each(|item| walk(item, tool)),
+            _ => {}
+        }
+    }
     let tools = listed(&mut Server::new(Engine::Builtin).with_detail(Detail::Full));
     for tool in &tools {
-        let text = tool.to_string();
-        assert!(
-            !text.contains("```"),
-            "{} carries a fenced block",
-            tool["name"]
-        );
+        walk(tool, tool["name"].as_str().unwrap());
     }
 }
 
