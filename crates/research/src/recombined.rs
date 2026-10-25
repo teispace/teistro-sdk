@@ -20,9 +20,34 @@ use crate::{
 };
 
 /// The most replicates one study may refound.
+///
+/// ```
+/// # use teistro_research::{Alternative, GroupCount, ReplicateTest, replicated};
+/// #
+/// # // A sample of 100 in which the predicate holds 30 times, against 99
+/// # // replicates in which it holds 10 to 20 times.
+/// # let names = [String::from("holds")];
+/// # let observed = [GroupCount { present: 30, absent: 70, ..GroupCount::default() }];
+/// # let replicates: Vec<Vec<(u32, u32)>> = (0..99).map(|k| vec![(10 + k % 11, 100)]).collect();
+/// # let test = ReplicateTest { alternative: Alternative::Greater, ..ReplicateTest::default() };
+///
+/// use teistro_research::MAX_REPLICATES;
+///
+/// let many = vec![vec![(10, 100)]; MAX_REPLICATES as usize + 1];
+/// assert_eq!(replicated(&names, &observed, &many, &test).unwrap_err().field(), Some("replicates"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const MAX_REPLICATES: u32 = 100_000;
 
 /// How a sample's observed counts are read against its replicates.
+///
+/// ```
+/// use teistro_research::{Alternative, ReplicateTest};
+///
+/// let test: ReplicateTest = serde_json::from_str(r#"{"alternative": "GREATER"}"#)?;
+/// assert_eq!((test.alternative, test.level, test.alpha), (Alternative::Greater, 0.95, None));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -164,6 +189,25 @@ impl Permuted for Replicas<'_> {
 /// Reads a sample's counts against its recombined replicates: one name
 /// and one observed count per predicate, and per replicate each
 /// predicate's `(present, read)`.
+///
+/// ```
+/// # use teistro_research::{Alternative, GroupCount, ReplicateTest, replicated};
+/// #
+/// # // A sample of 100 in which the predicate holds 30 times, against 99
+/// # // replicates in which it holds 10 to 20 times.
+/// # let names = [String::from("holds")];
+/// # let observed = [GroupCount { present: 30, absent: 70, ..GroupCount::default() }];
+/// # let replicates: Vec<Vec<(u32, u32)>> = (0..99).map(|k| vec![(10 + k % 11, 100)]).collect();
+/// # let test = ReplicateTest { alternative: Alternative::Greater, ..ReplicateTest::default() };
+///
+/// // Beyond all 99: the rank's smallest p, 1/100.
+/// let tested = replicated(&names, &observed, &replicates, &test)?;
+/// let row = &tested.rows[0];
+/// assert_eq!(row.p.value, 1.0 / 100.0);
+/// let expected = row.expected.ok_or_else(|| teistro_core::error::Error::internal("expected"))?;
+/// assert!(expected.observed == 0.3 && expected.expected < 0.2);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

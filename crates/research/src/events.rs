@@ -18,11 +18,25 @@ use crate::{Alternative, Expectation, GroupCount, Parallelism, PredicateRow, Tes
 
 /// The most subjects an event study may have: its matrices are `N²`
 /// bits a predicate.
+///
+/// ```
+/// use teistro_research::{MAX_SUBJECTS, PairMatrix};
+///
+/// assert_eq!(PairMatrix::new(MAX_SUBJECTS + 1).unwrap_err().field(), Some("subjects"));
+/// ```
 pub const MAX_SUBJECTS: usize = 20_000;
 
 /// The most instants an event study reads the sky at, unless its test
 /// raises the cap ([`EventTest::max_pairs`]): a transit rule is read at
 /// every pairing's instant, `N²` of them under the age shuffle.
+///
+/// ```
+/// use teistro_research::{DEFAULT_MAX_PAIRS, EventTest};
+///
+/// // A thousand subjects under the age shuffle.
+/// assert_eq!(EventTest::new(7, 999).max_pairs, DEFAULT_MAX_PAIRS);
+/// assert_eq!(DEFAULT_MAX_PAIRS, 1_000 * 1_000);
+/// ```
 pub const DEFAULT_MAX_PAIRS: u64 = 1_000_000;
 
 const fn default_max_pairs() -> u64 {
@@ -40,10 +54,38 @@ const fn is_default_max_pairs(cap: &u64) -> bool {
 /// The most attempts one permutation may make to draw a pairing that puts
 /// no event before its birth, under [`AfterBirth::RestrictPairings`] and
 /// `research/shuffle/1`, which draws by rejection.
+///
+/// ```
+/// use teistro_research::{MAX_ATTEMPTS, ShuffleVersion};
+///
+/// // Only the first shuffle draws by rejection, so only it can run out.
+/// assert_eq!(MAX_ATTEMPTS, 10_000);
+/// assert!(!ShuffleVersion::V1.exact_pairing());
+/// ```
 pub const MAX_ATTEMPTS: u32 = 10_000;
 
 /// What a pair a permutation may not make is: an event placed before the
 /// birth it is paired with.
+///
+/// ```
+/// # use teistro_research::{Alternative, Cell, EventTest, PairMatrix, timed};
+/// #
+/// # // Four subjects; the predicate holds for each at its own event and never
+/// # // at another's. Four events pair four subjects 24 ways.
+/// # let mut matrix = PairMatrix::new(4)?;
+/// # matrix.push("at own event", |subject, event| if subject == event { Cell::Present } else { Cell::Absent })?;
+/// # let test = EventTest { alternative: Alternative::Greater, ..EventTest::new(7, 9_999) };
+///
+/// use teistro_research::AfterBirth;
+///
+/// // An event before subject 0's birth: refused, unless the pairings are restricted.
+/// let mut late = matrix.clone();
+/// late.forbid(0, 1);
+/// assert_eq!(timed(&late, None, &test).unwrap_err().field(), Some("afterBirth"));
+/// let restricted = EventTest { after_birth: AfterBirth::RestrictPairings, ..test };
+/// assert!(timed(&late, None, &restricted).is_ok());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -69,6 +111,20 @@ pub(crate) struct PairColumn {
 }
 
 /// The study's predicates over subjects by events, built once.
+///
+/// ```
+/// # use teistro_research::{Alternative, Cell, EventTest, PairMatrix, timed};
+/// #
+/// # // Four subjects; the predicate holds for each at its own event and never
+/// # // at another's. Four events pair four subjects 24 ways.
+/// # let mut matrix = PairMatrix::new(4)?;
+/// # matrix.push("at own event", |subject, event| if subject == event { Cell::Present } else { Cell::Absent })?;
+/// # let test = EventTest { alternative: Alternative::Greater, ..EventTest::new(7, 9_999) };
+///
+/// assert_eq!(matrix.subjects(), 4);
+/// assert!(!matrix.restricted());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug)]
 pub struct PairMatrix {
     subjects: usize,
@@ -82,6 +138,14 @@ use crate::bits::Cell;
 
 impl PairMatrix {
     /// A matrix over `subjects` subjects, every pairing allowed.
+    ///
+    /// ```
+    /// use teistro_research::PairMatrix;
+    ///
+    /// assert!(PairMatrix::new(2)?.allows(1, 0));
+    /// assert_eq!(PairMatrix::new(1).unwrap_err().field(), Some("subjects"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -106,6 +170,13 @@ impl PairMatrix {
     }
 
     /// The study's size.
+    ///
+    /// ```
+    /// use teistro_research::PairMatrix;
+    ///
+    /// assert_eq!(PairMatrix::new(5)?.subjects(), 5);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn subjects(&self) -> usize {
         self.subjects
@@ -113,6 +184,17 @@ impl PairMatrix {
 
     /// Forbids pairing subject `subject` with event `event`, because the
     /// event would come before the birth.
+    ///
+    /// ```
+    /// use teistro_research::PairMatrix;
+    ///
+    /// let mut matrix = PairMatrix::new(3)?;
+    /// matrix.forbid(2, 0);
+    /// assert!(!matrix.allows(2, 0) && matrix.allows(0, 2));
+    /// // Out of range changes nothing.
+    /// matrix.forbid(9, 9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn forbid(&mut self, subject: usize, event: usize) {
         if subject < self.subjects && event < self.subjects {
             self.allowed.remove(subject * self.subjects + event);
@@ -121,6 +203,15 @@ impl PairMatrix {
 
     /// Whether a permutation may pair subject `subject` with event
     /// `event`.
+    ///
+    /// ```
+    /// use teistro_research::PairMatrix;
+    ///
+    /// let matrix = PairMatrix::new(3)?;
+    /// assert!(matrix.allows(2, 2));
+    /// assert!(!matrix.allows(3, 0));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn allows(&self, subject: usize, event: usize) -> bool {
         subject < self.subjects
@@ -129,6 +220,16 @@ impl PairMatrix {
     }
 
     /// Whether any pairing is forbidden.
+    ///
+    /// ```
+    /// use teistro_research::PairMatrix;
+    ///
+    /// let mut matrix = PairMatrix::new(3)?;
+    /// assert!(!matrix.restricted());
+    /// matrix.forbid(1, 2);
+    /// assert!(matrix.restricted());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn restricted(&self) -> bool {
         self.allowed.count() as usize != self.subjects * self.subjects
@@ -136,6 +237,15 @@ impl PairMatrix {
 
     /// Adds a predicate under `name`: `cell(i, j)` says what it is for
     /// subject `i` at event `j`.
+    ///
+    /// ```
+    /// use teistro_research::{Cell, PairMatrix};
+    ///
+    /// let mut matrix = PairMatrix::new(2)?;
+    /// matrix.push("transit", |_, _| Cell::Absent)?;
+    /// assert_eq!(matrix.push("transit", |_, _| Cell::Present).unwrap_err().field(), Some("predicates[1]"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -178,6 +288,14 @@ impl PairMatrix {
 }
 
 /// A test of events against the shuffled-event null.
+///
+/// ```
+/// use teistro_research::{AfterBirth, EventTest};
+///
+/// let asked: EventTest = serde_json::from_str(r#"{"seed": 7, "permutations": 999, "afterBirth": "RESTRICT_PAIRINGS"}"#)?;
+/// assert_eq!(asked, EventTest { after_birth: AfterBirth::RestrictPairings, ..EventTest::new(7, 999) });
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -219,6 +337,13 @@ pub struct EventTest {
 
 impl EventTest {
     /// A two-sided test over `permutations` permutations from `seed`.
+    ///
+    /// ```
+    /// use teistro_research::{AfterBirth, Alternative, EventTest};
+    ///
+    /// let test = EventTest::new(7, 999);
+    /// assert_eq!((test.alternative, test.after_birth, test.level), (Alternative::TwoSided, AfterBirth::Refuse, 0.95));
+    /// ```
     #[must_use]
     pub fn new(seed: u64, permutations: u32) -> EventTest {
         EventTest {
@@ -532,6 +657,22 @@ fn diagonal_row(
 /// Tests whether each predicate holds at the subjects' own events more
 /// (or less) often than at events shuffled among them, the shuffle inside
 /// `strata` when they are given (`research.md` §1.4).
+///
+/// ```
+/// # use teistro_research::{Alternative, Cell, EventTest, PairMatrix, timed};
+/// #
+/// # // Four subjects; the predicate holds for each at its own event and never
+/// # // at another's. Four events pair four subjects 24 ways.
+/// # let mut matrix = PairMatrix::new(4)?;
+/// # matrix.push("at own event", |subject, event| if subject == event { Cell::Present } else { Cell::Absent })?;
+/// # let test = EventTest { alternative: Alternative::Greater, ..EventTest::new(7, 9_999) };
+///
+/// // Only the identity pairs all four with their own: 1 of the 24.
+/// let tested = timed(&matrix, None, &test)?;
+/// assert!(tested.enumerated);
+/// assert_eq!((tested.permutations, tested.rows[0].p.value), (24, 1.0 / 24.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

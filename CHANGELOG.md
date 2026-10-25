@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`teistro-research` has a run example on every public item.**
+**Numbers:** none. Its 44 items join the crates `check-doc-examples`
+holds there, thirty-four in all. The studies are small enough to check by
+hand: four cases of five against one of ten charts gives 52 of the 252
+choices two-sided and 26 one-sided, four subjects each at its own
+event 1 of the 24 pairings, and four self-matched subjects 1 of the 81
+placements; the generator is held to SplitMix64's published sequence
+from a zero seed.
+
 **`teistro-panchanga` has a run example on every public item.**
 **Numbers:** none. Its 226 items join the crates `check-doc-examples`
 holds there, thirty-three in all. The almanac's examples read Wednesday

@@ -112,6 +112,17 @@ impl Bits {
 }
 
 /// What one predicate said of one chart.
+///
+/// ```
+/// use teistro_research::{Cell, Matrix};
+///
+/// // An unreadable chart leaves the denominator; it is not absent.
+/// let mut matrix = Matrix::new(3);
+/// matrix.push("lagna", &[Cell::Present, Cell::Unreadable, Cell::Unstable])?;
+/// let tally = matrix.tallies()[0];
+/// assert_eq!((tally.present, tally.absent, tally.unreadable, tally.unstable), (1, 0, 1, 1));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -184,6 +195,13 @@ impl Matrix {
     }
 
     /// A matrix over `charts` charts with no predicate yet.
+    ///
+    /// ```
+    /// use teistro_research::Matrix;
+    ///
+    /// let matrix = Matrix::new(12);
+    /// assert_eq!((matrix.charts(), matrix.predicates()), (12, 0));
+    /// ```
     #[must_use]
     pub fn new(charts: usize) -> Matrix {
         Matrix {
@@ -193,12 +211,28 @@ impl Matrix {
     }
 
     /// The batch's size.
+    ///
+    /// ```
+    /// use teistro_research::Matrix;
+    ///
+    /// assert_eq!(Matrix::new(3).charts(), 3);
+    /// ```
     #[must_use]
     pub const fn charts(&self) -> usize {
         self.charts
     }
 
     /// How many predicates have been added.
+    ///
+    /// ```
+    /// use teistro_research::{Cell, Matrix};
+    ///
+    /// let mut matrix = Matrix::new(2);
+    /// matrix.push("one", &[Cell::Present, Cell::Absent])?;
+    /// matrix.push("two", &[Cell::Absent, Cell::Absent])?;
+    /// assert_eq!(matrix.predicates(), 2);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn predicates(&self) -> usize {
         self.columns.len()
@@ -206,6 +240,17 @@ impl Matrix {
 
     /// Adds one predicate's column under `name`, a cell per chart in the
     /// batch's order.
+    ///
+    /// ```
+    /// use teistro_research::{Cell, Matrix};
+    ///
+    /// let mut matrix = Matrix::new(2);
+    /// matrix.push("one", &[Cell::Present, Cell::Absent])?;
+    /// // A name given twice, and a column not one cell per chart, are refused.
+    /// assert_eq!(matrix.push("one", &[Cell::Absent, Cell::Absent]).unwrap_err().field(), Some("predicates[1]"));
+    /// assert!(matrix.push("two", &[Cell::Absent]).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///

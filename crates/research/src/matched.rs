@@ -19,6 +19,13 @@ use crate::rng::{Digits, Draw, SplitMix64};
 use crate::{Alternative, Expectation, GroupCount, PredicateRow, Tested, special};
 
 /// The most instants one subject may be read at, its event included.
+///
+/// ```
+/// use teistro_research::{MAX_INSTANTS, MatchedMatrix};
+///
+/// assert_eq!(MatchedMatrix::new(&[MAX_INSTANTS + 1, 2]).unwrap_err().field(), Some("subjects[0]"));
+/// assert!(MatchedMatrix::new(&[MAX_INSTANTS, 2]).is_ok());
+/// ```
 pub const MAX_INSTANTS: u16 = 1_000;
 
 /// The most subjects whose exposure varies across their instants for
@@ -35,6 +42,19 @@ struct MatchedColumn {
 
 /// The study's predicates over each subject's instants, the event first,
 /// built once.
+///
+/// ```
+/// # use teistro_research::{Alternative, Cell, EventTest, MatchedMatrix, matched};
+/// #
+/// # // Four subjects, each read at its event and two referents; the predicate
+/// # // holds at every event and no referent. 3⁴ = 81 placements of the events.
+/// # let mut matrix = MatchedMatrix::new(&[3, 3, 3, 3])?;
+/// # matrix.push("at the event", |_, instant| if instant == 0 { Cell::Present } else { Cell::Absent })?;
+/// # let test = EventTest { alternative: Alternative::Greater, ..EventTest::new(7, 9_999) };
+///
+/// assert_eq!(matrix.subjects(), 4);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug)]
 pub struct MatchedMatrix {
     /// How many instants each subject is read at.
@@ -48,6 +68,14 @@ pub struct MatchedMatrix {
 impl MatchedMatrix {
     /// A matrix over subjects read at `instants[i]` instants each, the
     /// event the first of them.
+    ///
+    /// ```
+    /// use teistro_research::MatchedMatrix;
+    ///
+    /// // A subject with no instant has no event.
+    /// assert_eq!(MatchedMatrix::new(&[3, 0]).unwrap_err().field(), Some("subjects[1]"));
+    /// assert_eq!(MatchedMatrix::new(&[3]).unwrap_err().field(), Some("subjects"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -84,6 +112,13 @@ impl MatchedMatrix {
     }
 
     /// The study's size.
+    ///
+    /// ```
+    /// use teistro_research::MatchedMatrix;
+    ///
+    /// assert_eq!(MatchedMatrix::new(&[2, 5, 3])?.subjects(), 3);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn subjects(&self) -> usize {
         self.instants.len()
@@ -91,6 +126,15 @@ impl MatchedMatrix {
 
     /// Adds a predicate under `name`: `cell(i, k)` says what it is for
     /// subject `i` at its instant `k`, the event at `k = 0`.
+    ///
+    /// ```
+    /// use teistro_research::{Cell, MatchedMatrix};
+    ///
+    /// let mut matrix = MatchedMatrix::new(&[2, 2])?;
+    /// matrix.push("eclipse", |subject, instant| if subject == instant { Cell::Present } else { Cell::Absent })?;
+    /// assert!(matrix.push("eclipse", |_, _| Cell::Absent).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -376,6 +420,24 @@ fn row(
 /// subject a stratum of one event, the statistic is the
 /// Cochran–Mantel–Haenszel statistic over subjects, which conditional
 /// logistic regression's score test reduces to.
+///
+/// ```
+/// # use teistro_research::{Alternative, Cell, EventTest, MatchedMatrix, matched};
+/// #
+/// # // Four subjects, each read at its event and two referents; the predicate
+/// # // holds at every event and no referent. 3⁴ = 81 placements of the events.
+/// # let mut matrix = MatchedMatrix::new(&[3, 3, 3, 3])?;
+/// # matrix.push("at the event", |_, instant| if instant == 0 { Cell::Present } else { Cell::Absent })?;
+/// # let test = EventTest { alternative: Alternative::Greater, ..EventTest::new(7, 9_999) };
+///
+/// // Only the observed placement puts all four events where it holds.
+/// let tested = matched(&matrix, &test)?;
+/// assert!(tested.enumerated);
+/// assert_eq!((tested.permutations, tested.rows[0].p.value), (81, 1.0 / 81.0));
+/// let expected = tested.rows[0].expected.ok_or_else(|| teistro_core::error::Error::internal("expected"))?;
+/// assert!((expected.expected - 1.0 / 3.0).abs() < 1e-12);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
