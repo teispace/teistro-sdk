@@ -23,6 +23,30 @@ use crate::dignity::CHALDEAN_ORDER;
 /// Whether a line is a fortitude or a debility, and its worth, is the
 /// [`AccidentalScores`]' to say; orientality is a fortitude for Saturn,
 /// Jupiter and Mars and a debility for Venus and Mercury.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_hellenistic::{Accident, AccidentalRules, AccidentalScores, AccidentalSky, accidental_dignities};
+///
+/// // Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon.
+/// let longitudes = [200.0, 100.0, 300.0, 15.5, 15.42, 40.0, 130.0];
+/// let sky = AccidentalSky {
+///     speeds_deg_per_day: [0.1, 0.1, 0.6, 1.0, 1.2, 1.5, 13.0],
+///     houses: HouseSystem::Equal,
+///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+///     ascendant_deg: 0.0,
+///     midheaven_deg: 270.0,
+///     north_node_deg: 250.0,
+///     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// };
+/// let read = accidental_dignities(&longitudes, &sky, &AccidentalRules::LILLY, &AccidentalScores::LILLY)?;
+/// // Mars at 300°, behind the Sun in longitude: he rises before him.
+/// let mars = &read[2];
+/// assert!(mars.accidents.contains(&Accident::Oriental) && mars.accidents.contains(&Accident::Direct));
+/// // The luminaries are never direct or retrograde.
+/// assert!(!read[3].accidents.contains(&Accident::Direct));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -81,6 +105,35 @@ pub enum Accident {
 }
 
 /// When two planets are in partile aspect (crux C216).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_hellenistic::{Accident, AccidentalRules, AccidentalScores, AccidentalSky, accidental_dignities};
+///
+/// // Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon.
+/// let longitudes = [200.0, 100.0, 300.0, 15.5, 15.42, 40.0, 130.0];
+/// let sky = AccidentalSky {
+///     speeds_deg_per_day: [0.1, 0.1, 0.6, 1.0, 1.2, 1.5, 13.0],
+///     houses: HouseSystem::Equal,
+///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+///     ascendant_deg: 0.0,
+///     midheaven_deg: 270.0,
+///     north_node_deg: 250.0,
+///     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// };
+/// use teistro_hellenistic::Partile;
+///
+/// // The Moon at 9°30′ Scorpio, 119.5° from Jupiter at 10° Cancer: not the same
+/// // degree, but within a degree of the trine.
+/// let mut longitudes = longitudes;
+/// longitudes[6] = 219.5;
+/// let trine = |rules: &AccidentalRules| -> Result<bool, teistro_core::error::Error> {
+///     Ok(accidental_dignities(&longitudes, &sky, rules, &AccidentalScores::LILLY)?[6].accidents.contains(&Accident::TrineBenefic))
+/// };
+/// assert!(!trine(&AccidentalRules::LILLY)?);
+/// assert!(trine(&AccidentalRules::LILLY.with_partile(Partile::Within { orb_deg: 1.0 }))?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE", rename_all_fields = "camelCase")]
@@ -98,6 +151,34 @@ pub enum Partile {
 }
 
 /// When a planet is besieged by Saturn and Mars (crux C215).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_hellenistic::{Accident, AccidentalRules, AccidentalScores, AccidentalSky, accidental_dignities};
+///
+/// // Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon.
+/// let longitudes = [200.0, 100.0, 300.0, 15.5, 15.42, 40.0, 130.0];
+/// let sky = AccidentalSky {
+///     speeds_deg_per_day: [0.1, 0.1, 0.6, 1.0, 1.2, 1.5, 13.0],
+///     houses: HouseSystem::Equal,
+///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+///     ascendant_deg: 0.0,
+///     midheaven_deg: 270.0,
+///     north_node_deg: 250.0,
+///     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// };
+/// use teistro_hellenistic::Siege;
+///
+/// // Lilly's p. 114: Saturn at 15° Aries, Mars at 10°, Venus at 13° between them.
+/// let longitudes = [15.0, 100.0, 10.0, 30.0, 13.0, 40.0, 130.0];
+/// let besieged = |rules: &AccidentalRules| -> Result<bool, teistro_core::error::Error> {
+///     Ok(accidental_dignities(&longitudes, &sky, rules, &AccidentalScores::LILLY)?[4].accidents.contains(&Accident::Besieged))
+/// };
+/// assert!(besieged(&AccidentalRules::LILLY)?);
+/// // Saturn and Mars 5° apart: wider than a 4° span.
+/// assert!(!besieged(&AccidentalRules::LILLY.with_siege(Siege::Within { span_deg: 4.0 }))?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE", rename_all_fields = "camelCase")]
@@ -117,6 +198,13 @@ pub enum Siege {
 /// The orbs and limits the accidental fortitudes are read with.
 ///
 /// [`AccidentalRules::LILLY`] is Lilly's text; every field is a knob.
+///
+/// ```
+/// use teistro_hellenistic::AccidentalRules;
+///
+/// assert_eq!(AccidentalRules::default(), AccidentalRules::LILLY);
+/// assert!(AccidentalRules::LILLY.combustion_in_sign);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -167,6 +255,15 @@ impl AccidentalRules {
     /// besieged in one sign; and his mean motions, Saturn 2′01″, Jupiter
     /// 4′59″, Mars 31′27″, the Sun, Venus and Mercury 59′08″, the Moon
     /// 13°10′36″.
+    ///
+    /// ```
+    /// use teistro_hellenistic::AccidentalRules;
+    ///
+    /// let lilly = AccidentalRules::LILLY;
+    /// assert_eq!((lilly.combustion_deg, lilly.beams_deg, lilly.cusp_orb_deg), (8.5, 17.0, 5.0));
+    /// // The Moon's mean motion, 13°10′36″.
+    /// assert!((lilly.mean_motion_deg[6] - (13.0 + 10.0 / 60.0 + 36.0 / 3600.0)).abs() < 1e-12);
+    /// ```
     pub const LILLY: AccidentalRules = AccidentalRules {
         combustion_deg: 8.5,
         combustion_in_sign: true,
@@ -188,6 +285,34 @@ impl AccidentalRules {
     };
 
     /// The same rules, the five-degree rule set aside or widened.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_hellenistic::{Accident, AccidentalRules, AccidentalScores, AccidentalSky, accidental_dignities};
+    ///
+    /// // Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon.
+    /// let longitudes = [200.0, 100.0, 300.0, 15.5, 15.42, 40.0, 130.0];
+    /// let sky = AccidentalSky {
+    ///     speeds_deg_per_day: [0.1, 0.1, 0.6, 1.0, 1.2, 1.5, 13.0],
+    ///     houses: HouseSystem::Equal,
+    ///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    ///     ascendant_deg: 0.0,
+    ///     midheaven_deg: 270.0,
+    ///     north_node_deg: 250.0,
+    ///     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// };
+    /// // The Moon 2° before the fifth cusp: in the fifth by the five-degree rule,
+    /// // in the fourth by the cusps alone.
+    /// let mut longitudes = longitudes;
+    /// longitudes[6] = 118.0;
+    /// let house = |rules: &AccidentalRules| -> Result<u8, teistro_core::error::Error> {
+    ///     Ok(accidental_dignities(&longitudes, &sky, rules, &AccidentalScores::LILLY)?[6].house.get())
+    /// };
+    /// assert_eq!(house(&AccidentalRules::LILLY)?, 5);
+    /// assert_eq!(house(&AccidentalRules::LILLY.with_cusp_orb(0.0))?, 4);
+    /// # let _ = Graha::Moon;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_cusp_orb(mut self, cusp_orb_deg: f64) -> AccidentalRules {
         self.cusp_orb_deg = cusp_orb_deg;
@@ -196,6 +321,29 @@ impl AccidentalRules {
 
     /// The same rules, with the Sun's orbs changed: combustion, beams and
     /// cazimi, in degrees.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_hellenistic::{Accident, AccidentalRules, AccidentalScores, AccidentalSky, accidental_dignities};
+    ///
+    /// // Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon.
+    /// let longitudes = [200.0, 100.0, 300.0, 15.5, 15.42, 40.0, 130.0];
+    /// let sky = AccidentalSky {
+    ///     speeds_deg_per_day: [0.1, 0.1, 0.6, 1.0, 1.2, 1.5, 13.0],
+    ///     houses: HouseSystem::Equal,
+    ///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    ///     ascendant_deg: 0.0,
+    ///     midheaven_deg: 270.0,
+    ///     north_node_deg: 250.0,
+    ///     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// };
+    /// // Venus 0.08° from the Sun: in cazimi under Lilly's 17′, combust with none.
+    /// let no_cazimi = AccidentalRules::LILLY.with_solar_orbs(8.5, 17.0, 0.0);
+    /// let venus = &accidental_dignities(&longitudes, &sky, &no_cazimi, &AccidentalScores::LILLY)?[4];
+    /// assert_eq!(venus.planet, Graha::Venus);
+    /// assert!(venus.accidents.contains(&Accident::Combust));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_solar_orbs(
         mut self,
@@ -210,6 +358,13 @@ impl AccidentalRules {
     }
 
     /// The same rules, partile read otherwise.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AccidentalRules, Partile};
+    ///
+    /// let wide = AccidentalRules::LILLY.with_partile(Partile::Within { orb_deg: 1.0 });
+    /// assert_eq!(wide.partile, Partile::Within { orb_deg: 1.0 });
+    /// ```
     #[must_use]
     pub const fn with_partile(mut self, partile: Partile) -> AccidentalRules {
         self.partile = partile;
@@ -217,6 +372,13 @@ impl AccidentalRules {
     }
 
     /// The same rules, besieging read otherwise.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AccidentalRules, Siege};
+    ///
+    /// let wide = AccidentalRules::LILLY.with_siege(Siege::Within { span_deg: 30.0 });
+    /// assert_eq!(wide.siege, Siege::Within { span_deg: 30.0 });
+    /// ```
     #[must_use]
     pub const fn with_siege(mut self, siege: Siege) -> AccidentalRules {
         self.siege = siege;
@@ -265,6 +427,16 @@ impl AccidentalRules {
 
 /// What each of Lilly's lines is worth: positive for a fortitude,
 /// negative for a debility.
+///
+/// ```
+/// use teistro_hellenistic::AccidentalScores;
+///
+/// assert_eq!(AccidentalScores::default(), AccidentalScores::LILLY);
+/// // A record that names some lines takes the rest from Lilly's.
+/// let asked: AccidentalScores = serde_json::from_str(r#"{"retrograde": -4}"#)?;
+/// assert_eq!((asked.retrograde, asked.direct), (-4, 4));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -314,6 +486,14 @@ impl AccidentalScores {
     /// Lilly's table (p. 115): the Midheaven or Ascendant 5, the 7th, 4th
     /// and 11th 4, the 2nd and 5th 3, the 9th 2, the 3rd 1, the 12th −5, the
     /// 8th and 6th −2; and each line as printed.
+    ///
+    /// ```
+    /// use teistro_hellenistic::AccidentalScores;
+    ///
+    /// // The angles 5, the twelfth −5.
+    /// let houses = AccidentalScores::LILLY.houses;
+    /// assert_eq!((houses[0], houses[9], houses[11]), (5, 5, -5));
+    /// ```
     pub const LILLY: AccidentalScores = AccidentalScores {
         houses: [5, 3, 1, 4, 3, -2, 4, -2, 2, 5, 4, -5],
         direct: 4,
@@ -345,6 +525,15 @@ impl AccidentalScores {
     };
 
     /// What a house is worth.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    /// use teistro_hellenistic::AccidentalScores;
+    ///
+    /// assert_eq!(AccidentalScores::LILLY.house(House::try_new(7)?), 4);
+    /// assert_eq!(AccidentalScores::LILLY.house(House::try_new(8)?), -2);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn house(&self, house: House) -> i8 {
         self.houses
@@ -354,6 +543,15 @@ impl AccidentalScores {
     }
 
     /// What a line is worth to a planet.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{Accident, AccidentalScores};
+    ///
+    /// // Oriental strengthens the superiors and weakens Venus and Mercury.
+    /// assert_eq!(AccidentalScores::LILLY.points(Graha::Mars, Accident::Oriental), 2);
+    /// assert_eq!(AccidentalScores::LILLY.points(Graha::Venus, Accident::Oriental), -2);
+    /// ```
     #[must_use]
     pub const fn points(&self, planet: Graha, accident: Accident) -> i8 {
         let superior = matches!(planet, Graha::Saturn | Graha::Jupiter | Graha::Mars);
@@ -398,6 +596,30 @@ struct Motion {
 /// What a chart's accidental fortitudes are read from beside the seven's
 /// longitudes: how they move, the houses, the Nodes and three stars, all
 /// in the chart's zodiac.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_hellenistic::{Accident, AccidentalRules, AccidentalScores, AccidentalSky, accidental_dignities};
+///
+/// // Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon.
+/// let longitudes = [200.0, 100.0, 300.0, 15.5, 15.42, 40.0, 130.0];
+/// let sky = AccidentalSky {
+///     speeds_deg_per_day: [0.1, 0.1, 0.6, 1.0, 1.2, 1.5, 13.0],
+///     houses: HouseSystem::Equal,
+///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+///     ascendant_deg: 0.0,
+///     midheaven_deg: 270.0,
+///     north_node_deg: 250.0,
+///     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// };
+/// // A cusp that is not a number is refused by its place.
+/// let mut broken = sky;
+/// broken.cusps_deg[3] = f64::NAN;
+/// let refused = accidental_dignities(&longitudes, &broken, &AccidentalRules::LILLY, &AccidentalScores::LILLY).unwrap_err();
+/// assert_eq!(refused.field(), Some("cuspsDeg.4"));
+/// # let _ = (Graha::Sun, Accident::Direct);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -426,6 +648,30 @@ pub struct AccidentalSky {
 }
 
 /// One planet's accidental fortitudes and debilities.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_hellenistic::{Accident, AccidentalRules, AccidentalScores, AccidentalSky, accidental_dignities};
+///
+/// // Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon.
+/// let longitudes = [200.0, 100.0, 300.0, 15.5, 15.42, 40.0, 130.0];
+/// let sky = AccidentalSky {
+///     speeds_deg_per_day: [0.1, 0.1, 0.6, 1.0, 1.2, 1.5, 13.0],
+///     houses: HouseSystem::Equal,
+///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+///     ascendant_deg: 0.0,
+///     midheaven_deg: 270.0,
+///     north_node_deg: 250.0,
+///     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// };
+/// let read = accidental_dignities(&longitudes, &sky, &AccidentalRules::LILLY, &AccidentalScores::LILLY)?;
+/// // Mercury at 10° Taurus, in the second house: 3.
+/// let mercury = &read[5];
+/// assert_eq!((mercury.planet, mercury.house.get()), (Graha::Mercury, 2));
+/// assert!(mercury.fortitude >= 3);
+/// # let _ = Accident::Direct;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

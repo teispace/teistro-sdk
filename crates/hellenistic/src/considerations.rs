@@ -35,6 +35,14 @@ use crate::fortitude::Fortitudes;
 const SIGN_DEG: f64 = 30.0;
 
 /// A planet's nature, its two qualities (each planet's own chapter).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::Temperament;
+///
+/// assert_eq!(Temperament::of(Graha::Saturn), Some(Temperament::ColdDry));
+/// assert_eq!(Temperament::of(Graha::Saturn), Temperament::of(Graha::Mercury));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -52,6 +60,14 @@ pub enum Temperament {
 
 impl Temperament {
     /// A planet's nature as Lilly gives it; `None` outside the seven.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::Temperament;
+    ///
+    /// assert_eq!(Temperament::of(Graha::Jupiter), Some(Temperament::HotMoist));
+    /// assert_eq!(Temperament::of(Graha::Rahu), None);
+    /// ```
     #[must_use]
     pub const fn of(planet: Graha) -> Option<Temperament> {
         match planet {
@@ -67,6 +83,14 @@ impl Temperament {
 /// Why a figure is radical: the lord of the hour and the lord of the
 /// Ascendant "are of one Triplicity, or be one, or of the same nature"
 /// (p. 121).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_hellenistic::{RadicalGround, Triplicities, radical_grounds};
+///
+/// // Mars's hour with Pisces rising: Lilly's Mars rules the water.
+/// assert_eq!(radical_grounds(Graha::Mars, Rashi::Pisces, Triplicities::Lilly), [RadicalGround::Triplicity]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -88,6 +112,19 @@ pub enum RadicalGround {
 /// ascending radical, in the order of [`RadicalGround`]; empty when it is
 /// not radical. A lord of a triplicity is one by day or by night, as Lilly
 /// calls the Sun "one of the Lords of the fiery Triplicity" with no sect.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_hellenistic::{RadicalGround, Triplicities, radical_grounds};
+///
+/// // Scorpio rising in Mars's hour: his sign and his triplicity.
+/// assert_eq!(
+///     radical_grounds(Graha::Mars, Rashi::Scorpio, Triplicities::Lilly),
+///     [RadicalGround::OneLord, RadicalGround::Triplicity]
+/// );
+/// // Venus's hour with Leo rising: not radical.
+/// assert!(radical_grounds(Graha::Venus, Rashi::Leo, Triplicities::Lilly).is_empty());
+/// ```
 #[must_use]
 pub fn radical_grounds(
     hour_lord: Graha,
@@ -115,6 +152,35 @@ pub fn radical_grounds(
 }
 
 /// A Ptolemaic aspect, which the Moon's course is read on.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, HouseSystem};
+/// # use teistro_hellenistic::{AccidentalSky, ChartSky, ConsiderationRules, FortitudeRequest, considerations};
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// # let sky = AccidentalSky {
+/// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+/// #     houses: HouseSystem::Equal,
+/// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+/// #     ascendant_deg: 0.0,
+/// #     midheaven_deg: 270.0,
+/// #     north_node_deg: 250.0,
+/// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// # };
+/// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+/// # let read = considerations(&fortitudes, Graha::Mars, ConsiderationRules::LILLY)?;
+///
+/// use teistro_hellenistic::PtolemaicAspect;
+///
+/// // The Moon's first aspect is her square to Mars, exact now.
+/// let next = read.moon.course.next.ok_or("she applies")?;
+/// assert_eq!((next.planet, next.aspect), (Graha::Mars, PtolemaicAspect::Square));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -134,6 +200,13 @@ pub enum PtolemaicAspect {
 
 impl PtolemaicAspect {
     /// The five, in order of their angle.
+    ///
+    /// ```
+    /// use teistro_hellenistic::PtolemaicAspect;
+    ///
+    /// let angles = PtolemaicAspect::ALL.map(PtolemaicAspect::degrees);
+    /// assert_eq!(angles, [0.0, 60.0, 90.0, 120.0, 180.0]);
+    /// ```
     pub const ALL: [PtolemaicAspect; 5] = [
         PtolemaicAspect::Conjunction,
         PtolemaicAspect::Sextile,
@@ -143,6 +216,12 @@ impl PtolemaicAspect {
     ];
 
     /// Its angle, degrees.
+    ///
+    /// ```
+    /// use teistro_hellenistic::PtolemaicAspect;
+    ///
+    /// assert_eq!(PtolemaicAspect::Trine.degrees(), 120.0);
+    /// ```
     #[must_use]
     pub const fn degrees(self) -> f64 {
         match self {
@@ -156,6 +235,20 @@ impl PtolemaicAspect {
 }
 
 /// An aspect the Moon perfects with a planet.
+///
+/// ```
+/// use teistro_hellenistic::{LILLY_ORBS_DEG, moon_course};
+///
+/// let speeds = [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0];
+/// let at = |moon: f64| [285.0, 245.0, 190.0, 15.0, 25.0, 40.0, moon];
+///
+/// // At 11° Cancer the Moon is 4° short of opposing Saturn, 12.97° a day closer.
+/// let course = moon_course(&at(101.0), &speeds, &LILLY_ORBS_DEG)?;
+/// let next = course.next.ok_or(teistro_core::error::Error::internal("she applies"))?;
+/// assert_eq!(next.gap_deg, 4.0);
+/// assert!((next.days - 4.0 / 12.97).abs() < 1e-12);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -172,6 +265,19 @@ pub struct Perfection {
 }
 
 /// Where the Moon is going before she leaves her sign (p. 112).
+///
+/// ```
+/// use teistro_hellenistic::{LILLY_ORBS_DEG, moon_course};
+///
+/// let speeds = [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0];
+/// let at = |moon: f64| [285.0, 245.0, 190.0, 15.0, 25.0, 40.0, moon];
+///
+/// // At 29°30′ Cancer she leaves her sign in under an hour, aspecting no one.
+/// let course = moon_course(&at(119.5), &speeds, &LILLY_ORBS_DEG)?;
+/// assert!(course.void() && course.eased);
+/// assert!((course.days_in_sign - 0.5 / 13.0).abs() < 1e-12);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -194,6 +300,17 @@ impl MoonCourse {
     /// "Separated from a Planet, nor doth forthwith, during his being in
     /// that Signe, apply to any other" (p. 112): no aspect perfected
     /// before she leaves her sign (crux C230).
+    ///
+    /// ```
+    /// use teistro_hellenistic::{LILLY_ORBS_DEG, moon_course};
+    ///
+    /// let speeds = [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0];
+    /// let at = |moon: f64| [285.0, 245.0, 190.0, 15.0, 25.0, 40.0, moon];
+    ///
+    /// assert!(moon_course(&at(119.5), &speeds, &LILLY_ORBS_DEG)?.void());
+    /// assert!(!moon_course(&at(101.0), &speeds, &LILLY_ORBS_DEG)?.void());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn void(&self) -> bool {
         self.next.is_none()
@@ -202,6 +319,19 @@ impl MoonCourse {
     /// Void by Lilly's moieties: no aspect ahead in her sign is yet within
     /// the two planets' half orbs, which is how his Presbytery figure
     /// (p. 439) reads "after a little being voyd of course" (C230).
+    ///
+    /// ```
+    /// use teistro_hellenistic::{LILLY_ORBS_DEG, moon_course};
+    ///
+    /// let speeds = [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0];
+    /// let at = |moon: f64| [285.0, 245.0, 190.0, 15.0, 25.0, 40.0, moon];
+    ///
+    /// // Saturn's opposition 4° ahead: within Lilly's moieties, outside no orb at all.
+    /// assert!(!moon_course(&at(101.0), &speeds, &LILLY_ORBS_DEG)?.void_by_moieties());
+    /// let bare = moon_course(&at(101.0), &speeds, &[0.0; 7])?;
+    /// assert!(bare.void_by_moieties() && !bare.void());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn void_by_moieties(&self) -> bool {
         self.within_orb.is_none()
@@ -214,6 +344,19 @@ impl MoonCourse {
 /// `speeds` their daily motions and `orbs_deg` their whole orbs, all in
 /// the Chaldean order; the first perfection already within half of each
 /// orb is reported too.
+///
+/// ```
+/// use teistro_hellenistic::{LILLY_ORBS_DEG, moon_course};
+///
+/// let speeds = [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0];
+/// let at = |moon: f64| [285.0, 245.0, 190.0, 15.0, 25.0, 40.0, moon];
+///
+/// // A Moon that does not move forward is refused.
+/// let mut backward = speeds;
+/// backward[6] = -1.0;
+/// assert_eq!(moon_course(&at(101.0), &backward, &LILLY_ORBS_DEG).unwrap_err().field(), Some("moon"));
+/// assert_eq!(moon_course(&at(f64::NAN), &speeds, &LILLY_ORBS_DEG).unwrap_err().field(), Some("planets"));
+/// ```
 ///
 /// # Errors
 ///
@@ -298,6 +441,13 @@ pub fn moon_course(
 }
 
 /// The degrees Lilly names, as knobs where he leaves a number open.
+///
+/// ```
+/// use teistro_hellenistic::{ConsiderationRules, LILLY_ORBS_DEG};
+///
+/// assert_eq!(ConsiderationRules::default(), ConsiderationRules::LILLY);
+/// assert_eq!(ConsiderationRules::LILLY.orbs_deg, LILLY_ORBS_DEG);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -314,6 +464,13 @@ pub struct ConsiderationRules {
 
 impl ConsiderationRules {
     /// Lilly's, with C229 read by his late Ascendant.
+    ///
+    /// ```
+    /// use teistro_hellenistic::ConsiderationRules;
+    ///
+    /// // The Moon is late from 27°, as Lilly's late Ascendant.
+    /// assert_eq!(ConsiderationRules::LILLY.moon_late_from_deg, 27.0);
+    /// ```
     pub const LILLY: ConsiderationRules = ConsiderationRules {
         moon_late_from_deg: 27.0,
         orbs_deg: LILLY_ORBS_DEG,
@@ -358,6 +515,13 @@ impl ConsiderationRules {
 /// The planets' whole orbs in the Chaldean order, the first of the two
 /// columns Lilly prints on p. 107: Saturn 10, Jupiter 12, Mars 7½, the
 /// Sun 17, Venus 8, Mercury 7, the Moon 12½.
+///
+/// ```
+/// use teistro_hellenistic::LILLY_ORBS_DEG;
+///
+/// // The Sun's 17° and the Moon's 12°30′.
+/// assert_eq!((LILLY_ORBS_DEG[3], LILLY_ORBS_DEG[6]), (17.0, 12.5));
+/// ```
 pub const LILLY_ORBS_DEG: [f64; 7] = [10.0, 12.0, 7.5, 17.0, 8.0, 7.0, 12.5];
 
 /// Every orb a finite number of degrees, zero or more, refused as
@@ -381,6 +545,33 @@ impl Default for ConsiderationRules {
 }
 
 /// Whether the figure is radical (p. 121).
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, HouseSystem};
+/// # use teistro_hellenistic::{AccidentalSky, ChartSky, ConsiderationRules, FortitudeRequest, considerations};
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// # let sky = AccidentalSky {
+/// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+/// #     houses: HouseSystem::Equal,
+/// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+/// #     ascendant_deg: 0.0,
+/// #     midheaven_deg: 270.0,
+/// #     north_node_deg: 250.0,
+/// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// # };
+/// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+/// # let read = considerations(&fortitudes, Graha::Mars, ConsiderationRules::LILLY)?;
+///
+/// // Aries rising in Mars's hour: one lord.
+/// assert_eq!((read.radicality.hour_lord, read.radicality.ascendant_lord), (Graha::Mars, Graha::Mars));
+/// assert_eq!(read.radicality.grounds, [teistro_hellenistic::RadicalGround::OneLord]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -395,6 +586,34 @@ pub struct Radicality {
 
 impl Radicality {
     /// Radical on any ground.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, HouseSystem};
+    /// # use teistro_hellenistic::{AccidentalSky, ChartSky, ConsiderationRules, FortitudeRequest, considerations};
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+    /// # let read = considerations(&fortitudes, Graha::Mars, ConsiderationRules::LILLY)?;
+    ///
+    /// assert!(read.radicality.radical());
+    /// // In Venus's hour the same figure is not.
+    /// let venus = considerations(&fortitudes, Graha::Venus, ConsiderationRules::LILLY)?;
+    /// assert!(!venus.radicality.radical());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn radical(&self) -> bool {
         !self.grounds.is_empty()
@@ -402,6 +621,36 @@ impl Radicality {
 }
 
 /// The ascending degree (p. 122).
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, HouseSystem};
+/// # use teistro_hellenistic::{AccidentalSky, ChartSky, ConsiderationRules, FortitudeRequest, considerations};
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// # let sky = AccidentalSky {
+/// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+/// #     houses: HouseSystem::Equal,
+/// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+/// #     ascendant_deg: 0.0,
+/// #     midheaven_deg: 270.0,
+/// #     north_node_deg: 250.0,
+/// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// # };
+/// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+/// # let read = considerations(&fortitudes, Graha::Mars, ConsiderationRules::LILLY)?;
+///
+/// use teistro_core::catalogue::Rashi;
+///
+/// // 0° Aries rising: early, in a sign of short ascension.
+/// let ascendant = read.ascendant;
+/// assert_eq!((ascendant.sign, ascendant.degree), (Rashi::Aries, 0.0));
+/// assert!(ascendant.early && !ascendant.late && ascendant.short_ascension);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -420,6 +669,37 @@ pub struct AscendantClause {
 }
 
 /// The Moon (p. 122).
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, HouseSystem};
+/// # use teistro_hellenistic::{AccidentalSky, ChartSky, ConsiderationRules, FortitudeRequest, considerations};
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// # let sky = AccidentalSky {
+/// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+/// #     houses: HouseSystem::Equal,
+/// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+/// #     ascendant_deg: 0.0,
+/// #     midheaven_deg: 270.0,
+/// #     north_node_deg: 250.0,
+/// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// # };
+/// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+/// # let read = considerations(&fortitudes, Graha::Mars, ConsiderationRules::LILLY)?;
+///
+/// use teistro_core::catalogue::Rashi;
+///
+/// // 10° Cancer: neither late nor in the via combusta.
+/// let moon = read.moon;
+/// assert_eq!((moon.sign, moon.degree), (Rashi::Cancer, 10.0));
+/// assert!(!moon.late && !moon.late_sign && !moon.via_combusta);
+/// assert!(moon.course.eased);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -442,6 +722,37 @@ pub struct MoonClause {
 
 /// The seventh house, which "hath signification of the Artist" (p. 122),
 /// and the Arabians' rules on its lord (p. 123).
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, HouseSystem};
+/// # use teistro_hellenistic::{AccidentalSky, ChartSky, ConsiderationRules, FortitudeRequest, considerations};
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// # let sky = AccidentalSky {
+/// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+/// #     houses: HouseSystem::Equal,
+/// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+/// #     ascendant_deg: 0.0,
+/// #     midheaven_deg: 270.0,
+/// #     north_node_deg: 250.0,
+/// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// # };
+/// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+/// # let read = considerations(&fortitudes, Graha::Mars, ConsiderationRules::LILLY)?;
+///
+/// // Libra on the seventh cusp: Venus its lord, in Mars's term at 25° Aries,
+/// // and Mars in the house.
+/// let seventh = &read.seventh;
+/// assert_eq!((seventh.cusp_deg, seventh.lord), (180.0, Graha::Venus));
+/// assert_eq!(seventh.infortunes_in_house, [Graha::Mars]);
+/// assert!(seventh.lord_in_infortune_term && !seventh.lord_combust && !seventh.lord_in_fall);
+/// assert_eq!(Some(seventh.lord_net), fortitudes.net(Graha::Venus));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -472,6 +783,34 @@ pub struct SeventhClause {
 
 /// Lilly's considerations before judgement, each a clause with what it
 /// rests on.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, HouseSystem};
+/// # use teistro_hellenistic::{AccidentalSky, ChartSky, ConsiderationRules, FortitudeRequest, considerations};
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// # let sky = AccidentalSky {
+/// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+/// #     houses: HouseSystem::Equal,
+/// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+/// #     ascendant_deg: 0.0,
+/// #     midheaven_deg: 270.0,
+/// #     north_node_deg: 250.0,
+/// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// # };
+/// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+/// # let read = considerations(&fortitudes, Graha::Mars, ConsiderationRules::LILLY)?;
+///
+/// // Saturn in the tenth, direct; Mars, the Ascendant's lord, not combust.
+/// assert_eq!(read.saturn_house.get(), 10);
+/// assert!(!read.saturn_retrograde && !read.ascendant_lord_combust);
+/// assert_eq!(read.rules, ConsiderationRules::LILLY);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -497,12 +836,65 @@ pub struct Considerations {
 
 impl Considerations {
     /// Saturn in the Ascendant, "especially Retrograde" (p. 122).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, HouseSystem};
+    /// # use teistro_hellenistic::{AccidentalSky, ChartSky, ConsiderationRules, FortitudeRequest, considerations};
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+    /// # let read = considerations(&fortitudes, Graha::Mars, ConsiderationRules::LILLY)?;
+    ///
+    /// assert!(!read.saturn_in_ascendant());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn saturn_in_ascendant(&self) -> bool {
         self.saturn_house.get() == 1
     }
 
     /// Saturn in the seventh (p. 123).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, HouseSystem};
+    /// # use teistro_hellenistic::{AccidentalSky, ChartSky, ConsiderationRules, FortitudeRequest, considerations};
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+    /// # let read = considerations(&fortitudes, Graha::Mars, ConsiderationRules::LILLY)?;
+    ///
+    /// assert!(!read.saturn_in_seventh());
+    /// // An hour outside the seven is refused.
+    /// let refused = considerations(&fortitudes, Graha::Rahu, ConsiderationRules::LILLY).unwrap_err();
+    /// assert_eq!(refused.field(), Some("hour_lord"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn saturn_in_seventh(&self) -> bool {
         self.saturn_house.get() == 7

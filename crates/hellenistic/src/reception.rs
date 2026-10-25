@@ -13,6 +13,24 @@ use teistro_core::catalogue::Graha;
 use crate::dignity::EssentialDignity;
 
 /// One of the five essential dignities, the kinds a reception is by.
+///
+/// ```
+/// # use teistro_hellenistic::ChartSky;
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{DignityKind, DignityRequest};
+///
+/// // Mars in Libra and Venus in Aries: each in the other's house.
+/// let read = DignityRequest::default().read(&chart)?;
+/// let pair = read.receptions.iter().find(|one| one.planets == [Graha::Mars, Graha::Venus]).ok_or("received")?;
+/// assert!(pair.mutual_by(DignityKind::House));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -32,6 +50,12 @@ pub enum DignityKind {
 
 impl DignityKind {
     /// The five, strongest first, as Lilly scores them (p. 115).
+    ///
+    /// ```
+    /// use teistro_hellenistic::DignityKind;
+    ///
+    /// assert_eq!((DignityKind::ALL[0], DignityKind::ALL[4]), (DignityKind::House, DignityKind::Face));
+    /// ```
     pub const ALL: [DignityKind; 5] = [
         DignityKind::House,
         DignityKind::Exaltation,
@@ -73,6 +97,24 @@ impl EssentialDignity {
 /// ([`mutual`](Reception::mutual), Lilly's examples) and one by different
 /// kinds (a mixed reception, which Lilly neither names nor scores) are
 /// both read off the same record (C210).
+///
+/// ```
+/// # use teistro_hellenistic::ChartSky;
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::DignityRequest;
+///
+/// let read = DignityRequest::default().read(&chart)?;
+/// let pair = read.receptions.iter().find(|one| one.planets == [Graha::Mars, Graha::Venus]).ok_or("received")?;
+/// // Mars stands in Venus's house, and Venus in Mars's.
+/// assert!(pair.first_in.house && pair.second_in.house);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -89,6 +131,23 @@ pub struct Reception {
 
 impl Reception {
     /// Whether each stands in the other's dignity of this kind.
+    ///
+    /// ```
+    /// # use teistro_hellenistic::ChartSky;
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{DignityKind, DignityRequest};
+    ///
+    /// let read = DignityRequest::default().read(&chart)?;
+    /// let pair = read.receptions.iter().find(|one| one.planets == [Graha::Mars, Graha::Venus]).ok_or("received")?;
+    /// assert!(pair.mutual_by(DignityKind::House) && !pair.mutual_by(DignityKind::Exaltation));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn mutual_by(&self, kind: DignityKind) -> bool {
         self.first_in.holds(kind) && self.second_in.holds(kind)
@@ -96,6 +155,23 @@ impl Reception {
 
     /// The kinds each stands in of the other's, strongest first; empty for
     /// a mixed reception.
+    ///
+    /// ```
+    /// # use teistro_hellenistic::ChartSky;
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{DignityKind, DignityRequest};
+    ///
+    /// let read = DignityRequest::default().read(&chart)?;
+    /// let pair = read.receptions.iter().find(|one| one.planets == [Graha::Mars, Graha::Venus]).ok_or("received")?;
+    /// assert_eq!(pair.mutual().next(), Some(DignityKind::House));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn mutual(&self) -> impl Iterator<Item = DignityKind> + '_ {
         DignityKind::ALL
             .into_iter()

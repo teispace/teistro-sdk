@@ -58,6 +58,15 @@ impl FortitudeRequest {
     /// optional and taking Lilly's. `dignities` is a [`DignityRequest`]'s record; a
     /// partile orb is `{"partile": {"WITHIN": {"orbDeg": 1}}}`.
     ///
+    /// ```
+    /// use teistro_hellenistic::FortitudeRequest;
+    ///
+    /// assert_eq!(FortitudeRequest::from_json("{}")?, FortitudeRequest::default());
+    /// let unknown = FortitudeRequest::from_json(r#"{"dignity": {}}"#).unwrap_err();
+    /// assert_eq!(unknown.field(), Some("fortitudes.dignity"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Text that is not the record, a member it does not know, a value
@@ -74,6 +83,13 @@ impl FortitudeRequest {
     }
 
     /// The same request, its essential dignities read otherwise.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRequest, FortitudeRequest, SectRule};
+    ///
+    /// let asked = FortitudeRequest::default().with_dignities(DignityRequest::default().with_sect_rule(SectRule::Daylight));
+    /// assert_eq!(asked.dignities().sect_rule(), SectRule::Daylight);
+    /// ```
     #[must_use]
     pub const fn with_dignities(mut self, dignities: DignityRequest) -> FortitudeRequest {
         self.dignities = dignities;
@@ -81,6 +97,33 @@ impl FortitudeRequest {
     }
 
     /// The same request, under other orbs and limits.
+    ///
+    /// ```
+    /// # use teistro_hellenistic::ChartSky;
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # use teistro_core::catalogue::HouseSystem;
+    /// # use teistro_hellenistic::AccidentalSky;
+    /// #
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// use teistro_hellenistic::{AccidentalRules, FortitudeRequest};
+    ///
+    /// // A rule out of range is refused before the chart is read.
+    /// let negative = FortitudeRequest::default().with_rules(AccidentalRules::LILLY.with_cusp_orb(-1.0));
+    /// assert_eq!(negative.read(&chart, &sky).unwrap_err().field(), Some("rules.cuspOrbDeg"));
+    /// ```
     #[must_use]
     pub const fn with_rules(mut self, rules: AccidentalRules) -> FortitudeRequest {
         self.rules = rules;
@@ -88,6 +131,13 @@ impl FortitudeRequest {
     }
 
     /// The same request, the accidental lines scored otherwise.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AccidentalScores, FortitudeRequest};
+    ///
+    /// let flat = AccidentalScores { houses: [0; 12], ..AccidentalScores::LILLY };
+    /// assert_eq!(FortitudeRequest::default().with_scores(flat).scores().houses, [0; 12]);
+    /// ```
     #[must_use]
     pub const fn with_scores(mut self, scores: AccidentalScores) -> FortitudeRequest {
         self.scores = scores;
@@ -95,6 +145,15 @@ impl FortitudeRequest {
     }
 
     /// The same request, its almutens read otherwise.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AlmutenRules, FortitudeRequest, PlaceReading};
+    ///
+    /// let mut by_sign = AlmutenRules::LILLY;
+    /// by_sign.place = PlaceReading::Sign;
+    /// let asked = FortitudeRequest::default().with_almuten(by_sign);
+    /// assert_eq!(asked.almuten().place, PlaceReading::Sign);
+    /// ```
     #[must_use]
     pub const fn with_almuten(mut self, almuten: AlmutenRules) -> FortitudeRequest {
         self.almuten = almuten;
@@ -102,24 +161,48 @@ impl FortitudeRequest {
     }
 
     /// How the essential dignities are read.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRequest, FortitudeRequest};
+    ///
+    /// assert_eq!(FortitudeRequest::default().dignities(), DignityRequest::default());
+    /// ```
     #[must_use]
     pub const fn dignities(&self) -> DignityRequest {
         self.dignities
     }
 
     /// The accidental orbs and limits.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AccidentalRules, FortitudeRequest};
+    ///
+    /// assert_eq!(FortitudeRequest::default().rules(), AccidentalRules::LILLY);
+    /// ```
     #[must_use]
     pub const fn rules(&self) -> AccidentalRules {
         self.rules
     }
 
     /// The accidental scores.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AccidentalScores, FortitudeRequest};
+    ///
+    /// assert_eq!(FortitudeRequest::default().scores(), AccidentalScores::LILLY);
+    /// ```
     #[must_use]
     pub const fn scores(&self) -> AccidentalScores {
         self.scores
     }
 
     /// How the almutens are read.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AlmutenRules, FortitudeRequest};
+    ///
+    /// assert_eq!(FortitudeRequest::default().almuten(), AlmutenRules::default());
+    /// ```
     #[must_use]
     pub const fn almuten(&self) -> AlmutenRules {
         self.almuten
@@ -128,6 +211,36 @@ impl FortitudeRequest {
     /// Both halves of the table in a chart: the essential dignities from
     /// the chart's sky, and the accidental fortitudes from the same
     /// longitudes and the rest of it.
+    ///
+    /// ```
+    /// # use teistro_hellenistic::ChartSky;
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # use teistro_core::catalogue::HouseSystem;
+    /// # use teistro_hellenistic::AccidentalSky;
+    /// #
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::FortitudeRequest;
+    ///
+    /// let read = FortitudeRequest::default().read(&chart, &sky)?;
+    /// // Both halves, the seven in the Chaldean order.
+    /// assert_eq!(read.dignities.planets[3].planet, Graha::Sun);
+    /// assert_eq!(read.planets[3].planet, Graha::Sun);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -172,6 +285,33 @@ impl FortitudeRequest {
 
 /// Both halves of Lilly's table in one chart, with everything that made
 /// them.
+///
+/// ```
+/// # use teistro_hellenistic::ChartSky;
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// # use teistro_core::catalogue::HouseSystem;
+/// # use teistro_hellenistic::AccidentalSky;
+/// #
+/// # let sky = AccidentalSky {
+/// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+/// #     houses: HouseSystem::Equal,
+/// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+/// #     ascendant_deg: 0.0,
+/// #     midheaven_deg: 270.0,
+/// #     north_node_deg: 250.0,
+/// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// # };
+/// use teistro_hellenistic::{AccidentalRules, FortitudeRequest};
+///
+/// let read = FortitudeRequest::default().read(&chart, &sky)?;
+/// assert_eq!((read.sky, read.rules), (sky, AccidentalRules::LILLY));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -198,6 +338,38 @@ impl Fortitudes {
     /// 178–180): its essential score and mutual reception, and its
     /// accidental fortitudes less its debilities. `None` for a graha
     /// outside the seven.
+    ///
+    /// ```
+    /// # use teistro_hellenistic::ChartSky;
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # use teistro_core::catalogue::HouseSystem;
+    /// # use teistro_hellenistic::AccidentalSky;
+    /// #
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::FortitudeRequest;
+    ///
+    /// let read = FortitudeRequest::default().read(&chart, &sky)?;
+    /// // Mars: his essential score and reception, his fortitudes less his debilities.
+    /// let (essential, accidental) = (read.dignities.planets[2], &read.planets[2]);
+    /// let net = essential.score + essential.reception + accidental.fortitude - accidental.debility;
+    /// assert_eq!(read.net(Graha::Mars), Some(net));
+    /// assert_eq!(read.net(Graha::Rahu), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn net(&self, planet: Graha) -> Option<i16> {
         self.almutens.figure.total(planet)

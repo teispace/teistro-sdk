@@ -35,6 +35,28 @@ use crate::purifier::house;
 
 /// What the family remembers of the birth. Every fact is optional, and a
 /// clause whose fact is absent is reported and not weighed.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::{Indication, Presentation};
+///
+/// // Only the facts given are weighed: the father away, the feet first.
+/// let facts = Facts { father_present: Some(false), presentation: Some(Presentation::Feet), ..Facts::default() };
+/// let weighed = judged(sky, &facts, CircumstanceRules::default());
+/// assert_eq!(weighed.weights.len(), 2);
+/// assert_eq!(weighed.weights[0].indication, Indication::Father);
+/// assert_eq!(weighed.agreeing(), 2);
+/// # let _ = (Graha::Sun, read);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -52,6 +74,24 @@ pub struct Facts {
 }
 
 /// What came first at the birth.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::Presentation;
+///
+/// // Aries rises back first: the feet.
+/// assert_eq!(read.presentation.foretold, Presentation::Feet);
+/// # let _ = Graha::Sun;
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -67,6 +107,24 @@ pub enum Presentation {
 
 /// How much of the lamp's oil or wick was left, at the three points V.18's
 /// gloss names: a sign's start, its middle and its end.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::Level;
+///
+/// // The Moon at 10° Cancer and the lagna at 15° Aries: both about half.
+/// assert_eq!((read.lamp.oil_level, read.lamp.wick_level), (Level::Half, Level::Half));
+/// # let _ = Graha::Sun;
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "LampLevel"))]
@@ -84,6 +142,14 @@ impl Level {
     /// The level nearest a fraction left, one at a sign's start and none
     /// at its end: the gloss's three points, each holding the third of the
     /// sign nearest it in the fraction.
+    ///
+    /// ```
+    /// use teistro_rectification::Level;
+    ///
+    /// assert_eq!(Level::nearest(0.9), Level::Full);
+    /// assert_eq!(Level::nearest(0.5), Level::Half);
+    /// assert_eq!(Level::nearest(0.1), Level::Spent);
+    /// ```
     #[must_use]
     pub fn nearest(left: f64) -> Level {
         if left > 0.75 {
@@ -97,6 +163,26 @@ impl Level {
 }
 
 /// The women who attended, as many as the family can say.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::Attendants;
+///
+/// // Jupiter alone between the lagna and the Moon, below the horizon: one inside.
+/// let facts = Facts { attendants: Some(Attendants { inside: Some(1), outside: Some(0), total: None }), ..Facts::default() };
+/// let weighed = judged(sky, &facts, CircumstanceRules::default());
+/// assert_eq!(weighed.agreeing(), 2);
+/// # let _ = (Graha::Sun, read);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -110,6 +196,27 @@ pub struct Attendants {
 }
 
 /// What "the Moon not seeing the lagna" asks of her aspect (X16).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::MoonSees;
+///
+/// // From Cancer the Moon casts a quarter aspect on Aries, her tenth: seen,
+/// // unless only the full aspect counts.
+/// assert!(!read.father.unseen);
+/// let full = CircumstanceRules { moon_sees: MoonSees::Full, ..CircumstanceRules::default() };
+/// assert!(judged(sky, &Facts::default(), full).father.unseen);
+/// # let _ = Graha::Sun;
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -124,6 +231,26 @@ pub enum MoonSees {
 }
 
 /// Which houses are "fallen from the 10th" for the Sun in V.1 (X17).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::{MoonSees, SunFallen, Whereabouts};
+///
+/// // The Sun in the ninth, fallen either way; in a dual sign, the father is
+/// // on his way back.
+/// let full = CircumstanceRules { moon_sees: MoonSees::Full, sun_fallen: SunFallen::EitherSide, ..CircumstanceRules::default() };
+/// assert_eq!(judged(sky, &Facts::default(), full).father.whereabouts, Some(Whereabouts::Returning));
+/// # let _ = (Graha::Sun, read);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -139,6 +266,13 @@ pub enum SunFallen {
 
 impl SunFallen {
     /// Whether the Sun in a house from the lagna has fallen.
+    ///
+    /// ```
+    /// use teistro_rectification::SunFallen;
+    ///
+    /// assert!(SunFallen::NinthOrEighth.holds(9) && !SunFallen::NinthOrEighth.holds(11));
+    /// assert!(SunFallen::EitherSide.holds(11));
+    /// ```
     #[must_use]
     pub fn holds(self, house: u8) -> bool {
         match self {
@@ -149,6 +283,26 @@ impl SunFallen {
 }
 
 /// Which reading of V.17's presentation is asked (X18).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::{Presentation, PresentationBy};
+///
+/// // By the lagna lord's motion, Mars direct: a natural birth, head first.
+/// let by_lord = CircumstanceRules { presentation_by: PresentationBy::LagnaLordMotion, ..CircumstanceRules::default() };
+/// let reading = judged(sky, &Facts::default(), by_lord).presentation;
+/// assert_eq!((reading.lord, reading.foretold), (Graha::Mars, Presentation::Head));
+/// # let _ = read;
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -163,6 +317,25 @@ pub enum PresentationBy {
 }
 
 /// How "the grahas between the lagna and the Moon" are counted (X19).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::BetweenBy;
+///
+/// // By degree, Jupiter alone lies past the lagna and short of the Moon.
+/// assert_eq!(read.attending.between, [Graha::Jupiter]);
+/// let by_sign = CircumstanceRules { between_by: BetweenBy::Sign, ..CircumstanceRules::default() };
+/// assert_eq!(judged(sky, &Facts::default(), by_sign).attending.between, [Graha::Jupiter]);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -176,6 +349,27 @@ pub enum BetweenBy {
 }
 
 /// Which half of the attendants V.22 puts outside the room.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::OutsideHalf;
+///
+/// // Jupiter below the horizon: inside by Varahamihira's reading, outside by the others'.
+/// assert_eq!((read.attending.inside, read.attending.outside), (1, 0));
+/// let reversed = CircumstanceRules { outside: OutsideHalf::Invisible, ..CircumstanceRules::default() };
+/// let attending = judged(sky, &Facts::default(), reversed).attending;
+/// assert_eq!((attending.inside, attending.outside), (0, 1));
+/// # let _ = Graha::Sun;
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -189,6 +383,13 @@ pub enum OutsideHalf {
 }
 
 /// The knobs `CIRCUMSTANCE` takes, one per crux.
+///
+/// ```
+/// use teistro_rectification::{BetweenBy, CircumstanceRules, MoonSees, PresentationBy};
+///
+/// let rules = CircumstanceRules::default();
+/// assert_eq!((rules.moon_sees, rules.presentation_by, rules.between_by), (MoonSees::AnyAspect, PresentationBy::RisingSign, BetweenBy::Degree));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -207,6 +408,14 @@ pub struct CircumstanceRules {
 
 /// The grahas V.2 and V.22 read: the seven, the Moon among them. The nodes
 /// are not grahas Varahamihira counts here.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::circumstance::SEVEN;
+///
+/// assert_eq!((SEVEN[0], SEVEN[6]), (Graha::Sun, Graha::Saturn));
+/// assert!(!SEVEN.contains(&Graha::Rahu));
+/// ```
 pub const SEVEN: [Graha; 7] = [
     Graha::Sun,
     Graha::Moon,
@@ -219,6 +428,21 @@ pub const SEVEN: [Graha; 7] = [
 
 /// The sky at a candidate instant, as the clauses read it: the lagna, the
 /// seven grahas and whether the lagna's lord is retrograde.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// assert_eq!(read.sky, sky);
+/// assert_eq!(sky.of(Graha::Jupiter), 60.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -234,6 +458,23 @@ pub struct BirthSky {
 
 impl BirthSky {
     /// A graha's longitude.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+    ///
+    /// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+    /// let sky = BirthSky {
+    ///     lagna_deg: 15.0,
+    ///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+    ///     lord_retrograde: false,
+    /// };
+    /// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+    /// assert_eq!(sky.of(Graha::Moon), 100.0);
+    /// // The nodes are not among the seven.
+    /// assert!(sky.of(Graha::Rahu).is_nan());
+    /// # let _ = read;
+    /// ```
     #[must_use]
     pub fn of(&self, graha: Graha) -> f64 {
         SEVEN
@@ -255,6 +496,26 @@ impl BirthSky {
 }
 
 /// V.1–2: whether the father was away, and where.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_aspect::drishti::Strength;
+///
+/// // Mars in the seventh: the father away by V.2.
+/// let father = read.father;
+/// assert!(father.mars_setting && !father.saturn_rising && !father.moon_hemmed);
+/// assert!(father.away && father.whereabouts.is_none());
+/// assert_eq!((father.moon_aspect, father.sun_house), (Strength::Quarter, 9));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -285,6 +546,24 @@ pub struct Father {
 }
 
 /// Where V.1 puts an absent father, by the Sun's sign.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::{MoonSees, Whereabouts};
+///
+/// let full = CircumstanceRules { moon_sees: MoonSees::Full, ..CircumstanceRules::default() };
+/// assert_eq!(judged(sky, &Facts::default(), full).father.whereabouts, Some(Whereabouts::Returning));
+/// # let _ = (Graha::Sun, read);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -298,6 +577,24 @@ pub enum Whereabouts {
 }
 
 /// V.17's presentation as the sky foretells it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_core::catalogue::Rising;
+/// use teistro_rectification::PresentationBy;
+///
+/// let reading = read.presentation;
+/// assert_eq!((reading.by, reading.rising, reading.lord), (PresentationBy::RisingSign, Rising::Prishtodaya, Graha::Mars));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -318,6 +615,28 @@ pub struct PresentationReading {
 
 impl PresentationReading {
     /// Whether a remembered presentation agrees.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+    ///
+    /// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+    /// let sky = BirthSky {
+    ///     lagna_deg: 15.0,
+    ///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+    ///     lord_retrograde: false,
+    /// };
+    /// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+    /// use teistro_rectification::{Presentation, PresentationBy};
+    ///
+    /// assert!(read.presentation.agrees(Presentation::Feet));
+    /// assert!(!read.presentation.agrees(Presentation::Hands));
+    /// // By the lord's motion, any presentation but the head agrees with an irregular birth.
+    /// let retrograde = BirthSky { lord_retrograde: true, ..sky };
+    /// let by_lord = CircumstanceRules { presentation_by: PresentationBy::LagnaLordMotion, ..CircumstanceRules::default() };
+    /// assert!(judged(retrograde, &Facts::default(), by_lord).presentation.agrees(Presentation::Hands));
+    /// # let _ = Graha::Sun;
+    /// ```
     #[must_use]
     pub fn agrees(&self, given: Presentation) -> bool {
         match self.by {
@@ -330,6 +649,23 @@ impl PresentationReading {
 }
 
 /// V.18's lamp as the sky foretells it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// // Two thirds of the Moon's sign left, half of the rising sign.
+/// assert!((read.lamp.oil - 2.0 / 3.0).abs() < 1e-12);
+/// assert_eq!(read.lamp.wick, 0.5);
+/// # let _ = Graha::Sun;
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -345,6 +681,21 @@ pub struct Lamp {
 }
 
 /// V.22's attendants as the sky foretells them.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// assert_eq!(read.attending.between, [Graha::Jupiter]);
+/// assert!(read.attending.visible.is_empty());
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -361,6 +712,12 @@ pub struct Attending {
 }
 
 /// The clause a weight comes from.
+///
+/// ```
+/// use teistro_rectification::Indication;
+///
+/// assert_eq!(Indication::Oil.source(), Indication::Wick.source());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -383,6 +740,13 @@ pub enum Indication {
 
 impl Indication {
     /// The verse it reads, in Iyer's numbering.
+    ///
+    /// ```
+    /// use teistro_rectification::Indication;
+    ///
+    /// assert_eq!(Indication::Father.source(), "BJ V.1–2");
+    /// assert_eq!(Indication::AttendantsInside.source(), "BJ V.22");
+    /// ```
     #[must_use]
     pub const fn source(self) -> &'static str {
         match self {
@@ -397,6 +761,26 @@ impl Indication {
 }
 
 /// One fact given, set against the clause that reads it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// use teistro_rectification::{Indication, Level};
+///
+/// // The lamp remembered full: it was half, so the fact weighs against.
+/// let facts = Facts { oil: Some(Level::Full), ..Facts::default() };
+/// let weight = judged(sky, &facts, CircumstanceRules::default()).weights[0];
+/// assert_eq!((weight.indication, weight.agrees), (Indication::Oil, false));
+/// # let _ = (Graha::Sun, read);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -408,6 +792,23 @@ pub struct Weight {
 }
 
 /// What `CIRCUMSTANCE` reads at a candidate instant.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// // No fact given, nothing weighed, every clause still reported.
+/// assert!(read.weights.is_empty());
+/// assert!(read.father.away);
+/// # let _ = Graha::Sun;
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -429,6 +830,25 @@ pub struct Circumstance {
 
 impl Circumstance {
     /// How many facts agree.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+    ///
+    /// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+    /// let sky = BirthSky {
+    ///     lagna_deg: 15.0,
+    ///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+    ///     lord_retrograde: false,
+    /// };
+    /// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+    /// use teistro_rectification::Presentation;
+    ///
+    /// let facts = Facts { father_present: Some(true), presentation: Some(Presentation::Feet), ..Facts::default() };
+    /// // The father remembered present though the sky has him away: one of two agrees.
+    /// assert_eq!(judged(sky, &facts, CircumstanceRules::default()).agreeing(), 1);
+    /// # let _ = (Graha::Sun, read);
+    /// ```
     #[must_use]
     pub fn agreeing(&self) -> usize {
         self.weights.iter().filter(|weight| weight.agrees).count()
@@ -436,6 +856,58 @@ impl Circumstance {
 }
 
 /// The circumstances at a candidate instant, read from the sky.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{CircumstanceRules, Facts, circumstance};
+///
+/// let read = circumstance(&Orrery, birth, &Facts::default(), CircumstanceRules::default())?;
+/// assert_eq!(read.sky.lagna_deg, Orrery.ascendant_deg(birth)?);
+/// assert_eq!(read.sky.of(Graha::Mars), Orrery.graha_deg(Graha::Mars, birth)?);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -469,6 +941,22 @@ pub fn circumstance(
 
 /// The circumstances of a sky given whole, apart from the ephemeris, so a
 /// clause can be asserted from placements written down.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::{BirthSky, CircumstanceRules, Facts, circumstance::judged};
+///
+/// // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+/// let sky = BirthSky {
+///     lagna_deg: 15.0,
+///     grahas_deg: [250.0, 100.0, 200.0, 235.0, 60.0, 280.0, 330.0],
+///     lord_retrograde: false,
+/// };
+/// let read = judged(sky, &Facts::default(), CircumstanceRules::default());
+/// // The placements written down, no ephemeris.
+/// assert_eq!(read.father.sun_house, 9);
+/// # let _ = Graha::Sun;
+/// ```
 #[must_use]
 pub fn judged(sky: BirthSky, facts: &Facts, rules: CircumstanceRules) -> Circumstance {
     let father = father(&sky, rules);
@@ -554,6 +1042,15 @@ fn father(sky: &BirthSky, rules: CircumstanceRules) -> Father {
 /// Whether the Moon lies between two grahas: one in the 12th from her and
 /// the other in the 2nd, or all three in one sign with her degree between
 /// theirs (V.2 and the 1912 print's note).
+///
+/// ```
+/// use teistro_rectification::hemmed;
+///
+/// // Mercury in the 12th from the Moon and Venus in the 2nd.
+/// assert!(hemmed(100.0, 80.0, 125.0));
+/// // All three in her sign, her degree between theirs.
+/// assert!(hemmed(100.0, 95.0, 105.0) && !hemmed(100.0, 102.0, 105.0));
+/// ```
 #[must_use]
 pub fn hemmed(moon_deg: f64, first_deg: f64, second_deg: f64) -> bool {
     let moon = Rashi::of_longitude(moon_deg);

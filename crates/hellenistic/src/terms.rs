@@ -11,9 +11,27 @@ use teistro_core::error::Error;
 use crate::Sect;
 
 /// The terms in one sign.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_hellenistic::{TERMS_PER_SIGN, TermsTable};
+///
+/// assert_eq!(TermsTable::EGYPTIAN.of(Rashi::Leo).len(), TERMS_PER_SIGN);
+/// ```
 pub const TERMS_PER_SIGN: usize = 5;
 
 /// The five planets that take terms; the Sun and the Moon take none.
+///
+/// ```
+/// use teistro_hellenistic::{TERM_LORDS, TermsTable};
+///
+/// // Every sign of every table holds each of the five once.
+/// for sign in TermsTable::PTOLEMAIC_LILLY.signs() {
+///     for lord in TERM_LORDS {
+///         assert_eq!(sign.iter().filter(|term| term.lord == lord).count(), 1);
+///     }
+/// }
+/// ```
 pub const TERM_LORDS: [Graha; TERMS_PER_SIGN] = [
     Graha::Saturn,
     Graha::Jupiter,
@@ -25,6 +43,16 @@ pub const TERM_LORDS: [Graha; TERMS_PER_SIGN] = [
 const SIGN_DEGREES: u8 = 30;
 
 /// One term: its lord, and the degree within the sign it ends at.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{Term, TermsTable};
+///
+/// // Aries opens with Jupiter's term, which ends at 6° and does not hold it.
+/// assert_eq!(TermsTable::PTOLEMAIC_LILLY.signs()[0][0], Term { lord: Graha::Jupiter, end: 6 });
+/// assert_eq!(TermsTable::PTOLEMAIC_LILLY.lord_at(5.99), Some(Graha::Jupiter));
+/// assert_eq!(TermsTable::PTOLEMAIC_LILLY.lord_at(6.0), Some(Graha::Venus));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "TermEntry"))]
@@ -47,6 +75,15 @@ use Graha::{Jupiter as Ju, Mars as Ma, Mercury as Me, Saturn as Sa, Venus as Ve}
 ///
 /// The shipped systems are constants; a consumer's own is
 /// [`TermsTable::new`], which refuses a malformed sign by name.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::TermsTable;
+///
+/// // A table is twelve signs of five terms, read into by longitude.
+/// assert_eq!(TermsTable::EGYPTIAN.lord_at(13.0), Some(Graha::Mercury));
+/// assert_eq!(TermsTable::PTOLEMAIC_LILLY.lord_at(13.0), Some(Graha::Venus));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
@@ -72,6 +109,28 @@ impl From<TermsTable> for [[Term; TERMS_PER_SIGN]; 12] {
 impl TermsTable {
     /// The Egyptian terms, *Tetrabiblos* I.XXIII (Ashmand's 1822
     /// translation): the table the chapter prints, whose totals it states.
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::TermsTable;
+    ///
+    /// // The totals Ptolemy states for the Egyptian terms: Saturn 57, Jupiter 79,
+    /// // Mars 66, Venus 82, Mercury 76.
+    /// let mut totals: HashMap<Graha, u32> = HashMap::new();
+    /// for sign in TermsTable::EGYPTIAN.signs() {
+    ///     let mut start = 0;
+    ///     for term in sign {
+    ///         *totals.entry(term.lord).or_default() += u32::from(term.end - start);
+    ///         start = term.end;
+    ///     }
+    /// }
+    /// assert_eq!(totals[&Graha::Saturn], 57);
+    /// assert_eq!(totals[&Graha::Jupiter], 79);
+    /// assert_eq!(totals[&Graha::Mars], 66);
+    /// assert_eq!(totals[&Graha::Venus], 82);
+    /// assert_eq!(totals[&Graha::Mercury], 76);
+    /// ```
     #[rustfmt::skip]
     pub const EGYPTIAN: TermsTable = TermsTable([
         [term(Ju, 6), term(Ve, 12), term(Me, 20), term(Ma, 25), term(Sa, 30)],
@@ -90,6 +149,16 @@ impl TermsTable {
 
     /// Ptolemy's own terms as Lilly prints them, "according to Ptolomy"
     /// (*Christian Astrology*, 1647, p. 104).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_hellenistic::TermsTable;
+    ///
+    /// // Lilly's Taurus: Venus to 8°, Mercury to 15°, Jupiter to 22°, Saturn to 26°.
+    /// let lords: Vec<Graha> = TermsTable::PTOLEMAIC_LILLY.of(Rashi::Taurus).iter().map(|term| term.lord).collect();
+    /// assert_eq!(lords, [Graha::Venus, Graha::Mercury, Graha::Jupiter, Graha::Saturn, Graha::Mars]);
+    /// assert_eq!(TermsTable::PTOLEMAIC_LILLY.lord_at(55.0), Some(Graha::Saturn));
+    /// ```
     #[rustfmt::skip]
     pub const PTOLEMAIC_LILLY: TermsTable = TermsTable([
         [term(Ju, 6), term(Ve, 14), term(Me, 21), term(Ma, 26), term(Sa, 30)],
@@ -110,6 +179,15 @@ impl TermsTable {
     /// Ashmand's edition, the alternates' lords taken onto the first
     /// lines' ends: the one reading of that table in which every sign
     /// holds the five planets once (crux C208).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::TermsTable;
+    ///
+    /// // Ashmand's Taurus gives Saturn 22° to 24°, where Lilly's runs to 26°.
+    /// assert_eq!(TermsTable::PTOLEMAIC_ASHMAND.lord_at(55.0), Some(Graha::Mars));
+    /// assert_eq!(TermsTable::PTOLEMAIC_LILLY.lord_at(55.0), Some(Graha::Saturn));
+    /// ```
     #[rustfmt::skip]
     pub const PTOLEMAIC_ASHMAND: TermsTable = TermsTable([
         [term(Ju, 6), term(Ve, 14), term(Me, 21), term(Ma, 26), term(Sa, 30)],
@@ -219,12 +297,27 @@ impl TermsTable {
     }
 
     /// The twelve signs' terms, Aries first.
+    ///
+    /// ```
+    /// use teistro_hellenistic::TermsTable;
+    ///
+    /// // Every sign's last term ends at 30°.
+    /// assert!(TermsTable::EGYPTIAN.signs().iter().all(|sign| sign[4].end == 30));
+    /// ```
     #[must_use]
     pub const fn signs(&self) -> [[Term; TERMS_PER_SIGN]; 12] {
         self.0
     }
 
     /// The terms of one sign.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_hellenistic::TermsTable;
+    ///
+    /// let pisces = TermsTable::EGYPTIAN.of(Rashi::Pisces);
+    /// assert_eq!((pisces[0].lord, pisces[0].end), (Graha::Venus, 12));
+    /// ```
     #[must_use]
     pub fn of(&self, sign: Rashi) -> [Term; TERMS_PER_SIGN] {
         let [aries, ..] = self.0;
@@ -237,6 +330,16 @@ impl TermsTable {
 
     /// The lord of the term a longitude falls in, taken in any turn; none
     /// for a longitude that is not a number.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::TermsTable;
+    ///
+    /// // Taken in any turn: 365° is 5° Aries.
+    /// assert_eq!(TermsTable::EGYPTIAN.lord_at(365.0), Some(Graha::Jupiter));
+    /// assert_eq!(TermsTable::EGYPTIAN.lord_at(-355.0), Some(Graha::Jupiter));
+    /// assert_eq!(TermsTable::EGYPTIAN.lord_at(f64::NAN), None);
+    /// ```
     #[must_use]
     pub fn lord_at(&self, longitude_deg: f64) -> Option<Graha> {
         if !longitude_deg.is_finite() {
@@ -256,6 +359,18 @@ impl TermsTable {
 ///
 /// No system is a default: a reading names its terms, because the
 /// sources disagree and choosing one is choosing a school (crux C208).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{Sect, Terms, TermsTable};
+///
+/// // A table of one's own: the Egyptian with Aries's first two terms swapped.
+/// let mut signs = TermsTable::EGYPTIAN.signs();
+/// (signs[0][0].lord, signs[0][1].lord) = (Graha::Venus, Graha::Jupiter);
+/// let own = Terms::Table(TermsTable::new(signs)?);
+/// assert_eq!(own.table(Sect::Day).lord_at(3.0), Some(Graha::Venus));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -279,6 +394,16 @@ pub enum Terms {
 
 impl Terms {
     /// The table this system gives a chart of the sect.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{Sect, Terms};
+    ///
+    /// // Only the Chaldean terms change with the sect.
+    /// assert_eq!(Terms::Chaldean.table(Sect::Day).lord_at(60.0), Some(Graha::Saturn));
+    /// assert_eq!(Terms::Chaldean.table(Sect::Night).lord_at(60.0), Some(Graha::Mercury));
+    /// assert_eq!(Terms::Egyptian.table(Sect::Day), Terms::Egyptian.table(Sect::Night));
+    /// ```
     #[must_use]
     pub fn table(&self, sect: Sect) -> TermsTable {
         match self {

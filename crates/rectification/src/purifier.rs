@@ -20,6 +20,36 @@ use teistro_vargas::Scheme;
 use crate::{Day, Rules, Sky};
 
 /// What may purify a lagna.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Line;
+/// # impl Sky for Line {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+/// #     }
+/// # }
+/// # use teistro_rectification::{Rules, Window, narrow};
+/// #
+/// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+/// # let found = narrow(window, &Line, &Rules::default())?;
+///
+/// use teistro_rectification::Purifier;
+///
+/// // Every verdict judges the pranapada first and the Moon last.
+/// let clauses = &found.intervals[0].verdict.clauses;
+/// assert_eq!(clauses.first().map(|one| one.purifier), Some(Purifier::Pranapada));
+/// assert_eq!(clauses.last().map(|one| one.purifier), Some(Purifier::Moon));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -34,6 +64,36 @@ pub enum Purifier {
 
 /// Which point of a purifier a clause reads: the purifier itself, or one
 /// of the three v. 76 attaches to Gulika.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Line;
+/// # impl Sky for Line {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+/// #     }
+/// # }
+/// # use teistro_rectification::{Rules, Window, narrow};
+/// #
+/// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+/// # let found = narrow(window, &Line, &Rules::default())?;
+///
+/// use teistro_rectification::{Purifier, Reference};
+///
+/// // v. 76's three points are Gulika's alone.
+/// let clauses = &found.intervals[0].verdict.clauses;
+/// assert!(clauses.iter().filter(|one| one.reference != Reference::Itself).all(|one| one.purifier == Purifier::Gulika));
+/// assert_eq!(clauses.len(), 6);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PurifierReference"))]
@@ -50,6 +110,13 @@ pub enum Reference {
 }
 
 /// The species vv. 77–78 assign the twelve houses to.
+///
+/// ```
+/// use teistro_rectification::{Native, Rules};
+///
+/// assert_eq!(Rules::default().native, Native::Human);
+/// assert_eq!(Native::Bird.houses(), [3, 7, 11]);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RectificationSpecies"))]
@@ -69,6 +136,14 @@ pub enum Native {
 impl Native {
     /// The houses, counted from the purifier to the lagna, that purify
     /// this native's birth.
+    ///
+    /// ```
+    /// use teistro_rectification::Native;
+    ///
+    /// // A human's lagna in the purifier's sign or a trine of it.
+    /// assert_eq!(Native::Human.houses(), [1, 5, 9]);
+    /// assert_eq!(Native::Creeper.houses(), [4, 8, 12]);
+    /// ```
     #[must_use]
     pub const fn houses(self) -> [u8; 3] {
         match self {
@@ -81,6 +156,13 @@ impl Native {
 }
 
 /// Whether a lagna no purifier holds is removed or only weighed (X8).
+///
+/// ```
+/// use teistro_rectification::{PurifyAs, Rules};
+///
+/// assert_eq!(Rules::default().purify_as, PurifyAs::Bar);
+/// assert_eq!(PurifyAs::default(), PurifyAs::Bar);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -93,6 +175,16 @@ pub enum PurifyAs {
 }
 
 /// How the pranapada is reckoned (X2, X3).
+///
+/// ```
+/// use teistro_rectification::{PranapadaRule, pranapada_deg};
+///
+/// // The Sun at 10° Aries, a movable sign, an hour after sunrise: the verse
+/// // carries it 300°.
+/// assert!((pranapada_deg(PranapadaRule::Verse, 10.0, 1.0)? - 310.0).abs() < 1e-9);
+/// assert_eq!(PranapadaRule::default(), PranapadaRule::Verse);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -112,6 +204,19 @@ pub enum PranapadaRule {
 }
 
 /// Which end of Saturn's eighth is Gulika (X5).
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_rectification::{Day, GulikaAt, gulika_instant};
+///
+/// // Saturn's eighth runs from its start to its end, an eighth of the daylight.
+/// let day = Day::literal(0.0, 0.5, 1.0, Vara::Budhavara);
+/// let start = gulika_instant(&day, JulianDay::literal(0.1), GulikaAt::Start)?;
+/// let end = gulika_instant(&day, JulianDay::literal(0.1), GulikaAt::End)?;
+/// assert!((end.get() - start.get() - 0.5 / 8.0).abs() < 1e-12);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -132,6 +237,36 @@ pub enum GulikaAt {
 /// purifies", which keeps exactly the instants [`Always`](Self::Always)
 /// keeps (an instant either of the two holds is pure already) and differs
 /// only in what the verdict says counted. That reading is the SDK's.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Line;
+/// # impl Sky for Line {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+/// #     }
+/// # }
+/// # use teistro_rectification::{Rules, Window, narrow};
+/// #
+/// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+/// # let found = narrow(window, &Line, &Rules::default())?;
+///
+/// use teistro_rectification::{GulikaExtension, Reference};
+///
+/// // Not judged, Gulika is read by its own sign alone.
+/// let bare = narrow(window, &Line, &Rules { gulika_extension: GulikaExtension::Never, ..Rules::default() })?;
+/// let clauses = &bare.intervals.iter().chain(&bare.removed).next().ok_or(teistro_core::Error::internal("a run"))?.verdict.clauses;
+/// assert!(clauses.iter().all(|one| one.reference == Reference::Itself));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -146,6 +281,16 @@ pub enum GulikaExtension {
 }
 
 /// One test of the lagna against one point of one purifier.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_rectification::{Clause, Purifier, Reference};
+///
+/// // Aries rising with the Moon in Leo: the fifth from her, a trine.
+/// let moon = Clause { purifier: Purifier::Moon, reference: Reference::Itself, sign: Rashi::Leo, lagna: Rashi::Aries, house: 9, held: true, counted: true };
+/// assert!(moon.held && moon.counted);
+/// assert_eq!(moon.source(), "BPHS ch. 2 vv. 75, 77");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PurifierClause"))]
@@ -171,6 +316,19 @@ pub struct Clause {
 
 impl Clause {
     /// The verses the clause reads, in the Subodhini prints' numbering.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_rectification::{Clause, Purifier, Reference};
+    ///
+    /// // Aries rising with the Moon in Leo: the fifth from her, a trine.
+    /// let moon = Clause { purifier: Purifier::Moon, reference: Reference::Itself, sign: Rashi::Leo, lagna: Rashi::Aries, house: 9, held: true, counted: true };
+    /// use teistro_rectification::Purifier as P;
+    ///
+    /// // v. 76's points are read from their own verse.
+    /// let seventh = Clause { purifier: P::Gulika, reference: Reference::Seventh, ..moon };
+    /// assert_eq!(seventh.source(), "BPHS ch. 2 vv. 76–77");
+    /// ```
     #[must_use]
     pub const fn source(&self) -> &'static str {
         match (self.purifier, self.reference) {
@@ -184,6 +342,33 @@ impl Clause {
 
 /// What the purifier finds at an instant: every clause, and whether any
 /// held.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Line;
+/// # impl Sky for Line {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+/// #     }
+/// # }
+/// # use teistro_rectification::{Rules, Window, narrow};
+/// #
+/// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+/// # let found = narrow(window, &Line, &Rules::default())?;
+///
+/// // A kept run is pure: at least one counted clause held.
+/// let verdict = &found.intervals[0].verdict;
+/// assert!(verdict.pure && verdict.clauses.iter().any(|one| one.held && one.counted));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PurifierVerdict"))]
@@ -197,11 +382,64 @@ pub struct Verdict {
 
 impl Verdict {
     /// The clauses that held, counted or not.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Vara;
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{Day, Sky};
+    /// #
+    /// # struct Line;
+    /// # impl Sky for Line {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+    /// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+    /// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+    /// #     }
+    /// # }
+    /// # use teistro_rectification::{Rules, Window, narrow};
+    /// #
+    /// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+    /// # let found = narrow(window, &Line, &Rules::default())?;
+    ///
+    /// let verdict = &found.intervals[0].verdict;
+    /// assert!(verdict.held().all(|one| one.held));
+    /// assert!(verdict.held().count() >= verdict.purified_by().count());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     pub fn held(&self) -> impl Iterator<Item = &Clause> {
         self.clauses.iter().filter(|clause| clause.held)
     }
 
     /// The clauses that held and counted: what made the instant pure.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Vara;
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{Day, Sky};
+    /// #
+    /// # struct Line;
+    /// # impl Sky for Line {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+    /// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+    /// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+    /// #     }
+    /// # }
+    /// # use teistro_rectification::{Rules, Window, narrow};
+    /// #
+    /// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+    /// # let found = narrow(window, &Line, &Rules::default())?;
+    ///
+    /// // What made a kept run pure.
+    /// assert!(found.intervals.iter().all(|run| run.verdict.purified_by().next().is_some()));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     pub fn purified_by(&self) -> impl Iterator<Item = &Clause> {
         self.held().filter(|clause| clause.counted)
     }
@@ -209,6 +447,15 @@ impl Verdict {
 
 /// The verse's count for a time since sunrise, figure for figure as the
 /// 1899 print works it.
+///
+/// ```
+/// use teistro_rectification::pranapada_working;
+///
+/// // An hour is two and a half ghatis, 150 palas: ten signs exactly.
+/// let hour = pranapada_working(2, 30);
+/// assert_eq!((hour.signs, hour.palas_left, hour.degrees), (10, 0, 0));
+/// assert_eq!((hour.mod_twelve, hour.mod_fifteen), (10, 10));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

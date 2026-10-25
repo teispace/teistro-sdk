@@ -36,6 +36,13 @@ use crate::purifier::{house, nth};
 // ── the request ────────────────────────────────────────────────────────
 
 /// How far the reported time is trusted, which weighs its prior.
+///
+/// ```
+/// use teistro_rectification::Accuracy;
+///
+/// assert_eq!(Accuracy::default(), Accuracy::Approximate);
+/// assert!(Accuracy::Exact.weight() > Accuracy::Rectified.weight());
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -53,6 +60,14 @@ pub enum Accuracy {
 
 impl Accuracy {
     /// The weight of the reported time's prior.
+    ///
+    /// ```
+    /// use teistro_rectification::Accuracy;
+    ///
+    /// assert_eq!(Accuracy::Approximate.weight(), 1.2);
+    /// // An unknown time is weighed not at all.
+    /// assert_eq!(Accuracy::Unknown.weight(), 0.0);
+    /// ```
     #[must_use]
     pub const fn weight(self) -> f64 {
         match self {
@@ -65,6 +80,13 @@ impl Accuracy {
 }
 
 /// The child's sex, which the tattva prior reads.
+///
+/// ```
+/// use teistro_rectification::{Sex, Tattva};
+///
+/// assert_eq!(Tattva::Jala.sex(), Sex::Female);
+/// assert_eq!(Tattva::Agni.sex(), Sex::Male);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -77,6 +99,13 @@ pub enum Sex {
 
 /// What happened, which decides the houses and karakas a period's lord is
 /// scored against.
+///
+/// ```
+/// use teistro_rectification::EventKind;
+///
+/// assert_eq!(serde_json::to_string(&EventKind::ChildBirth)?, r#""CHILD_BIRTH""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -126,6 +155,16 @@ pub enum EventKind {
 }
 
 /// What a kind of event is scored against: the baseline's table.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::EventKind;
+///
+/// // An accident: the first house, afflicted by the dusthanas.
+/// let accident = EventKind::Accident.signification();
+/// assert_eq!((accident.primary, accident.afflicting), (&[1][..], &[8, 6, 12][..]));
+/// assert_eq!(accident.karakas, [Graha::Mars, Graha::Saturn, Graha::Rahu]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Signification {
     /// The houses that signify it most.
@@ -158,6 +197,15 @@ const fn signified(
 
 impl EventKind {
     /// The baseline's table for the kind.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rectification::EventKind;
+    ///
+    /// let marriage = EventKind::Marriage.signification();
+    /// assert_eq!((marriage.primary, marriage.supporting), (&[7][..], &[2, 11][..]));
+    /// assert_eq!((marriage.karakas, marriage.sharpness), (&[Graha::Venus, Graha::Jupiter][..], 1.0));
+    /// ```
     #[must_use]
     pub const fn signification(self) -> Signification {
         use Graha::{Jupiter, Ketu, Mars, Mercury, Moon, Rahu, Saturn, Sun, Venus};
@@ -195,6 +243,12 @@ impl EventKind {
 
 /// How finely an event's date is known, which sets the window it is
 /// fitted over.
+///
+/// ```
+/// use teistro_rectification::DatePrecision;
+///
+/// assert_eq!(DatePrecision::default(), DatePrecision::Day);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -210,6 +264,13 @@ pub enum DatePrecision {
 
 impl DatePrecision {
     /// The window's length, days, from its start.
+    ///
+    /// ```
+    /// use teistro_rectification::DatePrecision;
+    ///
+    /// let spans = [DatePrecision::Day, DatePrecision::Month, DatePrecision::Year].map(DatePrecision::days);
+    /// assert_eq!(spans, [1.0, 31.0, 366.0]);
+    /// ```
     #[must_use]
     pub const fn days(self) -> f64 {
         match self {
@@ -221,6 +282,12 @@ impl DatePrecision {
 }
 
 /// How sure the family is of an event, which weighs it.
+///
+/// ```
+/// use teistro_rectification::Confidence;
+///
+/// assert_eq!(Confidence::default(), Confidence::Certain);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -236,6 +303,13 @@ pub enum Confidence {
 
 impl Confidence {
     /// The event's weight.
+    ///
+    /// ```
+    /// use teistro_rectification::Confidence;
+    ///
+    /// let weights = [Confidence::Certain, Confidence::Probable, Confidence::Uncertain].map(Confidence::weight);
+    /// assert_eq!(weights, [1.0, 0.7, 0.4]);
+    /// ```
     #[must_use]
     pub const fn weight(self) -> f64 {
         match self {
@@ -247,6 +321,22 @@ impl Confidence {
 }
 
 /// A dated life event.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_rectification::{EventKind, LifeEvent};
+///
+/// let married = LifeEvent::on(EventKind::Marriage, JulianDay::literal(2_460_100.5));
+///
+/// // The same event known to the month, and kept out to test the fit.
+/// let tested = LifeEvent {
+///     id: Some("wedding".into()),
+///     precision: teistro_rectification::DatePrecision::Month,
+///     held_out: true,
+///     ..married
+/// };
+/// assert!(tested.held_out && tested.until.is_none());
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -274,6 +364,16 @@ pub struct LifeEvent {
 
 impl LifeEvent {
     /// An event on a day, certain, in the fit.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_rectification::{EventKind, LifeEvent};
+    ///
+    /// let married = LifeEvent::on(EventKind::Marriage, JulianDay::literal(2_460_100.5));
+    /// use teistro_rectification::{Confidence, DatePrecision};
+    ///
+    /// assert_eq!((married.precision, married.confidence, married.held_out), (DatePrecision::Day, Confidence::Certain, false));
+    /// ```
     #[must_use]
     pub fn on(kind: EventKind, on: JulianDay<Utc>) -> LifeEvent {
         LifeEvent {
@@ -290,6 +390,15 @@ impl LifeEvent {
 
 /// The dasha the event fit reads: Vimshottari, under the rules the
 /// baseline computes it with unless asked otherwise.
+///
+/// ```
+/// use teistro_rectification::BaselineRequest;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_rectification::baseline::baseline_dasha_rules;
+///
+/// let request = BaselineRequest::around(JulianDay::literal(2_460_000.5), 30.0);
+/// assert_eq!(request.dasha, baseline_dasha_rules());
+/// ```
 #[must_use]
 pub const fn baseline_dasha_rules() -> teistro_dasha::Rules {
     teistro_dasha::Rules {
@@ -303,6 +412,20 @@ pub const fn baseline_dasha_rules() -> teistro_dasha::Rules {
 }
 
 /// What the baseline rectification is asked.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_rectification::{Accuracy, BaselineRequest, EventKind, LifeEvent, Sex};
+///
+/// let request = BaselineRequest {
+///     accuracy: Accuracy::Exact,
+///     sex: Some(Sex::Female),
+///     events: vec![LifeEvent::on(EventKind::Marriage, JulianDay::literal(2_469_000.5))],
+///     ..BaselineRequest::around(JulianDay::literal(2_460_000.5), 30.0)
+/// };
+/// request.check()?;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -337,6 +460,15 @@ impl BaselineRequest {
     /// A request around a reported time, `uncertainty_minutes` either side:
     /// remembered approximately, no events, no sex, the intervals holding
     /// 80% of the posterior, the baseline's dasha.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_rectification::{Accuracy, BaselineRequest};
+    ///
+    /// let request = BaselineRequest::around(JulianDay::literal(2_460_000.5), 30.0);
+    /// assert_eq!((request.accuracy, request.coverage, request.sex), (Accuracy::Approximate, 0.8, None));
+    /// assert!(request.events.is_empty());
+    /// ```
     #[must_use]
     pub fn around(reported: JulianDay<Utc>, uncertainty_minutes: f64) -> BaselineRequest {
         BaselineRequest {
@@ -351,6 +483,18 @@ impl BaselineRequest {
     }
 
     /// Whether the request can be answered, each refusal naming its field.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_rectification::BaselineRequest;
+    ///
+    /// let request = BaselineRequest::around(JulianDay::literal(2_460_000.5), 30.0);
+    /// assert!(request.check().is_ok());
+    /// let too_wide = BaselineRequest { uncertainty_minutes: 721.0, ..request.clone() };
+    /// assert_eq!(too_wide.check().unwrap_err().field(), Some("uncertaintyMinutes"));
+    /// let whole = BaselineRequest { coverage: 1.0, ..request };
+    /// assert_eq!(whole.check().unwrap_err().field(), Some("coverage"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -385,6 +529,15 @@ impl BaselineRequest {
     }
 
     /// The window searched.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_rectification::BaselineRequest;
+    ///
+    /// // Half a day either side of noon.
+    /// let window = BaselineRequest::around(JulianDay::literal(2_460_000.0), 720.0).window();
+    /// assert_eq!((window.from.get(), window.to.get()), (2_459_999.5, 2_460_000.5));
+    /// ```
     #[must_use]
     pub fn window(&self) -> Interval {
         let half = self.uncertainty_minutes / MINUTES_PER_DAY;
@@ -396,38 +549,187 @@ impl BaselineRequest {
 
 const MINUTES_PER_DAY: f64 = 1440.0;
 /// Candidates in the first pass across the window.
+///
+/// ```
+/// use teistro_rectification::baseline::{CANDIDATES_PER_PASS, COARSE_STEP_MINUTES};
+///
+/// // An hour either side is searched at half-minute steps first.
+/// let step = (2.0 * 60.0 / CANDIDATES_PER_PASS).clamp(COARSE_STEP_MINUTES.0, COARSE_STEP_MINUTES.1);
+/// assert_eq!(step, 0.5);
+/// ```
 pub const CANDIDATES_PER_PASS: f64 = 240.0;
 /// The coarse step's bounds, minutes.
+///
+/// ```
+/// use teistro_rectification::baseline::{CANDIDATES_PER_PASS, COARSE_STEP_MINUTES};
+///
+/// // Twelve hours either side would step 6 minutes, the coarsest allowed.
+/// assert_eq!(2.0 * 720.0 / CANDIDATES_PER_PASS, COARSE_STEP_MINUTES.1);
+/// ```
 pub const COARSE_STEP_MINUTES: (f64, f64) = (0.25, 6.0);
 /// How much finer each refining pass steps.
+///
+/// ```
+/// use teistro_rectification::baseline::{COARSE_STEP_MINUTES, MAX_PASSES, REFINE_FACTOR};
+///
+/// // The coarsest step, refined at most twice, is never finer than 22.5 s.
+/// let finest = COARSE_STEP_MINUTES.1 / REFINE_FACTOR.powi(MAX_PASSES as i32 - 1);
+/// assert_eq!(finest, 0.375);
+/// ```
 pub const REFINE_FACTOR: f64 = 4.0;
 /// The passes at most.
+///
+/// ```
+/// use teistro_rectification::baseline::MAX_PASSES;
+///
+/// assert_eq!(MAX_PASSES, 3);
+/// ```
 pub const MAX_PASSES: usize = 3;
 /// The posterior a refining pass keeps.
+///
+/// ```
+/// use teistro_rectification::baseline::REFINE_COVERAGE;
+///
+/// assert!(REFINE_COVERAGE > 0.99);
+/// ```
 pub const REFINE_COVERAGE: f64 = 0.995;
 /// The candidates an answer lists.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             Graha::Rahu => 40.0 - 0.053 * days,
+/// #             _ => 220.0 - 0.053 * days,
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::BaselineRequest;
+/// use teistro_rectification::baseline::{MAX_CANDIDATES, rectify};
+///
+/// // An hour either side, no events: the reported time's prior alone.
+/// let request = BaselineRequest::around(birth, 60.0);
+/// let answer = rectify(&Orrery, &request, 345)?;
+/// assert!(answer.candidates.len() <= MAX_CANDIDATES);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 pub const MAX_CANDIDATES: usize = 20;
 /// The prior's resolution, minutes.
+///
+/// ```
+/// use teistro_rectification::baseline::{DASHA_RESOLUTION_MINUTES, PRIOR_RESOLUTION_MINUTES};
+///
+/// // A dasha boundary tells candidates apart finer than the prior does.
+/// assert!(DASHA_RESOLUTION_MINUTES < PRIOR_RESOLUTION_MINUTES);
+/// ```
 pub const PRIOR_RESOLUTION_MINUTES: f64 = 6.0;
 /// The event fit's resolution, minutes.
+///
+/// ```
+/// use teistro_rectification::baseline::DASHA_RESOLUTION_MINUTES;
+///
+/// assert_eq!(DASHA_RESOLUTION_MINUTES, 2.0);
+/// ```
 pub const DASHA_RESOLUTION_MINUTES: f64 = 2.0;
 /// The tattva prior's penalty on a candidate of the wrong sex's tattva.
+///
+/// ```
+/// use teistro_rectification::baseline::{TATTVA_SEX_PENALTY, from_score};
+///
+/// // A tattva of the other sex costs its candidate a score of zero at this weight.
+/// assert!(from_score(0.0, TATTVA_SEX_PENALTY) < from_score(1.0, TATTVA_SEX_PENALTY));
+/// ```
 pub const TATTVA_SEX_PENALTY: f64 = 2.5;
 /// The weight of each level of the dasha a fit descends through.
+///
+/// ```
+/// use teistro_rectification::baseline::LEVEL_WEIGHT;
+///
+/// // The antardasha weighs most.
+/// assert_eq!(LEVEL_WEIGHT.iter().copied().fold(0.0, f64::max), LEVEL_WEIGHT[1]);
+/// ```
 pub const LEVEL_WEIGHT: [f64; 3] = [0.8, 1.4, 0.9];
 /// The event fit's weight.
+///
+/// ```
+/// use teistro_rectification::baseline::DASHA_WEIGHT;
+///
+/// assert_eq!(DASHA_WEIGHT, 14.0);
+/// ```
 pub const DASHA_WEIGHT: f64 = 14.0;
 /// The score a likelihood never falls below, so no candidate is vetoed.
+///
+/// ```
+/// use teistro_rectification::baseline::{SCORE_FLOOR, from_score};
+///
+/// // A score of zero is the floor's log, never minus infinity.
+/// assert_eq!(from_score(0.0, 1.0), SCORE_FLOOR.ln());
+/// ```
 pub const SCORE_FLOOR: f64 = 0.02;
 /// How far over its baseline a held-out event must score to be supported.
+///
+/// ```
+/// use teistro_rectification::baseline::HOLD_OUT_MARGIN;
+///
+/// assert_eq!(HOLD_OUT_MARGIN, 0.05);
+/// ```
 pub const HOLD_OUT_MARGIN: f64 = 0.05;
 /// How many candidates, about, a held-out event's baseline is the mean of:
 /// every `n / HOLD_OUT_SPREAD`-th.
+///
+/// ```
+/// use teistro_rectification::baseline::HOLD_OUT_SPREAD;
+///
+/// assert_eq!(HOLD_OUT_SPREAD, 24);
+/// ```
 pub const HOLD_OUT_SPREAD: usize = 24;
 
 // ── the tattva cycle (the baseline's, X12) ─────────────────────────────
 
 /// The five tattvas, in the cycle's order.
+///
+/// ```
+/// use teistro_rectification::Tattva;
+///
+/// let minutes: f64 = Tattva::SEQUENCE.map(Tattva::minutes).iter().sum();
+/// assert_eq!(minutes, 90.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -446,6 +748,12 @@ pub enum Tattva {
 
 impl Tattva {
     /// The cycle's order.
+    ///
+    /// ```
+    /// use teistro_rectification::Tattva;
+    ///
+    /// assert_eq!(Tattva::SEQUENCE.map(Tattva::minutes), [6.0, 12.0, 18.0, 24.0, 30.0]);
+    /// ```
     pub const SEQUENCE: [Tattva; 5] = [
         Tattva::Prithvi,
         Tattva::Jala,
@@ -455,6 +763,12 @@ impl Tattva {
     ];
 
     /// Its minutes in each 90-minute turn.
+    ///
+    /// ```
+    /// use teistro_rectification::Tattva;
+    ///
+    /// assert_eq!(Tattva::Akasha.minutes(), Tattva::SEQUENCE[4].minutes());
+    /// ```
     #[must_use]
     pub const fn minutes(self) -> f64 {
         match self {
@@ -467,6 +781,13 @@ impl Tattva {
     }
 
     /// The sex of a birth in it.
+    ///
+    /// ```
+    /// use teistro_rectification::{Sex, Tattva};
+    ///
+    /// let female = Tattva::SEQUENCE.iter().filter(|t| t.sex() == Sex::Female).count();
+    /// assert_eq!(female, 2);
+    /// ```
     #[must_use]
     pub const fn sex(self) -> Sex {
         match self {
@@ -476,6 +797,13 @@ impl Tattva {
     }
 
     /// The tattva a weekday's cycle starts from, Sunday 0.
+    ///
+    /// ```
+    /// use teistro_rectification::Tattva;
+    ///
+    /// // Sunday from Agni, Monday from Jala, Wednesday from Prithvi.
+    /// assert_eq!([0, 1, 3, 4].map(Tattva::starting), [Tattva::Agni, Tattva::Jala, Tattva::Prithvi, Tattva::Akasha]);
+    /// ```
     #[must_use]
     pub const fn starting(weekday: u8) -> Tattva {
         match weekday % 7 {
@@ -489,10 +817,28 @@ impl Tattva {
 }
 
 /// One turn of the cycle: 90 minutes.
+///
+/// ```
+/// use teistro_rectification::baseline::TATTVA_TURN_MINUTES;
+///
+/// // Sixteen turns a day.
+/// assert_eq!(1440.0 / TATTVA_TURN_MINUTES, 16.0);
+/// ```
 pub const TATTVA_TURN_MINUTES: f64 = 90.0;
 
 /// A turn's order: from the weekday's starting tattva in the cycle's
 /// order, reversed in every odd turn (negative ones included).
+///
+/// ```
+/// use teistro_rectification::baseline::turn_order;
+///
+/// // Odd turns run backwards, the turn before sunrise too.
+/// let mut reversed = turn_order(3, 0);
+/// reversed.reverse();
+/// assert_eq!(turn_order(3, 1), reversed);
+/// assert_eq!(turn_order(3, -1), reversed);
+/// assert_eq!(turn_order(3, 2), turn_order(3, 0));
+/// ```
 #[must_use]
 pub fn turn_order(weekday: u8, turn: i64) -> [Tattva; 5] {
     let start = Tattva::SEQUENCE
@@ -509,6 +855,16 @@ pub fn turn_order(weekday: u8, turn: i64) -> [Tattva; 5] {
 
 /// The tattva running `minutes` after sunrise, on a weekday, with the
 /// minutes it runs from and to.
+///
+/// ```
+/// use teistro_rectification::Tattva;
+/// use teistro_rectification::baseline::tattva_at;
+///
+/// // A Wednesday begins in Prithvi; each span holds its minute.
+/// let (tattva, from, to) = tattva_at(0.0, 3);
+/// assert_eq!(tattva, Tattva::Prithvi);
+/// assert!(from <= 0.0 && 0.0 < to);
+/// ```
 #[must_use]
 pub fn tattva_at(minutes: f64, weekday: u8) -> (Tattva, f64, f64) {
     #[expect(
@@ -537,6 +893,15 @@ pub fn tattva_at(minutes: f64, weekday: u8) -> (Tattva, f64, f64) {
 
 /// The weekday of an instant on a civil clock, Sunday 0: counted from the
 /// clock's local midnight.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_rectification::baseline::civil_weekday;
+///
+/// // 2000-01-01 12:00 UTC was a Saturday; 18:30 UTC is Sunday in Kathmandu.
+/// assert_eq!(civil_weekday(JulianDay::literal(2_451_545.0), 345), 6);
+/// assert_eq!(civil_weekday(JulianDay::literal(2_451_545.0 + 6.5 / 24.0), 345), 0);
+/// ```
 #[must_use]
 pub fn civil_weekday(at: JulianDay<Utc>, utc_offset_minutes: i32) -> u8 {
     let days = (at.get() + 1.5 + f64::from(utc_offset_minutes) / MINUTES_PER_DAY).floor();
@@ -552,6 +917,15 @@ pub fn civil_weekday(at: JulianDay<Utc>, utc_offset_minutes: i32) -> u8 {
 // ── the likelihood ─────────────────────────────────────────────────────
 
 /// A score in 0 to 1 as a log-likelihood, floored so nothing is vetoed.
+///
+/// ```
+/// use teistro_rectification::baseline::from_score;
+///
+/// assert_eq!(from_score(1.0, 10.0), 0.0);
+/// // Scores outside 0 to 1 are clamped.
+/// assert_eq!(from_score(2.0, 10.0), 0.0);
+/// assert!(from_score(0.0, 10.0).is_finite());
+/// ```
 #[must_use]
 pub fn from_score(score: f64, weight: f64) -> f64 {
     math::ln(SCORE_FLOOR + (1.0 - SCORE_FLOOR) * score.clamp(0.0, 1.0)) * weight
@@ -569,6 +943,14 @@ fn flat(curve: &[f64]) -> bool {
 }
 
 /// The posterior's probabilities, or none where nothing is finite.
+///
+/// ```
+/// use teistro_rectification::baseline::probabilities;
+///
+/// let p = probabilities(&[0.0, 2_f64.ln(), 0.0]);
+/// assert!((p[1] - 0.5).abs() < 1e-12);
+/// assert!(probabilities(&[f64::NEG_INFINITY; 3]).is_empty());
+/// ```
 #[must_use]
 pub fn probabilities(log_posterior: &[f64]) -> Vec<f64> {
     let max = log_posterior
@@ -659,6 +1041,13 @@ fn grid(segments: &[(f64, f64)], step: f64) -> Vec<f64> {
 // ── the sky at a candidate ─────────────────────────────────────────────
 
 /// The nine grahas the fit reads, in the order a candidate holds them.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::baseline::NINE;
+///
+/// assert_eq!((NINE[1], NINE[8]), (Graha::Moon, Graha::Ketu));
+/// ```
 pub const NINE: [Graha; 9] = [
     Graha::Sun,
     Graha::Moon,
@@ -672,6 +1061,18 @@ pub const NINE: [Graha; 9] = [
 ];
 
 /// What the stages read of one candidate.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::EventKind;
+/// use teistro_rectification::baseline::{Candidate, signifier_score};
+///
+/// // Aries rising, Venus at 10° Libra in the seventh.
+/// let mut grahas_deg = [0.0; 9];
+/// grahas_deg[5] = 190.0;
+/// let candidate = Candidate { at: 2_451_545.0, lagna_deg: 10.0, grahas_deg, weekday: 0 };
+/// assert_eq!(signifier_score(Graha::Moon, EventKind::Marriage, &candidate), 0.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Candidate {
     /// The instant.
@@ -723,6 +1124,63 @@ fn candidate(
 // ── the stages ─────────────────────────────────────────────────────────
 
 /// Which stage an outcome is.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             Graha::Rahu => 40.0 - 0.053 * days,
+/// #             _ => 220.0 - 0.053 * days,
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::BaselineRequest;
+/// use teistro_rectification::baseline::{MAX_CANDIDATES, rectify};
+///
+/// // An hour either side, no events: the reported time's prior alone.
+/// let request = BaselineRequest::around(birth, 60.0);
+/// let answer = rectify(&Orrery, &request, 345)?;
+/// use teistro_rectification::baseline::BaselineStage;
+///
+/// assert_eq!(answer.stages[0].stage, BaselineStage::Prior);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -734,6 +1192,63 @@ pub enum BaselineStage {
 }
 
 /// What a stage says it did.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             Graha::Rahu => 40.0 - 0.053 * days,
+/// #             _ => 220.0 - 0.053 * days,
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::BaselineRequest;
+/// use teistro_rectification::baseline::{MAX_CANDIDATES, rectify};
+///
+/// // An hour either side, no events: the reported time's prior alone.
+/// let request = BaselineRequest::around(birth, 60.0);
+/// let answer = rectify(&Orrery, &request, 345)?;
+/// use teistro_rectification::{Accuracy, Note};
+///
+/// assert!(answer.stages[0].notes.contains(&Note::ReportedTime { accuracy: Accuracy::Approximate, uncertainty_minutes: 60.0 }));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
@@ -778,6 +1293,64 @@ pub enum Note {
 }
 
 /// One stage's outcome.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             Graha::Rahu => 40.0 - 0.053 * days,
+/// #             _ => 220.0 - 0.053 * days,
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::BaselineRequest;
+/// use teistro_rectification::baseline::{MAX_CANDIDATES, rectify};
+///
+/// // An hour either side, no events: the reported time's prior alone.
+/// let request = BaselineRequest::around(birth, 60.0);
+/// let answer = rectify(&Orrery, &request, 345)?;
+/// // No events: the dasha stage has nothing to fit.
+/// let prior = &answer.stages[0];
+/// assert!(prior.applied);
+/// assert!(answer.stages.iter().skip(1).all(|s| !s.applied));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -829,6 +1402,19 @@ fn windows(events: &[LifeEvent], held_out: bool, weighted: bool) -> Vec<Window> 
 }
 
 /// How strongly a period's lord signifies an event at a candidate, 0 to 1.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rectification::EventKind;
+/// use teistro_rectification::baseline::{Candidate, signifier_score};
+///
+/// // Aries rising, Venus at 10° Libra in the seventh.
+/// let mut grahas_deg = [0.0; 9];
+/// grahas_deg[5] = 190.0;
+/// let candidate = Candidate { at: 2_451_545.0, lagna_deg: 10.0, grahas_deg, weekday: 0 };
+/// // In the seventh, lord of it and a marriage's karaka: capped at one.
+/// assert_eq!(signifier_score(Graha::Venus, EventKind::Marriage, &candidate), 1.0);
+/// ```
 #[must_use]
 pub fn signifier_score(lord: Graha, kind: EventKind, candidate: &Candidate) -> f64 {
     let table = kind.signification();
@@ -1028,6 +1614,63 @@ fn contribution(note: &Note) -> f64 {
 // ── the answer ─────────────────────────────────────────────────────────
 
 /// One candidate, ranked.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             Graha::Rahu => 40.0 - 0.053 * days,
+/// #             _ => 220.0 - 0.053 * days,
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::BaselineRequest;
+/// use teistro_rectification::baseline::{MAX_CANDIDATES, rectify};
+///
+/// // An hour either side, no events: the reported time's prior alone.
+/// let request = BaselineRequest::around(birth, 60.0);
+/// let answer = rectify(&Orrery, &request, 345)?;
+/// let best = &answer.candidates[0];
+/// assert_eq!(best.at, answer.suggested);
+/// assert!(answer.candidates.windows(2).all(|w| w[0].probability >= w[1].probability));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -1045,6 +1688,64 @@ pub struct Ranked {
 }
 
 /// A held-out event tested against the fit.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             Graha::Rahu => 40.0 - 0.053 * days,
+/// #             _ => 220.0 - 0.053 * days,
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{BaselineRequest, EventKind, LifeEvent};
+/// use teistro_rectification::baseline::rectify;
+///
+/// // One event fitted, one held out and tested.
+/// let fitted = LifeEvent::on(EventKind::Marriage, JulianDay::literal(EPOCH + 9000.0));
+/// let tested = LifeEvent { held_out: true, ..LifeEvent::on(EventKind::ChildBirth, JulianDay::literal(EPOCH + 9800.0)) };
+/// let request = BaselineRequest { events: vec![fitted, tested], ..BaselineRequest::around(birth, 60.0) };
+/// let answer = rectify(&Orrery, &request, 345)?;
+/// assert_eq!((answer.events_used, answer.events_held_out), (1, 1));
+/// assert_eq!(answer.hold_out[0].event, 1);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -1063,6 +1764,64 @@ pub struct HoldOut {
 }
 
 /// What the baseline rectification answers.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             Graha::Rahu => 40.0 - 0.053 * days,
+/// #             _ => 220.0 - 0.053 * days,
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::BaselineRequest;
+/// use teistro_rectification::baseline::{MAX_CANDIDATES, rectify};
+///
+/// // An hour either side, no events: the reported time's prior alone.
+/// let request = BaselineRequest::around(birth, 60.0);
+/// let answer = rectify(&Orrery, &request, 345)?;
+/// assert_eq!(answer.window, request.window());
+/// assert!(!answer.intervals.is_empty());
+/// assert!(answer.interval_width_minutes >= answer.resolution_minutes);
+/// assert!((0.0..=1.0).contains(&answer.concentration));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -1205,6 +1964,62 @@ fn discriminating(outcomes: &[StageOutcome]) -> Option<f64> {
 
 /// The baseline rectification over a sky, on a civil clock
 /// `utc_offset_minutes` east of UTC.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             Graha::Rahu => 40.0 - 0.053 * days,
+/// #             _ => 220.0 - 0.053 * days,
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::BaselineRequest;
+/// use teistro_rectification::baseline::{MAX_CANDIDATES, rectify};
+///
+/// // An hour either side, no events: the reported time's prior alone.
+/// let request = BaselineRequest::around(birth, 60.0);
+/// let answer = rectify(&Orrery, &request, 345)?;
+/// // The mode stays within the window.
+/// assert!(answer.window.contains(answer.suggested));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///

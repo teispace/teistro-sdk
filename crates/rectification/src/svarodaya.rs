@@ -31,14 +31,54 @@ use crate::{Day, Sky, Window};
 
 /// The turns of a day and night: sixty ghatis in turns of two and a half
 /// (v. 63).
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::error::Error;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Still;
+/// # impl Sky for Still {
+/// #     fn ascendant_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(0.0) }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(15.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Somavara))
+/// #     }
+/// # }
+/// # let minute = 1.0 / 1440.0;
+///
+/// use teistro_rectification::svarodaya::{Nadi, TURNS, svarodaya};
+///
+/// // A day of 24 hours: each turn an hour, the nadis taking it in turn.
+/// assert_eq!(TURNS, 24);
+/// let second = svarodaya(&Still, JulianDay::literal(2_460_000.25 + 61.0 * minute))?;
+/// assert_eq!((second.run.turn, second.run.nadi), (1, Nadi::Sun));
+/// # Ok::<(), Error>(())
+/// ```
 pub const TURNS: u8 = 24;
 
 /// The palas of one turn: two and a half ghatis of sixty (v. 197's sum).
+///
+/// ```
+/// use teistro_rectification::svarodaya::{ORDER, TURN_PALAS};
+///
+/// assert_eq!(ORDER.iter().map(|(_, palas)| palas).sum::<f64>(), TURN_PALAS);
+/// ```
 pub const TURN_PALAS: f64 = 150.0;
 
 /// The tattvas of one turn in the order they rise, each with its palas:
 /// air, fire, earth and water (v. 71) at v. 197's palas, and ether at the
 /// junction (v. 154), last.
+///
+/// ```
+/// use teistro_rectification::Tattva;
+/// use teistro_rectification::svarodaya::ORDER;
+///
+/// // Air first, ether at the junction.
+/// assert_eq!((ORDER[0], ORDER[4]), ((Tattva::Vayu, 20.0), (Tattva::Akasha, 10.0)));
+/// ```
 pub const ORDER: [(Tattva, f64); 5] = [
     (Tattva::Vayu, 20.0),
     (Tattva::Agni, 30.0),
@@ -48,6 +88,13 @@ pub const ORDER: [(Tattva, f64); 5] = [
 ];
 
 /// One of the two nadis that alternate through the day.
+///
+/// ```
+/// use teistro_rectification::Sex;
+/// use teistro_rectification::svarodaya::Nadi;
+///
+/// assert_eq!((Nadi::Moon.sex(), Nadi::Sun.sex()), (Sex::Female, Sex::Male));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "SvarodayaNadi"))]
@@ -61,6 +108,13 @@ pub enum Nadi {
 
 impl Nadi {
     /// The other nadi, which the next turn runs.
+    ///
+    /// ```
+    /// use teistro_rectification::svarodaya::Nadi;
+    ///
+    /// assert_eq!(Nadi::Moon.other(), Nadi::Sun);
+    /// assert_eq!(Nadi::Sun.other().other(), Nadi::Sun);
+    /// ```
     #[must_use]
     pub const fn other(self) -> Nadi {
         match self {
@@ -70,6 +124,13 @@ impl Nadi {
     }
 
     /// The sex v. 60 gives the nadi.
+    ///
+    /// ```
+    /// use teistro_rectification::Sex;
+    /// use teistro_rectification::svarodaya::Nadi;
+    ///
+    /// assert_eq!(Nadi::Sun.sex(), Sex::Male);
+    /// ```
     #[must_use]
     pub const fn sex(self) -> Sex {
         match self {
@@ -81,6 +142,17 @@ impl Nadi {
     /// The nadi rising at a sunrise whose tithi is `tithi` (v. 62): in
     /// runs of three days from pratipada, the Moon's first in the bright
     /// fortnight and the Sun's in the dark.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    /// use teistro_rectification::svarodaya::Nadi;
+    ///
+    /// // Runs of three days: the Moon's from pratipada of the bright fortnight,
+    /// // then the Sun's; the dark fortnight opens with the Sun's.
+    /// assert_eq!(Nadi::at_sunrise(Tithi::ShuklaTritiya), Nadi::Moon);
+    /// assert_eq!(Nadi::at_sunrise(Tithi::ShuklaChaturthi), Nadi::Sun);
+    /// assert_eq!(Nadi::at_sunrise(Tithi::KrishnaPratipada), Nadi::Sun);
+    /// ```
     #[must_use]
     pub const fn at_sunrise(tithi: Tithi) -> Nadi {
         let index = tithi as u16;
@@ -92,6 +164,33 @@ impl Nadi {
 }
 
 /// One stretch of a day under one nadi and one tattva.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::error::Error;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Still;
+/// # impl Sky for Still {
+/// #     fn ascendant_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(0.0) }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(15.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Somavara))
+/// #     }
+/// # }
+/// # let minute = 1.0 / 1440.0;
+///
+/// use teistro_rectification::svarodaya::{Nadi, svarodaya};
+/// use teistro_rectification::{Sex, Tattva};
+///
+/// // Ten minutes after sunrise: past air's eight minutes, in fire.
+/// let run = svarodaya(&Still, JulianDay::literal(2_460_000.25 + 10.0 * minute))?.run;
+/// assert_eq!((run.nadi, run.tattva, run.sex, run.turn), (Nadi::Moon, Tattva::Agni, Sex::Female, 0));
+/// assert!((run.from.get() - (2_460_000.25 + 8.0 * minute)).abs() < 1e-9);
+/// # Ok::<(), Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -111,6 +210,34 @@ pub struct SvarodayaRun {
 }
 
 /// The nadi and the tattva at an instant, and the day they are counted in.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::error::Error;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Still;
+/// # impl Sky for Still {
+/// #     fn ascendant_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(0.0) }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(15.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Somavara))
+/// #     }
+/// # }
+/// # let minute = 1.0 / 1440.0;
+///
+/// use teistro_core::catalogue::Tithi;
+/// use teistro_rectification::svarodaya::{Nadi, svarodaya};
+///
+/// let read = svarodaya(&Still, JulianDay::literal(2_460_000.25 + 90.0 * minute))?;
+/// assert_eq!((read.tithi, read.sunrise_nadi), (Tithi::ShuklaPratipada, Nadi::Moon));
+/// // The second turn's junctions, an hour and two hours after sunrise.
+/// assert!((read.junctions[0].get() - (2_460_000.25 + 60.0 * minute)).abs() < 1e-9);
+/// assert!((read.junctions[1].get() - (2_460_000.25 + 120.0 * minute)).abs() < 1e-9);
+/// # Ok::<(), Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -239,6 +366,34 @@ pub fn svarodaya(sky: &dyn Sky, at: JulianDay<Utc>) -> Result<Svarodaya, Error> 
 
 /// Every run of nadi and tattva inside a window, in order and clipped to
 /// it: what a consumer sets beside the purifier's runs.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::error::Error;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Still;
+/// # impl Sky for Still {
+/// #     fn ascendant_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(0.0) }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, Error> { Ok(15.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Somavara))
+/// #     }
+/// # }
+/// # let minute = 1.0 / 1440.0;
+///
+/// use teistro_rectification::Window;
+/// use teistro_rectification::svarodaya::{Nadi, svarodaya_runs};
+///
+/// // Two hours from sunrise: two turns of five tattvas each.
+/// let window = Window::between(JulianDay::literal(2_460_000.25), JulianDay::literal(2_460_000.25 + 120.0 * minute))?;
+/// let runs = svarodaya_runs(&Still, window)?;
+/// assert_eq!(runs.len(), 10);
+/// assert_eq!((runs[0].nadi, runs[5].nadi), (Nadi::Moon, Nadi::Sun));
+/// # Ok::<(), Error>(())
+/// ```
 ///
 /// # Errors
 ///

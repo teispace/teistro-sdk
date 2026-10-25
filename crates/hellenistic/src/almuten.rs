@@ -10,6 +10,20 @@ use crate::dignity::{CHALDEAN_ORDER, DignityRules, Scores, Sect, essential_digni
 use crate::lot::{FortuneRule, part_of_fortune};
 
 /// What of a place an almuten's dignities are counted from (crux C218).
+///
+/// ```
+/// use teistro_hellenistic::{DignityRules, PlaceReading, Scores, Sect, almuten_of};
+///
+/// use teistro_core::catalogue::Graha;
+///
+/// // 5° Libra by day: Saturn's exaltation, triplicity and term, Venus's house.
+/// let degree = almuten_of(185.0, Sect::Day, &DignityRules::LILLY, &Scores::LILLY, PlaceReading::Degree)?;
+/// assert_eq!((degree.total(Graha::Saturn), degree.total(Graha::Venus)), (Some(9), Some(5)));
+/// // The sign alone drops Saturn's term.
+/// let sign = almuten_of(185.0, Sect::Day, &DignityRules::LILLY, &Scores::LILLY, PlaceReading::Sign)?;
+/// assert_eq!(sign.total(Graha::Saturn), Some(7));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -31,6 +45,18 @@ pub enum PlaceReading {
 /// An almuten is a ranking, not a planet: Lilly gives no rule for a tie,
 /// so every planet tied at the top is an almuten (crux C219), and Chapter
 /// CV's "partaker" is the next total down.
+///
+/// ```
+/// use teistro_hellenistic::{DignityRules, PlaceReading, Scores, Sect, almuten_of};
+///
+/// use teistro_core::catalogue::Graha;
+///
+/// // 5° Aries by day, Saturn first: Jupiter's term 2, Mars 6, the Sun 7.
+/// let at = almuten_of(5.0, Sect::Day, &DignityRules::LILLY, &Scores::LILLY, PlaceReading::Degree)?;
+/// assert_eq!(at.totals, [0, 2, 6, 7, 0, 0, 0]);
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -42,6 +68,17 @@ pub struct Almuten {
 
 impl Almuten {
     /// A planet's total; `None` for a graha outside the seven.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRules, PlaceReading, Scores, Sect, almuten_of};
+    ///
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let at = almuten_of(5.0, Sect::Day, &DignityRules::LILLY, &Scores::LILLY, PlaceReading::Degree)?;
+    /// assert_eq!(at.total(Graha::Sun), Some(7));
+    /// assert_eq!(at.total(Graha::Rahu), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn total(&self, planet: Graha) -> Option<i16> {
         CHALDEAN_ORDER
@@ -52,6 +89,20 @@ impl Almuten {
 
     /// Every planet holding the greatest total, in the Chaldean order: one
     /// unless they tie.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRules, PlaceReading, Scores, Sect, almuten_of};
+    ///
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Nothing scores, so all seven tie at the top.
+    /// let nothing = Scores::new(0, 0, 0, 0, 0, 0, 0, 0);
+    /// let at = almuten_of(5.0, Sect::Day, &DignityRules::LILLY, &nothing, PlaceReading::Degree)?;
+    /// assert_eq!(at.almutens().len(), 7);
+    /// let lilly = almuten_of(5.0, Sect::Day, &DignityRules::LILLY, &Scores::LILLY, PlaceReading::Degree)?;
+    /// assert_eq!(lilly.almutens(), [Graha::Sun]);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn almutens(&self) -> Vec<Graha> {
         self.holding(self.totals.iter().copied().max())
@@ -59,6 +110,19 @@ impl Almuten {
 
     /// Every planet holding the next total below the almutens': Chapter
     /// CV's "partaker". Empty when all seven tie.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRules, PlaceReading, Scores, Sect, almuten_of};
+    ///
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // The Sun leads at 5° Aries, and Mars partakes.
+    /// let at = almuten_of(5.0, Sect::Day, &DignityRules::LILLY, &Scores::LILLY, PlaceReading::Degree)?;
+    /// assert_eq!(at.partakers(), [Graha::Mars]);
+    /// let nothing = Scores::new(0, 0, 0, 0, 0, 0, 0, 0);
+    /// assert!(almuten_of(5.0, Sect::Day, &DignityRules::LILLY, &nothing, PlaceReading::Degree)?.partakers().is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn partakers(&self) -> Vec<Graha> {
         let top = self.totals.iter().copied().max();
@@ -133,6 +197,20 @@ pub fn almuten_of(
 /// the geniture by the ascendant, mid-heaven, Sun, Moon and Part of
 /// Fortune, or any list a reader names.
 ///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{DignityRules, PlaceReading, Scores, Sect, almuten_of_places};
+///
+/// // 5° Aries and 5° Libra by day: Saturn's 9 outweighs the Sun's 7.
+/// let both = almuten_of_places(&[5.0, 185.0], Sect::Day, &DignityRules::LILLY, &Scores::LILLY, PlaceReading::Degree)?;
+/// assert_eq!(both.almutens(), [Graha::Saturn]);
+/// let none = almuten_of_places(&[], Sect::Day, &DignityRules::LILLY, &Scores::LILLY, PlaceReading::Degree).unwrap_err();
+/// assert_eq!(none.field(), Some("places"));
+/// let broken = almuten_of_places(&[5.0, f64::NAN], Sect::Day, &DignityRules::LILLY, &Scores::LILLY, PlaceReading::Degree).unwrap_err();
+/// assert_eq!(broken.field(), Some("places[1]"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// An invalid-argument error at `places` for an empty list, which would
@@ -168,6 +246,13 @@ pub fn almuten_of_places(
 ///
 /// The default is Lilly's: the degree, and Fortune the same by day and
 /// night.
+///
+/// ```
+/// use teistro_hellenistic::{AlmutenRules, FortuneRule, PlaceReading};
+///
+/// assert_eq!(AlmutenRules::default(), AlmutenRules::LILLY);
+/// assert_eq!((AlmutenRules::LILLY.place, AlmutenRules::LILLY.fortune), (PlaceReading::Degree, FortuneRule::DayAndNight));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -181,12 +266,25 @@ pub struct AlmutenRules {
 
 impl AlmutenRules {
     /// Lilly's: the degree, and Fortune the same by day and night.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AlmutenRules, FortuneRule};
+    ///
+    /// // Lilly's Fortune is the same by day and night, unlike the lots' default.
+    /// assert_eq!(AlmutenRules::LILLY.fortune, FortuneRule::DayAndNight);
+    /// ```
     pub const LILLY: AlmutenRules = AlmutenRules {
         place: PlaceReading::Degree,
         fortune: FortuneRule::DayAndNight,
     };
 
     /// These rules with a place read otherwise.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AlmutenRules, PlaceReading};
+    ///
+    /// assert_eq!(AlmutenRules::LILLY.with_place(PlaceReading::Sign).place, PlaceReading::Sign);
+    /// ```
     #[must_use]
     pub const fn with_place(mut self, place: PlaceReading) -> AlmutenRules {
         self.place = place;
@@ -194,6 +292,12 @@ impl AlmutenRules {
     }
 
     /// These rules with Fortune taken otherwise by night.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{AlmutenRules, FortuneRule};
+    ///
+    /// assert_eq!(AlmutenRules::LILLY.with_fortune(FortuneRule::ReversedByNight).fortune, FortuneRule::ReversedByNight);
+    /// ```
     #[must_use]
     pub const fn with_fortune(mut self, fortune: FortuneRule) -> AlmutenRules {
         self.fortune = fortune;
@@ -202,6 +306,38 @@ impl AlmutenRules {
 }
 
 /// A chart's almutens, three ways, with the rules that made them.
+///
+/// ```
+/// # use teistro_hellenistic::ChartSky;
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// # use teistro_core::catalogue::HouseSystem;
+/// # use teistro_hellenistic::AccidentalSky;
+/// #
+/// # let sky = AccidentalSky {
+/// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+/// #     houses: HouseSystem::Equal,
+/// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+/// #     ascendant_deg: 0.0,
+/// #     midheaven_deg: 270.0,
+/// #     north_node_deg: 250.0,
+/// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+/// # };
+/// use teistro_hellenistic::{AlmutenRules, FortitudeRequest, PlaceReading, almuten_of};
+///
+/// let read = FortitudeRequest::default().read(&chart, &sky)?;
+/// let almutens = read.almutens;
+/// // Fortune by day: the ascendant 0° plus the Moon's 85° from the Sun.
+/// assert_eq!((almutens.rules, almutens.fortune_deg), (AlmutenRules::LILLY, 85.0));
+/// // A house's is its cusp's.
+/// let first = almuten_of(sky.cusps_deg[0], read.dignities.sect, &read.dignities.rules, &read.dignities.scores, PlaceReading::Degree)?;
+/// assert_eq!(almutens.houses[0], first);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

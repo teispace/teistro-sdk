@@ -19,6 +19,12 @@ use crate::dignity::CHALDEAN_ORDER;
 
 /// Which planet rules each sign, so which planet disposes of a body there
 /// (C414).
+///
+/// ```
+/// use teistro_hellenistic::Rulers;
+///
+/// assert_eq!(Rulers::default(), Rulers::Traditional);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -60,6 +66,17 @@ impl Rulers {
 
     /// Every planet that rules a sign under these rulers, so every planet
     /// a chain may need.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::Rulers;
+    ///
+    /// assert_eq!(Rulers::Traditional.lords().len(), 7);
+    /// // Saturn keeps Capricorn, Jupiter Sagittarius and Mars Aries.
+    /// let modern = Rulers::Modern.lords();
+    /// assert_eq!(modern.len(), 10);
+    /// assert!(modern.contains(&Graha::Saturn) && modern.contains(&Graha::Pluto));
+    /// ```
     #[must_use]
     pub fn lords(self) -> Vec<Graha> {
         let mut lords: Vec<Graha> = Vec::with_capacity(10);
@@ -76,6 +93,24 @@ impl Rulers {
 /// Where a chain of dispositors stops.
 ///
 /// Written `{"OWN_SIGN": "SUN"}` or `{"CYCLE": ["MARS", "SUN"]}`.
+///
+/// ```
+/// # use teistro_hellenistic::ChartSky;
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{ChainEnd, DignityRequest};
+///
+/// // Mars and Venus in each other's signs close a cycle; the Sun, in Aries, runs into it.
+/// let read = DignityRequest::default().read(&chart)?;
+/// let sun = read.dispositions.chains.iter().find(|chain| chain.planet == Graha::Sun).ok_or("the Sun")?;
+/// assert_eq!(sun.end, ChainEnd::Cycle(vec![Graha::Mars, Graha::Venus]));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -94,6 +129,14 @@ pub enum ChainEnd {
 
 impl ChainEnd {
     /// The planet in its own sign, or `None` for a cycle.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::ChainEnd;
+    ///
+    /// assert_eq!(ChainEnd::OwnSign(Graha::Sun).own_sign(), Some(Graha::Sun));
+    /// assert_eq!(ChainEnd::Cycle(vec![Graha::Mars, Graha::Venus]).own_sign(), None);
+    /// ```
     #[must_use]
     pub const fn own_sign(&self) -> Option<Graha> {
         match self {
@@ -104,6 +147,27 @@ impl ChainEnd {
 }
 
 /// One body's dispositors, followed until one repeats.
+///
+/// ```
+/// # use teistro_hellenistic::ChartSky;
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{ChainEnd, DignityRequest};
+///
+/// let read = DignityRequest::default().read(&chart)?;
+/// // Mercury in Taurus, to Venus, to Mars, who is in Venus's sign.
+/// let mercury = read.dispositions.chains.iter().find(|chain| chain.planet == Graha::Mercury).ok_or("Mercury")?;
+/// assert_eq!(mercury.dispositors, [Graha::Venus, Graha::Mars]);
+/// // The Moon in Cancer disposes of herself.
+/// let moon = read.dispositions.chains.iter().find(|chain| chain.planet == Graha::Moon).ok_or("the Moon")?;
+/// assert!(moon.dispositors.is_empty() && moon.end == ChainEnd::OwnSign(Graha::Moon));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -121,6 +185,25 @@ pub struct DispositorChain {
 
 /// Every body's chain of dispositors in one chart, and its final
 /// dispositor when there is one.
+///
+/// ```
+/// # use teistro_hellenistic::ChartSky;
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{ChainEnd, DignityRequest};
+///
+/// let read = DignityRequest::default().read(&chart)?;
+/// // Saturn, Jupiter and the Moon in their own signs, and the cycle: no final dispositor.
+/// assert_eq!(read.dispositions.ends.len(), 4);
+/// assert_eq!(read.dispositions.ends[0], ChainEnd::OwnSign(Graha::Saturn));
+/// assert_eq!(read.dispositions.final_dispositor, None);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
