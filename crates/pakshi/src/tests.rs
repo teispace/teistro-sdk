@@ -364,3 +364,28 @@ fn a_day_refuses_instants_out_of_order_and_the_clocks_cut_it() {
     let outside = now(&stretched, 1.5).unwrap_err();
     assert_eq!(field(outside).as_deref(), Some("instant"));
 }
+
+#[test]
+fn the_yamas_meet_to_the_bit_and_every_instant_is_in_one() {
+    // Lengths whose fifths and sums do not round alike: 0.7 + 0.1 is not 0.8.
+    let days = [
+        Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla).unwrap(),
+        Day::new(2_460_482.245, 2_460_482.807, 2_460_483.246, Vara::Shukravara, Paksha::Krishna)
+            .unwrap(),
+    ];
+    for day in &days {
+        for clock in [Clock::Stretched, Clock::Nazhigai] {
+            let rules = Rules {
+                clock,
+                ..Rules::default()
+            };
+            let read = read_day(day, Bird::Cock, &rules);
+            for pair in read.yamas.windows(2) {
+                assert_eq!(pair[0].span.to, pair[1].span.from, "{clock:?}");
+                // The instant a yama begins is in it, not in a gap before it.
+                let at = now(&read, pair[1].span.from).unwrap();
+                assert_eq!(at.yama.span, pair[1].span);
+            }
+        }
+    }
+}

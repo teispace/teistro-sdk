@@ -15,6 +15,24 @@ use crate::tables::{
 };
 
 /// How a half is cut into yamas (crux P3).
+///
+/// ```
+/// # use teistro_core::catalogue::{Paksha, Vara};
+/// # use teistro_pakshi::{Bird, Day, Rules, read_day};
+/// # // A bright Wednesday from 6:00 to 18:00, the cock's.
+/// # let day = Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla)?;
+/// # let read = read_day(&day, Bird::Cock, &Rules::default());
+/// use teistro_pakshi::Clock;
+///
+/// // A short day: sunset at 15:36. The stretched clock cuts the real day
+/// // in five; the nazhigai clock runs thirty nazhigai from sunrise whatever.
+/// let short = Day::new(0.0, 0.4, 1.0, Vara::Budhavara, Paksha::Shukla)?;
+/// let stretched = read_day(&short, Bird::Cock, &Rules::default());
+/// let nazhigai = read_day(&short, Bird::Cock, &Rules { clock: Clock::Nazhigai, ..Rules::default() });
+/// assert!((stretched.yamas[4].span.to - 0.4).abs() < 1e-12);
+/// assert!((nazhigai.yamas[4].span.to - 0.5).abs() < 1e-12);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -30,6 +48,13 @@ pub enum Clock {
 }
 
 /// What a day is read under.
+///
+/// ```
+/// use teistro_pakshi::{Clock, Relations, Rules, SubLengths};
+///
+/// let rules: Rules = serde_json::from_str(r#"{"clock": "NAZHIGAI"}"#).unwrap();
+/// assert_eq!((rules.clock, rules.subs, rules.relations), (Clock::Nazhigai, SubLengths::Agastya, Relations::Agastya));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -45,6 +70,16 @@ pub struct Rules {
 
 /// One day of the almanac, as a reading needs it: its sunrise, sunset and
 /// next sunrise as Julian days (UTC), its weekday and its paksha.
+///
+/// ```
+/// # use teistro_core::catalogue::{Paksha, Vara};
+/// # use teistro_pakshi::{Bird, Day, Rules, read_day};
+/// # // A bright Wednesday from 6:00 to 18:00, the cock's.
+/// # let day = Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla)?;
+/// # let read = read_day(&day, Bird::Cock, &Rules::default());
+/// assert_eq!((day.vara, day.paksha), (Vara::Budhavara, Paksha::Shukla));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -63,6 +98,17 @@ pub struct Day {
 
 impl Day {
     /// A day from its instants.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Paksha, Vara};
+    /// use teistro_pakshi::Day;
+    ///
+    /// assert!(Day::new(0.0, 0.5, 1.0, Vara::Ravivara, Paksha::Shukla).is_ok());
+    /// let backwards = Day::new(0.0, -0.1, 1.0, Vara::Ravivara, Paksha::Shukla).unwrap_err();
+    /// assert_eq!(backwards.field(), Some("sunset"));
+    /// let early = Day::new(0.0, 0.5, 0.4, Vara::Ravivara, Paksha::Shukla).unwrap_err();
+    /// assert_eq!(early.field(), Some("nextSunrise"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -110,6 +156,19 @@ impl Day {
 }
 
 /// A span of time, Julian days (UTC).
+///
+/// ```
+/// # use teistro_core::catalogue::{Paksha, Vara};
+/// # use teistro_pakshi::{Bird, Day, Rules, read_day};
+/// # // A bright Wednesday from 6:00 to 18:00, the cock's.
+/// # let day = Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla)?;
+/// # let read = read_day(&day, Bird::Cock, &Rules::default());
+/// // The day's five yamas meet end to end.
+/// for pair in read.yamas.windows(2) {
+///     assert_eq!(pair[0].span.to, pair[1].span.from);
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -122,6 +181,21 @@ pub struct Span {
 }
 
 /// One sub-period of a native's yama, timed.
+///
+/// ```
+/// # use teistro_core::catalogue::{Paksha, Vara};
+/// # use teistro_pakshi::{Bird, Day, Rules, read_day};
+/// # // A bright Wednesday from 6:00 to 18:00, the cock's.
+/// # let day = Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla)?;
+/// # let read = read_day(&day, Bird::Cock, &Rules::default());
+/// use teistro_pakshi::Relation;
+///
+/// let yama = &read.yamas[1];
+/// assert_eq!(yama.subs.len(), 5);
+/// assert_eq!(yama.subs[0].owner_is, Relation::Own);
+/// assert_eq!(yama.subs[0].span.from, yama.span.from);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -136,6 +210,20 @@ pub struct SubPeriod {
 }
 
 /// One yama of a native's day.
+///
+/// ```
+/// # use teistro_core::catalogue::{Paksha, Vara};
+/// # use teistro_pakshi::{Bird, Day, Rules, read_day};
+/// # // A bright Wednesday from 6:00 to 18:00, the cock's.
+/// # let day = Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla)?;
+/// # let read = read_day(&day, Bird::Cock, &Rules::default());
+/// use teistro_pakshi::{Activity, Half, Quality};
+///
+/// let second = &read.yamas[1];
+/// assert_eq!((second.half, second.yama), (Half::Day, 2));
+/// assert_eq!((second.activity, second.quality), (Activity::Sleeping, Quality::Bad));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -155,6 +243,22 @@ pub struct Yama {
 }
 
 /// A native's bird read over one day.
+///
+/// ```
+/// # use teistro_core::catalogue::{Paksha, Vara};
+/// # use teistro_pakshi::{Bird, Day, Rules, read_day};
+/// # // A bright Wednesday from 6:00 to 18:00, the cock's.
+/// # let day = Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla)?;
+/// # let read = read_day(&day, Bird::Cock, &Rules::default());
+/// use teistro_pakshi::Half;
+///
+/// assert_eq!(read.yamas.len(), 10);
+/// assert_eq!(read.yamas[5].half, Half::Night);
+/// // The owl eats first by day; the death bird is reported, and is not the cock.
+/// assert_eq!(read.eaters[0], Bird::Owl);
+/// assert!(!read.dead_today);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -210,8 +314,14 @@ pub fn read_day(day: &Day, bird: Bird, rules: &Rules) -> Reading {
 fn yama_of(day: &Day, bird: Bird, rules: Rules, half: Half, yama: u8) -> Yama {
     let (start, end) = day.bounds(half, rules.clock);
     let length = (end - start) / 5.0;
+    // Each end is the next yama's start, computed the same way, so the
+    // yamas meet to the bit and an instant is in exactly one.
     let from = start + length * f64::from(yama);
-    let to = if yama == 4 { end } else { from + length };
+    let to = if yama == 4 {
+        end
+    } else {
+        start + length * f64::from(yama + 1)
+    };
     let index = usize::from(yama);
     let main = activity(bird, day.paksha, half, day.vara, index);
     let mut at = from;
@@ -248,6 +358,21 @@ fn yama_of(day: &Day, bird: Bird, rules: Rules, half: Half, yama: u8) -> Yama {
 }
 
 /// The yama and sub-period running at `instant`.
+///
+/// ```
+/// # use teistro_core::catalogue::{Paksha, Vara};
+/// # use teistro_pakshi::{Bird, Day, Rules, read_day};
+/// # // A bright Wednesday from 6:00 to 18:00, the cock's.
+/// # let day = Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla)?;
+/// # let read = read_day(&day, Bird::Cock, &Rules::default());
+/// use teistro_pakshi::now;
+///
+/// // 09:36 is in the day's second yama, two fifths of a day-half in.
+/// let at = now(&read, 0.15)?;
+/// assert_eq!(at.yama.yama, 2);
+/// assert!(usize::from(at.sub) < at.yama.subs.len());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -259,6 +384,20 @@ pub struct Now {
 }
 
 /// The yama and sub-period of `reading` running at `instant`.
+///
+/// ```
+/// # use teistro_core::catalogue::{Paksha, Vara};
+/// # use teistro_pakshi::{Bird, Day, Rules, read_day};
+/// # // A bright Wednesday from 6:00 to 18:00, the cock's.
+/// # let day = Day::new(0.0, 0.5, 1.0, Vara::Budhavara, Paksha::Shukla)?;
+/// # let read = read_day(&day, Bird::Cock, &Rules::default());
+/// use teistro_pakshi::now;
+///
+/// assert!(now(&read, 0.0).is_ok());
+/// // The next sunrise ends the day, and is not in it.
+/// assert_eq!(now(&read, 1.0).unwrap_err().field(), Some("instant"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
