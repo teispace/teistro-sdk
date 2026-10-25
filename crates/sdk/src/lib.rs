@@ -631,6 +631,14 @@ pub use teistro_time::{
 /// other three bindings: it takes no context, because a fixed day and a
 /// Julian day are two spellings of the same integer and nothing about a
 /// profile or a locale can change the arithmetic.
+///
+/// ```
+/// use teistro::{FixedDay, jd_of_fixed};
+/// // Fixed day 1 is 1 January of the year 1 (proleptic Gregorian).
+/// assert_eq!(jd_of_fixed(FixedDay::new(1)), 1_721_425.5);
+/// // J2000.0 is noon on fixed day 730 120.
+/// assert_eq!(jd_of_fixed(FixedDay::new(730_120)) + 0.5, 2_451_545.0);
+/// ```
 #[must_use]
 pub fn jd_of_fixed(fixed: FixedDay) -> f64 {
     #[expect(
@@ -643,6 +651,15 @@ pub fn jd_of_fixed(fixed: FixedDay) -> f64 {
 
 /// The fixed day a Julian day falls in, and the fraction of that day
 /// elapsed since its midnight.
+///
+/// ```
+/// use teistro::{FixedDay, fixed_of_jd, jd_of_fixed};
+/// // J2000.0 is half-way through its day.
+/// assert_eq!(fixed_of_jd(2_451_545.0), (FixedDay::new(730_120), 0.5));
+/// // A midnight begins its day, and reads back as it was written.
+/// let day = FixedDay::new(739_534);
+/// assert_eq!(fixed_of_jd(jd_of_fixed(day)), (day, 0.0));
+/// ```
 #[must_use]
 pub fn fixed_of_jd(jd: f64) -> (FixedDay, f64) {
     FixedDay::from_local_jd(jd)
