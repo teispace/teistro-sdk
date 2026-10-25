@@ -17,6 +17,18 @@ use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::time::UtcOffset;
 
 /// The offset in force at an instant, with what a replay stamps.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_core::time::UtcOffset;
+/// use teistro_port_timezone::{FixedZone, TimeZoneProvider};
+///
+/// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+/// let info = nepal.offset_at("Asia/Kathmandu", JulianDay::literal(2_460_482.5))?;
+/// assert_eq!(info.offset.seconds(), 20_700);
+/// assert!(!info.is_dst && !info.before_rules);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct OffsetInfo {
@@ -32,6 +44,18 @@ pub struct OffsetInfo {
 }
 
 /// The offsets a civil time could take in a zone.
+///
+/// ```
+/// use teistro_core::time::UtcOffset;
+/// use teistro_port_timezone::LocalCandidates;
+///
+/// // New York's clocks jumped from 02:00 to 03:00 on 10 March 2024.
+/// let gap = LocalCandidates::Gap {
+///     before: UtcOffset::literal(-5, 0, 0),
+///     after: UtcOffset::literal(-4, 0, 0),
+/// };
+/// assert_eq!(serde_json::to_value(gap).unwrap()["kind"], "GAP");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -60,6 +84,15 @@ pub enum LocalCandidates {
 /// A civil time as a provider takes it: the seconds since 1970-01-01
 /// 00:00 read as if the civil clock were UTC, with the nanoseconds.
 /// Calendar-free, so a provider needs no calendar to place it.
+///
+/// ```
+/// use teistro_port_timezone::LocalSeconds;
+///
+/// // 1 January 2024, 06:00 on the civil clock, and a half second.
+/// let local = LocalSeconds { seconds: 1_704_088_800, nanos: 500_000_000 };
+/// assert_eq!(local.to_string(), "1704088800.500000000 local seconds");
+/// assert!(local < LocalSeconds { seconds: 1_704_088_801, nanos: 0 });
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct LocalSeconds {
     /// Whole seconds.
@@ -75,17 +108,67 @@ impl fmt::Display for LocalSeconds {
 }
 
 /// A zone database.
+///
+/// ```
+/// use teistro_core::time::UtcOffset;
+/// use teistro_port_timezone::{FixedZone, TimeZoneProvider};
+///
+/// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+/// // A reference to a provider is a provider.
+/// fn version_of(zones: impl TimeZoneProvider) -> String {
+///     zones.version().to_string()
+/// }
+/// assert_eq!(version_of(&nepal), "fixed");
+/// assert!(nepal.has_zone("Asia/Kathmandu"));
+/// ```
 pub trait TimeZoneProvider: Send + Sync {
     /// The database's version (`2026a`), stamped on every resolution.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    /// use teistro_port_timezone::{FixedZone, TimeZoneProvider};
+    ///
+    /// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+    /// assert_eq!(nepal.version(), "fixed");
+    /// ```
     fn version(&self) -> &str;
 
     /// Whether the database knows a zone.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    /// use teistro_port_timezone::{FixedZone, TimeZoneProvider};
+    ///
+    /// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+    /// assert!(nepal.has_zone("Asia/Kathmandu"));
+    /// assert!(!nepal.has_zone("Asia/Katmandu"));
+    /// ```
     fn has_zone(&self, zone: &str) -> bool;
 
     /// Every zone the database knows, for suggestions and listings.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    /// use teistro_port_timezone::{FixedZone, TimeZoneProvider};
+    ///
+    /// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+    /// assert_eq!(nepal.zones(), ["Asia/Kathmandu"]);
+    /// ```
     fn zones(&self) -> Vec<String>;
 
     /// The offset in force at an instant.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::time::UtcOffset;
+    /// use teistro_port_timezone::{FixedZone, TimeZoneProvider};
+    ///
+    /// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+    /// let instant = JulianDay::literal(2_451_545.0);
+    /// assert_eq!(nepal.offset_at("Asia/Kathmandu", instant)?.offset, UtcOffset::literal(5, 45, 0));
+    /// assert_eq!(nepal.offset_at("Mars/Olympus", instant).unwrap_err().field(), Some("zone"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -93,6 +176,19 @@ pub trait TimeZoneProvider: Send + Sync {
     fn offset_at(&self, zone: &str, instant: JulianDay<Utc>) -> Result<OffsetInfo, Error>;
 
     /// The offsets a civil time could take.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    /// use teistro_port_timezone::{FixedZone, LocalCandidates, LocalSeconds, TimeZoneProvider};
+    ///
+    /// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+    /// let local = LocalSeconds { seconds: 1_704_088_800, nanos: 0 };
+    /// assert_eq!(
+    ///     nepal.candidates("Asia/Kathmandu", local)?,
+    ///     LocalCandidates::Unambiguous { offset: UtcOffset::literal(5, 45, 0) }
+    /// );
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -102,6 +198,16 @@ pub trait TimeZoneProvider: Send + Sync {
     /// The offsets the zone applies in the database's own year: one for
     /// a zone without daylight saving, two with it. A resolution whose
     /// offset is not among them used earlier rules.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    /// use teistro_port_timezone::{FixedZone, TimeZoneProvider};
+    ///
+    /// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+    /// // One offset: Nepal keeps no daylight saving.
+    /// assert_eq!(nepal.current_offsets("Asia/Kathmandu")?.len(), 1);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -137,6 +243,14 @@ impl<P: TimeZoneProvider + ?Sized> TimeZoneProvider for &P {
 
 /// The error a provider raises for a zone it does not know, with the
 /// nearest names it does know as the hint.
+///
+/// ```
+/// use teistro_port_timezone::unknown_zone;
+///
+/// let error = unknown_zone("Asia/Katmandu", &[String::from("Asia/Kathmandu")]);
+/// assert_eq!(error.field(), Some("zone"));
+/// assert_eq!(error.hint(), Some("did you mean Asia/Kathmandu?"));
+/// ```
 #[must_use]
 pub fn unknown_zone(zone: &str, suggestions: &[String]) -> Error {
     let error = Error::invalid_arg(format!("unknown time zone `{zone}`")).with_field("zone");
@@ -144,6 +258,108 @@ pub fn unknown_zone(zone: &str, suggestions: &[String]) -> Error {
         error.with_hint("an IANA zone name such as `Asia/Kathmandu`")
     } else {
         error.with_hint(format!("did you mean {}?", suggestions.join(", ")))
+    }
+}
+
+/// One zone at one fixed offset all year, refusing every other: a zone
+/// with no daylight saving and no history, such as Nepal's since 1986, or
+/// a provider for a test.
+///
+/// Its abbreviation is the offset written as tzdb writes a numbered one
+/// (`+0545`), and no instant precedes its rules.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_core::time::UtcOffset;
+/// use teistro_port_timezone::{FixedZone, TimeZoneProvider};
+///
+/// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+/// let info = nepal.offset_at("Asia/Kathmandu", JulianDay::literal(2_460_482.5))?;
+/// assert_eq!(info.abbreviation, "+0545");
+/// assert!(nepal.offset_at("Asia/Katmandu", JulianDay::literal(2_460_482.5)).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FixedZone {
+    zone: String,
+    offset: UtcOffset,
+}
+
+impl FixedZone {
+    /// The zone `zone`, at `offset`.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    /// use teistro_port_timezone::{FixedZone, TimeZoneProvider};
+    ///
+    /// let zone = FixedZone::new("Etc/GMT+5", UtcOffset::literal(-5, 0, 0));
+    /// assert_eq!(zone.zones(), ["Etc/GMT+5"]);
+    /// ```
+    #[must_use]
+    pub fn new(zone: impl Into<String>, offset: UtcOffset) -> FixedZone {
+        FixedZone {
+            zone: zone.into(),
+            offset,
+        }
+    }
+
+    /// The offset, for a zone it knows.
+    fn known(&self, zone: &str) -> Result<UtcOffset, Error> {
+        if self.has_zone(zone) {
+            Ok(self.offset)
+        } else {
+            Err(unknown_zone(zone, &self.zones()))
+        }
+    }
+
+    /// The offset as tzdb abbreviates a numbered one: `+0545`, `-0500`,
+    /// and the seconds only when there are some.
+    fn abbreviation(&self) -> String {
+        let total = self.offset.seconds();
+        let sign = if total < 0 { '-' } else { '+' };
+        let magnitude = total.unsigned_abs();
+        let (hours, minutes, seconds) = (magnitude / 3600, magnitude / 60 % 60, magnitude % 60);
+        if seconds == 0 {
+            format!("{sign}{hours:02}{minutes:02}")
+        } else {
+            format!("{sign}{hours:02}{minutes:02}{seconds:02}")
+        }
+    }
+}
+
+impl TimeZoneProvider for FixedZone {
+    #[allow(
+        clippy::unnecessary_literal_bound,
+        reason = "the trait's signature, which a real provider borrows from itself"
+    )]
+    fn version(&self) -> &str {
+        "fixed"
+    }
+
+    fn has_zone(&self, zone: &str) -> bool {
+        zone == self.zone
+    }
+
+    fn zones(&self) -> Vec<String> {
+        vec![self.zone.clone()]
+    }
+
+    fn offset_at(&self, zone: &str, _: JulianDay<Utc>) -> Result<OffsetInfo, Error> {
+        self.known(zone).map(|offset| OffsetInfo {
+            offset,
+            abbreviation: self.abbreviation(),
+            is_dst: false,
+            before_rules: false,
+        })
+    }
+
+    fn candidates(&self, zone: &str, _: LocalSeconds) -> Result<LocalCandidates, Error> {
+        self.known(zone)
+            .map(|offset| LocalCandidates::Unambiguous { offset })
+    }
+
+    fn current_offsets(&self, zone: &str) -> Result<Vec<UtcOffset>, Error> {
+        self.known(zone).map(|offset| vec![offset])
     }
 }
 
@@ -176,55 +392,19 @@ mod tests {
         assert_eq!(json, "{\"kind\":\"UNAMBIGUOUS\",\"offset\":20700}");
     }
 
-    /// One zone at a fixed offset, refusing every other.
-    struct Kathmandu;
-
-    impl Kathmandu {
-        const OFFSET: UtcOffset = UtcOffset::literal(5, 45, 0);
-
-        fn known(&self, zone: &str) -> Result<UtcOffset, Error> {
-            if self.has_zone(zone) {
-                Ok(Self::OFFSET)
-            } else {
-                Err(unknown_zone(zone, &self.zones()))
-            }
-        }
+    fn kathmandu() -> FixedZone {
+        FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0))
     }
 
-    impl TimeZoneProvider for Kathmandu {
-        #[allow(
-            clippy::unnecessary_literal_bound,
-            reason = "the trait's signature, which a real provider borrows from itself"
-        )]
-        fn version(&self) -> &str {
-            "test"
-        }
-
-        fn has_zone(&self, zone: &str) -> bool {
-            zone == "Asia/Kathmandu"
-        }
-
-        fn zones(&self) -> Vec<String> {
-            vec![String::from("Asia/Kathmandu")]
-        }
-
-        fn offset_at(&self, zone: &str, _: JulianDay<Utc>) -> Result<OffsetInfo, Error> {
-            self.known(zone).map(|offset| OffsetInfo {
-                offset,
-                abbreviation: String::from("+0545"),
-                is_dst: false,
-                before_rules: false,
-            })
-        }
-
-        fn candidates(&self, zone: &str, _: LocalSeconds) -> Result<LocalCandidates, Error> {
-            self.known(zone)
-                .map(|offset| LocalCandidates::Unambiguous { offset })
-        }
-
-        fn current_offsets(&self, zone: &str) -> Result<Vec<UtcOffset>, Error> {
-            self.known(zone).map(|offset| vec![offset])
-        }
+    #[test]
+    fn a_fixed_zone_abbreviates_its_offset_as_tzdb_numbers_one() {
+        let at = |seconds| {
+            FixedZone::new("Etc/Test", UtcOffset::try_from_seconds(seconds).unwrap()).abbreviation()
+        };
+        assert_eq!(kathmandu().abbreviation(), "+0545");
+        assert_eq!(at(-5 * 3600), "-0500");
+        assert_eq!(at(0), "+0000");
+        assert_eq!(at(-(3600 + 60 + 5)), "-010105");
     }
 
     /// A borrowed provider answers every question as the provider does,
@@ -250,8 +430,8 @@ mod tests {
             )
         }
         for zone in ["Asia/Kathmandu", "Asia/Kathmandoo"] {
-            assert_eq!(answers(&&Kathmandu, zone), answers(&Kathmandu, zone));
+            assert_eq!(answers(&&kathmandu(), zone), answers(&kathmandu(), zone));
         }
-        assert!(answers(&&Kathmandu, "Asia/Kathmandoo").contains("did you mean"));
+        assert!(answers(&&kathmandu(), "Asia/Kathmandoo").contains("did you mean"));
     }
 }
