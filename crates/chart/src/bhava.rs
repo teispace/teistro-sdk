@@ -20,6 +20,14 @@ use teistro_core::catalogue::HouseSystem;
 
 /// Whether a system's cusps are the boundaries of its houses or their
 /// middles.
+///
+/// ```
+/// use teistro_chart::bhava::{Chalit, Reading};
+/// use teistro_core::catalogue::HouseSystem;
+///
+/// assert_eq!(Chalit::of(HouseSystem::Placidus).reading, Reading::Sandhi);
+/// assert_eq!(Chalit::of(HouseSystem::Sripati).reading, Reading::Madhya);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "CuspReading"))]
@@ -40,6 +48,17 @@ pub enum Reading {
 /// The distinction is not cosmetic. Sripati and Porphyry are built on the
 /// *same cusps* and disagree about a graha's house half the time, because
 /// one reads them as middles and the other as boundaries.
+///
+/// ```
+/// use teistro_chart::bhava::Chalit;
+/// use teistro_core::catalogue::HouseSystem;
+///
+/// // Sripati and Porphyry share their cusps and read them differently.
+/// let sripati = Chalit::of(HouseSystem::Sripati);
+/// let porphyry = Chalit::of(HouseSystem::Porphyry);
+/// assert_eq!(sripati.source, porphyry.source);
+/// assert_ne!(sripati.reading, porphyry.reading);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Chalit {
@@ -95,6 +114,16 @@ impl Chalit {
 /// Both are kept because both are asked for and neither can always be
 /// derived from the other: under an unequal division the madhya are not
 /// midway between the sandhi.
+///
+/// ```
+/// use teistro_chart::bhava::{Bhavas, Chalit};
+/// use teistro_core::catalogue::HouseSystem;
+///
+/// // Equal houses from a lagna at 10°.
+/// let cusps: [f64; 12] = core::array::from_fn(|i| 10.0 + 30.0 * i as f64);
+/// let equal = Bhavas::of(Chalit::of(HouseSystem::Equal), &cusps);
+/// assert_eq!((equal.sandhi[0], equal.madhya[0]), (10.0, 25.0));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Bhavas {
@@ -112,6 +141,18 @@ impl Bhavas {
     /// The cusps are the ones `astro::houses` returns for
     /// [`Chalit::source`], in whatever zodiac the caller wants the
     /// bhavas in; nothing here converts frames.
+    ///
+    /// ```
+    /// use teistro_chart::bhava::{Bhavas, Chalit};
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// // Equal houses from a lagna at 10°.
+    /// let cusps: [f64; 12] = core::array::from_fn(|i| 10.0 + 30.0 * i as f64);
+    /// let equal = Bhavas::of(Chalit::of(HouseSystem::Equal), &cusps);
+    /// // The same cusps read as middles: each sandhi midway between two.
+    /// let madhya = Bhavas::of(Chalit::of(HouseSystem::Sripati), &cusps);
+    /// assert_eq!((madhya.madhya[0], madhya.sandhi[0]), (10.0, 355.0));
+    /// ```
     #[must_use]
     pub fn of(chalit: Chalit, cusps: &[f64; 12]) -> Bhavas {
         let at = |index: usize| cusps.get(index % 12).copied().unwrap_or_default();
@@ -137,6 +178,20 @@ impl Bhavas {
     ///
     /// A bhava runs from its own sandhi forward through the zodiac to the
     /// next, so the bhava that spans 0° is one bhava and not two.
+    ///
+    /// ```
+    /// use teistro_chart::bhava::{Bhavas, Chalit};
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// // Equal houses from a lagna at 10°.
+    /// let cusps: [f64; 12] = core::array::from_fn(|i| 10.0 + 30.0 * i as f64);
+    /// let equal = Bhavas::of(Chalit::of(HouseSystem::Equal), &cusps);
+    /// let at_middle = equal.place(25.0);
+    /// assert_eq!((at_middle.bhava, at_middle.through, at_middle.from_madhya_deg), (1, 0.5, 0.0));
+    /// // The bhava that spans 0° is one bhava: the 12th runs from 340° to 10°.
+    /// assert_eq!(equal.place(5.0).bhava, 12);
+    /// assert_eq!(equal.place(345.0).bhava, 12);
+    /// ```
     #[must_use]
     pub fn place(&self, longitude_deg: f64) -> Placement {
         let longitude = longitude_deg.rem_euclid(360.0);
@@ -176,6 +231,16 @@ impl Bhavas {
 
     /// The width of each bhava in degrees, bhava 1 first. Equal
     /// divisions give twelve thirties; quadrant divisions do not.
+    ///
+    /// ```
+    /// use teistro_chart::bhava::{Bhavas, Chalit};
+    /// use teistro_core::catalogue::HouseSystem;
+    ///
+    /// // Equal houses from a lagna at 10°.
+    /// let cusps: [f64; 12] = core::array::from_fn(|i| 10.0 + 30.0 * i as f64);
+    /// let equal = Bhavas::of(Chalit::of(HouseSystem::Equal), &cusps);
+    /// assert_eq!(equal.widths(), [30.0; 12]);
+    /// ```
     #[must_use]
     pub fn widths(&self) -> [f64; 12] {
         let at = |index: usize| self.sandhi.get(index % 12).copied().unwrap_or_default();
@@ -189,6 +254,19 @@ impl Bhavas {
 /// 55 charts the four named chalits put a graha in a different bhava
 /// between 10% and 51% of the time, so a bhava number without its method
 /// is not a reproducible fact (`03-design/chart-bhava-chalit.md`).
+///
+/// ```
+/// use teistro_chart::bhava::{Bhavas, Chalit};
+/// use teistro_core::catalogue::HouseSystem;
+///
+/// // Equal houses from a lagna at 10°.
+/// let cusps: [f64; 12] = core::array::from_fn(|i| 10.0 + 30.0 * i as f64);
+/// let equal = Bhavas::of(Chalit::of(HouseSystem::Equal), &cusps);
+/// let placed = equal.place(20.0);
+/// assert_eq!((placed.bhava, placed.method), (1, HouseSystem::Equal));
+/// // Five degrees before the middle.
+/// assert_eq!(placed.from_madhya_deg, -5.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "BhavaPlacement"))]

@@ -37,6 +37,24 @@ use teistro_port_ephemeris::{
 };
 
 /// The chart's zodiac as a search reads it ([`ChartZodiac::searched`]).
+///
+/// ```
+/// use teistro_astro::completion::Completion;
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_astro::precession::PrecessionModel;
+/// use teistro_chart::{sample, zodiac::ChartZodiac};
+/// use teistro_core::quantity::{JulianDay, Tt};
+/// use teistro_port_ephemeris::TestProvider;
+///
+/// let provider = TestProvider::new();
+/// let settings = sample::resolved().settings;
+/// let completion = Completion::new(&provider, settings.provider.overrides, DeltaTModel::default());
+/// let at = JulianDay::<Tt>::literal(sample::INSTANT.get());
+/// let searched = ChartZodiac::searched(&completion, &settings, at, (PrecessionModel::default(), DeltaTModel::default()))?;
+/// // A modern provider is asked for the tropical frame and shifted.
+/// assert_eq!(searched.frame, searched.chart.request);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Searched {
     /// The chart's zodiac itself, for a reading that needs its one value
@@ -91,6 +109,15 @@ pub(crate) fn request_of(settings: &Settings) -> Frame {
 
 /// The zodiac of one chart: what to ask the provider for, and how far to
 /// shift what comes back.
+///
+/// ```
+/// use teistro_chart::zodiac::ChartZodiac;
+/// use teistro_port_ephemeris::{Frame, Zodiac};
+///
+/// let tropical = ChartZodiac { request: Frame::CANONICAL, offset_deg: 0.0, ayanamsha: None };
+/// assert_eq!(tropical.request.zodiac, Zodiac::Tropical);
+/// assert!(!tropical.is_sidereal());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChartZodiac {
@@ -107,6 +134,24 @@ pub struct ChartZodiac {
 
 impl ChartZodiac {
     /// The zodiac a profile's frame settings describe at an instant.
+    ///
+    /// ```
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_chart::{sample, zodiac::ChartZodiac};
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    /// use teistro_port_ephemeris::Zodiac;
+    ///
+    /// let settings = sample::resolved().settings;
+    /// let at = JulianDay::<Tt>::literal(sample::INSTANT.get());
+    /// let zodiac = ChartZodiac::of(&settings, at, PrecessionModel::default(), DeltaTModel::default())?;
+    /// assert!(zodiac.is_sidereal());
+    /// // Lahiri's ayanamsha in 2024, a little over 24°; the provider is still
+    /// // asked for the tropical frame.
+    /// assert!((24.0..24.4).contains(&zodiac.offset_deg));
+    /// assert_eq!(zodiac.request.zodiac, Zodiac::Tropical);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -159,6 +204,22 @@ impl ChartZodiac {
     /// central difference [`ChartZodiac::rate_deg_per_day`] takes, over
     /// the provider's values.
     ///
+    /// ```
+    /// use teistro_astro::completion::Completion;
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_chart::{sample, zodiac::ChartZodiac};
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let settings = sample::resolved().settings;
+    /// let completion = Completion::new(&provider, settings.provider.overrides, DeltaTModel::default());
+    /// let at = JulianDay::<Tt>::literal(sample::INSTANT.get());
+    /// // The test provider is a modern one: the catalogue gives the zodiac.
+    /// assert!(ChartZodiac::defined(&completion, &settings, at)?.is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// The provider's refusal of an instant, or `native-only` over a
@@ -207,6 +268,24 @@ impl ChartZodiac {
     /// text today, which Nepal's printed nakshatra and yoga ends measured
     /// as two to five hours (`03-design/nepal-day-measured.md`).
     ///
+    /// ```
+    /// use teistro_astro::completion::Completion;
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_chart::{sample, zodiac::ChartZodiac};
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let settings = sample::resolved().settings;
+    /// let completion = Completion::new(&provider, settings.provider.overrides, DeltaTModel::default());
+    /// let at = JulianDay::<Tt>::literal(sample::INSTANT.get());
+    /// let models = (PrecessionModel::default(), DeltaTModel::default());
+    /// let searched = ChartZodiac::searched(&completion, &settings, at, models)?;
+    /// assert_eq!(searched.chart, ChartZodiac::of(&settings, at, models.0, models.1)?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`ChartZodiac::defined`] and [`ChartZodiac::of`].
@@ -227,6 +306,27 @@ impl ChartZodiac {
     /// [`ChartZodiac::searched`] answers for a zodiac already taken — a
     /// chart document's own, say, whose searches (a return, the Moon's
     /// star) must read the grahas in the zodiac the chart placed them in.
+    ///
+    /// ```
+    /// use teistro_astro::completion::Completion;
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_chart::{sample, zodiac::ChartZodiac};
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let settings = sample::resolved().settings;
+    /// let completion = Completion::new(&provider, settings.provider.overrides, DeltaTModel::default());
+    /// let models = (PrecessionModel::default(), DeltaTModel::default());
+    /// let at = JulianDay::<Tt>::literal(sample::INSTANT.get());
+    /// // A zodiac already taken, read the way it was placed.
+    /// let taken = ChartZodiac::of(&settings, at, models.0, models.1)?;
+    /// let searched = taken.search(&completion, settings.frame.ayanamsha_basis, models)?;
+    /// assert_eq!(searched.chart, taken);
+    /// assert_eq!(searched.frame, taken.request);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -264,6 +364,20 @@ impl ChartZodiac {
     /// the tropical rate stood 1e-4 degrees a day from the recorded one in
     /// every body of a chart at once. Taken by a central difference over a
     /// hundredth of a day, far inside the shortest nutation term's period.
+    ///
+    /// ```
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_chart::{sample, zodiac::ChartZodiac};
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// let settings = sample::resolved().settings;
+    /// let at = JulianDay::<Tt>::literal(sample::INSTANT.get());
+    /// let rate = ChartZodiac::rate_deg_per_day(&settings, at, PrecessionModel::default(), DeltaTModel::default())?;
+    /// // About 50 arcseconds a year, give or take the nutation's swing.
+    /// assert!((2.0e-5..6.0e-5).contains(&rate));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -310,12 +424,35 @@ impl ChartZodiac {
     }
 
     /// A longitude of the chart's zodiac back in the tropical one.
+    ///
+    /// ```
+    /// use teistro_chart::zodiac::ChartZodiac;
+    /// use teistro_port_ephemeris::Frame;
+    ///
+    /// let sidereal = ChartZodiac { request: Frame::CANONICAL, offset_deg: 23.7, ayanamsha: None };
+    /// assert!((sidereal.to_tropical(346.3) - 10.0).abs() < 1e-12);
+    /// assert!((sidereal.to_tropical(sidereal.of_tropical(123.4)) - 123.4).abs() < 1e-12);
+    /// ```
     #[must_use]
     pub fn to_tropical(&self, chart_deg: f64) -> f64 {
         (chart_deg + self.offset_deg).rem_euclid(360.0)
     }
 
     /// Whether the chart is sidereal, which is what a stamp reports.
+    ///
+    /// ```
+    /// use teistro_chart::zodiac::ChartZodiac;
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::AyanamshaChoice;
+    /// use teistro_port_ephemeris::Frame;
+    ///
+    /// let lahiri = ChartZodiac {
+    ///     request: Frame::CANONICAL,
+    ///     offset_deg: 24.2,
+    ///     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+    /// };
+    /// assert!(lahiri.is_sidereal());
+    /// ```
     #[must_use]
     pub const fn is_sidereal(&self) -> bool {
         self.ayanamsha.is_some()
@@ -323,6 +460,19 @@ impl ChartZodiac {
 
     /// Whether the provider is being asked for a topocentric position,
     /// which it needs an observer for.
+    ///
+    /// ```
+    /// use teistro_chart::zodiac::ChartZodiac;
+    /// use teistro_port_ephemeris::{Centre, Frame};
+    ///
+    /// let geocentric = ChartZodiac { request: Frame::CANONICAL, offset_deg: 0.0, ayanamsha: None };
+    /// assert!(!geocentric.needs_observer());
+    /// let topocentric = ChartZodiac {
+    ///     request: Frame { centre: Centre::Topocentric, ..Frame::CANONICAL },
+    ///     ..geocentric
+    /// };
+    /// assert!(topocentric.needs_observer());
+    /// ```
     #[must_use]
     pub fn needs_observer(&self) -> bool {
         self.request.centre == FrameCentre::Topocentric

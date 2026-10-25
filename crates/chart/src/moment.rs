@@ -27,6 +27,17 @@ const STEP_DAYS: f64 = 5.0 / 1440.0;
 const TOLERANCE_DAYS: f64 = 1.0 / 86_400.0;
 
 /// The instant's own facts.
+///
+/// ```
+/// use teistro_chart::{BirthEclipse, Moment, RisingSign};
+/// use teistro_core::catalogue::Rashi;
+///
+/// let moment = Moment {
+///     rising: RisingSign { sign: Rashi::Leo, rose: None, sets: None },
+///     eclipse: BirthEclipse::None,
+/// };
+/// assert_eq!(serde_json::to_value(moment).unwrap()["eclipse"]["kind"], "NONE");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Moment {
@@ -37,6 +48,24 @@ pub struct Moment {
 }
 
 /// The sign rising at an instant, and its span.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::quantity::JulianDay;
+///
+/// // A lagna that turns once a day, from 0° at `start`: two hours a sign.
+/// let start = 2_460_000.5;
+/// let lagna_at = |t: JulianDay<_>| Ok(360.0 * (t.get() - start));
+/// use teistro_chart::moment::rising;
+///
+/// let risen = rising(JulianDay::literal(start + 0.05), lagna_at)?;
+/// assert_eq!(risen.sign, Rashi::Aries);
+/// // Found to a second either side.
+/// let (rose, sets) = (risen.rose.unwrap().get(), risen.sets.unwrap().get());
+/// assert!((rose - start).abs() < 1.0 / 86_400.0);
+/// assert!((sets - (start + 1.0 / 12.0)).abs() < 1.0 / 86_400.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RisingSign {
@@ -56,6 +85,14 @@ pub struct RisingSign {
 /// solar eclipse's partial phase with the Sun up. That is how the
 /// observances count an eclipse's time (*Dharmasindhu*), and the almanac's
 /// own eclipses report the same spans (`astro::eclipse::local`, C378).
+///
+/// ```
+/// use teistro_chart::BirthEclipse;
+/// use teistro_core::quantity::JulianDay;
+///
+/// let lunar = BirthEclipse::Lunar { greatest: JulianDay::literal(2_460_389.8) };
+/// assert_eq!(serde_json::to_value(lunar).unwrap()["kind"], "LUNAR");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -83,6 +120,23 @@ pub enum BirthEclipse {
 ///
 /// Each edge is walked to in `STEP_DAYS` and found to a second by
 /// bisection; an edge beyond `REACH_DAYS` is `None`.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::quantity::JulianDay;
+///
+/// // A lagna that turns once a day, from 0° at `start`: two hours a sign.
+/// let start = 2_460_000.5;
+/// let lagna_at = |t: JulianDay<_>| Ok(360.0 * (t.get() - start));
+/// use teistro_chart::moment::rising;
+///
+/// // Three hours in, the second sign is rising.
+/// assert_eq!(rising(JulianDay::literal(start + 0.125), lagna_at)?.sign, Rashi::Taurus);
+/// // A refusal from the lagna is the answer's.
+/// let refused = rising(JulianDay::literal(start), |_| Err(teistro_core::Error::invalid_arg("no sky")));
+/// assert!(refused.is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -116,6 +170,22 @@ where
 /// the list with its `sets` unknown. The list is whatever the sky gives:
 /// a sign can rise twice in a window longer than a sidereal day, and
 /// none is assumed to rise at all.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::quantity::JulianDay;
+///
+/// // A lagna that turns once a day, from 0° at `start`: two hours a sign.
+/// let start = 2_460_000.5;
+/// let lagna_at = |t: JulianDay<_>| Ok(360.0 * (t.get() - start));
+/// use teistro_chart::moment::risings;
+/// use teistro_core::interval::Interval;
+///
+/// let window = Interval::new(JulianDay::literal(start + 0.01), JulianDay::literal(start + 0.24))?;
+/// let signs: Vec<Rashi> = risings(window, lagna_at)?.iter().map(|risen| risen.sign).collect();
+/// assert_eq!(signs, [Rashi::Aries, Rashi::Taurus, Rashi::Gemini]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

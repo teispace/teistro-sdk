@@ -32,6 +32,12 @@ use teistro_time::local_day::{DayState, LocalDay, PolarKind, local_day};
 /// it is the night of the day before, and [`ChartDay`] has already moved
 /// to that day by the time this is answered. Naming it so stops "does
 /// pre-sunrise count as night?" from being asked once per module.
+///
+/// ```
+/// use teistro_chart::DayPart;
+///
+/// assert_eq!(serde_json::to_value(DayPart::Night).unwrap(), "NIGHT");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -46,6 +52,13 @@ pub enum DayPart {
 impl DayPart {
     /// Whether this is the daylight part, which is what "day birth"
     /// means in the texts and in every recorded fixture.
+    ///
+    /// ```
+    /// use teistro_chart::DayPart;
+    ///
+    /// assert!(DayPart::Daylight.is_daylight());
+    /// assert!(!DayPart::Night.is_daylight());
+    /// ```
     #[must_use]
     pub const fn is_daylight(self) -> bool {
         matches!(self, DayPart::Daylight)
@@ -57,6 +70,16 @@ impl DayPart {
 /// [`LocalDay`] already carries the arc, the vara, the polar state and
 /// the convention the arc was reckoned by; what this adds is the two
 /// things a day cannot know about an instant it does not have.
+///
+/// ```
+/// # let foundation = teistro_chart::sample::foundation()?;
+/// let day = &foundation.day;
+/// assert!((0.0..1.0).contains(&day.elapsed));
+/// // The day holds the chart's instant, sunrise to the next.
+/// assert!(day.day.sunrise.get() <= foundation.instant.get());
+/// assert!(foundation.instant.get() < day.day.next_sunrise.get());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChartDay {
@@ -73,6 +96,12 @@ impl ChartDay {
     /// The sunrise that anchors the lagna: the one that opened this day,
     /// which for an instant before the civil date's sunrise is the
     /// previous morning's.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// assert_eq!(foundation.day.lagna_sunrise(), foundation.day.day.sunrise);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn lagna_sunrise(&self) -> JulianDay<Utc> {
         self.day.sunrise
@@ -81,6 +110,13 @@ impl ChartDay {
     /// The bounds of the part holding the instant, as the recorded
     /// fixtures report them: sunrise to sunset by day, sunset to the next
     /// sunrise by night.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// let (from, to) = foundation.day.part_bounds();
+    /// assert!(from.get() <= foundation.instant.get() && foundation.instant.get() < to.get());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn part_bounds(&self) -> (JulianDay<Utc>, JulianDay<Utc>) {
         match self.part {
@@ -90,6 +126,14 @@ impl ChartDay {
     }
 
     /// The length of the part holding the instant, in days.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// let (from, to) = foundation.day.part_bounds();
+    /// assert_eq!(foundation.day.part_days(), to.get() - from.get());
+    /// assert!(foundation.day.part_days() > 0.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn part_days(&self) -> f64 {
         let (from, to) = self.part_bounds();
@@ -102,6 +146,36 @@ impl ChartDay {
 /// The civil date is where the search starts and not where it ends: if
 /// the instant precedes that date's sunrise it belongs to the day before,
 /// and that day's arc is the one returned.
+///
+/// ```
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_calendar::Gregorian;
+/// use teistro_calendar::solar::drik::DrikSun;
+/// use teistro_chart::{day::chart_day, sample};
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_core::settings::{OverridePolicy, PolarDayPolicy, Sunrise};
+/// use teistro_core::time::UtcOffset;
+/// use teistro_port_ephemeris::TestProvider;
+///
+/// let provider = TestProvider::new();
+/// let sun = DrikSun::new(
+///     &provider,
+///     Ayanamsha::Lahiri,
+///     Sunrise::CentreNoRefraction.into(),
+///     OverridePolicy::PreferNative,
+///     DeltaTModel::default(),
+/// );
+/// let nepal = UtcOffset::literal(5, 45, 0);
+/// let morning = chart_day(&sun, &Gregorian, &nepal, &sample::place(), sample::INSTANT, PolarDayPolicy::CivilMidnight)?;
+/// // An hour after midnight, local time, belongs to the day before: its
+/// // sunrise is the previous morning's.
+/// let small_hours = JulianDay::literal(sample::INSTANT.get() - 4.75 / 24.0);
+/// let night = chart_day(&sun, &Gregorian, &nepal, &sample::place(), small_hours, PolarDayPolicy::CivilMidnight)?;
+/// assert!(!night.part.is_daylight());
+/// assert!(night.lagna_sunrise().get() < morning.lagna_sunrise().get());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

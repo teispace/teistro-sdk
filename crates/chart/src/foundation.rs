@@ -54,6 +54,14 @@ use teistro_time::hora::{self, Hora};
 /// Moon's traversal of its nakshatra and the elapsed part of it, which
 /// the corpus settles to within 0.39 minutes over all 55 charts. They
 /// belong to `dasha`, the only module that needs them.
+///
+/// ```
+/// let foundation = teistro_chart::sample::foundation()?;
+/// // 05:45 in Kathmandu in June is about half an hour after sunrise.
+/// let timing = foundation.timing;
+/// assert!(timing.ishtakaal.ghati < 3);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct BirthTiming {
@@ -76,6 +84,17 @@ use crate::zodiac::{ChartZodiac, request_of};
 
 /// A chart's angles at an instant, in its own zodiac, with the obliquity of
 /// the date they were built on.
+///
+/// ```
+/// use teistro_chart::sample::{self, Sample};
+/// let sample = Sample::new();
+/// let founder = sample.founder();
+/// let foundation = sample::foundation()?;
+/// let angles = founder.angles_at(sample::INSTANT, &sample::place(), &foundation.zodiac)?;
+/// assert!((angles.ascendant_deg - foundation.lagna_deg).abs() < 1e-9);
+/// assert!((23.4..23.5).contains(&angles.obliquity_deg));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChartAngles {
@@ -103,6 +122,16 @@ impl ChartAngles {
 /// Both readings are kept and neither is recomputed: a module that wanted
 /// the other one and converted it itself would use a different ayanamsha
 /// than the chart did, the day someone changed the setting.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+///
+/// let foundation = teistro_chart::sample::foundation()?;
+/// let sun = foundation.graha(Graha::Sun).ok_or("the Sun is placed")?;
+/// assert!((0.0..360.0).contains(&sun.longitude_deg));
+/// assert!((sun.tropical_deg - foundation.zodiac.to_tropical(sun.longitude_deg)).abs() < 1e-9);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaPosition {
@@ -133,12 +162,31 @@ pub struct GrahaPosition {
 
 impl GrahaPosition {
     /// Whether the graha is moving backwards through the zodiac.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let foundation = teistro_chart::sample::foundation()?;
+    /// let sun = foundation.graha(Graha::Sun).ok_or("the Sun is placed")?;
+    /// // The Sun never turns back.
+    /// assert!(!sun.is_retrograde());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn is_retrograde(&self) -> bool {
         self.speed_deg_per_day < 0.0
     }
 
     /// The sign it occupies, 0 for Aries.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let foundation = teistro_chart::sample::foundation()?;
+    /// let moon = foundation.graha(Graha::Moon).ok_or("the Moon is placed")?;
+    /// assert_eq!(f64::from(moon.sign_index()), (moon.longitude_deg / 30.0).floor());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_possible_truncation,
@@ -192,6 +240,13 @@ impl Apogee {
     pub const ALL: [Apogee; 2] = [Apogee::Mean, Apogee::Osculating];
 
     /// The body the ephemeris port computes it as.
+    ///
+    /// ```
+    /// use teistro_chart::foundation::Apogee;
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Apogee::Mean.body(), Body::MeanApogee);
+    /// ```
     #[must_use]
     pub const fn body(self) -> Body {
         match self {
@@ -201,6 +256,12 @@ impl Apogee {
     }
 
     /// The key a document spells it with, as serde writes it.
+    ///
+    /// ```
+    /// use teistro_chart::foundation::Apogee;
+    ///
+    /// assert_eq!(Apogee::Mean.key(), "MEAN");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -274,12 +335,50 @@ impl LilithPosition {
     /// half a circle, which both apogees are by definition. The mean one
     /// is the theory's mean perigee plus 180°, and the osculating one the
     /// far end of the ellipse's line of apsides.
+    ///
+    /// ```
+    /// # use teistro_chart::bhava::Placement;
+    /// # use teistro_chart::foundation::{Apogee, LilithPosition};
+    /// # use teistro_core::catalogue::HouseSystem;
+    /// # let placement = Placement { bhava: 1, method: HouseSystem::WholeSign, through: 0.5, from_madhya_deg: 0.0 };
+    /// let lilith = LilithPosition {
+    ///     apogee: Apogee::Osculating,
+    ///     longitude_deg: 300.0,
+    ///     tropical_deg: 300.0,
+    ///     latitude_deg: 5.1,
+    ///     distance_au: 0.0027,
+    ///     speed_deg_per_day: 3.2,
+    ///     placement,
+    ///     house: placement,
+    /// };
+    /// // Half a circle on, past the start of the zodiac.
+    /// assert!((lilith.perigee_deg() - 120.0).abs() < 1e-9);
+    /// ```
     #[must_use]
     pub fn perigee_deg(&self) -> f64 {
         (self.longitude_deg + 180.0).rem_euclid(360.0)
     }
 
     /// Whether it is moving backwards through the zodiac.
+    ///
+    /// ```
+    /// # use teistro_chart::bhava::Placement;
+    /// # use teistro_chart::foundation::{Apogee, LilithPosition};
+    /// # use teistro_core::catalogue::HouseSystem;
+    /// # let placement = Placement { bhava: 1, method: HouseSystem::WholeSign, through: 0.5, from_madhya_deg: 0.0 };
+    /// let lilith = LilithPosition {
+    ///     apogee: Apogee::Osculating,
+    ///     longitude_deg: 300.0,
+    ///     tropical_deg: 300.0,
+    ///     latitude_deg: 5.1,
+    ///     distance_au: 0.0027,
+    ///     speed_deg_per_day: -4.5,
+    ///     placement,
+    ///     house: placement,
+    /// };
+    /// // The osculating apogee swings back for days at a time.
+    /// assert!(lilith.is_retrograde());
+    /// ```
     #[must_use]
     pub fn is_retrograde(&self) -> bool {
         self.speed_deg_per_day < 0.0
@@ -310,6 +409,14 @@ impl LilithPosition {
 }
 
 /// One moment at one place, founded.
+///
+/// ```
+/// let foundation = teistro_chart::sample::foundation()?;
+/// assert_eq!(foundation.grahas.len(), 9);
+/// assert!(foundation.outer.is_empty() && foundation.lilith.is_none());
+/// assert_eq!(foundation.houses.madhya.len(), 12);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChartFoundation {
@@ -374,6 +481,13 @@ impl ChartFoundation {
     /// sphere's: a classical astronomy that defines them
     /// (`03-design/classical-chart.md` §5), stamped `angles:NATIVE`. Such a
     /// chart's angles cannot be recomputed without that provider.
+    ///
+    /// ```
+    /// let foundation = teistro_chart::sample::foundation()?;
+    /// // A modern provider: the sphere gave the angles.
+    /// assert!(!foundation.angles_are_the_providers());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn angles_are_the_providers(&self) -> bool {
         let native = format!("{ANGLES_STEP}:{}", Implementation::Native.key());
@@ -382,6 +496,16 @@ impl ChartFoundation {
 
     /// One graha, by name: one of the nine, or an outer planet the chart
     /// placed.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let foundation = teistro_chart::sample::foundation()?;
+    /// assert!(foundation.graha(Graha::Ketu).is_some());
+    /// // The outer planets only when the chart was asked to place them.
+    /// assert!(foundation.graha(Graha::Uranus).is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn graha(&self, graha: Graha) -> Option<&GrahaPosition> {
         self.grahas
@@ -391,6 +515,12 @@ impl ChartFoundation {
     }
 
     /// The lagna's sign, 0 for Aries.
+    ///
+    /// ```
+    /// let foundation = teistro_chart::sample::foundation()?;
+    /// assert_eq!(f64::from(foundation.lagna_sign_index()), (foundation.lagna_deg / 30.0).floor());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_possible_truncation,
@@ -443,6 +573,23 @@ struct BatchInput {
 }
 
 /// One event of a transit search ([`Founder::transit_events`]).
+///
+/// ```
+/// use teistro_chart::sample::{self, Sample};
+/// use teistro_chart::foundation::TransitEventKind;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_port_ephemeris::Lattice;
+///
+/// let sample = Sample::new();
+/// let founder = sample.founder();
+/// let month = (sample::INSTANT, JulianDay::literal(sample::INSTANT.get() + 30.0));
+/// let events = founder.transit_events(&sample::place(), &[Graha::Moon], &[Lattice::SIGNS], false, month)?;
+/// // The Moon goes once round the twelve signs in a little over 27 days.
+/// assert!(events.value.len() >= 12);
+/// assert!(matches!(events.value[0].kind, TransitEventKind::Crossing { lattice: 0, .. }));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TransitEvent {
     /// Whose.
@@ -454,6 +601,24 @@ pub struct TransitEvent {
 }
 
 /// What a transit event was.
+///
+/// ```
+/// use teistro_chart::sample::{self, Sample};
+/// use teistro_chart::foundation::TransitEventKind;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_port_ephemeris::Lattice;
+///
+/// let sample = Sample::new();
+/// let founder = sample.founder();
+/// let month = (sample::INSTANT, JulianDay::literal(sample::INSTANT.get() + 30.0));
+/// let events = founder.transit_events(&sample::place(), &[Graha::Sun], &[Lattice::SIGNS], true, month)?;
+/// let crossings = events.value.iter().filter(|event| matches!(event.kind, TransitEventKind::Crossing { .. }));
+/// // The Sun crosses one sign line a month, and never stands still.
+/// assert_eq!(crossings.count(), 1);
+/// assert!(events.value.iter().all(|event| !matches!(event.kind, TransitEventKind::Station { .. })));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TransitEventKind {
     /// The graha's longitude reached a line of the `lattice`th lattice.
@@ -477,6 +642,21 @@ pub enum TransitEventKind {
 /// An exact aspect between two planets found by
 /// [`Founder::contact_events`]: their separation reached a multiple of
 /// 30°.
+///
+/// ```
+/// use teistro_chart::sample::{self, Sample};
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::quantity::JulianDay;
+///
+/// let sample = Sample::new();
+/// let founder = sample.founder();
+/// let month = (sample::INSTANT, JulianDay::literal(sample::INSTANT.get() + 30.0));
+/// let ahead = founder.contact_events(&sample::place(), &[Graha::Moon, Graha::Sun], &[], month)?;
+/// // The Moon gains a sign's width on the Sun about every two and a half days.
+/// assert!(ahead.value.contacts.len() >= 11);
+/// assert!(ahead.value.contacts.iter().all(|contact| (contact.separation_deg / 30.0).fract().abs() < 1e-6 || (contact.separation_deg / 30.0).fract() > 1.0 - 1e-6));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ContactEvent {
     /// The two, in the order asked.
@@ -489,6 +669,13 @@ pub struct ContactEvent {
 }
 
 /// What lies ahead of a figure ([`Founder::contact_events`]).
+///
+/// ```
+/// use teistro_chart::foundation::ContactEvents;
+///
+/// let nothing = ContactEvents::default();
+/// assert!(nothing.contacts.is_empty() && nothing.stations.is_empty());
+/// ```
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct ContactEvents {
     /// Every contact, in time order.
@@ -513,6 +700,14 @@ type Placed = (
 /// Rahu is whichever node `frame.node` names; Ketu is not asked for,
 /// because no body is Ketu — it is Rahu's opposite point in the same
 /// frame (`05-testing/01-golden-vectors.md`, entry 6).
+///
+/// ```
+/// use teistro_chart::{foundation, sample};
+///
+/// let bodies = foundation::bodies_of(&sample::resolved().settings);
+/// // Eight bodies for nine grahas: Ketu is Rahu turned.
+/// assert_eq!(bodies.len(), 8);
+/// ```
 #[must_use]
 pub fn bodies_of(settings: &Settings) -> Vec<Body> {
     [
@@ -531,10 +726,23 @@ pub fn bodies_of(settings: &Settings) -> Vec<Body> {
 }
 
 /// The outer planets a chart places when asked, in the catalogue's order.
+///
+/// ```
+/// use teistro_chart::foundation::OUTER;
+/// use teistro_core::catalogue::Graha;
+///
+/// assert_eq!(OUTER[0], Graha::Uranus);
+/// ```
 pub const OUTER: [Graha; 3] = [Graha::Uranus, Graha::Neptune, Graha::Pluto];
 
 /// Whether a chart places the outer planets beside the nine
 /// (`03-design/western-outer-planets.md`).
+///
+/// ```
+/// use teistro_chart::foundation::OuterPlanets;
+///
+/// assert_eq!(OuterPlanets::default(), OuterPlanets::Left);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum OuterPlanets {
     /// The nine alone, as every chart was before.
@@ -572,6 +780,17 @@ pub struct Carried {
 /// node the settings name turned half a circle, and every other graha is
 /// its own body unturned. The one place a graha names its body, so a
 /// search reaches the outer planets as it reaches the seven.
+///
+/// ```
+/// use teistro_chart::{foundation, sample};
+/// use teistro_core::catalogue::Graha;
+///
+/// let settings = sample::resolved().settings;
+/// let (rahu, unturned) = foundation::body_of(Graha::Rahu, &settings).ok_or("Rahu is placed")?;
+/// let (ketu, turned) = foundation::body_of(Graha::Ketu, &settings).ok_or("Ketu is placed")?;
+/// assert_eq!((rahu, unturned, turned), (ketu, 0.0, 180.0));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn body_of(graha: Graha, settings: &Settings) -> Option<(Body, f64)> {
     let node = if settings.frame.node == Node::True {
@@ -602,6 +821,17 @@ pub fn body_of(graha: Graha, settings: &Settings) -> Option<(Body, f64)> {
 /// with the provider and the settings and then asked for as many
 /// foundations as are wanted; [`Founder::found_one`] is the convenience
 /// over it and not the other way round.
+///
+/// ```
+/// use teistro_chart::sample::{self, Sample};
+/// use teistro_core::catalogue::ChartKind;
+///
+/// let sample = Sample::new();
+/// let founder = sample.founder();
+/// let chart = founder.found_one(sample::INSTANT, &sample::place(), ChartKind::Natal)?;
+/// assert_eq!(chart.value.kind, ChartKind::Natal);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub struct Founder<'a, P: EphemerisProvider + ?Sized> {
     provider: &'a P,
     resolved: &'a Resolved,
@@ -628,6 +858,36 @@ impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for Founder<'_, P> {
 impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// A founder over a provider, a solar model for the day's arcs, a
     /// calendar and a clock.
+    ///
+    /// ```
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_calendar::Gregorian;
+    /// use teistro_calendar::solar::drik::DrikSun;
+    /// use teistro_chart::foundation::Founder;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::{Ayanamsha, ChartKind};
+    /// use teistro_core::time::UtcOffset;
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let resolved = sample::resolved();
+    /// let settings = &resolved.settings;
+    /// let sun = DrikSun::new(&provider, Ayanamsha::Lahiri, settings.day.sunrise, settings.provider.overrides, DeltaTModel::default());
+    /// let nepal = UtcOffset::literal(5, 45, 0);
+    /// let founder = Founder::new(
+    ///     &provider,
+    ///     &resolved,
+    ///     &sun,
+    ///     &Gregorian,
+    ///     &nepal,
+    ///     PrecessionModel::default(),
+    ///     DeltaTModel::default(),
+    /// );
+    /// let chart = founder.found_one(sample::INSTANT, &sample::place(), ChartKind::Natal)?;
+    /// assert_eq!(chart.value, sample::foundation()?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn new(
         provider: &'a P,
         resolved: &'a Resolved,
@@ -659,6 +919,18 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     }
 
     /// Founds one chart.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let chart = founder.found_one(sample::INSTANT, &sample::place(), ChartKind::Natal)?;
+    /// // The answer carries its stamp, naming the profile it was founded under.
+    /// assert_eq!(chart.provenance.profile, sample.resolved().profile.as_str());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -844,6 +1116,20 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// Founds many charts at one place, sharing the settings and the
     /// solar model.
     ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::catalogue::ChartKind;
+    /// use teistro_core::quantity::JulianDay;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let hourly: Vec<_> = (0..3).map(|hour| JulianDay::literal(sample::INSTANT.get() + f64::from(hour) / 24.0)).collect();
+    /// let charts = founder.found(&hourly, &sample::place(), ChartKind::Natal)?;
+    /// assert_eq!(charts.value.len(), 3);
+    /// assert_eq!(charts.value[0], sample::foundation()?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Founder::found_one`], on the first instant that refuses.
@@ -858,6 +1144,19 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
 
     /// [`Founder::found`], placing the outer planets beside the nine when
     /// asked, in the same request to the provider.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_chart::foundation::OuterPlanets;
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let charts = founder.found_with(&[sample::INSTANT], &sample::place(), ChartKind::Natal, OuterPlanets::Placed)?;
+    /// assert_eq!(charts.value[0].outer.len(), 3);
+    /// assert_eq!(charts.value[0].grahas.len(), 9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -884,6 +1183,23 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// [`Founder::found`], placing what `carried` asks for beside the
     /// nine — the outer planets, the Black Moon Lilith — in the same
     /// request to the provider (`03-design/lilith.md`).
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_chart::foundation::{Apogee, Carried, OuterPlanets};
+    /// use teistro_core::catalogue::ChartKind;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let outer = Carried { outer: OuterPlanets::Placed, lilith: None };
+    /// let charts = founder.found_carrying(&[sample::INSTANT], &sample::place(), ChartKind::Natal, outer)?;
+    /// assert_eq!(charts.value[0].outer.len(), 3);
+    /// // The test provider computes no lunar apogee, and says so by name.
+    /// let lilith = Carried { outer: OuterPlanets::Left, lilith: Some(Apogee::Mean) };
+    /// let refused = founder.found_carrying(&[sample::INSTANT], &sample::place(), ChartKind::Natal, lilith);
+    /// assert_eq!(refused.unwrap_err().field(), Some("lilith"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -929,6 +1245,20 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// provider for every instant in one request rather than one each
     /// (`03-design/gochar.md` §6). The stamp's steps say what was done, so
     /// they name no day or angles.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let rows = founder.longitudes(&[sample::INSTANT], &sample::place())?;
+    /// let foundation = sample::foundation()?;
+    /// let moon = foundation.graha(Graha::Moon).ok_or("placed")?;
+    /// // To the bit what the founded chart places.
+    /// assert_eq!(rows.value[0][1], moon.longitude_deg);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1017,6 +1347,18 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// throughout. Ketu is Rahu's opposite point, as the founding places
     /// it.
     ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let foundation = sample::foundation()?;
+    /// let nodes = founder.longitudes_in(sample::INSTANT, &sample::place(), &foundation.zodiac, &[Graha::Rahu, Graha::Ketu])?;
+    /// assert!(((nodes[0] - nodes[1]).rem_euclid(360.0) - 180.0).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An instant outside the Delta T model's range, a graha the settings
@@ -1080,6 +1422,19 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// The zodiac is taken, as [`Founder::longitudes_in`] takes it, for
     /// the frame the provider is asked in; a declination does not depend
     /// on it.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let foundation = sample::foundation()?;
+    /// let rows = founder.declinations_at(&[sample::INSTANT], &sample::place(), &foundation.zodiac, &[Graha::Sun])?;
+    /// // No further from the equator than the ecliptic's tilt and a little latitude.
+    /// assert!(rows[0][0].abs() < 24.5);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1152,6 +1507,22 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// chart founded there would give, and not a frame's mean-ayanamsha
     /// reading 18″ away. Ketu, always Rahu's opposite point, is Rahu's
     /// search on its lattice turned half a circle, not a second one.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_port_ephemeris::Lattice;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let month = (sample::INSTANT, JulianDay::literal(sample::INSTANT.get() + 30.0));
+    /// let events = founder.transit_events(&sample::place(), &[Graha::Moon], &[Lattice::NAKSHATRAS], false, month)?;
+    /// // Every star of the twenty-seven, and a few again.
+    /// assert!(events.value.len() >= 27);
+    /// assert!(events.value.windows(2).all(|pair| pair[0].instant.get() <= pair[1].instant.get()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1236,6 +1607,20 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// ayanamsha cancels, and seen from `place` under a topocentric
     /// profile, as the charts are.
     ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_port_ephemeris::Lattice;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let month = (sample::INSTANT, JulianDay::literal(sample::INSTANT.get() + 30.0));
+    /// let tithis = founder.elongation_events(&sample::place(), &[Lattice::TITHIS], month)?;
+    /// // About one tithi ends a day.
+    /// assert!((25..=35).contains(&tithis.value.len()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// The search's own: a window that does not run forward, or a provider
@@ -1288,6 +1673,20 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// Read in the chart's zodiac, as [`Founder::transit_events`] reads
     /// it: a separation is the same in any zodiac, a station's longitude
     /// is not.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::quantity::JulianDay;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let month = (sample::INSTANT, JulianDay::literal(sample::INSTANT.get() + 30.0));
+    /// let ahead = founder.contact_events(&sample::place(), &[Graha::Sun, Graha::Moon], &[Graha::Sun], month)?;
+    /// assert!(!ahead.value.contacts.is_empty());
+    /// assert!(ahead.value.stations.is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1363,6 +1762,22 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     ///
     /// Read in the chart's zodiac, as [`Founder::transit_events`] reads
     /// it; a separation is the same in any zodiac.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::quantity::JulianDay;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let month = (sample::INSTANT, JulianDay::literal(sample::INSTANT.get() + 30.0));
+    /// let squares = founder.separation_events(&sample::place(), &[[Graha::Moon, Graha::Sun]], 90.0, month)?;
+    /// // New, first quarter, full and last quarter: four a month, or five.
+    /// assert!((4..=5).contains(&squares.value.len()));
+    /// // A step that does not divide the circle is refused.
+    /// assert!(founder.separation_events(&sample::place(), &[[Graha::Moon, Graha::Sun]], 7.0, month).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1507,6 +1922,15 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// instant it judges, and its pranapada and Gulika are read off the
     /// day this answers.
     ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let day = founder.day_at(sample::INSTANT, &sample::place())?;
+    /// assert_eq!(day, sample::foundation()?.day);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`chart_day`].
@@ -1540,6 +1964,16 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// with the ayanamsha at *this* instant, which for a division eight
     /// hours away is a different number.
     ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let foundation = sample::foundation()?;
+    /// let lagna = founder.ascendant_at(sample::INSTANT, &sample::place(), &foundation.zodiac)?;
+    /// assert!((lagna - foundation.lagna_deg).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Whatever the house computation refuses: an instant outside the
@@ -1562,6 +1996,17 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// ascendant beside a classical sky (a patro printed in Nepal, whose
     /// lagna table is the sphere's under Lahiri, C680).
     ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let foundation = sample::foundation()?;
+    /// let lagna = founder.spheres_ascendant_at(sample::INSTANT, &sample::place(), &foundation.zodiac)?;
+    /// // Over a modern provider the sphere's is the chart's own.
+    /// assert!((lagna - foundation.lagna_deg).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Founder::ascendant_at`].
@@ -1583,6 +2028,22 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// ayanamsha under `SPHERE`. The zodiac is the one at the window's
     /// middle, as a chart is measured in one ayanamsha throughout; over a
     /// day it moves by a fifth of an arcsecond.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::JulianDay;
+    ///
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let day = founder.day_at(sample::INSTANT, &sample::place())?;
+    /// let morning = day.lagna_sunrise();
+    /// let within = Interval::new(morning, JulianDay::literal(morning.get() + 1.0))?;
+    /// let table = founder.lagna_table(within, &sample::place())?;
+    /// // Every sign rises once a day, and the first is the one rising at dawn.
+    /// assert!((12..=13).contains(&table.len()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1616,6 +2077,16 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// on. The zodiac is taken rather than recomputed, as for
     /// [`Founder::ascendant_at`].
     ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let foundation = sample::foundation()?;
+    /// let angles = founder.angles_at(sample::INSTANT, &sample::place(), &foundation.zodiac)?;
+    /// assert!((0.0..360.0).contains(&angles.midheaven_deg));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Founder::ascendant_at`].
@@ -1632,6 +2103,13 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
 
     /// The solar model the day's arcs were found with, for a caller that
     /// needs the Sun's own events — a sankranti — on the same reckoning.
+    ///
+    /// ```
+    /// use teistro_chart::sample::Sample;
+    ///
+    /// let sample = Sample::new();
+    /// assert!(sample.founder().solar_model().describe().starts_with("drik"));
+    /// ```
     #[must_use]
     pub fn solar_model(&self) -> &'a dyn SolarModel {
         self.model
@@ -1667,6 +2145,16 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// ([`ChartFoundation::angles_are_the_providers`]): the sphere would
     /// give such a chart a modern ascendant and midheaven beside the
     /// text's grahas.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let foundation = sample::foundation()?;
+    /// // A modern provider does not define the angles.
+    /// assert!(founder.providers_angles_at(sample::INSTANT, &sample::place(), &foundation.zodiac).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -2007,6 +2495,20 @@ fn cusps_in(
 /// was founded with: KP reads Placidus's cusps (`03-design/kp.md`). Like
 /// [`angles_of`] it needs **no ephemeris**, so a stored chart answers it.
 ///
+/// ```
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_chart::{foundation, sample};
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// let chart = sample::foundation()?;
+/// let (cusps, built) = foundation::cusps_of(&chart, HouseSystem::Placidus, DeltaTModel::default(), PolarPolicy::Error)?;
+/// assert_eq!(built, HouseSystem::Placidus);
+/// // Placidus's first cusp is the lagna.
+/// assert!((cusps[0] - chart.lagna_deg).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`angles_of`], and a system the polar policy refuses at the
@@ -2049,6 +2551,18 @@ pub fn cusps_of(
 /// steps and the first step that crosses the target, rather than jumping
 /// over it, is bisected. Either way the answer is checked, and an
 /// ascendant no meridian gives is refused rather than guessed.
+///
+/// ```
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_chart::{foundation, sample};
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// let chart = sample::foundation()?;
+/// let (cusps, _) = foundation::cusps_raising(&chart, HouseSystem::Placidus, 100.0, DeltaTModel::default(), PolarPolicy::Error)?;
+/// assert!((cusps[0] - 100.0).abs() < 1e-6);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -2181,6 +2695,21 @@ fn refuse_providers_angles(foundation: &ChartFoundation) -> Result<(), Error> {
 /// (`03-design/tajika-sahams.md`). Needs **no ephemeris**: the angles
 /// are the instant, the place and the chart's own ayanamsha offset, so a
 /// stored chart answers it with nothing else to hand.
+///
+/// ```
+/// use teistro_chart::sample::{self, Sample};
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_chart::foundation;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// let sample = Sample::new();
+/// let founder = sample.founder();
+/// let chart = sample::foundation()?;
+/// let stored = foundation::angles_of(&chart, DeltaTModel::default(), PolarPolicy::Error)?;
+/// // What the founder answers, with no provider to hand.
+/// assert_eq!(stored, founder.angles_at(chart.instant, &chart.place, &chart.zodiac)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
