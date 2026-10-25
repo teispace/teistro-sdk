@@ -46,6 +46,15 @@ pub const NINE: [Graha; 9] = [
 pub const TWILIGHT_GHATIS: f64 = 3.0;
 
 /// One graha as the Bhava bala reads it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_strength::sample;
+///
+/// // Raman's Saturn in Leo, the eighth from Makara.
+/// let saturn = sample::standard_bhavas().grahas[Graha::Saturn as usize];
+/// assert_eq!(saturn.house, 8);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BhavaGraha {
     /// Its sidereal longitude, degrees.
@@ -55,6 +64,14 @@ pub struct BhavaGraha {
 }
 
 /// What a Bhava bala reads of a chart.
+///
+/// ```
+/// use teistro_strength::sample;
+///
+/// let chart = sample::standard_bhavas();
+/// // Art. 29: the first madhya is the ascendant, 298° 27′.
+/// assert!((chart.madhya[0] - (298.0 + 27.0 / 60.0)).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BhavaBalaChart {
     /// The twelve bhava madhyas, sidereal degrees, from the first.
@@ -73,6 +90,15 @@ pub struct BhavaBalaChart {
 impl BhavaBalaChart {
     /// The strengths a chart's Shadbala gives each graha: its virupas and its
     /// Drik bala, Sun to Saturn.
+    ///
+    /// ```
+    /// use teistro_strength::{BhavaBalaChart, ShadbalaReading, ShadbalaRules, sample};
+    ///
+    /// let reading = ShadbalaReading::of(&sample::standard_horoscope(), ShadbalaRules::SRIPATI);
+    /// let strengths = BhavaBalaChart::strengths(&reading);
+    /// // Each lord's virupas and Drik bala, as a Bhava bala reads them.
+    /// assert_eq!(strengths[3], (reading.grahas[3].virupas, reading.grahas[3].drik));
+    /// ```
     #[must_use]
     pub fn strengths(reading: &ShadbalaReading) -> [(f64, f64); 7] {
         let mut out = [(0.0, 0.0); 7];
@@ -84,6 +110,14 @@ impl BhavaBalaChart {
 }
 
 /// The choices a Bhava bala is computed under (cruxes C73 to C75).
+///
+/// ```
+/// use teistro_core::settings::BhavaDig;
+/// use teistro_strength::BhavaBalaRules;
+///
+/// assert_eq!(BhavaBalaRules::SRIPATI.dig, BhavaDig::Sripati);
+/// assert_eq!(BhavaBalaRules::RECORDING_ENGINE.dig, BhavaDig::WholeSign);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct BhavaBalaRules {
@@ -123,6 +157,13 @@ impl BhavaBalaRules {
     };
 
     /// The rules a context's settings name.
+    ///
+    /// ```
+    /// use teistro_strength::BhavaBalaRules;
+    ///
+    /// let settings = teistro_chart::sample::resolved().settings;
+    /// assert_eq!(BhavaBalaRules::of(&settings).dig, settings.strength.bhava_dig);
+    /// ```
     #[must_use]
     pub const fn of(settings: &Settings) -> BhavaBalaRules {
         BhavaBalaRules {
@@ -135,6 +176,17 @@ impl BhavaBalaRules {
 }
 
 /// One bhava's strength, in virupas.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_strength::{BhavaBalaReading, BhavaBalaRules, sample};
+///
+/// let reading = BhavaBalaReading::of(&sample::standard_bhavas(), BhavaBalaRules::SRIPATI);
+/// let first = &reading.bhavas[0];
+/// // Makara's lord is Saturn, whose Shadbala the bhava takes.
+/// assert_eq!((first.bhava, first.lord), (1, Graha::Saturn));
+/// assert!((first.virupas - (first.adhipati + first.dig + first.drishti + first.special)).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct BhavaStrength {
@@ -155,6 +207,16 @@ pub struct BhavaStrength {
 }
 
 /// A chart's Bhava bala.
+///
+/// ```
+/// use teistro_strength::{BhavaBalaReading, BhavaBalaRules, sample};
+///
+/// let reading = BhavaBalaReading::of(&sample::standard_bhavas(), BhavaBalaRules::SRIPATI);
+/// assert_eq!(reading.bhavas.len(), 12);
+/// // Example 59: the eighth is the strongest, 579.53.
+/// let strongest = reading.bhavas.iter().max_by(|a, b| a.virupas.total_cmp(&b.virupas));
+/// assert_eq!(strongest.map(|bhava| bhava.bhava), Some(8));
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct BhavaBalaReading {
@@ -304,6 +366,15 @@ fn special(chart: &BhavaBalaChart, bhava: usize) -> f64 {
 
 impl BhavaBalaReading {
     /// A chart's Bhava bala under `rules`.
+    ///
+    /// ```
+    /// use teistro_strength::{BhavaBalaReading, BhavaBalaRules, sample};
+    ///
+    /// // Sripati's Dig in ten-virupa steps: Example 59's 30, 40, 10 and 0.
+    /// let reading = BhavaBalaReading::of(&sample::standard_bhavas(), BhavaBalaRules::SRIPATI);
+    /// let dig: Vec<f64> = reading.bhavas.iter().take(4).map(|bhava| bhava.dig).collect();
+    /// assert_eq!(dig, [30.0, 40.0, 10.0, 0.0]);
+    /// ```
     #[must_use]
     pub fn of(chart: &BhavaBalaChart, rules: BhavaBalaRules) -> BhavaBalaReading {
         let bhavas = (0..12)

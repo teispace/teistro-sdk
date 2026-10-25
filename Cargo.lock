@@ -2256,6 +2256,7 @@ dependencies = [
  "serde",
  "serde_json",
  "teistro-aspect",
+ "teistro-chart",
  "teistro-core",
  "teistro-state",
  "teistro-vargas",

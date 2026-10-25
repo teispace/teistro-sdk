@@ -64,6 +64,16 @@ const NAISARGIKA_SEVENTHS: [f64; 7] = [7.0, 6.0, 2.0, 3.0, 4.0, 5.0, 1.0];
 const NAISARGIKA_HUNDREDTHS: [f64; 7] = [60.0, 51.43, 17.14, 25.71, 34.29, 42.86, 8.57];
 
 /// One graha as the Shadbala reads it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_strength::sample;
+///
+/// // Raman's Sun at 180° 53′ 55″, Libra, the tenth from Makara.
+/// let sun = sample::standard_horoscope().grahas[Graha::Sun as usize];
+/// assert_eq!(sun.house, 10);
+/// assert!((sun.tropical - sun.longitude - (21.0 + 16.0 / 60.0)).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ShadbalaGraha {
     /// Its sidereal longitude, degrees.
@@ -81,6 +91,16 @@ pub struct ShadbalaGraha {
 /// The day is **the Hindu day** the instant belongs to: from the sunrise at
 /// or before it to the next, so a birth before dawn belongs to the previous
 /// morning's day.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_strength::sample;
+///
+/// let chart = sample::standard_horoscope();
+/// // A Wednesday, in the Moon's hora, the birth after sunrise.
+/// assert_eq!((chart.weekday_lord, chart.hora_lord), (Graha::Mercury, Graha::Moon));
+/// assert!(chart.sunrise < chart.instant && chart.instant < chart.sunset);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ShadbalaChart {
     /// The seven grahas, Sun to Saturn.
@@ -124,6 +144,13 @@ pub struct ShadbalaChart {
 
 /// The choices a Shadbala is computed under, each a fork between BPHS ch. 27,
 /// Sripati and the recording engine (cruxes C64 to C72).
+///
+/// ```
+/// use teistro_strength::ShadbalaRules;
+///
+/// // The three readings part at several forks.
+/// assert_ne!(ShadbalaRules::BPHS, ShadbalaRules::SRIPATI);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ShadbalaRules {
@@ -225,6 +252,13 @@ impl ShadbalaRules {
 
     /// The rules a context's settings name.
     ///
+    /// ```
+    /// use teistro_strength::ShadbalaRules;
+    ///
+    /// let settings = teistro_chart::sample::resolved().settings;
+    /// assert!(ShadbalaRules::of(&settings).is_ok());
+    /// ```
+    ///
     /// # Errors
     ///
     /// `UNSUPPORTED` for a bala scheme other than the six strengths of
@@ -260,6 +294,17 @@ impl ShadbalaRules {
 }
 
 /// A graha's Sthana bala by component, virupas.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_strength::{ShadbalaReading, ShadbalaRules, sample};
+///
+/// let reading = ShadbalaReading::of(&sample::standard_horoscope(), ShadbalaRules::SRIPATI);
+/// let sun = &reading.grahas[Graha::Sun as usize];
+/// // Example 3 to 13: the Sun's Uchcha 3.00 and Kendradi 60.
+/// assert!((sun.sthana.uchcha - 3.0).abs() < 0.15);
+/// assert_eq!(sun.sthana.kendradi, 60.0);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SthanaBala {
@@ -277,6 +322,13 @@ pub struct SthanaBala {
 
 impl SthanaBala {
     /// The five together.
+    ///
+    /// ```
+    /// use teistro_strength::SthanaBala;
+    ///
+    /// let sthana = SthanaBala { uchcha: 3.0, saptavargaja: 90.0, ojayugma: 30.0, kendradi: 60.0, drekkana: 15.0 };
+    /// assert_eq!(sthana.total(), 198.0);
+    /// ```
     #[must_use]
     pub fn total(&self) -> f64 {
         self.uchcha + self.saptavargaja + self.ojayugma + self.kendradi + self.drekkana
@@ -284,6 +336,16 @@ impl SthanaBala {
 }
 
 /// A graha's Kaala bala by component, virupas.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_strength::{ShadbalaReading, ShadbalaRules, sample};
+///
+/// let reading = ShadbalaReading::of(&sample::standard_horoscope(), ShadbalaRules::SRIPATI);
+/// // Example 21: the Moon's Paksha bala, doubled, 86.92.
+/// let moon = &reading.grahas[Graha::Moon as usize];
+/// assert!((moon.kaala.paksha - 86.92).abs() < 0.15);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct KaalaBala {
@@ -310,6 +372,15 @@ pub struct KaalaBala {
 
 impl KaalaBala {
     /// The components up to the Hora bala, which a Yuddha bala weighs.
+    ///
+    /// ```
+    /// use teistro_strength::KaalaBala;
+    ///
+    /// let kaala = KaalaBala { hora: 60.0, vara: 45.0, ayana: 20.0, ..KaalaBala::default() };
+    /// // The Ayana bala comes after the Hora bala, so is not counted.
+    /// assert_eq!(kaala.to_hora(), 105.0);
+    /// assert_eq!(kaala.total(), 125.0);
+    /// ```
     #[must_use]
     pub fn to_hora(&self) -> f64 {
         self.nathonnatha
@@ -322,6 +393,14 @@ impl KaalaBala {
     }
 
     /// The nine together.
+    ///
+    /// ```
+    /// use teistro_strength::KaalaBala;
+    ///
+    /// let kaala = KaalaBala { nathonnatha: 48.32, yuddha: -5.0, ..KaalaBala::default() };
+    /// // A war lost is taken off.
+    /// assert!((kaala.total() - 43.32).abs() < 1e-9);
+    /// ```
     #[must_use]
     pub fn total(&self) -> f64 {
         self.nathonnatha
@@ -337,6 +416,18 @@ impl KaalaBala {
 }
 
 /// One graha's Shadbala.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_strength::{ShadbalaReading, ShadbalaRules, sample};
+///
+/// let reading = ShadbalaReading::of(&sample::standard_horoscope(), ShadbalaRules::SRIPATI);
+/// let mercury = &reading.grahas[Graha::Mercury as usize];
+/// // Example 56: 537.02 virupas, 8.95 rupas.
+/// assert!((mercury.virupas - 537.02).abs() < 0.5);
+/// assert!((mercury.rupas - mercury.virupas / 60.0).abs() < 1e-9);
+/// assert!(mercury.strong);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaShadbala {
@@ -378,6 +469,16 @@ pub struct GrahaShadbala {
 }
 
 /// A chart's Shadbala.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_strength::{ShadbalaReading, ShadbalaRules, sample};
+///
+/// let reading = ShadbalaReading::of(&sample::standard_horoscope(), ShadbalaRules::SRIPATI);
+/// assert_eq!(reading.rules, ShadbalaRules::SRIPATI);
+/// assert_eq!(reading.grahas.len(), 7);
+/// assert_eq!(reading.grahas[6].graha, Graha::Saturn);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ShadbalaReading {
@@ -462,6 +563,16 @@ fn waxing(chart: &ShadbalaChart) -> bool {
 
 impl ShadbalaReading {
     /// A chart's Shadbala under `rules`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_strength::{ShadbalaReading, ShadbalaRules, sample};
+    ///
+    /// let reading = ShadbalaReading::of(&sample::standard_horoscope(), ShadbalaRules::SRIPATI);
+    /// // Example 57: Mars alone falls short of Sripati's requirement.
+    /// let weak: Vec<_> = reading.grahas.iter().filter(|graha| !graha.strong).map(|graha| graha.graha).collect();
+    /// assert_eq!(weak, [Graha::Mars]);
+    /// ```
     #[must_use]
     pub fn of(chart: &ShadbalaChart, rules: ShadbalaRules) -> ShadbalaReading {
         let lords = kaala::Lords::of(chart, rules.kaala_lords);

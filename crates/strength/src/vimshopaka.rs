@@ -55,6 +55,16 @@ pub const WEIGHTS: [[u8; 16]; 4] = [
 
 /// What a Vimshopaka reads of a chart: the seven grahas' signs in each of
 /// the sixteen vargas.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_strength::VimshopakaChart;
+///
+/// // Every graha in its exaltation sign in all sixteen vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let chart = VimshopakaChart::from_fn(|_, graha| exaltation(graha));
+/// assert_eq!(chart.signs[0][0], Rashi::Aries);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct VimshopakaChart {
     /// Each varga's row in [`VARGAS`]' order, the grahas Sun to Saturn.
@@ -63,6 +73,16 @@ pub struct VimshopakaChart {
 
 impl VimshopakaChart {
     /// A chart from each graha's sign in each varga.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi, Varga};
+    /// use teistro_strength::VimshopakaChart;
+    /// use teistro_strength::vimshopaka::VARGAS;
+    ///
+    /// let chart = VimshopakaChart::from_fn(|varga, graha| if varga == Varga::D9 && graha == Graha::Moon { Rashi::Cancer } else { Rashi::Aries });
+    /// let d9 = VARGAS.iter().position(|varga| *varga == Varga::D9).unwrap_or_default();
+    /// assert_eq!(chart.signs[d9][Graha::Moon as usize], Rashi::Cancer);
+    /// ```
     #[must_use]
     pub fn from_fn(sign: impl Fn(Varga, Graha) -> Rashi) -> VimshopakaChart {
         VimshopakaChart {
@@ -72,6 +92,23 @@ impl VimshopakaChart {
 }
 
 /// One graha's Vimshopaka, each out of 20.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_strength::VimshopakaChart;
+///
+/// // Every graha in its exaltation sign in all sixteen vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let chart = VimshopakaChart::from_fn(|_, graha| exaltation(graha));
+/// use teistro_core::settings::Vimshopaka;
+/// use teistro_strength::VimshopakaReading;
+///
+/// // Exalted everywhere is full strength in every scheme, both ways of scoring.
+/// for scoring in [Vimshopaka::Bphs, Vimshopaka::SaptavargajaVirupas] {
+///     let sun = VimshopakaReading::of(&chart, scoring).grahas[0];
+///     assert_eq!((sun.shadvarga, sun.saptavarga, sun.dashavarga, sun.shodashavarga), (20.0, 20.0, 20.0, 20.0));
+/// }
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaVimshopaka {
@@ -88,6 +125,21 @@ pub struct GrahaVimshopaka {
 }
 
 /// A chart's Vimshopaka.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_strength::VimshopakaChart;
+///
+/// // Every graha in its exaltation sign in all sixteen vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let chart = VimshopakaChart::from_fn(|_, graha| exaltation(graha));
+/// use teistro_core::settings::Vimshopaka;
+/// use teistro_strength::VimshopakaReading;
+///
+/// let reading = VimshopakaReading::of(&chart, Vimshopaka::Bphs);
+/// assert_eq!(reading.scoring, Vimshopaka::Bphs);
+/// assert_eq!(reading.grahas.len(), 7);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct VimshopakaReading {
@@ -157,6 +209,18 @@ fn engine_fraction(graha: Graha, sign: Rashi) -> f64 {
 
 impl VimshopakaReading {
     /// A chart's Vimshopaka, each varga scored under `scoring`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_core::settings::Vimshopaka;
+    /// use teistro_strength::{VimshopakaChart, VimshopakaReading};
+    ///
+    /// // Debilitated everywhere: nothing under the recording engine's scoring.
+    /// let debilitation = |graha: Graha| graha.attributes().debilitation.map_or(Rashi::Aries, |at| at.sign);
+    /// let chart = VimshopakaChart::from_fn(|_, graha| debilitation(graha));
+    /// let reading = VimshopakaReading::of(&chart, Vimshopaka::SaptavargajaVirupas);
+    /// assert!(reading.grahas.iter().all(|graha| graha.shodashavarga == 0.0));
+    /// ```
     #[must_use]
     pub fn of(chart: &VimshopakaChart, scoring: Vimshopaka) -> VimshopakaReading {
         let [rasi, ..] = chart.signs;
