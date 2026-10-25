@@ -30,6 +30,16 @@ use crate::tara::ChandraBala;
 use crate::window::navamsa_of;
 
 /// Which month a rite is keyed on (crux C161).
+///
+/// ```
+/// use teistro_muhurta::{ActivityRules, MonthRule};
+///
+/// // Raman keys a marriage on the lunar month, the baseline on the Sun's sign.
+/// assert!(matches!(ActivityRules::raman_marriage().months, MonthRule::Lunar { .. }));
+/// assert!(matches!(ActivityRules::baseline_marriage().months, MonthRule::Solar { .. }));
+/// assert_eq!(serde_json::to_value(MonthRule::Any)?, serde_json::json!({"reckoning": "ANY"}));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
@@ -59,6 +69,19 @@ pub enum MonthRule {
 }
 
 /// A month allowed while the Sun stands in a sign.
+///
+/// ```
+/// use teistro_core::catalogue::{Masa, Rashi};
+/// use teistro_muhurta::{ActivityRules, MonthRule};
+/// use teistro_muhurta::activity::MonthWithSun;
+///
+/// // The sages' Pausha with the Sun in Capricorn, added to Raman's marriage.
+/// let mut rules = ActivityRules::raman_marriage();
+/// if let MonthRule::Lunar { with_sun, .. } = &mut rules.months {
+///     with_sun.push(MonthWithSun { masa: Masa::Pausha, sun: Rashi::Capricorn });
+/// }
+/// assert!(matches!(&rules.months, MonthRule::Lunar { with_sun, .. } if with_sun.len() == 1));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct MonthWithSun {
@@ -69,6 +92,15 @@ pub struct MonthWithSun {
 }
 
 /// A nakshatra's quarter.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_muhurta::ActivityRules;
+/// use teistro_muhurta::activity::Pada;
+///
+/// // Raman rejects the first quarter of Magha though Magha is good.
+/// assert!(ActivityRules::raman_marriage().padas.contains(&Pada { nakshatra: Nakshatra::Magha, pada: 1 }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Pada {
@@ -84,6 +116,18 @@ pub struct Pada {
 /// In JSON a bar is either a clause's key, `"KAALA"`, which bars all
 /// three kaalas, or a clause, `{"clause": "KAALA", "kaala": "RAHU_KAALA"}`,
 /// which bars Rahu kaala alone.
+///
+/// ```
+/// use teistro_core::catalogue::Kaala;
+/// use teistro_muhurta::{Bar, ClauseKind};
+/// use teistro_muhurta::clause::ClauseKey;
+///
+/// // A key bars every kaala; a clause bars Rahu kaala alone.
+/// assert_eq!(serde_json::from_str::<Bar>(r#""KAALA""#)?, Bar::Key(ClauseKey::Kaala));
+/// let rahu: Bar = serde_json::from_str(r#"{"clause": "KAALA", "kaala": "RAHU_KAALA"}"#)?;
+/// assert_eq!(rahu, Bar::Clause(ClauseKind::Kaala { kaala: Kaala::RahuKaala }));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(untagged)]
@@ -96,6 +140,16 @@ pub enum Bar {
 
 impl Bar {
     /// Whether a clause is one this bar names.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    /// use teistro_muhurta::{Bar, ClauseKind};
+    /// use teistro_muhurta::clause::ClauseKey;
+    ///
+    /// let gulika = ClauseKind::Kaala { kaala: Kaala::GulikaKaala };
+    /// assert!(Bar::Key(ClauseKey::Kaala).names(&gulika));
+    /// assert!(!Bar::Clause(ClauseKind::Kaala { kaala: Kaala::RahuKaala }).names(&gulika));
+    /// ```
     #[must_use]
     pub fn names(&self, kind: &ClauseKind) -> bool {
         match self {
@@ -126,6 +180,26 @@ impl From<ClauseKind> for Bar {
 /// [`ClauseKind::UnwantedPlacement`], one clause a house, and counts
 /// against the time; an entry that `bars` bars the rite outright (crux
 /// C205: the texts' "must be unoccupied" against their "should").
+///
+/// ```
+/// # use teistro_core::interval::Interval;
+/// # use teistro_muhurta::instant::Sky;
+/// #
+/// # // Libra rising; Mars in Taurus (the 8th), Venus in Pisces, Jupiter in
+/// # // Libra, the Sun in Aquarius with Mercury, the Moon and Saturn in
+/// # // Capricorn, the nodes opposite.
+/// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+/// # let sky = Sky { lagna_deg: 185.0, grahas, speeds: [1.0; 9] };
+/// # let at = Interval::literal(2_460_000.5, 2_460_000.51);
+/// use teistro_core::catalogue::Graha;
+/// use teistro_muhurta::{ActivityRules, ClauseKind, Unwanted};
+///
+/// // "Mars and Saturn should be avoided in the 8th": Mars is there.
+/// let mut rules = ActivityRules::raman_marriage();
+/// rules.unwanted.push(Unwanted::of(vec![Graha::Mars, Graha::Saturn], vec![8]));
+/// let found = rules.instant_clauses(&sky, at);
+/// assert!(found.iter().any(|c| c.kind == ClauseKind::UnwantedPlacement { house: 8, by: vec![Graha::Mars] }));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Unwanted {
@@ -141,6 +215,14 @@ pub struct Unwanted {
 
 impl Unwanted {
     /// Grahas out of houses, weighing against the time.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_muhurta::Unwanted;
+    ///
+    /// let unwanted = Unwanted::of(vec![Graha::Saturn], vec![5]);
+    /// assert!(!unwanted.bars);
+    /// ```
     #[must_use]
     pub fn of(grahas: Vec<Graha>, houses: Vec<u8>) -> Unwanted {
         Unwanted {
@@ -151,12 +233,38 @@ impl Unwanted {
     }
 
     /// Every graha out of the houses: the houses should be unoccupied.
+    ///
+    /// ```
+    /// use teistro_muhurta::Unwanted;
+    ///
+    /// // The eighth unoccupied: all nine grahas out of it.
+    /// assert_eq!(Unwanted::vacant(vec![8]).grahas.len(), 9);
+    /// ```
     #[must_use]
     pub fn vacant(houses: Vec<u8>) -> Unwanted {
         Unwanted::of(GRAHAS.into(), houses)
     }
 
     /// The same, barring the rite rather than weighing against it.
+    ///
+    /// ```
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_muhurta::instant::Sky;
+    /// #
+    /// # // Libra rising; Mars in Taurus (the 8th), Venus in Pisces, Jupiter in
+    /// # // Libra, the Sun in Aquarius with Mercury, the Moon and Saturn in
+    /// # // Capricorn, the nodes opposite.
+    /// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+    /// # let sky = Sky { lagna_deg: 185.0, grahas, speeds: [1.0; 9] };
+    /// # let at = Interval::literal(2_460_000.5, 2_460_000.51);
+    /// use teistro_muhurta::{ActivityRules, Unwanted};
+    ///
+    /// // The eighth "must be unoccupied": Mars there bars the rite.
+    /// let mut rules = ActivityRules::raman_marriage();
+    /// rules.unwanted.push(Unwanted::vacant(vec![8]).barring());
+    /// let found = rules.instant_clauses(&sky, at);
+    /// assert!(found.iter().any(|c| rules.bars(c)));
+    /// ```
     #[must_use]
     pub fn barring(self) -> Unwanted {
         Unwanted { bars: true, ..self }
@@ -169,6 +277,14 @@ impl Unwanted {
 }
 
 /// Something the source asks of the time that the SDK does not judge yet.
+///
+/// ```
+/// use teistro_muhurta::ActivityRules;
+///
+/// // What Raman asks and the SDK does not yet judge is said, not dropped.
+/// let rules = ActivityRules::raman_marriage();
+/// assert!(rules.unjudged.iter().any(|u| u.what.contains("Mrityu")));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Unjudged {
@@ -179,6 +295,17 @@ pub struct Unjudged {
 }
 
 /// What one activity asks of the time.
+///
+/// ```
+/// use teistro_muhurta::ActivityRules;
+/// use teistro_muhurta::season::BlackoutKind;
+///
+/// let rules = ActivityRules::raman_marriage();
+/// rules.check()?;
+/// assert!(rules.heeds.contains(&BlackoutKind::AdhikaMasa));
+/// assert!(rules.baseline.is_none());
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ActivityRules {
@@ -239,6 +366,16 @@ impl ActivityRules {
     /// - **Bars**, "the most important considerations": the 7th occupied,
     ///   Mars in the 8th, Venus in the 6th, kartari, a malefic in the
     ///   lagna, and the Moon joined.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Rashi, Vara};
+    /// use teistro_muhurta::{ActivityRules, Grade};
+    ///
+    /// let rules = ActivityRules::raman_marriage();
+    /// assert_eq!(rules.day.varas.grade(&Vara::Mangalavara), Grade::Rejected);
+    /// assert_eq!(rules.lagnas.grade(&Rashi::Gemini), Grade::Best);
+    /// assert_eq!(rules.lagnas.grade(&Rashi::Aries), Grade::Rejected);
+    /// ```
     #[must_use]
     pub fn raman_marriage() -> ActivityRules {
         let day = raman_marriage_day();
@@ -316,6 +453,15 @@ impl ActivityRules {
     ///   Kharmas, Pitru paksha and Guru and Shukra asta.
     /// - Nothing else is graded: the engine weighs the rest, and a
     ///   weight is the ranking's.
+    ///
+    /// ```
+    /// use teistro_muhurta::ActivityRules;
+    /// use teistro_muhurta::season::BlackoutKind;
+    ///
+    /// let rules = ActivityRules::baseline_marriage();
+    /// assert!(rules.baseline.is_some());
+    /// assert!(rules.heeds.contains(&BlackoutKind::Chaturmas));
+    /// ```
     #[must_use]
     pub fn baseline_marriage() -> ActivityRules {
         let event = BaselineEvent::marriage();
@@ -367,6 +513,64 @@ impl ActivityRules {
     ///
     /// An adhika month is left alone: the season blacks it out for a rite
     /// that heeds it, and its name is not the month the rule grades.
+    ///
+    /// ```
+    /// # use teistro_astro::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_chart::foundation::Founder;
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_ephemeris_builtin::provider::Builtin;
+    /// # use teistro_muhurta::sources::Over;
+    /// # use teistro_muhurta::{ProviderSources, Sources};
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::Horizon;
+    /// #
+    /// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = Builtin::new();
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+    /// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+    /// # let over = Over {
+    /// #     almanac: &almanac,
+    /// #     founder: &founder,
+    /// #     completion: &completion,
+    /// #     heliacal: &heliacal,
+    /// #     calendar: &Gregorian,
+    /// #     clock: &clock,
+    /// #     settings: &resolved.settings,
+    /// #     precession,
+    /// #     delta_t,
+    /// # };
+    /// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+    /// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// // 25 November 2026, after Devuthani.
+    /// let day = sources.day(&date(11, 25))?;
+    /// use teistro_muhurta::{ActivityRules, ClauseKind};
+    ///
+    /// // Raman's marriage grades the lunar month; the baseline's the Sun's sign.
+    /// let lunar = ActivityRules::raman_marriage().month_clauses(&day);
+    /// assert!(lunar.iter().all(|c| matches!(c.kind, ClauseKind::Month { .. })));
+    /// let solar = ActivityRules::baseline_marriage().month_clauses(&day);
+    /// assert!(solar.iter().all(|c| matches!(c.kind, ClauseKind::SolarMonth { .. })));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn month_clauses(&self, day: &Panchanga) -> Vec<Clause> {
         let spans = day.sun.signs.iter().filter_map(|span| {
@@ -410,6 +614,25 @@ impl ActivityRules {
     /// The instant's clauses the rite's own rules give: the lagna's
     /// grade, a rejected pada of the Moon's star, and the grahas standing
     /// where the rite does not want them.
+    ///
+    /// ```
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_muhurta::instant::Sky;
+    /// #
+    /// # // Libra rising; Mars in Taurus (the 8th), Venus in Pisces, Jupiter in
+    /// # // Libra, the Sun in Aquarius with Mercury, the Moon and Saturn in
+    /// # // Capricorn, the nodes opposite.
+    /// # let grahas = [320.0, 285.0, 45.0, 300.0, 190.0, 345.0, 285.0, 285.0, 105.0];
+    /// # let sky = Sky { lagna_deg: 185.0, grahas, speeds: [1.0; 9] };
+    /// # let at = Interval::literal(2_460_000.5, 2_460_000.51);
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_muhurta::{ActivityRules, ClauseKind, Grade};
+    ///
+    /// // Libra rising is a good lagna for Raman's marriage; the Moon's quarter is not barred.
+    /// let found = ActivityRules::raman_marriage().instant_clauses(&sky, at);
+    /// assert_eq!(found.len(), 1);
+    /// assert_eq!(found[0].kind, ClauseKind::Lagna { sign: Rashi::Libra, grade: Grade::Best });
+    /// ```
     #[must_use]
     pub fn instant_clauses(&self, sky: &Sky, at: Interval) -> Vec<Clause> {
         let mut found = Vec::new();
@@ -454,6 +677,14 @@ impl ActivityRules {
     /// Refuses rules that name a house or a quarter that does not exist,
     /// which would otherwise never match and so judge nothing, silently.
     ///
+    /// ```
+    /// use teistro_muhurta::{ActivityRules, Unwanted};
+    ///
+    /// let mut rules = ActivityRules::raman_marriage();
+    /// rules.unwanted.push(Unwanted::vacant(vec![13]));
+    /// assert_eq!(rules.check().unwrap_err().field(), Some("unwanted[0].houses"));
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` naming `unwanted[i].houses` (a house outside 1 to 12)
@@ -480,6 +711,16 @@ impl ActivityRules {
     }
 
     /// Whether a clause bars the rite outright.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_muhurta::{ActivityRules, Clause, ClauseKind};
+    ///
+    /// let at = Interval::literal(2_460_000.5, 2_460_000.6);
+    /// let rules = ActivityRules::raman_marriage();
+    /// assert!(rules.bars(&Clause { kind: ClauseKind::VenusInSixth {}, at }));
+    /// assert!(!rules.bars(&Clause { kind: ClauseKind::Abhijit {}, at }));
+    /// ```
     #[must_use]
     pub fn bars(&self, clause: &Clause) -> bool {
         self.bars.iter().any(|bar| bar.names(&clause.kind)) || self.placement_bars(&clause.kind)
@@ -487,6 +728,18 @@ impl ActivityRules {
 
     /// Whether a clause is an unwanted placement an entry that `bars`
     /// names: a graha standing where the rules say it must not.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_muhurta::{ActivityRules, ClauseKind, Unwanted};
+    ///
+    /// let mars = ClauseKind::UnwantedPlacement { house: 8, by: vec![Graha::Mars] };
+    /// let mut rules = ActivityRules::raman_marriage();
+    /// rules.unwanted.push(Unwanted::vacant(vec![8]));
+    /// assert!(!rules.placement_bars(&mars), "a should weighs");
+    /// rules.unwanted[0].bars = true;
+    /// assert!(rules.placement_bars(&mars), "a must bars");
+    /// ```
     #[must_use]
     pub fn placement_bars(&self, kind: &ClauseKind) -> bool {
         match kind {

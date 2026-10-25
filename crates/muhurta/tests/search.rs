@@ -511,3 +511,21 @@ fn the_nepali_vedha_is_nine_hours_before_a_lunar_eclipse_seen_and_twelve_before_
         assert!((october.to.get() - next_day.day.sunrise.get()).abs() < 1e-6);
     });
 }
+
+/// The cuts a day's ingresses give lie inside the day: a graha holding
+/// its sign through it gives none, though its span reaches past it.
+#[test]
+fn ingresses_lie_inside_their_window() {
+    with_sources(|sources| {
+        let day = Interval::literal(2_461_369.5, 2_461_370.5);
+        let found = sources.ingresses(day).unwrap();
+        assert!(
+            found
+                .iter()
+                .all(|at| at.get() > day.from.get() && at.get() < day.to.get()),
+            "{found:?}"
+        );
+        // The Moon changes navamsa about every five hours.
+        assert!(found.len() >= 4, "{found:?}");
+    });
+}

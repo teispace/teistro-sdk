@@ -33,6 +33,7 @@ const EXAMPLED: &[&str] = &[
     "teistro-kp",
     "teistro-lalkitab",
     "teistro-matching",
+    "teistro-muhurta",
     "teistro-numerology",
     "teistro-pakshi",
     "teistro-points",

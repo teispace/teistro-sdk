@@ -12,6 +12,22 @@
 use serde::{Deserialize, Serialize};
 
 /// A member's grade under a rule.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_muhurta::{Grade, Graded};
+///
+/// // Raman's marriage chapter calls Saturday middling; his general shuddhi
+/// // rejects Tuesday and Saturday.
+/// let marriage = Graded {
+///     best: vec![Vara::Somavara, Vara::Budhavara, Vara::Guruvara, Vara::Shukravara],
+///     middling: vec![Vara::Ravivara, Vara::Shanivara],
+///     rejected: vec![Vara::Mangalavara],
+///     otherwise: Grade::Middling,
+/// };
+/// assert_eq!(marriage.grade(&Vara::Guruvara), Grade::Best);
+/// assert_eq!(marriage.grade(&Vara::Mangalavara), Grade::Rejected);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -29,6 +45,24 @@ pub enum Grade {
 ///
 /// A member in more than one list takes the **worst** of its grades, so a
 /// careless merge can only make a rule stricter.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_muhurta::{Grade, Graded};
+///
+/// // Raman's marriage chapter calls Saturday middling; his general shuddhi
+/// // rejects Tuesday and Saturday.
+/// let marriage = Graded {
+///     best: vec![Vara::Somavara, Vara::Budhavara, Vara::Guruvara, Vara::Shukravara],
+///     middling: vec![Vara::Ravivara, Vara::Shanivara],
+///     rejected: vec![Vara::Mangalavara],
+///     otherwise: Grade::Middling,
+/// };
+/// // A member in two lists takes the worse grade.
+/// let mut strict = marriage.clone();
+/// strict.rejected.push(Vara::Shukravara);
+/// assert_eq!(strict.grade(&Vara::Shukravara), Grade::Rejected);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Graded<T> {
@@ -44,6 +78,15 @@ pub struct Graded<T> {
 
 impl<T: PartialEq + Clone> Graded<T> {
     /// A rule that only rejects: the rest are middling.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_muhurta::{Grade, Graded};
+    ///
+    /// let general = Graded::rejecting(vec![Vara::Mangalavara, Vara::Shanivara]);
+    /// assert_eq!(general.grade(&Vara::Shanivara), Grade::Rejected);
+    /// assert_eq!(general.grade(&Vara::Ravivara), Grade::Middling);
+    /// ```
     #[must_use]
     pub fn rejecting(rejected: Vec<T>) -> Graded<T> {
         Graded {
@@ -55,6 +98,14 @@ impl<T: PartialEq + Clone> Graded<T> {
     }
 
     /// A rule that grades nothing: every member middling.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_muhurta::{Grade, Graded};
+    ///
+    /// let open: Graded<Vara> = Graded::none();
+    /// assert!(Vara::ALL.iter().all(|v| open.grade(v) == Grade::Middling));
+    /// ```
     #[must_use]
     pub const fn none() -> Graded<T> {
         Graded {
@@ -67,6 +118,16 @@ impl<T: PartialEq + Clone> Graded<T> {
 
     /// A rule that only admits: the members named middling, the rest
     /// rejected — a gate, which weighs nothing either way.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_muhurta::{Grade, Graded};
+    ///
+    /// // A gate: Thursday and Friday pass, weighing nothing; the rest are shut.
+    /// let gate = Graded::admitting(vec![Vara::Guruvara, Vara::Shukravara]);
+    /// assert_eq!(gate.grade(&Vara::Guruvara), Grade::Middling);
+    /// assert_eq!(gate.grade(&Vara::Somavara), Grade::Rejected);
+    /// ```
     #[must_use]
     pub const fn admitting(admitted: Vec<T>) -> Graded<T> {
         Graded {
@@ -78,6 +139,21 @@ impl<T: PartialEq + Clone> Graded<T> {
     }
 
     /// The grade of a member.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_muhurta::{Grade, Graded};
+    ///
+    /// // Raman's marriage chapter calls Saturday middling; his general shuddhi
+    /// // rejects Tuesday and Saturday.
+    /// let marriage = Graded {
+    ///     best: vec![Vara::Somavara, Vara::Budhavara, Vara::Guruvara, Vara::Shukravara],
+    ///     middling: vec![Vara::Ravivara, Vara::Shanivara],
+    ///     rejected: vec![Vara::Mangalavara],
+    ///     otherwise: Grade::Middling,
+    /// };
+    /// assert_eq!(marriage.grade(&Vara::Shanivara), Grade::Middling);
+    /// ```
     #[must_use]
     pub fn grade(&self, member: &T) -> Grade {
         if self.rejected.contains(member) {
@@ -92,6 +168,15 @@ impl<T: PartialEq + Clone> Graded<T> {
     }
 
     /// Whether the rule names a member in any of its lists.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_muhurta::{Grade, Graded};
+    ///
+    /// let general = Graded::rejecting(vec![Vara::Mangalavara]);
+    /// assert!(general.names(&Vara::Mangalavara));
+    /// assert!(!general.names(&Vara::Ravivara));
+    /// ```
     #[must_use]
     pub fn names(&self, member: &T) -> bool {
         self.best.contains(member)
@@ -107,6 +192,25 @@ impl<T: PartialEq + Clone> Graded<T> {
     /// it: Raman's marriage chapter calls Saturday middling though his
     /// general shuddhi rejects it, and leaves Vaidhriti to the general
     /// list, which rejects it.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_muhurta::{Grade, Graded};
+    ///
+    /// // Raman's marriage chapter calls Saturday middling; his general shuddhi
+    /// // rejects Tuesday and Saturday.
+    /// let marriage = Graded {
+    ///     best: vec![Vara::Somavara, Vara::Budhavara, Vara::Guruvara, Vara::Shukravara],
+    ///     middling: vec![Vara::Ravivara, Vara::Shanivara],
+    ///     rejected: vec![Vara::Mangalavara],
+    ///     otherwise: Grade::Middling,
+    /// };
+    /// let general = Graded::rejecting(vec![Vara::Mangalavara, Vara::Shanivara]);
+    /// let merged = marriage.over(&general);
+    /// // The chapter speaks of Saturday, so its middling stands.
+    /// assert_eq!(merged.grade(&Vara::Shanivara), Grade::Middling);
+    /// assert_eq!(merged.grade(&Vara::Mangalavara), Grade::Rejected);
+    /// ```
     #[must_use]
     pub fn over(mut self, general: &Graded<T>) -> Graded<T> {
         for (list, grade) in [

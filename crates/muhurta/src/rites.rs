@@ -179,6 +179,16 @@ impl ActivityRules {
     ///
     /// The day itself is the 10th, 12th or 16th from the birth; an
     /// elected day is for when that cannot be.
+    ///
+    /// ```
+    /// use teistro_muhurta::ActivityRules;
+    ///
+    /// let naming = ActivityRules::raman_namakarana();
+    /// naming.check()?;
+    /// // The child's age, which a request does not carry, is said rather than dropped.
+    /// assert!(!naming.unjudged.is_empty());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn raman_namakarana() -> ActivityRules {
         let mut rejected = both(&[4, 6, 8, 9, 12, 14]);
@@ -252,6 +262,16 @@ impl ActivityRules {
     /// - **Heeds** nothing: "the most important factor in this function
     ///   is the month", the child's, so Jupiter and Venus combust are not
     ///   minded.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_muhurta::{ActivityRules, Grade};
+    ///
+    /// let feeding = ActivityRules::raman_annaprasana();
+    /// feeding.check()?;
+    /// assert_eq!(feeding.day.varas.grade(&Vara::Guruvara), Grade::Best);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn raman_annaprasana() -> ActivityRules {
         let day = over_shuddhi(
@@ -326,6 +346,15 @@ impl ActivityRules {
     /// - **Against**: a malefic in a kendra, a benefic in the 6th, Mars or
     ///   Saturn in the 2nd, 5th or 12th, and the Moon in the lagna, which
     ///   each "should" not be.
+    ///
+    /// ```
+    /// use teistro_muhurta::ActivityRules;
+    ///
+    /// let thread = ActivityRules::raman_upanayana();
+    /// thread.check()?;
+    /// assert_ne!(thread, ActivityRules::raman_marriage());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn raman_upanayana() -> ActivityRules {
         let mut best: Vec<Tithi> = [2, 3, 5, 7, 10, 13]
@@ -428,6 +457,15 @@ impl ActivityRules {
     ///   bars.
     /// - **Heeds**: Guru and Shukra asta, since the chapter asks Jupiter
     ///   and Venus "strongly disposed" and a set graha is not.
+    ///
+    /// ```
+    /// use teistro_muhurta::ActivityRules;
+    ///
+    /// let entry = ActivityRules::raman_griha_pravesha();
+    /// entry.check()?;
+    /// assert!(entry.baseline.is_none());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn raman_griha_pravesha() -> ActivityRules {
         let mut best: Vec<Tithi> = dark(1).into_iter().collect();

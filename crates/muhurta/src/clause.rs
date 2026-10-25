@@ -18,6 +18,15 @@ use crate::grade::Grade;
 use crate::tara::TaraReading;
 
 /// What a clause says.
+///
+/// ```
+/// use teistro_muhurta::ClauseKind;
+///
+/// // A clause serialises with its name as the tag a rule's JSON points at.
+/// let json = serde_json::to_value(ClauseKind::VenusInSixth {})?;
+/// assert_eq!(json["clause"], "VENUS_IN_SIXTH");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "clause", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -219,6 +228,14 @@ pub enum ClauseKind {
 /// Which clause, without what it found: the name a rule uses to point at
 /// a kind of clause, as [`ActivityRules::bars`](crate::activity::ActivityRules)
 /// does. It serialises as the clause's own `clause` tag.
+///
+/// ```
+/// use teistro_muhurta::{ClauseKey, ClauseKind};
+///
+/// let key = serde_json::to_value(ClauseKind::MarsInEighth {}.key())?;
+/// assert_eq!(key, serde_json::to_value(ClauseKind::MarsInEighth {})?["clause"]);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -294,6 +311,12 @@ impl ClauseKey {
     /// Every key, in declaration order, so a caller can say which kinds a
     /// search reached and which it did not. A key added is appended here
     /// too: the test below holds each entry to its declared position.
+    ///
+    /// ```
+    /// use teistro_muhurta::ClauseKey;
+    ///
+    /// assert!(ClauseKey::ALL.iter().enumerate().all(|(place, key)| *key as usize == place));
+    /// ```
     pub const ALL: [ClauseKey; 32] = [
         ClauseKey::Tithi,
         ClauseKey::Nakshatra,
@@ -332,6 +355,13 @@ impl ClauseKey {
 
 impl ClauseKind {
     /// Which clause this is.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kaala;
+    /// use teistro_muhurta::{ClauseKey, ClauseKind};
+    ///
+    /// assert_eq!(ClauseKind::Kaala { kaala: Kaala::Yamaghanda }.key(), ClauseKey::Kaala);
+    /// ```
     #[must_use]
     pub const fn key(&self) -> ClauseKey {
         match self {
@@ -376,6 +406,17 @@ impl ClauseKind {
     /// catalogue marks the yoga auspicious (the two pushkara yogas
     /// multiply whatever the day brings and are not); a tara and a
     /// Chandrabala say which way they went.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Tithi, Kaala};
+    /// use teistro_muhurta::{ClauseKind, Grade};
+    ///
+    /// assert!(ClauseKind::Abhijit {}.favourable());
+    /// assert!(!ClauseKind::Kaala { kaala: Kaala::RahuKaala }.favourable());
+    /// // A graded limb counts for the time only when named best.
+    /// let middling = ClauseKind::Tithi { tithi: Tithi::ShuklaDvitiya, grade: Grade::Middling };
+    /// assert!(!middling.favourable());
+    /// ```
     #[must_use]
     pub fn favourable(&self) -> bool {
         match self {
@@ -402,6 +443,18 @@ impl ClauseKind {
 }
 
 /// A clause and the interval it held over.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::{Clause, ClauseKind};
+///
+/// let abhijit = Clause { kind: ClauseKind::Abhijit {}, at: Interval::literal(2_460_000.75, 2_460_000.78) };
+/// // The kind's tag sits beside the interval on the wire.
+/// let json = serde_json::to_value(&abhijit)?;
+/// assert_eq!(json["clause"], "ABHIJIT");
+/// assert!(json.get("at").is_some());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Clause {
@@ -414,6 +467,14 @@ pub struct Clause {
 
 impl Clause {
     /// Whether the clause counts for the time.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_muhurta::{Clause, ClauseKind};
+    ///
+    /// let mars = Clause { kind: ClauseKind::MarsInEighth {}, at: Interval::literal(2_460_000.5, 2_460_000.7) };
+    /// assert!(!mars.favourable());
+    /// ```
     #[must_use]
     pub fn favourable(&self) -> bool {
         self.kind.favourable()

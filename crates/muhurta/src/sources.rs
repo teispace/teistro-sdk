@@ -53,6 +53,60 @@ const SLOW: [usize; 6] = [2, 3, 4, 5, 6, 7];
 const NAVAMSA_DEG: f64 = 30.0 / 9.0;
 
 /// The search's sources over a provider.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_chart::foundation::Founder;
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_muhurta::sources::Over;
+/// # use teistro_muhurta::{ProviderSources, Sources};
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::Horizon;
+/// #
+/// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = Builtin::new();
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+/// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+/// # let over = Over {
+/// #     almanac: &almanac,
+/// #     founder: &founder,
+/// #     completion: &completion,
+/// #     heliacal: &heliacal,
+/// #     calendar: &Gregorian,
+/// #     clock: &clock,
+/// #     settings: &resolved.settings,
+/// #     precession,
+/// #     delta_t,
+/// # };
+/// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+/// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// // The lagna turns once a day, forward at Kathmandu.
+/// let noon = JulianDay::literal(2_461_369.75);
+/// let lagna = sources.lagna_at(noon)?;
+/// assert!((0.0..360.0).contains(&lagna));
+/// assert!(sources.lagna_moves_forward());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub struct ProviderSources<'a, P: EphemerisProvider + ?Sized> {
     almanac: &'a Almanac<'a, P>,
     founder: &'a Founder<'a, P>,
@@ -87,6 +141,57 @@ impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for ProviderSources<'_, P> 
 }
 
 /// The collaborators a [`ProviderSources`] is built over.
+///
+/// ```
+/// # use teistro_astro::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_chart::foundation::Founder;
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_ephemeris_builtin::provider::Builtin;
+/// # use teistro_muhurta::sources::Over;
+/// # use teistro_muhurta::{ProviderSources, Sources};
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::Horizon;
+/// #
+/// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = Builtin::new();
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+/// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+/// # let over = Over {
+/// #     almanac: &almanac,
+/// #     founder: &founder,
+/// #     completion: &completion,
+/// #     heliacal: &heliacal,
+/// #     calendar: &Gregorian,
+/// #     clock: &clock,
+/// #     settings: &resolved.settings,
+/// #     precession,
+/// #     delta_t,
+/// # };
+/// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+/// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// // The collaborators share the one settings the almanac was built with.
+/// assert!(core::ptr::eq(over.settings, &resolved.settings));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub struct Over<'a, P: EphemerisProvider + ?Sized> {
     /// The almanac of the days.
     pub almanac: &'a Almanac<'a, P>,
@@ -119,6 +224,57 @@ impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for Over<'_, P> {
 
 impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
     /// Sources at a place, with the chart zodiac taken at `reference`.
+    ///
+    /// ```
+    /// # use teistro_astro::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_chart::foundation::Founder;
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_ephemeris_builtin::provider::Builtin;
+    /// # use teistro_muhurta::sources::Over;
+    /// # use teistro_muhurta::{ProviderSources, Sources};
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::Horizon;
+    /// #
+    /// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = Builtin::new();
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+    /// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+    /// # let over = Over {
+    /// #     almanac: &almanac,
+    /// #     founder: &founder,
+    /// #     completion: &completion,
+    /// #     heliacal: &heliacal,
+    /// #     calendar: &Gregorian,
+    /// #     clock: &clock,
+    /// #     settings: &resolved.settings,
+    /// #     precession,
+    /// #     delta_t,
+    /// # };
+    /// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+    /// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// let civil = sources.civil_day(&date(11, 25))?;
+    /// assert!((civil.days() - 1.0).abs() < 1e-9);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -163,6 +319,59 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
     ///
     /// The days must be founded with the same almanac at the same place;
     /// a day of `days` is taken as the one the almanac would give.
+    ///
+    /// ```
+    /// # use teistro_astro::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_chart::foundation::Founder;
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_ephemeris_builtin::provider::Builtin;
+    /// # use teistro_muhurta::sources::Over;
+    /// # use teistro_muhurta::{ProviderSources, Sources};
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::Horizon;
+    /// #
+    /// # // Kathmandu, on the Nepal clock, over the built-in ephemeris.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = Builtin::new();
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let founder = Founder::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+    /// # let heliacal = Heliacal::new(&completion, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, delta_t);
+    /// # let over = Over {
+    /// #     almanac: &almanac,
+    /// #     founder: &founder,
+    /// #     completion: &completion,
+    /// #     heliacal: &heliacal,
+    /// #     calendar: &Gregorian,
+    /// #     clock: &clock,
+    /// #     settings: &resolved.settings,
+    /// #     precession,
+    /// #     delta_t,
+    /// # };
+    /// # // The chart zodiac taken at 2026-09-01 00:00 UTC.
+    /// # let sources = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?;
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// // Days the caller founded already are read, not founded again.
+    /// let days = [sources.day(&date(11, 25))?];
+    /// let reused = ProviderSources::new(&over, kathmandu, JulianDay::literal(2_461_284.5))?.with_days(&days);
+    /// assert_eq!(reused.day(&date(11, 25))?, days[0]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn with_days(mut self, days: &'a [Panchanga]) -> ProviderSources<'a, P> {
         self.days = days;
@@ -390,10 +599,18 @@ impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
 
     fn ingresses(&self, within: Interval) -> Result<Vec<JulianDay<Utc>>, Error> {
         let source = self.chart_sky();
+        let (from, to) = (within.from.get(), within.to.get());
         let mut cuts = Vec::new();
         for body in SLOW.iter().filter_map(|i| self.bodies.get(*i)) {
+            // A sign held through the window spans the search's own reach
+            // either side of it, which is no ingress: only the ends that
+            // fall inside the window are.
             for span in signs_within(&source, *body, within, self.zodiac, Some(1.0))? {
-                cuts.extend([span.whole.from, span.whole.to]);
+                cuts.extend(
+                    [span.whole.from, span.whole.to]
+                        .into_iter()
+                        .filter(|at| at.get() > from && at.get() < to),
+                );
             }
         }
         let sidereal = Sidereal::over(&source, self.zodiac);
