@@ -45,9 +45,33 @@ use crate::solar::{SolarModel, find_sankranti};
 /// [`month_at`] takes both together and says so; passing the Surya
 /// Siddhanta for one and a modern ephemeris for the other gives a month
 /// bounded by one sky and named by another.
+///
+/// ```
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_calendar::lunisolar::{LunarModel, next_new_moon};
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// // The text's own Moon: nought at its new moon.
+/// let text = SuryaSiddhanta::text();
+/// let new_moon = next_new_moon(&text, JulianDay::<Utc>::try_new(2_460_310.5)?)?;
+/// let elongation = text.elongation_deg(new_moon.get())?;
+/// assert!(elongation < 1e-3 || elongation > 360.0 - 1e-3, "{elongation}");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub trait LunarModel: Send + Sync {
     /// The Moon's elongation from the Sun, degrees in `[0, 360)`, which
     /// is nought at a new moon.
+    ///
+    /// ```
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    /// use teistro_calendar::lunisolar::LunarModel;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // About twelve degrees a day.
+    /// let gain = (text.elongation_deg(2_460_311.5)? - text.elongation_deg(2_460_310.5)?).rem_euclid(360.0);
+    /// assert!((10.0..15.0).contains(&gain), "{gain}");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -63,6 +87,20 @@ impl<T: LunarModel + ?Sized> LunarModel for &T {
 }
 
 /// What a lunar month is, beyond its name.
+///
+/// ```
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_calendar::lunisolar::{MonthKind, month_at};
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// // August 1947 was an adhika Shravana; January 1964 held a kshaya month.
+/// let text = SuryaSiddhanta::text();
+/// let kind = |jd| month_at(&text, &text, JulianDay::<Utc>::literal(jd)).map(|month| month.kind);
+/// assert_eq!(kind(2_432_412.5)?, MonthKind::Adhika);
+/// assert_eq!(kind(2_438_395.0)?, MonthKind::Kshaya);
+/// assert_eq!(kind(2_451_545.0)?, MonthKind::Nija);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -83,6 +121,14 @@ impl MonthKind {
     /// one, so two boundaries is the most that fit — and a count that
     /// large is a model answering nonsense rather than a fourth case, so
     /// it is refused rather than named.
+    ///
+    /// ```
+    /// use teistro_calendar::lunisolar::MonthKind;
+    ///
+    /// assert_eq!(MonthKind::of(0), Some(MonthKind::Adhika));
+    /// assert_eq!(MonthKind::of(2), Some(MonthKind::Kshaya));
+    /// assert_eq!(MonthKind::of(3), None);
+    /// ```
     #[must_use]
     pub const fn of(sankrantis: usize) -> Option<MonthKind> {
         match sankrantis {
@@ -94,6 +140,12 @@ impl MonthKind {
     }
 
     /// The key the catalogue would spell it with.
+    ///
+    /// ```
+    /// use teistro_calendar::lunisolar::MonthKind;
+    ///
+    /// assert_eq!(MonthKind::Adhika.key(), "ADHIKA");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -105,6 +157,19 @@ impl MonthKind {
 }
 
 /// The lunar month a moment falls in.
+///
+/// ```
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_calendar::lunisolar::{SYNODIC_DAYS, month_at};
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// let text = SuryaSiddhanta::text();
+/// let month = month_at(&text, &text, JulianDay::<Utc>::literal(2_432_412.5))?;
+/// // The Sun in Karka (sign 3) at its new moon: Shravana.
+/// assert_eq!(month.sign, 3);
+/// assert!(((month.to.get() - month.from.get()) - SYNODIC_DAYS).abs() < 1.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct LunarMonthSpan {
     /// The new moon that opened it.
@@ -146,6 +211,18 @@ pub const MEAN_ELONGATION_RATE_DEG_PER_DAY: f64 = 360.0 / SYNODIC_DAYS;
 pub const TOLERANCE_DAYS: f64 = 1e-6;
 
 /// The first new moon at or after an instant.
+///
+/// ```
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_calendar::lunisolar::{SYNODIC_DAYS, next_new_moon};
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// let text = SuryaSiddhanta::text();
+/// let first = next_new_moon(&text, JulianDay::<Utc>::try_new(2_460_310.5)?)?;
+/// let second = next_new_moon(&text, JulianDay::<Utc>::try_new(first.get() + 1.0)?)?;
+/// assert!(((second.get() - first.get()) - SYNODIC_DAYS).abs() < 1.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -209,6 +286,18 @@ fn sankrantis_in(sun: &dyn SolarModel, from: f64, to: f64) -> Result<Vec<u8>, Er
 /// not find them twice, and because the rule is then one function whether
 /// the sky is the text's or a provider's.
 ///
+/// ```
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_calendar::lunisolar::{kind_of, month_at};
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// // Given the bounds, the kind is the month's own.
+/// let text = SuryaSiddhanta::text();
+/// let month = month_at(&text, &text, JulianDay::<Utc>::literal(2_432_412.5))?;
+/// assert_eq!(kind_of(&text, month.from, month.to)?, month.kind);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// The model's own refusal, or — impossibly for a real sky — a span
@@ -238,6 +327,18 @@ pub fn kind_of(
 /// classical Moon with a modern Sun gives a month bounded by one and
 /// named by the other. `SuryaSiddhanta` implements both, so the ordinary
 /// call passes it twice.
+///
+/// ```
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_calendar::lunisolar::month_at;
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// let text = SuryaSiddhanta::text();
+/// let at = JulianDay::<Utc>::literal(2_451_545.0);
+/// let month = month_at(&text, &text, at)?;
+/// assert!(month.from.get() <= at.get() && at.get() < month.to.get());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

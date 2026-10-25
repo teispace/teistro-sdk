@@ -10,6 +10,19 @@ use crate::date::{
 use crate::fixed::FixedDay;
 
 /// The proleptic Gregorian calendar.
+///
+/// ```
+/// use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
+/// use teistro_core::catalogue::Calendar;
+///
+/// let date = CalendarDate::defined(Calendar::Gregorian, 2024, 2, 29);
+/// let day = Gregorian.fixed_of(&date)?;
+/// let next = Gregorian.date_of(day.plus_days(1))?;
+/// assert_eq!((next.year, next.month, next.day), (2024, 3, 1));
+/// // 2023 had no 29 February.
+/// assert!(Gregorian.fixed_of(&CalendarDate::defined(Calendar::Gregorian, 2023, 2, 29)).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Gregorian;
 
@@ -27,12 +40,27 @@ pub(crate) const fn common_month_length(month: u8) -> Option<u8> {
 }
 
 /// Whether a year is a Gregorian leap year.
+///
+/// ```
+/// use teistro_calendar::gregorian::is_leap_year;
+///
+/// assert!(is_leap_year(2024) && is_leap_year(2000));
+/// assert!(!is_leap_year(1900) && !is_leap_year(2023));
+/// ```
 #[must_use]
 pub const fn is_leap_year(year: i32) -> bool {
     year.rem_euclid(4) == 0 && (year.rem_euclid(100) != 0 || year.rem_euclid(400) == 0)
 }
 
 /// The length of a month, or `None` for a month outside 1 to 12.
+///
+/// ```
+/// use teistro_calendar::gregorian::month_length;
+///
+/// assert_eq!(month_length(2024, 2), Some(29));
+/// assert_eq!(month_length(2100, 2), Some(28));
+/// assert_eq!(month_length(2024, 13), None);
+/// ```
 #[must_use]
 pub const fn month_length(year: i32, month: u8) -> Option<u8> {
     if month == 2 && is_leap_year(year) {
@@ -42,6 +70,14 @@ pub const fn month_length(year: i32, month: u8) -> Option<u8> {
 }
 
 /// The fixed day of a Gregorian date; the date is not validated.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+///
+/// assert_eq!(fixed_from_gregorian(2024, 1, 1).get(), 738_886);
+/// // Not validated: 32 January is 1 February.
+/// assert_eq!(fixed_from_gregorian(2024, 1, 32), fixed_from_gregorian(2024, 2, 1));
+/// ```
 #[must_use]
 pub const fn fixed_from_gregorian(year: i32, month: u8, day: u8) -> FixedDay {
     let y = year as i64 - 1;
@@ -63,6 +99,13 @@ pub const fn fixed_from_gregorian(year: i32, month: u8, day: u8) -> FixedDay {
 }
 
 /// The Gregorian year a fixed day falls in.
+///
+/// ```
+/// use teistro_calendar::gregorian::{fixed_from_gregorian, year_from_fixed};
+///
+/// assert_eq!(year_from_fixed(fixed_from_gregorian(2024, 12, 31)), 2024);
+/// assert_eq!(year_from_fixed(fixed_from_gregorian(0, 6, 1)), 0);
+/// ```
 #[must_use]
 #[allow(
     clippy::cast_possible_truncation,
@@ -82,6 +125,14 @@ pub const fn year_from_fixed(fixed: FixedDay) -> i32 {
 }
 
 /// The Gregorian date of a fixed day.
+///
+/// ```
+/// use teistro_calendar::FixedDay;
+/// use teistro_calendar::gregorian::gregorian_from_fixed;
+///
+/// assert_eq!(gregorian_from_fixed(FixedDay::new(738_886)), (2024, 1, 1));
+/// assert_eq!(gregorian_from_fixed(FixedDay::UNIX_EPOCH), (1970, 1, 1));
+/// ```
 #[must_use]
 #[allow(
     clippy::cast_possible_truncation,
@@ -104,6 +155,15 @@ pub const fn gregorian_from_fixed(fixed: FixedDay) -> (i32, u8, u8) {
 }
 
 /// The era view of an astronomical year.
+///
+/// ```
+/// use teistro_calendar::gregorian::era_of;
+/// use teistro_core::catalogue::Era;
+///
+/// assert_eq!(era_of(2024), (Era::CommonEra, 2024));
+/// // Astronomical year 0 is 1 BCE.
+/// assert_eq!(era_of(0), (Era::BeforeCommonEra, 1));
+/// ```
 #[must_use]
 pub const fn era_of(year: i32) -> (Era, i32) {
     if year > 0 {

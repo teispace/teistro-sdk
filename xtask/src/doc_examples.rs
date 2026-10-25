@@ -19,7 +19,7 @@ use crate::binding::step;
 use crate::coverage::COUNTED_BY;
 
 /// The crates held to an example on every item rustdoc counts.
-const EXAMPLED: &[&str] = &["teistro", "teistro-time"];
+const EXAMPLED: &[&str] = &["teistro", "teistro-calendar", "teistro-time"];
 
 pub(crate) fn check(root: &Path) -> i32 {
     let mut failed = 0;

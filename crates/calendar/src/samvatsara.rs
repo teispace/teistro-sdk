@@ -8,7 +8,7 @@
 //!   Jupiter's *mean* place takes to cross one sign. The Surya Siddhanta's
 //!   rule (I.55) counts the signs its mean Jupiter has crossed since the
 //!   Kali age began and reads the count modulo sixty from Vijaya. A
-//!   Jovian year is 361 days and a little over eleven hours, so it
+//!   Jovian year is 361 days and about 38 minutes, so it
 //!   starts about four days earlier each solar year, and a name that
 //!   begins and ends inside one lunar year never names a year: it is
 //!   *lupta*, expunged, about once in eighty-six years.
@@ -53,6 +53,20 @@ const VIJAYA: i64 = 26;
 const SHAKA_TO_CYCLE: i64 = 11;
 
 /// One Jovian year: which name it carries and when it ran.
+///
+/// ```
+/// use teistro_calendar::samvatsara::{JovianYear, Parameters};
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// let at = JulianDay::<Utc>::try_new(2_460_310.5)?;
+/// let year = JovianYear::at(&Parameters::TEXT, at)?;
+/// assert!(year.from.get() <= at.get() && at.get() < year.to.get());
+/// // A Jovian year is 361 days and about 38 minutes: a twelfth of the
+/// // text's 4332.32 days for mean Jupiter's revolution.
+/// let minutes = (year.to.get() - year.from.get() - 361.0) * 1440.0;
+/// assert!((38.0..39.0).contains(&minutes), "{minutes}");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct JovianYear {
@@ -73,6 +87,17 @@ impl JovianYear {
     /// The Jovian year running at an instant under a set of parameters:
     /// the text's own ([`Parameters::TEXT`]), or the text with a bija,
     /// which is how the page measures the corrected reading.
+    ///
+    /// ```
+    /// use teistro_calendar::samvatsara::{JovianYear, Parameters};
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let year = JovianYear::at(&Parameters::TEXT, JulianDay::<Utc>::try_new(2_460_310.5)?)?;
+    /// // The year after starts where this one ends.
+    /// let next = JovianYear::at(&Parameters::TEXT, year.to)?;
+    /// assert_eq!((next.count, next.from), (year.count + 1, year.to));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -109,6 +134,16 @@ impl JovianYear {
     }
 
     /// The Jovian year with a count: its name and its bounds.
+    ///
+    /// ```
+    /// use teistro_calendar::samvatsara::{JovianYear, Parameters};
+    ///
+    /// // Burgess's worked example (I.55): the year Jupiter entered in February
+    /// // 1859, "the 5019th since the epoch", counted here from 0.
+    /// let year = JovianYear::numbered(&Parameters::TEXT, 5018)?;
+    /// assert!((2_400_076.5..2_400_104.5).contains(&year.from.get()), "{}", year.from);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -159,6 +194,15 @@ impl JovianYear {
 
 /// The southern name of a lunar year, from its Shaka number (the year
 /// that began at its Chaitra Shukla Pratipada, counted from Shaka 0).
+///
+/// ```
+/// use teistro_calendar::samvatsara::chandramana;
+/// use teistro_core::catalogue::Samvatsara;
+///
+/// // Shaka 1947 (2025–26) is Vishvavasu, the 39th of the cycle.
+/// assert_eq!(chandramana(1947), Samvatsara::Vishvavasu);
+/// assert_eq!(chandramana(1948), Samvatsara::Parabhava);
+/// ```
 #[must_use]
 pub fn chandramana(shaka: i64) -> Samvatsara {
     in_cycle(shaka + SHAKA_TO_CYCLE)

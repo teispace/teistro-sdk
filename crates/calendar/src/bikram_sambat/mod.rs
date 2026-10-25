@@ -52,6 +52,17 @@ pub const SHIPPED_SPAN: (i32, i32) = (FIRST_YEAR, LAST_YEAR);
 /// A year inside the official span where the engine's answer differs
 /// from the table's: the engine's 1 Baisakh relative to the table's, and
 /// the engine's month lengths, so a date can report both labels.
+///
+/// ```
+/// use teistro_calendar::BikramSambat;
+///
+/// let bs = BikramSambat::shipped();
+///
+/// // The engine's own rows for each year it labels differently.
+/// for divergence in bs.divergences() {
+///     assert!(bs.table().model_rows.iter().any(|row| row.year == divergence.year));
+/// }
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ModelRow {
     /// The year.
@@ -64,6 +75,17 @@ pub struct ModelRow {
 
 /// The table the calendar runs over: what `cargo xtask gen calendars`
 /// writes and `check-calendars` holds to the engine.
+///
+/// ```
+/// use teistro_calendar::BikramSambat;
+///
+/// let bs = BikramSambat::shipped();
+///
+/// let table = bs.table();
+/// // The rows are anchored at the first official year's 1 Baisakh.
+/// assert_eq!(table.anchor.0, table.official.0);
+/// assert_eq!(table.month_lengths.len(), usize::try_from(bs.years().1 - bs.years().0 + 1).unwrap());
+/// ```
 #[derive(Debug)]
 pub struct Table {
     /// The first year of the rows.
@@ -89,6 +111,20 @@ pub struct Table {
 }
 
 /// The calendar over a table.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::{BikramSambat, CalendarDate, CalendarSystem};
+/// use teistro_core::catalogue::Calendar;
+///
+/// // 1 Baisakh 2081 was 13 April 2024.
+/// let bs = BikramSambat::shipped();
+/// let new_year = bs.fixed_of(&CalendarDate::defined(Calendar::BikramSambat, 2081, 1, 1))?;
+/// assert_eq!(new_year, fixed_from_gregorian(2024, 4, 13));
+/// // Jestha 2081 had 32 days.
+/// assert_eq!(bs.month_length(2081, 2)?, 32);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Debug)]
 pub struct BikramSambat {
     table: &'static Table,
@@ -100,11 +136,27 @@ static SHIPPED: OnceLock<BikramSambat> = OnceLock::new();
 
 impl BikramSambat {
     /// The shipped calendar over the checked-in table.
+    ///
+    /// ```
+    /// use teistro_calendar::{BikramSambat, CalendarSystem};
+    /// use teistro_core::catalogue::Calendar;
+    ///
+    /// assert_eq!(BikramSambat::shipped().id(), Calendar::BikramSambat);
+    /// ```
     pub fn shipped() -> &'static BikramSambat {
         SHIPPED.get_or_init(|| BikramSambat::over(&generated::TABLE))
     }
 
     /// A calendar over a table.
+    ///
+    /// ```
+    /// use teistro_calendar::{BikramSambat, CalendarSystem};
+    ///
+    /// // A calendar over the shipped table answers as the shipped calendar.
+    /// let bs = BikramSambat::over(BikramSambat::shipped().table());
+    /// assert_eq!(bs.to_fixed_ymd(2081, 1, 1)?, BikramSambat::shipped().to_fixed_ymd(2081, 1, 1)?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn over(table: &'static Table) -> BikramSambat {
         let year_days = |months: &[u8; 12]| months.iter().map(|d| i64::from(*d)).sum::<i64>();
@@ -134,12 +186,29 @@ impl BikramSambat {
     }
 
     /// The table.
+    ///
+    /// ```
+    /// use teistro_calendar::BikramSambat;
+    ///
+    /// let bs = BikramSambat::shipped();
+    ///
+    /// assert_eq!(bs.table().first_year, bs.years().0);
+    /// ```
     #[must_use]
     pub const fn table(&self) -> &'static Table {
         self.table
     }
 
     /// The first and last year of the table.
+    ///
+    /// ```
+    /// use teistro_calendar::BikramSambat;
+    ///
+    /// let bs = BikramSambat::shipped();
+    ///
+    /// let (first, last) = bs.years();
+    /// assert!(first <= 1970 && 2095 <= last);
+    /// ```
     #[must_use]
     pub fn years(&self) -> (i32, i32) {
         let count = i32::try_from(self.table.month_lengths.len()).unwrap_or(0);
@@ -147,18 +216,46 @@ impl BikramSambat {
     }
 
     /// The official span.
+    ///
+    /// ```
+    /// use teistro_calendar::BikramSambat;
+    ///
+    /// let bs = BikramSambat::shipped();
+    ///
+    /// // The span the government's calendar committee has published.
+    /// let (first, last) = bs.official_years();
+    /// assert!(first >= bs.years().0 && last <= bs.years().1);
+    /// assert!((first..=last).contains(&2081));
+    /// ```
     #[must_use]
     pub const fn official_years(&self) -> (i32, i32) {
         self.table.official
     }
 
     /// The official span's edition.
+    ///
+    /// ```
+    /// use teistro_calendar::BikramSambat;
+    ///
+    /// let bs = BikramSambat::shipped();
+    ///
+    /// assert!(bs.edition().starts_with("official-"));
+    /// ```
     #[must_use]
     pub const fn edition(&self) -> &'static str {
         self.table.edition
     }
 
     /// The frame the computed rows were made under.
+    ///
+    /// ```
+    /// use teistro_calendar::BikramSambat;
+    ///
+    /// let bs = BikramSambat::shipped();
+    ///
+    /// assert!(bs.frame().starts_with("Surya Siddhanta"));
+    /// assert!(bs.frame().ends_with("rule PUNYAKALA"));
+    /// ```
     #[must_use]
     pub const fn frame(&self) -> &'static str {
         self.table.frame
@@ -167,6 +264,18 @@ impl BikramSambat {
     /// The months inside the official span where the engine differs from
     /// the table: the public record of where computation and the official
     /// almanac disagree.
+    ///
+    /// ```
+    /// use teistro_calendar::BikramSambat;
+    ///
+    /// let bs = BikramSambat::shipped();
+    ///
+    /// let (first, last) = bs.official_years();
+    /// for divergence in bs.divergences() {
+    ///     assert!((first..=last).contains(&divergence.year));
+    ///     assert_ne!(divergence.tabular, divergence.computed);
+    /// }
+    /// ```
     #[must_use]
     pub const fn divergences(&self) -> &'static [Divergence] {
         self.table.divergences
@@ -174,6 +283,17 @@ impl BikramSambat {
 
     /// The official rows: each year of the published span with its
     /// twelve month lengths, what a measurement compares an engine with.
+    ///
+    /// ```
+    /// use teistro_calendar::BikramSambat;
+    ///
+    /// let bs = BikramSambat::shipped();
+    ///
+    /// let rows = bs.official_rows();
+    /// let (first, last) = bs.official_years();
+    /// assert_eq!(rows.len(), usize::try_from(last - first + 1).unwrap());
+    /// assert_eq!(rows.iter().find(|(year, _)| *year == 2081).map(|(_, months)| months[1]), Some(32));
+    /// ```
     #[must_use]
     pub fn official_rows(&self) -> Vec<(i32, [u8; 12])> {
         let (first, last) = self.table.official;
@@ -183,6 +303,16 @@ impl BikramSambat {
     }
 
     /// The fixed day of 1 Baisakh of a year in the table.
+    ///
+    /// ```
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    /// use teistro_calendar::BikramSambat;
+    ///
+    /// let bs = BikramSambat::shipped();
+    ///
+    /// assert_eq!(bs.year_start(2081), Some(fixed_from_gregorian(2024, 4, 13)));
+    /// assert_eq!(bs.year_start(bs.years().1 + 5), None);
+    /// ```
     #[must_use]
     pub fn year_start(&self, year: i32) -> Option<FixedDay> {
         let index = usize::try_from(year - self.table.first_year).ok()?;

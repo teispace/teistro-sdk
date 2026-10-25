@@ -8,6 +8,14 @@ use core::fmt;
 use crate::bikram_sambat::engine::YearRow;
 
 /// A month whose computed length differs from the table's.
+///
+/// ```
+/// use teistro_calendar::BikramSambat;
+///
+/// // The table's months the engine reckons a day longer or shorter.
+/// let divergences = BikramSambat::shipped().divergences();
+/// assert!(divergences.iter().all(|d| d.tabular.abs_diff(d.computed) == 1));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Divergence {
@@ -22,6 +30,27 @@ pub struct Divergence {
 }
 
 /// How a computed span reproduces a table.
+///
+/// ```
+/// # use teistro_calendar::MonthStartRule;
+/// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+/// // The frame the shipped table is computed in: the text's Sun, Nepal's
+/// // clock and Kathmandu, months placed by punya-kala.
+/// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+/// # use teistro_calendar::BikramSambat;
+/// use teistro_calendar::bikram_sambat::fit::fit;
+///
+/// let bs = BikramSambat::shipped();
+/// let official: Vec<_> = bs.official_rows().into_iter().filter(|(year, _)| (2081..=2082).contains(year)).collect();
+/// let report = fit("the text", &engine.span(2081, 2082)?, &official, bs.year_start(2081).unwrap());
+///
+/// assert_eq!((report.years, report.years_exact, report.months_matched), (2, 2, 24));
+/// assert!(report.divergences.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct FitReport {
@@ -50,6 +79,26 @@ pub struct FitReport {
 
 impl FitReport {
     /// The share of months reproduced, in percent.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    /// # use teistro_calendar::BikramSambat;
+    /// use teistro_calendar::bikram_sambat::fit::fit;
+    ///
+    /// let bs = BikramSambat::shipped();
+    /// let official: Vec<_> = bs.official_rows().into_iter().filter(|(year, _)| (2081..=2082).contains(year)).collect();
+    /// let report = fit("the text", &engine.span(2081, 2082)?, &official, bs.year_start(2081).unwrap());
+    ///
+    /// assert_eq!(report.month_agreement(), 100.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn month_agreement(&self) -> f64 {
         if self.months == 0 {
@@ -61,12 +110,54 @@ impl FitReport {
 
     /// Whether the running day count stays within a day, the condition
     /// for appending computed years to the table.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    /// # use teistro_calendar::BikramSambat;
+    /// use teistro_calendar::bikram_sambat::fit::fit;
+    ///
+    /// let bs = BikramSambat::shipped();
+    /// let official: Vec<_> = bs.official_rows().into_iter().filter(|(year, _)| (2081..=2082).contains(year)).collect();
+    /// let report = fit("the text", &engine.span(2081, 2082)?, &official, bs.year_start(2081).unwrap());
+    ///
+    /// assert!(report.drift_within_a_day());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn drift_within_a_day(&self) -> bool {
         self.drift_end.abs() <= 1 && self.drift_max.abs() <= 1
     }
 
     /// One row of a Markdown table: frame, months, years, drift, offset.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    /// # use teistro_calendar::BikramSambat;
+    /// use teistro_calendar::bikram_sambat::fit::fit;
+    ///
+    /// let bs = BikramSambat::shipped();
+    /// let official: Vec<_> = bs.official_rows().into_iter().filter(|(year, _)| (2081..=2082).contains(year)).collect();
+    /// let report = fit("the text", &engine.span(2081, 2082)?, &official, bs.year_start(2081).unwrap());
+    /// use teistro_calendar::bikram_sambat::fit::FitReport;
+    ///
+    /// assert_eq!(report.markdown_row(), "| the text | 24/24 (100.0 %) | 2/2 | 2/2 | 0 (max 0) | 0 |");
+    /// assert!(FitReport::MARKDOWN_HEADER.starts_with("| frame |"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn markdown_row(&self) -> String {
         format!(
@@ -98,6 +189,26 @@ impl fmt::Display for FitReport {
 /// Measures computed rows against official rows keyed by year; years
 /// present in both are compared, the table's first day anchoring the
 /// official year starts.
+///
+/// ```
+/// # use teistro_calendar::MonthStartRule;
+/// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+/// // The frame the shipped table is computed in: the text's Sun, Nepal's
+/// // clock and Kathmandu, months placed by punya-kala.
+/// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+/// # use teistro_calendar::BikramSambat;
+/// use teistro_calendar::bikram_sambat::fit::fit;
+///
+/// let bs = BikramSambat::shipped();
+/// let official: Vec<_> = bs.official_rows().into_iter().filter(|(year, _)| (2081..=2082).contains(year)).collect();
+/// let report = fit("the text", &engine.span(2081, 2082)?, &official, bs.year_start(2081).unwrap());
+///
+/// assert_eq!((report.drift_end, report.start_offset_max), (0, 0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn fit(
     frame: &str,

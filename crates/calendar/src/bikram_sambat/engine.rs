@@ -30,6 +30,23 @@ const NEXT_SEARCH_FROM_DAYS: f64 = 25.0;
 
 /// The twelve sankrantis of a Bikram Sambat year and the civil day each
 /// begins a month on.
+///
+/// ```
+/// # use teistro_calendar::MonthStartRule;
+/// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+/// // The frame the shipped table is computed in: the text's Sun, Nepal's
+/// // clock and Kathmandu, months placed by punya-kala.
+/// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+/// use teistro_calendar::gregorian::gregorian_from_fixed;
+///
+/// let row = engine.year(2081)?;
+/// assert_eq!(gregorian_from_fixed(row.start), (2024, 4, 13));
+/// assert_eq!(row.months, [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct YearRow {
     /// The Bikram Sambat year.
@@ -44,6 +61,20 @@ pub struct YearRow {
 
 impl YearRow {
     /// The days in the year.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// assert_eq!(engine.year(2081)?.days(), 366);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn days(&self) -> u32 {
         self.months.iter().map(|m| u32::from(*m)).sum()
@@ -51,6 +82,24 @@ impl YearRow {
 }
 
 /// The engine over a model, a clock, a place and a rule.
+///
+/// ```
+/// # use teistro_calendar::MonthStartRule;
+/// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+/// // The frame the shipped table is computed in: the text's Sun, Nepal's
+/// // clock and Kathmandu, months placed by punya-kala.
+/// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+/// use teistro_calendar::BikramSambat;
+///
+/// // Computed, 2081 is the year the committee printed.
+/// let official = BikramSambat::shipped().official_rows();
+/// let printed = official.iter().find(|(year, _)| *year == 2081).unwrap().1;
+/// assert_eq!(engine.year(2081)?.months, printed);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub struct Engine<'a> {
     model: &'a dyn SolarModel,
     clock: &'a dyn LocalClock,
@@ -66,6 +115,19 @@ impl fmt::Debug for Engine<'_> {
 
 impl<'a> Engine<'a> {
     /// An engine.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// assert_eq!(engine.rule(), MonthStartRule::Punyakala);
+    /// ```
     #[must_use]
     pub const fn new(
         model: &'a dyn SolarModel,
@@ -82,6 +144,19 @@ impl<'a> Engine<'a> {
     }
 
     /// The rule.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// assert!(engine.rule().needs_day_arc());
+    /// ```
     #[must_use]
     pub const fn rule(&self) -> MonthStartRule {
         self.rule
@@ -89,6 +164,22 @@ impl<'a> Engine<'a> {
 
     /// The frame stamp: model, clock, place and rule, the text a computed
     /// date carries.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// assert_eq!(
+    ///     engine.describe(),
+    ///     "Surya Siddhanta (the text, the sine table); +05:45; 27.7172°N 85.324°E 1400 m; rule PUNYAKALA"
+    /// );
+    /// ```
     #[must_use]
     pub fn describe(&self) -> String {
         format!(
@@ -104,6 +195,23 @@ impl<'a> Engine<'a> {
     /// year `year - 57`, to the Mesha of the next year. The rules need no
     /// more, so a measurement finds these once and places them under every
     /// rule.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// let instants = engine.sankrantis(2081)?;
+    /// // Mesha to Mesha: a sidereal year of the text's, 365.26 days.
+    /// let year = instants[12].get() - instants[0].get();
+    /// assert!((365.25..365.27).contains(&year), "{year}");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -122,6 +230,20 @@ impl<'a> Engine<'a> {
 
     /// A year.
     ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// assert_eq!(engine.year(2081)?.year, 2081);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// The model's refusal or a search that does not converge.
@@ -131,6 +253,22 @@ impl<'a> Engine<'a> {
     }
 
     /// A year from its thirteen sankrantis, placed by the rule.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// // Found once, placed by any rule.
+    /// let instants = engine.sankrantis(2081)?;
+    /// assert_eq!(engine.year_from(2081, &instants)?, engine.year(2081)?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -142,6 +280,23 @@ impl<'a> Engine<'a> {
     /// A year from its thirteen sankrantis, each placed by the rule a
     /// function names for its sign (0 for Mesha), for measurements that
     /// try a rule on one sankranti at a time.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// // Every sign under punya-kala is the year the engine's own rule gives.
+    /// let instants = engine.sankrantis(2081)?;
+    /// let each = engine.year_from_with(2081, &instants, &|_| MonthStartRule::Punyakala)?;
+    /// assert_eq!(each, engine.year(2081)?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -181,6 +336,23 @@ impl<'a> Engine<'a> {
     }
 
     /// Every year of a span, in order.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// // The frame the shipped table is computed in: the text's Sun, Nepal's
+    /// // clock and Kathmandu, months placed by punya-kala.
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// let years = engine.span(2081, 2083)?;
+    /// assert_eq!(years.iter().map(|row| row.year).collect::<Vec<_>>(), [2081, 2082, 2083]);
+    /// // Each year begins where the one before ended.
+    /// assert_eq!(years[0].start.plus_days(i64::from(years[0].days())), years[1].start);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///

@@ -9,16 +9,43 @@ use crate::fixed::FixedDay;
 use crate::gregorian::{YEAR_RANGE, check_year, common_month_length, era_of};
 
 /// The proleptic Julian calendar.
+///
+/// ```
+/// use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian, Julian};
+/// use teistro_core::catalogue::Calendar;
+///
+/// // Julian 19 December 2023 is Gregorian 1 January 2024.
+/// let day = Julian.fixed_of(&CalendarDate::defined(Calendar::Julian, 2023, 12, 19))?;
+/// let gregorian = Gregorian.date_of(day)?;
+/// assert_eq!((gregorian.year, gregorian.month, gregorian.day), (2024, 1, 1));
+/// // 1900 was a Julian leap year and not a Gregorian one.
+/// assert!(Julian.is_leap(1900) && !Gregorian.is_leap(1900));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Julian;
 
 /// Whether a year is a Julian leap year.
+///
+/// ```
+/// use teistro_calendar::julian::is_leap_year;
+///
+/// assert!(is_leap_year(1900) && is_leap_year(2024));
+/// assert!(!is_leap_year(2023));
+/// ```
 #[must_use]
 pub const fn is_leap_year(year: i32) -> bool {
     year.rem_euclid(4) == 0
 }
 
 /// The length of a month, or `None` for a month outside 1 to 12.
+///
+/// ```
+/// use teistro_calendar::julian::month_length;
+///
+/// assert_eq!(month_length(1900, 2), Some(29));
+/// assert_eq!(month_length(1900, 0), None);
+/// ```
 #[must_use]
 pub const fn month_length(year: i32, month: u8) -> Option<u8> {
     if month == 2 && is_leap_year(year) {
@@ -29,6 +56,15 @@ pub const fn month_length(year: i32, month: u8) -> Option<u8> {
 
 /// The fixed day of a Julian date; the date is not validated. Julian
 /// 1 January 1 CE is fixed day −1.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::julian::fixed_from_julian;
+///
+/// assert_eq!(fixed_from_julian(1, 1, 1).get(), -1);
+/// // The papal reform: Julian 4 October 1582 was followed by Gregorian 15 October.
+/// assert_eq!(fixed_from_julian(1582, 10, 4).plus_days(1), fixed_from_gregorian(1582, 10, 15));
+/// ```
 #[must_use]
 pub const fn fixed_from_julian(year: i32, month: u8, day: u8) -> FixedDay {
     let y = year as i64 - 1;
@@ -46,6 +82,13 @@ pub const fn fixed_from_julian(year: i32, month: u8, day: u8) -> FixedDay {
 }
 
 /// The Julian date of a fixed day.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::julian::julian_from_fixed;
+///
+/// assert_eq!(julian_from_fixed(fixed_from_gregorian(2024, 1, 1)), (2023, 12, 19));
+/// ```
 #[must_use]
 #[allow(
     clippy::cast_possible_truncation,

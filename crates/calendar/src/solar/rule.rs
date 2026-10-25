@@ -12,6 +12,26 @@ use crate::fixed::FixedDay;
 use crate::solar::{DayArc, SolarModel};
 
 /// Which civil day a sankranti begins the month on.
+///
+/// ```
+/// # use teistro_calendar::bikram_sambat::engine::KATHMANDU;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::MonthStartRule;
+/// use teistro_calendar::solar::find_sankranti;
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// // The text's Makara sankranti of 2024: 15 January, 08:45 on Nepal's clock.
+/// let makara = find_sankranti(&text, MonthStartRule::MAKARA, JulianDay::<Utc>::try_new(2_460_310.5)?)?.instant;
+/// let day = |rule: MonthStartRule| rule.month_start(MonthStartRule::MAKARA, makara, &clock, &text, &KATHMANDU);
+/// assert_eq!(day(MonthStartRule::SankrantiDay)?, fixed_from_gregorian(2024, 1, 15));
+/// assert_eq!(day(MonthStartRule::FollowingDay)?, fixed_from_gregorian(2024, 1, 16));
+/// // Before sunset, so Magh began that day: Maghe Sankranti.
+/// assert_eq!(day(MonthStartRule::Punyakala)?, fixed_from_gregorian(2024, 1, 15));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -75,6 +95,13 @@ impl MonthStartRule {
     pub const MAKARA: u8 = 9;
 
     /// Whether the rule needs sunrise or sunset.
+    ///
+    /// ```
+    /// use teistro_calendar::MonthStartRule;
+    ///
+    /// assert!(MonthStartRule::Punyakala.needs_day_arc());
+    /// assert!(!MonthStartRule::SankrantiDay.needs_day_arc());
+    /// ```
     #[must_use]
     pub const fn needs_day_arc(self) -> bool {
         matches!(
@@ -87,6 +114,13 @@ impl MonthStartRule {
     }
 
     /// The row's key for stamps and reports.
+    ///
+    /// ```
+    /// use teistro_calendar::MonthStartRule;
+    ///
+    /// assert_eq!(MonthStartRule::BeforeAparahna.key(), "BEFORE_APARAHNA");
+    /// assert_eq!(MonthStartRule::Shifted { days: 0.25 }.key(), "SHIFTED +0.250");
+    /// ```
     #[must_use]
     pub fn key(self) -> String {
         match self {
@@ -103,6 +137,23 @@ impl MonthStartRule {
     /// The civil day the month begins on for the sankranti into a sign
     /// (0 for Mesha), under a clock, with the model and the place for the
     /// rules that need the day's arc.
+    ///
+    /// ```
+    /// # use teistro_calendar::bikram_sambat::engine::KATHMANDU;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    /// use teistro_calendar::MonthStartRule;
+    /// use teistro_calendar::solar::find_sankranti;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let makara = find_sankranti(&text, MonthStartRule::MAKARA, JulianDay::<Utc>::try_new(2_460_310.5)?)?.instant;
+    /// // Shifted by a day, the sankranti's civil day moves with it.
+    /// let shifted = MonthStartRule::Shifted { days: 1.0 }.month_start(MonthStartRule::MAKARA, makara, &clock, &text, &KATHMANDU)?;
+    /// assert_eq!(shifted, fixed_from_gregorian(2024, 1, 16));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -165,6 +216,19 @@ impl fmt::Display for MonthStartRule {
 
 /// The civil day an instant falls in under a clock, and the fraction of
 /// that day elapsed.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::solar::rule::local_day;
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_core::time::UtcOffset;
+///
+/// // 20:00 UTC on 31 December is 01:45 on 1 January at +05:45.
+/// let (day, fraction) = local_day(&UtcOffset::literal(5, 45, 0), JulianDay::<Utc>::try_new(2_460_310.5 - 4.0 / 24.0)?);
+/// assert_eq!(day, fixed_from_gregorian(2024, 1, 1));
+/// assert!((fraction * 24.0 - 1.75).abs() < 1e-6);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn local_day(clock: &dyn LocalClock, instant: JulianDay<Utc>) -> (FixedDay, f64) {
     FixedDay::from_local_jd(clock.local_jd(instant))

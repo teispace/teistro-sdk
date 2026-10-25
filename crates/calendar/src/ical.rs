@@ -46,6 +46,23 @@ use crate::{CalendarSystem, FixedDay, Gregorian};
 use teistro_core::error::{Error, Status};
 
 /// A feed: the calendar's own properties and its events.
+///
+/// ```
+/// use teistro_calendar::ical::{Feed, write};
+///
+/// // A feed with no events is still a calendar a subscriber can add.
+/// let feed = Feed {
+///     product: "-//Example//Almanac//EN".to_owned(),
+///     name: "Festivals".to_owned(),
+///     refresh_minutes: Some(1440),
+///     stamp_unix_seconds: 1_767_225_600,
+///     events: Vec::new(),
+/// };
+/// let text = write(&feed)?;
+/// assert!(text.contains("REFRESH-INTERVAL;VALUE=DURATION:P1D\r\n"));
+/// assert!(text.ends_with("END:VCALENDAR\r\n"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Feed {
     /// `PRODID`, as `-//Owner//Product//EN`.
@@ -64,6 +81,24 @@ pub struct Feed {
 }
 
 /// One event, a whole day or a span of time.
+///
+/// ```
+/// use teistro_calendar::ical::{Event, Feed, When, write};
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+///
+/// let event = Event {
+///     uid: "dashain-10@example".to_owned(),
+///     summary: "Dashain, day 10".to_owned(),
+///     description: Some("Tika; then the visits".to_owned()),
+///     when: When::Day(Gregorian.to_fixed_ymd(2026, 10, 21)?),
+/// };
+/// let feed = Feed { product: "-//Example//EN".to_owned(), name: "Days".to_owned(), refresh_minutes: None, stamp_unix_seconds: 0, events: vec![event] };
+/// let text = write(&feed)?;
+/// // TEXT escapes commas and semicolons.
+/// assert!(text.contains("SUMMARY:Dashain\\, day 10\r\n"));
+/// assert!(text.contains("DESCRIPTION:Tika\\; then the visits\r\n"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Event {
     /// `UID`: the same for the same occurrence, so a feed published again
@@ -78,6 +113,28 @@ pub struct Event {
 }
 
 /// When an event is.
+///
+/// ```
+/// use teistro_calendar::ical::{Event, Feed, When, write};
+///
+/// let span = |from_unix_seconds, to_unix_seconds| Feed {
+///     product: "-//Example//EN".to_owned(),
+///     name: "Hours".to_owned(),
+///     refresh_minutes: None,
+///     stamp_unix_seconds: 0,
+///     events: vec![Event {
+///         uid: "u@example".to_owned(),
+///         summary: "An hour".to_owned(),
+///         description: None,
+///         when: When::Span { from_unix_seconds, to_unix_seconds },
+///     }],
+/// };
+/// let text = write(&span(1_767_225_600, 1_767_229_200))?;
+/// assert!(text.contains("DTSTART:20260101T000000Z\r\nDTEND:20260101T010000Z\r\n"));
+/// // A span must end after it starts.
+/// assert!(write(&span(1_767_225_600, 1_767_225_600)).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum When {
     /// A whole day, ending at the next day's start.
@@ -99,6 +156,25 @@ const LINE_OCTETS: usize = 75;
 const UNIX_EPOCH: FixedDay = FixedDay::new(719_163);
 
 /// The feed as RFC 5545 text.
+///
+/// ```
+/// use teistro_calendar::ical::{Feed, write};
+///
+/// let feed = Feed {
+///     product: "-//Example//EN".to_owned(),
+///     name: "Days".to_owned(),
+///     refresh_minutes: None,
+///     stamp_unix_seconds: 0,
+///     events: Vec::new(),
+/// };
+/// // The same feed writes the same bytes, every line ended by CRLF.
+/// let text = write(&feed)?;
+/// assert_eq!(text, write(&feed)?);
+/// assert!(text.split_inclusive('\n').all(|line| line.ends_with("\r\n")));
+/// // The format's four-digit year cannot write a stamp in the year 10000.
+/// assert!(write(&Feed { stamp_unix_seconds: 253_402_300_800, ..feed }).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -22,6 +22,16 @@ use crate::gregorian::{YEAR_RANGE, fixed_from_gregorian};
 use crate::julian::fixed_from_julian;
 
 /// Which reckoning of Easter.
+///
+/// ```
+/// use teistro_calendar::easter::{Computus, easter};
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+///
+/// // In 2024 the two reckonings were five weeks apart.
+/// assert_eq!(easter(2024, Computus::Gregorian)?, fixed_from_gregorian(2024, 3, 31));
+/// assert_eq!(easter(2024, Computus::Julian)?, fixed_from_gregorian(2024, 5, 5));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -36,6 +46,14 @@ pub enum Computus {
 
 impl Computus {
     /// The first year the reckoning answers for.
+    ///
+    /// ```
+    /// use teistro_calendar::easter::{Computus, easter};
+    ///
+    /// assert_eq!(Computus::Gregorian.first_year(), 1583);
+    /// assert!(easter(1582, Computus::Gregorian).is_err());
+    /// assert!(easter(1582, Computus::Julian).is_ok());
+    /// ```
     #[must_use]
     pub const fn first_year(self) -> i32 {
         match self {
@@ -45,6 +63,12 @@ impl Computus {
     }
 
     /// The reckoning's catalogue spelling.
+    ///
+    /// ```
+    /// use teistro_calendar::easter::Computus;
+    ///
+    /// assert_eq!(Computus::Julian.key(), "JULIAN");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {

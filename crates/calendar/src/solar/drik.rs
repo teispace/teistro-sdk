@@ -63,6 +63,21 @@ impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for DrikSun<'_, P> {
 
 impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
     /// The model over a provider.
+    ///
+    /// ```
+    /// use teistro_astro::DeltaTModel;
+    /// use teistro_calendar::solar::DrikSun;
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::{OverridePolicy, Sunrise};
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let drik = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    /// use teistro_calendar::solar::SolarModel;
+    ///
+    /// // Not a classical astronomy: the day's sunrise is the sky's.
+    /// assert!(!drik.defines_sunrise());
+    /// ```
     pub fn new(
         provider: &'p P,
         ayanamsha: Ayanamsha,
@@ -81,12 +96,38 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
     }
 
     /// The frame completion the model reads positions through.
+    ///
+    /// ```
+    /// use teistro_astro::DeltaTModel;
+    /// use teistro_calendar::solar::DrikSun;
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::{OverridePolicy, Sunrise};
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let drik = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    ///
+    /// assert_eq!(drik.completion().policy(), OverridePolicy::PreferNative);
+    /// ```
     #[must_use]
     pub const fn completion(&self) -> &Completion<'p, P> {
         &self.completion
     }
 
     /// The ayanamsha.
+    ///
+    /// ```
+    /// use teistro_astro::DeltaTModel;
+    /// use teistro_calendar::solar::DrikSun;
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::{OverridePolicy, Sunrise};
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let drik = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    ///
+    /// assert_eq!(drik.ayanamsha(), Ayanamsha::Lahiri);
+    /// ```
     #[must_use]
     pub const fn ayanamsha(&self) -> Ayanamsha {
         self.ayanamsha

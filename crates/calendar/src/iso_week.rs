@@ -12,10 +12,31 @@ use crate::fixed::{FixedDay, Weekday};
 use crate::gregorian::{YEAR_RANGE, check_year, fixed_from_gregorian, year_from_fixed};
 
 /// The ISO week calendar.
+///
+/// ```
+/// use teistro_calendar::{CalendarDate, CalendarSystem, IsoWeek};
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_core::catalogue::Calendar;
+///
+/// // Sunday 31 December 2023 is the seventh day of week 52 of 2023.
+/// let date = IsoWeek.date_of(fixed_from_gregorian(2023, 12, 31))?;
+/// assert_eq!((date.year, date.month, date.day), (2023, 52, 7));
+/// assert!(IsoWeek.fixed_of(&CalendarDate::defined(Calendar::IsoWeek, 2024, 53, 1)).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct IsoWeek;
 
 /// An ISO week date.
+///
+/// ```
+/// use teistro_calendar::IsoWeekDate;
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::iso_week::iso_from_fixed;
+///
+/// // 1 January 2021 was a Friday in the last week of 2020.
+/// assert_eq!(iso_from_fixed(fixed_from_gregorian(2021, 1, 1)), IsoWeekDate { week_year: 2020, week: 53, weekday: 5 });
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct IsoWeekDate {
@@ -28,6 +49,14 @@ pub struct IsoWeekDate {
 }
 
 /// The fixed day of an ISO week date; not validated.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::iso_week::fixed_from_iso;
+///
+/// assert_eq!(fixed_from_iso(2024, 1, 1), fixed_from_gregorian(2024, 1, 1));
+/// assert_eq!(fixed_from_iso(2025, 1, 1), fixed_from_gregorian(2024, 12, 30));
+/// ```
 #[must_use]
 pub const fn fixed_from_iso(week_year: i32, week: u8, weekday: u8) -> FixedDay {
     // The Sunday strictly before 28 December of the previous year, then
@@ -39,6 +68,14 @@ pub const fn fixed_from_iso(week_year: i32, week: u8, weekday: u8) -> FixedDay {
 }
 
 /// The ISO week date of a fixed day.
+///
+/// ```
+/// use teistro_calendar::IsoWeekDate;
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::iso_week::iso_from_fixed;
+///
+/// assert_eq!(iso_from_fixed(fixed_from_gregorian(2024, 12, 31)), IsoWeekDate { week_year: 2025, week: 1, weekday: 2 });
+/// ```
 #[must_use]
 #[allow(
     clippy::cast_possible_truncation,
@@ -62,6 +99,13 @@ pub const fn iso_from_fixed(fixed: FixedDay) -> IsoWeekDate {
 }
 
 /// Whether a week-year has 53 weeks.
+///
+/// ```
+/// use teistro_calendar::iso_week::is_long_year;
+///
+/// assert!(is_long_year(2020) && is_long_year(2026));
+/// assert!(!is_long_year(2024));
+/// ```
 #[must_use]
 pub const fn is_long_year(week_year: i32) -> bool {
     let next = fixed_from_iso(week_year + 1, 1, 1).get();

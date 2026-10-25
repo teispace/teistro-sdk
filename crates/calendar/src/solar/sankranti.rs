@@ -16,6 +16,17 @@ pub const TOLERANCE_DAYS: f64 = 1e-6;
 pub const MEAN_SOLAR_RATE_DEG_PER_DAY: f64 = 0.985_6;
 
 /// A found sankranti.
+///
+/// ```
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_calendar::solar::find_sankranti;
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// let found = find_sankranti(&SuryaSiddhanta::text(), 0, JulianDay::<Utc>::try_new(2_460_310.5)?)?;
+/// assert_eq!(found.sign, 0);
+/// assert!(found.evaluations > 0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Sankranti {
     /// The sign entered, 0 for Mesha to 11 for Meena.
@@ -27,6 +38,21 @@ pub struct Sankranti {
 }
 
 /// The first entry of the Sun into a sign at or after an instant.
+///
+/// ```
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_calendar::solar::{SolarModel, find_sankranti};
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// // The text's Mesha sankranti of 2024: 13 April, 17:55 UTC.
+/// let text = SuryaSiddhanta::text();
+/// let mesha = find_sankranti(&text, 0, JulianDay::<Utc>::try_new(2_460_310.5)?)?;
+/// assert!((mesha.instant.get() - 2_460_414.2465).abs() < 1e-3, "{}", mesha.instant);
+/// let longitude = text.sidereal_sun_deg(mesha.instant.get())?;
+/// assert!(longitude < 1e-4 || longitude > 360.0 - 1e-4, "{longitude}");
+/// assert!(find_sankranti(&text, 12, mesha.instant).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
