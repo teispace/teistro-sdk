@@ -128,6 +128,27 @@ impl<'s> Lockstep<'s> {
     /// The apparent positions of `body` at `instants` from `sky`, read in
     /// the round's one request of that source for that body.
     ///
+    /// ```
+    /// use teistro_astro::completion::Completion;
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::lockstep::Lockstep;
+    /// use teistro_astro::sky::ApparentPositions;
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_core::settings::OverridePolicy;
+    /// use teistro_port_ephemeris::{Body, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// let sky: &dyn ApparentPositions = &sky;
+    /// let j2000 = JulianDay::<Ut1>::J2000;
+    /// // Read in a round, the Sun is where it is read on the spot.
+    /// let lockstep = Lockstep::new();
+    /// let read = lockstep.run([lockstep.apparent(sky, Body::Sun, &[j2000])]);
+    /// let sun = read.into_iter().next().expect("one search")?;
+    /// assert_eq!(sun, [sky.apparent(Body::Sun, j2000)?]);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// The source's refusal for the round, which every search waiting on

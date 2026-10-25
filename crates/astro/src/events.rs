@@ -42,11 +42,57 @@ use crate::solve::{Caps, RatesRefinement, SolveError, first_zero, refine_known};
 
 /// The tolerance a crossing is found to, days: a hundredth of a second,
 /// a hundredth of the target the kernel is held to against the engines.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = sky.longitudes(Frame::CANONICAL);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// use teistro_astro::events::{Lattice, Quantity, Search, TOLERANCE_DAYS, greatest_rate, value_of};
+/// use teistro_core::angle::difference_deg;
+///
+/// // Every ingress is within the tolerance of its line, at the Sun's fastest.
+/// let sun = Quantity::Longitude(Body::Sun);
+/// for ingress in Search::new(&longitudes, sun, Lattice::SIGNS).between(j2000, j2000.plus_days(365.25)?)? {
+///     let off = difference_deg(value_of(sun, &longitudes, ingress.instant)?, ingress.boundary_deg);
+///     assert!(off.abs() <= TOLERANCE_DAYS * greatest_rate(Body::Sun));
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const TOLERANCE_DAYS: f64 = 1e-7;
 
 /// The longest sampling step, days: no retrograde arc of a planet is
 /// shorter than this, so a boundary crossed and re-crossed inside one step
 /// is a body lingering within a fraction of an arcminute of it.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = sky.longitudes(Frame::CANONICAL);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// use teistro_astro::events::{Lattice, Quantity, STEP_CAP_DAYS, Search};
+///
+/// // The Sun would cross no sign in a fortnight, but is sampled daily.
+/// let sun = Search::new(&longitudes, Quantity::Longitude(Body::Sun), Lattice::SIGNS);
+/// assert_eq!(sun.step_days(), STEP_CAP_DAYS);
+/// // The Moon's nakshatras need finer.
+/// let moon = Search::new(&longitudes, Quantity::Longitude(Body::Moon), Lattice::NAKSHATRAS);
+/// assert!(moon.step_days() < STEP_CAP_DAYS);
+/// ```
 pub const STEP_CAP_DAYS: f64 = 1.0;
 
 /// The spacing a single target is treated as having: a whole circle.
@@ -59,8 +105,56 @@ const SAMPLE_CAP: u32 = 2_000_000;
 /// A source of ecliptic longitudes and their rates, degrees and degrees a
 /// day, at UT1 instants: the frame completion over a provider in the frame
 /// a caller chooses, or a classical model.
+///
+/// ```
+/// # use teistro_astro::events::Longitudes;
+/// # use teistro_core::error::Error;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # // A planet that loops: retrograde for 26 days in every 63.
+/// # struct Looping;
+/// # impl Longitudes for Looping {
+/// #     fn longitude_and_speed(&self, _: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
+/// #         let t = ut1.get() - 2_451_545.0;
+/// #         Ok(((100.0 + 0.5 * t + 20.0 * (t / 10.0).sin()).rem_euclid(360.0), 0.5 + 2.0 * (t / 10.0).cos()))
+/// #     }
+/// #     fn describe(&self) -> String {
+/// #         "a looping planet".into()
+/// #     }
+/// # }
+///
+/// use teistro_astro::events::{Lattice, Quantity, Search};
+///
+/// // Any source of longitudes is searched like the completion: the loop
+/// // crosses 110° three times, forward, back and forward again.
+/// let search = Search::new(&Looping, Quantity::Longitude(Body::Mercury), Lattice::single(110.0));
+/// let crossings = search.between(JulianDay::<Ut1>::J2000, JulianDay::<Ut1>::literal(2_451_545.0 + 100.0))?;
+/// assert_eq!(crossings.len(), 3);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub trait Longitudes: Send + Sync {
     /// A body's longitude and its rate.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Longitudes, greatest_rate, least_rate};
+    ///
+    /// let (lon, speed) = longitudes.longitude_and_speed(Body::Sun, j2000)?;
+    /// assert!((0.0..360.0).contains(&lon));
+    /// assert!(least_rate(Body::Sun).is_some_and(|least| speed > least) && speed < greatest_rate(Body::Sun));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -73,6 +167,27 @@ pub trait Longitudes: Send + Sync {
     /// can answer two bodies in one request does so here, sharing the
     /// instant's obliquity, nutation and precession between them; the
     /// default reads them one by one.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::Longitudes;
+    ///
+    /// // One request for both, answering what two would.
+    /// let [moon, sun] = longitudes.longitude_and_speed_pair([Body::Moon, Body::Sun], j2000)?;
+    /// assert_eq!(moon, longitudes.longitude_and_speed(Body::Moon, j2000)?);
+    /// assert_eq!(sun, longitudes.longitude_and_speed(Body::Sun, j2000)?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -108,6 +223,30 @@ pub trait Longitudes: Send + Sync {
     /// `out` is cleared first, and is a buffer rather than a return so
     /// that a search reuses one allocation across its chunks.
     ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::Longitudes;
+    ///
+    /// let days: Vec<JulianDay<Ut1>> = (0..4).map(|day| JulianDay::literal(2_451_545.0 + f64::from(day))).collect();
+    /// let mut grid = Vec::new();
+    /// longitudes.longitudes_and_speeds(Body::Moon, &days, &mut grid)?;
+    /// // The grid answers the walk, to the bit.
+    /// for (at, reading) in days.iter().zip(&grid) {
+    ///     assert_eq!(*reading, longitudes.longitude_and_speed(Body::Moon, *at)?);
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An instant or a body the source cannot answer for.
@@ -130,6 +269,28 @@ pub trait Longitudes: Send + Sync {
     /// [`Longitudes::longitudes_and_speeds`], and under the same
     /// contract.
     ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::Longitudes;
+    ///
+    /// let days = [j2000, j2000.plus_days(0.5)?];
+    /// let mut grid = Vec::new();
+    /// longitudes.longitudes_and_speeds_pair([Body::Moon, Body::Sun], &days, &mut grid)?;
+    /// assert_eq!(grid.len(), 2);
+    /// assert_eq!(grid[1], longitudes.longitude_and_speed_pair([Body::Moon, Body::Sun], days[1])?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An instant or a body the source cannot answer for.
@@ -148,6 +309,24 @@ pub trait Longitudes: Send + Sync {
     }
 
     /// The source's name for provenance stamps.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::Longitudes;
+    ///
+    /// // The provider, and the frame its longitudes are in.
+    /// assert!(longitudes.describe().starts_with("test-provider in "));
+    /// ```
     fn describe(&self) -> String;
 }
 
@@ -191,6 +370,29 @@ impl<S: Longitudes + ?Sized> Longitudes for &S {
 
 /// The frame completion as a source of longitudes in one frame, geocentric
 /// or topocentric.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = sky.longitudes(Frame::CANONICAL);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// use teistro_astro::events::Longitudes;
+/// use teistro_port_ephemeris::{PositionRequest, TimeScale};
+///
+/// // What the completion answers in the frame, read as a longitude and its rate.
+/// let jds = [j2000.get()];
+/// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Moon], Frame::CANONICAL);
+/// let cell = sky.positions(&request)?.columns.cell(0).expect("one cell");
+/// assert_eq!(longitudes.longitude_and_speed(Body::Moon, j2000)?, (cell.lon, cell.lon_speed));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub struct FrameLongitudes<'c, P: EphemerisProvider + ?Sized> {
     completion: &'c Completion<'c, P>,
     frame: Frame,
@@ -199,6 +401,31 @@ pub struct FrameLongitudes<'c, P: EphemerisProvider + ?Sized> {
 
 impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
     /// This completion as a source of longitudes in a frame.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::Longitudes;
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_port_ephemeris::Zodiac;
+    ///
+    /// // The same Sun, a sidereal frame's longitude smaller by the ayanamsha.
+    /// let sidereal = sky.longitudes(Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)));
+    /// let (tropical, _) = longitudes.longitude_and_speed(Body::Sun, j2000)?;
+    /// let (nirayana, _) = sidereal.longitude_and_speed(Body::Sun, j2000)?;
+    /// let shift = (tropical - nirayana).rem_euclid(360.0);
+    /// assert!((shift - 23.86).abs() < 0.05);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn longitudes(&self, frame: Frame) -> FrameLongitudes<'_, P> {
         FrameLongitudes {
@@ -221,6 +448,32 @@ impl<P: EphemerisProvider + ?Sized> fmt::Debug for FrameLongitudes<'_, P> {
 
 impl<P: EphemerisProvider + ?Sized> FrameLongitudes<'_, P> {
     /// The observer, for a topocentric frame.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::Longitudes;
+    /// use teistro_core::quantity::Place;
+    /// use teistro_port_ephemeris::Centre;
+    ///
+    /// // The Moon from Kathmandu: the test provider puts every body at one au, so
+    /// // its parallax is the Sun's, a few arcseconds.
+    /// let place = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// let topocentric = sky.longitudes(Frame::CANONICAL.with_centre(Centre::Topocentric)).with_observer(place);
+    /// let (seen, _) = topocentric.longitude_and_speed(Body::Moon, j2000)?;
+    /// let (centre, _) = longitudes.longitude_and_speed(Body::Moon, j2000)?;
+    /// assert!((seen - centre).abs() < 0.01);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn with_observer(mut self, place: Place) -> Self {
         self.observer = Some(place);
@@ -339,6 +592,16 @@ pub use teistro_port_ephemeris::crossing::{Direction, Event, Lattice, Quantity};
 
 /// The greatest rate the quantity reaches, degrees a day: a body's own,
 /// or the coefficients' weighted sum of the two bodies' for a composite.
+///
+/// ```
+/// use teistro_astro::events::{Quantity, greatest_rate, quantity_rate_deg_per_day};
+/// use teistro_port_ephemeris::Body;
+///
+/// // The tithi's elongation at its fastest: the Moon's and the Sun's together.
+/// let elongation = quantity_rate_deg_per_day(Quantity::ELONGATION);
+/// assert!((elongation - (greatest_rate(Body::Moon) + greatest_rate(Body::Sun))).abs() < 1e-12);
+/// assert_eq!(quantity_rate_deg_per_day(Quantity::Speed(Body::Mars)), greatest_rate(Body::Mars));
+/// ```
 #[must_use]
 pub fn quantity_rate_deg_per_day(quantity: Quantity) -> f64 {
     match quantity {
@@ -359,6 +622,28 @@ pub fn quantity_rate_deg_per_day(quantity: Quantity) -> f64 {
 /// to name what lies *between* two boundaries — which tithi runs between
 /// two tithi boundaries — and reading the quantity there is how it does
 /// so, with the same evaluation the search used.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = sky.longitudes(Frame::CANONICAL);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// use teistro_astro::events::{Lattice, Quantity, Search, value_of};
+///
+/// // Which tithi runs between the first two boundaries after J2000.
+/// let bounds = Search::new(&longitudes, Quantity::ELONGATION, Lattice::TITHIS).between(j2000, j2000.plus_days(3.0)?)?;
+/// let middle = JulianDay::<Ut1>::literal((bounds[0].instant.get() + bounds[1].instant.get()) / 2.0);
+/// let elongation = value_of(Quantity::ELONGATION, &longitudes, middle)?;
+/// assert_eq!((elongation / 12.0).floor(), (bounds[0].boundary_deg / 12.0).round());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -470,6 +755,16 @@ const QUARTER_CIRCLE_DEG: f64 = 90.0;
 /// `None` for one that turns within days or that the table does not
 /// know: the true node and the osculating apogee swing back and forth in
 /// hours, so their scan keeps the fine step.
+///
+/// ```
+/// use teistro_astro::events::shortest_run_days;
+/// use teistro_port_ephemeris::Body;
+///
+/// assert_eq!(shortest_run_days(Body::Mercury), Some(19.5));
+/// // The Sun never turns; the true node turns within days.
+/// assert_eq!(shortest_run_days(Body::Sun), Some(f64::INFINITY));
+/// assert_eq!(shortest_run_days(Body::TrueNode), None);
+/// ```
 #[must_use]
 pub fn shortest_run_days(body: Body) -> Option<f64> {
     if least_rate(body).is_some() {
@@ -982,6 +1277,15 @@ fn line_deg(lattice: &Lattice, k: i64) -> f64 {
 /// day, with a margin: the Moon at perigee, Mercury at inferior
 /// conjunction, the true node's swings; bodies this table does not know
 /// take Mercury's.
+///
+/// ```
+/// use teistro_astro::events::greatest_rate;
+/// use teistro_port_ephemeris::Body;
+///
+/// assert_eq!(greatest_rate(Body::Moon), 15.5);
+/// // Mercury is the fastest planet, and the rate of a body the table lacks.
+/// assert_eq!(greatest_rate(Body::Mercury), 2.3);
+/// ```
 #[must_use]
 pub fn greatest_rate(body: Body) -> f64 {
     match body {
@@ -1011,6 +1315,16 @@ pub fn greatest_rate(body: Body) -> f64 {
 /// a caller that needs one for such a body has to say what it will
 /// accept. The mean node is here although it moves backwards: it never
 /// turns, so its dwell is bounded like any other steady motion.
+///
+/// ```
+/// use teistro_astro::events::least_rate;
+/// use teistro_port_ephemeris::Body;
+///
+/// assert_eq!(least_rate(Body::Sun), Some(0.95));
+/// // Mars stations; the mean node runs backwards and never turns.
+/// assert_eq!(least_rate(Body::Mars), None);
+/// assert_eq!(least_rate(Body::MeanNode), Some(0.052));
+/// ```
 #[must_use]
 pub fn least_rate(body: Body) -> Option<f64> {
     match body {
@@ -1033,6 +1347,17 @@ pub fn least_rate(body: Body) -> Option<f64> {
 /// is a bound whether that body turns or not. The tithi's elongation is
 /// the case that matters — the Moon's least less the Sun's greatest, ten
 /// and a half degrees a day.
+///
+/// ```
+/// use teistro_astro::events::{Quantity, quantity_least_rate};
+/// use teistro_port_ephemeris::Body;
+///
+/// // The Moon at her slowest less the Sun at his fastest.
+/// let tithi = quantity_least_rate(Quantity::ELONGATION).expect("bounded");
+/// assert!((tithi - (11.7 - 1.03)).abs() < 1e-12);
+/// assert_eq!(quantity_least_rate(Quantity::Longitude(Body::Venus)), None);
+/// assert_eq!(quantity_least_rate(Quantity::Speed(Body::Moon)), None);
+/// ```
 #[must_use]
 pub fn quantity_least_rate(quantity: Quantity) -> Option<f64> {
     match quantity {
@@ -1071,12 +1396,53 @@ pub fn quantity_least_rate(quantity: Quantity) -> Option<f64> {
 /// `None` when the quantity can stand still or turn
 /// ([`quantity_least_rate`]); such a caller chooses a reach and lives
 /// with the truncation past it.
+///
+/// ```
+/// use teistro_astro::events::{Lattice, Quantity, longest_dwell_days};
+/// use teistro_port_ephemeris::Body;
+///
+/// // No tithi lasts longer than twelve degrees at ten and two thirds a day.
+/// let tithi = longest_dwell_days(Quantity::ELONGATION, &Lattice::TITHIS).expect("bounded");
+/// assert!((tithi - 12.0 / 10.67).abs() < 1e-9);
+/// assert_eq!(longest_dwell_days(Quantity::Longitude(Body::Saturn), &Lattice::SIGNS), None);
+/// ```
 #[must_use]
 pub fn longest_dwell_days(quantity: Quantity, lattice: &Lattice) -> Option<f64> {
     quantity_least_rate(quantity).map(|rate| spacing_deg(lattice) / rate)
 }
 
 /// Which way a station turns.
+///
+/// ```
+/// # use teistro_astro::events::Longitudes;
+/// # use teistro_core::error::Error;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # // A planet that loops: retrograde for 26 days in every 63.
+/// # struct Looping;
+/// # impl Longitudes for Looping {
+/// #     fn longitude_and_speed(&self, _: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
+/// #         let t = ut1.get() - 2_451_545.0;
+/// #         Ok(((100.0 + 0.5 * t + 20.0 * (t / 10.0).sin()).rem_euclid(360.0), 0.5 + 2.0 * (t / 10.0).cos()))
+/// #     }
+/// #     fn describe(&self) -> String {
+/// #         "a looping planet".into()
+/// #     }
+/// # }
+///
+/// use teistro_astro::events::stations;
+///
+/// let (from, to) = (JulianDay::<Ut1>::J2000, JulianDay::<Ut1>::literal(2_451_545.0 + 100.0));
+/// let found = stations(&Looping, Body::Mercury, from, to, 1e-7)?;
+/// use teistro_astro::events::StationKind;
+///
+/// // Retrograde, direct, retrograde again: the speed's sign changes in turn.
+/// let kinds: Vec<StationKind> = found.iter().map(|station| station.kind).collect();
+/// assert_eq!(kinds, [StationKind::Retrograde, StationKind::Direct, StationKind::Retrograde]);
+/// assert_eq!(serde_json::to_string(&StationKind::Direct)?, r#""DIRECT""#);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -1088,6 +1454,36 @@ pub enum StationKind {
 }
 
 /// A station: the instant a body's longitude stands still.
+///
+/// ```
+/// # use teistro_astro::events::Longitudes;
+/// # use teistro_core::error::Error;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # // A planet that loops: retrograde for 26 days in every 63.
+/// # struct Looping;
+/// # impl Longitudes for Looping {
+/// #     fn longitude_and_speed(&self, _: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
+/// #         let t = ut1.get() - 2_451_545.0;
+/// #         Ok(((100.0 + 0.5 * t + 20.0 * (t / 10.0).sin()).rem_euclid(360.0), 0.5 + 2.0 * (t / 10.0).cos()))
+/// #     }
+/// #     fn describe(&self) -> String {
+/// #         "a looping planet".into()
+/// #     }
+/// # }
+///
+/// use teistro_astro::events::stations;
+///
+/// let (from, to) = (JulianDay::<Ut1>::J2000, JulianDay::<Ut1>::literal(2_451_545.0 + 100.0));
+/// let found = stations(&Looping, Body::Mercury, from, to, 1e-7)?;
+/// // The first: where 0.5 + 2 cos(t/10) first reaches zero, 18.2 days in.
+/// let first = found[0];
+/// assert!((first.instant.get() - 2_451_545.0 - 10.0 * (-0.25_f64).acos()).abs() < 1e-6);
+/// assert_eq!(first.longitude_deg, Looping.longitude_and_speed(Body::Mercury, first.instant)?.0);
+/// assert!(first.evaluations > 0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Station {
@@ -1103,6 +1499,37 @@ pub struct Station {
 
 /// The events of a crossing search over the completion, with who found
 /// them.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = sky.longitudes(Frame::CANONICAL);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// use teistro_astro::Implementation;
+/// use teistro_astro::events::{Lattice, Quantity};
+/// use teistro_port_ephemeris::CrossingRequest;
+///
+/// // The test provider has no search of its own, so the SDK's kernel answers.
+/// let found = sky.crossings(&CrossingRequest {
+///     quantity: Quantity::ELONGATION,
+///     lattice: Lattice::TITHIS,
+///     from: j2000,
+///     to: j2000.plus_days(30.0)?,
+///     tolerance_days: 1e-7,
+///     frame: Frame::CANONICAL,
+///     observer: None,
+/// })?;
+/// assert_eq!(found.implementation, Implementation::Sdk);
+/// assert!(found.events.windows(2).all(|pair| pair[0].instant.get() < pair[1].instant.get()));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Crossings {
     /// The events, in time order.
@@ -1192,6 +1619,28 @@ impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
 /// Samples are `anchor + k × step` for a whole `k`, computed by
 /// multiplication rather than by accumulating steps, so the same `k`
 /// gives the same instant to the last bit however the scan reached it.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = sky.longitudes(Frame::CANONICAL);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// use teistro_astro::events::{Lattice, Quantity, Search};
+///
+/// // Two windows round the same ingresses find them to the same bits.
+/// let search = Search::new(&longitudes, Quantity::Longitude(Body::Sun), Lattice::SIGNS);
+/// let wide = search.between(j2000, j2000.plus_days(120.0)?)?;
+/// let narrow = search.between(j2000.plus_days(17.3)?, j2000.plus_days(100.0)?)?;
+/// assert!(narrow.iter().all(|event| wide.contains(event)));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const SCAN_ANCHOR_JD: f64 = 2_451_545.0;
 
 /// How many of a scan's instants are asked for in one grid by default.
@@ -1203,10 +1652,53 @@ pub const SCAN_ANCHOR_JD: f64 = 2_451_545.0;
 /// and twelve holds a two-year ingress search or a century of solar
 /// sign changes in one request, and keeps the buffer under thirty
 /// kilobytes.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = sky.longitudes(Frame::CANONICAL);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// use teistro_astro::events::{Lattice, Quantity, SCAN_CHUNK, Search};
+///
+/// // The grid answers what the walk answers, an instant per request.
+/// let search = Search::new(&longitudes, Quantity::ELONGATION, Lattice::TITHIS);
+/// let to = j2000.plus_days(10.0)?;
+/// assert_eq!(search.between(j2000, to)?, Search::new(&longitudes, Quantity::ELONGATION, Lattice::TITHIS).with_chunk(1).between(j2000, to)?);
+/// assert!(SCAN_CHUNK > 1);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const SCAN_CHUNK: usize = 512;
 
 /// A search for the crossings of a quantity over a lattice, or over
 /// several at once from one scan.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = sky.longitudes(Frame::CANONICAL);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// use teistro_astro::events::{Lattice, Quantity, Search};
+///
+/// // The Moon's signs and nakshatras in a month, from one scan.
+/// let moon = Search::each(&longitudes, Quantity::Longitude(Body::Moon), Lattice::SIGNS, [Lattice::NAKSHATRAS]);
+/// let [signs, nakshatras] = <[_; 2]>::try_from(moon.between_each(j2000, j2000.plus_days(27.0)?)?).expect("two lattices");
+/// assert!(signs.len() >= 11 && nakshatras.len() >= 26);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub struct Search<'s, S: Longitudes + ?Sized> {
     source: &'s S,
     quantity: Quantity,
@@ -1233,6 +1725,27 @@ impl<S: Longitudes + ?Sized> fmt::Debug for Search<'_, S> {
 
 impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     /// A search with the default tolerance, the step rule and caps.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// // The tithi boundaries of a fortnight, every one a multiple of twelve degrees.
+    /// let tithis = Search::new(&longitudes, Quantity::ELONGATION, Lattice::TITHIS).between(j2000, j2000.plus_days(14.0)?)?;
+    /// assert!(tithis.len() >= 13);
+    /// assert!(tithis.iter().all(|tithi| tithi.boundary_deg % 12.0 == 0.0));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn new(source: &'s S, quantity: Quantity, lattice: Lattice) -> Search<'s, S> {
         Search::each(source, quantity, lattice, [])
@@ -1247,6 +1760,28 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     ///
     /// [`Search::between_each`] answers each lattice's crossings apart;
     /// [`Search::between`], all of them in time order.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// // The tithis and the karanas, which halve them: every tithi line is a karana line.
+    /// let both = Search::each(&longitudes, Quantity::ELONGATION, Lattice::TITHIS, [Lattice::KARANAS]);
+    /// let each = both.between_each(j2000, j2000.plus_days(10.0)?)?;
+    /// assert!(each[0].iter().all(|tithi| each[1].contains(tithi)));
+    /// assert!(each[1].len() > each[0].len());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn each(
         source: &'s S,
@@ -1270,6 +1805,27 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     /// The default is [`SCAN_CHUNK`]. One is the walk this replaced —
     /// every instant its own round trip — which is what the grid is
     /// held against in the tests. Zero is read as one.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// let search = || Search::new(&longitudes, Quantity::Longitude(Body::Moon), Lattice::NAKSHATRAS);
+    /// let to = j2000.plus_days(5.0)?;
+    /// // Zero is read as one.
+    /// assert_eq!(search().with_chunk(0).between(j2000, to)?, search().with_chunk(1).between(j2000, to)?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_chunk(mut self, instants: usize) -> Self {
         self.chunk = if instants == 0 { 1 } else { instants };
@@ -1277,6 +1833,29 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     }
 
     /// The tolerance an instant is found to, days.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// let search = || Search::new(&longitudes, Quantity::Longitude(Body::Sun), Lattice::SIGNS);
+    /// let to = j2000.plus_days(40.0)?;
+    /// // A tolerance of a minute finds the ingress within a minute.
+    /// let fine = search().between(j2000, to)?;
+    /// let coarse = search().with_tolerance_days(1.0 / 1_440.0).between(j2000, to)?;
+    /// assert!((fine[0].instant.get() - coarse[0].instant.get()).abs() < 1.0 / 1_440.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_tolerance_days(mut self, tolerance_days: f64) -> Self {
         self.tolerance_days = tolerance_days;
@@ -1284,6 +1863,26 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     }
 
     /// A sampling step instead of the rule's.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// let hourly = Search::new(&longitudes, Quantity::ELONGATION, Lattice::TITHIS).with_step_days(1.0 / 24.0);
+    /// assert_eq!(hourly.step_days(), 1.0 / 24.0);
+    /// // A step chosen by hand is not strided.
+    /// assert_eq!(hourly.scan_step_days(), hourly.step_days());
+    /// ```
     #[must_use]
     pub const fn with_step_days(mut self, step_days: f64) -> Self {
         self.step_days = Some(step_days);
@@ -1294,6 +1893,25 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     /// at the quantity's greatest rate, never more than a day, so no line
     /// is passed twice between two samples and no retrograde arc is
     /// stepped over.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search, greatest_rate};
+    ///
+    /// // Half a nakshatra at the Moon's fastest.
+    /// let moon = Search::new(&longitudes, Quantity::Longitude(Body::Moon), Lattice::NAKSHATRAS);
+    /// assert!((moon.step_days() - 360.0 / 27.0 / greatest_rate(Body::Moon) * 0.5).abs() < 1e-12);
+    /// ```
     #[must_use]
     pub fn step_days(&self) -> f64 {
         self.step_days.unwrap_or_else(|| {
@@ -1322,6 +1940,27 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     /// `None` when the quantity can stand still or turn, whose dwell no
     /// table bounds ([`quantity_least_rate`]); such a caller chooses a
     /// reach and lives with the truncation past it.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// // No sign holds the Sun more than 30° at 0.95° a day.
+    /// let sun = Search::new(&longitudes, Quantity::Longitude(Body::Sun), Lattice::SIGNS);
+    /// assert!(sun.longest_dwell_days().is_some_and(|days| (days - 30.0 / 0.95).abs() < 1e-9));
+    /// // Mars stations, so nothing bounds his.
+    /// assert_eq!(Search::new(&longitudes, Quantity::Longitude(Body::Mars), Lattice::SIGNS).longest_dwell_days(), None);
+    /// ```
     #[must_use]
     pub fn longest_dwell_days(&self) -> Option<f64> {
         // The longest of any one lattice's, since a caller widens its
@@ -1359,6 +1998,26 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     /// Every crossing between two instants, of every lattice, in time
     /// order.
     ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// let search = Search::new(&longitudes, Quantity::Longitude(Body::Sun), Lattice::SIGNS);
+    /// // A window must run forward.
+    /// let reversed = search.between(j2000, JulianDay::<Ut1>::literal(2_451_544.0)).unwrap_err();
+    /// assert_eq!(reversed.field(), Some("to"));
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` for an empty or reversed window or a bad tolerance,
@@ -1376,6 +2035,28 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
 
     /// Every crossing between two instants, lattice by lattice in the
     /// order they were given, each in time order, from one scan.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// // The Sun's signs and the four cardinal points, lattice by lattice.
+    /// let sun = Search::each(&longitudes, Quantity::Longitude(Body::Sun), Lattice::SIGNS, [Lattice::single(270.0)]);
+    /// let each = sun.between_each(j2000, j2000.plus_days(365.25)?)?;
+    /// assert_eq!((each[0].len(), each[1].len()), (12, 1));
+    /// assert_eq!(each[1][0].boundary_deg, 270.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1538,6 +2219,26 @@ impl<S: Longitudes + ?Sized> Search<'_, S> {
     /// The step the scan samples at, days: [`Search::step_days`] times
     /// the stride a slow body's shortest run allows. A crossing is still
     /// refined on the fine step's grid, which is why the two are apart.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// // Saturn runs at least 133 days between stations: his scan strides
+    /// // a hundred of the fine grid's daily steps.
+    /// let saturn = Search::new(&longitudes, Quantity::Longitude(Body::Saturn), Lattice::SIGNS);
+    /// assert_eq!((saturn.step_days(), saturn.scan_step_days()), (1.0, 100.0));
+    /// ```
     #[must_use]
     pub fn scan_step_days(&self) -> f64 {
         // A stride is a small whole number.
@@ -1645,6 +2346,27 @@ impl<S: Longitudes + ?Sized> Search<'_, S> {
 
     /// The first crossing at or after an instant within a window of days.
     ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Quantity, Search};
+    ///
+    /// let tithis = Search::new(&longitudes, Quantity::ELONGATION, Lattice::TITHIS);
+    /// // A tithi never lasts two days.
+    /// assert!(tithis.next_within(j2000, 2.0)?.is_some());
+    /// assert!(tithis.next_within(j2000, 0.0).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Search::between`]; a non-positive window is `INVALID_ARG`.
@@ -1732,6 +2454,34 @@ pub(crate) fn check_window(
 /// The stations of a body between two instants: where its rate of
 /// longitude changes sign, each found by the sign change and refined to
 /// the tolerance.
+///
+/// ```
+/// # use teistro_astro::events::Longitudes;
+/// # use teistro_core::error::Error;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # // A planet that loops: retrograde for 26 days in every 63.
+/// # struct Looping;
+/// # impl Longitudes for Looping {
+/// #     fn longitude_and_speed(&self, _: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
+/// #         let t = ut1.get() - 2_451_545.0;
+/// #         Ok(((100.0 + 0.5 * t + 20.0 * (t / 10.0).sin()).rem_euclid(360.0), 0.5 + 2.0 * (t / 10.0).cos()))
+/// #     }
+/// #     fn describe(&self) -> String {
+/// #         "a looping planet".into()
+/// #     }
+/// # }
+///
+/// use teistro_astro::events::stations;
+///
+/// let (from, to) = (JulianDay::<Ut1>::J2000, JulianDay::<Ut1>::literal(2_451_545.0 + 100.0));
+/// let found = stations(&Looping, Body::Mercury, from, to, 1e-7)?;
+/// // Three in a hundred days, each turning the other way from the last.
+/// assert_eq!(found.len(), 3);
+/// assert!(found.windows(2).all(|pair| pair[0].kind != pair[1].kind));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -12,6 +12,24 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`teistro-astro` has a run example on every public item.**
+**Numbers:** none. Its 408 items join the crates `check-doc-examples`
+holds there, forty in all. The examples run on the analytic test
+provider and say so where it is not the sky: its Sun is a couple of
+degrees from the real one, every body is at one au and placed only as
+it is seen, so the solar eclipse examples move the Moon to its mean
+distance before they search, and an astrometric placing over it is
+shown refused. The horizon examples stand at Kathmandu on the June
+solstice of 2024, and the lockstep ones check that a search run in a
+round answers what the same search answers on the spot, to the bit.
+
+**`rise_set::Outcome` is removed.**
+**Numbers:** none. The enum said it was what a horizon search failed
+with, but no function returned it and nothing outside its own
+re-export named it: every search answers `Option<HorizonEvent>`, `None`
+for an event absent from the window. A type a caller could import and
+never receive is gone rather than given an example.
+
 **`PrecessionModel` is written as its key.**
 **Numbers:** none. serde spelt the four models `VONDRAK2011`,
 `IAU2006`, `IAU1976` and `NEWCOMB`, while `key()`, which provenance

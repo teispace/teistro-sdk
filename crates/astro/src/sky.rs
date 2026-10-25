@@ -524,6 +524,24 @@ pub struct Apparent {
 pub trait ApparentPositions: Send + Sync {
     /// The body's apparent position at a UT1 instant.
     ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_astro::sky::ApparentPositions;
+    ///
+    /// // The Moon on the equator of date: a declination within the Moon's reach.
+    /// let moon = sky.apparent(Body::Moon, JulianDay::<Ut1>::J2000)?;
+    /// assert!(moon.dec_deg.abs() < 29.0 && (0.0..360.0).contains(&moon.ra_deg));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An instant the source cannot answer for.
@@ -548,6 +566,28 @@ pub trait ApparentPositions: Send + Sync {
     /// `out` is cleared first, and is a buffer rather than a return so
     /// that a scan reuses one allocation across its chunks.
     ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_astro::sky::ApparentPositions;
+    ///
+    /// let hours: Vec<JulianDay<Ut1>> = (0..6).map(|h| JulianDay::literal(2_451_545.0 + f64::from(h) / 24.0)).collect();
+    /// let mut grid = Vec::new();
+    /// sky.apparent_many(Body::Sun, &hours, &mut grid)?;
+    /// // The grid answers the walk, to the bit.
+    /// for (at, place) in hours.iter().zip(&grid) {
+    ///     assert_eq!(*place, sky.apparent(Body::Sun, *at)?);
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An instant the source cannot answer for.
@@ -566,6 +606,21 @@ pub trait ApparentPositions: Send + Sync {
     }
 
     /// The source's name for provenance stamps.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_astro::sky::ApparentPositions;
+    ///
+    /// assert!(ApparentPositions::describe(&sky).starts_with("test-provider"));
+    /// ```
     fn describe(&self) -> String;
 }
 

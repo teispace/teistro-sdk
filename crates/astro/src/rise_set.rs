@@ -40,17 +40,80 @@ use crate::solve::{Caps, SCAN_CHUNK, Scan, first_zero_gridded_async};
 /// The standard refraction at the horizon, arcminutes: the value the
 /// almanacs reckon rising and setting by (*Astronomical Almanac*,
 /// section A; Meeus, chapter 15).
+///
+/// ```
+/// use teistro_astro::rise_set::{STANDARD_HORIZON_REFRACTION_ARCMIN, horizon_refraction_arcmin};
+/// use teistro_core::quantity::Altitude;
+/// use teistro_port_ephemeris::Refraction;
+///
+/// // The almanac's refraction, whatever the height.
+/// let everest = Altitude::try_new(8_849.0)?;
+/// assert_eq!(horizon_refraction_arcmin(Refraction::Standard, everest), STANDARD_HORIZON_REFRACTION_ARCMIN);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const STANDARD_HORIZON_REFRACTION_ARCMIN: f64 = 34.0;
 /// The Earth's equatorial radius, kilometres (WGS 84), for the horizontal
 /// parallax.
+///
+/// ```
+/// use teistro_astro::rise_set::{AU_KM, Disc, EARTH_EQUATORIAL_RADIUS_KM};
+/// use teistro_port_ephemeris::Body;
+///
+/// // The Moon's horizontal parallax at her mean distance, near a degree.
+/// let moon = Disc::of(Body::Moon, 384_400.0 / AU_KM);
+/// assert!((moon.parallax_deg - (EARTH_EQUATORIAL_RADIUS_KM / 384_400.0).asin().to_degrees()).abs() < 1e-12);
+/// assert!((moon.parallax_deg - 0.951).abs() < 0.001);
+/// ```
 pub const EARTH_EQUATORIAL_RADIUS_KM: f64 = 6_378.137;
 /// The astronomical unit, kilometres (IAU 2012 Resolution B2).
+///
+/// ```
+/// use teistro_astro::rise_set::{AU_KM, Disc};
+/// use teistro_port_ephemeris::Body;
+///
+/// // Jupiter at five au: some twenty arcseconds across.
+/// let jupiter = Disc::of(Body::Jupiter, 5.0);
+/// assert!((jupiter.semidiameter_deg * 3600.0 - 69_911.0 / (5.0 * AU_KM) * 206_264.8).abs() < 0.01);
+/// ```
 pub const AU_KM: f64 = 149_597_870.7;
 /// How fast the hour angle grows, degrees per day of UT1: a rotation plus
 /// the day's share of the year.
+///
+/// ```
+/// use teistro_astro::rise_set::HOUR_ANGLE_RATE_DEG_PER_DAY;
+///
+/// // A sidereal day is a turn of the hour angle: four minutes short of the solar day.
+/// let sidereal_day_s = 360.0 / HOUR_ANGLE_RATE_DEG_PER_DAY * 86_400.0;
+/// assert!((sidereal_day_s - 86_164.09).abs() < 0.01);
+/// ```
 pub const HOUR_ANGLE_RATE_DEG_PER_DAY: f64 = 360.985_647;
 /// The tolerance an event is found to, days: under a hundredth of a
 /// second, inside `f64`'s resolution and far inside any convention.
+///
+/// ```
+/// # use teistro_astro::rise_set::Solver;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+/// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+/// # // The local mean day of 2024-06-21 there.
+/// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+///
+/// use teistro_astro::rise_set::TOLERANCE_DAYS;
+/// use teistro_port_ephemeris::HorizonEventKind;
+///
+/// // The rise is found to within the tolerance of where the altitude crosses.
+/// let rise = solver.event(HorizonEventKind::Rise, midnight, 1.0)?.expect("a sunrise");
+/// let before = solver.altitude_deg(JulianDay::literal(rise.instant.get() - TOLERANCE_DAYS))?;
+/// let after = solver.altitude_deg(JulianDay::literal(rise.instant.get() + TOLERANCE_DAYS))?;
+/// assert!(before < after);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const TOLERANCE_DAYS: f64 = 1e-7;
 /// The scan step of the fallback search, days: ten minutes, so that a
 /// body above the horizon for a quarter of an hour is still seen.
@@ -159,6 +222,15 @@ const MIN_RATE_FACTOR: f64 = 1e-3;
 /// `None` for a body the sweep has not measured, and there the fast path
 /// does not apply at all — a bound that might be too small is worse than
 /// no bound, so an unmeasured body walks the window as it always did.
+///
+/// ```
+/// use teistro_astro::rise_set::declination_chord_margin;
+/// use teistro_port_ephemeris::Body;
+///
+/// assert_eq!(declination_chord_margin(Body::Moon), Some(0.5));
+/// // Unmeasured: its windows are walked.
+/// assert_eq!(declination_chord_margin(Body::Venus), None);
+/// ```
 #[must_use]
 pub const fn declination_chord_margin(body: Body) -> Option<f64> {
     match body {
@@ -172,6 +244,15 @@ pub const fn declination_chord_margin(body: Body) -> Option<f64> {
 /// the Sun's nominal radius (IAU 2015 Resolution B3), the others from the
 /// IAU Working Group on Cartographic Coordinates (Archinal et al., 2018);
 /// the lunar points have no disc.
+///
+/// ```
+/// use teistro_astro::rise_set::radius_km;
+/// use teistro_port_ephemeris::Body;
+///
+/// assert_eq!(radius_km(Body::Moon), 1_737.4);
+/// // A lunar point has no disc.
+/// assert_eq!(radius_km(Body::MeanNode), 0.0);
+/// ```
 #[must_use]
 pub fn radius_km(body: Body) -> f64 {
     match body {
@@ -214,6 +295,15 @@ pub struct Disc {
 impl Disc {
     /// The disc of a body at a distance in astronomical units; a point
     /// (a node, an apogee) has neither size nor parallax.
+    ///
+    /// ```
+    /// use teistro_astro::rise_set::Disc;
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// // The Sun at perihelion is larger than at one au.
+    /// assert!(Disc::of(Body::Sun, 0.983).semidiameter_deg > Disc::of(Body::Sun, 1.0).semidiameter_deg);
+    /// assert_eq!(Disc::of(Body::TrueNode, 0.002).parallax_deg, 0.0);
+    /// ```
     #[must_use]
     pub fn of(body: Body, distance_au: f64) -> Disc {
         if !body.has_distance() || distance_au <= 0.0 {
@@ -311,6 +401,30 @@ fn event_altitude_deg(horizon: &Horizon, disc: &Disc, refraction: f64) -> f64 {
 }
 
 /// Which method answered.
+///
+/// ```
+/// # use teistro_astro::rise_set::Solver;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+/// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+/// # // The local mean day of 2024-06-21 there.
+/// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+///
+/// use teistro_astro::rise_set::Method;
+/// use teistro_port_ephemeris::HorizonEventKind;
+///
+/// // A temperate sunrise is the iteration's.
+/// let rise = solver.event(HorizonEventKind::Rise, midnight, 1.0)?.expect("a sunrise");
+/// assert_eq!(rise.method, Method::Iterated);
+/// assert_eq!(serde_json::to_string(&Method::Scanned)?, r#""SCANNED""#);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -322,6 +436,30 @@ pub enum Method {
 }
 
 /// A found horizon event.
+///
+/// ```
+/// # use teistro_astro::rise_set::Solver;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+/// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+/// # // The local mean day of 2024-06-21 there.
+/// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+///
+/// use teistro_port_ephemeris::HorizonEventKind;
+///
+/// let set = solver.event(HorizonEventKind::Set, midnight, 1.0)?.expect("a sunset");
+/// // Kathmandu's midsummer sunset falls in the local evening, and took a few readings.
+/// let hours = (set.instant.get() - midnight.get()) * 24.0;
+/// assert!(hours > 18.0 && hours < 20.0);
+/// assert!(set.evaluations > 0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct HorizonEvent {
@@ -337,6 +475,26 @@ pub struct HorizonEvent {
 /// day's arc), and whether it stood above the horizon at the day's
 /// middle, which names a day without an arc as a polar day or a polar
 /// night.
+///
+/// ```
+/// # use teistro_astro::rise_set::Solver;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let place = Place::try_from_degrees(69.65, 18.96, 0.0)?;
+/// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+/// # // The local mean day of 2024-06-21 there.
+/// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 18.96 / 360.0);
+///
+/// // Tromsø at midsummer: a polar day, the Sun above all day and neither rising nor setting.
+/// let day = solver.day(midnight)?;
+/// assert_eq!((day.rise, day.set, day.above_at_midday), (None, None, true));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DayEvents {
@@ -351,6 +509,25 @@ pub struct DayEvents {
 
 impl DayEvents {
     /// The sunrise and the sunset when the day has both, in order.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// let (rise, set) = solver.day(midnight)?.arc().expect("a sunrise and a sunset");
+    /// assert!(rise.get() < set.get());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn arc(&self) -> Option<(JulianDay<Ut1>, JulianDay<Ut1>)> {
         match (self.rise, self.set) {
@@ -360,15 +537,6 @@ impl DayEvents {
             _ => None,
         }
     }
-}
-
-/// What a search failed with.
-#[derive(Clone, Debug, PartialEq)]
-pub enum Outcome {
-    /// The event was found.
-    Found(HorizonEvent),
-    /// No such event inside the window.
-    Absent,
 }
 
 /// One reading of the sky at an instant, in the solver's own terms.
@@ -430,6 +598,26 @@ impl fmt::Debug for Solver<'_> {
 
 impl<'a> Solver<'a> {
     /// A solver.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// // The convention it was built with, and a stamp naming it all.
+    /// assert_eq!(solver.horizon(), Horizon::UPPER_LIMB_REFRACTION);
+    /// assert!(solver.describe().starts_with("SUN "));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn new(
         sky: &'a dyn ApparentPositions,
@@ -465,6 +653,31 @@ impl<'a> Solver<'a> {
     /// that the rule is compared against a search that does not use it;
     /// a caller who wants the walk's answer by the walk's route can do
     /// the same.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(69.65, 18.96, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 18.96 / 360.0);
+    ///
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// // No sunset at midsummer, proved or walked: the same answer.
+    /// let proved = solver.event(HorizonEventKind::Set, midnight, 1.0)?;
+    /// let walked = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel)
+    ///     .with_absence_check(false)
+    ///     .event(HorizonEventKind::Set, midnight, 1.0)?;
+    /// assert_eq!((proved, walked), (None, None));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_absence_check(mut self, on: bool) -> Solver<'a> {
         self.absence_check = on;
@@ -480,6 +693,30 @@ impl<'a> Solver<'a> {
     /// hundreds (`03-design/horizon-absence-measured.md` §7). The answer
     /// is the walk's either way. Turning it off is what that page's sweep
     /// does to measure the proof against the walk.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// let walk = || Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// // The rise is the same whichever route found it.
+    /// let with = walk().event(HorizonEventKind::Rise, midnight, 1.0)?.map(|rise| rise.instant);
+    /// let without = walk().with_none_proof(false).event(HorizonEventKind::Rise, midnight, 1.0)?.map(|rise| rise.instant);
+    /// assert_eq!(with, without);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_none_proof(mut self, on: bool) -> Solver<'a> {
         self.none_proof = on;
@@ -491,6 +728,28 @@ impl<'a> Solver<'a> {
     /// The default is [`crate::solve::SCAN_CHUNK`]. One is the walk this
     /// replaced — every instant its own round trip — which is what the
     /// grid is held against in the tests. Zero is read as one.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(69.65, 18.96, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 18.96 / 360.0);
+    ///
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// // Zero is read as one; the answer is the grid's either way.
+    /// let walked = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel).with_chunk(0);
+    /// assert_eq!(walked.day(midnight)?, solver.day(midnight)?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_chunk(mut self, instants: usize) -> Solver<'a> {
         self.chunk = if instants == 0 { 1 } else { instants };
@@ -498,12 +757,50 @@ impl<'a> Solver<'a> {
     }
 
     /// The convention.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// assert_eq!(solver.horizon().refraction, Horizon::UPPER_LIMB_REFRACTION.refraction);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn horizon(&self) -> Horizon {
         self.horizon
     }
 
     /// The stamp: body, convention, place and source.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// // Body, convention, place and the source it reads.
+    /// assert!(solver.describe().contains("test-provider"));
+    /// assert_eq!(format!("{solver:?}"), solver.describe());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn describe(&self) -> String {
         format!(
@@ -518,6 +815,27 @@ impl<'a> Solver<'a> {
     /// The geocentric altitude of the body's centre above the horizon at
     /// an instant, degrees, as the solver reads it: what a visibility
     /// criterion compares the Sun's depression against.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// // Below the horizon at local midnight, high at local noon.
+    /// assert!(solver.altitude_deg(midnight)? < 0.0);
+    /// let noon = JulianDay::<Ut1>::literal(midnight.get() + 0.5);
+    /// assert!(solver.altitude_deg(noon)? > 80.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -654,6 +972,28 @@ impl<'a> Solver<'a> {
     /// (see [`Solver::with_none_proof`]). `false` says only that the
     /// proof could not settle the window, never that an event is in it.
     ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(69.65, 18.96, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 18.96 / 360.0);
+    ///
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// // Two readings bound the Sun's altitude at Tromsø above the horizon all day.
+    /// assert!(solver.proves_no_event(HorizonEventKind::Set, midnight, 1.0)?);
+    /// assert!(solver.proves_no_event(HorizonEventKind::Set, midnight, 0.0).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A window that is not a positive number of days, the source's
@@ -678,6 +1018,28 @@ impl<'a> Solver<'a> {
     /// many days, or `None` when there is none inside it (a polar day or
     /// night, a circumpolar body).
     ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// let rise = solver.event(HorizonEventKind::Rise, midnight, 1.0)?.expect("a sunrise");
+    /// let transit = solver.event(HorizonEventKind::Transit, midnight, 1.0)?.expect("a noon");
+    /// assert!(rise.instant.get() < transit.instant.get());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// The source's refusal, a Delta T model that cannot answer, or a
@@ -695,6 +1057,31 @@ impl<'a> Solver<'a> {
     /// readings asked for in `round`'s requests ([`Lockstep::run`]). It
     /// takes [`Solver::event`]'s steps on [`Solver::event`]'s readings,
     /// so it answers [`Solver::event`]'s answer to the bit.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// use teistro_astro::lockstep::Lockstep;
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// // The rise and the set searched side by side: the answers on the spot, to the bit.
+    /// let round = Lockstep::new();
+    /// let both = round.run([HorizonEventKind::Rise, HorizonEventKind::Set].map(|kind| solver.event_in(&round, kind, midnight, 1.0)));
+    /// assert_eq!(both[0], solver.event(HorizonEventKind::Rise, midnight, 1.0));
+    /// assert_eq!(both[1], solver.event(HorizonEventKind::Set, midnight, 1.0));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1074,6 +1461,26 @@ impl<'a> Solver<'a> {
     /// rise, and whether the body stood above the event altitude at the
     /// day's middle.
     ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// let day = solver.day(midnight)?;
+    /// // A temperate day: a rise, a set, and the Sun up at its middle.
+    /// assert!(day.rise.is_some() && day.set.is_some() && day.above_at_midday);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Solver::event`].
@@ -1084,6 +1491,32 @@ impl<'a> Solver<'a> {
     /// [`Solver::day`] run beside other searches in lockstep
     /// ([`Solver::event_in`]), answering [`Solver::day`]'s answer to the
     /// bit.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// use teistro_astro::lockstep::Lockstep;
+    ///
+    /// // Three days in one run, each the day `day` answers.
+    /// let days = [0.0, 1.0, 2.0].map(|d| JulianDay::<Ut1>::literal(midnight.get() + d));
+    /// let round = Lockstep::new();
+    /// let found = round.run(days.map(|day| solver.day_in(&round, day)));
+    /// for (day, events) in days.iter().zip(found) {
+    ///     assert_eq!(events?, solver.day(*day)?);
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
