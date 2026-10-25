@@ -121,7 +121,8 @@ fn capitalised(word: &str) -> String {
 /// carry: a fenced block with no language, or one tagged as Rust, is an
 /// example in a language the reader of a binding does not write, so it is
 /// dropped rather than shown as if it were theirs. A block tagged with
-/// another language (`text`, `json`) is kept.
+/// another language (`text`, `json`) is kept. A dropped example leaves
+/// the blank lines either side of it, and one of them goes with it.
 #[must_use]
 pub fn without_rust_examples(text: &str) -> String {
     const RUST: [&str; 6] = [
@@ -132,28 +133,40 @@ pub fn without_rust_examples(text: &str) -> String {
         "compile_fail",
         "should_panic",
     ];
+    /// Where a line stands among the fences.
+    #[derive(PartialEq)]
+    enum Fence {
+        /// Prose.
+        Outside,
+        /// Inside a block that is kept, whose blank lines are its own.
+        Kept,
+        /// Inside an example that is dropped.
+        Dropped,
+    }
     let mut out = String::with_capacity(text.len());
-    let mut dropping = false;
+    let mut fence = Fence::Outside;
     for line in text.lines() {
-        let trimmed = line.trim_start();
-        if let Some(tag) = trimmed.strip_prefix("```") {
-            if dropping {
-                dropping = false;
-                continue;
+        if let Some(tag) = line.trim_start().strip_prefix("```") {
+            let (next, shown) = match fence {
+                Fence::Outside if RUST.contains(&tag.trim()) => (Fence::Dropped, false),
+                Fence::Outside => (Fence::Kept, true),
+                Fence::Kept => (Fence::Outside, true),
+                Fence::Dropped => (Fence::Outside, false),
+            };
+            fence = next;
+            if shown {
+                out.push_str(line);
+                out.push('\n');
             }
-            if RUST.contains(&tag.trim()) {
-                dropping = true;
-                continue;
-            }
+            continue;
         }
-        if !dropping {
+        let doubled = fence == Fence::Outside
+            && line.trim().is_empty()
+            && (out.is_empty() || out.ends_with("\n\n"));
+        if fence != Fence::Dropped && !doubled {
             out.push_str(line);
             out.push('\n');
         }
-    }
-    // A dropped example often leaves the blank line that introduced it.
-    while out.ends_with("\n\n") {
-        out.pop();
     }
     out.trim_end().to_string()
 }
@@ -234,5 +247,16 @@ mod tests {
             "/**\n * x * / y\n *\n * z\n */\n"
         );
         assert_eq!(block_comment("  ", ""), "");
+    }
+
+    #[test]
+    fn a_kept_block_closes_and_keeps_its_blank_lines() {
+        let doc = "A.\n\n```\nlet x = 1;\n```\n\n```text\n1\n\n2\n```\n\nB.\n\n```rust\nf();\n```\n\nC.";
+        // The prose after a kept block survives, and the block's own blank
+        // line is not taken for one either side of a dropped example.
+        assert_eq!(
+            without_rust_examples(doc),
+            "A.\n\n```text\n1\n\n2\n```\n\nB.\n\nC."
+        );
     }
 }
