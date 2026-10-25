@@ -34,6 +34,17 @@ use teistro_core::math;
 use teistro_core::angle::difference_deg;
 
 /// How many steps a search may take before it is a defect.
+///
+/// ```
+/// use teistro_astro::solve::{Caps, first_zero};
+///
+/// // A quantity that climbs through zero a third of the way in.
+/// let f = |t: f64| -> Result<f64, ()> { Ok(t - 1.0 / 3.0) };
+/// // Two steps of a tenth cannot bracket it.
+/// let tight = Caps { bracket_steps: 2, ..Caps::DEFAULT };
+/// assert!(first_zero(f, 0.0, 1.0, 0.1, true, 1e-9, tight).is_err());
+/// assert!(first_zero(f, 0.0, 1.0, 0.1, true, 1e-9, Caps::DEFAULT).is_ok());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Caps {
     /// Steps by the mean rate to bracket the crossing.
@@ -47,6 +58,13 @@ impl Caps {
     /// a handful of jumps, and sixty-four halvings of a day exceed `f64`'s
     /// resolution (the narrowing never needs more than a bisection and
     /// one), so a search that needs more is not converging.
+    ///
+    /// ```
+    /// use teistro_astro::solve::Caps;
+    ///
+    /// assert_eq!(Caps::DEFAULT, Caps::default());
+    /// assert_eq!((Caps::DEFAULT.bracket_steps, Caps::DEFAULT.refinements), (64, 64));
+    /// ```
     pub const DEFAULT: Caps = Caps {
         bracket_steps: 64,
         refinements: 64,
@@ -60,6 +78,15 @@ impl Default for Caps {
 }
 
 /// A found crossing.
+///
+/// ```
+/// use teistro_astro::solve::{Caps, refine};
+///
+/// let crossing = refine(|t: f64| Ok::<_, ()>(t - 0.25), 0.0, 1.0, 1e-9, Caps::DEFAULT)?;
+/// assert!((crossing.instant - 0.25).abs() < 1e-9);
+/// assert!(crossing.width <= 1e-9 && crossing.evaluations > 0);
+/// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Crossing {
     /// The instant, in the unit the search was given (days).
@@ -71,6 +98,17 @@ pub struct Crossing {
 }
 
 /// Why a search failed.
+///
+/// ```
+/// use teistro_astro::solve::{Caps, SolveError, refine};
+///
+/// // Both ends above the line: nothing is bracketed.
+/// let above = refine(|t: f64| Ok::<_, ()>(t + 1.0), 0.0, 1.0, 1e-9, Caps::DEFAULT);
+/// assert!(matches!(above, Err(SolveError::Argument { .. }) | Err(SolveError::NotBracketed { .. })));
+/// // A tolerance must be positive.
+/// let zero = refine(|t: f64| Ok::<_, ()>(t - 0.5), 0.0, 1.0, 0.0, Caps::DEFAULT);
+/// assert!(matches!(zero, Err(SolveError::Argument { name: "tolerance", .. })));
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub enum SolveError<E> {
     /// The quantity could not be evaluated.
@@ -392,6 +430,12 @@ pub fn first_zero<E>(
 /// the almanac's event loop does twice a day — walks the whole window
 /// and finds nothing, and there thirty-two turns a hundred and forty-four
 /// round trips into five.
+///
+/// ```
+/// use teistro_astro::solve::{SCAN_CHUNK, Scan};
+///
+/// assert_eq!(Scan::new(0.0, 1.0, 0.01, true, 1e-7).chunk, SCAN_CHUNK);
+/// ```
 pub const SCAN_CHUNK: usize = 32;
 
 /// Where a bracket scan looks, and how it walks.
@@ -428,6 +472,13 @@ pub struct Scan {
 
 impl Scan {
     /// A scan with the default caps and chunk.
+    ///
+    /// ```
+    /// use teistro_astro::solve::Scan;
+    ///
+    /// let scan = Scan::new(0.0, 2.0, 0.25, false, 1e-8);
+    /// assert_eq!((scan.from, scan.to, scan.step, scan.upward, scan.tolerance), (0.0, 2.0, 0.25, false, 1e-8));
+    /// ```
     #[must_use]
     pub const fn new(from: f64, to: f64, step: f64, upward: bool, tolerance: f64) -> Scan {
         Scan {
@@ -442,6 +493,13 @@ impl Scan {
     }
 
     /// The caps instead of the default.
+    ///
+    /// ```
+    /// use teistro_astro::solve::{Caps, Scan};
+    ///
+    /// let caps = Caps { bracket_steps: 10, refinements: 30 };
+    /// assert_eq!(Scan::new(0.0, 1.0, 0.1, true, 1e-7).with_caps(caps).caps, caps);
+    /// ```
     #[must_use]
     pub const fn with_caps(mut self, caps: Caps) -> Scan {
         self.caps = caps;
@@ -449,6 +507,13 @@ impl Scan {
     }
 
     /// How many instants to ask for at once. Zero is read as one.
+    ///
+    /// ```
+    /// use teistro_astro::solve::Scan;
+    ///
+    /// // Zero is read as one: a walk.
+    /// assert_eq!(Scan::new(0.0, 1.0, 0.1, true, 1e-7).with_chunk(0).chunk, 1);
+    /// ```
     #[must_use]
     pub const fn with_chunk(mut self, instants: usize) -> Scan {
         self.chunk = if instants == 0 { 1 } else { instants };
@@ -469,6 +534,20 @@ impl Scan {
 /// `sample` is given a slice of instants and writes their values into
 /// the buffer in the order asked; `refine_at` reads one instant, for the
 /// narrowing, which cannot be asked for in advance.
+///
+/// ```
+/// use teistro_astro::solve::{Caps, Scan, first_zero, first_zero_gridded};
+///
+/// // A quantity that climbs through zero a third of the way in.
+/// let f = |t: f64| -> Result<f64, ()> { Ok(t - 1.0 / 3.0) };
+/// // The grid finds what the walk finds, to the bit.
+/// let scan = Scan::new(0.0, 1.0, 0.1, true, 1e-9).with_chunk(4);
+/// let sample = |at: &[f64], out: &mut Vec<f64>| -> Result<(), ()> { out.clear(); out.extend(at.iter().map(|t| t - 1.0 / 3.0)); Ok(()) };
+/// let gridded = first_zero_gridded(sample, f, &scan)?.expect("crossed");
+/// let walked = first_zero(f, 0.0, 1.0, 0.1, true, 1e-9, Caps::DEFAULT)?.expect("crossed");
+/// assert_eq!(gridded.instant.to_bits(), walked.instant.to_bits());
+/// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -498,6 +577,28 @@ pub fn first_zero_gridded<E>(
 /// search run beside others in lockstep waits for the round's one
 /// request ([`crate::lockstep`]). The steps and the arithmetic are
 /// [`first_zero_gridded`]'s own, which is this function read on the spot.
+///
+/// ```
+/// use teistro_astro::solve::{Scan, first_zero_gridded, first_zero_gridded_async};
+///
+/// let sample = |at: &[f64], out: &mut Vec<f64>| -> Result<(), ()> {
+///     out.clear();
+///     out.extend(at.iter().map(|t| t - 1.0 / 3.0));
+///     Ok(())
+/// };
+/// let scan = Scan::new(0.0, 1.0, 0.1, true, 1e-9).with_chunk(4);
+/// // Nothing here waits, so one poll finishes it: the spot answer, to the bit.
+/// let waiting = first_zero_gridded_async(
+///     async |at: &[f64], out: &mut Vec<f64>| sample(at, out),
+///     async |t: f64| Ok(t - 1.0 / 3.0),
+///     &scan,
+/// );
+/// let lockstep = teistro_astro::lockstep::Lockstep::new();
+/// let read = lockstep.run([waiting]).remove(0)?.expect("crossed");
+/// let spot = first_zero_gridded(sample, |t| Ok(t - 1.0 / 3.0), &scan)?.expect("crossed");
+/// assert_eq!(read.instant.to_bits(), spot.instant.to_bits());
+/// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -673,6 +774,16 @@ pub fn refine_known<E>(
 
 /// One end of a bracket with the quantity's rate there: the instant, the
 /// signed value and its derivative in the same unit per unit of time.
+///
+/// ```
+/// use teistro_astro::solve::{Caps, Sloped, refine_with_rates};
+///
+/// // The instant, the value and its rate: a line through zero at 0.4.
+/// let (lo, hi): (Sloped, Sloped) = ((0.0, -0.4, 1.0), (1.0, 0.6, 1.0));
+/// let crossing = refine_with_rates(|t: f64| Ok::<_, ()>((t - 0.4, 1.0)), lo, hi, 1e-9, Caps::DEFAULT)?;
+/// assert!((crossing.instant - 0.4).abs() < 1e-9);
+/// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+/// ```
 pub type Sloped = (f64, f64, f64);
 
 /// How many polynomial steps the seed may take: a cubic on the unit
@@ -792,6 +903,23 @@ pub fn refine_with_rates<E>(
 /// assert_eq!(driven.finish(), closed);
 /// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
 /// ```
+///
+/// ```
+/// use teistro_astro::solve::{Caps, RatesRefinement};
+///
+/// let curve = |t: f64| (((t - 0.3) * 1.5).sin(), 1.5 * ((t - 0.3) * 1.5).cos());
+/// let (lo, hi) = (curve(0.0), curve(1.0));
+/// let mut driven = RatesRefinement::new::<()>((0.0, lo.0, lo.1), (1.0, hi.0, hi.1), 1e-9, Caps::DEFAULT)?;
+/// // Driven a reading at a time: what a search beside others in lockstep needs.
+/// let mut readings = 0;
+/// while let Some(at) = driven.next::<()>()? {
+///     driven.feed(at, curve(at));
+///     readings += 1;
+/// }
+/// assert!((driven.finish().instant - 0.3).abs() < 1e-9);
+/// assert!(readings < 10);
+/// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct RatesRefinement {
     lo: Sloped,
@@ -817,6 +945,14 @@ pub struct RatesRefinement {
 impl RatesRefinement {
     /// A refinement of the bracket from `lo`, below the line, to `hi`, at
     /// or above it.
+    ///
+    /// ```
+    /// use teistro_astro::solve::{Caps, RatesRefinement, SolveError};
+    ///
+    /// // Both ends above the line bracket nothing.
+    /// let refused = RatesRefinement::new::<()>((0.0, 1.0, 1.0), (1.0, 2.0, 1.0), 1e-9, Caps::DEFAULT);
+    /// assert!(matches!(refused, Err(SolveError::Argument { .. }) | Err(SolveError::NotBracketed { .. })));
+    /// ```
     ///
     /// # Errors
     ///
@@ -854,6 +990,18 @@ impl RatesRefinement {
     /// The instant to read next, or `None` once the bracket is at most
     /// the tolerance wide or `f64` cannot split it further.
     ///
+    /// ```
+    /// use teistro_astro::solve::{Caps, RatesRefinement};
+    ///
+    /// let curve = |t: f64| (((t - 0.3) * 1.5).sin(), 1.5 * ((t - 0.3) * 1.5).cos());
+    /// let (lo, hi) = (curve(0.0), curve(1.0));
+    /// let mut driven = RatesRefinement::new::<()>((0.0, lo.0, lo.1), (1.0, hi.0, hi.1), 1e-9, Caps::DEFAULT)?;
+    /// // The next instant is inside the bracket.
+    /// let at = driven.next::<()>()?.expect("a reading wanted");
+    /// assert!(at > 0.0 && at < 1.0);
+    /// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `NotConverged` once the refinement has taken its cap of readings.
@@ -877,6 +1025,19 @@ impl RatesRefinement {
 
     /// The value and the rate read at `at`, the instant
     /// [`RatesRefinement::next`] last named.
+    ///
+    /// ```
+    /// use teistro_astro::solve::{Caps, RatesRefinement};
+    ///
+    /// let curve = |t: f64| (((t - 0.3) * 1.5).sin(), 1.5 * ((t - 0.3) * 1.5).cos());
+    /// let (lo, hi) = (curve(0.0), curve(1.0));
+    /// let mut driven = RatesRefinement::new::<()>((0.0, lo.0, lo.1), (1.0, hi.0, hi.1), 1e-9, Caps::DEFAULT)?;
+    /// let at = driven.next::<()>()?.expect("a reading wanted");
+    /// driven.feed(at, curve(at));
+    /// // The bracket narrowed.
+    /// assert!(driven.finish().width < 1.0);
+    /// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+    /// ```
     pub fn feed(&mut self, at: f64, (value, rate): (f64, f64)) {
         self.evaluations += 1;
         let end = (at, value, rate);
@@ -907,6 +1068,17 @@ impl RatesRefinement {
     }
 
     /// The crossing the readings fed so far place.
+    ///
+    /// ```
+    /// use teistro_astro::solve::{Caps, RatesRefinement};
+    ///
+    /// let curve = |t: f64| (((t - 0.3) * 1.5).sin(), 1.5 * ((t - 0.3) * 1.5).cos());
+    /// let (lo, hi) = (curve(0.0), curve(1.0));
+    /// let mut driven = RatesRefinement::new::<()>((0.0, lo.0, lo.1), (1.0, hi.0, hi.1), 1e-9, Caps::DEFAULT)?;
+    /// // Before any reading, the crossing is the bracket as given.
+    /// assert_eq!(driven.finish().width, 1.0);
+    /// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+    /// ```
     #[must_use]
     pub fn finish(&self) -> Crossing {
         Crossing {
@@ -937,6 +1109,16 @@ fn nearer_newton(lo: Sloped, hi: Sloped) -> f64 {
 /// The angle at `from` should be behind the target; if it is already at or
 /// past it, the search moves to just before the next crossing a circle
 /// ahead, assuming the true rate stays within a tenth of the mean.
+///
+/// ```
+/// use teistro_astro::solve::{Caps, next_crossing};
+///
+/// // An angle turning 13° a day from 350° reaches 10° on the second day.
+/// let angle = |t: f64| -> Result<f64, ()> { Ok((350.0 + 13.0 * t).rem_euclid(360.0)) };
+/// let crossing = next_crossing(angle, 10.0, 0.0, 13.0, 1e-9, Caps::DEFAULT)?;
+/// assert!((crossing.instant - 20.0 / 13.0).abs() < 1e-8);
+/// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -1007,6 +1189,16 @@ pub fn next_crossing<E>(
 }
 
 /// A found minimum.
+///
+/// ```
+/// use teistro_astro::solve::{Caps, minimum};
+///
+/// let bowl = |t: f64| -> Result<f64, ()> { Ok((t - 0.3).powi(2)) };
+/// let least = minimum(bowl, 0.0, 1.0, 1e-9, Caps::DEFAULT)?;
+/// assert!((least.instant - 0.3).abs() < 1e-8 && least.value < 1e-15);
+/// assert!(least.width <= 1e-9);
+/// # Ok::<(), teistro_astro::solve::SolveError<()>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Minimum {
     /// Where the quantity is least, in the unit the search was given.

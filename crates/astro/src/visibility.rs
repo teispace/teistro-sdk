@@ -67,6 +67,28 @@ use crate::sky::{ApparentPositions, local_mean_midnight};
 
 /// Whether the body advances or retrogrades, which the Surya Siddhanta's
 /// thresholds for Mercury and Venus turn on (IX.7 to 8).
+///
+/// ```
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+/// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+/// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+///
+/// let mercury = heliacal.state(Body::Mercury, day)?;
+/// use teistro_astro::visibility::Motion;
+///
+/// // The motion its speed shows on the day, which picks Mercury's threshold.
+/// let expected = if mercury.motion == Motion::Direct { 14.0 } else { 12.0 };
+/// assert_eq!(mercury.threshold_deg, expected);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -79,6 +101,15 @@ pub enum Motion {
 
 impl Motion {
     /// The motion a rate of longitude shows.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Motion;
+    ///
+    /// assert_eq!(Motion::of_speed(1.2), Motion::Direct);
+    /// assert_eq!(Motion::of_speed(-0.3), Motion::Retrograde);
+    /// // A station counts as direct.
+    /// assert_eq!(Motion::of_speed(0.0), Motion::Direct);
+    /// ```
     #[must_use]
     pub fn of_speed(speed_deg_per_day: f64) -> Motion {
         if speed_deg_per_day < 0.0 {
@@ -89,6 +120,14 @@ impl Motion {
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Motion;
+    ///
+    /// assert_eq!(Motion::Retrograde.key(), "RETROGRADE");
+    /// assert_eq!(serde_json::to_string(&Motion::Direct)?, format!("\"{}\"", Motion::Direct.key()));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -100,6 +139,29 @@ impl Motion {
 
 /// Which sky the body is in: the morning sky, rising before the Sun, or
 /// the evening sky, setting after it (IX.2 to 3).
+///
+/// ```
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+/// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+/// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+///
+/// let mercury = heliacal.state(Body::Mercury, day)?;
+/// use teistro_astro::visibility::Side;
+/// use teistro_port_ephemeris::HorizonEventKind;
+///
+/// // Its side names the horizon event its measure is read at.
+/// let read_at = if mercury.side == Side::East { HorizonEventKind::Rise } else { HorizonEventKind::Set };
+/// assert_eq!(mercury.side.event_kind(), read_at);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -114,6 +176,14 @@ pub enum Side {
 impl Side {
     /// The side from the body's longitude less the Sun's, folded to a half
     /// turn either way.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Side;
+    ///
+    /// // West of the Sun in longitude, it rises first: the morning sky.
+    /// assert_eq!(Side::of_elongation(-18.0), Side::East);
+    /// assert_eq!(Side::of_elongation(25.0), Side::West);
+    /// ```
     #[must_use]
     pub fn of_elongation(elongation_deg: f64) -> Side {
         if elongation_deg < 0.0 {
@@ -125,6 +195,14 @@ impl Side {
 
     /// The horizon event the side's measure is read at: the rising in the
     /// east, the setting in the west.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Side;
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// assert_eq!(Side::East.event_kind(), HorizonEventKind::Rise);
+    /// assert_eq!(Side::West.event_kind(), HorizonEventKind::Set);
+    /// ```
     #[must_use]
     pub const fn event_kind(self) -> HorizonEventKind {
         match self {
@@ -134,6 +212,14 @@ impl Side {
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Side;
+    ///
+    /// assert_eq!(Side::West.key(), "WEST");
+    /// assert_eq!(serde_json::to_string(&Side::East)?, format!("\"{}\"", Side::East.key()));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -144,6 +230,14 @@ impl Side {
 }
 
 /// A threshold for each motion of one body, degrees.
+///
+/// ```
+/// use teistro_astro::visibility::{Motion, Pair};
+///
+/// // Venus in the Surya Siddhanta: ten degrees direct, eight retrograde (IX.7).
+/// let venus = Pair { direct: 10.0, retrograde: 8.0 };
+/// assert_eq!(venus.of(Motion::Retrograde), 8.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Pair {
@@ -155,6 +249,13 @@ pub struct Pair {
 
 impl Pair {
     /// The same threshold for both motions.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Motion, Pair};
+    ///
+    /// let mars = Pair::same(17.0);
+    /// assert_eq!((mars.of(Motion::Direct), mars.of(Motion::Retrograde)), (17.0, 17.0));
+    /// ```
     #[must_use]
     pub const fn same(deg: f64) -> Pair {
         Pair {
@@ -164,6 +265,13 @@ impl Pair {
     }
 
     /// The threshold for a motion.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Motion, Pair};
+    ///
+    /// let mercury = Pair { direct: 14.0, retrograde: 12.0 };
+    /// assert_eq!(mercury.of(Motion::Direct), 14.0);
+    /// ```
     #[must_use]
     pub const fn of(self, motion: Motion) -> f64 {
         match motion {
@@ -175,6 +283,18 @@ impl Pair {
 
 /// A caller's own thresholds, degrees, per body; `None` for a body the
 /// table does not place.
+///
+/// ```
+/// use teistro_astro::visibility::{Criterion, Motion, Pair, Table, Thresholds};
+/// use teistro_port_ephemeris::Body;
+///
+/// // A caller's own: Venus at six degrees, every other body unplaced.
+/// let mine = Table { venus: Some(Pair::same(6.0)), ..Table::EMPTY };
+/// let criterion = Criterion::ArcusVisionis { thresholds: Thresholds::Custom(mine) };
+/// assert_eq!(criterion.thresholds().of(Body::Venus, Motion::Direct), Some(6.0));
+/// assert!(!criterion.thresholds().places(Body::Mars));
+/// assert_eq!(criterion.key(), "ARCUS_VISIONIS/CUSTOM");
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Table {
@@ -200,6 +320,14 @@ pub struct Table {
 
 impl Table {
     /// No body placed.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Motion, Table};
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Table::EMPTY.of(Body::Moon, Motion::Direct), None);
+    /// assert_eq!(Table::EMPTY, Table::default());
+    /// ```
     pub const EMPTY: Table = Table {
         moon: None,
         mercury: None,
@@ -215,6 +343,16 @@ impl Table {
     /// The Surya Siddhanta's degrees of time (IX.6 to 8; the Moon's,
     /// X.1): Jupiter 11, Saturn 15, Mars 17; Venus 10 direct and 8
     /// retrograde; Mercury 14 direct and 12 retrograde; the Moon 12.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Motion, Table};
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Table::SURYA_SIDDHANTA.of(Body::Jupiter, Motion::Direct), Some(11.0));
+    /// assert_eq!(Table::SURYA_SIDDHANTA.of(Body::Mercury, Motion::Retrograde), Some(12.0));
+    /// // The text knows no planet past Saturn.
+    /// assert_eq!(Table::SURYA_SIDDHANTA.of(Body::Uranus, Motion::Direct), None);
+    /// ```
     pub const SURYA_SIDDHANTA: Table = Table {
         moon: Some(Pair::same(12.0)),
         mercury: Some(Pair {
@@ -235,6 +373,15 @@ impl Table {
     /// them in his note to IX.9): Saturn 14°, Jupiter 12°45′, Mars 14°30′,
     /// Venus 5°40′, Mercury 11°30′, the same for both motions; nothing for
     /// the Moon.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Motion, Table};
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// // Jupiter's 12°45′; nothing for the Moon.
+    /// assert_eq!(Table::PTOLEMY.of(Body::Jupiter, Motion::Direct), Some(12.75));
+    /// assert_eq!(Table::PTOLEMY.of(Body::Moon, Motion::Direct), None);
+    /// ```
     pub const PTOLEMY: Table = Table {
         mercury: Some(Pair::same(11.5)),
         venus: Some(Pair::same(5.0 + 40.0 / 60.0)),
@@ -245,6 +392,16 @@ impl Table {
     };
 
     /// The same threshold for the Moon and every planet, both motions.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Motion, Table};
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// let ten = Table::uniform(10.0);
+    /// assert_eq!(ten.of(Body::Pluto, Motion::Retrograde), Some(10.0));
+    /// // The Sun is never held against itself.
+    /// assert_eq!(ten.of(Body::Sun, Motion::Direct), None);
+    /// ```
     #[must_use]
     pub const fn uniform(deg: f64) -> Table {
         let pair = Some(Pair::same(deg));
@@ -262,6 +419,14 @@ impl Table {
     }
 
     /// The threshold for a body and motion.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Motion, Table};
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Table::SURYA_SIDDHANTA.of(Body::Venus, Motion::Retrograde), Some(8.0));
+    /// assert_eq!(Table::SURYA_SIDDHANTA.of(Body::MeanNode, Motion::Retrograde), None);
+    /// ```
     #[must_use]
     pub fn of(&self, body: Body, motion: Motion) -> Option<f64> {
         let pair = match body {
@@ -281,6 +446,13 @@ impl Table {
 }
 
 /// The threshold table a criterion compares its measure against.
+///
+/// ```
+/// use teistro_astro::visibility::{Table, Thresholds};
+///
+/// assert_eq!(Thresholds::Ptolemy.table(), &Table::PTOLEMY);
+/// assert_eq!(Thresholds::Custom(Table::uniform(9.0)).key(), "CUSTOM");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -302,6 +474,12 @@ pub enum Thresholds {
 
 impl Thresholds {
     /// The table behind the name.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Table, Thresholds};
+    ///
+    /// assert_eq!(Thresholds::SuryaSiddhanta.table(), &Table::SURYA_SIDDHANTA);
+    /// ```
     #[must_use]
     pub const fn table(&self) -> &Table {
         match self {
@@ -313,12 +491,27 @@ impl Thresholds {
 
     /// The threshold for a body and motion, degrees; `None` for a body the
     /// table does not place.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Motion, Thresholds};
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Thresholds::Ptolemy.of(Body::Saturn, Motion::Direct), Some(14.0));
+    /// ```
     #[must_use]
     pub fn of(&self, body: Body, motion: Motion) -> Option<f64> {
         self.table().of(body, motion)
     }
 
     /// Whether the table places a body under either motion.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Thresholds;
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert!(Thresholds::SuryaSiddhanta.places(Body::Moon));
+    /// assert!(!Thresholds::Ptolemy.places(Body::Moon));
+    /// ```
     #[must_use]
     pub fn places(&self, body: Body) -> bool {
         self.of(body, Motion::Direct).is_some() || self.of(body, Motion::Retrograde).is_some()
@@ -328,6 +521,16 @@ impl Thresholds {
     /// the asterisms' junction stars (IX.12 to 15) and of the named stars
     /// (Agastya, Mrgavyadha, Abhijit and Brahmahrdaya at thirteen); `None`
     /// under the other tables and for a star the text does not place.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Thresholds;
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// // Spica, Chitra's junction star, of the first class; Aldebaran, Rohini's, of the second.
+    /// assert_eq!(Thresholds::SuryaSiddhanta.of_star(Star::Spica), Some(13.0));
+    /// assert_eq!(Thresholds::SuryaSiddhanta.of_star(Star::Aldebaran), Some(14.0));
+    /// assert_eq!(Thresholds::Ptolemy.of_star(Star::Spica), None);
+    /// ```
     #[must_use]
     pub fn of_star(&self, star: Star) -> Option<f64> {
         match self {
@@ -340,6 +543,14 @@ impl Thresholds {
     /// (IX.18), owing to their northern situation at its latitude: Abhijit
     /// (Vega), Brahmahrdaya (Capella) and the junction stars of Svati,
     /// Shravana, Shravishtha and Uttara-Bhadrapada.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Thresholds;
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// assert!(Thresholds::never_sets_heliacally(Star::Vega));
+    /// assert!(!Thresholds::never_sets_heliacally(Star::Regulus));
+    /// ```
     #[must_use]
     pub fn never_sets_heliacally(star: Star) -> bool {
         matches!(star, Star::Vega | Star::Capella)
@@ -355,6 +566,13 @@ impl Thresholds {
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Thresholds;
+    ///
+    /// assert_eq!(Thresholds::SuryaSiddhanta.key(), "SURYA_SIDDHANTA");
+    /// assert_eq!(Thresholds::Ptolemy.key(), "PTOLEMY");
+    /// ```
     #[must_use]
     pub const fn key(&self) -> &'static str {
         match self {
@@ -406,6 +624,14 @@ fn surya_siddhanta_star_deg(star: Star) -> Option<f64> {
 }
 
 /// How visibility is decided.
+///
+/// ```
+/// use teistro_astro::visibility::Criterion;
+///
+/// // The same numbers, read two ways.
+/// assert_eq!(Criterion::SURYA_SIDDHANTA.thresholds(), Criterion::COMBUSTION_ORB.thresholds());
+/// assert_ne!(Criterion::SURYA_SIDDHANTA.measure(), Criterion::COMBUSTION_ORB.measure());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -437,22 +663,60 @@ pub enum Criterion {
 
 impl Criterion {
     /// The Surya Siddhanta's: degrees of time against the text's numbers.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Criterion;
+    ///
+    /// assert_eq!(Criterion::SURYA_SIDDHANTA.to_string(), "TIME_DEGREES/SURYA_SIDDHANTA");
+    /// ```
     pub const SURYA_SIDDHANTA: Criterion = Criterion::TimeDegrees {
         thresholds: Thresholds::SuryaSiddhanta,
     };
 
     /// The tradition's combustion: the same numbers as degrees of
     /// longitude.
+    ///
+    /// ```
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::COMBUSTION_ORB, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+    /// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+    ///
+    /// // The orb is the longitude between Mercury and the Sun, at sunrise or sunset.
+    /// let mercury = heliacal.state(Body::Mercury, day)?;
+    /// assert_eq!(mercury.visible, mercury.measure_deg >= mercury.threshold_deg);
+    /// assert!(mercury.measure_deg <= 180.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const COMBUSTION_ORB: Criterion = Criterion::Longitude {
         thresholds: Thresholds::SuryaSiddhanta,
     };
 
     /// Ptolemy's arcus visionis.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Criterion;
+    ///
+    /// assert_eq!(Criterion::PTOLEMY.key(), "ARCUS_VISIONIS/PTOLEMY");
+    /// ```
     pub const PTOLEMY: Criterion = Criterion::ArcusVisionis {
         thresholds: Thresholds::Ptolemy,
     };
 
     /// The thresholds the criterion compares against.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{Criterion, Thresholds};
+    ///
+    /// assert_eq!(Criterion::PTOLEMY.thresholds(), &Thresholds::Ptolemy);
+    /// ```
     #[must_use]
     pub const fn thresholds(&self) -> &Thresholds {
         match self {
@@ -463,6 +727,12 @@ impl Criterion {
     }
 
     /// The measure's name.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Criterion;
+    ///
+    /// assert_eq!(Criterion::COMBUSTION_ORB.measure(), "LONGITUDE");
+    /// ```
     #[must_use]
     pub const fn measure(&self) -> &'static str {
         match self {
@@ -473,6 +743,13 @@ impl Criterion {
     }
 
     /// The key stamped in provenance: the measure and the table.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::Criterion;
+    ///
+    /// assert_eq!(Criterion::COMBUSTION_ORB.key(), "LONGITUDE/SURYA_SIDDHANTA");
+    /// assert_eq!(Criterion::COMBUSTION_ORB.key(), Criterion::COMBUSTION_ORB.to_string());
+    /// ```
     #[must_use]
     pub fn key(&self) -> String {
         format!("{}/{}", self.measure(), self.thresholds().key())
@@ -486,6 +763,27 @@ impl fmt::Display for Criterion {
 }
 
 /// The state of a body's visibility on one local mean day.
+///
+/// ```
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+/// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+/// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+///
+/// let mercury = heliacal.state(Body::Mercury, day)?;
+/// // Read inside the day, and visible when the measure reaches the threshold.
+/// assert_eq!((mercury.body, mercury.day_start), (Body::Mercury, day));
+/// assert!(mercury.instant.get() > day.get() && mercury.instant.get() < day.get() + 1.0);
+/// assert_eq!(mercury.visible, mercury.measure_deg >= mercury.threshold_deg);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Visibility {
@@ -513,6 +811,14 @@ pub struct Visibility {
 }
 
 /// Which heliacal event.
+///
+/// ```
+/// use teistro_astro::visibility::{HeliacalKind, Side};
+///
+/// // The heliacal rising is the first morning; the heliacal setting the last evening.
+/// assert_eq!(HeliacalKind::of(Side::East, true), HeliacalKind::MorningFirst);
+/// assert_eq!(HeliacalKind::of(Side::West, false), HeliacalKind::EveningLast);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -529,6 +835,18 @@ pub enum HeliacalKind {
 
 impl HeliacalKind {
     /// The event a change of state on a side is.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{HeliacalKind, Side};
+    ///
+    /// // Each kind is its side and whether it appears.
+    /// for side in [Side::East, Side::West] {
+    ///     for appears in [true, false] {
+    ///         let kind = HeliacalKind::of(side, appears);
+    ///         assert_eq!((kind.side(), kind.appears()), (side, appears));
+    ///     }
+    /// }
+    /// ```
     #[must_use]
     pub const fn of(side: Side, appears: bool) -> HeliacalKind {
         match (side, appears) {
@@ -540,6 +858,12 @@ impl HeliacalKind {
     }
 
     /// The sky the event is in.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::{HeliacalKind, Side};
+    ///
+    /// assert_eq!(HeliacalKind::EveningFirst.side(), Side::West);
+    /// ```
     #[must_use]
     pub const fn side(self) -> Side {
         match self {
@@ -549,6 +873,13 @@ impl HeliacalKind {
     }
 
     /// Whether the body appears (a first) rather than disappears (a last).
+    ///
+    /// ```
+    /// use teistro_astro::visibility::HeliacalKind;
+    ///
+    /// assert!(HeliacalKind::MorningFirst.appears());
+    /// assert!(!HeliacalKind::MorningLast.appears());
+    /// ```
     #[must_use]
     pub const fn appears(self) -> bool {
         matches!(
@@ -558,6 +889,14 @@ impl HeliacalKind {
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_astro::visibility::HeliacalKind;
+    ///
+    /// assert_eq!(HeliacalKind::EveningLast.key(), "EVENING_LAST");
+    /// assert_eq!(serde_json::to_string(&HeliacalKind::MorningFirst)?, format!("\"{}\"", HeliacalKind::MorningFirst.key()));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -570,6 +909,28 @@ impl HeliacalKind {
 }
 
 /// A heliacal event: the day a body is first seen, or the last day it is.
+///
+/// ```
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+/// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+/// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+///
+/// let events = heliacal.events(Body::Mercury, day, day.plus_days(240.0)?)?;
+/// // A first is dated by a day it is seen; so is a last.
+/// for event in &events {
+///     assert!(event.day.visible);
+///     assert_eq!(event.day.side, event.kind.side());
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct HeliacalEvent {
@@ -583,6 +944,25 @@ pub struct HeliacalEvent {
 /// The visibility of bodies near the Sun at a place under a criterion,
 /// over the frame completion: the state on a day, and the heliacal events
 /// inside a window.
+///
+/// ```
+/// # use teistro_astro::visibility::{Criterion, Heliacal};
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+/// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+/// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+///
+/// let events = heliacal.events(Body::Mercury, day, day.plus_days(240.0)?)?;
+/// // The events in time order, each a change from the day before.
+/// assert!(events.windows(2).all(|pair| pair[0].day.day_start.get() < pair[1].day.day_start.get()));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub struct Heliacal<'a, P: EphemerisProvider + ?Sized> {
     completion: &'a Completion<'a, P>,
     place: Place,
@@ -602,6 +982,24 @@ impl<'a, P: EphemerisProvider + ?Sized> Heliacal<'a, P> {
     /// place, the criterion, the horizon convention the risings and
     /// settings are taken under (the Sun's and the body's alike), and the
     /// Delta T model for the sidereal time.
+    ///
+    /// ```
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+    /// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+    ///
+    /// assert_eq!(heliacal.criterion(), Criterion::SURYA_SIDDHANTA);
+    /// assert!(heliacal.describe().starts_with("TIME_DEGREES/SURYA_SIDDHANTA under "));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn new(
         completion: &'a Completion<'a, P>,
@@ -620,12 +1018,48 @@ impl<'a, P: EphemerisProvider + ?Sized> Heliacal<'a, P> {
     }
 
     /// The criterion.
+    ///
+    /// ```
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::PTOLEMY, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+    /// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+    ///
+    /// assert_eq!(heliacal.criterion().measure(), "ARCUS_VISIONIS");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn criterion(&self) -> Criterion {
         self.criterion
     }
 
     /// The stamp: criterion, horizon convention, place and source.
+    ///
+    /// ```
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+    /// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+    ///
+    /// // The criterion, the horizon, the place and the source.
+    /// assert!(heliacal.describe().contains("test-provider"));
+    /// assert_eq!(format!("{heliacal:?}"), heliacal.describe());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn describe(&self) -> String {
         format!(
@@ -639,12 +1073,55 @@ impl<'a, P: EphemerisProvider + ?Sized> Heliacal<'a, P> {
 
     /// The local mean midnight that begins the day an instant falls in at
     /// the place.
+    ///
+    /// ```
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+    /// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+    ///
+    /// // Kathmandu's local mean midnight: 85.3° east, some 5 h 41 min before
+    /// // Greenwich's.
+    /// let offset_h = (2_460_310.5 - day.get()) * 24.0;
+    /// assert!((offset_h - 85.324 / 15.0).abs() < 1e-6);
+    /// // Any instant of that day gives the same.
+    /// assert_eq!(heliacal.day_start(day.plus_days(0.7)?), day);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn day_start(&self, at: JulianDay<Ut1>) -> JulianDay<Ut1> {
         local_mean_midnight(at, self.place.longitude)
     }
 
     /// The state of a body on the local mean day beginning at `day_start`.
+    ///
+    /// ```
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+    /// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+    ///
+    /// // The Sun is never held against itself.
+    /// assert!(heliacal.state(Body::Sun, day).is_err());
+    /// // Uranus is not in the text's table.
+    /// assert!(heliacal.state(Body::Uranus, day).is_err());
+    /// assert!(heliacal.state(Body::Venus, day).is_ok());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -723,6 +1200,28 @@ impl<'a, P: EphemerisProvider + ?Sized> Heliacal<'a, P> {
     /// in time order, reading the state day by day from the local mean day
     /// `from` falls in.
     ///
+    /// ```
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+    /// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+    ///
+    /// let events = heliacal.events(Body::Mercury, day, day.plus_days(240.0)?)?;
+    /// use teistro_astro::visibility::HeliacalKind;
+    ///
+    /// // The test provider's Mercury always outruns the Sun: it leaves the
+    /// // morning sky and enters the evening sky in turn.
+    /// assert!(events.iter().all(|event| matches!(event.kind, HeliacalKind::MorningLast | HeliacalKind::EveningFirst)));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A window that does not run forward (`INVALID_ARG`), and whatever
@@ -743,6 +1242,27 @@ impl<'a, P: EphemerisProvider + ?Sized> Heliacal<'a, P> {
 
     /// The first heliacal event of a body whose day begins inside a window
     /// of so many days from `from`, or `None` when there is none.
+    ///
+    /// ```
+    /// # use teistro_astro::visibility::{Criterion, Heliacal};
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let heliacal = Heliacal::new(&sky, kathmandu, Criterion::SURYA_SIDDHANTA, Horizon::CENTRE_NO_REFRACTION, DeltaTModel::TableThenModel);
+    /// # let day = heliacal.day_start(JulianDay::<Ut1>::literal(2_460_310.5));
+    ///
+    /// let events = heliacal.events(Body::Mercury, day, day.plus_days(240.0)?)?;
+    /// // The first of the window's events.
+    /// let next = heliacal.next(Body::Mercury, day, 240.0)?;
+    /// assert_eq!(next.as_ref().map(|event| event.kind), events.first().map(|event| event.kind));
+    /// assert!(heliacal.next(Body::Mercury, day, 0.0).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///

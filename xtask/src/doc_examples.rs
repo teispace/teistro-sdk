@@ -22,6 +22,7 @@ use crate::coverage::COUNTED_BY;
 const EXAMPLED: &[&str] = &[
     "teistro",
     "teistro-aspect",
+    "teistro-astro",
     "teistro-calendar",
     "teistro-chart",
     "teistro-core",

@@ -37,6 +37,26 @@ use crate::sky::{self, Apparent, ApparentPositions, Spherical};
 use crate::topocentric::Station;
 
 /// Who computed a step.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+///
+/// use teistro_astro::completion::Implementation;
+/// use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequest, TimeScale};
+///
+/// let jds = [2_460_483.4];
+/// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+/// // The test provider answers the canonical frame itself: nothing to do.
+/// let done = sky.positions(&request)?;
+/// assert_eq!(done.steps[0].implementation, Implementation::PassThrough);
+/// # Ok::<(), teistro_astro::completion::CompletionError>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -52,6 +72,14 @@ pub enum Implementation {
 impl Implementation {
     /// The key it is spelled by wherever it is serialised — `NATIVE`,
     /// `SDK`, `PASS_THROUGH` — and so the spelling every binding reads.
+    ///
+    /// ```
+    /// use teistro_astro::completion::Implementation;
+    ///
+    /// assert_eq!(Implementation::Native.key(), "NATIVE");
+    /// assert_eq!(serde_json::to_string(&Implementation::PassThrough)?, format!("\"{}\"", Implementation::PassThrough.key()));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -63,6 +91,27 @@ impl Implementation {
 }
 
 /// One completion step and who did it.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+///
+/// use teistro_astro::completion::Implementation;
+/// use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequest, TimeScale};
+///
+/// let jds = [2_460_483.4];
+/// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL.with_coordinates(Coordinates::Equatorial));
+/// // Equatorial coordinates the provider does not give: the SDK rotates them
+/// // by its own obliquity.
+/// let done = sky.positions(&request)?;
+/// assert!(done.steps.iter().any(|step| step.name == "obliquity" && step.implementation == Implementation::Sdk));
+/// # Ok::<(), teistro_astro::completion::CompletionError>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Step {
@@ -76,6 +125,13 @@ impl Step {
     /// The step as a stamp spells it, `positions:NATIVE`: its name and
     /// who computed it by [`Implementation::key`], so a chart's steps and
     /// a positions result's read alike in every binding.
+    ///
+    /// ```
+    /// use teistro_astro::completion::{Implementation, Step};
+    ///
+    /// let step = Step { name: "delta-t", implementation: Implementation::Sdk };
+    /// assert_eq!(step.key(), "delta-t:SDK");
+    /// ```
     #[must_use]
     pub fn key(&self) -> String {
         format!("{}:{}", self.name, self.implementation.key())
@@ -84,6 +140,26 @@ impl Step {
 
 /// A completed response: the columns in the requested frame and the
 /// steps that produced them, in order.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+///
+/// use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequest, TimeScale};
+///
+/// let jds = [2_460_483.4];
+/// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL.with_coordinates(Coordinates::Equatorial));
+/// let done = sky.positions(&request)?;
+/// // One cell, the Sun's, now in right ascension and declination.
+/// assert_eq!(done.columns.cells().count(), 1);
+/// assert!(!done.steps.is_empty());
+/// # Ok::<(), teistro_astro::completion::CompletionError>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Completed {
@@ -96,6 +172,23 @@ pub struct Completed {
 impl Completed {
     /// The steps as `name:IMPLEMENTATION` for a stamp, each its
     /// [`Step::key`].
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequest, TimeScale};
+    ///
+    /// let jds = [2_460_483.4];
+    /// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+    /// assert_eq!(sky.positions(&request)?.step_keys(), ["positions:PASS_THROUGH"]);
+    /// # Ok::<(), teistro_astro::completion::CompletionError>(())
+    /// ```
     #[must_use]
     pub fn step_keys(&self) -> Vec<String> {
         self.steps.iter().map(Step::key).collect()
@@ -103,6 +196,27 @@ impl Completed {
 }
 
 /// Why completion could not be done.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::NativeOnly, DeltaTModel::TableThenModel);
+///
+/// use teistro_astro::completion::CompletionError;
+/// use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequest, TimeScale};
+///
+/// let jds = [2_460_483.4];
+/// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL.with_coordinates(Coordinates::Equatorial));
+/// // The test provider declares no obliquity of its own, and native-only
+/// // forbids the SDK's.
+/// let refused = sky.positions(&request).unwrap_err();
+/// assert!(matches!(refused, CompletionError::PolicyRefused { step: "obliquity", .. }));
+/// assert_eq!(refused.to_string(), "the NATIVE_ONLY override policy refuses the available implementation of `obliquity`");
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -216,6 +330,17 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// until [`Completion::with_precession`] says otherwise, and are the
     /// mean value until [`Completion::with_ayanamsha_basis`] says
     /// otherwise, both being what the root profile sets.
+    ///
+    /// ```
+    /// use teistro_astro::completion::Completion;
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_core::settings::OverridePolicy;
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    /// assert_eq!(sky.policy(), OverridePolicy::PreferNative);
+    /// ```
     pub fn new(provider: &'p P, policy: OverridePolicy, delta_t: DeltaTModel) -> Completion<'p, P> {
         Completion {
             provider,
@@ -242,6 +367,25 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// the light time's own rates, which the conformance corpus found as
     /// 7e-4 degrees a day in Mercury at a station. A provider whose speeds
     /// follow a rule keeps its rule's either way.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequest, TimeScale};
+    ///
+    /// let jds = [2_460_483.4];
+    /// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+    /// // Speeds read off the longitudes as completed, at a third more cost.
+    /// let derived = sky.deriving_speeds();
+    /// assert!(derived.positions(&request)?.columns.cells().all(|cell| cell.lon_speed.is_finite()));
+    /// # Ok::<(), teistro_astro::completion::CompletionError>(())
+    /// ```
     #[must_use]
     pub const fn deriving_speeds(mut self) -> Self {
         self.derived_speeds = true;
@@ -249,6 +393,20 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     }
 
     /// The precession model the SDK's ayanamshas are carried by.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_astro::precession::PrecessionModel;
+    ///
+    /// assert_eq!(sky.with_precession(PrecessionModel::Iau1976).precession(), PrecessionModel::Iau1976);
+    /// ```
     #[must_use]
     pub const fn with_precession(mut self, model: PrecessionModel) -> Self {
         self.precession = model;
@@ -264,6 +422,20 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// from it leaves the whole nutation in longitude behind — measured
     /// against the baseline engine, up to 18.5 arcseconds on every body
     /// at once.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_astro::ayanamsha::Basis;
+    ///
+    /// assert_eq!(sky.with_ayanamsha_basis(Basis::True).ayanamsha_basis(), Basis::True);
+    /// ```
     #[must_use]
     pub const fn with_ayanamsha_basis(mut self, basis: Basis) -> Self {
         self.ayanamsha_basis = basis;
@@ -271,18 +443,60 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     }
 
     /// The ayanamsha basis in force.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_astro::ayanamsha::Basis;
+    ///
+    /// let mean = sky.with_ayanamsha_basis(Basis::Mean);
+    /// assert_eq!(mean.ayanamsha_basis(), Basis::Mean);
+    /// ```
     #[must_use]
     pub const fn ayanamsha_basis(&self) -> Basis {
         self.ayanamsha_basis
     }
 
     /// The policy in force.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// assert_eq!(sky.policy(), OverridePolicy::SdkOnly);
+    /// ```
     #[must_use]
     pub const fn policy(&self) -> OverridePolicy {
         self.policy
     }
 
     /// The precession model in force for the SDK's ayanamshas.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_astro::precession::PrecessionModel;
+    ///
+    /// let model = sky.precession();
+    /// assert_eq!(sky.with_precession(model).precession(), model);
+    /// ```
     #[must_use]
     pub const fn precession(&self) -> PrecessionModel {
         self.precession
@@ -344,12 +558,42 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     }
 
     /// The provider's capabilities, as read at construction.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_port_ephemeris::{Astronomy, Overrides};
+    ///
+    /// // A modern astronomy that overrides nothing: the SDK completes every step.
+    /// assert_eq!(sky.capabilities().astronomy, Astronomy::Modern);
+    /// assert_eq!(sky.capabilities().overrides, Overrides::NONE);
+    /// ```
     #[must_use]
     pub const fn capabilities(&self) -> &Capabilities {
         &self.capabilities
     }
 
     /// The provider.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_port_ephemeris::EphemerisProvider;
+    ///
+    /// assert!(sky.provider().capabilities().describe().starts_with("test-provider"));
+    /// ```
     #[must_use]
     pub const fn provider(&self) -> &'p P {
         self.provider
@@ -390,6 +634,23 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// with (`03-design/classical-chart.md` §2). So a chart takes its
     /// zodiac from the provider only here, and the catalogue otherwise.
     ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_core::catalogue::Ayanamsha;
+    ///
+    /// // A modern provider approximates the catalogue's ayanamsha; it never
+    /// // defines one.
+    /// assert!(!sky.defines_ayanamsha(Ayanamsha::Lahiri)?);
+    /// # Ok::<(), teistro_astro::completion::CompletionError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `native-only` over a provider that does not list the member,
@@ -404,6 +665,22 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// under a policy that lets it answer. The same rule as
     /// [`Completion::defines_ayanamsha`], for a step with no member to
     /// list — the sunrise (`RISE_SET`), the angles.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_port_ephemeris::Overrides;
+    ///
+    /// // The sunrise is the SDK's: the provider is modern and declares none.
+    /// assert!(!sky.defines(Overrides::RISE_SET, "rise-set")?);
+    /// # Ok::<(), teistro_astro::completion::CompletionError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -489,6 +766,31 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
 
     /// Positions in the requested frame, completed from the provider's
     /// native frame where they differ.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequest, TimeScale};
+    ///
+    /// let jds = [2_460_483.4];
+    /// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL.with_coordinates(Coordinates::Equatorial));
+    /// # use teistro_port_ephemeris::EphemerisProvider;
+    /// let native = sky.provider().positions(&request.in_frame(Frame::CANONICAL)).map_err(teistro_astro::completion::CompletionError::from)?;
+    /// let done = sky.positions(&request)?;
+    /// // The solstice Sun, rotated onto the equator: about 23.4° north.
+    /// let sun = done.columns.cell(0).expect("one cell");
+    /// assert!((sun.lat - 23.4).abs() < 0.1);
+    /// // Natively it is ecliptic, near 90° of longitude: the analytic Sun
+    /// // runs a couple of degrees from the real one.
+    /// assert!(native.cell(0).is_some_and(|cell| (cell.lon - 90.0).abs() < 3.0));
+    /// # Ok::<(), teistro_astro::completion::CompletionError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1112,6 +1414,21 @@ impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
     /// the built-in ephemeris on the J2000 equator without light time or
     /// aberration: 1.3° of right ascension in 1900, a minute of every
     /// sunrise in 2025.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_port_ephemeris::{Coordinates, Frame, Zodiac};
+    ///
+    /// let frame = sky.apparent_frame();
+    /// assert_eq!(frame, Frame::CANONICAL.with_coordinates(Coordinates::Equatorial).with_zodiac(Zodiac::Tropical));
+    /// ```
     #[must_use]
     pub fn apparent_frame(&self) -> Frame {
         let base = match self.capabilities.astronomy {

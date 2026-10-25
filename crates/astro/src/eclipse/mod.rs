@@ -63,10 +63,27 @@ mod local;
 pub use local::{EclipsesHere, LocalMoment, LunarHere, LunarView, SolarHere, SolarView, Visible};
 
 /// The Sun's radius, km (IAU 2015 nominal).
+///
+/// ```
+/// use teistro_astro::eclipse::SUN_RADIUS_KM;
+/// use teistro_astro::rise_set::EARTH_EQUATORIAL_RADIUS_KM;
+///
+/// // The Sun is some 109 Earths across.
+/// assert!((SUN_RADIUS_KM / EARTH_EQUATORIAL_RADIUS_KM - 109.1).abs() < 0.1);
+/// ```
 pub const SUN_RADIUS_KM: f64 = 696_000.0;
 
 /// The Moon's radius in Earth radii for a lunar eclipse and the penumbra
 /// of a solar one (IAU 1982).
+///
+/// ```
+/// use teistro_astro::eclipse::{MOON_RADIUS, MOON_RADIUS_UMBRA};
+/// use teistro_astro::rise_set::EARTH_EQUATORIAL_RADIUS_KM;
+///
+/// // 1738 km, a kilometre and a half above the limb's valleys.
+/// assert!((MOON_RADIUS * EARTH_EQUATORIAL_RADIUS_KM - 1_738.1).abs() < 0.1);
+/// assert!(MOON_RADIUS_UMBRA < MOON_RADIUS);
+/// ```
 pub const MOON_RADIUS: f64 = 0.272_507_6;
 
 /// The Moon's radius in Earth radii for the umbra of a solar eclipse:
@@ -74,9 +91,24 @@ pub const MOON_RADIUS: f64 = 0.272_507_6;
 /// that a total eclipse is total wherever the Sun is wholly hidden. With
 /// [`MOON_RADIUS`] instead, four total eclipses and one annular eclipse
 /// of 1900 to 2100 read partial.
+///
+/// ```
+/// use teistro_astro::eclipse::{MOON_RADIUS, MOON_RADIUS_UMBRA};
+/// use teistro_astro::rise_set::EARTH_EQUATORIAL_RADIUS_KM;
+///
+/// let valleys_km = (MOON_RADIUS - MOON_RADIUS_UMBRA) * EARTH_EQUATORIAL_RADIUS_KM;
+/// assert!((valleys_km - 1.44).abs() < 0.01);
+/// ```
 pub const MOON_RADIUS_UMBRA: f64 = 0.272_281;
 
 /// The Earth's polar radius over its equatorial one, `1 − 1/298.257`.
+///
+/// ```
+/// use teistro_astro::eclipse::EARTH_AXIS_RATIO;
+///
+/// // One less the WGS 84 flattening.
+/// assert!((EARTH_AXIS_RATIO - (1.0 - 1.0 / 298.257_223_563)).abs() < 1e-12);
+/// ```
 pub const EARTH_AXIS_RATIO: f64 = 0.996_647_189_335;
 
 /// The mean synodic month, days (Meeus, *Astronomical Algorithms* 49.1).
@@ -96,6 +128,13 @@ const SEED_REACH_DAYS: f64 = 1.0;
 const COARSE_DAYS: f64 = 0.01;
 
 /// The tolerance a greatest eclipse and a contact are found to, days.
+///
+/// ```
+/// use teistro_astro::eclipse::TOLERANCE_DAYS;
+///
+/// // Under a hundredth of a second.
+/// assert!(TOLERANCE_DAYS * 86_400.0 < 0.01);
+/// ```
 pub const TOLERANCE_DAYS: f64 = 1e-7;
 
 /// The fastest the Moon closes on the Earth's shadow axis, radians a day
@@ -114,9 +153,53 @@ const CONTACT_REACH_DAYS: f64 = 0.25;
 
 /// How long a search looks ahead for the next eclipse, days: a year holds
 /// at least two of each kind, penumbral lunar ones counted.
+///
+/// ```
+/// # use teistro_astro::eclipse::Eclipses;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // The test provider's sky: a geometry, not the real eclipses.
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// let lunar = eclipses.next_lunar(j2000)?;
+/// use teistro_astro::eclipse::NEXT_REACH_DAYS;
+///
+/// // The next is never further than the reach.
+/// assert!(lunar.greatest.get() - j2000.get() < NEXT_REACH_DAYS);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const NEXT_REACH_DAYS: f64 = 366.0;
 
 /// How the Earth's shadow is enlarged by its atmosphere.
+///
+/// ```
+/// # use teistro_astro::eclipse::Eclipses;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // The test provider's sky: a geometry, not the real eclipses.
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// let lunar = eclipses.next_lunar(j2000)?;
+/// use teistro_astro::eclipse::ShadowRule;
+///
+/// // Chauvenet's larger shadow reads every magnitude larger than Danjon's.
+/// let chauvenet = Eclipses::new(&sky, DeltaTModel::TableThenModel).with_shadow(ShadowRule::Chauvenet).next_lunar(j2000)?;
+/// assert_eq!((lunar.shadow, chauvenet.shadow), (ShadowRule::Danjon, ShadowRule::Chauvenet));
+/// assert!(chauvenet.penumbral_magnitude > lunar.penumbral_magnitude);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -150,6 +233,15 @@ impl ShadowRule {
 
     /// The rule `panchanga.eclipse_shadow` names.
     ///
+    /// ```
+    /// use teistro_astro::eclipse::ShadowRule;
+    /// use teistro_core::settings::EclipseShadow;
+    ///
+    /// assert_eq!(ShadowRule::of_setting(EclipseShadow::Chauvenet)?, ShadowRule::Chauvenet);
+    /// assert_eq!(ShadowRule::of_setting(EclipseShadow::Danjon)?, ShadowRule::default());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A member this release of the SDK does not compute (`Unsupported`,
@@ -167,6 +259,14 @@ impl ShadowRule {
     }
 
     /// The rule's key.
+    ///
+    /// ```
+    /// use teistro_astro::eclipse::ShadowRule;
+    ///
+    /// assert_eq!(ShadowRule::Danjon.key(), "DANJON");
+    /// assert_eq!(serde_json::to_string(&ShadowRule::Chauvenet)?, format!("\"{}\"", ShadowRule::Chauvenet.key()));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -178,6 +278,29 @@ impl ShadowRule {
 
 /// A lunar eclipse's contacts, UT1: the Moon's limb meeting each
 /// shadow's edge. A contact the eclipse does not have is `None`.
+///
+/// ```
+/// # use teistro_astro::eclipse::Eclipses;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // The test provider's sky: a geometry, not the real eclipses.
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// let lunar = eclipses.next_lunar(j2000)?;
+/// // The penumbra's touches bound the eclipse; every umbral contact lies between.
+/// let c = lunar.contacts;
+/// assert!(c.p1.get() < lunar.greatest.get() && lunar.greatest.get() < c.p4.get());
+/// for umbral in [c.u1, c.u2, c.u3, c.u4].into_iter().flatten() {
+///     assert!(c.p1.get() < umbral.get() && umbral.get() < c.p4.get());
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -197,6 +320,29 @@ pub struct LunarContacts {
 }
 
 /// A lunar eclipse.
+///
+/// ```
+/// # use teistro_astro::eclipse::Eclipses;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // The test provider's sky: a geometry, not the real eclipses.
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// let lunar = eclipses.next_lunar(j2000)?;
+/// use teistro_core::catalogue::LunarEclipseKind;
+///
+/// // The kind follows the magnitudes.
+/// assert_eq!(lunar.kind == LunarEclipseKind::Total, lunar.umbral_magnitude >= 1.0);
+/// assert_eq!(lunar.kind == LunarEclipseKind::Penumbral, lunar.umbral_magnitude < 0.0);
+/// assert!(lunar.penumbral_magnitude > lunar.umbral_magnitude);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -223,6 +369,27 @@ impl LunarEclipse {
     /// How long the Moon is in the umbra wholly (the totality), partly
     /// or at all (the penumbral phase), days; `None` for a phase the
     /// eclipse does not have.
+    ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// let lunar = eclipses.next_lunar(j2000)?;
+    /// let [total, umbral, penumbral] = lunar.durations();
+    /// // Each phase lies within the next.
+    /// assert!(penumbral.is_some_and(|whole| umbral.is_none_or(|part| part < whole)));
+    /// assert!(total.is_none() || total < umbral);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn durations(&self) -> [Option<f64>; 3] {
         let span = |from: Option<JulianDay<Ut1>>, to: Option<JulianDay<Ut1>>| {
@@ -239,6 +406,49 @@ impl LunarEclipse {
 
 /// A point on the Earth: a geodetic latitude and a longitude, east
 /// positive.
+///
+/// ```
+/// # use teistro_astro::eclipse::Eclipses;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // The test provider's sky: a geometry, not the real eclipses.
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # // The test provider places a body only as it is seen and every
+/// # // body at one au, where the Moon's shadow never reaches the Earth:
+/// # // this sky takes the placing it has and the Moon's mean distance.
+/// # struct AsSeen<'a, 'p>(&'a Completion<'p, TestProvider>);
+/// # impl teistro_astro::eclipse::ShadowSource for AsSeen<'_, '_> {
+/// #     fn place(
+/// #         &self,
+/// #         body: teistro_port_ephemeris::Body,
+/// #         ut1: JulianDay<Ut1>,
+/// #         _: teistro_astro::eclipse::Seen,
+/// #     ) -> Result<teistro_astro::sky::Apparent, teistro_core::error::Error> {
+/// #         let apparent = teistro_astro::eclipse::Seen::Apparent;
+/// #         let mut place = teistro_astro::eclipse::ShadowSource::place(self.0, body, ut1, apparent)?;
+/// #         if body == teistro_port_ephemeris::Body::Moon {
+/// #             place.distance_au = 0.002_57;
+/// #         }
+/// #         Ok(place)
+/// #     }
+/// #     fn describe(&self) -> String {
+/// #         teistro_astro::eclipse::ShadowSource::describe(self.0)
+/// #     }
+/// # }
+/// # let as_seen = AsSeen(&sky);
+/// # let eclipses = Eclipses::new(&as_seen, DeltaTModel::TableThenModel);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// let solar = eclipses.next_solar(j2000)?;
+/// // Somewhere on the Earth.
+/// let point = solar.point;
+/// assert!(point.latitude.get().abs() <= 90.0 && point.longitude.get().abs() <= 180.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -250,6 +460,53 @@ pub struct GroundPoint {
 }
 
 /// A solar eclipse.
+///
+/// ```
+/// # use teistro_astro::eclipse::Eclipses;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // The test provider's sky: a geometry, not the real eclipses.
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # // The test provider places a body only as it is seen and every
+/// # // body at one au, where the Moon's shadow never reaches the Earth:
+/// # // this sky takes the placing it has and the Moon's mean distance.
+/// # struct AsSeen<'a, 'p>(&'a Completion<'p, TestProvider>);
+/// # impl teistro_astro::eclipse::ShadowSource for AsSeen<'_, '_> {
+/// #     fn place(
+/// #         &self,
+/// #         body: teistro_port_ephemeris::Body,
+/// #         ut1: JulianDay<Ut1>,
+/// #         _: teistro_astro::eclipse::Seen,
+/// #     ) -> Result<teistro_astro::sky::Apparent, teistro_core::error::Error> {
+/// #         let apparent = teistro_astro::eclipse::Seen::Apparent;
+/// #         let mut place = teistro_astro::eclipse::ShadowSource::place(self.0, body, ut1, apparent)?;
+/// #         if body == teistro_port_ephemeris::Body::Moon {
+/// #             place.distance_au = 0.002_57;
+/// #         }
+/// #         Ok(place)
+/// #     }
+/// #     fn describe(&self) -> String {
+/// #         teistro_astro::eclipse::ShadowSource::describe(self.0)
+/// #     }
+/// # }
+/// # let as_seen = AsSeen(&sky);
+/// # let eclipses = Eclipses::new(&as_seen, DeltaTModel::TableThenModel);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// let solar = eclipses.next_solar(j2000)?;
+/// use teistro_core::catalogue::SolarEclipseKind;
+///
+/// // A central eclipse's axis meets the Earth.
+/// if solar.kind != SolarEclipseKind::Partial {
+///     assert!(solar.gamma.abs() < 1.0);
+/// }
+/// assert!(solar.magnitude > 0.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -273,6 +530,14 @@ pub struct SolarEclipse {
 }
 
 /// How a body is placed for a shadow.
+///
+/// ```
+/// use teistro_astro::eclipse::Seen;
+///
+/// // A solar shadow reads both bodies without aberration; a lunar one, apparent.
+/// assert!(!Seen::Astrometric.frame().corrections.aberration);
+/// assert!(Seen::Apparent.frame().corrections.aberration);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Seen {
     /// Corrected for light time and for nothing else: where the light now
@@ -284,6 +549,16 @@ pub enum Seen {
 
 impl Seen {
     /// The geocentric frame of date this placing asks for.
+    ///
+    /// ```
+    /// use teistro_astro::eclipse::Seen;
+    /// use teistro_port_ephemeris::Coordinates;
+    ///
+    /// // Geocentric equatorial of date, light time applied either way.
+    /// let frame = Seen::Astrometric.frame();
+    /// assert_eq!(frame.coordinates, Coordinates::Equatorial);
+    /// assert!(frame.corrections.light_time && frame.corrections.nutation);
+    /// ```
     #[must_use]
     pub const fn frame(self) -> Frame {
         let corrections = match self {
@@ -316,8 +591,57 @@ impl Seen {
 /// Sun astrometric comes 38 seconds late and with both astrometric 77;
 /// these placings agree with it to a second or two
 /// (`docs/03-design/eclipses.md` §4.1).
+///
+/// ```
+/// # use teistro_astro::eclipse::Eclipses;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // The test provider's sky: a geometry, not the real eclipses.
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// use teistro_astro::eclipse::{Seen, ShadowSource};
+/// use teistro_port_ephemeris::Body;
+///
+/// use teistro_core::error::Status;
+///
+/// // The completion is one. The test provider places the Moon as it is
+/// // seen, and refuses to place it astrometric: a real ephemeris does both.
+/// let apparent = sky.place(Body::Moon, j2000, Seen::Apparent)?;
+/// assert!((0.0..360.0).contains(&apparent.ra_deg));
+/// let astrometric = sky.place(Body::Moon, j2000, Seen::Astrometric);
+/// assert_eq!(astrometric.map_err(|error| error.status), Err(Status::Unsupported));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub trait ShadowSource: Send + Sync {
     /// The body's place at a UT1 instant.
+    ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::eclipse::{Seen, ShadowSource};
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// let sun = sky.place(Body::Sun, j2000, Seen::Apparent)?;
+    /// // The Sun at J2000, in Sagittarius, far south.
+    /// assert!(sun.dec_deg < -20.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -326,6 +650,24 @@ pub trait ShadowSource: Send + Sync {
     fn place(&self, body: Body, ut1: JulianDay<Ut1>, seen: Seen) -> Result<Apparent, Error>;
 
     /// The source's name for provenance stamps.
+    ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::eclipse::ShadowSource;
+    ///
+    /// assert!(ShadowSource::describe(&sky).starts_with("test-provider"));
+    /// ```
     fn describe(&self) -> String;
 }
 
@@ -523,6 +865,25 @@ fn ground(surface: &Vector3, sidereal_deg: f64) -> Result<GroundPoint, Error> {
 /// depends on, the Delta T model the sidereal time is read under and the
 /// rule for the Earth's shadow. A lunar eclipse reports the rule it was
 /// found under.
+///
+/// ```
+/// # use teistro_astro::eclipse::Eclipses;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // The test provider's sky: a geometry, not the real eclipses.
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// // The lunar eclipses of a year, each nearer a full moon than the last.
+/// let year = eclipses.lunar_between(j2000, j2000.plus_days(365.25)?)?;
+/// assert!(year.windows(2).all(|pair| pair[1].greatest.get() - pair[0].greatest.get() > 29.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub struct Eclipses<'s, S: ShadowSource + ?Sized> {
     sky: &'s S,
     delta_t: DeltaTModel,
@@ -549,6 +910,24 @@ enum Syzygy {
 
 impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
     /// The eclipses over a source, under Danjon's shadow.
+    ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::eclipse::ShadowRule;
+    ///
+    /// assert_eq!(eclipses.shadow(), ShadowRule::Danjon);
+    /// ```
     #[must_use]
     pub const fn new(sky: &'s S, delta_t: DeltaTModel) -> Eclipses<'s, S> {
         Eclipses {
@@ -559,12 +938,50 @@ impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
     }
 
     /// The same, with the Earth's shadow enlarged by another rule.
+    ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::eclipse::ShadowRule;
+    ///
+    /// let almanac = Eclipses::new(&sky, DeltaTModel::TableThenModel).with_shadow(ShadowRule::Chauvenet);
+    /// assert_eq!(almanac.next_lunar(j2000)?.shadow, ShadowRule::Chauvenet);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_shadow(self, shadow: ShadowRule) -> Eclipses<'s, S> {
         Eclipses { shadow, ..self }
     }
 
     /// The rule the Earth's shadow is enlarged by.
+    ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::eclipse::ShadowRule;
+    ///
+    /// assert_eq!(eclipses.with_shadow(ShadowRule::Chauvenet).shadow(), ShadowRule::Chauvenet);
+    /// ```
     #[must_use]
     pub const fn shadow(&self) -> ShadowRule {
         self.shadow
@@ -572,6 +989,26 @@ impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
 
     /// Every lunar eclipse whose greatest moment falls in `[from, to)`,
     /// in order.
+    ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// // The window is half-open, and must run forward.
+    /// let lunar = eclipses.next_lunar(j2000)?;
+    /// assert!(eclipses.lunar_between(j2000, lunar.greatest)?.is_empty());
+    /// assert_eq!(eclipses.lunar_between(lunar.greatest, j2000).unwrap_err().field(), Some("to"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -588,6 +1025,48 @@ impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
     /// Every solar eclipse whose greatest moment falls in `[from, to)`, in
     /// order.
     ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # // The test provider places a body only as it is seen and every
+    /// # // body at one au, where the Moon's shadow never reaches the Earth:
+    /// # // this sky takes the placing it has and the Moon's mean distance.
+    /// # struct AsSeen<'a, 'p>(&'a Completion<'p, TestProvider>);
+    /// # impl teistro_astro::eclipse::ShadowSource for AsSeen<'_, '_> {
+    /// #     fn place(
+    /// #         &self,
+    /// #         body: teistro_port_ephemeris::Body,
+    /// #         ut1: JulianDay<Ut1>,
+    /// #         _: teistro_astro::eclipse::Seen,
+    /// #     ) -> Result<teistro_astro::sky::Apparent, teistro_core::error::Error> {
+    /// #         let apparent = teistro_astro::eclipse::Seen::Apparent;
+    /// #         let mut place = teistro_astro::eclipse::ShadowSource::place(self.0, body, ut1, apparent)?;
+    /// #         if body == teistro_port_ephemeris::Body::Moon {
+    /// #             place.distance_au = 0.002_57;
+    /// #         }
+    /// #         Ok(place)
+    /// #     }
+    /// #     fn describe(&self) -> String {
+    /// #         teistro_astro::eclipse::ShadowSource::describe(self.0)
+    /// #     }
+    /// # }
+    /// # let as_seen = AsSeen(&sky);
+    /// # let eclipses = Eclipses::new(&as_seen, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// let solar = eclipses.next_solar(j2000)?;
+    /// let around = eclipses.solar_between(j2000, solar.greatest.plus_days(1.0)?)?;
+    /// assert_eq!(around.first(), Some(&solar));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Eclipses::lunar_between`].
@@ -601,6 +1080,26 @@ impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
 
     /// The first lunar eclipse at or after `from`.
     ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// let lunar = eclipses.next_lunar(j2000)?;
+    /// // From just after it, the next is another.
+    /// let after = eclipses.next_lunar(lunar.greatest.plus_days(1.0)?)?;
+    /// assert!(after.greatest.get() > lunar.greatest.get() + 29.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `NotConverged` when none falls within [`NEXT_REACH_DAYS`], which
@@ -612,6 +1111,50 @@ impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
     }
 
     /// The first solar eclipse at or after `from`.
+    ///
+    /// ```
+    /// # use teistro_astro::eclipse::Eclipses;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // The test provider's sky: a geometry, not the real eclipses.
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # // The test provider places a body only as it is seen and every
+    /// # // body at one au, where the Moon's shadow never reaches the Earth:
+    /// # // this sky takes the placing it has and the Moon's mean distance.
+    /// # struct AsSeen<'a, 'p>(&'a Completion<'p, TestProvider>);
+    /// # impl teistro_astro::eclipse::ShadowSource for AsSeen<'_, '_> {
+    /// #     fn place(
+    /// #         &self,
+    /// #         body: teistro_port_ephemeris::Body,
+    /// #         ut1: JulianDay<Ut1>,
+    /// #         _: teistro_astro::eclipse::Seen,
+    /// #     ) -> Result<teistro_astro::sky::Apparent, teistro_core::error::Error> {
+    /// #         let apparent = teistro_astro::eclipse::Seen::Apparent;
+    /// #         let mut place = teistro_astro::eclipse::ShadowSource::place(self.0, body, ut1, apparent)?;
+    /// #         if body == teistro_port_ephemeris::Body::Moon {
+    /// #             place.distance_au = 0.002_57;
+    /// #         }
+    /// #         Ok(place)
+    /// #     }
+    /// #     fn describe(&self) -> String {
+    /// #         teistro_astro::eclipse::ShadowSource::describe(self.0)
+    /// #     }
+    /// # }
+    /// # let as_seen = AsSeen(&sky);
+    /// # let eclipses = Eclipses::new(&as_seen, DeltaTModel::TableThenModel);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// let solar = eclipses.next_solar(j2000)?;
+    /// // A solar eclipse falls a fortnight from a lunar one, or near enough.
+    /// let lunar = eclipses.next_lunar(j2000)?;
+    /// let apart = (solar.greatest.get() - lunar.greatest.get()).abs() % 29.53;
+    /// assert!((apart - 14.77).abs() < 2.0 || apart < 2.0 || apart > 27.5);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///

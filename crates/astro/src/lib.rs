@@ -72,7 +72,7 @@ mod generated;
 
 pub use completion::{Completed, Completion, CompletionError, Implementation, Step};
 pub use delta_t::{DeltaT, DeltaTModel, DeltaTSource, delta_t};
-pub use rise_set::{DayEvents, HorizonEvent, Method, Outcome};
+pub use rise_set::{DayEvents, HorizonEvent, Method};
 pub use scale::{tt_from_ut1, tt_of, ut1_from_tt};
 pub use sky::{
     Apparent, ApparentPositions, EarthAt, Observer, Spherical, earth_at, equation_of_time_seconds,
