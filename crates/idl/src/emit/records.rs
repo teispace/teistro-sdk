@@ -116,6 +116,19 @@ fn ts_fields(out: &mut String, fields: &[RecordField]) {
 
 /// `records.d.ts`: every record as a TypeScript type, and its decoder's
 /// declaration.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::records;
+///
+/// // Every record TypeScript reads typed, as `cargo xtask gen ffi` writes it.
+/// assert_eq!(records::typescript_declarations(&api), std::fs::read_to_string(root.join("bindings/node/lib/records.d.ts"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn typescript_declarations(api: &Api) -> String {
     let mut out = ts::preamble(api, "//");
@@ -209,6 +222,19 @@ fn js_fields(out: &mut String, fields: &[RecordField], indent: &str) {
 }
 
 /// `records.js`: every record's decoder.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::records;
+///
+/// // The decoders the declarations promise.
+/// assert_eq!(records::javascript_decoders(&api), std::fs::read_to_string(root.join("bindings/node/lib/records.js"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn javascript_decoders(api: &Api) -> String {
     let mut out = ts::preamble(api, "//");
@@ -369,6 +395,19 @@ fn py_construct(name: &str, fields: &[RecordField], indent: &str) -> String {
 
 /// `_records.py`: every record as a frozen dataclass or a `Literal`, and
 /// a `decode_*` function for each.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::records;
+///
+/// // Every record as a Python dataclass.
+/// assert_eq!(records::python_records(&api), std::fs::read_to_string(root.join("bindings/python/teistro/_records.py"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn python_records(api: &Api) -> String {
     let mut out = python::preamble(api, ABOUT);
@@ -595,6 +634,19 @@ fn dart_class(
 
 /// `records.dart`: every record as a Dart class, sealed family or enum,
 /// each decoded by `fromJson`.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::records;
+///
+/// // Every record as a Dart class.
+/// assert_eq!(records::dart_records(&api), std::fs::read_to_string(root.join("bindings/dart/lib/src/records.dart"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn dart_records(api: &Api) -> String {
     let mut out = dart::preamble(api, "");

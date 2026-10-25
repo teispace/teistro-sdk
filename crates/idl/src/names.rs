@@ -13,6 +13,15 @@
 
 /// The binding-facing name of a Rust boundary type: `TsContext` becomes
 /// `Context`, `PositionRequestC` becomes `PositionRequest`, `Status` stays.
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::binding_type_name("TsContext"), "Context");
+/// assert_eq!(names::binding_type_name("ObserverC"), "Observer");
+/// // Neither spelling here: the name stays.
+/// assert_eq!(names::binding_type_name("ProviderVtable"), "ProviderVtable");
+/// ```
 #[must_use]
 pub fn binding_type_name(rust_name: &str) -> String {
     let without_prefix = rust_name
@@ -31,6 +40,13 @@ pub fn binding_type_name(rust_name: &str) -> String {
 
 /// The C name of a boundary type: the prefix plus the binding name in
 /// snake case (`ts_position_request`).
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::c_type_name("ts_", "PositionRequestC"), "ts_position_request");
+/// assert_eq!(names::c_type_name("ts_", "TimeScale"), "ts_time_scale");
+/// ```
 #[must_use]
 pub fn c_type_name(prefix: &str, rust_name: &str) -> String {
     format!("{prefix}{}", snake(&binding_type_name(rust_name)))
@@ -39,6 +55,14 @@ pub fn c_type_name(prefix: &str, rust_name: &str) -> String {
 /// The C name of an enum member: its key upper-cased, so the C name and
 /// the key are the same word (`TS_STATUS_INVALID_ARG`,
 /// `TS_GRAHA_PURVA_PHALGUNI`, `TS_KIND_GRAHA`).
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::c_enum_member("ts_", "Graha", "SUN"), "TS_GRAHA_SUN");
+/// // A kind's key is lower case; the C name is not.
+/// assert_eq!(names::c_enum_member("ts_", "Kind", "graha"), "TS_KIND_GRAHA");
+/// ```
 #[must_use]
 pub fn c_enum_member(prefix: &str, enum_rust_name: &str, key: &str) -> String {
     format!(
@@ -51,6 +75,13 @@ pub fn c_enum_member(prefix: &str, enum_rust_name: &str, key: &str) -> String {
 
 /// The C name of a constant: `TS_ABI_VERSION` stays, `VTABLE_ABI_VERSION`
 /// becomes `TS_VTABLE_ABI_VERSION`.
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::c_constant_name("ts_", "TS_ABI_VERSION"), "TS_ABI_VERSION");
+/// assert_eq!(names::c_constant_name("ts_", "VTABLE_ABI_VERSION"), "TS_VTABLE_ABI_VERSION");
+/// ```
 #[must_use]
 pub fn c_constant_name(prefix: &str, rust_name: &str) -> String {
     let upper = prefix.to_ascii_uppercase();
@@ -64,6 +95,14 @@ pub fn c_constant_name(prefix: &str, rust_name: &str) -> String {
 /// The binding-facing method name of a handle function:
 /// `ts_context_settings_json` on `TsContext` becomes `settings_json`;
 /// `ts_positions` becomes `positions`.
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::method_name("ts_", "TsContext", "ts_context_settings_json"), "settings_json");
+/// // Not the handle's own: only the prefix goes.
+/// assert_eq!(names::method_name("ts_", "TsContext", "ts_positions"), "positions");
+/// ```
 #[must_use]
 pub fn method_name(prefix: &str, opaque_rust_name: &str, symbol: &str) -> String {
     let handle_prefix = format!("{prefix}{}_", snake(&binding_type_name(opaque_rust_name)));
@@ -76,18 +115,40 @@ pub fn method_name(prefix: &str, opaque_rust_name: &str, symbol: &str) -> String
 
 /// `PascalCase` or `camelCase` to `snake_case`; digits stay attached to
 /// the word before them (`Ut1` becomes `ut1`).
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::snake("PositionRequest"), "position_request");
+/// assert_eq!(names::snake("Ut1Tt"), "ut1_tt");
+/// // An acronym is one word.
+/// assert_eq!(names::snake("ABIVersion"), "abi_version");
+/// ```
 #[must_use]
 pub fn snake(name: &str) -> String {
     separate(name, '_')
 }
 
 /// `PascalCase` to `SCREAMING_SNAKE_CASE`.
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::screaming("TimeScale"), "TIME_SCALE");
+/// ```
 #[must_use]
 pub fn screaming(name: &str) -> String {
     snake(name).to_ascii_uppercase()
 }
 
 /// `snake_case` to `camelCase`.
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::camel("settings_hash"), "settingsHash");
+/// assert_eq!(names::camel("jd_ut1"), "jdUt1");
+/// ```
 #[must_use]
 pub fn camel(name: &str) -> String {
     let mut out = String::with_capacity(name.len());
@@ -106,6 +167,13 @@ pub fn camel(name: &str) -> String {
 }
 
 /// `snake_case` to `PascalCase`.
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::pascal("time_scale"), "TimeScale");
+/// assert_eq!(names::pascal(""), "");
+/// ```
 #[must_use]
 pub fn pascal(name: &str) -> String {
     let c = camel(name);
@@ -146,6 +214,15 @@ fn separate(name: &str, separator: char) -> String {
 /// ``[`Frame::to_bits`]`` becomes `Frame::to_bits`, `[text](url)` becomes
 /// `text`, and ``[`X`](crate::path)`` becomes `X`. A code span is text, so
 /// a bracket inside one is kept: `` `dossier.sections[0]` `` stays whole.
+///
+/// ```
+/// use teistro_idl::names;
+///
+/// assert_eq!(names::clean_doc("See [`Frame::to_bits`]."), "See `Frame::to_bits`.");
+/// assert_eq!(names::clean_doc("As [the design](https://example.org) says."), "As the design says.");
+/// // A bracket inside a code span is text.
+/// assert_eq!(names::clean_doc("Read `sections[0]`."), "Read `sections[0]`.");
+/// ```
 #[must_use]
 pub fn clean_doc(text: &str) -> String {
     let mut out = String::with_capacity(text.len());

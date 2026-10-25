@@ -42,17 +42,56 @@ use crate::model::FieldDef;
 /// writes it for its own null and reads it back as null, never as a
 /// member — `0` is a member (`era.VIKRAMA`), so a null written as zero
 /// would read back as a real one.
+///
+/// ```
+/// use teistro_idl::emit::NO_MEMBER;
+///
+/// // Above every id a kind numbers.
+/// assert_eq!(u16::from_str_radix(NO_MEMBER.trim_start_matches("0x"), 16), Ok(u16::MAX));
+/// ```
 pub const NO_MEMBER: &str = "0xFFFF";
 
 /// What a nullable enum field holds for none, by its width: a one-byte
 /// field cannot hold [`NO_MEMBER`], so it holds `0xFF`, the most a byte
 /// holds, as a two-byte field holds the most two do.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::no_member_of;
+/// use teistro_idl::model::{FieldDef, Meta};
+/// use teistro_idl::{Scalar, TypeRef};
+///
+/// let field = |scalar| FieldDef { name: "sign".into(), ty: TypeRef::scalar(scalar), doc: String::new(), meta: Meta::default() };
+/// // A byte cannot hold `0xFFFF`.
+/// assert_eq!(no_member_of(&field(Scalar::U8)), Some("0xFF"));
+/// assert_eq!(no_member_of(&field(Scalar::U16)), None);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn no_member_of(field: &FieldDef) -> Option<&'static str> {
     matches!(field.ty.as_scalar(), Some(crate::model::Scalar::U8)).then_some("0xFF")
 }
 
 /// How a field's metadata is spelled inside its documentation.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::{DocStyle, field_doc};
+///
+/// let longitude = &api.struct_named("ObserverC").ok_or("declared")?.fields[0];
+/// assert!(field_doc(longitude, DocStyle::JsDoc).ends_with("@range [-180,180]\n@example 85.3240"));
+/// // Markdown reads a bare `[-180,180]` as a link, so it is code.
+/// assert!(field_doc(longitude, DocStyle::Markdown).contains("Range: `[-180,180]`."));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DocStyle {
     /// `Unit: deg. Range: [1,5]. Example: 3.` on one line after the text.
@@ -67,12 +106,40 @@ pub enum DocStyle {
 /// A field's documentation with the enum it stands for, its unit, range
 /// and example appended; `enum_name` is the spelling the target uses for
 /// the linked enum (the C name in the header, the binding name elsewhere).
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::{DocStyle, field_doc};
+///
+/// let longitude = &api.struct_named("ObserverC").ok_or("declared")?.fields[0];
+/// assert_eq!(field_doc(longitude, DocStyle::Prose), "Degrees, east positive.\nUnit: deg. Range: [-180,180]. Example: 85.3240.");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn field_doc(field: &FieldDef, style: DocStyle) -> String {
     field_doc_with(field, style, field.meta.enum_name.as_deref())
 }
 
 /// [`field_doc`] with the linked enum spelled as given.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::{DocStyle, field_doc_with};
+///
+/// // The linked enum spelled as the target spells it.
+/// let request = api.struct_named("PositionRequestC").ok_or("declared")?;
+/// let scale = request.fields.iter().find(|field| field.name == "scale").ok_or("a field")?;
+/// assert!(field_doc_with(scale, DocStyle::Prose, Some("ts_time_scale")).contains("Enum: ts_time_scale."));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn field_doc_with(field: &FieldDef, style: DocStyle, enum_name: Option<&str>) -> String {
     let mut text = field.doc.clone();
@@ -123,6 +190,14 @@ fn capitalised(word: &str) -> String {
 /// dropped rather than shown as if it were theirs. A block tagged with
 /// another language (`text`, `json`) is kept. A dropped example leaves
 /// the blank lines either side of it, and one of them goes with it.
+///
+/// ```
+/// use teistro_idl::emit::without_rust_examples;
+///
+/// let doc = "The scale.\n\n```\nassert!(true);\n```\n\n```text\n1 2 3\n```";
+/// // The Rust example goes, with one of its blank lines; a text block stays.
+/// assert_eq!(without_rust_examples(doc), "The scale.\n\n```text\n1 2 3\n```");
+/// ```
 #[must_use]
 pub fn without_rust_examples(text: &str) -> String {
     const RUST: [&str; 6] = [
@@ -172,6 +247,12 @@ pub fn without_rust_examples(text: &str) -> String {
 }
 
 /// A comment where every line carries the same marker (`/// `, `// `).
+///
+/// ```
+/// use teistro_idl::emit::line_comment;
+///
+/// assert_eq!(line_comment("One.\n\nTwo.", "  ", "/// "), "  /// One.\n  ///\n  /// Two.\n");
+/// ```
 #[must_use]
 pub fn line_comment(text: &str, indent: &str, marker: &str) -> String {
     let text = without_rust_examples(text);
@@ -188,6 +269,14 @@ pub fn line_comment(text: &str, indent: &str, marker: &str) -> String {
 
 /// A `/** … */` block, as in C and JavaScript documentation comments;
 /// empty text renders nothing, and a `*/` inside the text is defused.
+///
+/// ```
+/// use teistro_idl::emit::block_comment;
+///
+/// // A `*/` in the text cannot end the comment early.
+/// assert_eq!(block_comment("a */ b", ""), "/**\n * a * / b\n */\n");
+/// assert_eq!(block_comment("", ""), "");
+/// ```
 #[must_use]
 pub fn block_comment(text: &str, indent: &str) -> String {
     let text = without_rust_examples(text);

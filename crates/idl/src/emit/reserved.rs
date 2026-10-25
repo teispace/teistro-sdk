@@ -20,6 +20,13 @@
 //! ```
 
 /// Dart's reserved words, which no identifier may be.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{DART, renamed};
+///
+/// // Dart appends `Value` to a name it reserves.
+/// assert_eq!(renamed("true", DART, "Value"), "trueValue");
+/// ```
 pub const DART: &[&str] = &[
     "true", "false", "null", "default", "new", "in", "is", "as", "do", "if", "for", "switch",
     "this", "super", "var", "final", "const", "class", "enum", "void", "return", "with", "extends",
@@ -31,6 +38,14 @@ pub const DART: &[&str] = &[
 /// `var`, `yield` …) are legal as a field or a method's name and are left
 /// out. Java is camel case, so the rule is Dart's: `native` becomes
 /// `nativeValue`.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{JAVA, is_reserved};
+///
+/// assert!(is_reserved("long", JAVA) && is_reserved("_", JAVA));
+/// // A contextual keyword is a name.
+/// assert!(!is_reserved("record", JAVA));
+/// ```
 pub const JAVA: &[&str] = &[
     "_",
     "abstract",
@@ -89,6 +104,14 @@ pub const JAVA: &[&str] = &[
 ];
 
 /// Python's hard keywords, which no identifier may be.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{PYTHON, renamed};
+///
+/// // PEP 8's trailing underscore.
+/// assert_eq!(renamed("lambda", PYTHON, "_"), "lambda_");
+/// assert_eq!(renamed("graha", PYTHON, "_"), "graha");
+/// ```
 pub const PYTHON: &[&str] = &[
     "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue",
     "def", "del", "elif", "else", "except", "finally", "for", "from", "global", "if", "import",
@@ -100,6 +123,14 @@ pub const PYTHON: &[&str] = &[
 /// called `Warning` is legal, and silently replaces the builtin exception
 /// for anything that imports the module's names. A record's schema name is
 /// held against this list by the generator, which refuses a clash.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{PYTHON, PYTHON_BUILTINS, is_reserved};
+///
+/// // A builtin a name would shadow, though the language allows it.
+/// assert!(is_reserved("type", PYTHON_BUILTINS) || is_reserved("id", PYTHON_BUILTINS));
+/// assert!(!is_reserved("list", PYTHON));
+/// ```
 pub const PYTHON_BUILTINS: &[&str] = &[
     "ArithmeticError",
     "AssertionError",
@@ -151,14 +182,35 @@ pub const PYTHON_BUILTINS: &[&str] = &[
 /// Python's soft keywords, which are legal identifiers but read as
 /// keywords in the one grammar each belongs to; an emitter may use them
 /// and a reader should be told.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{PYTHON, PYTHON_SOFT, is_reserved};
+///
+/// // A keyword only in a `match` statement.
+/// assert!(is_reserved("match", PYTHON_SOFT) && !is_reserved("match", PYTHON));
+/// ```
 pub const PYTHON_SOFT: &[&str] = &["_", "case", "match", "type"];
 
 /// The names `enum.Enum` keeps for itself, which a member may not take.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{PYTHON_ENUM, renamed};
+///
+/// // An enum member cannot be called `name`: the enum's own attribute is.
+/// assert_eq!(renamed("name", PYTHON_ENUM, "_"), "name_");
+/// ```
 pub const PYTHON_ENUM: &[&str] = &["mro", "name", "value"];
 
 /// JavaScript's and TypeScript's reserved words. Members of a generated
 /// enum are string literals there rather than identifiers, so this list
 /// bears on field and parameter names alone.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{TYPESCRIPT, is_reserved};
+///
+/// assert!(is_reserved("delete", TYPESCRIPT));
+/// assert!(!is_reserved("graha", TYPESCRIPT));
+/// ```
 pub const TYPESCRIPT: &[&str] = &[
     "await",
     "break",
@@ -202,6 +254,13 @@ pub const TYPESCRIPT: &[&str] = &[
 
 /// Rust's keywords, strict and reserved, which an identifier may be only
 /// as a raw identifier.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{RUST, is_reserved};
+///
+/// // Reserved for the future as well as in use.
+/// assert!(is_reserved("type", RUST) && is_reserved("yield", RUST));
+/// ```
 pub const RUST: &[&str] = &[
     "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum", "extern",
     "false", "fn", "for", "gen", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut",
@@ -216,6 +275,15 @@ const RUST_NOT_RAWABLE: &[&str] = &["self", "Self", "super", "crate"];
 /// A C name spelled so Rust accepts it: `r#type` for a keyword, and a
 /// trailing underscore for the four a raw identifier cannot be — the
 /// spelling the engine's own Rust binding gives the same fields.
+///
+/// ```
+/// use teistro_idl::emit::reserved::rust_ident;
+///
+/// assert_eq!(rust_ident("type"), "r#type");
+/// // A raw identifier cannot spell `self`.
+/// assert_eq!(rust_ident("self"), "self_");
+/// assert_eq!(rust_ident("graha"), "graha");
+/// ```
 #[must_use]
 pub fn rust_ident(name: &str) -> String {
     if is_reserved(name, RUST_NOT_RAWABLE) {
@@ -228,6 +296,13 @@ pub fn rust_ident(name: &str) -> String {
 }
 
 /// Whether a name is one of a target's reserved words.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{DART, is_reserved};
+///
+/// assert!(is_reserved("in", DART));
+/// assert!(!is_reserved("In", DART));
+/// ```
 #[must_use]
 pub fn is_reserved(name: &str, list: &[&str]) -> bool {
     list.contains(&name)
@@ -235,6 +310,13 @@ pub fn is_reserved(name: &str, list: &[&str]) -> bool {
 
 /// A name with the target's collision rule applied: `suffix` appended
 /// when the name is reserved, and the name itself when it is not.
+///
+/// ```
+/// use teistro_idl::emit::reserved::{PYTHON, renamed};
+///
+/// assert_eq!(renamed("from", PYTHON, "_"), "from_");
+/// assert_eq!(renamed("into", PYTHON, "_"), "into");
+/// ```
 #[must_use]
 pub fn renamed(name: &str, list: &[&str], suffix: &str) -> String {
     if is_reserved(name, list) {

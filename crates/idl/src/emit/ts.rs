@@ -34,6 +34,14 @@ pub(crate) fn preamble(api: &Api, comment: &str) -> String {
 /// serialised result carries; any other member is its key as the
 /// description records it (`INVALID_ARG`, and the `Kind` enum's
 /// `avastha_baladi`).
+///
+/// ```
+/// use teistro_idl::emit::ts::member_value;
+///
+/// assert_eq!(member_value(Some("graha"), "SUN"), "graha.SUN");
+/// // A closed enum's member is its key alone.
+/// assert_eq!(member_value(None, "INVALID_ARG"), "INVALID_ARG");
+/// ```
 #[must_use]
 pub fn member_value(kind: Option<&str>, key: &str) -> String {
     kind.map_or_else(|| key.to_string(), |kind| format!("{kind}.{key}"))
@@ -41,6 +49,19 @@ pub fn member_value(kind: Option<&str>, key: &str) -> String {
 
 /// The member a value from a newer library or a runtime registration
 /// falls into; the catalogue's kinds carry it (design §3.6).
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::ts::{self, UNKNOWN_MEMBER};
+///
+/// // Every catalogue union carries it, for a member a newer library names.
+/// assert!(ts::catalogue_declarations(&api).contains(&format!("'{UNKNOWN_MEMBER}'")));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const UNKNOWN_MEMBER: &str = "unknown";
 
 /// The TypeScript type of a scalar.
@@ -114,6 +135,21 @@ pub(crate) fn article(word: &str) -> &'static str {
 /// A branded number is its own type, so a latitude cannot be passed where
 /// a longitude is wanted; the layer's constructor is the only way to make
 /// one, and it checks the range (ADR-0023, and Phase 1's exit criterion).
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::ts;
+///
+/// // A latitude and a longitude are two types, each declared once.
+/// let brands: Vec<String> = ts::brands(&api).into_iter().map(|(brand, _)| brand).collect();
+/// assert!(brands.contains(&"latitude".to_string()) && brands.contains(&"longitude".to_string()));
+/// assert!(brands.windows(2).all(|pair| pair[0] != pair[1]));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn brands(api: &Api) -> Vec<(String, &FieldDef)> {
     let mut seen: BTreeSet<&str> = BTreeSet::new();
@@ -149,6 +185,19 @@ fn ts_plain(ty: &TypeRef, enum_name: Option<&str>) -> String {
 /// Renders `catalogue.d.ts`: every enum as a string union with the table
 /// beside it that `catalogue.js` defines. No imports, so it is the file
 /// every other declaration builds on.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::ts;
+///
+/// // The catalogue as string unions, as `cargo xtask gen ffi` writes it.
+/// assert_eq!(ts::catalogue_declarations(&api), std::fs::read_to_string(root.join("bindings/node/lib/catalogue.d.ts"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn catalogue_declarations(api: &Api) -> String {
     let mut out = preamble(api, "//");
@@ -175,6 +224,19 @@ pub fn catalogue_declarations(api: &Api) -> String {
 
 /// Renders `types.d.ts`: the boundary's value types and the error class,
 /// which exist at compile time only.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::ts;
+///
+/// // Every boundary struct as a TypeScript interface.
+/// assert_eq!(ts::type_declarations(&api), std::fs::read_to_string(root.join("bindings/node/lib/types.d.ts"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn type_declarations(api: &Api) -> String {
     let mut out = preamble(api, "//");
@@ -228,6 +290,19 @@ fn render_brands(out: &mut String, api: &Api) {
 }
 
 /// Renders `blob.d.ts`: each result blob's decoded shape and its decoder.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::ts;
+///
+/// // Every decoded blob's type.
+/// assert_eq!(ts::blob_declarations(&api), std::fs::read_to_string(root.join("bindings/node/lib/blob.d.ts"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn blob_declarations(api: &Api) -> String {
     let mut out = preamble(api, "//");
@@ -387,6 +462,19 @@ fn typed_array(scalar: Scalar) -> &'static str {
 }
 
 /// The decoded name of a blob schema: `positions` becomes `Positions`.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::ts;
+///
+/// let positions = api.blob_named("positions").ok_or("declared")?;
+/// assert_eq!(ts::blob_type(positions), "Positions");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn blob_type(schema: &BlobSchema) -> String {
     pascal(&schema.name)
@@ -597,6 +685,19 @@ fn render_brand_constructors(out: &mut String, api: &Api) {
 
 /// The two ends of a branded field's range, when it states one as
 /// `[low,high]`. Every binding checks the same numbers.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::ts;
+///
+/// let longitude = &api.struct_named("ObserverC").ok_or("declared")?.fields[0];
+/// assert_eq!(ts::brand_range(longitude), Some(("-180", "180")));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn brand_range(field: &FieldDef) -> Option<(&str, &str)> {
     let range = field.meta.range.as_deref()?;
@@ -609,6 +710,19 @@ pub fn brand_range(field: &FieldDef) -> Option<(&str, &str)> {
 /// Renders `catalogue.js`: the `const` tables the declarations promise,
 /// one exported constant per enum so a bundler keeps only what is used,
 /// and an id table for every enum a result blob's columns carry.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::ts;
+///
+/// // The tables the catalogue's declarations promise.
+/// assert_eq!(ts::tables(&api), std::fs::read_to_string(root.join("bindings/node/lib/catalogue.js"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn tables(api: &Api) -> String {
     let mut out = preamble(api, "//");
@@ -657,6 +771,19 @@ pub fn tables(api: &Api) -> String {
 }
 
 /// Renders `blob.js`: one decoder per schema, over the `TSRB` layout.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::ts;
+///
+/// // The blob decoders the declarations promise.
+/// assert_eq!(ts::decoders(&api), std::fs::read_to_string(root.join("bindings/node/lib/blob.js"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn decoders(api: &Api) -> String {
     let mut out = preamble(api, "//");

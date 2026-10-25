@@ -33,6 +33,7 @@ const EXAMPLED: &[&str] = &[
     "teistro-gochar",
     "teistro-hellenistic",
     "teistro-houses",
+    "teistro-idl",
     "teistro-interpret",
     "teistro-intl",
     "teistro-kp",

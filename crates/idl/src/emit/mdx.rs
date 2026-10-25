@@ -32,6 +32,19 @@ use crate::rules;
 
 /// One generated file: where it goes under the reference directory, and
 /// what is in it.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::mdx::{self, Reach};
+///
+/// let pages = mdx::render(&api, &Reach::new());
+/// assert_eq!((pages[0].path.as_str(), pages[1].path.as_str()), ("meta.json", "index.mdx"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Page {
     /// The path relative to the reference directory, with forward
@@ -43,6 +56,23 @@ pub struct Page {
 
 /// An operation of the surface that reaches an entry point: its
 /// canonical path and how each binding spells it.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::mdx::{self, Reach, Reached, Spelling};
+///
+/// // What the hand-written layers call the entry point, one tab per binding.
+/// let node = Spelling { binding: "Node".into(), language: "js".into(), member: "ctx.calendar.convert".into() };
+/// let reach = Reach::from([("ts_calendar_convert".to_string(), vec![Reached { path: "calendar.convert".into(), spellings: vec![node] }])]);
+/// let pages = mdx::render(&api, &reach);
+/// let page = pages.iter().find(|page| page.path.ends_with("ts_calendar_convert.mdx")).ok_or("a page")?;
+/// assert!(page.text.contains("ctx.calendar.convert"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Reached {
     /// The canonical `area.operation` path, `calendar.convert`.
@@ -52,6 +82,13 @@ pub struct Reached {
 }
 
 /// One binding's spelling of an operation.
+///
+/// ```
+/// use teistro_idl::emit::mdx::Spelling;
+///
+/// let python = Spelling { binding: "Python".into(), language: "python".into(), member: "ctx.calendar.convert".into() };
+/// assert_eq!(python.language, "python");
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Spelling {
     /// The tab a reader picks: `Node`, `Python`.
@@ -64,9 +101,38 @@ pub struct Spelling {
 
 /// What reaches each entry point, by its name; an entry point absent here
 /// is one no operation of the surface calls.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::mdx::{self, Reach};
+///
+/// // With nothing reaching it, a page says so rather than inventing a call.
+/// let pages = mdx::render(&api, &Reach::new());
+/// assert!(pages.iter().any(|page| page.path.ends_with("ts_positions.mdx")));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub type Reach = BTreeMap<String, Vec<Reached>>;
 
 /// Every page of the generated reference, in the order they are written.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::mdx::{self, Reach};
+///
+/// // A page for every entry point, grouped by the file it comes from.
+/// let pages = mdx::render(&api, &Reach::new());
+/// let entry_points = pages.iter().filter(|page| page.path.contains("/ts_")).count();
+/// assert_eq!(entry_points, api.functions.len());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn render(api: &Api, reach: &Reach) -> Vec<Page> {
     let groups = groups(api);

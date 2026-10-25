@@ -27,9 +27,36 @@ use crate::model::{Api, EnumDef, FieldDef, FunctionDef, Scalar, StructDef, Struc
 use crate::names::{binding_type_name, c_type_name, camel, screaming};
 
 /// The package every public type is in.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::java::{self, PACKAGE};
+///
+/// // Every public type, under the package's path.
+/// let dir = PACKAGE.replace('.', "/");
+/// assert!(java::render(&api).iter().any(|file| file.path == format!("{dir}/Graha.java")));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const PACKAGE: &str = "com.teispace.teistro";
 
 /// The package of the raw layer.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::java::{self, FFI_PACKAGE};
+///
+/// let raw = format!("package {FFI_PACKAGE};");
+/// assert!(java::render(&api).iter().any(|file| file.text.contains(&raw)));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const FFI_PACKAGE: &str = "com.teispace.teistro.ffi";
 
 /// The member a value from a newer library falls into.
@@ -37,6 +64,20 @@ const UNKNOWN: &str = "UNKNOWN";
 
 /// One generated source file: its path under the generated source root
 /// (`com/teispace/teistro/Graha.java`), and its text.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::java;
+///
+/// let files = java::render(&api);
+/// let graha = files.iter().find(|file| file.path.ends_with("/Graha.java")).ok_or("rendered")?;
+/// assert!(graha.text.contains("public enum Graha"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct File {
     /// Where the file goes, relative to the source root.
@@ -46,6 +87,23 @@ pub struct File {
 }
 
 /// Every generated file of the Java binding.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::java;
+///
+/// // One file per path.
+/// let files = java::render(&api);
+/// let mut paths: Vec<&str> = files.iter().map(|file| file.path.as_str()).collect();
+/// paths.sort_unstable();
+/// paths.dedup();
+/// assert_eq!(paths.len(), files.len());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Panics
 ///

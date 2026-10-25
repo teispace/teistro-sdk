@@ -13,6 +13,19 @@ use crate::names::{c_constant_name, c_enum_member, c_type_name};
 use crate::rules::has_handshake;
 
 /// Renders the header.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::c;
+///
+/// // The header the C binding ships, which `cargo xtask gen ffi` writes.
+/// assert_eq!(c::render(&api), std::fs::read_to_string(root.join("bindings/c/include/teistro.h"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn render(api: &Api) -> String {
     let mut out = String::new();
@@ -152,6 +165,19 @@ fn render_structs(out: &mut String, api: &Api) {
 
 /// One function's C declaration, without its documentation: what the
 /// header states and what the reference quotes, so the two cannot drift.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::c;
+///
+/// let version = api.function_named("ts_abi_version").ok_or("declared")?;
+/// assert_eq!(c::c_signature(&api, version), "uint32_t ts_abi_version(void);");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn c_signature(api: &Api, f: &FunctionDef) -> String {
     let params: Vec<String> = f
@@ -245,6 +271,20 @@ fn c_note(api: &Api, f: &FieldDef) -> String {
 }
 
 /// The C spelling of a boundary type.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::TypeRef;
+/// use teistro_idl::emit::c;
+///
+/// let handle = TypeRef::pointer(TypeRef::Opaque { name: "TsContext".into() }, false);
+/// assert_eq!(c::c_type(&api, &handle), "const ts_context *");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn c_type(api: &Api, ty: &TypeRef) -> String {
     match ty {

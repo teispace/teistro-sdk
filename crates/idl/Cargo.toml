@@ -24,7 +24,12 @@ extract = ["dep:syn", "dep:proc-macro2"]
 [dependencies]
 proc-macro2 = { version = "1", optional = true, features = ["span-locations"] }
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+# The validator corpus is written from a `Value`, whose keys keep the
+# order they were written in only under `preserve_order`. Every build
+# with `teistro-intl` has it on already; asking for it here makes this
+# crate's output its own rather than its neighbours' (the corpus came out
+# sorted, and unlike its checked-in file, when this crate was built alone).
+serde_json = { version = "1", features = ["preserve_order"] }
 syn = { version = "2", optional = true, features = ["full", "extra-traits", "parsing"] }
 
 [lints]

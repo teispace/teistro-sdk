@@ -14,6 +14,19 @@ use super::ts::{brand_range, brands};
 use crate::model::Api;
 
 /// The corpus's schema.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::validators::{self, SCHEMA};
+///
+/// let corpus: serde_json::Value = serde_json::from_str(&validators::corpus(&api)?)?;
+/// assert_eq!(corpus["schema"], SCHEMA);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const SCHEMA: &str = "teistro-validators/1";
 
 /// The double after `x` towards positive infinity, for a finite `x`: the
@@ -48,6 +61,19 @@ fn written(x: f64) -> String {
 }
 
 /// Renders `idl/validators.json`.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::validators;
+///
+/// // What every binding's constructor is held to, as `cargo xtask gen ffi` writes it.
+/// assert_eq!(validators::corpus(&api)?, std::fs::read_to_string(root.join("idl/validators.json"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

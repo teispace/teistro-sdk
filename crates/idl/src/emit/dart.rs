@@ -63,6 +63,19 @@ pub(crate) fn preamble(api: &Api, ignores: &str) -> String {
 
 /// Renders `catalogue.dart`: every enum, with the id the C boundary
 /// carries and the key every pack, fixture and serialised result uses.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::dart;
+///
+/// // The Dart binding's catalogue, as `cargo xtask gen ffi` writes it.
+/// assert_eq!(dart::catalogue(&api), std::fs::read_to_string(root.join("bindings/dart/lib/src/catalogue.dart"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn catalogue(api: &Api) -> String {
     let mut out = preamble(api, "\n// ignore_for_file: constant_identifier_names\n");
@@ -231,6 +244,19 @@ fn dart_type(api: &Api, ty: &TypeRef) -> String {
 
 /// Renders `ffi.dart`: the structs, the looked-up functions, the value
 /// classes and the context.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::dart;
+///
+/// // The Dart binding's raw layer.
+/// assert_eq!(dart::declarations(&api), std::fs::read_to_string(root.join("bindings/dart/lib/src/ffi.dart"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn declarations(api: &Api) -> String {
     let mut out = preamble(
@@ -1315,6 +1341,19 @@ fn byte_data_getter(scalar: Scalar) -> &'static str {
 
 /// Renders `blob.dart`: one decoder per result blob over the `TSRB`
 /// layout, the columns as views over the bytes rather than copies.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+///
+/// use teistro_idl::emit::dart;
+///
+/// // The Dart binding's blob decoders.
+/// assert_eq!(dart::decoders(&api), std::fs::read_to_string(root.join("bindings/dart/lib/src/blob.dart"))?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn decoders(api: &Api) -> String {
     let mut out = preamble(
