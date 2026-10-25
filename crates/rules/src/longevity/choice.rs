@@ -30,6 +30,13 @@ use crate::language::Body;
 const SAVANA_TO_SOLAR: f64 = 360.0 / 365.0;
 
 /// The eight spans of life *Jataka Parijata* ch. 5 v. 1 names.
+///
+/// ```
+/// use teistro_rules::longevity::Ayus;
+///
+/// assert_eq!(serde_json::to_string(&Ayus::Bhinnashtakavarga)?, r#""bhinnashtakavarga""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -70,6 +77,17 @@ const NAMES: [(Body, Ayus); 8] = [
 impl Ayus {
     /// The span a body names when it is strongest (v. 33); none for the
     /// nodes, which the verse does not weigh.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    /// use teistro_rules::longevity::Ayus;
+    ///
+    /// assert_eq!(Ayus::named_by(Body::Graha(Graha::Moon)), Some(Ayus::Nisarga));
+    /// assert_eq!(Ayus::named_by(Body::Lagna), Some(Ayus::Amsa));
+    /// // The verse does not weigh the nodes.
+    /// assert_eq!(Ayus::named_by(Body::Graha(Graha::Rahu)), None);
+    /// ```
     #[must_use]
     pub fn named_by(body: Body) -> Option<Ayus> {
         NAMES
@@ -80,6 +98,28 @@ impl Ayus {
 }
 
 /// One candidate of v. 33.
+///
+/// ```
+/// # use teistro_rules::{StrengthMeasure, Strengths};
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::Body;
+/// #
+/// # // The rays' figure (p. 251), in Shadbala's rupas.
+/// # let strengths = Strengths {
+/// #     measure: StrengthMeasure::Shadbala,
+/// #     of: [Some(8.154), Some(7.289), Some(7.354), Some(7.550), Some(5.678),
+/// #          Some(7.719), Some(5.053), None, None, None],
+/// #     required: [None; 10],
+/// # };
+///
+/// use teistro_rules::longevity::{Ayus, Computed, span_choice};
+///
+/// let choice = span_choice(&strengths, Some(7.345), Computed::default());
+/// let lagna = choice.candidates[7];
+/// assert_eq!((lagna.by, lagna.ayus, lagna.strength), (Body::Lagna, Ayus::Amsa, Some(7.345)));
+/// // No span was computed, so none carries years.
+/// assert!(choice.candidates.iter().all(|candidate| candidate.years.is_none()));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Candidate {
@@ -104,6 +144,30 @@ pub struct Candidate {
 
 /// The spans already computed, whose years a candidate carries; each left
 /// out is a span whose candidate carries none.
+///
+/// ```
+/// # use teistro_rules::{StrengthMeasure, Strengths};
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::Body;
+/// #
+/// # // The rays' figure (p. 251), in Shadbala's rupas.
+/// # let strengths = Strengths {
+/// #     measure: StrengthMeasure::Shadbala,
+/// #     of: [Some(8.154), Some(7.289), Some(7.354), Some(7.550), Some(5.678),
+/// #          Some(7.719), Some(5.053), None, None, None],
+/// #     required: [None; 10],
+/// # };
+///
+/// use teistro_rules::longevity::{Computed, dasayus, span_choice};
+///
+/// // Jupiter names the dashas' span; given it, his candidate carries its years.
+/// let span = dasayus(Graha::Venus, 0.25).ok_or("Venus lords a dasha")?;
+/// let computed = Computed { dasayus: Some(&span), ..Computed::default() };
+/// let jupiter = span_choice(&strengths, None, computed).candidates[5];
+/// assert_eq!(jupiter.years, Some(105.0));
+/// assert_eq!(jupiter.solar_years, Some(105.0 * 360.0 / 365.0));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Computed<'a> {
     /// Pinda, Nisarga and Amsa.
@@ -119,6 +183,30 @@ pub struct Computed<'a> {
 }
 
 /// The span the strongest names, with every candidate weighed.
+///
+/// ```
+/// # use teistro_rules::{StrengthMeasure, Strengths};
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::Body;
+/// #
+/// # // The rays' figure (p. 251), in Shadbala's rupas.
+/// # let strengths = Strengths {
+/// #     measure: StrengthMeasure::Shadbala,
+/// #     of: [Some(8.154), Some(7.289), Some(7.354), Some(7.550), Some(5.678),
+/// #          Some(7.719), Some(5.053), None, None, None],
+/// #     required: [None; 10],
+/// # };
+///
+/// use teistro_rules::longevity::{Computed, span_choice};
+///
+/// // Shadbala does not reach the lagna: the Sun is the strongest of the seven weighed.
+/// let choice = span_choice(&strengths, None, Computed::default());
+/// assert_eq!(choice.strongest, Some(Body::Graha(Graha::Sun)));
+/// assert!(!choice.all_weighed);
+/// // Two at the greatest strength name nothing.
+/// let tied = span_choice(&strengths, Some(8.154), Computed::default());
+/// assert_eq!((tied.strongest, tied.ayus), (None, None));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SpanChoice {

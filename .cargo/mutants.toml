@@ -14,7 +14,7 @@ all_features = true
 exclude_re = [
   # The samudaya product is (rashi + graha) * 7 / 27 over whole pindas,
   # which is exactly 100 only at a sum of 2700 / 7, not a whole number.
-  'crates/rules/src/longevity/ashtakavarga\.rs:426:35: replace > with >= in Evaluator<._>::ashtakavarga_ayus',
+  'crates/rules/src/longevity/ashtakavarga\.rs:819:35: replace > with >= in Evaluator<._>::ashtakavarga_ayus',
   # A child's end is `from + days * s / total`; at `s == total` the
   # product's rounding is an ulp of a period's days (about 1e-12 for
   # 7000), below a JD's own ulp (4.7e-10 near 2.4e6), so the sum lands on
@@ -36,11 +36,11 @@ exclude_re = [
   'crates/dasha/src/kalachakra\.rs:520:36: replace \|\| with && in <impl Timeline for KalachakraDasha>::mahadasha',
   # A body on either node's sign has already ended the count, so `from`
   # never equals `arc` where the side is chosen.
-  'crates/rules/src/eval\.rs:853:72: replace > with >= in Evaluator<.a>::predicate',
+  'crates/rules/src/eval\.rs:1763:72: replace > with >= in Evaluator<.a>::predicate',
   # Two strengths a span's chosen by differ by exactly the epsilon only by
   # chance no chart's arithmetic makes, so the bound's own point is never
   # met.
-  'crates/rules/src/longevity/ayurdaya\.rs:290:67: replace < with <= in Ayurdaya::chosen',
+  'crates/rules/src/longevity/ayurdaya\.rs:719:67: replace < with <= in Ayurdaya::chosen',
   # Two distinct own signs stand at distinct counts from the graha, so
   # the greater count is never a tie.
   'crates/dasha/src/jaimini\.rs:585:33: replace > with >= in graha_arudha',

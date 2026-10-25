@@ -33,6 +33,14 @@ const GRAHAS: [Graha; 7] = [
 const STAR: f64 = 360.0 / 27.0;
 
 /// Which untraversed part a graha's years are taken in proportion to.
+///
+/// ```
+/// use teistro_rules::longevity::{ChakraPortion, untraversed};
+///
+/// // Aries 15°: 100 of Bharani's 800 minutes gone, and 100 of its first pada's 200.
+/// assert_eq!(untraversed(15.0, ChakraPortion::Star), 0.875);
+/// assert!((untraversed(15.0, ChakraPortion::Pada) - 0.5).abs() < 1e-12);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -45,6 +53,15 @@ pub enum ChakraPortion {
 }
 
 /// The choices Chakrayus is read under.
+///
+/// ```
+/// use teistro_rules::longevity::{ChakraPortion, ChakrayusRules};
+///
+/// let rules: ChakrayusRules = serde_json::from_str(r#"{"portion": "pada"}"#)?;
+/// assert_eq!(rules.portion, ChakraPortion::Pada);
+/// assert_eq!(serde_json::from_str::<ChakrayusRules>("{}")?, ChakrayusRules::default());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -54,6 +71,47 @@ pub struct ChakrayusRules {
 }
 
 /// One graha's part of Chakrayus.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+///
+/// # use teistro_rules::longevity::ChakrayusRules;
+/// #
+/// # let span = evaluator.chakrayus(ChakrayusRules::default());
+///
+/// // The Moon at Aries 15° keeps seven eighths of her 21 years.
+/// let moon = span.grahas[1];
+/// assert_eq!((moon.graha, moon.untraversed), (Graha::Moon, 0.875));
+/// assert!((moon.years - 18.375).abs() < 1e-12);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChakraGiver {
@@ -66,6 +124,46 @@ pub struct ChakraGiver {
 }
 
 /// The seven grahas' years in the wheel of time and their sum.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+///
+/// # use teistro_rules::longevity::ChakrayusRules;
+/// #
+/// # let span = evaluator.chakrayus(ChakrayusRules::default());
+///
+/// // Seven eighths of the seven's 72 years.
+/// assert!((span.years - 63.0).abs() < 1e-12);
+/// assert_eq!(span.grahas.map(|giver| giver.graha)[6], Graha::Saturn);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Chakrayus {
@@ -80,6 +178,16 @@ pub struct Chakrayus {
 /// A graha's years in the wheel of time (ch. 17 v. 6): its own signs'
 /// years, which v. 6 says "correspond to the years of their lords"; none
 /// for a node, which owns no sign.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rules::longevity::chakra_years;
+///
+/// // ch. 17 v. 6: the Moon 21, Saturn 4; the nodes own no sign.
+/// assert_eq!(chakra_years(Graha::Moon), Some(21.0));
+/// assert_eq!(chakra_years(Graha::Saturn), Some(4.0));
+/// assert_eq!(chakra_years(Graha::Ketu), None);
+/// ```
 #[must_use]
 pub fn chakra_years(graha: Graha) -> Option<f64> {
     let sign = graha.attributes().own.first()?;
@@ -87,6 +195,16 @@ pub fn chakra_years(graha: Graha) -> Option<f64> {
 }
 
 /// The untraversed fraction of the nakshatra or pada a longitude is in.
+///
+/// ```
+/// use teistro_rules::longevity::{ChakraPortion, untraversed};
+///
+/// // The note's Sun at 1s 2° 55′ 30″: 424.5 of Krittika's 800 minutes left (p. 256).
+/// let sun = 32.0 + 55.0 / 60.0 + 30.0 / 3600.0;
+/// assert!((untraversed(sun, ChakraPortion::Star) - 424.5 / 800.0).abs() < 1e-12);
+/// // A star's first instant leaves the whole.
+/// assert_eq!(untraversed(0.0, ChakraPortion::Star), 1.0);
+/// ```
 #[must_use]
 pub fn untraversed(longitude: f64, portion: ChakraPortion) -> f64 {
     let arc = match portion {
@@ -98,6 +216,49 @@ pub fn untraversed(longitude: f64, portion: ChakraPortion) -> f64 {
 
 impl Evaluator<'_> {
     /// Chakrayus under `rules` (*Jataka Parijata* ch. 5 v. 26).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings};
+    /// #
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    ///
+    /// # use teistro_rules::longevity::ChakrayusRules;
+    /// #
+    /// # let span = evaluator.chakrayus(ChakrayusRules::default());
+    ///
+    /// use teistro_rules::longevity::ChakraPortion;
+    ///
+    /// // Read by the pada, each keeps half of its years.
+    /// let by_pada = evaluator.chakrayus(ChakrayusRules { portion: ChakraPortion::Pada });
+    /// assert!((by_pada.years - 36.0).abs() < 1e-12);
+    /// assert_eq!(span.rules, ChakrayusRules::default());
+    /// ```
     #[must_use]
     pub fn chakrayus(&self, rules: ChakrayusRules) -> Chakrayus {
         let chart = self.chart();

@@ -46,6 +46,50 @@ const RAYS: [(Graha, f64); 7] = [
 ];
 
 /// Which place doubles a graha's rays or takes a share of them (C306).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+///
+/// # use teistro_rules::longevity::RasmiRules;
+/// #
+/// # let rays = evaluator.rasmi(RasmiRules::default());
+///
+/// use teistro_rules::longevity::RayPlace;
+///
+/// // The Sun at Aries 15° is exalted by the sign, and in Libra's dwadasamsa, his debilitation.
+/// let by_sign = evaluator.rasmi(RasmiRules { place: RayPlace::Sign }).grahas[0];
+/// let by_dwadasamsa = rays.grahas[0];
+/// assert!(by_sign.doubled);
+/// assert_eq!(by_dwadasamsa.enemy_share, 1.0 / 16.0);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -63,6 +107,16 @@ pub enum RayPlace {
 /// The choices the rays are read under. Every field is optional where a
 /// request reads it, and the defaults are the note's, whose figure the
 /// kernel reproduces.
+///
+/// ```
+/// use teistro_rules::longevity::{RasmiRules, RayPlace};
+///
+/// // The note's reading unless asked otherwise.
+/// assert_eq!(RasmiRules::default().place, RayPlace::Dwadasamsa);
+/// let rules: RasmiRules = serde_json::from_str(r#"{"place": "sign"}"#)?;
+/// assert_eq!(rules, RasmiRules::VERSE);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -73,12 +127,63 @@ pub struct RasmiRules {
 
 impl RasmiRules {
     /// v. 24 as the verse reads: the place by the sign.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{RasmiRules, RayPlace};
+    ///
+    /// assert_eq!(RasmiRules::VERSE.place, RayPlace::Sign);
+    /// ```
     pub const VERSE: RasmiRules = RasmiRules {
         place: RayPlace::Sign,
     };
 }
 
 /// Whether a graha is rising towards its exaltation or falling from it.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+///
+/// # use teistro_rules::longevity::RasmiRules;
+/// #
+/// # let rays = evaluator.rasmi(RasmiRules::default());
+///
+/// use teistro_rules::longevity::Facing;
+///
+/// // Past his exaltation at Aries 10°, the Sun falls towards Libra.
+/// assert_eq!(rays.grahas[0].facing, Facing::Away);
+/// // Saturn at Aries 15°, short of his debilitation at Aries 20°, still falls;
+/// // Jupiter climbs towards Cancer 5°.
+/// assert_eq!(rays.grahas[6].facing, Facing::Away);
+/// assert_eq!(rays.grahas[4].facing, Facing::Towards);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -92,6 +197,48 @@ pub enum Facing {
 }
 
 /// One graha's rays and years, step by step.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+///
+/// # use teistro_rules::longevity::RasmiRules;
+/// #
+/// # let rays = evaluator.rasmi(RasmiRules::default());
+///
+/// // The Sun 5° past deep exaltation: 175 of 180 degrees from debilitation.
+/// let sun = rays.grahas[0];
+/// assert!((sun.basic - 10.0 * 175.0 / 180.0).abs() < 1e-12);
+/// assert!((sun.rays - sun.basic * 15.0 / 16.0).abs() < 1e-12);
+/// assert!(!sun.eclipsed);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaRays {
@@ -120,6 +267,46 @@ pub struct GrahaRays {
 
 /// The seven grahas' rays, the class of life their sum gives, and the years
 /// they give.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+///
+/// # use teistro_rules::longevity::RasmiRules;
+/// #
+/// # let rays = evaluator.rasmi(RasmiRules::default());
+///
+/// assert!((rays.total - rays.grahas.iter().map(|one| one.rays).sum::<f64>()).abs() < 1e-12);
+/// assert_eq!(rays.class, teistro_rules::longevity::class_of_rays(rays.total));
+/// assert!(rays.years > 0.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Rasmi {
@@ -138,6 +325,16 @@ pub struct Rasmi {
 
 /// The class of life a total of rays gives (Jatakadesa, quoted p. 251):
 /// "exceed 25" long, "between 15 and 25" medium, "short of 15" short.
+///
+/// ```
+/// use teistro_rules::LifeClass;
+/// use teistro_rules::longevity::class_of_rays;
+///
+/// assert_eq!(class_of_rays(30.0), LifeClass::Long);
+/// // Twenty-five is medium: long must exceed it.
+/// assert_eq!(class_of_rays(25.0), LifeClass::Medium);
+/// assert_eq!(class_of_rays(14.0), LifeClass::Short);
+/// ```
 #[must_use]
 pub fn class_of_rays(total: f64) -> LifeClass {
     if total > 25.0 {
@@ -175,6 +372,16 @@ pub fn rays_by_distance(graha: Graha, longitude: f64, full: f64) -> Option<f64> 
 
 /// The dwadasamsa sign of a longitude: the sign itself for its first
 /// twelfth, and each twelfth after it the next sign.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_rules::longevity::dwadasamsa_of;
+///
+/// // A sign's first twelfth is its own; each after it the next sign.
+/// assert_eq!(dwadasamsa_of(1.0), Rashi::Aries);
+/// assert_eq!(dwadasamsa_of(15.0), Rashi::Libra);
+/// assert_eq!(dwadasamsa_of(359.9), Rashi::Aquarius);
+/// ```
 #[must_use]
 pub fn dwadasamsa_of(longitude: f64) -> Rashi {
     let longitude = longitude.rem_euclid(360.0);
@@ -289,6 +496,48 @@ impl Evaluator<'_> {
     /// The seven grahas' rays, the class of life their total gives and the
     /// years they give, under `rules` (*Jataka Parijata* ch. 5 vv. 22 to
     /// 25).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings};
+    /// #
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    ///
+    /// # use teistro_rules::longevity::RasmiRules;
+    /// #
+    /// # let rays = evaluator.rasmi(RasmiRules::default());
+    ///
+    /// // Retrograde, Mars's rays are doubled however his place stands.
+    /// chart.placements[Body::Graha(Graha::Mars).index()].retrograde = true;
+    /// let again = Evaluator::new(&chart, Readings::TEXTS).rasmi(RasmiRules::default());
+    /// assert!(again.grahas[2].doubled);
+    /// assert!(again.total > rays.total);
+    /// ```
     #[must_use]
     pub fn rasmi(&self, rules: RasmiRules) -> Rasmi {
         let chart = self.chart();

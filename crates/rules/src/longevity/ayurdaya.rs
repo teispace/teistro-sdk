@@ -48,6 +48,46 @@ const GRAHAS: [Graha; 7] = [
 const BENEFICS: [Graha; 4] = [Graha::Moon, Graha::Mercury, Graha::Jupiter, Graha::Venus];
 
 /// Which span.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::AyurdayaRules;
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+///
+/// use teistro_rules::longevity::Method;
+///
+/// assert_eq!(spans.amsayu.method, Method::Amsayu);
+/// assert_eq!(serde_json::to_string(&Method::Jeevasarman)?, r#""jeevasarman""#);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -71,6 +111,12 @@ impl Method {
     /// `state-readings-measured.md` reads the size of this vocabulary from
     /// the type, after a prose sentence put the maraka reasons at fifteen
     /// when [`super::Reason::ALL`] has twenty.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::Method;
+    ///
+    /// assert_eq!(Method::ALL, [Method::Pindayu, Method::Nisargayu, Method::Amsayu, Method::Jeevasarman]);
+    /// ```
     pub const ALL: [Method; 4] = [
         Method::Pindayu,
         Method::Nisargayu,
@@ -80,6 +126,46 @@ impl Method {
 }
 
 /// How several reductions on one graha combine.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::AyurdayaRules;
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+///
+/// use teistro_rules::longevity::Combine;
+///
+/// // Taking each reduction in turn takes no less than the largest alone.
+/// let each = evaluator.ayurdaya(AyurdayaRules { combine: Combine::Each, ..AyurdayaRules::default() });
+/// assert!(each.pindayu.years <= spans.pindayu.years);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -93,6 +179,46 @@ pub enum Combine {
 }
 
 /// How Nisargayu's listed years are given.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::AyurdayaRules;
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+///
+/// use teistro_rules::longevity::Nisarga;
+///
+/// // The listed years alone always sum to 120.
+/// let listed = evaluator.ayurdaya(AyurdayaRules { nisarga: Nisarga::Listed, ..AyurdayaRules::default() });
+/// assert!((listed.nisargayu.years - 120.0).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -108,6 +234,52 @@ pub enum Nisarga {
 }
 
 /// Which graha keeps all its years in an enemy's sign (C302).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::AyurdayaRules;
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+///
+/// use teistro_rules::longevity::EnemyExempt;
+///
+/// // Saturn in Aries, a natural enemy's sign, loses a third of his Pindayu years.
+/// let saturn = spans.pindayu.contributions[6];
+/// assert!((saturn.reductions.enemy_sign - saturn.basic / 3.0).abs() < 1e-12);
+/// // Retrograde, he keeps them under BPHS's reading, and not under the majority's.
+/// chart.placements[Body::Graha(Graha::Saturn).index()].retrograde = true;
+/// let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// assert_eq!(evaluator.ayurdaya(AyurdayaRules::default()).pindayu.contributions[6].reductions.enemy_sign, 0.0);
+/// let mars = AyurdayaRules { enemy_exempt: EnemyExempt::Mars, ..AyurdayaRules::default() };
+/// assert!(evaluator.ayurdaya(mars).pindayu.contributions[6].reductions.enemy_sign > 0.0);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -122,6 +294,14 @@ pub enum EnemyExempt {
 }
 
 /// Whose enmity takes a third in an enemy's sign (C303).
+///
+/// ```
+/// use teistro_rules::longevity::Enmity;
+///
+/// assert_eq!(serde_json::from_str::<Enmity>(r#""compound""#)?, Enmity::Compound);
+/// assert_eq!(Enmity::default(), Enmity::Natural);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -137,6 +317,14 @@ pub enum Enmity {
 }
 
 /// Whose years a malefic rising in the lagna diminishes (C304).
+///
+/// ```
+/// use teistro_rules::longevity::RisingTakes;
+///
+/// assert_eq!(serde_json::from_str::<RisingTakes>(r#""every""#)?, RisingTakes::Every);
+/// assert_eq!(RisingTakes::default(), RisingTakes::Malefic);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -190,6 +378,15 @@ impl AyurdayaRules {
     /// *Jataka Parijata* ch. 5's readings of the reductions it shares with
     /// BPHS: Mars keeps his years in an enemy's sign, enmity is compound,
     /// and a rising malefic takes from every giver. The rest stay BPHS's.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{AyurdayaRules, Combine};
+    ///
+    /// // Only the three reductions differ from BPHS's defaults.
+    /// assert_eq!(AyurdayaRules::PARIJATA.combine, Combine::Largest);
+    /// assert!(!AyurdayaRules::PARIJATA.amsayu_multiplied);
+    /// assert_ne!(AyurdayaRules::PARIJATA, AyurdayaRules::default());
+    /// ```
     pub const PARIJATA: AyurdayaRules = AyurdayaRules {
         combine: Combine::Largest,
         nisarga: Nisarga::LikePindayu,
@@ -201,6 +398,46 @@ impl AyurdayaRules {
 }
 
 /// Who gives years.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::AyurdayaRules;
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+///
+/// use teistro_rules::longevity::Giver;
+///
+/// let givers = spans.pindayu.contributions.map(|one| one.giver);
+/// assert_eq!(givers[0], Giver::Graha(Graha::Sun));
+/// assert_eq!(givers[7], Giver::Lagna);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -212,6 +449,44 @@ pub enum Giver {
 }
 
 /// What each reduction takes from a graha, in years.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::AyurdayaRules;
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+///
+/// // Everything in the lagna: none in the visible half, the twelfth to the seventh.
+/// assert!(spans.pindayu.contributions.iter().all(|one| one.reductions.visible_half == 0.0));
+/// assert_eq!(spans.pindayu.contributions[0].reductions.combustion, 0.0);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Reductions {
@@ -226,6 +501,45 @@ pub struct Reductions {
 }
 
 /// What one giver gives.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::AyurdayaRules;
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+///
+/// // The Sun 5° past his deep exaltation at Aries 10°: 355 of 360 parts of his 19 years.
+/// let sun = spans.pindayu.contributions[0];
+/// assert!((sun.basic - 19.0 * 355.0 / 360.0).abs() < 1e-12);
+/// assert!(sun.net <= sun.basic);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Contribution {
@@ -240,6 +554,44 @@ pub struct Contribution {
 }
 
 /// One span.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::AyurdayaRules;
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+///
+/// let pindayu = spans.pindayu;
+/// let sum: f64 = pindayu.contributions.iter().map(|one| one.net).sum();
+/// assert!((pindayu.years - sum).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AyurdayaSpan"))]
@@ -253,6 +605,43 @@ pub struct Span {
 }
 
 /// The three spans of a chart.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_rules::{Evaluator, Readings};
+/// # use teistro_rules::longevity::AyurdayaRules;
+/// #
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+/// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+///
+/// assert_eq!(spans.rules, AyurdayaRules::default());
+/// assert!(spans.pindayu.years > 0.0 && spans.amsayu.years > 0.0 && spans.jeevasarman.years > 0.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Ayurdaya {
@@ -274,6 +663,46 @@ impl Ayurdaya {
     /// strongest, Pindayu the Sun, Nisargayu the Moon, and the mean of those
     /// tied for strongest. The strengths are the caller's, in one measure; the
     /// kernel carries none for the lagna.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings};
+    /// # use teistro_rules::longevity::AyurdayaRules;
+    /// #
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+    ///
+    /// // The Sun strongest: Pindayu.
+    /// assert_eq!(spans.chosen(1.0, 3.0, 2.0), spans.pindayu.years);
+    /// // The lagna and the Moon tied: the mean of Amsayu and Nisargayu.
+    /// let mean = (spans.amsayu.years + spans.nisargayu.years) / 2.0;
+    /// assert!((spans.chosen(3.0, 1.0, 3.0) - mean).abs() < 1e-12);
+    /// ```
     #[must_use]
     pub fn chosen(&self, lagna: f64, sun: f64, moon: f64) -> f64 {
         let candidates = [
@@ -307,10 +736,29 @@ const NISARGAYU_YEARS: [f64; 7] = [20.0, 1.0, 2.0, 9.0, 18.0, 20.0, 50.0];
 /// of 120 years, 5 days or 17 years, 1 month, 22 days, 8 ghatikas and 34.3
 /// vighatikas" (*Jataka Parijata* ch. 5 v. 17, p. 247), in years of 360
 /// days.
+///
+/// ```
+/// use teistro_rules::longevity::JEEVASARMAN_YEARS;
+///
+/// // 17 years, 1 month and 22 days and a little more (p. 247).
+/// let days = (JEEVASARMAN_YEARS - 17.0) * 360.0;
+/// assert!((days - 52.14).abs() < 0.01);
+/// ```
 pub const JEEVASARMAN_YEARS: f64 = (120.0 + 5.0 / 360.0) / 7.0;
 
 /// A graha's full years in Pindayu or Jeevasarman's span or its listed years
 /// in Nisargayu; none in Amsayu, which counts navamshas, or for a node.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rules::longevity::{Method, full_years};
+///
+/// assert_eq!(full_years(Method::Pindayu, Graha::Moon), Some(25.0));
+/// assert_eq!(full_years(Method::Nisargayu, Graha::Saturn), Some(50.0));
+/// // Amsayu counts navamshas, and no span counts a node.
+/// assert_eq!(full_years(Method::Amsayu, Graha::Moon), None);
+/// assert_eq!(full_years(Method::Pindayu, Graha::Rahu), None);
+/// ```
 #[must_use]
 pub fn full_years(method: Method, graha: Graha) -> Option<f64> {
     let table = match method {
@@ -353,6 +801,15 @@ pub(super) fn deep_exaltation(graha: Graha) -> Option<f64> {
 
 /// The years a longitude gives in Amsayu (vv. 18 to 19): a year a navamsha
 /// from Aries, less whole twelves.
+///
+/// ```
+/// use teistro_rules::longevity::by_navamsha;
+///
+/// // Aries 15° is four and a half navamshas from Aries.
+/// assert!((by_navamsha(15.0) - 4.5).abs() < 1e-12);
+/// // Twelve navamshas are a whole twelve, and dropped.
+/// assert!((by_navamsha(45.0) - 1.5).abs() < 1e-12);
+/// ```
 #[must_use]
 pub fn by_navamsha(longitude: f64) -> f64 {
     (longitude.rem_euclid(360.0) * 108.0 / 360.0).rem_euclid(12.0)
@@ -361,6 +818,17 @@ pub fn by_navamsha(longitude: f64) -> f64 {
 /// The share of its years a graha loses in a house of the visible half (vv. 10
 /// to 11): the whole in the twelfth, then a half, a third, a quarter, a fifth
 /// and a sixth down to the seventh; a benefic half of that.
+///
+/// ```
+/// use teistro_rules::House;
+/// use teistro_rules::longevity::visible_half_share;
+///
+/// assert_eq!(visible_half_share(House::try_new(12)?, false), 1.0);
+/// // A benefic loses half as much.
+/// assert_eq!(visible_half_share(House::try_new(10)?, true), 1.0 / 6.0);
+/// assert_eq!(visible_half_share(House::try_new(6)?, false), 0.0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn visible_half_share(house: House, benefic: bool) -> f64 {
     let share = match house.get() {
@@ -379,6 +847,46 @@ impl Evaluator<'_> {
     /// The three spans of this chart under `rules`. A graha's house is whole
     /// signs from the lagna, and "the strongest of several in one house" reads
     /// the chart's strengths; where they cannot say, each of the several loses.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_rules::{Evaluator, Readings};
+    /// # use teistro_rules::longevity::AyurdayaRules;
+    /// #
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+    /// # let spans = evaluator.ayurdaya(AyurdayaRules::default());
+    ///
+    /// // Combust, the Sun's companions but Venus and Saturn lose half.
+    /// chart.placements[Body::Graha(Graha::Moon).index()].combust = true;
+    /// let burnt = Evaluator::new(&chart, Readings::TEXTS).ayurdaya(AyurdayaRules::default());
+    /// let moon = burnt.pindayu.contributions[1];
+    /// assert!((moon.reductions.combustion - moon.basic / 2.0).abs() < 1e-12);
+    /// ```
     #[must_use]
     pub fn ayurdaya(&self, rules: AyurdayaRules) -> Ayurdaya {
         Ayurdaya {

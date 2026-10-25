@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`teistro-rules` has a run example on every public item.**
+**Numbers:** none. Its 301 items join the crates `check-doc-examples`
+holds there, thirty-nine in all. The examples build their charts in
+place, every body at Aries 15° and one moved at a time, so a reader sees
+which placement makes a condition hold; the longevity spans are read
+where the verses give the answer outright (seven eighths of the
+Chakrayus years with every graha at Aries 15°), and the shipped packs
+are checked to name only the rules and tables they ship.
+
 **`teistro-tajika` has a run example on every public item.**
 **Numbers:** none. Its 192 items join the crates `check-doc-examples`
 holds there, thirty-eight in all. The examples read Charak's printed

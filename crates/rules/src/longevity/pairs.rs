@@ -31,6 +31,48 @@ use crate::rule::LifeClass;
 use teistro_core::catalogue::Point;
 
 /// One of the three pairs.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::{Graha, Point};
+/// # use teistro_rules::{Evaluator, PointAt, Readings};
+/// # use teistro_rules::longevity::ThreePairsRules;
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Saturn), Rashi::Libra);
+/// # let hora = [PointAt { point: Point::HoraLagna, longitude: 15.0, sign: Rashi::Aries }];
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_points(&hora);
+/// # let pairs = evaluator.three_pairs(ThreePairsRules::VERSE).ok_or("a hora lagna")?;
+///
+/// use teistro_rules::longevity::Pair;
+///
+/// assert_eq!(pairs.pairs[1].pair, Pair::SaturnAndMoon);
+/// assert_eq!(serde_json::to_string(&Pair::LagnaAndHoraLagna)?, r#""lagna-and-hora-lagna""#);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -45,6 +87,13 @@ pub enum Pair {
 
 impl Pair {
     /// The three, in the verses' order.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::Pair;
+    ///
+    /// assert_eq!(Pair::ALL[0], Pair::LagnaAndEighthLords);
+    /// assert_eq!(Pair::ALL.len(), 3);
+    /// ```
     pub const ALL: [Pair; 3] = [
         Pair::LagnaAndEighthLords,
         Pair::SaturnAndMoon,
@@ -56,6 +105,17 @@ impl Pair {
 /// fixed and one dual, long; one movable and one fixed, or both dual, medium;
 /// one movable and one dual, or both fixed, short. `None` for a modality the
 /// verses do not name, which the catalogue could only add.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_rules::LifeClass;
+/// use teistro_rules::longevity::class_of;
+///
+/// // Both movable, long; movable and fixed, medium; both fixed, short.
+/// assert_eq!(class_of(Rashi::Aries, Rashi::Cancer), Some(LifeClass::Long));
+/// assert_eq!(class_of(Rashi::Aries, Rashi::Taurus), Some(LifeClass::Medium));
+/// assert_eq!(class_of(Rashi::Leo, Rashi::Scorpio), Some(LifeClass::Short));
+/// ```
 #[must_use]
 pub fn class_of(one: Rashi, other: Rashi) -> Option<LifeClass> {
     use Modality::{Chara, Dwiswabhava, Sthira};
@@ -73,6 +133,16 @@ pub fn class_of(one: Rashi, other: Rashi) -> Option<LifeClass> {
 /// 96, 108 and 120 for one, two and three pairs; medium 64, 72 and 80; short
 /// 40, 36 and 32. A class outside the three, which only a shift reaches, is
 /// given its own span (vv. 53 to 54).
+///
+/// ```
+/// use teistro_rules::LifeClass;
+/// use teistro_rules::longevity::years_of;
+///
+/// assert_eq!(years_of(LifeClass::Long, 3), Some(120.0));
+/// // Short life shortens as more pairs agree on it.
+/// assert_eq!(years_of(LifeClass::Short, 1), Some(40.0));
+/// assert_eq!(years_of(LifeClass::Short, 3), Some(32.0));
+/// ```
 #[must_use]
 pub fn years_of(class: LifeClass, pairs: u8) -> Option<f64> {
     let at = usize::from(pairs.clamp(1, 3) - 1);
@@ -121,6 +191,15 @@ pub fn rectify(
 }
 
 /// Which way a contributor's degrees rectify the years (v. 45).
+///
+/// ```
+/// use teistro_rules::longevity::{Rectification, ThreePairsRules, rectify};
+///
+/// // A contributor 10° into its sign: twenty of thirty degrees to run, or ten gone.
+/// let remaining = rectify(120.0, 1, [10.0], ThreePairsRules::VERSE);
+/// let elapsed = rectify(120.0, 1, [10.0], ThreePairsRules { rectification: Rectification::Elapsed, ..ThreePairsRules::VERSE });
+/// assert!((remaining - 80.0).abs() < 1e-9 && (elapsed - 40.0).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "YearsRectification"))]
@@ -135,6 +214,15 @@ pub enum Rectification {
 }
 
 /// What the rectification multiplies (v. 46).
+///
+/// ```
+/// use teistro_rules::longevity::{Basis, ThreePairsRules, rectify};
+///
+/// // Two pairs agreeing on short life, 36 years, every contributor at the start of its sign.
+/// let once = rectify(36.0, 2, [0.0; 4], ThreePairsRules::VERSE);
+/// let per_pair = rectify(36.0, 2, [0.0; 4], ThreePairsRules { basis: Basis::PerPair, ..ThreePairsRules::VERSE });
+/// assert!((once - 36.0).abs() < 1e-9 && (per_pair - 72.0).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -148,6 +236,55 @@ pub enum Basis {
 }
 
 /// What Saturn among the contributors does to the class (v. 47).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::{Graha, Point};
+/// # use teistro_rules::{Evaluator, PointAt, Readings};
+/// # use teistro_rules::longevity::ThreePairsRules;
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Saturn), Rashi::Libra);
+/// # let hora = [PointAt { point: Point::HoraLagna, longitude: 15.0, sign: Rashi::Aries }];
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_points(&hora);
+/// # let pairs = evaluator.three_pairs(ThreePairsRules::VERSE).ok_or("a hora lagna")?;
+///
+/// use teistro_rules::LifeClass;
+/// use teistro_rules::longevity::SaturnAmongThem;
+///
+/// // Saturn debilitated in Aries with the rest, benefics among them, shifts the class.
+/// place(&mut chart, Body::Graha(Graha::Saturn), Rashi::Aries);
+/// let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_points(&hora);
+/// let lowered = evaluator.three_pairs(ThreePairsRules::VERSE).ok_or("a hora lagna")?;
+/// let raises = ThreePairsRules { saturn: SaturnAmongThem::Raises, ..ThreePairsRules::VERSE };
+/// let raised = evaluator.three_pairs(raises).ok_or("a hora lagna")?;
+/// assert_eq!((lowered.decided_class, lowered.class), (LifeClass::Long, LifeClass::Medium));
+/// assert_eq!(raised.class, LifeClass::Long.raised());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -161,6 +298,16 @@ pub enum SaturnAmongThem {
 
 /// The choices the three pairs are read under; every field is optional
 /// where a request reads it.
+///
+/// ```
+/// use teistro_rules::longevity::ThreePairsRules;
+///
+/// // Every field may be left out, and the verses' reading taken.
+/// let rules: ThreePairsRules = serde_json::from_str(r#"{"rectification": "elapsed"}"#)?;
+/// assert_eq!(rules.basis, ThreePairsRules::VERSE.basis);
+/// assert_eq!(ThreePairsRules::default(), ThreePairsRules::VERSE);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -176,6 +323,12 @@ pub struct ThreePairsRules {
 impl ThreePairsRules {
     /// The verses as they read: the degrees to run, the class's years once,
     /// Saturn lowering.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Rectification, ThreePairsRules};
+    ///
+    /// assert_eq!(ThreePairsRules::VERSE.rectification, Rectification::Remaining);
+    /// ```
     pub const VERSE: ThreePairsRules = ThreePairsRules {
         rectification: Rectification::Remaining,
         basis: Basis::ClassYears,
@@ -184,6 +337,13 @@ impl ThreePairsRules {
 
     /// The translator's worked example: the degrees gone, the years once per
     /// agreeing pair.
+    ///
+    /// ```
+    /// use teistro_rules::longevity::{Basis, Rectification, ThreePairsRules};
+    ///
+    /// let translator = ThreePairsRules::TRANSLATOR;
+    /// assert_eq!((translator.rectification, translator.basis), (Rectification::Elapsed, Basis::PerPair));
+    /// ```
     pub const TRANSLATOR: ThreePairsRules = ThreePairsRules {
         rectification: Rectification::Elapsed,
         basis: Basis::PerPair,
@@ -192,6 +352,49 @@ impl ThreePairsRules {
 }
 
 /// What one pair stands at.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::{Graha, Point};
+/// # use teistro_rules::{Evaluator, PointAt, Readings};
+/// # use teistro_rules::longevity::ThreePairsRules;
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Saturn), Rashi::Libra);
+/// # let hora = [PointAt { point: Point::HoraLagna, longitude: 15.0, sign: Rashi::Aries }];
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_points(&hora);
+/// # let pairs = evaluator.three_pairs(ThreePairsRules::VERSE).ok_or("a hora lagna")?;
+///
+/// // Saturn exalted in Libra and the Moon in Aries: both movable.
+/// let saturn_and_moon = pairs.pairs[1];
+/// assert_eq!(saturn_and_moon.signs, [Rashi::Libra, Rashi::Aries]);
+/// assert_eq!(saturn_and_moon.degrees, [15.0, 15.0]);
+/// assert_eq!(saturn_and_moon.class, teistro_rules::LifeClass::Long);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PairReading {
@@ -206,6 +409,49 @@ pub struct PairReading {
 }
 
 /// How the class was decided.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::{Graha, Point};
+/// # use teistro_rules::{Evaluator, PointAt, Readings};
+/// # use teistro_rules::longevity::ThreePairsRules;
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Saturn), Rashi::Libra);
+/// # let hora = [PointAt { point: Point::HoraLagna, longitude: 15.0, sign: Rashi::Aries }];
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_points(&hora);
+/// # let pairs = evaluator.three_pairs(ThreePairsRules::VERSE).ok_or("a hora lagna")?;
+///
+/// use teistro_rules::longevity::Decided;
+///
+/// // All three pairs give long life.
+/// assert_eq!(pairs.decided, Decided::Agreement { pairs: 3 });
+/// assert_eq!(serde_json::to_string(&pairs.decided)?, r#"{"by":"agreement","pairs":3}"#);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "by", rename_all = "kebab-case")]
@@ -223,6 +469,49 @@ pub enum Decided {
 }
 
 /// A shift of class (vv. 47 to 50).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::{Graha, Point};
+/// # use teistro_rules::{Evaluator, PointAt, Readings};
+/// # use teistro_rules::longevity::ThreePairsRules;
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Saturn), Rashi::Libra);
+/// # let hora = [PointAt { point: Point::HoraLagna, longitude: 15.0, sign: Rashi::Aries }];
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_points(&hora);
+/// # let pairs = evaluator.three_pairs(ThreePairsRules::VERSE).ok_or("a hora lagna")?;
+///
+/// use teistro_rules::longevity::Shift;
+///
+/// // Exalted, Saturn keeps the class.
+/// assert_eq!(pairs.shifts, [None, None]);
+/// assert_eq!(serde_json::to_string(&Shift::Jupiter)?, r#""jupiter""#);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -236,6 +525,50 @@ pub enum Shift {
 }
 
 /// The three pairs' reading of a chart.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Rashi};
+/// # use teistro_rules::{Body, House, Placement, RuleChart};
+/// #
+/// # let mut chart = RuleChart {
+/// #     placements: [Placement {
+/// #         longitude: 15.0,
+/// #         sign: Rashi::Aries,
+/// #         house: House::try_new(1).unwrap(),
+/// #         dignity: Dignity::Neutral,
+/// #         retrograde: false,
+/// #         combust: false,
+/// #         karaka7: None,
+/// #         karaka8: None,
+/// #         navamsha: Rashi::Aries,
+/// #     }; 10],
+/// #     panchanga: None,
+/// #     strengths: None,
+/// # };
+/// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+/// #     let at = &mut chart.placements[body.index()];
+/// #     at.sign = sign;
+/// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+/// #     at.house = House::between(Rashi::Aries, sign);
+/// # };
+///
+/// # use teistro_core::catalogue::{Graha, Point};
+/// # use teistro_rules::{Evaluator, PointAt, Readings};
+/// # use teistro_rules::longevity::ThreePairsRules;
+/// #
+/// # place(&mut chart, Body::Graha(Graha::Saturn), Rashi::Libra);
+/// # let hora = [PointAt { point: Point::HoraLagna, longitude: 15.0, sign: Rashi::Aries }];
+/// # let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_points(&hora);
+/// # let pairs = evaluator.three_pairs(ThreePairsRules::VERSE).ok_or("a hora lagna")?;
+///
+/// use teistro_rules::LifeClass;
+///
+/// assert_eq!(pairs.class, LifeClass::Long);
+/// assert_eq!(pairs.years, Some(120.0));
+/// // Every contributor halfway through its sign: half the years.
+/// assert_eq!(pairs.rectified, Some(60.0));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ThreePairs {
@@ -261,6 +594,47 @@ pub struct ThreePairs {
 impl Evaluator<'_> {
     /// The three pairs' reading of this chart, or `None` when the evaluator was
     /// given no hora lagna among its points.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{Body, House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// # let place = |chart: &mut RuleChart, body: Body, sign: Rashi| {
+    /// #     let at = &mut chart.placements[body.index()];
+    /// #     at.sign = sign;
+    /// #     at.longitude = f64::from(sign as u8) * 30.0 + 15.0;
+    /// #     at.house = House::between(Rashi::Aries, sign);
+    /// # };
+    ///
+    /// # use teistro_core::catalogue::{Graha, Point};
+    /// # use teistro_rules::{Evaluator, PointAt, Readings};
+    /// # use teistro_rules::longevity::ThreePairsRules;
+    /// #
+    /// # place(&mut chart, Body::Graha(Graha::Saturn), Rashi::Libra);
+    /// # let hora = [PointAt { point: Point::HoraLagna, longitude: 15.0, sign: Rashi::Aries }];
+    /// # let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_points(&hora);
+    /// # let pairs = evaluator.three_pairs(ThreePairsRules::VERSE).ok_or("a hora lagna")?;
+    ///
+    /// // Without the hora lagna there is no third pair.
+    /// assert!(Evaluator::new(&chart, Readings::TEXTS).three_pairs(ThreePairsRules::VERSE).is_none());
+    /// assert_eq!(pairs.rules, ThreePairsRules::VERSE);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn three_pairs(&self, rules: ThreePairsRules) -> Option<ThreePairs> {
         let chart = self.chart();

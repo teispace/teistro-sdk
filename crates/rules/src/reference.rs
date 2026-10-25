@@ -60,6 +60,17 @@ use teistro_core::catalogue::{CharaKaraka, Graha, Point};
 use crate::language::{Body, House, Karaka, KarakaScheme, SELF};
 
 /// A reference that resolves to a body.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_rules::{Body, BodyRef};
+///
+/// let jupiter: BodyRef = serde_json::from_str(r#""JUPITER""#)?;
+/// assert_eq!(jupiter, BodyRef::Body(Body::Graha(Graha::Jupiter)));
+/// let lord: BodyRef = serde_json::from_str(r#"{"lordOf": 10}"#)?;
+/// assert!(matches!(lord, BodyRef::LordOf(_)));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum BodyRef {
     /// That graha, or the lagna.
@@ -81,6 +92,15 @@ pub enum BodyRef {
 }
 
 /// A reference that resolves to a sign.
+///
+/// ```
+/// use teistro_rules::{House, SignRef};
+///
+/// let seventh: SignRef = serde_json::from_str("7")?;
+/// assert_eq!(seventh, SignRef::House(House::try_new(7)?));
+/// assert_eq!(serde_json::from_str::<SignRef>(r#""UPAPADA""#)?, SignRef::Upapada);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum SignRef {
     /// The sign a body stands in.
@@ -116,12 +136,29 @@ pub enum SignRef {
 
 impl BodyRef {
     /// The lord of a sign.
+    ///
+    /// ```
+    /// use teistro_rules::{BodyRef, House};
+    ///
+    /// let tenth_lord = BodyRef::lord_of(House::try_new(10)?);
+    /// assert_eq!(serde_json::to_string(&tenth_lord)?, r#"{"lordOf":10}"#);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn lord_of(sign: impl Into<SignRef>) -> BodyRef {
         BodyRef::LordOf(Box::new(sign.into()))
     }
 
     /// The holder of a karaka among seven grahas.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::CharaKaraka;
+    /// use teistro_rules::BodyRef;
+    ///
+    /// let amatya: BodyRef = serde_json::from_str(r#"{"karaka": "AmK"}"#)?;
+    /// assert_eq!(amatya, BodyRef::karaka(CharaKaraka::Amatyakaraka));
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn karaka(karaka: CharaKaraka) -> BodyRef {
         BodyRef::Karaka {
@@ -131,6 +168,14 @@ impl BodyRef {
     }
 
     /// The body, when the reference names one outright.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::{Body, BodyRef};
+    ///
+    /// assert_eq!(BodyRef::from(Graha::Sun).named(), Some(Body::Graha(Graha::Sun)));
+    /// assert_eq!(BodyRef::Bound.named(), None);
+    /// ```
     #[must_use]
     pub const fn named(&self) -> Option<Body> {
         match self {
@@ -143,18 +188,44 @@ impl BodyRef {
 impl SignRef {
     /// The pada of the house standing in a sign: `SignRef::arudha(1)` is the
     /// arudha lagna.
+    ///
+    /// ```
+    /// use teistro_rules::{House, SignRef};
+    ///
+    /// // The arudha lagna.
+    /// let arudha = SignRef::arudha(House::try_new(1)?);
+    /// assert_eq!(serde_json::to_string(&arudha)?, r#"{"arudha":1}"#);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn arudha(sign: impl Into<SignRef>) -> SignRef {
         SignRef::Arudha(Box::new(sign.into()))
     }
 
     /// The badhaka sthana of a sign: `SignRef::badhaka(1)` is the lagna's.
+    ///
+    /// ```
+    /// use teistro_rules::{House, SignRef};
+    ///
+    /// let badhaka: SignRef = serde_json::from_str(r#"{"badhakaOf": 1}"#)?;
+    /// assert_eq!(badhaka, SignRef::badhaka(House::try_new(1)?));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn badhaka(sign: impl Into<SignRef>) -> SignRef {
         SignRef::Badhaka(Box::new(sign.into()))
     }
 
     /// The sign `house` houses on from `from`.
+    ///
+    /// ```
+    /// use teistro_rules::{House, SignRef};
+    ///
+    /// // The eleventh from the arudha lagna.
+    /// let gains = SignRef::counted(SignRef::arudha(House::try_new(1)?), House::try_new(11)?);
+    /// assert_eq!(serde_json::to_string(&gains)?, r#"{"from":{"arudha":1},"house":11}"#);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn counted(from: impl Into<SignRef>, house: House) -> SignRef {
         SignRef::Counted {
@@ -165,12 +236,30 @@ impl SignRef {
 
     /// The Karakamsha: the atmakaraka's navamsha, among seven karakas (BPHS
     /// ch. 33 v. 1).
+    ///
+    /// ```
+    /// use teistro_rules::SignRef;
+    ///
+    /// let written: SignRef = serde_json::from_str(r#"{"navamsha": {"karaka": "AK"}}"#)?;
+    /// assert_eq!(written, SignRef::karakamsha());
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn karakamsha() -> SignRef {
         SignRef::Navamsha(BodyRef::karaka(CharaKaraka::Atmakaraka))
     }
 
     /// The body, when the reference names one outright.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::{Body, SignRef};
+    ///
+    /// assert_eq!(SignRef::from(Graha::Moon).named(), Some(Body::Graha(Graha::Moon)));
+    /// // A house's sign names no body.
+    /// assert_eq!(SignRef::try_from(4)?.named(), None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn named(&self) -> Option<Body> {
         match self {
@@ -232,6 +321,15 @@ impl TryFrom<u8> for SignRef {
 
 /// Who a condition that needs a body asks about: a body reference, or
 /// whichever benefic, malefic or maraka first meets it.
+///
+/// ```
+/// use teistro_rules::BodySubject;
+///
+/// let any: BodySubject = serde_json::from_str(r#""any-benefic""#)?;
+/// assert_eq!(any, BodySubject::AnyBenefic);
+/// assert!(matches!(serde_json::from_str::<BodySubject>(r#""MARS""#)?, BodySubject::Ref(_)));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum BodySubject {
     /// That reference.
@@ -343,6 +441,15 @@ impl<'de> Deserialize<'de> for BodySubject {
 
 /// Who a placement condition asks about: a sign reached from a reference, or
 /// whichever benefic, malefic or maraka first meets the condition.
+///
+/// ```
+/// use teistro_rules::{SignRef, Subject};
+///
+/// let any: Subject = serde_json::from_str(r#""any-maraka""#)?;
+/// assert_eq!(any, Subject::AnyMaraka);
+/// assert_eq!(serde_json::from_str::<Subject>(r#""UPAPADA""#)?, Subject::Ref(SignRef::Upapada));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Subject {
     /// That reference.
