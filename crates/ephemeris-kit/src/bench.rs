@@ -8,6 +8,16 @@ use std::time::Instant;
 use serde::Serialize;
 
 /// One measurement.
+///
+/// ```
+/// use teistro_ephemeris_kit::bench::bench;
+///
+/// let row = bench("a sum", 10, 2, 3, || {
+///     std::hint::black_box((0..100).sum::<u32>());
+/// });
+/// assert_eq!((row.name.as_str(), row.iterations, row.rounds), ("a sum", 10, 3));
+/// assert!(row.p90_us >= row.median_us);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Row {
     /// What was measured.
@@ -24,6 +34,16 @@ pub struct Row {
 
 /// Times `f` over `rounds` rounds of `iterations` calls after `warmup`
 /// calls each, keeping the round with the lowest median.
+///
+/// ```
+/// use teistro_ephemeris_kit::bench::bench;
+///
+/// // Three rounds of two warm-up calls and five timed ones.
+/// let mut calls = 0;
+/// let row = bench("counted", 5, 2, 3, || calls += 1);
+/// assert_eq!(calls, 3 * (2 + 5));
+/// assert!(row.median_us >= 0.0);
+/// ```
 pub fn bench<F: FnMut()>(
     name: &str,
     iterations: usize,
@@ -75,6 +95,13 @@ pub fn bench<F: FnMut()>(
 }
 
 /// The rows as a Markdown table.
+///
+/// ```
+/// use teistro_ephemeris_kit::bench::{Row, markdown};
+///
+/// let row = Row { name: "positions".to_owned(), median_us: 1.5, p90_us: 2.25, iterations: 200, rounds: 3 };
+/// assert!(markdown(&[row]).ends_with("| positions | 1.50 | 2.25 |\n"));
+/// ```
 #[must_use]
 pub fn markdown(rows: &[Row]) -> String {
     let mut out = String::from("| measurement | median µs | p90 µs |\n|---|---:|---:|\n");

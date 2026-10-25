@@ -34,6 +34,17 @@ use crate::bench::Row;
 
 /// The bounds the kit holds a provider to; one set, published in
 /// `docs/03-design/ephemeris-port-and-adapters.md`, never per provider.
+///
+/// ```
+/// # use teistro_ephemeris_kit::kit::{self, Bounds};
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # let report = kit::run(&TestProvider::new(), &Bounds::DEFAULT);
+///
+/// // The bounds a run applied travel with its report.
+/// assert_eq!(report.bounds, Bounds::DEFAULT);
+/// assert_eq!(Bounds::DEFAULT.obliquity_arcsec, 0.01);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Bounds {
     /// Reported longitude speed against a central difference, degrees per day.
@@ -71,6 +82,14 @@ pub struct Bounds {
 
 impl Bounds {
     /// The published bounds.
+    ///
+    /// ```
+    /// use teistro_ephemeris_kit::Bounds;
+    ///
+    /// // A geometric rise is pure geometry on both sides; a refracted one is not.
+    /// let bounds = Bounds::DEFAULT;
+    /// assert!(bounds.rise_set_geometric_seconds < bounds.rise_set_refracted_seconds);
+    /// ```
     pub const DEFAULT: Bounds = Bounds {
         speed_deg_per_day: 2e-3,
         continuity_deg: 5e-6,
@@ -88,6 +107,17 @@ impl Bounds {
 }
 
 /// One check's outcome.
+///
+/// ```
+/// # use teistro_ephemeris_kit::kit::{self, Bounds};
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # let report = kit::run(&TestProvider::new(), &Bounds::DEFAULT);
+///
+/// let check = report.check("determinism").ok_or("the determinism check")?;
+/// assert!(check.passed && check.ran());
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Check {
     /// The check's name.
@@ -161,6 +191,19 @@ impl Check {
     }
 
     /// Whether the check ran rather than being skipped.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::kit::{self, Bounds};
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let report = kit::run(&TestProvider::new(), &Bounds::DEFAULT);
+    ///
+    /// // A check skipped says so, and passes: a skip is not a failure.
+    /// for check in &report.checks {
+    ///     assert_eq!(check.ran(), !check.detail.starts_with("skipped:"));
+    /// }
+    /// assert!(report.checks.iter().any(|check| check.ran()));
+    /// ```
     #[must_use]
     pub fn ran(&self) -> bool {
         !self.detail.starts_with("skipped:")
@@ -168,6 +211,16 @@ impl Check {
 }
 
 /// The kit's report.
+///
+/// ```
+/// # use teistro_ephemeris_kit::kit::{self, Bounds};
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # let report = kit::run(&TestProvider::new(), &Bounds::DEFAULT);
+///
+/// assert_eq!(report.passed, report.checks.iter().all(|check| check.passed));
+/// assert_eq!(report.capabilities.identity, report.identity);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Report {
     /// The provider.
@@ -186,6 +239,17 @@ pub struct Report {
 
 impl Report {
     /// The report as a Markdown table.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::kit::{self, Bounds};
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let report = kit::run(&TestProvider::new(), &Bounds::DEFAULT);
+    ///
+    /// let table = report.markdown();
+    /// assert!(table.starts_with(&format!("provider: {}; ", report.identity)));
+    /// assert!(table.contains("| determinism | pass |"));
+    /// ```
     #[must_use]
     pub fn markdown(&self) -> String {
         let mut out = format!(
@@ -211,6 +275,16 @@ impl Report {
     }
 
     /// The check with a name.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::kit::{self, Bounds};
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let report = kit::run(&TestProvider::new(), &Bounds::DEFAULT);
+    ///
+    /// assert!(report.check("capabilities").is_some_and(|check| check.passed));
+    /// assert!(report.check("no such check").is_none());
+    /// ```
     #[must_use]
     pub fn check(&self, name: &str) -> Option<&Check> {
         self.checks.iter().find(|c| c.name == name)
@@ -219,6 +293,20 @@ impl Report {
 
 /// What every runner writes: the kit report and the timing rows of one
 /// provider, so a result page reads the same shape for each.
+///
+/// ```
+/// # use teistro_ephemeris_kit::kit::{self, Bounds};
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # let report = kit::run(&TestProvider::new(), &Bounds::DEFAULT);
+///
+/// use teistro_ephemeris_kit::Results;
+///
+/// let results = Results { provider: "test".to_owned(), report, bench: Vec::new() };
+/// let json = serde_json::to_value(&results)?;
+/// assert_eq!(json["provider"], "test");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Results {
     /// The provider's short name.
@@ -231,6 +319,23 @@ pub struct Results {
 
 impl Results {
     /// Writes the results as pretty JSON to `<dir>/<provider>.json`.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::kit::{self, Bounds};
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let report = kit::run(&TestProvider::new(), &Bounds::DEFAULT);
+    ///
+    /// use teistro_ephemeris_kit::Results;
+    ///
+    /// let dir = std::env::temp_dir().join(format!("teistro-kit-doc-{}-results", std::process::id()));
+    /// let results = Results { provider: "test".to_owned(), report, bench: Vec::new() };
+    /// let path = results.write(&dir)?;
+    /// assert_eq!(path, dir.join("test.json"));
+    /// assert!(std::fs::read_to_string(&path)?.ends_with("}\n"));
+    /// std::fs::remove_dir_all(&dir)?;
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -310,6 +415,15 @@ fn request<'a>(
 }
 
 /// Runs the kit.
+///
+/// ```
+/// use teistro_ephemeris_kit::kit::{self, Bounds};
+/// use teistro_port_ephemeris::TestProvider;
+///
+/// let report = kit::run(&TestProvider::new(), &Bounds::DEFAULT);
+/// assert!(report.passed, "{}", report.markdown());
+/// assert_eq!(report.checks[0].name, "capabilities");
+/// ```
 pub fn run<P: EphemerisProvider + ?Sized>(provider: &P, bounds: &Bounds) -> Report {
     let start = Instant::now();
     let capabilities = provider.capabilities();
@@ -1255,6 +1369,19 @@ fn check_completion<P: EphemerisProvider + ?Sized>(
 /// for another frame answered `Unsupported`. What the kit and the runner
 /// put in front of a provider so the SDK's completion has to do the work
 /// even when the provider could have answered the frame itself.
+///
+/// ```
+/// use teistro_ephemeris_kit::Refusing;
+/// use teistro_port_ephemeris::{Body, Coordinates, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+///
+/// // The equatorial frame refused, so the SDK must rotate it itself.
+/// let provider = TestProvider::new();
+/// let refusing = Refusing::new(&provider, Frame::CANONICAL);
+/// let (jds, bodies) = ([2_451_545.0], [Body::Sun]);
+/// let equatorial = Frame::CANONICAL.with_coordinates(Coordinates::Equatorial);
+/// assert!(refusing.positions(&PositionRequest::new(&jds, TimeScale::Ut1, &bodies, equatorial)).is_err());
+/// assert!(refusing.positions(&PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL)).is_ok());
+/// ```
 #[derive(Debug)]
 pub struct Refusing<'a, P: EphemerisProvider + ?Sized> {
     inner: &'a P,
@@ -1263,6 +1390,15 @@ pub struct Refusing<'a, P: EphemerisProvider + ?Sized> {
 
 impl<'a, P: EphemerisProvider + ?Sized> Refusing<'a, P> {
     /// The provider behind a native frame it answers alone.
+    ///
+    /// ```
+    /// use teistro_ephemeris_kit::Refusing;
+    /// use teistro_port_ephemeris::{EphemerisProvider, Frame, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let refusing = Refusing::new(&provider, Frame::CANONICAL);
+    /// assert_eq!(refusing.capabilities().native_frame, Frame::CANONICAL);
+    /// ```
     pub const fn new(inner: &'a P, frame: Frame) -> Refusing<'a, P> {
         Refusing { inner, frame }
     }

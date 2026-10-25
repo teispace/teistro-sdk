@@ -54,6 +54,15 @@ const AU_KM: f64 = 149_597_870.7;
 
 /// The frame a geometric comparison asks for: what the states are, with no
 /// correction and the J2000 equinox.
+///
+/// ```
+/// use teistro_ephemeris_kit::jpl::GEOMETRIC;
+/// use teistro_port_ephemeris::{Centre, Corrections, Equinox};
+///
+/// // DE440's geocentric states as CSPICE gives them: no correction, J2000.
+/// assert_eq!((GEOMETRIC.centre, GEOMETRIC.equinox), (Centre::Geocentric, Equinox::J2000));
+/// assert_eq!(GEOMETRIC.corrections, Corrections::GEOMETRIC);
+/// ```
 pub const GEOMETRIC: Frame = Frame {
     centre: Centre::Geocentric,
     equinox: Equinox::J2000,
@@ -115,6 +124,33 @@ impl Series {
 
 /// A geometric run: the report, and the instants the provider does not
 /// cover, which were not asked and are not in it.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::Corpus;
+/// #
+/// # const TOLERANCES: &str = r#"{
+/// #     "provider_classes": {"builtin-compact": "the compact tier", "same-ephemeris": "the recording engine's own"},
+/// #     "fields": {
+/// #         "positions.bodies.*.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.01, "same-ephemeris": 1e-6},
+/// #         "positions.bodies.MOON.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.02, "same-ephemeris": 1e-6}
+/// #     }
+/// # }"#;
+/// # // A corpus of no recorded charts, written where the example can.
+/// # let dir = std::env::temp_dir().join(format!("teistro-kit-doc-{}-jplrun", std::process::id()));
+/// # std::fs::create_dir_all(dir.join("baseline/charts"))?;
+/// # std::fs::write(dir.join("corpus.json"), r#"{"version": "0.0.1"}"#)?;
+/// # std::fs::write(dir.join("tolerances.json"), TOLERANCES)?;
+/// # let corpus = Corpus::open(&dir)?;
+///
+/// use teistro_ephemeris_kit::jpl;
+/// use teistro_port_ephemeris::TestProvider;
+///
+/// // A corpus older than the `jpl/` states has no run to give.
+/// let refused = jpl::geometric(&corpus, &TestProvider::new(), "builtin-compact").unwrap_err();
+/// assert!(refused.contains("older than 0.12.0"));
+/// # std::fs::remove_dir_all(&dir)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Run {
     /// One result per instant the provider covers.
@@ -302,6 +338,33 @@ fn compare(
 /// The provider's geometric positions against DE440's at every recorded
 /// instant it covers, under the band of `class`.
 ///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::Corpus;
+/// #
+/// # const TOLERANCES: &str = r#"{
+/// #     "provider_classes": {"builtin-compact": "the compact tier", "same-ephemeris": "the recording engine's own"},
+/// #     "fields": {
+/// #         "positions.bodies.*.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.01, "same-ephemeris": 1e-6},
+/// #         "positions.bodies.MOON.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.02, "same-ephemeris": 1e-6}
+/// #     }
+/// # }"#;
+/// # // A corpus of no recorded charts, written where the example can.
+/// # let dir = std::env::temp_dir().join(format!("teistro-kit-doc-{}-geometric", std::process::id()));
+/// # std::fs::create_dir_all(dir.join("baseline/charts"))?;
+/// # std::fs::write(dir.join("corpus.json"), r#"{"version": "0.0.1"}"#)?;
+/// # std::fs::write(dir.join("tolerances.json"), TOLERANCES)?;
+/// # let corpus = Corpus::open(&dir)?;
+///
+/// use teistro_ephemeris_kit::jpl;
+/// use teistro_port_ephemeris::TestProvider;
+///
+/// // The class is checked first, against the corpus's own list.
+/// let refused = jpl::geometric(&corpus, &TestProvider::new(), "acme").unwrap_err();
+/// assert!(refused.starts_with("`acme` is not a provider class"));
+/// # std::fs::remove_dir_all(&dir)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Errors
 ///
 /// A class the corpus does not name, a corpus without the `jpl/` states,
@@ -367,6 +430,14 @@ pub fn geometric<P: EphemerisProvider + ?Sized>(
 /// Where a provider parts from DE440's geometric states, and why; each
 /// measured on 2026-10-09 over every built-in tier against corpus 0.12.0,
 /// and judged both ways like the charts' (`CorpusReport::against`).
+///
+/// ```
+/// use teistro_ephemeris_kit::jpl::KNOWN;
+///
+/// // The built-in tiers' only: an engine reading DE440 parts from it by nothing.
+/// assert!(KNOWN.iter().all(|d| !d.applies_to("same-ephemeris")));
+/// assert!(KNOWN.iter().any(|d| d.explains("jd-2451545", "jpl.geometric.URANUS.distance_km")));
+/// ```
 pub const KNOWN: [Divergence; 3] = [
     Divergence {
         name: "vsop87-radius-vectors",

@@ -24,13 +24,42 @@ use crate::kit::{self, Bounds, Refusing, Results};
 use crate::sdk_only::{self, NativeFrameOnly, Open};
 
 /// Timed calls per round.
+///
+/// ```
+/// use teistro_ephemeris_kit::runner::{ITERATIONS, row};
+///
+/// assert_eq!(row("nothing", || ()).iterations, ITERATIONS);
+/// ```
 pub const ITERATIONS: usize = 200;
 /// Untimed calls before each round.
+///
+/// ```
+/// use teistro_ephemeris_kit::runner::{ITERATIONS, ROUNDS, WARMUP, row};
+///
+/// // Every call the standard counts make, warm-up included.
+/// let mut calls = 0;
+/// let _ = row("counted", || calls += 1);
+/// assert_eq!(calls, ROUNDS * (WARMUP + ITERATIONS));
+/// ```
 pub const WARMUP: usize = 20;
 /// Rounds; the best is kept.
+///
+/// ```
+/// use teistro_ephemeris_kit::runner::{ROUNDS, row};
+///
+/// assert_eq!(row("nothing", || ()).rounds, ROUNDS);
+/// ```
 pub const ROUNDS: usize = 3;
 
 /// The instants and bodies a benchmark runs over.
+///
+/// ```
+/// use teistro_ephemeris_kit::runner::Grid;
+/// use teistro_port_ephemeris::Body;
+///
+/// let grid = Grid { jds: vec![2_451_545.0, 2_451_546.0], bodies: vec![Body::Sun, Body::Moon] };
+/// assert_eq!(grid.label(), "2 × 2");
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Grid {
     /// The instants, UT1.
@@ -41,6 +70,15 @@ pub struct Grid {
 
 impl Grid {
     /// A hundred instants at 36.525-day steps from J2000 over `bodies`.
+    ///
+    /// ```
+    /// use teistro_ephemeris_kit::runner::Grid;
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// // A century from J2000, a hundredth of it at a time.
+    /// let grid = Grid::standard(&[Body::Sun]);
+    /// assert_eq!((grid.jds.len(), grid.jds[0], grid.jds[1]), (100, 2_451_545.0, 2_451_581.525));
+    /// ```
     #[must_use]
     pub fn standard(bodies: &[Body]) -> Grid {
         Grid {
@@ -52,12 +90,30 @@ impl Grid {
     }
 
     /// `instants × bodies`, for row names.
+    ///
+    /// ```
+    /// use teistro_ephemeris_kit::runner::Grid;
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Grid::standard(&[Body::Sun, Body::Moon, Body::Mars]).label(), "100 × 3");
+    /// ```
     #[must_use]
     pub fn label(&self) -> String {
         format!("{} × {}", self.jds.len(), self.bodies.len())
     }
 
     /// The request over the grid in `frame`, geocentric, with speeds.
+    ///
+    /// ```
+    /// use teistro_ephemeris_kit::runner::Grid;
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// use teistro_port_ephemeris::Frame;
+    ///
+    /// let grid = Grid::standard(&[Body::Sun, Body::Moon]);
+    /// let request = grid.request(Frame::CANONICAL);
+    /// assert_eq!((request.cell_count(), request.speeds), (200, true));
+    /// ```
     #[must_use]
     pub fn request(&self, frame: Frame) -> PositionRequest<'_> {
         PositionRequest::new(&self.jds, TimeScale::Ut1, &self.bodies, frame)
@@ -65,6 +121,15 @@ impl Grid {
 }
 
 /// Times `f` with the standard counts.
+///
+/// ```
+/// use teistro_ephemeris_kit::runner::row;
+///
+/// let timed = row("a sum", || {
+///     std::hint::black_box((0..100).sum::<u32>());
+/// });
+/// assert_eq!(timed.name, "a sum");
+/// ```
 pub fn row(name: &str, f: impl FnMut()) -> Row {
     bench::bench(name, ITERATIONS, WARMUP, ROUNDS, f)
 }
@@ -72,6 +137,21 @@ pub fn row(name: &str, f: impl FnMut()) -> Row {
 /// The rows every provider is measured on: the grid through the trait,
 /// through the C vtable, and completed to the equatorial frame with the
 /// native obliquity and with the SDK's.
+///
+/// ```
+/// use teistro_ephemeris_kit::runner::Grid;
+/// use teistro_port_ephemeris::Body;
+///
+/// use teistro_ephemeris_kit::runner::standard_rows;
+/// use teistro_port_ephemeris::TestProvider;
+///
+/// // One cell, so the example is quick: the trait, the C vtable, and the
+/// // completion with either obliquity.
+/// let grid = Grid { jds: vec![2_451_545.0], bodies: vec![Body::Sun] };
+/// let rows = standard_rows(&TestProvider::new(), &grid);
+/// assert_eq!(rows.len(), 4);
+/// assert!(rows[0].name.ends_with("through the trait"));
+/// ```
 pub fn standard_rows<P: EphemerisProvider>(provider: &P, grid: &Grid) -> Vec<Row> {
     let label = grid.label();
     let canonical = grid.request(Frame::CANONICAL);
@@ -110,6 +190,15 @@ pub fn standard_rows<P: EphemerisProvider>(provider: &P, grid: &Grid) -> Vec<Row
 }
 
 /// The `--out DIR` argument of a kit binary, when given.
+///
+/// ```
+/// use std::path::Path;
+/// use teistro_ephemeris_kit::runner::out_dir;
+///
+/// let args = ["--out", "target/kit"].map(String::from);
+/// assert_eq!(out_dir(&args), Some(Path::new("target/kit")));
+/// assert_eq!(out_dir(&args[..1]), None);
+/// ```
 #[must_use]
 pub fn out_dir(args: &[String]) -> Option<&Path> {
     args.iter()
@@ -120,6 +209,16 @@ pub fn out_dir(args: &[String]) -> Option<&Path> {
 
 /// The `--corpus DIR --class CLASS` arguments of a kit binary, when both
 /// are given: the corpus's root and the provider class to hold it to.
+///
+/// ```
+/// use std::path::Path;
+/// use teistro_ephemeris_kit::runner::corpus_args;
+///
+/// let args = ["--corpus", "fixtures", "--class", "builtin-full"].map(String::from);
+/// assert_eq!(corpus_args(&args), Some((Path::new("fixtures"), "builtin-full")));
+/// // Both are needed.
+/// assert_eq!(corpus_args(&args[..2]), None);
+/// ```
 #[must_use]
 pub fn corpus_args(args: &[String]) -> Option<(&Path, &str)> {
     let value = |flag: &str| {
@@ -134,6 +233,16 @@ pub fn corpus_args(args: &[String]) -> Option<(&Path, &str)> {
 /// the corpus when [`corpus_args`] names one, writing
 /// `<out>/<name>-corpus.json` in the corpus's report format when a
 /// directory is given. Answers whether both passed.
+///
+/// ```
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// let open = || -> Box<dyn EphemerisProvider> { Box::new(TestProvider::new()) };
+/// use teistro_ephemeris_kit::runner::charts;
+///
+/// // No `--corpus`: the `sdk-only` identity alone.
+/// assert!(charts("test", &open, &[]));
+/// ```
 #[allow(
     clippy::print_stdout,
     clippy::print_stderr,
@@ -194,6 +303,16 @@ pub fn charts(name: &str, open: Open<'_>, args: &[String]) -> bool {
 /// Runs the kit against `provider`, prints the report, runs and prints
 /// the rows `bench` produces, writes `<out>/<name>.json` when a directory
 /// is given, and returns success when the kit passed.
+///
+/// ```
+/// use std::process::ExitCode;
+/// use teistro_ephemeris_kit::runner::{self, row};
+/// use teistro_port_ephemeris::TestProvider;
+///
+/// // The kit's report and one row, written nowhere.
+/// let code = runner::run("test", &TestProvider::new(), None, || vec![row("nothing", || ())]);
+/// assert_eq!(code, ExitCode::SUCCESS);
+/// ```
 #[allow(
     clippy::print_stdout,
     clippy::print_stderr,

@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`teistro-ephemeris-kit` has a run example on every public item.**
+**Numbers:** none. Its 73 items join the crates `check-doc-examples`
+holds there, thirty-five in all. The kit's checks run over the analytic
+test provider; the corpus and JPL examples write a corpus of no charts
+to a temporary directory and remove it, and the report examples build
+one in memory, so none needs the fixtures submodule.
+
 **`teistro-research` has a run example on every public item.**
 **Numbers:** none. Its 44 items join the crates `check-doc-examples`
 holds there, thirty-four in all. The studies are small enough to check by
