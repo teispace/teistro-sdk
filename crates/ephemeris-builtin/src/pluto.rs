@@ -39,6 +39,14 @@ use crate::chebyshev::Table;
 /// 15 intervals of 14610 days, 10 terms a component. Measured worst over
 /// the span: 32.1 arcseconds of geocentric angle, against this tier's
 /// bound of 60.0.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::{PLUTO, PLUTO_COEFFICIENTS};
+///
+/// // Three components of 10 terms in each of 15 intervals.
+/// assert_eq!(PLUTO.intervals(), 15);
+/// assert_eq!(PLUTO_COEFFICIENTS.len(), PLUTO.intervals() * 3 * PLUTO.terms);
+/// ```
 pub static PLUTO_COEFFICIENTS: [f64; 450] = [
     41.49902082814062,3.2656093378835522,-1.8617562079104488,0.049060590777817485,0.0025165270368781023,-0.0016895660885943187,0.0010457542091216966,-0.000695721718511777,0.001605935862636443,0.0022910252449701574,-0.4261737108875487,16.45949708667276,0.05017335939033281,-0.12780566673281513,0.008081102721830291,-0.0018136674099327621,-0.0006731127912043889,-0.0014441454743788996,-0.0008153338984330461,0.004233186093315844,-11.956504509915654,-2.7071719605853666,0.5323343406504236,-0.0010120448397090698,-0.0013491570047250434,0.00018608659354786284,-2.810302316120783e-5,2.4430672828845703e-5,-3.3759182684356405e-5,-6.90828590824033e-5,
     35.19627667279672,-9.023153742789587,-1.2021496271683576,0.06039876647244285,-0.000426397420389435,0.0018974738055625552,-4.0255402115008114e-5,0.0015416204382894705,-0.000498672102651554,-0.0045798948074587285,29.1709099398655,12.278071399796985,-0.9977628362847185,-0.06267608832676821,0.0013375000831135964,-0.0001417527832156651,0.0013053662052236348,0.000509400855397324,0.0017592834980463936,-0.00137681890919108,-13.30265172843454,1.2949374181984536,0.45457871839202896,-0.009679392905408335,-0.00024951106127097945,-3.030470614362457e-5,-1.0155220416052658e-5,-3.975856465388006e-5,5.272931856659114e-6,0.0001087814846437496,
@@ -58,7 +66,21 @@ pub static PLUTO_COEFFICIENTS: [f64; 450] = [
 ];
 
 #[cfg(all(feature = "compact", not(feature = "standard"), not(feature = "full")))]
-/// Pluto's fitted table, ready to evaluate.
+/// Pluto's fitted table, ready to evaluate: heliocentric, in the
+/// ecliptic and equinox of J2000, astronomical units and
+/// astronomical units a day.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::PLUTO;
+///
+/// // At J2000 Pluto was ten years past perihelion, about 30 au out.
+/// let (position, _) = PLUTO.at(2_451_545.0).ok_or("inside the fit")?;
+/// let distance = position.iter().map(|x| x * x).sum::<f64>().sqrt();
+/// assert!((29.7..30.7).contains(&distance));
+/// // A Chebyshev table is refused past its span rather than extrapolated.
+/// assert!(PLUTO.at(PLUTO.span().1 + 1.0).is_none());
+/// # Ok::<(), &str>(())
+/// ```
 pub static PLUTO: Table = Table {
     start_jd: 2378497.0,
     interval_days: 14610.0,
@@ -69,6 +91,13 @@ pub static PLUTO: Table = Table {
 #[cfg(all(feature = "compact", not(feature = "standard"), not(feature = "full")))]
 /// The worst geocentric angle this tier's fit was measured at over
 /// the span, arcseconds. A published figure rather than a claim.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::PLUTO_WORST_ARCSEC;
+///
+/// // Inside this tier's bound.
+/// assert!(PLUTO_WORST_ARCSEC <= 60.0);
+/// ```
 pub const PLUTO_WORST_ARCSEC: f64 = 32.05761328112225;
 
 #[cfg(all(feature = "standard", not(feature = "full")))]
@@ -80,6 +109,14 @@ pub const PLUTO_WORST_ARCSEC: f64 = 32.05761328112225;
 /// 30 intervals of 7305 days, 10 terms a component. Measured worst over
 /// the span: 0.867 arcseconds of geocentric angle, against this tier's
 /// bound of 1.00.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::{PLUTO, PLUTO_COEFFICIENTS};
+///
+/// // Three components of 10 terms in each of 30 intervals.
+/// assert_eq!(PLUTO.intervals(), 30);
+/// assert_eq!(PLUTO_COEFFICIENTS.len(), PLUTO.intervals() * 3 * PLUTO.terms);
+/// ```
 pub static PLUTO_COEFFICIENTS: [f64; 900] = [
     40.34492813087334,3.5153439517679943,-0.499160343807975,0.005731274939932973,0.0036669675120698745,-0.0013603863992670995,-0.0013958012994415014,0.00036776665268192235,0.0002622812017882836,-0.00012062230346785441,-8.699697921258746,8.13412547838469,0.1128484445970372,-0.02192039714381444,0.002297266877114623,0.00253304100528311,-0.0007450923095436935,-0.0006568399656854851,0.0001543593381086339,0.00016478541999145337,-10.736541831970378,-1.8870342183491198,0.13281438631807171,0.0006483503771137933,-0.00022165136284062472,2.814727822642027e-5,3.390252531652038e-5,-5.7803313180393445e-6,-6.543473127784694e-6,2.2678350466875942e-6,
     43.586182400055705,-0.21339795322663235,-0.4246688718034506,0.004423896072805178,0.0002280170040037888,0.0029005864299570306,-0.00017498642502573604,-0.000704364687752701,-2.0363120116684287e-5,8.684142520731797e-5,7.824540700877183,8.227886658299692,-0.07723303323985767,-0.01188815842184815,-0.0034550921075055976,0.0002719573396004038,0.001607398220263079,-2.8047780924411736e-5,-0.00025911158789733435,-0.00010810048473638562,-13.443163353870276,-0.8209659322359699,0.1312685128222306,-0.0006282189347341927,-2.878161313795147e-5,-6.258606891265118e-5,-2.796171527030822e-6,1.5815735251578646e-5,1.600557122305446e-6,-1.5292091555263454e-6,
@@ -114,7 +151,21 @@ pub static PLUTO_COEFFICIENTS: [f64; 900] = [
 ];
 
 #[cfg(all(feature = "standard", not(feature = "full")))]
-/// Pluto's fitted table, ready to evaluate.
+/// Pluto's fitted table, ready to evaluate: heliocentric, in the
+/// ecliptic and equinox of J2000, astronomical units and
+/// astronomical units a day.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::PLUTO;
+///
+/// // At J2000 Pluto was ten years past perihelion, about 30 au out.
+/// let (position, _) = PLUTO.at(2_451_545.0).ok_or("inside the fit")?;
+/// let distance = position.iter().map(|x| x * x).sum::<f64>().sqrt();
+/// assert!((29.7..30.7).contains(&distance));
+/// // A Chebyshev table is refused past its span rather than extrapolated.
+/// assert!(PLUTO.at(PLUTO.span().1 + 1.0).is_none());
+/// # Ok::<(), &str>(())
+/// ```
 pub static PLUTO: Table = Table {
     start_jd: 2378497.0,
     interval_days: 7305.0,
@@ -125,6 +176,13 @@ pub static PLUTO: Table = Table {
 #[cfg(all(feature = "standard", not(feature = "full")))]
 /// The worst geocentric angle this tier's fit was measured at over
 /// the span, arcseconds. A published figure rather than a claim.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::PLUTO_WORST_ARCSEC;
+///
+/// // Inside this tier's bound.
+/// assert!(PLUTO_WORST_ARCSEC <= 1.0);
+/// ```
 pub const PLUTO_WORST_ARCSEC: f64 = 0.8669580664652724;
 
 #[cfg(feature = "full")]
@@ -136,6 +194,14 @@ pub const PLUTO_WORST_ARCSEC: f64 = 0.8669580664652724;
 /// 300 intervals of 730.5 days, 12 terms a component. Measured worst over
 /// the span: 0.0061 arcseconds of geocentric angle, against this tier's
 /// bound of 0.0092.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::{PLUTO, PLUTO_COEFFICIENTS};
+///
+/// // Three components of 12 terms in each of 300 intervals.
+/// assert_eq!(PLUTO.intervals(), 300);
+/// assert_eq!(PLUTO_COEFFICIENTS.len(), PLUTO.intervals() * 3 * PLUTO.terms);
+/// ```
 pub static PLUTO_COEFFICIENTS: [f64; 10800] = [
     36.86501105917244,0.5316945503041831,-0.0050300226711902,2.7174781063621367e-5,-2.375053806365675e-6,-2.073999574155512e-6,6.238905291648204e-7,1.0849508136345776e-6,9.446443627325607e-7,-4.6200111825100976e-7,-7.027205128906644e-7,1.9398535237395245e-7,-15.942716199604693,0.7586031852705709,0.001953999953904291,-6.915236496318755e-6,3.274716733929021e-6,-1.4687552907233226e-6,-1.6025245657876515e-6,-4.1195241529123905e-7,7.050960260102102e-7,9.668393870695031e-7,-2.5011541519385594e-7,-6.016448475717102e-7,-8.954701193638815,-0.23587818851589107,0.0012656390197542202,1.3101303058723108e-6,3.604687777899092e-8,-2.0867148749677728e-8,-1.3610111852339438e-8,-1.834740374443792e-8,-5.6808033092418477e-8,2.7505583144460388e-8,3.964992045801807e-8,-1.8938635067596483e-8,
     37.88890720321464,0.4923543875445576,-0.004847297610105272,4.507269679265846e-6,-1.6846606551249956e-6,-1.4169371051290605e-6,3.518026214048101e-7,1.5615260722986097e-6,-3.909819366043621e-7,-1.1951565446940056e-6,2.1151093469266394e-7,6.528819890642504e-7,-14.409948353304886,0.7741701591009651,0.0019560011775790658,3.539288253584516e-6,1.3925572526218843e-6,-3.725150718262663e-7,-1.4218403698862403e-6,4.0092196732880814e-7,1.4766719562686603e-6,-3.262176690258892e-7,-7.972597959593486e-7,1.751743927691507e-7,-9.416281631129069,-0.22568853446233383,0.0012819818921627757,1.4090301666177159e-6,-2.9507763639931755e-9,-4.488852297275987e-8,5.1551456436982335e-9,-3.5346932640104946e-8,3.155813195950448e-8,5.495798112894097e-8,-2.250456473025982e-8,-3.305528217811826e-8,
@@ -440,7 +506,21 @@ pub static PLUTO_COEFFICIENTS: [f64; 10800] = [
 ];
 
 #[cfg(feature = "full")]
-/// Pluto's fitted table, ready to evaluate.
+/// Pluto's fitted table, ready to evaluate: heliocentric, in the
+/// ecliptic and equinox of J2000, astronomical units and
+/// astronomical units a day.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::PLUTO;
+///
+/// // At J2000 Pluto was ten years past perihelion, about 30 au out.
+/// let (position, _) = PLUTO.at(2_451_545.0).ok_or("inside the fit")?;
+/// let distance = position.iter().map(|x| x * x).sum::<f64>().sqrt();
+/// assert!((29.7..30.7).contains(&distance));
+/// // A Chebyshev table is refused past its span rather than extrapolated.
+/// assert!(PLUTO.at(PLUTO.span().1 + 1.0).is_none());
+/// # Ok::<(), &str>(())
+/// ```
 pub static PLUTO: Table = Table {
     start_jd: 2378497.0,
     interval_days: 730.5,
@@ -451,6 +531,13 @@ pub static PLUTO: Table = Table {
 #[cfg(feature = "full")]
 /// The worst geocentric angle this tier's fit was measured at over
 /// the span, arcseconds. A published figure rather than a claim.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::PLUTO_WORST_ARCSEC;
+///
+/// // Inside this tier's bound.
+/// assert!(PLUTO_WORST_ARCSEC <= 0.009220755379517213);
+/// ```
 pub const PLUTO_WORST_ARCSEC: f64 = 0.006147170253011476;
 
 /// Pluto's own share of a tier's data budget, bytes.
@@ -461,6 +548,14 @@ pub const PLUTO_WORST_ARCSEC: f64 = 0.006147170253011476;
 /// being a way to overspend quietly: a tier that broke its budget
 /// *because of Pluto* fails to compile, exactly as one that broke it
 /// because of the Moon does.
+///
+/// ```
+/// use teistro_ephemeris_builtin::pluto::{PLUTO_BYTES, PLUTO_COEFFICIENTS};
+/// use teistro_ephemeris_builtin::tables::{BUDGET_BYTES, DATA_BYTES};
+///
+/// assert_eq!(PLUTO_BYTES, PLUTO_COEFFICIENTS.len() * 8);
+/// assert!(DATA_BYTES + PLUTO_BYTES <= BUDGET_BYTES);
+/// ```
 pub const PLUTO_BYTES: usize = PLUTO_COEFFICIENTS.len() * 8;
 
 const _: () = assert!(

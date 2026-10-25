@@ -182,6 +182,14 @@ fn module(fit: &Fit) -> String {
          /// being a way to overspend quietly: a tier that broke its budget\n\
          /// *because of Pluto* fails to compile, exactly as one that broke it\n\
          /// because of the Moon does.\n\
+         ///\n\
+         /// ```\n\
+         /// use teistro_ephemeris_builtin::pluto::{{PLUTO_BYTES, PLUTO_COEFFICIENTS}};\n\
+         /// use teistro_ephemeris_builtin::tables::{{BUDGET_BYTES, DATA_BYTES}};\n\
+         ///\n\
+         /// assert_eq!(PLUTO_BYTES, PLUTO_COEFFICIENTS.len() * 8);\n\
+         /// assert!(DATA_BYTES + PLUTO_BYTES <= BUDGET_BYTES);\n\
+         /// ```\n\
          pub const PLUTO_BYTES: usize = PLUTO_COEFFICIENTS.len() * 8;\n\
          \n\
          const _: () = assert!(\n    \
@@ -213,12 +221,23 @@ fn tier_module(chosen: &Chosen) -> String {
          /// {} intervals of {} days, {} terms a component. Measured worst over\n\
          /// the span: {} arcseconds of geocentric angle, against this tier's\n\
          /// bound of {}.\n\
+         ///\n\
+         /// ```\n\
+         /// use teistro_ephemeris_builtin::pluto::{{PLUTO, PLUTO_COEFFICIENTS}};\n\
+         ///\n\
+         /// // Three components of {} terms in each of {} intervals.\n\
+         /// assert_eq!(PLUTO.intervals(), {});\n\
+         /// assert_eq!(PLUTO_COEFFICIENTS.len(), PLUTO.intervals() * 3 * PLUTO.terms);\n\
+         /// ```\n\
          pub static PLUTO_COEFFICIENTS: [f64; {}] = [",
         chosen.intervals,
         chosen.interval_days,
         chosen.terms,
         arcsec(chosen.worst_arcsec),
         arcsec(chosen.bound_arcsec),
+        chosen.terms,
+        chosen.intervals,
+        chosen.intervals,
         chosen.coefficients.len(),
     );
     for interval in chosen.coefficients.chunks(3 * chosen.terms) {
@@ -229,7 +248,21 @@ fn tier_module(chosen: &Chosen) -> String {
         out,
         "];\n\n\
          {gate}\n\
-         /// Pluto's fitted table, ready to evaluate.\n\
+         /// Pluto's fitted table, ready to evaluate: heliocentric, in the\n\
+         /// ecliptic and equinox of J2000, astronomical units and\n\
+         /// astronomical units a day.\n\
+         ///\n\
+         /// ```\n\
+         /// use teistro_ephemeris_builtin::pluto::PLUTO;\n\
+         ///\n\
+         /// // At J2000 Pluto was ten years past perihelion, about 30 au out.\n\
+         /// let (position, _) = PLUTO.at(2_451_545.0).ok_or(\"inside the fit\")?;\n\
+         /// let distance = position.iter().map(|x| x * x).sum::<f64>().sqrt();\n\
+         /// assert!((29.7..30.7).contains(&distance));\n\
+         /// // A Chebyshev table is refused past its span rather than extrapolated.\n\
+         /// assert!(PLUTO.at(PLUTO.span().1 + 1.0).is_none());\n\
+         /// # Ok::<(), &str>(())\n\
+         /// ```\n\
          pub static PLUTO: Table = Table {{\n    \
          start_jd: {:?},\n    \
          interval_days: {:?},\n    \
@@ -239,8 +272,19 @@ fn tier_module(chosen: &Chosen) -> String {
          {gate}\n\
          /// The worst geocentric angle this tier's fit was measured at over\n\
          /// the span, arcseconds. A published figure rather than a claim.\n\
+         ///\n\
+         /// ```\n\
+         /// use teistro_ephemeris_builtin::pluto::PLUTO_WORST_ARCSEC;\n\
+         ///\n\
+         /// // Inside this tier's bound.\n\
+         /// assert!(PLUTO_WORST_ARCSEC <= {:?});\n\
+         /// ```\n\
          pub const PLUTO_WORST_ARCSEC: f64 = {:?};\n",
-        chosen.start_jd, chosen.interval_days, chosen.terms, chosen.worst_arcsec,
+        chosen.start_jd,
+        chosen.interval_days,
+        chosen.terms,
+        chosen.bound_arcsec,
+        chosen.worst_arcsec,
     );
     out
 }

@@ -150,6 +150,28 @@ impl Default for Builtin {
 
 impl Builtin {
     /// The provider as it should normally be used, with the bija applied.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::provider::Builtin;
+    /// # use teistro_port_ephemeris::{
+    /// #     Body, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame, PositionRequest,
+    /// #     TimeScale, Zodiac,
+    /// # };
+    /// #
+    /// # let frame = Frame {
+    /// #     centre: Centre::Geocentric,
+    /// #     equinox: Equinox::J2000,
+    /// #     coordinates: Coordinates::Ecliptic,
+    /// #     zodiac: Zodiac::Tropical,
+    /// #     corrections: Corrections::GEOMETRIC,
+    /// # };
+    ///
+    /// // The Sun at J2000, geometric and geocentric: 280.378 degrees.
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Tt, &[Body::Sun], frame);
+    /// let sun = Builtin::new().positions(&request)?.at(0, 0).ok_or("a cell")?;
+    /// assert!((sun.lon - 280.378).abs() < 1e-3);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn new() -> Builtin {
         Builtin {
@@ -166,6 +188,28 @@ impl Builtin {
     /// For a consumer checking the fit, or reproducing the theories to
     /// the last bit. It is several times slower for an almanac, and
     /// differs by less than the resolution of the instant asked.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::provider::Builtin;
+    /// # use teistro_port_ephemeris::{
+    /// #     Body, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame, PositionRequest,
+    /// #     TimeScale, Zodiac,
+    /// # };
+    /// #
+    /// # let frame = Frame {
+    /// #     centre: Centre::Geocentric,
+    /// #     equinox: Equinox::J2000,
+    /// #     coordinates: Coordinates::Ecliptic,
+    /// #     zodiac: Zodiac::Tropical,
+    /// #     corrections: Corrections::GEOMETRIC,
+    /// # };
+    ///
+    /// let request = PositionRequest::new(&[2_460_000.3], TimeScale::Tt, &[Body::Moon], frame);
+    /// let fitted = Builtin::new().positions(&request)?.at(0, 0).ok_or("a cell")?;
+    /// let summed = Builtin::new().with_series().positions(&request)?.at(0, 0).ok_or("a cell")?;
+    /// assert!((fitted.lon - summed.lon).abs() < 1e-7, "under half a milliarcsecond");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn with_series(mut self) -> Builtin {
         self.fitted = false;
@@ -174,6 +218,34 @@ impl Builtin {
 
     /// The same provider under another Delta T model, for a consumer who
     /// pins one (ADR-0020 counts it in the calculation version).
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::provider::Builtin;
+    /// # use teistro_port_ephemeris::{
+    /// #     Body, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame, PositionRequest,
+    /// #     TimeScale, Zodiac,
+    /// # };
+    /// #
+    /// # let frame = Frame {
+    /// #     centre: Centre::Geocentric,
+    /// #     equinox: Equinox::J2000,
+    /// #     coordinates: Coordinates::Ecliptic,
+    /// #     zodiac: Zodiac::Tropical,
+    /// #     corrections: Corrections::GEOMETRIC,
+    /// # };
+    /// use teistro_astro::DeltaTModel;
+    ///
+    /// // A civil instant becomes dynamical time by the model: a minute more of
+    /// // Delta T moves the Moon by about half a minute of arc.
+    /// let request = PositionRequest::new(&[2_460_000.3], TimeScale::Ut1, &[Body::Moon], frame);
+    /// let moon = |model| -> Result<f64, Box<dyn std::error::Error>> {
+    ///     let provider = Builtin::new().with_delta_t(model);
+    ///     Ok(provider.positions(&request)?.at(0, 0).ok_or("a cell")?.lon)
+    /// };
+    /// let plus_a_minute = moon(DeltaTModel::Custom { seconds: 129.2 })? - moon(DeltaTModel::Custom { seconds: 69.2 })?;
+    /// assert!((plus_a_minute * 60.0 - 0.5).abs() < 0.1);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn with_delta_t(mut self, model: DeltaTModel) -> Builtin {
         self.delta_t = model;
@@ -203,6 +275,29 @@ impl Builtin {
     ///
     /// For a consumer reproducing ELP2000-82B itself, and for the
     /// measurement that decided the correction was worth making.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::provider::Builtin;
+    /// # use teistro_port_ephemeris::{
+    /// #     Body, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame, PositionRequest,
+    /// #     TimeScale, Zodiac,
+    /// # };
+    /// #
+    /// # let frame = Frame {
+    /// #     centre: Centre::Geocentric,
+    /// #     equinox: Equinox::J2000,
+    /// #     coordinates: Coordinates::Ecliptic,
+    /// #     zodiac: Zodiac::Tropical,
+    /// #     corrections: Corrections::GEOMETRIC,
+    /// # };
+    ///
+    /// // At 2400 the correction is worth arcseconds of the Moon.
+    /// let request = PositionRequest::new(&[2_597_000.0], TimeScale::Tt, &[Body::Moon], frame);
+    /// let corrected = Builtin::new().positions(&request)?.at(0, 0).ok_or("a cell")?;
+    /// let published = Builtin::without_bija().positions(&request)?.at(0, 0).ok_or("a cell")?;
+    /// assert!((corrected.lon - published.lon).abs() * 3_600.0 > 1.0);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn without_bija() -> Builtin {
         Builtin {
@@ -213,6 +308,14 @@ impl Builtin {
     }
 
     /// Which tier is compiled in.
+    ///
+    /// ```
+    /// use teistro_ephemeris_builtin::provider::Builtin;
+    /// use teistro_ephemeris_builtin::tables::TIER;
+    ///
+    /// // The tier the tables were compiled from, in the settings' spelling.
+    /// assert_eq!(Builtin::tier().key(), TIER.to_ascii_uppercase());
+    /// ```
     #[must_use]
     pub fn tier() -> Tier {
         match tables::TIER {

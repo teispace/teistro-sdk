@@ -31,6 +31,21 @@
 /// slices — a generated table of nested slices costs a relocation per
 /// interval, and this one is meant for a wasm consumer counting
 /// kilobytes.
+///
+/// ```
+/// use teistro_ephemeris_builtin::chebyshev::Table;
+///
+/// // x = T2, y = T1 and z = 3, over the two days from J2000.
+/// static COEFFICIENTS: [f64; 9] = [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0];
+/// let table = Table { start_jd: 2_451_545.0, interval_days: 2.0, terms: 3, coefficients: &COEFFICIENTS };
+///
+/// assert_eq!(table.intervals(), 1);
+/// // Midway, where Chebyshev's variable is zero: T2 is -1 and T1 is 0.
+/// let (position, rate) = table.at(2_451_546.0).ok_or("inside")?;
+/// assert_eq!(position, [-1.0, 0.0, 3.0]);
+/// assert_eq!(rate, [0.0, 1.0, 0.0]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Table {
     /// The first interval's start, Julian day in the dynamical scale.
@@ -52,6 +67,18 @@ impl Table {
     /// Derived rather than stored: a stored count and a coefficient slice
     /// can disagree, and this crate has been bitten by a declared number
     /// that nothing checked.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::chebyshev::Table;
+    /// #
+    /// # // x = T2, y = T1 and z = 3, over the two days from J2000.
+    /// # static COEFFICIENTS: [f64; 9] = [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0];
+    /// # let table = Table { start_jd: 2_451_545.0, interval_days: 2.0, terms: 3, coefficients: &COEFFICIENTS };
+    /// assert_eq!(table.intervals(), 1);
+    /// // Nine coefficients of three terms each: three components of one interval.
+    /// assert_eq!(Table { terms: 1, ..table }.intervals(), 3);
+    /// assert_eq!(Table { terms: 0, ..table }.intervals(), 0);
+    /// ```
     #[must_use]
     pub const fn intervals(&self) -> usize {
         if self.terms == 0 {
@@ -64,6 +91,16 @@ impl Table {
     ///
     /// An empty table covers nothing, and says so as an empty range
     /// rather than as a point.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::chebyshev::Table;
+    /// #
+    /// # // x = T2, y = T1 and z = 3, over the two days from J2000.
+    /// # static COEFFICIENTS: [f64; 9] = [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0];
+    /// # let table = Table { start_jd: 2_451_545.0, interval_days: 2.0, terms: 3, coefficients: &COEFFICIENTS };
+    /// assert_eq!(table.span(), (2_451_545.0, 2_451_547.0));
+    /// assert_eq!(Table { coefficients: &[], ..table }.span(), (2_451_545.0, 2_451_545.0));
+    /// ```
     #[must_use]
     pub fn span(&self) -> (f64, f64) {
         let intervals = self.intervals();
@@ -76,6 +113,17 @@ impl Table {
     }
 
     /// Whether an instant falls inside the table.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::chebyshev::Table;
+    /// #
+    /// # // x = T2, y = T1 and z = 3, over the two days from J2000.
+    /// # static COEFFICIENTS: [f64; 9] = [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0];
+    /// # let table = Table { start_jd: 2_451_545.0, interval_days: 2.0, terms: 3, coefficients: &COEFFICIENTS };
+    /// assert!(table.covers(2_451_545.0) && table.covers(2_451_547.0));
+    /// assert!(!table.covers(2_451_547.1));
+    /// assert!(!table.covers(f64::NAN));
+    /// ```
     #[must_use]
     pub fn covers(&self, jd: f64) -> bool {
         let (first, last) = self.span();
@@ -89,6 +137,22 @@ impl Table {
     /// `None` outside the span — a fitted table is worthless beyond its
     /// fit, and a Chebyshev series diverges spectacularly rather than
     /// gracefully, so this refuses rather than extrapolates.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::chebyshev::Table;
+    /// #
+    /// # // x = T2, y = T1 and z = 3, over the two days from J2000.
+    /// # static COEFFICIENTS: [f64; 9] = [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0];
+    /// # let table = Table { start_jd: 2_451_545.0, interval_days: 2.0, terms: 3, coefficients: &COEFFICIENTS };
+    /// // Three quarters through, Chebyshev's variable is a half: T2 is 2·0.25 - 1
+    /// // and turns at 4x a unit of it, which is one a day.
+    /// let (position, rate) = table.at(2_451_546.5).ok_or("inside")?;
+    /// assert_eq!(position, [-0.5, 0.5, 3.0]);
+    /// assert_eq!(rate, [2.0, 1.0, 0.0]);
+    /// // Past the end it refuses rather than extrapolates.
+    /// assert_eq!(table.at(2_451_547.5), None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn at(&self, jd: f64) -> Option<([f64; 3], [f64; 3])> {
         if !self.covers(jd) || self.interval_days <= 0.0 {
