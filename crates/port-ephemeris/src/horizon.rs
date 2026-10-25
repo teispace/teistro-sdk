@@ -11,6 +11,12 @@ use teistro_core::settings::{Atmosphere, Sunrise, SunriseConvention};
 use crate::body::Body;
 
 /// Which event at the horizon.
+///
+/// ```
+/// use teistro_port_ephemeris::HorizonEventKind;
+///
+/// assert_eq!(HorizonEventKind::ALL.map(HorizonEventKind::key), ["RISE", "SET", "TRANSIT", "ANTITRANSIT"]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -35,6 +41,12 @@ impl HorizonEventKind {
     ];
 
     /// The stable id at the C boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// assert_eq!(HorizonEventKind::Transit.id(), 2);
+    /// ```
     #[must_use]
     pub fn id(self) -> u8 {
         HorizonEventKind::ALL
@@ -45,12 +57,27 @@ impl HorizonEventKind {
     }
 
     /// The kind with an id.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// for kind in HorizonEventKind::ALL {
+    ///     assert_eq!(HorizonEventKind::from_id(kind.id()), Some(kind));
+    /// }
+    /// assert_eq!(HorizonEventKind::from_id(4), None);
+    /// ```
     #[must_use]
     pub fn from_id(id: u8) -> Option<HorizonEventKind> {
         HorizonEventKind::ALL.get(usize::from(id)).copied()
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// assert_eq!(HorizonEventKind::Antitransit.key(), "ANTITRANSIT");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -69,6 +96,13 @@ impl fmt::Display for HorizonEventKind {
 }
 
 /// Which point of the disc the event is reckoned for.
+///
+/// ```
+/// use teistro_port_ephemeris::{DiscPoint, Horizon, HorizonEventKind, Refraction};
+///
+/// assert_eq!(Horizon::UPPER_LIMB_REFRACTION.disc, DiscPoint::UpperLimb);
+/// assert_eq!(Horizon::CENTRE_NO_REFRACTION.disc, DiscPoint::Centre);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -83,6 +117,12 @@ pub enum DiscPoint {
 
 impl DiscPoint {
     /// The stable id at the C boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DiscPoint;
+    ///
+    /// assert_eq!(DiscPoint::LowerLimb.id(), 2);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u8 {
         match self {
@@ -93,6 +133,13 @@ impl DiscPoint {
     }
 
     /// The point with an id.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DiscPoint;
+    ///
+    /// assert_eq!(DiscPoint::from_id(1), Some(DiscPoint::UpperLimb));
+    /// assert_eq!(DiscPoint::from_id(3), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u8) -> Option<DiscPoint> {
         match id {
@@ -104,6 +151,12 @@ impl DiscPoint {
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DiscPoint;
+    ///
+    /// assert_eq!(DiscPoint::UpperLimb.key(), "UPPER_LIMB");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -116,6 +169,16 @@ impl DiscPoint {
 
 /// Whether atmospheric refraction lifts the body at the horizon, and by
 /// what.
+///
+/// ```
+/// use teistro_core::settings::Atmosphere;
+/// use teistro_port_ephemeris::{DiscPoint, Horizon, HorizonEventKind, Refraction};
+///
+/// assert_eq!(Horizon::CENTRE_NO_REFRACTION.refraction, Refraction::None);
+/// // A named air, as a weather report gives it.
+/// let air = Refraction::Atmosphere(Atmosphere::given(860.0, 12.0));
+/// assert_eq!(Horizon { refraction: air, ..Horizon::UPPER_LIMB_REFRACTION }.key(), "UPPER_LIMB/ATMOSPHERE[860hPa,12C]/0");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -136,6 +199,13 @@ pub enum Refraction {
 impl Refraction {
     /// The stable id at the C boundary; an atmosphere's air crosses
     /// beside it.
+    ///
+    /// ```
+    /// use teistro_core::settings::Atmosphere;
+    /// use teistro_port_ephemeris::Refraction;
+    ///
+    /// assert_eq!(Refraction::Atmosphere(Atmosphere::STANDARD).id(), 2);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u8 {
         match self {
@@ -147,6 +217,17 @@ impl Refraction {
 
     /// The refraction with an id, and the air an atmosphere is given
     /// (read only for id 2).
+    ///
+    /// ```
+    /// use teistro_core::settings::Atmosphere;
+    /// use teistro_port_ephemeris::Refraction;
+    ///
+    /// let air = Atmosphere::given(1013.25, 15.0);
+    /// assert_eq!(Refraction::from_id(2, air), Some(Refraction::Atmosphere(air)));
+    /// // The air is read for an atmosphere alone.
+    /// assert_eq!(Refraction::from_id(1, air), Some(Refraction::Standard));
+    /// assert_eq!(Refraction::from_id(3, air), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u8, air: Atmosphere) -> Option<Refraction> {
         match id {
@@ -159,6 +240,12 @@ impl Refraction {
 
     /// The key stamped in provenance; an atmosphere's air is stamped by
     /// [`Horizon::key`].
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Refraction;
+    ///
+    /// assert_eq!(Refraction::Standard.key(), "STANDARD_REFRACTION");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -248,6 +335,15 @@ impl Horizon {
     /// The settings refuse an air given to a convention that does not
     /// refract; one that reaches here anyway keeps its named horizon,
     /// which has no refraction for the air to replace.
+    ///
+    /// ```
+    /// use teistro_core::settings::Sunrise;
+    /// use teistro_port_ephemeris::{DiscPoint, Horizon, HorizonEventKind, Refraction};
+    ///
+    /// let horizon = Horizon::from_convention(Sunrise::CentreRefraction.into());
+    /// assert_eq!(horizon, Horizon::CENTRE_REFRACTION);
+    /// assert_eq!((horizon.disc, horizon.refraction), (DiscPoint::Centre, Refraction::Standard));
+    /// ```
     #[must_use]
     pub const fn from_convention(convention: SunriseConvention) -> Horizon {
         match convention {
@@ -272,6 +368,19 @@ impl Horizon {
     /// The settings convention this horizon is, when it is a named one or
     /// a custom altitude of the centre without refraction; `None` for a
     /// combination the settings cannot name.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Sunrise, SunriseConvention};
+    /// use teistro_port_ephemeris::{DiscPoint, Horizon, HorizonEventKind, Refraction};
+    ///
+    /// for which in [Sunrise::CentreNoRefraction, Sunrise::UpperLimbRefraction, Sunrise::CentreRefraction] {
+    ///     let convention: SunriseConvention = which.into();
+    ///     assert_eq!(Horizon::from_convention(convention).convention(), Some(convention));
+    /// }
+    /// // The lower limb without refraction is a horizon the settings cannot name.
+    /// let unnamed = Horizon { disc: DiscPoint::LowerLimb, refraction: Refraction::None, altitude_deg: 0.0 };
+    /// assert_eq!(unnamed.convention(), None);
+    /// ```
     #[must_use]
     pub fn convention(&self) -> Option<SunriseConvention> {
         if *self == Horizon::CENTRE_NO_REFRACTION {
@@ -305,6 +414,12 @@ impl Horizon {
     /// The key stamped in provenance: disc, refraction and altitude, and
     /// an atmosphere's air as it was named (`STANDARD` for a part left to
     /// the standard at the place).
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{DiscPoint, Horizon, HorizonEventKind, Refraction};
+    ///
+    /// assert_eq!(Horizon::UPPER_LIMB_REFRACTION.key(), "UPPER_LIMB/STANDARD_REFRACTION/0");
+    /// ```
     #[must_use]
     pub fn key(&self) -> String {
         let refraction = match self.refraction {
@@ -332,6 +447,24 @@ impl fmt::Display for Horizon {
 
 /// A request for the next horizon event of a body at a place from a
 /// provider's own search.
+///
+/// ```
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind, HorizonRequest};
+///
+/// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// // The next sunrise at Kathmandu within a day of midnight UT, 1 January 2024.
+/// let request = HorizonRequest {
+///     body: Body::Sun,
+///     kind: HorizonEventKind::Rise,
+///     place: kathmandu,
+///     from: JulianDay::literal(2_460_310.5),
+///     window_days: 1.0,
+///     horizon: Horizon::UPPER_LIMB_REFRACTION,
+/// };
+/// assert_eq!(request.kind.key(), "RISE");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct HorizonRequest {

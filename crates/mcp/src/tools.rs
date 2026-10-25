@@ -59,11 +59,17 @@ pub(crate) fn list(
 /// Every tool computes and changes nothing, so a host may call one
 /// without asking and again with the same answer.
 pub(crate) fn annotations(title: &str) -> Value {
+    annotations_reading(title, true)
+}
+
+/// The same, for a tool that may change state where `read_only` is false:
+/// then it is neither read-only nor idempotent, and still not destructive.
+fn annotations_reading(title: &str, read_only: bool) -> Value {
     json!({
         "title": title,
-        "readOnlyHint": true,
+        "readOnlyHint": read_only,
         "destructiveHint": false,
-        "idempotentHint": true,
+        "idempotentHint": read_only,
         "openWorldHint": false,
     })
 }
@@ -121,6 +127,14 @@ fn engine_tool(operation: &NativeFunction) -> Value {
         .supplied()
         .map(|param| (param.name.clone(), param_schema(param)))
         .collect();
+    let required: Vec<&str> = operation
+        .supplied()
+        .filter(|param| !param.optional)
+        .map(|param| param.name.as_str())
+        .collect();
+    // An operation that may change the engine's state is not read-only,
+    // and the engine is the one to say it does not.
+    let annotations = annotations_reading(&title, operation.mutates_engine_state == Some(false));
     let doc = operation
         .doc
         .as_deref()
@@ -138,9 +152,10 @@ fn engine_tool(operation: &NativeFunction) -> Value {
         "inputSchema": {
             "type": "object",
             "properties": properties,
+            "required": required,
             "additionalProperties": false,
         },
-        "annotations": annotations(&title),
+        "annotations": annotations,
     })
 }
 
@@ -153,6 +168,16 @@ fn param_schema(param: &NativeParam) -> Value {
         Role::ArrayIn => Some("array"),
         Role::StringIn => Some("string"),
         Role::StructIn => Some("object"),
+        // A bare direction says nothing of the type; the engine's spelling
+        // of it does, for the plain C types. An engine type (`tm_body`, an
+        // enum or a struct) is left untyped rather than guessed.
+        Role::In => param.kind.as_deref().and_then(|kind| match kind {
+            "double" | "float" => Some("number"),
+            "int32_t" | "int64_t" | "uint32_t" | "uint64_t" | "size_t" | "int" => Some("integer"),
+            "string" => Some("string"),
+            array if array.ends_with("[]") => Some("array"),
+            _ => None,
+        }),
         _ => None,
     };
     if let Some(kind) = kind {

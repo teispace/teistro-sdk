@@ -10,6 +10,13 @@ use teistro_core::catalogue::Ayanamsha;
 use crate::error::ProviderError;
 
 /// Where a position is seen from.
+///
+/// ```
+/// use teistro_port_ephemeris::{Centre, Frame};
+///
+/// assert_eq!(Frame::CANONICAL.centre, Centre::Geocentric);
+/// assert_eq!(serde_json::to_string(&Centre::Topocentric).unwrap(), r#""TOPOCENTRIC""#);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -27,6 +34,12 @@ pub enum Centre {
 
 impl Centre {
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Centre;
+    ///
+    /// assert_eq!(Centre::Heliocentric.key(), "HELIOCENTRIC");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -39,6 +52,14 @@ impl Centre {
 }
 
 /// The equinox and equator the coordinates refer to.
+///
+/// ```
+/// use teistro_port_ephemeris::{Equinox, Frame};
+///
+/// // The canonical frame is of date; J2000 is a frame a provider may also give.
+/// assert_eq!(Frame::CANONICAL.equinox, Equinox::OfDate);
+/// assert_ne!(Frame { equinox: Equinox::J2000, ..Frame::CANONICAL }.to_bits(), Frame::CANONICAL.to_bits());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -52,6 +73,12 @@ pub enum Equinox {
 
 impl Equinox {
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Equinox;
+    ///
+    /// assert_eq!(Equinox::OfDate.key(), "OF_DATE");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -62,6 +89,14 @@ impl Equinox {
 }
 
 /// The coordinate system of a position.
+///
+/// ```
+/// use teistro_port_ephemeris::{Coordinates, Frame};
+///
+/// let equatorial = Frame::CANONICAL.with_coordinates(Coordinates::Equatorial);
+/// assert_eq!(equatorial.coordinates, Coordinates::Equatorial);
+/// assert_eq!(Frame::CANONICAL.coordinates, Coordinates::Ecliptic);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -75,6 +110,12 @@ pub enum Coordinates {
 
 impl Coordinates {
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Coordinates;
+    ///
+    /// assert_eq!(Coordinates::Equatorial.key(), "EQUATORIAL");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -85,6 +126,18 @@ impl Coordinates {
 }
 
 /// Which zodiac longitudes are measured in.
+///
+/// ```
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_port_ephemeris::Zodiac;
+///
+/// assert_eq!(Zodiac::Tropical.to_string(), "TROPICAL");
+/// assert_eq!(Zodiac::sidereal(Ayanamsha::Lahiri).to_string(), "SIDEREAL(LAHIRI)");
+/// assert_eq!(
+///     serde_json::to_string(&Zodiac::sidereal(Ayanamsha::Lahiri)).unwrap(),
+///     r#"{"kind":"SIDEREAL","ayanamsha":"LAHIRI"}"#
+/// );
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -101,12 +154,27 @@ pub enum Zodiac {
 
 impl Zodiac {
     /// A sidereal zodiac by a catalogued ayanamsha.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_port_ephemeris::Zodiac;
+    ///
+    /// assert_eq!(Zodiac::sidereal(Ayanamsha::Raman), Zodiac::Sidereal { ayanamsha: Ayanamsha::Raman });
+    /// ```
     #[must_use]
     pub const fn sidereal(ayanamsha: Ayanamsha) -> Zodiac {
         Zodiac::Sidereal { ayanamsha }
     }
 
     /// The ayanamsha, when sidereal.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_port_ephemeris::Zodiac;
+    ///
+    /// assert_eq!(Zodiac::sidereal(Ayanamsha::Lahiri).ayanamsha(), Some(Ayanamsha::Lahiri));
+    /// assert_eq!(Zodiac::Tropical.ayanamsha(), None);
+    /// ```
     #[must_use]
     pub const fn ayanamsha(self) -> Option<Ayanamsha> {
         match self {
@@ -126,6 +194,15 @@ impl fmt::Display for Zodiac {
 }
 
 /// Which corrections a position includes.
+///
+/// ```
+/// use teistro_port_ephemeris::{Corrections, Frame};
+///
+/// // The canonical frame is apparent: every correction applied.
+/// assert_eq!(Frame::CANONICAL.corrections, Corrections::APPARENT);
+/// let astrometric = Corrections { nutation: false, ..Corrections::APPARENT };
+/// assert_ne!(astrometric, Corrections::APPARENT);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[allow(
@@ -160,6 +237,13 @@ impl Corrections {
     };
 
     /// The names of the corrections applied, in bit order.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Corrections;
+    ///
+    /// assert_eq!(Corrections::APPARENT.names(), ["light_time", "aberration", "deflection", "nutation"]);
+    /// assert!(Corrections::GEOMETRIC.names().is_empty());
+    /// ```
     #[must_use]
     pub fn names(self) -> Vec<&'static str> {
         [
@@ -176,6 +260,15 @@ impl Corrections {
 
     /// The key stamped in provenance: `APPARENT`, `GEOMETRIC`, or the
     /// corrections applied.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Corrections;
+    ///
+    /// assert_eq!(Corrections::APPARENT.key(), "APPARENT");
+    /// assert_eq!(Corrections::GEOMETRIC.key(), "GEOMETRIC");
+    /// let light = Corrections { light_time: true, aberration: true, ..Corrections::GEOMETRIC };
+    /// assert_eq!(light.key(), "light_time+aberration");
+    /// ```
     #[must_use]
     pub fn key(self) -> String {
         if self == Corrections::APPARENT {
@@ -228,12 +321,26 @@ impl Frame {
     };
 
     /// The same frame seen from elsewhere.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Centre, Frame};
+    ///
+    /// let topocentric = Frame::CANONICAL.with_centre(Centre::Topocentric);
+    /// assert_eq!(topocentric.key(), "TOPOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT");
+    /// ```
     #[must_use]
     pub const fn with_centre(self, centre: Centre) -> Frame {
         Frame { centre, ..self }
     }
 
     /// The same frame with other coordinates.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Coordinates, Frame};
+    ///
+    /// let equatorial = Frame::CANONICAL.with_coordinates(Coordinates::Equatorial);
+    /// assert_eq!(equatorial.with_coordinates(Coordinates::Ecliptic), Frame::CANONICAL);
+    /// ```
     #[must_use]
     pub const fn with_coordinates(self, coordinates: Coordinates) -> Frame {
         Frame {
@@ -243,6 +350,14 @@ impl Frame {
     }
 
     /// The same frame in another zodiac.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_port_ephemeris::{Frame, Zodiac};
+    ///
+    /// let sidereal = Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri));
+    /// assert_eq!(sidereal.zodiac.ayanamsha(), Some(Ayanamsha::Lahiri));
+    /// ```
     #[must_use]
     pub const fn with_zodiac(self, zodiac: Zodiac) -> Frame {
         Frame { zodiac, ..self }
@@ -251,6 +366,14 @@ impl Frame {
     /// The frame packed for the C boundary: bits 0 and 1 the centre, bit 2
     /// the equinox, bit 3 the coordinates, bits 4 to 7 the corrections,
     /// bit 8 sidereal, bits 16 to 31 the ayanamsha's catalogue id.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Centre, Frame};
+    ///
+    /// // Geocentric (0), of date, ecliptic, and the four corrections' bits 4 to 7.
+    /// assert_eq!(Frame::CANONICAL.to_bits(), 0xF0);
+    /// assert_eq!(Frame::CANONICAL.with_centre(Centre::Topocentric).to_bits(), 0xF1);
+    /// ```
     #[must_use]
     pub fn to_bits(self) -> u32 {
         let centre = match self.centre {
@@ -279,6 +402,14 @@ impl Frame {
     }
 
     /// The frame from its packed form.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Frame;
+    ///
+    /// assert_eq!(Frame::try_from_bits(0xF0), Ok(Frame::CANONICAL));
+    /// // Bit 9 is reserved.
+    /// assert!(Frame::try_from_bits(0xF0 | 1 << 9).is_err());
+    /// ```
     ///
     /// # Errors
     ///
@@ -333,6 +464,12 @@ impl Frame {
 
     /// The key stamped in provenance: centre, equinox, coordinates,
     /// zodiac and corrections, slash-separated.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Frame;
+    ///
+    /// assert_eq!(Frame::CANONICAL.key(), "GEOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT");
+    /// ```
     #[must_use]
     pub fn key(&self) -> String {
         format!(

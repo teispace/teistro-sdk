@@ -103,6 +103,19 @@ pub type PluginCloseFn = unsafe extern "C" fn(user_data: *mut c_void);
 /// allows. A buffer too small for even one character gets the
 /// terminator alone.
 ///
+/// ```
+/// use core::ffi::{CStr, c_char};
+/// use teistro_port_ephemeris::plugin::write_error;
+///
+/// // A buffer of six bytes takes five and the terminator, cut where the
+/// // text allows: "ā" is two bytes and does not fit after "refus".
+/// let mut buffer = [1 as c_char; 6];
+/// // SAFETY: the buffer is six writable bytes.
+/// unsafe { write_error("refusā", buffer.as_mut_ptr(), buffer.len()) };
+/// // SAFETY: write_error terminated it.
+/// assert_eq!(unsafe { CStr::from_ptr(buffer.as_ptr()) }.to_str(), Ok("refus"));
+/// ```
+///
 /// # Safety
 ///
 /// `error` must be null, or valid for writes of `capacity` bytes.
@@ -130,6 +143,16 @@ pub unsafe fn write_error(message: &str, error: *mut c_char, capacity: usize) {
 ///
 /// Null is an empty configuration rather than an error: an adapter that
 /// needs nothing should not require `{}`.
+///
+/// ```
+/// use teistro_port_ephemeris::plugin::read_config;
+///
+/// let config = c"{\"data_dir\": \"/srv/ephe\"}";
+/// // SAFETY: a NUL-terminated literal, valid for the call.
+/// assert_eq!(unsafe { read_config(config.as_ptr()) }, Ok("{\"data_dir\": \"/srv/ephe\"}"));
+/// // SAFETY: null is allowed, and reads as no configuration.
+/// assert_eq!(unsafe { read_config(core::ptr::null()) }, Ok(""));
+/// ```
 ///
 /// # Errors
 ///
@@ -161,9 +184,50 @@ pub unsafe fn read_config<'a>(config_json: *const c_char) -> Result<&'a str, Pro
 /// `DataMissing` and a bad option is `Invalid`, and a loader can act on
 /// the difference.
 ///
-/// ```ignore
-/// fn open(config: &str) -> Result<MyProvider, ProviderError> { /* … */ }
-/// teistro_port_ephemeris::export_provider!(MyProvider, open);
+/// ```
+/// use core::ffi::{CStr, c_char, c_void};
+/// use teistro_port_ephemeris::plugin::PLUGIN_ABI_VERSION;
+/// use teistro_port_ephemeris::{
+///     EphemerisProvider, ProviderCode, ProviderError, ProviderVtable, TestProvider, VtableProvider,
+/// };
+///
+/// fn open(config: &str) -> Result<TestProvider, ProviderError> {
+///     match config {
+///         "" => Ok(TestProvider::new()),
+///         other => Err(ProviderError::DataMissing { detail: format!("no data at {other}") }),
+///     }
+/// }
+/// teistro_port_ephemeris::export_provider!(TestProvider, open);
+///
+/// // What a loader does with the three symbols, here called directly.
+/// assert_eq!(teistro_provider_abi_version(), PLUGIN_ABI_VERSION);
+/// let (mut vtable, mut user_data) = (ProviderVtable::EMPTY, core::ptr::null_mut::<c_void>());
+/// let mut error = [0 as c_char; 128];
+/// // SAFETY: a null configuration is allowed; every out-parameter is
+/// // writable and the buffer's length is given.
+/// let code = unsafe {
+///     teistro_provider_open(core::ptr::null(), &mut vtable, &mut user_data, error.as_mut_ptr(), error.len())
+/// };
+/// assert_eq!(code, 0);
+/// // SAFETY: the vtable and its box are what `open` wrote, and the box is
+/// // closed only after the provider is dropped.
+/// let provider = unsafe { VtableProvider::bind(vtable, user_data) }?;
+/// assert_eq!(provider.capabilities().identity.name, "test-provider");
+/// drop(provider);
+/// // SAFETY: exactly what `open` wrote, closed once.
+/// unsafe { teistro_provider_close(user_data) };
+///
+/// // A refusal crosses as its code and its sentence.
+/// let missing = c"/srv/ephe";
+/// // SAFETY: as above, with a NUL-terminated configuration.
+/// let code = unsafe {
+///     teistro_provider_open(missing.as_ptr(), &mut vtable, &mut user_data, error.as_mut_ptr(), error.len())
+/// };
+/// assert_eq!(code, ProviderCode::DataMissing as i32);
+/// // SAFETY: `open` terminated the buffer.
+/// let said = unsafe { CStr::from_ptr(error.as_ptr()) }.to_str().unwrap();
+/// assert!(said.contains("no data at /srv/ephe"), "{said}");
+/// # Ok::<(), ProviderError>(())
 /// ```
 ///
 /// The generated `open` catches a panic and turns it into a refusal.

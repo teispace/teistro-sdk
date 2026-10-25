@@ -178,6 +178,10 @@ fn each_operation_of_a_loaded_engine_is_a_tool_with_its_parameters() {
         "the out parameter is the engine's to fill"
     );
     assert_eq!(properties["values"]["type"], "array");
+    // The length the provider derives is optional; the array is not.
+    assert_eq!(sum["inputSchema"]["required"], json!(["values"]));
+    // The engine says the call leaves its state alone.
+    assert_eq!(sum["annotations"]["readOnlyHint"], true);
     assert!(tools.iter().any(|tool| tool["name"] == "engine.tp_echo"));
 
     // Without a plugin, no engine operation is a tool.

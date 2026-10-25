@@ -41,6 +41,19 @@ use crate::provider::{EphemerisProvider, PositionRequest};
 /// visible: a hundred charts asking for one grid of a hundred instants
 /// and a hundred charts asking one at a time both report a hundred times
 /// the cells, and only the first reports one call.
+///
+/// ```
+/// use teistro_port_ephemeris::{Body, CountingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+///
+/// let counting = CountingProvider::new(TestProvider::new()).watching_repeats();
+/// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+/// counting.positions(&request)?;
+/// counting.positions(&request)?;
+/// let calls = counting.calls();
+/// // Two calls of four cells each, the second all repeats.
+/// assert_eq!((calls.positions, calls.cells, calls.widest, calls.distinct_cells), (2, 8, 4, 4));
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct ProviderCalls {
     /// Calls to `positions`.
@@ -74,6 +87,19 @@ pub struct ProviderCalls {
 
 impl ProviderCalls {
     /// Every call, of whatever kind.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CountingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let counting = CountingProvider::new(TestProvider::new()).watching_repeats();
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// counting.positions(&request)?;
+    /// counting.positions(&request)?;
+    /// counting.delta_t_seconds(2_451_545.0).ok();
+    /// // A refused override is still a call.
+    /// assert_eq!(counting.calls().total(), 3);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub const fn total(&self) -> u64 {
         self.positions
@@ -89,6 +115,17 @@ impl ProviderCalls {
     /// The share of the cells that were asked for more than once, which
     /// is what a memo inside one call would save. Nought when repeats
     /// were not watched.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CountingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let counting = CountingProvider::new(TestProvider::new()).watching_repeats();
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// counting.positions(&request)?;
+    /// counting.positions(&request)?;
+    /// assert_eq!(counting.calls().repeat_share(), 0.5);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn repeat_share(&self) -> f64 {
         if self.cells == 0 || self.distinct_cells == 0 {
@@ -106,6 +143,17 @@ impl ProviderCalls {
     /// The mean width of a `positions` call, in cells: one when every
     /// call asked for a single cell, and the batch size when the caller
     /// asked once for the lot.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CountingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let counting = CountingProvider::new(TestProvider::new()).watching_repeats();
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// counting.positions(&request)?;
+    /// counting.positions(&request)?;
+    /// assert_eq!(counting.calls().mean_width(), 4.0);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn mean_width(&self) -> f64 {
         if self.positions == 0 {
@@ -157,6 +205,12 @@ pub struct CountingProvider<P> {
 
 impl<P> CountingProvider<P> {
     /// Wraps a provider with its counters at nought.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{CountingProvider, ProviderCalls, TestProvider};
+    ///
+    /// assert_eq!(CountingProvider::new(TestProvider::new()).calls(), ProviderCalls::default());
+    /// ```
     pub const fn new(inner: P) -> CountingProvider<P> {
         CountingProvider {
             inner,
@@ -178,6 +232,17 @@ impl<P> CountingProvider<P> {
     /// so [`ProviderCalls::distinct_cells`] says how much of the work was
     /// asked for twice. Costs a lock and a set insertion per cell, which
     /// is why it is not the default.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CountingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// // Unwatched, distinct cells are not counted.
+    /// let plain = CountingProvider::new(TestProvider::new());
+    /// plain.positions(&request)?;
+    /// assert_eq!((plain.calls().distinct_cells, plain.calls().repeat_share()), (0, 0.0));
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn watching_repeats(self) -> CountingProvider<P> {
         CountingProvider {
@@ -187,11 +252,31 @@ impl<P> CountingProvider<P> {
     }
 
     /// The provider underneath.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{CountingProvider, EphemerisProvider, TestProvider};
+    ///
+    /// let counting = CountingProvider::new(TestProvider::new());
+    /// // Asking the provider underneath is not counted.
+    /// let _ = counting.inner().capabilities();
+    /// assert_eq!(counting.calls().total(), 0);
+    /// ```
     pub const fn inner(&self) -> &P {
         &self.inner
     }
 
     /// The tally so far.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CountingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let counting = CountingProvider::new(TestProvider::new()).watching_repeats();
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// counting.positions(&request)?;
+    /// counting.positions(&request)?;
+    /// assert_eq!(counting.calls().positions, 2);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     pub fn calls(&self) -> ProviderCalls {
         let read = |counter: &AtomicU64| counter.load(Ordering::Relaxed);
         ProviderCalls {
@@ -214,6 +299,18 @@ impl<P> CountingProvider<P> {
 
     /// Sets every counter back to nought, so one wrapper can measure one
     /// operation after another.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CountingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let counting = CountingProvider::new(TestProvider::new()).watching_repeats();
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// counting.positions(&request)?;
+    /// counting.positions(&request)?;
+    /// counting.reset();
+    /// assert_eq!(counting.calls().total(), 0);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     pub fn reset(&self) {
         if let Some(seen) = self.seen.as_ref() {
             if let Ok(mut seen) = seen.lock() {

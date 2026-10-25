@@ -138,6 +138,12 @@ impl TestProvider {
     ];
 
     /// The provider.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// assert_eq!(TestProvider::new().capabilities().bodies, TestProvider::BODIES);
+    /// ```
     #[must_use]
     pub const fn new() -> TestProvider {
         TestProvider
@@ -186,6 +192,7 @@ const NATIVE_MANIFEST: &str = r#"{
       "name": "tp_echo",
       "doc": "Answers with the value it was given, so a caller can prove the relay works.",
       "returns": "object",
+      "mutatesEngineState": false,
       "params": [
         { "name": "value", "role": "value", "kind": "double", "doc": "Any number." }
       ]
@@ -194,9 +201,10 @@ const NATIVE_MANIFEST: &str = r#"{
       "name": "tp_sum",
       "doc": "Adds an array, which exercises the array roles a real manifest carries.",
       "returns": "object",
+      "mutatesEngineState": false,
       "params": [
         { "name": "values", "role": "array_in", "kind": "double *" },
-        { "name": "count", "role": "array_len", "kind": "size_t" },
+        { "name": "count", "role": "array_len", "kind": "size_t", "optional": true },
         { "name": "total", "role": "scalar_out", "kind": "double *" }
       ]
     }
