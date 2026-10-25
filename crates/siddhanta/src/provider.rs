@@ -572,4 +572,98 @@ mod tests {
                 .starts_with("Surya")
         );
     }
+
+    #[test]
+    fn a_body_outside_the_text_a_rate_not_asked_for_and_a_bija_are_answered() {
+        let provider = SiddhantaProvider::text();
+        let request = PositionRequest::new(
+            &[2_460_413.5],
+            TimeScale::Ut1,
+            &[Body::Sun],
+            SiddhantaProvider::FRAME,
+        );
+        let still = provider.positions(&request.without_speeds()).unwrap();
+        let sun = still.at(0, 0).unwrap();
+        assert_eq!(sun.status, CellStatus::Ok);
+        assert!(sun.lon_speed.abs() < f64::EPSILON);
+        assert!(
+            provider
+                .positions(&request)
+                .unwrap()
+                .at(0, 0)
+                .unwrap()
+                .lon_speed
+                > 0.9
+        );
+        // The text has no outer planets and no true node: the request is
+        // refused whole, naming what it answers.
+        for body in [Body::Uranus, Body::TrueNode] {
+            let bodies = [Body::Sun, body];
+            let outside = PositionRequest::new(
+                &[2_460_413.5],
+                TimeScale::Ut1,
+                &bodies,
+                SiddhantaProvider::FRAME,
+            );
+            assert!(matches!(
+                provider.positions(&outside),
+                Err(ProviderError::Unsupported { .. })
+            ));
+        }
+        // Only a bija that moves a count is named in the stamp.
+        let none = SiddhantaProvider::with_bija(Bija::NONE)
+            .capabilities()
+            .identity;
+        let committee = SiddhantaProvider::with_bija(Bija::NEPAL_COMMITTEE)
+            .capabilities()
+            .identity;
+        assert!(!none.data_version.contains("bija"), "{}", none.data_version);
+        assert!(
+            committee.data_version.contains("bija moon_apsis -4"),
+            "{}",
+            committee.data_version
+        );
+    }
+
+    #[test]
+    fn a_sunrise_past_the_window_and_a_sun_that_never_sets_are_none() {
+        let provider = SiddhantaProvider::text();
+        let request = |latitude: f64, from: f64, window_days: f64| HorizonRequest {
+            body: Body::Sun,
+            kind: HorizonEventKind::Rise,
+            place: Place::new(
+                Latitude::literal(latitude),
+                Longitude::literal(85.324),
+                Altitude::literal(0.0),
+            ),
+            from: JulianDay::literal(from),
+            window_days,
+            horizon: Horizon::CENTRE_NO_REFRACTION,
+        };
+        // Kathmandu's sunrise is near 00:15 UT; a window opened at 02:24 UT
+        // and closed five hours later holds none, and the next one ends it.
+        assert_eq!(
+            provider
+                .horizon_event(&request(27.7, 2_460_413.6, 0.2))
+                .unwrap(),
+            None
+        );
+        // Inside the polar circle at the June solstice the text's Sun has
+        // no day arc on any day of the window.
+        assert_eq!(
+            provider
+                .horizon_event(&request(80.0, 2_460_482.5, 3.0))
+                .unwrap(),
+            None
+        );
+        // A meridian transit is not in the text's day arc.
+        let twilight = HorizonRequest {
+            kind: HorizonEventKind::Transit,
+            ..request(27.7, 2_460_413.5, 1.0)
+        };
+        assert!(matches!(
+            provider.horizon_event(&twilight),
+            Err(ProviderError::Unsupported { .. })
+        ));
+    }
 }

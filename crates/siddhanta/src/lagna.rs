@@ -110,10 +110,7 @@ impl RisingTimes {
         let portions = [at_30 * 60.0, (at_60 - at_30) * 60.0, (at_90 - at_60) * 60.0];
         let lanka = RisingTimes::lanka(model.parameters()).asu;
         let mut asu = [0.0; 12];
-        for i in 0..3 {
-            let (Some(base), Some(portion)) = (lanka.get(i), portions.get(i)) else {
-                return None;
-            };
+        for (i, (base, portion)) in lanka.iter().zip(portions).enumerate() {
             let first_quadrant = base - portion;
             let second_quadrant = base + portion;
             // Mesha, Vrishabha, Mithuna; Karka, Simha, Kanya as the
@@ -381,5 +378,15 @@ mod tests {
         assert!((wrapped - 64.015).abs() < 0.05, "{wrapped}");
         assert!((rising.asu_between(350.0, wrapped) - 3000.0).abs() < 1e-6);
         assert!((rising.asu_between(100.0, 100.0)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn an_arc_ending_behind_its_start_in_one_sign_goes_the_whole_way_round() {
+        let lanka = RisingTimes::lanka(&Parameters::TEXT);
+        let day: f64 = lanka.asu.iter().sum();
+        let forward = lanka.asu_between(10.0, 20.0);
+        let round = lanka.asu_between(20.0, 10.0);
+        assert!((forward - lanka.asu[0] / 3.0).abs() < 1e-9, "{forward}");
+        assert!((forward + round - day).abs() < 1e-6, "{forward} + {round}");
     }
 }
