@@ -217,86 +217,12 @@ fn every_rule_round_trips_through_the_language() {
 }
 
 /// The engine's key, or keys, for each figure the SDK writes; a figure it does
-/// not carry is left out of the comparison.
-const SAME: [(&str, &[&str]); 62] = [
-    ("PRAVRAJYA_SUN", &["PRAVRAJYA_SUN_TAPASVI"]),
-    ("PRAVRAJYA_MOON", &["PRAVRAJYA_MOON_VRIDHHA"]),
-    ("PRAVRAJYA_MARS", &["PRAVRAJYA_MARS_SHAKYA"]),
-    ("PRAVRAJYA_MERCURY", &["PRAVRAJYA_MERCURY_BHIKSHU"]),
-    ("PRAVRAJYA_JUPITER", &["PRAVRAJYA_JUPITER_VYRTAKA"]),
-    ("PRAVRAJYA_VENUS", &["PRAVRAJYA_VENUS_CHARAKA"]),
-    ("PRAVRAJYA_SATURN", &["PRAVRAJYA_SATURN_NIRGRANTHA"]),
-    ("MAHAPURUSHA_RUCHAKA", &["RUCHAKA"]),
-    ("MAHAPURUSHA_BHADRA", &["BHADRA"]),
-    ("MAHAPURUSHA_HAMSA", &["HAMSA"]),
-    ("MAHAPURUSHA_MALAVYA", &["MALAVYA"]),
-    ("MAHAPURUSHA_SASA", &["SHASHA"]),
-    ("PARASHARA_GAJA_KESARI", &["GAJA_KESARI"]),
-    (
-        "PARASHARA_AMALA",
-        &["AMALA", "AMALA_KIRTI_BENEFIC_10_FROM_MOON"],
-    ),
-    ("PARASHARA_CHAMARA", &["CHAMARA"]),
-    ("PARASHARA_MATSYA", &["MATSYA"]),
-    ("PARASHARA_KALANIDHI", &["KALANIDHI"]),
-    ("PARASHARA_LAGNADHI", &["LAGNADHI"]),
-    ("LUNAR_SUNAPHA", &["SUNAPHA"]),
-    ("LUNAR_ANAPHA", &["ANAPHA"]),
-    ("LUNAR_DURADHARA", &["DURUDHARA"]),
-    ("LUNAR_KEMADRUMA", &["KEMADRUMA"]),
-    ("LUNAR_ADHI_YOGA", &["ADHI_YOGA"]),
-    ("SOLAR_VESI", &["VESI_BROAD"]),
-    ("SOLAR_VOSI", &["VOSI_BROAD"]),
-    ("SOLAR_UBHAYACHARI", &["UBHAYACHARI_BROAD"]),
-    ("NABHASA_RAJJU", &["RAJJU"]),
-    ("NABHASA_MUSALA", &["MUSALA"]),
-    ("NABHASA_NALA", &["NALA"]),
-    ("NABHASA_MAALA", &["MAALA"]),
-    ("NABHASA_SARPA", &["SARPA"]),
-    ("NABHASA_GADA", &["GADA", "GADA_4_7"]),
-    ("NABHASA_SAKATA", &["SAKATA"]),
-    ("NABHASA_VIHAGA", &["VIHAGA"]),
-    ("NABHASA_SRINGATAKA", &["SHRINGATAKA"]),
-    (
-        "NABHASA_HALA",
-        &["HALA_AKRITI", "HALA_AKRITI_3_7_11", "HALA_AKRITI_4_8_12"],
-    ),
-    ("NABHASA_KAMALA", &["PADMA"]),
-    ("NABHASA_VAPI", &["VAPI"]),
-    ("NABHASA_YUPA", &["YUPA"]),
-    ("NABHASA_SARA", &["ISHU"]),
-    ("NABHASA_SAKTHI", &["SAKTI"]),
-    ("NABHASA_DANDA", &["DANDA_AKRITI"]),
-    ("NABHASA_NAUKA", &["NAUKHA"]),
-    ("NABHASA_KOOTA", &["KUTA"]),
-    ("NABHASA_CHATRA", &["CHATRA"]),
-    ("NABHASA_CHAPA", &["CHAPA"]),
-    ("NABHASA_ARDHA_CHANDRA", &["ARDHA_CHANDRA"]),
-    ("NABHASA_CHAKRA", &["CHAKRA"]),
-    ("NABHASA_SAMUDRA", &["SAMUDRA"]),
-    ("NABHASA_GOLA", &["GOLA"]),
-    ("NABHASA_YUGA", &["YUGA"]),
-    ("NABHASA_SOOLA", &["SHOOLA"]),
-    ("NABHASA_KEDARA", &["KEDARA"]),
-    ("NABHASA_PASA", &["PASHA"]),
-    (
-        "BPHS_FIFTH_AND_NINTH_LORDS_RELATED",
-        &["RAJA_LORD_CONJ_5_9"],
-    ),
-    ("BPHS_LORDS_OF_10_AND_5_JOINED", &["RAJA_LORD_CONJ_5_10"]),
-    ("BPHS_LORDS_OF_10_AND_9_JOINED", &["RAJA_LORD_CONJ_9_10"]),
-    ("BPHS_LORDS_OF_4_AND_5_JOINED", &["RAJA_LORD_CONJ_4_5"]),
-    (
-        "BPHS_MAHA_RAJA_LAGNA_AND_FIFTH_LORDS_EXCHANGED",
-        &["RAJA_1_5"],
-    ),
-    (
-        "BPHS_TENTH_AND_LAGNA_LORDS_EXCHANGED",
-        &["MAHA_PARIVARTANA_1_10"],
-    ),
-    ("NABHASA_DAMA", &["DAMA"]),
-    ("NABHASA_VEENA", &["VEENA"]),
-];
+/// not carry is left out of the comparison. Kept as data, since the A/B
+/// against the baseline engine (`bindings/node/bench/ab-agree.mjs`) joins
+/// the two catalogues by the same table.
+fn same() -> Vec<(String, Vec<String>)> {
+    serde_json::from_str(include_str!("same-figures.json")).unwrap()
+}
 
 /// The yogas the SDK reads from BPHS chs. 35 to 39 and 79, against the answers
 /// the recording engine recorded for the same figures over the same 93 charts.
@@ -304,19 +230,23 @@ const SAME: [(&str, &[&str]); 62] = [
 fn the_sdk_s_yogas_answer_what_the_engine_answered() {
     let ours = teistro_rules::shipped::nabhasas();
     let owned: Vec<Rule> = ours.to_vec();
-    let mut tally: std::collections::BTreeMap<&str, (usize, usize, usize)> =
-        SAME.iter().map(|(key, _)| (*key, (0, 0, 0))).collect();
+    let same = same();
+    assert_eq!(same.len(), 62);
+    let mut tally: std::collections::BTreeMap<&str, (usize, usize, usize)> = same
+        .iter()
+        .map(|(key, _)| (key.as_str(), (0, 0, 0)))
+        .collect();
     for (path, file) in files() {
         // The SDK's rules ask questions of strength; the engine's never do, so
         // only this pass needs a chart that can answer them.
         let chart = chart_at(&path, &file["inputs"]);
         let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(&owned);
         let present = file["present"].as_object().unwrap();
-        for (key, theirs) in SAME {
-            let rule = ours.iter().find(|rule| rule.key == key).unwrap();
+        for (key, theirs) in &same {
+            let rule = ours.iter().find(|rule| rule.key == *key).unwrap();
             let we = evaluator.evaluate(rule);
-            let they = theirs.iter().any(|key| present.contains_key(*key));
-            let counted = tally.get_mut(key).unwrap();
+            let they = theirs.iter().any(|key| present.contains_key(key));
+            let counted = tally.get_mut(key.as_str()).unwrap();
             match (we.present, they) {
                 (true, true) => counted.0 += 1,
                 (true, false) => counted.1 += 1,
