@@ -31,7 +31,7 @@ the modern sky would print instead (C187).
 | the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed sunrise within 3 minutes | **holds** | 0 of 333 disagree; median -0.4 min |
 | the same text at its own sunrise: every printed sunrise within 3 minutes | falsified | 231 of 333 disagree; median +0.3 min |
 | the text without a bija, at its own sunrise: every printed sunrise within 3 minutes | falsified | 231 of 333 disagree; median +0.3 min |
-| the modern sky under Lahiri (`nepali-default`): every printed sunrise within 3 minutes | falsified | 109 of 333 disagree; median +2.5 min |
+| the modern sky under Lahiri (`nepali-default`): every printed sunrise within 3 minutes | **holds** | 0 of 333 disagree; median -0.4 min |
 | the print's sunrise is `CENTRE_REFRACTION`, the nearest of the named conventions | **holds** | nearest CENTRE_REFRACTION |
 | the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed tithi flag, or a reason the pass checks | **holds** | 331 of 331 agree; the 0 others each for a reason in §5 |
 | the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed nakshatra flag, or a reason the pass checks | **holds** | 333 of 333 agree; the 0 others each for a reason in §5 |
@@ -84,7 +84,7 @@ less the print's.
 | the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise | 333 | -0.4 | -1.6 | +1.4 |
 | the same text at its own sunrise | 333 | +0.3 | -11.0 | +19.6 |
 | the text without a bija, at its own sunrise | 333 | +0.3 | -11.0 | +19.6 |
-| the modern sky under Lahiri (`nepali-default`) | 333 | +2.5 | +1.0 | +4.0 |
+| the modern sky under Lahiri (`nepali-default`) | 333 | -0.4 | -1.6 | +1.4 |
 
 Under the committee's sky, each named convention's modern sunrise
 against the print's, the reading's less the print's, and how many days

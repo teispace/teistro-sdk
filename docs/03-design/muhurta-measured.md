@@ -14,8 +14,8 @@ measured.
 
 The baseline engine's marriage (`ActivityRules::baseline_marriage`)
 under its own ranking (`Ranking::Baseline`). 80 days are closed and
-11 judged; the judged days are cut into 2086 windows, 831 of them open
-and 353 of those in a choghadiya the engine offers. 8 windows fell
+11 judged; the judged days are cut into 2086 windows, 830 of them open
+and 356 of those in a choghadiya the engine offers. 9 windows fell
 inside a blackout that did not cover their day, and were left out.
 The best window opens on 2026-11-25, scored 100.
 
@@ -25,7 +25,7 @@ The best window opens on 2026-11-25, scored 100.
 | nothing is open before Devuthani Ekadashi, 2026-11-20 | **holds** | 0 of 80 disagree |
 | every day closed is closed by Chaturmas, and says so | **holds** | 0 of 80 disagree |
 | 2026-11-25 is kept | **holds** | 0 of 1 disagree |
-| an open window is scored exactly when the engine would offer it (Amrita, Shubha or Labha) | **holds** | 0 of 831 disagree |
+| an open window is scored exactly when the engine would offer it (Amrita, Shubha or Labha) | **holds** | 0 of 830 disagree |
 
 ## 2. The asta against the published almanac
 
@@ -42,12 +42,12 @@ the almanac's.
 
 | criterion | asta | found | published | begins earlier by | ends later by |
 |---|---|---|---|---:|---:|
-| Surya Siddhanta | Guru | 2026-07-13 to 2026-08-12 | 2026-07-16 to 2026-08-09 | 3 days | 3 days |
-| Surya Siddhanta | Shukra | 2026-10-10 to 2026-10-29 | 2026-10-14 to 2026-10-28 | 4 days | 1 day |
+| Surya Siddhanta | Guru | 2026-07-12 to 2026-08-12 | 2026-07-16 to 2026-08-09 | 4 days | 3 days |
+| Surya Siddhanta | Shukra | 2026-10-10 to 2026-10-30 | 2026-10-14 to 2026-10-28 | 4 days | 2 days |
 | the combustion orbs | Guru | 2026-07-13 to 2026-08-14 | 2026-07-16 to 2026-08-09 | 3 days | 5 days |
 | the combustion orbs | Shukra | 2026-10-18 to 2026-10-30 | 2026-10-14 to 2026-10-28 | -4 days | 2 days |
-| Ptolemy | Guru | 2026-07-05 to 2026-08-17 | 2026-07-16 to 2026-08-09 | 11 days | 8 days |
-| Ptolemy | Shukra | 2026-10-12 to 2026-10-29 | 2026-10-14 to 2026-10-28 | 2 days | 1 day |
+| Ptolemy | Guru | 2026-07-06 to 2026-08-16 | 2026-07-16 to 2026-08-09 | 10 days | 7 days |
+| Ptolemy | Shukra | 2026-10-12 to 2026-10-28 | 2026-10-14 to 2026-10-28 | 2 days | 0 days |
 
 | proposed rule | verdict | measured |
 |---|---|---|
@@ -72,15 +72,15 @@ matter is the rules' to say.
 
 | search | windows | unsteady | clauses over part of a window | neighbours judged alike | shortest | under six minutes |
 |---|---:|---:|---:|---:|---:|---:|
-| the baseline's | 2086 | 0 | 0 | 706 | 0.79 s | 883 |
-| Raman's | 13 555 | 0 | 0 | 4516 | 0.01 s | 5642 |
+| the baseline's | 2086 | 0 | 0 | 706 | 0.49 s | 886 |
+| Raman's | 13 368 | 0 | 0 | 4454 | 0.00 s | 5577 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
 | every window of the baseline's search reads the same sky a moment inside either end | **holds** | 0 of 2086 disagree |
-| every clause of the baseline's search's windows covers its window whole | **holds** | 0 of 10360 disagree |
-| every window of Raman's search reads the same sky a moment inside either end | **holds** | 0 of 13555 disagree |
-| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 123248 disagree |
+| every clause of the baseline's search's windows covers its window whole | **holds** | 0 of 10358 disagree |
+| every window of Raman's search reads the same sky a moment inside either end | **holds** | 0 of 13368 disagree |
+| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 121525 disagree |
 
 ## 4. Where the engine's sampling parts from the SDK
 
@@ -89,7 +89,7 @@ sunrise**; the SDK bars the windows in a star the rite does not
 take and keeps the rest. A day the engine keeps the SDK keeps too,
 since the star at sunrise runs in the day; the parting is one way.
 Of the 11 days the baseline search judged, the engine drops 3 days that the
-SDK keeps for an allowed star rising after sunrise. And 151 open
+SDK keeps for an allowed star rising after sunrise. And 155 open
 windows the SDK scores are shorter than the six minutes under which
 the engine drops a fragment.
 
@@ -97,9 +97,9 @@ the engine drops a fragment.
 
 Raman makes a panchaka's kind the remainder by nine of the tithi,
 vara, star and lagna numbers; the baseline engine makes it one kind
-per star of the last five. Of Raman's search's windows, 1589 lie in a
-panchaka star; the remainder names a panchaka in 856 of them, and
-the star's kind in 167. The remainder is the SDK's reading and this
+per star of the last five. Of Raman's search's windows, 1588 lie in a
+panchaka star; the remainder names a panchaka in 859 of them, and
+the star's kind in 166. The remainder is the SDK's reading and this
 is how far the engine's would part from it.
 
 C158, where panchaka begins, is not counted: it is closed at rank 1
@@ -123,12 +123,12 @@ context's cache, over Raman's search:
 
 | asked | provider calls |
 |---|---:|
-| the search alone | 117 606 |
+| the search alone | 116 004 |
 | the almanac alone | 311 |
-| the two apart | 117 917 |
-| the two together | 112 272 |
+| the two apart | 116 315 |
+| the two together | 110 747 |
 
-Together they are spared 5645 calls, 4.8% of the two apart: the
+Together they are spared 5568 calls, 4.8% of the two apart: the
 almanac beside the search adds 0.0% to the search's own.
 
 | proposed rule | verdict | measured |

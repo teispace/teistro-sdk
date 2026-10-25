@@ -64,9 +64,9 @@ exclude_re = [
   # the empty one is their difference, nothing, either way.
   'crates/strength/src/ashtakavarga\.rs:469:65: replace < with <= in ekadhipatya',
   # At exactly 180° the shorter arc is 180 either way.
-  'crates/strength/src/shadbala/mod\.rs:497:13: replace > with >= in apart',
+  'crates/strength/src/shadbala/mod\.rs:510:13: replace > with >= in apart',
   # Ketu is Rahu less 180° or plus 180°: the same point.
-  'crates/strength/src/shadbala/mod\.rs:546:65: replace \+ with - in is_benefic',
+  'crates/strength/src/shadbala/mod\.rs:559:65: replace \+ with - in is_benefic',
   # An arc past 180° folded down by 360° or up by it puts half of it on
   # the same point once the madhyama is reduced past 360°.
   'crates/strength/src/shadbala/cheshta\.rs:54:13: replace -= with \+= in from_kendra',
@@ -76,10 +76,10 @@ exclude_re = [
   'crates/strength/src/shadbala/dig\.rs:18:36: replace \+ with - in of',
   'crates/strength/src/shadbala/dig\.rs:25:54: replace \+ with - in of',
   # A bhuja of exactly 90° is 90 folded or not.
-  'crates/strength/src/shadbala/kaala\.rs:199:31: replace > with >= in kranti',
+  'crates/strength/src/shadbala/kaala\.rs:234:27: replace > with >= in tabled',
   # At a sayana of exactly 180° the bhuja is 0, so the kranti is zero of
   # either sign.
-  'crates/strength/src/shadbala/kaala\.rs:216:30: replace < with <= in kranti',
+  'crates/strength/src/shadbala/kaala\.rs:252:15: replace < with <= in tabled',
   # `skip(i * 1)` adds each graha's pair with itself, whose discs differ by
   # nothing, which the loop skips.
   'crates/strength/src/shadbala/yuddha\.rs:27:58: replace \+ with \* in apply',

@@ -33,7 +33,7 @@ reader would guess from the names.
 | `limbs.nakshatra` | 1 to 3 | 2 to 60 | no |
 | `limbs.tithi` | 1 to 3 | 2 to 62 | no |
 | `limbs.yoga` | 1 to 3 | 2 to 65 | no |
-| `moon.rises` | 0 to 1 | 0 to 40 | no |
+| `moon.rises` | 0 to 1 | 0 to 41 | no |
 | `moon.sets` | 0 to 1 | 0 to 41 | no |
 | `moon.signs` | 1 to 2 | 1 to 28 | no |
 | `omens.panchaka` | 0 to 3 | 0 to 10 | no |
@@ -68,8 +68,8 @@ the widest day and every other day:
 
 | batch | ragged rows | rectangular rows | wasted |
 |---|---|---|---|
-| the 408 ordinary days | 35 472 | 39 576 | 10.4% |
-| all 450 days | 49 772 | 227 700 | **78.1%** |
+| the 408 ordinary days | 35 471 | 39 576 | 10.4% |
+| all 450 days | 49 759 | 228 150 | **78.2%** |
 
 Ten per cent is arguable. Seventy-eight is not, and the second
 row is what a real caller gets: **one** polar day in a batch sets

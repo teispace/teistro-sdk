@@ -1082,7 +1082,7 @@ class AnEngine(WithLibrary):
         self.assertEqual(day.vara, Vara.SHANIVARA)
         self.assertTrue(day.sunrise < day.sunset < 2451545.0 < day.next_sunrise)
         self.assertIsNone(day.polar)
-        self.assertEqual(day.convention, Sunrise.CENTRE_NO_REFRACTION)
+        self.assertEqual(day.convention, Sunrise.CENTRE_REFRACTION)
         self.assertIsNone(day.custom_altitude_deg)
 
         # A custom altitude is a number and no named convention.
@@ -5670,10 +5670,14 @@ class ADaysLagnas(AJuneWeek):
         )[0].lagnas
         # Raman's ayanamsha is some 1.4° short of Lahiri's, so the
         # sidereal lagna stands further on and each sign enters some five
-        # minutes sooner.
-        for one, other in zip(lahiri[1:], raman[1:]):
-            self.assertIs(one.member, other.member)
-            sooner = (one.whole.from_jd - other.whole.from_jd) * 1440
+        # minutes sooner. A sign entered just after sunrise under Lahiri
+        # may have entered before it under Raman's, so the signs are
+        # paired by name, past each day's first, which sunrise cuts.
+        entered = {span.member: span.whole.from_jd for span in raman[1:]}
+        paired = [span for span in lahiri[1:] if span.member in entered]
+        self.assertTrue(len(paired) >= 10, len(paired))
+        for one in paired:
+            sooner = (one.whole.from_jd - entered[one.member]) * 1440
             self.assertTrue(3 < sooner < 9, sooner)
 
 
