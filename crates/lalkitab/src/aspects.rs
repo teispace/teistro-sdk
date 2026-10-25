@@ -9,6 +9,12 @@
 use serde::Serialize;
 
 /// How strongly one house looks at another.
+///
+/// ```
+/// use teistro_lalkitab::aspects::{Strength, looks_at};
+///
+/// assert_eq!(looks_at(1), &[(7, Strength::Full)]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -24,6 +30,12 @@ pub enum Strength {
 
 impl Strength {
     /// The share of the looking house's effect that reaches, in percent.
+    ///
+    /// ```
+    /// use teistro_lalkitab::aspects::Strength;
+    ///
+    /// assert_eq!([Strength::Quarter, Strength::Half, Strength::Full].map(Strength::percent), [25, 50, 100]);
+    /// ```
     #[must_use]
     pub const fn percent(self) -> u8 {
         match self {
@@ -36,6 +48,14 @@ impl Strength {
 
 /// The houses a house looks at, with how hard (1952 pp. 102–104): the
 /// printed arrow table, start houses 1, 2, 3, 4, 5, 6 and 8.
+///
+/// ```
+/// use teistro_lalkitab::aspects::{Strength, looks_at};
+///
+/// assert_eq!(looks_at(3), &[(9, Strength::Half), (11, Strength::Half)]);
+/// // The later houses look at nothing, 8 apart.
+/// assert!(looks_at(7).is_empty());
+/// ```
 #[must_use]
 pub const fn looks_at(house: u8) -> &'static [(u8, Strength)] {
     match house {
@@ -51,6 +71,14 @@ pub const fn looks_at(house: u8) -> &'static [(u8, Strength)] {
 }
 
 /// The houses that look at `house`, with how hard.
+///
+/// ```
+/// use teistro_lalkitab::aspects::{Strength, looked_at_by};
+///
+/// let ninth: Vec<_> = looked_at_by(9).collect();
+/// assert_eq!(ninth, [(3, Strength::Half), (5, Strength::Half)]);
+/// assert_eq!(looked_at_by(1).count(), 0);
+/// ```
 pub fn looked_at_by(house: u8) -> impl Iterator<Item = (u8, Strength)> {
     (1..=12_u8).flat_map(move |from| {
         looks_at(from)
@@ -62,6 +90,13 @@ pub fn looked_at_by(house: u8) -> impl Iterator<Item = (u8, Strength)> {
 
 /// One *yog drishti* relation of a house (1952 p. 112): the house it sees
 /// under the relation, and the house it is seen from.
+///
+/// ```
+/// use teistro_lalkitab::aspects::yog_drishti;
+///
+/// let first = yog_drishti(1);
+/// assert_eq!((first.collision.sees, first.collision.seen_from), (8, 6));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -73,6 +108,14 @@ pub struct Relation {
 }
 
 /// Every *yog drishti* relation of one house (1952 p. 112).
+///
+/// ```
+/// use teistro_lalkitab::aspects::yog_drishti;
+///
+/// // The general condition is the 7th, both ways.
+/// let tenth = yog_drishti(10);
+/// assert_eq!((tenth.general.sees, tenth.general.seen_from), (4, 4));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -92,6 +135,14 @@ pub struct YogDrishti {
 }
 
 /// The house `steps` on from `house`, counting round the twelve.
+///
+/// ```
+/// use teistro_lalkitab::aspects::ahead;
+///
+/// assert_eq!(ahead(1, 1), 2);
+/// // Round past 12.
+/// assert_eq!(ahead(10, 6), 4);
+/// ```
 #[must_use]
 pub const fn ahead(house: u8, steps: u8) -> u8 {
     (house + steps + 11) % 12 + 1

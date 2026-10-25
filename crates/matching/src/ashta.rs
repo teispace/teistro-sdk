@@ -9,6 +9,20 @@ use crate::native::Native;
 
 /// The kootas in the verse's order, each worth one point more than the last
 /// (VI.21).
+///
+/// ```
+/// use teistro_matching::{ASHTA_KOOTA, KootaRules, Native, ashta_koota};
+///
+/// // Two Moons at 45°: Rohini's second pada, in Taurus.
+/// let moon = Native::of_moon(45.0)?;
+/// let koota = ashta_koota(moon, moon, KootaRules::default());
+/// let read: Vec<_> = koota.kootas.iter().map(|row| row.reading.koota()).collect();
+/// assert_eq!(read, ASHTA_KOOTA);
+/// // Each worth one more than the last.
+/// let most: Vec<f64> = koota.kootas.iter().map(|row| row.max_points).collect();
+/// assert_eq!(most, [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const ASHTA_KOOTA: [Koota; 8] = [
     Koota::Varna,
     Koota::Vashya,
@@ -21,9 +35,31 @@ pub const ASHTA_KOOTA: [Koota; 8] = [
 ];
 
 /// The most an Ashta Koota totals.
+///
+/// ```
+/// use teistro_matching::{ASHTA_KOOTA_POINTS, KootaRules, Native, ashta_koota};
+///
+/// // Two Moons at 45°: Rohini's second pada, in Taurus.
+/// let moon = Native::of_moon(45.0)?;
+/// let koota = ashta_koota(moon, moon, KootaRules::default());
+/// assert_eq!(koota.kootas.iter().map(|row| row.max_points).sum::<f64>(), ASHTA_KOOTA_POINTS);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const ASHTA_KOOTA_POINTS: f64 = 36.0;
 
 /// The point an equal varna earns (C259).
+///
+/// ```
+/// use teistro_matching::{EqualVarna, KootaRules, Native, ashta_koota};
+///
+/// // Two Moons at 45°: Rohini's second pada, in Taurus.
+/// let moon = Native::of_moon(45.0)?;
+/// // One sign, one varna: a whole point, or a half as "some say".
+/// let half = KootaRules { equal_varna: EqualVarna::Half, ..KootaRules::default() };
+/// assert_eq!(ashta_koota(moon, moon, KootaRules::default()).total, 28.0);
+/// assert_eq!(ashta_koota(moon, moon, half).total, 27.5);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -37,6 +73,18 @@ pub enum EqualVarna {
 
 /// The points of a Deva bride and a Manushya groom, which
 /// *Daivajna-manohara* gives as "four or three" (C262).
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{DevaBride, KootaRules, Native, ashta_koota};
+///
+/// // A Deva bride in Ashvini and a Manushya groom in Rohini.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(45.0)?);
+/// let gana = |rules| ashta_koota(bride, groom, rules).row(Koota::Gana).map(|row| row.points);
+/// assert_eq!(gana(KootaRules::default()), Some(4.0));
+/// assert_eq!(gana(KootaRules { deva_bride: DevaBride::Three, ..KootaRules::default() }), Some(3.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -49,6 +97,23 @@ pub enum DevaBride {
 }
 
 /// How many exceptions lift a bad Bhakoot (C263).
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{BhakootLift, KootaReading, KootaRules, Native, ashta_koota};
+///
+/// // Moons in Ashvini (Aries) and Anuradha (Scorpio): the 8th apart.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(215.0)?);
+/// let lifted = |rules| match ashta_koota(bride, groom, rules).row(Koota::Bhakoot).map(|row| row.reading) {
+///     Some(KootaReading::Bhakoot { lifted, .. }) => lifted,
+///     _ => false,
+/// };
+/// // One lord rules both signs, which is one exception: enough for VI.32–33,
+/// // and short of the three Garga asks of a 6/8.
+/// assert!(lifted(KootaRules::default()));
+/// assert!(!lifted(KootaRules { bhakoot_lift: BhakootLift::Garga, ..KootaRules::default() }));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -63,6 +128,22 @@ pub enum BhakootLift {
 }
 
 /// Which shared nadi is a dosha (C264).
+///
+/// ```
+/// use teistro_core::catalogue::{Koota, Nadi};
+/// use teistro_matching::{KootaReading, KootaRules, NadiDosha, Native, ashta_koota};
+///
+/// // Rohini's nadi is the last, so the middle-only reading sees no dosha;
+/// // the shared nadi earns nothing either way.
+/// let moon = Native::of_moon(45.0)?;
+/// let rules = KootaRules { nadi_dosha: NadiDosha::MiddleOnly, ..KootaRules::default() };
+/// let row = ashta_koota(moon, moon, rules).row(Koota::Nadi).copied();
+/// assert!(matches!(
+///     row.map(|row| (row.points, row.reading)),
+///     Some((0.0, KootaReading::Nadi { bride: Nadi::Antya, dosha: false, .. }))
+/// ));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -77,6 +158,14 @@ pub enum NadiDosha {
 
 /// The readings an Ashta Koota is computed under; each default is the
 /// source's own.
+///
+/// ```
+/// use teistro_matching::{BhakootLift, DevaBride, EqualVarna, KootaRules, NadiDosha};
+///
+/// let rules = KootaRules::default();
+/// assert_eq!((rules.equal_varna, rules.deva_bride), (EqualVarna::Whole, DevaBride::Four));
+/// assert_eq!((rules.bhakoot_lift, rules.nadi_dosha), (BhakootLift::AnyOne, NadiDosha::Any));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -92,6 +181,17 @@ pub struct KootaRules {
 }
 
 /// How one sign stands to another in Vashya (C260).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_matching::{VashyaRelation, vashya_relation};
+///
+/// assert_eq!(vashya_relation(Rashi::Gemini, Rashi::Virgo), VashyaRelation::Mutual);
+/// assert_eq!(vashya_relation(Rashi::Aries, Rashi::Scorpio), VashyaRelation::OneWay);
+/// // A water sign to a human one is its food.
+/// assert_eq!(vashya_relation(Rashi::Cancer, Rashi::Virgo), VashyaRelation::Food);
+/// assert_eq!(vashya_relation(Rashi::Aries, Rashi::Taurus), VashyaRelation::Neither);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -108,6 +208,14 @@ pub enum VashyaRelation {
 }
 
 /// How one yoni stands to another (C261).
+///
+/// ```
+/// use teistro_core::catalogue::Yoni;
+/// use teistro_matching::{YoniRelation, yoni_relation};
+///
+/// assert_eq!(yoni_relation(Yoni::Horse, Yoni::Horse), YoniRelation::Same);
+/// assert_eq!(yoni_relation(Yoni::Horse, Yoni::Elephant), YoniRelation::Neutral);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -122,6 +230,14 @@ pub enum YoniRelation {
 
 /// How two sign lords stand to each other, by the natural friendships of
 /// VI.27–28.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_matching::{MaitriRelation, maitri_relation};
+///
+/// assert_eq!(maitri_relation(Graha::Mars, Graha::Mars), MaitriRelation::OneLord);
+/// assert_eq!(maitri_relation(Graha::Sun, Graha::Moon), MaitriRelation::MutualFriends);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -143,6 +259,23 @@ pub enum MaitriRelation {
 }
 
 /// A bad Bhakoot, by how far the signs stand apart (VI.31).
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{BhakootDosha, KootaReading, KootaRules, Native, ashta_koota};
+///
+/// // Moons in Ashvini (Aries) and Anuradha (Scorpio): the 8th apart.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(215.0)?);
+/// let koota = ashta_koota(bride, groom, KootaRules::default());
+/// let Some(KootaReading::Bhakoot { apart, dosha, exceptions, lifted }) = koota.row(Koota::Bhakoot).map(|row| row.reading) else {
+///     unreachable!("the eight always read Bhakoot")
+/// };
+/// assert_eq!((apart, dosha), (8, Some(BhakootDosha::SixEight)));
+/// // A bad Bhakoot earns nothing, lifted or not.
+/// assert_eq!(koota.row(Koota::Bhakoot).map(|row| row.points), Some(0.0));
+/// # let _ = (exceptions, lifted);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -157,6 +290,22 @@ pub enum BhakootDosha {
 
 /// The five exceptions of VI.32–33 that lift a bad Bhakoot, each as a
 /// clause that holds or not.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{BhakootExceptions, KootaReading, KootaRules, Native, ashta_koota};
+///
+/// // Moons in Ashvini (Aries) and Anuradha (Scorpio): the 8th apart.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(215.0)?);
+/// let koota = ashta_koota(bride, groom, KootaRules::default());
+/// let Some(KootaReading::Bhakoot { apart, dosha, exceptions, lifted }) = koota.row(Koota::Bhakoot).map(|row| row.reading) else {
+///     unreachable!("the eight always read Bhakoot")
+/// };
+/// // Mars rules both; Scorpio is vashya to Aries; the taras are 8 and 3.
+/// assert_eq!(exceptions, BhakootExceptions { one_lord: true, vashya: true, ..BhakootExceptions::default() });
+/// # let _ = (apart, dosha, lifted);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -178,6 +327,22 @@ pub struct BhakootExceptions {
 }
 
 /// What a koota read, by koota.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{KootaReading, KootaRules, Native, ashta_koota};
+///
+/// // Moons in Ashvini (Aries) and Anuradha (Scorpio): the 8th apart.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(215.0)?);
+/// let koota = ashta_koota(bride, groom, KootaRules::default());
+/// let Some(KootaReading::Tara { bride_to_groom, groom_to_bride }) = koota.row(Koota::Tara).map(|row| row.reading) else {
+///     unreachable!("the eight always read Tara")
+/// };
+/// // Counted both ways: the 8th is pure, the 3rd is not, so half the points.
+/// assert_eq!((bride_to_groom, groom_to_bride), (8, 3));
+/// assert_eq!(koota.row(Koota::Tara).map(|row| row.points), Some(1.5));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "koota", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -288,6 +453,18 @@ impl KootaReading {
 }
 
 /// One koota's points and what it read.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{KootaRules, Native, ashta_koota};
+///
+/// // Two Moons at 45°: Rohini's second pada, in Taurus.
+/// let moon = Native::of_moon(45.0)?;
+/// let koota = ashta_koota(moon, moon, KootaRules::default());
+/// let nadi = koota.row(Koota::Nadi).copied();
+/// assert_eq!(nadi.map(|row| (row.points, row.max_points)), Some((0.0, 8.0)));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -301,6 +478,17 @@ pub struct KootaRow {
 }
 
 /// The Ashta Koota of a bride and a groom.
+///
+/// ```
+/// use teistro_matching::{KootaRules, Native, ashta_koota};
+///
+/// // Two Moons at 45°: Rohini's second pada, in Taurus.
+/// let moon = Native::of_moon(45.0)?;
+/// let koota = ashta_koota(moon, moon, KootaRules::default());
+/// assert_eq!(koota.kootas.len(), 8);
+/// assert_eq!(koota.total, koota.kootas.iter().map(|row| row.points).sum::<f64>());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -313,6 +501,19 @@ pub struct AshtaKoota {
 
 impl AshtaKoota {
     /// One koota's row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    /// use teistro_matching::{KootaRules, Native, ashta_koota};
+    ///
+    /// // Two Moons at 45°: Rohini's second pada, in Taurus.
+    /// let moon = Native::of_moon(45.0)?;
+    /// let koota = ashta_koota(moon, moon, KootaRules::default());
+    /// assert_eq!(koota.row(Koota::Gana).map(|row| row.points), Some(6.0));
+    /// // Rajju is one of the ten considerations, not the eight.
+    /// assert!(koota.row(Koota::Rajju).is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn row(&self, koota: Koota) -> Option<&KootaRow> {
         let at = ASHTA_KOOTA.iter().position(|one| *one == koota)?;
@@ -371,6 +572,16 @@ pub fn ashta_koota(bride: Native, groom: Native, rules: KootaRules) -> AshtaKoot
 }
 
 /// A sign's varna (VI.22).
+///
+/// ```
+/// use teistro_core::catalogue::{Rashi, Varna};
+/// use teistro_matching::sign_varna;
+///
+/// assert_eq!(sign_varna(Rashi::Cancer), Varna::Brahmin);
+/// assert_eq!(sign_varna(Rashi::Aries), Varna::Kshatriya);
+/// assert_eq!(sign_varna(Rashi::Taurus), Varna::Vaishya);
+/// assert_eq!(sign_varna(Rashi::Gemini), Varna::Shudra);
+/// ```
 #[must_use]
 pub fn sign_varna(sign: Rashi) -> Varna {
     if matches!(sign, Rashi::Cancer | Rashi::Scorpio | Rashi::Pisces) {
@@ -417,6 +628,17 @@ const fn water(sign: Rashi) -> bool {
 
 /// Whether `sign` is vashya to `to`: the verse where it decides,
 /// Kalaprakasika's table (XIII, p. 75) for the rest (C260).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_matching::is_vashya;
+///
+/// // Every sign but Leo is vashya to a human one.
+/// assert!(is_vashya(Rashi::Aries, Rashi::Gemini));
+/// assert!(!is_vashya(Rashi::Leo, Rashi::Gemini));
+/// // Directed: Scorpio to Aries, not Aries to Scorpio.
+/// assert!(is_vashya(Rashi::Scorpio, Rashi::Aries) && !is_vashya(Rashi::Aries, Rashi::Scorpio));
+/// ```
 #[must_use]
 pub fn is_vashya(sign: Rashi, to: Rashi) -> bool {
     if sign == to {
@@ -444,6 +666,14 @@ pub fn is_vashya(sign: Rashi, to: Rashi) -> bool {
 }
 
 /// How two signs stand in Vashya (C260).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_matching::{VashyaRelation, vashya_relation};
+///
+/// // One sign is vashya to itself both ways.
+/// assert_eq!(vashya_relation(Rashi::Leo, Rashi::Leo), VashyaRelation::Mutual);
+/// ```
 #[must_use]
 pub fn vashya_relation(bride: Rashi, groom: Rashi) -> VashyaRelation {
     let (to_groom, to_bride) = (is_vashya(bride, groom), is_vashya(groom, bride));
@@ -498,6 +728,15 @@ const GREAT_ENEMIES: [(Yoni, Yoni); 7] = [
 ];
 
 /// How two yonis stand (C261).
+///
+/// ```
+/// use teistro_core::catalogue::Yoni;
+/// use teistro_matching::{YoniRelation, yoni_relation};
+///
+/// // The horse and the buffalo, either way round.
+/// assert_eq!(yoni_relation(Yoni::Horse, Yoni::Buffalo), YoniRelation::GreatEnemy);
+/// assert_eq!(yoni_relation(Yoni::Buffalo, Yoni::Horse), YoniRelation::GreatEnemy);
+/// ```
 #[must_use]
 pub fn yoni_relation(a: Yoni, b: Yoni) -> YoniRelation {
     if a == b {
@@ -544,6 +783,15 @@ fn regards(graha: Graha, other: Graha) -> i8 {
 }
 
 /// How two sign lords stand by the natural friendships (VI.27–28).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_matching::{MaitriRelation, maitri_relation};
+///
+/// assert_eq!(maitri_relation(Graha::Sun, Graha::Saturn), MaitriRelation::MutualEnemies);
+/// // The relation is of the pair, read the same either way round.
+/// assert_eq!(maitri_relation(Graha::Sun, Graha::Mercury), maitri_relation(Graha::Mercury, Graha::Sun));
+/// ```
 #[must_use]
 pub fn maitri_relation(a: Graha, b: Graha) -> MaitriRelation {
     if a == b {

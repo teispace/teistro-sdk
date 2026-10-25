@@ -38,6 +38,17 @@ impl Native {
     /// The native whose Moon stands at a longitude, in degrees of the
     /// chart's own zodiac.
     ///
+    /// ```
+    /// use teistro_core::catalogue::{Nakshatra, Rashi};
+    /// use teistro_matching::Native;
+    ///
+    /// // Folded into the circle: -1° is 359°, Revati's last pada.
+    /// let moon = Native::of_moon(-1.0)?;
+    /// assert_eq!((moon.nakshatra, moon.pada, moon.rashi), (Nakshatra::Revati, 4, Rashi::Pisces));
+    /// assert_eq!(Native::of_moon(f64::INFINITY).unwrap_err().field(), Some("moon"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A longitude that is not a finite number, named `moon`.

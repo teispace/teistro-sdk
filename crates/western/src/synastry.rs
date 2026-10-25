@@ -46,6 +46,13 @@ use crate::midpoint::MidpointRequest;
 const ROOT: &str = "synastry";
 
 /// Which zodiac two charts are compared in (C241).
+///
+/// ```
+/// use teistro_western::{SynastryRequest, SynastryZodiac};
+///
+/// assert_eq!(SynastryRequest::default().zodiac, SynastryZodiac::Tropical);
+/// assert_eq!(SynastryRequest::default().with_zodiac(SynastryZodiac::Charts).zodiac, SynastryZodiac::Charts);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -63,6 +70,14 @@ pub enum SynastryZodiac {
 
 /// What a synastry is asked: the aspects and orbs a chart's own table
 /// reads, whether each chart's lagna joins its planets, and the zodiac.
+///
+/// ```
+/// use teistro_western::{AspectRequest, SynastryRequest};
+///
+/// let asked = SynastryRequest::default();
+/// assert_eq!(asked.table, AspectRequest::default());
+/// assert!(asked.lagna && !asked.composite && asked.parallels.is_none());
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", from = "Asked")]
@@ -174,6 +189,15 @@ impl Default for SynastryRequest {
 impl SynastryRequest {
     /// Lilly's reading: the Ptolemaic five under his moieties, which give
     /// the lagna no orb, so it is left out.
+    ///
+    /// ```
+    /// use teistro_western::{AspectRequest, SynastryRequest};
+    ///
+    /// // The moieties give the lagna no orb, so Lilly's reading leaves it out.
+    /// let lilly = SynastryRequest::lilly();
+    /// assert_eq!((&lilly.table, lilly.lagna), (&AspectRequest::lilly(), false));
+    /// assert!(lilly.check().is_ok());
+    /// ```
     #[must_use]
     pub fn lilly() -> SynastryRequest {
         SynastryRequest {
@@ -188,6 +212,13 @@ impl SynastryRequest {
     }
 
     /// Reads the parallels across the two charts too, under this request.
+    ///
+    /// ```
+    /// use teistro_western::{ParallelRequest, SynastryRequest};
+    ///
+    /// let asked = SynastryRequest::default().with_parallels(ParallelRequest::default().with_orb_deg(30.0));
+    /// assert_eq!(asked.check().unwrap_err().field(), Some("parallels.orbDeg"));
+    /// ```
     #[must_use]
     pub const fn with_parallels(mut self, parallels: ParallelRequest) -> Self {
         self.parallels = Some(parallels);
@@ -195,6 +226,15 @@ impl SynastryRequest {
     }
 
     /// Reads the antiscia across the two charts too, under this request.
+    ///
+    /// ```
+    /// use teistro_western::{AntisciaRequest, HouseRequest, SynastryRequest};
+    ///
+    /// // Cusps are one chart's, so a synastry's antiscia are read without them.
+    /// let on_cusps = SynastryRequest::default().with_antiscia(AntisciaRequest::default().with_cusps(HouseRequest::default()));
+    /// assert_eq!(on_cusps.check().unwrap_err().field(), Some("antiscia.cusps"));
+    /// assert!(SynastryRequest::default().with_antiscia(AntisciaRequest::default()).check().is_ok());
+    /// ```
     #[must_use]
     pub fn with_antiscia(mut self, antiscia: AntisciaRequest) -> Self {
         self.antiscia = Some(antiscia);
@@ -203,6 +243,13 @@ impl SynastryRequest {
 
     /// Reads the equal distances across the two charts too, under this
     /// request.
+    ///
+    /// ```
+    /// use teistro_western::{MidpointRequest, SynastryRequest};
+    ///
+    /// let asked = SynastryRequest::default().with_midpoints(MidpointRequest::default());
+    /// assert_eq!(asked.midpoints, Some(MidpointRequest::default()));
+    /// ```
     #[must_use]
     pub const fn with_midpoints(mut self, midpoints: MidpointRequest) -> Self {
         self.midpoints = Some(midpoints);
@@ -210,6 +257,12 @@ impl SynastryRequest {
     }
 
     /// Makes the composite of the two charts too, or not.
+    ///
+    /// ```
+    /// use teistro_western::SynastryRequest;
+    ///
+    /// assert!(SynastryRequest::default().with_composite(true).composite);
+    /// ```
     #[must_use]
     pub const fn with_composite(mut self, composite: bool) -> Self {
         self.composite = composite;
@@ -217,6 +270,20 @@ impl SynastryRequest {
     }
 
     /// Looks for these aspects only.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{SynastryPoint, SynastryRequest, synastry};
+    ///
+    /// let his = [SynastryPoint::graha(Graha::Sun, 10.0), SynastryPoint::lagna(100.0)];
+    /// let hers = [SynastryPoint::graha(Graha::Moon, 12.0), SynastryPoint::lagna(85.0)];
+    /// use teistro_western::WesternAspect;
+    ///
+    /// // The conjunction of the lights is not a trine.
+    /// let trines = SynastryRequest::default().with_aspects([WesternAspect::Trine]);
+    /// assert!(synastry(&his, &hers, &trines)?.is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn with_aspects(mut self, aspects: impl IntoIterator<Item = WesternAspect>) -> Self {
         self.table = self.table.with_aspects(aspects);
@@ -224,6 +291,15 @@ impl SynastryRequest {
     }
 
     /// Reads them under this model of orbs.
+    ///
+    /// ```
+    /// use teistro_western::{OrbModel, SynastryRequest};
+    ///
+    /// // The moieties give the lagna no orb.
+    /// let asked = SynastryRequest::default().with_orbs(OrbModel::lilly());
+    /// assert_eq!(asked.check().unwrap_err().field(), Some("lagna"));
+    /// assert!(asked.with_lagna(false).check().is_ok());
+    /// ```
     #[must_use]
     pub fn with_orbs(mut self, orbs: OrbModel) -> Self {
         self.table = self.table.with_orbs(orbs);
@@ -231,6 +307,12 @@ impl SynastryRequest {
     }
 
     /// Reads each chart's lagna beside its planets, or not.
+    ///
+    /// ```
+    /// use teistro_western::SynastryRequest;
+    ///
+    /// assert!(!SynastryRequest::default().with_lagna(false).lagna);
+    /// ```
     #[must_use]
     pub const fn with_lagna(mut self, lagna: bool) -> Self {
         self.lagna = lagna;
@@ -238,6 +320,13 @@ impl SynastryRequest {
     }
 
     /// Compares the two in this zodiac.
+    ///
+    /// ```
+    /// use teistro_western::{SynastryRequest, SynastryZodiac};
+    ///
+    /// let sidereal = SynastryRequest::default().with_zodiac(SynastryZodiac::Charts);
+    /// assert_eq!(sidereal.zodiac, SynastryZodiac::Charts);
+    /// ```
     #[must_use]
     pub const fn with_zodiac(mut self, zodiac: SynastryZodiac) -> Self {
         self.zodiac = zodiac;
@@ -284,6 +373,13 @@ impl SynastryRequest {
     /// which give it no orb (C242), and antiscia asked on cusps, which are
     /// one chart's.
     ///
+    /// ```
+    /// use teistro_western::SynastryRequest;
+    ///
+    /// assert!(SynastryRequest::default().check().is_ok());
+    /// assert_eq!(SynastryRequest::default().with_aspects([]).check().unwrap_err().field(), Some("aspects"));
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` naming the field.
@@ -315,6 +411,19 @@ impl SynastryRequest {
 }
 
 /// A point of one chart as a synastry reads it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{SynastryPoint, SynastryRequest, synastry};
+///
+/// let his = [SynastryPoint::graha(Graha::Sun, 10.0), SynastryPoint::lagna(100.0)];
+/// let hers = [SynastryPoint::graha(Graha::Moon, 12.0), SynastryPoint::lagna(85.0)];
+/// use teistro_gochar::hits::NatalPoint;
+///
+/// assert_eq!(his[1].point, NatalPoint::Lagna);
+/// assert_eq!(hers[0].point, NatalPoint::Graha { graha: Graha::Moon });
+/// # let _ = (synastry, SynastryRequest::default());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -327,6 +436,13 @@ pub struct SynastryPoint {
 
 impl SynastryPoint {
     /// A planet at a longitude.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::SynastryPoint;
+    ///
+    /// assert_eq!(SynastryPoint::graha(Graha::Sun, 10.0).longitude_deg, 10.0);
+    /// ```
     #[must_use]
     pub const fn graha(graha: Graha, longitude_deg: f64) -> SynastryPoint {
         SynastryPoint {
@@ -336,6 +452,22 @@ impl SynastryPoint {
     }
 
     /// The lagna at a longitude.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{SynastryPoint, SynastryRequest, synastry};
+    ///
+    /// let his = [SynastryPoint::graha(Graha::Sun, 10.0), SynastryPoint::lagna(100.0)];
+    /// let hers = [SynastryPoint::graha(Graha::Moon, 12.0), SynastryPoint::lagna(85.0)];
+    /// use teistro_gochar::hits::NatalPoint;
+    /// use teistro_western::WesternAspect;
+    ///
+    /// // The lagnas 15° apart: no aspect at 15°; the lagna stands as a planet.
+    /// let found = synastry(&his, &hers, &SynastryRequest::default())?;
+    /// assert!(found.iter().all(|row| !(row.first == NatalPoint::Lagna && row.second == NatalPoint::Lagna)));
+    /// # let _ = WesternAspect::Conjunction;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn lagna(longitude_deg: f64) -> SynastryPoint {
         SynastryPoint {
@@ -353,6 +485,19 @@ impl SynastryPoint {
 /// One aspect between a point of the first chart and a point of the
 /// second. Two births do not move against each other, so it has no
 /// applying.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{SynastryPoint, SynastryRequest, synastry};
+///
+/// let his = [SynastryPoint::graha(Graha::Sun, 10.0), SynastryPoint::lagna(100.0)];
+/// let hers = [SynastryPoint::graha(Graha::Moon, 12.0), SynastryPoint::lagna(85.0)];
+/// use teistro_western::WesternAspect;
+///
+/// let row = synastry(&his, &hers, &SynastryRequest::default())?[0];
+/// assert_eq!((row.aspect, row.apart_deg, row.orb_deg), (WesternAspect::Conjunction, 2.0, 12.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -376,6 +521,18 @@ pub struct SynastryRow {
 ///
 /// The request's `lagna` and `zodiac` say which points a caller gathers
 /// and in which zodiac; this reads the points it is given.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{SynastryPoint, SynastryRequest, synastry};
+///
+/// let his = [SynastryPoint::graha(Graha::Sun, 10.0), SynastryPoint::lagna(100.0)];
+/// let hers = [SynastryPoint::graha(Graha::Moon, 12.0), SynastryPoint::lagna(85.0)];
+/// // A point given twice on one side is refused by the side.
+/// let twice = [his[0], his[0]];
+/// assert_eq!(synastry(&twice, &hers, &SynastryRequest::default()).unwrap_err().field(), Some("first"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -414,6 +571,15 @@ pub fn synastry(
 
 /// A point of one chart as a synastry's parallels read it: its distance
 /// from the equator.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_gochar::hits::NatalPoint;
+/// use teistro_western::DeclinedPoint;
+///
+/// let sun = DeclinedPoint::graha(Graha::Sun, 22.3);
+/// assert_eq!((sun.point, sun.declination_deg), (NatalPoint::Graha { graha: Graha::Sun }, 22.3));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -426,6 +592,14 @@ pub struct DeclinedPoint {
 
 impl DeclinedPoint {
     /// A planet at a declination.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{DeclinedPoint, ParallelRequest, synastry_parallels};
+    ///
+    /// let refused = synastry_parallels(&[DeclinedPoint::graha(Graha::Sun, 91.0)], &[], &ParallelRequest::default()).unwrap_err();
+    /// assert_eq!(refused.field(), Some("first[0].declinationDeg"));
+    /// ```
     #[must_use]
     pub const fn graha(graha: Graha, declination_deg: f64) -> DeclinedPoint {
         DeclinedPoint {
@@ -435,6 +609,13 @@ impl DeclinedPoint {
     }
 
     /// The lagna at a declination.
+    ///
+    /// ```
+    /// use teistro_gochar::hits::NatalPoint;
+    /// use teistro_western::DeclinedPoint;
+    ///
+    /// assert_eq!(DeclinedPoint::lagna(5.0).point, NatalPoint::Lagna);
+    /// ```
     #[must_use]
     pub const fn lagna(declination_deg: f64) -> DeclinedPoint {
         DeclinedPoint {
@@ -446,6 +627,17 @@ impl DeclinedPoint {
 
 /// A point of one chart and a point of the other the same distance from
 /// the equator, within the orb.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_gochar::hits::NatalPoint;
+/// use teistro_western::{DeclinedPoint, ParallelRequest, synastry_parallels};
+///
+/// let row = synastry_parallels(&[DeclinedPoint::lagna(10.0)], &[DeclinedPoint::graha(Graha::Venus, 10.25)], &ParallelRequest::default())?[0];
+/// assert_eq!((row.first, row.contrary), (NatalPoint::Lagna, false));
+/// assert!((row.apart_deg - 0.25).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -517,6 +709,17 @@ pub fn synastry_parallels(
 /// One chart's cusps as an overlay counts the other chart's points on
 /// them: the twelve, in the zodiac the two are compared in, and the
 /// division they are of.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_western::{OverlayCusps, SynastryPoint, house_overlays};
+///
+/// let equal = OverlayCusps { system: HouseSystem::Equal, cusps_deg: std::array::from_fn(|k| k as f64 * 30.0) };
+/// let mut broken = equal;
+/// broken.cusps_deg[5] = f64::NAN;
+/// let refused = house_overlays(&[SynastryPoint::graha(Graha::Sun, 10.0)], &broken, &[], &equal).unwrap_err();
+/// assert_eq!(refused.field(), Some("firstCusps.cuspsDeg[5]"));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -528,6 +731,17 @@ pub struct OverlayCusps {
 }
 
 /// A point of one chart counted in a house of the other's.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_western::{OverlayCusps, SynastryPoint, house_overlays};
+///
+/// // A point exactly on a cusp is in the house that cusp opens.
+/// let equal = OverlayCusps { system: HouseSystem::Equal, cusps_deg: std::array::from_fn(|k| k as f64 * 30.0) };
+/// let read = house_overlays(&[SynastryPoint::graha(Graha::Sun, 90.0)], &equal, &[], &equal)?;
+/// assert_eq!(read.first_in_second[0].house.get(), 4);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -540,6 +754,18 @@ pub struct HouseOverlay {
 }
 
 /// Each chart's points in the other's houses: the house overlays.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_western::{OverlayCusps, SynastryPoint, house_overlays};
+///
+/// let equal = OverlayCusps { system: HouseSystem::Equal, cusps_deg: std::array::from_fn(|k| k as f64 * 30.0) };
+/// let placidus = OverlayCusps { system: HouseSystem::Placidus, ..equal };
+/// let read = house_overlays(&[SynastryPoint::graha(Graha::Sun, 10.0)], &equal, &[], &placidus)?;
+/// assert_eq!((read.first_system, read.second_system), (HouseSystem::Equal, HouseSystem::Placidus));
+/// assert!(read.second_in_first.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

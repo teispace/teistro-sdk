@@ -34,13 +34,36 @@ use crate::aspects::refuse_repeats;
 const ROOT: &str = "parallels";
 
 /// Leo's orb for the parallel (p. 47).
+///
+/// ```
+/// use teistro_western::{LEO_PARALLEL_ORB_DEG, ParallelRequest};
+///
+/// assert_eq!(ParallelRequest::default().orb_deg, LEO_PARALLEL_ORB_DEG);
+/// ```
 pub const LEO_PARALLEL_ORB_DEG: f64 = 1.0;
 
 /// The widest orb a request may ask: beyond it, every pair of planets near
 /// the ecliptic would stand in parallel with every other.
+///
+/// ```
+/// use teistro_western::{MAX_PARALLEL_ORB_DEG, ParallelRequest};
+///
+/// assert!(ParallelRequest::default().with_orb_deg(MAX_PARALLEL_ORB_DEG).check().is_ok());
+/// assert!(ParallelRequest::default().with_orb_deg(MAX_PARALLEL_ORB_DEG + 0.1).check().is_err());
+/// ```
 pub const MAX_PARALLEL_ORB_DEG: f64 = 10.0;
 
 /// A body as the parallels read it: its distance from the equator.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{Declined, ParallelRequest, parallels};
+///
+/// // A declination past a pole is refused by its place in the list.
+/// let bodies = [Declined::new(Graha::Sun, 10.0), Declined::new(Graha::Moon, 95.0)];
+/// let refused = parallels(&bodies, &ParallelRequest::default()).unwrap_err();
+/// assert_eq!(refused.field(), Some("bodies[1].declinationDeg"));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -53,6 +76,14 @@ pub struct Declined {
 
 impl Declined {
     /// A body at a declination.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::Declined;
+    ///
+    /// let moon = Declined::new(Graha::Moon, -2.67);
+    /// assert_eq!((moon.graha, moon.declination_deg), (Graha::Moon, -2.67));
+    /// ```
     #[must_use]
     pub const fn new(graha: Graha, declination_deg: f64) -> Declined {
         Declined {
@@ -64,6 +95,12 @@ impl Declined {
 
 /// What the parallels are asked: how close two distances from the equator
 /// must stand.
+///
+/// ```
+/// use teistro_western::ParallelRequest;
+///
+/// assert_eq!(ParallelRequest::default().orb_deg, 1.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
@@ -82,6 +119,18 @@ impl Default for ParallelRequest {
 
 impl ParallelRequest {
     /// Holds a parallel to this orb, degrees.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{Declined, ParallelRequest, parallels};
+    ///
+    /// // The Moon and Mercury 1.5° apart in distance: a parallel at a 2° orb only.
+    /// let bodies = [Declined::new(Graha::Moon, 12.5), Declined::new(Graha::Mercury, -14.0)];
+    /// assert!(parallels(&bodies, &ParallelRequest::default())?.is_empty());
+    /// let wider = ParallelRequest::default().with_orb_deg(2.0);
+    /// assert!(parallels(&bodies, &wider)?[0].contrary);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_orb_deg(mut self, orb_deg: f64) -> ParallelRequest {
         self.orb_deg = orb_deg;
@@ -114,6 +163,12 @@ impl ParallelRequest {
     /// Refuses an orb that is not a positive number of degrees up to
     /// [`MAX_PARALLEL_ORB_DEG`].
     ///
+    /// ```
+    /// use teistro_western::ParallelRequest;
+    ///
+    /// assert_eq!(ParallelRequest::default().with_orb_deg(0.0).check().unwrap_err().field(), Some("orbDeg"));
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` naming `orbDeg`.
@@ -131,6 +186,18 @@ impl ParallelRequest {
 }
 
 /// One pair of bodies the same distance from the equator, within the orb.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{Declined, ParallelRequest, parallels};
+///
+/// // On opposite sides of the equator: the contra-parallel, which Leo counts.
+/// let bodies = [Declined::new(Graha::Sun, 20.0), Declined::new(Graha::Saturn, -20.4)];
+/// let row = parallels(&bodies, &ParallelRequest::default())?[0];
+/// assert!(row.contrary && (row.apart_deg - 0.4).abs() < 1e-9);
+/// assert_eq!(row.orb_deg, 1.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -152,6 +219,14 @@ pub struct ParallelRow {
 ///
 /// A pair is read once, in the order the bodies are given. Two distances
 /// from the equator within the orb are a parallel, on either side of it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{Declined, ParallelRequest, parallels};
+///
+/// let twice = [Declined::new(Graha::Sun, 20.0), Declined::new(Graha::Sun, 20.0)];
+/// assert_eq!(parallels(&twice, &ParallelRequest::default()).unwrap_err().field(), Some("bodies"));
+/// ```
 ///
 /// # Errors
 ///

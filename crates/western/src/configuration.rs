@@ -19,6 +19,20 @@ use teistro_core::error::Error;
 use crate::aspects::{AspectRequest, OrbModel, PlanetAt, WesternAspect, WesternAspectRow};
 
 /// Which shape.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AspectRequest, ConfigurationKind, ConfigurationRules, Placed, PlanetAt, aspects, configurations};
+///
+/// // The Sun, the Moon and Mars a trine apart: a grand trine.
+/// let bodies = [PlanetAt::new(Graha::Sun, 10.0), PlanetAt::new(Graha::Moon, 131.0), PlanetAt::new(Graha::Mars, 249.0)];
+/// let placed = bodies.map(|one| Placed::new(one.graha, one.longitude_deg, 0.0));
+/// let rows = aspects(&placed, &AspectRequest::default())?;
+/// let shapes = configurations(&bodies, &rows, ConfigurationRules::default())?;
+/// assert_eq!(shapes.len(), 1);
+/// assert_eq!(shapes[0].kind, ConfigurationKind::GrandTrine);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -46,6 +60,13 @@ pub enum ConfigurationKind {
 
 impl ConfigurationKind {
     /// Every shape, the three-body ones first.
+    ///
+    /// ```
+    /// use teistro_western::ConfigurationKind;
+    ///
+    /// assert_eq!(ConfigurationKind::ALL[0], ConfigurationKind::GrandTrine);
+    /// assert_eq!(ConfigurationKind::ALL[6], ConfigurationKind::Stellium);
+    /// ```
     pub const ALL: [ConfigurationKind; 7] = [
         ConfigurationKind::GrandTrine,
         ConfigurationKind::TSquare,
@@ -57,6 +78,14 @@ impl ConfigurationKind {
     ];
 
     /// The member's key, as serde writes it: `GRAND_TRINE`.
+    ///
+    /// ```
+    /// use teistro_western::ConfigurationKind;
+    ///
+    /// assert_eq!(ConfigurationKind::TSquare.key(), "T_SQUARE");
+    /// assert_eq!(serde_json::to_string(&ConfigurationKind::MysticRectangle)?, r#""MYSTIC_RECTANGLE""#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -72,6 +101,18 @@ impl ConfigurationKind {
 }
 
 /// The readings the shapes part on.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{ConfigurationKind, ConfigurationRules, PlanetAt, configurations};
+///
+/// // Three bodies in Aries: a stellium of three, not of four.
+/// let bodies = [PlanetAt::new(Graha::Sun, 1.0), PlanetAt::new(Graha::Mercury, 12.0), PlanetAt::new(Graha::Venus, 25.0)];
+/// let three = configurations(&bodies, &[], ConfigurationRules::default())?;
+/// assert_eq!(three[0].kind, ConfigurationKind::Stellium);
+/// assert!(configurations(&bodies, &[], ConfigurationRules { stellium_least: 4 })?.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
@@ -89,6 +130,12 @@ impl Default for ConfigurationRules {
 
 impl ConfigurationRules {
     /// Whether the rules can be applied.
+    ///
+    /// ```
+    /// use teistro_western::ConfigurationRules;
+    ///
+    /// assert_eq!(ConfigurationRules { stellium_least: 2 }.check().unwrap_err().field(), Some("stelliumLeast"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -113,6 +160,14 @@ const ROOT: &str = "westernConfigurations";
 /// What a chart's configurations are asked, as a binding sends them: the
 /// [`AspectRequest`] the shapes are read over and the
 /// [`ConfigurationRules`], side by side in one record, each defaulted.
+///
+/// ```
+/// use teistro_western::{AspectRequest, ConfigurationRequest, ConfigurationRules};
+///
+/// let asked = ConfigurationRequest::default();
+/// assert_eq!(asked.aspect_request(), AspectRequest::default());
+/// assert_eq!(asked.rules(), ConfigurationRules::default());
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
@@ -134,6 +189,14 @@ impl Default for ConfigurationRequest {
 
 impl ConfigurationRequest {
     /// The shapes over `aspects`' table, under `rules`.
+    ///
+    /// ```
+    /// use teistro_western::{AspectRequest, ConfigurationRequest, ConfigurationRules};
+    ///
+    /// let lilly = ConfigurationRequest::new(&AspectRequest::lilly(), ConfigurationRules { stellium_least: 4 });
+    /// assert_eq!(lilly.aspects.len(), 5);
+    /// assert_eq!(lilly.stellium_least, 4);
+    /// ```
     #[must_use]
     pub fn new(aspects: &AspectRequest, rules: ConfigurationRules) -> ConfigurationRequest {
         ConfigurationRequest {
@@ -144,6 +207,13 @@ impl ConfigurationRequest {
     }
 
     /// The aspect table the shapes are read over.
+    ///
+    /// ```
+    /// use teistro_western::{AspectRequest, ConfigurationRequest, ConfigurationRules};
+    ///
+    /// let asked = ConfigurationRequest::new(&AspectRequest::lilly(), ConfigurationRules::default());
+    /// assert_eq!(asked.aspect_request(), AspectRequest::lilly());
+    /// ```
     #[must_use]
     pub fn aspect_request(&self) -> AspectRequest {
         AspectRequest {
@@ -153,6 +223,13 @@ impl ConfigurationRequest {
     }
 
     /// The readings the shapes part on.
+    ///
+    /// ```
+    /// use teistro_western::{ConfigurationRequest, ConfigurationRules};
+    ///
+    /// let asked = ConfigurationRequest { stellium_least: 5, ..ConfigurationRequest::default() };
+    /// assert_eq!(asked.rules(), ConfigurationRules { stellium_least: 5 });
+    /// ```
     #[must_use]
     pub const fn rules(&self) -> ConfigurationRules {
         ConfigurationRules {
@@ -190,6 +267,13 @@ impl ConfigurationRequest {
     /// Refuses what [`AspectRequest::check`] and
     /// [`ConfigurationRules::check`] refuse, by the field written here.
     ///
+    /// ```
+    /// use teistro_western::ConfigurationRequest;
+    ///
+    /// let none = ConfigurationRequest { aspects: Vec::new(), ..ConfigurationRequest::default() };
+    /// assert_eq!(none.check().unwrap_err().field(), Some("aspects"));
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` naming `aspects`, `orbs` or `stelliumLeast`.
@@ -200,6 +284,24 @@ impl ConfigurationRequest {
 }
 
 /// One shape a chart holds.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AspectRequest, ConfigurationKind, ConfigurationRules, Placed, PlanetAt, aspects, configurations};
+///
+/// // The Sun, the Moon and Mars a trine apart: a grand trine.
+/// let bodies = [PlanetAt::new(Graha::Sun, 10.0), PlanetAt::new(Graha::Moon, 131.0), PlanetAt::new(Graha::Mars, 249.0)];
+/// let placed = bodies.map(|one| Placed::new(one.graha, one.longitude_deg, 0.0));
+/// let rows = aspects(&placed, &AspectRequest::default())?;
+/// let shapes = configurations(&bodies, &rows, ConfigurationRules::default())?;
+/// let trine = &shapes[0];
+/// assert_eq!(trine.bodies, [Graha::Sun, Graha::Moon, Graha::Mars]);
+/// // Symmetric, so no apex; its loosest trine is 2° from exact.
+/// assert_eq!(trine.apex, None);
+/// assert!(trine.widest_from_exact_deg.is_some_and(|widest| (widest - 2.0).abs() < 1e-9));
+/// assert!(trine.inside.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -229,6 +331,19 @@ pub struct Configuration {
 /// longitudes, which the stellium reads by sign and which fix the order of
 /// every answer; `aspects` are those bodies' rows, as
 /// [`aspects`](crate::aspects) answered them.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AspectRequest, ConfigurationKind, ConfigurationRules, Placed, PlanetAt, aspects, configurations};
+///
+/// // The Sun opposite the Moon and Mars square to both: Mars is the apex.
+/// let bodies = [PlanetAt::new(Graha::Sun, 0.0), PlanetAt::new(Graha::Moon, 180.0), PlanetAt::new(Graha::Mars, 90.0)];
+/// let placed = bodies.map(|one| Placed::new(one.graha, one.longitude_deg, 0.0));
+/// let rows = aspects(&placed, &AspectRequest::default())?;
+/// let shapes = configurations(&bodies, &rows, ConfigurationRules::default())?;
+/// assert_eq!((shapes[0].kind, shapes[0].apex), (ConfigurationKind::TSquare, Some(Graha::Mars)));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

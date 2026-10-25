@@ -48,6 +48,13 @@ pub fn contrantiscion_deg(longitude_deg: f64) -> f64 {
 
 /// What the antiscia are asked: the orbs a pair is read under, and whether
 /// a reflection is read on the cusps.
+///
+/// ```
+/// use teistro_western::{AntisciaRequest, OrbModel};
+///
+/// let asked = AntisciaRequest::default();
+/// assert_eq!((asked.orbs, asked.cusps), (OrbModel::lilly(), None));
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
@@ -73,6 +80,20 @@ impl Default for AntisciaRequest {
 
 impl AntisciaRequest {
     /// Reads the pairs under this model of orbs.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{AntisciaRequest, PlanetAt, antiscia};
+    ///
+    /// // Lilly's p. 181 figure: Saturn's contrantiscion falls "neer" Jupiter.
+    /// let bodies = [PlanetAt::new(Graha::Saturn, 255.32), PlanetAt::new(Graha::Jupiter, 107.52)];
+    /// use teistro_western::{AspectOrb, OrbModel, WesternAspect};
+    ///
+    /// // Two degrees at the conjunction no longer reach the 2.84° pair.
+    /// let tight = AntisciaRequest::default().with_orbs(OrbModel::ByAspect { orbs: vec![AspectOrb { aspect: WesternAspect::Conjunction, orb_deg: 2.0 }] });
+    /// assert!(antiscia(&bodies, &tight)?.pairs.is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn with_orbs(mut self, orbs: OrbModel) -> AntisciaRequest {
         self.orbs = orbs;
@@ -81,6 +102,14 @@ impl AntisciaRequest {
 
     /// Reads each reflection on the cusps too, in `houses`' division, or
     /// Lilly's Regiomontanus when it names none.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    /// use teistro_western::{AntisciaRequest, HouseRequest};
+    ///
+    /// let on_cusps = AntisciaRequest::default().with_cusps(HouseRequest::default().with_system(HouseSystem::Placidus));
+    /// assert_eq!(on_cusps.cusps.and_then(|houses| houses.system), Some(HouseSystem::Placidus));
+    /// ```
     #[must_use]
     pub fn with_cusps(mut self, houses: HouseRequest) -> AntisciaRequest {
         self.cusps = Some(houses);
@@ -117,6 +146,15 @@ impl AntisciaRequest {
 
     /// Refuses orbs no pair could be read under, and orbs by aspect that
     /// give the conjunction none, since a pair is read at it.
+    ///
+    /// ```
+    /// use teistro_western::{AntisciaRequest, AspectOrb, OrbModel, WesternAspect};
+    ///
+    /// // A pair is read at the conjunction, so orbs by aspect must give it one.
+    /// let trines = AntisciaRequest::default().with_orbs(OrbModel::ByAspect { orbs: vec![AspectOrb { aspect: WesternAspect::Trine, orb_deg: 6.0 }] });
+    /// assert_eq!(trines.check().unwrap_err().field(), Some("orbs.orbs"));
+    /// assert!(AntisciaRequest::default().check().is_ok());
+    /// ```
     ///
     /// # Errors
     ///
@@ -159,6 +197,20 @@ impl AntisciaRequest {
 
 /// A planet's two reflections, tropical degrees, as Lilly tabulates them
 /// beside a figure (p. 181).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AntisciaRequest, PlanetAt, antiscia};
+///
+/// // Lilly's p. 181 figure: Saturn's contrantiscion falls "neer" Jupiter.
+/// let bodies = [PlanetAt::new(Graha::Saturn, 255.32), PlanetAt::new(Graha::Jupiter, 107.52)];
+/// let read = antiscia(&bodies, &AntisciaRequest::default())?;
+/// let saturn = read.points[0];
+/// // Reflected about the solstices and about the equinoxes: 180° and 360° less it.
+/// assert!((saturn.antiscion_deg - (180.0 - 255.32 + 360.0)).abs() < 1e-9);
+/// assert!((saturn.contrantiscion_deg - (360.0 - 255.32)).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -173,6 +225,19 @@ pub struct Antiscion {
 
 /// A planet's reflection upon "the very degree" of a cusp (Lilly, p. 165;
 /// C251): in the cusp's own sign and whole degree.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{CuspAntiscion, PlanetAt, antiscia_on_cusps};
+///
+/// // The Sun at 10°20′ Taurus reflects onto 19°40′ Leo, the fourth cusp's degree.
+/// let mut cusps = [45.0, 75.0, 105.0, 0.0, 165.0, 195.0, 225.0, 255.0, 285.0, 315.0, 345.0, 15.0];
+/// cusps[3] = 139.0 + 5.0 / 60.0;
+/// let rows = antiscia_on_cusps(&[PlanetAt::new(Graha::Sun, 40.0 + 20.0 / 60.0)], &cusps)?;
+/// let CuspAntiscion { graha, house, contrary } = rows[0];
+/// assert_eq!((graha, house.get(), contrary), (Graha::Sun, 4, false));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -241,6 +306,19 @@ pub fn antiscia_on_cusps(
 
 /// Two planets in antiscion: one's antiscion within the orb of the other,
 /// which is the other's within the orb of the first.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AntisciaRequest, PlanetAt, antiscia};
+///
+/// // Lilly's p. 181 figure: Saturn's contrantiscion falls "neer" Jupiter.
+/// let bodies = [PlanetAt::new(Graha::Saturn, 255.32), PlanetAt::new(Graha::Jupiter, 107.52)];
+/// let pair = antiscia(&bodies, &AntisciaRequest::default())?.pairs[0];
+/// assert_eq!((pair.first, pair.second), (Graha::Saturn, Graha::Jupiter));
+/// // Lilly's moieties: Saturn's 10° and Jupiter's 12°, meaned.
+/// assert_eq!(pair.orb_deg, 11.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -260,6 +338,17 @@ pub struct AntiscionRow {
 
 /// A chart's antiscia: every planet's reflections, and the pairs standing
 /// in one.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AntisciaRequest, PlanetAt, antiscia};
+///
+/// // Lilly gives Uranus no moiety, so it stands in no pair.
+/// let read = antiscia(&[PlanetAt::new(Graha::Sun, 40.0), PlanetAt::new(Graha::Uranus, 140.0)], &AntisciaRequest::default())?;
+/// assert_eq!(read.unpaired, [Graha::Uranus]);
+/// assert!(read.pairs.is_empty() && read.on_cusps.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

@@ -80,6 +80,15 @@ pub const MOST_DECIMALS: u8 = CANONICAL_DECIMALS;
 ///
 /// Keys in code-point order at every depth, no whitespace, and every
 /// number in the grammar this module documents.
+///
+/// ```
+/// use std::collections::HashMap;
+/// use teistro_serial::to_hash_form;
+///
+/// // Keys in code-point order, whatever order the map kept them in.
+/// let map = HashMap::from([("b", 1.0_f64), ("a", 0.000_25)]);
+/// assert_eq!(to_hash_form(&map), r#"{"a":0.00025,"b":1}"#);
+/// ```
 #[must_use]
 pub fn to_hash_form<T: Serialize + ?Sized>(value: &T) -> String {
     canonical_json(value)
@@ -95,6 +104,15 @@ pub fn to_hash_form<T: Serialize + ?Sized>(value: &T) -> String {
 /// `03-design/schema-measured.md` §9 measures it, and
 /// `a_value_reads_back_from_its_own_bytes` fails if the feature is ever
 /// off.
+///
+/// ```
+/// use teistro_serial::canonical::{from_hash_form, to_hash_form};
+///
+/// let read: Vec<f64> = from_hash_form("[2460483.1086663892]")?;
+/// assert_eq!(to_hash_form(&read), "[2460483.1086663892]");
+/// assert!(from_hash_form::<Vec<f64>>("not json").is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -122,6 +140,13 @@ pub fn from_hash_form<T: DeserializeOwned>(text: &str) -> Result<T, Error> {
 /// this answers `false` and the content hash does not match. Permissive
 /// to read, exact to hash.
 ///
+/// ```
+/// use teistro_serial::canonical::reads_back;
+///
+/// assert!(reads_back(&vec![0.1_f64, 1e-7, 2_460_483.108_666_389])?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// Whatever [`from_hash_form`] refuses the value's own bytes for, which
@@ -134,6 +159,15 @@ pub fn reads_back<T: Serialize + DeserializeOwned>(value: &T) -> Result<bool, Er
 }
 
 /// The hash of a value's canonical bytes.
+///
+/// ```
+/// use teistro_core::envelope::Hash;
+/// use teistro_serial::{hash_of, to_hash_form};
+///
+/// assert_eq!(hash_of(&[1.5_f64]), Hash::of(to_hash_form(&[1.5_f64]).as_bytes()));
+/// // One value, one hash, however its zero was signed.
+/// assert_eq!(hash_of(&-0.0_f64), hash_of(&0.0_f64));
+/// ```
 #[must_use]
 pub fn hash_of<T: Serialize + ?Sized>(value: &T) -> Hash {
     Hash::of(to_hash_form(value).as_bytes())
@@ -142,6 +176,14 @@ pub fn hash_of<T: Serialize + ?Sized>(value: &T) -> Hash {
 /// A double as a plain decimal in the canonical grammar, which is
 /// `core`'s own: [`Digits::Shortest`] for the bytes a hash is taken
 /// over, [`Digits::Rounded`] for a rendering.
+///
+/// ```
+/// use teistro_core::envelope::Digits;
+/// use teistro_serial::canonical::decimal;
+///
+/// assert_eq!(decimal(1e-6, Digits::Shortest), "0.000001");
+/// assert_eq!(decimal(1.23456, Digits::Rounded(2)), "1.23");
+/// ```
 #[must_use]
 pub fn decimal(value: f64, digits: Digits) -> String {
     core_decimal(value, digits)
@@ -153,6 +195,18 @@ pub fn decimal(value: f64, digits: Digits) -> String {
 /// This is a **rendering**: it is what a consumer reads and stores, and
 /// it is never hashed, because a hash that moved with a display setting
 /// would make the cache key useless.
+///
+/// ```
+/// use teistro_core::settings::Precision;
+/// use teistro_serial::to_rendered;
+///
+/// let precision = Precision { angle_decimals: 2, instant_decimals: 2, score_decimals: 2 };
+/// assert_eq!(to_rendered(&[1.23456_f64], &precision)?, "[1.23]");
+/// // More decimals than the grammar carries is refused.
+/// let greedy = Precision { angle_decimals: 13, ..precision };
+/// assert!(to_rendered(&[1.0_f64], &greedy).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -178,6 +232,13 @@ pub fn to_rendered<T: Serialize + ?Sized>(
 }
 
 /// The widest of the three precisions a rendering may use.
+///
+/// ```
+/// use teistro_core::settings::Precision;
+/// use teistro_serial::canonical::widest;
+///
+/// assert_eq!(widest(&Precision { angle_decimals: 4, instant_decimals: 6, score_decimals: 2 }), 6);
+/// ```
 #[must_use]
 pub fn widest(precision: &Precision) -> u8 {
     precision

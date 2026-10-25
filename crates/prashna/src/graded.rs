@@ -15,6 +15,26 @@ use crate::{Disposition, GRAHAS, Placed, PrashnaSky, disposition};
 ///
 /// The passage never uses a Tajika term, yet the Prashna Tantra quotes it
 /// among Tajika rules, so either aspect may be the one that "sees".
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{GradedRule, Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// // A question of the 7th, Scorpio: Venus the lagnesha, Mars the karyesha.
+/// let answer = read(&sky, Question::about(7), PrashnaRules { graded: GradedRule::Parashari, ..PrashnaRules::default() })?;
+/// assert_eq!(answer.graded.map(|graded| graded.rule), Some(GradedRule::Parashari));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -34,6 +54,14 @@ pub enum GradedRule {
 impl GradedRule {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `PARASHARI`.
+    ///
+    /// ```
+    /// use teistro_prashna::GradedRule;
+    ///
+    /// assert_eq!(GradedRule::Parashari.key(), "PARASHARI");
+    /// assert_eq!(serde_json::to_string(&GradedRule::Parashari)?, r#""PARASHARI""#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -46,6 +74,12 @@ impl GradedRule {
 
 /// How the lagnesha and the karyesha look at the two houses, one of the
 /// three configurations of the full yoga (*paripūrṇa*).
+///
+/// ```
+/// use teistro_prashna::LordsSee;
+///
+/// assert_eq!(LordsSee::ALL[0], LordsSee::OwnHouses);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -65,6 +99,14 @@ pub enum LordsSee {
 impl LordsSee {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `OWN_HOUSES`.
+    ///
+    /// ```
+    /// use teistro_prashna::LordsSee;
+    ///
+    /// assert_eq!(LordsSee::EachOthersHouses.key(), "EACH_OTHERS_HOUSES");
+    /// assert_eq!(serde_json::to_string(&LordsSee::EachOthersHouses)?, r#""EACH_OTHERS_HOUSES""#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -86,6 +128,14 @@ impl LordsSee {
 /// fractions, but the passage's order does not rank them as numbers
 /// would ("less a third" for two or three benefics, "less a quarter" for
 /// one), so they are reported as names.
+///
+/// ```
+/// use teistro_prashna::Grade;
+///
+/// // Names, in the passage's order, and not a ranking.
+/// assert_eq!(Grade::ALL.len(), 6);
+/// assert_eq!(Grade::ALL[0], Grade::Paripurna);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PrashnaGrade"))]
@@ -115,6 +165,14 @@ pub enum Grade {
 impl Grade {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `PARIPURNA`.
+    ///
+    /// ```
+    /// use teistro_prashna::Grade;
+    ///
+    /// assert_eq!(Grade::Tribhagona.key(), "TRIBHAGONA");
+    /// assert_eq!(serde_json::to_string(&Grade::Tribhagona)?, r#""TRIBHAGONA""#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -140,6 +198,27 @@ impl Grade {
 
 /// The Bhuvanapradīpa's graded yogas, read: every clause the grades are
 /// built from, and the grades whose clauses hold.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{GradedRule, Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// // A question of the 7th, Scorpio: Venus the lagnesha, Mars the karyesha.
+/// let answer = read(&sky, Question::about(7), PrashnaRules { graded: GradedRule::Tajika, ..PrashnaRules::default() })?;
+/// let graded = answer.graded.ok_or(teistro_core::Error::internal("asked for"))?;
+/// // The lagnesha is never among the benefics counted on the lagna.
+/// assert!(!graded.on_lagna.contains(&Graha::Venus));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PrashnaGraded"))]

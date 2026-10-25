@@ -14,6 +14,17 @@ use crate::{BirthSyllable, Native, birth_syllable, sign_varna};
 /// A gathering, not doctrine of its own: each reading is the one the Ashta
 /// Koota reads of the same Moon, so it carries no rules. Vashya, paya,
 /// disha and tatwa are not here (C300, C301).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nadi, Rashi};
+/// use teistro_matching::{Native, avakahada};
+///
+/// // Rohini, in Taurus: the Moon's own star in Venus's sign.
+/// let read = avakahada(Native::of_moon(45.0)?)?;
+/// assert_eq!((read.rashi, read.nakshatra_lord, read.rashi_lord), (Rashi::Taurus, Graha::Moon, Graha::Venus));
+/// assert_eq!(read.nadi, Nadi::Antya);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

@@ -19,6 +19,15 @@ use crate::model::SuryaSiddhanta;
 use crate::params::Parameters;
 
 /// Respirations in a day: the equator's rotation in minutes of arc.
+///
+/// ```
+/// use teistro_siddhanta::{Parameters, RisingTimes};
+/// use teistro_siddhanta::lagna::ASU_PER_DAY;
+///
+/// // The twelve signs rise in one day.
+/// let lanka = RisingTimes::lanka(&Parameters::TEXT);
+/// assert!((lanka.asu.iter().sum::<f64>() - ASU_PER_DAY).abs() < 1e-9);
+/// ```
 pub const ASU_PER_DAY: f64 = 21_600.0;
 /// The most signs a walk visits before it is a defect: a full circle
 /// and the sign the walk began in, twice over for a time past a day.
@@ -27,6 +36,18 @@ const WALK_CAP: usize = 26;
 /// The times of rising of the twelve signs, Mesha to Meena, in
 /// respirations: at Lanka (the equator) the right ascensions of the
 /// signs, elsewhere the oblique ascensions.
+///
+/// ```
+/// use teistro_core::quantity::Latitude;
+/// use teistro_siddhanta::{RisingTimes, SuryaSiddhanta};
+///
+/// // Washington, 38°54′, as Burgess works it under III.42 to 45.
+/// let rising = RisingTimes::at(&SuryaSiddhanta::text(), Latitude::literal(38.9)).ok_or("the Sun rises there")?;
+/// // Vrishabha rises in 1312½ respirations, Karka in 2137½.
+/// assert!((rising.of_sign(1) - 1312.5).abs() < 2.0);
+/// assert!((rising.of_sign(3) - 2137.5).abs() < 2.0);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RisingTimes {
@@ -38,6 +59,15 @@ impl RisingTimes {
     /// The times at Lanka (III.44): the three of the first quadrant, then
     /// the same three inverted for the second, and those six inverted for
     /// the other half.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, RisingTimes};
+    ///
+    /// let lanka = RisingTimes::lanka(&Parameters::TEXT);
+    /// assert_eq!(lanka.asu[..3], [1670.0, 1795.0, 1935.0]);
+    /// // The second quadrant the first inverted.
+    /// assert_eq!(lanka.asu[3..6], [1935.0, 1795.0, 1670.0]);
+    /// ```
     #[must_use]
     pub fn lanka(params: &Parameters) -> RisingTimes {
         let [first, second, third] = params.lanka_rising_asu.map(f64::from);
@@ -57,6 +87,16 @@ impl RisingTimes {
     /// three increased by the inverted portions, and the other half the
     /// same six inverted. `None` where the Sun neither rises nor sets at
     /// the end of a sign, which is where the text's rule has no answer.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Latitude;
+    /// use teistro_siddhanta::{Parameters, RisingTimes, SuryaSiddhanta};
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// assert_eq!(RisingTimes::at(&text, Latitude::literal(0.0)), Some(RisingTimes::lanka(&Parameters::TEXT)));
+    /// // Above the polar circle the rule has no answer.
+    /// assert!(RisingTimes::at(&text, Latitude::literal(70.0)).is_none());
+    /// ```
     #[must_use]
     pub fn at(model: &SuryaSiddhanta, latitude: Latitude) -> Option<RisingTimes> {
         let cara = |tropical_deg: f64| -> Option<f64> {
@@ -93,6 +133,14 @@ impl RisingTimes {
     }
 
     /// The time of rising of a sign, 0 for Mesha.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, RisingTimes};
+    ///
+    /// let lanka = RisingTimes::lanka(&Parameters::TEXT);
+    /// // Counted round: sign 12 is Mesha.
+    /// assert_eq!(lanka.of_sign(12), lanka.of_sign(0));
+    /// ```
     #[must_use]
     pub fn of_sign(&self, sign: usize) -> f64 {
         self.asu.get(sign % 12).copied().unwrap_or(0.0)
@@ -103,6 +151,18 @@ impl RisingTimes {
     /// forward through the parts to come when the time is positive,
     /// backward through the parts past when it is negative. Degrees in
     /// `[0, 360)`, in the frame the point was given in.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Latitude;
+    /// use teistro_siddhanta::{RisingTimes, SuryaSiddhanta};
+    ///
+    /// // Washington, 38°54′, as Burgess works it under III.42 to 45.
+    /// let rising = RisingTimes::at(&SuryaSiddhanta::text(), Latitude::literal(38.9)).ok_or("the Sun rises there")?;
+    /// // Burgess under III.46 to 49: the Sun at 42° and 6555 respirations after
+    /// // sunrise, the horoscope point is 4s 25°.
+    /// assert!((rising.point_after(42.0, 6555.0) - 145.0).abs() < 0.15);
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn point_after(&self, from_deg: f64, elapsed_asu: f64) -> f64 {
         let from = from_deg.rem_euclid(360.0);
@@ -151,6 +211,18 @@ impl RisingTimes {
     /// the rising of a later one (III.50): the part of the first point's
     /// sign to come, the part of the second's sign past, and the signs
     /// between. In `[0, 21 600)`.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Latitude;
+    /// use teistro_siddhanta::{RisingTimes, SuryaSiddhanta};
+    ///
+    /// // Washington, 38°54′, as Burgess works it under III.42 to 45.
+    /// let rising = RisingTimes::at(&SuryaSiddhanta::text(), Latitude::literal(38.9)).ok_or("the Sun rises there")?;
+    /// // The inverse walk gives the time back.
+    /// let lagna = rising.point_after(42.0, 6555.0);
+    /// assert!((rising.asu_between(42.0, lagna) - 6555.0).abs() < 1e-6);
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn asu_between(&self, from_deg: f64, to_deg: f64) -> f64 {
         let from = from_deg.rem_euclid(360.0);
@@ -195,6 +267,22 @@ impl fmt::Display for RisingTimes {
 }
 
 /// The horoscope point at an instant, with the figures behind it.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Latitude, Longitude, Ut1};
+/// use teistro_siddhanta::SuryaSiddhanta;
+///
+/// let text = SuryaSiddhanta::text();
+/// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+/// let (latitude, longitude) = (Latitude::literal(27.7172), Longitude::literal(85.324));
+/// let lagna = text.lagna(at, latitude, longitude)?;
+/// // The tropical point is the sidereal one with the text's precession.
+/// let ayanamsha = (lagna.tropical_deg - lagna.sidereal_deg).rem_euclid(360.0);
+/// assert!(ayanamsha < 30.0);
+/// // 0h UT is 05:41 local mean time, just after sunrise there.
+/// assert!(lagna.elapsed_asu.abs() < 2000.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Lagna {

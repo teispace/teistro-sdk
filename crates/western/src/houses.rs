@@ -13,22 +13,57 @@ use crate::aspects::{PlanetAt, refuse_unreadable};
 
 /// The module's name under `houses.module_overrides`, where a profile
 /// names its division.
+///
+/// ```
+/// use teistro_western::MODULE;
+///
+/// assert_eq!(MODULE, "western");
+/// ```
 pub const MODULE: &str = "western";
 
 /// The division Leo's figures are cast in (C249): his p. 150 illustration
 /// fits Placidus at every printed cusp within 0.5°.
+///
+/// ```
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_western::LEO_HOUSE_SYSTEM;
+///
+/// assert_eq!(LEO_HOUSE_SYSTEM, HouseSystem::Placidus);
+/// ```
 pub const LEO_HOUSE_SYSTEM: HouseSystem = HouseSystem::Placidus;
 
 /// Lilly's division (*Christian Astrology*), which his antiscia on the
 /// cusps are read in unless asked otherwise.
+///
+/// ```
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_western::LILLY_HOUSE_SYSTEM;
+///
+/// assert_eq!(LILLY_HOUSE_SYSTEM, HouseSystem::Regiomontanus);
+/// ```
 pub const LILLY_HOUSE_SYSTEM: HouseSystem = HouseSystem::Regiomontanus;
 
 /// How far above the ascendant Leo's first house reaches, in right
 /// ascension of the meridian, degrees: one sidereal hour, "15° of
 /// Oblique Ascension" (p. 90, C250).
+///
+/// ```
+/// use teistro_western::{ASCENDANT_REACH_DEG, rising_an_hour_before};
+///
+/// // One sidereal hour of the meridian, 15°.
+/// assert_eq!(ASCENDANT_REACH_DEG, 15.0);
+/// assert!(rising_an_hour_before(90.0, 0.0, 23.4393) < 180.0);
+/// ```
 pub const ASCENDANT_REACH_DEG: f64 = 15.0;
 
 /// What a chart's Western houses are asked with.
+///
+/// ```
+/// use teistro_western::HouseRequest;
+///
+/// // The module's own division unless one is named.
+/// assert_eq!(HouseRequest::default().system, None);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
@@ -42,6 +77,13 @@ pub struct HouseRequest {
 
 impl HouseRequest {
     /// Reads the houses in `system` whatever the profile names.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    /// use teistro_western::HouseRequest;
+    ///
+    /// assert_eq!(HouseRequest::default().with_system(HouseSystem::Koch).system, Some(HouseSystem::Koch));
+    /// ```
     #[must_use]
     pub const fn with_system(mut self, system: HouseSystem) -> HouseRequest {
         self.system = Some(system);
@@ -77,6 +119,18 @@ impl HouseRequest {
 const ROOT: &str = "westernHouses";
 
 /// Where a planet is counted.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{HouseFrame, PlanetAt, place_in_houses};
+///
+/// // Equal houses from 0° Aries; the hour before raised 20° Pisces.
+/// let frame = HouseFrame { cusps_deg: std::array::from_fn(|k| k as f64 * 30.0), ascendant_deg: 0.0, reach_deg: 350.0 };
+/// let placed = place_in_houses(&frame, &[PlanetAt::new(Graha::Mars, 15.0)])?;
+/// // In the first house, so with the ascendant.
+/// assert_eq!((placed[0].graha, placed[0].house.get(), placed[0].with_ascendant), (Graha::Mars, 1, true));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -93,6 +147,17 @@ pub struct HousePlacement {
 
 /// What a chart's houses are read on: the cusps, the ascendant and the
 /// limit of its reach, all in the chart's zodiac.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{HouseFrame, PlanetAt, place_in_houses};
+///
+/// // Equal houses from 0° Aries; the hour before raised 20° Pisces.
+/// let frame = HouseFrame { cusps_deg: std::array::from_fn(|k| k as f64 * 30.0), ascendant_deg: 0.0, reach_deg: 350.0 };
+/// let refused = place_in_houses(&HouseFrame { reach_deg: f64::NAN, ..frame }, &[PlanetAt::new(Graha::Mars, 15.0)]).unwrap_err();
+/// assert_eq!(refused.field(), Some("reachDeg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -107,6 +172,16 @@ pub struct HouseFrame {
 }
 
 /// A chart's Western houses.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_western::{HouseFrame, PlanetAt, WesternHouses, place_in_houses};
+///
+/// let frame = HouseFrame { cusps_deg: std::array::from_fn(|k| k as f64 * 30.0), ascendant_deg: 0.0, reach_deg: 350.0 };
+/// let houses = WesternHouses { system: HouseSystem::Equal, frame, planets: place_in_houses(&frame, &[PlanetAt::new(Graha::Sun, 100.0)])? };
+/// assert_eq!(houses.planets[0].house.get(), 4);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

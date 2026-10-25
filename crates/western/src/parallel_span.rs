@@ -22,6 +22,22 @@ use crate::declination::{contrary, gap_deg};
 /// orb of a fixed distance from the equator: a progressed planet's
 /// parallel to a radical point, which Leo holds "in force for a period of
 /// several years" (*The Progressed Horoscope*, p. 34).
+///
+/// ```
+/// use teistro_western::{SpanSearch, parallel_spans};
+///
+/// // A body rising 0.5° a day from 20° S, against a point 10° N.
+/// let at = |t: f64| -20.0 + 0.5 * t;
+/// let samples: Vec<(f64, f64)> = (0..=100).map(|t| (f64::from(t), at(f64::from(t)))).collect();
+/// let search = SpanSearch { fixed_deg: 10.0, orb_deg: 1.0, tolerance: 1e-6 };
+/// let spans = parallel_spans(&samples, search, |t| Ok::<_, ()>(at(t))).map_err(|()| "never refused")?;
+/// // The parallel at 10° N: in force from day 58 to day 62.
+/// let north = spans[1];
+/// assert!((north.enters.unwrap_or(0.0) - 58.0).abs() < 1e-5);
+/// assert!((north.leaves.unwrap_or(0.0) - 62.0).abs() < 1e-5);
+/// assert!(north.closest_deg < 1e-5);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ParallelSpan {
     /// When the body came within the orb; none when it was already within
@@ -42,6 +58,22 @@ pub struct ParallelSpan {
 type Points = Vec<(f64, f64)>;
 
 /// What [`parallel_spans`] searches for.
+///
+/// ```
+/// use teistro_western::{SpanSearch, parallel_spans};
+///
+/// // A body rising 0.5° a day from 20° S, against a point 10° N.
+/// let at = |t: f64| -20.0 + 0.5 * t;
+/// let samples: Vec<(f64, f64)> = (0..=100).map(|t| (f64::from(t), at(f64::from(t)))).collect();
+/// let search = SpanSearch { fixed_deg: 10.0, orb_deg: 1.0, tolerance: 1e-6 };
+/// let spans = parallel_spans(&samples, search, |t| Ok::<_, ()>(at(t))).map_err(|()| "never refused")?;
+/// // A narrower orb, a shorter span.
+/// let narrow = SpanSearch { orb_deg: 0.5, ..search };
+/// let tight = parallel_spans(&samples, narrow, |t| Ok::<_, ()>(at(t))).map_err(|()| "never refused")?;
+/// let width = |span: &teistro_western::ParallelSpan| span.leaves.unwrap_or(0.0) - span.enters.unwrap_or(0.0);
+/// assert!(width(&tight[1]) < width(&spans[1]));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SpanSearch {
     /// The fixed distance from the equator, degrees, north positive.

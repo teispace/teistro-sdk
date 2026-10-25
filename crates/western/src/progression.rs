@@ -9,6 +9,14 @@ use teistro_core::quantity::{JulianDay, Utc};
 
 /// The mean tropical year, in days: the year a day measures by default,
 /// and the one the mean Sun's right ascension takes to come round.
+///
+/// ```
+/// use teistro_western::{ArcMeasure, TROPICAL_YEAR_DAYS};
+///
+/// // Naibod's arc is the circle over the tropical year.
+/// assert_eq!(ArcMeasure::Naibod.degrees_per_year()?, 360.0 / TROPICAL_YEAR_DAYS);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const TROPICAL_YEAR_DAYS: f64 = 365.242_189;
 
 /// The Julian year, in days.
@@ -16,14 +24,37 @@ const JULIAN_YEAR_DAYS: f64 = 365.25;
 
 /// The mean synodic month, in days: Leo's "synodic month, 29·53059
 /// days" (p. 295), the month his month-for-a-year horoscope counts.
+///
+/// ```
+/// use teistro_western::{Progression, Rate, SYNODIC_MONTH_DAYS};
+///
+/// // A day for a month: a day of sky measures a synodic month of life.
+/// let tertiary = Progression::SECONDARY.with_rate(Rate::TERTIARY);
+/// assert_eq!(tertiary.life_days_per_sky_day(), Some(SYNODIC_MONTH_DAYS));
+/// ```
 pub const SYNODIC_MONTH_DAYS: f64 = 29.530_588_9;
 
 /// The mean sidereal month, in days: the month later authors count for
 /// the tertiary progression (C238).
+///
+/// ```
+/// use teistro_western::{Progression, Rate, SIDEREAL_MONTH_DAYS, Span};
+///
+/// let sidereal = Progression::SECONDARY.with_rate(Rate { sky: Span::Day, life: Span::SiderealMonth });
+/// assert_eq!(sidereal.life_days_per_sky_day(), Some(SIDEREAL_MONTH_DAYS));
+/// ```
 pub const SIDEREAL_MONTH_DAYS: f64 = 27.321_661_5;
 
 /// One span of time a rate is stated in, spelled `"DAY"`, `"YEAR"` or
 /// `{"DAYS": 2.5}` in a request.
+///
+/// ```
+/// use teistro_western::{Progression, Rate, Span, TROPICAL_YEAR_DAYS};
+///
+/// // Two days of sky for a year of life.
+/// let slow = Progression::SECONDARY.with_rate(Rate { sky: Span::Days(2.0), life: Span::Year });
+/// assert_eq!(slow.life_days_per_sky_day(), Some(TROPICAL_YEAR_DAYS / 2.0));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RateSpan"))]
@@ -56,6 +87,12 @@ impl Span {
 
 /// A rate: one `sky` span of the ephemeris measures one `life` span of the
 /// native's life, spelled `{"sky": "DAY", "life": "YEAR"}` in a request.
+///
+/// ```
+/// use teistro_western::Rate;
+///
+/// assert_eq!(Rate::default(), Rate::SECONDARY);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "ProgressionRate"))]
@@ -69,6 +106,13 @@ pub struct Rate {
 impl Rate {
     /// A day for a year: Leo's progressed horoscope (p. 295), the
     /// secondary progression.
+    ///
+    /// ```
+    /// use teistro_western::{Progression, Rate, TROPICAL_YEAR_DAYS};
+    ///
+    /// let secondary = Progression::SECONDARY.with_rate(Rate::SECONDARY);
+    /// assert_eq!(secondary.life_days_per_sky_day(), Some(TROPICAL_YEAR_DAYS));
+    /// ```
     pub const SECONDARY: Rate = Rate {
         sky: Span::Day,
         life: Span::Year,
@@ -78,6 +122,12 @@ impl Rate {
     /// 311), the tertiary progression. His table names no month, so the
     /// synodic one his first lunar horoscope counts stands in (C238);
     /// `Rate { sky: Span::Day, life: Span::SiderealMonth }` is the other.
+    ///
+    /// ```
+    /// use teistro_western::{Rate, Span};
+    ///
+    /// assert_eq!((Rate::TERTIARY.sky, Rate::TERTIARY.life), (Span::Day, Span::SynodicMonth));
+    /// ```
     pub const TERTIARY: Rate = Rate {
         sky: Span::Day,
         life: Span::SynodicMonth,
@@ -86,6 +136,13 @@ impl Rate {
     /// A month for a year: Leo's "Progressed Lunar" horoscope, a map "for
     /// as many months after birth as subject is years old" (p. 295), the
     /// minor progression.
+    ///
+    /// ```
+    /// use teistro_western::{Rate, Span};
+    ///
+    /// // A month of sky for a year of life.
+    /// assert_eq!((Rate::MINOR.sky, Rate::MINOR.life), (Span::SynodicMonth, Span::Year));
+    /// ```
     pub const MINOR: Rate = Rate {
         sky: Span::SynodicMonth,
         life: Span::Year,
@@ -100,6 +157,14 @@ impl Default for Rate {
 }
 
 /// How long a year of life is, against the calendar (C236).
+///
+/// ```
+/// use teistro_western::{Progression, YearMeasure};
+///
+/// let julian = Progression::SECONDARY.with_year(YearMeasure::Julian);
+/// assert_eq!(julian.life_days_per_sky_day(), Some(365.25));
+/// assert_eq!(YearMeasure::default(), YearMeasure::Tropical);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -143,6 +208,12 @@ pub struct Progression {
 impl Progression {
     /// A day for a tropical year: the secondary progression as it is
     /// computed today.
+    ///
+    /// ```
+    /// use teistro_western::Progression;
+    ///
+    /// assert_eq!(Progression::default(), Progression::SECONDARY);
+    /// ```
     pub const SECONDARY: Progression = Progression {
         rate: Rate::SECONDARY,
         year: YearMeasure::Tropical,
@@ -150,18 +221,47 @@ impl Progression {
 
     /// A day for a year by Leo's sidereal time at noon: the day his
     /// Appendix V prints.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// // Leo's birth, 7 August 1860 at 5.49 a.m. in London.
+    /// let birth = JulianDay::<Utc>::try_new(2_400_629.742_361)?;
+    /// use teistro_western::Progression;
+    ///
+    /// // Not proportional, so no one ratio; it inverts all the same.
+    /// assert_eq!(Progression::LEO.life_days_per_sky_day(), None);
+    /// let sky = birth.plus_days(46.3)?;
+    /// let life = Progression::LEO.life_at(birth, sky)?;
+    /// assert!((Progression::LEO.sky_at(birth, life)?.get() - sky.get()).abs() < 1e-6);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const LEO: Progression = Progression {
         rate: Rate::SECONDARY,
         year: YearMeasure::NoonSiderealTime,
     };
 
     /// The same progression at another rate.
+    ///
+    /// ```
+    /// use teistro_western::{Progression, Rate, YearMeasure};
+    ///
+    /// let minor = Progression::SECONDARY.with_rate(Rate::MINOR);
+    /// assert_eq!((minor.rate, minor.year), (Rate::MINOR, YearMeasure::Tropical));
+    /// ```
     #[must_use]
     pub const fn with_rate(self, rate: Rate) -> Progression {
         Progression { rate, ..self }
     }
 
     /// The same progression under another year.
+    ///
+    /// ```
+    /// use teistro_western::{Progression, Rate, YearMeasure};
+    ///
+    /// let julian = Progression::SECONDARY.with_year(YearMeasure::Julian);
+    /// assert_eq!((julian.rate, julian.year), (Rate::SECONDARY, YearMeasure::Julian));
+    /// ```
     #[must_use]
     pub const fn with_year(self, year: YearMeasure) -> Progression {
         Progression { year, ..self }
@@ -170,6 +270,12 @@ impl Progression {
     /// Days of life a day of sky measures, when that is one number:
     /// `None` under [`YearMeasure::NoonSiderealTime`], which is not
     /// proportional.
+    ///
+    /// ```
+    /// use teistro_western::{Progression, TROPICAL_YEAR_DAYS};
+    ///
+    /// assert_eq!(Progression::SECONDARY.life_days_per_sky_day(), Some(TROPICAL_YEAR_DAYS));
+    /// ```
     #[must_use]
     pub fn life_days_per_sky_day(&self) -> Option<f64> {
         let year_days = match self.year {
@@ -182,6 +288,16 @@ impl Progression {
 
     /// Refuses a rate whose spans are not finite and above zero, and Leo's
     /// noon rule at any rate but a day for a year.
+    ///
+    /// ```
+    /// use teistro_western::{Progression, Rate, Span};
+    ///
+    /// // Leo's noon rule dates a day for a year only.
+    /// let refused = Progression::LEO.with_rate(Rate::MINOR).check().unwrap_err();
+    /// assert_eq!(refused.field(), Some("year"));
+    /// let empty = Progression::SECONDARY.with_rate(Rate { sky: Span::Days(0.0), life: Span::Year });
+    /// assert_eq!(empty.check().unwrap_err().field(), Some("rate.sky"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -210,6 +326,20 @@ impl Progression {
     /// of someone born at `birth`. Before birth is allowed: that is the
     /// converse progression.
     ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// // Leo's birth, 7 August 1860 at 5.49 a.m. in London.
+    /// let birth = JulianDay::<Utc>::try_new(2_400_629.742_361)?;
+    /// use teistro_western::Progression;
+    ///
+    /// // Before birth is the converse progression.
+    /// let before = birth.plus_days(-10.0 * 365.242_189)?;
+    /// let sky = Progression::SECONDARY.sky_at(birth, before)?;
+    /// assert!((birth.get() - sky.get() - 10.0).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// What [`Progression::check`] refuses, or an instant that is not
@@ -230,6 +360,19 @@ impl Progression {
     /// The instant of the life that `sky`, an instant of the ephemeris,
     /// measures for someone born at `birth`: the inverse of
     /// [`Progression::sky_at`].
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// // Leo's birth, 7 August 1860 at 5.49 a.m. in London.
+    /// let birth = JulianDay::<Utc>::try_new(2_400_629.742_361)?;
+    /// use teistro_western::Progression;
+    ///
+    /// // Forty-six days of sky: the 47th year.
+    /// let life = Progression::SECONDARY.life_at(birth, birth.plus_days(46.0)?)?;
+    /// assert!(((life.get() - birth.get()) / 365.242_189 - 46.0).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///

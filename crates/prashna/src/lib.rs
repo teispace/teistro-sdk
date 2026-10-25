@@ -88,6 +88,14 @@ const SEVEN: [Graha; 7] = [
 ];
 
 /// Where one graha stands in the query chart.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_prashna::Placed;
+///
+/// let mars = Placed { longitude_deg: 200.0, navamsha: Rashi::Aries, retrograde: true, combust: false };
+/// assert_eq!(mars.sign(), Rashi::Libra);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -104,6 +112,15 @@ pub struct Placed {
 
 impl Placed {
     /// The sign it stands in.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_prashna::Placed;
+    ///
+    /// let at = Placed { longitude_deg: -10.0, navamsha: Rashi::Aries, retrograde: false, combust: false };
+    /// // Folded into the circle: 350°.
+    /// assert_eq!(at.sign(), Rashi::Pisces);
+    /// ```
     #[must_use]
     pub fn sign(&self) -> Rashi {
         sign_at(self.longitude_deg)
@@ -111,6 +128,23 @@ impl Placed {
 }
 
 /// The query chart, as the kernel reads it.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// assert_eq!(sky.lagna(), Rashi::Taurus);
+/// # let _ = (Graha::Sun, Question::default(), PrashnaRules::default(), read);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -129,6 +163,23 @@ pub struct PrashnaSky {
 impl PrashnaSky {
     /// Where `graha` stands, or `None` for a graha a prashna does not
     /// place.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+    ///
+    /// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+    /// // one graha a sign from there on; Saturn the strongest.
+    /// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+    /// let sky = PrashnaSky {
+    ///     lagna_deg: 40.0,
+    ///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+    ///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+    ///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+    /// };
+    /// assert_eq!(sky.of(Graha::Sun).map(Placed::sign), Some(Rashi::Virgo));
+    /// # let _ = (Question::default(), PrashnaRules::default(), read);
+    /// ```
     #[must_use]
     pub fn of(&self, graha: Graha) -> Option<&Placed> {
         GRAHAS
@@ -138,12 +189,46 @@ impl PrashnaSky {
     }
 
     /// The lagna's sign.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+    ///
+    /// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+    /// // one graha a sign from there on; Saturn the strongest.
+    /// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+    /// let sky = PrashnaSky {
+    ///     lagna_deg: 40.0,
+    ///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+    ///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+    ///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+    /// };
+    /// assert_eq!(sky.lagna(), Rashi::Taurus);
+    /// # let _ = (Graha::Sun, Question::default(), PrashnaRules::default(), read);
+    /// ```
     #[must_use]
     pub fn lagna(&self) -> Rashi {
         sign_at(self.lagna_deg)
     }
 
     /// The sign of the lagna's navāṁśa, the rising varga by default.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+    ///
+    /// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+    /// // one graha a sign from there on; Saturn the strongest.
+    /// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+    /// let sky = PrashnaSky {
+    ///     lagna_deg: 40.0,
+    ///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+    ///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+    ///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+    /// };
+    /// assert_eq!(sky.lagna_navamsha(), Rashi::Leo);
+    /// # let _ = (Graha::Sun, Question::default(), PrashnaRules::default(), read);
+    /// ```
     #[must_use]
     pub const fn lagna_navamsha(&self) -> Rashi {
         let [_, _, _, navamsha, _, _] = self.lagna_vargas;
@@ -230,6 +315,27 @@ fn sign_at(longitude_deg: f64) -> Rashi {
 }
 
 /// Whether a graha counts as a benefic or a malefic in a prashna.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// use teistro_prashna::{Disposition, disposition};
+///
+/// // The Moon 10° past the Sun waxes.
+/// assert_eq!(disposition(&sky, Graha::Moon), Some(Disposition::Benefic));
+/// assert_eq!(disposition(&sky, Graha::Saturn), Some(Disposition::Malefic));
+/// # let _ = (Question::default(), PrashnaRules::default(), read);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -245,6 +351,28 @@ pub enum Disposition {
 ///
 /// The Moon is a benefic while waxing, from new to full, and Mercury is
 /// a malefic in a sign a malefic shares with him.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// use teistro_prashna::{Disposition, disposition};
+///
+/// // Mercury alone in Scorpio: no malefic joins him.
+/// assert_eq!(disposition(&sky, Graha::Mercury), Some(Disposition::Benefic));
+/// // The list leaves out the nodes.
+/// assert_eq!(disposition(&sky, Graha::Rahu), None);
+/// # let _ = (Question::default(), PrashnaRules::default(), read);
+/// ```
 #[must_use]
 pub fn disposition(sky: &PrashnaSky, graha: Graha) -> Option<Disposition> {
     let waxing = || {
@@ -279,6 +407,12 @@ pub fn disposition(sky: &PrashnaSky, graha: Graha) -> Option<Disposition> {
 }
 
 /// How Pisces rises (C336).
+///
+/// ```
+/// use teistro_prashna::{PiscesRising, PrashnaRules};
+///
+/// assert_eq!(PrashnaRules::default().pisces, PiscesRising::BothWays);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -303,6 +437,31 @@ pub const SHADVARGA: [Varga; 6] = [
 ];
 
 /// Whose the rising varga is (C336).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::{ClauseKind, RisingVarga};
+///
+/// // By the navamsha alone, unless the six vargas are asked for.
+/// assert!(answer.verdict.clauses.iter().any(|clause| clause.kind == ClauseKind::RisingNavamsha));
+/// let six = PrashnaRules { rising_varga: RisingVarga::Shadvarga, ..PrashnaRules::default() };
+/// let wider = read(&sky, Question::default(), six)?;
+/// assert!(wider.verdict.clauses.iter().any(|clause| clause.kind == ClauseKind::RisingShadvarga));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -318,6 +477,28 @@ pub enum RisingVarga {
 }
 
 /// Which rule times the matter.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::{TimingRule, Unit};
+///
+/// // II.14–15: Saturn, the strongest, in the 10th from Taurus.
+/// assert_eq!((answer.timing.rule, answer.timing.graha, answer.timing.count), (TimingRule::StrongestGraha, Graha::Saturn, 10));
+/// assert_eq!(answer.timing.unit, Unit::Months);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -341,6 +522,29 @@ pub enum TimingRule {
 }
 
 /// Which rule reads an unspoken question.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::{MookRule, Person};
+///
+/// // VII.7–8: the strongest graha in the 10th, a question about a guru.
+/// assert_eq!((answer.mook.rule, answer.mook.house), (MookRule::Shatpanchashika, 10));
+/// assert_eq!(answer.mook.person, Some(Person::Guru));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -359,6 +563,13 @@ pub enum MookRule {
 }
 
 /// The readings a prashna is given under.
+///
+/// ```
+/// use teistro_prashna::{MookRule, PrashnaRules, TimingRule};
+///
+/// let rules = PrashnaRules { timing: TimingRule::MoonDays, ..PrashnaRules::default() };
+/// assert_eq!(rules.mook, MookRule::Shatpanchashika);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -389,6 +600,13 @@ pub struct PrashnaRules {
 
 impl PrashnaRules {
     /// Every reading the baseline engine takes.
+    ///
+    /// ```
+    /// use teistro_prashna::{MookRule, PrashnaRules, TimingRule};
+    ///
+    /// let baseline = PrashnaRules::baseline();
+    /// assert_eq!((baseline.timing, baseline.mook), (TimingRule::Baseline, MookRule::Baseline));
+    /// ```
     #[must_use]
     pub const fn baseline() -> PrashnaRules {
         PrashnaRules {
@@ -416,6 +634,30 @@ impl PrashnaRules {
 }
 
 /// What was asked.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// // A question of the 7th, Scorpio: Venus the lagnesha, Mars the karyesha.
+/// let answer = read(&sky, Question::about(7), PrashnaRules::default())?;
+/// use teistro_prashna::Tense;
+///
+/// assert_eq!(Question::default().tense, Tense::Unspecified);
+/// // A house asked about brings the lords' Tajika link.
+/// assert!(answer.links.is_some() && answer.link.is_some());
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -451,6 +693,29 @@ impl Question {
 }
 
 /// Which way a clause tells.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::{ClauseKind, Favour};
+///
+/// // Taurus rises by its back, which tells against the matter (I.4).
+/// let rising = answer.verdict.clauses.iter().find(|clause| clause.kind == ClauseKind::LagnaRising);
+/// assert_eq!(rising.map(|clause| clause.favour), Some(Favour::Against));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -464,6 +729,28 @@ pub enum Favour {
 }
 
 /// What a clause of the verdict says. Each names its verse.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::ClauseKind;
+///
+/// // Without a house asked about there is no karya house to read.
+/// assert!(answer.verdict.clauses.iter().all(|clause| clause.kind != ClauseKind::KaryaHouse));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -488,6 +775,13 @@ pub enum ClauseKind {
 
 impl ClauseKind {
     /// The verse a clause reads.
+    ///
+    /// ```
+    /// use teistro_prashna::ClauseKind;
+    ///
+    /// assert!(ClauseKind::LagnaRising.source().contains("I.4"));
+    /// assert!(ClauseKind::KaryaHouse.source().contains("I.3"));
+    /// ```
     #[must_use]
     pub const fn source(self) -> &'static str {
         match self {
@@ -502,6 +796,29 @@ impl ClauseKind {
 }
 
 /// One clause of the verdict.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::ClauseKind;
+///
+/// let rising = answer.verdict.clauses.iter().find(|clause| clause.kind == ClauseKind::LagnaRising);
+/// // How the lagna rises is about no graha.
+/// assert_eq!(rising.map(|clause| clause.graha), Some(None));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -515,6 +832,33 @@ pub struct Clause {
 }
 
 /// The three outcomes of *Shatpanchashika* I.4.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::{Favour, Outcome};
+///
+/// let against = answer.verdict.clauses.iter().filter(|clause| clause.favour != Favour::For).count();
+/// let expected = match against {
+///     0 => Outcome::Succeeds,
+///     n if n == answer.verdict.clauses.len() && answer.verdict.clauses.iter().all(|clause| clause.favour == Favour::Against) => Outcome::Fails,
+///     _ => Outcome::WithDifficulty,
+/// };
+/// assert_eq!(answer.verdict.outcome, expected);
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PrashnaOutcome"))]
@@ -529,6 +873,27 @@ pub enum Outcome {
 }
 
 /// Whether the matter succeeds.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// // The clauses are the answer, and never a score.
+/// assert!(!answer.verdict.clauses.is_empty());
+/// assert!(answer.score.is_none());
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PrashnaVerdict"))]
@@ -541,6 +906,28 @@ pub struct Verdict {
 }
 
 /// Whether the matter stays as it is (*Shatpanchashika* II.1–2).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::Change;
+///
+/// // A fixed lagna: the state continues (II.1).
+/// assert_eq!(answer.change, Change::Stays);
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -553,6 +940,28 @@ pub enum Change {
 }
 
 /// The unit a time is counted in.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::{TimingRule, Unit};
+///
+/// let days = PrashnaRules { timing: TimingRule::FirstOccupied, ..PrashnaRules::default() };
+/// assert_eq!(read(&sky, Question::default(), days)?.timing.unit, Unit::Days);
+/// # let _ = (answer, Graha::Sun);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PrashnaUnit"))]
@@ -567,6 +976,28 @@ pub enum Unit {
 }
 
 /// When the matter comes to pass.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// // Saturn in a movable navamsha: the count once.
+/// assert_eq!(answer.timing.multiplier, 1);
+/// assert_eq!(answer.timing.amount, Some(10));
+/// assert!(!answer.timing.tie);
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -591,6 +1022,30 @@ pub struct Timing {
 }
 
 /// Whom *Shatpanchashika* VII.7–8 says an unspoken question is about.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::{MookRule, Person};
+///
+/// assert_eq!(answer.mook.person, Some(Person::Guru));
+/// // The other rules name a house, not a person.
+/// let moon = PrashnaRules { mook: MookRule::MoonHouse, ..PrashnaRules::default() };
+/// assert_eq!(read(&sky, Question::default(), moon)?.mook.person, None);
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -619,6 +1074,27 @@ pub enum Person {
 }
 
 /// What the thing thought of is (*Shatpanchashika* I.6–7).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// use teistro_prashna::Thought;
+///
+/// assert!(matches!(answer.mook.thought, Thought::Mineral | Thought::Root | Thought::Living));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -632,6 +1108,24 @@ pub enum Thought {
 }
 
 /// What an unspoken question is about.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// assert_eq!((answer.mook.graha, answer.mook.tie), (Graha::Saturn, false));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -652,6 +1146,27 @@ pub struct Mook {
 }
 
 /// A prashna read.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// // A question of the 7th, Scorpio: Venus the lagnesha, Mars the karyesha.
+/// let answer = read(&sky, Question::about(7), PrashnaRules::default())?;
+/// assert_eq!(answer.tri_kala.lagnesha, Graha::Venus);
+/// assert_eq!(answer.weak.len(), 7);
+/// assert!(answer.graded.is_none() && answer.number_sign.is_none());
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -695,6 +1210,26 @@ pub struct Prashna {
 }
 
 /// Reads a query chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// // A house outside 1 to 12 is refused.
+/// assert!(read(&sky, Question::about(13), PrashnaRules::default()).is_err());
+/// # let _ = (answer, Graha::Sun);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///

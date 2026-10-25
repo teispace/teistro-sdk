@@ -16,6 +16,24 @@ use crate::tables::{
 use crate::teva::Teva;
 
 /// A dignity a planet has in its house.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// use teistro_lalkitab::Dignity;
+///
+/// let rahu = reading.planets.iter().find(|planet| planet.graha == Graha::Rahu).ok_or(teistro_core::error::Error::internal("nine planets"))?;
+/// // Rahu in 12: its pakka ghar, and the seventh from its exaltation in 6.
+/// assert_eq!(rahu.dignities, [Dignity::Pakka, Dignity::Debilitated]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -32,6 +50,24 @@ pub enum Dignity {
 }
 
 /// How a planet regards one owner of the house it sits in.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// use teistro_lalkitab::{OwnerRegard, Regard};
+///
+/// let mercury = reading.planets.iter().find(|planet| planet.graha == Graha::Mercury).ok_or(teistro_core::error::Error::internal("nine planets"))?;
+/// // House 4 is the Moon's, whom Mercury takes as an enemy.
+/// assert_eq!(mercury.owners, [OwnerRegard { owner: Graha::Moon, regard: Regard::Enemy }]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -43,6 +79,24 @@ pub struct OwnerRegard {
 }
 
 /// One house a planet's aspect falls on.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// use teistro_lalkitab::aspects::Strength;
+///
+/// let mars = reading.planets.iter().find(|planet| planet.graha == Graha::Mars).ok_or(teistro_core::error::Error::internal("nine planets"))?;
+/// let casts: Vec<_> = mars.casts.iter().map(|cast| (cast.to, cast.strength, cast.onto.clone())).collect();
+/// assert_eq!(casts, [(9, Strength::Half, vec![Graha::Moon]), (11, Strength::Half, vec![])]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -56,6 +110,25 @@ pub struct Cast {
 }
 
 /// One planet of the teva.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// let sun = reading.planets.iter().find(|planet| planet.graha == Graha::Sun).ok_or(teistro_core::error::Error::internal("nine planets"))?;
+/// // The Sun in 4 looks only at 10, which is empty: it sleeps.
+/// assert!(!sun.awake && sun.dignities.is_empty());
+/// let mars = reading.planets.iter().find(|planet| planet.graha == Graha::Mars).ok_or(teistro_core::error::Error::internal("nine planets"))?;
+/// // Mars alone in its pakka ghar, and no occupied house looks at 3.
+/// assert!(mars.awake && mars.kayam);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -78,6 +151,25 @@ pub struct PlanetReading {
 }
 
 /// An occupied house looking at another.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// use teistro_lalkitab::Look;
+/// use teistro_lalkitab::aspects::Strength;
+///
+/// // House 10 is empty and awake: 4, occupied, looks at it in full.
+/// let tenth = &reading.houses[9];
+/// assert_eq!(tenth.looked_at_by, [Look { from: 4, strength: Strength::Full }]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -89,6 +181,23 @@ pub struct Look {
 }
 
 /// An enemy seated in one of a planet's houses.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// use teistro_lalkitab::{Rin, Seated};
+///
+/// assert_eq!(reading.rinas[0].rin, Rin::Pitri);
+/// assert_eq!(reading.rinas[0].seated, [Seated { enemy: Graha::Rahu, house: 12 }]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -100,6 +209,23 @@ pub struct Seated {
 }
 
 /// One house of the teva.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// let first = &reading.houses[0];
+/// // Empty and looked at by no house: house 1 sleeps, and Mars wakes it.
+/// assert!(first.occupants.is_empty() && !first.awake);
+/// assert_eq!(first.waker, Graha::Mars);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -119,6 +245,25 @@ pub struct HouseReading {
 }
 
 /// A pair of planets in one house counting as a third (p. 27).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// use teistro_lalkitab::{Formed, Masnui};
+///
+/// assert_eq!(reading.masnui, [
+///     Formed { pair: [Graha::Sun, Graha::Mercury], house: 4, counts_as: Masnui::MarsBenefic },
+///     Formed { pair: [Graha::Venus, Graha::Saturn], house: 7, counts_as: Masnui::KetuExalted },
+/// ]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -133,6 +278,22 @@ pub struct Formed {
 
 /// A debt the teva carries (p. 125): an enemy of a planet seated in one of
 /// its houses.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// // Rahu in 12, a house of Jupiter's: the one debt this teva carries.
+/// assert_eq!(reading.rinas.len(), 1);
+/// assert_eq!(reading.rinas[0].of, Graha::Jupiter);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -147,6 +308,22 @@ pub struct Debt {
 
 /// The ancestors' debt in its first state (p. 128): a planet in house 9
 /// while Mercury sits in that planet's root house.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// use teistro_lalkitab::PitriState;
+///
+/// assert_eq!(reading.pitri, [PitriState { ninth: Graha::Moon, mercury: 4 }]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -158,6 +335,23 @@ pub struct PitriState {
 }
 
 /// The teva's own conditions.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// // Houses 4 and 7 hold two planets each: not a minor's chart.
+/// assert!(reading.flags.ratandha && !reading.flags.nabalig);
+/// assert!(reading.flags.dharmi.is_empty());
+/// assert_eq!(reading.flags.sathi, [[Graha::Jupiter, Graha::Moon], [Graha::Rahu, Graha::Ketu]]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -176,6 +370,21 @@ pub struct Flags {
 }
 
 /// Everything a teva says.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// assert_eq!((reading.planets.len(), reading.houses.len()), (9, 12));
+/// assert_eq!(reading.planets[0].graha, Graha::Jupiter);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -361,6 +570,22 @@ fn flags(teva: &Teva) -> Flags {
 }
 
 /// Everything a teva says.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let reading = read(&teva);
+/// let jupiter = reading.planets.iter().find(|planet| planet.graha == Graha::Jupiter).ok_or(teistro_core::error::Error::internal("nine planets"))?;
+/// // Jupiter alone in 2, its pakka ghar, which only an empty 8 looks at.
+/// assert!(jupiter.kayam);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn read(teva: &Teva) -> Reading {
     let planets = teva

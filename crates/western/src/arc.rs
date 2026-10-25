@@ -8,6 +8,16 @@ use crate::progression::TROPICAL_YEAR_DAYS;
 
 /// How many degrees of arc measure a year of life, spelled `"NAIBOD"`,
 /// `"PTOLEMY"` or `{"PER_YEAR": 1.0}` in a request.
+///
+/// ```
+/// use teistro_western::ArcMeasure;
+///
+/// // A degree for a year, or the Sun's mean day.
+/// assert_eq!(ArcMeasure::Ptolemy.years(20.25)?, 20.25);
+/// assert!(ArcMeasure::Naibod.years(20.25)? > 20.25);
+/// assert_eq!(ArcMeasure::PerYear(1.5).years(3.0)?, 2.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -23,6 +33,16 @@ pub enum ArcMeasure {
 
 impl ArcMeasure {
     /// Degrees of arc a year measures.
+    ///
+    /// ```
+    /// use teistro_western::ArcMeasure;
+    ///
+    /// // Naibod's 0° 59′ 8.33″.
+    /// let naibod = ArcMeasure::Naibod.degrees_per_year()?;
+    /// assert!((naibod * 3600.0 - (59.0 * 60.0 + 8.33)).abs() < 0.01);
+    /// assert_eq!(ArcMeasure::PerYear(0.0).degrees_per_year().unwrap_err().field(), Some("arc"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -43,6 +63,14 @@ impl ArcMeasure {
 
     /// The years of life an arc of `degrees` measures.
     ///
+    /// ```
+    /// use teistro_western::ArcMeasure;
+    ///
+    /// assert_eq!(ArcMeasure::Ptolemy.years(30.0)?, 30.0);
+    /// assert_eq!(ArcMeasure::Ptolemy.years(f64::NAN).unwrap_err().field(), Some("degrees"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`ArcMeasure::degrees_per_year`], or an arc that is not finite.
@@ -54,6 +82,16 @@ impl ArcMeasure {
     }
 
     /// The arc, in degrees, that `years` of life measure.
+    ///
+    /// ```
+    /// use teistro_western::ArcMeasure;
+    ///
+    /// // The inverse of `years`.
+    /// let arc = ArcMeasure::Naibod.degrees(20.545)?;
+    /// assert!((ArcMeasure::Naibod.years(arc)? - 20.545).abs() < 1e-12);
+    /// assert_eq!(ArcMeasure::Naibod.degrees(f64::INFINITY).unwrap_err().field(), Some("years"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///

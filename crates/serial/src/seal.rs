@@ -39,6 +39,20 @@ use teistro_core::envelope::{Envelope, Hash, Provenance};
 use crate::canonical;
 
 /// A value with a provenance whose content hash is the value's own.
+///
+/// ```
+/// use teistro_core::envelope::{Hash, Provenance, Version};
+/// use teistro_serial::seal::Sealed;
+///
+/// let provenance = Provenance::new(
+///     Version::new(0, 1, 0), 1, 1, "parashari-classical",
+///     Hash::of(b"settings"), Hash::of(b"input"),
+/// );
+/// let sealed = Sealed::new(vec![1.5_f64, 2.5], provenance);
+/// // Written with its provenance; the hash is the value's.
+/// assert!(sealed.is_intact());
+/// assert_eq!(sealed.to_hash_form(), "[1.5,2.5]");
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Sealed<T> {
@@ -52,6 +66,18 @@ impl<T: Serialize> Sealed<T> {
     /// This is the only constructor, and it takes the provenance by
     /// value, so the pair cannot be built with a hash that belongs to
     /// something else.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Hash, Provenance, Version};
+    /// use teistro_serial::seal::Sealed;
+    ///
+    /// let provenance = Provenance::new(
+    ///     Version::new(0, 1, 0), 1, 1, "parashari-classical",
+    ///     Hash::of(b"settings"), Hash::of(b"input"),
+    /// );
+    /// let sealed = Sealed::new(vec![1.5_f64, 2.5], provenance);
+    /// assert_eq!(sealed.content_hash(), teistro_serial::hash_of(&[1.5_f64, 2.5]));
+    /// ```
     #[must_use]
     pub fn new(value: T, mut provenance: Provenance) -> Sealed<T> {
         provenance.content_hash = canonical::hash_of(&value);
@@ -60,34 +86,105 @@ impl<T: Serialize> Sealed<T> {
 
     /// Seals what a producer built, which is how a module's own
     /// `Envelope` becomes something publishable.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Envelope, Hash, Provenance, Version};
+    /// use teistro_serial::seal::Sealed;
+    ///
+    /// let provenance = Provenance::new(Version::new(0, 1, 0), 1, 1, "parashari-classical", Hash::of(b"s"), Hash::of(b"i"));
+    /// // A producer's envelope leaves the hash empty; sealing fills it.
+    /// let envelope = Envelope::new(vec![1_u8, 2, 3], provenance);
+    /// assert_eq!(envelope.provenance.content_hash, Hash::of(&[]));
+    /// assert!(Sealed::of(envelope).is_intact());
+    /// ```
     #[must_use]
     pub fn of(envelope: Envelope<T>) -> Sealed<T> {
         Sealed::new(envelope.value, envelope.provenance)
     }
 
     /// The value.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Hash, Provenance, Version};
+    /// use teistro_serial::seal::Sealed;
+    ///
+    /// let provenance = Provenance::new(
+    ///     Version::new(0, 1, 0), 1, 1, "parashari-classical",
+    ///     Hash::of(b"settings"), Hash::of(b"input"),
+    /// );
+    /// let sealed = Sealed::new(vec![1.5_f64, 2.5], provenance);
+    /// assert_eq!(sealed.value(), &vec![1.5, 2.5]);
+    /// ```
     pub const fn value(&self) -> &T {
         &self.value
     }
 
     /// How it was produced, with the hash filled in.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Hash, Provenance, Version};
+    /// use teistro_serial::seal::Sealed;
+    ///
+    /// let provenance = Provenance::new(
+    ///     Version::new(0, 1, 0), 1, 1, "parashari-classical",
+    ///     Hash::of(b"settings"), Hash::of(b"input"),
+    /// );
+    /// let sealed = Sealed::new(vec![1.5_f64, 2.5], provenance);
+    /// assert_eq!(sealed.provenance().profile, "parashari-classical");
+    /// ```
     pub const fn provenance(&self) -> &Provenance {
         &self.provenance
     }
 
     /// The hash of the value's canonical bytes.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Hash, Provenance, Version};
+    /// use teistro_serial::seal::Sealed;
+    ///
+    /// let provenance = Provenance::new(
+    ///     Version::new(0, 1, 0), 1, 1, "parashari-classical",
+    ///     Hash::of(b"settings"), Hash::of(b"input"),
+    /// );
+    /// let sealed = Sealed::new(vec![1.5_f64, 2.5], provenance);
+    /// assert_eq!(sealed.content_hash(), sealed.provenance().content_hash);
+    /// ```
     #[must_use]
     pub const fn content_hash(&self) -> Hash {
         self.provenance.content_hash
     }
 
     /// The cache key every binding documents.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Hash, Provenance, Version};
+    /// use teistro_serial::seal::Sealed;
+    ///
+    /// let provenance = Provenance::new(
+    ///     Version::new(0, 1, 0), 1, 1, "parashari-classical",
+    ///     Hash::of(b"settings"), Hash::of(b"input"),
+    /// );
+    /// let sealed = Sealed::new(vec![1.5_f64, 2.5], provenance);
+    /// assert_eq!(sealed.cache_key(), sealed.provenance().cache_key());
+    /// ```
     #[must_use]
     pub fn cache_key(&self) -> (Hash, Hash, u32) {
         self.provenance.cache_key()
     }
 
     /// The canonical bytes the hash was taken over.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Hash, Provenance, Version};
+    /// use teistro_serial::seal::Sealed;
+    ///
+    /// let provenance = Provenance::new(
+    ///     Version::new(0, 1, 0), 1, 1, "parashari-classical",
+    ///     Hash::of(b"settings"), Hash::of(b"input"),
+    /// );
+    /// let sealed = Sealed::new(vec![1.5_f64, 2.5], provenance);
+    /// assert_eq!(teistro_core::envelope::Hash::of(sealed.to_hash_form().as_bytes()), sealed.content_hash());
+    /// ```
     #[must_use]
     pub fn to_hash_form(&self) -> String {
         canonical::to_hash_form(&self.value)
@@ -95,12 +192,38 @@ impl<T: Serialize> Sealed<T> {
 
     /// Whether the hash still belongs to the value, which is true by
     /// construction and is asserted rather than assumed.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Hash, Provenance, Version};
+    /// use teistro_serial::seal::Sealed;
+    ///
+    /// let provenance = Provenance::new(
+    ///     Version::new(0, 1, 0), 1, 1, "parashari-classical",
+    ///     Hash::of(b"settings"), Hash::of(b"input"),
+    /// );
+    /// let sealed = Sealed::new(vec![1.5_f64, 2.5], provenance);
+    /// assert!(sealed.is_intact());
+    /// ```
     #[must_use]
     pub fn is_intact(&self) -> bool {
         self.provenance.content_hash == canonical::hash_of(&self.value)
     }
 
     /// The value and its provenance, given up.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Hash, Provenance, Version};
+    /// use teistro_serial::seal::Sealed;
+    ///
+    /// let provenance = Provenance::new(
+    ///     Version::new(0, 1, 0), 1, 1, "parashari-classical",
+    ///     Hash::of(b"settings"), Hash::of(b"input"),
+    /// );
+    /// let sealed = Sealed::new(vec![1.5_f64, 2.5], provenance);
+    /// let hash = sealed.content_hash();
+    /// let (value, provenance) = sealed.into_parts();
+    /// assert_eq!((value, provenance.content_hash), (vec![1.5, 2.5], hash));
+    /// ```
     #[must_use]
     pub fn into_parts(self) -> (T, Provenance) {
         (self.value, self.provenance)

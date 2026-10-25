@@ -13,6 +13,34 @@ use crate::significators::Significators;
 /// For a horary chart the cusps are the number's and the ruling planets
 /// still the moment's own, which the Reader takes "at the moment of
 /// judgment" (`03-design/kp.md`).
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_core::settings::NodeAspects;
+/// use teistro_kp::{KpChart, Position, Significators};
+///
+/// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+/// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+/// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+/// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+/// let chart = KpChart::new(
+///     HouseSystem::Placidus,
+///     cusps,
+///     [
+///         Position::new(Graha::Moon, at(50)),
+///         Position::new(Graha::Mars, at(55)),
+///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+///     ],
+/// );
+/// let significators = Significators::of(&chart, NodeAspects::None);
+/// use teistro_kp::{KpReading, RulingPlanets, RulingRules};
+///
+/// let ruling = RulingPlanets::of(&chart, Graha::Jupiter, RulingRules::READER);
+/// let reading = KpReading::new(chart, significators, ruling);
+/// assert_eq!(reading.chart.planets.len(), 4);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
@@ -27,6 +55,34 @@ pub struct KpReading {
 
 impl KpReading {
     /// The three together.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_core::settings::NodeAspects;
+    /// use teistro_kp::{KpChart, Position, Significators};
+    ///
+    /// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+    /// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+    /// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let chart = KpChart::new(
+    ///     HouseSystem::Placidus,
+    ///     cusps,
+    ///     [
+    ///         Position::new(Graha::Moon, at(50)),
+    ///         Position::new(Graha::Mars, at(55)),
+    ///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+    ///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+    ///     ],
+    /// );
+    /// let significators = Significators::of(&chart, NodeAspects::None);
+    /// use teistro_kp::{KpReading, RulingPlanets, RulingRules};
+    ///
+    /// let ruling = RulingPlanets::of(&chart, Graha::Jupiter, RulingRules::READER);
+    /// let reading = KpReading::new(chart.clone(), significators.clone(), ruling.clone());
+    /// assert_eq!((reading.chart, reading.significators, reading.ruling), (chart, significators, ruling));
+    /// ```
     #[must_use]
     pub const fn new(
         chart: KpChart,

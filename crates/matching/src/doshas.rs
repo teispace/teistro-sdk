@@ -8,6 +8,27 @@ use teistro_core::catalogue::Koota;
 use crate::{AshtaKoota, KootaReading, Kuja, MaitriRelation, MatchRole, Porutham};
 
 /// Which reading a marriage dosha comes from.
+///
+/// ```
+/// use teistro_matching::{
+///     DoshaSystem, KootaRules, KujaNative, KujaRules, MatchRole, Native, PoruthamRules, ashta_koota, kuja,
+///     marriage_doshas, porutham,
+/// };
+///
+/// let moon = Native::of_moon(45.0)?;
+/// // Mars in the 7th from the bride's Aries lagna, the 2nd from the groom's.
+/// let bride = KujaNative::of_longitudes(5.0, 40.0, 70.0, 190.0)?;
+/// let groom = KujaNative::of_longitudes(5.0, 40.0, 70.0, 40.0)?;
+/// let doshas = marriage_doshas(
+///     &ashta_koota(moon, moon, KootaRules::default()),
+///     &porutham(moon, moon, PoruthamRules::default()),
+///     &kuja(bride, groom, KujaRules::default()),
+/// );
+/// let mars: Vec<_> = doshas.iter().filter(|dosha| dosha.system == DoshaSystem::Kuja).collect();
+/// assert_eq!(mars.len(), 1);
+/// assert_eq!(mars[0].side, Some(MatchRole::Bride));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -21,6 +42,25 @@ pub enum DoshaSystem {
 }
 
 /// One marriage dosha a match carries.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{
+///     DoshaSystem, KootaRules, KujaNative, KujaRules, MarriageDosha, Native, PoruthamRules, ashta_koota, kuja,
+///     marriage_doshas, porutham,
+/// };
+///
+/// let moon = Native::of_moon(45.0)?;
+/// let mars = KujaNative::of_longitudes(5.0, 40.0, 70.0, 40.0)?;
+/// let doshas = marriage_doshas(
+///     &ashta_koota(moon, moon, KootaRules::default()),
+///     &porutham(moon, moon, PoruthamRules::default()),
+///     &kuja(mars, mars, KujaRules::default()),
+/// );
+/// // One Moon in one pada: the shared nadi, which nothing lifts, comes first.
+/// assert_eq!(doshas.first(), Some(&MarriageDosha { system: DoshaSystem::AshtaKoota, koota: Some(Koota::Nadi), side: None, lifted: false }));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

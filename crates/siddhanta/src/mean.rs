@@ -7,6 +7,14 @@ use core::fmt;
 use crate::params::Parameters;
 
 /// The cycle a revolution count is given for.
+///
+/// ```
+/// use teistro_siddhanta::{Cycle, Parameters};
+///
+/// // An aeon is a thousand ages.
+/// let text = &Parameters::TEXT;
+/// assert_eq!(text.cycle_days(Cycle::Kalpa), 1000 * text.cycle_days(Cycle::Yuga));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -18,6 +26,15 @@ pub enum Cycle {
 }
 
 /// A mean motion: whole revolutions in a cycle, direct or retrograde.
+///
+/// ```
+/// use teistro_siddhanta::{Parameters, Planet};
+///
+/// // The Moon's node runs back, 232 238 times an age.
+/// let node = Parameters::TEXT.moon_node;
+/// assert!(node.retrograde && node.revolutions == 232_238);
+/// assert!(!Parameters::TEXT.motion(Planet::Moon).retrograde);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Motion {
@@ -31,6 +48,12 @@ pub struct Motion {
 
 impl Motion {
     /// A direct motion.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Cycle, Motion, Parameters, Planet};
+    ///
+    /// assert_eq!(Motion::direct(4_320_000, Cycle::Yuga), Parameters::TEXT.motion(Planet::Sun));
+    /// ```
     #[must_use]
     pub const fn direct(revolutions: u64, cycle: Cycle) -> Motion {
         Motion {
@@ -41,6 +64,12 @@ impl Motion {
     }
 
     /// A retrograde motion (the nodes).
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Cycle, Motion, Parameters};
+    ///
+    /// assert_eq!(Motion::retrograde(232_238, Cycle::Yuga), Parameters::TEXT.moon_node);
+    /// ```
     #[must_use]
     pub const fn retrograde(revolutions: u64, cycle: Cycle) -> Motion {
         Motion {
@@ -51,6 +80,15 @@ impl Motion {
     }
 
     /// The mean motion in degrees per civil day, signed.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, Planet};
+    ///
+    /// // 4 320 000 revolutions in 1 577 917 828 days: 59′8″ a day.
+    /// let sun = Parameters::TEXT.motion(Planet::Sun).degrees_per_day(&Parameters::TEXT);
+    /// assert!((sun * 60.0 - (59.0 + 8.0 / 60.0)).abs() < 0.01);
+    /// assert!(Parameters::TEXT.moon_node.degrees_per_day(&Parameters::TEXT) < 0.0);
+    /// ```
     #[must_use]
     #[allow(clippy::cast_precision_loss, reason = "counts far below 2^53")]
     pub fn degrees_per_day(self, params: &Parameters) -> f64 {
@@ -61,6 +99,15 @@ impl Motion {
 
 /// The days elapsed since the epoch: the whole days, which the mean-place
 /// arithmetic handles exactly, and the fraction of the current day.
+///
+/// ```
+/// use teistro_siddhanta::{Ahargana, Parameters};
+///
+/// // Ten and a half days before the epoch: day -11, half gone.
+/// let before = Ahargana::at(Parameters::TEXT.epoch_jd_ut - 10.5, &Parameters::TEXT);
+/// assert_eq!(before.days, -11);
+/// assert!((before.fraction - 0.5).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Ahargana {
     /// Whole civil days since the epoch; negative before it.
@@ -71,6 +118,13 @@ pub struct Ahargana {
 
 impl Ahargana {
     /// The count at a Universal Time instant.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Ahargana, Parameters};
+    ///
+    /// let epoch = Ahargana::at(Parameters::TEXT.epoch_jd_ut, &Parameters::TEXT);
+    /// assert_eq!(epoch.days, 0);
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
@@ -86,6 +140,13 @@ impl Ahargana {
     }
 
     /// The count as one number of days.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Ahargana;
+    ///
+    /// let count = Ahargana { days: 1_861_191, fraction: 0.25 };
+    /// assert_eq!(count.total(), 1_861_191.25);
+    /// ```
     #[must_use]
     #[allow(clippy::cast_precision_loss, reason = "day counts far below 2^53")]
     pub fn total(self) -> f64 {
@@ -93,6 +154,14 @@ impl Ahargana {
     }
 
     /// The count `days` later.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Ahargana;
+    ///
+    /// let count = Ahargana { days: 1_861_191, fraction: 0.0 };
+    /// assert_eq!(count.plus(1.75), Ahargana { days: 1_861_192, fraction: 0.75 });
+    /// assert_eq!(count.plus(-0.25), Ahargana { days: 1_861_190, fraction: 0.75 });
+    /// ```
     #[must_use]
     pub fn plus(self, days: f64) -> Ahargana {
         let total = self.fraction + days;
@@ -110,6 +179,17 @@ impl Ahargana {
     /// count) times the revolutions, modulo the cycle, the whole days in
     /// integer arithmetic and only the current day's fraction in floating
     /// point.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Ahargana, Parameters, Planet};
+    ///
+    /// let text = &Parameters::TEXT;
+    /// // I.57: at the start of the Kali age every mean planet is at the first of
+    /// // Mesha, and the Moon's node at 180°.
+    /// let epoch = Ahargana::at(text.epoch_jd_ut, text);
+    /// assert!(epoch.mean_degrees(text.motion(Planet::Saturn), text).abs() < 1e-9);
+    /// assert!((epoch.mean_degrees(text.moon_node, text) - 180.0).abs() < 1e-9);
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_precision_loss,

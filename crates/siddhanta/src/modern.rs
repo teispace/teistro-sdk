@@ -93,6 +93,14 @@ impl core::fmt::Debug for ModernParts {
 impl ModernParts {
     /// The bodies [`ModernParts::with_planets`] takes from the modern
     /// ephemeris.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Body;
+    /// use teistro_siddhanta::ModernParts;
+    ///
+    /// // The Sun and the Moon stay the text's.
+    /// assert!(!ModernParts::PLANETS.contains(&Body::Sun) && !ModernParts::PLANETS.contains(&Body::Moon));
+    /// ```
     pub const PLANETS: [Body; 6] = [
         Body::Mars,
         Body::Mercury,
@@ -104,6 +112,16 @@ impl ModernParts {
 
     /// The text's sky beside a modern ephemeris, taking nothing from it
     /// until a part is asked for.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    /// use teistro_siddhanta::{ModernParts, SiddhantaProvider};
+    ///
+    /// // Nothing taken yet: the stamp is the text's own.
+    /// let sky = ModernParts::new(SiddhantaProvider::text(), Box::new(TestProvider::new()));
+    /// let text = SiddhantaProvider::text().capabilities().identity.data_version;
+    /// assert_eq!(sky.capabilities().identity.data_version, text);
+    /// ```
     #[must_use]
     pub fn new(text: SiddhantaProvider, modern: Box<dyn EphemerisProvider>) -> ModernParts {
         ModernParts {
@@ -116,6 +134,14 @@ impl ModernParts {
     }
 
     /// The same, with the rise and set the modern ephemeris gives.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    /// use teistro_siddhanta::{ModernParts, SiddhantaProvider};
+    ///
+    /// let sky = ModernParts::new(SiddhantaProvider::text(), Box::new(TestProvider::new())).with_sunrise();
+    /// assert!(sky.capabilities().identity.data_version.contains("sunrise from"));
+    /// ```
     #[must_use]
     pub fn with_sunrise(self) -> ModernParts {
         ModernParts {
@@ -126,6 +152,18 @@ impl ModernParts {
 
     /// The same, with [`ModernParts::PLANETS`] from the modern ephemeris
     /// in the zodiac of `ayanamsha`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::AyanamshaChoice;
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    /// use teistro_siddhanta::{ModernParts, SiddhantaProvider};
+    ///
+    /// let lahiri = AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri };
+    /// let sky = ModernParts::new(SiddhantaProvider::text(), Box::new(TestProvider::new())).with_planets(lahiri);
+    /// let text = SiddhantaProvider::text().capabilities().identity.data_version;
+    /// assert_ne!(sky.capabilities().identity.data_version, text);
+    /// ```
     #[must_use]
     pub fn with_planets(self, ayanamsha: AyanamshaChoice) -> ModernParts {
         ModernParts {
@@ -135,18 +173,46 @@ impl ModernParts {
     }
 
     /// The same, with the Delta T the modern parts are found under.
+    ///
+    /// ```
+    /// use teistro_astro::DeltaTModel;
+    /// use teistro_port_ephemeris::TestProvider;
+    /// use teistro_siddhanta::{ModernParts, SiddhantaProvider};
+    ///
+    /// let sky = ModernParts::new(SiddhantaProvider::text(), Box::new(TestProvider::new()))
+    ///     .with_sunrise()
+    ///     .with_delta_t(DeltaTModel::TableThenModel);
+    /// assert!(format!("{sky:?}").contains("TableThenModel"));
+    /// ```
     #[must_use]
     pub fn with_delta_t(self, delta_t: DeltaTModel) -> ModernParts {
         ModernParts { delta_t, ..self }
     }
 
     /// The text this sky's places come from.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::TestProvider;
+    /// use teistro_siddhanta::{ModernParts, SiddhantaProvider, SuryaSiddhanta};
+    ///
+    /// let sky = ModernParts::new(SiddhantaProvider::text(), Box::new(TestProvider::new()));
+    /// assert_eq!(sky.text().model(), &SuryaSiddhanta::text());
+    /// ```
     #[must_use]
     pub const fn text(&self) -> &SiddhantaProvider {
         &self.text
     }
 
     /// The ephemeris this sky's modern parts come from.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    /// use teistro_siddhanta::{ModernParts, SiddhantaProvider};
+    ///
+    /// let sky = ModernParts::new(SiddhantaProvider::text(), Box::new(TestProvider::new()));
+    /// let name = TestProvider::new().capabilities().identity.name;
+    /// assert_eq!(sky.modern().capabilities().identity.name, name);
+    /// ```
     #[must_use]
     pub fn modern(&self) -> &dyn EphemerisProvider {
         self.modern.as_ref()

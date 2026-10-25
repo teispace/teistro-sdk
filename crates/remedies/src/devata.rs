@@ -34,6 +34,19 @@ use teistro_core::house::House;
 use crate::subjects::NINE;
 
 /// A deity a verse, or the baseline's table, names.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{Deity, DevataRules, ishta_devata};
+///
+/// // The karakamsha in Leo, so the 12th is Cancer: the Moon there with Ketu.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[Graha::Moon as usize] = Rashi::Cancer;
+/// signs[Graha::Rahu as usize] = Rashi::Capricorn;
+/// signs[Graha::Ketu as usize] = Rashi::Cancer;
+/// let read = ishta_devata(Rashi::Leo, &signs, DevataRules::default());
+/// assert_eq!(read.devotions[0].deities, [Deity::Gauri]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -80,6 +93,20 @@ pub enum Deity {
 /// prints give vv. 70–71 with their fruits exchanged and read
 /// *ravi-bhakti*; the recension and Jaimini's *Upadeśa Sūtras* read
 /// Śiva for the Sun and Gaurī for the Moon.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{Deity, DevataRules, SunWithKetu, ishta_devata};
+///
+/// // The Sun with Ketu in Cancer, the 12th from a Leo karakamsha.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[Graha::Sun as usize] = Rashi::Cancer;
+/// signs[Graha::Ketu as usize] = Rashi::Cancer;
+/// signs[Graha::Rahu as usize] = Rashi::Capricorn;
+/// let sun = |sun_with_ketu| ishta_devata(Rashi::Leo, &signs, DevataRules { sun_with_ketu }).devotions[0].deities.clone();
+/// assert_eq!(sun(SunWithKetu::Shiva), [Deity::Shiva]);
+/// assert_eq!(sun(SunWithKetu::Surya), [Deity::Surya]);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -92,6 +119,12 @@ pub enum SunWithKetu {
 }
 
 /// The readings the ishṭa-devatā is given under.
+///
+/// ```
+/// use teistro_remedies::{DevataRules, SunWithKetu};
+///
+/// assert_eq!(DevataRules::default().sun_with_ketu, SunWithKetu::Shiva);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -102,6 +135,21 @@ pub struct DevataRules {
 
 /// One graha in the 12th from the kārakāṁśa, and the devotion its verse
 /// names.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{Deity, DevataRules, ishta_devata};
+///
+/// // The karakamsha in Leo, so the 12th is Cancer: the Moon there with Ketu.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[Graha::Moon as usize] = Rashi::Cancer;
+/// signs[Graha::Rahu as usize] = Rashi::Capricorn;
+/// signs[Graha::Ketu as usize] = Rashi::Cancer;
+/// let read = ishta_devata(Rashi::Leo, &signs, DevataRules::default());
+/// let moon = &read.devotions[0];
+/// assert_eq!((moon.graha, moon.with_ketu), (Graha::Moon, true));
+/// # let _ = Deity::Shiva;
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -120,6 +168,22 @@ pub struct Devotion {
 
 /// The 12th from the kārakāṁśa in one chart, read as BPHS vv. 70–76
 /// read it.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{Deity, DevataRules, ishta_devata};
+///
+/// // The karakamsha in Leo, so the 12th is Cancer: the Moon there with Ketu.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[Graha::Moon as usize] = Rashi::Cancer;
+/// signs[Graha::Rahu as usize] = Rashi::Capricorn;
+/// signs[Graha::Ketu as usize] = Rashi::Cancer;
+/// let read = ishta_devata(Rashi::Leo, &signs, DevataRules::default());
+/// assert_eq!(read.sign, Rashi::Cancer);
+/// // The Moon rules Cancer, so no minor deity.
+/// assert!(read.minor.is_empty());
+/// # let _ = Deity::Shiva;
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -256,6 +320,18 @@ fn devotions_in(
 }
 
 /// The amātya's devotions in one chart, read as BPHS vv. 77–79 read them.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{DevataRules, amatya_devata};
+///
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[Graha::Rahu as usize] = Rashi::Libra;
+/// let read = amatya_devata(Rashi::Taurus, Graha::Mars, Rashi::Aries, &signs, DevataRules::default());
+/// assert_eq!((read.sign, read.house), (Rashi::Aries, 1));
+/// // Every other graha but Rahu is joined to Mars in Aries.
+/// assert_eq!(read.joined.len(), 7);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -320,6 +396,14 @@ pub fn amatya_devata(
 /// The baseline engine's ishṭa-devatā: a pair of deities by the Moon's
 /// sign, from twelve records written for the kārakāṁśa sign and pending
 /// review in its own source. `BASELINE` and unsourced (C356).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_remedies::baseline_ishta_devata;
+///
+/// // A pair for every sign, from a table no text gives.
+/// assert!(Rashi::ALL.into_iter().all(|moon| baseline_ishta_devata(moon)[0] != baseline_ishta_devata(moon)[1]));
+/// ```
 #[must_use]
 pub const fn baseline_ishta_devata(moon: Rashi) -> [Deity; 2] {
     match moon {
@@ -340,6 +424,28 @@ pub const fn baseline_ishta_devata(moon: Rashi) -> [Deity; 2] {
 
 /// The ishṭa-devatā in both charts the kārakāṁśa's houses are counted
 /// in, since the verses name neither (C130).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{AmatyaDevatas, DevataRules, IshtaDevatas, amatya_devata, ishta_devata};
+///
+/// // One chart read twice, as the facade reads the rasi and the navamsha:
+/// // every graha in Aries but Rahu, opposite Ketu.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[Graha::Rahu as usize] = Rashi::Libra;
+/// let rules = DevataRules::default();
+/// let amatya = |lagna| amatya_devata(Rashi::Taurus, Graha::Mars, lagna, &signs, rules);
+/// let read = IshtaDevatas {
+///     atmakaraka: Graha::Sun,
+///     karakamsha: Rashi::Taurus,
+///     in_rasi: ishta_devata(Rashi::Taurus, &signs, rules),
+///     in_navamsha: ishta_devata(Rashi::Taurus, &signs, rules),
+///     amatya: AmatyaDevatas { graha: Graha::Mars, amsha: Rashi::Taurus, in_rasi: amatya(Rashi::Aries), in_navamsha: amatya(Rashi::Leo) },
+/// };
+/// // Aries is the 12th from Taurus, and every graha stands there.
+/// assert_eq!(read.in_rasi.sign, Rashi::Aries);
+/// assert_eq!(read.in_rasi.devotions.len(), 8);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -358,6 +464,27 @@ pub struct IshtaDevatas {
 
 /// The amātya's devotions in both charts, as [`IshtaDevatas`] reads the
 /// ātmakāraka's.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{AmatyaDevatas, DevataRules, IshtaDevatas, amatya_devata, ishta_devata};
+///
+/// // One chart read twice, as the facade reads the rasi and the navamsha:
+/// // every graha in Aries but Rahu, opposite Ketu.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[Graha::Rahu as usize] = Rashi::Libra;
+/// let rules = DevataRules::default();
+/// let amatya = |lagna| amatya_devata(Rashi::Taurus, Graha::Mars, lagna, &signs, rules);
+/// let read = IshtaDevatas {
+///     atmakaraka: Graha::Sun,
+///     karakamsha: Rashi::Taurus,
+///     in_rasi: ishta_devata(Rashi::Taurus, &signs, rules),
+///     in_navamsha: ishta_devata(Rashi::Taurus, &signs, rules),
+///     amatya: AmatyaDevatas { graha: Graha::Mars, amsha: Rashi::Taurus, in_rasi: amatya(Rashi::Aries), in_navamsha: amatya(Rashi::Leo) },
+/// };
+/// assert_eq!(read.amatya.in_rasi.house, 1);
+/// assert_eq!(read.amatya.in_navamsha.house, 9);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

@@ -18,6 +18,16 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Direction, Graha};
 
 /// What a graha's image is made of (BPHS 84.4 = Yājñavalkya I.297).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{ImageMaterial, ShantiRules, shanti};
+///
+/// let read = shanti(Graha::Ketu, ShantiRules::default()).ok_or("the texts name it")?;
+/// // Bell metal, kāṃsya.
+/// assert_eq!(read.image, ImageMaterial::Bronze);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -41,6 +51,15 @@ pub enum ImageMaterial {
 }
 
 /// The wood a graha's fire is fed with (BPHS 84.21 = Yājñavalkya I.302).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{Samidh, ShantiRules, shanti};
+///
+/// let read = shanti(Graha::Saturn, ShantiRules::default()).ok_or("the texts name it")?;
+/// assert_eq!(read.samidh, Samidh::Shami);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -67,6 +86,16 @@ pub enum Samidh {
 
 /// The food Brahmins are fed for a graha (BPHS 84.23 = Yājñavalkya
 /// I.304–305).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{Food, ShantiRules, shanti};
+///
+/// let read = shanti(Graha::Moon, ShantiRules::default()).ok_or("the texts name it")?;
+/// // Rice boiled in milk.
+/// assert_eq!(read.food, Food::Payasa);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -93,6 +122,16 @@ pub enum Food {
 }
 
 /// The fee given for a graha (BPHS 84.25 = Yājñavalkya I.306).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{Dakshina, ShantiRules, shanti};
+///
+/// let read = shanti(Graha::Ketu, ShantiRules::default()).ok_or("the texts name it")?;
+/// // A goat, not the 1918 English's sheep.
+/// assert_eq!(read.dakshina, Dakshina::Goat);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -121,6 +160,15 @@ pub enum Dakshina {
 
 /// The gem a graha owns (Jataka Parijata II.21). The verse states
 /// ownership only, and nothing about wearing a gem or giving it away.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{Gem, ShantiRules, shanti};
+///
+/// let read = shanti(Graha::Jupiter, ShantiRules::default()).ok_or("the texts name it")?;
+/// assert_eq!(read.gem, Gem::Topaz);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -147,6 +195,18 @@ pub enum Gem {
 
 /// The substance a graha rules (Brihat Jataka II.12 = Jataka Parijata
 /// II.20). Neither verse gives one to the nodes (C346).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{Substance, ShantiRules, shanti};
+///
+/// let read = shanti(Graha::Mercury, ShantiRules::default()).ok_or("the texts name it")?;
+/// assert_eq!(read.substance, Some(Substance::Alloy));
+/// // Neither verse gives the nodes one.
+/// let rahu = shanti(Graha::Rahu, ShantiRules::default()).ok_or("the texts name it")?;
+/// assert_eq!(rahu.substance, None);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -170,6 +230,15 @@ pub enum Substance {
 
 /// Where a graha's image stands in the Matsya maṇḍala, which the
 /// Mitākṣarā quotes on Yājñavalkya I.298 for laying out the rite.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{MandalaPlace, ShantiRules, shanti};
+///
+/// let read = shanti(Graha::Sun, ShantiRules::default()).ok_or("the texts name it")?;
+/// assert_eq!(read.mandala, MandalaPlace::Centre);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -196,6 +265,12 @@ pub enum MandalaPlace {
 
 /// Which text's ṛk is given for Rahu. The two texts agree for the other
 /// eight grahas (C343).
+///
+/// ```
+/// use teistro_remedies::{RikSource, ShantiRules};
+///
+/// assert_eq!(ShantiRules::default().rik, RikSource::Bphs);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -208,6 +283,15 @@ pub enum RikSource {
 }
 
 /// The readings a graha-śānti is given under.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{RikSource, ShantiRules, shanti};
+///
+/// // The two texts agree on the Sun's ṛk whichever is read.
+/// let sun = |rik| shanti(Graha::Sun, ShantiRules { rik }).map(|read| read.rik);
+/// assert_eq!(sun(RikSource::Bphs), sun(RikSource::Yajnavalkya));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -217,6 +301,16 @@ pub struct ShantiRules {
 }
 
 /// What the texts prescribe for one graha.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{ShantiRules, shanti};
+///
+/// let read = shanti(Graha::Sun, ShantiRules::default()).ok_or("the texts name it")?;
+/// assert_eq!((read.rik, read.japa_thousands), ("ā kṛṣṇena", 7));
+/// assert_eq!(read.direction, Some(teistro_core::catalogue::Direction::East));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

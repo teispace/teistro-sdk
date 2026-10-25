@@ -23,6 +23,13 @@ const LORDS: [Graha; 7] = [
 const NATURAL_BENEFICS: [Graha; 4] = [Graha::Jupiter, Graha::Venus, Graha::Mercury, Graha::Moon];
 
 /// How a graha's summary nature is derived from its lordships.
+///
+/// ```
+/// use teistro_remedies::{FunctionalRules, Scheme};
+///
+/// assert_eq!(FunctionalRules::default().scheme, Scheme::LaghuParashari);
+/// assert_eq!(FunctionalRules::baseline().scheme, Scheme::Baseline);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "FunctionalScheme"))]
@@ -43,6 +50,13 @@ pub enum Scheme {
 }
 
 /// The readings functional nature is derived under.
+///
+/// ```
+/// use teistro_remedies::{FunctionalRules, Scheme};
+///
+/// let rules = FunctionalRules { scheme: Scheme::Baseline };
+/// assert_eq!(rules, FunctionalRules::baseline());
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -53,6 +67,12 @@ pub struct FunctionalRules {
 
 impl FunctionalRules {
     /// Every reading the baseline engine takes.
+    ///
+    /// ```
+    /// use teistro_remedies::{FunctionalRules, Scheme};
+    ///
+    /// assert_eq!(FunctionalRules::baseline().scheme, Scheme::Baseline);
+    /// ```
     #[must_use]
     pub const fn baseline() -> FunctionalRules {
         FunctionalRules {
@@ -62,6 +82,16 @@ impl FunctionalRules {
 }
 
 /// A graha's functional nature for a lagna, summarised.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{ClauseKind, FunctionalRules, Nature, functional};
+///
+/// let aries = functional(Rashi::Aries, FunctionalRules::default());
+/// // Mars owns the 1st and the 8th: the lagna lord voids the 8th's blemish.
+/// assert_eq!(aries.row(Graha::Mars).map(|row| row.nature), Some(Nature::Benefic));
+/// # let _ = ClauseKind::Maraka;
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "FunctionalNature"))]
@@ -80,6 +110,18 @@ pub enum Nature {
 
 /// What a clause says of a graha's lordship. Each names the verse it
 /// reads.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{ClauseKind, FunctionalRules, Nature, functional};
+///
+/// let aries = functional(Rashi::Aries, FunctionalRules::default());
+/// let mars = aries.row(Graha::Mars).ok_or("Mars owns a sign")?;
+/// assert!(mars.holds(ClauseKind::Lagnesha));
+/// assert!(mars.holds(ClauseKind::RandhreshaVoidLagnesha));
+/// # let _ = Nature::Neutral;
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "FunctionalClauseKind"))]
@@ -119,6 +161,12 @@ pub enum ClauseKind {
 
 impl ClauseKind {
     /// The verse the clause reads, as the design page cites it.
+    ///
+    /// ```
+    /// use teistro_remedies::ClauseKind;
+    ///
+    /// assert_eq!(ClauseKind::Yogakaraka.source(), "Laghu Parashari v. 20");
+    /// ```
     #[must_use]
     pub const fn source(self) -> &'static str {
         match self {
@@ -140,6 +188,19 @@ impl ClauseKind {
 }
 
 /// One clause that holds for a graha, and the house that makes it hold.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{ClauseKind, FunctionalRules, Nature, functional};
+///
+/// let aries = functional(Rashi::Aries, FunctionalRules::default());
+/// use teistro_remedies::Clause;
+///
+/// let sun = aries.row(Graha::Sun).ok_or("the Sun owns a sign")?;
+/// assert_eq!(sun.clauses, [Clause { kind: ClauseKind::TrikonaLord, house: 5 }]);
+/// # let _ = Nature::Neutral;
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "FunctionalClause"))]
@@ -153,6 +214,19 @@ pub struct Clause {
 }
 
 /// One graha's lordships for a lagna and what they make of it.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{ClauseKind, FunctionalRules, Nature, functional};
+///
+/// let aries = functional(Rashi::Aries, FunctionalRules::default());
+/// let venus = aries.row(Graha::Venus).ok_or("Venus owns a sign")?;
+/// // Taurus and Libra, the 2nd and the 7th.
+/// assert_eq!(venus.houses, [2, 7]);
+/// assert!(venus.holds(ClauseKind::Maraka));
+/// # let _ = Nature::Neutral;
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -170,6 +244,18 @@ pub struct FunctionalRow {
 
 impl FunctionalRow {
     /// Whether a clause of this kind holds for the graha.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_remedies::{ClauseKind, FunctionalRules, Nature, functional};
+    ///
+    /// let aries = functional(Rashi::Aries, FunctionalRules::default());
+    /// let sun = aries.row(Graha::Sun).ok_or("the Sun owns a sign")?;
+    /// assert!(sun.holds(ClauseKind::TrikonaLord));
+    /// assert!(!sun.holds(ClauseKind::Maraka));
+    /// # let _ = Nature::Neutral;
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn holds(&self, kind: ClauseKind) -> bool {
         self.clauses.iter().any(|clause| clause.kind == kind)
@@ -177,6 +263,18 @@ impl FunctionalRow {
 }
 
 /// A lagna's badhaka sthana and its lord.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{ClauseKind, FunctionalRules, Nature, functional};
+///
+/// let aries = functional(Rashi::Aries, FunctionalRules::default());
+/// use teistro_remedies::Badhaka;
+///
+/// // A movable lagna's badhaka is the 11th: Aquarius, Saturn's.
+/// assert_eq!(aries.badhaka, Badhaka { house: 11, lord: Graha::Saturn });
+/// # let _ = (Nature::Neutral, ClauseKind::Maraka);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -188,6 +286,17 @@ pub struct Badhaka {
 }
 
 /// What a lagna's lordships make of the seven grahas.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{ClauseKind, FunctionalRules, Nature, functional};
+///
+/// let aries = functional(Rashi::Aries, FunctionalRules::default());
+/// assert_eq!(aries.lagna, Rashi::Aries);
+/// assert_eq!(aries.rows.len(), 7);
+/// assert_eq!(aries.marakas, [Graha::Venus]);
+/// # let _ = (Nature::Neutral, ClauseKind::Maraka);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -209,6 +318,17 @@ pub struct Functional {
 impl Functional {
     /// The row of a graha, or `None` for Rahu, Ketu or an outer planet,
     /// which own no sign.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_remedies::{ClauseKind, FunctionalRules, Nature, functional};
+    ///
+    /// let aries = functional(Rashi::Aries, FunctionalRules::default());
+    /// assert!(aries.row(Graha::Jupiter).is_some());
+    /// // The nodes own no sign.
+    /// assert!(aries.row(Graha::Rahu).is_none());
+    /// # let _ = (Nature::Neutral, ClauseKind::Maraka);
+    /// ```
     #[must_use]
     pub fn row(&self, graha: Graha) -> Option<&FunctionalRow> {
         self.rows.iter().find(|row| row.graha == graha)

@@ -39,6 +39,13 @@ pub const DOSSIER_FORMAT: u32 = 2;
 
 /// One column of a section: its name in the header line and what it is,
 /// in the legend. The one table both are written from.
+///
+/// ```
+/// use teistro_serial::dossier::column;
+///
+/// let degree = column("deg", "degrees into the sign");
+/// assert_eq!((degree.name, degree.meaning), ("deg", "degrees into the sign"));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Column {
     /// The name in the header line.
@@ -48,6 +55,13 @@ pub struct Column {
 }
 
 /// A column, as the section tables write one.
+///
+/// ```
+/// use teistro_serial::dossier::{Column, column};
+///
+/// const COLUMNS: [Column; 2] = [column("graha", "the graha"), column("sign", "its sign")];
+/// assert_eq!(COLUMNS[1].name, "sign");
+/// ```
 #[must_use]
 pub const fn column(name: &'static str, meaning: &'static str) -> Column {
     Column { name, meaning }
@@ -55,6 +69,14 @@ pub const fn column(name: &'static str, meaning: &'static str) -> Column {
 
 /// What every section is written under: the "now" of a dated dossier, the
 /// clock instants are written in and how deep a dasha goes.
+///
+/// ```
+/// use teistro_serial::dossier::DossierOptions;
+///
+/// let view = DossierOptions { utc_offset_seconds: Some(20_700), ..DossierOptions::default() }.view()?;
+/// assert_eq!((view.at, view.utc_offset_seconds, view.dasha_depth), (None, 20_700, None));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct View {
     /// The instant a dated dossier is read at; `None`, date-free.
@@ -72,24 +94,111 @@ pub struct View {
 /// legend are both written from them. `rows` answers `None` when the
 /// document does not carry what the section reads, so a preset leaves it
 /// out and an explicit request for it is refused.
+///
+/// ```
+/// use teistro_serial::Document;
+/// use teistro_serial::dossier::{Column, DossierSection, View, column};
+///
+/// /// A consumer's own section: one row, the lagna's degree.
+/// struct Lagna;
+/// impl DossierSection for Lagna {
+///     fn key(&self) -> &str {
+///         "LAGNA"
+///     }
+///     fn columns(&self) -> &[Column] {
+///         const COLUMNS: [Column; 1] = [column("deg", "the lagna's longitude, degrees")];
+///         &COLUMNS
+///     }
+///     fn asked_by(&self) -> &str {
+///         "the app's own call"
+///     }
+///     fn rows(&self, document: &Document, _: &View) -> Option<Vec<Vec<String>>> {
+///         Some(vec![vec![teistro_serial::dossier::fixed(document.foundation.lagna_deg, 2)]])
+///     }
+/// }
+/// use teistro_serial::canonical::from_hash_form;
+/// use teistro_serial::dossier::{DossierOptions, dossier};
+///
+/// let chart: Document = from_hash_form(include_str!("../tests/dossier-chart.json"))?;
+/// let text = dossier(&chart, &DossierOptions::default(), &[&Lagna])?;
+/// // Written after the built-in sections, and in the legend as they are.
+/// assert!(text.contains("== LAGNA ==\n# deg\n"));
+/// assert!(text.contains("#   deg: the lagna's longitude, degrees\n"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub trait DossierSection: Sync {
     /// The banner and the key a request names it by: `GRAHAS`.
+    ///
+    /// ```
+    /// use teistro_serial::dossier::built_in;
+    ///
+    /// assert_eq!(built_in()[0].key(), "CHART");
+    /// ```
     fn key(&self) -> &str;
     /// The columns, in order.
+    ///
+    /// ```
+    /// use teistro_serial::dossier::built_in;
+    ///
+    /// assert!(built_in().iter().all(|section| section.columns().iter().all(|column| !column.meaning.is_empty())));
+    /// ```
     fn columns(&self) -> &[Column];
     /// Lines the legend adds after the columns' own.
+    ///
+    /// ```
+    /// use teistro_serial::dossier::built_in;
+    ///
+    /// // The chart section explains itself beyond its columns.
+    /// assert!(!built_in()[0].notes().is_empty());
+    /// ```
     fn notes(&self) -> &[&str] {
         &[]
     }
     /// What carries it, for the refusal's hint: `` `shadbala: true` on
     /// the chart request``.
+    ///
+    /// ```
+    /// use teistro_serial::dossier::built_in;
+    ///
+    /// assert!(built_in().iter().all(|section| !section.asked_by().is_empty()));
+    /// ```
     fn asked_by(&self) -> &str;
     /// The rows, each a field a column; `None` when the document does not
     /// carry the section.
+    ///
+    /// ```
+    /// use teistro_serial::Document;
+    /// use teistro_serial::canonical::from_hash_form;
+    /// use teistro_serial::dossier::{DossierOptions, dossier};
+    ///
+    /// let chart: Document = from_hash_form(include_str!("../tests/dossier-chart.json"))?;
+    /// use teistro_serial::dossier::built_in;
+    ///
+    /// let view = DossierOptions::default().view()?;
+    /// let grahas = built_in().iter().find(|section| section.key() == "GRAHAS").and_then(|section| section.rows(&chart, &view));
+    /// // A field for every column of every row.
+    /// assert!(grahas.is_some_and(|rows| !rows.is_empty()));
+    /// # let _ = dossier;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     fn rows(&self, document: &Document, view: &View) -> Option<Vec<Vec<String>>>;
 }
 
 /// A named list of sections; presets choose sections and never thin them.
+///
+/// ```
+/// use teistro_serial::Document;
+/// use teistro_serial::canonical::from_hash_form;
+/// use teistro_serial::dossier::{DossierOptions, dossier};
+///
+/// let chart: Document = from_hash_form(include_str!("../tests/dossier-chart.json"))?;
+/// use teistro_serial::dossier::DossierPreset;
+///
+/// let family = DossierOptions { preset: DossierPreset::Family, ..DossierOptions::default() };
+/// let text = dossier(&chart, &family, &[])?;
+/// assert!(text.contains("== GRAHAS ==") && !text.contains("== SHADBALA =="));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -104,6 +213,13 @@ pub enum DossierPreset {
 
 impl DossierPreset {
     /// The built-in sections it names; every one for [`DossierPreset::Full`].
+    ///
+    /// ```
+    /// use teistro_serial::dossier::{DossierPreset, built_in};
+    ///
+    /// assert_eq!(DossierPreset::Family.sections(), ["CHART", "GRAHAS", "DASHAS", "PANCHANGA"]);
+    /// assert_eq!(DossierPreset::Full.sections().len(), built_in().len());
+    /// ```
     #[must_use]
     pub fn sections(self) -> &'static [&'static str] {
         match self {
@@ -114,6 +230,19 @@ impl DossierPreset {
 }
 
 /// What a dossier writes and how.
+///
+/// ```
+/// use teistro_serial::Document;
+/// use teistro_serial::canonical::from_hash_form;
+/// use teistro_serial::dossier::{DossierOptions, dossier};
+///
+/// let chart: Document = from_hash_form(include_str!("../tests/dossier-chart.json"))?;
+/// // Two sections, named in either order: written in the dossier's own.
+/// let asked = DossierOptions { sections: Some(vec!["GRAHAS".into(), "CHART".into()]), ..DossierOptions::default() };
+/// let text = dossier(&chart, &asked, &[])?;
+/// assert!(text.find("== CHART ==") < text.find("== GRAHAS =="));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -143,6 +272,15 @@ pub struct DossierOptions {
 
 impl DossierOptions {
     /// The options checked, as the view a section is written under.
+    ///
+    /// ```
+    /// use teistro_serial::dossier::DossierOptions;
+    ///
+    /// let nought = DossierOptions { dasha_depth: Some(0), ..DossierOptions::default() };
+    /// assert!(nought.view().is_err());
+    /// let far = DossierOptions { utc_offset_seconds: Some(86_400), ..DossierOptions::default() };
+    /// assert!(far.view().is_err());
+    /// ```
     ///
     /// # Errors
     ///
@@ -226,6 +364,20 @@ const DOSSIER: &str = "dossier";
 
 /// The dossier of `document`: the format line, the legend of the sections
 /// written, and each section, built-in and `extra`, in order.
+///
+/// ```
+/// use teistro_serial::Document;
+/// use teistro_serial::canonical::from_hash_form;
+/// use teistro_serial::dossier::{DossierOptions, dossier};
+///
+/// let chart: Document = from_hash_form(include_str!("../tests/dossier-chart.json"))?;
+/// let text = dossier(&chart, &DossierOptions::default(), &[])?;
+/// assert!(text.starts_with("# teistro dossier 2\n== LEGEND ==\n"));
+/// // Asking for what the document does not carry is refused by its place.
+/// let asked = DossierOptions { sections: Some(vec!["NOT_A_SECTION".into()]), ..DossierOptions::default() };
+/// assert_eq!(dossier(&chart, &asked, &[]).unwrap_err().field(), Some("sections[0]"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -321,12 +473,26 @@ pub fn dossier(
 
 /// The legend of `sections` alone, for a prompt that holds several
 /// people's dossiers under one legend.
+///
+/// ```
+/// use teistro_serial::dossier::{built_in, dossier_legend};
+///
+/// let legend = dossier_legend(&built_in()[..1]);
+/// assert!(legend.starts_with("== LEGEND ==\n") && legend.contains("# CHART\n"));
+/// ```
 #[must_use]
 pub fn dossier_legend(sections: &[&dyn DossierSection]) -> String {
     legend(sections.iter().copied())
 }
 
 /// The built-in sections, in the dossier's order.
+///
+/// ```
+/// use teistro_serial::dossier::built_in;
+///
+/// let keys: Vec<&str> = built_in().iter().map(|section| section.key()).collect();
+/// assert_eq!(keys[..2], ["CHART", "NOW"]);
+/// ```
 #[must_use]
 pub fn built_in() -> &'static [&'static dyn DossierSection] {
     &BUILT_IN
@@ -362,6 +528,14 @@ fn clean(field: &str) -> String {
 
 /// A number to `decimals`, with no sign on a zero: how every section
 /// writes a number, a consumer's too, so the bytes are the same everywhere.
+///
+/// ```
+/// use teistro_serial::dossier::fixed;
+///
+/// assert_eq!(fixed(12.345_6, 2), "12.35");
+/// // No sign on a zero.
+/// assert_eq!(fixed(-0.001, 2), "0.00");
+/// ```
 #[must_use]
 pub fn fixed(value: f64, decimals: usize) -> String {
     let written = format!("{value:.decimals$}");
@@ -378,6 +552,15 @@ pub fn fixed(value: f64, decimals: usize) -> String {
 
 /// A value as serde spells it, quotes off: `GREAT_FRIEND`; how every
 /// section writes a member.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha};
+/// use teistro_serial::dossier::word;
+///
+/// assert_eq!(word(&Dignity::GreatFriend), "GREAT_FRIEND");
+/// assert_eq!(word(&Graha::Jupiter), "JUPITER");
+/// assert_eq!(word(&3_u8), "3");
+/// ```
 #[must_use]
 pub fn word<T: Serialize>(value: &T) -> String {
     match serde_json::to_value(value) {
@@ -390,6 +573,15 @@ pub fn word<T: Serialize>(value: &T) -> String {
 /// The civil minute of `jd` on a clock `offset` seconds east,
 /// `1990-04-12 13:20`: how every section writes an instant, on the
 /// [`View`]'s clock.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_serial::dossier::civil;
+///
+/// // 0h UTC on 21 June 2024, on Nepal's clock.
+/// assert_eq!(civil(JulianDay::literal(2_460_482.5), 20_700), "2024-06-21 05:45");
+/// assert_eq!(civil(JulianDay::literal(2_460_482.5), 0), "2024-06-21 00:00");
+/// ```
 #[must_use]
 pub fn civil(jd: JulianDay<Utc>, offset: i32) -> String {
     #[expect(

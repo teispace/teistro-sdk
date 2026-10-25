@@ -12,6 +12,18 @@ use crate::aspects::Placed;
 
 /// One chart as a composite reads it: its planets, and its two angles,
 /// all in one zodiac.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{ChartPoints, Placed, composite};
+///
+/// let his = ChartPoints { planets: vec![Placed::new(Graha::Sun, 350.0, 1.0)], lagna_deg: 10.0, midheaven_deg: 0.0, cusps_deg: None };
+/// let hers = ChartPoints { planets: vec![Placed::new(Graha::Sun, 20.0, 0.96)], lagna_deg: 340.0, midheaven_deg: 170.0, cusps_deg: None };
+/// // A chart that places a planet twice is refused under its side.
+/// let twice = ChartPoints { planets: vec![his.planets[0], his.planets[0]], ..his.clone() };
+/// assert_eq!(composite(&twice, &hers).unwrap_err().field(), Some("first.planets[1]"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -30,6 +42,19 @@ pub struct ChartPoints {
 
 /// A composite chart: every planet and both angles at the near midpoint of
 /// two charts'.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{ChartPoints, Placed, composite};
+///
+/// let his = ChartPoints { planets: vec![Placed::new(Graha::Sun, 350.0, 1.0)], lagna_deg: 10.0, midheaven_deg: 0.0, cusps_deg: None };
+/// let hers = ChartPoints { planets: vec![Placed::new(Graha::Sun, 20.0, 0.96)], lagna_deg: 340.0, midheaven_deg: 170.0, cusps_deg: None };
+/// let both = composite(&his, &hers)?;
+/// // The Suns at 350° and 20° meet at 5°, moving at the mean of the two.
+/// assert_eq!((both.planets[0].longitude_deg, both.planets[0].speed_deg_per_day), (5.0, 0.98));
+/// assert_eq!(both.cusps_deg, None);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -58,6 +83,23 @@ pub struct Composite {
 impl Composite {
     /// The house a composite planet stands in by its cusps, or `None`
     /// when the composite has no cusps or places no such planet.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{ChartPoints, Placed, composite};
+    ///
+    /// let his = ChartPoints { planets: vec![Placed::new(Graha::Sun, 350.0, 1.0)], lagna_deg: 10.0, midheaven_deg: 0.0, cusps_deg: None };
+    /// let hers = ChartPoints { planets: vec![Placed::new(Graha::Sun, 20.0, 0.96)], lagna_deg: 340.0, midheaven_deg: 170.0, cusps_deg: None };
+    /// use teistro_western::Composite;
+    ///
+    /// // Both charts with equal houses from their lagnas.
+    /// let cusps = |from: f64| std::array::from_fn(|k| (from + k as f64 * 30.0) % 360.0);
+    /// let (his, hers) = (ChartPoints { cusps_deg: Some(cusps(10.0)), ..his }, ChartPoints { cusps_deg: Some(cusps(340.0)), ..hers });
+    /// let both: Composite = composite(&his, &hers)?;
+    /// assert!(both.house_of(Graha::Sun).is_some());
+    /// assert_eq!(both.house_of(Graha::Moon), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn house_of(&self, graha: Graha) -> Option<House> {
         let cusps = self.cusps_deg.as_ref()?;

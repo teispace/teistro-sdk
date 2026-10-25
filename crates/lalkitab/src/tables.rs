@@ -8,6 +8,13 @@ use teistro_core::catalogue::{Graha, Rashi};
 
 /// The nine planets Lal Kitab reads, in its own order (1952 p. 33):
 /// Jupiter, Sun, Moon, Venus, Mars, Mercury, Saturn, Rahu, Ketu.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::PLANETS;
+///
+/// assert_eq!((PLANETS[0], PLANETS[8]), (Graha::Jupiter, Graha::Ketu));
+/// ```
 pub const PLANETS: [Graha; 9] = [
     Graha::Jupiter,
     Graha::Sun,
@@ -21,6 +28,14 @@ pub const PLANETS: [Graha; 9] = [
 ];
 
 /// Whether `graha` is one of the nine.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::reads;
+///
+/// assert!(reads(Graha::Ketu));
+/// assert!(!reads(Graha::Uranus));
+/// ```
 #[must_use]
 pub fn reads(graha: Graha) -> bool {
     PLANETS.contains(&graha)
@@ -29,6 +44,14 @@ pub fn reads(graha: Graha) -> bool {
 /// The houses a planet is permanent in, its *pakka ghar* (1952 p. 29,
 /// the kundali diagram): the first is the one a single-house reading
 /// names.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::pakka_ghar;
+///
+/// assert_eq!(pakka_ghar(Graha::Jupiter), &[2, 5, 9, 11]);
+/// assert_eq!(pakka_ghar(Graha::Saturn)[0], 10);
+/// ```
 #[must_use]
 pub fn pakka_ghar(graha: Graha) -> &'static [u8] {
     match graha {
@@ -46,6 +69,14 @@ pub fn pakka_ghar(graha: Graha) -> &'static [u8] {
 
 /// The house a sign stands for: house `n` is rashi `n`, Aries 1
 /// (1952 pp. ~6–7).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_lalkitab::tables::house_of_sign;
+///
+/// assert_eq!(house_of_sign(Rashi::Aries), 1);
+/// assert_eq!(house_of_sign(Rashi::Pisces), 12);
+/// ```
 #[must_use]
 pub fn house_of_sign(sign: Rashi) -> u8 {
     Rashi::ALL
@@ -56,6 +87,13 @@ pub fn house_of_sign(sign: Rashi) -> u8 {
 }
 
 /// The seventh house from `house`.
+///
+/// ```
+/// use teistro_lalkitab::tables::seventh_from;
+///
+/// assert_eq!(seventh_from(1), 7);
+/// assert_eq!(seventh_from(9), 3);
+/// ```
 #[must_use]
 pub const fn seventh_from(house: u8) -> u8 {
     (house + 5) % 12 + 1
@@ -65,6 +103,14 @@ pub const fn seventh_from(house: u8) -> u8 {
 /// is the classical rulership by number, read off the catalogue (1952
 /// pp. ~6–7). The nodes own none: houses 6 and 12 are held jointly, Mercury
 /// with Ketu and Jupiter with Rahu (p. ~46), which [`joint_owners`] gives.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::own;
+///
+/// assert_eq!(own(Graha::Venus), [2, 7]);
+/// assert!(own(Graha::Rahu).is_empty());
+/// ```
 #[must_use]
 pub fn own(graha: Graha) -> Vec<u8> {
     if matches!(graha, Graha::Rahu | Graha::Ketu) || !reads(graha) {
@@ -79,6 +125,14 @@ pub fn own(graha: Graha) -> Vec<u8> {
 }
 
 /// The planets that hold a house jointly when it is empty (1952 p. ~46).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::joint_owners;
+///
+/// assert_eq!(joint_owners(12), Some([Graha::Jupiter, Graha::Rahu]));
+/// assert_eq!(joint_owners(1), None);
+/// ```
 #[must_use]
 pub const fn joint_owners(house: u8) -> Option<[Graha; 2]> {
     match house {
@@ -92,6 +146,15 @@ pub const fn joint_owners(house: u8) -> Option<[Graha; 2]> {
 /// rule and its examples are the classical exaltation signs read as house
 /// numbers, so the seven are read off the catalogue; the nodes take the
 /// book's own houses, Rahu Mercury's (3, 6) and Ketu Jupiter's (9, 12).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::exalted;
+///
+/// // The Sun in Aries, house 1; Rahu in the book's own 3 and 6.
+/// assert_eq!(exalted(Graha::Sun), [1]);
+/// assert_eq!(exalted(Graha::Rahu), [3, 6]);
+/// ```
 #[must_use]
 pub fn exalted(graha: Graha) -> Vec<u8> {
     match graha {
@@ -108,6 +171,19 @@ pub fn exalted(graha: Graha) -> Vec<u8> {
 
 /// The houses a planet is debilitated in: the seventh from each exalted
 /// house (1952 pp. ~44–46), which for the nodes is the other's exaltation.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::{debilitated, exalted};
+///
+/// assert_eq!(debilitated(Graha::Sun), [7]);
+/// // A node falls where the other rises.
+/// let mut ketu = exalted(Graha::Ketu);
+/// ketu.sort_unstable();
+/// let mut rahu = debilitated(Graha::Rahu);
+/// rahu.sort_unstable();
+/// assert_eq!(rahu, ketu);
+/// ```
 #[must_use]
 pub fn debilitated(graha: Graha) -> Vec<u8> {
     exalted(graha).into_iter().map(seventh_from).collect()
@@ -115,6 +191,15 @@ pub fn debilitated(graha: Graha) -> Vec<u8> {
 
 /// How one planet regards another (1952 p. 31). The relation is
 /// directed: the book says so, and the table is not symmetric.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::{Regard, regard};
+///
+/// // Directed: the Moon takes Mercury as a friend, Mercury the Moon as an enemy.
+/// assert_eq!(regard(Graha::Moon, Graha::Mercury), Some(Regard::Friend));
+/// assert_eq!(regard(Graha::Mercury, Graha::Moon), Some(Regard::Enemy));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -128,6 +213,15 @@ pub enum Regard {
 }
 
 /// How `of` regards `to` (1952 p. 31); a planet is its own equal.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::{Regard, regard};
+///
+/// assert_eq!(regard(Graha::Sun, Graha::Mercury), Some(Regard::Equal));
+/// assert_eq!(regard(Graha::Sun, Graha::Sun), Some(Regard::Equal));
+/// assert_eq!(regard(Graha::Sun, Graha::Uranus), None);
+/// ```
 #[must_use]
 pub fn regard(of: Graha, to: Graha) -> Option<Regard> {
     use Graha::{Jupiter, Ketu, Mars, Mercury, Moon, Rahu, Saturn, Sun, Venus};
@@ -160,6 +254,14 @@ pub fn regard(of: Graha, to: Graha) -> Option<Regard> {
 
 /// A house's waker: the planet whose presence wakes it when it sleeps
 /// (1952 p. 98).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::waker;
+///
+/// assert_eq!(waker(1), Graha::Mars);
+/// assert_eq!(waker(12), Graha::Ketu);
+/// ```
 #[must_use]
 pub const fn waker(house: u8) -> Graha {
     match house {
@@ -177,6 +279,14 @@ pub const fn waker(house: u8) -> Graha {
 
 /// The age a planet matures and wakes by itself, its *aam saal* (1952
 /// pp. 33, 99); also where its second round of the 35-year cycle starts.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::matures_at;
+///
+/// assert_eq!(matures_at(Graha::Jupiter), Some(16));
+/// assert_eq!(matures_at(Graha::Uranus), None);
+/// ```
 #[must_use]
 pub const fn matures_at(graha: Graha) -> Option<u8> {
     match graha {
@@ -195,6 +305,14 @@ pub const fn matures_at(graha: Graha) -> Option<u8> {
 
 /// A planet's years in the 35-year cycle (1952 p. 33): Jupiter 6, Sun 2,
 /// Moon 1, Venus 3, Mars 6, Mercury 2, Saturn 6, Rahu 6, Ketu 3.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::cycle_years;
+///
+/// assert_eq!(cycle_years(Graha::Moon), 1);
+/// assert_eq!(cycle_years(Graha::Uranus), 0);
+/// ```
 #[must_use]
 pub const fn cycle_years(graha: Graha) -> u8 {
     match graha {
@@ -208,6 +326,12 @@ pub const fn cycle_years(graha: Graha) -> u8 {
 
 /// A planet's mahadasha years (1952 p. 33): Vimshottari's values, in Lal
 /// Kitab's order, 120 in all.
+///
+/// ```
+/// use teistro_lalkitab::tables::{PLANETS, mahadasha_years};
+///
+/// assert_eq!(PLANETS.map(|planet| u16::from(mahadasha_years(planet))).iter().sum::<u16>(), 120);
+/// ```
 #[must_use]
 pub const fn mahadasha_years(graha: Graha) -> u8 {
     match graha {
@@ -225,6 +349,15 @@ pub const fn mahadasha_years(graha: Graha) -> u8 {
 
 /// The planets ruling the thirds of a year whose planet is `graha`,
 /// months 1–4, 5–8 and 9–12 (1952 p. 34).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::thirds;
+///
+/// // Each year's own planet rules one of its thirds.
+/// assert_eq!(thirds(Graha::Sun), Some([Graha::Sun, Graha::Moon, Graha::Mars]));
+/// assert_eq!(thirds(Graha::Uranus), None);
+/// ```
 #[must_use]
 pub const fn thirds(graha: Graha) -> Option<[Graha; 3]> {
     use Graha::{Jupiter, Ketu, Mars, Mercury, Moon, Rahu, Saturn, Sun, Venus};
@@ -244,6 +377,13 @@ pub const fn thirds(graha: Graha) -> Option<[Graha; 3]> {
 
 /// The artificial (*masnui*) planets two planets in one house make
 /// (1952 p. 27): the pair, and what it counts as.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::{MASNUI, Masnui};
+///
+/// assert!(MASNUI.contains(&(Graha::Rahu, Graha::Ketu, Masnui::Venus)));
+/// ```
 pub const MASNUI: [(Graha, Graha, Masnui); 13] = [
     (Graha::Sun, Graha::Venus, Masnui::Jupiter),
     (Graha::Mercury, Graha::Venus, Masnui::Sun),
@@ -261,6 +401,20 @@ pub const MASNUI: [(Graha, Graha, Masnui); 13] = [
 ];
 
 /// What a pair of planets in one house counts as (1952 p. 27).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::Masnui;
+/// use teistro_lalkitab::tables::MASNUI;
+///
+/// // The Sun with Saturn counts twice: a malefic Mars and a debilitated Rahu.
+/// let both: Vec<Masnui> = MASNUI
+///     .iter()
+///     .filter(|(a, b, _)| (*a, *b) == (Graha::Sun, Graha::Saturn))
+///     .map(|(.., counts_as)| *counts_as)
+///     .collect();
+/// assert_eq!(both, [Masnui::MarsMalefic, Masnui::RahuDebilitated]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -295,6 +449,15 @@ pub enum Masnui {
 
 /// The nine debts (*rin*), each arising when one of a planet's enemies
 /// sits in one of its houses (1952 p. 125).
+///
+/// ```
+/// use teistro_lalkitab::Rin;
+/// use teistro_lalkitab::tables::RINAS;
+///
+/// // One debt to each of the nine, in Lal Kitab's order.
+/// assert_eq!(RINAS.map(|(rin, ..)| rin)[0], Rin::Pitri);
+/// assert_eq!(RINAS.map(|(_, of, ..)| of), teistro_lalkitab::tables::PLANETS);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -321,6 +484,16 @@ pub enum Rin {
 
 /// Each debt: the planet, its houses, and the enemies whose seat there
 /// raises it (1952 p. 125). The Sun's "papi" are Saturn, Rahu and Ketu.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::Rin;
+/// use teistro_lalkitab::tables::RINAS;
+///
+/// let (_, of, houses, enemies) = RINAS.iter().find(|(rin, ..)| *rin == Rin::Matri).copied().ok_or("nine debts")?;
+/// assert_eq!((of, houses, enemies), (Graha::Moon, &[4_u8][..], &[Graha::Ketu][..]));
+/// # Ok::<(), &str>(())
+/// ```
 pub const RINAS: [(Rin, Graha, &[u8], &[Graha]); 9] = [
     (
         Rin::Pitri,
@@ -366,6 +539,15 @@ pub const RINAS: [(Rin, Graha, &[u8], &[Graha]); 9] = [
 /// The first state of the ancestors' debt (1952 p. 128): a planet in the
 /// ninth house while Mercury sits in that planet's root house; here, each
 /// planet and its root houses.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::tables::root;
+///
+/// assert_eq!(root(Graha::Venus), &[2, 7]);
+/// // Mercury's own presence is what is asked, so it has no root.
+/// assert!(root(Graha::Mercury).is_empty());
+/// ```
 #[must_use]
 pub fn root(graha: Graha) -> &'static [u8] {
     match graha {

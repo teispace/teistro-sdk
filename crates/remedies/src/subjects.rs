@@ -28,6 +28,14 @@ pub const NINE: [Graha; 9] = [
 ];
 
 /// The daśā running at the instant the remedy is asked for.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{Running, dasha_shanti};
+///
+/// let running = Running { mahadasha: Graha::Saturn, antardasha: Graha::Venus };
+/// assert!(dasha_shanti(running.mahadasha, running.antardasha).is_some());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -39,6 +47,27 @@ pub struct Running {
 }
 
 /// The chart, as the remedies read it.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{FunctionalRules, RemedySky, Running, functional, subjects};
+///
+/// // Aries rising, every graha in Aries but the Sun, debilitated in Libra,
+/// // and Ketu opposite Rahu;
+/// // Saturn's mahadasha, Venus's antardasha.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[0] = Rashi::Libra;
+/// signs[8] = Rashi::Libra;
+/// let sky = RemedySky {
+///     lagna: Rashi::Aries,
+///     signs,
+///     combust: [false; 9],
+///     moon_waxing: true,
+///     running: Some(Running { mahadasha: Graha::Saturn, antardasha: Graha::Venus }),
+/// };
+/// let found = subjects(&sky, &functional(Rashi::Aries, FunctionalRules::default()));
+/// assert!(found.antardasha.is_some());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -113,6 +142,33 @@ fn index(graha: Graha) -> Option<usize> {
 }
 
 /// Why a graha is a subject of a remedy.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{FunctionalRules, RemedySky, Running, functional, subjects};
+///
+/// // Aries rising, every graha in Aries but the Sun, debilitated in Libra,
+/// // and Ketu opposite Rahu;
+/// // Saturn's mahadasha, Venus's antardasha.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[0] = Rashi::Libra;
+/// signs[8] = Rashi::Libra;
+/// let sky = RemedySky {
+///     lagna: Rashi::Aries,
+///     signs,
+///     combust: [false; 9],
+///     moon_waxing: true,
+///     running: Some(Running { mahadasha: Graha::Saturn, antardasha: Graha::Venus }),
+/// };
+/// let found = subjects(&sky, &functional(Rashi::Aries, FunctionalRules::default()));
+/// use teistro_remedies::Reason;
+///
+/// let reasons = |graha: Graha| found.subjects.iter().find(|subject| subject.graha == graha).map(|subject| subject.reasons.clone());
+/// // Debilitated, and nothing else: the 5th lord is good for Aries.
+/// assert_eq!(reasons(Graha::Sun), Some(vec![Reason::Debilitated]));
+/// // The antardasha's lord, and the 2nd and 7th lord.
+/// assert_eq!(reasons(Graha::Venus), Some(vec![Reason::Antardasha, Reason::Maraka]));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RemedyReason"))]
@@ -137,6 +193,29 @@ pub enum Reason {
 }
 
 /// A graha with every reason that makes it a subject.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{FunctionalRules, RemedySky, Running, functional, subjects};
+///
+/// // Aries rising, every graha in Aries but the Sun, debilitated in Libra,
+/// // and Ketu opposite Rahu;
+/// // Saturn's mahadasha, Venus's antardasha.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[0] = Rashi::Libra;
+/// signs[8] = Rashi::Libra;
+/// let sky = RemedySky {
+///     lagna: Rashi::Aries,
+///     signs,
+///     combust: [false; 9],
+///     moon_waxing: true,
+///     running: Some(Running { mahadasha: Graha::Saturn, antardasha: Graha::Venus }),
+/// };
+/// let found = subjects(&sky, &functional(Rashi::Aries, FunctionalRules::default()));
+/// // No ranking: the catalogue's order.
+/// let order: Vec<Graha> = found.subjects.iter().map(|subject| subject.graha).collect();
+/// assert!(order.windows(2).all(|pair| (pair[0] as u8) < (pair[1] as u8)));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -149,6 +228,30 @@ pub struct Subject {
 
 /// The running antardaśā's printed śānti, with whether each of its
 /// conditions holds.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{FunctionalRules, RemedySky, Running, functional, subjects};
+///
+/// // Aries rising, every graha in Aries but the Sun, debilitated in Libra,
+/// // and Ketu opposite Rahu;
+/// // Saturn's mahadasha, Venus's antardasha.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[0] = Rashi::Libra;
+/// signs[8] = Rashi::Libra;
+/// let sky = RemedySky {
+///     lagna: Rashi::Aries,
+///     signs,
+///     combust: [false; 9],
+///     moon_waxing: true,
+///     running: Some(Running { mahadasha: Graha::Saturn, antardasha: Graha::Venus }),
+/// };
+/// let found = subjects(&sky, &functional(Rashi::Aries, FunctionalRules::default()));
+/// let shanti = found.antardasha.ok_or("a dasha runs")?;
+/// assert_eq!((shanti.shanti.mahadasha, shanti.shanti.antardasha), (Graha::Saturn, Graha::Venus));
+/// assert_eq!(shanti.holds.len(), shanti.shanti.conditions.len());
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -161,6 +264,27 @@ pub struct AntardashaShanti {
 }
 
 /// Whom a remedy is for.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{FunctionalRules, RemedySky, Running, functional, subjects};
+///
+/// // Aries rising, every graha in Aries but the Sun, debilitated in Libra,
+/// // and Ketu opposite Rahu;
+/// // Saturn's mahadasha, Venus's antardasha.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[0] = Rashi::Libra;
+/// signs[8] = Rashi::Libra;
+/// let sky = RemedySky {
+///     lagna: Rashi::Aries,
+///     signs,
+///     combust: [false; 9],
+///     moon_waxing: true,
+///     running: Some(Running { mahadasha: Graha::Saturn, antardasha: Graha::Venus }),
+/// };
+/// let found = subjects(&sky, &functional(Rashi::Aries, FunctionalRules::default()));
+/// assert!(found.subjects.iter().all(|subject| !subject.reasons.is_empty()));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -177,6 +301,34 @@ pub struct Subjects {
 ///
 /// A node owns no sign here, so a lordship condition on a node is open
 /// rather than false (C351).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{FunctionalRules, RemedySky, Running, functional, subjects};
+///
+/// // Aries rising, every graha in Aries but the Sun, debilitated in Libra,
+/// // and Ketu opposite Rahu;
+/// // Saturn's mahadasha, Venus's antardasha.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[0] = Rashi::Libra;
+/// signs[8] = Rashi::Libra;
+/// let sky = RemedySky {
+///     lagna: Rashi::Aries,
+///     signs,
+///     combust: [false; 9],
+///     moon_waxing: true,
+///     running: Some(Running { mahadasha: Graha::Saturn, antardasha: Graha::Venus }),
+/// };
+/// let found = subjects(&sky, &functional(Rashi::Aries, FunctionalRules::default()));
+/// use teistro_remedies::{Condition, holds};
+///
+/// let running = Running { mahadasha: Graha::Saturn, antardasha: Graha::Venus };
+/// // Venus owns Taurus and Libra, the 2nd and the 7th from Aries.
+/// assert_eq!(holds(Condition::LordOfSecondOrSeventh, &sky, running), Some(true));
+/// // "Joined or aspected", by what the verse does not say: left open.
+/// assert_eq!(holds(Condition::JoinedOrAspected, &sky, running), None);
+/// # let _ = found;
+/// ```
 #[must_use]
 pub fn holds(condition: Condition, sky: &RemedySky, running: Running) -> Option<bool> {
     let ad = running.antardasha;
@@ -242,6 +394,33 @@ pub fn holds(condition: Condition, sky: &RemedySky, running: Running) -> Option<
 
 /// Whom a remedy is for in `sky`, by the lordships `functional` read for
 /// its lagna.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{FunctionalRules, RemedySky, Running, functional, subjects};
+///
+/// // Aries rising, every graha in Aries but the Sun, debilitated in Libra,
+/// // and Ketu opposite Rahu;
+/// // Saturn's mahadasha, Venus's antardasha.
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[0] = Rashi::Libra;
+/// signs[8] = Rashi::Libra;
+/// let sky = RemedySky {
+///     lagna: Rashi::Aries,
+///     signs,
+///     combust: [false; 9],
+///     moon_waxing: true,
+///     running: Some(Running { mahadasha: Graha::Saturn, antardasha: Graha::Venus }),
+/// };
+/// let found = subjects(&sky, &functional(Rashi::Aries, FunctionalRules::default()));
+/// use teistro_remedies::Reason;
+///
+/// let reasons = |graha: Graha| found.subjects.iter().find(|subject| subject.graha == graha).map(|subject| subject.reasons.clone());
+/// let saturn = reasons(Graha::Saturn).unwrap_or_default();
+/// // The mahadasha's lord, debilitated in Aries, the 10th and 11th lord.
+/// assert!(saturn.contains(&Reason::Mahadasha) && saturn.contains(&Reason::Debilitated));
+/// assert!(saturn.contains(&Reason::FunctionalMalefic) && saturn.contains(&Reason::Badhakesha));
+/// ```
 #[must_use]
 pub fn subjects(sky: &RemedySky, functional: &Functional) -> Subjects {
     let subjects = NINE

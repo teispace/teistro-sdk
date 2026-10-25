@@ -10,6 +10,17 @@ use crate::trig::{Bhuja, RADIUS, Trig};
 
 /// An epicycle: its circumference in minutes of arc at the end of the
 /// even quadrants and at the end of the odd ones (II.34 to 37).
+///
+/// ```
+/// use teistro_siddhanta::Epicycle;
+/// use teistro_siddhanta::trig::Bhuja;
+/// use teistro_siddhanta::Trig;
+///
+/// // The Sun's: the even value at 0°, the odd at 90°.
+/// let sun = Epicycle::new(14 * 60, 13 * 60 + 40);
+/// assert_eq!(sun.corrected_deg(Trig::Table, Bhuja::of(0.0)), 14.0);
+/// assert!((sun.corrected_deg(Trig::Table, Bhuja::of(90.0)) - (13.0 + 40.0 / 60.0)).abs() < 1e-12);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Epicycle {
@@ -23,6 +34,13 @@ pub struct Epicycle {
 
 impl Epicycle {
     /// An epicycle from its two circumferences in minutes.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Epicycle;
+    ///
+    /// let sun = Epicycle::new(840, 820);
+    /// assert_eq!((sun.even_arcmin, sun.odd_arcmin), (840, 820));
+    /// ```
     #[must_use]
     pub const fn new(even_arcmin: u32, odd_arcmin: u32) -> Epicycle {
         Epicycle {
@@ -34,6 +52,16 @@ impl Epicycle {
     /// The corrected circumference in degrees at a reduced anomaly
     /// (II.38): the even-quadrant value, moved toward the odd-quadrant
     /// value by the sine of the reduced arc over the radius.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Epicycle, Trig};
+    /// use teistro_siddhanta::trig::Bhuja;
+    ///
+    /// // The tradition's worked figure: 13°43′ at 61°31′9″.
+    /// let sun = Epicycle::new(840, 820);
+    /// let arc = Bhuja::of(61.0 + 31.0 / 60.0 + 9.0 / 3600.0);
+    /// assert!((sun.corrected_deg(Trig::Table, arc) - (13.0 + 43.0 / 60.0)).abs() < 0.01);
+    /// ```
     #[must_use]
     pub fn corrected_deg(self, trig: Trig, bhuja: Bhuja) -> f64 {
         let even = f64::from(self.even_arcmin) / 60.0;
@@ -55,6 +83,17 @@ fn signed(magnitude_deg: f64, bhuja: Bhuja) -> f64 {
 /// (apsis less mean place; II.29): the sine of the reduced anomaly times
 /// the corrected circumference over 360 is the "sine of the equation"; its
 /// arc is the equation (II.39 to 40).
+///
+/// ```
+/// use teistro_siddhanta::{Epicycle, Trig};
+/// use teistro_siddhanta::equation::manda_equation_deg;
+///
+/// let sun = Epicycle::new(840, 820);
+/// // The Sun's greatest equation, about 2°10′, additive in the half from Mesha.
+/// let peak = manda_equation_deg(Trig::Table, sun, 90.0);
+/// assert!((peak - 2.175).abs() < 0.01);
+/// assert!(manda_equation_deg(Trig::Table, sun, 270.0) < 0.0);
+/// ```
 #[must_use]
 pub fn manda_equation_deg(trig: Trig, epicycle: Epicycle, kendra_deg: f64) -> f64 {
     let bhuja = Bhuja::of(kendra_deg);
@@ -64,6 +103,20 @@ pub fn manda_equation_deg(trig: Trig, epicycle: Epicycle, kendra_deg: f64) -> f6
 }
 
 /// The sighra equation and the hypotenuse it went through.
+///
+/// ```
+/// use teistro_siddhanta::{Parameters, Planet, Trig};
+/// use teistro_siddhanta::equation::sighra_equation;
+/// use teistro_siddhanta::trig::RADIUS;
+///
+/// let mars = Parameters::TEXT.sighra_epicycle(Planet::Mars).ok_or("a star planet")?;
+/// // At conjunction no equation, and the hypotenuse is the radius and the
+/// // circumference's share.
+/// let at = sighra_equation(Trig::Table, mars, 0.0);
+/// assert_eq!(at.equation_deg, 0.0);
+/// assert!((at.karna - (RADIUS + 235.0 / 360.0 * RADIUS)).abs() < 1e-9);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SighraEquation {
     /// The equation in degrees, signed.
@@ -80,6 +133,16 @@ pub struct SighraEquation {
 /// taken away in the other) and the bhujaphala give the hypotenuse; the
 /// bhujaphala times the radius over the hypotenuse is the sine of the
 /// equation, whose arc is the equation (II.39 to 42).
+///
+/// ```
+/// use teistro_siddhanta::{Parameters, Planet, Trig};
+/// use teistro_siddhanta::equation::sighra_equation;
+///
+/// let mars = Parameters::TEXT.sighra_epicycle(Planet::Mars).ok_or("a star planet")?;
+/// // Past opposition the equation is subtractive.
+/// assert!(sighra_equation(Trig::Table, mars, 250.0).equation_deg < 0.0);
+/// # Ok::<(), &str>(())
+/// ```
 #[must_use]
 pub fn sighra_equation(trig: Trig, epicycle: Epicycle, kendra_deg: f64) -> SighraEquation {
     let bhuja = Bhuja::of(kendra_deg);
@@ -108,6 +171,18 @@ pub fn sighra_equation(trig: Trig, epicycle: Epicycle, kendra_deg: f64) -> Sighr
 /// mean place; half the manda equation of the result to the result; the
 /// whole manda equation of that, to the original mean place; the whole
 /// sighra equation of that, to it.
+///
+/// ```
+/// use teistro_siddhanta::{Parameters, Planet, Trig};
+/// use teistro_siddhanta::equation::four_step;
+///
+/// let text = &Parameters::TEXT;
+/// let mars = (text.manda_epicycle(Planet::Mars), text.sighra_epicycle(Planet::Mars).ok_or("a star planet")?);
+/// let steps = four_step(Trig::Table, mars.0, mars.1, 100.0, 130.0, 100.0);
+/// // Step three applies the whole manda equation to the mean place.
+/// assert!((steps.manda_corrected_deg - (100.0 + steps.manda_equation_deg)).abs() < 1e-9);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FourStep {
     /// The mean place corrected by the whole manda equation (step three),
@@ -126,6 +201,18 @@ pub struct FourStep {
 }
 
 /// Runs the four steps.
+///
+/// ```
+/// use teistro_siddhanta::{Parameters, Planet, Trig};
+/// use teistro_siddhanta::equation::four_step;
+///
+/// let text = &Parameters::TEXT;
+/// let mars = (text.manda_epicycle(Planet::Mars), text.sighra_epicycle(Planet::Mars).ok_or("a star planet")?);
+/// let steps = four_step(Trig::Table, mars.0, mars.1, 200.0, 130.0, 20.0);
+/// let place = (steps.manda_corrected_deg + steps.sighra.equation_deg).rem_euclid(360.0);
+/// assert!((steps.true_deg - place).abs() < 1e-9);
+/// # Ok::<(), &str>(())
+/// ```
 #[must_use]
 pub fn four_step(
     trig: Trig,
@@ -158,6 +245,17 @@ pub fn four_step(
 /// the step) times the corrected circumference over 360, taken from the
 /// mean motion in the half from Makara through Mithuna and added in the
 /// other. Degrees per day.
+///
+/// ```
+/// use teistro_siddhanta::{Epicycle, Trig};
+/// use teistro_siddhanta::equation::manda_motion_deg_per_day;
+///
+/// let (sun, mean, apsis) = (Epicycle::new(840, 820), 0.985_602_6, 0.000_002);
+/// // Slowest at the apsis, fastest at the perigee.
+/// let slow = manda_motion_deg_per_day(Trig::Table, sun, 0.0, mean, apsis);
+/// let fast = manda_motion_deg_per_day(Trig::Table, sun, 180.0, mean, apsis);
+/// assert!(slow < mean && mean < fast);
+/// ```
 #[must_use]
 pub fn manda_motion_deg_per_day(
     trig: Trig,
@@ -185,6 +283,15 @@ pub fn manda_motion_deg_per_day(
 /// additive when the hypotenuse exceeds the radius and subtractive when
 /// it is less; a subtractive equation greater than the motion leaves a
 /// retrograde motion, which is the negative result. Degrees per day.
+///
+/// ```
+/// use teistro_siddhanta::equation::sighra_motion_deg_per_day;
+///
+/// // Burgess under II.50 to 51: Mars equated 27′45″, the Sun 59′8″, the last
+/// // hypotenuse 3984: a true motion of 32′3″.
+/// let motion = sighra_motion_deg_per_day((27.0 + 45.0 / 60.0) / 60.0, (59.0 + 8.0 / 60.0) / 60.0, 3984.0);
+/// assert!((motion * 60.0 - (32.0 + 3.0 / 60.0)).abs() < 0.03);
+/// ```
 #[must_use]
 pub fn sighra_motion_deg_per_day(
     equated_motion_deg: f64,
@@ -202,6 +309,17 @@ pub fn sighra_motion_deg_per_day(
 /// node times the extreme latitude, over the last hypotenuse (or over
 /// the radius for the Moon, whose `karna` is the radius); north when the
 /// distance's sine is positive. Degrees.
+///
+/// ```
+/// use teistro_siddhanta::Trig;
+/// use teistro_siddhanta::equation::latitude_deg;
+/// use teistro_siddhanta::trig::RADIUS;
+///
+/// // The Moon 53°14′ from its node: 3°36′ north (Burgess under II.58).
+/// let moon = latitude_deg(Trig::Table, 53.0 + 14.0 / 60.0, 270, RADIUS);
+/// assert!((moon - 3.6).abs() < 0.01);
+/// assert!(latitude_deg(Trig::Table, 270.0, 270, RADIUS) < 0.0);
+/// ```
 #[must_use]
 pub fn latitude_deg(
     trig: Trig,

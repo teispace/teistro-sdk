@@ -5,16 +5,46 @@
 
 use teistro_core::math;
 /// The radius the table's sines are measured on (3438′).
+///
+/// ```
+/// use teistro_siddhanta::trig::{RADIUS, SINES};
+///
+/// // The minutes in a radian, and the table's last sine.
+/// assert_eq!(f64::from(SINES[24]), RADIUS);
+/// ```
 pub const RADIUS: f64 = 3438.0;
 /// The step between table entries in minutes of arc (225′ = 3°45′).
+///
+/// ```
+/// use teistro_siddhanta::trig::{SINES, STEP_ARCMIN};
+///
+/// // Twenty-four steps of 3°45′ make the quadrant.
+/// assert_eq!(STEP_ARCMIN * (SINES.len() - 1) as f64, 90.0 * 60.0);
+/// ```
 pub const STEP_ARCMIN: f64 = 225.0;
 /// The twenty-four sines of II.15 to 27, with the zero prepended.
+///
+/// ```
+/// use teistro_siddhanta::trig::SINES;
+///
+/// // The sine of 30°, the eighth entry, is half the radius to the minute.
+/// assert_eq!(SINES[8], 1719);
+/// ```
 pub const SINES: [u16; 25] = [
     0, 225, 449, 671, 890, 1105, 1315, 1520, 1719, 1910, 2093, 2267, 2431, 2585, 2728, 2859, 2978,
     3084, 3177, 3256, 3321, 3372, 3409, 3431, 3438,
 ];
 
 /// Which trigonometry the model uses.
+///
+/// ```
+/// use teistro_siddhanta::Trig;
+///
+/// // The table is within a minute of the true sine at its nodes.
+/// let (table, exact) = (Trig::Table.sine(45.0), Trig::Exact.sine(45.0));
+/// assert!((table - exact).abs() < 1.0);
+/// assert_eq!(Trig::default(), Trig::Table);
+/// ```
 #[derive(
     Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
@@ -32,6 +62,14 @@ pub enum Trig {
 
 /// An arc reduced to the first quadrant (II.30): the arc itself, and the
 /// signs its sine and cosine carry in the quadrant it came from.
+///
+/// ```
+/// use teistro_siddhanta::trig::Bhuja;
+///
+/// // 210° is 30° into the third quadrant: both the sine and the cosine negative.
+/// let arc = Bhuja::of(210.0);
+/// assert_eq!((arc.arc_deg, arc.sine_positive, arc.cosine_positive), (30.0, false, false));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Bhuja {
     /// The reduced arc, degrees in `[0, 90]`.
@@ -46,6 +84,14 @@ pub struct Bhuja {
 
 impl Bhuja {
     /// The reduction of any arc in degrees.
+    ///
+    /// ```
+    /// use teistro_siddhanta::trig::Bhuja;
+    ///
+    /// assert_eq!(Bhuja::of(150.0).arc_deg, 30.0);
+    /// assert_eq!(Bhuja::of(-30.0).arc_deg, 30.0);
+    /// assert!(Bhuja::of(330.0).cosine_positive);
+    /// ```
     #[must_use]
     pub fn of(arc_deg: f64) -> Bhuja {
         let k = arc_deg.rem_euclid(360.0);
@@ -77,6 +123,12 @@ impl Bhuja {
     }
 
     /// The reduced arc's complement, for the cosine (kotijya).
+    ///
+    /// ```
+    /// use teistro_siddhanta::trig::Bhuja;
+    ///
+    /// assert_eq!(Bhuja::of(20.0).complement_deg(), 70.0);
+    /// ```
     #[must_use]
     pub fn complement_deg(self) -> f64 {
         90.0 - self.arc_deg
@@ -86,6 +138,15 @@ impl Bhuja {
 impl Trig {
     /// The sine of an arc in the first quadrant, on the radius: the
     /// table's interpolation (II.31 to 33) or the exact value.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Trig;
+    ///
+    /// // II.31 to 33 worked: 61°31′9″ is 16 steps and 91.15′ over, a difference
+    /// // of 106: 2978 + 91.15 × 106 / 225.
+    /// let arc = 61.0 + 31.0 / 60.0 + 9.0 / 3600.0;
+    /// assert!((Trig::Table.sine(arc) - 3020.94).abs() < 0.01);
+    /// ```
     #[must_use]
     pub fn sine(self, arc_deg: f64) -> f64 {
         let arc = arc_deg.clamp(0.0, 90.0);
@@ -113,6 +174,16 @@ impl Trig {
     /// The arc in degrees, in the first quadrant, whose sine on the radius
     /// is `sine`: the inverse of the interpolation (II.33) or the exact
     /// value. A sine beyond the radius is the quadrant's end.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Trig;
+    ///
+    /// // The table's inverse is exact on its own interpolation.
+    /// let sine = Trig::Table.sine(40.0);
+    /// assert!((Trig::Table.arc(sine) - 40.0).abs() < 1e-9);
+    /// // A sine past the radius is the quadrant's end.
+    /// assert_eq!(Trig::Table.arc(5000.0), 90.0);
+    /// ```
     #[must_use]
     pub fn arc(self, sine: f64) -> f64 {
         let sine = sine.clamp(0.0, RADIUS);
@@ -141,6 +212,14 @@ impl Trig {
     /// slope in its current interval (the "difference of sines" of II.47,
     /// which divided by the step is the cosine because the radius is the
     /// minutes in a radian) or the exact value.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Trig;
+    ///
+    /// // Near 60° the table's slope is 106/225, against a true cosine of 0.5.
+    /// assert_eq!(Trig::Table.cosine_ratio(61.0), 106.0 / 225.0);
+    /// assert!((Trig::Exact.cosine_ratio(60.0) - 0.5).abs() < 1e-12);
+    /// ```
     #[must_use]
     pub fn cosine_ratio(self, arc_deg: f64) -> f64 {
         let arc = arc_deg.clamp(0.0, 90.0);

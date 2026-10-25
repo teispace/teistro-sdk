@@ -14,6 +14,18 @@ use crate::progression::TROPICAL_YEAR_DAYS;
 
 /// How the progressed midheaven moves (C237), spelled as its member in a
 /// request: `"NAIBOD_RIGHT_ASCENSION"`, `"SOLAR_ARC_LONGITUDE"`.
+///
+/// ```
+/// use teistro_western::{AngleMethod, Meridian, SunAt, progressed_armc};
+///
+/// let birth = Meridian { armc_deg: 43.225, obliquity_deg: 23.46 };
+///
+/// let sun = SunAt { longitude_deg: 135.0, obliquity_deg: 23.46 };
+/// // The quotidian's meridian is the progressed chart's own.
+/// assert_eq!(progressed_armc(AngleMethod::Quotidian, birth, 46.0, sun, sun)?, None);
+/// assert_eq!(AngleMethod::default(), AngleMethod::NaibodRightAscension);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -39,6 +51,21 @@ pub enum AngleMethod {
 impl AngleMethod {
     /// Every method, Leo's first, so a consumer can weigh them all
     /// (`progressed-angles-measured.md` does).
+    ///
+    /// ```
+    /// use teistro_western::{AngleMethod, Meridian, SunAt, progressed_armc};
+    ///
+    /// let birth = Meridian { armc_deg: 43.225, obliquity_deg: 23.46 };
+    ///
+    /// let (at_birth, progressed) = (SunAt { longitude_deg: 135.0, obliquity_deg: 23.46 }, SunAt { longitude_deg: 180.5, obliquity_deg: 23.46 });
+    /// // Every method but the quotidian turns the meridian.
+    /// let turned = AngleMethod::ALL
+    ///     .iter()
+    ///     .filter_map(|method| progressed_armc(*method, birth, 46.0, at_birth, progressed).transpose())
+    ///     .count();
+    /// assert_eq!(turned, 4);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const ALL: [AngleMethod; 5] = [
         AngleMethod::NaibodRightAscension,
         AngleMethod::NaibodLongitude,
@@ -50,6 +77,18 @@ impl AngleMethod {
 
 /// The Sun at one instant: tropical longitude and the obliquity of date,
 /// degrees.
+///
+/// ```
+/// use teistro_western::{AngleMethod, Meridian, SunAt, progressed_armc};
+///
+/// let birth = Meridian { armc_deg: 43.225, obliquity_deg: 23.46 };
+///
+/// // The true Sun moved 45° 30′ in forty-six days of sky: the solar arc.
+/// let (at_birth, progressed) = (SunAt { longitude_deg: 135.0, obliquity_deg: 23.46 }, SunAt { longitude_deg: 180.5, obliquity_deg: 23.46 });
+/// let arc = progressed_armc(AngleMethod::SolarArcRightAscension, birth, 46.0, at_birth, progressed)?;
+/// assert!(arc.is_some_and(|armc| armc > birth.armc_deg));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SunAt {
     /// Tropical ecliptic longitude.
@@ -72,6 +111,21 @@ impl SunAt {
 }
 
 /// What the progressed meridian is turned from.
+///
+/// ```
+/// use teistro_western::{AngleMethod, Meridian, SunAt, progressed_armc};
+///
+/// let birth = Meridian { armc_deg: 43.225, obliquity_deg: 23.46 };
+/// use teistro_western::TROPICAL_YEAR_DAYS;
+///
+/// // Naibod in right ascension adds the mean Sun's arc to the meridian.
+/// let sun = SunAt { longitude_deg: 135.0, obliquity_deg: 23.46 };
+/// let armc = progressed_armc(AngleMethod::NaibodRightAscension, birth, 46.0, sun, sun)?;
+/// let expected = birth.armc_deg + 46.0 * 360.0 / TROPICAL_YEAR_DAYS;
+/// assert!(armc.is_some_and(|armc| (armc - expected).abs() < 1e-9));
+/// assert_eq!(progressed_armc(AngleMethod::NaibodRightAscension, Meridian { armc_deg: f64::NAN, ..birth }, 46.0, sun, sun).unwrap_err().field(), Some("armc_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Meridian {
     /// The birth's right ascension of the midheaven, degrees.
