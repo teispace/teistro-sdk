@@ -39,6 +39,29 @@ use crate::span::Span;
 pub const CLASSICAL: &str = "CLASSICAL";
 
 /// What made a muhurta yoga hold.
+///
+/// ```
+/// # use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // A Sunday from 100.25 to 101.25: Hasta at sunrise, Chitra from 100.7,
+/// # // and Shukla Saptami all the day.
+/// # let day = Interval::literal(100.25, 101.25);
+/// # let star = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// # let nakshatras: Vec<_> =
+/// #     [star(Nakshatra::Hasta, 99.8, 100.7), star(Nakshatra::Chitra, 100.7, 101.7)].into_iter().flatten().collect();
+/// # let tithis: Vec<_> = Span::new(Tithi::ShuklaSaptami, Interval::literal(100.0, 101.3), day).into_iter().collect();
+///
+/// use teistro_panchanga::omen::{CLASSICAL, yogas};
+///
+/// use teistro_panchanga::omen::YogaCause;
+///
+/// // Hasta on a Sunday makes Amrit Siddhi.
+/// let found = yogas(CLASSICAL, Vara::Ravivara, &nakshatras, &tithis)?;
+/// assert_eq!(found[0].because, YogaCause::VaraNakshatra { vara: Vara::Ravivara, nakshatra: Nakshatra::Hasta });
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "cause", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -62,6 +85,29 @@ pub enum YogaCause {
 }
 
 /// A muhurta yoga that held, and for how long.
+///
+/// ```
+/// # use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // A Sunday from 100.25 to 101.25: Hasta at sunrise, Chitra from 100.7,
+/// # // and Shukla Saptami all the day.
+/// # let day = Interval::literal(100.25, 101.25);
+/// # let star = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// # let nakshatras: Vec<_> =
+/// #     [star(Nakshatra::Hasta, 99.8, 100.7), star(Nakshatra::Chitra, 100.7, 101.7)].into_iter().flatten().collect();
+/// # let tithis: Vec<_> = Span::new(Tithi::ShuklaSaptami, Interval::literal(100.0, 101.3), day).into_iter().collect();
+///
+/// use teistro_panchanga::omen::{CLASSICAL, yogas};
+///
+/// use teistro_core::catalogue::MuhurtaYoga;
+///
+/// // It holds while the sunrise nakshatra does.
+/// let found = yogas(CLASSICAL, Vara::Ravivara, &nakshatras, &tithis)?;
+/// assert_eq!((found[0].yoga, found[0].at), (MuhurtaYoga::AmritSiddhi, Interval::literal(100.25, 100.7)));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PanchangaMuhurtaYoga"))]
@@ -75,6 +121,43 @@ pub struct MuhurtaYoga {
 }
 
 /// What a day is said to be.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # // Wednesday 25 November 2026.
+/// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+///
+/// use teistro_core::catalogue::Vara;
+/// use teistro_panchanga::omen::disha_shool;
+///
+/// assert_eq!(day.omens.disha_shool, disha_shool(Vara::Budhavara));
+/// // Every window is cut to the day.
+/// assert!(day.omens.varjyam.iter().all(|span| span.inside.from.get() >= day.day.sunrise.get()));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Omens {
@@ -101,6 +184,14 @@ pub struct Omens {
 /// days, and Muhurta Chintamani's (*Yatra Prakarana* v. 10; the 1906
 /// Venkateshwar Press edition, p. 111), which gives the nakshatra's
 /// beside it ([`nakshatra_shool`]).
+///
+/// ```
+/// use teistro_core::catalogue::{Direction, Vara};
+/// use teistro_panchanga::omen::disha_shool;
+///
+/// assert_eq!(disha_shool(Vara::Ravivara), Direction::West);
+/// assert_eq!(disha_shool(Vara::Guruvara), Direction::South);
+/// ```
 #[must_use]
 pub const fn disha_shool(vara: Vara) -> Direction {
     match vara {
@@ -133,6 +224,16 @@ const VARJYAM_GHATIS: f64 = 4.0;
 
 /// The ghati a nakshatra's varjyam begins after under a table, of a star
 /// sixty ghatis long, or `None` under `NONE`.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_core::settings::Varjyam;
+/// use teistro_panchanga::omen::varjyam_start;
+///
+/// // Bharani, where Raman's print departs from Muhurta Chintamani.
+/// assert_eq!(varjyam_start(Varjyam::MuhurtaChintamani, Nakshatra::Bharani), Some(24));
+/// assert_eq!(varjyam_start(Varjyam::Raman, Nakshatra::Bharani), Some(4));
+/// ```
 #[must_use]
 pub fn varjyam_start(table: Varjyam, nakshatra: Nakshatra) -> Option<u8> {
     let starts = match table {
@@ -157,6 +258,30 @@ pub fn varjyam_start(table: Varjyam, nakshatra: Nakshatra) -> Option<u8> {
 /// star. A window is reported when any of it falls in the day; one
 /// cannot fall outside its star, so clipping to the star's part of the
 /// day clips it to the day.
+///
+/// ```
+/// # use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // A Sunday from 100.25 to 101.25: Hasta at sunrise, Chitra from 100.7,
+/// # // and Shukla Saptami all the day.
+/// # let day = Interval::literal(100.25, 101.25);
+/// # let star = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// # let nakshatras: Vec<_> =
+/// #     [star(Nakshatra::Hasta, 99.8, 100.7), star(Nakshatra::Chitra, 100.7, 101.7)].into_iter().flatten().collect();
+/// # let tithis: Vec<_> = Span::new(Tithi::ShuklaSaptami, Interval::literal(100.0, 101.3), day).into_iter().collect();
+///
+/// use teistro_core::settings::Varjyam;
+/// use teistro_panchanga::omen::varjyam;
+///
+/// // Hasta's falls before sunrise; Chitra's is its 20th to 24th sixtieths.
+/// let found = varjyam(&nakshatras, Varjyam::MuhurtaChintamani)?;
+/// assert_eq!(found.len(), 1);
+/// assert_eq!(found[0].member, Nakshatra::Chitra);
+/// assert!((found[0].whole.from.get() - (100.7 + 20.0 / 60.0)).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -212,6 +337,29 @@ pub fn amrit_kalam_start(reading: AmritKalam, table: Varjyam, nakshatra: Nakshat
 /// The amrita kalam windows of a day, from its nakshatra spans: four
 /// ghatis of each star from the reading's start, scaled to the star's
 /// own span as the varjyam is (C679).
+///
+/// ```
+/// # use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // A Sunday from 100.25 to 101.25: Hasta at sunrise, Chitra from 100.7,
+/// # // and Shukla Saptami all the day.
+/// # let day = Interval::literal(100.25, 101.25);
+/// # let star = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// # let nakshatras: Vec<_> =
+/// #     [star(Nakshatra::Hasta, 99.8, 100.7), star(Nakshatra::Chitra, 100.7, 101.7)].into_iter().flatten().collect();
+/// # let tithis: Vec<_> = Span::new(Tithi::ShuklaSaptami, Interval::literal(100.0, 101.3), day).into_iter().collect();
+///
+/// use teistro_core::settings::{AmritKalam, Varjyam};
+/// use teistro_panchanga::omen::amrit_kalam;
+///
+/// // Hasta's from its 45th sixtieth, scaled to its 0.9 days.
+/// let found = amrit_kalam(&nakshatras, AmritKalam::Raman, Varjyam::MuhurtaChintamani)?;
+/// assert_eq!(found.len(), 1);
+/// assert!((found[0].whole.from.get() - (99.8 + 0.9 * 45.0 / 60.0)).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -278,6 +426,22 @@ pub const fn nakshatra_shool(nakshatra: Nakshatra) -> Option<Direction> {
 
 /// The nakshatra shool's spans over a day: while the Moon is in one of
 /// the four nakshatras that block a direction, that direction.
+///
+/// ```
+/// use teistro_core::catalogue::{Direction, Nakshatra};
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::omen::nakshatra_shools;
+/// use teistro_panchanga::span::Span;
+///
+/// // Rohini blocks the west while the Moon is in it; Mrigashira nothing.
+/// let day = Interval::literal(100.25, 101.25);
+/// let star = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// let nakshatras: Vec<_> =
+///     [star(Nakshatra::Rohini, 99.9, 100.6), star(Nakshatra::Mrigashira, 100.6, 101.6)].into_iter().flatten().collect();
+/// let shools = nakshatra_shools(&nakshatras);
+/// assert_eq!(shools.len(), 1);
+/// assert_eq!((shools[0].member, shools[0].whole), (Direction::West, Interval::literal(99.9, 100.6)));
+/// ```
 #[must_use]
 pub fn nakshatra_shools(nakshatras: &[Span<Nakshatra>]) -> Vec<Span<Direction>> {
     nakshatras
@@ -341,6 +505,18 @@ pub fn chandrashtama_of(sign: Rashi) -> Rashi {
 /// The spans of a day over which each natal Moon sign has chandrashtama,
 /// from the signs the Moon stood in: the member is the **natal** sign,
 /// and the intervals are the Moon's own run through the eighth from it.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::omen::chandrashtama;
+/// use teistro_panchanga::span::Span;
+///
+/// // The Moon in Scorpio all day: those born with it in Aries.
+/// let day = Interval::literal(100.25, 101.25);
+/// let signs: Vec<_> = Span::new(Rashi::Scorpio, Interval::literal(99.5, 101.8), day).into_iter().collect();
+/// assert_eq!(chandrashtama(&signs)[0].member, Rashi::Aries);
+/// ```
 #[must_use]
 pub fn chandrashtama(moon_signs: &[Span<Rashi>]) -> Vec<Span<Rashi>> {
     moon_signs
@@ -350,6 +526,20 @@ pub fn chandrashtama(moon_signs: &[Span<Rashi>]) -> Vec<Span<Rashi>> {
 }
 
 /// The Moon's direction over a day, by the sign it stood in.
+///
+/// ```
+/// use teistro_core::catalogue::{Direction, Rashi};
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::omen::chandra_vasas;
+/// use teistro_panchanga::span::Span;
+///
+/// // Leo, then Virgo from 100.8: east, then south.
+/// let day = Interval::literal(100.25, 101.25);
+/// let sign = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// let signs: Vec<_> = [sign(Rashi::Leo, 98.5, 100.8), sign(Rashi::Virgo, 100.8, 103.1)].into_iter().flatten().collect();
+/// let directions: Vec<_> = chandra_vasas(&signs).iter().map(|span| span.member).collect();
+/// assert_eq!(directions, [Direction::East, Direction::South]);
+/// ```
 #[must_use]
 pub fn chandra_vasas(moon_signs: &[Span<Rashi>]) -> Vec<Span<Direction>> {
     moon_signs
@@ -359,6 +549,15 @@ pub fn chandra_vasas(moon_signs: &[Span<Rashi>]) -> Vec<Span<Direction>> {
 }
 
 /// The panchaka a nakshatra carries, if it is one of the last five.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Panchaka};
+/// use teistro_panchanga::omen::panchaka_of;
+///
+/// assert_eq!(panchaka_of(Nakshatra::Dhanishtha), Some(Panchaka::Mrityu));
+/// assert_eq!(panchaka_of(Nakshatra::Revati), Some(Panchaka::Roga));
+/// assert_eq!(panchaka_of(Nakshatra::Ashwini), None);
+/// ```
 #[must_use]
 pub fn panchaka_of(nakshatra: Nakshatra) -> Option<Panchaka> {
     Panchaka::ALL
@@ -377,6 +576,33 @@ pub fn panchaka_of(nakshatra: Nakshatra) -> Option<Panchaka> {
 /// of Dhanishtha, and no recorded day has the Moon there — so the SDK
 /// follows Raman's *Muhurtha* (ch. IV), the one text in hand, and names
 /// the recording engine's whole nakshatra as the other.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Panchaka, Rashi};
+/// use teistro_core::interval::Interval;
+/// use teistro_core::settings::PanchakaStart;
+/// use teistro_panchanga::omen::panchaka;
+/// use teistro_panchanga::span::Span;
+///
+/// // Dhanishtha to 100.9, then Shatabhisha; the Moon enters Aquarius at 100.5.
+/// let day = Interval::literal(100.25, 101.25);
+/// let star = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// let nakshatras: Vec<_> =
+///     [star(Nakshatra::Dhanishtha, 100.0, 100.9), star(Nakshatra::Shatabhisha, 100.9, 101.9)].into_iter().flatten().collect();
+/// let signs = |_| {
+///     let sign = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+///     Ok([sign(Rashi::Capricorn, 98.0, 100.5), sign(Rashi::Aquarius, 100.5, 102.8)].into_iter().flatten().collect())
+/// };
+///
+/// // From the Moon's entry into Aquarius, as Raman has it.
+/// let found = panchaka(&nakshatras, PanchakaStart::Aquarius, signs)?;
+/// assert_eq!((found[0].member, found[0].whole), (Panchaka::Mrityu, Interval::literal(100.5, 100.9)));
+/// assert_eq!(found[1].member, Panchaka::Agni);
+/// // From Dhanishtha's start, the signs unasked.
+/// let whole = panchaka(&nakshatras, PanchakaStart::Dhanishtha, |_| Ok(Vec::new()))?;
+/// assert_eq!(whole[0].whole, Interval::literal(100.0, 100.9));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -422,6 +648,16 @@ where
 /// since the lagna is one, and not the almanac's panchaka, which is the
 /// Moon's run through the last nakshatras and carries the recording
 /// engine's kind for each.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Panchaka, Rashi, Tithi, Vara};
+/// use teistro_panchanga::omen::panchaka_remainder;
+///
+/// // 1 + 1 + 1 + 1 = 4 leaves raja; one sign on, 5 is good.
+/// let raja = panchaka_remainder(Tithi::ShuklaPratipada, Vara::Ravivara, Nakshatra::Ashwini, Rashi::Aries);
+/// assert_eq!(raja, Some(Panchaka::Raja));
+/// assert_eq!(panchaka_remainder(Tithi::ShuklaPratipada, Vara::Ravivara, Nakshatra::Ashwini, Rashi::Taurus), None);
+/// ```
 #[must_use]
 pub fn panchaka_remainder(
     tithi: Tithi,
@@ -549,6 +785,35 @@ const TWO_FOOTED: [Nakshatra; 4] = [
 const PUSHKARA_VARAS: [Vara; 3] = [Vara::Ravivara, Vara::Mangalavara, Vara::Shanivara];
 
 /// The muhurta yogas of a day.
+///
+/// ```
+/// # use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // A Sunday from 100.25 to 101.25: Hasta at sunrise, Chitra from 100.7,
+/// # // and Shukla Saptami all the day.
+/// # let day = Interval::literal(100.25, 101.25);
+/// # let star = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// # let nakshatras: Vec<_> =
+/// #     [star(Nakshatra::Hasta, 99.8, 100.7), star(Nakshatra::Chitra, 100.7, 101.7)].into_iter().flatten().collect();
+/// # let tithis: Vec<_> = Span::new(Tithi::ShuklaSaptami, Interval::literal(100.0, 101.3), day).into_iter().collect();
+///
+/// use teistro_panchanga::omen::{CLASSICAL, yogas};
+///
+/// use teistro_core::catalogue::MuhurtaYoga;
+///
+/// // Hasta on a Sunday: Amrit Siddhi and Sarvartha Siddhi.
+/// let kinds: Vec<_> = yogas(CLASSICAL, Vara::Ravivara, &nakshatras, &tithis)?.iter().map(|y| y.yoga).collect();
+/// assert_eq!(kinds, [MuhurtaYoga::AmritSiddhi, MuhurtaYoga::SarvarthaSiddhi]);
+/// // A Bhadra tithi on a Sunday in two-footed Chitra: Dwipushkar.
+/// let chitra = &nakshatras[1..];
+/// let dvitiya: Vec<_> = Span::new(Tithi::ShuklaDvitiya, Interval::literal(100.7, 101.3), day).into_iter().collect();
+/// let found = yogas(CLASSICAL, Vara::Ravivara, chitra, &dvitiya)?;
+/// assert_eq!(found.iter().map(|y| y.yoga).collect::<Vec<_>>(), [MuhurtaYoga::Dwipushkar]);
+/// assert_eq!(yogas("ACME", Vara::Ravivara, chitra, &dvitiya).unwrap_err().field(), Some("panchanga.muhurta_tables"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`teistro-panchanga` has a run example on every public item.**
+**Numbers:** none. Its 226 items join the crates `check-doc-examples`
+holds there, thirty-three in all. The almanac's examples read Wednesday
+25 November 2026 in Kathmandu over the analytic test provider, and its
+first year a death at that noon; the limb examples read the same sky in
+Lahiri's zodiac and assert what any sky must give, spans that join and
+a lunar month of 29.2 to 29.9 days. The ashauch, festival, omen and
+period examples run on synthetic days whose answers the rule fixes, a
+Sunday's rahu kaala in its last eighth and Hasta on a Sunday making
+Amrit Siddhi.
+
 **`teistro-dasha` has a run example on every public item.**
 **Numbers:** none. Its 294 items join the crates `check-doc-examples`
 holds there, thirty-two in all. The nakshatra examples run a Moon a

@@ -97,6 +97,12 @@ const SAPINDA: &str =
 
 impl AshauchTable {
     /// The name [`AshauchTable::dharmasindhu`] answers under.
+    ///
+    /// ```
+    /// use teistro_panchanga::ashauch::AshauchTable;
+    ///
+    /// assert_eq!(AshauchTable::dharmasindhu().name, AshauchTable::DHARMASINDHU);
+    /// ```
     pub const DHARMASINDHU: &'static str = "DHARMASINDHU";
 
     /// The *Dharmasindhu*'s table, the default (`03-design/ashauch.md`
@@ -105,6 +111,17 @@ impl AshauchTable {
     /// Mādhava's abroad, which it prefers), the last night's two days and
     /// its last quarter's three, and the mother's bar to the 30th or 40th
     /// day.
+    ///
+    /// ```
+    /// use teistro_panchanga::ashauch::{AshauchTable, NightRule};
+    ///
+    /// // The night in thirds; a full period's late news three days to 90 days.
+    /// let table = AshauchTable::dharmasindhu();
+    /// assert_eq!(table.night, NightRule::Thirds);
+    /// assert_eq!(table.late[0].within_days, 90);
+    /// table.check()?;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn dharmasindhu() -> AshauchTable {
         AshauchTable {

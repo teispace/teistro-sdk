@@ -41,6 +41,44 @@ const MOST_STEPS: usize = 4;
 
 /// One lunar year: when it opened, the name it carries, and the Jovian
 /// years that ran in it.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # // Wednesday 25 November 2026.
+/// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+/// # let sunrise = day.day.sunrise;
+///
+/// // The year holding the day, from one Chaitra Shukla Pratipada to the next.
+/// let years = almanac.years(&date(11, 25), &date(11, 25), &kathmandu)?.value;
+/// let year = &years[0];
+/// assert!(year.contains(sunrise));
+/// assert!((354.0..386.0).contains(&(year.ended.get() - year.began.get())));
+/// assert!(year.opened.get() < year.began.get());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct LunarYear {
@@ -73,6 +111,46 @@ impl LunarYear {
     /// A year from its opening, its two sunrises, and the Jovian counts
     /// that name it and the next year ([`name_counts`]); the southern
     /// count ignores them and reads the Shaka year.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// use teistro_core::settings::SamvatsaraCount;
+    /// use teistro_panchanga::year::LunarYear;
+    ///
+    /// // The southern count reads the Shaka year and expunges nothing.
+    /// let found = &almanac.years(&date(11, 25), &date(11, 25), &kathmandu)?.value[0];
+    /// let southern = LunarYear::of(SamvatsaraCount::Chandramana, found.opened, found.began, found.ended, (0, 0))?;
+    /// assert_eq!(southern.samvatsara, teistro_calendar::samvatsara::chandramana(i64::from(southern.shaka)));
+    /// assert_eq!((southern.vikrama, southern.lupta), (found.vikrama, None));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -125,6 +203,42 @@ impl LunarYear {
 
     /// Whether an instant falls in the year: from its first sunrise up
     /// to the next year's.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// let years = almanac.years(&date(11, 25), &date(11, 25), &kathmandu)?.value;
+    /// // From its first sunrise, up to the next year's.
+    /// assert!(years[0].contains(years[0].began));
+    /// assert!(!years[0].contains(years[0].ended));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn contains(&self, instant: JulianDay<Utc>) -> bool {
         self.began.get() <= instant.get() && instant.get() < self.ended.get()
@@ -142,6 +256,44 @@ impl LunarYear {
     /// Years as JSON, every catalogue member written as its full key
     /// where [`LunarYear::MEMBERS`] says: what a boundary section carries
     /// and seals.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// use teistro_panchanga::year::LunarYear;
+    ///
+    /// let years = almanac.years(&date(11, 25), &date(11, 25), &kathmandu)?.value;
+    /// let json = LunarYear::in_full(&years)?;
+    /// assert_eq!(json[0]["vikrama"], 2083);
+    /// assert!(json[0]["samvatsara"].as_str().is_some_and(|key| key.starts_with("samvatsara.")));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -163,6 +315,16 @@ impl LunarYear {
 /// 354-day lunar year, and the run ends at the next 384-day one, which
 /// the calendar puts at most three years on. `samvatsara-measured.md`
 /// holds this against the full recursion over six centuries.
+///
+/// ```
+/// use teistro_core::settings::SamvatsaraCount;
+/// use teistro_panchanga::year::{MOST_ADVANCED_YEARS, name_counts};
+///
+/// // A lead carried that far back is still read.
+/// let running = [10, 10, 11, 12, 13];
+/// assert_eq!(MOST_ADVANCED_YEARS, running.len() - 1);
+/// assert_eq!(name_counts(&running, MOST_ADVANCED_YEARS, SamvatsaraCount::Barhaspatya), Some(14));
+/// ```
 pub const MOST_ADVANCED_YEARS: usize = 4;
 
 /// The Jovian count naming the year at `index` of a run of consecutive
@@ -177,6 +339,20 @@ pub const MOST_ADVANCED_YEARS: usize = 4;
 /// until a year whose count rises by two, which is where the expunged
 /// name falls. Walking back from the year: a repeat behind an unbroken
 /// run of ones leads, a rise of two ends it.
+///
+/// ```
+/// use teistro_core::settings::SamvatsaraCount;
+/// use teistro_panchanga::year::name_counts;
+///
+/// // A running count repeated: the second year is named one ahead...
+/// let running = [10, 10, 12];
+/// assert_eq!(name_counts(&running, 1, SamvatsaraCount::Barhaspatya), Some(11));
+/// // ...until a rise of two, where the expunged name fell.
+/// assert_eq!(name_counts(&running, 2, SamvatsaraCount::Barhaspatya), Some(12));
+/// assert_eq!(name_counts(&running, 1, SamvatsaraCount::BarhaspatyaRunning), Some(10));
+/// // The first year has nothing behind it to say.
+/// assert_eq!(name_counts(&running, 0, SamvatsaraCount::Barhaspatya), None);
+/// ```
 #[must_use]
 pub fn name_counts(running: &[i64], index: usize, count: SamvatsaraCount) -> Option<i64> {
     let own = *running.get(index)?;
@@ -203,6 +379,41 @@ pub fn name_counts(running: &[i64], index: usize, count: SamvatsaraCount) -> Opt
 /// a month late and a kshaya one a month early. A Chaitra whose previous
 /// month is also Chaitra is the nija one after an adhika Chaitra, and
 /// the year opened with the adhika.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_core::catalogue::Masa;
+/// use teistro_panchanga::limb::masa_at;
+/// use teistro_panchanga::year::chaitra_opening;
+///
+/// // A new moon with the Sun in Pisces, within the year before.
+/// let opened = chaitra_opening(&longitudes, zodiac, window.from)?;
+/// assert_eq!(masa_at(&longitudes, opened, zodiac)?, Masa::Chaitra);
+/// assert!((0.0..385.0).contains(&(window.from.get() - opened.get())));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

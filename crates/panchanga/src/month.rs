@@ -22,6 +22,18 @@ use teistro_core::catalogue::{Masa, Paksha, Tithi};
 use teistro_core::settings::LunarMonth as Convention;
 
 /// The lunar month a day falls in, under both conventions.
+///
+/// ```
+/// use teistro_calendar::lunisolar::MonthKind;
+/// use teistro_core::catalogue::{Masa, Paksha, Tithi};
+/// use teistro_core::settings::LunarMonth as Convention;
+/// use teistro_panchanga::month;
+///
+/// // A dark-half day of amanta Shravana is purnimanta Bhadrapada's.
+/// let day = month::of(Masa::Shravana, Tithi::KrishnaAshtami, Convention::Amanta, MonthKind::Nija);
+/// assert_eq!((day.amanta, day.purnimanta, day.paksha), (Masa::Shravana, Masa::Bhadrapada, Paksha::Krishna));
+/// assert_eq!(day.month, day.amanta);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PanchangaLunarMonth"))]
@@ -49,6 +61,16 @@ pub struct LunarMonth {
 
 impl LunarMonth {
     /// The month under a convention, whichever the value leads with.
+    ///
+    /// ```
+    /// use teistro_calendar::lunisolar::MonthKind;
+    /// use teistro_core::catalogue::{Masa, Tithi};
+    /// use teistro_core::settings::LunarMonth as Convention;
+    /// use teistro_panchanga::month;
+    ///
+    /// let day = month::of(Masa::Shravana, Tithi::KrishnaAshtami, Convention::Amanta, MonthKind::Nija);
+    /// assert_eq!(day.under(Convention::Purnimanta), Masa::Bhadrapada);
+    /// ```
     #[must_use]
     pub const fn under(&self, convention: Convention) -> Masa {
         match convention {
@@ -71,6 +93,20 @@ impl LunarMonth {
 /// names Parama Ekadashi, the adhika dark 11th of 12 August 2023,
 /// "Shravana, Krishna", and Aja Ekadashi a month later, a nija dark 11th,
 /// "Bhadrapada, Krishna" (`03-design/calendar-indian-lunisolar.md` §4).
+///
+/// ```
+/// use teistro_calendar::lunisolar::MonthKind;
+/// use teistro_core::catalogue::{Masa, Tithi};
+/// use teistro_core::settings::LunarMonth as Convention;
+/// use teistro_panchanga::month;
+///
+/// // A bright-half day has one name under both conventions.
+/// let bright = month::of(Masa::Shravana, Tithi::ShuklaAshtami, Convention::Purnimanta, MonthKind::Nija);
+/// assert_eq!((bright.month, bright.amanta, bright.purnimanta), (Masa::Shravana, Masa::Shravana, Masa::Shravana));
+/// // An adhika month keeps its name in its dark half under both.
+/// let adhika = month::of(Masa::Shravana, Tithi::KrishnaAshtami, Convention::Purnimanta, MonthKind::Adhika);
+/// assert_eq!(adhika.purnimanta, Masa::Shravana);
+/// ```
 #[must_use]
 pub fn of(amanta: Masa, at_sunrise: Tithi, convention: Convention, kind: MonthKind) -> LunarMonth {
     let paksha = at_sunrise.attributes().paksha;

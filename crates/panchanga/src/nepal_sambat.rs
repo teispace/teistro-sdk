@@ -38,6 +38,43 @@ const YEAR_AT_ZERO: i32 = -880;
 /// The tithi that completes the date is the day's own
 /// (`Panchanga::limbs`), and `sdk.calendar.nepalSambatMonth`,
 /// `nepalSambatHalf` and `nepalSambatDate` say the rest in every locale.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # // Wednesday 25 November 2026.
+/// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+/// # let sunrise = day.day.sunrise;
+///
+/// use teistro_core::catalogue::Paksha;
+///
+/// let ns = day.nepal_sambat();
+/// assert_eq!((ns.year, ns.month), (1147, 1));
+/// assert!(matches!(ns.paksha, Paksha::Shukla | Paksha::Krishna));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct NepalSambatDate {
@@ -85,6 +122,43 @@ impl NepalSambatDate {
     /// where [`NepalSambatDate::MEMBERS`] says: what a boundary section
     /// carries and seals.
     ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// use teistro_panchanga::NepalSambatDate;
+    ///
+    /// let json = NepalSambatDate::in_full(&[day.nepal_sambat()])?;
+    /// assert_eq!(json[0]["year"], 1147);
+    /// assert!(json[0]["paksha"].as_str().is_some_and(|key| key.starts_with("paksha.")));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INTERNAL` if the dates do not serialise, which a value this
@@ -102,6 +176,17 @@ impl NepalSambatDate {
 
 /// The Nepal Sambat year of a day in an amanta month, by its sunrise:
 /// the civil year its [`middle_of`] falls in, less 880.
+///
+/// ```
+/// use teistro_core::catalogue::Masa;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_panchanga::nepal_sambat::year_of;
+///
+/// // Kartika of late 2026 opens Nepal Sambat 1147; the Ashwina before it
+/// // closes 1146.
+/// assert_eq!(year_of(Masa::Kartika, JulianDay::literal(2_461_369.5)), 1147);
+/// assert_eq!(year_of(Masa::Ashwina, JulianDay::literal(2_461_330.5)), 1146);
+/// ```
 #[must_use]
 pub fn year_of(amanta: Masa, sunrise: JulianDay<Utc>) -> i32 {
     year_from_fixed(middle_of(amanta, sunrise)) + YEAR_AT_ZERO
@@ -116,6 +201,18 @@ pub fn year_of(amanta: Masa, sunrise: JulianDay<Utc>) -> i32 {
 /// civil year, a day in seventy years. The measured page holds the count
 /// to the lunar years the almanac itself finds, and reports how near a
 /// civil new year the estimate came.
+///
+/// ```
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+/// use teistro_core::catalogue::Masa;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_panchanga::nepal_sambat::middle_of;
+///
+/// // The middle of NS 1147 falls in 2027, the civil year it is counted by.
+/// let middle = middle_of(Masa::Kartika, JulianDay::literal(2_461_369.5));
+/// assert_eq!(Gregorian.date_of(middle)?.year, 2027);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn middle_of(amanta: Masa, sunrise: JulianDay<Utc>) -> FixedDay {
     let (day, _) = FixedDay::from_jd(sunrise);
@@ -128,6 +225,14 @@ pub fn middle_of(amanta: Masa, sunrise: JulianDay<Utc>) -> FixedDay {
 }
 
 /// The Nepal Sambat month an amanta month is, 1 for Kachhala.
+///
+/// ```
+/// use teistro_core::catalogue::Masa;
+/// use teistro_panchanga::nepal_sambat::month_of;
+///
+/// assert_eq!(month_of(Masa::Kartika), 1);
+/// assert_eq!(month_of(Masa::Ashwina), 12);
+/// ```
 #[must_use]
 #[allow(clippy::cast_possible_truncation, reason = "at most 12")]
 pub const fn month_of(amanta: Masa) -> u8 {
