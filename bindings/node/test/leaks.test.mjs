@@ -95,11 +95,25 @@ const collect = (() => {
   return runInNewContext('gc');
 })();
 
-/** Collects twice, so a finaliser queued by the first runs before a read. */
+/** How little the bytes in use may move between two reads to count as settled. */
+const QUIET = 4 * 1024;
+/** The most collections one settling waits through. */
+const SETTLE_PASSES = 100;
+
+/**
+ * Collects until the finalisers have freed what they held: until two reads
+ * a collection apart agree to `QUIET`. Not a fixed number of passes, which
+ * Java's test found too few on a loaded runner.
+ */
 async function settle() {
-  for (let pass = 0; pass < 2; pass += 1) {
+  let last = inUse();
+  let quiet = 0;
+  for (let pass = 0; pass < SETTLE_PASSES && quiet < 2; pass += 1) {
     collect();
-    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    const now = inUse();
+    quiet = Math.abs(now - last) <= QUIET ? quiet + 1 : 0;
+    last = now;
   }
 }
 
