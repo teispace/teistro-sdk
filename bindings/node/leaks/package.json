@@ -1,0 +1,9 @@
+{
+  "name": "teistro-node-leaks",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The foreign-function library the Node binding's leak test reads the C allocator through: pinned here, installed by `cargo xtask check-node`, and no dependency of the package itself.",
+  "devDependencies": {
+    "koffi": "3.3.3"
+  }
+}

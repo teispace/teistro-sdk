@@ -142,6 +142,16 @@ yet; the first run is verify's. A new `valgrind` job runs
 memory never written or already freed, bad frees, and definite or
 indirect leaks.
 
+**Node is held to giving back native memory, and so is a context
+dropped without being disposed in Dart.** **Numbers:** a context kept a
+cycle fails both at about 21 KB a cycle, as in Java. Node's
+`test/leaks.test.mjs` reads the C allocator through koffi 3.3.3. koffi
+is pinned in `bindings/node/leaks/` and installed by `check-node`; the
+package does not depend on it. It covers a context disposed, one
+dropped and collected, and a chart with positions. Dart's leak file
+starts the VM's own service and asks it for a full collection, so its
+finaliser path is measured too.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:
