@@ -251,7 +251,8 @@ mod tests {
 
     #[test]
     fn a_kept_block_closes_and_keeps_its_blank_lines() {
-        let doc = "A.\n\n```\nlet x = 1;\n```\n\n```text\n1\n\n2\n```\n\nB.\n\n```rust\nf();\n```\n\nC.";
+        let doc =
+            "A.\n\n```\nlet x = 1;\n```\n\n```text\n1\n\n2\n```\n\nB.\n\n```rust\nf();\n```\n\nC.";
         // The prose after a kept block survives, and the block's own blank
         // line is not taken for one either side of a dropped example.
         assert_eq!(
