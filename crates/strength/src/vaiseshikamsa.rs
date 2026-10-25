@@ -61,6 +61,19 @@ const SHODASHAVARGA_LADDER: [Vaiseshikamsa; 15] = [
 ];
 
 /// What a Vaiseshikamsa reads of a chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_strength::VimshopakaChart;
+///
+/// // Every graha in its exaltation sign in all sixteen vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let chart = VimshopakaChart::from_fn(|_, graha| exaltation(graha));
+/// use teistro_strength::{VaiseshikamsaChart, VaiseshikamsaReading};
+///
+/// let reading = VaiseshikamsaReading::of(&VaiseshikamsaChart { signs: chart, arudha_lagna: Rashi::Aries, impaired: [false; 7] });
+/// assert_eq!(reading.grahas.len(), 7);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct VaiseshikamsaChart {
     /// The seven grahas' signs in the sixteen vargas, as the Vimshopaka
@@ -75,6 +88,22 @@ pub struct VaiseshikamsaChart {
 }
 
 /// A graha's standing in one scheme.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_strength::VimshopakaChart;
+///
+/// // Every graha in its exaltation sign in all sixteen vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let chart = VimshopakaChart::from_fn(|_, graha| exaltation(graha));
+/// use teistro_core::catalogue::Vaiseshikamsa;
+/// use teistro_strength::{VaiseshikamsaChart, VaiseshikamsaReading};
+///
+/// let reading = VaiseshikamsaReading::of(&VaiseshikamsaChart { signs: chart, arudha_lagna: Rashi::Aries, impaired: [false; 7] });
+/// // Good in all six of the shadvarga: Kundala.
+/// let sun = reading.grahas[0];
+/// assert_eq!((sun.shadvarga.good_vargas, sun.shadvarga.name), (6, Some(Vaiseshikamsa::Kundala)));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Standing {
@@ -86,6 +115,26 @@ pub struct Standing {
 }
 
 /// One graha's Vaiseshikamsa.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_strength::VimshopakaChart;
+///
+/// // Every graha in its exaltation sign in all sixteen vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let chart = VimshopakaChart::from_fn(|_, graha| exaltation(graha));
+/// use teistro_core::catalogue::Vaiseshikamsa;
+/// use teistro_strength::{VaiseshikamsaChart, VaiseshikamsaReading};
+///
+/// let impaired = [true, false, false, false, false, false, false];
+/// let reading = VaiseshikamsaReading::of(&VaiseshikamsaChart { signs: chart, arudha_lagna: Rashi::Aries, impaired });
+/// let sun = reading.grahas[0];
+/// // Seven of seven, ten of ten, sixteen of sixteen; and combust, say.
+/// assert_eq!(sun.saptavarga.name, Some(Vaiseshikamsa::Mukuta));
+/// assert_eq!(sun.dashavarga.name, Some(Vaiseshikamsa::Shridhama));
+/// assert_eq!(sun.shodashavarga.name, Some(Vaiseshikamsa::Shrivallabha));
+/// assert!(sun.impaired);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaVaiseshikamsa {
@@ -104,6 +153,19 @@ pub struct GrahaVaiseshikamsa {
 }
 
 /// A chart's Vaiseshikamsa.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_strength::VimshopakaChart;
+///
+/// // Every graha in its exaltation sign in all sixteen vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let chart = VimshopakaChart::from_fn(|_, graha| exaltation(graha));
+/// use teistro_strength::{VaiseshikamsaChart, VaiseshikamsaReading};
+///
+/// let reading = VaiseshikamsaReading::of(&VaiseshikamsaChart { signs: chart, arudha_lagna: Rashi::Aries, impaired: [false; 7] });
+/// assert!(reading.grahas.iter().all(|graha| graha.shodashavarga.good_vargas == 16));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct VaiseshikamsaReading {
@@ -131,6 +193,19 @@ fn name(ladder: &[Vaiseshikamsa], good_vargas: u8) -> Option<Vaiseshikamsa> {
 
 impl VaiseshikamsaReading {
     /// A chart's Vaiseshikamsa.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_strength::{VaiseshikamsaChart, VaiseshikamsaReading, VimshopakaChart};
+    ///
+    /// // Every graha in Aries in every varga, the arudha lagna in Libra: its
+    /// // kendras' lords are Venus, the Moon, Mars and Saturn, Aries's own lord
+    /// // among them, so Aries is good for all.
+    /// let signs = VimshopakaChart::from_fn(|_, _| Rashi::Aries);
+    /// let reading = VaiseshikamsaReading::of(&VaiseshikamsaChart { signs, arudha_lagna: Rashi::Libra, impaired: [false; 7] });
+    /// assert!(reading.grahas.iter().all(|graha| graha.shadvarga.good_vargas == 6));
+    /// assert_eq!(reading.grahas[Graha::Saturn as usize].graha, Graha::Saturn);
+    /// ```
     #[must_use]
     pub fn of(chart: &VaiseshikamsaChart) -> VaiseshikamsaReading {
         let kendra_lords = [0_u16, 3, 6, 9].map(|step| {

@@ -20,12 +20,13 @@ schema = ["dep:schemars", "teistro-core/schema", "teistro-state/schema", "teistr
 teistro-aspect = { path = "../aspect" }
 teistro-core = { path = "../core" }
 teistro-state = { path = "../state" }
+teistro-vargas = { path = "../vargas" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 serde_json = "1"
-teistro-vargas = { path = "../vargas" }
+teistro-chart = { path = "../chart" }
 
 [lints]
 workspace = true

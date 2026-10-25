@@ -1,6 +1,7 @@
 //! Sripati's Shadbala against B.V. Raman's worked Standard Horoscope
 //! (*Graha and Bhava Balas*, thirteenth edition, Examples 3 to 56): every
-//! component of every graha, from the inputs his Chapter I gives, under
+//! component of every graha, from the inputs his Chapter I gives
+//! ([`teistro_strength::sample`]), under
 //! [`ShadbalaRules::SRIPATI`]; and its Bhava balas (Example 59) under
 //! [`BhavaBalaRules::SRIPATI`].
 //!
@@ -15,78 +16,14 @@
     reason = "tests fail by panicking and index what they built"
 )]
 
-use teistro_core::angle::Nas;
-use teistro_core::catalogue::{Graha, Rashi, Varga};
-use teistro_core::quantity::Degrees;
+use teistro_core::catalogue::Graha;
 use teistro_strength::ashtakavarga::GRAHAS;
-use teistro_strength::bhava_bala::{BhavaBalaChart, BhavaBalaReading, BhavaBalaRules, BhavaGraha};
-use teistro_strength::shadbala::{
-    SAPTAVARGAJA_VARGAS, ShadbalaChart, ShadbalaGraha, ShadbalaReading, ShadbalaRules,
-};
-use teistro_vargas::{Scheme, sign};
+use teistro_strength::bhava_bala::{BhavaBalaReading, BhavaBalaRules};
+use teistro_strength::sample::{standard_bhavas, standard_horoscope};
+use teistro_strength::shadbala::{ShadbalaReading, ShadbalaRules};
 
 /// How far Raman's degrees-and-minutes arithmetic moves a component.
 const ROUNDING: f64 = 0.15;
-
-/// Degrees, minutes and seconds.
-fn dms(degrees: f64, minutes: f64, seconds: f64) -> f64 {
-    degrees + minutes / 60.0 + seconds / 3600.0
-}
-
-/// Raman's Standard Horoscope, from his Chapter I and the examples that use it.
-fn standard_horoscope() -> ShadbalaChart {
-    // Art. 6: nirayana longitudes, Sun to Saturn.
-    let longitudes = [
-        dms(180.0, 53.0, 55.0),
-        dms(311.0, 17.0, 19.0),
-        dms(229.0, 30.0, 34.0),
-        dms(181.0, 31.0, 34.0),
-        dms(84.0, 0.0, 49.0),
-        dms(171.0, 9.0, 56.0),
-        dms(124.0, 22.0, 41.0),
-    ];
-    // Example 32: the ayanamsha, 21° 16′.
-    let ayanamsha = dms(21.0, 16.0, 0.0);
-    // Art. 7: Makara rising, so each graha's house counts from Capricorn.
-    let lagna = Rashi::Capricorn as u8;
-    let varga_sign = |varga: Varga, longitude: f64| {
-        sign(
-            &Scheme::of(varga),
-            Nas::from_degrees(Degrees::try_new(longitude).unwrap()),
-        )
-    };
-    let house = |longitude: f64| (varga_sign(Varga::D1, longitude) as u8 + 12 - lagna) % 12 + 1;
-    // 16 October 1918, 2h 6m 16s p.m. LMT at 77° 35′ E: 8h 55m 56s UT.
-    let day = 2_421_882.5;
-    let ut = |hours: f64, minutes: f64, seconds: f64| day + dms(hours, minutes, seconds) / 24.0;
-    ShadbalaChart {
-        grahas: longitudes.map(|longitude| ShadbalaGraha {
-            longitude,
-            tropical: longitude + ayanamsha,
-            latitude: 0.0,
-            house: house(longitude),
-        }),
-        // Art. 6: Rahu.
-        rahu: Some(dms(234.0, 23.0, 47.0)),
-        vargas: SAPTAVARGAJA_VARGAS.map(|varga| longitudes.map(|l| varga_sign(varga, l))),
-        instant: ut(8.0, 55.0, 56.0),
-        // Art. 5: sunrise 5h 54m LMT, a day of 29 ghatis 20 vighatis.
-        sunrise: ut(0.0, 43.0, 40.0),
-        sunset: ut(0.0, 43.0, 40.0) + 29.333_333 / 60.0,
-        next_sunrise: ut(0.0, 43.0, 40.0) + 1.0,
-        after_midnight: false,
-        civil_day: 2_421_883,
-        // Examples 22 and 31: a Wednesday, in the Moon's hora.
-        weekday_lord: Graha::Mercury,
-        hora_lord: Graha::Moon,
-        sankranti_lord: None,
-        // Art. 29: the first and tenth bhava madhyas.
-        ascendant: dms(298.0, 27.0, 0.0),
-        midheaven: dms(216.0, 36.0, 0.0),
-        ayanamsha,
-        obliquity: 24.0,
-    }
-}
 
 /// One component's worked values, Sun to Saturn.
 type Row = (
@@ -234,47 +171,7 @@ fn raman_s_ishta_and_kashta_phalas_reproduce() {
 
 #[test]
 fn raman_s_bhava_balas_reproduce() {
-    let horoscope = standard_horoscope();
-    // Art. 29: the twelve bhava madhyas.
-    let madhya = [
-        (298.0, 27.0),
-        (331.0, 10.0),
-        (3.0, 53.0),
-        (36.0, 36.0),
-        (63.0, 53.0),
-        (91.0, 10.0),
-        (118.0, 27.0),
-        (151.0, 10.0),
-        (183.0, 53.0),
-        (216.0, 36.0),
-        (243.0, 53.0),
-        (271.0, 10.0),
-    ]
-    .map(|(d, m)| dms(d, m, 0.0));
-    let mut grahas = [BhavaGraha {
-        longitude: 0.0,
-        house: 1,
-    }; 9];
-    for (slot, at) in grahas.iter_mut().zip(horoscope.grahas) {
-        slot.longitude = at.longitude;
-    }
-    // Example 58: the lords' Shadbalas as Example 59 takes them (the Sun's,
-    // lord of no madhya, never read).
-    let chart = BhavaBalaChart {
-        madhya,
-        grahas,
-        shadbala: [
-            (424.94, 15.86),
-            (389.80, -21.73),
-            (298.14, 0.95),
-            (537.02, 15.64),
-            (433.77, -16.04),
-            (376.15, 18.47),
-            (389.21, 7.21),
-        ],
-        instant: horoscope.instant,
-        day: (horoscope.sunrise, horoscope.sunset, horoscope.next_sunrise),
-    };
+    let chart = standard_bhavas();
     let reading = BhavaBalaReading::of(&chart, BhavaBalaRules::SRIPATI);
     // Example 59: Digbala, the net drishti, and the total of each bhava. Its
     // Saturn on the first is printed 13.00 and summed as 12.00, and its Mars

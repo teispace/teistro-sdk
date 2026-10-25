@@ -31,6 +31,12 @@ use teistro_state::dignity::{is_shadow, varga_dignity};
 use crate::bhava_bala::NINE;
 
 /// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+///
+/// ```
+/// use teistro_strength::DashaPhase;
+///
+/// assert_eq!(DashaPhase::ALL[0], DashaPhase::Commencement);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -49,6 +55,12 @@ impl DashaPhase {
     /// Spelled in the house style — lower case, the words the verses use —
     /// because a phase is not a catalogue member and a message matching on
     /// it needs a string to match, exactly as `LifeClass` does.
+    ///
+    /// ```
+    /// use teistro_strength::DashaPhase;
+    ///
+    /// assert!(DashaPhase::ALL.iter().all(|phase| !phase.key().is_empty()));
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -67,6 +79,27 @@ impl DashaPhase {
 }
 
 /// One graha as the dasha phala reads it.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_core::settings::ShantaSign;
+/// use teistro_strength::{DashaPhalaChart, DashaPhalaGraha, DashaPhalaReading};
+///
+/// // Every graha exalted, at 5° of its sign, in the lagna, in all seven vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let signs = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn, Graha::Rahu, Graha::Ketu].map(exaltation);
+/// let chart = DashaPhalaChart {
+///     grahas: signs.map(|sign| DashaPhalaGraha {
+///         longitude: f64::from(sign as u8) * 30.0 + 5.0,
+///         house: 1,
+///         dignity: Dignity::Exalted,
+///         retrograde: false,
+///     }),
+///     vargas: [signs; 7],
+/// };
+/// let reading = DashaPhalaReading::of(&chart, ShantaSign::Friendly);
+/// assert_eq!(chart.grahas[0].longitude, 5.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DashaPhalaGraha {
     /// Its sidereal longitude, degrees.
@@ -80,6 +113,27 @@ pub struct DashaPhalaGraha {
 }
 
 /// What the dasha phala reads of a chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_core::settings::ShantaSign;
+/// use teistro_strength::{DashaPhalaChart, DashaPhalaGraha, DashaPhalaReading};
+///
+/// // Every graha exalted, at 5° of its sign, in the lagna, in all seven vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let signs = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn, Graha::Rahu, Graha::Ketu].map(exaltation);
+/// let chart = DashaPhalaChart {
+///     grahas: signs.map(|sign| DashaPhalaGraha {
+///         longitude: f64::from(sign as u8) * 30.0 + 5.0,
+///         house: 1,
+///         dignity: Dignity::Exalted,
+///         retrograde: false,
+///     }),
+///     vargas: [signs; 7],
+/// };
+/// let reading = DashaPhalaReading::of(&chart, ShantaSign::Friendly);
+/// assert_eq!(reading.grahas.len(), 9);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DashaPhalaChart {
     /// The nine grahas, Sun to Ketu.
@@ -91,6 +145,36 @@ pub struct DashaPhalaChart {
 }
 
 /// One graha's dasha phala.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_core::settings::ShantaSign;
+/// use teistro_strength::{DashaPhalaChart, DashaPhalaGraha, DashaPhalaReading};
+///
+/// // Every graha exalted, at 5° of its sign, in the lagna, in all seven vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let signs = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn, Graha::Rahu, Graha::Ketu].map(exaltation);
+/// let chart = DashaPhalaChart {
+///     grahas: signs.map(|sign| DashaPhalaGraha {
+///         longitude: f64::from(sign as u8) * 30.0 + 5.0,
+///         house: 1,
+///         dignity: Dignity::Exalted,
+///         retrograde: false,
+///     }),
+///     vargas: [signs; 7],
+/// };
+/// let reading = DashaPhalaReading::of(&chart, ShantaSign::Friendly);
+/// use teistro_core::catalogue::Nature;
+/// use teistro_strength::DashaPhase;
+///
+/// let sun = &reading.grahas[0];
+/// // Exalted in all seven: 60 in the rasi and 30 in each of the six others.
+/// assert_eq!((sun.subhanka, sun.asubhanka), (240.0, 0.0));
+/// assert_eq!(sun.nature, Nature::Benefic);
+/// // The first decanate gives its effects at the dasha's commencement.
+/// assert_eq!(sun.phase, DashaPhase::Commencement);
+/// assert!(sun.favourable && !sun.unfavourable);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaDashaPhala {
@@ -115,6 +199,30 @@ pub struct GrahaDashaPhala {
 }
 
 /// A chart's dasha phala.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_core::settings::ShantaSign;
+/// use teistro_strength::{DashaPhalaChart, DashaPhalaGraha, DashaPhalaReading};
+///
+/// // Every graha exalted, at 5° of its sign, in the lagna, in all seven vargas.
+/// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+/// let signs = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn, Graha::Rahu, Graha::Ketu].map(exaltation);
+/// let chart = DashaPhalaChart {
+///     grahas: signs.map(|sign| DashaPhalaGraha {
+///         longitude: f64::from(sign as u8) * 30.0 + 5.0,
+///         house: 1,
+///         dignity: Dignity::Exalted,
+///         retrograde: false,
+///     }),
+///     vargas: [signs; 7],
+/// };
+/// let reading = DashaPhalaReading::of(&chart, ShantaSign::Friendly);
+/// use teistro_strength::DashaPhase;
+///
+/// // Rahu and Ketu give theirs the other way about: at the end.
+/// assert_eq!(reading.grahas[Graha::Rahu as usize].phase, DashaPhase::End);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DashaPhalaReading {
@@ -172,6 +280,27 @@ fn phase(graha: Graha, longitude: f64, retrograde: bool) -> DashaPhase {
 
 impl DashaPhalaReading {
     /// A chart's dasha phala.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// use teistro_core::settings::ShantaSign;
+    /// use teistro_strength::{DashaPhalaChart, DashaPhalaGraha, DashaPhalaReading};
+    ///
+    /// // Every graha exalted, at 5° of its sign, in the lagna, in all seven vargas.
+    /// let exaltation = |graha: Graha| graha.attributes().exaltation.map_or(Rashi::Aries, |at| at.sign);
+    /// let signs = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn, Graha::Rahu, Graha::Ketu].map(exaltation);
+    /// let chart = DashaPhalaChart {
+    ///     grahas: signs.map(|sign| DashaPhalaGraha {
+    ///         longitude: f64::from(sign as u8) * 30.0 + 5.0,
+    ///         house: 1,
+    ///         dignity: Dignity::Exalted,
+    ///         retrograde: false,
+    ///     }),
+    ///     vargas: [signs; 7],
+    /// };
+    /// let reading = DashaPhalaReading::of(&chart, ShantaSign::Friendly);
+    /// assert!(reading.grahas.iter().take(7).all(|graha| graha.favourable));
+    /// ```
     #[must_use]
     pub fn of(chart: &DashaPhalaChart, shanta: ShantaSign) -> DashaPhalaReading {
         let [rasi, ..] = chart.vargas;

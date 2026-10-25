@@ -148,6 +148,25 @@ pub const RECORDED_RASHI_MEASURES: [u16; SIGNS] = [7, 10, 8, 4, 10, 8, 7, 8, 9, 
 pub const GRAHA_MEASURES: [u16; 7] = [5, 5, 8, 5, 10, 7, 5];
 
 /// What an Ashtakavarga reads of a chart.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana};
+/// use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
+///
+/// // The Standard Horoscope's signs: Makara rising, the Sun in Libra.
+/// let chart = AshtakavargaChart {
+///     lagna: Rashi::Capricorn,
+///     signs: [Rashi::Libra, Rashi::Aquarius, Rashi::Scorpio, Rashi::Libra, Rashi::Gemini, Rashi::Virgo, Rashi::Leo],
+/// };
+/// let rules = AshtakavargaRules {
+///     shodhana: Shodhana::EachGraha,
+///     ekadhipatya: Ekadhipatya::Bphs,
+///     moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
+/// };
+/// let reading = AshtakavargaReading::of(&chart, rules);
+/// assert_eq!(reading.grahas.len(), 7);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct AshtakavargaChart {
     /// The lagna's sign.
@@ -157,6 +176,26 @@ pub struct AshtakavargaChart {
 }
 
 /// The choices an Ashtakavarga is reduced under.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana};
+/// use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
+///
+/// // The Standard Horoscope's signs: Makara rising, the Sun in Libra.
+/// let chart = AshtakavargaChart {
+///     lagna: Rashi::Capricorn,
+///     signs: [Rashi::Libra, Rashi::Aquarius, Rashi::Scorpio, Rashi::Libra, Rashi::Gemini, Rashi::Virgo, Rashi::Leo],
+/// };
+/// let rules = AshtakavargaRules {
+///     shodhana: Shodhana::EachGraha,
+///     ekadhipatya: Ekadhipatya::Bphs,
+///     moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
+/// };
+/// // Reduced in the sum of the seven instead, as the recording engine does.
+/// let sarva = AshtakavargaRules { shodhana: Shodhana::Sarva, ..rules };
+/// assert!(AshtakavargaReading::of(&chart, sarva).grahas.iter().all(|graha| graha.reduced.is_none()));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AshtakavargaRules {
@@ -179,6 +218,13 @@ const fn counted_before_the_knob() -> MoonBinduFromJupiter {
 
 impl AshtakavargaRules {
     /// The rules the settings choose, from their `strength` group.
+    ///
+    /// ```
+    /// use teistro_strength::ashtakavarga::AshtakavargaRules;
+    ///
+    /// let settings = teistro_chart::sample::resolved().settings;
+    /// assert_eq!(AshtakavargaRules::of(&settings).shodhana, settings.strength.shodhana);
+    /// ```
     #[must_use]
     pub const fn of(settings: &Settings) -> AshtakavargaRules {
         AshtakavargaRules {
@@ -190,6 +236,31 @@ impl AshtakavargaRules {
 }
 
 /// One graha's Ashtakavarga.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana};
+/// use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
+///
+/// // The Standard Horoscope's signs: Makara rising, the Sun in Libra.
+/// let chart = AshtakavargaChart {
+///     lagna: Rashi::Capricorn,
+///     signs: [Rashi::Libra, Rashi::Aquarius, Rashi::Scorpio, Rashi::Libra, Rashi::Gemini, Rashi::Virgo, Rashi::Leo],
+/// };
+/// let rules = AshtakavargaRules {
+///     shodhana: Shodhana::EachGraha,
+///     ekadhipatya: Ekadhipatya::Bphs,
+///     moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
+/// };
+/// use teistro_core::catalogue::Graha;
+///
+/// let reading = AshtakavargaReading::of(&chart, rules);
+/// // BPHS ch. 66's totals, whatever the chart: the Sun's 48, Jupiter's 56.
+/// let total = |graha: Graha| reading.grahas[graha as usize].bindus.iter().map(|b| u32::from(*b)).sum::<u32>();
+/// assert_eq!((total(Graha::Sun), total(Graha::Jupiter), total(Graha::Saturn)), (48, 56, 39));
+/// let sun = &reading.grahas[0];
+/// assert_eq!(sun.yoga_pinda, sun.rashi_pinda + sun.graha_pinda);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaAshtakavarga {
@@ -210,6 +281,28 @@ pub struct GrahaAshtakavarga {
 }
 
 /// A chart's Ashtakavarga.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana};
+/// use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
+///
+/// // The Standard Horoscope's signs: Makara rising, the Sun in Libra.
+/// let chart = AshtakavargaChart {
+///     lagna: Rashi::Capricorn,
+///     signs: [Rashi::Libra, Rashi::Aquarius, Rashi::Scorpio, Rashi::Libra, Rashi::Gemini, Rashi::Virgo, Rashi::Leo],
+/// };
+/// let rules = AshtakavargaRules {
+///     shodhana: Shodhana::EachGraha,
+///     ekadhipatya: Ekadhipatya::Bphs,
+///     moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
+/// };
+/// let reading = AshtakavargaReading::of(&chart, rules);
+/// assert_eq!(reading.sarva.iter().map(|b| u32::from(*b)).sum::<u32>(), 337);
+/// // The reductions only ever take away.
+/// assert!(reading.reduced.iter().zip(&reading.trikona).all(|(after, before)| after <= before));
+/// assert!(reading.trikona.iter().zip(&reading.sarva).all(|(after, before)| after <= before));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AshtakavargaReading {
@@ -285,6 +378,20 @@ pub fn prastara(chart: &AshtakavargaChart, reading: MoonBinduFromJupiter) -> [[u
 }
 
 /// Each graha's bindus by sign: its [`prastara`]'s contributors, counted.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::settings::MoonBinduFromJupiter;
+/// use teistro_strength::ashtakavarga::{AshtakavargaChart, bindus};
+///
+/// let chart = AshtakavargaChart { lagna: Rashi::Aries, signs: [Rashi::Leo; 7] };
+/// let twelfth = bindus(&chart, MoonBinduFromJupiter::Twelfth);
+/// let second = bindus(&chart, MoonBinduFromJupiter::Second);
+/// // The two readings part on the Moon's row alone, and hold its 49 alike.
+/// assert_eq!(twelfth[0], second[0]);
+/// assert_eq!(twelfth[1].iter().map(|b| u32::from(*b)).sum::<u32>(), 49);
+/// assert_eq!(second[1].iter().map(|b| u32::from(*b)).sum::<u32>(), 49);
+/// ```
 #[must_use]
 pub fn bindus(chart: &AshtakavargaChart, reading: MoonBinduFromJupiter) -> [[u8; SIGNS]; 7] {
     #[allow(
@@ -387,6 +494,26 @@ fn dot<T: Copy + Into<u32>>(values: &[T; SIGNS], measures: &[u16; SIGNS]) -> u32
 
 impl AshtakavargaReading {
     /// A chart's Ashtakavarga, reduced under `rules`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana};
+    /// use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
+    ///
+    /// // The Standard Horoscope's signs: Makara rising, the Sun in Libra.
+    /// let chart = AshtakavargaChart {
+    ///     lagna: Rashi::Capricorn,
+    ///     signs: [Rashi::Libra, Rashi::Aquarius, Rashi::Scorpio, Rashi::Libra, Rashi::Gemini, Rashi::Virgo, Rashi::Leo],
+    /// };
+    /// let rules = AshtakavargaRules {
+    ///     shodhana: Shodhana::EachGraha,
+    ///     ekadhipatya: Ekadhipatya::Bphs,
+    ///     moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
+    /// };
+    /// let reading = AshtakavargaReading::of(&chart, rules);
+    /// assert_eq!(reading.rules, rules);
+    /// assert!(reading.grahas.iter().all(|graha| graha.reduced.is_some()));
+    /// ```
     #[must_use]
     pub fn of(chart: &AshtakavargaChart, rules: AshtakavargaRules) -> AshtakavargaReading {
         let bindus = bindus(chart, rules.moon_bindu_from_jupiter);

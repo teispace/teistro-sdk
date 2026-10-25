@@ -17,6 +17,9 @@
 //!   the drishtis it receives, under BPHS's, Sripati's or the engine's reading
 //!   (`docs/03-design/bhava-bala-measured.md`).
 //!
+//! - [`sample`]: B.V. Raman's Standard Horoscope, whose every component his
+//!   *Graha and Bhava Balas* works, to try the measures on.
+//!
 //! ```
 //! use teistro_core::catalogue::Rashi;
 //! use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana};
@@ -39,6 +42,7 @@
 pub mod ashtakavarga;
 pub mod bhava_bala;
 pub mod dasha_phala;
+pub mod sample;
 pub mod shadbala;
 pub mod vaiseshikamsa;
 pub mod vimshopaka;
