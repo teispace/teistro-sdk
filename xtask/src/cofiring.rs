@@ -867,7 +867,7 @@ const REVIEWED: [(&[&str], &str); 98] = [
 /// shown alive. Each was found at Kathmandu's latitude, at Kathmandu itself
 /// or on the meridian that puts the lagna the rule asks for on the horizon,
 /// except an eclipse, found where it is seen with the luminary just risen.
-const FIXTURES: [(&str, f64, f64, f64); 230] = [
+const FIXTURES: [(&str, f64, f64, f64); 224] = [
     // Brihat Jataka ch. 23's figures the computed sky misses: v. 12's two
     // eclipses at a place that sees the luminary just risen in the rising
     // sign, the Moon's in 1846 at 60° S and the Sun's in 1969 at 25° N, and
@@ -1133,20 +1133,51 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
         27.7172,
         85.324,
     ),
-    // v. 70's two, which only Leo, Virgo, Sagittarius and Pisces rising can
-    // hold (C471): of 4820 two-hourly instants of 1801 to 2398 at Kathmandu
-    // with every lord placed as the verse asks, 108 also have the strengths
-    // for the Duryoga and 13 for the king. A Leo lagna on 1823-01-15 and a
-    // Virgo lagna on 1964-02-14.
+    // v. 70's king, which only Leo, Virgo, Sagittarius and Pisces rising can
+    // hold (C471): of the 2135 two-hourly instants of 1801 to 2398 at
+    // Kathmandu with every lord placed as the verse asks, 11 also have the
+    // strengths under the Shadbala defaults of 2026-10-25. 2017-08-16.
     (
-        "PHALADEEPIKA_DURYOGA_OF_THE_LORDS",
-        2_386_911.083_3,
+        "PHALADEEPIKA_KING_BY_THE_LORDS",
+        2_457_986.916_8,
+        27.7172,
+        85.324,
+    ),
+    // Rules the sky held before the Shadbala defaults of 2026-10-25 and
+    // now holds on none of its charts, each found by placing the grahas a
+    // day at a time over 1801 to 2398 and asking the SDK every 20 minutes
+    // of the days that place them. The three texts' twins, the Sun in a
+    // quadruped sign and the rest strong in dual signs (one condition, so
+    // one instant): 2989 of 29304 instants. 1821-04-15.
+    (
+        "BJ_JANMA_SUN_IN_A_QUADRUPED_SIGN_THE_REST_STRONG_IN_DUAL_SIGNS_TWINS",
+        2_386_271.208_3,
         27.7172,
         85.324,
     ),
     (
-        "PHALADEEPIKA_KING_BY_THE_LORDS",
-        2_438_440.166_8,
+        "BPHS_TANU_SUN_IN_A_QUADRUPED_SIGN_THE_REST_STRONG_IN_DUAL_SIGNS_TWINS",
+        2_386_271.208_3,
+        27.7172,
+        85.324,
+    ),
+    (
+        "PARIJATA_JANMA_TWINS_IN_ONE_SAC_SUN_IN_A_QUADRUPED_SIGN",
+        2_386_271.208_3,
+        27.7172,
+        85.324,
+    ),
+    // Five exalted and strong: 124 instants, on 8 days. 1896-04-17.
+    (
+        "PARIJATA_RAJA_FIVE_EXALTED_AND_STRONG",
+        2_413_666.708_3,
+        27.7172,
+        85.324,
+    ),
+    // Five strong grahas in one sign: 2763 instants. 1803-09-16.
+    (
+        "SARAVALI_PRAVRAJYA_STRONG_SUN_MOON_MARS_MERCURY_SATURN",
+        2_379_849.541_7,
         27.7172,
         85.324,
     ),
@@ -1203,12 +1234,6 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
         85.324,
     ),
     (
-        "PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON",
-        2_417_139.0,
-        27.7172,
-        -89.502,
-    ),
-    (
         "PARIJATA_SATURN_IN_A_JUPITER_NAVAMSHA_LAGNA_LORD_EXALTED",
         2_416_949.0,
         27.7172,
@@ -1249,12 +1274,6 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
         2_437_699.083_33,
         27.7172,
         -37.399,
-    ),
-    (
-        "PHALADEEPIKA_WEAK_MOON_IN_A_DUSTHANA",
-        2_450_123.749_13,
-        27.7172,
-        85.324,
     ),
     (
         "SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS",
@@ -1356,12 +1375,6 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
     (
         "SARAVALI_RAJA_VENUS_RISING_IN_A_SIGN_OF_JUPITER_MERCURY_EXALTED",
         2_404_003.687_5,
-        27.7172,
-        85.324,
-    ),
-    (
-        "SARAVALI_RAJA_MOON_SIGN_LORD_IN_AN_UPACHAYA_FROM_THE_MOON",
-        2_379_895.258_6,
         27.7172,
         85.324,
     ),
@@ -1559,15 +1572,6 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
     ("BJ_NABHASA_SAMUDRA", 2_412_258.5, 27.7172, 97.14),
     ("BJ_NABHASA_CHAKRA", 2_412_258.5, 27.7172, 65.74),
     ("BJ_NABHASA_GOLA", 2_437_699.083_33, 27.7172, -37.399),
-    // Brihat Jataka ch. 15 v. 2: the leader combust, found by sign day by
-    // day, 1800 to 2398, and confirmed at Kathmandu.
-    (
-        "BJ_PRAVRAJYA_MARS_COMBUST",
-        2_379_202.944_4,
-        27.7172,
-        85.324,
-    ),
-    ("BJ_PRAVRAJYA_SATURN_COMBUST", 2_379_857.0, 27.7172, 85.324),
     // Jataka Parijata chs. 5A and 6: found by sign day by day, 1800 to
     // 2398, or drawn over 1900 to 2100, and confirmed at Kathmandu.
     (
@@ -1758,7 +1762,7 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
     ),
     (
         "PARIJATA_GARBHA_MANY_LAGNA_IN_SAGITTARIUS_LAST_NAVAMSHA",
-        2_380_862.5,
+        2_380_863.5,
         27.7172,
         -59.061,
     ),
@@ -1987,38 +1991,8 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
     // to 2100, Brihat Jataka ch. 15 v. 2's own instants, or the half hours
     // about a day the sign search found, at Kathmandu.
     (
-        "SARAVALI_PRAVRAJYA_MARS_STRONGEST_ASPECTED_BY_ANOTHER",
-        2_447_915.521_5,
-        27.7172,
-        85.324,
-    ),
-    (
-        "SARAVALI_PRAVRAJYA_MARS_STRONGEST_COMBUST",
-        2_379_202.944_4,
-        27.7172,
-        85.324,
-    ),
-    (
-        "SARAVALI_PRAVRAJYA_SATURN_STRONGEST_ASPECTED_BY_ANOTHER",
-        2_478_116.825_8,
-        27.7172,
-        85.324,
-    ),
-    (
-        "SARAVALI_PRAVRAJYA_SATURN_STRONGEST_COMBUST",
-        2_379_857.0,
-        27.7172,
-        85.324,
-    ),
-    (
         "SARAVALI_PRAVRAJYA_STRONG_SUN_MARS_JUPITER_SATURN",
-        2_451_658.099_5,
-        27.7172,
-        85.324,
-    ),
-    (
-        "SARAVALI_PRAVRAJYA_STRONG_MARS_MERCURY_JUPITER_VENUS_SATURN",
-        2_386_253.708_3,
+        2_451_653.099_5,
         27.7172,
         85.324,
     ),
@@ -2030,7 +2004,7 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
     ),
     (
         "SARAVALI_PRAVRAJYA_STRONG_SUN_MARS_MERCURY_JUPITER_VENUS_SATURN",
-        2_386_253.708_3,
+        2_386_254.0,
         27.7172,
         85.324,
     ),
@@ -2057,7 +2031,7 @@ const FIXTURES: [(&str, f64, f64, f64); 230] = [
 ];
 
 /// Rules the sky never holds and no instant searched does, each with why.
-const UNSEEN: [(&str, &str); 84] = [
+const UNSEEN: [(&str, &str); 82] = [
     (
         "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
         "It asks all seven below their required Shadbala at once, the Moon among them, and her Shadbala rarely falls below her six rupas: no instant from 1900 to 2100 with the seven in apoklimas has every one weak.",
@@ -2188,10 +2162,6 @@ const UNSEEN: [(&str, &str); 84] = [
         "A Moon aspecting the second while the Sun stands in it is opposite the Sun, near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there.",
     ),
     (
-        "SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY",
-        "Mercury casts only the seventh aspect and keeps near the Sun, so the Moon he aspects is near full, and no instant from 1900 to 2100 has her Shadbala below her six rupas there.",
-    ),
-    (
         "SARAVALI_RAJA_ARIES_RISING_JUPITER_AND_SUN_IN_LEO_FIGURE",
         "No sky from 1801 to 2398 has its seven grahas in those signs, searched four times a day.",
     ),
@@ -2238,10 +2208,6 @@ const UNSEEN: [(&str, &str); 84] = [
     (
         "SARAVALI_RAJA_VENUS_AND_MERCURY_IN_KENDRAS_FROM_SATURN_THE_REST_EXALTED",
         "No sky from 1801 to 2398 has the Sun, the Moon, Mars, Jupiter and Saturn exalted at once, searched every ten minutes of a day they allow.",
-    ),
-    (
-        "PARIJATA_RAJA_LAGNA_LORD_IN_AN_UPACHAYA_FROM_THE_MOON_BENEFICS_IN_KENDRAS_MALEFICS_WEAK",
-        "It asks the Sun, Mars and Saturn all below their required Shadbala: of 2,000 instants drawn from 1900 to 2100 the Sun is weak on 482, Mars on 54, the two together on 12 and all three on none, and none of the 16,848 instants every twenty minutes of the 300 days from 1800 to 2398 that place the rest has them weak together.",
     ),
     (
         "PARIJATA_RAJA_SIX_EXALTED",

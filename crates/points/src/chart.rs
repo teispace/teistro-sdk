@@ -354,8 +354,37 @@ mod tests {
         reason = "tests fail by panicking, and two longitudes computed the same way are equal or the code is wrong"
     )]
 
-    use super::Points;
+    use super::{Points, Withheld};
     use teistro_core::catalogue::{Point, PointFamily};
+    use teistro_core::error::{Error, Status};
+
+    #[test]
+    fn a_family_refused_for_its_own_reason_is_withheld_and_any_other_refusal_is_the_charts() {
+        let mut points = Points {
+            found: Vec::new(),
+            withheld: Vec::new(),
+        };
+        // A time lagna past the hours its verse counts is withheld.
+        let far = Error::new(Status::OutOfRange, "102 hours from sunrise");
+        points
+            .keep(&[Point::HoraLagna], Status::OutOfRange, Err(far))
+            .unwrap();
+        assert_eq!(
+            points.withheld,
+            [Withheld {
+                point: Point::HoraLagna,
+                status: Status::OutOfRange,
+                reason: String::from("102 hours from sunrise"),
+            }]
+        );
+        // Any other refusal is the chart's, and nothing more is withheld.
+        let other = Error::new(Status::Unsupported, "no arc");
+        let refused = points
+            .keep(&[Point::GhatiLagna], Status::OutOfRange, Err(other))
+            .unwrap_err();
+        assert_eq!(refused.status, Status::Unsupported);
+        assert_eq!(points.withheld.len(), 1);
+    }
 
     #[test]
     fn a_family_holds_what_the_catalogue_says_it_does() {

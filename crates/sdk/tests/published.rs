@@ -414,6 +414,48 @@ fn a_set_is_refused_by_name() {
     assert_eq!(refusal(other).field(), Some("published[0].format"));
     let no_day = refusal(set("np", 1, vec![set_entry(&rule, &date(2027, 2, 30))]));
     assert_eq!(no_day.field(), Some("published[0].entries[0].day"));
+
+    // A dated rule and an anniversary under new keys are rules of the
+    // request too: a `SET` may name them and an `ADD` may not.
+    let mut dated = FestivalPack::NepalPanchanga.dated().remove(0);
+    dated.key = String::from("A_CIVIL_DAY");
+    let barkhi = teistro::festival::Anniversary {
+        key: String::from("GRANDFATHER"),
+        origin: teistro::festival::Origin::Lunar {
+            month: teistro::catalogue::Masa::Kartika,
+            tithi: teistro::catalogue::Tithi::ShuklaDashami,
+            adhika: false,
+            half: teistro::festival::Half::default(),
+            at: None,
+        },
+        kind: teistro::festival::AnniversaryKind::Shraddha,
+        window: None,
+        first_year_adhika: teistro::festival::FirstYearAdhika::Adhika,
+        in_samsarpa: teistro::festival::InSamsarpa::Also,
+        janma: teistro::festival::JanmaOptions::default(),
+    };
+    let widened = request.clone().with_dated(dated).with_anniversary(barkhi);
+    for key in ["A_CIVIL_DAY", "GRANDFATHER"] {
+        let carried = widened
+            .clone()
+            .with_published(set("np", 1, vec![set_entry(key, &day)]));
+        carried.check().unwrap();
+        let added = widened.clone().with_published(set(
+            "np",
+            1,
+            vec![PublishedEntry::Add {
+                key: String::from(key),
+                day: PublishedDay::from(&day),
+                names: BTreeMap::default(),
+                window: None,
+                source: String::from("p. 1"),
+            }],
+        ));
+        assert_eq!(
+            added.check().unwrap_err().field(),
+            Some("published[0].entries[0].key")
+        );
+    }
 }
 
 #[test]
@@ -605,6 +647,63 @@ fn a_published_day_is_explained_by_the_first_change_that_gives_it() {
             name: String::from("Honolulu")
         }
     );
+}
+
+/// A fast, a following observance and a dated one are explained as an
+/// observance is: each found again under every change by its rule, set
+/// and day, and each pack asked with its own rule of that kind.
+#[test]
+fn a_fast_a_following_and_a_dated_day_are_explained_too() {
+    let modern = context("nepali-default", Ephemeris::Builtin);
+    let (from, to) = autumn();
+    let plain = FestivalRequest::from(FestivalPack::NepalPanchanga);
+    let ours = modern
+        .almanac()
+        .festivals(
+            &from,
+            &to,
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            &plain,
+        )
+        .unwrap()
+        .value;
+    let fast = ours.ekadashis.first().expect("an autumn holds an Ekadashi");
+    let dated = ours
+        .dated
+        .first()
+        .expect("an autumn holds a dated observance");
+    let following = FestivalPack::NepalPanchanga
+        .following()
+        .into_iter()
+        .find_map(|rule| ours.observances.iter().find(|o| o.rule == rule.key))
+        .expect("an autumn holds a following observance");
+    let moved = [
+        (&fast.rule, &fast.day),
+        (&dated.rule, &dated.day),
+        (&following.rule, &following.day),
+    ];
+    let request = plain.clone().with_published(set(
+        "np",
+        1,
+        moved
+            .iter()
+            .map(|(rule, day)| set_entry(rule, &shifted(day, 1)))
+            .collect(),
+    ));
+    let explained = reasons(&modern, &request, &[], &[]);
+    let mut asked: Vec<&str> = moved.iter().map(|(rule, _)| rule.as_str()).collect();
+    let mut answered: Vec<&str> = explained.iter().map(|r| r.rule.as_str()).collect();
+    asked.sort_unstable();
+    answered.sort_unstable();
+    assert_eq!(answered, asked);
+    for reason in &explained {
+        let (_, day) = moved
+            .iter()
+            .find(|(rule, _)| **rule == reason.rule)
+            .unwrap();
+        assert_eq!((&reason.day, &reason.computed), (&shifted(day, 1), *day));
+    }
 }
 
 #[test]
