@@ -31,9 +31,49 @@ use crate::balance::{BalanceAtBirth, Written, spatial, temporal};
 use crate::row::{Seat, UduRow};
 
 /// The deepest a path goes: the six named levels, from mahadasha to deha.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::{DashaSystem, Graha};
+/// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+/// # use teistro_core::settings::root;
+/// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+/// #
+/// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+/// # // of his nineteen years remain at birth.
+/// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+/// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+/// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+/// # // Saturn's balance ends 12 years 8 months after birth.
+/// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+/// use teistro_dasha::MAX_DEPTH;
+///
+/// // Mahadasha to deha: six levels at most.
+/// let deepest = dasha.at(JulianDay::literal(2_450_000.5), Depth::try_new(MAX_DEPTH as u8)?);
+/// assert_eq!(deepest.len(), MAX_DEPTH);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const MAX_DEPTH: usize = 6;
 
 /// What a dasha is computed from: the birth and the Moon at it.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::{DashaSystem, Graha};
+/// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+/// # use teistro_core::settings::root;
+/// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+/// #
+/// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+/// # // of his nineteen years remain at birth.
+/// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+/// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+/// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+/// # // Saturn's balance ends 12 years 8 months after birth.
+/// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+/// assert_eq!(dasha.seed(), teistro_core::catalogue::Nakshatra::Anuradha);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Birth {
     /// The instant of birth.
@@ -48,6 +88,20 @@ pub struct Birth {
 impl Birth {
     /// The Moon's nakshatra span a temporal balance reads.
     ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_dasha::Birth;
+    ///
+    /// let spatial = Birth { instant: JulianDay::literal(2_447_995.5), moon: Nas::new(0), moon_span: None };
+    /// assert_eq!(spatial.span().unwrap_err().field(), Some("moon_span"));
+    /// let stay = Interval::literal(2_447_994.5, 2_447_995.6);
+    /// let temporal = Birth { moon_span: Some(stay), ..spatial };
+    /// assert_eq!(temporal.span()?, stay);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// No span, named `moon_span`.
@@ -61,6 +115,17 @@ impl Birth {
 
 /// The choices a dasha is computed under, which the settings' `dasha`
 /// group holds.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_core::settings::{AfterCycle, Balance, BirthPeriod, YearLength, root};
+/// use teistro_dasha::Rules;
+///
+/// // The root settings: spatial, Julian years, compressed, the cycle ending.
+/// let rules = Rules::of(&root().dasha, DashaSystem::Vimshottari);
+/// assert_eq!((rules.balance, rules.year_length), (Balance::Spatial, YearLength::Julian36525));
+/// assert_eq!((rules.birth_period, rules.after_cycle), (BirthPeriod::Compressed, AfterCycle::End));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "DashaRules"))]
@@ -89,6 +154,15 @@ const fn three_each() -> AshtottariGrouping {
 impl Rules {
     /// The rules the settings' `dasha` group gives a system: its own year
     /// length, and the group's balance, birth period, cycle end and overflow.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    /// use teistro_core::settings::root;
+    /// use teistro_dasha::Rules;
+    ///
+    /// let settings = root().dasha;
+    /// assert_eq!(Rules::of(&settings, DashaSystem::Yogini).balance, settings.balance);
+    /// ```
     #[must_use]
     pub fn of(settings: &teistro_core::settings::Dasha, system: DashaSystem) -> Rules {
         Rules {
@@ -108,6 +182,18 @@ impl Rules {
     /// The rules a consumer's system runs under: its definition's own year
     /// length, and the settings group's balance, birth period, cycle end and
     /// overflow, as a catalogued system takes them.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_core::settings::{YearLength, root};
+    /// use teistro_dasha::{DashaDefinition, Rules, UduDefinition};
+    ///
+    /// // A consumer's system takes its year from its definition.
+    /// let mut traya = UduDefinition::of("ACME_TRAYA", Nakshatra::Ashwini);
+    /// traya.year_length = YearLength::Savana360;
+    /// let rules = Rules::of_definition(&root().dasha, &DashaDefinition::from(traya));
+    /// assert_eq!(rules.year_length, YearLength::Savana360);
+    /// ```
     #[must_use]
     pub fn of_definition(
         settings: &teistro_core::settings::Dasha,
@@ -126,6 +212,16 @@ impl Rules {
 
 /// Where a period sits: the cycle it runs in, and its place among its
 /// parent's children at every level.
+///
+/// ```
+/// use teistro_dasha::Path;
+///
+/// let path = Path::root(0, 2).child(5).ok_or("a level below")?;
+/// assert_eq!(path.to_string(), "2/5");
+/// // A later cycle is written before a colon.
+/// assert_eq!(Path::root(1, 0).to_string(), "1:0");
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Path {
     cycle: u32,
@@ -135,6 +231,13 @@ pub struct Path {
 
 impl Path {
     /// The mahadasha at `index` of `cycle`.
+    ///
+    /// ```
+    /// use teistro_dasha::Path;
+    ///
+    /// let root = Path::root(0, 3);
+    /// assert_eq!((root.cycle(), root.depth(), root.indices()), (0, 1, &[3][..]));
+    /// ```
     #[must_use]
     pub const fn root(cycle: u32, index: u8) -> Path {
         let mut indices = [0; MAX_DEPTH];
@@ -147,12 +250,26 @@ impl Path {
     }
 
     /// The cycle, 0 for the one birth falls in.
+    ///
+    /// ```
+    /// use teistro_dasha::Path;
+    ///
+    /// assert_eq!(Path::root(2, 0).cycle(), 2);
+    /// ```
     #[must_use]
     pub const fn cycle(self) -> u32 {
         self.cycle
     }
 
     /// How many levels deep: 1 for a mahadasha.
+    ///
+    /// ```
+    /// use teistro_dasha::Path;
+    ///
+    /// let antar = Path::root(0, 1).child(4).ok_or("a level below")?;
+    /// assert_eq!(antar.depth(), 2);
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub const fn depth(self) -> usize {
         self.depth as usize
@@ -161,12 +278,32 @@ impl Path {
     /// The place at each level, from the mahadasha down. A child's place is
     /// its place in its parent's sequence, so under the elapsed reading the
     /// first child after birth may not be 0.
+    ///
+    /// ```
+    /// use teistro_dasha::Path;
+    ///
+    /// let path = Path::root(0, 1).child(4).and_then(|p| p.child(0)).ok_or("two levels below")?;
+    /// assert_eq!(path.indices(), [1, 4, 0]);
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn indices(&self) -> &[u8] {
         self.indices.get(..self.depth()).unwrap_or(&[])
     }
 
     /// The child at `index`, or nothing at the deepest level.
+    ///
+    /// ```
+    /// use teistro_dasha::{MAX_DEPTH, Path};
+    ///
+    /// // Nothing below the sixth level.
+    /// let mut path = Path::root(0, 0);
+    /// for _ in 1..MAX_DEPTH {
+    ///     path = path.child(0).ok_or("a level below")?;
+    /// }
+    /// assert_eq!(path.child(0), None);
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn child(self, index: u8) -> Option<Path> {
         let mut path = self;
@@ -199,6 +336,28 @@ impl fmt::Debug for Path {
 }
 
 /// One period of the tree.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::{DashaSystem, Graha};
+/// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+/// # use teistro_core::settings::root;
+/// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+/// #
+/// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+/// # // of his nineteen years remain at birth.
+/// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+/// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+/// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+/// # // Saturn's balance ends 12 years 8 months after birth.
+/// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+/// // The first mahadasha is Saturn's balance, from birth.
+/// let first = dasha.mahadasha(0, 0).ok_or("a mahadasha")?;
+/// assert_eq!((first.lord, first.sign, first.path.to_string()), (Graha::Saturn, None, "0".to_owned()));
+/// assert_eq!(first.interval.from, birth.instant);
+/// assert!((first.interval.to.get() - saturn_ends).abs() < 1e-6);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Period {
     /// Its lord.
@@ -259,6 +418,26 @@ impl Period {
     }
 
     /// The span its sub-periods are shares of.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// // Compressed by default: the birth period's sub-periods share its balance.
+    /// let first = dasha.mahadasha(0, 0).ok_or("a mahadasha")?;
+    /// assert_eq!(first.whole(), first.interval);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn whole(&self) -> Interval {
         self.whole
@@ -271,6 +450,28 @@ impl Period {
 }
 
 /// The periods running at an instant, from the mahadasha down.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::{DashaSystem, Graha};
+/// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+/// # use teistro_core::settings::root;
+/// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+/// #
+/// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+/// # // of his nineteen years remain at birth.
+/// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+/// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+/// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+/// # // Saturn's balance ends 12 years 8 months after birth.
+/// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+/// let later = JulianDay::literal(2_447_995.5 + 20.0 * 365.25);
+/// let chain = dasha.at(later, Depth::try_new(3)?);
+/// let lords: Vec<Graha> = chain.iter().map(|period| period.lord).collect();
+/// assert_eq!(lords[0], Graha::Mercury);
+/// assert_eq!(lords.len(), 3);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Chain {
     periods: [Option<Period>; MAX_DEPTH],
@@ -291,23 +492,100 @@ impl Chain {
     }
 
     /// How many levels it holds; none before birth or past the cycle's end.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// assert_eq!(dasha.at(JulianDay::literal(2_450_000.5), Depth::try_new(2)?).len(), 2);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn len(&self) -> usize {
         self.len
     }
 
     /// Whether no period runs.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// // Nothing runs before birth.
+    /// assert!(dasha.at(JulianDay::literal(2_447_000.5), Depth::try_new(3)?).is_empty());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.len == 0
     }
 
     /// The periods, from the mahadasha down.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// // Each level runs inside the one above it.
+    /// let chain = dasha.at(JulianDay::literal(2_450_000.5), Depth::try_new(3)?);
+    /// let levels: Vec<_> = chain.iter().collect();
+    /// assert!(levels.windows(2).all(|w| w[0].interval.from.get() <= w[1].interval.from.get() && w[1].interval.to.get() <= w[0].interval.to.get()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn iter(&self) -> impl Iterator<Item = &Period> {
         self.periods.iter().take(self.len).flatten()
     }
 
     /// The deepest period, when one runs.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// let chain = dasha.at(JulianDay::literal(2_450_000.5), Depth::try_new(3)?);
+    /// assert_eq!(chain.deepest().map(|period| period.path.depth()), Some(3));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn deepest(&self) -> Option<&Period> {
         self.iter().last()
@@ -318,28 +596,172 @@ impl Chain {
 /// at an instant and a period's children, from which the chain at an
 /// instant and a window's periods follow the same way for every kind of
 /// dasha.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::{DashaSystem, Graha};
+/// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+/// # use teistro_core::settings::root;
+/// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+/// #
+/// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+/// # // of his nineteen years remain at birth.
+/// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+/// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+/// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+/// # // Saturn's balance ends 12 years 8 months after birth.
+/// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+/// // Every kind of dasha reads the same way: the mahadashas, then their children.
+/// let lords: Vec<Graha> = dasha.mahadashas().map(|period| period.lord).collect();
+/// assert_eq!(lords, [Graha::Saturn, Graha::Mercury, Graha::Ketu, Graha::Venus, Graha::Sun, Graha::Moon, Graha::Mars, Graha::Rahu, Graha::Jupiter]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub trait Timeline {
     /// How many children a period has at most.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// // Nine lords, nine sub-periods each.
+    /// assert_eq!(dasha.breadth(), 9);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     fn breadth(&self) -> usize;
 
     /// The mahadasha at `index` of `cycle`, 0 for the one birth falls in; nothing
     /// past the cycle's mahadashas, or past its end when the rules end it.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// let mercury = dasha.mahadasha(0, 1).ok_or("a mahadasha")?;
+    /// assert_eq!(mercury.lord, Graha::Mercury);
+    /// assert!((mercury.interval.from.get() - saturn_ends).abs() < 1e-6);
+    /// // The cycle ends under the root settings: no second one.
+    /// assert_eq!(dasha.mahadasha(1, 0), None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     fn mahadasha(&self, cycle: u32, index: usize) -> Option<Period>;
 
     /// The mahadashas of the birth cycle, in order.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// // The mahadashas tile the cycle.
+    /// let all: Vec<_> = dasha.mahadashas().collect();
+    /// assert!(all.windows(2).all(|w| w[0].interval.to == w[1].interval.from));
+    /// assert_eq!(all.last().map(|p| p.interval.to), Some(dasha.cycle_end()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     fn mahadashas(&self) -> impl Iterator<Item = Period> + '_ {
         (0..).map_while(|index| self.mahadasha(0, index))
     }
 
     /// The mahadasha running at a Julian day (UTC), with its cycle; nothing
     /// before birth, or past the cycle's end when the rules end it.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// assert_eq!(dasha.mahadasha_at(saturn_ends + 1.0).map(|p| p.lord), Some(Graha::Mercury));
+    /// assert_eq!(dasha.mahadasha_at(2_447_000.5), None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     fn mahadasha_at(&self, instant: f64) -> Option<Period>;
 
     /// The child of `parent` at `index` in its sequence, or nothing past
     /// the sequence or the deepest level, or when it is over before birth.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// // Mercury's antardashas start with his own.
+    /// let mercury = dasha.mahadasha(0, 1).ok_or("a mahadasha")?;
+    /// assert_eq!(dasha.child(&mercury, 0).map(|p| p.lord), Some(Graha::Mercury));
+    /// assert_eq!(dasha.child(&mercury, 9), None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     fn child(&self, parent: &Period, index: usize) -> Option<Period>;
 
     /// The children of `parent` that run, in order.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// // A period's children partition it.
+    /// let mercury = dasha.mahadasha(0, 1).ok_or("a mahadasha")?;
+    /// let antars: Vec<_> = dasha.children(&mercury).collect();
+    /// assert_eq!(antars.len(), 9);
+    /// assert_eq!((antars[0].interval.from, antars[8].interval.to), (mercury.interval.from, mercury.interval.to));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     fn children<'a>(&'a self, parent: &'a Period) -> impl Iterator<Item = Period> + 'a {
         (0..self.breadth()).filter_map(move |index| self.child(parent, index))
     }
@@ -347,6 +769,26 @@ pub trait Timeline {
     /// The periods running at `instant`, from the mahadasha down to `depth`
     /// levels; empty before birth, and past the end of the cycle when the
     /// rules end it. Allocates nothing.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// let chain = dasha.at(JulianDay::literal(saturn_ends + 1.0), Depth::try_new(2)?);
+    /// let lords: Vec<Graha> = chain.iter().map(|p| p.lord).collect();
+    /// assert_eq!(lords, [Graha::Mercury, Graha::Mercury]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     fn at(&self, instant: JulianDay<Utc>, depth: Depth) -> Chain {
         let mut chain = Chain::EMPTY;
         let jd = instant.get();
@@ -370,6 +812,30 @@ pub trait Timeline {
     /// Every period of the birth cycle to `depth` levels that overlaps
     /// `window`, depth first in time order: the tree materialised, pruned to
     /// the window, which is the cost a caller asks for by asking.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// use teistro_core::interval::Interval;
+    ///
+    /// // A year either side of Saturn's end: his last antardasha and Mercury's first.
+    /// let window = Interval::literal(saturn_ends - 100.0, saturn_ends + 100.0);
+    /// let found = dasha.periods(window, Depth::try_new(2)?);
+    /// let antars: Vec<(Graha, Graha)> = found.windows(2).filter(|w| w[1].path.depth() == 2 && w[0].path.depth() == 1).map(|w| (w[0].lord, w[1].lord)).collect();
+    /// assert_eq!(antars, [(Graha::Saturn, Graha::Jupiter), (Graha::Mercury, Graha::Mercury)]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     fn periods(&self, window: Interval, depth: Depth) -> Vec<Period> {
         fn collect<T: Timeline + ?Sized>(
             timeline: &T,
@@ -399,6 +865,25 @@ pub trait Timeline {
 }
 
 /// A nakshatra-seeded dasha of one birth.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::{DashaSystem, Graha};
+/// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+/// # use teistro_core::settings::root;
+/// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+/// #
+/// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+/// # // of his nineteen years remain at birth.
+/// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+/// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+/// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+/// # // Saturn's balance ends 12 years 8 months after birth.
+/// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+/// assert_eq!(dasha.row(), &VIMSHOTTARI);
+/// assert_eq!(dasha.seat().lord, 7);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Dasha {
     row: UduRow,
@@ -418,6 +903,28 @@ pub struct Dasha {
 
 impl Dasha {
     /// The dasha of a birth under a row and its rules.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// use teistro_core::settings::Balance;
+    ///
+    /// // A temporal balance needs the Moon's stay in its nakshatra.
+    /// let temporal = Rules { balance: Balance::Temporal, ..dasha.rules() };
+    /// assert_eq!(Dasha::new(&VIMSHOTTARI, &birth, temporal).unwrap_err().field(), Some("moon_span"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -477,18 +984,74 @@ impl Dasha {
     }
 
     /// The row the dasha runs.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// assert_eq!(dasha.row().total_years(), 120);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn row(&self) -> &UduRow {
         &self.row
     }
 
     /// The rules it runs under.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// assert_eq!(dasha.rules(), Rules::of(&root().dasha, DashaSystem::Vimshottari));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn rules(&self) -> Rules {
         self.rules
     }
 
     /// The nakshatra the Moon stood in, which seeds it.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// use teistro_core::catalogue::Nakshatra;
+    ///
+    /// assert_eq!(dasha.seed(), Nakshatra::Anuradha);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn seed(&self) -> Nakshatra {
         self.seed
@@ -496,18 +1059,75 @@ impl Dasha {
 
     /// Where the Moon's nakshatra seats it: the first lord, and whether the
     /// seed overflowed a conditional cycle.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// let seat = dasha.seat();
+    /// assert_eq!(VIMSHOTTARI.lords[seat.lord].graha, Graha::Saturn);
+    /// assert!(!seat.overflow);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn seat(&self) -> Seat {
         self.seat
     }
 
     /// The balance at birth.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// assert_eq!(dasha.balance().written.years, 12);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn balance(&self) -> BalanceAtBirth {
         self.balance
     }
 
     /// When the birth cycle ends.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_core::quantity::{Degrees, Depth, JulianDay};
+    /// # use teistro_core::settings::root;
+    /// # use teistro_dasha::{Birth, Dasha, Rules, Timeline, VIMSHOTTARI};
+    /// #
+    /// # // A Moon a third of the way into Anuradha, Saturn's nakshatra: two thirds
+    /// # // of his nineteen years remain at birth.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+    /// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+    /// # // Saturn's balance ends 12 years 8 months after birth.
+    /// # let saturn_ends = 2_447_995.5 + 19.0 * 365.25 * 2.0 / 3.0;
+    /// // The balance, then the other eight lords' 101 years.
+    /// assert!((dasha.cycle_end().get() - (saturn_ends + 101.0 * 365.25)).abs() < 1e-6);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn cycle_end(&self) -> JulianDay<Utc> {
         JulianDay::literal(self.first.last().copied().unwrap_or(self.birth.get()))

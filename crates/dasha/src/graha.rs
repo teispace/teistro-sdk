@@ -100,6 +100,16 @@ pub fn tara_lords(grahas: &[(Graha, House, f64)]) -> Option<Vec<(Graha, f64)>> {
 /// "the Moon, Mars, Mercury, Venus, Jupiter, the Sun and Saturn, in order,
 /// one, two, nine, twenty, eighteen, twenty and fifty years … from the time
 /// of birth, in order, these are the natural dashas", 120 years in all.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_dasha::NAISARGIKA_LORDS;
+///
+/// // The Moon's one year first, Saturn's fifty last: 120 in all.
+/// assert_eq!(NAISARGIKA_LORDS[0], (Graha::Moon, 1.0));
+/// assert_eq!(NAISARGIKA_LORDS[6], (Graha::Saturn, 50.0));
+/// assert_eq!(NAISARGIKA_LORDS.iter().map(|(_, years)| years).sum::<f64>(), 120.0);
+/// ```
 pub const NAISARGIKA_LORDS: [(Graha, f64); 7] = [
     (Graha::Moon, 1.0),
     (Graha::Mars, 2.0),
@@ -114,6 +124,16 @@ pub const NAISARGIKA_LORDS: [(Graha, f64); 7] = [
 /// signs counted forward from the lagna's to the karaka's, its own sign
 /// counting twelve, whatever the lagna's footedness. Santhanam's worked
 /// table under the verse counts so for every one of its eight.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::karaka_years;
+///
+/// // Leo is four signs on from Aries; the karaka in the lagna's own sign,
+/// // twelve.
+/// assert_eq!(karaka_years(Rashi::Aries, Rashi::Leo), 4);
+/// assert_eq!(karaka_years(Rashi::Aries, Rashi::Aries), 12);
+/// ```
 #[must_use]
 pub fn karaka_years(lagna: Rashi, karaka: Rashi) -> u8 {
     let ahead = (karaka.id() + 12 - lagna.id()) % 12;
@@ -124,6 +144,13 @@ pub fn karaka_years(lagna: Rashi, karaka: Rashi) -> u8 {
 
 /// The most seats a graha dasha can run: each is a graha and the sign its
 /// period is of, or none, and no two are the same.
+///
+/// ```
+/// use teistro_dasha::graha::MOST_SEATS;
+///
+/// // Each of the catalogue's twelve grahas, with each sign's period or none.
+/// assert_eq!(MOST_SEATS, 12 * 13);
+/// ```
 pub const MOST_SEATS: usize = Graha::ALL.len() * (Rashi::ALL.len() + 1);
 
 // A seat's place in a path is a `u8`.
@@ -131,6 +158,23 @@ const _: () = assert!(MOST_SEATS <= u8::MAX as usize);
 
 /// A graha dasha of one birth: its lords in the order they run, each with
 /// the years the chart gives it.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AfterCycle, GrahaDivision, YearLength};
+/// # use teistro_dasha::{GrahaDasha, NAISARGIKA_LORDS, Timeline};
+/// #
+/// # // The Naisargika dasha: its seven lords from birth, in proportion.
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let natural = GrahaDasha::new(NAISARGIKA_LORDS.to_vec(), birth, YearLength::Julian36525, GrahaDivision::Proportional, AfterCycle::End)?;
+/// // The Moon's year, then Mars's two.
+/// let mars = natural.mahadasha(0, 1).ok_or(teistro_core::Error::internal("a period"))?;
+/// assert_eq!(mars.lord, Graha::Mars);
+/// assert!((mars.interval.from.get() - birth.get() - 365.25).abs() < 1e-9);
+/// assert_eq!(natural.children(&mars).count(), 7);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct GrahaDasha {
     lords: Vec<(Graha, f64)>,
@@ -156,6 +200,30 @@ enum Shares {
 
 /// One giver of an ayurdaya dasha's years (BPHS ch. 46 vv. 201 to 203): a
 /// graha, or the lagna, whose periods are its sign's under the sign's lord.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AfterCycle, AntardashaPlace, YearLength};
+/// # use teistro_dasha::graha::Giver;
+/// # use teistro_dasha::{GrahaDasha, Timeline};
+/// #
+/// # // Aries rising; the Sun in Taurus, the Moon in Cancer, Mars in Libra and
+/// # // Saturn in Gemini, each giving its years.
+/// # let giver = |graha, sign, years, strength| Giver { graha, sign, years, strength };
+/// # let givers = [
+/// #     giver(None, Rashi::Aries, 4.0, 6.0),
+/// #     giver(Some(Graha::Sun), Rashi::Taurus, 10.0, 8.0),
+/// #     giver(Some(Graha::Moon), Rashi::Cancer, 12.0, 5.0),
+/// #     giver(Some(Graha::Mars), Rashi::Libra, 8.0, 7.0),
+/// #     giver(Some(Graha::Saturn), Rashi::Gemini, 15.0, 9.0),
+/// # ];
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let ayu = GrahaDasha::ayurdaya(&givers, 0, AntardashaPlace::Share, birth, YearLength::Julian36525, AfterCycle::End)?;
+/// assert_eq!((givers[0].lord(), givers[0].period_sign()), (Graha::Mars, Some(Rashi::Aries)));
+/// assert_eq!((givers[1].lord(), givers[1].period_sign()), (Graha::Sun, None));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Giver {
     /// The graha; nothing for the lagna.
@@ -170,12 +238,29 @@ pub struct Giver {
 
 impl Giver {
     /// The lord its periods carry: the graha, or the lagna's sign's lord.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_dasha::graha::Giver;
+    ///
+    /// // The lagna in Cancer gives its periods under the Moon.
+    /// let lagna = Giver { graha: None, sign: Rashi::Cancer, years: 4.0, strength: 6.0 };
+    /// assert_eq!(lagna.lord(), Graha::Moon);
+    /// ```
     #[must_use]
     pub fn lord(&self) -> Graha {
         self.graha.unwrap_or_else(|| self.sign.attributes().lord)
     }
 
     /// The sign its periods are of: the lagna's, and none for a graha's.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_dasha::graha::Giver;
+    ///
+    /// let sun = Giver { graha: Some(Graha::Sun), sign: Rashi::Leo, years: 10.0, strength: 8.0 };
+    /// assert_eq!(sun.period_sign(), None);
+    /// ```
     #[must_use]
     pub const fn period_sign(&self) -> Option<Rashi> {
         match self.graha {
@@ -330,6 +415,22 @@ impl GrahaDasha {
     /// of `year_length`, divided as `division` says at every level, and
     /// begun again after the last lord when `after_cycle` repeats it.
     ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, GrahaDivision, YearLength};
+    /// # use teistro_dasha::{GrahaDasha, NAISARGIKA_LORDS, Timeline};
+    /// #
+    /// # // The Naisargika dasha: its seven lords from birth, in proportion.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let natural = GrahaDasha::new(NAISARGIKA_LORDS.to_vec(), birth, YearLength::Julian36525, GrahaDivision::Proportional, AfterCycle::End)?;
+    /// // A lord named twice is refused.
+    /// let twice = vec![(Graha::Moon, 1.0), (Graha::Moon, 2.0)];
+    /// let refused = GrahaDasha::new(twice, birth, YearLength::Julian36525, GrahaDivision::Equal, AfterCycle::End);
+    /// assert_eq!(refused.unwrap_err().field(), Some("lords"));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// No lords, or a lord named twice, named `lords`; a lord's years not
@@ -358,6 +459,25 @@ impl GrahaDasha {
     /// seats they are of, in order, with their parts, scaled to sum to one,
     /// and so at every level. Two seats may share a lord when their signs
     /// differ, as the lagna and its lord do in an ayurdaya dasha.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::settings::{AfterCycle, YearLength};
+    /// use teistro_dasha::{GrahaDasha, Timeline};
+    ///
+    /// // Two seats, each period half its own and half the other's.
+    /// let seats = vec![(Graha::Sun, None, 10.0), (Graha::Moon, None, 6.0)];
+    /// let shares = vec![vec![(0, 1.0), (1, 1.0)], vec![(1, 1.0), (0, 1.0)]];
+    /// let dasha = GrahaDasha::with_shares(seats, shares, JulianDay::literal(2_451_545.0), YearLength::Julian36525, AfterCycle::End)?;
+    /// let sun = dasha.mahadasha(0, 0).ok_or(teistro_core::Error::internal("a period"))?;
+    /// let halves: Vec<f64> = dasha.children(&sun).map(|p| p.interval.days() / sun.interval.days()).collect();
+    /// assert!(halves.iter().all(|part| (part - 0.5).abs() < 1e-12));
+    /// // One row of shares a seat.
+    /// let short = GrahaDasha::with_shares(vec![(Graha::Sun, None, 10.0)], Vec::new(), JulianDay::literal(2_451_545.0), YearLength::Julian36525, AfterCycle::End);
+    /// assert_eq!(short.unwrap_err().field(), Some("shares"));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -419,6 +539,32 @@ impl GrahaDasha {
     /// whose span gives them no years left out, each for its years of
     /// `year_length`, the antardashas as [`ayurdaya_shares`] gives them
     /// under `place`.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Rashi};
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, AntardashaPlace, YearLength};
+    /// # use teistro_dasha::graha::Giver;
+    /// # use teistro_dasha::{GrahaDasha, Timeline};
+    /// #
+    /// # // Aries rising; the Sun in Taurus, the Moon in Cancer, Mars in Libra and
+    /// # // Saturn in Gemini, each giving its years.
+    /// # let giver = |graha, sign, years, strength| Giver { graha, sign, years, strength };
+    /// # let givers = [
+    /// #     giver(None, Rashi::Aries, 4.0, 6.0),
+    /// #     giver(Some(Graha::Sun), Rashi::Taurus, 10.0, 8.0),
+    /// #     giver(Some(Graha::Moon), Rashi::Cancer, 12.0, 5.0),
+    /// #     giver(Some(Graha::Mars), Rashi::Libra, 8.0, 7.0),
+    /// #     giver(Some(Graha::Saturn), Rashi::Gemini, 15.0, 9.0),
+    /// # ];
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let ayu = GrahaDasha::ayurdaya(&givers, 0, AntardashaPlace::Share, birth, YearLength::Julian36525, AfterCycle::End)?;
+    /// // From the lagna: then Mars and the Moon in kendras, the Sun, Saturn.
+    /// let lords: Vec<Graha> = ayu.lords().iter().map(|(lord, _)| *lord).collect();
+    /// assert_eq!(lords, [Graha::Mars, Graha::Mars, Graha::Moon, Graha::Sun, Graha::Saturn]);
+    /// assert_eq!(ayu.signs()[0], Some(Rashi::Aries));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -509,6 +655,19 @@ impl GrahaDasha {
     }
 
     /// The lords in the order they run, each with its years.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, GrahaDivision, YearLength};
+    /// # use teistro_dasha::{GrahaDasha, NAISARGIKA_LORDS, Timeline};
+    /// #
+    /// # // The Naisargika dasha: its seven lords from birth, in proportion.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let natural = GrahaDasha::new(NAISARGIKA_LORDS.to_vec(), birth, YearLength::Julian36525, GrahaDivision::Proportional, AfterCycle::End)?;
+    /// assert_eq!(natural.lords(), NAISARGIKA_LORDS);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn lords(&self) -> &[(Graha, f64)] {
         &self.lords
@@ -516,6 +675,20 @@ impl GrahaDasha {
 
     /// The sign each lord's period is of, in the same order: the lagna's
     /// in an ayurdaya dasha, and nothing for a graha's.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, GrahaDivision, YearLength};
+    /// # use teistro_dasha::{GrahaDasha, NAISARGIKA_LORDS, Timeline};
+    /// #
+    /// # // The Naisargika dasha: its seven lords from birth, in proportion.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let natural = GrahaDasha::new(NAISARGIKA_LORDS.to_vec(), birth, YearLength::Julian36525, GrahaDivision::Proportional, AfterCycle::End)?;
+    /// // A graha dasha's periods are its lords', of no sign.
+    /// assert!(natural.signs().iter().all(Option::is_none));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn signs(&self) -> &[Option<Rashi>] {
         &self.signs
@@ -523,6 +696,19 @@ impl GrahaDasha {
 
     /// How a period divides among its sub-periods; nothing when a table of
     /// shares divides it.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, GrahaDivision, YearLength};
+    /// # use teistro_dasha::{GrahaDasha, NAISARGIKA_LORDS, Timeline};
+    /// #
+    /// # // The Naisargika dasha: its seven lords from birth, in proportion.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let natural = GrahaDasha::new(NAISARGIKA_LORDS.to_vec(), birth, YearLength::Julian36525, GrahaDivision::Proportional, AfterCycle::End)?;
+    /// assert_eq!(natural.division(), Some(GrahaDivision::Proportional));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub const fn division(&self) -> Option<GrahaDivision> {
         match self.shares {

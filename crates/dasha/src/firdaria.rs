@@ -50,18 +50,69 @@ pub(crate) const DESCENDING: [Graha; 7] = [
 ];
 
 /// The periods of one round: the seven and the two nodes.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{FirdariaNodes, YearLength};
+/// # use teistro_dasha::{FirdariaDasha, Timeline};
+/// #
+/// # // A night birth: the firdaria begin from the Moon.
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let night = FirdariaDasha::new(Graha::Moon, birth, YearLength::Julian36525, FirdariaNodes::End)?;
+/// use teistro_dasha::FIRDARIA_PERIODS;
+///
+/// // The seven and the two nodes.
+/// assert_eq!(night.order().len(), FIRDARIA_PERIODS);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 pub const FIRDARIA_PERIODS: usize = 9;
 
 /// The years of one round: "a span of 75 years" (§438).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::settings::FirdariaNodes;
+/// use teistro_dasha::{FIRDARIA_YEARS, firdar_years, firdaria_order};
+///
+/// let years: u32 = firdaria_order(Graha::Sun, FirdariaNodes::End).map(firdar_years).iter().sum();
+/// assert_eq!(years, FIRDARIA_YEARS);
+/// ```
 pub const FIRDARIA_YEARS: u32 = 75;
 
 /// The rounds one cycle holds: two, 150 years, so that a stored reading
 /// answers the period at any age a life reaches; the cursor carries on
 /// past them, as Abu Ma'shar's "returns to the Sun" does.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{FirdariaNodes, YearLength};
+/// # use teistro_dasha::{FirdariaDasha, Timeline};
+/// #
+/// # // A night birth: the firdaria begin from the Moon.
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let night = FirdariaDasha::new(Graha::Moon, birth, YearLength::Julian36525, FirdariaNodes::End)?;
+/// use teistro_dasha::{FIRDARIA_PERIODS, FIRDARIA_ROUNDS};
+///
+/// // Two rounds, 150 years, then the cycle carries on from the Moon.
+/// let last = night.mahadasha(0, FIRDARIA_PERIODS * FIRDARIA_ROUNDS - 1).ok_or(teistro_core::Error::internal("a period"))?;
+/// assert!((last.interval.to.get() - birth.get() - 150.0 * 365.25).abs() < 1e-6);
+/// assert_eq!(night.mahadasha(1, 0).map(|p| p.lord), Some(Graha::Moon));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 pub const FIRDARIA_ROUNDS: usize = 2;
 
 /// A firdar's years (§438): the Sun 10, Venus 8, Mercury 13, the Moon 9,
 /// Saturn 11, Jupiter 12, Mars 7, the Head 3 and the Tail 2.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_dasha::firdar_years;
+///
+/// // §438: Mercury 13, the Head 3, the Tail 2.
+/// assert_eq!([Graha::Mercury, Graha::Rahu, Graha::Ketu].map(firdar_years), [13, 3, 2]);
+/// ```
 #[must_use]
 pub const fn firdar_years(lord: Graha) -> u32 {
     match lord {
@@ -81,6 +132,17 @@ pub const fn firdar_years(lord: Graha) -> u32 {
 /// The nine lords of a round, in order: the seven from `first` in
 /// descending order, the nodes at the end or, under
 /// [`FirdariaNodes::AfterMars`], after Mars.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::settings::FirdariaNodes;
+/// use teistro_dasha::firdaria_order;
+///
+/// // By night from the Moon in descending order; the nodes last, or after Mars.
+/// use Graha::*;
+/// assert_eq!(firdaria_order(Moon, FirdariaNodes::End), [Moon, Saturn, Jupiter, Mars, Sun, Venus, Mercury, Rahu, Ketu]);
+/// assert_eq!(firdaria_order(Moon, FirdariaNodes::AfterMars), [Moon, Saturn, Jupiter, Mars, Rahu, Ketu, Sun, Venus, Mercury]);
+/// ```
 #[must_use]
 pub fn firdaria_order(first: Graha, nodes: FirdariaNodes) -> [Graha; FIRDARIA_PERIODS] {
     let from = DESCENDING
@@ -111,6 +173,24 @@ pub fn firdaria_order(first: Graha, nodes: FirdariaNodes) -> [Graha; FIRDARIA_PE
 }
 
 /// The firdaria of a birth: its luminary's round, repeating.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{FirdariaNodes, YearLength};
+/// # use teistro_dasha::{FirdariaDasha, Timeline};
+/// #
+/// # // A night birth: the firdaria begin from the Moon.
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let night = FirdariaDasha::new(Graha::Moon, birth, YearLength::Julian36525, FirdariaNodes::End)?;
+/// // The Moon's nine years, then Saturn's eleven.
+/// let saturn = night.mahadasha(0, 1).ok_or(teistro_core::Error::internal("a period"))?;
+/// assert_eq!(saturn.lord, Graha::Saturn);
+/// assert!((saturn.interval.from.get() - birth.get() - 9.0 * 365.25).abs() < 1e-9);
+/// // A planet's period has seven sevenths, from its own lord.
+/// assert_eq!(night.children(&saturn).count(), 7);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct FirdariaDasha {
     order: [Graha; FIRDARIA_PERIODS],
@@ -122,6 +202,17 @@ impl FirdariaDasha {
     /// The firdaria begun from `first`, the Sun for a day birth and the
     /// Moon for a night one, a year being `year_length`, the nodes placed
     /// as `nodes` says.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::settings::{FirdariaNodes, YearLength};
+    /// use teistro_dasha::FirdariaDasha;
+    ///
+    /// // Only a luminary begins the firdaria.
+    /// let refused = FirdariaDasha::new(Graha::Mars, JulianDay::literal(2_451_545.0), YearLength::Julian36525, FirdariaNodes::End);
+    /// assert_eq!(refused.unwrap_err().field(), Some("first"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -147,6 +238,20 @@ impl FirdariaDasha {
     }
 
     /// The nine lords of a round, in order.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{FirdariaNodes, YearLength};
+    /// # use teistro_dasha::{FirdariaDasha, Timeline};
+    /// #
+    /// # // A night birth: the firdaria begin from the Moon.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let night = FirdariaDasha::new(Graha::Moon, birth, YearLength::Julian36525, FirdariaNodes::End)?;
+    /// assert_eq!(night.order()[0], Graha::Moon);
+    /// assert_eq!(night.order()[8], Graha::Ketu);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub const fn order(&self) -> [Graha; FIRDARIA_PERIODS] {
         self.order

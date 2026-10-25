@@ -36,6 +36,14 @@ const CYCLES: usize = 3;
 const MAHADASHAS: usize = NINE * CYCLES;
 
 /// Each sign's years, Aries to Pisces: its lord's share of the paramayus.
+///
+/// ```
+/// use teistro_dasha::kalachakra::SIGN_YEARS;
+///
+/// // Aries's 7 years and Taurus's 16, each its lord's share.
+/// assert_eq!((SIGN_YEARS[0], SIGN_YEARS[1]), (7, 16));
+/// assert_eq!(SIGN_YEARS[0], SIGN_YEARS[7], "Mars rules both");
+/// ```
 pub const SIGN_YEARS: [u8; 12] = [7, 16, 9, 21, 5, 9, 16, 7, 10, 4, 4, 10];
 
 const fn row(signs: [u8; NINE]) -> [u8; NINE] {
@@ -83,6 +91,14 @@ const LISTED: [u8; 27] = [
 ];
 
 /// The choices a Kalachakra is computed under.
+///
+/// ```
+/// use teistro_core::settings::root;
+/// use teistro_dasha::KalachakraRules;
+///
+/// let rules = KalachakraRules::of(&root());
+/// assert_eq!(rules.balance, root().dasha.balance);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct KalachakraRules {
@@ -102,6 +118,14 @@ pub struct KalachakraRules {
 
 impl KalachakraRules {
     /// The rules the settings give the Kalachakra.
+    ///
+    /// ```
+    /// use teistro_core::settings::{KalachakraAfterNinth, root};
+    /// use teistro_dasha::KalachakraRules;
+    ///
+    /// let rules = KalachakraRules::of(&root());
+    /// assert!(matches!(rules.after_ninth, KalachakraAfterNinth::Reverse | KalachakraAfterNinth::Repeat));
+    /// ```
     #[must_use]
     pub fn of(settings: &teistro_core::settings::Settings) -> KalachakraRules {
         KalachakraRules {
@@ -149,6 +173,16 @@ fn table(nakshatra: u8, membership: KalachakraMembership) -> &'static [[u8; NINE
 }
 
 /// The nine signs a nakshatra's pada (from 0) runs, under a membership.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Rashi};
+/// use teistro_core::settings::KalachakraMembership;
+/// use teistro_dasha::pada_row;
+///
+/// // Ashwini's first pada runs Aries to Sagittarius in order.
+/// let row = pada_row(Nakshatra::Ashwini, 0, KalachakraMembership::Listed);
+/// assert_eq!((row[0], row[8]), (Rashi::Aries, Rashi::Sagittarius));
+/// ```
 #[must_use]
 pub fn pada_row(nakshatra: Nakshatra, pada: u8, membership: KalachakraMembership) -> [Rashi; NINE] {
     table(u8::try_from(nakshatra.id() % 27).unwrap_or(0), membership)
@@ -159,6 +193,38 @@ pub fn pada_row(nakshatra: Nakshatra, pada: u8, membership: KalachakraMembership
 }
 
 /// The Kalachakra of one birth.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::{Nakshatra, Rashi};
+/// # use teistro_core::quantity::{Degrees, JulianDay};
+/// # use teistro_core::settings::{AfterCycle, Balance, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, YearLength};
+/// # use teistro_dasha::{Birth, KalachakraDasha, KalachakraRules, Timeline};
+/// #
+/// # let rules = KalachakraRules {
+/// #     balance: Balance::Spatial,
+/// #     year_length: YearLength::Julian36525,
+/// #     after_cycle: AfterCycle::End,
+/// #     membership: KalachakraMembership::Listed,
+/// #     balance_of: KalachakraBalance::FirstSign,
+/// #     after_ninth: KalachakraAfterNinth::Reverse,
+/// # };
+/// # // A Moon a quarter of the way through Ashwini's first pada.
+/// # let moon = Nas::from_degrees(Degrees::try_new(360.0 / 108.0 / 4.0)?);
+/// # let birth = Birth { instant: JulianDay::literal(2_451_545.0), moon, moon_span: None };
+/// # let dasha = KalachakraDasha::new(&birth, rules)?;
+/// // Aries runs three quarters of its seven years, then Taurus its sixteen;
+/// // the second cycle runs the nine reversed.
+/// let mds: Vec<_> = dasha.mahadashas().collect();
+/// assert_eq!(mds.len(), 27);
+/// assert!((mds[0].interval.days() - 0.75 * 7.0 * 365.25).abs() < 1e-6);
+/// assert_eq!((mds[1].sign, mds[9].sign), (Some(Rashi::Taurus), Some(Rashi::Sagittarius)));
+/// // Nine antardashas from the mahadasha's own place, nothing below.
+/// let antars: Vec<_> = dasha.children(&mds[1]).collect();
+/// assert_eq!((antars.len(), antars[0].sign), (9, Some(Rashi::Taurus)));
+/// assert!(dasha.children(&antars[0]).next().is_none());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct KalachakraDasha {
     rules: KalachakraRules,
@@ -176,6 +242,37 @@ pub struct KalachakraDasha {
 
 impl KalachakraDasha {
     /// The Kalachakra of a birth under its rules.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{Nakshatra, Rashi};
+    /// # use teistro_core::quantity::{Degrees, JulianDay};
+    /// # use teistro_core::settings::{AfterCycle, Balance, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, YearLength};
+    /// # use teistro_dasha::{Birth, KalachakraDasha, KalachakraRules, Timeline};
+    /// #
+    /// # let rules = KalachakraRules {
+    /// #     balance: Balance::Spatial,
+    /// #     year_length: YearLength::Julian36525,
+    /// #     after_cycle: AfterCycle::End,
+    /// #     membership: KalachakraMembership::Listed,
+    /// #     balance_of: KalachakraBalance::FirstSign,
+    /// #     after_ninth: KalachakraAfterNinth::Reverse,
+    /// # };
+    /// # // A Moon a quarter of the way through Ashwini's first pada.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(360.0 / 108.0 / 4.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_451_545.0), moon, moon_span: None };
+    /// # let dasha = KalachakraDasha::new(&birth, rules)?;
+    /// // Under the whole pada's balance, a tenth through skips Aries's seven years.
+    /// let tenth = Birth { moon: Nas::from_degrees(Degrees::try_new(360.0 / 108.0 / 10.0)?), ..birth };
+    /// let whole = KalachakraRules { balance_of: KalachakraBalance::WholePada, ..rules };
+    /// let skipped = KalachakraDasha::new(&tenth, whole)?;
+    /// assert_eq!(skipped.mahadashas().next().and_then(|p| p.sign), Some(Rashi::Taurus));
+    /// assert_eq!(skipped.mahadashas().count(), 26);
+    /// // A temporal balance needs the Moon's stay.
+    /// let temporal = KalachakraRules { balance: Balance::Temporal, ..rules };
+    /// assert_eq!(KalachakraDasha::new(&birth, temporal).unwrap_err().field(), Some("moon_span"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -275,24 +372,116 @@ impl KalachakraDasha {
     }
 
     /// The rules it runs under.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{Nakshatra, Rashi};
+    /// # use teistro_core::quantity::{Degrees, JulianDay};
+    /// # use teistro_core::settings::{AfterCycle, Balance, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, YearLength};
+    /// # use teistro_dasha::{Birth, KalachakraDasha, KalachakraRules, Timeline};
+    /// #
+    /// # let rules = KalachakraRules {
+    /// #     balance: Balance::Spatial,
+    /// #     year_length: YearLength::Julian36525,
+    /// #     after_cycle: AfterCycle::End,
+    /// #     membership: KalachakraMembership::Listed,
+    /// #     balance_of: KalachakraBalance::FirstSign,
+    /// #     after_ninth: KalachakraAfterNinth::Reverse,
+    /// # };
+    /// # // A Moon a quarter of the way through Ashwini's first pada.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(360.0 / 108.0 / 4.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_451_545.0), moon, moon_span: None };
+    /// # let dasha = KalachakraDasha::new(&birth, rules)?;
+    /// assert_eq!(dasha.rules(), rules);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn rules(&self) -> KalachakraRules {
         self.rules
     }
 
     /// The nakshatra the Moon stood in.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{Nakshatra, Rashi};
+    /// # use teistro_core::quantity::{Degrees, JulianDay};
+    /// # use teistro_core::settings::{AfterCycle, Balance, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, YearLength};
+    /// # use teistro_dasha::{Birth, KalachakraDasha, KalachakraRules, Timeline};
+    /// #
+    /// # let rules = KalachakraRules {
+    /// #     balance: Balance::Spatial,
+    /// #     year_length: YearLength::Julian36525,
+    /// #     after_cycle: AfterCycle::End,
+    /// #     membership: KalachakraMembership::Listed,
+    /// #     balance_of: KalachakraBalance::FirstSign,
+    /// #     after_ninth: KalachakraAfterNinth::Reverse,
+    /// # };
+    /// # // A Moon a quarter of the way through Ashwini's first pada.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(360.0 / 108.0 / 4.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_451_545.0), moon, moon_span: None };
+    /// # let dasha = KalachakraDasha::new(&birth, rules)?;
+    /// assert_eq!(dasha.seed(), Nakshatra::Ashwini);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn seed(&self) -> Nakshatra {
         self.seed
     }
 
     /// The Moon's pada in its nakshatra, from 0.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{Nakshatra, Rashi};
+    /// # use teistro_core::quantity::{Degrees, JulianDay};
+    /// # use teistro_core::settings::{AfterCycle, Balance, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, YearLength};
+    /// # use teistro_dasha::{Birth, KalachakraDasha, KalachakraRules, Timeline};
+    /// #
+    /// # let rules = KalachakraRules {
+    /// #     balance: Balance::Spatial,
+    /// #     year_length: YearLength::Julian36525,
+    /// #     after_cycle: AfterCycle::End,
+    /// #     membership: KalachakraMembership::Listed,
+    /// #     balance_of: KalachakraBalance::FirstSign,
+    /// #     after_ninth: KalachakraAfterNinth::Reverse,
+    /// # };
+    /// # // A Moon a quarter of the way through Ashwini's first pada.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(360.0 / 108.0 / 4.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_451_545.0), moon, moon_span: None };
+    /// # let dasha = KalachakraDasha::new(&birth, rules)?;
+    /// assert_eq!(dasha.pada(), 0);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn pada(&self) -> u8 {
         self.pada
     }
 
     /// The balance at birth.
+    ///
+    /// ```
+    /// # use teistro_core::angle::Nas;
+    /// # use teistro_core::catalogue::{Nakshatra, Rashi};
+    /// # use teistro_core::quantity::{Degrees, JulianDay};
+    /// # use teistro_core::settings::{AfterCycle, Balance, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, YearLength};
+    /// # use teistro_dasha::{Birth, KalachakraDasha, KalachakraRules, Timeline};
+    /// #
+    /// # let rules = KalachakraRules {
+    /// #     balance: Balance::Spatial,
+    /// #     year_length: YearLength::Julian36525,
+    /// #     after_cycle: AfterCycle::End,
+    /// #     membership: KalachakraMembership::Listed,
+    /// #     balance_of: KalachakraBalance::FirstSign,
+    /// #     after_ninth: KalachakraAfterNinth::Reverse,
+    /// # };
+    /// # // A Moon a quarter of the way through Ashwini's first pada.
+    /// # let moon = Nas::from_degrees(Degrees::try_new(360.0 / 108.0 / 4.0)?);
+    /// # let birth = Birth { instant: JulianDay::literal(2_451_545.0), moon, moon_span: None };
+    /// # let dasha = KalachakraDasha::new(&birth, rules)?;
+    /// assert!((dasha.balance().remaining - 0.75).abs() < 1e-9);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn balance(&self) -> BalanceAtBirth {
         self.balance

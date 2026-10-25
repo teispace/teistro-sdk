@@ -25,9 +25,25 @@ use teistro_core::settings::{AshtottariGrouping, YearLength};
 use crate::wheel::Wheel;
 
 /// How many nakshatras a seed is counted over.
+///
+/// ```
+/// use teistro_dasha::row::NAKSHATRAS;
+/// use teistro_dasha::Wheel;
+///
+/// assert_eq!(NAKSHATRAS, Wheel::Nakshatras.size());
+/// ```
 pub const NAKSHATRAS: u8 = 27;
 
 /// One lord of a system and its years.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_dasha::{Lord, VIMSHOTTARI_LORDS};
+///
+/// // Ashwini's lord first: Ketu's seven years, then Venus's twenty.
+/// assert_eq!(VIMSHOTTARI_LORDS[0], Lord { graha: Graha::Ketu, years: 7 });
+/// assert_eq!(VIMSHOTTARI_LORDS[1].years, 20);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Lord {
@@ -38,6 +54,15 @@ pub struct Lord {
 }
 
 /// Which way a system counts from its reference nakshatra to the seed.
+///
+/// ```
+/// use teistro_dasha::Count;
+/// use teistro_dasha::row::{DWADASHOTTARI, VIMSHOTTARI};
+///
+/// assert_eq!(VIMSHOTTARI.count, Count::FromReference);
+/// // Dwadashottari counts from the seed back to Revati.
+/// assert_eq!(DWADASHOTTARI.count, Count::ToReference);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -54,6 +79,15 @@ pub enum Count {
 ///
 /// The sub-periods are still shares of the row's whole years, so a scale
 /// changes how long a mahadasha is and not how it divides.
+///
+/// ```
+/// use teistro_dasha::Scale;
+/// use teistro_dasha::row::TRIBHAGI;
+///
+/// // Tribhagi: two thirds of each lord's years, the sequence twice round.
+/// assert_eq!(TRIBHAGI.scale, Scale { numerator: 2, denominator: 3, rounds: 2 });
+/// assert_eq!(TRIBHAGI.mahadashas(), 18);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Scale {
@@ -73,6 +107,13 @@ impl Default for Scale {
 
 impl Scale {
     /// Every lord's own years, the sequence once.
+    ///
+    /// ```
+    /// use teistro_dasha::{Scale, VIMSHOTTARI};
+    ///
+    /// assert_eq!(VIMSHOTTARI.scale, Scale::WHOLE);
+    /// assert_eq!(Scale::default(), Scale::WHOLE);
+    /// ```
     pub const WHOLE: Scale = Scale {
         numerator: 1,
         denominator: 1,
@@ -80,6 +121,14 @@ impl Scale {
     };
 
     /// The factor on a mahadasha's years.
+    ///
+    /// ```
+    /// use teistro_dasha::Scale;
+    /// use teistro_dasha::row::TRIBHAGI;
+    ///
+    /// assert_eq!(Scale::WHOLE.factor(), 1.0);
+    /// assert!((TRIBHAGI.scale.factor() - 2.0 / 3.0).abs() < 1e-15);
+    /// ```
     #[must_use]
     pub fn factor(self) -> f64 {
         f64::from(self.numerator) / f64::from(self.denominator.max(1))
@@ -91,6 +140,17 @@ impl Scale {
 ///
 /// It serialises as the bare key either way (`VIMSHOTTARI`, `ACME_SAPTA`),
 /// and a registry refuses a key the catalogue has, so the two never meet.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_dasha::DashaName;
+///
+/// // A key the catalogue has names its system; any other is a consumer's.
+/// assert_eq!(DashaName::from("VIMSHOTTARI"), DashaSystem::Vimshottari);
+/// assert_eq!(DashaName::from("ACME_SAPTA"), DashaName::Registered("ACME_SAPTA".into()));
+/// assert_eq!(serde_json::to_string(&DashaName::from(DashaSystem::Yogini))?, r#""YOGINI""#);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum DashaName {
     /// A catalogued system.
@@ -101,6 +161,14 @@ pub enum DashaName {
 
 impl DashaName {
     /// The key: the catalogue's, or the registered one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    /// use teistro_dasha::DashaName;
+    ///
+    /// assert_eq!(DashaName::from(DashaSystem::Ashtottari).key(), "ASHTOTTARI");
+    /// assert_eq!(DashaName::from("ACME_SAPTA").key(), "ACME_SAPTA");
+    /// ```
     #[must_use]
     pub fn key(&self) -> &str {
         match self {
@@ -111,12 +179,27 @@ impl DashaName {
 
     /// The key under its kind, `dasha_system.VIMSHOTTARI`, which is how a
     /// binding spells either.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    /// use teistro_dasha::DashaName;
+    ///
+    /// assert_eq!(DashaName::from(DashaSystem::Vimshottari).full_key(), "dasha_system.VIMSHOTTARI");
+    /// ```
     #[must_use]
     pub fn full_key(&self) -> String {
         format!("dasha_system.{}", self.key())
     }
 
     /// The catalogued system, when it is one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    /// use teistro_dasha::DashaName;
+    ///
+    /// assert_eq!(DashaName::from("YOGINI").catalogued(), Some(DashaSystem::Yogini));
+    /// assert_eq!(DashaName::from("ACME_SAPTA").catalogued(), None);
+    /// ```
     #[must_use]
     pub const fn catalogued(&self) -> Option<DashaSystem> {
         match self {
@@ -205,6 +288,15 @@ impl schemars::JsonSchema for DashaName {
 }
 
 /// A nakshatra-seeded system.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_dasha::{VIMSHOTTARI, Wheel};
+///
+/// assert_eq!(VIMSHOTTARI.system, DashaSystem::Vimshottari);
+/// assert_eq!((VIMSHOTTARI.reference, VIMSHOTTARI.span, VIMSHOTTARI.wheel), (0, 1, Wheel::Nakshatras));
+/// assert!(VIMSHOTTARI.repeats);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UduRow {
     /// Which system the row is.
@@ -243,6 +335,16 @@ pub struct UduRow {
 }
 
 /// Where a seed nakshatra falls in a row's cycle.
+///
+/// ```
+/// use teistro_dasha::row::ASHTOTTARI;
+///
+/// // Ashtottari's eight windows of three from Ardra leave Krittika outside.
+/// assert!(ASHTOTTARI.seat(2).overflow);
+/// // Pushya is the second nakshatra of the first window.
+/// let pushya = ASHTOTTARI.seat(7);
+/// assert_eq!((pushya.lord, pushya.within, pushya.overflow), (0, 2, false));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Seat {
     /// The first lord, as an index into [`UduRow::lords`].
@@ -259,12 +361,28 @@ pub struct Seat {
 impl UduRow {
     /// The cycle's years, the sum of the lords': what every sub-period is a
     /// share of, whatever the scale.
+    ///
+    /// ```
+    /// use teistro_dasha::row::{ASHTOTTARI, TRIBHAGI, YOGINI};
+    /// use teistro_dasha::{VIMSHOTTARI, VIMSHOTTARI_YEARS};
+    ///
+    /// assert_eq!(VIMSHOTTARI.total_years(), u32::from(VIMSHOTTARI_YEARS));
+    /// assert_eq!((ASHTOTTARI.total_years(), YOGINI.total_years()), (108, 36));
+    /// // Whatever the scale: Tribhagi's sub-periods are still shares of 120.
+    /// assert_eq!(TRIBHAGI.total_years(), 120);
+    /// ```
     #[must_use]
     pub fn total_years(&self) -> u32 {
         self.lords.iter().map(|lord| u32::from(lord.years)).sum()
     }
 
     /// How many mahadashas one cycle runs: the lords, once each round.
+    ///
+    /// ```
+    /// use teistro_dasha::VIMSHOTTARI;
+    ///
+    /// assert_eq!(VIMSHOTTARI.mahadashas(), 9);
+    /// ```
     #[must_use]
     pub fn mahadashas(&self) -> usize {
         self.lords.len() * usize::from(self.scale.rounds.max(1))
@@ -272,6 +390,15 @@ impl UduRow {
 
     /// The years of the lord at `index` round the sequence, scaled: how long
     /// its mahadasha runs.
+    ///
+    /// ```
+    /// use teistro_dasha::VIMSHOTTARI;
+    /// use teistro_dasha::row::TRIBHAGI;
+    ///
+    /// // Venus: twenty years, or two thirds of them in Tribhagi; round again from index 9.
+    /// assert_eq!(VIMSHOTTARI.scaled_years(1), 20.0);
+    /// assert!((TRIBHAGI.scaled_years(10) - 40.0 / 3.0).abs() < 1e-12);
+    /// ```
     #[must_use]
     pub fn scaled_years(&self, index: usize) -> f64 {
         self.lords
@@ -281,6 +408,16 @@ impl UduRow {
 
     /// How many nakshatras the lord at `index` covers: its own group, or
     /// the row's span when every lord covers alike.
+    ///
+    /// ```
+    /// use teistro_dasha::row::{ASHTOTTARI, ASHTOTTARI_BPHS};
+    /// use teistro_dasha::VIMSHOTTARI;
+    ///
+    /// assert_eq!(VIMSHOTTARI.window_of(4), 1);
+    /// assert_eq!(ASHTOTTARI.window_of(0), 3);
+    /// // BPHS's Ashtottari: four and three alternately from Ardra.
+    /// assert_eq!((ASHTOTTARI_BPHS.window_of(0), ASHTOTTARI_BPHS.window_of(1)), (4, 3));
+    /// ```
     #[must_use]
     pub fn window_of(&self, index: usize) -> u8 {
         self.groups
@@ -301,6 +438,16 @@ impl UduRow {
     /// window. `place` is the seed's place on the row's
     /// [`wheel`](UduRow::wheel), which on the twenty-seven is the
     /// nakshatra's own index.
+    ///
+    /// ```
+    /// use teistro_dasha::VIMSHOTTARI;
+    /// use teistro_dasha::row::YOGINI;
+    ///
+    /// // Anuradha, the seventeenth, is Saturn's: the eighth of Vimshottari's nine.
+    /// assert_eq!(VIMSHOTTARI.seat(16).lord, 7);
+    /// // Yogini adds three, so Ashwini's is the fourth.
+    /// assert_eq!(YOGINI.seat(0).lord, 3);
+    /// ```
     #[must_use]
     pub fn seat(&self, place: u8) -> Seat {
         let cycle = i16::from(self.wheel.size());
@@ -332,6 +479,19 @@ impl UduRow {
 
     /// The checks every row passes before it is used, naming the field it
     /// fails.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_dasha::{ROWS, UduDefinition};
+    ///
+    /// for row in ROWS {
+    ///     row.validate()?;
+    /// }
+    /// // A definition with no lords yet is refused by its field.
+    /// let empty = UduDefinition::of("ACME_EMPTY", Nakshatra::Ashwini).row();
+    /// assert_eq!(empty.validate().unwrap_err().field(), Some("lords"));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -421,6 +581,13 @@ const fn lord(graha: Graha, years: u8) -> Lord {
 ///
 /// The one list: [`VIMSHOTTARI`] borrows it, and KP divides every
 /// nakshatra in the same proportions (`03-design/kp.md`).
+///
+/// ```
+/// use teistro_dasha::{VIMSHOTTARI_LORDS, VIMSHOTTARI_YEARS};
+///
+/// let years: u32 = VIMSHOTTARI_LORDS.iter().map(|lord| u32::from(lord.years)).sum();
+/// assert_eq!(years, u32::from(VIMSHOTTARI_YEARS));
+/// ```
 pub const VIMSHOTTARI_LORDS: [Lord; 9] = [
     lord(Graha::Ketu, 7),
     lord(Graha::Venus, 20),
@@ -434,11 +601,25 @@ pub const VIMSHOTTARI_LORDS: [Lord; 9] = [
 ];
 
 /// Vimshottari's whole cycle in years, the sum of [`VIMSHOTTARI_LORDS`].
+///
+/// ```
+/// use teistro_dasha::VIMSHOTTARI_YEARS;
+///
+/// assert_eq!(VIMSHOTTARI_YEARS, 120);
+/// ```
 pub const VIMSHOTTARI_YEARS: u8 = 120;
 
 /// Vimshottari: nine lords over 120 years, counted from Ashwini, one
 /// nakshatra each. Measured over the whole corpus
 /// (`03-design/dasha-measured.md`).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_dasha::VIMSHOTTARI;
+///
+/// // Krittika, the third, is the Sun's.
+/// assert_eq!(VIMSHOTTARI.lords[VIMSHOTTARI.seat(2).lord].graha, Graha::Sun);
+/// ```
 pub const VIMSHOTTARI: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Vimshottari),
     lords: Cow::Borrowed(&VIMSHOTTARI_LORDS),
@@ -457,6 +638,15 @@ pub const VIMSHOTTARI: UduRow = UduRow {
 /// before Ardra lie outside the cycle, which `dasha.seed_overflow` decides
 /// (crux C5); whether a chart is one Ashtottari applies to is a rule and not
 /// this row (crux C3).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_dasha::row::ASHTOTTARI;
+///
+/// // Ardra opens the Sun's window.
+/// assert_eq!(ASHTOTTARI.lords[ASHTOTTARI.seat(5).lord].graha, Graha::Sun);
+/// assert_eq!((ASHTOTTARI.span, ASHTOTTARI.repeats), (3, false));
+/// ```
 pub const ASHTOTTARI: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Ashtottari),
     lords: Cow::Borrowed(&[
@@ -481,6 +671,12 @@ pub const ASHTOTTARI: UduRow = UduRow {
 
 /// Dwadashottari: eight lords over 112 years, counted from the seed back to
 /// Revati.
+///
+/// ```
+/// use teistro_dasha::row::DWADASHOTTARI;
+///
+/// assert_eq!((DWADASHOTTARI.lords.len(), DWADASHOTTARI.total_years()), (8, 112));
+/// ```
 pub const DWADASHOTTARI: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Dwadashottari),
     lords: Cow::Borrowed(&[
@@ -504,6 +700,12 @@ pub const DWADASHOTTARI: UduRow = UduRow {
 };
 
 /// Panchottari: seven lords over 105 years, counted from Anuradha.
+///
+/// ```
+/// use teistro_dasha::row::PANCHOTTARI;
+///
+/// assert_eq!((PANCHOTTARI.lords.len(), PANCHOTTARI.total_years()), (7, 105));
+/// ```
 pub const PANCHOTTARI: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Panchottari),
     lords: Cow::Borrowed(&[
@@ -526,6 +728,12 @@ pub const PANCHOTTARI: UduRow = UduRow {
 };
 
 /// Shatabdika: seven lords over 100 years, counted from Revati.
+///
+/// ```
+/// use teistro_dasha::row::SHATABDIKA;
+///
+/// assert_eq!((SHATABDIKA.lords.len(), SHATABDIKA.total_years()), (7, 100));
+/// ```
 pub const SHATABDIKA: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Shatabdika),
     lords: Cow::Borrowed(&[
@@ -549,6 +757,13 @@ pub const SHATABDIKA: UduRow = UduRow {
 
 /// Chaturashiti-sama: seven lords of twelve years each, 84 in all, counted
 /// from Swati.
+///
+/// ```
+/// use teistro_dasha::row::CHATURASHITI_SAMA;
+///
+/// assert!(CHATURASHITI_SAMA.lords.iter().all(|lord| lord.years == 12));
+/// assert_eq!(CHATURASHITI_SAMA.total_years(), 84);
+/// ```
 pub const CHATURASHITI_SAMA: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::ChaturashitiSama),
     lords: Cow::Borrowed(&[
@@ -572,6 +787,13 @@ pub const CHATURASHITI_SAMA: UduRow = UduRow {
 
 /// Dwisaptati-sama: eight lords of nine years each, 72 in all, counted from
 /// Mula.
+///
+/// ```
+/// use teistro_dasha::row::DWISAPTATI_SAMA;
+///
+/// assert!(DWISAPTATI_SAMA.lords.iter().all(|lord| lord.years == 9));
+/// assert_eq!(DWISAPTATI_SAMA.total_years(), 72);
+/// ```
 pub const DWISAPTATI_SAMA: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::DwisaptatiSama),
     lords: Cow::Borrowed(&[
@@ -596,6 +818,12 @@ pub const DWISAPTATI_SAMA: UduRow = UduRow {
 
 /// Yogini: the eight yoginis' lords over 36 years, counted from Ashwini
 /// with three added, so Ashwini's is the fourth.
+///
+/// ```
+/// use teistro_dasha::row::YOGINI;
+///
+/// assert_eq!((YOGINI.offset, YOGINI.total_years()), (3, 36));
+/// ```
 pub const YOGINI: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Yogini),
     lords: Cow::Borrowed(&[
@@ -620,6 +848,14 @@ pub const YOGINI: UduRow = UduRow {
 
 /// Tribhagi: Vimshottari's lords at two thirds of their years, the sequence
 /// twice round, eighty years a round; the sub-periods still shares of 120.
+///
+/// ```
+/// use teistro_dasha::row::TRIBHAGI;
+/// use teistro_dasha::VIMSHOTTARI;
+///
+/// // Vimshottari's lords in Vimshottari's order.
+/// assert_eq!(TRIBHAGI.lords, VIMSHOTTARI.lords);
+/// ```
 pub const TRIBHAGI: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Tribhagi),
     lords: VIMSHOTTARI.lords,
@@ -643,6 +879,14 @@ pub const TRIBHAGI: UduRow = UduRow {
 /// lies outside the cycle (crux C5). A nakshatra is a quarter of a
 /// malefic's dasha and a third of a benefic's (v. 21), an equal share of
 /// its lord's window either way.
+///
+/// ```
+/// use teistro_dasha::{ASHTOTTARI_BPHS, Wheel};
+///
+/// // Over the twenty-eight with Abhijit, every seed has a lord.
+/// assert_eq!(ASHTOTTARI_BPHS.wheel, Wheel::WithAbhijit);
+/// assert!((0..28).all(|place| !ASHTOTTARI_BPHS.seat(place).overflow));
+/// ```
 pub const ASHTOTTARI_BPHS: UduRow = UduRow {
     groups: Cow::Borrowed(&[4, 3, 4, 3, 4, 3, 4, 3]),
     wheel: Wheel::WithAbhijit,
@@ -655,6 +899,13 @@ pub const ASHTOTTARI_BPHS: UduRow = UduRow {
 /// alternately over the twenty-eight with Abhijit (crux C1). The received
 /// English's "13 years" is contradicted by its own worked example and by
 /// the verse, दशा दश दशाब्दकाः.
+///
+/// ```
+/// use teistro_dasha::SHASHTIHAYANI;
+///
+/// // The sixty the name states, and not the received "13 years".
+/// assert_eq!(SHASHTIHAYANI.total_years(), 60);
+/// ```
 pub const SHASHTIHAYANI: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Shashtihayani),
     lords: Cow::Borrowed(&[
@@ -683,6 +934,14 @@ pub const SHASHTIHAYANI: UduRow = UduRow {
 /// eleven years rising by one to eighteen (*rudrādy ekottarāḥ … dhṛtyantam*),
 /// 116 in all. v. 24 reads it for a lagna in the Moon's hora in the dark
 /// fortnight or the Sun's in the bright.
+///
+/// ```
+/// use teistro_dasha::row::SHODASHOTTARI;
+///
+/// let years: Vec<u8> = SHODASHOTTARI.lords.iter().map(|lord| lord.years).collect();
+/// assert_eq!(years, [11, 12, 13, 14, 15, 16, 17, 18]);
+/// assert_eq!(SHODASHOTTARI.total_years(), 116);
+/// ```
 pub const SHODASHOTTARI: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Shodashottari),
     lords: Cow::Borrowed(&[
@@ -712,6 +971,14 @@ pub const SHODASHOTTARI: UduRow = UduRow {
 /// hora, or by night in the Moon's. Yogini's lords and years, counted from
 /// another nakshatra round a circle eight does not divide, so the two
 /// differ on most births.
+///
+/// ```
+/// use teistro_dasha::row::{SHATTRIMSHA_SAMA, YOGINI};
+///
+/// // Yogini's thirty-six years, counted from another nakshatra.
+/// assert_eq!(SHATTRIMSHA_SAMA.total_years(), YOGINI.total_years());
+/// assert_ne!(SHATTRIMSHA_SAMA.reference, YOGINI.reference);
+/// ```
 pub const SHATTRIMSHA_SAMA: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::ShattrimshaSama),
     lords: YOGINI.lords,
@@ -727,6 +994,14 @@ pub const SHATTRIMSHA_SAMA: UduRow = UduRow {
 
 /// Every row this build implements, in the catalogue's order. A system
 /// the catalogue names and no row implements is refused by name.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_dasha::ROWS;
+///
+/// assert_eq!(ROWS[0].system, DashaSystem::Vimshottari);
+/// assert!(ROWS.iter().all(|row| row.system.catalogued().is_some()));
+/// ```
 pub const ROWS: &[UduRow] = &[
     VIMSHOTTARI,
     ASHTOTTARI,
@@ -744,6 +1019,18 @@ pub const ROWS: &[UduRow] = &[
 
 /// The row of a system, when this build implements one: Ashtottari's
 /// is the one `grouping` names, and every other system has one.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_core::settings::AshtottariGrouping;
+/// use teistro_dasha::{ASHTOTTARI_BPHS, row};
+///
+/// let bphs = row(DashaSystem::Ashtottari, AshtottariGrouping::FourAndThree).ok_or("a row")?;
+/// assert_eq!(bphs, &ASHTOTTARI_BPHS);
+/// let three = row(DashaSystem::Ashtottari, AshtottariGrouping::ThreeEach).ok_or("a row")?;
+/// assert_eq!(three.span, 3);
+/// # Ok::<(), &str>(())
+/// ```
 #[must_use]
 pub fn row(system: DashaSystem, grouping: AshtottariGrouping) -> Option<&'static UduRow> {
     if system == DashaSystem::Ashtottari && grouping == AshtottariGrouping::FourAndThree {
@@ -853,6 +1140,15 @@ pub(crate) fn three() -> Depth {
 impl UduDefinition {
     /// A definition with a key and a reference and every other field its
     /// default: no lords yet, which a caller then gives.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_dasha::{Count, UduDefinition, Wheel};
+    ///
+    /// let definition = UduDefinition::of("ACME_TRAYA", Nakshatra::Ashwini);
+    /// assert!(definition.lords.is_empty());
+    /// assert_eq!((definition.count, definition.wheel, definition.depth.get()), (Count::FromReference, Wheel::Nakshatras, 3));
+    /// ```
     #[must_use]
     pub fn of(key: impl Into<String>, reference: Nakshatra) -> UduDefinition {
         UduDefinition {
@@ -873,6 +1169,21 @@ impl UduDefinition {
     }
 
     /// The row the kernel runs, its lords owned.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Nakshatra};
+    /// use teistro_dasha::{Lord, UduDefinition};
+    ///
+    /// // Seven lords of ten years each, from Krittika.
+    /// let mut saptaka = UduDefinition::of("ACME_SAPTAKA", Nakshatra::Krittika);
+    /// saptaka.lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn]
+    ///     .map(|graha| Lord { graha, years: 10 })
+    ///     .into();
+    /// let row = saptaka.row();
+    /// assert_eq!((row.system.key(), row.total_years(), row.reference), ("ACME_SAPTAKA", 70, 2));
+    /// row.validate()?;
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn row(&self) -> UduRow {
         UduRow {

@@ -26,6 +26,15 @@ use crate::row::DashaName;
 use crate::tree::{Path, Period, Timeline};
 
 /// One lord of a year's ring, and its weight among the ring's.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_dasha::Share;
+///
+/// // A Patyayini share: Leo's lagna, ruled by the Sun, weighed by its arc.
+/// let lagna = Share { lord: Graha::Sun, sign: Some(Rashi::Leo), weight: 12.5 };
+/// assert_eq!(lagna.sign, Some(Rashi::Leo));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Share {
@@ -43,6 +52,28 @@ pub struct Share {
 
 /// What a year is divided among: the ring, where it starts, and how much
 /// of the first lord's share is still to run when the year opens.
+///
+/// ```
+/// use teistro_core::catalogue::{DashaSystem, Graha};
+/// use teistro_dasha::row::DashaName;
+/// use teistro_dasha::{Share, YearRing};
+///
+/// let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+/// let ring = YearRing {
+///     system: DashaName::Catalogued(DashaSystem::Mudda),
+///     ring: lords
+///         .iter()
+///         .zip(1..)
+///         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+///         .collect(),
+///     first: 0,
+///     remaining: None,
+/// };
+///
+/// ring.validate()?;
+/// assert_eq!((ring.total(), ring.mahadashas()), (10.0, 4));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct YearRing {
@@ -63,6 +94,32 @@ pub struct YearRing {
 impl YearRing {
     /// The checks a ring must pass, each refused by the field that is
     /// wrong.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_dasha::row::DashaName;
+    /// # use teistro_dasha::{Share, YearRing};
+    /// #
+    /// # let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+    /// # let ring = YearRing {
+    /// #     system: DashaName::Catalogued(DashaSystem::Mudda),
+    /// #     ring: lords
+    /// #         .iter()
+    /// #         .zip(1..)
+    /// #         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+    /// #         .collect(),
+    /// #     first: 0,
+    /// #     remaining: None,
+    /// # };
+    /// ring.validate()?;
+    /// let mut late = ring.clone();
+    /// late.first = 4;
+    /// assert_eq!(late.validate().unwrap_err().field(), Some("first"));
+    /// let mut over = ring;
+    /// over.remaining = Some(1.5);
+    /// assert_eq!(over.validate().unwrap_err().field(), Some("remaining"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -115,6 +172,25 @@ impl YearRing {
     }
 
     /// The ring's weights summed: what the whole year stands for.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_dasha::row::DashaName;
+    /// # use teistro_dasha::{Share, YearRing};
+    /// #
+    /// # let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+    /// # let ring = YearRing {
+    /// #     system: DashaName::Catalogued(DashaSystem::Mudda),
+    /// #     ring: lords
+    /// #         .iter()
+    /// #         .zip(1..)
+    /// #         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+    /// #         .collect(),
+    /// #     first: 0,
+    /// #     remaining: None,
+    /// # };
+    /// assert_eq!(ring.total(), 1.0 + 2.0 + 3.0 + 4.0);
+    /// ```
     #[must_use]
     pub fn total(&self) -> f64 {
         self.ring.iter().map(|share| share.weight).sum()
@@ -122,6 +198,28 @@ impl YearRing {
 
     /// How many mahadashas the year holds: one for each lord, and one more
     /// when the first lord's share is split across the year's two ends.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_dasha::row::DashaName;
+    /// # use teistro_dasha::{Share, YearRing};
+    /// #
+    /// # let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+    /// # let ring = YearRing {
+    /// #     system: DashaName::Catalogued(DashaSystem::Mudda),
+    /// #     ring: lords
+    /// #         .iter()
+    /// #         .zip(1..)
+    /// #         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+    /// #         .collect(),
+    /// #     first: 0,
+    /// #     remaining: None,
+    /// # };
+    /// assert_eq!(ring.mahadashas(), 4);
+    /// // Opening part-way through the Sun's share splits it over the two ends.
+    /// let split = YearRing { remaining: Some(0.5), ..ring };
+    /// assert_eq!(split.mahadashas(), 5);
+    /// ```
     #[must_use]
     pub fn mahadashas(&self) -> usize {
         self.ring.len() + usize::from(self.remaining.is_some())
@@ -137,6 +235,18 @@ impl YearRing {
 /// linearly between them, and one outside the year (a sub-period sized
 /// against a share that began before the year did) is extrapolated along
 /// the end segment.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_dasha::Clock;
+///
+/// // A year whose first half runs faster than its second.
+/// let clock = Clock::new(vec![2_460_000.5, 2_460_170.5, 2_460_365.5])?;
+/// assert_eq!(clock.at(0.5), 2_460_170.5);
+/// assert_eq!(clock.at(0.25), 2_460_085.5);
+/// assert_eq!(clock.year(), Interval::literal(2_460_000.5, 2_460_365.5));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Clock {
     knots: Vec<f64>,
@@ -144,6 +254,16 @@ pub struct Clock {
 
 impl Clock {
     /// A clock through its knots.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_dasha::Clock;
+    ///
+    /// assert_eq!(Clock::new(vec![2_460_000.5]).unwrap_err().field(), Some("knots"));
+    /// assert!(Clock::new(vec![2_460_365.5, 2_460_000.5]).is_err(), "it runs forwards");
+    /// assert_eq!(Clock::new(vec![2_460_000.5, 2_460_365.5])?.knots().len(), 2);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -176,6 +296,16 @@ impl Clock {
 
     /// The clock that spreads the year evenly over an interval.
     ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_dasha::Clock;
+    ///
+    /// let clock = Clock::even(Interval::literal(2_460_000.5, 2_460_360.5))?;
+    /// assert_eq!(clock.at(0.5), 2_460_180.5);
+    /// assert!(Clock::even(Interval::literal(2_460_000.5, 2_460_000.5)).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An empty year, named `knots`.
@@ -184,6 +314,15 @@ impl Clock {
     }
 
     /// The year it runs over.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_dasha::Clock;
+    ///
+    /// let year = Interval::literal(2_460_000.5, 2_460_365.75);
+    /// assert_eq!(Clock::even(year)?.year(), year);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn year(&self) -> Interval {
         let first = self.knots.first().copied().unwrap_or_default();
@@ -192,6 +331,15 @@ impl Clock {
     }
 
     /// Its knots.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_dasha::Clock;
+    ///
+    /// let clock = Clock::new(vec![2_460_000.5, 2_460_170.5, 2_460_365.5])?;
+    /// assert_eq!(clock.knots(), [2_460_000.5, 2_460_170.5, 2_460_365.5]);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn knots(&self) -> &[f64] {
         &self.knots
@@ -203,6 +351,17 @@ impl Clock {
 
     /// The instant a fraction of the year falls at: exactly a knot at a
     /// knot, linear between, extrapolated past either end.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_dasha::Clock;
+    ///
+    /// let clock = Clock::even(Interval::literal(2_460_000.5, 2_460_360.5))?;
+    /// assert_eq!((clock.at(0.0), clock.at(1.0)), (2_460_000.5, 2_460_360.5));
+    /// // A tenth before the year is extrapolated along it.
+    /// assert!((clock.at(-0.1) - 2_459_964.5).abs() < 1e-6);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_precision_loss,
@@ -231,6 +390,16 @@ impl Clock {
 
     /// The fraction of the year an instant falls at: the inverse of
     /// [`Clock::at`].
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_dasha::Clock;
+    ///
+    /// let clock = Clock::new(vec![2_460_000.5, 2_460_170.5, 2_460_365.5])?;
+    /// assert_eq!(clock.fraction_of(2_460_170.5), 0.5);
+    /// assert!((clock.fraction_of(clock.at(0.8)) - 0.8).abs() < 1e-12);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_precision_loss,
@@ -260,6 +429,35 @@ struct Place {
 }
 
 /// One year's dasha: a ring over a clock.
+///
+/// ```
+/// use teistro_core::catalogue::{DashaSystem, Graha};
+/// use teistro_dasha::row::DashaName;
+/// use teistro_dasha::{Share, YearRing};
+///
+/// let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+/// let ring = YearRing {
+///     system: DashaName::Catalogued(DashaSystem::Mudda),
+///     ring: lords
+///         .iter()
+///         .zip(1..)
+///         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+///         .collect(),
+///     first: 0,
+///     remaining: None,
+/// };
+/// use teistro_core::interval::Interval;
+/// use teistro_core::settings::BirthPeriod;
+/// use teistro_dasha::{Clock, Timeline, YearDasha};
+///
+/// // The Sun's tenth of a 360-day year, then the Moon's fifth.
+/// let clock = Clock::even(Interval::literal(2_460_000.5, 2_460_360.5))?;
+/// let dasha = YearDasha::new(ring, clock, BirthPeriod::Compressed)?;
+/// let days: Vec<_> = dasha.mahadashas().map(|p| (p.lord, p.interval.days())).collect();
+/// assert_eq!(days[..2], [(Graha::Sun, 36.0), (Graha::Moon, 72.0)]);
+/// assert_eq!(dasha.mahadashas().last().map(|p| p.interval.to), Some(dasha.year().to));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct YearDasha {
     ring: YearRing,
@@ -274,6 +472,33 @@ pub struct YearDasha {
 impl YearDasha {
     /// A year's dasha: `ring` over `clock`, with the first lord's two
     /// pieces divided as `birth_period` divides a natal birth period.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_dasha::row::DashaName;
+    /// # use teistro_dasha::{Share, YearRing};
+    /// #
+    /// # let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+    /// # let ring = YearRing {
+    /// #     system: DashaName::Catalogued(DashaSystem::Mudda),
+    /// #     ring: lords
+    /// #         .iter()
+    /// #         .zip(1..)
+    /// #         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+    /// #         .collect(),
+    /// #     first: 0,
+    /// #     remaining: None,
+    /// # };
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::settings::BirthPeriod;
+    /// use teistro_dasha::{Clock, YearDasha};
+    ///
+    /// let clock = Clock::even(Interval::literal(2_460_000.5, 2_460_360.5))?;
+    /// let empty = YearRing { ring: Vec::new(), ..ring };
+    /// let refused = YearDasha::new(empty, clock, BirthPeriod::Compressed).unwrap_err();
+    /// assert_eq!(refused.field(), Some("ring"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -320,24 +545,132 @@ impl YearDasha {
     }
 
     /// The ring it runs.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_dasha::row::DashaName;
+    /// # use teistro_dasha::{Share, YearRing};
+    /// #
+    /// # let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+    /// # let ring = YearRing {
+    /// #     system: DashaName::Catalogued(DashaSystem::Mudda),
+    /// #     ring: lords
+    /// #         .iter()
+    /// #         .zip(1..)
+    /// #         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+    /// #         .collect(),
+    /// #     first: 0,
+    /// #     remaining: None,
+    /// # };
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::settings::BirthPeriod;
+    /// # use teistro_dasha::{Clock, Timeline, YearDasha};
+    /// #
+    /// # let clock = Clock::even(Interval::literal(2_460_000.5, 2_460_360.5))?;
+    /// # let dasha = YearDasha::new(ring.clone(), clock.clone(), BirthPeriod::Compressed)?;
+    ///
+    /// assert_eq!(dasha.ring(), &ring);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn ring(&self) -> &YearRing {
         &self.ring
     }
 
     /// The clock it runs on.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_dasha::row::DashaName;
+    /// # use teistro_dasha::{Share, YearRing};
+    /// #
+    /// # let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+    /// # let ring = YearRing {
+    /// #     system: DashaName::Catalogued(DashaSystem::Mudda),
+    /// #     ring: lords
+    /// #         .iter()
+    /// #         .zip(1..)
+    /// #         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+    /// #         .collect(),
+    /// #     first: 0,
+    /// #     remaining: None,
+    /// # };
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::settings::BirthPeriod;
+    /// # use teistro_dasha::{Clock, Timeline, YearDasha};
+    /// #
+    /// # let clock = Clock::even(Interval::literal(2_460_000.5, 2_460_360.5))?;
+    /// # let dasha = YearDasha::new(ring.clone(), clock.clone(), BirthPeriod::Compressed)?;
+    ///
+    /// assert_eq!(dasha.clock(), &clock);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn clock(&self) -> &Clock {
         &self.clock
     }
 
     /// How the first lord's two pieces are divided.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_dasha::row::DashaName;
+    /// # use teistro_dasha::{Share, YearRing};
+    /// #
+    /// # let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+    /// # let ring = YearRing {
+    /// #     system: DashaName::Catalogued(DashaSystem::Mudda),
+    /// #     ring: lords
+    /// #         .iter()
+    /// #         .zip(1..)
+    /// #         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+    /// #         .collect(),
+    /// #     first: 0,
+    /// #     remaining: None,
+    /// # };
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::settings::BirthPeriod;
+    /// # use teistro_dasha::{Clock, Timeline, YearDasha};
+    /// #
+    /// # let clock = Clock::even(Interval::literal(2_460_000.5, 2_460_360.5))?;
+    /// # let dasha = YearDasha::new(ring.clone(), clock.clone(), BirthPeriod::Compressed)?;
+    ///
+    /// assert_eq!(dasha.birth_period(), BirthPeriod::Compressed);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn birth_period(&self) -> BirthPeriod {
         self.birth_period
     }
 
     /// The year it divides.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{DashaSystem, Graha};
+    /// # use teistro_dasha::row::DashaName;
+    /// # use teistro_dasha::{Share, YearRing};
+    /// #
+    /// # let lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury];
+    /// # let ring = YearRing {
+    /// #     system: DashaName::Catalogued(DashaSystem::Mudda),
+    /// #     ring: lords
+    /// #         .iter()
+    /// #         .zip(1..)
+    /// #         .map(|(&lord, weight)| Share { lord, sign: None, weight: f64::from(weight) })
+    /// #         .collect(),
+    /// #     first: 0,
+    /// #     remaining: None,
+    /// # };
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::settings::BirthPeriod;
+    /// # use teistro_dasha::{Clock, Timeline, YearDasha};
+    /// #
+    /// # let clock = Clock::even(Interval::literal(2_460_000.5, 2_460_360.5))?;
+    /// # let dasha = YearDasha::new(ring.clone(), clock.clone(), BirthPeriod::Compressed)?;
+    ///
+    /// assert_eq!(dasha.year(), Interval::literal(2_460_000.5, 2_460_360.5));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn year(&self) -> Interval {
         self.clock.year()

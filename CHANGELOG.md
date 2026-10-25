@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`teistro-dasha` has a run example on every public item.**
+**Numbers:** none. Its 294 items join the crates `check-doc-examples`
+holds there, thirty-two in all. The nakshatra examples run a Moon a
+third into Anuradha, two thirds of Saturn's nineteen years to run; the
+rashi and Jaimini ones a chart with Rahu opposite Ketu and Mercury and
+Venus beside the Sun, where Saturn in Aquarius counts to Rahu under
+BPHS and the recording engine takes Saturn himself.
+
 **A muhurta search's ingresses lie inside the day they were asked of.**
 **Numbers:** none. `Sources::ingresses` over a day returned, for each
 slow graha that held its sign through it, the two ends of the search's

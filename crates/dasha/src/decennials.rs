@@ -52,15 +52,85 @@ use crate::releasing::minimum_years;
 use crate::tree::{Path, Period, Timeline};
 
 /// The stars that take periods: the seven.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{DecennialDivision, YearLength};
+/// # use teistro_dasha::{DecennialDasha, Timeline, decennial_order};
+/// #
+/// # // Valens's night nativity (VI.5): the Moon in Pisces 18°, Venus in Aries,
+/// # // Jupiter in Libra, Saturn in Sagittarius, Mars early in Aquarius, the Sun
+/// # // in Aquarius and Mercury in Pisces before the Moon.
+/// # let places = [
+/// #     (Graha::Moon, 348.0), (Graha::Venus, 10.0), (Graha::Jupiter, 195.0), (Graha::Saturn, 255.0),
+/// #     (Graha::Mars, 301.0), (Graha::Sun, 315.0), (Graha::Mercury, 340.0),
+/// # ];
+/// # let order = decennial_order(Graha::Moon, &places)?;
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let valens = DecennialDasha::new(order, birth, YearLength::Savana360, DecennialDivision::Proportional)?;
+/// use teistro_dasha::DECENNIAL_STARS;
+///
+/// assert_eq!(valens.order().len(), DECENNIAL_STARS);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 pub const DECENNIAL_STARS: usize = 7;
 
 /// The months a star rules, 10 years 9 months, which are also the sum of
 /// the seven's minimum years.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{DecennialDivision, YearLength};
+/// # use teistro_dasha::{DecennialDasha, Timeline, decennial_order};
+/// #
+/// # // Valens's night nativity (VI.5): the Moon in Pisces 18°, Venus in Aries,
+/// # // Jupiter in Libra, Saturn in Sagittarius, Mars early in Aquarius, the Sun
+/// # // in Aquarius and Mercury in Pisces before the Moon.
+/// # let places = [
+/// #     (Graha::Moon, 348.0), (Graha::Venus, 10.0), (Graha::Jupiter, 195.0), (Graha::Saturn, 255.0),
+/// #     (Graha::Mars, 301.0), (Graha::Sun, 315.0), (Graha::Mercury, 340.0),
+/// # ];
+/// # let order = decennial_order(Graha::Moon, &places)?;
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let valens = DecennialDasha::new(order, birth, YearLength::Savana360, DecennialDivision::Proportional)?;
+/// use teistro_dasha::DECENNIAL_MONTHS;
+///
+/// // Each star rules 129 months of 30 days: 10 years 9 months.
+/// let moon = valens.mahadasha(0, 0).ok_or(teistro_core::Error::internal("a period"))?;
+/// assert!((moon.interval.days() - f64::from(DECENNIAL_MONTHS) * 30.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 pub const DECENNIAL_MONTHS: u32 = 129;
 
 /// The rounds of the seven one cycle holds: two, 150 years 6 months of
 /// 360-day years, so that a stored reading answers the period at any age
 /// a life reaches; the cursor carries on past them.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{DecennialDivision, YearLength};
+/// # use teistro_dasha::{DecennialDasha, Timeline, decennial_order};
+/// #
+/// # // Valens's night nativity (VI.5): the Moon in Pisces 18°, Venus in Aries,
+/// # // Jupiter in Libra, Saturn in Sagittarius, Mars early in Aquarius, the Sun
+/// # // in Aquarius and Mercury in Pisces before the Moon.
+/// # let places = [
+/// #     (Graha::Moon, 348.0), (Graha::Venus, 10.0), (Graha::Jupiter, 195.0), (Graha::Saturn, 255.0),
+/// #     (Graha::Mars, 301.0), (Graha::Sun, 315.0), (Graha::Mercury, 340.0),
+/// # ];
+/// # let order = decennial_order(Graha::Moon, &places)?;
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let valens = DecennialDasha::new(order, birth, YearLength::Savana360, DecennialDivision::Proportional)?;
+/// use teistro_dasha::{DECENNIAL_ROUNDS, DECENNIAL_STARS};
+///
+/// // Two rounds of the seven, then the cycle goes on from the Moon.
+/// assert!(valens.mahadasha(0, DECENNIAL_STARS * DECENNIAL_ROUNDS).is_none());
+/// assert_eq!(valens.mahadasha(1, 0).map(|p| p.lord), Some(Graha::Moon));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 pub const DECENNIAL_ROUNDS: usize = 2;
 
 /// The days of a cycle at the third level under
@@ -84,6 +154,30 @@ const SEVEN: [Graha; DECENNIAL_STARS] = [
 /// The seven in the order the decennials run: `apheta` first, then the
 /// others by their longitude onwards from it, "by sign and by degree"
 /// (VI.7). `places` gives each of the seven its longitude in degrees.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{DecennialDivision, YearLength};
+/// # use teistro_dasha::{DecennialDasha, Timeline, decennial_order};
+/// #
+/// # // Valens's night nativity (VI.5): the Moon in Pisces 18°, Venus in Aries,
+/// # // Jupiter in Libra, Saturn in Sagittarius, Mars early in Aquarius, the Sun
+/// # // in Aquarius and Mercury in Pisces before the Moon.
+/// # let places = [
+/// #     (Graha::Moon, 348.0), (Graha::Venus, 10.0), (Graha::Jupiter, 195.0), (Graha::Saturn, 255.0),
+/// #     (Graha::Mars, 301.0), (Graha::Sun, 315.0), (Graha::Mercury, 340.0),
+/// # ];
+/// # let order = decennial_order(Graha::Moon, &places)?;
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let valens = DecennialDasha::new(order, birth, YearLength::Savana360, DecennialDivision::Proportional)?;
+/// // From the Moon onwards by longitude, "by sign and by degree" (VI.7).
+/// use Graha::*;
+/// assert_eq!(order, [Moon, Venus, Jupiter, Saturn, Mars, Sun, Mercury]);
+/// // The apheta must be one of the seven.
+/// assert_eq!(decennial_order(Graha::Rahu, &places).unwrap_err().field(), Some("apheta"));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -132,6 +226,29 @@ pub fn decennial_order(
 
 /// The decennials of a birth: the seven's 129 months each, in the order
 /// they run, repeating.
+///
+/// ```
+/// # use teistro_core::catalogue::Graha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{DecennialDivision, YearLength};
+/// # use teistro_dasha::{DecennialDasha, Timeline, decennial_order};
+/// #
+/// # // Valens's night nativity (VI.5): the Moon in Pisces 18°, Venus in Aries,
+/// # // Jupiter in Libra, Saturn in Sagittarius, Mars early in Aquarius, the Sun
+/// # // in Aquarius and Mercury in Pisces before the Moon.
+/// # let places = [
+/// #     (Graha::Moon, 348.0), (Graha::Venus, 10.0), (Graha::Jupiter, 195.0), (Graha::Saturn, 255.0),
+/// #     (Graha::Mars, 301.0), (Graha::Sun, 315.0), (Graha::Mercury, 340.0),
+/// # ];
+/// # let order = decennial_order(Graha::Moon, &places)?;
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let valens = DecennialDasha::new(order, birth, YearLength::Savana360, DecennialDivision::Proportional)?;
+/// // Mars, fifth in the order, begins 43 years after birth.
+/// let mars = valens.mahadasha(0, 4).ok_or(teistro_core::Error::internal("a period"))?;
+/// assert_eq!(mars.lord, Graha::Mars);
+/// assert!((mars.interval.from.get() - birth.get() - 43.0 * 360.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct DecennialDasha {
     order: [Graha; DECENNIAL_STARS],
@@ -144,6 +261,18 @@ impl DecennialDasha {
     /// The decennials running in `order` (from [`decennial_order`], or any
     /// order of the seven a consumer chooses), a year being `year_length`,
     /// the levels below the second divided as `division` says.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::settings::{DecennialDivision, YearLength};
+    /// use teistro_dasha::DecennialDasha;
+    ///
+    /// // An order that names a star twice is refused.
+    /// let twice = [Graha::Moon; 7];
+    /// let refused = DecennialDasha::new(twice, JulianDay::literal(2_451_545.0), YearLength::Savana360, DecennialDivision::Proportional);
+    /// assert_eq!(refused.unwrap_err().field(), Some("order"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -171,12 +300,52 @@ impl DecennialDasha {
     }
 
     /// The seven in the order they run.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{DecennialDivision, YearLength};
+    /// # use teistro_dasha::{DecennialDasha, Timeline, decennial_order};
+    /// #
+    /// # // Valens's night nativity (VI.5): the Moon in Pisces 18°, Venus in Aries,
+    /// # // Jupiter in Libra, Saturn in Sagittarius, Mars early in Aquarius, the Sun
+    /// # // in Aquarius and Mercury in Pisces before the Moon.
+    /// # let places = [
+    /// #     (Graha::Moon, 348.0), (Graha::Venus, 10.0), (Graha::Jupiter, 195.0), (Graha::Saturn, 255.0),
+    /// #     (Graha::Mars, 301.0), (Graha::Sun, 315.0), (Graha::Mercury, 340.0),
+    /// # ];
+    /// # let order = decennial_order(Graha::Moon, &places)?;
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let valens = DecennialDasha::new(order, birth, YearLength::Savana360, DecennialDivision::Proportional)?;
+    /// assert_eq!(valens.order(), order);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub const fn order(&self) -> [Graha; DECENNIAL_STARS] {
         self.order
     }
 
     /// How the levels below the second divide.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Graha;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{DecennialDivision, YearLength};
+    /// # use teistro_dasha::{DecennialDasha, Timeline, decennial_order};
+    /// #
+    /// # // Valens's night nativity (VI.5): the Moon in Pisces 18°, Venus in Aries,
+    /// # // Jupiter in Libra, Saturn in Sagittarius, Mars early in Aquarius, the Sun
+    /// # // in Aquarius and Mercury in Pisces before the Moon.
+    /// # let places = [
+    /// #     (Graha::Moon, 348.0), (Graha::Venus, 10.0), (Graha::Jupiter, 195.0), (Graha::Saturn, 255.0),
+    /// #     (Graha::Mars, 301.0), (Graha::Sun, 315.0), (Graha::Mercury, 340.0),
+    /// # ];
+    /// # let order = decennial_order(Graha::Moon, &places)?;
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let valens = DecennialDasha::new(order, birth, YearLength::Savana360, DecennialDivision::Proportional)?;
+    /// assert_eq!(valens.division(), DecennialDivision::Proportional);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub const fn division(&self) -> DecennialDivision {
         self.division

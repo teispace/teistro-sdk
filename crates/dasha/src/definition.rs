@@ -46,6 +46,15 @@ pub enum DashaDefinition {
 
 impl DashaDefinition {
     /// The key it is registered under.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_dasha::{DashaDefinition, RashiDefinition, UduDefinition};
+    ///
+    /// let udu: DashaDefinition = UduDefinition::of("ACME_TRAYA", Nakshatra::Ashwini).into();
+    /// let rashi: DashaDefinition = RashiDefinition::of("ACME_STHIRA").into();
+    /// assert_eq!((udu.key(), rashi.key()), ("ACME_TRAYA", "ACME_STHIRA"));
+    /// ```
     #[must_use]
     pub fn key(&self) -> &str {
         match self {
@@ -55,6 +64,15 @@ impl DashaDefinition {
     }
 
     /// How many levels of periods a reading of it carries.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_dasha::{DashaDefinition, RashiDefinition, UduDefinition};
+    ///
+    /// let udu: DashaDefinition = UduDefinition::of("ACME_TRAYA", Nakshatra::Ashwini).into();
+    /// let rashi: DashaDefinition = RashiDefinition::of("ACME_STHIRA").into();
+    /// assert_eq!(udu.depth().get(), 3);
+    /// ```
     #[must_use]
     pub const fn depth(&self) -> Depth {
         match self {
@@ -65,6 +83,17 @@ impl DashaDefinition {
 
     /// The length of its year, which is the one setting a row states for
     /// itself rather than taking from the context.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_dasha::{DashaDefinition, RashiDefinition, UduDefinition};
+    ///
+    /// let udu: DashaDefinition = UduDefinition::of("ACME_TRAYA", Nakshatra::Ashwini).into();
+    /// let rashi: DashaDefinition = RashiDefinition::of("ACME_STHIRA").into();
+    /// use teistro_core::settings::YearLength;
+    ///
+    /// assert_eq!(udu.year_length(), YearLength::Julian36525);
+    /// ```
     #[must_use]
     pub const fn year_length(&self) -> teistro_core::settings::YearLength {
         match self {
@@ -74,6 +103,15 @@ impl DashaDefinition {
     }
 
     /// The nakshatra-seeded row, when that is the kernel it names.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_dasha::{DashaDefinition, RashiDefinition, UduDefinition};
+    ///
+    /// let udu: DashaDefinition = UduDefinition::of("ACME_TRAYA", Nakshatra::Ashwini).into();
+    /// let rashi: DashaDefinition = RashiDefinition::of("ACME_STHIRA").into();
+    /// assert!(udu.udu().is_some() && rashi.udu().is_none());
+    /// ```
     #[must_use]
     pub const fn udu(&self) -> Option<&UduDefinition> {
         match self {
@@ -83,6 +121,15 @@ impl DashaDefinition {
     }
 
     /// The sign-based row, when that is the kernel it names.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_dasha::{DashaDefinition, RashiDefinition, UduDefinition};
+    ///
+    /// let udu: DashaDefinition = UduDefinition::of("ACME_TRAYA", Nakshatra::Ashwini).into();
+    /// let rashi: DashaDefinition = RashiDefinition::of("ACME_STHIRA").into();
+    /// assert!(rashi.rashi().is_some() && udu.rashi().is_none());
+    /// ```
     #[must_use]
     pub const fn rashi(&self) -> Option<&RashiDefinition> {
         match self {

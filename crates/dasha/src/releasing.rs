@@ -49,6 +49,15 @@ const SIGNS: usize = 12;
 
 /// The units a cycle of the twelve signs allots: 17 years 7 months at the
 /// second level (IV.4), 528 days at the third and 44 at the fourth (IV.10).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::{RELEASING_CYCLE, releasing_years};
+///
+/// // The twelve signs' years: 211, 17 years 7 months of months.
+/// let years: u32 = Rashi::ALL.iter().map(|sign| releasing_years(*sign)).sum();
+/// assert_eq!(years, RELEASING_CYCLE);
+/// ```
 pub const RELEASING_CYCLE: u32 = 211;
 
 /// The most children a releasing period can have: Aquarius's 360 months
@@ -58,6 +67,14 @@ const RELEASING_BREADTH: usize = 24;
 /// The years a sign allots in releasing: its lord's minimum years (IV.1),
 /// except Capricorn's 27 (IV.6). IV.6 gives Aquarius 30 as well, which are
 /// its lord Saturn's own.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::releasing_years;
+///
+/// // Leo the Sun's 19; Capricorn 27, not Saturn's 30 (IV.6); Aquarius Saturn's 30.
+/// assert_eq!([Rashi::Leo, Rashi::Capricorn, Rashi::Aquarius].map(releasing_years), [19, 27, 30]);
+/// ```
 #[must_use]
 pub fn releasing_years(sign: Rashi) -> u32 {
     match sign {
@@ -70,6 +87,15 @@ pub fn releasing_years(sign: Rashi) -> u32 {
 /// Mars 15, Venus 8, Mercury 20, the Sun 19 and the Moon 25, 129 in all;
 /// a node has none. Releasing gives them to signs, and the decennials
 /// share their 129 months by them.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_dasha::minimum_years;
+///
+/// let seven = [Graha::Saturn, Graha::Jupiter, Graha::Mars, Graha::Venus, Graha::Mercury, Graha::Sun, Graha::Moon];
+/// assert_eq!(seven.map(minimum_years).iter().sum::<u32>(), 129);
+/// assert_eq!(minimum_years(Graha::Rahu), 0);
+/// ```
 #[must_use]
 pub const fn minimum_years(planet: Graha) -> u32 {
     match planet {
@@ -206,6 +232,23 @@ pub const fn releasing_angle(lot: Rashi, sign: Rashi) -> Option<LotAngle> {
 }
 
 /// Valens's releasing from a sign: the vital sector begun from a lot.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::YearLength;
+/// # use teistro_dasha::{ReleasingDasha, Timeline};
+/// #
+/// # // Released from Leo at birth, in Valens's 360-day years.
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let leo = ReleasingDasha::new(Rashi::Leo, birth, YearLength::Savana360);
+/// // Leo's 19 years, then Virgo's 20: one sign after another.
+/// let first = leo.mahadasha(0, 0).ok_or(teistro_core::Error::internal("a period"))?;
+/// assert_eq!((first.sign, first.lord), (Some(Rashi::Leo), Graha::Sun));
+/// assert!((first.interval.days() - 19.0 * 360.0).abs() < 1e-9);
+/// assert_eq!(leo.mahadasha(0, 1).and_then(|p| p.sign), Some(Rashi::Virgo));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct ReleasingDasha {
     start: Rashi,
@@ -216,6 +259,23 @@ pub struct ReleasingDasha {
 impl ReleasingDasha {
     /// Releasing from `start` at `birth`, a period year being `year_length`
     /// (Valens's is 360 days, IV.9).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Rashi};
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::YearLength;
+    /// # use teistro_dasha::{ReleasingDasha, Timeline};
+    /// #
+    /// # // Released from Leo at birth, in Valens's 360-day years.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let leo = ReleasingDasha::new(Rashi::Leo, birth, YearLength::Savana360);
+    /// // The first sub-period is the sign's own, its years as months.
+    /// let first = leo.mahadasha(0, 0).ok_or(teistro_core::Error::internal("a period"))?;
+    /// let sub = leo.child(&first, 0).ok_or(teistro_core::Error::internal("a sub-period"))?;
+    /// assert_eq!(sub.sign, Some(Rashi::Leo));
+    /// assert!((sub.interval.days() - 19.0 * 30.0).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub const fn new(
         start: Rashi,
@@ -230,6 +290,19 @@ impl ReleasingDasha {
     }
 
     /// The sign it is released from.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Rashi};
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::YearLength;
+    /// # use teistro_dasha::{ReleasingDasha, Timeline};
+    /// #
+    /// # // Released from Leo at birth, in Valens's 360-day years.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let leo = ReleasingDasha::new(Rashi::Leo, birth, YearLength::Savana360);
+    /// assert_eq!(leo.start(), Rashi::Leo);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub const fn start(&self) -> Rashi {
         self.start
@@ -401,9 +474,41 @@ impl Timeline for ReleasingDasha {
 /// twelve signs, the life Vimshottari reckons, so that a stored reading
 /// answers the year at any age a life reaches. Valens's count itself never
 /// ends, and the cursor carries on past it.
+///
+/// ```
+/// # use teistro_core::catalogue::Rashi;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::YearLength;
+/// # use teistro_dasha::{ProfectionDasha, Timeline};
+/// #
+/// # // Profected from Virgo, as Valens's IV.11.
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let virgo = ProfectionDasha::new(Rashi::Virgo, birth, YearLength::Julian36525);
+/// use teistro_dasha::PROFECTION_YEARS;
+///
+/// // Ten circuits, then the count carries on.
+/// assert!(virgo.mahadasha(0, usize::from(PROFECTION_YEARS)).is_none());
+/// assert_eq!(virgo.mahadasha(1, 0).and_then(|p| p.sign), Some(Rashi::Virgo));
+/// ```
 pub const PROFECTION_YEARS: u8 = 120;
 
 /// The profected year: one sign a year from a start, without end (IV.11).
+///
+/// ```
+/// # use teistro_core::catalogue::Rashi;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::YearLength;
+/// # use teistro_dasha::{ProfectionDasha, Timeline};
+/// #
+/// # // Profected from Virgo, as Valens's IV.11.
+/// # let birth = JulianDay::literal(2_451_545.0);
+/// # let virgo = ProfectionDasha::new(Rashi::Virgo, birth, YearLength::Julian36525);
+/// // A sign a year, the year's index the completed age; no division below.
+/// let fifth = virgo.mahadasha(0, 4).ok_or("a year")?;
+/// assert_eq!(fifth.sign, Some(Rashi::Capricorn));
+/// assert_eq!(virgo.child(&fifth, 0), None);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct ProfectionDasha {
     start: Rashi,
@@ -414,6 +519,19 @@ pub struct ProfectionDasha {
 impl ProfectionDasha {
     /// The years profected from `start` at `birth`, a year being
     /// `year_length` (Valens's is 365¼ days, IV.9).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Rashi;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::YearLength;
+    /// # use teistro_dasha::{ProfectionDasha, Timeline};
+    /// #
+    /// # // Profected from Virgo, as Valens's IV.11.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let virgo = ProfectionDasha::new(Rashi::Virgo, birth, YearLength::Julian36525);
+    /// // The year at birth is the start's.
+    /// assert_eq!(virgo.mahadasha_at(birth.get()).and_then(|p| p.sign), Some(Rashi::Virgo));
+    /// ```
     #[must_use]
     pub const fn new(
         start: Rashi,
@@ -428,6 +546,18 @@ impl ProfectionDasha {
     }
 
     /// The sign the count starts from.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Rashi;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::YearLength;
+    /// # use teistro_dasha::{ProfectionDasha, Timeline};
+    /// #
+    /// # // Profected from Virgo, as Valens's IV.11.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let virgo = ProfectionDasha::new(Rashi::Virgo, birth, YearLength::Julian36525);
+    /// assert_eq!(virgo.start(), Rashi::Virgo);
+    /// ```
     #[must_use]
     pub const fn start(&self) -> Rashi {
         self.start
@@ -436,6 +566,20 @@ impl ProfectionDasha {
     /// The sign of the ordinal year `year`, 1 for the year that begins at
     /// birth: `year − 1` signs on (IV.11's 35th year, from Virgo, is
     /// Cancer); nothing for year 0, which does not exist.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Rashi;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::YearLength;
+    /// # use teistro_dasha::{ProfectionDasha, Timeline};
+    /// #
+    /// # // Profected from Virgo, as Valens's IV.11.
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let virgo = ProfectionDasha::new(Rashi::Virgo, birth, YearLength::Julian36525);
+    /// // IV.11: the 35th year from Virgo is Cancer.
+    /// assert_eq!(virgo.sign_of_year(35), Some(Rashi::Cancer));
+    /// assert_eq!(virgo.sign_of_year(0), None);
+    /// ```
     #[must_use]
     pub fn sign_of_year(&self, year: u32) -> Option<Rashi> {
         let elapsed = usize::try_from(year.checked_sub(1)?).ok()?;
@@ -489,6 +633,14 @@ impl Timeline for ProfectionDasha {
 }
 
 /// The catalogued systems these kernels run, in the catalogue's order.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_dasha::TIME_LORDS;
+///
+/// assert!(TIME_LORDS.contains(&DashaSystem::Profection));
+/// assert!(TIME_LORDS.iter().all(|system| teistro_dasha::systems().any(|s| s == *system)));
+/// ```
 pub const TIME_LORDS: [DashaSystem; 3] = [
     DashaSystem::ReleasingFortune,
     DashaSystem::ReleasingDaimon,
@@ -498,6 +650,20 @@ pub const TIME_LORDS: [DashaSystem; 3] = [
 /// The time lord a catalogued system names, begun from `start`: releasing
 /// for the releasing family, the profected year for the profection family,
 /// and nothing for a system of any other kernel.
+///
+/// ```
+/// use teistro_core::catalogue::{DashaSystem, Rashi};
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_core::settings::YearLength;
+/// use teistro_dasha::time_lord;
+///
+/// let birth = JulianDay::literal(2_451_545.0);
+/// let fortune = time_lord(DashaSystem::ReleasingFortune, Rashi::Leo, birth, YearLength::Savana360).ok_or("a time lord")?;
+/// assert!(fortune.releasing().is_some());
+/// // Vimshottari is no time lord.
+/// assert!(time_lord(DashaSystem::Vimshottari, Rashi::Leo, birth, YearLength::Savana360).is_none());
+/// # Ok::<(), &str>(())
+/// ```
 #[must_use]
 pub fn time_lord(
     system: DashaSystem,

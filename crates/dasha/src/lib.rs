@@ -96,6 +96,14 @@ pub use wheel::{Segment, Wheel};
 /// Every dasha system this build computes, in the catalogue's order within
 /// each kernel: the nakshatra-seeded rows, the sign-based rows, the
 /// Kalachakra, Valens's time lords, and the graha dashas.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+///
+/// let all: Vec<DashaSystem> = teistro_dasha::systems().collect();
+/// assert_eq!(all[0], DashaSystem::Vimshottari);
+/// assert!(all.contains(&DashaSystem::Kalachakra) && all.contains(&DashaSystem::Firdaria));
+/// ```
 pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
     ROWS.iter()
         .filter_map(|row| row.system.catalogued())
@@ -126,6 +134,14 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
 /// the Sun and the Moon (v. 202) and are refused where two are equally
 /// strong, as a Cancer lagna's own Bhava bala can equal the Moon's
 /// shadbala exactly.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+///
+/// // The Tara dasha is not given a chart with no graha in a kendra.
+/// assert!(teistro_dasha::systems().any(|s| s == DashaSystem::Tara));
+/// assert!(!teistro_dasha::systems_every_chart_gives().any(|s| s == DashaSystem::Tara));
+/// ```
 pub fn systems_every_chart_gives() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
     systems().filter(|system| {
         !matches!(

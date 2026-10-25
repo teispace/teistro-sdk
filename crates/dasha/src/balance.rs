@@ -27,6 +27,27 @@ use crate::row::{Seat, UduRow};
 const MINUTES_PER_DAY: f64 = 1440.0;
 
 /// What remains of the first period, and how long it runs.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::DashaSystem;
+/// # use teistro_core::quantity::{Degrees, JulianDay};
+/// # use teistro_core::settings::root;
+/// # use teistro_dasha::{Birth, Dasha, Rules, VIMSHOTTARI};
+/// #
+/// # // A Moon a third of the way into Anuradha, Saturn's nakshatra.
+/// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+/// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+/// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+/// use teistro_core::settings::Balance;
+///
+/// // Two thirds of Saturn's nineteen years remain, measured by longitude.
+/// let balance = dasha.balance();
+/// assert_eq!(balance.method, Balance::Spatial);
+/// assert!((balance.remaining - 2.0 / 3.0).abs() < 1e-9);
+/// assert!((balance.days - 19.0 * 365.25 * 2.0 / 3.0).abs() < 1e-6);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct BalanceAtBirth {
@@ -41,6 +62,24 @@ pub struct BalanceAtBirth {
 }
 
 /// A balance written as years, months, days, hours and minutes.
+///
+/// ```
+/// # use teistro_core::angle::Nas;
+/// # use teistro_core::catalogue::DashaSystem;
+/// # use teistro_core::quantity::{Degrees, JulianDay};
+/// # use teistro_core::settings::root;
+/// # use teistro_dasha::{Birth, Dasha, Rules, VIMSHOTTARI};
+/// #
+/// # // A Moon a third of the way into Anuradha, Saturn's nakshatra.
+/// # let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+/// # let birth = Birth { instant: JulianDay::literal(2_447_995.5), moon, moon_span: None };
+/// # let dasha = Dasha::new(&VIMSHOTTARI, &birth, Rules::of(&root().dasha, DashaSystem::Vimshottari))?;
+/// use teistro_dasha::Written;
+///
+/// let written = dasha.balance().written;
+/// assert_eq!(written, Written { years: 12, months: 8, days: 0, hours: 0, minutes: 0 });
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Written {
@@ -62,6 +101,16 @@ impl Written {
     /// Only the minutes are rounded, and a rest that rounds to a whole day
     /// carries into the days, which can never reach a month: a remainder
     /// below a twelfth of a year of whole days is at most 30 and a fraction.
+    ///
+    /// ```
+    /// use teistro_dasha::Written;
+    ///
+    /// // Two thirds of nineteen Julian years: twelve years and eight months.
+    /// let written = Written::of(19.0 * 365.25 * 2.0 / 3.0, 365.25);
+    /// assert_eq!((written.years, written.months, written.days), (12, 8, 0));
+    /// // A rest that rounds to a whole day carries into the days.
+    /// assert_eq!(Written::of(1.0 - 1e-6, 365.25).days, 1);
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_possible_truncation,
@@ -106,6 +155,20 @@ fn window(row: &UduRow, seat: Seat, elapsed: f64) -> f64 {
 
 /// What remains of the Moon's window of nakshatras, spatially: how far by
 /// longitude it is through its segment of the row's wheel.
+///
+/// ```
+/// use teistro_core::angle::Nas;
+/// use teistro_core::quantity::Degrees;
+///
+/// // A Moon a third of the way into Anuradha, Saturn's nakshatra.
+/// let moon = Nas::from_degrees(Degrees::try_new(16.0 * 360.0 / 27.0 + 360.0 / 81.0)?);
+/// use teistro_dasha::VIMSHOTTARI;
+/// use teistro_dasha::balance::spatial;
+///
+/// let remaining = spatial(&VIMSHOTTARI, moon, VIMSHOTTARI.seat(16));
+/// assert!((remaining - 2.0 / 3.0).abs() < 1e-9);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn spatial(row: &UduRow, moon: Nas, seat: Seat) -> f64 {
     window(row, seat, row.wheel.segment(moon).elapsed())
@@ -118,6 +181,19 @@ pub fn spatial(row: &UduRow, moon: Nas, seat: Seat) -> f64 {
 ///
 /// The other reading of a window, the Moon's time across all of it, is not
 /// recorded anywhere this crate is measured against, and is not built.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_dasha::VIMSHOTTARI;
+/// use teistro_dasha::balance::temporal;
+///
+/// // Born a day into the Moon's three-day stay in Anuradha: two thirds remain.
+/// let span = Interval::literal(2_447_994.5, 2_447_997.5);
+/// let remaining = temporal(&VIMSHOTTARI, VIMSHOTTARI.seat(16), JulianDay::literal(2_447_995.5), span)?;
+/// assert!((remaining - 2.0 / 3.0).abs() < 1e-12);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -133,6 +209,19 @@ pub fn temporal(
 }
 
 /// How far through its stay in its nakshatra the Moon is at birth, 0 to 1.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_dasha::balance::elapsed_in;
+///
+/// let span = Interval::literal(2_447_994.5, 2_447_997.5);
+/// assert!((elapsed_in(JulianDay::literal(2_447_995.5), span)? - 1.0 / 3.0).abs() < 1e-12);
+/// // A span that does not hold the birth is refused by its field.
+/// let refused = elapsed_in(JulianDay::literal(2_448_000.5), span).unwrap_err();
+/// assert_eq!(refused.field(), Some("moon_span"));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
