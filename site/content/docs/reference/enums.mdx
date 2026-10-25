@@ -1442,15 +1442,6 @@ The status of a call, with the code it has at the C boundary.
 
 The bodies the port knows: the ten classical bodies of modern astrology and the four lunar points. Adapters map them to their own numbering; a body an adapter cannot compute is reported per cell, never guessed. The astrological grahas of the catalogue map onto these under the node knob (Rahu is the mean or the true node).
 
-```
-use teistro_port_ephemeris::Body;
-
-assert_eq!(Body::MeanNode.key(), "MEAN_NODE");
-assert_eq!("moon".parse::<Body>().ok(), Some(Body::Moon));
-assert_eq!(Body::from_id(Body::Pluto.id()), Some(Body::Pluto));
-assert!(!Body::TrueNode.has_distance());
-```
-
 | member | value | what it is |
 |---|---|---|
 | `TS_BODY_SUN` | 0 | The Sun. |
@@ -1471,13 +1462,6 @@ assert!(!Body::TrueNode.has_distance());
 ## ts_time_scale
 
 The time scale of the instants in a request.
-
-```
-use teistro_port_ephemeris::TimeScale;
-
-assert_eq!(TimeScale::from_id(TimeScale::Tt.id()), Some(TimeScale::Tt));
-assert_eq!(TimeScale::Ut1.to_string(), "UT1");
-```
 
 | member | value | what it is |
 |---|---|---|
@@ -1543,13 +1527,6 @@ The coordinate system of a position.
 ## ts_provider_code
 
 What a vtable function returns: `0` for success, and one of these for a failure the port names. A provider's own code stays outside them (`ProviderError::RESERVED_CODES`), so a binding that implements a provider need never write a number.
-
-```
-use teistro_port_ephemeris::{ProviderCode, ProviderError};
-
-assert_eq!(ProviderCode::Unsupported as i32, -1);
-assert_eq!(ProviderError::unsupported("positions").code(), ProviderCode::Unsupported as i32);
-```
 
 | member | value | what it is |
 |---|---|---|
