@@ -18,9 +18,35 @@ use crate::source::{ENTITY_NAMESPACE, Entity, Entry, META_FILE, Tree};
 use crate::translit::{Script, transliterate};
 
 /// The file a derived locale keeps its hand corrections in.
+///
+/// ```
+/// use teistro_intl::derive::OVERRIDES_FILE;
+/// use teistro_intl::sdk_root;
+///
+/// // `sa-Latn` keeps its hand corrections beside its sources.
+/// assert!(sdk_root().join("sa-Latn").join(OVERRIDES_FILE).is_file());
+/// ```
 pub const OVERRIDES_FILE: &str = "_overrides.json";
 
 /// What deriving a locale produced: the files and what they say.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// use teistro_intl::derive::{Casing, derive, overrides_of};
+///
+/// let derived = derive(&tree, "sa-Deva", "sa-Latn", &overrides_of(&sdk_root(), "sa-Latn")?, Casing::Names)?;
+/// // What is checked in is what the derivation writes.
+/// for (path, text) in &derived.files {
+///     assert_eq!(&std::fs::read_to_string(sdk_root().join(path))?, text);
+/// }
+/// assert!(derived.stale.is_empty());
+/// assert!(derived.agreeing <= derived.entities);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Derived {
     /// The files, relative to the `i18n/` root, and their text.
@@ -48,6 +74,13 @@ pub struct Derived {
 /// and a corpus of passages both reach this function, and a rule that
 /// guessed between them by counting words would be exactly the inference
 /// this project refuses elsewhere.
+///
+/// ```
+/// use teistro_intl::derive::Casing;
+///
+/// // A name table is title-cased; a corpus of passages, by sentence.
+/// assert_ne!(Casing::Names, Casing::Sentences);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Casing {
     /// Every word's first letter, which is how a Latin script writes a
@@ -72,6 +105,22 @@ pub enum Casing {
 /// `casing` says what the root holds — names or prose — because the source
 /// script carries no case and the target's is not derivable from the text
 /// ([`Casing`]).
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// use teistro_intl::derive::{Casing, derive, overrides_of};
+///
+/// let derived = derive(&tree, "sa-Deva", "sa-Latn", &overrides_of(&sdk_root(), "sa-Latn")?, Casing::Names)?;
+/// assert!(derived.entities > 0);
+/// // A source the tree lacks is refused by name.
+/// let missing = derive(&tree, "pi-Deva", "pi-Latn", &Default::default(), Casing::Names).unwrap_err();
+/// assert!(missing.contains("pi-Deva"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -180,6 +229,16 @@ pub fn derive(
 }
 
 /// The overrides beside a derived locale, or none when it has no file.
+///
+/// ```
+/// use teistro_intl::derive::overrides_of;
+/// use teistro_intl::sdk_root;
+///
+/// assert!(!overrides_of(&sdk_root(), "sa-Latn")?.is_empty());
+/// // A locale with no file has none.
+/// assert!(overrides_of(&sdk_root(), "ne-Deva-NP")?.is_empty());
+/// # Ok::<(), String>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -14,6 +14,15 @@ use super::ast::{
 /// Checks a parsed message; the error is the specification's name for the
 /// rule broken, with the detail.
 ///
+/// ```
+/// use teistro_intl::mf2::check::check;
+/// use teistro_intl::mf2::parse;
+///
+/// // What `parse` already ran: a message that parses has passed.
+/// assert!(check(&parse(".input {$n :integer} .match $n 1 {{one}} * {{many}}")?).is_ok());
+/// # Ok::<(), teistro_intl::mf2::ParseError>(())
+/// ```
+///
 /// # Errors
 ///
 /// The first data-model error found.

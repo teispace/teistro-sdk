@@ -91,7 +91,7 @@ export interface Messages {
           readonly numeric: (p: { day: number; month: number; year: number }) => string;
         };
         readonly monthName: (p: { month: number }) => string;
-        readonly monthShort: () => string;
+        readonly monthShort: (p: { month: number }) => string;
       };
       readonly bikramSambat: {
         readonly date: {
@@ -131,28 +131,28 @@ export interface Messages {
       };
       readonly isoWeek: {
         readonly date: {
-          readonly full: () => string;
+          readonly full: (p: { day: number; month: number; year: number }) => string;
           readonly long: (p: { day: number; month: number; year: number }) => string;
           readonly numeric: (p: { day: number; month: number; year: number }) => string;
         };
       };
       readonly julian: {
         readonly date: {
-          readonly full: () => string;
-          readonly long: () => string;
-          readonly numeric: () => string;
+          readonly full: (p: { day: number; monthName: string; weekdayName: string; year: number }) => string;
+          readonly long: (p: { day: number; monthName: string; year: number }) => string;
+          readonly numeric: (p: { day: number; month: number; year: number }) => string;
         };
-        readonly monthName: () => string;
-        readonly monthShort: () => string;
+        readonly monthName: (p: { month: number }) => string;
+        readonly monthShort: (p: { month: number }) => string;
       };
       readonly mixed: {
         readonly date: {
-          readonly full: () => string;
-          readonly long: () => string;
-          readonly numeric: () => string;
+          readonly full: (p: { day: number; monthName: string; weekdayName: string; year: number }) => string;
+          readonly long: (p: { day: number; monthName: string; year: number }) => string;
+          readonly numeric: (p: { day: number; month: number; year: number }) => string;
         };
-        readonly monthName: () => string;
-        readonly monthShort: () => string;
+        readonly monthName: (p: { month: number }) => string;
+        readonly monthShort: (p: { month: number }) => string;
       };
       readonly tibetanPhugpa: {
         readonly date: {

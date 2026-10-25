@@ -12,15 +12,72 @@ use serde::{Deserialize, Serialize};
 
 /// The base locale: complete by definition, the source of keys and
 /// parameters for every other locale.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// use teistro_intl::source::BASE_LOCALE;
+///
+/// // Complete by definition: no fallback behind it.
+/// assert!(tree.locales[BASE_LOCALE].meta.fallback.is_empty());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const BASE_LOCALE: &str = "en-Latn";
 /// The locale metadata file inside every locale directory.
+///
+/// ```
+/// use teistro_intl::sdk_root;
+/// use teistro_intl::source::META_FILE;
+///
+/// assert!(sdk_root().join("ne-Deva-NP").join(META_FILE).is_file());
+/// ```
 pub const META_FILE: &str = "_meta.json";
 /// The namespace whose leaves are entity records rather than messages.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let english = tree.base().ok_or("the base locale")?;
+/// use teistro_intl::source::{ENTITY_NAMESPACE, Entry};
+///
+/// // Its leaves are records; every other namespace's are messages.
+/// let entities = &english.namespaces[ENTITY_NAMESPACE];
+/// assert!(matches!(entities.entries["graha.SUN"], Entry::Entity(_)));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const ENTITY_NAMESPACE: &str = "sdk.entity";
 /// The entity form every record must carry.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let english = tree.base().ok_or("the base locale")?;
+/// use teistro_intl::source::NAME_FORM;
+///
+/// let sun = english.entity("graha.SUN").ok_or("the Sun")?;
+/// assert_eq!(sun.form(NAME_FORM), Some("Sun"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const NAME_FORM: &str = "name";
 
 /// Text direction.
+///
+/// ```
+/// use teistro_intl::source::Direction;
+///
+/// assert_eq!(Direction::default(), Direction::Ltr);
+/// assert_eq!(serde_json::from_str::<Direction>(r#""rtl""#)?, Direction::Rtl);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Direction {
@@ -32,6 +89,20 @@ pub enum Direction {
 }
 
 /// What a locale promises about coverage.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// use teistro_intl::source::Completeness;
+///
+/// // English and Nepali are gated complete; Hindi and Sanskrit fall back.
+/// assert_eq!(tree.locales["ne-Deva-NP"].meta.completeness, Completeness::Strict);
+/// assert_eq!(tree.locales["hi-Deva-IN"].meta.completeness, Completeness::Base);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Completeness {
@@ -43,6 +114,19 @@ pub enum Completeness {
 }
 
 /// The patterns of one list type, CLDR style: `{0}` and `{1}`.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let nepali = &tree.locales["ne-Deva-NP"];
+/// let and = &nepali.meta.list_patterns["and"];
+/// assert_eq!(and.pair, "{0} र {1}");
+/// assert_eq!(and.middle, "{0}, {1}");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ListPattern {
@@ -60,6 +144,13 @@ pub struct ListPattern {
 /// The parts are stated in order and the last wraps around midnight, so
 /// `[4 morning, 12 afternoon, 16 evening, 20 night]` puts hours 0 to 3 in
 /// `night` without anyone writing two entries for it.
+///
+/// ```
+/// use teistro_intl::source::default_day_periods;
+///
+/// let first = &default_day_periods()[0];
+/// assert_eq!((first.from, first.key.as_str()), (4, "morning"));
+/// ```
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct DayPeriod {
@@ -72,6 +163,13 @@ pub struct DayPeriod {
 /// The parts of the day a locale falls back to when it states none: the
 /// division English and Nepali share. A language whose day divides
 /// elsewhere states its own, which is what the field is for.
+///
+/// ```
+/// use teistro_intl::source::default_day_periods;
+///
+/// let keys: Vec<String> = default_day_periods().into_iter().map(|period| period.key).collect();
+/// assert_eq!(keys, ["morning", "afternoon", "evening", "night"]);
+/// ```
 #[must_use]
 pub fn default_day_periods() -> Vec<DayPeriod> {
     [
@@ -94,6 +192,21 @@ fn is_default_day_periods(periods: &[DayPeriod]) -> bool {
 }
 
 /// `_meta.json`.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let nepali = &tree.locales["ne-Deva-NP"];
+/// // Devanagari digits in the Indian grouping, falling back to English.
+/// let meta = &nepali.meta;
+/// assert_eq!((meta.numbering_system.as_str(), meta.grouping.as_slice()), ("deva", &[3, 2][..]));
+/// assert_eq!(meta.fallback, ["en-Latn"]);
+/// assert_eq!(meta.contexts["gender"], ["m", "f", "n"]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Meta {
@@ -151,6 +264,20 @@ impl Meta {
     /// The parts are in order and the last wraps, so an hour before the
     /// first belongs to the last: under the default division, two o'clock
     /// is `night`.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// let english = tree.base().ok_or("the base locale")?;
+    /// // The last part wraps past midnight.
+    /// assert_eq!(english.meta.day_period(2), "night");
+    /// assert_eq!(english.meta.day_period(4), "morning");
+    /// assert_eq!(english.meta.day_period(13), "afternoon");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn day_period(&self, hour: u8) -> &str {
         self.day_periods
@@ -180,6 +307,19 @@ const fn comma() -> char {
 
 /// An entity record: named forms, a gender from the `gender` context,
 /// and an optional glyph.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let nepali = &tree.locales["ne-Deva-NP"];
+/// let sun = nepali.entity("graha.SUN").ok_or("the Sun")?;
+/// assert_eq!(sun.name(), "सूर्य");
+/// assert_eq!((sun.glyph.as_deref(), sun.gender.as_deref()), (Some("☉"), Some("m")));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Entity {
     /// The forms by name: `short`, `name`, `prose`, `iast`, and any the
@@ -193,6 +333,20 @@ pub struct Entity {
 
 impl Entity {
     /// A form by name; `glyph` is a form too.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Entity;
+    /// #
+    /// # let mut sun = Entity::default();
+    /// # sun.forms.insert(String::from("name"), String::from("Sun"));
+    /// # sun.forms.insert(String::from("prose"), String::from("the Sun"));
+    /// # sun.glyph = Some(String::from("☉"));
+    ///
+    /// assert_eq!(sun.form("prose"), Some("the Sun"));
+    /// // The glyph is a form too.
+    /// assert_eq!(sun.form("glyph"), Some("☉"));
+    /// assert_eq!(sun.form("iast"), None);
+    /// ```
     #[must_use]
     pub fn form(&self, form: &str) -> Option<&str> {
         if form == "glyph" {
@@ -206,6 +360,20 @@ impl Entity {
     /// adds after them, then the glyph and the gender. Every writer of
     /// `sdk.entity.json` writes through this, so a file a command
     /// rewrites keeps the order it was written in.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Entity;
+    /// #
+    /// # let mut sun = Entity::default();
+    /// # sun.forms.insert(String::from("name"), String::from("Sun"));
+    /// # sun.forms.insert(String::from("prose"), String::from("the Sun"));
+    /// # sun.glyph = Some(String::from("☉"));
+    ///
+    /// // The forms a reader expects first, then the glyph.
+    /// let written = serde_json::to_string(&sun.source_json())?;
+    /// assert_eq!(written, r#"{"name":"Sun","prose":"the Sun","glyph":"☉"}"#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub fn source_json(&self) -> serde_json::Value {
         use serde_json::Value as Json;
@@ -230,6 +398,19 @@ impl Entity {
     }
 
     /// The `name` form, which loading guarantees.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Entity;
+    /// #
+    /// # let mut sun = Entity::default();
+    /// # sun.forms.insert(String::from("name"), String::from("Sun"));
+    /// # sun.forms.insert(String::from("prose"), String::from("the Sun"));
+    /// # sun.glyph = Some(String::from("☉"));
+    ///
+    /// assert_eq!(sun.name(), "Sun");
+    /// // A record without one, which loading refuses, reads empty.
+    /// assert_eq!(Entity::default().name(), "");
+    /// ```
     #[must_use]
     pub fn name(&self) -> &str {
         self.forms.get(NAME_FORM).map_or("", String::as_str)
@@ -284,6 +465,22 @@ impl Entity {
 
     /// Whether `overlay` laid over this record would keep anything of it:
     /// a form, a gender or a glyph the overlay does not carry.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Entity;
+    /// #
+    /// # let mut sun = Entity::default();
+    /// # sun.forms.insert(String::from("name"), String::from("Sun"));
+    /// # sun.forms.insert(String::from("prose"), String::from("the Sun"));
+    /// # sun.glyph = Some(String::from("☉"));
+    ///
+    /// // An overlay of the name alone keeps the prose and the glyph.
+    /// let mut renamed = Entity::default();
+    /// renamed.forms.insert(String::from("name"), String::from("Surya"));
+    /// assert!(sun.kept_under(&renamed));
+    /// // The whole record over itself keeps nothing.
+    /// assert!(!sun.kept_under(&sun));
+    /// ```
     #[must_use]
     pub fn kept_under(&self, overlay: &Entity) -> bool {
         self.forms
@@ -295,6 +492,22 @@ impl Entity {
 }
 
 /// A leaf of a namespace.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let english = tree.base().ok_or("the base locale")?;
+/// use teistro_intl::source::Entry;
+///
+/// let Some(Entry::Message(source)) = english.entry("sdk.reason.appName") else {
+///     panic!("a message");
+/// };
+/// assert_eq!(source, "Teistro");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Entry {
     /// A `MessageFormat 2` source.
@@ -305,6 +518,21 @@ pub enum Entry {
 
 /// One namespace of one locale: keys are dotted paths inside the
 /// namespace (`graha.SUN`, `strength.score`).
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let english = tree.base().ok_or("the base locale")?;
+/// // Source order: the Sun before the Moon.
+/// let order = &english.namespaces["sdk.entity"].order;
+/// let sun = order.iter().position(|key| key == "graha.SUN");
+/// let moon = order.iter().position(|key| key == "graha.MOON");
+/// assert!(sun < moon);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Namespace {
     /// The entries by key.
@@ -315,6 +543,23 @@ pub struct Namespace {
 }
 
 /// How an entry laid over a namespace landed ([`Namespace::overlay`]).
+///
+/// ```
+/// # use teistro_intl::source::Entity;
+/// #
+/// # let mut sun = Entity::default();
+/// # sun.forms.insert(String::from("name"), String::from("Sun"));
+/// # sun.forms.insert(String::from("prose"), String::from("the Sun"));
+/// # sun.glyph = Some(String::from("☉"));
+///
+/// use teistro_intl::source::{Entry, Landed, Namespace};
+///
+/// let mut namespace = Namespace::default();
+/// let key = String::from("graha.SUN");
+/// assert_eq!(namespace.overlay(key.clone(), Entry::Entity(sun.clone())), Landed::Added);
+/// assert_eq!(namespace.overlay(key.clone(), Entry::Entity(sun)), Landed::Replaced);
+/// assert_eq!(namespace.overlay(key, Entry::Message(String::from("Sun"))), Landed::Replaced);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Landed {
     /// No entry stood under the key.
@@ -330,6 +575,18 @@ impl Namespace {
     /// Adds an entry, keeping source order. An entry under the same key is
     /// replaced whole; [`Namespace::overlay`] is what lays one record over
     /// another.
+    ///
+    /// ```
+    /// use teistro_intl::source::{Entry, Namespace};
+    ///
+    /// let mut namespace = Namespace::default();
+    /// namespace.insert(String::from("welcome"), Entry::Message(String::from("Hello")));
+    /// namespace.insert(String::from("appName"), Entry::Message(String::from("Teistro")));
+    /// namespace.insert(String::from("welcome"), Entry::Message(String::from("Welcome")));
+    /// // Replaced whole, kept in the order first written.
+    /// assert_eq!(namespace.order, ["welcome", "appName"]);
+    /// assert_eq!(namespace.entries["welcome"], Entry::Message(String::from("Welcome")));
+    /// ```
     pub fn insert(&mut self, key: String, entry: Entry) {
         if !self.entries.contains_key(&key) {
             self.order.push(key.clone());
@@ -344,6 +601,26 @@ impl Namespace {
     /// This is what loading a pack at runtime does, so a consumer's pack
     /// adding one form to a record does not erase the rest of it
     /// (`03-design/state-readings.md` §3).
+    ///
+    /// ```
+    /// # use teistro_intl::source::Entity;
+    /// #
+    /// # let mut sun = Entity::default();
+    /// # sun.forms.insert(String::from("name"), String::from("Sun"));
+    /// # sun.forms.insert(String::from("prose"), String::from("the Sun"));
+    /// # sun.glyph = Some(String::from("☉"));
+    ///
+    /// use teistro_intl::source::{Entry, Landed, Namespace};
+    ///
+    /// let mut namespace = Namespace::default();
+    /// namespace.insert(String::from("graha.SUN"), Entry::Entity(sun));
+    /// // A pack adding one form merges it into the record.
+    /// let mut iast = Entity::default();
+    /// iast.forms.insert(String::from("iast"), String::from("Sūrya"));
+    /// assert_eq!(namespace.overlay(String::from("graha.SUN"), Entry::Entity(iast)), Landed::Merged);
+    /// let Entry::Entity(merged) = &namespace.entries["graha.SUN"] else { unreachable!() };
+    /// assert_eq!((merged.name(), merged.form("iast")), ("Sun", Some("Sūrya")));
+    /// ```
     pub fn overlay(&mut self, key: String, entry: Entry) -> Landed {
         let (landed, entry) = match (self.entries.get(&key), entry) {
             (None, entry) => (Landed::Added, entry),
@@ -362,6 +639,18 @@ impl Namespace {
     }
 
     /// The entries in source order, then any without a recorded order.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// let english = tree.base().ok_or("the base locale")?;
+    /// let first = english.namespaces["sdk.reason"].in_source_order().next().map(|(key, _)| key.as_str());
+    /// assert_eq!(first, Some("appName"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn in_source_order(&self) -> impl Iterator<Item = (&String, &Entry)> {
         let ordered = self
             .order
@@ -376,6 +665,18 @@ impl Namespace {
 }
 
 /// One locale directory.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let nepali = &tree.locales["ne-Deva-NP"];
+/// assert_eq!(nepali.tag, nepali.meta.locale);
+/// assert!(nepali.namespaces.contains_key("sdk.reason"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct LocaleSource {
     /// The tag, the directory name.
@@ -389,6 +690,19 @@ pub struct LocaleSource {
 impl LocaleSource {
     /// Splits a full key into its namespace and the key inside it, taking
     /// the longest namespace the locale has.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// let english = tree.base().ok_or("the base locale")?;
+    /// // The longest namespace the locale has.
+    /// assert_eq!(english.split("sdk.entity.graha.SUN"), Some(("sdk.entity", "graha.SUN")));
+    /// assert_eq!(english.split("elsewhere.key"), None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn split<'k>(&self, full_key: &'k str) -> Option<(&str, &'k str)> {
         self.namespaces
@@ -403,6 +717,18 @@ impl LocaleSource {
     }
 
     /// The entry at a full key.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// let english = tree.base().ok_or("the base locale")?;
+    /// assert!(english.entry("sdk.reason.grahaInBhava").is_some());
+    /// assert!(english.entry("sdk.reason.noSuchKey").is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn entry(&self, full_key: &str) -> Option<&Entry> {
         let (ns, key) = self.split(full_key)?;
@@ -410,6 +736,19 @@ impl LocaleSource {
     }
 
     /// The entity at a catalogue key (`graha.SUN`).
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// let english = tree.base().ok_or("the base locale")?;
+    /// assert_eq!(english.entity("graha.MOON").map(|moon| moon.name()), Some("Moon"));
+    /// // A message is not an entity.
+    /// assert!(english.entity("appName").is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn entity(&self, catalogue_key: &str) -> Option<&Entity> {
         match self
@@ -424,6 +763,18 @@ impl LocaleSource {
     }
 
     /// Every full key, sorted.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// let english = tree.base().ok_or("the base locale")?;
+    /// assert!(english.keys().any(|key| key == "sdk.entity.graha.SUN"));
+    /// assert!(english.keys().any(|key| key == "sdk.reason.appName"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn keys(&self) -> impl Iterator<Item = String> + '_ {
         self.namespaces
             .iter()
@@ -432,6 +783,18 @@ impl LocaleSource {
 }
 
 /// A loaded `i18n/` root.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// // The SDK's own five locales.
+/// let tags: Vec<&str> = tree.locales.keys().map(String::as_str).collect();
+/// assert_eq!(tags, ["en-Latn", "hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Tree {
     /// Where it was read from.
@@ -442,12 +805,31 @@ pub struct Tree {
 
 impl Tree {
     /// The base locale, when present.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// assert_eq!(tree.base().map(|base| base.tag.as_str()), Some("en-Latn"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn base(&self) -> Option<&LocaleSource> {
         self.locales.get(BASE_LOCALE)
     }
 
     /// Loads every locale directory under `root`.
+    ///
+    /// ```
+    /// use teistro_intl::sdk_root;
+    /// use teistro_intl::source::Tree;
+    ///
+    /// // A directory without locales is refused, naming it.
+    /// let empty = Tree::load(&sdk_root().join("en-Latn")).unwrap_err();
+    /// assert!(empty.path.ends_with("en-Latn"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -477,6 +859,13 @@ impl Tree {
 }
 
 /// A file that could not be loaded.
+///
+/// ```
+/// use teistro_intl::source::Tree;
+///
+/// let missing = Tree::load(std::path::Path::new("no/such/root")).unwrap_err();
+/// assert!(missing.to_string().starts_with("no/such/root: "));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SourceError {
     /// The file or directory.
@@ -503,6 +892,15 @@ impl fmt::Display for SourceError {
 impl std::error::Error for SourceError {}
 
 /// Whether `s` is a locale tag with a script: `language-Script[-REGION]`.
+///
+/// ```
+/// use teistro_intl::source::is_locale_tag;
+///
+/// assert!(is_locale_tag("ne-Deva-NP") && is_locale_tag("sa-Latn"));
+/// // The script is required.
+/// assert!(!is_locale_tag("ne-NP"));
+/// assert!(!is_locale_tag("en-latn"));
+/// ```
 #[must_use]
 pub fn is_locale_tag(s: &str) -> bool {
     let mut parts = s.split('-');
@@ -525,6 +923,13 @@ pub fn is_locale_tag(s: &str) -> bool {
 }
 
 /// Whether `s` is a namespace name: lowercase words joined by dots.
+///
+/// ```
+/// use teistro_intl::source::is_namespace_name;
+///
+/// assert!(is_namespace_name("sdk.reason"));
+/// assert!(!is_namespace_name("sdk.Reason") && !is_namespace_name("sdk..reason"));
+/// ```
 #[must_use]
 pub fn is_namespace_name(s: &str) -> bool {
     !s.is_empty()
@@ -538,6 +943,14 @@ pub fn is_namespace_name(s: &str) -> bool {
 
 /// Whether `s` is a key segment: a `camelCase` identifier, or a member key
 /// ([`is_member_key`]) for entities and rule readings.
+///
+/// ```
+/// use teistro_intl::source::is_key_segment;
+///
+/// // camelCase, a member's key, or a catalogue kind of two words.
+/// assert!(is_key_segment("grahaInBhava") && is_key_segment("SUN") && is_key_segment("avastha_baladi"));
+/// assert!(!is_key_segment("graha_in_bhava"));
+/// ```
 #[must_use]
 pub fn is_key_segment(s: &str) -> bool {
     let Some(first) = s.bytes().next() else {
@@ -564,6 +977,14 @@ pub fn is_key_segment(s: &str) -> bool {
 /// formed here, and to naming a shipped rule by the gate that reads the
 /// rule packs, which is a stronger check than `resolve` could give
 /// (`03-design/interpretation-records.md` §4).
+///
+/// ```
+/// use teistro_intl::source::is_open_kind_key;
+///
+/// assert!(is_open_kind_key("rule.GAJA_KESARI"));
+/// // The graha is a closed kind: its keys resolve against the catalogue.
+/// assert!(!is_open_kind_key("graha.SUN"));
+/// ```
 #[must_use]
 pub fn is_open_kind_key(full: &str) -> bool {
     full.split_once('.').is_some_and(|(kind, member)| {
@@ -578,9 +999,21 @@ pub fn is_open_kind_key(full: &str) -> bool {
 /// Open because its members are the product of two closed kinds, and 108
 /// rows of generated table would buy a `resolve` the key's own grammar
 /// already performs (`03-design/state-readings.md` §4).
+///
+/// ```
+/// use teistro_intl::source::{GRAHA_BHAVA_KIND, graha_bhava_key};
+///
+/// assert!(graha_bhava_key("SUN", 10).starts_with(GRAHA_BHAVA_KIND));
+/// ```
 pub const GRAHA_BHAVA_KIND: &str = "graha_bhava";
 
 /// What separates the graha from the house in a `graha_bhava` key.
+///
+/// ```
+/// use teistro_intl::source::{IN_BHAVA, graha_bhava_key};
+///
+/// assert_eq!(graha_bhava_key("MARS", 7), format!("graha_bhava.MARS{IN_BHAVA}7"));
+/// ```
 pub const IN_BHAVA: &str = "_IN_";
 
 /// The `graha_bhava` key for a graha's own key and a house from 1 to 12.
@@ -608,6 +1041,12 @@ pub fn graha_bhava_key(graha: &str, bhava: u8) -> String {
 /// transits it is not the natal bhava it stood in, and a reading of the one
 /// is no reading of the other. Sade Sati's phases and smaller spells are
 /// Saturn's members of it (`03-design/sade-sati.md`).
+///
+/// ```
+/// use teistro_intl::source::{GOCHAR_BHAVA_KIND, gochar_bhava_key};
+///
+/// assert!(gochar_bhava_key("SATURN", 1).starts_with(GOCHAR_BHAVA_KIND));
+/// ```
 pub const GOCHAR_BHAVA_KIND: &str = "gochar_bhava";
 
 /// The `gochar_bhava` key for a graha's own key and a house from 1 to 12,
@@ -626,6 +1065,15 @@ pub fn gochar_bhava_key(graha: &str, house: u8) -> String {
 
 /// The kinds whose members are a graha and a house, spelled
 /// `<GRAHA>_IN_<house>`.
+///
+/// ```
+/// use teistro_intl::source::{GRAHA_IN_HOUSE_KINDS, graha_in_house_member};
+/// use teistro_core::catalogue::Graha;
+///
+/// // Both spell a member alike, so one grammar reads both.
+/// assert_eq!(GRAHA_IN_HOUSE_KINDS, ["graha_bhava", "gochar_bhava"]);
+/// assert_eq!(graha_in_house_member("MOON_IN_4"), Some((Graha::Moon, 4)));
+/// ```
 pub const GRAHA_IN_HOUSE_KINDS: [&str; 2] = [GRAHA_BHAVA_KIND, GOCHAR_BHAVA_KIND];
 
 /// One spelling for every graha-and-house key, so the kinds cannot drift
@@ -660,10 +1108,23 @@ pub fn graha_in_house_member(member: &str) -> Option<(teistro_core::catalogue::G
 /// its named fields, because a record's forms are an open set and a
 /// corpus adds to it. A form called `forms` would shadow that map in all
 /// three languages, so it is refused here rather than discovered there.
+///
+/// ```
+/// use teistro_intl::source::{RESERVED_FORM, is_form_name};
+///
+/// assert!(!is_form_name(RESERVED_FORM));
+/// ```
 pub const RESERVED_FORM: &str = "forms";
 
 /// Whether `s` names a form of an entity record: a `camelCase` word, and
 /// not [`RESERVED_FORM`].
+///
+/// ```
+/// use teistro_intl::source::is_form_name;
+///
+/// assert!(is_form_name("prose") && is_form_name("phala"));
+/// assert!(!is_form_name("Prose") && !is_form_name("forms"));
+/// ```
 #[must_use]
 pub fn is_form_name(s: &str) -> bool {
     s != RESERVED_FORM
@@ -681,6 +1142,14 @@ pub fn is_form_name(s: &str) -> bool {
 /// members are a consumer's packs rather than a table, so this says what no
 /// pack could name and the packs themselves decide the rest
 /// (`03-design/interpretation-records.md` §4).
+///
+/// ```
+/// use teistro_intl::source::is_member_key;
+///
+/// // A karaka's own abbreviation mid-key is a real rule's.
+/// assert!(is_member_key("JAIMINI_AmK_10"));
+/// assert!(!is_member_key("sun") && !is_member_key("SUN_") && !is_member_key("SUN__MOON"));
+/// ```
 #[must_use]
 pub fn is_member_key(s: &str) -> bool {
     s.bytes().next().is_some_and(|b| b.is_ascii_uppercase())
@@ -859,6 +1328,13 @@ fn entity(
 
 /// The SDK's own sources, `i18n/` at the repository root: what the tests,
 /// the gate and the command line read by default.
+///
+/// ```
+/// use teistro_intl::sdk_root;
+///
+/// // The SDK's own `i18n/`, beside the crates.
+/// assert!(sdk_root().join("en-Latn").join("sdk.entity.json").is_file());
+/// ```
 #[must_use]
 pub fn sdk_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../i18n")

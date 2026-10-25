@@ -23,6 +23,31 @@ use crate::source::{
 };
 
 /// The exporter's document.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, Dump};
+/// #
+/// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+/// # let dump: Dump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+/// #     "languages": ["en", "ne"],
+/// #     "types": {
+/// #         "GRAHA": [
+/// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+/// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+/// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+/// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+/// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+/// #         ],
+/// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+/// #     }
+/// # }"#)?;
+/// # let mut migration = migrate::plan(&dump, None);
+///
+/// assert_eq!(dump.languages, ["en", "ne"]);
+/// assert_eq!(dump.types["GRAHA"].len(), 3);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Deserialize)]
 pub struct Dump {
     /// `teistro-conformance/baseline-names/1`.
@@ -39,6 +64,31 @@ pub struct Dump {
 }
 
 /// One entity of the engine.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, Dump};
+/// #
+/// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+/// # let dump: Dump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+/// #     "languages": ["en", "ne"],
+/// #     "types": {
+/// #         "GRAHA": [
+/// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+/// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+/// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+/// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+/// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+/// #         ],
+/// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+/// #     }
+/// # }"#)?;
+/// # let mut migration = migrate::plan(&dump, None);
+///
+/// let sun = &dump.types["GRAHA"][0];
+/// assert_eq!((sun.key.as_str(), sun.index, sun.symbol.as_deref()), ("SUN", 0, Some("☉")));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Deserialize)]
 pub struct Row {
     /// The engine's key.
@@ -53,6 +103,33 @@ pub struct Row {
 }
 
 /// One language's name of an entity.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, Dump};
+/// #
+/// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+/// # let dump: Dump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+/// #     "languages": ["en", "ne"],
+/// #     "types": {
+/// #         "GRAHA": [
+/// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+/// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+/// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+/// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+/// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+/// #         ],
+/// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+/// #     }
+/// # }"#)?;
+/// # let mut migration = migrate::plan(&dump, None);
+///
+/// let english = &dump.types["GRAHA"][0].names["en"];
+/// assert_eq!((english.primary.as_str(), english.abbreviation.as_deref()), ("Sun", Some("Su")));
+/// // What the exporter leaves out is empty.
+/// assert!(english.synonyms.is_empty());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Deserialize)]
 pub struct Name {
     /// The display name.
@@ -69,6 +146,12 @@ pub struct Name {
 }
 
 /// The engine's language codes and the SDK's locale tags.
+///
+/// ```
+/// use teistro_intl::migrate::LOCALES;
+///
+/// assert!(LOCALES.contains(&("ne", "ne-Deva-NP")));
+/// ```
 pub const LOCALES: [(&str, &str); 4] = [
     ("en", BASE_LOCALE),
     ("ne", "ne-Deva-NP"),
@@ -77,6 +160,12 @@ pub const LOCALES: [(&str, &str); 4] = [
 ];
 
 /// The engine's entity types that name a catalogue kind, and the kind.
+///
+/// ```
+/// use teistro_intl::migrate::TYPE_KINDS;
+///
+/// assert!(TYPE_KINDS.contains(&("PANCHANGA_YOGA", "yoga")));
+/// ```
 pub const TYPE_KINDS: [(&str, &str); 20] = [
     ("GRAHA", "graha"),
     ("RASHI", "rashi"),
@@ -102,6 +191,14 @@ pub const TYPE_KINDS: [(&str, &str); 20] = [
 
 /// The engine's keys whose spelling or kind the catalogue does not share:
 /// the engine's type and key, and the catalogue's full key.
+///
+/// ```
+/// use teistro_intl::migrate::{KEY_ALIASES, catalogue_key};
+///
+/// // The engine's lagna is the catalogue's point, not a graha.
+/// assert!(KEY_ALIASES.contains(&(("GRAHA", "LAGNA"), "point.LAGNA")));
+/// assert_eq!(catalogue_key("GRAHA", "LAGNA").as_deref(), Some("point.LAGNA"));
+/// ```
 pub const KEY_ALIASES: [((&str, &str), &str); 18] = [
     (("GRAHA", "LAGNA"), "point.LAGNA"),
     (("PANCHANGA_YOGA", "VISHKAMBA"), "yoga.VISHKAMBHA"),
@@ -128,6 +225,14 @@ const PUSHA: ((&str, &str), &str) = (("DEITY", "Pusha"), "deity.PUSHAN");
 
 /// The catalogue's full key for an engine entity: an alias, else the kind
 /// and the key uppercased with every run of other characters as `_`.
+///
+/// ```
+/// use teistro_intl::migrate::catalogue_key;
+///
+/// assert_eq!(catalogue_key("NAKSHATRA", "purva-phalguni").as_deref(), Some("nakshatra.PURVA_PHALGUNI"));
+/// // A type the catalogue has no kind for.
+/// assert_eq!(catalogue_key("COLOUR", "RED"), None);
+/// ```
 #[must_use]
 pub fn catalogue_key(entity_type: &str, key: &str) -> Option<String> {
     if let Some((_, full)) = KEY_ALIASES
@@ -153,6 +258,33 @@ pub fn catalogue_key(entity_type: &str, key: &str) -> Option<String> {
 }
 
 /// What the migration would write, and what it could not.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, Dump};
+/// #
+/// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+/// # let dump: Dump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+/// #     "languages": ["en", "ne"],
+/// #     "types": {
+/// #         "GRAHA": [
+/// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+/// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+/// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+/// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+/// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+/// #         ],
+/// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+/// #     }
+/// # }"#)?;
+/// # let mut migration = migrate::plan(&dump, None);
+///
+/// let report = &migration.report;
+/// assert_eq!(report.mapped["GRAHA"], 2);
+/// assert_eq!(report.unmapped["COLOUR"], 1);
+/// assert_eq!(report.unknown_keys, ["GRAHA: VULCAN"]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct MigrationReport {
     /// The engine's types mapped, with the records each gave.
@@ -173,6 +305,30 @@ pub struct MigrationReport {
 
 impl MigrationReport {
     /// The report as Markdown.
+    ///
+    /// ```
+    /// # use teistro_intl::migrate::{self, Dump};
+    /// #
+    /// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+    /// # let dump: Dump = serde_json::from_str(r#"{
+    /// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+    /// #     "languages": ["en", "ne"],
+    /// #     "types": {
+    /// #         "GRAHA": [
+    /// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+    /// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+    /// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+    /// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+    /// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+    /// #         ],
+    /// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+    /// #     }
+    /// # }"#)?;
+    /// # let mut migration = migrate::plan(&dump, None);
+    ///
+    /// assert!(migration.report.markdown().contains("COLOUR"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn markdown(&self) -> String {
         let mut out = String::new();
@@ -215,6 +371,33 @@ impl MigrationReport {
 
 /// The migration planned: records per locale in the engine's order, and
 /// the report.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, Dump};
+/// #
+/// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+/// # let dump: Dump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+/// #     "languages": ["en", "ne"],
+/// #     "types": {
+/// #         "GRAHA": [
+/// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+/// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+/// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+/// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+/// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+/// #         ],
+/// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+/// #     }
+/// # }"#)?;
+/// # let mut migration = migrate::plan(&dump, None);
+///
+/// // The engine's order: the Sun, then the lagna as a point.
+/// let keys: Vec<&str> = migration.records["en-Latn"].iter().map(|(key, _)| key.as_str()).collect();
+/// assert_eq!(keys, ["graha.SUN", "point.LAGNA"]);
+/// assert!(!migration.overlay);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default)]
 pub struct Migration {
     /// Records per SDK locale, each as the catalogue key (`graha.SUN`) and
@@ -234,6 +417,33 @@ pub struct Migration {
 }
 
 /// The record at a catalogue key, when the migration has one.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, Dump};
+/// #
+/// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+/// # let dump: Dump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+/// #     "languages": ["en", "ne"],
+/// #     "types": {
+/// #         "GRAHA": [
+/// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+/// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+/// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+/// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+/// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+/// #         ],
+/// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+/// #     }
+/// # }"#)?;
+/// # let mut migration = migrate::plan(&dump, None);
+///
+/// let sun = migrate::record(&migration.records["ne-Deva-NP"], "graha.SUN").ok_or("planned")?;
+/// assert_eq!((sun.name(), sun.form("short")), ("सूर्य", Some("सू")));
+/// // A graha the dump does not carry has no record.
+/// assert!(migrate::record(&migration.records["ne-Deva-NP"], "graha.MOON").is_none());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn record<'r>(records: &'r [(String, Entity)], key: &str) -> Option<&'r Entity> {
     records
@@ -265,6 +475,33 @@ fn push_record(records: &mut Vec<(String, Entity)>, full: String, entity: Entity
 /// Sanskrit one, since a transliteration names the Sanskrit word whatever
 /// the script); the glyph is the engine's symbol or the catalogue's
 /// skeleton's; the gender the skeleton's.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, Dump};
+/// #
+/// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+/// # let dump: Dump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+/// #     "languages": ["en", "ne"],
+/// #     "types": {
+/// #         "GRAHA": [
+/// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+/// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+/// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+/// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+/// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+/// #         ],
+/// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+/// #     }
+/// # }"#)?;
+/// # let mut migration = migrate::plan(&dump, None);
+///
+/// let sun = migrate::record(&migration.records["en-Latn"], "graha.SUN").ok_or("planned")?;
+/// // The name twice, as name and prose; the symbol as the glyph.
+/// assert_eq!((sun.form("name"), sun.form("prose"), sun.form("iast")), (Some("Sun"), Some("Sun"), Some("Sūrya")));
+/// assert_eq!(sun.glyph.as_deref(), Some("☉"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn plan(dump: &Dump, skeleton: Option<&Json>) -> Migration {
     let mut migration = Migration::default();
@@ -375,6 +612,38 @@ fn new_locale_meta(tag: &str, overlay: bool) -> Json {
 /// Returns the files written; the report's `written` and `kept` are
 /// filled.
 ///
+/// ```
+/// # use teistro_intl::migrate::{self, Dump};
+/// #
+/// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+/// # let dump: Dump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+/// #     "languages": ["en", "ne"],
+/// #     "types": {
+/// #         "GRAHA": [
+/// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+/// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+/// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+/// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+/// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+/// #         ],
+/// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+/// #     }
+/// # }"#)?;
+/// # let mut migration = migrate::plan(&dump, None);
+///
+/// # let root = std::env::temp_dir().join("teistro-intl-doc-apply");
+/// # let _ = std::fs::remove_dir_all(&root);
+///
+/// // A root from scratch: each locale created with its metadata.
+/// let written = migrate::apply(&mut migration, &root, false)?;
+/// assert!(written.iter().any(|path| path.ends_with("ne-Deva-NP/sdk.entity.json")));
+/// assert_eq!(migration.report.written["en-Latn"], 2);
+/// assert!(migrate::reload(&root)?.locales.contains_key("ne-Deva-NP"));
+/// # std::fs::remove_dir_all(&root)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Errors
 ///
 /// A file that cannot be read, parsed or written.
@@ -439,6 +708,13 @@ pub fn apply(
 
 /// Reads a dump.
 ///
+/// ```
+/// use teistro_intl::migrate;
+///
+/// // A file that is not there is refused, naming it.
+/// assert!(migrate::read_dump(std::path::Path::new("no/names.json")).unwrap_err().contains("no/names.json"));
+/// ```
+///
 /// # Errors
 ///
 /// A file that cannot be read or is not the exporter's document.
@@ -457,12 +733,26 @@ pub fn read_dump(path: &Path) -> Result<Dump, String> {
 
 /// The catalogue's entity skeleton (`catalogue/entity-skeleton.json`),
 /// when the file is there: glyphs and genders per kind and key.
+///
+/// ```
+/// use teistro_intl::migrate;
+///
+/// // Optional: a missing skeleton leaves the glyphs to the exporter.
+/// assert!(migrate::read_skeleton(std::path::Path::new("no/entity-skeleton.json")).is_none());
+/// ```
 #[must_use]
 pub fn read_skeleton(path: &Path) -> Option<Json> {
     serde_json::from_str(&std::fs::read_to_string(path).ok()?).ok()
 }
 
 /// Loads the tree after a migration, to validate what was written.
+///
+/// ```
+/// use teistro_intl::{migrate, sdk_root};
+///
+/// assert!(migrate::reload(&sdk_root())?.base().is_some());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -473,6 +763,31 @@ pub fn reload(root: &Path) -> Result<Tree, crate::source::SourceError> {
 
 /// A migration's own consistency check: every written key resolves in the
 /// catalogue, and the entry it came from is an entity.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, Dump};
+/// #
+/// # // The exporter's document, cut to two grahas and one key the catalogue lacks.
+/// # let dump: Dump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-names/1", "tool": "the baseline engine", "exported": "2026-09-04",
+/// #     "languages": ["en", "ne"],
+/// #     "types": {
+/// #         "GRAHA": [
+/// #             {"key": "SUN", "index": 0, "symbol": "☉", "names": {
+/// #                 "en": {"primary": "Sun", "abbreviation": "Su", "transliteration": "Sūrya"},
+/// #                 "ne": {"primary": "सूर्य", "abbreviation": "सू"}}},
+/// #             {"key": "LAGNA", "index": 9, "names": {"en": {"primary": "Ascendant"}, "ne": {"primary": "लग्न"}}},
+/// #             {"key": "VULCAN", "index": 10, "names": {"en": {"primary": "Vulcan"}}}
+/// #         ],
+/// #         "COLOUR": [{"key": "RED", "index": 0, "names": {"en": {"primary": "Red"}}}]
+/// #     }
+/// # }"#)?;
+/// # let mut migration = migrate::plan(&dump, None);
+///
+/// // VULCAN was reported, not written: what was written resolves.
+/// assert!(migrate::every_record_resolves(&migration));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn every_record_resolves(migration: &Migration) -> bool {
     migration
@@ -482,6 +797,16 @@ pub fn every_record_resolves(migration: &Migration) -> bool {
 }
 
 /// The `sdk.entity` entries of a locale as the migration would see them.
+///
+/// ```
+/// use teistro_intl::source::Tree;
+/// use teistro_intl::{migrate, sdk_root};
+///
+/// let tree = Tree::load(&sdk_root())?;
+/// assert!(migrate::entity_entries(&tree, "en-Latn") > 100);
+/// assert_eq!(migrate::entity_entries(&tree, "xx-Latn"), 0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn entity_entries(tree: &Tree, tag: &str) -> usize {
     tree.locales
@@ -651,6 +976,25 @@ mod tests {
 pub const RULE_KIND: &str = "rule";
 
 /// The readings exporter's document.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, ReadingsDump};
+/// #
+/// # let dump: ReadingsDump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-readings/1", "tool": "the baseline engine",
+/// #     "languages": ["en", "ne"], "facets": ["career"],
+/// #     "readings": {
+/// #         "GAJA_KESARI": {"group": "yoga", "source": "an example",
+/// #             "en": {"summary": "Jupiter in a kendra from the Moon.", "full": "A longer passage.", "effects": {"career": "Respect."}},
+/// #             "ne": {"summary": "चन्द्रमाबाट केन्द्रमा बृहस्पति।"}},
+/// #         "not a key": {"group": "dosha", "en": {"summary": "Skipped."}}
+/// #     }
+/// # }"#)?;
+///
+/// assert_eq!(dump.languages, ["en", "ne"]);
+/// assert_eq!(dump.readings["GAJA_KESARI"].group, "yoga");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, Deserialize)]
 pub struct ReadingsDump {
     /// `teistro-conformance/baseline-readings/1`.
@@ -671,6 +1015,27 @@ pub struct ReadingsDump {
 }
 
 /// One rule's reading in every language the document carries.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, ReadingsDump};
+/// #
+/// # let dump: ReadingsDump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-readings/1", "tool": "the baseline engine",
+/// #     "languages": ["en", "ne"], "facets": ["career"],
+/// #     "readings": {
+/// #         "GAJA_KESARI": {"group": "yoga", "source": "an example",
+/// #             "en": {"summary": "Jupiter in a kendra from the Moon.", "full": "A longer passage.", "effects": {"career": "Respect."}},
+/// #             "ne": {"summary": "चन्द्रमाबाट केन्द्रमा बृहस्पति।"}},
+/// #         "not a key": {"group": "dosha", "en": {"summary": "Skipped."}}
+/// #     }
+/// # }"#)?;
+///
+/// // Each language the row carries, by the engine's code; the citation is read and not migrated.
+/// let row = &dump.readings["GAJA_KESARI"];
+/// assert_eq!(row.languages.keys().collect::<Vec<_>>(), ["en", "ne"]);
+/// assert_eq!(row.source.as_deref(), Some("an example"));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, Deserialize)]
 pub struct ReadingRow {
     /// `yoga` or `dosha`, which is the engine's own grouping.
@@ -686,6 +1051,26 @@ pub struct ReadingRow {
 }
 
 /// One language's reading of one rule.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, ReadingsDump};
+/// #
+/// # let dump: ReadingsDump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-readings/1", "tool": "the baseline engine",
+/// #     "languages": ["en", "ne"], "facets": ["career"],
+/// #     "readings": {
+/// #         "GAJA_KESARI": {"group": "yoga", "source": "an example",
+/// #             "en": {"summary": "Jupiter in a kendra from the Moon.", "full": "A longer passage.", "effects": {"career": "Respect."}},
+/// #             "ne": {"summary": "चन्द्रमाबाट केन्द्रमा बृहस्पति।"}},
+/// #         "not a key": {"group": "dosha", "en": {"summary": "Skipped."}}
+/// #     }
+/// # }"#)?;
+///
+/// let english = &dump.readings["GAJA_KESARI"].languages["en"];
+/// assert_eq!(english.summary.as_deref(), Some("Jupiter in a kendra from the Moon."));
+/// assert_eq!(english.effects["career"], "Respect.");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, Default, Deserialize)]
 pub struct Reading {
     /// One sentence.
@@ -705,6 +1090,13 @@ pub struct Reading {
 /// there is one function and this is its name here:
 /// [`source::is_member_key`](crate::source::is_member_key), which says why
 /// it is looser than upper case.
+///
+/// ```
+/// use teistro_intl::migrate::well_formed_rule_key;
+///
+/// assert!(well_formed_rule_key("GAJA_KESARI"));
+/// assert!(!well_formed_rule_key("not a key"));
+/// ```
 #[must_use]
 pub fn well_formed_rule_key(key: &str) -> bool {
     crate::source::is_member_key(key)
@@ -721,6 +1113,33 @@ pub fn well_formed_rule_key(key: &str) -> bool {
 ///
 /// The report reads: `mapped` counts the records each of the engine's
 /// groups gave, and `unknown_keys` lists what was skipped and why.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, ReadingsDump};
+/// #
+/// # let dump: ReadingsDump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-readings/1", "tool": "the baseline engine",
+/// #     "languages": ["en", "ne"], "facets": ["career"],
+/// #     "readings": {
+/// #         "GAJA_KESARI": {"group": "yoga", "source": "an example",
+/// #             "en": {"summary": "Jupiter in a kendra from the Moon.", "full": "A longer passage.", "effects": {"career": "Respect."}},
+/// #             "ne": {"summary": "चन्द्रमाबाट केन्द्रमा बृहस्पति।"}},
+/// #         "not a key": {"group": "dosha", "en": {"summary": "Skipped."}}
+/// #     }
+/// # }"#)?;
+///
+/// let migration = migrate::plan_readings(&dump);
+/// // Each language becomes a `rule` record: the summary its name, the passage its prose, a facet a form.
+/// let (key, record) = &migration.records["en-Latn"][0];
+/// assert_eq!(key, "rule.GAJA_KESARI");
+/// assert_eq!(record.forms["name"], "Jupiter in a kendra from the Moon.");
+/// assert_eq!(record.forms["career"], "Respect.");
+/// assert_eq!(migration.records["ne-Deva-NP"].len(), 1);
+/// // The malformed key is reported, not guessed at.
+/// assert_eq!(migration.report.unknown_keys, ["not a key: not a rule key"]);
+/// assert_eq!(migration.report.mapped["yoga"], 1);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[must_use]
 pub fn plan_readings(dump: &ReadingsDump) -> Migration {
     let mut migration = Migration::default();
@@ -780,6 +1199,17 @@ pub fn plan_readings(dump: &ReadingsDump) -> Migration {
 
 /// Reads a readings dump.
 ///
+/// ```
+/// use teistro_intl::migrate::read_readings_dump;
+///
+/// let path = std::env::temp_dir().join("teistro-intl-doc-readings.json");
+/// std::fs::write(&path, r#"{"schema": "teistro-conformance/baseline-names/1", "tool": "x", "languages": [], "readings": {}}"#)?;
+/// // Another exporter's document is refused by its schema.
+/// assert!(read_readings_dump(&path).unwrap_err().ends_with("is not the readings exporter's"));
+/// std::fs::remove_file(&path)?;
+/// # Ok::<(), std::io::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A file that cannot be read or is not the readings exporter's document.
@@ -807,6 +1237,14 @@ pub fn read_readings_dump(path: &Path) -> Result<ReadingsDump, String> {
 pub const STATE_SCHEMA: &str = "teistro-conformance/baseline-state-readings/1";
 
 /// One of the engine's state categories, and where its readings land.
+///
+/// ```
+/// use teistro_intl::migrate::STATE_CATEGORIES;
+///
+/// // A graha's condition is a dignity or a state: two candidate kinds, one form.
+/// let condition = STATE_CATEGORIES.iter().find(|state| state.category == "planet-condition").expect("mapped");
+/// assert_eq!((condition.kinds, condition.form), (&["dignity", "state"][..], "phala"));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct StateCategory {
     /// The engine's own name for the category.
@@ -928,6 +1366,23 @@ pub const STATE_KEY_ALIASES: [(&str, &str, &str); 20] = [
 ];
 
 /// The state readings exporter's document.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, StatesDump};
+/// #
+/// # let dump: StatesDump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-state-readings/1", "tool": "the baseline engine",
+/// #     "languages": ["en"],
+/// #     "categories": {
+/// #         "nakshatra-phala": {"ASHWINI": {"en": {"summary": "Quick.", "full": "A longer passage."}}},
+/// #         "colour-of-the-day": {"MONDAY": {"en": {"summary": "White."}}}
+/// #     }
+/// # }"#)?;
+///
+/// assert_eq!(dump.categories.len(), 2);
+/// assert!(dump.categories["nakshatra-phala"].contains_key("ASHWINI"));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, Deserialize)]
 pub struct StatesDump {
     /// `teistro-conformance/baseline-state-readings/1`.
@@ -947,6 +1402,24 @@ pub struct StatesDump {
 }
 
 /// One subject's reading in every language the document carries.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, StatesDump};
+/// #
+/// # let dump: StatesDump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-state-readings/1", "tool": "the baseline engine",
+/// #     "languages": ["en"],
+/// #     "categories": {
+/// #         "nakshatra-phala": {"ASHWINI": {"en": {"summary": "Quick.", "full": "A longer passage."}}},
+/// #         "colour-of-the-day": {"MONDAY": {"en": {"summary": "White."}}}
+/// #     }
+/// # }"#)?;
+///
+/// let ashwini = &dump.categories["nakshatra-phala"]["ASHWINI"];
+/// assert_eq!(ashwini.languages["en"].summary.as_deref(), Some("Quick."));
+/// assert!(ashwini.source.is_none());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, Deserialize)]
 pub struct StateRow {
     /// The classical text the reading cites. **Not migrated**: a citation
@@ -1113,6 +1586,29 @@ fn state_forms(reading: &Reading, prefix: &str) -> BTreeMap<String, String> {
 /// The report reads: `mapped` counts the records each category gave,
 /// `unmapped` names the categories the SDK has no subject for, and
 /// `unknown_keys` lists every key that named no member and why.
+///
+/// ```
+/// # use teistro_intl::migrate::{self, StatesDump};
+/// #
+/// # let dump: StatesDump = serde_json::from_str(r#"{
+/// #     "schema": "teistro-conformance/baseline-state-readings/1", "tool": "the baseline engine",
+/// #     "languages": ["en"],
+/// #     "categories": {
+/// #         "nakshatra-phala": {"ASHWINI": {"en": {"summary": "Quick.", "full": "A longer passage."}}},
+/// #         "colour-of-the-day": {"MONDAY": {"en": {"summary": "White."}}}
+/// #     }
+/// # }"#)?;
+///
+/// let migration = migrate::plan_states(&dump);
+/// // A state reading is a form laid over the member's record, not a record of its own.
+/// assert!(migration.overlay);
+/// let (key, record) = &migration.records["en-Latn"][0];
+/// assert_eq!(key, "nakshatra.ASHWINI");
+/// assert_eq!((record.forms["phala"].as_str(), record.forms["phalaProse"].as_str()), ("Quick.", "A longer passage."));
+/// // A category the SDK has no subject for is counted and skipped.
+/// assert_eq!(migration.report.unmapped["colour-of-the-day"], 1);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[must_use]
 pub fn plan_states(dump: &StatesDump) -> Migration {
     let mut migration = Migration {
@@ -1191,6 +1687,17 @@ pub fn plan_states(dump: &StatesDump) -> Migration {
 }
 
 /// Reads a state readings dump.
+///
+/// ```
+/// use teistro_intl::migrate::{STATE_SCHEMA, read_states_dump};
+///
+/// let path = std::env::temp_dir().join("teistro-intl-doc-states.json");
+/// let document = format!(r#"{{"schema": "{STATE_SCHEMA}", "tool": "x", "languages": ["en"], "categories": {{}}}}"#);
+/// std::fs::write(&path, document)?;
+/// assert!(read_states_dump(&path)?.categories.is_empty());
+/// std::fs::remove_file(&path)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -27,9 +27,32 @@ use crate::source::{ENTITY_NAMESPACE, Entity, Entry, LocaleSource, Namespace, Tr
 /// The glyph and the gender are the record's own: a symbol is the same in
 /// every language, and a gender is a grammatical fact the locale states
 /// rather than a translation.
+///
+/// ```
+/// use teistro_intl::xliff::TRANSLATED_FORMS;
+///
+/// // The glyph and the gender are not translated.
+/// assert!(!TRANSLATED_FORMS.contains(&"glyph"));
+/// ```
 pub const TRANSLATED_FORMS: [&str; 4] = ["name", "prose", "short", "iast"];
 
 /// What an export produced.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::xliff;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = xliff::export(&tree, "ne-Deva-NP")?;
+///
+/// // A strict locale has every key; an entity form it leaves empty is
+/// // the work left, a few units in thousands.
+/// assert!(nepali.units > 1_000);
+/// assert!(nepali.untranslated < nepali.units / 100);
+/// assert!(nepali.text.contains("trgLang=\"ne-Deva-NP\""));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Exported {
     /// The XLIFF document.
@@ -41,6 +64,24 @@ pub struct Exported {
 }
 
 /// What an import found.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::xliff;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = xliff::export(&tree, "ne-Deva-NP")?;
+///
+/// // Read back, the file says what the locale already says.
+/// let imported = xliff::import(&tree, &nepali.text)?;
+/// assert_eq!(imported.locale, "ne-Deva-NP");
+/// assert_eq!(imported.translated + imported.empty, nepali.units);
+/// // The empty targets are the export's untranslated units.
+/// assert_eq!(imported.empty, nepali.untranslated);
+/// assert!(imported.unknown.is_empty());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Imported {
     /// The locale the file names as its target.
@@ -58,6 +99,19 @@ pub struct Imported {
 
 /// The sources as one XLIFF 2.1 document: the base locale's text as the
 /// source and `locale`'s as the target.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::xliff;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let hindi = xliff::export(&tree, "hi-Deva-IN")?;
+///
+/// assert!(xliff::export(&tree, "xx-Latn").is_err());
+/// assert!(hindi.text.starts_with("<?xml"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -172,6 +226,18 @@ fn parameters(base: &LocaleSource, source: &str) -> String {
 
 /// An XLIFF document read back: what it says the locale's entries are.
 ///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::xliff;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let hindi = xliff::export(&tree, "hi-Deva-IN")?;
+///
+/// assert!(xliff::import(&tree, "not xml").is_err());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Errors
 ///
 /// A document that does not parse, or one whose target language the
@@ -265,6 +331,21 @@ fn take(out: &mut Imported, base: &LocaleSource, id: &str, target: &str) {
 
 /// The imported entries applied to a locale's namespaces: a message
 /// replaced, an entity's form replaced, everything else left as it was.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::xliff;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = xliff::export(&tree, "ne-Deva-NP")?;
+///
+/// // A round trip changes nothing.
+/// let imported = xliff::import(&tree, &nepali.text)?;
+/// let applied = xliff::apply(&imported, &tree.locales["ne-Deva-NP"]);
+/// assert_eq!(applied["sdk.reason"].entries, tree.locales["ne-Deva-NP"].namespaces["sdk.reason"].entries);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn apply(imported: &Imported, locale: &LocaleSource) -> BTreeMap<String, Namespace> {
     let mut out = locale.namespaces.clone();

@@ -59,6 +59,15 @@ impl fmt::Display for Message {
 }
 
 /// A pattern as source text, escaped.
+///
+/// ```
+/// use teistro_intl::mf2::display::pattern_source;
+/// use teistro_intl::mf2::{Message, parse};
+///
+/// let Message::Simple(pattern) = parse(r"Braces \{ escaped")? else { unreachable!() };
+/// assert_eq!(pattern_source(&pattern), r"Braces \{ escaped");
+/// # Ok::<(), teistro_intl::mf2::ParseError>(())
+/// ```
 #[must_use]
 pub fn pattern_source(pattern: &Pattern) -> String {
     let mut out = String::new();

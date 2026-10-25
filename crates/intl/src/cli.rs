@@ -27,6 +27,17 @@ use crate::validate::{self, Report};
 use crate::xliff;
 
 /// The command line.
+///
+/// ```
+/// use clap::Parser;
+/// use teistro_intl::cli::{Cli, Command};
+///
+/// let cli = Cli::try_parse_from(["teistro-intl", "validate"])?;
+/// assert!(matches!(cli.command, Command::Validate));
+/// // The SDK's own sources unless another root is given.
+/// assert_eq!(cli.root, teistro_intl::sdk_root());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Parser)]
 #[command(
     name = "teistro-intl",
@@ -43,6 +54,17 @@ pub struct Cli {
 }
 
 /// The commands.
+///
+/// ```
+/// use clap::Parser;
+/// use teistro_intl::cli::{Cli, Command};
+///
+/// let cli = Cli::try_parse_from(["teistro-intl", "render", "--locale", "ne-Deva-NP", "sdk.reason.appName"])?;
+/// assert!(matches!(cli.command, Command::Render { .. }));
+/// // An unknown command is refused.
+/// assert!(Cli::try_parse_from(["teistro-intl", "publish"]).is_err());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Subcommand)]
 pub enum Command {
     /// Checks the sources: syntax, parity with the base locale, selectors,
@@ -161,6 +183,15 @@ pub enum Command {
 }
 
 /// What `export` writes.
+///
+/// ```
+/// use clap::Parser;
+/// use teistro_intl::cli::{Cli, Command, ExportFormat};
+///
+/// let cli = Cli::try_parse_from(["teistro-intl", "export", "xliff", "--locale", "hi-Deva-IN"])?;
+/// assert!(matches!(cli.command, Command::Export { format: ExportFormat::Xliff { .. } }));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Subcommand)]
 pub enum ExportFormat {
     /// XLIFF 2.1, one file per locale.
@@ -176,6 +207,15 @@ pub enum ExportFormat {
 }
 
 /// What `import` reads.
+///
+/// ```
+/// use clap::Parser;
+/// use teistro_intl::cli::{Cli, Command, ImportFormat};
+///
+/// let cli = Cli::try_parse_from(["teistro-intl", "import", "xliff", "hi-Deva-IN.xlf", "--dry-run"])?;
+/// assert!(matches!(cli.command, Command::Import { format: ImportFormat::Xliff { .. } }));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Subcommand)]
 pub enum ImportFormat {
     /// XLIFF 2.1, as `export xliff` writes it.
@@ -192,6 +232,15 @@ pub enum ImportFormat {
 }
 
 /// What `migrate` imports.
+///
+/// ```
+/// use clap::Parser;
+/// use teistro_intl::cli::{Cli, Command, MigrateSource};
+///
+/// let cli = Cli::try_parse_from(["teistro-intl", "migrate", "readings", "--dump", "readings.json", "--out", "readings"])?;
+/// assert!(matches!(cli.command, Command::Migrate { source: MigrateSource::Readings { .. } }));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Subcommand)]
 pub enum MigrateSource {
     /// The baseline engine's entity name tables, from its names exporter's
@@ -246,6 +295,16 @@ pub enum MigrateSource {
 }
 
 /// A generator target.
+///
+/// ```
+/// use clap::Parser;
+/// use teistro_intl::cli::{Cli, Command, Target};
+///
+/// let cli = Cli::try_parse_from(["teistro-intl", "gen", "--target", "ts,rs"])?;
+/// let Command::Gen { target, .. } = cli.command else { unreachable!() };
+/// assert_eq!(target, [Target::Ts, Target::Rs]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
 pub enum Target {
     /// TypeScript.
@@ -451,6 +510,14 @@ fn run_translit(from: &str, to: &str, text: &[String]) -> Result<bool, Box<dyn s
 
 /// Parses the arguments, runs the command, prints, and exits non-zero on
 /// a failed validation, a render with warnings or an error.
+///
+/// ```
+/// use teistro_intl::cli;
+///
+/// // The binary's whole body: parse the process's arguments, run, exit.
+/// let entry: fn() -> std::process::ExitCode = cli::main;
+/// # let _ = entry;
+/// ```
 #[must_use]
 pub fn main() -> ExitCode {
     match run(Cli::parse()) {
@@ -464,6 +531,16 @@ pub fn main() -> ExitCode {
 }
 
 /// Runs a parsed command line; `Ok(true)` when the command passed.
+///
+/// ```
+/// use clap::Parser;
+/// use teistro_intl::cli::{Cli, run};
+///
+/// // The SDK's own sources validate.
+/// let cli = Cli::try_parse_from(["teistro-intl", "validate"])?;
+/// assert!(run(cli)?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -550,6 +627,24 @@ pub fn run(cli: Cli) -> Result<bool, Box<dyn std::error::Error>> {
 }
 
 /// One built file and its size against its source.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// # let out = std::env::temp_dir().join("teistro-intl-doc-pack-size");
+///
+/// use teistro_intl::cli::build_packs;
+///
+/// let sizes = build_packs(&tree, &out, &[String::from("ne-Deva-NP")], &[String::from("sdk.reason")], false)?;
+/// let reason = &sizes[0];
+/// assert_eq!((reason.locale.as_str(), reason.namespace.as_str()), ("ne-Deva-NP", "sdk.reason"));
+/// assert!(reason.entries > 0 && reason.pack_bytes > 0);
+/// # std::fs::remove_dir_all(&out)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct PackSize {
     /// The locale.
@@ -566,6 +661,24 @@ pub struct PackSize {
 
 /// Builds the packs (or bundles) of a tree into a directory and reports
 /// their sizes.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// # let out = std::env::temp_dir().join("teistro-intl-doc-build-packs");
+///
+/// use teistro_intl::cli::build_packs;
+///
+/// // One bundle per locale, named `*`.
+/// let sizes = build_packs(&tree, &out, &[String::from("ne-Deva-NP")], &[], true)?;
+/// assert_eq!(sizes.len(), 1);
+/// assert_eq!(sizes[0].namespace, "*");
+/// # std::fs::remove_dir_all(&out)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -627,6 +740,14 @@ fn source_bytes(tree: &Tree, locale: &LocaleSource, namespace: &str) -> u64 {
 }
 
 /// The sizes as a Markdown table.
+///
+/// ```
+/// use teistro_intl::cli::{PackSize, sizes_markdown};
+///
+/// let sizes = [PackSize { locale: String::from("en-Latn"), namespace: String::from("sdk.reason"), source_bytes: 2_000, pack_bytes: 1_500, entries: 40 }];
+/// let table = sizes_markdown(&sizes);
+/// assert!(table.contains("en-Latn") && table.contains("sdk.reason"));
+/// ```
 #[must_use]
 pub fn sizes_markdown(sizes: &[PackSize]) -> String {
     let mut out = String::from(
@@ -644,6 +765,23 @@ pub fn sizes_markdown(sizes: &[PackSize]) -> String {
 
 /// The typed accessors of the base locale for each target, written under
 /// `out` (`ts/sdk.ts`, `dart/lib/sdk.dart`, `rs/messages.rs`).
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// # let out = std::env::temp_dir().join("teistro-intl-doc-generate");
+///
+/// use teistro_intl::cli::{Target, generate_targets};
+///
+/// let written = generate_targets(&tree, &[Target::Ts], &out)?;
+/// assert!(written.iter().all(|path| path.is_file()));
+/// assert!(written[0].ends_with("ts/sdk.ts"));
+/// # std::fs::remove_dir_all(&out)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -677,6 +815,17 @@ pub fn generate_targets(
 
 /// A parameter value from its command-line text: `@graha.SUN` an entity,
 /// `@a,@b` a list of entities, an integer, a number, or text.
+///
+/// ```
+/// use teistro_intl::cli::parse_value;
+/// use teistro_intl::Value;
+///
+/// assert_eq!(parse_value("@graha.SUN"), Value::entity("graha.SUN"));
+/// assert_eq!(parse_value("7"), Value::Int(7));
+/// assert_eq!(parse_value("2.5"), Value::Num(2.5));
+/// assert_eq!(parse_value("@a,@b"), Value::List(vec![Value::entity("a"), Value::entity("b")]));
+/// assert_eq!(parse_value("Mars"), Value::from("Mars"));
+/// ```
 #[must_use]
 pub fn parse_value(text: &str) -> Value {
     if text.contains(',') && text.starts_with('@') {
@@ -695,6 +844,14 @@ pub fn parse_value(text: &str) -> Value {
 }
 
 /// Parameters from `name=value` items.
+///
+/// ```
+/// use teistro_intl::cli::parse_params;
+/// use teistro_intl::{Value, params};
+///
+/// let items = [String::from("graha=@graha.MARS"), String::from("bhava=7"), String::from("no equals sign")];
+/// assert_eq!(parse_params(&items), params([("graha", Value::entity("graha.MARS")), ("bhava", Value::Int(7))]));
+/// ```
 #[must_use]
 pub fn parse_params(items: &[String]) -> Params {
     items
@@ -709,6 +866,22 @@ pub fn parse_params(items: &[String]) -> Params {
 /// completeness (an existing locale's metadata kept), and every base
 /// namespace as nested JSON with the base text where the locale has no
 /// translation yet.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// use teistro_intl::cli::extract;
+///
+/// // A new locale: its metadata falls back to the base, and every base
+/// // namespace comes with the base text to translate.
+/// let files = extract(&tree, "ta-Taml-IN", &[])?;
+/// assert_eq!(files["_meta.json"]["fallback"], serde_json::json!(["en-Latn"]));
+/// assert_eq!(files["sdk.reason.json"]["appName"], "Teistro");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -784,6 +957,24 @@ fn insert_nested(root: &mut Map<String, Json>, key: &str, value: Json) {
 
 /// Writes scaffolded files into a locale directory.
 ///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// # let out = std::env::temp_dir().join("teistro-intl-doc-write-files");
+///
+/// use teistro_intl::cli::{extract, write_files};
+///
+/// let files = extract(&tree, "ta-Taml-IN", &[String::from("sdk.reason")])?;
+/// let written = write_files(&out, &files)?;
+/// assert_eq!(written.len(), files.len());
+/// assert!(out.join("_meta.json").is_file());
+/// # std::fs::remove_dir_all(&out)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Errors
 ///
 /// A directory or file that cannot be written.
@@ -799,6 +990,23 @@ pub fn write_files(dir: &Path, files: &BTreeMap<String, Json>) -> std::io::Resul
 }
 
 /// Everything `report` measures.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// # let out = std::env::temp_dir().join("teistro-intl-doc-results");
+///
+/// use teistro_intl::cli::report;
+///
+/// let results = report(&tree, &out)?;
+/// assert!(results.validation.passed());
+/// assert!(!results.sizes.is_empty() && !results.generated.is_empty());
+/// # std::fs::remove_dir_all(&out)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Serialize)]
 pub struct Results {
     /// The validation report.
@@ -810,6 +1018,22 @@ pub struct Results {
 }
 
 /// One generated surface's size.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// # let out = std::env::temp_dir().join("teistro-intl-doc-generated");
+///
+/// use teistro_intl::cli::report;
+///
+/// let results = report(&tree, &out)?;
+/// assert!(results.generated.iter().all(|surface| surface.lines > 0 && surface.bytes > surface.lines));
+/// # std::fs::remove_dir_all(&out)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Debug, Serialize)]
 pub struct Generated {
     /// The target.
@@ -822,6 +1046,22 @@ pub struct Generated {
 
 impl Results {
     /// The results as Markdown.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// # let out = std::env::temp_dir().join("teistro-intl-doc-markdown");
+    ///
+    /// use teistro_intl::cli::report;
+    ///
+    /// let markdown = report(&tree, &out)?.markdown();
+    /// assert!(markdown.contains("en-Latn"));
+    /// # std::fs::remove_dir_all(&out)?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn markdown(&self) -> String {
         let mut out = self.validation.markdown();
@@ -837,6 +1077,26 @@ impl Results {
 
 /// Validates, builds every pack and every bundle under `out`, and sizes
 /// every generated surface.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// # let out = std::env::temp_dir().join("teistro-intl-doc-report");
+///
+/// use teistro_intl::cli::report;
+///
+/// // Every pack and every bundle under one directory, and what each
+/// // generator would write, counted.
+/// let results = report(&tree, &out)?;
+/// assert!(results.validation.passed());
+/// assert!(out.join("packs").is_dir() && out.join("bundles").is_dir());
+/// assert_eq!(results.generated.len(), 3);
+/// # std::fs::remove_dir_all(&out)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -10,6 +10,26 @@ use crate::mf2::ast::{Body, Declaration, Expression, Key, Message, Operand, OptV
 use crate::source::Meta;
 
 /// The type a parameter takes, inferred from the function applied to it.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let meta = &tree.locales["en-Latn"].meta;
+///
+/// use teistro_intl::analysis::signature;
+/// use teistro_intl::mf2::parse;
+///
+/// let message = parse(r#".input {$graha :entity kind=graha} .input {$bhava :integer select=ordinal} .match $bhava one {{{#b}{$graha}{/b} in the {$bhava}st, {sdk.reason.appName :msg}}} * {{{$graha} in the {$bhava}th}}"#)?;
+/// let declared = signature(&message, meta);
+/// use teistro_intl::analysis::ParamType;
+///
+/// // Typed by the functions that read them.
+/// assert_eq!(declared.params["graha"], ParamType::Entity(Some(String::from("graha"))));
+/// assert_eq!(declared.params["bhava"], ParamType::Integer);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ParamType {
     /// Text.
@@ -39,6 +59,15 @@ pub enum ParamType {
 
 impl ParamType {
     /// Whether a translation's use of a parameter agrees with the base's.
+    ///
+    /// ```
+    /// use teistro_intl::analysis::ParamType;
+    ///
+    /// // A translation may read an integer as a number, and an entity of any kind as one of a kind.
+    /// assert!(ParamType::Number.agrees_with(&ParamType::Integer));
+    /// assert!(ParamType::Entity(None).agrees_with(&ParamType::Entity(Some(String::from("graha")))));
+    /// assert!(!ParamType::Date.agrees_with(&ParamType::Time));
+    /// ```
     #[must_use]
     pub fn agrees_with(&self, base: &ParamType) -> bool {
         match (self, base) {
@@ -53,6 +82,24 @@ impl ParamType {
 }
 
 /// What a message declares.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let meta = &tree.locales["en-Latn"].meta;
+///
+/// use teistro_intl::analysis::signature;
+/// use teistro_intl::mf2::parse;
+///
+/// let message = parse(r#".input {$graha :entity kind=graha} .input {$bhava :integer select=ordinal} .match $bhava one {{{#b}{$graha}{/b} in the {$bhava}st, {sdk.reason.appName :msg}}} * {{{$graha} in the {$bhava}th}}"#)?;
+/// let declared = signature(&message, meta);
+/// assert_eq!(declared.markup.iter().collect::<Vec<_>>(), ["b"]);
+/// assert_eq!(declared.links, ["sdk.reason.appName"]);
+/// assert!(declared.entities.is_empty());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Signature {
     /// The parameters by name.
@@ -68,6 +115,25 @@ pub struct Signature {
 }
 
 /// One selector of a matcher.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let meta = &tree.locales["en-Latn"].meta;
+///
+/// use teistro_intl::analysis::signature;
+/// use teistro_intl::mf2::parse;
+///
+/// let message = parse(r#".input {$graha :entity kind=graha} .input {$bhava :integer select=ordinal} .match $bhava one {{{#b}{$graha}{/b} in the {$bhava}st, {sdk.reason.appName :msg}}} * {{{$graha} in the {$bhava}th}}"#)?;
+/// let declared = signature(&message, meta);
+/// let bhava = &declared.selectors[0];
+/// assert_eq!(bhava.variable, "bhava");
+/// assert!(bhava.ordinal);
+/// assert_eq!(bhava.keys, ["one"]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Selector {
     /// The variable selected on.
@@ -82,6 +148,23 @@ pub struct Selector {
 
 /// The signature of a message under a locale's metadata (for its
 /// contexts).
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let meta = &tree.locales["en-Latn"].meta;
+///
+/// use teistro_intl::analysis::signature;
+/// use teistro_intl::mf2::parse;
+///
+/// let message = parse(r#".input {$graha :entity kind=graha} .input {$bhava :integer select=ordinal} .match $bhava one {{{#b}{$graha}{/b} in the {$bhava}st, {sdk.reason.appName :msg}}} * {{{$graha} in the {$bhava}th}}"#)?;
+/// let declared = signature(&message, meta);
+/// assert_eq!(declared.params.len(), 2);
+/// assert_eq!(declared.selectors.len(), 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn signature(message: &Message, meta: &Meta) -> Signature {
     let mut collector = Collector {

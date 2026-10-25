@@ -30,6 +30,21 @@ use teistro_port_timezone::TimeZoneProvider;
 use crate::source::{BASE_LOCALE, Entity, Entry, LocaleSource, Meta, Tree};
 
 /// A time of day, for `:time` and `:datetime`.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// use teistro_intl::{Value, params};
+/// use teistro_intl::ClockTime;
+///
+/// let dawn = params([("at", Value::from(ClockTime::new(6, 5, 0)))]);
+/// assert_eq!(intl.render_source("{$at :time}", &dawn)?.text, "06:05");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(
     Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
@@ -44,6 +59,14 @@ pub struct ClockTime {
 
 impl ClockTime {
     /// A time of day.
+    ///
+    /// ```
+    /// use teistro_intl::ClockTime;
+    ///
+    /// let noon = ClockTime::new(12, 0, 0);
+    /// assert_eq!((noon.hour, noon.minute, noon.second), (12, 0, 0));
+    /// assert_eq!(ClockTime::default(), ClockTime::new(0, 0, 0));
+    /// ```
     #[must_use]
     pub const fn new(hour: u8, minute: u8, second: u8) -> ClockTime {
         ClockTime {
@@ -56,6 +79,23 @@ impl ClockTime {
 
 /// A ghati-pala count since sunrise, for `:ghati`; the time crate's
 /// `GhatiPala` has the same three fields.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// use teistro_intl::{Value, params};
+/// use teistro_intl::Ghati;
+///
+/// // Twelve ghatis and thirty palas after sunrise.
+/// let since = params([("since", Value::from(Ghati::new(12, 30, 0)))]);
+/// let rendered = intl.render_source("{$since :ghati}", &since)?;
+/// assert!(rendered.warnings.is_empty() && rendered.text.contains("12"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(
     Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
@@ -70,6 +110,13 @@ pub struct Ghati {
 
 impl Ghati {
     /// A count.
+    ///
+    /// ```
+    /// use teistro_intl::Ghati;
+    ///
+    /// let count = Ghati::new(5, 59, 30);
+    /// assert_eq!((count.ghati, count.pala, count.vipala), (5, 59, 30));
+    /// ```
     #[must_use]
     pub const fn new(ghati: u8, pala: u8, vipala: u8) -> Ghati {
         Ghati {
@@ -89,6 +136,17 @@ impl Ghati {
 /// `{"$instant": 2451545.25}`. One shape, so
 /// a narrative plan that crosses the boundary carries slots a binding can
 /// hand straight back to `render` (`03-design/interpret-composers.md`).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_intl::Value;
+///
+/// // Written as the boundary takes it: plain where it can be, `$`-tagged where not.
+/// assert_eq!(serde_json::to_string(&Value::from(7_i64))?, "7");
+/// assert_eq!(serde_json::to_string(&Value::catalogued(Graha::Sun))?, r#"{"$entity":"graha.SUN"}"#);
+/// assert_eq!(serde_json::from_str::<Value>(r#""text""#)?, Value::from("text"));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     /// Text.
@@ -171,6 +229,13 @@ impl From<Vec<Value>> for Value {
 
 impl Value {
     /// A catalogue key given as text (`graha.SUN`).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_intl::Value;
+    ///
+    /// assert_eq!(Value::entity("graha.MOON"), Value::catalogued(Graha::Moon));
+    /// ```
     #[must_use]
     pub fn entity(key: &str) -> Value {
         Value::Entity(key.to_string())
@@ -178,6 +243,13 @@ impl Value {
 
     /// A catalogued member as an entity (`Graha::Sun` is `graha.SUN`): the
     /// typed way, which cannot name a key the catalogue lacks.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_intl::Value;
+    ///
+    /// assert_eq!(Value::catalogued(Rashi::Leo), Value::Entity(String::from("rashi.LEO")));
+    /// ```
     #[must_use]
     pub fn catalogued<T: Catalogued>(member: T) -> Value {
         Value::Entity(member.full_key())
@@ -187,17 +259,69 @@ impl Value {
 /// A message with typed parameters: what the generated accessors
 /// ([`crate::messages`], and a consumer's own from `teistro-intl gen
 /// --target rs`) implement, so a key or a parameter cannot be misspelt.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// use teistro_core::catalogue::Graha;
+/// use teistro_intl::TypedMessage;
+/// use teistro_intl::messages::sdk::reason::GrahaInBhava;
+///
+/// // A generated accessor: the key and the parameters, typed.
+/// let message = GrahaInBhava { bhava: 7, graha: Graha::Jupiter };
+/// assert_eq!(GrahaInBhava::KEY, "sdk.reason.grahaInBhava");
+/// assert_eq!(intl.render_typed(&message).text, "Jupiter in the 7th house");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub trait TypedMessage {
     /// The full key.
     const KEY: &'static str;
     /// The parameters, by name.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_intl::messages::sdk::reason::GrahaInBhava;
+    /// use teistro_intl::{TypedMessage, Value};
+    ///
+    /// // Each field under its message's own name for it.
+    /// let params = GrahaInBhava { bhava: 7, graha: Graha::Jupiter }.params();
+    /// assert_eq!(params["bhava"], Value::Int(7));
+    /// assert_eq!(params.len(), 2);
+    /// ```
     fn params(&self) -> Params;
 }
 
 /// The parameters of one render.
+///
+/// ```
+/// use teistro_intl::{Params, Value};
+///
+/// let mut by_hand = Params::new();
+/// by_hand.insert(String::from("bhava"), Value::Int(7));
+/// assert_eq!(by_hand, teistro_intl::params([("bhava", Value::Int(7))]));
+/// ```
 pub type Params = BTreeMap<String, Value>;
 
 /// Parameters from pairs.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// use teistro_intl::{Value, params};
+/// use teistro_core::catalogue::Graha;
+///
+/// let jupiter = params([("graha", Value::catalogued(Graha::Jupiter)), ("bhava", Value::Int(1))]);
+/// assert_eq!(intl.render("sdk.reason.grahaInBhava", &jupiter).text, "Jupiter in the 1st house");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn params<const N: usize>(pairs: [(&str, Value); N]) -> Params {
     pairs
@@ -207,6 +331,24 @@ pub fn params<const N: usize>(pairs: [(&str, Value); N]) -> Params {
 }
 
 /// One rendered part: text, or markup for a rich renderer.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// use teistro_intl::OutPart;
+/// use teistro_intl::mf2::ast::MarkupKind;
+///
+/// // The markup kept for a rich renderer, stripped from the text.
+/// let bold = intl.render_source("{#b}Jupiter{/b} rises", &teistro_intl::Params::new())?;
+/// assert_eq!(bold.text, "Jupiter rises");
+/// assert!(matches!(&bold.parts[0], OutPart::Markup { kind: MarkupKind::Open, name, .. } if name == "b"));
+/// assert_eq!(bold.parts[1], OutPart::Text(String::from("Jupiter")));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum OutPart {
     /// Text.
@@ -223,6 +365,25 @@ pub enum OutPart {
 }
 
 /// What a render produced.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// intl.set_locale("ne-Deva-NP")?;
+/// // A key the Nepali sources hold answers from them, not the fallback.
+/// let name = intl.render("sdk.reason.appName", &teistro_intl::Params::new());
+/// assert_eq!(name.resolved_from.as_deref(), Some("ne-Deva-NP"));
+/// assert!(!name.is_fallback && !name.is_override && name.warnings.is_empty());
+/// // A key no locale has renders nothing, and says so.
+/// let missing = intl.render("sdk.reason.noSuchKey", &teistro_intl::Params::new());
+/// assert_eq!(missing.resolved_from, None);
+/// assert!(!missing.warnings.is_empty());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Rendered {
     /// The plain text: the text parts joined, markup stripped.
@@ -246,6 +407,14 @@ pub struct Rendered {
 
 /// The key of the sign at an index of the ecliptic, from the catalogue
 /// (`rashi.ARIES` for 0), for `:zodiac`.
+///
+/// ```
+/// use teistro_intl::render::rashi_key;
+///
+/// assert_eq!(rashi_key(0), "rashi.ARIES");
+/// // The index wraps round the zodiac.
+/// assert_eq!(rashi_key(13), "rashi.TAURUS");
+/// ```
 #[must_use]
 pub fn rashi_key(index: usize) -> String {
     let sign = Rashi::ALL.get(index % 12).copied().unwrap_or(Rashi::Aries);
@@ -255,6 +424,13 @@ pub fn rashi_key(index: usize) -> String {
 /// The duration units `:duration` knows, longest first. The order is the
 /// order a decomposition walks them in, so it is the order the constant
 /// is written in rather than a sort at every call.
+///
+/// ```
+/// use teistro_intl::render::DURATION_UNITS;
+///
+/// // Longest first, the order a decomposition walks them in.
+/// assert_eq!(DURATION_UNITS.first(), Some(&"day"));
+/// ```
 pub const DURATION_UNITS: [&str; 4] = ["day", "hour", "minute", "second"];
 
 /// How many seconds one of each duration unit is, in the same order.
@@ -539,10 +715,34 @@ fn default_ghati(style: &NumberStyle, ghati: Ghati, vipalas: bool) -> String {
 }
 
 /// How deep `:msg` may link before it gives up.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// use teistro_intl::render::MSG_DEPTH;
+///
+/// // One link deep: well inside the limit.
+/// let welcome = intl.render("sdk.reason.welcome", &teistro_intl::Params::new());
+/// assert_eq!(welcome.text, "Welcome to Teistro");
+/// assert!(MSG_DEPTH > 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const MSG_DEPTH: u8 = 8;
 
 /// The digits of a CLDR numbering system, for the systems the product
 /// renders in.
+///
+/// ```
+/// use teistro_intl::render::digits;
+///
+/// assert_eq!(digits("deva").map(|d| d[7]), Some('७'));
+/// assert_eq!(digits("latn").map(|d| d[0]), Some('0'));
+/// assert_eq!(digits("klingon"), None);
+/// ```
 #[must_use]
 pub fn digits(system: &str) -> Option<[char; 10]> {
     let zero = match system {
@@ -564,6 +764,21 @@ pub fn digits(system: &str) -> Option<[char; 10]> {
 }
 
 /// How a locale writes numbers, from its metadata.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// use teistro_intl::render::NumberStyle;
+///
+/// let nepali = NumberStyle::of(&tree.locales["ne-Deva-NP"].meta);
+/// // The Indian grouping in Devanagari digits.
+/// assert_eq!(nepali.integer(1_234_567), "१२,३४,५६७");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NumberStyle {
     digits: [char; 10],
@@ -575,6 +790,20 @@ pub struct NumberStyle {
 impl NumberStyle {
     /// The style of a locale; an unknown numbering system falls back to
     /// Latin digits.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::render::NumberStyle;
+    ///
+    /// let english = NumberStyle::of(&tree.locales["en-Latn"].meta);
+    /// assert_eq!(english.integer(1_234_567), "1,234,567");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn of(meta: &Meta) -> NumberStyle {
         NumberStyle {
@@ -592,6 +821,20 @@ impl NumberStyle {
 
     /// An ASCII decimal (`-1234567.5`) in the locale's digits, grouping
     /// and separators.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::render::NumberStyle;
+    ///
+    /// let nepali = NumberStyle::of(&tree.locales["ne-Deva-NP"].meta);
+    /// assert_eq!(nepali.localise("-1234567.5"), "-१२,३४,५६७.५");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn localise(&self, ascii: &str) -> String {
         self.localise_with(ascii, true)
@@ -599,6 +842,22 @@ impl NumberStyle {
 
     /// As [`NumberStyle::localise`], with or without digit grouping (a
     /// year, a code).
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::render::NumberStyle;
+    ///
+    /// let nepali = NumberStyle::of(&tree.locales["ne-Deva-NP"].meta);
+    /// // A year is written without grouping.
+    /// assert_eq!(nepali.localise_with("2081", false), "२०८१");
+    /// assert_eq!(nepali.localise_with("2081", true), "२,०८१");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn localise_with(&self, ascii: &str, grouping: bool) -> String {
         let (sign, digits) = match ascii.strip_prefix('-') {
@@ -637,12 +896,41 @@ impl NumberStyle {
     }
 
     /// An integer in the locale's digits and grouping.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::render::NumberStyle;
+    ///
+    /// let nepali = NumberStyle::of(&tree.locales["ne-Deva-NP"].meta);
+    /// assert_eq!(nepali.integer(-108), "-१०८");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn integer(&self, value: i64) -> String {
         self.localise(&value.to_string())
     }
 
     /// ASCII digits mapped, everything else kept.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::render::NumberStyle;
+    ///
+    /// let nepali = NumberStyle::of(&tree.locales["ne-Deva-NP"].meta);
+    /// // Digits mapped, everything else kept: no grouping added.
+    /// assert_eq!(nepali.map_digits("12:05, 10000"), "१२:०५, १००००");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn map_digits(&self, ascii: &str) -> String {
         ascii.chars().map(|c| self.digit(c)).collect()
@@ -665,6 +953,15 @@ const INTEGER_DIGITS: usize = 21;
 
 /// A decimal string with `min` to `max` fraction digits, trailing zeros
 /// beyond `min` removed, no exponent, `-0` normalised.
+///
+/// ```
+/// use teistro_intl::render::ascii_decimal;
+///
+/// assert_eq!(ascii_decimal(2.5, 0, 3), "2.5");
+/// assert_eq!(ascii_decimal(2.0, 2, 3), "2.00");
+/// // Minus zero is zero.
+/// assert_eq!(ascii_decimal(-0.0001, 0, 2), "0");
+/// ```
 #[must_use]
 pub fn ascii_decimal(value: f64, min: usize, max: usize) -> String {
     let max = max.max(min);
@@ -689,6 +986,23 @@ pub fn ascii_decimal(value: f64, min: usize, max: usize) -> String {
 }
 
 /// The engine over a set of locales.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// intl.set_locale("ne-Deva-NP")?;
+/// use teistro_intl::{Value, params};
+/// use teistro_core::catalogue::Graha;
+///
+/// let jupiter = params([("graha", Value::catalogued(Graha::Jupiter)), ("bhava", Value::Int(7))]);
+/// let rendered = intl.render("sdk.reason.grahaInBhava", &jupiter);
+/// assert!(rendered.text.contains('७'));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub struct Intl {
     /// Shared, so engines over the same decoded sources hold one copy; a
     /// locale a runtime pack changes is copied for this engine alone
@@ -712,6 +1026,20 @@ pub struct Intl {
 
 /// Where a key resolved: the locale in the chain that answered, its
 /// entry, and whether an override supplied it.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// intl.set_locale("ne-Deva-NP")?;
+/// let found = intl.resolution_from("ne-Deva-NP", "sdk.reason.appName").ok_or("a message")?;
+/// assert_eq!(found.locale.tag, "ne-Deva-NP");
+/// assert!(!found.is_override);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Resolution<'a> {
     /// The locale that answered.
@@ -738,6 +1066,18 @@ pub(crate) struct Plurals {
 }
 
 /// A configuration failure.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// let unknown = intl.set_locale("xx-Latn").unwrap_err();
+/// assert!(unknown.to_string().contains("xx-Latn"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct IntlError(pub String);
 
@@ -775,6 +1115,18 @@ impl Intl {
     /// An engine over locales; the current locale is the base locale when
     /// present, else the first.
     ///
+    /// ```
+    /// use teistro_intl::source::Tree;
+    /// use teistro_intl::{Intl, sdk_root};
+    ///
+    /// // Only the Nepali sources: it becomes the current locale, being the first.
+    /// let mut tree = Tree::load(&sdk_root())?;
+    /// let nepali = tree.locales.remove("ne-Deva-NP").ok_or("shipped")?;
+    /// let intl = Intl::new([(nepali.tag.clone(), nepali)].into())?;
+    /// assert_eq!(intl.locale(), "ne-Deva-NP");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A locale tag ICU4X cannot parse or has no plural rules for.
@@ -792,6 +1144,20 @@ impl Intl {
     /// rules rather than of decoding every message again. A locale one
     /// engine changes ([`Intl::load_pack`]) is copied for it alone, so
     /// the others never see the change.
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro_intl::source::Tree;
+    /// use teistro_intl::{Intl, sdk_root};
+    ///
+    /// // Two engines over one decoded copy, each with its own locale.
+    /// let sources: std::collections::BTreeMap<_, _> = Tree::load(&sdk_root())?.locales.into_iter().map(|(tag, locale)| (tag, Arc::new(locale))).collect();
+    /// let english = Intl::shared(sources.clone())?;
+    /// let mut nepali = Intl::shared(sources)?;
+    /// nepali.set_locale("ne-Deva-NP")?;
+    /// assert_ne!(english.locale(), nepali.locale());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -847,6 +1213,22 @@ impl Intl {
     /// UTC and an offset by themselves, and a zone's name through the zone
     /// database, refused by name when there is none or it does not know it.
     ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_core::quantity::JulianDay;
+    ///
+    /// // An offset needs no zone database; a zone's name does.
+    /// let j2000 = JulianDay::J2000;
+    /// assert!(intl.offset_in("+05:45", j2000).is_ok());
+    /// assert!(intl.offset_in("Asia/Kathmandu", j2000).is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A malformed offset, a name with no database to answer it, or a name
@@ -869,6 +1251,18 @@ impl Intl {
 
     /// An engine over a loaded source tree.
     ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// // The base locale is current until another is chosen.
+    /// assert_eq!(intl.locale(), "en-Latn");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Intl::new`].
@@ -878,6 +1272,21 @@ impl Intl {
 
     /// Selects the locale every render resolves from. Explicit and
     /// deterministic: the engine never reads the environment.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// intl.set_locale("sa-Deva")?;
+    /// assert_eq!(intl.locale(), "sa-Deva");
+    /// // An unknown locale leaves the current one.
+    /// assert!(intl.set_locale("de-Latn-DE").is_err());
+    /// assert_eq!(intl.locale(), "sa-Deva");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -891,18 +1300,54 @@ impl Intl {
     }
 
     /// The current locale.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// intl.set_locale("ne-Deva-NP")?;
+    /// assert_eq!(intl.locale(), "ne-Deva-NP");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn locale(&self) -> &str {
         &self.current
     }
 
     /// The locales loaded, sorted.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// assert_eq!(intl.locales().count(), 5);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn locales(&self) -> impl Iterator<Item = &LocaleSource> {
         self.locales.values().map(Arc::as_ref)
     }
 
     /// The resolution chain from a locale: itself, then its declared
     /// fallbacks that are loaded.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// // Itself, then its fallbacks.
+    /// let chain: Vec<&str> = intl.chain_from("ne-Deva-NP").iter().map(|locale| locale.tag.as_str()).collect();
+    /// assert_eq!(chain, ["ne-Deva-NP", "en-Latn"]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn chain_from(&self, tag: &str) -> Vec<&LocaleSource> {
         let Some(first) = self.locales.get(tag).map(Arc::as_ref) else {
@@ -921,6 +1366,21 @@ impl Intl {
 
     /// The entry for a key along the chain from `tag`, with the locale
     /// that has it; an override of a locale stands before its own entries.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::source::Entry;
+    ///
+    /// let (locale, entry) = intl.resolve_from("en-Latn", "sdk.reason.appName").ok_or("a message")?;
+    /// assert_eq!(locale.tag, "en-Latn");
+    /// assert_eq!(entry, &Entry::Message(String::from("Teistro")));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn resolve_from<'a>(
         &'a self,
@@ -933,6 +1393,18 @@ impl Intl {
 
     /// The resolution of a key along the chain from `tag`: each locale's
     /// overrides, then its own entries, before the next locale.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// assert!(intl.resolution_from("hi-Deva-IN", "sdk.reason.grahaInBhava").is_some());
+    /// assert!(intl.resolution_from("hi-Deva-IN", "sdk.reason.noSuchKey").is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn resolution_from<'a>(&'a self, tag: &str, key: &str) -> Option<Resolution<'a>> {
         for locale in self.chain_from(tag) {
@@ -971,6 +1443,18 @@ impl Intl {
     }
 
     /// The entity for a catalogue key along the chain from `tag`.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// let sun = intl.entity_from("ne-Deva-NP", "graha.SUN").ok_or("the Sun")?;
+    /// assert_eq!(sun.name(), "सूर्य");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn entity_from<'a>(&'a self, tag: &str, key: &str) -> Option<&'a Entity> {
         self.chain_from(tag)
@@ -979,6 +1463,18 @@ impl Intl {
     }
 
     /// Whether a key resolves under the current locale's chain.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// assert!(intl.has("sdk.reason.grahaInBhava"));
+    /// assert!(!intl.has("sdk.reason.noSuchKey"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn has(&self, key: &str) -> bool {
         self.resolve_from(&self.current, key).is_some()
@@ -986,12 +1482,42 @@ impl Intl {
 
     /// Renders a typed message ([`TypedMessage`]) under the current locale
     /// and its fallback chain.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// intl.set_locale("ne-Deva-NP")?;
+    /// use teistro_intl::messages::sdk::reason::AppName;
+    ///
+    /// let name = intl.render_typed(&AppName);
+    /// assert_eq!(name.resolved_from.as_deref(), Some("ne-Deva-NP"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn render_typed<M: TypedMessage>(&self, message: &M) -> Rendered {
         self.render(M::KEY, &message.params())
     }
 
     /// Renders a key with parameters in the current locale.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::{Value, params};
+    /// // A missing parameter is a warning, and rendering goes on.
+    /// let without = intl.render("sdk.reason.grahaInBhava", &params([("bhava", Value::Int(2))]));
+    /// assert!(!without.warnings.is_empty());
+    /// assert!(without.text.ends_with("in the 2nd house"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn render(&self, key: &str, params: &Params) -> Rendered {
         self.render_from(&self.current, key, params, 0)
@@ -999,6 +1525,22 @@ impl Intl {
 
     /// Renders a message given as source, in the current locale, for
     /// tools and tests.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// intl.set_locale("ne-Deva-NP")?;
+    /// use teistro_intl::{Value, params};
+    /// let count = intl.render_source("{$n :integer} days", &params([("n", Value::Int(12))]))?;
+    /// assert_eq!(count.text, "१२ days");
+    /// // A source that does not parse is refused.
+    /// assert!(intl.render_source("{$n", &params([])).is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1064,6 +1606,19 @@ impl Intl {
     }
 
     /// The plural categories a locale's rules can produce.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// // English ordinals: 1st, 2nd, 3rd, 4th.
+    /// assert_eq!(intl.categories("en-Latn", true), ["one", "two", "few", "other"]);
+    /// assert_eq!(intl.categories("en-Latn", false), ["one", "other"]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn categories(&self, tag: &str, ordinal: bool) -> Vec<&'static str> {
         let Some(rules) = self.plurals.get(tag) else {
@@ -1115,6 +1670,19 @@ impl Intl {
 }
 
 /// The text parts joined.
+///
+/// ```
+/// use teistro_intl::OutPart;
+/// use teistro_intl::mf2::ast::MarkupKind;
+/// use teistro_intl::render::plain_text;
+///
+/// let parts = [
+///     OutPart::Markup { kind: MarkupKind::Open, name: String::from("b"), options: Vec::new() },
+///     OutPart::Text(String::from("Mars")),
+///     OutPart::Markup { kind: MarkupKind::Close, name: String::from("b"), options: Vec::new() },
+/// ];
+/// assert_eq!(plain_text(&parts), "Mars");
+/// ```
 #[must_use]
 pub fn plain_text(parts: &[OutPart]) -> String {
     parts

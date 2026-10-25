@@ -17,10 +17,53 @@ use sha2::{Digest, Sha256};
 use crate::source::{Entity, Entry, LocaleSource, Meta, Namespace};
 
 /// The first four bytes of every pack.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = &tree.locales["ne-Deva-NP"];
+///
+/// use teistro_intl::pack::{self, MAGIC};
+///
+/// assert!(pack::build(nepali, "sdk.reason")?.starts_with(&MAGIC));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const MAGIC: [u8; 4] = *b"TPK1";
 /// The bundle's magic: one locale, every namespace, the metadata once.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = &tree.locales["ne-Deva-NP"];
+///
+/// use teistro_intl::pack::{self, BUNDLE_MAGIC};
+///
+/// assert!(pack::build_bundle(nepali)?.starts_with(&BUNDLE_MAGIC));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const BUNDLE_MAGIC: [u8; 4] = *b"TPB1";
 /// The container format version.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = &tree.locales["ne-Deva-NP"];
+///
+/// use teistro_intl::pack::{self, FORMAT_VERSION, Pack};
+///
+/// // A pack of another version is refused.
+/// let mut bytes = pack::build(nepali, "sdk.reason")?;
+/// assert_eq!(u16::from_le_bytes([bytes[4], bytes[5]]), FORMAT_VERSION);
+/// bytes[4] = bytes[4].wrapping_add(1);
+/// assert!(Pack::parse(&bytes).is_err());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const FORMAT_VERSION: u16 = 2;
 
 /// The fewest bytes a bundle's index entry takes: a `u16` name length
@@ -32,6 +75,14 @@ const KIND_ENTITY: u8 = 2;
 const TABLE_ENTRY: usize = 16;
 
 /// Why bytes are not a pack.
+///
+/// ```
+/// use teistro_intl::pack::Pack;
+///
+/// let refused = Pack::parse(b"not a pack").unwrap_err();
+/// assert!(!refused.0.is_empty());
+/// assert_eq!(refused.to_string(), refused.0);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PackError(pub String);
 
@@ -46,12 +97,32 @@ impl std::error::Error for PackError {}
 /// The file a pack of one namespace of a locale is written to and read
 /// from: `en-Latn.sdk.entity.tpack`. One rule, so the command line that
 /// writes a pack and whatever reads it back cannot disagree.
+///
+/// ```
+/// use teistro_intl::pack;
+///
+/// assert_eq!(pack::file_name("en-Latn", "sdk.entity"), "en-Latn.sdk.entity.tpack");
+/// ```
 #[must_use]
 pub fn file_name(locale: &str, namespace: &str) -> String {
     format!("{locale}.{namespace}.tpack")
 }
 
 /// Builds the pack of one namespace of a locale.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = &tree.locales["ne-Deva-NP"];
+///
+/// use teistro_intl::pack;
+///
+/// // A namespace the locale lacks is refused, naming it.
+/// assert!(pack::build(nepali, "sdk.nothing").unwrap_err().0.contains("sdk.nothing"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -64,6 +135,23 @@ pub fn build(locale: &LocaleSource, namespace: &str) -> Result<Vec<u8>, PackErro
 /// One locale as a bundle: the metadata once, then every namespace as a
 /// pack without metadata, each verified on its own; the container's CRC
 /// and SHA-256 cover the whole payload.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = &tree.locales["ne-Deva-NP"];
+///
+/// use teistro_intl::pack::{self, Bundle};
+///
+/// let bytes = pack::build_bundle(nepali)?;
+/// let bundle = Bundle::parse(&bytes)?;
+/// // Every namespace, the metadata once.
+/// assert_eq!(bundle.packs().len(), nepali.namespaces.len());
+/// assert_eq!(bundle.meta()?, nepali.meta);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -244,6 +332,22 @@ impl<'a> Cursor<'a> {
 }
 
 /// A pack over borrowed bytes.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = &tree.locales["ne-Deva-NP"];
+///
+/// use teistro_intl::pack::{self, Pack};
+///
+/// let bytes = pack::build(nepali, "sdk.reason")?;
+/// let reason = Pack::parse(&bytes)?;
+/// assert_eq!((reason.locale(), reason.namespace()), ("ne-Deva-NP", "sdk.reason"));
+/// assert_eq!(reason.len(), nepali.namespaces["sdk.reason"].entries.len());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy)]
 pub struct Pack<'a> {
     locale: &'a str,
@@ -266,6 +370,24 @@ impl fmt::Debug for Pack<'_> {
 }
 
 /// One entry read from a pack.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = &tree.locales["ne-Deva-NP"];
+///
+/// use teistro_intl::pack::{self, Pack, PackEntry};
+///
+/// let bytes = pack::build(nepali, "sdk.entity")?;
+/// let entities = Pack::parse(&bytes)?;
+/// let Some(PackEntry::Entity(sun)) = entities.get("graha.SUN") else {
+///     panic!("the Sun's record");
+/// };
+/// assert_eq!(sun.name(), "सूर्य");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum PackEntry<'a> {
     /// A message's source text, borrowed.
@@ -277,6 +399,23 @@ pub enum PackEntry<'a> {
 impl<'a> Pack<'a> {
     /// Parses and verifies: magic, version, lengths, the checksum, every
     /// table entry inside the arena, keys valid UTF-8 and sorted.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// // Nothing in the file is trusted: one byte changed fails the checksum.
+    /// let mut bytes = pack::build(nepali, "sdk.reason")?;
+    /// let last = bytes.len() - 1;
+    /// bytes[last] ^= 1;
+    /// assert!(Pack::parse(&bytes).is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -337,36 +476,133 @@ impl<'a> Pack<'a> {
     }
 
     /// The locale tag.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// assert_eq!(reason.locale(), nepali.tag);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn locale(&self) -> &'a str {
         self.locale
     }
 
     /// The namespace name.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// assert_eq!(reason.namespace(), "sdk.reason");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn namespace(&self) -> &'a str {
         self.namespace
     }
 
     /// The number of entries.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// assert!(reason.len() > 1);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn len(&self) -> usize {
         self.entries
     }
 
     /// Whether the pack is empty.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// assert!(!reason.is_empty());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.entries == 0
     }
 
     /// The SHA-256 of the key table and arena, lower-case hex.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// // The same sources pack to the same digest.
+    /// let again = pack::build(nepali, "sdk.reason")?;
+    /// assert_eq!(Pack::parse(&again)?.content_sha256(), reason.content_sha256());
+    /// assert_eq!(reason.content_sha256().len(), 64);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn content_sha256(&self) -> String {
         hex(self.sha256)
     }
 
     /// The locale metadata carried in the pack.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// // A pack of its own carries the metadata; one inside a bundle does not.
+    /// assert_eq!(reason.meta()?.locale, "ne-Deva-NP");
+    /// let bundled = pack::build_bundle(nepali)?;
+    /// let bundle = pack::Bundle::parse(&bundled)?;
+    /// assert!(bundle.pack("sdk.reason").is_some_and(|inner| inner.meta().is_err()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -382,6 +618,21 @@ impl<'a> Pack<'a> {
     }
 
     /// Whether the pack carries its locale's metadata.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// assert!(reason.has_meta());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn has_meta(&self) -> bool {
         !self.meta.is_empty()
@@ -437,6 +688,24 @@ impl<'a> Pack<'a> {
     }
 
     /// The entry at a key, by binary search over the sorted table.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// use teistro_intl::pack::PackEntry;
+    ///
+    /// assert!(matches!(reason.get("appName"), Some(PackEntry::Message(_))));
+    /// assert_eq!(reason.get("noSuchKey"), None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn get(&self, key: &str) -> Option<PackEntry<'a>> {
         let mut low = 0usize;
@@ -453,11 +722,44 @@ impl<'a> Pack<'a> {
     }
 
     /// Every entry, in key order.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// // In key order.
+    /// let keys: Vec<&str> = reason.iter().map(|(key, _)| key).collect();
+    /// assert!(keys.windows(2).all(|pair| pair[0] < pair[1]));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn iter(&self) -> impl Iterator<Item = (&'a str, PackEntry<'a>)> + '_ {
         (0..self.entries).filter_map(move |i| self.entry_at(i).ok())
     }
 
     /// The pack's namespace as a source namespace, decoded, in key order.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Pack};
+    ///
+    /// let bytes = pack::build(nepali, "sdk.reason")?;
+    /// let reason = Pack::parse(&bytes)?;
+    /// // The same entries as the sources, in key order rather than source order.
+    /// assert_eq!(reason.to_namespace().entries, nepali.namespaces["sdk.reason"].entries);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn to_namespace(&self) -> Namespace {
         let mut namespace = Namespace::default();
@@ -491,6 +793,22 @@ fn decode_entity(bytes: &[u8]) -> Result<Entity, PackError> {
 }
 
 /// A parsed bundle: one locale's metadata and its namespaces as packs.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = &tree.locales["ne-Deva-NP"];
+///
+/// use teistro_intl::pack::{self, Bundle};
+///
+/// let bytes = pack::build_bundle(nepali)?;
+/// let bundle = Bundle::parse(&bytes)?;
+/// assert_eq!(bundle.locale(), "ne-Deva-NP");
+/// assert!(bundle.pack("sdk.entity").is_some());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub struct Bundle<'a> {
     locale: &'a str,
     meta: &'a [u8],
@@ -513,6 +831,21 @@ impl fmt::Debug for Bundle<'_> {
 impl<'a> Bundle<'a> {
     /// Parses and verifies a bundle: magic, version, the container's
     /// checksum, then every embedded pack on its own terms.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Bundle};
+    ///
+    /// // A pack is not a bundle.
+    /// let single = pack::build(nepali, "sdk.reason")?;
+    /// assert!(Bundle::parse(&single).is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -581,12 +914,42 @@ impl<'a> Bundle<'a> {
     }
 
     /// The locale tag.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Bundle};
+    ///
+    /// let bytes = pack::build_bundle(nepali)?;
+    /// let bundle = Bundle::parse(&bytes)?;
+    /// assert_eq!(bundle.locale(), nepali.tag);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn locale(&self) -> &'a str {
         self.locale
     }
 
     /// The locale metadata, carried once.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Bundle};
+    ///
+    /// let bytes = pack::build_bundle(nepali)?;
+    /// let bundle = Bundle::parse(&bytes)?;
+    /// assert_eq!(bundle.meta()?.numbering_system, "deva");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -596,12 +959,45 @@ impl<'a> Bundle<'a> {
     }
 
     /// The namespaces' packs, in name order.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Bundle};
+    ///
+    /// let bytes = pack::build_bundle(nepali)?;
+    /// let bundle = Bundle::parse(&bytes)?;
+    /// // In name order.
+    /// let names: Vec<&str> = bundle.packs().iter().map(|inner| inner.namespace()).collect();
+    /// assert!(names.windows(2).all(|pair| pair[0] < pair[1]));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn packs(&self) -> &[Pack<'a>] {
         &self.packs
     }
 
     /// One namespace's pack.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Bundle};
+    ///
+    /// let bytes = pack::build_bundle(nepali)?;
+    /// let bundle = Bundle::parse(&bytes)?;
+    /// assert!(bundle.pack("sdk.reason").is_some());
+    /// assert!(bundle.pack("sdk.nothing").is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn pack(&self, namespace: &str) -> Option<&Pack<'a>> {
         self.packs.iter().find(|p| p.namespace() == namespace)
@@ -609,6 +1005,22 @@ impl<'a> Bundle<'a> {
 
     /// The SHA-256 of the payload, lower-case hex, for the provenance
     /// envelope.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let nepali = &tree.locales["ne-Deva-NP"];
+    ///
+    /// use teistro_intl::pack::{self, Bundle};
+    ///
+    /// let bytes = pack::build_bundle(nepali)?;
+    /// let bundle = Bundle::parse(&bytes)?;
+    /// let again = pack::build_bundle(nepali)?;
+    /// assert_eq!(Bundle::parse(&again)?.content_sha256(), bundle.content_sha256());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn content_sha256(&self) -> String {
         hex(self.sha256)
@@ -628,6 +1040,23 @@ fn hex(bytes: &[u8]) -> String {
 /// namespace and its metadata, which a locale takes from the first file
 /// that carries it. Entries come back in key order because a pack does
 /// not carry source order.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let nepali = &tree.locales["ne-Deva-NP"];
+///
+/// use teistro_intl::pack;
+///
+/// // A bundle brings its whole locale back.
+/// let bundle = pack::build_bundle(nepali)?;
+/// let rebuilt = pack::locales_from_packs(&[&bundle])?;
+/// assert_eq!(rebuilt["ne-Deva-NP"].meta, nepali.meta);
+/// assert_eq!(rebuilt["ne-Deva-NP"].namespaces.len(), nepali.namespaces.len());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

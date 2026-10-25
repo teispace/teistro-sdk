@@ -282,6 +282,21 @@ fn markup_kind(kind: MarkupKind) -> &'static str {
 /// **A reader turns an empty array back into the one text part** that
 /// [`Rendered::parts`] holds; every binding does, and
 /// `every_binding_reads_the_parts_of_a_rich_message` holds them to it.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, Params, sdk_root};
+/// #
+/// # let intl = Intl::from_tree(&Tree::load(&sdk_root())?)?;
+///
+/// use teistro_intl::wire::parts_json;
+///
+/// let plain = intl.render_source("Mars rises", &Params::new())?;
+/// assert_eq!(parts_json(&plain), "[]");
+/// let rich = intl.render_source("{#b}Mars{/b} rises", &Params::new())?;
+/// assert!(parts_json(&rich).starts_with(r#"[{"type":"markup","kind":"open","name":"b""#));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn parts_json(rendered: &Rendered) -> String {
     if rendered
