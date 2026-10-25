@@ -5671,13 +5671,19 @@ class ADaysLagnas(AJuneWeek):
         # Raman's ayanamsha is some 1.4° short of Lahiri's, so the
         # sidereal lagna stands further on and each sign enters some five
         # minutes sooner. A sign entered just after sunrise under Lahiri
-        # may have entered before it under Raman's, so the signs are
-        # paired by name, past each day's first, which sunrise cuts.
-        entered = {span.member: span.whole.from_jd for span in raman[1:]}
-        paired = [span for span in lahiri[1:] if span.member in entered]
+        # may have entered before it under Raman's, and the sign at sunrise
+        # rises again before the next, so each entry past the day's first,
+        # which sunrise cuts, is paired with Raman's entry of its sign within
+        # the hour.
+        paired = [
+            (one, other)
+            for one in lahiri[1:]
+            for other in raman[1:]
+            if other.member is one.member and abs(one.whole.from_jd - other.whole.from_jd) * 1440 < 60
+        ]
         self.assertTrue(len(paired) >= 10, len(paired))
-        for one in paired:
-            sooner = (one.whole.from_jd - entered[one.member]) * 1440
+        for one, other in paired:
+            sooner = (one.whole.from_jd - other.whole.from_jd) * 1440
             self.assertTrue(3 < sooner < 9, sooner)
 
 
