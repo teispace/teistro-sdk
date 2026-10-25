@@ -65,6 +65,16 @@ pub use subjects::{
 
 /// The readings a chart's remedies are given under, each group the texts'
 /// own when left out.
+///
+/// ```
+/// use teistro_remedies::{RemedyRules, Scheme};
+///
+/// // Every group the texts' own when left out.
+/// let rules: RemedyRules = serde_json::from_str(r#"{"functional":{"scheme":"BASELINE"}}"#)?;
+/// assert_eq!(rules.functional.scheme, Scheme::Baseline);
+/// assert_eq!(rules.shanti, RemedyRules::default().shanti);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(
     Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
@@ -82,6 +92,41 @@ pub struct RemedyRules {
 /// A chart's remedies, every step read off it: the lagna's functional
 /// natures, whom a remedy is for and why, what the texts prescribe for
 /// each of them, the running antardaśā's śānti and the ishṭa-devatā.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{
+///     AmatyaDevatas, IshtaDevatas, RemedyRules, RemedySky, Remedies, amatya_devata, functional, ishta_devata, shanti,
+///     subjects,
+/// };
+///
+/// // What the facade assembles, step by step, for an Aries lagna with every
+/// // graha in Aries but the Sun in Libra and Rahu opposite Ketu.
+/// let rules = RemedyRules::default();
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[Graha::Sun as usize] = Rashi::Libra;
+/// signs[Graha::Rahu as usize] = Rashi::Libra;
+/// let sky = RemedySky { lagna: Rashi::Aries, signs, combust: [false; 9], moon_waxing: true, running: None };
+/// let natures = functional(sky.lagna, rules.functional);
+/// let found = subjects(&sky, &natures);
+/// let shantis = found.subjects.iter().filter_map(|subject| shanti(subject.graha, rules.shanti)).collect();
+/// let amatya = |lagna| amatya_devata(Rashi::Taurus, Graha::Mars, lagna, &signs, rules.devata);
+/// let remedies = Remedies {
+///     rules,
+///     functional: natures,
+///     subjects: found,
+///     shantis,
+///     ishta_devata: IshtaDevatas {
+///         atmakaraka: Graha::Sun,
+///         karakamsha: Rashi::Taurus,
+///         in_rasi: ishta_devata(Rashi::Taurus, &signs, rules.devata),
+///         in_navamsha: ishta_devata(Rashi::Taurus, &signs, rules.devata),
+///         amatya: AmatyaDevatas { graha: Graha::Mars, amsha: Rashi::Taurus, in_rasi: amatya(Rashi::Aries), in_navamsha: amatya(Rashi::Aries) },
+///     },
+/// };
+/// // A shanti for each subject, in their order.
+/// assert_eq!(remedies.shantis.len(), remedies.subjects.subjects.len());
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

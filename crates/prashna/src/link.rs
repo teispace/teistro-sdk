@@ -19,6 +19,29 @@ use teistro_tajika::{
 /// which a matter still to come reads as failure, and the general
 /// section reads the graha the lagnesha separates from as what is past.
 /// The question decides which, so it says.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// // A question of the 7th, Scorpio: Venus the lagnesha, Mars the karyesha.
+/// let answer = read(&sky, Question::about(7), PrashnaRules::default())?;
+/// use teistro_prashna::Tense;
+///
+/// let past = Question { tense: Tense::Past, ..Question::about(7) };
+/// assert!(read(&sky, past, PrashnaRules::default())?.link.is_some());
+/// # let _ = answer;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PrashnaTense"))]
@@ -36,6 +59,14 @@ pub enum Tense {
 impl Tense {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `UNSPECIFIED`.
+    ///
+    /// ```
+    /// use teistro_prashna::Tense;
+    ///
+    /// assert_eq!(Tense::Unspecified.key(), "UNSPECIFIED");
+    /// assert_eq!(serde_json::to_string(&Tense::Unspecified)?, r#""UNSPECIFIED""#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -48,6 +79,32 @@ impl Tense {
 
 /// How the lagnesha and the karyesha are linked, as the Prashna Tantra
 /// reads it.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// // A question of the 7th, Scorpio: Venus the lagnesha, Mars the karyesha.
+/// let answer = read(&sky, Question::about(7), PrashnaRules::default())?;
+/// use teistro_prashna::{LinkKind, Meaning};
+///
+/// let link = answer.link.ok_or(teistro_core::Error::internal("a house was asked"))?;
+/// // An unlinked pair, or one lord of both, is a link the text does not read.
+/// if matches!(link.kind, LinkKind::Unlinked | LinkKind::SameLord) {
+///     assert_eq!(link.meaning, Meaning::Unread);
+/// }
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PrashnaLinkKind"))]
@@ -73,6 +130,14 @@ pub enum LinkKind {
 impl LinkKind {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `DIRECT`.
+    ///
+    /// ```
+    /// use teistro_prashna::LinkKind;
+    ///
+    /// assert_eq!(LinkKind::Destroyed.key(), "DESTROYED");
+    /// assert_eq!(serde_json::to_string(&LinkKind::Destroyed)?, r#""DESTROYED""#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -87,6 +152,12 @@ impl LinkKind {
 }
 
 /// What a link says of the matter.
+///
+/// ```
+/// use teistro_prashna::Meaning;
+///
+/// assert_eq!(Meaning::FailsOrPast.key(), "FAILS_OR_PAST");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PrashnaMeaning"))]
@@ -108,6 +179,14 @@ pub enum Meaning {
 impl Meaning {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `PROMISED`.
+    ///
+    /// ```
+    /// use teistro_prashna::Meaning;
+    ///
+    /// assert_eq!(Meaning::Promised.key(), "PROMISED");
+    /// assert_eq!(serde_json::to_string(&Meaning::Promised)?, r#""PROMISED""#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -122,6 +201,30 @@ impl Meaning {
 
 /// Which questions v. 96's "all yogas are fruitless without the Moon"
 /// governs (crux C376).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// // A question of the 7th, Scorpio: Venus the lagnesha, Mars the karyesha.
+/// let answer = read(&sky, Question::about(7), PrashnaRules::default())?;
+/// use teistro_prashna::MoonScope;
+///
+/// // v. 96 reaches every question by default, so the Moon is reported.
+/// assert_eq!(PrashnaRules::default().moon_scope, MoonScope::Every);
+/// assert!(answer.link.is_some_and(|link| link.moonless.is_some()));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -137,6 +240,14 @@ pub enum MoonScope {
 impl MoonScope {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `EVERY`.
+    ///
+    /// ```
+    /// use teistro_prashna::MoonScope;
+    ///
+    /// assert_eq!(MoonScope::Gain.key(), "GAIN");
+    /// assert_eq!(serde_json::to_string(&MoonScope::Gain)?, r#""GAIN""#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -151,6 +262,12 @@ impl MoonScope {
 /// His clause on "loss of the matter" when the karyesha looks at the
 /// lagnesha and the lagna is not here: it contradicts his clauses of
 /// success and one print cannot say which is the slip (crux C374).
+///
+/// ```
+/// use teistro_prashna::SamarasimhaClause;
+///
+/// assert_eq!(SamarasimhaClause::ALL[3], SamarasimhaClause::MoonSeesLagnesha);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -173,6 +290,14 @@ pub enum SamarasimhaClause {
 impl SamarasimhaClause {
     /// The member's key, as serde writes it and every binding reads it
     /// back: `LORDS_SEE_THEIR_HOUSES`.
+    ///
+    /// ```
+    /// use teistro_prashna::SamarasimhaClause;
+    ///
+    /// assert_eq!(SamarasimhaClause::LordsSeeTheirHouses.key(), "LORDS_SEE_THEIR_HOUSES");
+    /// assert_eq!(serde_json::to_string(&SamarasimhaClause::LordsSeeTheirHouses)?, r#""LORDS_SEE_THEIR_HOUSES""#);
+    /// # Ok::<(), serde_json::Error>(())
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -193,6 +318,29 @@ impl SamarasimhaClause {
 }
 
 /// The link between the lagnesha and the karyesha, read.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// // A question of the 7th, Scorpio: Venus the lagnesha, Mars the karyesha.
+/// let answer = read(&sky, Question::about(7), PrashnaRules::default())?;
+/// let link = answer.link.ok_or(teistro_core::Error::internal("a house was asked"))?;
+/// // Samarasimha's conditions are reported in his order, never weighed.
+/// let order: Vec<usize> = link.samarasimha.iter().filter_map(|clause| teistro_prashna::SamarasimhaClause::ALL.iter().position(|one| one == clause)).collect();
+/// assert!(order.windows(2).all(|pair| pair[0] < pair[1]));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "PrashnaLink"))]
@@ -220,6 +368,25 @@ pub struct Link {
 /// The lagnesha's own yogas read as time (n179, crux C375): the graha it
 /// is separating from tells the past, the one it is joined with the
 /// present, the one it will join the future.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::default())?;
+/// // Taurus rising: Venus, whose yogas are read as time.
+/// assert_eq!(answer.tri_kala.lagnesha, Graha::Venus);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

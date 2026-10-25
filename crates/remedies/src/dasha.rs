@@ -16,6 +16,16 @@ use teistro_core::catalogue::Graha;
 
 /// A condition an antardaśā's śānti is given under. Houses are counted
 /// from the lagna unless a variant says otherwise.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{Condition, dasha_shantis};
+///
+/// // The commonest condition, the 2nd or 7th lord, in 53 of the 81 rows.
+/// let rows = dasha_shantis().iter().filter(|row| row.conditions.contains(&Condition::LordOfSecondOrSeventh));
+/// assert_eq!(rows.count(), 53);
+/// # let _ = Graha::Sun;
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -78,6 +88,15 @@ pub enum Condition {
 
 /// A rite or gift an antardaśā's śānti prescribes, keyed by the verse's
 /// own words.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::{Remedy, dasha_shanti};
+///
+/// let read = dasha_shanti(Graha::Sun, Graha::Ketu).ok_or("BPHS prints it")?;
+/// assert!(read.remedies.contains(&Remedy::MahaMrityunjayaJapa));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -174,6 +193,15 @@ pub enum Remedy {
 }
 
 /// One antardaśā's śānti, as printed.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_remedies::dasha_shanti;
+///
+/// let read = dasha_shanti(Graha::Sun, Graha::Ketu).ok_or("BPHS prints it")?;
+/// assert_eq!((read.mahadasha, read.antardasha, read.chapter), (Graha::Sun, Graha::Ketu, 37));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -579,6 +607,14 @@ const ROWS: [DashaShanti; 81] = {
 };
 
 /// Every antardaśā śānti BPHS chs. 37 to 45 print, chapter by chapter.
+///
+/// ```
+/// use teistro_remedies::dasha_shantis;
+///
+/// // Nine mahadashas of nine antardashas, chapters 37 to 45.
+/// assert_eq!(dasha_shantis().len(), 81);
+/// assert!(dasha_shantis().iter().all(|row| (37..=45).contains(&row.chapter)));
+/// ```
 #[must_use]
 pub fn dasha_shantis() -> &'static [DashaShanti] {
     &ROWS

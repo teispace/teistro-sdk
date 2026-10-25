@@ -12,6 +12,12 @@ pub use teistro_core::settings::Bija;
 
 /// The bodies the text gives a motion of their own, in the text's order
 /// (I.29 to 34). Rahu and Ketu are the Moon's node and its opposite.
+///
+/// ```
+/// use teistro_siddhanta::Planet;
+///
+/// assert_eq!(Planet::Jupiter.to_string(), "Guru");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -34,6 +40,12 @@ pub enum Planet {
 
 impl Planet {
     /// The seven, in the text's order.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Planet;
+    ///
+    /// assert!(Planet::ALL.iter().enumerate().all(|(index, planet)| planet.index() == index));
+    /// ```
     pub const ALL: [Planet; 7] = [
         Planet::Sun,
         Planet::Moon,
@@ -45,6 +57,14 @@ impl Planet {
     ];
 
     /// The five star planets, which take the sighra equation.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, Planet};
+    ///
+    /// // The five take the sighra equation; the Sun and the Moon have none.
+    /// assert!(Planet::STARS.iter().all(|planet| Parameters::TEXT.sighra_epicycle(*planet).is_some()));
+    /// assert!(!Planet::STARS.contains(&Planet::Moon));
+    /// ```
     pub const STARS: [Planet; 5] = [
         Planet::Mars,
         Planet::Mercury,
@@ -55,12 +75,24 @@ impl Planet {
 
     /// Whether the planet's mean place is the Sun's (Mercury and Venus,
     /// whose own revolutions are those of their conjunction; I.29).
+    ///
+    /// ```
+    /// use teistro_siddhanta::Planet;
+    ///
+    /// assert!(Planet::Venus.is_inferior() && !Planet::Mars.is_inferior());
+    /// ```
     #[must_use]
     pub const fn is_inferior(self) -> bool {
         matches!(self, Planet::Mercury | Planet::Venus)
     }
 
     /// The index in the seven-entry tables.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Planet;
+    ///
+    /// assert_eq!((Planet::Sun.index(), Planet::Saturn.index()), (0, 6));
+    /// ```
     #[must_use]
     pub const fn index(self) -> usize {
         self as usize
@@ -68,6 +100,13 @@ impl Planet {
 
     /// The index in the five-entry star-planet tables; `None` for the Sun
     /// and the Moon.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Planet;
+    ///
+    /// assert_eq!(Planet::Mars.star_index(), Some(0));
+    /// assert_eq!(Planet::Moon.star_index(), None);
+    /// ```
     #[must_use]
     pub const fn star_index(self) -> Option<usize> {
         match self {
@@ -81,6 +120,12 @@ impl Planet {
     }
 
     /// The name as the text's tradition writes it.
+    ///
+    /// ```
+    /// use teistro_siddhanta::Planet;
+    ///
+    /// assert_eq!(Planet::Saturn.name(), "Shani");
+    /// ```
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
@@ -103,6 +148,15 @@ impl fmt::Display for Planet {
 
 /// The text's numbers. Each field names its verse; the derived fields
 /// name the verses they combine.
+///
+/// ```
+/// use teistro_siddhanta::Parameters;
+///
+/// // 452.75 ages of 1 577 917 828 days had passed when the Kali age began.
+/// let text = &Parameters::TEXT;
+/// assert_eq!(text.elapsed_days_at_kali * 4, text.yuga_civil_days * 1811);
+/// assert_eq!(text.lanka_rising_asu, [1670, 1795, 1935]);
+/// ```
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Parameters {
@@ -164,6 +218,13 @@ pub struct Parameters {
 
 impl Parameters {
     /// The text as Burgess (1860) prints it.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, Planet};
+    ///
+    /// assert_eq!(Parameters::TEXT.motion(Planet::Moon).revolutions, 57_753_336);
+    /// assert_eq!(Parameters::TEXT.obliquity_sine, 1397);
+    /// ```
     pub const TEXT: Parameters = Parameters {
         yuga_civil_days: 1_577_917_828,
         yuga_years: 4_320_000,
@@ -224,6 +285,13 @@ impl Parameters {
 
     /// The motion of a planet's own revolutions (the conjunction's for
     /// Mercury and Venus).
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, Planet};
+    ///
+    /// // Mercury's own revolutions are its conjunction's.
+    /// assert_eq!(Parameters::TEXT.motion(Planet::Mercury).revolutions, 17_937_060);
+    /// ```
     #[must_use]
     #[allow(
         clippy::indexing_slicing,
@@ -235,6 +303,14 @@ impl Parameters {
 
     /// The apsis of the Sun or a star planet; the Moon's is
     /// [`Parameters::moon_apsis`].
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Cycle, Parameters, Planet};
+    ///
+    /// let saturn = Parameters::TEXT.apsis(Planet::Saturn);
+    /// assert_eq!((saturn.revolutions, saturn.cycle), (39, Cycle::Kalpa));
+    /// assert_eq!(Parameters::TEXT.apsis(Planet::Moon), Parameters::TEXT.moon_apsis);
+    /// ```
     #[must_use]
     pub const fn apsis(&self, planet: Planet) -> Motion {
         match planet {
@@ -250,6 +326,13 @@ impl Parameters {
 
     /// The node of a planet other than the Sun: the Moon's from I.34, a
     /// star planet's from I.43 to 44.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, Planet};
+    ///
+    /// assert_eq!(Parameters::TEXT.node(Planet::Sun), None);
+    /// assert_eq!(Parameters::TEXT.node(Planet::Saturn).map(|node| node.revolutions), Some(662));
+    /// ```
     #[must_use]
     #[allow(
         clippy::indexing_slicing,
@@ -268,6 +351,14 @@ impl Parameters {
 
     /// The extreme latitude of a planet other than the Sun, minutes of
     /// arc (I.68 to 70).
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, Planet};
+    ///
+    /// // I.68: an eightieth of the circle's minutes for the Moon.
+    /// assert_eq!(Parameters::TEXT.extreme_latitude_arcmin(Planet::Moon), Some(21_600 / 80));
+    /// assert_eq!(Parameters::TEXT.extreme_latitude_arcmin(Planet::Sun), None);
+    /// ```
     #[must_use]
     pub const fn extreme_latitude_arcmin(&self, planet: Planet) -> Option<u32> {
         let index = match planet {
@@ -287,6 +378,13 @@ impl Parameters {
     }
 
     /// The manda epicycle of a planet.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Epicycle, Parameters, Planet};
+    ///
+    /// // The Sun's: 14° at the even quadrants, 13°40′ at the odd.
+    /// assert_eq!(Parameters::TEXT.manda_epicycle(Planet::Sun), Epicycle::new(840, 820));
+    /// ```
     #[must_use]
     #[allow(
         clippy::indexing_slicing,
@@ -297,6 +395,13 @@ impl Parameters {
     }
 
     /// The sighra epicycle of a star planet.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Epicycle, Parameters, Planet};
+    ///
+    /// assert_eq!(Parameters::TEXT.sighra_epicycle(Planet::Venus), Some(Epicycle::new(262 * 60, 260 * 60)));
+    /// assert_eq!(Parameters::TEXT.sighra_epicycle(Planet::Sun), None);
+    /// ```
     #[must_use]
     #[allow(
         clippy::indexing_slicing,
@@ -310,6 +415,12 @@ impl Parameters {
     }
 
     /// The civil days of a cycle.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Cycle, Parameters};
+    ///
+    /// assert_eq!(Parameters::TEXT.cycle_days(Cycle::Kalpa), 1_577_917_828_000);
+    /// ```
     #[must_use]
     pub const fn cycle_days(&self, cycle: Cycle) -> u64 {
         match cycle {
@@ -320,6 +431,16 @@ impl Parameters {
 
     /// The same parameters with a tradition's bija corrections applied to
     /// the revolution counts.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Bija, Parameters, Planet};
+    ///
+    /// let bija = Bija { moon: -1, saturn: 12, ..Bija::default() };
+    /// let corrected = Parameters::TEXT.with_bija(&bija);
+    /// assert_eq!(corrected.motion(Planet::Saturn).revolutions, 146_580);
+    /// // The Sun takes no bija.
+    /// assert_eq!(corrected.motion(Planet::Sun), Parameters::TEXT.motion(Planet::Sun));
+    /// ```
     #[must_use]
     pub fn with_bija(&self, bija: &Bija) -> Parameters {
         let mut params = self.clone();

@@ -36,6 +36,13 @@ impl KujaNative {
     /// The native whose lagna, Moon, Venus and Mars stand at these
     /// longitudes, in degrees of the chart's own zodiac.
     ///
+    /// ```
+    /// use teistro_matching::KujaNative;
+    ///
+    /// let refused = KujaNative::of_longitudes(5.0, 40.0, f64::NAN, 190.0).unwrap_err();
+    /// assert_eq!(refused.field(), Some("venus"));
+    /// ```
+    ///
     /// # Errors
     ///
     /// A longitude that is not a finite number, named by what it places
@@ -65,6 +72,17 @@ impl KujaNative {
     }
 
     /// The sign a house is counted from.
+    ///
+    /// ```
+    /// use teistro_matching::{KujaNative, KujaReference};
+    ///
+    /// // An Aries lagna, the Moon in Taurus, Venus in Gemini, Mars in Libra.
+    /// let native = KujaNative::of_longitudes(5.0, 40.0, 70.0, 190.0)?;
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(native.sign_of(KujaReference::Moon), Rashi::Taurus);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn sign_of(self, reference: KujaReference) -> Rashi {
         match reference {
@@ -75,6 +93,17 @@ impl KujaNative {
     }
 
     /// Mars's house from a reference, 1 to 12, counted by sign (C287).
+    ///
+    /// ```
+    /// use teistro_matching::{KujaNative, KujaReference};
+    ///
+    /// // An Aries lagna, the Moon in Taurus, Venus in Gemini, Mars in Libra.
+    /// let native = KujaNative::of_longitudes(5.0, 40.0, 70.0, 190.0)?;
+    /// // Libra is the 7th from Aries, the 6th from Taurus, the 5th from Gemini.
+    /// let houses = [KujaReference::Lagna, KujaReference::Moon, KujaReference::Venus].map(|from| native.mars_house(from));
+    /// assert_eq!(houses, [7, 6, 5]);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn mars_house(self, reference: KujaReference) -> u8 {
         let from = self.sign_of(reference).id();
@@ -83,6 +112,17 @@ impl KujaNative {
 }
 
 /// Which houses of Mars make the dosha (C285).
+///
+/// ```
+/// use teistro_matching::{KujaHouses, KujaNative, KujaRules, kuja_side};
+///
+/// // Mars in the 2nd from an Aries lagna.
+/// let native = KujaNative::of_longitudes(5.0, 40.0, 70.0, 40.0)?;
+/// assert!(!kuja_side(native, KujaRules::default()).dosha);
+/// let modern = KujaRules { houses: KujaHouses::WithSecond, ..KujaRules::default() };
+/// assert!(kuja_side(native, modern).dosha);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -97,6 +137,13 @@ pub enum KujaHouses {
 
 impl KujaHouses {
     /// The houses, in order.
+    ///
+    /// ```
+    /// use teistro_matching::KujaHouses;
+    ///
+    /// assert_eq!(KujaHouses::default().houses(), &[1, 4, 7, 8, 12]);
+    /// assert!(KujaHouses::WithSecond.houses().contains(&2));
+    /// ```
     #[must_use]
     pub fn houses(self) -> &'static [u8] {
         match self {
@@ -107,6 +154,21 @@ impl KujaHouses {
 }
 
 /// From where Mars's house makes the dosha (C286).
+///
+/// ```
+/// use teistro_matching::{KujaFrom, KujaNative, KujaRules, kuja_side};
+///
+/// // Mars in Cancer: the 4th from an Aries lagna, and the 12th from a Leo Moon.
+/// let native = KujaNative::of_longitudes(5.0, 130.0, 130.0, 100.0)?;
+/// let side = kuja_side(native, KujaRules::default());
+/// assert_eq!(side.readings.map(|reading| reading.house), [4, 12, 12]);
+/// // Mars in the 6th from Aquarius and with the Moon: only the Moon makes it.
+/// let late = KujaNative::of_longitudes(305.0, 100.0, 100.0, 100.0)?;
+/// let wider = KujaRules { from: KujaFrom::LagnaMoonVenus, ..KujaRules::default() };
+/// assert!(!kuja_side(late, KujaRules::default()).dosha && kuja_side(late, wider).dosha);
+/// # let _ = side;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -120,6 +182,14 @@ pub enum KujaFrom {
 
 impl KujaFrom {
     /// Whether the dosha is read from this reference.
+    ///
+    /// ```
+    /// use teistro_matching::{KujaFrom, KujaReference};
+    ///
+    /// assert!(KujaFrom::Lagna.counts(KujaReference::Lagna));
+    /// assert!(!KujaFrom::Lagna.counts(KujaReference::Venus));
+    /// assert!(KujaFrom::LagnaMoonVenus.counts(KujaReference::Venus));
+    /// ```
     #[must_use]
     pub fn counts(self, reference: KujaReference) -> bool {
         match self {
@@ -130,6 +200,15 @@ impl KujaFrom {
 }
 
 /// A place Mars's house is counted from.
+///
+/// ```
+/// use teistro_matching::{KujaNative, KujaReference};
+///
+/// // An Aries lagna, the Moon in Taurus, Venus in Gemini, Mars in Libra.
+/// let native = KujaNative::of_longitudes(5.0, 40.0, 70.0, 190.0)?;
+/// assert_eq!(native.mars_house(KujaReference::Lagna), 7);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -143,6 +222,19 @@ pub enum KujaReference {
 }
 
 /// The three references, in the order every answer reports them.
+///
+/// ```
+/// use teistro_matching::{KujaNative, KujaReference};
+///
+/// // An Aries lagna, the Moon in Taurus, Venus in Gemini, Mars in Libra.
+/// let native = KujaNative::of_longitudes(5.0, 40.0, 70.0, 190.0)?;
+/// use teistro_matching::{KUJA_REFERENCES, KujaRules, kuja_side};
+///
+/// let side = kuja_side(native, KujaRules::default());
+/// assert_eq!(side.readings.map(|reading| reading.from), KUJA_REFERENCES);
+/// # let _ = KujaReference::Lagna;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const KUJA_REFERENCES: [KujaReference; 3] = [
     KujaReference::Lagna,
     KujaReference::Moon,
@@ -151,6 +243,12 @@ pub const KUJA_REFERENCES: [KujaReference; 3] = [
 
 /// The readings the Kuja dosha is computed under; each default is the
 /// verse's own.
+///
+/// ```
+/// use teistro_matching::{KujaFrom, KujaHouses, KujaRules};
+///
+/// assert_eq!(KujaRules::default(), KujaRules { houses: KujaHouses::Manasagari, from: KujaFrom::Lagna });
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -162,6 +260,18 @@ pub struct KujaRules {
 }
 
 /// Mars's house from one reference.
+///
+/// ```
+/// use teistro_matching::{KujaNative, KujaReference};
+///
+/// // An Aries lagna, the Moon in Taurus, Venus in Gemini, Mars in Libra.
+/// let native = KujaNative::of_longitudes(5.0, 40.0, 70.0, 190.0)?;
+/// use teistro_matching::{KujaReading, KujaRules, kuja_side};
+///
+/// let side = kuja_side(native, KujaRules::default());
+/// assert_eq!(side.readings[0], KujaReading { from: KujaReference::Lagna, house: 7, in_houses: true });
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -176,6 +286,20 @@ pub struct KujaReading {
 }
 
 /// One native's Kuja dosha.
+///
+/// ```
+/// use teistro_matching::{KujaNative, KujaReference};
+///
+/// // An Aries lagna, the Moon in Taurus, Venus in Gemini, Mars in Libra.
+/// let native = KujaNative::of_longitudes(5.0, 40.0, 70.0, 190.0)?;
+/// use teistro_matching::{KujaRules, kuja_side};
+///
+/// let side = kuja_side(native, KujaRules::default());
+/// // The 7th from the lagna is the verse's own dosha.
+/// assert!(side.dosha);
+/// # let _ = KujaReference::Lagna;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -190,6 +314,20 @@ pub struct KujaSide {
 
 /// The Kuja dosha of both natives, as clauses: no verse read lifts it
 /// (C288).
+///
+/// ```
+/// use teistro_matching::{KujaNative, KujaReference};
+///
+/// // An Aries lagna, the Moon in Taurus, Venus in Gemini, Mars in Libra.
+/// let native = KujaNative::of_longitudes(5.0, 40.0, 70.0, 190.0)?;
+/// use teistro_matching::{KujaRules, kuja};
+///
+/// // One Mars on both sides: both carry it.
+/// let read = kuja(native, native, KujaRules::default());
+/// assert!(read.both);
+/// # let _ = KujaReference::Lagna;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -203,6 +341,15 @@ pub struct Kuja {
 }
 
 /// One native's Kuja dosha under the rules.
+///
+/// ```
+/// use teistro_matching::{KujaNative, KujaRules, kuja_side};
+///
+/// // Mars in the 3rd from the lagna.
+/// let native = KujaNative::of_longitudes(5.0, 40.0, 70.0, 70.0)?;
+/// assert!(!kuja_side(native, KujaRules::default()).dosha);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn kuja_side(native: KujaNative, rules: KujaRules) -> KujaSide {
     let houses = rules.houses.houses();

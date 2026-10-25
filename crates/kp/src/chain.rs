@@ -21,6 +21,19 @@ pub const MAX_LEVELS: usize = 9;
 /// then the first whole ones on or after each edge, so a longitude is in
 /// the level exactly when [`Span::contains`] says it is. `end` wraps to 0°
 /// for the last part of Revati.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::Graha;
+///
+/// // Gemini 9°: Ardra, Rahu's star; Jupiter's sub, 68°40′ to 70°26′40″.
+/// let at = Nas::new(69 * Nas::PER_DEGREE);
+/// let lords = teistro_kp::lords(at);
+/// let sub = lords.sub.span;
+/// assert_eq!(sub.start, Nas::new(68 * Nas::PER_DEGREE + 40 * Nas::PER_ARCMINUTE));
+/// assert!(sub.contains(at));
+/// # let _ = Graha::Sun;
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "ChainSpan"))]
@@ -33,12 +46,38 @@ pub struct Span {
 
 impl Span {
     /// How wide the level is, in nanoarcseconds.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Gemini 9°: Ardra, Rahu's star; Jupiter's sub, 68°40′ to 70°26′40″.
+    /// let at = Nas::new(69 * Nas::PER_DEGREE);
+    /// let lords = teistro_kp::lords(at);
+    /// // Jupiter's 16 years × 6′40″.
+    /// assert_eq!(lords.sub.span.width(), 106 * Nas::PER_ARCMINUTE + 40 * Nas::PER_ARCSECOND);
+    /// # let _ = Graha::Sun;
+    /// ```
     #[must_use]
     pub const fn width(self) -> i64 {
         self.start.arc_to(self.end).get()
     }
 
     /// Whether a longitude is in the level.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Gemini 9°: Ardra, Rahu's star; Jupiter's sub, 68°40′ to 70°26′40″.
+    /// let at = Nas::new(69 * Nas::PER_DEGREE);
+    /// let lords = teistro_kp::lords(at);
+    /// let sub = lords.sub.span;
+    /// // Half-open: its start is in, its end is the next sub's.
+    /// assert!(sub.contains(sub.start));
+    /// assert!(!sub.contains(sub.end));
+    /// # let _ = Graha::Sun;
+    /// ```
     #[must_use]
     pub const fn contains(self, at: Nas) -> bool {
         self.start.arc_to(at).get() < self.width()
@@ -52,6 +91,18 @@ impl Span {
     /// degree in four minutes, so a birth time known to the minute cannot
     /// settle a sub whose margin is a few arcminutes, and a rectification
     /// reads this to know which way the lord changes first.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Gemini 9°: Ardra, Rahu's star; Jupiter's sub, 68°40′ to 70°26′40″.
+    /// let at = Nas::new(69 * Nas::PER_DEGREE);
+    /// let lords = teistro_kp::lords(at);
+    /// // Twenty arcminutes past the start, nearer than the end.
+    /// assert_eq!(lords.sub.span.margin(at), 20 * Nas::PER_ARCMINUTE);
+    /// # let _ = Graha::Sun;
+    /// ```
     #[must_use]
     pub fn margin(self, at: Nas) -> i64 {
         debug_assert!(self.contains(at), "{at:?} is outside {self:?}");
@@ -60,6 +111,18 @@ impl Span {
 }
 
 /// One level of a longitude's chain: its lord and the arc it spans.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::Graha;
+///
+/// // Gemini 9°: Ardra, Rahu's star; Jupiter's sub, 68°40′ to 70°26′40″.
+/// let at = Nas::new(69 * Nas::PER_DEGREE);
+/// let lords = teistro_kp::lords(at);
+/// assert_eq!(lords.star.lord, Graha::Rahu);
+/// // Ardra opens at 66°40′.
+/// assert_eq!(lords.star.span.start, Nas::new(66 * Nas::PER_DEGREE + 40 * Nas::PER_ARCMINUTE));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Level {
@@ -82,6 +145,16 @@ impl Level {
 
 /// A longitude's lords as KP reads them: the sign's, the star's, the
 /// sub's and the sub-sub's.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::Graha;
+///
+/// // Gemini 9°: Ardra, Rahu's star; Jupiter's sub, 68°40′ to 70°26′40″.
+/// let at = Nas::new(69 * Nas::PER_DEGREE);
+/// let lords = teistro_kp::lords(at);
+/// assert_eq!((lords.sign, lords.star.lord, lords.sub.lord, lords.sub_sub.lord), (Graha::Mercury, Graha::Rahu, Graha::Jupiter, Graha::Saturn));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -126,6 +199,19 @@ pub fn lords(at: Nas) -> Lords {
 /// The first `N` levels of a longitude's chain, the star's first.
 ///
 /// `N` is 1 to [`MAX_LEVELS`], checked when the call is compiled.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::Graha;
+///
+/// // Gemini 9°: Ardra, Rahu's star; Jupiter's sub, 68°40′ to 70°26′40″.
+/// let at = Nas::new(69 * Nas::PER_DEGREE);
+/// let lords = teistro_kp::lords(at);
+/// // Three levels of a chain are the star, the sub and the sub-sub.
+/// let chain = teistro_kp::chain::<3>(at);
+/// assert_eq!(chain.levels(), &[lords.star, lords.sub, lords.sub_sub]);
+/// # let _ = Graha::Sun;
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Chain<const N: usize> {
     levels: [Level; N],
@@ -133,12 +219,30 @@ pub struct Chain<const N: usize> {
 
 impl<const N: usize> Chain<N> {
     /// The levels, the star's first and the deepest last.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    ///
+    /// let chain = teistro_kp::chain::<4>(Nas::new(69 * Nas::PER_DEGREE));
+    /// // Each level lies inside the one above it.
+    /// let levels = chain.levels();
+    /// assert!(levels.windows(2).all(|pair| pair[0].span.contains(pair[1].span.start)));
+    /// ```
     #[must_use]
     pub const fn levels(&self) -> &[Level; N] {
         &self.levels
     }
 
     /// The deepest level asked for.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    ///
+    /// let at = Nas::new(69 * Nas::PER_DEGREE);
+    /// let chain = teistro_kp::chain::<9>(at);
+    /// assert_eq!(chain.deepest(), chain.levels()[8]);
+    /// assert!(chain.deepest().span.width() > 0);
+    /// ```
     #[must_use]
     #[allow(
         clippy::indexing_slicing,

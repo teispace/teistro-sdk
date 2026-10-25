@@ -55,6 +55,12 @@ pub struct SiddhantaProvider {
 
 impl SiddhantaProvider {
     /// The text as the provider.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{SiddhantaProvider, SuryaSiddhanta};
+    ///
+    /// assert_eq!(SiddhantaProvider::text().model(), &SuryaSiddhanta::text());
+    /// ```
     #[must_use]
     pub const fn text() -> SiddhantaProvider {
         SiddhantaProvider {
@@ -84,12 +90,30 @@ impl SiddhantaProvider {
     }
 
     /// Any model (a bija applied, exact trigonometry) as the provider.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::EphemerisProvider;
+    /// use teistro_siddhanta::{Parameters, SiddhantaProvider, SuryaSiddhanta, Trig};
+    ///
+    /// let exact = SiddhantaProvider::new(SuryaSiddhanta::new(Parameters::TEXT, Trig::Exact));
+    /// assert_eq!(exact.model().trig(), Trig::Exact);
+    /// assert_ne!(exact.capabilities().identity.data_version, SiddhantaProvider::text().capabilities().identity.data_version);
+    /// ```
     #[must_use]
     pub const fn new(model: SuryaSiddhanta) -> SiddhantaProvider {
         SiddhantaProvider { model, bija: None }
     }
 
     /// The model.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Bija, Planet, SiddhantaProvider};
+    ///
+    /// let committee = SiddhantaProvider::with_bija(Bija::NEPAL_COMMITTEE);
+    /// let moon = committee.model().parameters().moon_apsis.revolutions;
+    /// assert_eq!(moon, 488_203 - 4);
+    /// # let _ = Planet::Moon;
+    /// ```
     #[must_use]
     pub const fn model(&self) -> &SuryaSiddhanta {
         &self.model
@@ -97,6 +121,15 @@ impl SiddhantaProvider {
 
     /// The bodies the text models, in the port's order: the seven, the
     /// Moon's node and its apogee.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider};
+    /// use teistro_siddhanta::SiddhantaProvider;
+    ///
+    /// assert!(SiddhantaProvider::BODIES.contains(&Body::MeanNode));
+    /// assert!(!SiddhantaProvider::BODIES.contains(&Body::Uranus));
+    /// # let _ = SiddhantaProvider::text().capabilities();
+    /// ```
     pub const BODIES: [Body; 9] = [
         Body::Sun,
         Body::Moon,
@@ -111,6 +144,13 @@ impl SiddhantaProvider {
 
     /// The frame the text answers in: its own sidereal ecliptic of date,
     /// geocentric, without the modern corrections.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::EphemerisProvider;
+    /// use teistro_siddhanta::SiddhantaProvider;
+    ///
+    /// assert_eq!(SiddhantaProvider::text().capabilities().native_frame, SiddhantaProvider::FRAME);
+    /// ```
     pub const FRAME: Frame = Frame {
         centre: Centre::Geocentric,
         equinox: Equinox::OfDate,

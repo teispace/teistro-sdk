@@ -49,6 +49,25 @@ const TRIKONAS: [u8; 3] = [1, 5, 9];
 const ASPECTS_DEG: [f64; 5] = [0.0, 60.0, 90.0, 120.0, 180.0];
 
 /// Whether a prashna carries the baseline's points.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{ScoreRule, Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules { score: ScoreRule::Baseline, ..PrashnaRules::default() })?;
+/// assert!(answer.score.is_some());
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -62,6 +81,29 @@ pub enum ScoreRule {
 }
 
 /// A factor the baseline scores, in the order it scores them.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::baseline())?;
+/// use teistro_prashna::{Factor, FactorKind};
+///
+/// let score = answer.score.ok_or(teistro_core::Error::internal("the baseline scores"))?;
+/// // The Moon 10° past the Sun: waxing, +1.
+/// assert!(score.factors.contains(&Factor { kind: FactorKind::MoonWaxing, points: 1 }));
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -85,6 +127,26 @@ pub enum FactorKind {
 }
 
 /// One factor and the points it gave.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::baseline())?;
+/// let score = answer.score.ok_or(teistro_core::Error::internal("the baseline scores"))?;
+/// assert_eq!(score.points, score.factors.iter().map(|factor| factor.points).sum::<i8>());
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -96,6 +158,29 @@ pub struct Factor {
 }
 
 /// The baseline's answer over its points.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::baseline())?;
+/// use teistro_prashna::Answer;
+///
+/// let score = answer.score.ok_or(teistro_core::Error::internal("the baseline scores"))?;
+/// let expected = match score.points { p if p > 1 => Answer::Yes, p if p < -1 => Answer::No, _ => Answer::Uncertain };
+/// assert_eq!(score.answer, expected);
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -109,6 +194,26 @@ pub enum Answer {
 }
 
 /// The baseline engine's points for a query chart. Unsourced (C337).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_prashna::{Placed, PrashnaRules, PrashnaSky, Question, read};
+///
+/// // Taurus rising, its navamsha Leo; the Sun, the Moon and Ketu in Virgo and
+/// // one graha a sign from there on; Saturn the strongest.
+/// let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
+/// let sky = PrashnaSky {
+///     lagna_deg: 40.0,
+///     lagna_vargas: [Rashi::Taurus, Rashi::Cancer, Rashi::Taurus, Rashi::Leo, Rashi::Virgo, Rashi::Virgo],
+///     grahas: [at(160.0), at(170.0), at(200.0), at(230.0), at(260.0), at(290.0), at(320.0), at(350.0), at(170.0)],
+///     strength: [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0],
+/// };
+/// let answer = read(&sky, Question::default(), PrashnaRules::baseline())?;
+/// let score = answer.score.ok_or(teistro_core::Error::internal("the baseline scores"))?;
+/// assert!(score.applying_to.is_some());
+/// # let _ = Graha::Sun;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -248,6 +353,16 @@ pub(crate) fn topic(sky: &PrashnaSky) -> Result<(Graha, bool), Error> {
 /// The sign the baseline gives a querent's number, 1 to 108: (n − 1)
 /// mod 12 from Aries. `BASELINE` and unsourced: no text read gives a
 /// number method (C340).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_prashna::number_sign;
+///
+/// assert_eq!(number_sign(1)?, Rashi::Aries);
+/// assert_eq!(number_sign(108)?, Rashi::Pisces);
+/// assert_eq!(number_sign(109).unwrap_err().field(), Some("number"));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///

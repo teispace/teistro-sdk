@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Eight more crates have a run example on every public item.**
+**Numbers:** none. `teistro-kp` (24), `teistro-lalkitab` (57),
+`teistro-matching` (69), `teistro-prashna` (48), `teistro-remedies`
+(47), `teistro-serial` (63), `teistro-siddhanta` (102) and
+`teistro-western` (87) join the crates `check-doc-examples` holds
+there, twenty-eight in all. The remedies examples place Ketu opposite
+Rahu, as a sky must; the western ones read Lilly's p. 181 antiscia
+figure and Leo's p. 47 midpoint.
+
 **Six more crates have a run example on every public item.**
 **Numbers:** none. `teistro-aspect` (60), `teistro-gochar` (110),
 `teistro-interpret` (34), `teistro-points` (54), `teistro-state` (52)

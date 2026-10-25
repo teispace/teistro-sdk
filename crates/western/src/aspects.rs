@@ -32,6 +32,13 @@ use teistro_core::error::Error;
 use teistro_gochar::hits::NatalPoint;
 
 /// An aspect Leo lists, by the angle between the two bodies.
+///
+/// ```
+/// use teistro_western::WesternAspect;
+///
+/// assert_eq!(WesternAspect::Sesquiquadrate.degrees(), 135.0);
+/// assert_eq!(WesternAspect::Quincunx.key(), "QUINCUNX");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -59,6 +66,14 @@ pub enum WesternAspect {
 
 impl WesternAspect {
     /// Leo's nine, by their angle (pp. 43, 47).
+    ///
+    /// ```
+    /// use teistro_western::WesternAspect;
+    ///
+    /// // By their angle.
+    /// let angles = WesternAspect::ALL.map(WesternAspect::degrees);
+    /// assert!(angles.windows(2).all(|pair| pair[0] < pair[1]));
+    /// ```
     pub const ALL: [WesternAspect; 9] = [
         WesternAspect::Conjunction,
         WesternAspect::SemiSextile,
@@ -72,6 +87,12 @@ impl WesternAspect {
     ];
 
     /// The five Ptolemaic aspects, which Lilly reads.
+    ///
+    /// ```
+    /// use teistro_western::WesternAspect;
+    ///
+    /// assert_eq!(WesternAspect::PTOLEMAIC.map(WesternAspect::degrees), [0.0, 60.0, 90.0, 120.0, 180.0]);
+    /// ```
     pub const PTOLEMAIC: [WesternAspect; 5] = [
         WesternAspect::Conjunction,
         WesternAspect::Sextile,
@@ -81,6 +102,13 @@ impl WesternAspect {
     ];
 
     /// The angle the orb engine measures it as.
+    ///
+    /// ```
+    /// use teistro_western::WesternAspect;
+    ///
+    /// let trine = WesternAspect::Trine.angle();
+    /// assert_eq!((trine.key, trine.degrees), ("TRINE", 120.0));
+    /// ```
     #[must_use]
     pub const fn angle(self) -> Angle {
         match self {
@@ -97,12 +125,24 @@ impl WesternAspect {
     }
 
     /// Its key, as a request spells it: `SEMI_SQUARE`.
+    ///
+    /// ```
+    /// use teistro_western::WesternAspect;
+    ///
+    /// assert_eq!(WesternAspect::SemiSquare.key(), "SEMI_SQUARE");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         self.angle().key
     }
 
     /// The separation it names, degrees, 0 to 180.
+    ///
+    /// ```
+    /// use teistro_western::WesternAspect;
+    ///
+    /// assert_eq!(WesternAspect::Opposition.degrees(), 180.0);
+    /// ```
     #[must_use]
     pub const fn degrees(self) -> f64 {
         self.angle().degrees
@@ -110,6 +150,16 @@ impl WesternAspect {
 }
 
 /// One body's orb, for the moieties.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{BodyOrb, OrbModel, WesternAspect};
+///
+/// // A pair reads the mean of its two orbs.
+/// let orbs = OrbModel::Moieties { orbs: vec![BodyOrb { graha: Graha::Sun, orb_deg: 17.0 }, BodyOrb { graha: Graha::Mars, orb_deg: 7.0 }] };
+/// assert_eq!(orbs.orb_deg(WesternAspect::Trine, Graha::Sun, Graha::Mars)?, 12.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -121,6 +171,17 @@ pub struct BodyOrb {
 }
 
 /// One aspect's orb, for a caller's own table.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AspectOrb, OrbModel, WesternAspect};
+///
+/// let orbs = OrbModel::ByAspect { orbs: vec![AspectOrb { aspect: WesternAspect::Trine, orb_deg: 6.0 }] };
+/// assert_eq!(orbs.orb_deg(WesternAspect::Trine, Graha::Sun, Graha::Moon)?, 6.0);
+/// // An aspect it gives no orb is refused.
+/// assert!(orbs.orb_deg(WesternAspect::Square, Graha::Sun, Graha::Moon).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -132,6 +193,18 @@ pub struct AspectOrb {
 }
 
 /// How wide an aspect may be before it no longer holds (C240).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{OrbModel, WesternAspect};
+///
+/// // Leo's conjunction: 12° for the lights, 10° for a light and a planet, 8° else.
+/// let leo = OrbModel::default();
+/// assert_eq!(leo.orb_deg(WesternAspect::Conjunction, Graha::Sun, Graha::Moon)?, 12.0);
+/// assert_eq!(leo.orb_deg(WesternAspect::Conjunction, Graha::Sun, Graha::Mars)?, 10.0);
+/// assert_eq!(leo.orb_deg(WesternAspect::Conjunction, Graha::Mars, Graha::Venus)?, 8.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "model", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -160,6 +233,18 @@ impl OrbModel {
     /// Lilly's moieties: the seven planets' whole orbs (p. 107), Saturn
     /// 10°, Jupiter 12°, Mars 7½°, the Sun 17°, Venus 8°, Mercury 7°, the
     /// Moon 12½°. He gives none for the outer three.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{OrbModel, WesternAspect};
+    ///
+    /// // The Sun's 17° and the Moon's 12½°: 14¾° between them.
+    /// let lilly = OrbModel::lilly();
+    /// assert_eq!(lilly.orb_deg(WesternAspect::Square, Graha::Sun, Graha::Moon)?, 14.75);
+    /// // He gives the outer planets none.
+    /// assert!(lilly.orb_deg(WesternAspect::Square, Graha::Sun, Graha::Uranus).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn lilly() -> OrbModel {
         let orb = |graha, orb_deg| BodyOrb { graha, orb_deg };
@@ -177,6 +262,15 @@ impl OrbModel {
     }
 
     /// The orb an aspect between two bodies is allowed, degrees.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{OrbModel, WesternAspect};
+    ///
+    /// assert_eq!(OrbModel::Leo.orb_deg(WesternAspect::Sextile, Graha::Sun, Graha::Mars)?, 7.0);
+    /// assert_eq!(OrbModel::Leo.orb_deg(WesternAspect::Quincunx, Graha::Sun, Graha::Mars)?, 2.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -198,6 +292,18 @@ impl OrbModel {
     /// [`OrbModel::orb_deg`], with the lagna standing as a planet in Leo's
     /// rule (10° beside a luminary at the conjunction and opposition, 8°
     /// beside a planet) and given none among the moieties (C242).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_gochar::hits::NatalPoint;
+    /// use teistro_western::{OrbModel, WesternAspect};
+    ///
+    /// // The lagna stands as a planet under Leo's orbs, and has none among the moieties.
+    /// let (sun, lagna) = (NatalPoint::Graha { graha: Graha::Sun }, NatalPoint::Lagna);
+    /// assert_eq!(OrbModel::Leo.point_orb_deg(WesternAspect::Conjunction, sun, lagna)?, 10.0);
+    /// assert!(OrbModel::lilly().point_orb_deg(WesternAspect::Conjunction, sun, lagna).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -338,6 +444,13 @@ pub(crate) fn refuse_repeats(
 const ROOT: &str = "westernAspects";
 
 /// What an aspect table is asked: which aspects, under which orbs.
+///
+/// ```
+/// use teistro_western::{AspectRequest, OrbModel, WesternAspect};
+///
+/// let asked = AspectRequest::default();
+/// assert_eq!((asked.aspects.len(), asked.orbs), (WesternAspect::ALL.len(), OrbModel::Leo));
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
@@ -359,6 +472,19 @@ impl Default for AspectRequest {
 
 impl AspectRequest {
     /// Looks for these aspects only.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{AspectRequest, Placed, WesternAspect, aspects};
+    ///
+    /// // The Sun at 10° and Mars at 72°: a sextile two degrees wide.
+    /// let bodies = [Placed::new(Graha::Sun, 10.0, 1.0), Placed::new(Graha::Mars, 72.0, 0.5)];
+    ///
+    /// // The trine alone: the sextile is not looked for.
+    /// let trines = AspectRequest::default().with_aspects([WesternAspect::Trine]);
+    /// assert!(aspects(&bodies, &trines)?.is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn with_aspects(
         mut self,
@@ -369,6 +495,22 @@ impl AspectRequest {
     }
 
     /// Reads them under this model of orbs.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{AspectRequest, Placed, WesternAspect, aspects};
+    ///
+    /// // The Sun at 10° and Mars at 72°: a sextile two degrees wide.
+    /// let bodies = [Placed::new(Graha::Sun, 10.0, 1.0), Placed::new(Graha::Mars, 72.0, 0.5)];
+    /// use teistro_western::{AspectOrb, OrbModel};
+    ///
+    /// // A sextile allowed one degree no longer holds at two.
+    /// let tight = AspectRequest::default().with_orbs(OrbModel::ByAspect {
+    ///     orbs: WesternAspect::ALL.map(|aspect| AspectOrb { aspect, orb_deg: 1.0 }).to_vec(),
+    /// });
+    /// assert!(aspects(&bodies, &tight)?.is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn with_orbs(mut self, orbs: OrbModel) -> AspectRequest {
         self.orbs = orbs;
@@ -376,6 +518,13 @@ impl AspectRequest {
     }
 
     /// Lilly's reading: the Ptolemaic five under his moieties.
+    ///
+    /// ```
+    /// use teistro_western::{AspectRequest, OrbModel, WesternAspect};
+    ///
+    /// let lilly = AspectRequest::lilly();
+    /// assert_eq!((lilly.aspects, lilly.orbs), (WesternAspect::PTOLEMAIC.to_vec(), OrbModel::lilly()));
+    /// ```
     #[must_use]
     pub fn lilly() -> AspectRequest {
         AspectRequest {
@@ -417,6 +566,14 @@ impl AspectRequest {
 
     /// Refuses a request no table could answer, by field.
     ///
+    /// ```
+    /// use teistro_western::{AspectRequest, WesternAspect};
+    ///
+    /// assert_eq!(AspectRequest::default().with_aspects([]).check().unwrap_err().field(), Some("aspects"));
+    /// let twice = AspectRequest::default().with_aspects([WesternAspect::Trine, WesternAspect::Trine]);
+    /// assert_eq!(twice.check().unwrap_err().field(), Some("aspects"));
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` for no aspects, an aspect named twice, or an orb the
@@ -435,6 +592,15 @@ impl AspectRequest {
 
 /// A planet at a longitude, as the readings that need no motion take it:
 /// the antiscia (its tropical longitude) and the equal distances.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{PlanetAt, antiscion_deg};
+///
+/// // Mars at 10° Taurus; its antiscion at 20° Leo.
+/// let mars = PlanetAt::new(Graha::Mars, 40.0);
+/// assert_eq!(antiscion_deg(mars.longitude_deg), 140.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -447,6 +613,14 @@ pub struct PlanetAt {
 
 impl PlanetAt {
     /// A planet at a longitude.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::PlanetAt;
+    ///
+    /// let venus = PlanetAt::new(Graha::Venus, 200.0);
+    /// assert_eq!((venus.graha, venus.longitude_deg), (Graha::Venus, 200.0));
+    /// ```
     #[must_use]
     pub const fn new(graha: Graha, longitude_deg: f64) -> PlanetAt {
         PlanetAt {
@@ -457,6 +631,20 @@ impl PlanetAt {
 }
 
 /// A body as the table reads it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AspectRequest, Placed, WesternAspect, aspects};
+///
+/// // The Sun at 10° and Mars at 72°: a sextile two degrees wide.
+/// let bodies = [Placed::new(Graha::Sun, 10.0, 1.0), Placed::new(Graha::Mars, 72.0, 0.5)];
+///
+/// // A retrograde body is one with a negative speed.
+/// let back = [bodies[0], Placed { speed_deg_per_day: -0.5, ..bodies[1] }];
+/// assert_eq!(aspects(&back, &AspectRequest::default())?.len(), 1);
+/// # let _ = WesternAspect::Sextile;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "WesternAspectBody"))]
@@ -472,6 +660,14 @@ pub struct Placed {
 
 impl Placed {
     /// A body at a longitude, moving at a rate.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::Placed;
+    ///
+    /// let mars = Placed::new(Graha::Mars, 72.0, 0.5);
+    /// assert_eq!((mars.graha, mars.speed_deg_per_day), (Graha::Mars, 0.5));
+    /// ```
     #[must_use]
     pub const fn new(graha: Graha, longitude_deg: f64, speed_deg_per_day: f64) -> Placed {
         Placed {
@@ -483,6 +679,19 @@ impl Placed {
 }
 
 /// One aspect a pair holds.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AspectRequest, Placed, WesternAspect, aspects};
+///
+/// // The Sun at 10° and Mars at 72°: a sextile two degrees wide.
+/// let bodies = [Placed::new(Graha::Sun, 10.0, 1.0), Placed::new(Graha::Mars, 72.0, 0.5)];
+///
+/// let row = aspects(&bodies, &AspectRequest::default())?[0];
+/// assert_eq!((row.first, row.second, row.aspect), (Graha::Sun, Graha::Mars, WesternAspect::Sextile));
+/// assert_eq!((row.apart_deg, row.orb_deg), (62.0, 7.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -508,6 +717,20 @@ pub struct WesternAspectRow {
 /// A pair is read once, in the order the bodies are given, and each
 /// aspect under its own orb. Two aspects can share a pair only where a
 /// caller's orbs overlap, and then both rows are kept.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AspectRequest, Placed, WesternAspect, aspects};
+///
+/// // The Sun at 10° and Mars at 72°: a sextile two degrees wide.
+/// let bodies = [Placed::new(Graha::Sun, 10.0, 1.0), Placed::new(Graha::Mars, 72.0, 0.5)];
+///
+/// // The same body twice is refused.
+/// let twice = [bodies[0], bodies[0]];
+/// assert_eq!(aspects(&twice, &AspectRequest::default()).unwrap_err().field(), Some("bodies"));
+/// # let _ = WesternAspect::Sextile;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

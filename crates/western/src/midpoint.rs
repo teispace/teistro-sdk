@@ -16,13 +16,39 @@ const ROOT: &str = "midpoints";
 
 /// How far a planet may stand from the axis by default, degrees: half the
 /// parallel's 1° (C245), where its two distances differ by that 1°.
+///
+/// ```
+/// use teistro_western::{DEFAULT_MIDPOINT_ORB_DEG, MidpointRequest};
+///
+/// assert_eq!(MidpointRequest::default().orb_deg, DEFAULT_MIDPOINT_ORB_DEG);
+/// assert_eq!(DEFAULT_MIDPOINT_ORB_DEG, 0.5);
+/// ```
 pub const DEFAULT_MIDPOINT_ORB_DEG: f64 = LEO_PARALLEL_ORB_DEG / 2.0;
 
 /// The widest orb a caller may ask, degrees: the parallel's own limit.
+///
+/// ```
+/// use teistro_western::{MAX_MIDPOINT_ORB_DEG, MidpointRequest};
+///
+/// assert!(MidpointRequest::default().with_orb_deg(MAX_MIDPOINT_ORB_DEG).check().is_ok());
+/// ```
 pub const MAX_MIDPOINT_ORB_DEG: f64 = MAX_PARALLEL_ORB_DEG;
 
 /// What the equal distances are asked: how far from the axis a planet may
 /// stand.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{MidpointRequest, PlanetAt, midpoints};
+///
+/// // Leo's p. 47: Mars 95° from the Sun and from the Moon.
+/// let bodies = [PlanetAt::new(Graha::Sun, 0.0), PlanetAt::new(Graha::Moon, 190.0), PlanetAt::new(Graha::Mars, 95.0)];
+/// // Mars 0.8° off the axis: held at a 1° orb, not at the default 0.5°.
+/// let off = [bodies[0], bodies[1], PlanetAt::new(Graha::Mars, 95.8)];
+/// assert!(midpoints(&off, &MidpointRequest::default())?.is_empty());
+/// assert_eq!(midpoints(&off, &MidpointRequest::default().with_orb_deg(1.0))?.len(), 1);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
@@ -42,6 +68,12 @@ impl Default for MidpointRequest {
 
 impl MidpointRequest {
     /// Holds an equal distance to this orb from the axis, degrees.
+    ///
+    /// ```
+    /// use teistro_western::MidpointRequest;
+    ///
+    /// assert_eq!(MidpointRequest::default().with_orb_deg(2.0).orb_deg, 2.0);
+    /// ```
     #[must_use]
     pub const fn with_orb_deg(mut self, orb_deg: f64) -> MidpointRequest {
         self.orb_deg = orb_deg;
@@ -74,6 +106,12 @@ impl MidpointRequest {
     /// Refuses an orb that is not a positive number of degrees up to
     /// [`MAX_MIDPOINT_ORB_DEG`].
     ///
+    /// ```
+    /// use teistro_western::MidpointRequest;
+    ///
+    /// assert_eq!(MidpointRequest::default().with_orb_deg(-1.0).check().unwrap_err().field(), Some("orbDeg"));
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` naming `orbDeg`.
@@ -94,6 +132,19 @@ impl MidpointRequest {
 
 /// A planet equally distant from two others, within the orb of the axis
 /// through their midpoint.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{MidpointRequest, PlanetAt, midpoints};
+///
+/// // Leo's p. 47: Mars 95° from the Sun and from the Moon.
+/// let bodies = [PlanetAt::new(Graha::Sun, 0.0), PlanetAt::new(Graha::Moon, 190.0), PlanetAt::new(Graha::Mars, 95.0)];
+/// let row = midpoints(&bodies, &MidpointRequest::default())?[0];
+/// // 95° from each, on the longer arc's midpoint.
+/// assert!(row.far);
+/// assert!((row.distance_deg - 95.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -170,6 +221,21 @@ pub fn midpoints(
 /// An equal distance across two charts: a planet of one standing within
 /// the orb of the axis through the midpoint of two of the other's
 /// (`03-design/western-midpoints.md`, decision 9).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{MidpointRequest, PlanetAt, synastry_midpoints};
+///
+/// // Her Sun and Moon, his Mars between them: the partner's pair.
+/// let rows = synastry_midpoints(
+///     &[PlanetAt::new(Graha::Mars, 95.0)],
+///     &[PlanetAt::new(Graha::Sun, 0.0), PlanetAt::new(Graha::Moon, 190.0)],
+///     &MidpointRequest::default(),
+/// )?;
+/// assert!(rows[0].partners_pair);
+/// assert_eq!((rows[0].first, rows[0].second, rows[0].middle), (Graha::Sun, Graha::Moon, Graha::Mars));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

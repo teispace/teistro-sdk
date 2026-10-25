@@ -14,6 +14,18 @@ use crate::native::Native;
 /// The ten in the chapter's order, each a catalogue koota (C282): Dhinam is
 /// the tara count, Ganam the gana, Rasi the signs' distance (`BHAKOOT`),
 /// Rasyadhipathi their lords (`GRAHA_MAITRI`) and Vasyam their vashya.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{Native, PORUTHAM, PoruthamRules, porutham};
+///
+/// // Moons in Ashvini and Bharani, both in Aries.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(18.0)?);
+/// let ten = porutham(bride, groom, PoruthamRules::default());
+/// let read: Vec<_> = ten.considerations.iter().map(|row| row.reading.koota()).collect();
+/// assert_eq!(read, PORUTHAM);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const PORUTHAM: [Koota; 10] = [
     Koota::Tara,
     Koota::Gana,
@@ -28,6 +40,19 @@ pub const PORUTHAM: [Koota; 10] = [
 ];
 
 /// The chief five of p. 76: Dhinam, Ganam, Yoni, Rasi and Rajju.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{CHIEF_FIVE, Native, PoruthamRules, porutham};
+///
+/// // Moons in Ashvini and Bharani, both in Aries.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(18.0)?);
+/// let ten = porutham(bride, groom, PoruthamRules::default());
+/// let chief = CHIEF_FIVE.iter().filter(|koota| ten.row(**koota).is_some_and(|row| row.agrees)).count();
+/// assert_eq!(usize::from(ten.chief_agreeing), chief);
+/// # let _ = Koota::Tara;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const CHIEF_FIVE: [Koota; 5] = [
     Koota::Tara,
     Koota::Gana,
@@ -38,6 +63,12 @@ pub const CHIEF_FIVE: [Koota; 5] = [
 
 /// Whose quarter comes first when one star, spanning two signs, is both
 /// natives' (C270).
+///
+/// ```
+/// use teistro_matching::{PoruthamRules, TwoSignStar};
+///
+/// assert_eq!(PoruthamRules::default().two_sign_star, TwoSignStar::GroomEarlier);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -53,6 +84,18 @@ pub enum TwoSignStar {
 
 /// How far the groom's star must stand from the bride's for
 /// Sthree-Dheergham (C272).
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{DeerghaBeyond, Native, PoruthamRules, porutham};
+///
+/// // The groom's star the 10th from the bride's: Ashvini to Magha.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(125.0)?);
+/// let agrees = |rules| porutham(bride, groom, rules).row(Koota::StreeDeergha).is_some_and(|row| row.agrees);
+/// assert!(!agrees(PoruthamRules::default()));
+/// assert!(agrees(PoruthamRules { deergha_beyond: DeerghaBeyond::Seventh, ..PoruthamRules::default() }));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -66,6 +109,13 @@ pub enum DeerghaBeyond {
 
 /// Which friendship of the lords agrees on Rasyadhipathi and lifts by the
 /// p. 76 exception (C273).
+///
+/// ```
+/// use teistro_matching::{LordsFriendship, PoruthamRules};
+///
+/// let either = PoruthamRules { lords_friendship: LordsFriendship::OneWay, ..PoruthamRules::default() };
+/// assert_ne!(either, PoruthamRules::default());
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -79,6 +129,13 @@ pub enum LordsFriendship {
 
 /// The readings the ten are computed under; each default is the source's
 /// own.
+///
+/// ```
+/// use teistro_matching::{DeerghaBeyond, LordsFriendship, PoruthamRules};
+///
+/// let rules = PoruthamRules::default();
+/// assert_eq!((rules.deergha_beyond, rules.lords_friendship), (DeerghaBeyond::Thirteenth, LordsFriendship::Mutual));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
@@ -92,6 +149,20 @@ pub struct PoruthamRules {
 }
 
 /// Which of the chapter's rules decided Dhinam.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{DhinamRule, Native, PoruthamReading, PoruthamRules, porutham};
+///
+/// // Moons in Ashvini and Bharani, both in Aries.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(18.0)?);
+/// let ten = porutham(bride, groom, PoruthamRules::default());
+/// assert!(matches!(
+///     ten.row(Koota::Tara).map(|row| row.reading),
+///     Some(PoruthamReading::Tara { count: 2, rule: DhinamRule::NextStar })
+/// ));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -125,6 +196,21 @@ pub enum DhinamRule {
 }
 
 /// A Rajju division, foot to head (p. 75).
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{Native, PoruthamReading, Rajju, PoruthamRules, porutham};
+///
+/// // Moons in Ashvini and Bharani, both in Aries.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(18.0)?);
+/// let ten = porutham(bride, groom, PoruthamRules::default());
+/// // Ashvini at the foot, Bharani at the thigh: two divisions agree.
+/// assert!(matches!(
+///     ten.row(Koota::Rajju).map(|row| (row.agrees, row.reading)),
+///     Some((true, PoruthamReading::Rajju { bride: Rajju::Padha, groom: Rajju::Ooru }))
+/// ));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -167,6 +253,19 @@ impl Rajju {
 
 /// The p. 76 exception's three clauses, any one of which lifts Rajju,
 /// Vedhai, Ganam and Rasi (C277).
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{Native, PoruthamException, PoruthamRules, porutham};
+///
+/// // Moons in Ashvini and Bharani, both in Aries.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(18.0)?);
+/// let ten = porutham(bride, groom, PoruthamRules::default());
+/// // Both Moons in Aries, Mars's.
+/// assert_eq!(ten.exception, PoruthamException { one_lord: true, ..PoruthamException::default() });
+/// # let _ = Koota::Tara;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -181,6 +280,13 @@ pub struct PoruthamException {
 
 impl PoruthamException {
     /// Whether any clause holds.
+    ///
+    /// ```
+    /// use teistro_matching::PoruthamException;
+    ///
+    /// assert!(!PoruthamException::default().holds());
+    /// assert!(PoruthamException { opposite: true, ..PoruthamException::default() }.holds());
+    /// ```
     #[must_use]
     pub const fn holds(self) -> bool {
         self.one_lord || self.lords_friendly || self.opposite
@@ -188,6 +294,17 @@ impl PoruthamException {
 }
 
 /// What a consideration read, by koota.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{Native, PoruthamReading, PoruthamRules, porutham};
+///
+/// // Moons in Ashvini and Bharani, both in Aries.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(18.0)?);
+/// let ten = porutham(bride, groom, PoruthamRules::default());
+/// assert!(matches!(ten.row(Koota::Bhakoot).map(|row| row.reading), Some(PoruthamReading::Bhakoot { apart: 1 })));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "koota", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -268,6 +385,13 @@ pub enum PoruthamReading {
 
 impl PoruthamReading {
     /// The koota this is the reading of.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    /// use teistro_matching::PoruthamReading;
+    ///
+    /// assert_eq!(PoruthamReading::Vedha { pierced: false }.koota(), Koota::Vedha);
+    /// ```
     #[must_use]
     pub const fn koota(&self) -> Koota {
         match self {
@@ -286,6 +410,18 @@ impl PoruthamReading {
 }
 
 /// One consideration: whether it agrees, and what it read.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{Native, PoruthamRules, porutham};
+///
+/// // Moons in Ashvini and Bharani, both in Aries.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(18.0)?);
+/// let ten = porutham(bride, groom, PoruthamRules::default());
+/// // A lift is an agreement, made only by the exception.
+/// assert!(ten.considerations.iter().all(|row| !row.lifted || row.agrees));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -299,6 +435,19 @@ pub struct PoruthamRow {
 }
 
 /// The ten considerations of a bride and a groom.
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{Native, PoruthamRules, porutham};
+///
+/// // Moons in Ashvini and Bharani, both in Aries.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(18.0)?);
+/// let ten = porutham(bride, groom, PoruthamRules::default());
+/// let agreeing = ten.considerations.iter().filter(|row| row.agrees).count();
+/// assert_eq!(usize::from(ten.agreeing), agreeing);
+/// # let _ = Koota::Tara;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -315,6 +464,19 @@ pub struct Porutham {
 
 impl Porutham {
     /// One consideration's row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    /// use teistro_matching::{Native, PoruthamRules, porutham};
+    ///
+    /// // Moons in Ashvini and Bharani, both in Aries.
+    /// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(18.0)?);
+    /// let ten = porutham(bride, groom, PoruthamRules::default());
+    /// assert!(ten.row(Koota::Mahendra).is_some());
+    /// // Nadi is one of the eight, not the ten.
+    /// assert!(ten.row(Koota::Nadi).is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn row(&self, koota: Koota) -> Option<&PoruthamRow> {
         let at = PORUTHAM.iter().position(|one| *one == koota)?;

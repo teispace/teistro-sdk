@@ -17,10 +17,29 @@ use teistro_core::error::Error;
 use crate::tables::{PLANETS, cycle_years, reads};
 
 /// The cycle's length in years.
+///
+/// ```
+/// use teistro_lalkitab::cycle::CYCLE;
+/// use teistro_lalkitab::tables::{PLANETS, cycle_years};
+///
+/// assert_eq!(PLANETS.map(|planet| u16::from(cycle_years(planet))).iter().sum::<u16>(), CYCLE);
+/// ```
 pub const CYCLE: u16 = 35;
 
 /// Where a life's cycle starts: a planet, and the year of life its first
 /// period begins.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::cycle::{CycleStart, ruler};
+///
+/// // The book's own example: Venus from the 17th year.
+/// let start = CycleStart::new(Graha::Venus, 17)?;
+/// assert_eq!(ruler(17, start), Graha::Venus);
+/// // The cycle runs back from the start too: Moon before Venus.
+/// assert_eq!(ruler(16, start), Graha::Moon);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -33,12 +52,26 @@ pub struct CycleStart {
 
 impl CycleStart {
     /// The book's general table: Saturn from the first year of life.
+    ///
+    /// ```
+    /// use teistro_lalkitab::cycle::CycleStart;
+    ///
+    /// assert_eq!(CycleStart::default(), CycleStart::GENERAL);
+    /// ```
     pub const GENERAL: CycleStart = CycleStart {
         planet: Graha::Saturn,
         year: 1,
     };
 
     /// A start at `planet` in year of life `year`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_lalkitab::cycle::CycleStart;
+    ///
+    /// assert_eq!(CycleStart::new(Graha::Uranus, 1).unwrap_err().field(), Some("planet"));
+    /// assert_eq!(CycleStart::new(Graha::Sun, 0).unwrap_err().field(), Some("year"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -70,6 +103,14 @@ impl Default for CycleStart {
 
 /// One planet's period in the cycle: the years of life it runs, both
 /// ends included.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::cycle::{CycleStart, Period, periods};
+///
+/// // Saturn's six years open the general table.
+/// assert_eq!(periods(1, 6, CycleStart::GENERAL), [Period { planet: Graha::Saturn, from: 1, to: 6 }]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -119,6 +160,16 @@ pub fn ruler(year: u16, start: CycleStart) -> Graha {
 
 /// The periods that fall in years of life `from` to `to`, both included,
 /// each cut to the span.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::cycle::{CycleStart, periods};
+///
+/// // Cut to the span: Saturn's last year, then Rahu's six, Ketu's first.
+/// let span = periods(6, 13, CycleStart::GENERAL);
+/// let planets: Vec<_> = span.iter().map(|period| (period.planet, period.from, period.to)).collect();
+/// assert_eq!(planets, [(Graha::Saturn, 6, 6), (Graha::Rahu, 7, 12), (Graha::Ketu, 13, 13)]);
+/// ```
 #[must_use]
 pub fn periods(from: u16, to: u16, start: CycleStart) -> Vec<Period> {
     let mut periods: Vec<Period> = Vec::new();

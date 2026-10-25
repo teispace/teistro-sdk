@@ -8,6 +8,15 @@ use teistro_core::catalogue::{Graha, HouseSystem};
 use crate::chain::{Lords, lords};
 
 /// Where a planet stands, what a [`KpChart`] is built from.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_kp::Position;
+///
+/// let saturn = Position::new(Graha::Saturn, Nas::new(140 * Nas::PER_DEGREE)).retrograde(true);
+/// assert!(saturn.retrograde);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
@@ -22,6 +31,14 @@ pub struct Position {
 
 impl Position {
     /// A planet at a longitude, moving forwards.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_kp::Position;
+    ///
+    /// assert!(!Position::new(Graha::Sun, Nas::ZERO).retrograde);
+    /// ```
     #[must_use]
     pub const fn new(graha: Graha, longitude: Nas) -> Position {
         Position {
@@ -32,6 +49,15 @@ impl Position {
     }
 
     /// The same planet, retrograde or not.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_kp::Position;
+    ///
+    /// let mars = Position::new(Graha::Mars, Nas::ZERO);
+    /// assert_eq!(mars.retrograde(true).retrograde(false), mars);
+    /// ```
     #[must_use]
     pub const fn retrograde(self, retrograde: bool) -> Position {
         Position { retrograde, ..self }
@@ -39,6 +65,23 @@ impl Position {
 }
 
 /// A cusp and its lords.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_kp::{KpChart, Position};
+///
+/// // Cusps 30° apart from 10° Aries; the Sun at 5° Aries, Saturn retrograde
+/// // at 20° Leo.
+/// let cusps = std::array::from_fn(|h| Nas::new((10 + 30 * h as i64) * Nas::PER_DEGREE));
+/// let sun = Position::new(Graha::Sun, Nas::new(5 * Nas::PER_DEGREE));
+/// let saturn = Position::new(Graha::Saturn, Nas::new(140 * Nas::PER_DEGREE)).retrograde(true);
+/// let chart = KpChart::new(HouseSystem::Placidus, cusps, [sun, saturn]);
+/// let first = chart.cusp(1).ok_or("twelve cusps")?;
+/// // 10° Aries: Mars's sign, Ashwini, Ketu's star.
+/// assert_eq!((first.house, first.lords.sign, first.lords.star.lord), (1, Graha::Mars, Graha::Ketu));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
@@ -52,6 +95,23 @@ pub struct Cusp {
 }
 
 /// A planet, its house and its lords.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_kp::{KpChart, Position};
+///
+/// // Cusps 30° apart from 10° Aries; the Sun at 5° Aries, Saturn retrograde
+/// // at 20° Leo.
+/// let cusps = std::array::from_fn(|h| Nas::new((10 + 30 * h as i64) * Nas::PER_DEGREE));
+/// let sun = Position::new(Graha::Sun, Nas::new(5 * Nas::PER_DEGREE));
+/// let saturn = Position::new(Graha::Saturn, Nas::new(140 * Nas::PER_DEGREE)).retrograde(true);
+/// let chart = KpChart::new(HouseSystem::Placidus, cusps, [sun, saturn]);
+/// let saturn = chart.planet(Graha::Saturn).ok_or("Saturn was given")?;
+/// // 20° Leo follows the 5th cusp at 10° Leo; Purva Phalguni, Venus's star.
+/// assert_eq!((saturn.house, saturn.retrograde, saturn.lords.star.lord), (5, true, Graha::Venus));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
@@ -129,12 +189,43 @@ impl KpChart {
     }
 
     /// A cusp by its house, 1 to 12.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_kp::{KpChart, Position};
+    ///
+    /// // Cusps 30° apart from 10° Aries; the Sun at 5° Aries, Saturn retrograde
+    /// // at 20° Leo.
+    /// let cusps = std::array::from_fn(|h| Nas::new((10 + 30 * h as i64) * Nas::PER_DEGREE));
+    /// let sun = Position::new(Graha::Sun, Nas::new(5 * Nas::PER_DEGREE));
+    /// let saturn = Position::new(Graha::Saturn, Nas::new(140 * Nas::PER_DEGREE)).retrograde(true);
+    /// let chart = KpChart::new(HouseSystem::Placidus, cusps, [sun, saturn]);
+    /// assert_eq!(chart.cusp(12).map(|cusp| cusp.longitude), Some(Nas::new(340 * Nas::PER_DEGREE)));
+    /// assert!(chart.cusp(0).is_none() && chart.cusp(13).is_none());
+    /// ```
     #[must_use]
     pub fn cusp(&self, house: u8) -> Option<&Cusp> {
         self.cusps.get(usize::from(house).checked_sub(1)?)
     }
 
     /// A planet, when the chart has it.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_kp::{KpChart, Position};
+    ///
+    /// // Cusps 30° apart from 10° Aries; the Sun at 5° Aries, Saturn retrograde
+    /// // at 20° Leo.
+    /// let cusps = std::array::from_fn(|h| Nas::new((10 + 30 * h as i64) * Nas::PER_DEGREE));
+    /// let sun = Position::new(Graha::Sun, Nas::new(5 * Nas::PER_DEGREE));
+    /// let saturn = Position::new(Graha::Saturn, Nas::new(140 * Nas::PER_DEGREE)).retrograde(true);
+    /// let chart = KpChart::new(HouseSystem::Placidus, cusps, [sun, saturn]);
+    /// assert_eq!(chart.planet(Graha::Sun).map(|sun| sun.house), Some(12));
+    /// // The chart has only the planets it was given.
+    /// assert!(chart.planet(Graha::Moon).is_none());
+    /// ```
     #[must_use]
     pub fn planet(&self, graha: Graha) -> Option<&Planet> {
         self.planets.iter().find(|planet| planet.graha == graha)
@@ -144,6 +235,17 @@ impl KpChart {
 /// The house whose cusp a longitude follows: the cusp it is the shortest
 /// arc past. KP takes a cusp as its house's start, so a planet a
 /// nanoarcsecond short of the 2nd cusp is in the 1st.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_kp::house_of;
+///
+/// let cusps = std::array::from_fn(|h| Nas::new((10 + 30 * h as i64) * Nas::PER_DEGREE));
+/// // On the 2nd cusp is the 2nd house; a nanoarcsecond short of it, the 1st.
+/// let second = Nas::new(40 * Nas::PER_DEGREE);
+/// assert_eq!(house_of(&cusps, second), 2);
+/// assert_eq!(house_of(&cusps, Nas::new(second.get() - 1)), 1);
+/// ```
 #[must_use]
 pub fn house_of(cusps: &[Nas; 12], at: Nas) -> u8 {
     let (index, _) = cusps

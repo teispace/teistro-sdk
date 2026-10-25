@@ -28,6 +28,33 @@ use crate::chart::{KpChart, Planet, house_of, is_node};
 /// A planet may stand at more than one level: the Moon in its own Hasta
 /// in the 5th is both (a) and (b) of the 5th. Within a level the planets
 /// keep the chart's order.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_core::settings::NodeAspects;
+/// use teistro_kp::{KpChart, Position, Significators};
+///
+/// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+/// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+/// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+/// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+/// let chart = KpChart::new(
+///     HouseSystem::Placidus,
+///     cusps,
+///     [
+///         Position::new(Graha::Moon, at(50)),
+///         Position::new(Graha::Mars, at(55)),
+///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+///     ],
+/// );
+/// let significators = Significators::of(&chart, NodeAspects::None);
+/// let second = significators.house(2).ok_or("twelve houses")?;
+/// assert_eq!(second.occupants, [Graha::Moon, Graha::Mars, Graha::Rahu]);
+/// assert_eq!(second.lord, Graha::Venus);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -56,6 +83,34 @@ pub struct HouseSignificators {
 
 impl HouseSignificators {
     /// The four levels, (a) first.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_core::settings::NodeAspects;
+    /// use teistro_kp::{KpChart, Position, Significators};
+    ///
+    /// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+    /// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+    /// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let chart = KpChart::new(
+    ///     HouseSystem::Placidus,
+    ///     cusps,
+    ///     [
+    ///         Position::new(Graha::Moon, at(50)),
+    ///         Position::new(Graha::Mars, at(55)),
+    ///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+    ///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+    ///     ],
+    /// );
+    /// let significators = Significators::of(&chart, NodeAspects::None);
+    /// let second = significators.house(2).ok_or("twelve houses")?;
+    /// let [_, occupants, _, lord] = second.levels();
+    /// assert_eq!(occupants, second.occupants);
+    /// assert_eq!(lord, [Graha::Venus]);
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn levels(&self) -> [&[Graha]; 4] {
         [
@@ -67,6 +122,35 @@ impl HouseSignificators {
     }
 
     /// Every planet at the four levels, strongest first, each once.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_core::settings::NodeAspects;
+    /// use teistro_kp::{KpChart, Position, Significators};
+    ///
+    /// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+    /// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+    /// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let chart = KpChart::new(
+    ///     HouseSystem::Placidus,
+    ///     cusps,
+    ///     [
+    ///         Position::new(Graha::Moon, at(50)),
+    ///         Position::new(Graha::Mars, at(55)),
+    ///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+    ///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+    ///     ],
+    /// );
+    /// let significators = Significators::of(&chart, NodeAspects::None);
+    /// let second = significators.house(2).ok_or("twelve houses")?;
+    /// let order = second.in_order();
+    /// // Each once, the strongest level first, the lord last.
+    /// assert_eq!(order.last(), Some(&Graha::Venus));
+    /// assert!(order.iter().all(|graha| order.iter().filter(|other| *other == graha).count() == 1));
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn in_order(&self) -> Vec<Graha> {
         once_each(self.levels().into_iter().flatten().copied())
@@ -74,6 +158,20 @@ impl HouseSignificators {
 
     /// The lords of the intercepted signs, the baseline engine's fifth
     /// level (crux C154).
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem, Rashi};
+    /// use teistro_core::settings::NodeAspects;
+    /// use teistro_kp::{KpChart, Significators};
+    ///
+    /// // A first house of 70°, from 0° Aries to 10° Gemini: Taurus lies inside it.
+    /// let degrees = [0, 70, 90, 120, 150, 180, 210, 240, 270, 300, 320, 340];
+    /// let chart = KpChart::new(HouseSystem::Placidus, degrees.map(|deg| Nas::new(deg * Nas::PER_DEGREE)), []);
+    /// let first = Significators::of(&chart, NodeAspects::None).houses[0].clone();
+    /// assert_eq!(first.intercepted, [Rashi::Taurus]);
+    /// assert_eq!(first.intercepted_lords(), [Graha::Venus]);
+    /// ```
     #[must_use]
     pub fn intercepted_lords(&self) -> Vec<Graha> {
         once_each(self.intercepted.iter().map(|sign| sign.attributes().lord))
@@ -81,6 +179,34 @@ impl HouseSignificators {
 }
 
 /// Whose results a node gives, in the Reader's order.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_core::settings::NodeAspects;
+/// use teistro_kp::{KpChart, Position, Significators};
+///
+/// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+/// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+/// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+/// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+/// let chart = KpChart::new(
+///     HouseSystem::Placidus,
+///     cusps,
+///     [
+///         Position::new(Graha::Moon, at(50)),
+///         Position::new(Graha::Mars, at(55)),
+///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+///     ],
+/// );
+/// let significators = Significators::of(&chart, NodeAspects::None);
+/// let rahu = significators.node(Graha::Rahu).ok_or("the chart has Rahu")?;
+/// assert_eq!(rahu.conjoined, [Graha::Moon, Graha::Mars]);
+/// // 22° Taurus is Rohini, the Moon's star, in Venus's sign.
+/// assert_eq!((rahu.star_lord, rahu.sign_lord), (Graha::Moon, Graha::Venus));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -102,6 +228,33 @@ pub struct NodeAgency {
 impl NodeAgency {
     /// Every planet the node gives the results of, in the Reader's order,
     /// each once.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_core::settings::NodeAspects;
+    /// use teistro_kp::{KpChart, Position, Significators};
+    ///
+    /// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+    /// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+    /// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let chart = KpChart::new(
+    ///     HouseSystem::Placidus,
+    ///     cusps,
+    ///     [
+    ///         Position::new(Graha::Moon, at(50)),
+    ///         Position::new(Graha::Mars, at(55)),
+    ///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+    ///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+    ///     ],
+    /// );
+    /// let significators = Significators::of(&chart, NodeAspects::None);
+    /// let rahu = significators.node(Graha::Rahu).ok_or("the chart has Rahu")?;
+    /// assert_eq!(&rahu.in_order()[..2], [Graha::Moon, Graha::Mars]);
+    /// assert_eq!(rahu.in_order().last(), Some(&Graha::Venus));
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn in_order(&self) -> Vec<Graha> {
         once_each(
@@ -117,6 +270,32 @@ impl NodeAgency {
 
 /// The houses one planet signifies at each level: the inverse of the
 /// houses' table.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_core::settings::NodeAspects;
+/// use teistro_kp::{KpChart, Position, Significators};
+///
+/// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+/// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+/// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+/// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+/// let chart = KpChart::new(
+///     HouseSystem::Placidus,
+///     cusps,
+///     [
+///         Position::new(Graha::Moon, at(50)),
+///         Position::new(Graha::Mars, at(55)),
+///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+///     ],
+/// );
+/// let significators = Significators::of(&chart, NodeAspects::None);
+/// let moon = significators.signified_by(Graha::Moon);
+/// // In its own star in the 2nd, and lord of the 4th.
+/// assert_eq!((moon.by_star.clone(), moon.occupies.clone(), moon.owns.clone()), (vec![2], vec![2], vec![4]));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -171,6 +350,31 @@ pub struct Significators {
 
 impl Significators {
     /// Reads a chart's significators, a node's aspects under `node_aspects`.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_core::settings::NodeAspects;
+    /// use teistro_kp::{KpChart, Position, Significators};
+    ///
+    /// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+    /// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+    /// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let chart = KpChart::new(
+    ///     HouseSystem::Placidus,
+    ///     cusps,
+    ///     [
+    ///         Position::new(Graha::Moon, at(50)),
+    ///         Position::new(Graha::Mars, at(55)),
+    ///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+    ///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+    ///     ],
+    /// );
+    /// let significators = Significators::of(&chart, NodeAspects::None);
+    /// assert_eq!(significators.houses.len(), 12);
+    /// assert_eq!(significators.nodes.len(), 2);
+    /// ```
     #[must_use]
     pub fn of(chart: &KpChart, node_aspects: NodeAspects) -> Significators {
         let cusps = chart.cusps.map(|cusp| cusp.longitude);
@@ -258,18 +462,93 @@ impl Significators {
     }
 
     /// One house's significators, 1 to 12.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_core::settings::NodeAspects;
+    /// use teistro_kp::{KpChart, Position, Significators};
+    ///
+    /// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+    /// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+    /// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let chart = KpChart::new(
+    ///     HouseSystem::Placidus,
+    ///     cusps,
+    ///     [
+    ///         Position::new(Graha::Moon, at(50)),
+    ///         Position::new(Graha::Mars, at(55)),
+    ///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+    ///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+    ///     ],
+    /// );
+    /// let significators = Significators::of(&chart, NodeAspects::None);
+    /// assert!(significators.house(12).is_some());
+    /// assert!(significators.house(13).is_none());
+    /// ```
     #[must_use]
     pub fn house(&self, house: u8) -> Option<&HouseSignificators> {
         self.houses.get(usize::from(house).checked_sub(1)?)
     }
 
     /// Whose results a node gives, when the chart has it.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_core::settings::NodeAspects;
+    /// use teistro_kp::{KpChart, Position, Significators};
+    ///
+    /// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+    /// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+    /// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let chart = KpChart::new(
+    ///     HouseSystem::Placidus,
+    ///     cusps,
+    ///     [
+    ///         Position::new(Graha::Moon, at(50)),
+    ///         Position::new(Graha::Mars, at(55)),
+    ///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+    ///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+    ///     ],
+    /// );
+    /// let significators = Significators::of(&chart, NodeAspects::None);
+    /// assert_eq!(significators.node(Graha::Ketu).map(|ketu| ketu.node), Some(Graha::Ketu));
+    /// assert!(significators.node(Graha::Mars).is_none());
+    /// ```
     #[must_use]
     pub fn node(&self, node: Graha) -> Option<&NodeAgency> {
         self.nodes.iter().find(|agency| agency.node == node)
     }
 
     /// The houses a planet signifies at each level.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_core::settings::NodeAspects;
+    /// use teistro_kp::{KpChart, Position, Significators};
+    ///
+    /// // Equal cusps from 0° Aries; the Moon at 20° Taurus in its own Rohini,
+    /// // Mars at 25° in Mrigashira, Rahu with them at 22° and Ketu opposite.
+    /// let cusps = std::array::from_fn(|h| Nas::new(30 * h as i64 * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let chart = KpChart::new(
+    ///     HouseSystem::Placidus,
+    ///     cusps,
+    ///     [
+    ///         Position::new(Graha::Moon, at(50)),
+    ///         Position::new(Graha::Mars, at(55)),
+    ///         Position::new(Graha::Rahu, at(52)).retrograde(true),
+    ///         Position::new(Graha::Ketu, at(232)).retrograde(true),
+    ///     ],
+    /// );
+    /// let significators = Significators::of(&chart, NodeAspects::None);
+    /// // Mars owns Aries and Scorpio, the 1st and the 8th.
+    /// assert_eq!(significators.signified_by(Graha::Mars).owns, [1, 8]);
+    /// ```
     #[must_use]
     pub fn signified_by(&self, graha: Graha) -> Signified {
         let houses = |planets: fn(&HouseSignificators) -> &[Graha]| -> Vec<u8> {

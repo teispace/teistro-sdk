@@ -60,6 +60,15 @@ const fn starts() -> [i64; COUNT] {
 /// Aries, number 249 closes at 30° Pisces. Each number is a sub, or the
 /// half of one a sign's end falls inside, so its sign, star and sub lords
 /// are the same throughout.
+///
+/// ```
+/// use teistro_kp::KpNumber;
+///
+/// let number = KpNumber::try_from(48)?;
+/// assert_eq!(number.to_string(), "48");
+/// assert_eq!(u16::from(number), 48);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u16", into = "u16")]
@@ -71,6 +80,15 @@ impl KpNumber {
     pub const MAX: u16 = COUNT as u16;
 
     /// The number, refusing anything outside 1 to 249.
+    ///
+    /// ```
+    /// use teistro_kp::KpNumber;
+    ///
+    /// assert_eq!(KpNumber::new(249)?.get(), KpNumber::MAX);
+    /// assert_eq!(KpNumber::new(250).unwrap_err().field(), Some("number"));
+    /// assert!(KpNumber::new(0).is_err());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -91,6 +109,17 @@ impl KpNumber {
     }
 
     /// The number whose arc holds a longitude.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_kp::KpNumber;
+    ///
+    /// // 0° Aries opens the first number.
+    /// assert_eq!(KpNumber::of(Nas::ZERO).get(), 1);
+    /// let number = KpNumber::new(100)?;
+    /// assert_eq!(KpNumber::of(number.start()), number);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn of(at: Nas) -> KpNumber {
         let opened = STARTS.partition_point(|start| *start <= at.get());
@@ -98,23 +127,59 @@ impl KpNumber {
     }
 
     /// Every number, 1 to 249.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_kp::KpNumber;
+    ///
+    /// assert_eq!(KpNumber::all().len(), 249);
+    /// // The arcs tile the zodiac with no gap.
+    /// let total: i64 = KpNumber::all().map(|number| number.span().width()).sum();
+    /// assert_eq!(total, Nas::CIRCLE);
+    /// ```
     pub fn all() -> impl ExactSizeIterator<Item = KpNumber> {
         (1..=u8::try_from(COUNT).unwrap_or(u8::MAX)).map(KpNumber)
     }
 
     /// The number itself.
+    ///
+    /// ```
+    /// use teistro_kp::KpNumber;
+    ///
+    /// assert_eq!(KpNumber::new(7)?.get(), 7);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub const fn get(self) -> u16 {
         self.0 as u16
     }
 
     /// Where the number's arc opens: the horary lagna.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_kp::KpNumber;
+    ///
+    /// assert_eq!(KpNumber::new(1)?.start(), Nas::ZERO);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn start(self) -> Nas {
         opens(usize::from(self.0) - 1)
     }
 
     /// The arc the number spans, its end the next number's start.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_kp::KpNumber;
+    ///
+    /// // The first is Ketu's sub of Ashwini, 46′40″.
+    /// let first = KpNumber::new(1)?.span();
+    /// assert_eq!(first.width(), 46 * Nas::PER_ARCMINUTE + 40 * Nas::PER_ARCSECOND);
+    /// assert_eq!(first.end, KpNumber::new(2)?.start());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn span(self) -> Span {
         Span {
@@ -125,6 +190,15 @@ impl KpNumber {
 
     /// The lords at the number's start, the same throughout its arc down
     /// to the sub.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_kp::KpNumber;
+    ///
+    /// let lords = KpNumber::new(48)?.lords();
+    /// assert_eq!((lords.sign, lords.star.lord, lords.sub.lord), (Graha::Mercury, Graha::Rahu, Graha::Jupiter));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn lords(self) -> Lords {
         lords(self.start())

@@ -17,6 +17,17 @@ use teistro_core::settings::{NodeRulers, RetrogradeRejection, RulingCount, Setti
 use crate::chart::{KpChart, Planet, is_node};
 
 /// The settings a reading of the ruling planets takes.
+///
+/// ```
+/// use teistro_core::settings::{RulingCount, RetrogradeRejection};
+/// use teistro_kp::RulingRules;
+///
+/// // The Reader with the subs counted and a retrograde planet's star or sub rejecting.
+/// let mut rules = RulingRules::READER;
+/// rules.count = RulingCount::WithSubs;
+/// rules.retrograde_rejection = RetrogradeRejection::StarOrSub;
+/// assert_ne!(rules, RulingRules::READER);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -40,6 +51,16 @@ impl RulingRules {
     };
 
     /// The rules the settings' `kp` group gives.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DEFAULT_PROFILE, Profile, SettingsPatch};
+    /// use teistro_kp::RulingRules;
+    ///
+    /// let profile = Profile::shipped(DEFAULT_PROFILE).ok_or("the default profile ships")?;
+    /// let settings = profile.resolve(&SettingsPatch::default())?.settings;
+    /// assert_eq!(RulingRules::of(&settings).count, settings.kp.ruling_count);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub const fn of(settings: &Settings) -> RulingRules {
         RulingRules {
@@ -51,6 +72,25 @@ impl RulingRules {
 }
 
 /// Why a planet is a ruler.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_kp::{KpChart, Position, RulingPlanets, RulingRules};
+///
+/// // The lagna at 5° Aries (Ketu's star, Mars's sign), the Moon at 20° Taurus
+/// // (its own star, Venus's sign), on a Thursday.
+/// let cusps = std::array::from_fn(|h| Nas::new((5 + 30 * h as i64) * Nas::PER_DEGREE));
+/// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+/// let moon = Position::new(Graha::Moon, at(50));
+/// let ruling = RulingPlanets::of(&KpChart::new(HouseSystem::Placidus, cusps, [moon]), Graha::Jupiter, RulingRules::READER);
+/// use teistro_kp::Reason;
+///
+/// let ketu = ruling.ruler(Graha::Ketu).map(|ruler| ruler.reasons.clone());
+/// assert_eq!(ketu, Some(vec![Reason::LagnaStar]));
+/// // The Moon rules twice over: its own star, and nothing else.
+/// assert_eq!(ruling.ruler(Graha::Moon).map(|ruler| ruler.reasons.clone()), Some(vec![Reason::MoonStar]));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RulerReason"))]
@@ -81,6 +121,27 @@ pub enum Reason {
 }
 
 /// How a node stands for a ruler.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_kp::{KpChart, Position, RulingPlanets, RulingRules};
+///
+/// // The lagna at 5° Aries (Ketu's star, Mars's sign), the Moon at 20° Taurus
+/// // (its own star, Venus's sign), on a Thursday.
+/// let cusps = std::array::from_fn(|h| Nas::new((5 + 30 * h as i64) * Nas::PER_DEGREE));
+/// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+/// let moon = Position::new(Graha::Moon, at(50));
+/// use teistro_kp::{Agency, Reason};
+///
+/// // Rahu in Aries, Mars's sign, stands for Mars.
+/// let rahu = Position::new(Graha::Rahu, at(15)).retrograde(true);
+/// let ketu = Position::new(Graha::Ketu, at(195)).retrograde(true);
+/// let chart = KpChart::new(HouseSystem::Placidus, cusps, [moon, rahu, ketu]);
+/// let ruling = RulingPlanets::of(&chart, Graha::Jupiter, RulingRules::READER);
+/// let reasons = ruling.ruler(Graha::Rahu).map(|ruler| ruler.reasons.clone()).unwrap_or_default();
+/// assert!(reasons.contains(&Reason::Agent { of: Graha::Mars, by: Agency::InItsSign }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -94,6 +155,30 @@ pub enum Agency {
 
 /// Why a ruler is rejected: it stands in the star, or the sub, of a
 /// retrograde planet.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_kp::{KpChart, Position, RulingPlanets, RulingRules};
+///
+/// // The lagna at 5° Aries (Ketu's star, Mars's sign), the Moon at 20° Taurus
+/// // (its own star, Venus's sign), on a Thursday.
+/// let cusps = std::array::from_fn(|h| Nas::new((5 + 30 * h as i64) * Nas::PER_DEGREE));
+/// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+/// let moon = Position::new(Graha::Moon, at(50));
+/// // Mars in Purva Phalguni, the star of Venus, which is retrograde.
+/// let mars = Position::new(Graha::Mars, at(140));
+/// let venus = Position::new(Graha::Venus, at(10)).retrograde(true);
+/// let chart = KpChart::new(HouseSystem::Placidus, cusps, [moon, mars, venus]);
+/// let ruling = RulingPlanets::of(&chart, Graha::Jupiter, RulingRules::READER);
+/// use teistro_kp::Rejection;
+///
+/// let mars = ruling.ruler(Graha::Mars).ok_or("Mars rules the lagna's sign")?;
+/// let rejection: Rejection = mars.rejected_by.ok_or("Venus is retrograde")?;
+/// assert_eq!((rejection.retrograde, rejection.by_star), (Graha::Venus, true));
+/// assert!(!ruling.accepted().contains(&Graha::Mars));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -106,6 +191,27 @@ pub struct Rejection {
 }
 
 /// One ruling planet, every reason it rules, and what rejects it.
+///
+/// ```
+/// use teistro_core::Nas;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
+/// use teistro_kp::{KpChart, Position, RulingPlanets, RulingRules};
+///
+/// // The lagna at 5° Aries (Ketu's star, Mars's sign), the Moon at 20° Taurus
+/// // (its own star, Venus's sign), on a Thursday.
+/// let cusps = std::array::from_fn(|h| Nas::new((5 + 30 * h as i64) * Nas::PER_DEGREE));
+/// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+/// let moon = Position::new(Graha::Moon, at(50));
+/// // Mars in Purva Phalguni, the star of Venus, which is retrograde.
+/// let mars = Position::new(Graha::Mars, at(140));
+/// let venus = Position::new(Graha::Venus, at(10)).retrograde(true);
+/// let chart = KpChart::new(HouseSystem::Placidus, cusps, [moon, mars, venus]);
+/// let ruling = RulingPlanets::of(&chart, Graha::Jupiter, RulingRules::READER);
+/// // Venus is retrograde itself, which delays and does not reject.
+/// let venus = ruling.ruler(Graha::Venus).ok_or("Venus rules the Moon's sign")?;
+/// assert!(venus.retrograde);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -160,6 +266,23 @@ impl RulingPlanets {
     /// with the day's lord.
     ///
     /// A chart without the Moon counts the lagna's lords and the day's.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_kp::{KpChart, Position, RulingPlanets, RulingRules};
+    ///
+    /// // The lagna at 5° Aries (Ketu's star, Mars's sign), the Moon at 20° Taurus
+    /// // (its own star, Venus's sign), on a Thursday.
+    /// let cusps = std::array::from_fn(|h| Nas::new((5 + 30 * h as i64) * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let moon = Position::new(Graha::Moon, at(50));
+    /// // Without the Moon, the lagna's lords and the day's.
+    /// let chart = KpChart::new(HouseSystem::Placidus, cusps, []);
+    /// let ruling = RulingPlanets::of(&chart, Graha::Saturn, RulingRules::READER);
+    /// assert_eq!(ruling.accepted(), [Graha::Ketu, Graha::Mars, Graha::Saturn]);
+    /// # let _ = moon;
+    /// ```
     #[must_use]
     pub fn of(chart: &KpChart, day_lord: Graha, rules: RulingRules) -> RulingPlanets {
         let with_subs = rules.count == RulingCount::WithSubs;
@@ -227,6 +350,20 @@ impl RulingPlanets {
     }
 
     /// The rulers that stand, in order.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_kp::{KpChart, Position, RulingPlanets, RulingRules};
+    ///
+    /// // The lagna at 5° Aries (Ketu's star, Mars's sign), the Moon at 20° Taurus
+    /// // (its own star, Venus's sign), on a Thursday.
+    /// let cusps = std::array::from_fn(|h| Nas::new((5 + 30 * h as i64) * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let moon = Position::new(Graha::Moon, at(50));
+    /// let ruling = RulingPlanets::of(&KpChart::new(HouseSystem::Placidus, cusps, [moon]), Graha::Jupiter, RulingRules::READER);
+    /// assert_eq!(ruling.accepted(), [Graha::Ketu, Graha::Mars, Graha::Moon, Graha::Venus, Graha::Jupiter]);
+    /// ```
     #[must_use]
     pub fn accepted(&self) -> Vec<Graha> {
         self.rulers
@@ -237,6 +374,21 @@ impl RulingPlanets {
     }
 
     /// One ruler, when it is one.
+    ///
+    /// ```
+    /// use teistro_core::Nas;
+    /// use teistro_core::catalogue::{Graha, HouseSystem};
+    /// use teistro_kp::{KpChart, Position, RulingPlanets, RulingRules};
+    ///
+    /// // The lagna at 5° Aries (Ketu's star, Mars's sign), the Moon at 20° Taurus
+    /// // (its own star, Venus's sign), on a Thursday.
+    /// let cusps = std::array::from_fn(|h| Nas::new((5 + 30 * h as i64) * Nas::PER_DEGREE));
+    /// let at = |deg: i64| Nas::new(deg * Nas::PER_DEGREE);
+    /// let moon = Position::new(Graha::Moon, at(50));
+    /// let ruling = RulingPlanets::of(&KpChart::new(HouseSystem::Placidus, cusps, [moon]), Graha::Jupiter, RulingRules::READER);
+    /// assert!(ruling.ruler(Graha::Jupiter).is_some());
+    /// assert!(ruling.ruler(Graha::Saturn).is_none());
+    /// ```
     #[must_use]
     pub fn ruler(&self, graha: Graha) -> Option<&Ruler> {
         self.rulers.iter().find(|ruler| ruler.graha == graha)

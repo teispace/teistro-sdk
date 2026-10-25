@@ -17,17 +17,44 @@ const ROOT: &str = "harmonic";
 
 /// The highest harmonic a request may ask: the circle in whole degrees,
 /// whose aspect is 1° (decision 1).
+///
+/// ```
+/// use teistro_western::{HarmonicRequest, MAX_HARMONIC};
+///
+/// assert!(HarmonicRequest::of(MAX_HARMONIC).check().is_ok());
+/// assert_eq!(HarmonicRequest::of(MAX_HARMONIC + 1).check().unwrap_err().field(), Some("number"));
+/// ```
 pub const MAX_HARMONIC: u16 = 360;
 
 /// The orb of a meeting in a harmonic chart by default, degrees: the
 /// smaller of the two full-circle orbs Addey offers (p. 130, C252).
+///
+/// ```
+/// use teistro_western::{ADDEY_HARMONIC_ORB_DEG, HarmonicRequest};
+///
+/// assert_eq!(HarmonicRequest::of(5).orb_deg, ADDEY_HARMONIC_ORB_DEG);
+/// ```
 pub const ADDEY_HARMONIC_ORB_DEG: f64 = 12.0;
 
 /// The widest orb a caller may ask, degrees: a sign of the harmonic
 /// chart.
+///
+/// ```
+/// use teistro_western::{HarmonicRequest, MAX_HARMONIC_ORB_DEG};
+///
+/// let wide = HarmonicRequest::of(5).with_orb_deg(MAX_HARMONIC_ORB_DEG + 1.0);
+/// assert_eq!(wide.check().unwrap_err().field(), Some("orbDeg"));
+/// ```
 pub const MAX_HARMONIC_ORB_DEG: f64 = 30.0;
 
 /// What a chart's harmonic is asked: which, and the orb of a meeting.
+///
+/// ```
+/// use teistro_western::HarmonicRequest;
+///
+/// let ninth = HarmonicRequest::of(9).with_orb_deg(15.0);
+/// assert_eq!((ninth.number, ninth.orb_deg), (9, 15.0));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -47,6 +74,12 @@ const fn addey_orb() -> f64 {
 
 impl HarmonicRequest {
     /// The `number`-th harmonic under Addey's orb.
+    ///
+    /// ```
+    /// use teistro_western::HarmonicRequest;
+    ///
+    /// assert_eq!(HarmonicRequest::of(0).check().unwrap_err().field(), Some("number"));
+    /// ```
     #[must_use]
     pub const fn of(number: u16) -> HarmonicRequest {
         HarmonicRequest {
@@ -56,6 +89,23 @@ impl HarmonicRequest {
     }
 
     /// Reads a meeting to this orb, degrees.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_western::{HarmonicPoint, HarmonicRequest, PlanetAt, harmonic_chart};
+    ///
+    /// // A square 1° past exact meets in the 4th harmonic 4° apart.
+    /// let chart = harmonic_chart(
+    ///     &[PlanetAt::new(Graha::Sun, 10.0), PlanetAt::new(Graha::Mars, 101.0)],
+    ///     250.0,
+    ///     175.0,
+    ///     &HarmonicRequest::of(4).with_orb_deg(3.0),
+    /// )?;
+    /// // Four degrees apart is past a 3° orb.
+    /// assert!(chart.rows.is_empty());
+    /// # let _ = HarmonicPoint::Ascendant;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_orb_deg(mut self, orb_deg: f64) -> HarmonicRequest {
         self.orb_deg = orb_deg;
@@ -91,6 +141,13 @@ impl HarmonicRequest {
     /// Refuses a harmonic outside 1 to [`MAX_HARMONIC`] and an orb that is
     /// not a positive number of degrees up to [`MAX_HARMONIC_ORB_DEG`].
     ///
+    /// ```
+    /// use teistro_western::HarmonicRequest;
+    ///
+    /// assert!(HarmonicRequest::of(1).check().is_ok());
+    /// assert!(HarmonicRequest::of(4).with_orb_deg(f64::NAN).check().is_err());
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` naming `number` or `orbDeg`.
@@ -119,6 +176,23 @@ impl HarmonicRequest {
 
 /// A point of a harmonic chart, in the order a tie is broken: the grahas
 /// in the catalogue's order, then the ascendant, then the midheaven.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{HarmonicPoint, HarmonicRequest, PlanetAt, harmonic_chart};
+///
+/// // A square 1° past exact meets in the 4th harmonic 4° apart.
+/// let chart = harmonic_chart(
+///     &[PlanetAt::new(Graha::Sun, 10.0), PlanetAt::new(Graha::Mars, 101.0)],
+///     250.0,
+///     175.0,
+///     &HarmonicRequest::of(4),
+/// )?;
+/// // The planets in the order given, then the ascendant and the midheaven.
+/// let order: Vec<HarmonicPoint> = chart.points.iter().map(|one| one.point).collect();
+/// assert_eq!(order[2..], [HarmonicPoint::Ascendant, HarmonicPoint::Midheaven]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "point", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -135,6 +209,24 @@ pub enum HarmonicPoint {
 }
 
 /// A point's place in the harmonic chart.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{HarmonicPoint, HarmonicRequest, PlanetAt, harmonic_chart};
+///
+/// // A square 1° past exact meets in the 4th harmonic 4° apart.
+/// let chart = harmonic_chart(
+///     &[PlanetAt::new(Graha::Sun, 10.0), PlanetAt::new(Graha::Mars, 101.0)],
+///     250.0,
+///     175.0,
+///     &HarmonicRequest::of(4),
+/// )?;
+/// // The ascendant 250° times four is 280°, and opens the first house.
+/// let ascendant = chart.points[2];
+/// assert!((ascendant.longitude_deg - 280.0).abs() < 1e-9);
+/// assert_eq!(ascendant.house.get(), 1);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -150,6 +242,22 @@ pub struct HarmonicPlaced {
 /// Two points meeting in a harmonic chart: within the orb of each other
 /// there, and so within the orb divided by the harmonic of an aspect of
 /// it in the chart itself.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{HarmonicPoint, HarmonicRequest, PlanetAt, harmonic_chart};
+///
+/// // A square 1° past exact meets in the 4th harmonic 4° apart.
+/// let chart = harmonic_chart(
+///     &[PlanetAt::new(Graha::Sun, 10.0), PlanetAt::new(Graha::Mars, 101.0)],
+///     250.0,
+///     175.0,
+///     &HarmonicRequest::of(4),
+/// )?;
+/// let row = chart.rows[0];
+/// assert_eq!((row.first, row.multiple, row.orb_deg), (HarmonicPoint::Graha { graha: Graha::Sun }, 1, 12.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -170,6 +278,21 @@ pub struct HarmonicRow {
 }
 
 /// A chart's harmonic chart.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{HarmonicPoint, HarmonicRequest, PlanetAt, harmonic_chart};
+///
+/// // A square 1° past exact meets in the 4th harmonic 4° apart.
+/// let chart = harmonic_chart(
+///     &[PlanetAt::new(Graha::Sun, 10.0), PlanetAt::new(Graha::Mars, 101.0)],
+///     250.0,
+///     175.0,
+///     &HarmonicRequest::of(4),
+/// )?;
+/// assert_eq!((chart.harmonic, chart.points.len()), (4, 4));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

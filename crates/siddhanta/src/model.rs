@@ -19,6 +19,19 @@ use crate::trig::{Bhuja, RADIUS, Trig};
 
 /// A graha's place: the sidereal longitude in the text's own frame, the
 /// latitude, and the daily motion.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Ut1};
+/// use teistro_siddhanta::SuryaSiddhanta;
+///
+/// let text = SuryaSiddhanta::text();
+/// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+/// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+/// let sun = text.sun(at);
+/// // The Sun has no latitude in the text.
+/// assert_eq!(sun.latitude_deg, 0.0);
+/// assert!((sun.speed_deg_per_day - 0.98).abs() < 0.05);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Position {
@@ -33,6 +46,23 @@ pub struct Position {
 
 /// The tradition's intermediate figures, for checking a hand computation
 /// or a printed panchanga against the model.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Ut1};
+/// use teistro_siddhanta::SuryaSiddhanta;
+///
+/// let text = SuryaSiddhanta::text();
+/// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+/// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+/// use teistro_core::catalogue::Graha;
+///
+/// let mars = text.trace(Graha::Mars, at)?;
+/// // A star planet has a conjunction, the Sun's mean place for Mars.
+/// assert!(mars.conjunction_deg.is_some() && mars.karna.is_some());
+/// let place = (mars.manda_corrected_deg + mars.sighra_equation_deg.unwrap_or(0.0)).rem_euclid(360.0);
+/// assert!((mars.longitude_deg - place).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Trace {
     /// The graha.
@@ -66,6 +96,21 @@ pub struct Trace {
 
 /// A day's arc at a latitude: when the Sun rises and sets, and the
 /// figures behind them.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Latitude, Longitude, Ut1};
+/// use teistro_siddhanta::SuryaSiddhanta;
+///
+/// let text = SuryaSiddhanta::text();
+/// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+/// let (latitude, longitude) = (Latitude::literal(27.7172), Longitude::literal(85.324));
+/// let midnight = SuryaSiddhanta::local_mean_midnight(at, longitude);
+/// let arc = text.day_arc(midnight, latitude).ok_or("the Sun rises in Kathmandu")?;
+/// // In mid-April the day is a little longer than the night.
+/// assert!(arc.ascensional_difference_deg > 0.0 && arc.declination_deg > 0.0);
+/// assert!(arc.sunrise.get() < arc.sunset.get());
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DayArc {
     /// Sunrise, the Sun's centre on the horizon in mean time.
@@ -80,6 +125,13 @@ pub struct DayArc {
 }
 
 /// The Surya Siddhanta over a set of parameters and a trigonometry.
+///
+/// ```
+/// use teistro_siddhanta::{Parameters, SuryaSiddhanta, Trig};
+///
+/// let exact = SuryaSiddhanta::new(Parameters::TEXT, Trig::Exact);
+/// assert_ne!(exact, SuryaSiddhanta::text());
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct SuryaSiddhanta {
     params: Parameters,
@@ -88,6 +140,13 @@ pub struct SuryaSiddhanta {
 
 impl SuryaSiddhanta {
     /// The text's parameters with the text's table: the classical path.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, SuryaSiddhanta, Trig};
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// assert_eq!((text.parameters(), text.trig()), (&Parameters::TEXT, Trig::Table));
+    /// ```
     #[must_use]
     pub const fn text() -> SuryaSiddhanta {
         SuryaSiddhanta {
@@ -98,24 +157,49 @@ impl SuryaSiddhanta {
 
     /// A model over any parameters (a tradition's bija applied, say) and
     /// either trigonometry.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Bija, Parameters, SuryaSiddhanta, Trig};
+    ///
+    /// let committee = SuryaSiddhanta::new(Parameters::TEXT.with_bija(&Bija::NEPAL_COMMITTEE), Trig::Table);
+    /// assert_eq!(committee.describe(), "Surya Siddhanta (adjusted parameters, the sine table)");
+    /// ```
     #[must_use]
     pub const fn new(params: Parameters, trig: Trig) -> SuryaSiddhanta {
         SuryaSiddhanta { params, trig }
     }
 
     /// The parameters.
+    ///
+    /// ```
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// assert_eq!(SuryaSiddhanta::text().parameters().yuga_years, 4_320_000);
+    /// ```
     #[must_use]
     pub const fn parameters(&self) -> &Parameters {
         &self.params
     }
 
     /// The trigonometry.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Parameters, SuryaSiddhanta, Trig};
+    ///
+    /// assert_eq!(SuryaSiddhanta::new(Parameters::TEXT, Trig::Exact).trig(), Trig::Exact);
+    /// ```
     #[must_use]
     pub const fn trig(&self) -> Trig {
         self.trig
     }
 
     /// The model's name for provenance stamps.
+    ///
+    /// ```
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// assert_eq!(SuryaSiddhanta::text().describe(), "Surya Siddhanta (the text, the sine table)");
+    /// ```
     #[must_use]
     pub fn describe(&self) -> String {
         let params = if self.params == Parameters::TEXT {
@@ -131,6 +215,18 @@ impl SuryaSiddhanta {
     }
 
     /// The day count at an instant.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// // Days since the Kali age began, about 5125 years of 365.2588 days.
+    /// let count = text.ahargana(at);
+    /// assert!((count.total() / 365.258_756 - 5125.0).abs() < 1.0);
+    /// ```
     #[must_use]
     pub fn ahargana(&self, at: JulianDay<Ut1>) -> Ahargana {
         Ahargana::at(at.get(), &self.params)
@@ -138,18 +234,57 @@ impl SuryaSiddhanta {
 
     /// The mean place of a planet's own revolutions (the conjunction's for
     /// Mercury and Venus), degrees.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// use teistro_siddhanta::Planet;
+    ///
+    /// let count = text.ahargana(at);
+    /// // Mercury's and Venus's mean place is the Sun's; their own is the conjunction.
+    /// assert!((0.0..360.0).contains(&text.mean_deg(Planet::Venus, count)));
+    /// assert_ne!(text.mean_deg(Planet::Venus, count), text.mean_deg(Planet::Sun, count));
+    /// ```
     #[must_use]
     pub fn mean_deg(&self, planet: Planet, at: Ahargana) -> f64 {
         at.mean_degrees(self.params.motion(planet), &self.params)
     }
 
     /// The apsis of a planet, degrees.
+    ///
+    /// ```
+    /// use teistro_siddhanta::{Ahargana, Parameters, Planet, SuryaSiddhanta};
+    ///
+    /// // Burgess on I.41 to 44: the Sun's apsis at 77°7′48″ when the Kali age began.
+    /// let text = SuryaSiddhanta::text();
+    /// let epoch = Ahargana::at(Parameters::TEXT.epoch_jd_ut, &Parameters::TEXT);
+    /// assert!((text.apsis_deg(Planet::Sun, epoch) - (77.0 + 7.0 / 60.0 + 48.0 / 3600.0)).abs() < 1e-9);
+    /// ```
     #[must_use]
     pub fn apsis_deg(&self, planet: Planet, at: Ahargana) -> f64 {
         at.mean_degrees(self.params.apsis(planet), &self.params)
     }
 
     /// The Moon's ascending node, degrees.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Rahu is the Moon's node itself.
+    /// let rahu = text.graha(Graha::Rahu, at)?;
+    /// assert!((rahu.longitude.get() - text.node_deg(text.ahargana(at))).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn node_deg(&self, at: Ahargana) -> f64 {
         at.mean_degrees(self.params.moon_node, &self.params)
@@ -337,12 +472,35 @@ impl SuryaSiddhanta {
 
     /// The Moon's apogee at an instant: the apsis of I.34, which moves
     /// direct.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// // The apogee moves direct, about 6′41″ a day.
+    /// let apogee = text.moon_apogee_position(at);
+    /// assert!((apogee.speed_deg_per_day * 60.0 - 6.68).abs() < 0.05);
+    /// ```
     #[must_use]
     pub fn moon_apogee_position(&self, at: JulianDay<Ut1>) -> Position {
         Position::from(self.moon_apogee_trace(at))
     }
 
     /// The Moon's apogee as a trace.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// let trace = text.moon_apogee_trace(at);
+    /// assert_eq!(trace.longitude_deg, trace.apsis_deg);
+    /// ```
     #[must_use]
     pub fn moon_apogee_trace(&self, at: JulianDay<Ut1>) -> Trace {
         self.moon_apogee(self.ahargana(at))
@@ -350,6 +508,20 @@ impl SuryaSiddhanta {
 
     /// The node of a planet at a count, degrees: the Moon's from I.34, a
     /// star planet's from I.43 to 44; `None` for the Sun.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// use teistro_siddhanta::Planet;
+    ///
+    /// let count = text.ahargana(at);
+    /// assert_eq!(text.planet_node_deg(Planet::Sun, count), None);
+    /// assert_eq!(text.planet_node_deg(Planet::Moon, count), Some(text.node_deg(count)));
+    /// ```
     #[must_use]
     pub fn planet_node_deg(&self, planet: Planet, at: Ahargana) -> Option<f64> {
         self.params
@@ -358,6 +530,19 @@ impl SuryaSiddhanta {
     }
 
     /// The tradition's figures for a graha at an instant.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let refused = text.trace(Graha::Uranus, at).unwrap_err();
+    /// assert_eq!(refused.field(), Some("graha"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -389,6 +574,21 @@ impl SuryaSiddhanta {
 
     /// A graha's place at an instant.
     ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// // Ketu opposite Rahu.
+    /// let (rahu, ketu) = (text.graha(Graha::Rahu, at)?, text.graha(Graha::Ketu, at)?);
+    /// assert!(((ketu.longitude.get() - rahu.longitude.get()).rem_euclid(360.0) - 180.0).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`SuryaSiddhanta::trace`].
@@ -397,6 +597,18 @@ impl SuryaSiddhanta {
     }
 
     /// The Sun's place: the mean place with the manda equation (II.45).
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// // Within a degree of the first of Mesha: the solar year begins.
+    /// let sun = text.sun(at).longitude.get();
+    /// assert!(sun < 1.0 || sun > 359.0);
+    /// ```
     #[must_use]
     pub fn sun(&self, at: JulianDay<Ut1>) -> Position {
         Position::from(self.manda_only(Planet::Sun, self.ahargana(at)))
@@ -404,6 +616,16 @@ impl SuryaSiddhanta {
 
     /// The Sun's sidereal longitude at a Universal Time Julian day given
     /// as a number, the form a root finder calls.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// assert_eq!(text.sun_longitude_deg(at.get()), text.sun(at).longitude.get());
+    /// ```
     #[must_use]
     pub fn sun_longitude_deg(&self, jd_ut: f64) -> f64 {
         self.manda_only(Planet::Sun, Ahargana::at(jd_ut, &self.params))
@@ -411,12 +633,39 @@ impl SuryaSiddhanta {
     }
 
     /// The Moon's place.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// // The Moon's daily motion, between 11° and 16°.
+    /// let moon = text.moon(at);
+    /// assert!((11.0..16.0).contains(&moon.speed_deg_per_day));
+    /// assert!(moon.latitude_deg.abs() <= 4.5);
+    /// ```
     #[must_use]
     pub fn moon(&self, at: JulianDay<Ut1>) -> Position {
         Position::from(self.manda_only(Planet::Moon, self.ahargana(at)))
     }
 
     /// The nine grahas the text models, in the catalogue's order.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let all = text.all(at);
+    /// assert_eq!(all[0], (Graha::Sun, text.sun(at)));
+    /// assert_eq!(all[8].0, Graha::Ketu);
+    /// ```
     #[must_use]
     pub fn all(&self, at: JulianDay<Ut1>) -> [(Graha, Position); 9] {
         let count = self.ahargana(at);
@@ -456,6 +705,17 @@ impl SuryaSiddhanta {
     /// the tradition applies the text today: zero at the start of the
     /// Kali age and again 3600 years later (Shaka 421), positive since,
     /// 54″ a year; so the tropical longitude is the sidereal one plus this.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // 13 April 2024, 0h UT: the day the Nepali calendar begins 2081 BS.
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// // 54″ a year since Shaka 421: about 23° in 2024.
+    /// assert!((text.ayanamsha_deg(at) - 23.0).abs() < 1.0);
+    /// ```
     #[must_use]
     pub fn ayanamsha_deg(&self, at: JulianDay<Ut1>) -> f64 {
         let motion = Motion::direct(
@@ -475,6 +735,16 @@ impl SuryaSiddhanta {
     /// The Sun's declination from its tropical longitude (II.28 with
     /// III.17): the sine of the longitude times the sine of the greatest
     /// declination over the radius; north in the half from Mesha.
+    ///
+    /// ```
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// // The greatest declination, 24°, at the solstice; none at the equinox.
+    /// let text = SuryaSiddhanta::text();
+    /// assert!((text.declination_deg(90.0) - 24.0).abs() < 0.01);
+    /// assert_eq!(text.declination_deg(0.0), 0.0);
+    /// assert!(text.declination_deg(270.0) < 0.0);
+    /// ```
     #[must_use]
     pub fn declination_deg(&self, tropical_longitude_deg: f64) -> f64 {
         let bhuja = Bhuja::of(tropical_longitude_deg);
@@ -491,6 +761,18 @@ impl SuryaSiddhanta {
     /// declination) is the sine of the difference. Degrees, positive when
     /// the day is longer than the night; `None` when the Sun neither
     /// rises nor sets.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Latitude;
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // None at the equator; a longer day where the Sun is on the latitude's side.
+    /// assert_eq!(text.ascensional_difference_deg(Latitude::literal(0.0), 20.0), Some(0.0));
+    /// assert!(text.ascensional_difference_deg(Latitude::literal(27.7), 20.0).is_some_and(|cara| cara > 0.0));
+    /// // Within the polar circle at the solstice the Sun does not set.
+    /// assert_eq!(text.ascensional_difference_deg(Latitude::literal(70.0), 24.0), None);
+    /// ```
     #[must_use]
     pub fn ascensional_difference_deg(
         &self,
@@ -520,6 +802,21 @@ impl SuryaSiddhanta {
     /// local mean time. The declination is taken at the rise and set
     /// instants themselves, each found in two passes. `None` where the
     /// Sun neither rises nor sets.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Latitude, Longitude, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// let (latitude, longitude) = (Latitude::literal(27.7172), Longitude::literal(85.324));
+    /// let midnight = SuryaSiddhanta::local_mean_midnight(at, longitude);
+    /// let arc = text.day_arc(midnight, latitude).ok_or("the Sun rises in Kathmandu")?;
+    /// // The text's day is symmetric about local mean noon.
+    /// let noon = midnight.get() + 0.5;
+    /// assert!(((arc.sunrise.get() + arc.sunset.get()) / 2.0 - noon).abs() < 1e-3);
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn day_arc(
         &self,
@@ -555,6 +852,19 @@ impl SuryaSiddhanta {
 impl SuryaSiddhanta {
     /// The local mean midnight that begins the local mean day an instant
     /// falls in, at a longitude.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Latitude, Longitude, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// let (latitude, longitude) = (Latitude::literal(27.7172), Longitude::literal(85.324));
+    /// // Kathmandu's local mean midnight before 0h UT is 18:18 UT the day before.
+    /// let midnight = SuryaSiddhanta::local_mean_midnight(at, longitude);
+    /// assert!((at.get() - midnight.get() - 85.324 / 360.0).abs() < 1e-9);
+    /// # let _ = (text, latitude);
+    /// ```
     #[must_use]
     pub fn local_mean_midnight(at: JulianDay<Ut1>, longitude: Longitude) -> JulianDay<Ut1> {
         teistro_astro::sky::local_mean_midnight(at, longitude)
@@ -562,6 +872,14 @@ impl SuryaSiddhanta {
 
     /// The times of rising of the signs at a latitude (III.42 to 45), or
     /// `None` where the text's rule has no answer.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Latitude;
+    /// use teistro_siddhanta::{Parameters, RisingTimes, SuryaSiddhanta};
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// assert_eq!(text.rising_times(Latitude::literal(0.0)), Some(RisingTimes::lanka(&Parameters::TEXT)));
+    /// ```
     #[must_use]
     pub fn rising_times(&self, latitude: Latitude) -> Option<RisingTimes> {
         RisingTimes::at(self, latitude)
@@ -574,6 +892,21 @@ impl SuryaSiddhanta {
     /// back, before sunrise), and the point on the meridian from the
     /// Sun's hour angle through the rising times at Lanka; both returned
     /// with the text's precession taken off again.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Latitude, Longitude, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// let at = JulianDay::<Ut1>::literal(2_460_413.5);
+    /// let (latitude, longitude) = (Latitude::literal(27.7172), Longitude::literal(85.324));
+    /// let lagna = text.lagna(at, latitude, longitude)?;
+    /// assert!((0.0..360.0).contains(&lagna.sidereal_deg));
+    /// // Far north the text's rule has no answer.
+    /// let north = text.lagna(at, Latitude::literal(80.0), longitude).unwrap_err();
+    /// assert_eq!(north.field(), Some("place"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -622,6 +955,17 @@ impl SuryaSiddhanta {
     /// Whether, on a day without a sunrise, the Sun is above the horizon
     /// throughout (a polar day) rather than below it (a polar night): the
     /// declination at local mean noon has the latitude's sign.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Latitude, Ut1};
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// // 21 June 2024 at 80° north: a polar day; at 80° south, a polar night.
+    /// let text = SuryaSiddhanta::text();
+    /// let midnight = JulianDay::<Ut1>::literal(2_460_482.5);
+    /// assert!(text.sun_up_all_day(midnight, Latitude::literal(80.0)));
+    /// assert!(!text.sun_up_all_day(midnight, Latitude::literal(-80.0)));
+    /// ```
     #[must_use]
     pub fn sun_up_all_day(&self, local_mean_midnight: JulianDay<Ut1>, latitude: Latitude) -> bool {
         let noon = local_mean_midnight.get() + 0.5;

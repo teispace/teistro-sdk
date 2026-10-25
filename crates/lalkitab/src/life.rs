@@ -13,6 +13,22 @@ use crate::teva::Teva;
 use crate::varshphal::{VarshphalTable, YEARS};
 
 /// What a life is read under.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{LifeRules, Teva, life};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// // Read no year, and the cycle from the general table.
+/// let read = life(&teva, &LifeRules::default())?;
+/// assert!(read.year.is_none());
+/// assert_eq!(read.periods.first().map(|period| period.planet), Some(Graha::Saturn));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct LifeRules {
     /// Where the 35-year cycle starts: the general table unless a reader
@@ -27,6 +43,27 @@ pub struct LifeRules {
 }
 
 /// One year of life.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{LifeRules, Teva, VarshphalTable, life};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let rows: Vec<[u8; 12]> = (0..120_u8)
+///     .map(|year| std::array::from_fn(|house| (house as u8 + year % 12) % 12 + 1))
+///     .collect();
+/// let rules = LifeRules { year: Some(2), varshphal: Some(VarshphalTable::from_rows(rows)?), ..LifeRules::default() };
+/// let year = life(&teva, &rules)?.year.ok_or(teistro_core::error::Error::internal("asked for"))?;
+/// assert_eq!(year.ruler, Graha::Saturn);
+/// // The annual teva moved every house one on: the Sun from 4 to 5.
+/// let annual = year.annual.ok_or(teistro_core::error::Error::internal("a list was given"))?;
+/// assert!(annual.houses[4].occupants.contains(&Graha::Sun));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -43,6 +80,24 @@ pub struct Year {
 }
 
 /// A teva read over a life.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{LifeRules, Teva, life};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// let read = life(&teva, &LifeRules::default())?;
+/// // The periods cover years 1 to 120 with no gap.
+/// assert_eq!(read.periods.first().map(|period| period.from), Some(1));
+/// assert_eq!(read.periods.last().map(|period| period.to), Some(120));
+/// assert!(read.periods.windows(2).all(|pair| pair[0].to + 1 == pair[1].from));
+/// assert!(read.reading.flags.ratandha);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]

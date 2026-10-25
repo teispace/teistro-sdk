@@ -12,6 +12,20 @@ use teistro_core::error::Error;
 use crate::tables::{PLANETS, house_of_sign, reads};
 
 /// The nine planets, each in one of the twelve houses.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_lalkitab::{Teva, read};
+///
+/// let teva = Teva::from_houses([
+///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+/// ])?;
+/// assert_eq!(teva.occupants(7), [Graha::Venus, Graha::Saturn]);
+/// # let _ = read;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Teva {
@@ -60,6 +74,21 @@ impl Teva {
     /// A teva from each planet's house, as a reader who already has one
     /// writes it.
     ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_lalkitab::Teva;
+    /// use teistro_lalkitab::tables::PLANETS;
+    ///
+    /// let teva = Teva::from_houses(PLANETS.map(|planet| (planet, 1)))?;
+    /// assert_eq!(teva.occupants(1).len(), 9);
+    /// // Ketu left out.
+    /// let eight = Teva::from_houses(PLANETS[..8].iter().map(|planet| (*planet, 1)));
+    /// assert_eq!(eight.unwrap_err().field(), Some("placements"));
+    /// let thirteen = Teva::from_houses([(Graha::Sun, 13)]);
+    /// assert_eq!(thirteen.unwrap_err().field(), Some("placements[0]"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INVALID_ARG` naming its field: a graha Lal Kitab does not read, a
@@ -107,6 +136,21 @@ impl Teva {
     }
 
     /// The house a planet is in; `None` for a graha Lal Kitab does not read.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_lalkitab::{Teva, read};
+    ///
+    /// let teva = Teva::from_houses([
+    ///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+    ///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+    ///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+    /// ])?;
+    /// assert_eq!(teva.house_of(Graha::Moon), Some(9));
+    /// assert_eq!(teva.house_of(Graha::Uranus), None);
+    /// # let _ = read;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn house_of(&self, graha: Graha) -> Option<u8> {
         PLANETS
@@ -117,6 +161,21 @@ impl Teva {
     }
 
     /// The planets in a house, in [`PLANETS`] order.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_lalkitab::{Teva, read};
+    ///
+    /// let teva = Teva::from_houses([
+    ///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+    ///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+    ///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+    /// ])?;
+    /// // In Lal Kitab's order, Sun before Mercury.
+    /// assert_eq!(teva.occupants(4), [Graha::Sun, Graha::Mercury]);
+    /// # let _ = read;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn occupants(&self, house: u8) -> Vec<Graha> {
         self.placements()
@@ -126,12 +185,41 @@ impl Teva {
     }
 
     /// Whether a house holds any planet.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_lalkitab::{Teva, read};
+    ///
+    /// let teva = Teva::from_houses([
+    ///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+    ///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+    ///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+    /// ])?;
+    /// assert!(teva.occupied(2) && !teva.occupied(1));
+    /// # let _ = read;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn occupied(&self, house: u8) -> bool {
         self.houses.contains(&house)
     }
 
     /// Every planet with its house, in [`PLANETS`] order.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_lalkitab::{Teva, read};
+    ///
+    /// let teva = Teva::from_houses([
+    ///     (Graha::Jupiter, 2), (Graha::Sun, 4), (Graha::Moon, 9),
+    ///     (Graha::Venus, 7), (Graha::Mars, 3), (Graha::Mercury, 4),
+    ///     (Graha::Saturn, 7), (Graha::Rahu, 12), (Graha::Ketu, 6),
+    /// ])?;
+    /// assert_eq!(teva.placements().next(), Some((Graha::Jupiter, 2)));
+    /// assert_eq!(teva.placements().count(), 9);
+    /// # let _ = read;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn placements(&self) -> impl Iterator<Item = (Graha, u8)> + '_ {
         PLANETS.iter().copied().zip(self.houses.iter().copied())
     }
