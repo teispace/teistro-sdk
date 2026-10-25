@@ -118,5 +118,11 @@ export const native = loaded;
  */
 export const named = wasNamed;
 
+/**
+ * The sanitizer `TEISTRO_SANITIZER` says the named addon was built with,
+ * or empty: how a sanitizer gate says it means to load such a build.
+ */
+export const sanitizer = process.env.TEISTRO_SANITIZER ?? '';
+
 /** The file the addon was loaded from. */
 export const path = foundAt;

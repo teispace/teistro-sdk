@@ -17,7 +17,7 @@
 // module in the wasm package. `#native` is this package's own import map
 // (`package.json` `imports`), so the layer below is one file for both and
 // names no Node built-in itself (03-design/wasm-binding.md §3).
-import { native, named as wasNamed, platformPackage } from '#native';
+import { native, named as wasNamed, platformPackage, sanitizer as acknowledged } from '#native';
 
 import {
   ABI_VERSION,
@@ -222,7 +222,7 @@ export { platformPackage };
 /** What the loaded addon says about its own build (ADR-0007). */
 export const buildInfo = Object.freeze(readBuildInfo(native));
 
-const refusal = refuseBuild(buildInfo, wasNamed, process.env.TEISTRO_SANITIZER ?? '');
+const refusal = refuseBuild(buildInfo, wasNamed, acknowledged);
 if (refusal) throw new Error(refusal);
 
 /**
