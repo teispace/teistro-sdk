@@ -4202,6 +4202,11 @@
           "const": "HINDU_TABLE",
           "description": "Sripati, as B.V. Raman works it: the Hindu table of 362′, 341′, 299′, 236′, 150′ and 52′ a 15° step of the sayana bhuja, on 24°.",
           "type": "string"
+        },
+        {
+          "const": "KHANDA",
+          "description": "BPHS ch. 27 vv. 15 and 16 as the Sanskrit reads: khandas of 45, 33 and 12 for each sign of the sayana bhuja, out of 90.",
+          "type": "string"
         }
       ]
     },
@@ -4770,6 +4775,21 @@
         "window"
       ],
       "type": "object"
+    },
+    "MoonPaksha": {
+      "description": "Whether the Moon's Paksha bala is doubled in the Shadbala's Kaala (crux C66).",
+      "oneOf": [
+        {
+          "const": "DOUBLED",
+          "description": "Sripati, as B.V. Raman works it: doubled.",
+          "type": "string"
+        },
+        {
+          "const": "ONCE",
+          "description": "BPHS ch. 27 vv. 10 and 11 as the Sanskrit reads: once, as every graha's; v. 18 makes it the Moon's Cheshta besides.",
+          "type": "string"
+        }
+      ]
     },
     "Motion": {
       "description": "Which way a body is going, and how fast.",
@@ -6411,6 +6431,11 @@
           "const": "NATURAL",
           "description": "The conformance corpus's recording engine: exaltation 45, moolatrikona or the own sign 30, then 15, 7.5 or 3.75 by natural friendship alone, debilitation nothing.",
           "type": "string"
+        },
+        {
+          "const": "TEXT",
+          "description": "BPHS ch. 27 vv. 2 to 4 as the Sanskrit reads: the moolatrikona 45 in each of the seven (\"evam\", v. 4), the own sign 30, then 20, 15, 10, 4 or 2 by the compound relationship (bhutabdhayah, khagni, nakhah, tithyah, dasha, yugah, karah).",
+          "type": "string"
         }
       ]
     },
@@ -6658,6 +6683,10 @@
           "$ref": "#/$defs/LuminaryCheshta",
           "description": "The Sun's and the Moon's Cheshta."
         },
+        "moon_paksha": {
+          "$ref": "#/$defs/MoonPaksha",
+          "description": "Whether the Moon's Paksha is doubled in Kaala."
+        },
         "naisargika": {
           "$ref": "#/$defs/Naisargika",
           "description": "The natural strengths."
@@ -6697,6 +6726,7 @@
         "kaala_lords",
         "kranti",
         "sun_ayana",
+        "moon_paksha",
         "yuddha",
         "luminary_cheshta",
         "cheshta",
@@ -7070,12 +7100,17 @@
       "oneOf": [
         {
           "const": "DOUBLED",
-          "description": "BPHS ch. 27 v. 17 and Sripati: doubled in Kaala.",
+          "description": "Sripati, as B.V. Raman works it, and BPHS ch. 27 v. 17 as translated: doubled in Kaala.",
           "type": "string"
         },
         {
           "const": "NOT_IN_KAALA",
           "description": "The recording engine: not in Kaala at all.",
+          "type": "string"
+        },
+        {
+          "const": "ONCE",
+          "description": "BPHS ch. 27 v. 17 as the Sanskrit reads: once, as every graha's; v. 18 makes it the Sun's Cheshta besides.",
           "type": "string"
         }
       ]

@@ -4,7 +4,7 @@
 
 use teistro_core::angle::declination_deg;
 use teistro_core::catalogue::Graha;
-use teistro_core::settings::{KaalaLords, Kranti, Nathonnatha, PreDawnNight, SunAyana};
+use teistro_core::settings::{KaalaLords, Kranti, MoonPaksha, Nathonnatha, PreDawnNight, SunAyana};
 
 use super::{KaalaBala, ShadbalaChart, ShadbalaRules, elongation, is_benefic, seat, sign_of};
 
@@ -19,6 +19,11 @@ pub const HINDU_OBLIQUITY_DEG: f64 = 24.0;
 /// equinox (B.V. Raman, Art. 73): 362′, then 341′, 299′, 236′, 150′ and 52′
 /// more.
 const HINDU_KRANTI: [f64; 7] = [0.0, 362.0, 703.0, 1002.0, 1238.0, 1388.0, 1440.0];
+
+/// The khandas summed at each sign of the sayana bhuja (BPHS ch. 27 v. 15:
+/// "pancabdhayah surah suryah", 45, 33 and 12), out of the 90 a whole
+/// quadrant sums to.
+const KHANDAS: [f64; 4] = [0.0, 45.0, 78.0, 90.0];
 
 /// Days elapsed from creation to 1 January 1860 (Burgess's 714,404,108,573
 /// less the day itself), so that the count is a Sunday at nought as the
@@ -91,6 +96,7 @@ pub(crate) fn of(
         hora: award(chart.hora_lord == graha, 60.0),
         ayana: match (graha, rules.sun_ayana) {
             (Graha::Sun, SunAyana::Doubled) => 2.0 * own_ayana,
+            (Graha::Sun, SunAyana::Once) => own_ayana,
             (Graha::Sun, _) => 0.0,
             _ => own_ayana,
         },
@@ -142,7 +148,8 @@ pub(crate) fn nathonnatha(graha: Graha, chart: &ShadbalaChart, rules: &ShadbalaR
 }
 
 /// The fortnight's strength (vv. 10 and 11): a third of the Moon's elongation
-/// for a benefic, 60 less that for a malefic, the Moon's doubled.
+/// for a benefic, 60 less that for a malefic, the Moon's doubled where
+/// [`MoonPaksha::Doubled`] reads it so.
 pub(crate) fn paksha(graha: Graha, chart: &ShadbalaChart, rules: &ShadbalaRules) -> f64 {
     let bright = elongation(chart) / 3.0;
     let value = if is_benefic(graha, chart, rules.benefics) {
@@ -150,7 +157,7 @@ pub(crate) fn paksha(graha: Graha, chart: &ShadbalaChart, rules: &ShadbalaRules)
     } else {
         60.0 - bright
     };
-    if graha == Graha::Moon {
+    if graha == Graha::Moon && rules.moon_paksha == MoonPaksha::Doubled {
         2.0 * value
     } else {
         value
@@ -193,36 +200,56 @@ fn tribhaga(graha: Graha, chart: &ShadbalaChart, rules: &ShadbalaRules) -> f64 {
 /// formula scales it by.
 fn kranti(graha: Graha, chart: &ShadbalaChart, rule: Kranti) -> (f64, f64) {
     let at = seat(&chart.grahas, graha);
-    if rule == Kranti::HinduTable {
-        let sayana = at.tropical.rem_euclid(360.0);
-        let within = sayana.rem_euclid(180.0);
-        let bhuja = if within > 90.0 {
-            180.0 - within
-        } else {
-            within
-        };
-        let step = bhuja / 15.0;
-        #[allow(
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss,
-            reason = "a bhuja of 0 to 90 degrees is 0 to 6 steps"
-        )]
-        let whole = (step.floor() as usize).min(5);
-        let before = HINDU_KRANTI.get(whole).copied().unwrap_or_default();
-        let after = HINDU_KRANTI.get(whole + 1).copied().unwrap_or(before);
-        #[allow(clippy::cast_precision_loss, reason = "0 to 5")]
-        let fraction = step - whole as f64;
-        let minutes = before + (after - before) * fraction;
-        let sign = if sayana < 180.0 { 1.0 } else { -1.0 };
-        (sign * minutes / 60.0, HINDU_OBLIQUITY_DEG)
-    } else {
-        let (obliquity, latitude) = if rule == Kranti::True {
-            (chart.obliquity, at.latitude)
-        } else {
-            (ENGINE_OBLIQUITY_DEG, 0.0)
-        };
-        (declination_deg(at.tropical, latitude, obliquity), obliquity)
+    match rule {
+        Kranti::HinduTable => (
+            tabled(at.tropical, 15.0, &HINDU_KRANTI) / 60.0,
+            HINDU_OBLIQUITY_DEG,
+        ),
+        // The khandas stand for the declination, and their 90 for the
+        // greatest one (vv. 15 to 17).
+        Kranti::Khanda => (tabled(at.tropical, 30.0, &KHANDAS), 90.0),
+        _ => {
+            let (obliquity, latitude) = if rule == Kranti::True {
+                (chart.obliquity, at.latitude)
+            } else {
+                (ENGINE_OBLIQUITY_DEG, 0.0)
+            };
+            (declination_deg(at.tropical, latitude, obliquity), obliquity)
+        }
     }
+}
+
+/// The khandas at a sayana longitude, for the tests.
+#[cfg(test)]
+pub(crate) fn tabled_for_test(sayana: f64) -> f64 {
+    tabled(sayana, 30.0, &KHANDAS)
+}
+
+/// A table read at the sayana bhuja, a row each `step` degrees from the
+/// equinox and straight between rows: north for the half from Mesha,
+/// south for the half from Tula.
+fn tabled(sayana: f64, step: f64, table: &[f64]) -> f64 {
+    let sayana = sayana.rem_euclid(360.0);
+    let within = sayana.rem_euclid(180.0);
+    let bhuja = if within > 90.0 {
+        180.0 - within
+    } else {
+        within
+    };
+    let steps = bhuja / step;
+    let last = table.len().saturating_sub(2);
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a bhuja of 0 to 90 degrees is a few steps"
+    )]
+    let whole = (steps.floor() as usize).min(last);
+    let before = table.get(whole).copied().unwrap_or_default();
+    let after = table.get(whole + 1).copied().unwrap_or(before);
+    #[allow(clippy::cast_precision_loss, reason = "a few steps")]
+    let fraction = steps - whole as f64;
+    let value = before + (after - before) * fraction;
+    if sayana < 180.0 { value } else { -value }
 }
 
 /// A graha's Ayana bala, before the Sun's is doubled (vv. 15 to 17).

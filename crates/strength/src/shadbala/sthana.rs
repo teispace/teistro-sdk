@@ -38,10 +38,11 @@ fn saptavargaja(graha: Graha, chart: &ShadbalaChart, rule: Saptavargaja) -> f64 
         .enumerate()
         .map(|(k, row)| {
             let sign = seat(row, graha);
-            if rule == Saptavargaja::Natural {
-                natural_virupas(graha, sign)
-            } else {
-                compound_virupas(graha, sign, k == 0, &rasi)
+            match rule {
+                Saptavargaja::Natural => natural_virupas(graha, sign),
+                // v. 4's "evam": the same scores in every varga.
+                Saptavargaja::Text => by_compound(graha, sign, true, &rasi, &TEXT_VIRUPAS),
+                _ => by_compound(graha, sign, k == 0, &rasi, &COMPOUND_VIRUPAS),
             }
         })
         .sum()
@@ -67,13 +68,38 @@ pub(crate) fn natural_virupas(graha: Graha, sign: Rashi) -> f64 {
     }
 }
 
+/// The virupas for a great friend's, a friend's, a neutral's, an enemy's
+/// and a great enemy's sign, by the compound relationship.
+type ByRelationship = [f64; 5];
+
+/// B.V. Raman, Art. 30.
+const COMPOUND_VIRUPAS: ByRelationship = [22.5, 15.0, 7.5, 3.75, 1.875];
+
+/// BPHS ch. 27 vv. 2 and 3: nakhah 20, tithyah 15, dasha 10, yugah 4,
+/// karah 2.
+const TEXT_VIRUPAS: ByRelationship = [20.0, 15.0, 10.0, 4.0, 2.0];
+
 /// The compound relationship's virupas: 45 for the moolatrikona rasi in the
 /// rasi chart alone, 30 for the own sign, then 22.5, 15, 7.5, 3.75 or 1.875
 /// by the compound relationship with the sign's lord, its temporary half from
 /// the rasi chart (B.V. Raman, Art. 30).
+#[cfg(test)]
 pub(crate) fn compound_virupas(graha: Graha, sign: Rashi, in_rasi: bool, rasi: &[Rashi; 7]) -> f64 {
+    by_compound(graha, sign, in_rasi, rasi, &COMPOUND_VIRUPAS)
+}
+
+/// 45 for the moolatrikona sign where `moolatrikona_counts`, 30 for the own
+/// sign, then the scores by the compound relationship with the sign's lord,
+/// its temporary half from the rasi chart.
+fn by_compound(
+    graha: Graha,
+    sign: Rashi,
+    moolatrikona_counts: bool,
+    rasi: &[Rashi; 7],
+    scores: &ByRelationship,
+) -> f64 {
     let attributes = graha.attributes();
-    if in_rasi && attributes.moolatrikona.is_some_and(|m| m.sign == sign) {
+    if moolatrikona_counts && attributes.moolatrikona.is_some_and(|m| m.sign == sign) {
         return 45.0;
     }
     if attributes.own.contains(&sign) {
@@ -83,12 +109,13 @@ pub(crate) fn compound_virupas(graha: Graha, sign: Rashi, in_rasi: bool, rasi: &
         Some(seat(rasi, g))
     })
     .unwrap_or(Relationship::Neutral);
+    let [great_friend, friend, neutral, enemy, great_enemy] = *scores;
     match compound(natural(graha, sign), temporary) {
-        Relationship::GreatFriend => 22.5,
-        Relationship::Friend => 15.0,
-        Relationship::Enemy => 3.75,
-        Relationship::GreatEnemy => 1.875,
-        _ => 7.5,
+        Relationship::GreatFriend => great_friend,
+        Relationship::Friend => friend,
+        Relationship::Enemy => enemy,
+        Relationship::GreatEnemy => great_enemy,
+        _ => neutral,
     }
 }
 

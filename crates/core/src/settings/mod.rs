@@ -33,15 +33,15 @@ use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
     AfterCycle, AmritKalam, AntardashaPlace, AshtakavargaGoodFrom, AshtottariGrouping,
-    AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaDig, BhavaDrishti,
-    BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta, DayBoundary,
-    DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap,
-    DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
+    AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
+    BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
+    DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
+    DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
     GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NaisargikaDivision, NakshatraScheme,
-    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
-    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    LunarMonth, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
+    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
+    NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
     RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
     RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
     ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
@@ -960,6 +960,8 @@ group!(
         pre_dawn_night: PreDawnNight,
         /// Where the Sun's Ayana bala is counted (crux C66).
         sun_ayana: SunAyana,
+        /// Whether the Moon's Paksha bala is doubled (crux C66).
+        moon_paksha: MoonPaksha,
         /// The Sun's and the Moon's Cheshta balas (crux C66).
         luminary_cheshta: LuminaryCheshta,
         /// The declination the Ayana bala reads (crux C66).
@@ -984,6 +986,8 @@ group!(
         yuddha: Yuddha,
         /// How the Ishta and Kashta phalas are read (crux C76).
         ishta_kashta: IshtaKashta,
+        /// Which division's bhavas the Bhava bala measures (crux C73).
+        bhava_division: BhavaBalaDivision,
         /// How the Bhava bala's Dig bala reads a bhava's sign class (crux C73).
         bhava_dig: BhavaDig,
         /// How the Bhava bala weighs the drishtis a bhava receives (crux C74).
@@ -2031,7 +2035,15 @@ mod tests {
             .resolve(&warned)
             .unwrap_or_else(|e| panic!("{e}"));
         let rules: Vec<&str> = resolved.warnings.iter().map(|d| d.rule).collect();
-        assert_eq!(rules, ["siddhanta-topocentric", "year-length-convention"]);
+        // nepali-default's refracted sunrise is not the text's either.
+        assert_eq!(
+            rules,
+            [
+                "siddhanta-topocentric",
+                "siddhanta-text-sunrise-convention",
+                "year-length-convention"
+            ]
+        );
     }
 
     #[test]

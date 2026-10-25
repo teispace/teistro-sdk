@@ -54,7 +54,7 @@ fn of(chart: &ShadbalaChart, rules: ShadbalaRules, graha: Graha) -> GrahaShadbal
 
 #[test]
 fn the_rules_follow_the_settings_and_refuse_an_undefined_scheme() {
-    assert_eq!(ShadbalaRules::of(&root()).unwrap(), ShadbalaRules::BPHS);
+    assert_eq!(ShadbalaRules::of(&root()).unwrap(), ShadbalaRules::SRIPATI);
     let engine = Profile::shipped("conformance-baseline")
         .unwrap()
         .resolve(&SettingsPatch::default())
@@ -200,18 +200,27 @@ fn the_luminaries_ayana_and_cheshta_follow_each_reading() {
     for kranti in [Kranti::True, Kranti::Ecliptic, Kranti::HinduTable] {
         assert!((ayana(Graha::Moon, &equinox, kranti) - 30.0).abs() < 1e-12);
     }
+    // The text counts the Sun's Ayana once and repeats it as his
+    // Cheshta (BPHS 27.17-18); Sripati doubles it and gives none.
     let text = of(&equinox, ShadbalaRules::BPHS, Graha::Sun);
-    assert_eq!(text.kaala.ayana, 2.0 * text.cheshta);
+    assert_eq!(text.kaala.ayana, text.cheshta);
+    assert_eq!(text.kaala.ayana, 30.0);
     let engine = of(&equinox, ShadbalaRules::RECORDING_ENGINE, Graha::Sun);
     assert_eq!(engine.kaala.ayana, 0.0);
     let sripati = of(&equinox, ShadbalaRules::SRIPATI, Graha::Sun);
+    assert_eq!(sripati.kaala.ayana, 60.0);
     assert_eq!(sripati.cheshta, 0.0);
-    // Opposite the Sun: a full Moon, whose Paksha is doubled.
+    // Opposite the Sun: a full Moon, whose Paksha the text counts once
+    // and repeats as her Cheshta, and Sripati doubles.
     let mut full = chart();
     full.grahas[1].longitude = 180.0;
     let moon = of(&full, ShadbalaRules::BPHS, Graha::Moon);
-    assert_eq!(moon.kaala.paksha, 120.0);
+    assert_eq!(moon.kaala.paksha, 60.0);
     assert_eq!(moon.cheshta, moon.kaala.paksha);
+    assert_eq!(
+        of(&full, ShadbalaRules::SRIPATI, Graha::Moon).kaala.paksha,
+        120.0
+    );
     assert_eq!(
         of(&full, ShadbalaRules::RECORDING_ENGINE, Graha::Moon).cheshta,
         60.0
@@ -398,6 +407,8 @@ fn the_saptavargaja_counts_the_moolatrikona_in_the_rasi_alone() {
     let sun = |rule| of(&chart, rules(rule), Graha::Sun).sthana.saptavargaja;
     assert_eq!(sun(Saptavargaja::Compound), 45.0 + 6.0 * 30.0);
     assert_eq!(sun(Saptavargaja::Natural), 7.0 * 30.0);
+    // v. 4's "evam": the text counts the moolatrikona in all seven.
+    assert_eq!(sun(Saptavargaja::Text), 7.0 * 45.0);
 }
 
 #[test]
@@ -522,4 +533,16 @@ fn the_bhava_bala_reads_each_graha_s_own_shadbala() {
         strengths.iter().any(|&(_, drik)| drik != 0.0),
         "a reading with a drishti, so the Drik column is read"
     );
+}
+
+/// BPHS ch. 27 v. 15's khandas: 45 for the first sign of the bhuja, 78 by
+/// the second, the whole 90 at the solstice, south from Tula.
+#[test]
+fn the_khandas_sum_to_ninety_at_the_solstice() {
+    assert!((super::kaala::tabled_for_test(0.0) - 0.0).abs() < 1e-12);
+    assert!((super::kaala::tabled_for_test(30.0) - 45.0).abs() < 1e-12);
+    assert!((super::kaala::tabled_for_test(45.0) - (45.0 + 33.0 / 2.0)).abs() < 1e-12);
+    assert!((super::kaala::tabled_for_test(90.0) - 90.0).abs() < 1e-12);
+    assert!((super::kaala::tabled_for_test(150.0) - 45.0).abs() < 1e-12);
+    assert!((super::kaala::tabled_for_test(270.0) + 90.0).abs() < 1e-12);
 }

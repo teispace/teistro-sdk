@@ -61,23 +61,24 @@ differ at all.
 **The engine's arithmetic is settled**: every component reproduces from
 the recorded inputs, so the conformance profile can take it whole.
 
-**The text is not the engine**, and a rank-1 text corrects a rank-2
-value, so the module's defaults follow BPHS wherever the chapter
-decides, each fork a setting with the engine's reading as its other
-value: the Saptavargaja by the compound relationship (C64), Nathonnatha
-from midnight and a pre-dawn birth's night from the previous evening
-(C65), the Sun's Ayana doubled, the Moon's Cheshta her Paksha and the
-kranti from the ephemeris (C66), the Abda and Masa lords from the
-ahargana (C67), Dig from the true angles (C68), Drik by the chapter's
-quarters (C69), and the chapter's requirements and exact natural
-strengths (C71).
+**The text is not the engine**, and the chapter's own reading ships
+beside it as `BPHS`, each fork a setting: the vargas at
+45/30/20/15/10/4/2 virupas with the moolatrikona in each (C64),
+Nathonnatha from midnight and a pre-dawn birth's night from the previous
+evening (C65), the luminaries' Ayana and Paksha counted once and
+repeated as their Cheshta, with the khanda kranti of 45, 33 and 12 parts
+(C66), the Abda and Masa lords from the ahargana (C67), Dig from the
+true angles (C68), Drik by the chapter's quarters (C69), and the
+chapter's requirements and exact natural strengths (C71).
 
-**A third reading settles what the chapter leaves open.** B.V. Raman's
+**The default is the reading with a worked example.** B.V. Raman's
 *Graha and Bhava Balas* works Sripati's method on one horoscope number
-by number: the sphuta drishti Drik reads (C45), the benefics by the
-Moon's phase and Mercury's company (C69), Kedarnath Dutt's mean elements
-for the Cheshta and the Yuddha bala (C70), and a male, neuter, female
-order for the Drekkana (C72). The module ships it as the `SRIPATI`
-reading, reproduces his worked Shadbala within his rounding
-(`crates/strength/tests/sripati.rs`), and takes its Cheshta elements and
-Yuddha rule for the chapter's reading too, which gives neither.
+by number: the Hindu kranti table and the luminaries doubled (C66), the
+sphuta drishti Drik reads (C45), the benefics by the Moon's phase and
+Mercury's company (C69), Kedarnath Dutt's mean elements for the Cheshta
+and the Yuddha bala (C70), and a male, neuter, female order for the
+Drekkana (C72). The module reproduces his worked Shadbala within his
+rounding (`crates/strength/tests/sripati.rs`), where the chapter's
+reading stands a median 40 virupas from it, so `SRIPATI` is the root's
+reading and the one printed tables give; the chapter's reading takes its
+Cheshta elements and Yuddha rule, which the chapter gives neither.
