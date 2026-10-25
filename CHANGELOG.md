@@ -125,6 +125,17 @@ refuses a sanitizer build, unless its path is named with `TEISTRO_ADDON`
 and `TEISTRO_SANITIZER` names the same sanitizer. That refusal now says
 "an address sanitizer build" in every binding, not "a address build".
 
+**The Node loader opens an addon Cargo built where Cargo left it.**
+**Numbers:** none. The loader's last two places to look,
+`target/release` and `target/debug`, hold the addon as
+`libteistro_node.dylib` (`.so`, `.dll`). The loader opened them with
+`require`, which reads a file not ending `.node` as JavaScript, so a
+contributor who built with `cargo build --release -p teistro-node` got
+a syntax error. The loader's own message suggested that command.
+`TEISTRO_ADDON` naming such a file failed the same way. The loader now
+opens the file with `process.dlopen`, and a test opens the addon under
+Cargo's name.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:

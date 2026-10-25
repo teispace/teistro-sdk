@@ -2,6 +2,9 @@
 // and the loader refuses one that is not.
 
 import assert from 'node:assert/strict';
+import { copyFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { ABI_VERSION, SDK_VERSION } from '../lib/catalogue.js';
@@ -63,4 +66,29 @@ test('an unoptimised build is refused only when it was searched for', () => {
   assert.match(refuseBuild(debug, false), /unoptimised build/u);
   assert.match(refuseBuild(debug, false), /TEISTRO_ADDON/u);
   assert.equal(refuseBuild(debug, true), null, 'a path named is a deliberate act');
+});
+
+test('an addon opens from the name Cargo gives it, not only from a `.node` file', async (t) => {
+  if (buildInfo.target.startsWith('wasm32')) {
+    t.skip('a wasm build opens no addon');
+    return;
+  }
+  const { openAddon, path } = await import('../lib/addon.js');
+  const cargoName = {
+    darwin: 'libteistro_node.dylib',
+    win32: 'teistro_node.dll',
+  }[process.platform] ?? 'libteistro_node.so';
+  const dir = mkdtempSync(join(tmpdir(), 'teistro-addon-'));
+  try {
+    const copy = join(dir, cargoName);
+    copyFileSync(path, copy);
+    const opened = openAddon(copy);
+    assert.equal(JSON.parse(opened.buildInfo()).abi, buildInfo.abi);
+  } finally {
+    try {
+      rmSync(dir, { recursive: true, force: true });
+    } catch {
+      // Windows keeps a loaded library's file open, so it may not go.
+    }
+  }
 });
