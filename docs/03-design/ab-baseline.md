@@ -242,7 +242,12 @@ renders the page and fails:
   time, a throughput, a percentile, a cold-start phase, a memory measure;
 - a request where the SDK is slower and the two ranges are apart: a
   claim of "not slower" that `within spread` meets but a measured ratio
-  above one does not;
+  above one does not. A request the SDK is slower at for a reason the
+  page gives (`SLOWER` in `xtask/src/ab.rs`, which the page prints) is
+  held to a bound on the ratio instead, and the gate fails an entry that
+  is no longer slower. The first in-depth record found one: `yogas`, at
+  2.13×, since the shipped Nabhasa set carries about 2 500 of the SDK's
+  3 130 classical rules and is not asked for in part;
 - the same of a throughput (the SDK answering measurably fewer a second
   at a count and mode both sides were measured in) and of a percentile;
 - an input count below the corpus's less the births that request was

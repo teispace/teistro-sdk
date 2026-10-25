@@ -12,6 +12,33 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The A/B against the baseline engine is in depth, and judges accuracy.**
+**Numbers:** on this machine, per request, the SDK takes 0.19× the
+baseline's time for a chart, 0.09× for a day, 0.64× for the whole chart,
+0.03× for a month of days and 0.42× for a batch of ten, and **2.13×** for
+the yogas, whose shipped Nabhasa set carries about 2 500 of its 3 130
+classical rules; that request is listed with a 2.5× bound. A chart on 10
+worker threads answers 4 165 a second (the baseline dies of SIGSEGV on two
+or more threads; 975 a second in 10 processes); the whole chart's p99 is
+42.8 ms against 72.1 ms; a cold process opens in 152 ms against 911 ms;
+the SDK's peak resident set is 466 MB against 298 MB, its settled heap
+8.9 MB against 46.0 MB. `bench/ab.mjs` now times fourteen requests
+interleaved (the muhurta search and the tithi calendar are dropped as
+other work), then load, tail, cold start and memory in processes of
+their own. Every answer is read into facts and the two sides compared
+field by field under the timed profiles and under `conformance-baseline`:
+a chart agrees on 54.5% of its facts as timed and 100.0% cast as the
+baseline casts, the gap being the Moon's centre and the ayanamsha's
+basis. Each side is held to a reference neither computed: both match
+Swiss Ephemeris at their own conventions but for the SDK's lagnas of
+2350 and 2399 (7 to 12″, its IAU 2006 sidereal time) and the baseline's
+KP cusps at 64.8° N; given Sripati's readings the SDK reproduces Raman's
+seven Shadbala totals within 0.7 virupas; on Charak's worked year it names
+all seven offices and the baseline three; on *Kalaprakasika*'s lists the
+SDK is right on all 165 and the baseline on 92.1%. `check-ab` holds every
+share to the floor the record measured and each request's named cause to
+the record (`xtask/src/ab/accuracy.rs`).
+
 **A message that renders another takes its parameters.**
 **Numbers:** none. `sdk.calendar.JULIAN.date.full` is
 `{sdk.calendar.GREGORIAN.date.full :msg}`, and `:msg` renders its target

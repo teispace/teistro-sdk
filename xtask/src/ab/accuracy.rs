@@ -79,9 +79,10 @@ const CAUSES: [(&str, Cause, &str); 14] = [
         "chart",
         Cause::Convention,
         "the centre: `timed` casts the Moon from the Earth's centre and the baseline from the \
-         birthplace, up to an hour of arc apart, which moves the Vimshottari's starts; under \
-         `same` only the lagnas of 2350 and 2399 differ, the SDK's IAU 2006 sidereal time against \
-         Swiss Ephemeris's that far from J2000",
+         birthplace, up to an hour of arc apart, on a mean ayanamsha where the baseline's is \
+         nutated (12″), which moves the Vimshottari's starts; under `same` only the lagnas of \
+         2350 and 2399 differ, the SDK's IAU 2006 sidereal time against Swiss Ephemeris's that \
+         far from J2000",
     ),
     (
         "day",
@@ -114,8 +115,8 @@ const CAUSES: [(&str, Cause, &str); 14] = [
         "strength",
         Cause::Convention,
         "the readings: `timed` is the classical drik and luminaries' cheshta, the baseline its \
-         own; the SDK given Sripati's readings reproduces Raman's totals, and under `same` only \
-         c022 differs, the baseline's wrong Hindu day (crux C35)",
+         own; the SDK given Sripati's readings reproduces Raman's totals, and under `same` the \
+         largest gaps are c022's, a birth the baseline places in the wrong Hindu day (crux C35)",
     ),
     (
         "dashas",
@@ -145,46 +146,89 @@ const CAUSES: [(&str, Cause, &str); 14] = [
     (
         "kp",
         Cause::Convention,
-        "the frame: `kp-default`'s true node and mean basis against the baseline's; under `same` \
-         c043's cusps, where the baseline's Placidus falls back at 64.8° N, and the lagnas of 2350 \
-         and 2399, as `chart`",
+        "the frame: `kp-default` casts from the Earth's centre on its own node, the baseline from \
+         the birthplace on the mean node; under `same` c043's cusps, where the baseline's \
+         Placidus falls back at 64.8° N and Swiss Ephemeris and the SDK do not, and the lagnas \
+         of 2350 and 2399, as `chart`",
     ),
     (
         "gochar",
         Cause::Convention,
-        "the centre: the baseline casts a transit from the Earth's centre, and under `same` so \
-         does the SDK",
+        "the ayanamsha's basis: `timed` takes the mean and the baseline the nutated, about 12″ \
+         apart; under `same`, cast from the Earth's centre as the baseline casts a transit, the \
+         transits agree to a hundredth of an arcsecond and only c051's transit bindus differ",
     ),
     (
         "sadeSati",
         Cause::Convention,
-        "the centre, as `gochar`; a natal Moon near a sign's edge moves a whole spell",
+        "the ayanamsha's basis, as `gochar`: 12″ of Saturn moves an edge by hours; under `same` \
+         every edge agrees within two seconds",
     ),
     ("batch", Cause::Convention, "as `full`, at ten instants"),
 ];
 
 /// The least share of compared facts each request agrees on, under
-/// `timed` and under `same`, from the record.
+/// `timed` and under `same`: the record's of 25 October 2026, to the
+/// tenth of a percent below.
 const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
-    ("chart", 0.0, 0.0),
-    ("day", 0.0, 0.0),
-    ("full", 0.0, 0.0),
-    ("vargas", 0.0, 0.0),
-    ("yogas", 0.0, 0.0),
-    ("strength", 0.0, 0.0),
-    ("dashas", 0.0, 0.0),
-    ("month", 0.0, 0.0),
-    ("milan", 0.0, 0.0),
-    ("varsha", 0.0, 0.0),
-    ("kp", 0.0, 0.0),
-    ("gochar", 0.0, 0.0),
-    ("sadeSati", 0.0, 0.0),
-    ("batch", 0.0, 0.0),
+    ("chart", 0.545, 0.999),
+    ("day", 0.869, 0.965),
+    ("full", 0.643, 0.999),
+    ("vargas", 0.97, 1.0),
+    ("yogas", 0.968, 0.97),
+    ("strength", 0.696, 0.986),
+    ("dashas", 0.619, 1.0),
+    ("month", 0.863, 1.0),
+    ("milan", 0.734, 0.763),
+    ("varsha", 0.26, 0.243),
+    ("kp", 0.746, 0.979),
+    ("gochar", 0.659, 0.997),
+    ("sadeSati", 0.076, 1.0),
+    ("batch", 0.653, 0.999),
 ];
 
 /// The least share each side keeps on a rung for a request, under a
-/// convention, from the record: rung, request, side, convention, floor.
-const REFERENCE_FLOORS: [(&str, &str, &str, &str, f64); 0] = [];
+/// convention, from the same record: rung, request, side, convention,
+/// floor.
+const REFERENCE_FLOORS: [(&str, &str, &str, &str, f64); 37] = [
+    ("swiss-ephemeris", "chart", "sdk", "timed", 0.996),
+    ("swiss-ephemeris", "full", "sdk", "timed", 0.998),
+    ("swiss-ephemeris", "batch", "sdk", "timed", 0.998),
+    ("swiss-ephemeris", "kp", "sdk", "timed", 0.978),
+    ("swiss-ephemeris", "gochar", "sdk", "timed", 1.0),
+    ("swiss-ephemeris", "chart", "sdk", "same", 0.996),
+    ("swiss-ephemeris", "full", "sdk", "same", 0.998),
+    ("swiss-ephemeris", "batch", "sdk", "same", 0.998),
+    ("swiss-ephemeris", "kp", "sdk", "same", 0.978),
+    ("swiss-ephemeris", "gochar", "sdk", "same", 1.0),
+    ("swiss-ephemeris", "chart", "baseline", "timed", 1.0),
+    ("swiss-ephemeris", "full", "baseline", "timed", 1.0),
+    ("swiss-ephemeris", "batch", "baseline", "timed", 1.0),
+    ("swiss-ephemeris", "kp", "baseline", "timed", 0.982),
+    ("swiss-ephemeris", "gochar", "baseline", "timed", 1.0),
+    ("pyjhora", "chart", "sdk", "timed", 0.728),
+    ("pyjhora", "full", "sdk", "timed", 0.727),
+    ("pyjhora", "dashas", "sdk", "timed", 0.728),
+    ("pyjhora", "chart", "sdk", "same", 0.465),
+    ("pyjhora", "full", "sdk", "same", 0.463),
+    ("pyjhora", "dashas", "sdk", "same", 0.465),
+    ("pyjhora", "chart", "baseline", "timed", 0.465),
+    ("pyjhora", "full", "baseline", "timed", 0.463),
+    ("pyjhora", "dashas", "baseline", "timed", 0.465),
+    ("committee", "day", "sdk", "timed", 0.0),
+    ("committee", "day", "sdk", "same", 0.346),
+    ("committee", "day", "baseline", "timed", 0.346),
+    ("raman", "strength", "sdk", "timed", 0.0),
+    ("raman", "strength", "sdk", "same", 0.0),
+    ("raman", "strength", "baseline", "timed", 0.0),
+    ("raman", "strength", "sdk", "source", 1.0),
+    ("charak", "varsha", "sdk", "timed", 1.0),
+    ("charak", "varsha", "sdk", "same", 0.875),
+    ("charak", "varsha", "baseline", "timed", 0.375),
+    ("kalaprakasika", "milan", "sdk", "timed", 1.0),
+    ("kalaprakasika", "milan", "sdk", "same", 1.0),
+    ("kalaprakasika", "milan", "baseline", "timed", 0.921),
+];
 
 /// One family's comparison on one request: the two sides' facts, or one
 /// side's against a rung's.
@@ -714,28 +758,36 @@ fn judged(rung: &str, request: &str, side: &str, convention: &str, matches: usiz
         rung: Some(rung.to_string()),
         rank: Some(2),
         side: Some(side.to_string()),
-        ..line(request, convention, matches, 10)
+        ..line(request, convention, matches, 1000)
     }
 }
 
-/// A record's accuracy the gate passes: every request agrees on half its
-/// facts under `timed` and nine in ten under `same`, and the rungs find
-/// the two sides alike but on `varsha`, where the baseline is the farther.
+/// A count of a thousand facts at `share`, for the gate's tests.
+#[cfg(test)]
+fn thousandths(share: f64) -> usize {
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a share is between 0 and 1"
+    )]
+    let n = (share * 1000.0).round() as usize;
+    n
+}
+
+/// A record's accuracy the gate passes: every share at its floor.
 #[cfg(test)]
 pub(super) fn whole() -> Accuracy {
     let mut agree = Vec::new();
-    for (request, _) in REQUESTS {
-        agree.push(line(request, "timed", 5, 10));
-        agree.push(line(request, "same", 9, 10));
+    for (request, timed, same) in AGREEMENT_FLOORS {
+        agree.push(line(request, "timed", thousandths(timed), 1000));
+        agree.push(line(request, "same", thousandths(same), 1000));
     }
-    let mut reference = Vec::new();
-    for (request, rungs) in JUDGED {
-        for rung in rungs {
-            let baseline = if request == "varsha" { 3 } else { 9 };
-            reference.push(judged(rung, request, "sdk", "timed", 9));
-            reference.push(judged(rung, request, "baseline", "timed", baseline));
-        }
-    }
+    let reference = REFERENCE_FLOORS
+        .iter()
+        .map(|(rung, request, side, convention, floor)| {
+            judged(rung, request, side, convention, thousandths(*floor))
+        })
+        .collect();
     Accuracy {
         agree,
         reference,
@@ -772,11 +824,11 @@ mod tests {
             .iter_mut()
             .filter(|l| l.request == "varsha")
         {
-            l.matches = 9;
+            l.matches = 1000;
         }
         // A convention cause where `same` agrees no more than `timed`.
         for l in accuracy.agree.iter_mut().filter(|l| l.request == "chart") {
-            l.matches = 5;
+            l.matches = 1000;
         }
         let found = faults_of(&accuracy);
         assert_eq!(found.len(), 2, "{found:?}");
@@ -786,6 +838,16 @@ mod tests {
         );
         assert!(
             found[1].contains("`varsha`'s cause is the baseline"),
+            "{found:?}"
+        );
+        // A share below its floor.
+        for l in accuracy.agree.iter_mut().filter(|l| l.request == "dashas") {
+            l.matches = 10;
+        }
+        let found = faults_of(&accuracy);
+        assert!(
+            found.iter().any(|f| f
+                .contains("`dashas`'s agreement under `same` is 1.0%, below its floor of 100.0%")),
             "{found:?}"
         );
     }
@@ -799,7 +861,7 @@ mod tests {
         accuracy.reference.retain(|l| l.request != "milan");
         accuracy
             .reference
-            .push(judged("raman", "yogas", "sdk", "timed", 9));
+            .push(judged("raman", "yogas", "sdk", "timed", 900));
         accuracy.unanswered.push(Unanswered {
             convention: String::from("same"),
             request: String::from("chart"),
@@ -852,12 +914,13 @@ mod tests {
         let mut out = String::new();
         tables(&mut out, &whole());
         assert!(
-            out.contains("| vargas | 50.0% of 10 | 90.0% of 10 | agreement only | — |"),
+            out.contains("| vargas | 97.0% of 1000 | 100.0% of 1000 | agreement only | — |"),
             "{out}"
         );
         assert!(
             out.contains(
-                "| strength | 50.0% of 10 | 90.0% of 10 | Raman's Example 56 (2) | neither:"
+                "| strength | 69.6% of 1000 | 98.6% of 1000 | Raman's Example 56 (2) | the SDK: SDK \
+                 100.0% `source`, baseline 0.0% |"
             ),
             "{out}"
         );
