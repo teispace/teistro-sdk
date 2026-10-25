@@ -71,6 +71,21 @@ const fn odd(sign: Rashi) -> bool {
 /// v. 1), and every graha's house counted from it in **both** charts, since
 /// the schools read its houses in the rasi chart or in the navamsha itself
 /// (crux C130) and a consumer reading one wants the other named.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_dasha::jaimini::karakamsha;
+///
+/// // The Moon the atmakaraka, in Cancer's navamsha; every graha in Libra.
+/// let signs = [Rashi::Libra; 9];
+/// let mut navamshas = [Rashi::Aries; 9];
+/// navamshas[Graha::Moon as usize] = Rashi::Cancer;
+/// let reading = karakamsha(Graha::Moon, &signs, &navamshas);
+/// assert_eq!((reading.atmakaraka, reading.sign), (Graha::Moon, Rashi::Cancer));
+/// // Libra is the 4th from Cancer, Aries the 10th.
+/// assert_eq!(reading.in_rasi[Graha::Sun as usize], 4);
+/// assert_eq!(reading.in_navamsha[Graha::Sun as usize], 10);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Karakamsha {
@@ -117,6 +132,39 @@ pub fn karakamsha(atmakaraka: Graha, signs: &[Rashi; 9], navamshas: &[Rashi; 9])
 }
 
 /// A chart's Jaimini significators: what `sdk.chart().jaimini` answers.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_core::settings::{BrahmaRule, NodeCoLordship};
+/// use teistro_dasha::rashi::RashiChart;
+///
+/// let chart = RashiChart {
+///     lagna: Rashi::Aquarius,
+///     arudha_lagna: Rashi::Aquarius,
+///     navamsa_lagna: Rashi::Aquarius,
+///     signs: [
+///         Rashi::Capricorn, Rashi::Gemini, Rashi::Taurus, Rashi::Aquarius, Rashi::Aquarius,
+///         Rashi::Aquarius, Rashi::Scorpio, Rashi::Gemini, Rashi::Sagittarius,
+///     ],
+///     dignities: [Dignity::Neutral; 9],
+///     brahma: None,
+/// };
+/// let degrees = [29.6, 22.1, 0.9, 13.1, 13.7, 20.1, 13.4, 13.9, 13.9];
+/// use teistro_core::settings::GrahaArudhaException;
+/// use teistro_dasha::jaimini::{
+///     JaiminiReading, brahma, graha_arudhas, karaka_bhavas, karakamsha, sthira_karakas,
+/// };
+///
+/// let reading = JaiminiReading {
+///     karakamsha: karakamsha(Graha::Sun, &chart.signs, &chart.signs),
+///     brahma: brahma(&chart, &degrees, NodeCoLordship::None, BrahmaRule::Verses),
+///     graha_arudhas: graha_arudhas(&chart, NodeCoLordship::None, GrahaArudhaException::None),
+///     sthira_karakas: sthira_karakas(&chart),
+///     karaka_bhavas: karaka_bhavas(&chart),
+/// };
+/// assert_eq!(reading.brahma.graha, Some(Graha::Mercury));
+/// assert_eq!(reading.graha_arudhas[Graha::Rahu as usize], None);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct JaiminiReading {
@@ -137,6 +185,28 @@ pub struct JaiminiReading {
 }
 
 /// Why a chart has no Brahma graha under the rule asked for.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_core::settings::{BrahmaRule, NodeCoLordship};
+/// use teistro_dasha::jaimini::{NoBrahma, brahma};
+/// use teistro_dasha::rashi::RashiChart;
+///
+/// // Everything in Taurus, an even sign, with Ketu opposite: no lord of the
+/// // 6th, 8th or 12th stands in an odd sign.
+/// let mut signs = [Rashi::Taurus; 9];
+/// signs[Graha::Ketu as usize] = Rashi::Scorpio;
+/// let chart = RashiChart {
+///     lagna: Rashi::Taurus,
+///     arudha_lagna: Rashi::Taurus,
+///     navamsa_lagna: Rashi::Taurus,
+///     signs,
+///     dignities: [Dignity::Neutral; 9],
+///     brahma: None,
+/// };
+/// let found = brahma(&chart, &[10.0; 9], NodeCoLordship::None, BrahmaRule::Verses);
+/// assert_eq!((found.graha, found.none), (None, Some(NoBrahma::NoLordQualifies)));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -154,6 +224,31 @@ pub enum NoBrahma {
 
 /// The Brahma graha of a chart, and how it was found (BPHS ch. 46 vv. 170
 /// to 173).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_core::settings::{BrahmaRule, NodeCoLordship};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aquarius,
+/// #     arudha_lagna: Rashi::Aquarius,
+/// #     navamsa_lagna: Rashi::Aquarius,
+/// #     signs: [
+/// #         Rashi::Capricorn, Rashi::Gemini, Rashi::Taurus, Rashi::Aquarius, Rashi::Aquarius,
+/// #         Rashi::Aquarius, Rashi::Scorpio, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities: [Dignity::Neutral; 9],
+/// #     brahma: None,
+/// # };
+/// # let degrees = [29.6, 22.1, 0.9, 13.1, 13.7, 20.1, 13.4, 13.9, 13.9];
+/// use teistro_dasha::jaimini::brahma;
+///
+/// let found = brahma(&chart, &degrees, NodeCoLordship::None, BrahmaRule::Verses);
+/// assert_eq!((found.rule, found.graha), (BrahmaRule::Verses, Some(Graha::Mercury)));
+/// assert!(found.qualified.contains(&Graha::Mercury));
+/// assert_eq!((found.passed_from, found.none), (None, None));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Brahma {
@@ -177,6 +272,30 @@ pub struct Brahma {
 impl Brahma {
     /// The sign the Brahma graha stands in, which the Sthira dasa starts
     /// from.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_core::settings::{BrahmaRule, NodeCoLordship};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aquarius,
+    /// #     arudha_lagna: Rashi::Aquarius,
+    /// #     navamsa_lagna: Rashi::Aquarius,
+    /// #     signs: [
+    /// #         Rashi::Capricorn, Rashi::Gemini, Rashi::Taurus, Rashi::Aquarius, Rashi::Aquarius,
+    /// #         Rashi::Aquarius, Rashi::Scorpio, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities: [Dignity::Neutral; 9],
+    /// #     brahma: None,
+    /// # };
+    /// # let degrees = [29.6, 22.1, 0.9, 13.1, 13.7, 20.1, 13.4, 13.9, 13.9];
+    /// use teistro_dasha::jaimini::brahma;
+    ///
+    /// // Mercury in Aquarius: the Sthira dasa starts there.
+    /// let found = brahma(&chart, &degrees, NodeCoLordship::None, BrahmaRule::Verses);
+    /// assert_eq!(found.sign(&chart), Some(Rashi::Aquarius));
+    /// ```
     #[must_use]
     pub fn sign(&self, chart: &RashiChart) -> Option<Rashi> {
         self.graha.map(|graha| chart.sign_of(graha))
@@ -373,6 +492,30 @@ pub fn pada_lord(chart: &RashiChart, sign: Rashi, co_lordship: NodeCoLordship) -
 }
 
 /// Every sign's [`pada_lord`], Aries to Pisces.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut signs = [Rashi::Aries; 9];
+/// # signs[Graha::Ketu as usize] = Rashi::Libra;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Aries,
+/// #     navamsa_lagna: Rashi::Aries,
+/// #     signs,
+/// #     dignities: [Dignity::Neutral; 9],
+/// #     brahma: None,
+/// # };
+///
+/// use teistro_core::settings::NodeCoLordship;
+/// use teistro_dasha::jaimini::pada_lords;
+///
+/// // With every graha together, each sign's own lord.
+/// let lords = pada_lords(&chart, NodeCoLordship::None);
+/// assert_eq!(lords[Rashi::Leo as usize], Graha::Sun);
+/// assert_eq!(lords[Rashi::Pisces as usize], Graha::Jupiter);
+/// ```
 #[must_use]
 pub fn pada_lords(chart: &RashiChart, co_lordship: NodeCoLordship) -> [Graha; SIGNS] {
     Rashi::ALL.map(|sign| pada_lord(chart, sign, co_lordship))
@@ -448,6 +591,30 @@ pub fn graha_arudha(
 }
 
 /// Every graha's arudha, the Sun to Ketu ([`graha_arudha`]).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut signs = [Rashi::Aries; 9];
+/// # signs[Graha::Ketu as usize] = Rashi::Libra;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Aries,
+/// #     navamsa_lagna: Rashi::Aries,
+/// #     signs,
+/// #     dignities: [Dignity::Neutral; 9],
+/// #     brahma: None,
+/// # };
+///
+/// use teistro_core::settings::{GrahaArudhaException, NodeCoLordship};
+/// use teistro_dasha::jaimini::graha_arudhas;
+///
+/// // The Sun's Leo is the 5th from Aries, and the 5th from Leo is Sagittarius.
+/// let arudhas = graha_arudhas(&chart, NodeCoLordship::None, GrahaArudhaException::None);
+/// assert_eq!(arudhas[Graha::Sun as usize], Some(Rashi::Sagittarius));
+/// assert_eq!(arudhas[Graha::Ketu as usize], None);
+/// ```
 #[must_use]
 pub fn graha_arudhas(
     chart: &RashiChart,

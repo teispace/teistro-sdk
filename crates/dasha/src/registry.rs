@@ -52,6 +52,22 @@ use teistro_core::registry::Registry;
 use crate::definition::DashaDefinition;
 
 /// The consumer's own systems, of either kernel, looked up by key or id.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Nakshatra};
+/// # use teistro_dasha::{DashaSystems, Lord, UduDefinition};
+/// #
+/// # // Seven lords of ten years each, from Krittika.
+/// # let mut saptaka = UduDefinition::of("ACME_SAPTAKA", Nakshatra::Krittika);
+/// # saptaka.lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn]
+/// #     .map(|graha| Lord { graha, years: 10 })
+/// #     .into();
+/// # let mut systems = DashaSystems::new();
+/// # let id = systems.register(saptaka)?;
+/// assert_eq!(systems.get("ACME_SAPTAKA").map(|d| d.key()), Some("ACME_SAPTAKA"));
+/// assert_eq!(systems.id("ACME_SAPTAKA"), Some(id));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug)]
 pub struct DashaSystems {
     registered: Registry<DashaDefinition>,
@@ -65,6 +81,13 @@ impl Default for DashaSystems {
 
 impl DashaSystems {
     /// Nothing registered yet.
+    ///
+    /// ```
+    /// use teistro_dasha::DashaSystems;
+    ///
+    /// assert!(DashaSystems::new().is_empty());
+    /// assert!(DashaSystems::default().is_empty());
+    /// ```
     #[must_use]
     pub const fn new() -> DashaSystems {
         DashaSystems {
@@ -73,6 +96,24 @@ impl DashaSystems {
     }
 
     /// Registers a consumer's system.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Nakshatra};
+    /// # use teistro_dasha::{DashaSystems, Lord, UduDefinition};
+    /// #
+    /// # // Seven lords of ten years each, from Krittika.
+    /// # let mut saptaka = UduDefinition::of("ACME_SAPTAKA", Nakshatra::Krittika);
+    /// # saptaka.lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn]
+    /// #     .map(|graha| Lord { graha, years: 10 })
+    /// #     .into();
+    /// # let mut systems = DashaSystems::new();
+    /// # let id = systems.register(saptaka)?;
+    /// // A key the catalogue has, or one already taken, is refused.
+    /// assert!(systems.register(UduDefinition::of("VIMSHOTTARI", Nakshatra::Ashwini)).is_err());
+    /// let again = systems.get("ACME_SAPTAKA").and_then(|d| d.udu()).cloned().ok_or(teistro_core::Error::internal("registered"))?;
+    /// assert!(systems.register(again).is_err());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -84,34 +125,130 @@ impl DashaSystems {
 
     /// Refuses further registrations, so nothing changes under a context that
     /// has started computing.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Nakshatra};
+    /// # use teistro_dasha::{DashaSystems, Lord, UduDefinition};
+    /// #
+    /// # // Seven lords of ten years each, from Krittika.
+    /// # let mut saptaka = UduDefinition::of("ACME_SAPTAKA", Nakshatra::Krittika);
+    /// # saptaka.lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn]
+    /// #     .map(|graha| Lord { graha, years: 10 })
+    /// #     .into();
+    /// # let mut systems = DashaSystems::new();
+    /// # let id = systems.register(saptaka)?;
+    /// use teistro_dasha::RashiDefinition;
+    ///
+    /// systems.seal();
+    /// assert!(systems.register(RashiDefinition::of("ACME_STHIRA")).is_err());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     pub fn seal(&mut self) {
         self.registered.seal();
     }
 
     /// The definition registered under a key.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Nakshatra};
+    /// # use teistro_dasha::{DashaSystems, Lord, UduDefinition};
+    /// #
+    /// # // Seven lords of ten years each, from Krittika.
+    /// # let mut saptaka = UduDefinition::of("ACME_SAPTAKA", Nakshatra::Krittika);
+    /// # saptaka.lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn]
+    /// #     .map(|graha| Lord { graha, years: 10 })
+    /// #     .into();
+    /// # let mut systems = DashaSystems::new();
+    /// # let id = systems.register(saptaka)?;
+    /// assert!(systems.get("ACME_SAPTAKA").is_some_and(|d| d.udu().is_some()));
+    /// assert!(systems.get("ACME_OTHER").is_none());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn get(&self, key: &str) -> Option<&DashaDefinition> {
         self.registered.get(key).map(|(definition, _)| definition)
     }
 
     /// The id a key was registered under.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Nakshatra};
+    /// # use teistro_dasha::{DashaSystems, Lord, UduDefinition};
+    /// #
+    /// # // Seven lords of ten years each, from Krittika.
+    /// # let mut saptaka = UduDefinition::of("ACME_SAPTAKA", Nakshatra::Krittika);
+    /// # saptaka.lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn]
+    /// #     .map(|graha| Lord { graha, years: 10 })
+    /// #     .into();
+    /// # let mut systems = DashaSystems::new();
+    /// # let id = systems.register(saptaka)?;
+    /// assert_eq!(systems.id("ACME_SAPTAKA"), Some(id));
+    /// assert_eq!(systems.id("ACME_OTHER"), None);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn id(&self, key: &str) -> Option<KeyId> {
         self.registered.get(key).map(|(_, id)| id)
     }
 
     /// The definition registered under an id.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Nakshatra};
+    /// # use teistro_dasha::{DashaSystems, Lord, UduDefinition};
+    /// #
+    /// # // Seven lords of ten years each, from Krittika.
+    /// # let mut saptaka = UduDefinition::of("ACME_SAPTAKA", Nakshatra::Krittika);
+    /// # saptaka.lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn]
+    /// #     .map(|graha| Lord { graha, years: 10 })
+    /// #     .into();
+    /// # let mut systems = DashaSystems::new();
+    /// # let id = systems.register(saptaka)?;
+    /// assert_eq!(systems.by_id(id).map(|d| d.key()), Some("ACME_SAPTAKA"));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn by_id(&self, id: KeyId) -> Option<&DashaDefinition> {
         self.registered.by_id(id)
     }
 
     /// Every registered definition with its id, in registration order.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Nakshatra};
+    /// # use teistro_dasha::{DashaSystems, Lord, UduDefinition};
+    /// #
+    /// # // Seven lords of ten years each, from Krittika.
+    /// # let mut saptaka = UduDefinition::of("ACME_SAPTAKA", Nakshatra::Krittika);
+    /// # saptaka.lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn]
+    /// #     .map(|graha| Lord { graha, years: 10 })
+    /// #     .into();
+    /// # let mut systems = DashaSystems::new();
+    /// # let id = systems.register(saptaka)?;
+    /// let keys: Vec<&str> = systems.iter().map(|(_, definition)| definition.key()).collect();
+    /// assert_eq!(keys, ["ACME_SAPTAKA"]);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     pub fn iter(&self) -> impl Iterator<Item = (KeyId, &DashaDefinition)> {
         self.registered.iter()
     }
 
     /// Whether nothing is registered.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Nakshatra};
+    /// # use teistro_dasha::{DashaSystems, Lord, UduDefinition};
+    /// #
+    /// # // Seven lords of ten years each, from Krittika.
+    /// # let mut saptaka = UduDefinition::of("ACME_SAPTAKA", Nakshatra::Krittika);
+    /// # saptaka.lords = [Graha::Sun, Graha::Moon, Graha::Mars, Graha::Mercury, Graha::Jupiter, Graha::Venus, Graha::Saturn]
+    /// #     .map(|graha| Lord { graha, years: 10 })
+    /// #     .into();
+    /// # let mut systems = DashaSystems::new();
+    /// # let id = systems.register(saptaka)?;
+    /// assert!(!systems.is_empty());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.registered.is_empty()

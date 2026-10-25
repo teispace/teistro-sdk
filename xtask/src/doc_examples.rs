@@ -25,6 +25,7 @@ const EXAMPLED: &[&str] = &[
     "teistro-calendar",
     "teistro-chart",
     "teistro-core",
+    "teistro-dasha",
     "teistro-geometry",
     "teistro-gochar",
     "teistro-hellenistic",

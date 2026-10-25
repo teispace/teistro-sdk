@@ -42,6 +42,14 @@ use crate::tree::{Path, Period, Timeline};
 const SIGNS: usize = 12;
 
 /// Whether a sign is odd by number: Aries, Gemini, Leo and the rest.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::rashi::Parity;
+///
+/// assert_eq!(Parity::of(Rashi::Aquarius), Parity::Odd);
+/// assert_eq!(Parity::of(Rashi::Pisces), Parity::Even);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Parity {
     /// Aries, Gemini, Leo, Libra, Sagittarius, Aquarius.
@@ -52,6 +60,14 @@ pub enum Parity {
 
 impl Parity {
     /// A sign's parity.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_dasha::rashi::Parity;
+    ///
+    /// assert_eq!(Parity::of(Rashi::Aries), Parity::Odd);
+    /// assert_eq!(Parity::of(Rashi::Taurus), Parity::Even);
+    /// ```
     #[must_use]
     pub const fn of(sign: Rashi) -> Parity {
         if (sign as usize) % 2 == 0 {
@@ -64,6 +80,15 @@ impl Parity {
 
 /// Whether a sign is odd-footed, by threes from Aries: the count from a
 /// sign to its lord runs forward from an odd-footed one.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::rashi::Footedness;
+///
+/// // Libra to Sagittarius are footed as Aries to Gemini are.
+/// assert_eq!(Footedness::of(Rashi::Libra), Footedness::OddFooted);
+/// assert_eq!(Footedness::of(Rashi::Pisces), Footedness::EvenFooted);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Footedness {
     /// Aries to Gemini, and Libra to Sagittarius.
@@ -74,6 +99,14 @@ pub enum Footedness {
 
 impl Footedness {
     /// A sign's footedness.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_dasha::rashi::Footedness;
+    ///
+    /// assert_eq!(Footedness::of(Rashi::Gemini), Footedness::OddFooted);
+    /// assert_eq!(Footedness::of(Rashi::Cancer), Footedness::EvenFooted);
+    /// ```
     #[must_use]
     pub const fn of(sign: Rashi) -> Footedness {
         if ((sign as usize) / 3) % 2 == 0 {
@@ -85,6 +118,14 @@ impl Footedness {
 }
 
 /// Which way a sequence runs through the zodiac.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::rashi::{Direction, step};
+///
+/// assert_eq!(step(Rashi::Aries, Direction::Forward, 1), Rashi::Taurus);
+/// assert_eq!(step(Rashi::Taurus, Direction::Back, 1), Rashi::Aries);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Direction {
     /// Aries to Taurus.
@@ -95,6 +136,13 @@ pub enum Direction {
 
 impl Direction {
     /// Forward from an odd sign, back from an even one.
+    ///
+    /// ```
+    /// use teistro_dasha::rashi::{Direction, Parity};
+    ///
+    /// assert_eq!(Direction::of(Parity::Odd), Direction::Forward);
+    /// assert_eq!(Direction::of(Parity::Even), Direction::Back);
+    /// ```
     #[must_use]
     pub const fn of(parity: Parity) -> Direction {
         match parity {
@@ -113,6 +161,15 @@ fn sign_at(position: usize) -> Rashi {
 }
 
 /// The sign `count` signs from `sign` in `direction`.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::rashi::{Direction, step};
+///
+/// assert_eq!(step(Rashi::Aries, Direction::Back, 1), Rashi::Pisces);
+/// // Counted round the twelve.
+/// assert_eq!(step(Rashi::Aries, Direction::Forward, 13), Rashi::Taurus);
+/// ```
 #[must_use]
 pub fn step(sign: Rashi, direction: Direction, count: usize) -> Rashi {
     let count = count % SIGNS;
@@ -128,6 +185,29 @@ fn forward(from: Rashi, to: Rashi) -> usize {
 }
 
 /// What a rashi dasha reads of a chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_dasha::rashi::RashiChart;
+///
+/// let mut dignities = [Dignity::Neutral; 9];
+/// dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// let chart = RashiChart {
+///     lagna: Rashi::Aries,
+///     arudha_lagna: Rashi::Leo,
+///     navamsa_lagna: Rashi::Sagittarius,
+///     signs: [
+///         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+///         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+///     ],
+///     dignities,
+///     brahma: Some(Rashi::Aquarius),
+/// };
+///
+/// assert_eq!(chart.signs[Graha::Mars as usize], Rashi::Capricorn);
+/// assert_eq!(chart.brahma, Some(Rashi::Aquarius));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RashiChart {
     /// The lagna's sign.
@@ -165,6 +245,15 @@ impl RashiChart {
 }
 
 /// The rashi dashas' two readings BPHS and the recording engine part on.
+///
+/// ```
+/// use teistro_core::settings::{DualLord, RashiStart, root};
+/// use teistro_dasha::rashi::RashiRules;
+///
+/// assert_eq!(RashiRules::of(&root()), RashiRules::BPHS);
+/// let mine = RashiRules { start: RashiStart::Lagna, ..RashiRules::BPHS };
+/// assert_eq!(mine.dual_lord, DualLord::Bphs);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RashiRules {
@@ -176,18 +265,41 @@ pub struct RashiRules {
 
 impl RashiRules {
     /// BPHS ch. 46's readings, the settings' defaults.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DualLord, RashiStart};
+    /// use teistro_dasha::rashi::RashiRules;
+    ///
+    /// assert_eq!((RashiRules::BPHS.dual_lord, RashiRules::BPHS.start), (DualLord::Bphs, RashiStart::Stronger));
+    /// ```
     pub const BPHS: RashiRules = RashiRules {
         dual_lord: DualLord::Bphs,
         start: RashiStart::Stronger,
     };
 
     /// The conformance corpus's recording engine's readings.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DualLord, RashiStart};
+    /// use teistro_dasha::rashi::RashiRules;
+    ///
+    /// let engine = RashiRules::RECORDING_ENGINE;
+    /// assert_eq!((engine.dual_lord, engine.start), (DualLord::Kendra, RashiStart::Lagna));
+    /// ```
     pub const RECORDING_ENGINE: RashiRules = RashiRules {
         dual_lord: DualLord::Kendra,
         start: RashiStart::Lagna,
     };
 
     /// The readings the settings' `dasha` group gives.
+    ///
+    /// ```
+    /// use teistro_core::settings::root;
+    /// use teistro_dasha::rashi::RashiRules;
+    ///
+    /// let settings = root();
+    /// assert_eq!(RashiRules::of(&settings).start, settings.dasha.rashi_start);
+    /// ```
     #[must_use]
     pub const fn of(settings: &teistro_core::settings::Settings) -> RashiRules {
         RashiRules {
@@ -275,6 +387,15 @@ const FIRST_LORDS: [Graha; SIGNS] = [
 ];
 
 /// A sign's first Jaimini lord: Ketu for Scorpio and Rahu for Aquarius.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_dasha::rashi::first_lord;
+///
+/// assert_eq!(first_lord(Rashi::Scorpio), Graha::Ketu);
+/// assert_eq!(first_lord(Rashi::Aquarius), Graha::Rahu);
+/// assert_eq!(first_lord(Rashi::Leo), Graha::Sun);
+/// ```
 #[must_use]
 pub fn first_lord(sign: Rashi) -> Graha {
     FIRST_LORDS
@@ -284,6 +405,14 @@ pub fn first_lord(sign: Rashi) -> Graha {
 }
 
 /// A dual-lorded sign's second lord: Mars for Scorpio, Saturn for Aquarius.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_dasha::rashi::second_lord;
+///
+/// assert_eq!(second_lord(Rashi::Scorpio), Some(Graha::Mars));
+/// assert_eq!(second_lord(Rashi::Leo), None);
+/// ```
 #[must_use]
 pub const fn second_lord(sign: Rashi) -> Option<Graha> {
     match sign {
@@ -301,6 +430,34 @@ pub const fn second_lord(sign: Rashi) -> Option<Graha> {
 ///   equal, the lord the greater count reaches.
 /// - [`DualLord::Kendra`], the recording engine: the one in a kendra from the
 ///   sign when only one is, else the first.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_core::settings::DualLord;
+/// use teistro_dasha::rashi::stronger_lord;
+///
+/// // Saturn stands in Aquarius: under BPHS he counts to Rahu, the other lord;
+/// // the recording engine takes the lord in a kendra from it, Saturn.
+/// assert_eq!(stronger_lord(&chart, Rashi::Aquarius, DualLord::Bphs), Graha::Rahu);
+/// assert_eq!(stronger_lord(&chart, Rashi::Aquarius, DualLord::Kendra), Graha::Saturn);
+/// assert_eq!(stronger_lord(&chart, Rashi::Leo, DualLord::Bphs), Graha::Sun);
+/// ```
 #[must_use]
 pub fn stronger_lord(chart: &RashiChart, sign: Rashi, rule: DualLord) -> Graha {
     let first = first_lord(sign);
@@ -332,6 +489,32 @@ pub fn stronger_lord(chart: &RashiChart, sign: Rashi, rule: DualLord) -> Graha {
 /// The years from a sign to its lord: the signs counted forward from an
 /// odd-footed sign and back from an even-footed one, twelve when the lord
 /// is in the sign.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::counted_years;
+///
+/// // Aquarius is even-footed, so back from it to Rahu's Gemini: eight.
+/// assert_eq!(counted_years(&chart, Rashi::Aquarius, Graha::Rahu), 8);
+/// // A lord in its own sign counts twelve.
+/// assert_eq!(counted_years(&chart, Rashi::Aquarius, Graha::Saturn), 12);
+/// ```
 #[must_use]
 pub fn counted_years(chart: &RashiChart, sign: Rashi, lord: Graha) -> u8 {
     let at = chart.sign_of(lord);
@@ -347,6 +530,14 @@ pub fn counted_years(chart: &RashiChart, sign: Rashi, lord: Graha) -> u8 {
 }
 
 /// Where a system starts.
+///
+/// ```
+/// use teistro_dasha::rashi::{CHARA, PADANADHAMSA, STHIRA, Start};
+///
+/// assert_eq!(CHARA.start, Start::Lagna);
+/// assert_eq!(PADANADHAMSA.start, Start::ArudhaLagna);
+/// assert_eq!(STHIRA.start, Start::Brahma);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -379,6 +570,14 @@ impl Start {
 }
 
 /// The order a system visits the signs in.
+///
+/// ```
+/// use teistro_dasha::rashi::{DRIG, MANDOOKA, Order, TRIKONA};
+///
+/// assert_eq!(TRIKONA.order, Order::TrineGroups);
+/// assert_eq!(DRIG.order, Order::DrishtiChain);
+/// assert_eq!(MANDOOKA.order, Order::Leap);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -402,6 +601,14 @@ pub enum Order {
 }
 
 /// How long a sign's period runs.
+///
+/// ```
+/// use teistro_dasha::rashi::{CHARA, Length, SHOOLA, YOGARDHA};
+///
+/// assert_eq!(CHARA.length, Length::CountToLord);
+/// assert_eq!(SHOOLA.length, Length::Fixed(9));
+/// assert!(matches!(YOGARDHA.length, Length::MeanOfCountAndModality { movable: 7, .. }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -437,6 +644,32 @@ pub enum Length {
 }
 
 /// Which lord a mahadasha names.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{CHARA, NamedLord, RashiRules, SHOOLA};
+///
+/// // Shoola names Aquarius's first lord, Rahu, whichever is stronger.
+/// assert_eq!(SHOOLA.named_lord, NamedLord::First);
+/// assert_eq!(SHOOLA.lord(&chart, Rashi::Aquarius, RashiRules::RECORDING_ENGINE), Graha::Rahu);
+/// assert_eq!(CHARA.lord(&chart, Rashi::Aquarius, RashiRules::RECORDING_ENGINE), Graha::Saturn);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -453,6 +686,33 @@ pub enum NamedLord {
 /// exactly as [`UduRow`](crate::UduRow) is: a shipped row clones without
 /// allocating, which the allocation tests hold, and a registered one owns
 /// its key and its houses.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{CHARA, RashiRules};
+///
+/// // Chara runs forward from an odd lagna, Aries first, Mars's nine years.
+/// let signs = CHARA.sequence(&chart, RashiRules::BPHS)?;
+/// assert_eq!(signs[..3], [Rashi::Aries, Rashi::Taurus, Rashi::Gemini]);
+/// assert_eq!(CHARA.years(&chart, Rashi::Aries, RashiRules::BPHS), 9.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RashiRow {
     /// Which system the row is: a catalogued one, or a consumer's by the
@@ -477,6 +737,37 @@ pub struct RashiRow {
 
 impl RashiRow {
     /// The sign the system starts from under `rules`.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// use teistro_dasha::rashi::{RashiRules, STHIRA, TRIKONA};
+    ///
+    /// // The strongest trine under BPHS: Sagittarius, two grahas in a dual sign.
+    /// assert_eq!(TRIKONA.start_sign(&chart, RashiRules::BPHS)?, Rashi::Sagittarius);
+    /// assert_eq!(TRIKONA.start_sign(&chart, RashiRules::RECORDING_ENGINE)?, Rashi::Aries);
+    /// assert_eq!(STHIRA.start_sign(&chart, RashiRules::BPHS)?, Rashi::Aquarius);
+    /// // No Brahma graha, no Sthira dasa.
+    /// let none = RashiChart { brahma: None, ..chart };
+    /// let refused = STHIRA.start_sign(&none, RashiRules::BPHS).unwrap_err();
+    /// assert_eq!(refused.field(), Some("jaimini.brahma"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -519,6 +810,35 @@ impl RashiRow {
     }
 
     /// The mahadasha signs for a chart, in order.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// use teistro_dasha::rashi::{RashiRules, TRIKONA};
+    ///
+    /// // From Aries: its trine, then Taurus's, then Gemini's and Cancer's.
+    /// let signs = TRIKONA.sequence(&chart, RashiRules::RECORDING_ENGINE)?;
+    /// assert_eq!(
+    ///     signs[..6],
+    ///     [Rashi::Aries, Rashi::Leo, Rashi::Sagittarius, Rashi::Taurus, Rashi::Virgo, Rashi::Capricorn]
+    /// );
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -576,6 +896,33 @@ impl RashiRow {
 
     /// A sign's period in years for a chart: whole years, but for
     /// [`Length::MeanOfCountAndModality`]'s half-years.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// use teistro_dasha::rashi::{CHARA, NARAYANA, RashiRules, YOGARDHA};
+    ///
+    /// // Aries to Mars in Capricorn is nine; exalted, Narayana gives him ten.
+    /// assert_eq!(CHARA.years(&chart, Rashi::Aries, RashiRules::BPHS), 9.0);
+    /// assert_eq!(NARAYANA.years(&chart, Rashi::Aries, RashiRules::BPHS), 10.0);
+    /// // Half of nine and a movable sign's seven.
+    /// assert_eq!(YOGARDHA.years(&chart, Rashi::Aries, RashiRules::BPHS), 8.0);
+    /// ```
     #[must_use]
     pub fn years(&self, chart: &RashiChart, sign: Rashi, rules: RashiRules) -> f64 {
         let by_modality = |movable: u8, fixed: u8, dual: u8| {
@@ -614,6 +961,30 @@ impl RashiRow {
     }
 
     /// The lord a mahadasha of `sign` names.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// use teistro_dasha::rashi::{CHARA, RashiRules};
+    ///
+    /// assert_eq!(CHARA.lord(&chart, Rashi::Aquarius, RashiRules::BPHS), Graha::Rahu);
+    /// assert_eq!(CHARA.lord(&chart, Rashi::Aquarius, RashiRules::RECORDING_ENGINE), Graha::Saturn);
+    /// ```
     #[must_use]
     pub fn lord(&self, chart: &RashiChart, sign: Rashi, rules: RashiRules) -> Graha {
         match self.named_lord {
@@ -625,6 +996,14 @@ impl RashiRow {
 
 impl RashiRow {
     /// Whether this row is a catalogued system's.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::DashaSystem;
+    /// use teistro_dasha::rashi::CHARA;
+    ///
+    /// assert!(CHARA.is(DashaSystem::Chara));
+    /// assert!(!CHARA.is(DashaSystem::Narayana));
+    /// ```
     #[must_use]
     pub fn is(&self, system: DashaSystem) -> bool {
         self.system.catalogued() == Some(system)
@@ -637,6 +1016,16 @@ impl RashiRow {
     /// modality length gives, and the houses a stronger start counts from.
     /// Both are refused by field, exactly as `UduRow::validate` does, so a
     /// registered row is refused by the same field a shipped one would be.
+    ///
+    /// ```
+    /// use teistro_dasha::rashi::{Length, RASHI_ROWS, RashiDefinition};
+    ///
+    /// assert!(RASHI_ROWS.iter().all(|row| row.validate().is_ok()));
+    /// let one = RashiDefinition { stronger_of: vec![5], ..RashiDefinition::of("ACME") };
+    /// assert_eq!(one.row().validate().unwrap_err().field(), Some("stronger_of"));
+    /// let none = RashiDefinition { length: Length::Fixed(0), ..RashiDefinition::of("ACME") };
+    /// assert_eq!(none.row().validate().unwrap_err().field(), Some("length"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -695,6 +1084,16 @@ impl RashiRow {
 /// The signs a sign aspects by rashi drishti, in the zodiac's order: a
 /// movable sign the fixed signs but the one after it, a fixed sign the
 /// movable signs but the one before it, a dual sign the other duals.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::rashi::aspected;
+///
+/// // Aries, movable, aspects the fixed signs but Taurus beside it.
+/// assert_eq!(aspected(Rashi::Aries), [Rashi::Leo, Rashi::Scorpio, Rashi::Aquarius]);
+/// // Gemini, dual, the other duals.
+/// assert_eq!(aspected(Rashi::Gemini), [Rashi::Virgo, Rashi::Sagittarius, Rashi::Pisces]);
+/// ```
 #[must_use]
 pub fn aspected(sign: Rashi) -> [Rashi; 3] {
     let target = match (sign as usize) % 3 {
@@ -733,6 +1132,31 @@ const fn row(
 }
 
 /// Chara: every sign from the lagna, each counted to its stronger lord.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{CHARA, RashiRules};
+///
+/// let signs = CHARA.sequence(&chart, RashiRules::BPHS)?;
+/// assert_eq!((signs[0], signs[11]), (Rashi::Aries, Rashi::Pisces));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const CHARA: RashiRow = row(
     DashaSystem::Chara,
     Start::Lagna,
@@ -742,6 +1166,12 @@ pub const CHARA: RashiRow = row(
     &[],
 );
 /// Narayana: Chara with the lord's exaltation and debilitation.
+///
+/// ```
+/// use teistro_dasha::rashi::{Length, NARAYANA};
+///
+/// assert_eq!(NARAYANA.length, Length::CountToLordByDignity);
+/// ```
 pub const NARAYANA: RashiRow = row(
     DashaSystem::Narayana,
     Start::Lagna,
@@ -751,6 +1181,32 @@ pub const NARAYANA: RashiRow = row(
     &[],
 );
 /// Padanadhamsa: Chara from the arudha lagna.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{PADANADHAMSA, RashiRules};
+///
+/// // From the arudha lagna, Leo, an odd sign: forward.
+/// let signs = PADANADHAMSA.sequence(&chart, RashiRules::BPHS)?;
+/// assert_eq!(signs[..2], [Rashi::Leo, Rashi::Virgo]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const PADANADHAMSA: RashiRow = row(
     DashaSystem::Padanadhamsa,
     Start::ArudhaLagna,
@@ -761,6 +1217,12 @@ pub const PADANADHAMSA: RashiRow = row(
 );
 /// Trikona: the trine groups from the lagna's, or under BPHS from the
 /// strongest trine's (ch. 46 vv. 183 and 184).
+///
+/// ```
+/// use teistro_dasha::rashi::TRIKONA;
+///
+/// assert_eq!(*TRIKONA.stronger_of, [1, 5, 9]);
+/// ```
 pub const TRIKONA: RashiRow = row(
     DashaSystem::Trikona,
     Start::Lagna,
@@ -770,6 +1232,36 @@ pub const TRIKONA: RashiRow = row(
     &[1, 5, 9],
 );
 /// Drig: the ninth, tenth and eleventh houses and what each aspects.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{DRIG, RashiRules};
+///
+/// // The 9th from Aries, Sagittarius, then the duals it aspects; then the
+/// // 10th, Capricorn, and what it aspects.
+/// let signs = DRIG.sequence(&chart, RashiRules::BPHS)?;
+/// assert_eq!(
+///     signs[..6],
+///     [Rashi::Sagittarius, Rashi::Gemini, Rashi::Virgo, Rashi::Pisces, Rashi::Capricorn, Rashi::Taurus]
+/// );
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const DRIG: RashiRow = row(
     DashaSystem::Drig,
     Start::Lagna,
@@ -780,6 +1272,33 @@ pub const DRIG: RashiRow = row(
 );
 /// Shoola: nine years a sign from the lagna, or under BPHS from the stronger
 /// of the second and the eighth (ch. 46 vv. 181 and 182).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{Length, RashiRules, SHOOLA};
+///
+/// assert_eq!(SHOOLA.length, Length::Fixed(9));
+/// // The 2nd and the 8th, Taurus and Scorpio, both empty and fixed: the
+/// // earlier is kept.
+/// assert_eq!(SHOOLA.start_sign(&chart, RashiRules::BPHS)?, Rashi::Taurus);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const SHOOLA: RashiRow = row(
     DashaSystem::Shoola,
     Start::Lagna,
@@ -789,6 +1308,30 @@ pub const SHOOLA: RashiRow = row(
     &[2, 8],
 );
 /// Niryana Shoola: Shoola from the navamsa lagna.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{NIRYANA_SHOOLA, RashiRules};
+///
+/// assert_eq!(NIRYANA_SHOOLA.start_sign(&chart, RashiRules::BPHS)?, Rashi::Sagittarius);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const NIRYANA_SHOOLA: RashiRow = row(
     DashaSystem::NiryanaShoola,
     Start::NavamsaLagna,
@@ -800,6 +1343,33 @@ pub const NIRYANA_SHOOLA: RashiRow = row(
 /// Mandooka: leaping back two signs, seven, eight or nine years by modality,
 /// from the lagna, or under BPHS from the stronger of the lagna and the
 /// seventh (ch. 46 vv. 179 and 180).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{MANDOOKA, RashiRules};
+///
+/// // Back two signs at a time from Aries, then from Pisces.
+/// let signs = MANDOOKA.sequence(&chart, RashiRules::RECORDING_ENGINE)?;
+/// assert_eq!(signs[..3], [Rashi::Aries, Rashi::Aquarius, Rashi::Sagittarius]);
+/// assert_eq!(signs[6], Rashi::Pisces);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const MANDOOKA: RashiRow = row(
     DashaSystem::Mandooka,
     Start::Lagna,
@@ -902,6 +1472,13 @@ const fn stronger() -> NamedLord {
 impl RashiDefinition {
     /// A definition with a key and every other field its default: Chara's
     /// row under another name, which a caller then changes.
+    ///
+    /// ```
+    /// use teistro_dasha::rashi::{CHARA, RashiDefinition};
+    ///
+    /// let mine = RashiDefinition::of("ACME_CHARA").row();
+    /// assert_eq!((mine.start, mine.order, mine.length), (CHARA.start, CHARA.order, CHARA.length));
+    /// ```
     #[must_use]
     pub fn of(key: impl Into<String>) -> RashiDefinition {
         RashiDefinition {
@@ -919,6 +1496,15 @@ impl RashiDefinition {
     }
 
     /// The row the kernel runs, its houses owned.
+    ///
+    /// ```
+    /// use teistro_dasha::rashi::{RashiDefinition, Start};
+    /// use teistro_dasha::row::DashaName;
+    ///
+    /// let row = RashiDefinition { start: Start::NavamsaLagna, ..RashiDefinition::of("ACME") }.row();
+    /// assert_eq!(row.system, DashaName::Registered(String::from("ACME")));
+    /// assert_eq!(row.start, Start::NavamsaLagna);
+    /// ```
     #[must_use]
     pub fn row(&self) -> RashiRow {
         RashiRow {
@@ -949,6 +1535,33 @@ impl teistro_core::registry::Definition for RashiDefinition {
 /// from the lagna; the Sanskrit starts it from Brahma, and states no order,
 /// which the translation's "reverse from even signs" supplies and this
 /// does not (C129).
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{RashiRules, STHIRA};
+///
+/// // From the Brahma graha's Aquarius, forward, eight years a fixed sign.
+/// let signs = STHIRA.sequence(&chart, RashiRules::BPHS)?;
+/// assert_eq!(signs[..2], [Rashi::Aquarius, Rashi::Pisces]);
+/// assert_eq!(STHIRA.years(&chart, Rashi::Aquarius, RashiRules::BPHS), 8.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const STHIRA: RashiRow = row(
     DashaSystem::Sthira,
     Start::Brahma,
@@ -968,6 +1581,31 @@ pub const STHIRA: RashiRow = row(
 /// sign and back from an even one, is its own worked example's and
 /// `PyJHora`'s, and this takes it (C131). It needs no Brahma: it takes the
 /// Sthira dasa's years, not its start.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut dignities = [Dignity::Neutral; 9];
+/// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Leo,
+/// #     navamsa_lagna: Rashi::Sagittarius,
+/// #     signs: [
+/// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+/// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+/// #     ],
+/// #     dignities,
+/// #     brahma: Some(Rashi::Aquarius),
+/// # };
+/// use teistro_dasha::rashi::{RashiRules, YOGARDHA};
+///
+/// // Aries and Libra both empty and movable: the lagna is kept.
+/// assert_eq!(YOGARDHA.start_sign(&chart, RashiRules::BPHS)?, Rashi::Aries);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const YOGARDHA: RashiRow = row(
     DashaSystem::Yogardha,
     Start::Lagna,
@@ -991,6 +1629,13 @@ pub const YOGARDHA: RashiRow = row(
 /// all three rings when the lagna, the Sun and the Moon stand in three
 /// signs and from the lagna alone otherwise (vv. 19 and 20), which changes
 /// what is read, never when.
+///
+/// ```
+/// use teistro_dasha::rashi::{Length, SUDARSHANA_CHAKRA};
+///
+/// assert_eq!(SUDARSHANA_CHAKRA.length, Length::Fixed(1));
+/// assert!(SUDARSHANA_CHAKRA.recurs, "twelve years again, for life");
+/// ```
 pub const SUDARSHANA_CHAKRA: RashiRow = RashiRow {
     system: DashaName::Catalogued(DashaSystem::SudarshanaChakra),
     start: Start::Lagna,
@@ -1002,6 +1647,14 @@ pub const SUDARSHANA_CHAKRA: RashiRow = RashiRow {
 };
 
 /// Every sign-based row this build implements.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_dasha::rashi::RASHI_ROWS;
+///
+/// assert_eq!(RASHI_ROWS.len(), 11);
+/// assert!(RASHI_ROWS.iter().any(|row| row.is(DashaSystem::Sthira)));
+/// ```
 pub const RASHI_ROWS: &[RashiRow] = &[
     CHARA,
     NARAYANA,
@@ -1017,12 +1670,53 @@ pub const RASHI_ROWS: &[RashiRow] = &[
 ];
 
 /// The sign-based row of a system, when this build implements one.
+///
+/// ```
+/// use teistro_core::catalogue::DashaSystem;
+/// use teistro_dasha::rashi::{CHARA, rashi_row};
+///
+/// assert_eq!(rashi_row(DashaSystem::Chara), Some(&CHARA));
+/// assert_eq!(rashi_row(DashaSystem::Vimshottari), None);
+/// ```
 #[must_use]
 pub fn rashi_row(system: DashaSystem) -> Option<&'static RashiRow> {
     RASHI_ROWS.iter().find(|row| row.is(system))
 }
 
 /// A sign-based dasha of one chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_dasha::rashi::RashiChart;
+///
+/// let mut dignities = [Dignity::Neutral; 9];
+/// dignities[Graha::Mars as usize] = Dignity::Exalted;
+/// dignities[Graha::Venus as usize] = Dignity::Debilitated;
+/// let chart = RashiChart {
+///     lagna: Rashi::Aries,
+///     arudha_lagna: Rashi::Leo,
+///     navamsa_lagna: Rashi::Sagittarius,
+///     signs: [
+///         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+///         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+///     ],
+///     dignities,
+///     brahma: Some(Rashi::Aquarius),
+/// };
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_core::settings::{AfterCycle, YearLength};
+/// use teistro_dasha::rashi::{CHARA, RashiDasha, RashiRules};
+/// use teistro_dasha::Timeline;
+///
+/// let birth = JulianDay::literal(2_451_545.0);
+/// let dasha = RashiDasha::new(&CHARA, &chart, birth, YearLength::Julian36525, AfterCycle::End, RashiRules::BPHS)?;
+/// // Aries first, Mars's nine years.
+/// let first = dasha.mahadashas().next().ok_or(teistro_core::error::Error::internal("a mahadasha"))?;
+/// assert_eq!((first.sign, first.lord), (Some(Rashi::Aries), Graha::Mars));
+/// assert!((first.interval.days() - 9.0 * 365.25).abs() < 1e-6);
+/// assert_eq!(dasha.mahadashas().count(), 12);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct RashiDasha {
     row: RashiRow,
@@ -1038,6 +1732,34 @@ pub struct RashiDasha {
 
 impl RashiDasha {
     /// The dasha of a chart under a row.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::settings::{AfterCycle, YearLength};
+    /// use teistro_dasha::rashi::{RashiDasha, RashiRules, STHIRA};
+    ///
+    /// let none = RashiChart { brahma: None, ..chart };
+    /// let birth = JulianDay::literal(2_451_545.0);
+    /// let refused = RashiDasha::new(&STHIRA, &none, birth, YearLength::Julian36525, AfterCycle::End, RashiRules::BPHS);
+    /// assert_eq!(refused.unwrap_err().field(), Some("jaimini.brahma"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -1078,30 +1800,181 @@ impl RashiDasha {
     }
 
     /// The row the dasha runs.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, YearLength};
+    /// # use teistro_dasha::rashi::{CHARA, RashiDasha, RashiRules};
+    /// # use teistro_dasha::Timeline;
+    /// #
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let dasha = RashiDasha::new(&CHARA, &chart, birth, YearLength::Julian36525, AfterCycle::End, RashiRules::RECORDING_ENGINE)?;
+    ///
+    /// assert_eq!(dasha.row(), &CHARA);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn row(&self) -> &RashiRow {
         &self.row
     }
 
     /// The readings it was built under.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, YearLength};
+    /// # use teistro_dasha::rashi::{CHARA, RashiDasha, RashiRules};
+    /// # use teistro_dasha::Timeline;
+    /// #
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let dasha = RashiDasha::new(&CHARA, &chart, birth, YearLength::Julian36525, AfterCycle::End, RashiRules::RECORDING_ENGINE)?;
+    ///
+    /// assert_eq!(dasha.rules(), RashiRules::RECORDING_ENGINE);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn rules(&self) -> RashiRules {
         self.rules
     }
 
     /// The chart it reads.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, YearLength};
+    /// # use teistro_dasha::rashi::{CHARA, RashiDasha, RashiRules};
+    /// # use teistro_dasha::Timeline;
+    /// #
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let dasha = RashiDasha::new(&CHARA, &chart, birth, YearLength::Julian36525, AfterCycle::End, RashiRules::RECORDING_ENGINE)?;
+    ///
+    /// assert_eq!(dasha.chart(), &chart);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn chart(&self) -> &RashiChart {
         &self.chart
     }
 
     /// The mahadasha signs, in order.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, YearLength};
+    /// # use teistro_dasha::rashi::{CHARA, RashiDasha, RashiRules};
+    /// # use teistro_dasha::Timeline;
+    /// #
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let dasha = RashiDasha::new(&CHARA, &chart, birth, YearLength::Julian36525, AfterCycle::End, RashiRules::RECORDING_ENGINE)?;
+    ///
+    /// assert_eq!(dasha.signs()[..2], [Rashi::Aries, Rashi::Taurus]);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn signs(&self) -> [Rashi; SIGNS] {
         self.signs
     }
 
     /// When the birth cycle ends.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// # use teistro_dasha::rashi::RashiChart;
+    /// #
+    /// # let mut dignities = [Dignity::Neutral; 9];
+    /// # dignities[Graha::Mars as usize] = Dignity::Exalted;
+    /// # dignities[Graha::Venus as usize] = Dignity::Debilitated;
+    /// # let chart = RashiChart {
+    /// #     lagna: Rashi::Aries,
+    /// #     arudha_lagna: Rashi::Leo,
+    /// #     navamsa_lagna: Rashi::Sagittarius,
+    /// #     signs: [
+    /// #         Rashi::Leo, Rashi::Cancer, Rashi::Capricorn, Rashi::Leo, Rashi::Sagittarius,
+    /// #         Rashi::Virgo, Rashi::Aquarius, Rashi::Gemini, Rashi::Sagittarius,
+    /// #     ],
+    /// #     dignities,
+    /// #     brahma: Some(Rashi::Aquarius),
+    /// # };
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AfterCycle, YearLength};
+    /// # use teistro_dasha::rashi::{CHARA, RashiDasha, RashiRules};
+    /// # use teistro_dasha::Timeline;
+    /// #
+    /// # let birth = JulianDay::literal(2_451_545.0);
+    /// # let dasha = RashiDasha::new(&CHARA, &chart, birth, YearLength::Julian36525, AfterCycle::End, RashiRules::RECORDING_ENGINE)?;
+    ///
+    /// let last = dasha.mahadashas().last().map(|period| period.interval.to.get());
+    /// assert_eq!(last, Some(dasha.cycle_end().get()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn cycle_end(&self) -> JulianDay<Utc> {
         JulianDay::literal(self.birth.get() + self.cycle_days())

@@ -24,6 +24,15 @@ use teistro_core::house::House;
 use crate::rashi::{RashiChart, stronger_sign};
 
 /// What a fixed significator signifies: a relative, or death.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_dasha::jaimini::{KARAKA_BHAVA_HOUSES, Signification};
+///
+/// // The 7th from Venus shows the wife.
+/// let (graha, house, of) = KARAKA_BHAVA_HOUSES[5];
+/// assert_eq!((graha, house.get(), of), (Graha::Venus, 7, Signification::Wife));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -159,6 +168,27 @@ pub fn bhava_karaka(house: House) -> Graha {
 
 /// How a sthira karaka was chosen, so a reader can check the choice and a
 /// consumer who weighs strength otherwise knows which ones to recompute.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut signs = [Rashi::Aries; 9];
+/// # signs[Graha::Ketu as usize] = Rashi::Libra;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Aries,
+/// #     navamsa_lagna: Rashi::Aries,
+/// #     signs,
+/// #     dignities: [Dignity::Neutral; 9],
+/// #     brahma: None,
+/// # };
+///
+/// use teistro_dasha::jaimini::{ChosenBy, stronger_karaka};
+///
+/// // Together and equal, the Sun is named first.
+/// assert_eq!(stronger_karaka(&chart, Graha::Sun, Graha::Venus), (Graha::Sun, ChosenBy::FirstNamed));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -180,6 +210,29 @@ pub enum ChosenBy {
 }
 
 /// One sthira karaka of a chart.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut signs = [Rashi::Aries; 9];
+/// # signs[Graha::Ketu as usize] = Rashi::Libra;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Aries,
+/// #     navamsa_lagna: Rashi::Aries,
+/// #     signs,
+/// #     dignities: [Dignity::Neutral; 9],
+/// #     brahma: None,
+/// # };
+///
+/// use teistro_dasha::jaimini::{ChosenBy, Signification, sthira_karakas};
+///
+/// let father = &sthira_karakas(&chart)[0];
+/// assert_eq!(father.signification, Signification::Father);
+/// assert_eq!(father.candidates, [Graha::Sun, Graha::Venus]);
+/// assert_eq!((father.graha, father.chosen_by), (Graha::Sun, ChosenBy::FirstNamed));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SthiraKaraka {
@@ -196,6 +249,29 @@ pub struct SthiraKaraka {
 
 /// A karaka bhava of a chart (BPHS ch. 32 vv. 22 to 24): the sign the house
 /// counted from a graha falls in, whole signs in the rasi chart.
+///
+/// ```
+/// # use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// # use teistro_dasha::rashi::RashiChart;
+/// #
+/// # let mut signs = [Rashi::Aries; 9];
+/// # signs[Graha::Ketu as usize] = Rashi::Libra;
+/// # let chart = RashiChart {
+/// #     lagna: Rashi::Aries,
+/// #     arudha_lagna: Rashi::Aries,
+/// #     navamsa_lagna: Rashi::Aries,
+/// #     signs,
+/// #     dignities: [Dignity::Neutral; 9],
+/// #     brahma: None,
+/// # };
+///
+/// use teistro_dasha::jaimini::{Signification, karaka_bhavas};
+///
+/// // The 4th from the Moon in Aries, the mother's, is Cancer.
+/// let mother = karaka_bhavas(&chart)[1];
+/// assert_eq!((mother.graha, mother.house.get()), (Graha::Moon, 4));
+/// assert_eq!((mother.signification, mother.sign), (Signification::Mother, Rashi::Cancer));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct KarakaBhava {

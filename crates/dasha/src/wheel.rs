@@ -38,6 +38,13 @@ const ABHIJIT_FROM: i64 = UTTARASHADHA * Nas::PER_NAKSHATRA + 3 * PADA;
 const ABHIJIT_TO: i64 = (UTTARASHADHA + 1) * Nas::PER_NAKSHATRA + Nas::PER_NAKSHATRA / 15;
 
 /// Which circle a system counts over.
+///
+/// ```
+/// use teistro_dasha::Wheel;
+///
+/// assert_eq!(Wheel::default(), Wheel::Nakshatras);
+/// assert_eq!((Wheel::Nakshatras.size(), Wheel::WithAbhijit.size()), (27, 28));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -52,6 +59,18 @@ pub enum Wheel {
 
 /// One segment of a wheel the Moon stands in: its place round the wheel,
 /// its bounds, and how far into it the Moon is.
+///
+/// ```
+/// use teistro_core::angle::Nas;
+/// use teistro_core::quantity::Degrees;
+/// use teistro_dasha::Wheel;
+///
+/// // 20° is halfway through Bharani, the second nakshatra.
+/// let bharani = Wheel::Nakshatras.segment(Nas::from_degrees(Degrees::try_new(20.0)?));
+/// assert_eq!(bharani.place, 1);
+/// assert!((bharani.elapsed() - 0.5).abs() < 1e-12);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Segment {
     /// Its place, 0 for Ashwini.
@@ -66,6 +85,18 @@ pub struct Segment {
 
 impl Segment {
     /// How far through the segment the Moon is, 0 to 1.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    /// use teistro_core::quantity::Degrees;
+    /// use teistro_dasha::Wheel;
+    ///
+    /// // 278° is in Abhijit's 4°13′20″, from 276°40′.
+    /// let abhijit = Wheel::WithAbhijit.segment(Nas::from_degrees(Degrees::try_new(278.0)?));
+    /// assert_eq!(abhijit.place, 21);
+    /// assert!((abhijit.elapsed() - (278.0 - 276.0 - 2.0 / 3.0) / (4.0 + 2.0 / 9.0)).abs() < 1e-9);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_precision_loss,
@@ -80,6 +111,16 @@ impl Segment {
     }
 
     /// Its bounds in degrees, for a search of when the Moon crossed them.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    /// use teistro_core::quantity::Degrees;
+    /// use teistro_dasha::Wheel;
+    ///
+    /// let (from, to) = Wheel::Nakshatras.segment(Nas::from_degrees(Degrees::try_new(20.0)?)).degrees();
+    /// assert!((from - 40.0 / 3.0).abs() < 1e-9 && (to - 80.0 / 3.0).abs() < 1e-9);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_precision_loss,
@@ -96,6 +137,12 @@ impl Segment {
 
 impl Wheel {
     /// How many segments it has.
+    ///
+    /// ```
+    /// use teistro_dasha::Wheel;
+    ///
+    /// assert_eq!(Wheel::WithAbhijit.size(), 28);
+    /// ```
     #[must_use]
     pub const fn size(self) -> u8 {
         match self {
@@ -106,6 +153,15 @@ impl Wheel {
 
     /// A catalogue nakshatra's place on this wheel, 0 for Ashwini: past
     /// Abhijit every nakshatra is one further round.
+    ///
+    /// ```
+    /// use teistro_dasha::Wheel;
+    ///
+    /// // Shravana, the catalogue's 21, is 22 round the wheel with Abhijit.
+    /// assert_eq!(Wheel::WithAbhijit.place_of(21), 22);
+    /// assert_eq!(Wheel::Nakshatras.place_of(21), 21);
+    /// assert_eq!(Wheel::WithAbhijit.place_of(5), 5);
+    /// ```
     #[must_use]
     pub const fn place_of(self, nakshatra: u8) -> u8 {
         match self {
@@ -115,6 +171,20 @@ impl Wheel {
     }
 
     /// The segment a longitude falls in.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    /// use teistro_core::quantity::Degrees;
+    /// use teistro_dasha::Wheel;
+    ///
+    /// // Shravana's first fifteenth belongs to Abhijit on the wheel of twenty-eight.
+    /// let at = Nas::from_degrees(Degrees::try_new(280.5)?);
+    /// assert_eq!(Wheel::Nakshatras.segment(at).place, 21);
+    /// assert_eq!(Wheel::WithAbhijit.segment(at).place, 21);
+    /// let later = Nas::from_degrees(Degrees::try_new(285.0)?);
+    /// assert_eq!(Wheel::WithAbhijit.segment(later).place, 22);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn segment(self, at: Nas) -> Segment {
         let nas = at.get();
