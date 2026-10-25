@@ -505,7 +505,9 @@ jobs:
   # threads share under ThreadSanitizer, the standard library rebuilt
   # instrumented: the ephemeris memo four threads ask at once, and the
   # surface tests, whose workers each build a context over the SDK's
-  # lazily built tables.
+  # lazily built tables. Last, the Node binding's suite against the addon
+  # built with ASan, clang's runtime loaded ahead of an unchanged Node, so
+  # the generated glue between Node's values and the C ABI is checked too.
   sanitizers:
     name: no memory errors, leaks or data races (ASan, TSan)
     runs-on: ubuntu-latest
@@ -533,6 +535,13 @@ jobs:
         run: |
           cargo +nightly test -Zbuild-std --target x86_64-unknown-linux-gnu -p teistro-port-ephemeris --lib
           cargo +nightly test -Zbuild-std --target x86_64-unknown-linux-gnu -p teistro --test surface
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: The Node binding's suite with the addon under ASan
+        env:
+          TEISTRO_STRICT: "1"
+        run: cargo xtask check-node-asan
 
   # Phase 3's exit asks for the conformance kit against **every tier**,
   # and a tier is a cargo feature, so the kit is whichever one is

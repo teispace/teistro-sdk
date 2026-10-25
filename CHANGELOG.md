@@ -114,6 +114,17 @@ examples convert a date to Bikram Sambat and show that an answer spells a
 catalogue member as serde does, `BIKRAM_SAMBAT` rather than
 `calendar.BIKRAM_SAMBAT`.
 
+**The Node addon runs its suite under AddressSanitizer.** **Numbers:**
+all six test files pass with every access the addon and the SDK make
+checked; a one-byte heap over-read planted in the addon failed each of
+the five that load it. `cargo xtask check-node-asan`, a new step in
+verify's `sanitizers` job, builds the addon with the sanitizer and
+refuses one that is not instrumented. It runs the Node suite in a stock
+`node` with the sanitizer's runtime loaded first. The Node layer still
+refuses a sanitizer build, unless its path is named with `TEISTRO_ADDON`
+and `TEISTRO_SANITIZER` names the same sanitizer. That refusal now says
+"an address sanitizer build" in every binding, not "a address build".
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:

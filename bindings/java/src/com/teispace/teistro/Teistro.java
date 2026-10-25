@@ -195,7 +195,8 @@ public final class Teistro implements AutoCloseable {
                     + Native.GENERATED_SDK_VERSION;
         }
         if (info.get("sanitizer") instanceof String sanitizer && !sanitizer.isEmpty()) {
-            return "the library is a " + sanitizer + " build, which is not for use";
+            String article = "aeiou".indexOf(sanitizer.charAt(0)) >= 0 ? "an" : "a";
+            return "the library is " + article + " " + sanitizer + " sanitizer build, which is not for use";
         }
         if (!named && !Boolean.TRUE.equals(info.get("optimised"))) {
             return "the library found is an unoptimised build; name it outright with "

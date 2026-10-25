@@ -15,7 +15,7 @@ use crate::binding::{FIXTURES, blob_fixtures, build, pinned_npm_tool, present, s
 use crate::examples::{Binding, Runtime};
 use crate::platform::Platform;
 
-const TESTS: &str = "bindings/node/test/";
+pub(crate) const TESTS: &str = "bindings/node/test/";
 /// The Node binding's suite, as `node --test` is given it from the
 /// package's own directory (and from the staged wasm package, which has
 /// the same layout).

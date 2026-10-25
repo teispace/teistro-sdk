@@ -45,8 +45,17 @@ test('a build of another ABI or another version is refused', () => {
 
 test('a sanitizer build is refused however it was found', () => {
   for (const named of [true, false]) {
-    assert.match(refuseBuild(info({ sanitizer: 'address' }), named), /address sanitizer build/u);
+    assert.match(refuseBuild(info({ sanitizer: 'address' }), named), /an address sanitizer build/u);
   }
+  assert.match(refuseBuild(info({ sanitizer: 'thread' }), true), /a thread sanitizer build/u);
+});
+
+test('a sanitizer build is loaded only when named and acknowledged', () => {
+  const asan = info({ sanitizer: 'address' });
+  assert.equal(refuseBuild(asan, true, 'address'), null, 'what a sanitizer gate does');
+  assert.match(refuseBuild(asan, false, 'address'), /TEISTRO_SANITIZER=address/u, 'a searched path');
+  assert.match(refuseBuild(asan, true, 'thread'), /sanitizer build/u, 'another sanitizer');
+  assert.match(refuseBuild(info({ abi: 99, sanitizer: 'address' }), true, 'address'), /ABI 99/u);
 });
 
 test('an unoptimised build is refused only when it was searched for', () => {

@@ -2128,8 +2128,9 @@ String? refuseBuild(BuildInfo info, {required bool named}) {
         'generated from $generatedSdkVersion';
   }
   if (info.sanitizer.isNotEmpty) {
-    return 'the library is a ${info.sanitizer} sanitizer build, which is '
-        'not for use';
+    final article = RegExp('^[aeiou]').hasMatch(info.sanitizer) ? 'an' : 'a';
+    return 'the library is $article ${info.sanitizer} sanitizer build, '
+        'which is not for use';
   }
   if (!named && !info.optimised) {
     return 'the library found at a searched path is an unoptimised '

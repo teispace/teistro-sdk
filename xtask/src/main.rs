@@ -238,6 +238,9 @@
 //! - `check-node`: the Node binding's decoders read blobs the library
 //!   produced and its types pass a consumer's strict type-check (needs
 //!   Node, and TypeScript for the second half).
+//! - `check-node-asan`: the same suite against the addon built with
+//!   the address sanitizer, its runtime loaded ahead of Node (needs nightly,
+//!   Node, and clang on Linux).
 //! - `check-wasm`: the wasm module, bound by the `wasm-bindgen` CLI the
 //!   lockfile pins, passes the Node binding's own suite unchanged (needs
 //!   Node and the `wasm32-unknown-unknown` target).
@@ -342,6 +345,7 @@ mod mutants;
 mod nepal_day;
 mod nepal_month;
 mod nepal_sambat;
+mod node_asan;
 mod node_binding;
 mod outer_planets;
 mod package;
@@ -698,6 +702,7 @@ fn binding_gate(command: &str, args: &[String]) -> Option<i32> {
     Some(match command {
         "check-c" => c_binding::check(&root),
         "check-node" => node_binding::check(&root),
+        "check-node-asan" => node_asan::check(&root),
         "check-wasm" => wasm_binding::check(&root),
         "check-dart" => dart_binding::check(&root),
         "check-flutter" => flutter_package::check(&root, &args[1..]),
@@ -839,7 +844,7 @@ fn usage() -> i32 {
          rule-doc PACK|CATEGORY|KEY | cofiring-probe FILE KEYS [LAT LON] | \
          vsop [DIR] | moon | wasm-crates [MODULE] | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
-         check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
+         check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-node-asan | check-wasm | \
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | measure-mobile [ROW...] | measure-ffi-cost | measure-micro | measure-ab | app-speed-device ROW | \
          conformance --from DIR | check-conformance --from DIR | \

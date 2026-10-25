@@ -176,22 +176,27 @@ import { decodeProvenance, decodeStep } from './records.js';
  * library, and these files were generated from a description of it. A
  * mismatched ABI or version is refused outright. A sanitizer build is
  * refused because it answers differently and slowly and is never chosen
- * by accident; an unoptimised one is refused only when the loader found
- * it itself, because naming a path is a deliberate act and a development
- * build is what a developer means by it.
+ * by accident, unless its path was named and `sanitizer` names the same
+ * sanitizer: the two together are how a sanitizer gate says it means one.
+ * An unoptimised one is refused only when the loader found it itself,
+ * because naming a path is a deliberate act and a development build is
+ * what a developer means by it.
  *
  * @param {object} info what `buildInfo()` parsed
  * @param {boolean} named whether the path was given rather than searched
+ * @param {string} [sanitizer] the sanitizer the caller says it is loading
+ *   (`TEISTRO_SANITIZER`), or empty
  */
-export function refuseBuild(info, named) {
+export function refuseBuild(info, named, sanitizer = '') {
   if (info.abi !== ABI_VERSION) {
     return `the addon implements ABI ${info.abi}, these types were generated for ${ABI_VERSION}`;
   }
   if (info.sdk !== SDK_VERSION) {
     return `the addon is Teistro ${info.sdk}, these types were generated from ${SDK_VERSION}`;
   }
-  if (info.sanitizer) {
-    return `the addon is a ${info.sanitizer} sanitizer build, which is not for use`;
+  if (info.sanitizer && !(named && sanitizer === info.sanitizer)) {
+    const article = /^[aeiou]/u.test(info.sanitizer) ? 'an' : 'a';
+    return `the addon is ${article} ${info.sanitizer} sanitizer build, which is not for use; a sanitizer gate names it with TEISTRO_ADDON and TEISTRO_SANITIZER=${info.sanitizer}`;
   }
   if (!named && info.optimised === false) {
     return `the addon at ${info.profile ?? 'an unoptimised path'} is an unoptimised build; build it with \`--release\`, or set TEISTRO_ADDON to load this one deliberately`;
@@ -217,7 +222,7 @@ export { platformPackage };
 /** What the loaded addon says about its own build (ADR-0007). */
 export const buildInfo = Object.freeze(readBuildInfo(native));
 
-const refusal = refuseBuild(buildInfo, wasNamed);
+const refusal = refuseBuild(buildInfo, wasNamed, process.env.TEISTRO_SANITIZER ?? '');
 if (refusal) throw new Error(refusal);
 
 /**
