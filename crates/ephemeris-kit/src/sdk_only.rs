@@ -38,10 +38,30 @@ use teistro_port_ephemeris::{
 use crate::kit::{self, Check};
 
 /// The check's name in a report.
+///
+/// ```
+/// # use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+/// #
+/// # let open = || -> Box<dyn EphemerisProvider> { Box::new(TestProvider::new()) };
+///
+/// use teistro_ephemeris_kit::sdk_only::{NAME, check};
+///
+/// assert_eq!(check(&open).name, NAME);
+/// ```
 pub const NAME: &str = "sdk-only: a chart is its native positions";
 
 /// How the check opens a provider: the façade owns what it computes with,
 /// so it is given a fresh one for each context it builds.
+///
+/// ```
+/// use teistro_ephemeris_kit::sdk_only::Open;
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// // A fresh provider each call: a context owns the one it is given.
+/// let fresh = || -> Box<dyn EphemerisProvider> { Box::new(TestProvider::new()) };
+/// let open: Open<'_> = &fresh;
+/// assert_eq!(open().capabilities(), open().capabilities());
+/// ```
 pub type Open<'a> = &'a dyn Fn() -> Box<dyn EphemerisProvider>;
 
 /// A provider reduced to its native frame: the positions it computes in the
@@ -75,6 +95,17 @@ impl<P> core::fmt::Debug for NativeFrameOnly<P> {
 
 impl<P: EphemerisProvider> NativeFrameOnly<P> {
     /// The provider, reduced.
+    ///
+    /// ```
+    /// use teistro_ephemeris_kit::sdk_only::NativeFrameOnly;
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// // The native frame kept; the ayanamshas and engine operations gone.
+    /// let provider = TestProvider::new();
+    /// let reduced = NativeFrameOnly::new(TestProvider::new());
+    /// assert_eq!(reduced.capabilities().native_frame, provider.capabilities().native_frame);
+    /// assert!(reduced.capabilities().ayanamshas.is_empty());
+    /// ```
     pub fn new(inner: P) -> NativeFrameOnly<P> {
         let native = inner.capabilities().native_frame;
         NativeFrameOnly { inner, native }
@@ -147,6 +178,16 @@ fn readings(
 
 /// The first place two JSON values part, as a path from the root, or
 /// `None` when they are the same value.
+///
+/// ```
+/// use serde_json::json;
+/// use teistro_ephemeris_kit::sdk_only::first_difference;
+///
+/// let left = json!({"positions": [{"deg": 10.0}, {"deg": 20.0}]});
+/// let right = json!({"positions": [{"deg": 10.0}, {"deg": 20.5}]});
+/// assert_eq!(first_difference(&left, &right, "").as_deref(), Some(".positions[1].deg"));
+/// assert_eq!(first_difference(&left, &left, ""), None);
+/// ```
 #[must_use]
 pub fn first_difference(left: &Value, right: &Value, path: &str) -> Option<String> {
     match (left, right) {
@@ -199,6 +240,21 @@ fn describe(reading: &Result<Value, String>) -> String {
 }
 
 /// What comparing a provider with its native frame alone found.
+///
+/// ```
+/// # use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+/// #
+/// # let open = || -> Box<dyn EphemerisProvider> { Box::new(TestProvider::new()) };
+///
+/// use teistro_core::settings::OverridePolicy;
+/// use teistro_ephemeris_kit::sdk_only::parting;
+///
+/// // Three births, at the kit's three places.
+/// let found = parting(&open, OverridePolicy::SdkOnly)?;
+/// assert_eq!(found.readings, 3);
+/// assert!(found.founded <= found.readings);
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Parting {
     /// How many readings were made on each side.
@@ -216,6 +272,19 @@ pub struct Parting {
 /// Under `sdk-only` they must never part; under `prefer-native` they part
 /// wherever one of the provider's overrides reaches a chart, which is what
 /// makes a pass under `sdk-only` mean something.
+///
+/// ```
+/// # use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+/// #
+/// # let open = || -> Box<dyn EphemerisProvider> { Box::new(TestProvider::new()) };
+///
+/// use teistro_core::settings::OverridePolicy;
+/// use teistro_ephemeris_kit::sdk_only::parting;
+///
+/// // Under `sdk-only` the two sides never part.
+/// assert_eq!(parting(&open, OverridePolicy::SdkOnly)?.at, None);
+/// # Ok::<(), String>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -237,6 +306,18 @@ pub fn parting(open: Open<'_>, policy: OverridePolicy) -> Result<Parting, String
 /// provider and over its native frame alone. Its detail says where the two
 /// part under `prefer-native`, so a reader can tell a check that held
 /// against real overrides from one that held because none reaches a chart.
+///
+/// ```
+/// # use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+/// #
+/// # let open = || -> Box<dyn EphemerisProvider> { Box::new(TestProvider::new()) };
+///
+/// use teistro_ephemeris_kit::sdk_only::check;
+///
+/// let check = check(&open);
+/// assert!(check.passed, "{}", check.detail);
+/// assert!(check.detail.starts_with("3 readings"));
+/// ```
 #[must_use]
 pub fn check(open: Open<'_>) -> Check {
     let (sdk_only, native) = match (

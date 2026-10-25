@@ -43,6 +43,14 @@ use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut
 use crate::sdk_only::Open;
 
 /// The profile the corpus's charts reproduce under.
+///
+/// ```
+/// use teistro_core::settings::Profile;
+/// use teistro_ephemeris_kit::corpus::PROFILE;
+///
+/// // A profile the SDK ships.
+/// assert!(Profile::shipped(PROFILE).is_some());
+/// ```
 pub const PROFILE: &str = "conformance-baseline";
 
 /// Where the recorded charts are, under the corpus's root.
@@ -59,6 +67,22 @@ struct TolerancesFile {
 }
 
 /// The corpus's tolerance bands, by field pattern and provider class.
+///
+/// ```
+/// # const TOLERANCES: &str = r#"{
+/// #     "provider_classes": {"builtin-compact": "the compact tier", "same-ephemeris": "the recording engine's own"},
+/// #     "fields": {
+/// #         "positions.bodies.*.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.01, "same-ephemeris": 1e-6},
+/// #         "positions.bodies.MOON.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.02, "same-ephemeris": 1e-6}
+/// #     }
+/// # }"#;
+///
+/// use teistro_ephemeris_kit::corpus::Tolerances;
+///
+/// let tolerances = Tolerances::from_json(TOLERANCES)?;
+/// assert_eq!(tolerances.classes.len(), 2);
+/// # Ok::<(), String>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Tolerances {
     /// Every provider class the corpus names, with what it means.
@@ -69,6 +93,14 @@ pub struct Tolerances {
 
 impl Tolerances {
     /// Reads the file, refusing a band that is not a number.
+    ///
+    /// ```
+    /// use teistro_ephemeris_kit::corpus::Tolerances;
+    ///
+    /// // A band that is not a number is refused, naming it.
+    /// let text = r#"{"provider_classes": {"de": "a DE reader"}, "fields": {"jpl.*": {"de": "tight"}}}"#;
+    /// assert!(Tolerances::from_json(text).unwrap_err().contains("`jpl.*`.de"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -98,6 +130,25 @@ impl Tolerances {
 
     /// The band a field is held to under a class: the most specific pattern
     /// that matches it, or `0` — exact — when none does.
+    ///
+    /// ```
+    /// # const TOLERANCES: &str = r#"{
+    /// #     "provider_classes": {"builtin-compact": "the compact tier", "same-ephemeris": "the recording engine's own"},
+    /// #     "fields": {
+    /// #         "positions.bodies.*.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.01, "same-ephemeris": 1e-6},
+    /// #         "positions.bodies.MOON.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.02, "same-ephemeris": 1e-6}
+    /// #     }
+    /// # }"#;
+    ///
+    /// use teistro_ephemeris_kit::corpus::Tolerances;
+    ///
+    /// let tolerances = Tolerances::from_json(TOLERANCES)?;
+    /// // The most specific pattern wins; a field none names is exact.
+    /// assert_eq!(tolerances.band("positions.bodies.MOON.sidereal_longitude_deg", "builtin-compact"), 0.02);
+    /// assert_eq!(tolerances.band("positions.bodies.SUN.sidereal_longitude_deg", "builtin-compact"), 0.01);
+    /// assert_eq!(tolerances.band("positions.bodies.SUN.latitude_deg", "builtin-compact"), 0.0);
+    /// # Ok::<(), String>(())
+    /// ```
     #[must_use]
     pub fn band(&self, path: &str, class: &str) -> f64 {
         self.bands
@@ -109,6 +160,23 @@ impl Tolerances {
     }
 
     /// Refuses a class the corpus does not name, naming the ones it does.
+    ///
+    /// ```
+    /// # const TOLERANCES: &str = r#"{
+    /// #     "provider_classes": {"builtin-compact": "the compact tier", "same-ephemeris": "the recording engine's own"},
+    /// #     "fields": {
+    /// #         "positions.bodies.*.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.01, "same-ephemeris": 1e-6},
+    /// #         "positions.bodies.MOON.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.02, "same-ephemeris": 1e-6}
+    /// #     }
+    /// # }"#;
+    ///
+    /// use teistro_ephemeris_kit::corpus::Tolerances;
+    ///
+    /// let tolerances = Tolerances::from_json(TOLERANCES)?;
+    /// assert!(tolerances.class("same-ephemeris").is_ok());
+    /// assert!(tolerances.class("acme").unwrap_err().ends_with("it names builtin-compact, same-ephemeris"));
+    /// # Ok::<(), String>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -127,6 +195,15 @@ impl Tolerances {
 
 /// Whether a field pattern matches a path: segment by segment, a `*`
 /// standing for any run of characters inside one segment.
+///
+/// ```
+/// use teistro_ephemeris_kit::corpus::matches;
+///
+/// assert!(matches("positions.bodies.*.speed_deg_per_day", "positions.bodies.MOON.speed_deg_per_day"));
+/// // A `*` stays inside its segment.
+/// assert!(!matches("positions.*", "positions.bodies.MOON"));
+/// assert!(matches("jpl.geometric.*_km", "jpl.geometric.distance_km"));
+/// ```
 #[must_use]
 pub fn matches(pattern: &str, path: &str) -> bool {
     let patterns: Vec<&str> = pattern.split('.').collect();
@@ -155,6 +232,29 @@ fn glob(pattern: &str, text: &str) -> bool {
 
 /// The corpus a run is made against: its root, its version, the commit
 /// it was checked out at when that can be read, and its tolerances.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::Corpus;
+/// #
+/// # const TOLERANCES: &str = r#"{
+/// #     "provider_classes": {"builtin-compact": "the compact tier", "same-ephemeris": "the recording engine's own"},
+/// #     "fields": {
+/// #         "positions.bodies.*.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.01, "same-ephemeris": 1e-6},
+/// #         "positions.bodies.MOON.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.02, "same-ephemeris": 1e-6}
+/// #     }
+/// # }"#;
+/// # // A corpus of no recorded charts, written where the example can.
+/// # let dir = std::env::temp_dir().join(format!("teistro-kit-doc-{}-corpus", std::process::id()));
+/// # std::fs::create_dir_all(dir.join("baseline/charts"))?;
+/// # std::fs::write(dir.join("corpus.json"), r#"{"version": "0.0.1"}"#)?;
+/// # std::fs::write(dir.join("tolerances.json"), TOLERANCES)?;
+/// # let corpus = Corpus::open(&dir)?;
+///
+/// // Not a checkout, so no commit to cite.
+/// assert_eq!((corpus.version.as_str(), corpus.commit.as_deref()), ("0.0.1", None));
+/// # std::fs::remove_dir_all(&dir)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug)]
 pub struct Corpus {
     root: PathBuf,
@@ -169,6 +269,31 @@ pub struct Corpus {
 
 impl Corpus {
     /// Opens the corpus at its root (the SDK's `fixtures/`).
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::corpus::Corpus;
+    /// #
+    /// # const TOLERANCES: &str = r#"{
+    /// #     "provider_classes": {"builtin-compact": "the compact tier", "same-ephemeris": "the recording engine's own"},
+    /// #     "fields": {
+    /// #         "positions.bodies.*.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.01, "same-ephemeris": 1e-6},
+    /// #         "positions.bodies.MOON.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.02, "same-ephemeris": 1e-6}
+    /// #     }
+    /// # }"#;
+    /// # // A corpus of no recorded charts, written where the example can.
+    /// # let dir = std::env::temp_dir().join(format!("teistro-kit-doc-{}-open", std::process::id()));
+    /// # std::fs::create_dir_all(dir.join("baseline/charts"))?;
+    /// # std::fs::write(dir.join("corpus.json"), r#"{"version": "0.0.1"}"#)?;
+    /// # std::fs::write(dir.join("tolerances.json"), TOLERANCES)?;
+    /// # let corpus = Corpus::open(&dir)?;
+    ///
+    /// assert!(corpus.tolerances.class("builtin-compact").is_ok());
+    /// // A root without the corpus's files is refused, saying where to get them.
+    /// let empty = dir.join("baseline");
+    /// assert!(Corpus::open(&empty).unwrap_err().contains("git submodule update --init"));
+    /// # std::fs::remove_dir_all(&dir)?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -258,6 +383,15 @@ fn commit_of(root: &Path) -> Option<String> {
 }
 
 /// What a report says of the corpus it was made against.
+///
+/// ```
+/// use teistro_ephemeris_kit::corpus::CorpusId;
+///
+/// // A commit that is not known is left out of the report.
+/// let id = CorpusId { version: "0.12.0".to_owned(), commit: None };
+/// assert_eq!(serde_json::to_string(&id)?, r#"{"version":"0.12.0"}"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct CorpusId {
     /// The corpus's version.
@@ -268,6 +402,53 @@ pub struct CorpusId {
 }
 
 /// What a report says of the implementation it scores.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+/// #
+/// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+/// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+/// #     path: path.to_owned(),
+/// #     expected: 10.0,
+/// #     found: 10.0 + difference,
+/// #     difference,
+/// #     tolerance,
+/// #     within: difference <= tolerance,
+/// # };
+/// # let results = vec![
+/// #     FixtureResult {
+/// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+/// #         outcome: Outcome::Pass,
+/// #         reason: None,
+/// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+/// #     },
+/// #     FixtureResult {
+/// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+/// #         outcome: Outcome::Fail,
+/// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+/// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+/// #     },
+/// # ];
+/// # let report = CorpusReport {
+/// #     schema: "teistro-conformance/report/1",
+/// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+/// #     implementation: Implementation {
+/// #         name: "teistro over acme".to_owned(),
+/// #         version: "1.0".to_owned(),
+/// #         binding: "rust",
+/// #         provider_class: "builtin-compact".to_owned(),
+/// #         platform: "macos-aarch64".to_owned(),
+/// #         settings_hash: None,
+/// #     },
+/// #     counts: Counts::of(&results),
+/// #     results,
+/// # };
+///
+/// let json = serde_json::to_value(&report.implementation)?;
+/// assert_eq!(json["provider_class"], "builtin-compact");
+/// assert!(json.get("settings_hash").is_none());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Implementation {
     /// The SDK and the provider it computed with.
@@ -287,6 +468,13 @@ pub struct Implementation {
 }
 
 /// A fixture's outcome, as the corpus's report spells it.
+///
+/// ```
+/// use teistro_ephemeris_kit::corpus::Outcome;
+///
+/// assert_eq!(serde_json::to_string(&Outcome::Skip)?, r#""skip""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Outcome {
@@ -299,6 +487,52 @@ pub enum Outcome {
 }
 
 /// One field compared.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+/// #
+/// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+/// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+/// #     path: path.to_owned(),
+/// #     expected: 10.0,
+/// #     found: 10.0 + difference,
+/// #     difference,
+/// #     tolerance,
+/// #     within: difference <= tolerance,
+/// # };
+/// # let results = vec![
+/// #     FixtureResult {
+/// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+/// #         outcome: Outcome::Pass,
+/// #         reason: None,
+/// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+/// #     },
+/// #     FixtureResult {
+/// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+/// #         outcome: Outcome::Fail,
+/// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+/// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+/// #     },
+/// # ];
+/// # let report = CorpusReport {
+/// #     schema: "teistro-conformance/report/1",
+/// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+/// #     implementation: Implementation {
+/// #         name: "teistro over acme".to_owned(),
+/// #         version: "1.0".to_owned(),
+/// #         binding: "rust",
+/// #         provider_class: "builtin-compact".to_owned(),
+/// #         platform: "macos-aarch64".to_owned(),
+/// #         settings_hash: None,
+/// #     },
+/// #     counts: Counts::of(&results),
+/// #     results,
+/// # };
+///
+/// // Each field compared is listed, inside its band or not.
+/// let missed = &report.results[1].fields[0];
+/// assert!(!missed.within && missed.difference > missed.tolerance);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Field {
     /// The field's path in the recorded chart.
@@ -316,6 +550,52 @@ pub struct Field {
 }
 
 /// One recorded chart's result.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+/// #
+/// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+/// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+/// #     path: path.to_owned(),
+/// #     expected: 10.0,
+/// #     found: 10.0 + difference,
+/// #     difference,
+/// #     tolerance,
+/// #     within: difference <= tolerance,
+/// # };
+/// # let results = vec![
+/// #     FixtureResult {
+/// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+/// #         outcome: Outcome::Pass,
+/// #         reason: None,
+/// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+/// #     },
+/// #     FixtureResult {
+/// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+/// #         outcome: Outcome::Fail,
+/// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+/// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+/// #     },
+/// # ];
+/// # let report = CorpusReport {
+/// #     schema: "teistro-conformance/report/1",
+/// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+/// #     implementation: Implementation {
+/// #         name: "teistro over acme".to_owned(),
+/// #         version: "1.0".to_owned(),
+/// #         binding: "rust",
+/// #         provider_class: "builtin-compact".to_owned(),
+/// #         platform: "macos-aarch64".to_owned(),
+/// #         settings_hash: None,
+/// #     },
+/// #     counts: Counts::of(&results),
+/// #     results,
+/// # };
+///
+/// let failed = &report.results[1];
+/// assert_eq!(failed.outcome, Outcome::Fail);
+/// assert!(failed.reason.as_deref().is_some_and(|why| why.starts_with("outside its band")));
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct FixtureResult {
     /// The recorded chart.
@@ -330,6 +610,50 @@ pub struct FixtureResult {
 }
 
 /// How many fixtures came out each way.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+/// #
+/// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+/// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+/// #     path: path.to_owned(),
+/// #     expected: 10.0,
+/// #     found: 10.0 + difference,
+/// #     difference,
+/// #     tolerance,
+/// #     within: difference <= tolerance,
+/// # };
+/// # let results = vec![
+/// #     FixtureResult {
+/// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+/// #         outcome: Outcome::Pass,
+/// #         reason: None,
+/// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+/// #     },
+/// #     FixtureResult {
+/// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+/// #         outcome: Outcome::Fail,
+/// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+/// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+/// #     },
+/// # ];
+/// # let report = CorpusReport {
+/// #     schema: "teistro-conformance/report/1",
+/// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+/// #     implementation: Implementation {
+/// #         name: "teistro over acme".to_owned(),
+/// #         version: "1.0".to_owned(),
+/// #         binding: "rust",
+/// #         provider_class: "builtin-compact".to_owned(),
+/// #         platform: "macos-aarch64".to_owned(),
+/// #         settings_hash: None,
+/// #     },
+/// #     counts: Counts::of(&results),
+/// #     results,
+/// # };
+///
+/// assert_eq!(report.counts, Counts { passed: 1, failed: 1, skipped: 0 });
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct Counts {
     /// Passed.
@@ -342,6 +666,51 @@ pub struct Counts {
 
 impl Counts {
     /// How many of the results came out each way.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+    /// #
+    /// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+    /// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+    /// #     path: path.to_owned(),
+    /// #     expected: 10.0,
+    /// #     found: 10.0 + difference,
+    /// #     difference,
+    /// #     tolerance,
+    /// #     within: difference <= tolerance,
+    /// # };
+    /// # let results = vec![
+    /// #     FixtureResult {
+    /// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+    /// #         outcome: Outcome::Pass,
+    /// #         reason: None,
+    /// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+    /// #     },
+    /// #     FixtureResult {
+    /// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+    /// #         outcome: Outcome::Fail,
+    /// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+    /// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+    /// #     },
+    /// # ];
+    /// # let report = CorpusReport {
+    /// #     schema: "teistro-conformance/report/1",
+    /// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+    /// #     implementation: Implementation {
+    /// #         name: "teistro over acme".to_owned(),
+    /// #         version: "1.0".to_owned(),
+    /// #         binding: "rust",
+    /// #         provider_class: "builtin-compact".to_owned(),
+    /// #         platform: "macos-aarch64".to_owned(),
+    /// #         settings_hash: None,
+    /// #     },
+    /// #     counts: Counts::of(&results),
+    /// #     results,
+    /// # };
+    ///
+    /// assert_eq!(Counts::of(&report.results[..1]).passed, 1);
+    /// assert_eq!(Counts::of(&[]), Counts::default());
+    /// ```
     #[must_use]
     pub fn of(results: &[FixtureResult]) -> Counts {
         let mut counts = Counts::default();
@@ -358,6 +727,53 @@ impl Counts {
 
 /// One implementation's score against one version of the corpus, in the
 /// corpus's report format.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+/// #
+/// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+/// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+/// #     path: path.to_owned(),
+/// #     expected: 10.0,
+/// #     found: 10.0 + difference,
+/// #     difference,
+/// #     tolerance,
+/// #     within: difference <= tolerance,
+/// # };
+/// # let results = vec![
+/// #     FixtureResult {
+/// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+/// #         outcome: Outcome::Pass,
+/// #         reason: None,
+/// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+/// #     },
+/// #     FixtureResult {
+/// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+/// #         outcome: Outcome::Fail,
+/// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+/// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+/// #     },
+/// # ];
+/// # let report = CorpusReport {
+/// #     schema: "teistro-conformance/report/1",
+/// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+/// #     implementation: Implementation {
+/// #         name: "teistro over acme".to_owned(),
+/// #         version: "1.0".to_owned(),
+/// #         binding: "rust",
+/// #         provider_class: "builtin-compact".to_owned(),
+/// #         platform: "macos-aarch64".to_owned(),
+/// #         settings_hash: None,
+/// #     },
+/// #     counts: Counts::of(&results),
+/// #     results,
+/// # };
+///
+/// let json = serde_json::to_value(&report)?;
+/// assert_eq!(json["schema"], "teistro-conformance/report/1");
+/// assert_eq!(json["results"][1]["outcome"], "fail");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct CorpusReport {
     /// The report format.
@@ -373,6 +789,53 @@ pub struct CorpusReport {
 }
 
 /// The worst a field pattern missed by, as a share of its band.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+/// #
+/// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+/// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+/// #     path: path.to_owned(),
+/// #     expected: 10.0,
+/// #     found: 10.0 + difference,
+/// #     difference,
+/// #     tolerance,
+/// #     within: difference <= tolerance,
+/// # };
+/// # let results = vec![
+/// #     FixtureResult {
+/// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+/// #         outcome: Outcome::Pass,
+/// #         reason: None,
+/// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+/// #     },
+/// #     FixtureResult {
+/// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+/// #         outcome: Outcome::Fail,
+/// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+/// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+/// #     },
+/// # ];
+/// # let report = CorpusReport {
+/// #     schema: "teistro-conformance/report/1",
+/// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+/// #     implementation: Implementation {
+/// #         name: "teistro over acme".to_owned(),
+/// #         version: "1.0".to_owned(),
+/// #         binding: "rust",
+/// #         provider_class: "builtin-compact".to_owned(),
+/// #         platform: "macos-aarch64".to_owned(),
+/// #         settings_hash: None,
+/// #     },
+/// #     counts: Counts::of(&results),
+/// #     results,
+/// # };
+///
+/// // The worst sidereal longitude, the Moon's of 2350.
+/// let worst = report.worst();
+/// assert_eq!(worst.len(), 1);
+/// assert_eq!((worst[0].field.as_str(), worst[0].fixture.as_str()), ("sidereal_longitude_deg", "c046-kathmandu-2350-01-01"));
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Worst {
     /// The field, with the body in place of `*`.
@@ -387,6 +850,55 @@ pub struct Worst {
 
 impl CorpusReport {
     /// The misses against the known divergences, both ways.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+    /// #
+    /// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+    /// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+    /// #     path: path.to_owned(),
+    /// #     expected: 10.0,
+    /// #     found: 10.0 + difference,
+    /// #     difference,
+    /// #     tolerance,
+    /// #     within: difference <= tolerance,
+    /// # };
+    /// # let results = vec![
+    /// #     FixtureResult {
+    /// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+    /// #         outcome: Outcome::Pass,
+    /// #         reason: None,
+    /// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+    /// #     },
+    /// #     FixtureResult {
+    /// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+    /// #         outcome: Outcome::Fail,
+    /// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+    /// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+    /// #     },
+    /// # ];
+    /// # let report = CorpusReport {
+    /// #     schema: "teistro-conformance/report/1",
+    /// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+    /// #     implementation: Implementation {
+    /// #         name: "teistro over acme".to_owned(),
+    /// #         version: "1.0".to_owned(),
+    /// #         binding: "rust",
+    /// #         provider_class: "builtin-compact".to_owned(),
+    /// #         platform: "macos-aarch64".to_owned(),
+    /// #         settings_hash: None,
+    /// #     },
+    /// #     counts: Counts::of(&results),
+    /// #     results,
+    /// # };
+    ///
+    /// use teistro_ephemeris_kit::corpus::KNOWN;
+    ///
+    /// // 2350 is past the Delta T table: the miss is a known one.
+    /// let judged = report.against(&KNOWN);
+    /// assert_eq!((judged.explained, judged.unexplained.len()), (1, 0));
+    /// assert_eq!(judged.explained_by[0].0.name, "delta-t-beyond-the-table");
+    /// ```
     #[must_use]
     pub fn against<'k>(&self, known: &'k [Divergence]) -> Judged<'k> {
         let applicable: Vec<&Divergence> = known
@@ -433,6 +945,51 @@ impl CorpusReport {
     }
 
     /// Whether every fixture passed and none was skipped.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+    /// #
+    /// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+    /// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+    /// #     path: path.to_owned(),
+    /// #     expected: 10.0,
+    /// #     found: 10.0 + difference,
+    /// #     difference,
+    /// #     tolerance,
+    /// #     within: difference <= tolerance,
+    /// # };
+    /// # let results = vec![
+    /// #     FixtureResult {
+    /// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+    /// #         outcome: Outcome::Pass,
+    /// #         reason: None,
+    /// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+    /// #     },
+    /// #     FixtureResult {
+    /// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+    /// #         outcome: Outcome::Fail,
+    /// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+    /// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+    /// #     },
+    /// # ];
+    /// # let report = CorpusReport {
+    /// #     schema: "teistro-conformance/report/1",
+    /// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+    /// #     implementation: Implementation {
+    /// #         name: "teistro over acme".to_owned(),
+    /// #         version: "1.0".to_owned(),
+    /// #         binding: "rust",
+    /// #         provider_class: "builtin-compact".to_owned(),
+    /// #         platform: "macos-aarch64".to_owned(),
+    /// #         settings_hash: None,
+    /// #     },
+    /// #     counts: Counts::of(&results),
+    /// #     results,
+    /// # };
+    ///
+    /// // One failed, so not passed, though every miss is explained.
+    /// assert!(!report.passed());
+    /// ```
     #[must_use]
     pub fn passed(&self) -> bool {
         self.counts.failed == 0 && self.counts.skipped == 0
@@ -440,6 +997,52 @@ impl CorpusReport {
 
     /// The largest miss of each kind of field, across the corpus: the
     /// measurement a provisional band is settled from.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+    /// #
+    /// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+    /// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+    /// #     path: path.to_owned(),
+    /// #     expected: 10.0,
+    /// #     found: 10.0 + difference,
+    /// #     difference,
+    /// #     tolerance,
+    /// #     within: difference <= tolerance,
+    /// # };
+    /// # let results = vec![
+    /// #     FixtureResult {
+    /// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+    /// #         outcome: Outcome::Pass,
+    /// #         reason: None,
+    /// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+    /// #     },
+    /// #     FixtureResult {
+    /// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+    /// #         outcome: Outcome::Fail,
+    /// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+    /// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+    /// #     },
+    /// # ];
+    /// # let report = CorpusReport {
+    /// #     schema: "teistro-conformance/report/1",
+    /// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+    /// #     implementation: Implementation {
+    /// #         name: "teistro over acme".to_owned(),
+    /// #         version: "1.0".to_owned(),
+    /// #         binding: "rust",
+    /// #         provider_class: "builtin-compact".to_owned(),
+    /// #         platform: "macos-aarch64".to_owned(),
+    /// #         settings_hash: None,
+    /// #     },
+    /// #     counts: Counts::of(&results),
+    /// #     results,
+    /// # };
+    ///
+    /// let worst = &report.worst()[0];
+    /// assert!((worst.difference - 3e-2).abs() < 1e-12);
+    /// assert_eq!(worst.tolerance, 2e-2);
+    /// ```
     #[must_use]
     pub fn worst(&self) -> Vec<Worst> {
         let mut worst: BTreeMap<String, Worst> = BTreeMap::new();
@@ -468,6 +1071,52 @@ impl CorpusReport {
 
     /// The report for a reader: the counts, the worst of each field
     /// against its band, and every field that missed.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+    /// #
+    /// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+    /// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+    /// #     path: path.to_owned(),
+    /// #     expected: 10.0,
+    /// #     found: 10.0 + difference,
+    /// #     difference,
+    /// #     tolerance,
+    /// #     within: difference <= tolerance,
+    /// # };
+    /// # let results = vec![
+    /// #     FixtureResult {
+    /// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+    /// #         outcome: Outcome::Pass,
+    /// #         reason: None,
+    /// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+    /// #     },
+    /// #     FixtureResult {
+    /// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+    /// #         outcome: Outcome::Fail,
+    /// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+    /// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+    /// #     },
+    /// # ];
+    /// # let report = CorpusReport {
+    /// #     schema: "teistro-conformance/report/1",
+    /// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+    /// #     implementation: Implementation {
+    /// #         name: "teistro over acme".to_owned(),
+    /// #         version: "1.0".to_owned(),
+    /// #         binding: "rust",
+    /// #         provider_class: "builtin-compact".to_owned(),
+    /// #         platform: "macos-aarch64".to_owned(),
+    /// #         settings_hash: None,
+    /// #     },
+    /// #     counts: Counts::of(&results),
+    /// #     results,
+    /// # };
+    ///
+    /// let page = report.markdown();
+    /// assert!(page.starts_with("corpus 0.12.0 against teistro over acme 1.0 as `builtin-compact`: 1 passed, 1 failed, 0 skipped"));
+    /// assert!(page.contains("| sidereal_longitude_deg | 3.000e-2 | 2.0e-2 | 150% |"));
+    /// ```
     #[must_use]
     pub fn markdown(&self) -> String {
         let mut out = format!(
@@ -503,6 +1152,54 @@ impl CorpusReport {
 
     /// Writes the report as the corpus's JSON to `<dir>/<name>.json`.
     ///
+    /// ```
+    /// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+    /// #
+    /// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+    /// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+    /// #     path: path.to_owned(),
+    /// #     expected: 10.0,
+    /// #     found: 10.0 + difference,
+    /// #     difference,
+    /// #     tolerance,
+    /// #     within: difference <= tolerance,
+    /// # };
+    /// # let results = vec![
+    /// #     FixtureResult {
+    /// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+    /// #         outcome: Outcome::Pass,
+    /// #         reason: None,
+    /// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+    /// #     },
+    /// #     FixtureResult {
+    /// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+    /// #         outcome: Outcome::Fail,
+    /// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+    /// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+    /// #     },
+    /// # ];
+    /// # let report = CorpusReport {
+    /// #     schema: "teistro-conformance/report/1",
+    /// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+    /// #     implementation: Implementation {
+    /// #         name: "teistro over acme".to_owned(),
+    /// #         version: "1.0".to_owned(),
+    /// #         binding: "rust",
+    /// #         provider_class: "builtin-compact".to_owned(),
+    /// #         platform: "macos-aarch64".to_owned(),
+    /// #         settings_hash: None,
+    /// #     },
+    /// #     counts: Counts::of(&results),
+    /// #     results,
+    /// # };
+    ///
+    /// let dir = std::env::temp_dir().join(format!("teistro-kit-doc-{}-report", std::process::id()));
+    /// let path = report.write(&dir, "acme-corpus")?;
+    /// assert_eq!(path, dir.join("acme-corpus.json"));
+    /// std::fs::remove_dir_all(&dir)?;
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// When the directory cannot be created or the file written.
@@ -523,6 +1220,20 @@ impl CorpusReport {
 /// ways by [`CorpusReport::against`]: a miss no entry explains fails, and so
 /// does an entry that explains nothing in a run it applies to — a
 /// divergence the SDK has stopped having is a line that must go.
+///
+/// ```
+/// use teistro_ephemeris_kit::corpus::Divergence;
+///
+/// let divergence = Divergence {
+///     name: "acme-moon",
+///     fields: &["positions.bodies.MOON.*"],
+///     fixtures: &[],
+///     classes: &["builtin-compact"],
+///     why: "measured: the Moon's theory, not its truncation",
+/// };
+/// assert!(divergence.applies_to("builtin-compact") && !divergence.applies_to("builtin-full"));
+/// assert!(divergence.explains("c001", "positions.bodies.MOON.distance_au"));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Divergence {
     /// A short name, for a report.
@@ -539,12 +1250,31 @@ pub struct Divergence {
 
 impl Divergence {
     /// Whether it applies to a run of a class.
+    ///
+    /// ```
+    /// use teistro_ephemeris_kit::corpus::KNOWN;
+    ///
+    /// // Past the Delta T table every class misses alike.
+    /// let beyond = KNOWN.iter().find(|d| d.name == "delta-t-beyond-the-table").ok_or("listed")?;
+    /// assert!(beyond.applies_to("builtin-compact") && beyond.applies_to("same-ephemeris"));
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn applies_to(&self, class: &str) -> bool {
         self.classes.is_empty() || self.classes.contains(&class)
     }
 
     /// Whether it explains one field's miss in one recorded chart.
+    ///
+    /// ```
+    /// use teistro_ephemeris_kit::corpus::KNOWN;
+    ///
+    /// let beyond = KNOWN.iter().find(|d| d.name == "delta-t-beyond-the-table").ok_or("listed")?;
+    /// assert!(beyond.explains("c046-kathmandu-2350-01-01", "positions.bodies.SUN.tropical_longitude_deg"));
+    /// // Only in the charts it names.
+    /// assert!(!beyond.explains("c001-kathmandu-2000-01-01", "positions.bodies.SUN.tropical_longitude_deg"));
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn explains(&self, fixture: &str, path: &str) -> bool {
         (self.fixtures.is_empty() || self.fixtures.contains(&fixture))
@@ -555,6 +1285,15 @@ impl Divergence {
 /// Where the SDK parts from corpus 0.11.0, and why; each measured on
 /// 2026-09-25 over every built-in tier and over Teimeris, the corpus's own
 /// ephemeris (`docs/03-design/ephemeris-port-and-adapters.md` §9).
+///
+/// ```
+/// use teistro_ephemeris_kit::corpus::KNOWN;
+///
+/// // Each says why, and none is named twice.
+/// assert!(KNOWN.iter().all(|d| !d.why.is_empty() && !d.fields.is_empty()));
+/// let names: std::collections::BTreeSet<_> = KNOWN.iter().map(|d| d.name).collect();
+/// assert_eq!(names.len(), KNOWN.len());
+/// ```
 pub const KNOWN: [Divergence; 6] = [
     Divergence {
         name: "delta-t-beyond-the-table",
@@ -624,6 +1363,55 @@ pub const KNOWN: [Divergence; 6] = [
 ];
 
 /// What [`CorpusReport::against`] found.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+/// #
+/// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+/// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+/// #     path: path.to_owned(),
+/// #     expected: 10.0,
+/// #     found: 10.0 + difference,
+/// #     difference,
+/// #     tolerance,
+/// #     within: difference <= tolerance,
+/// # };
+/// # let results = vec![
+/// #     FixtureResult {
+/// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+/// #         outcome: Outcome::Pass,
+/// #         reason: None,
+/// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+/// #     },
+/// #     FixtureResult {
+/// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+/// #         outcome: Outcome::Fail,
+/// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+/// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+/// #     },
+/// # ];
+/// # let report = CorpusReport {
+/// #     schema: "teistro-conformance/report/1",
+/// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+/// #     implementation: Implementation {
+/// #         name: "teistro over acme".to_owned(),
+/// #         version: "1.0".to_owned(),
+/// #         binding: "rust",
+/// #         provider_class: "builtin-compact".to_owned(),
+/// #         platform: "macos-aarch64".to_owned(),
+/// #         settings_hash: None,
+/// #     },
+/// #     counts: Counts::of(&results),
+/// #     results,
+/// # };
+///
+/// use teistro_ephemeris_kit::corpus::KNOWN;
+///
+/// // The one divergence that applies to the compact tier explained a miss.
+/// let judged = report.against(&KNOWN);
+/// assert!(judged.idle.is_empty());
+/// assert_eq!(judged.explained_by[0].1, 1);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Judged<'k> {
     /// Each miss no divergence explains, as `fixture: path`.
@@ -638,6 +1426,56 @@ pub struct Judged<'k> {
 
 impl Judged<'_> {
     /// Whether every miss is explained and every divergence explained one.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_kit::corpus::{CorpusId, CorpusReport, Counts, Field, FixtureResult, Implementation, Outcome};
+    /// #
+    /// # // Two recorded charts: one inside its band, one whose Moon missed in 2350.
+    /// # let field = |path: &str, difference: f64, tolerance: f64| Field {
+    /// #     path: path.to_owned(),
+    /// #     expected: 10.0,
+    /// #     found: 10.0 + difference,
+    /// #     difference,
+    /// #     tolerance,
+    /// #     within: difference <= tolerance,
+    /// # };
+    /// # let results = vec![
+    /// #     FixtureResult {
+    /// #         fixture: "c001-kathmandu-2000-01-01".to_owned(),
+    /// #         outcome: Outcome::Pass,
+    /// #         reason: None,
+    /// #         fields: vec![field("positions.bodies.SUN.sidereal_longitude_deg", 1e-5, 1e-2)],
+    /// #     },
+    /// #     FixtureResult {
+    /// #         fixture: "c046-kathmandu-2350-01-01".to_owned(),
+    /// #         outcome: Outcome::Fail,
+    /// #         reason: Some("outside its band: positions.bodies.MOON.sidereal_longitude_deg".to_owned()),
+    /// #         fields: vec![field("positions.bodies.MOON.sidereal_longitude_deg", 3e-2, 2e-2)],
+    /// #     },
+    /// # ];
+    /// # let report = CorpusReport {
+    /// #     schema: "teistro-conformance/report/1",
+    /// #     corpus: CorpusId { version: "0.12.0".to_owned(), commit: None },
+    /// #     implementation: Implementation {
+    /// #         name: "teistro over acme".to_owned(),
+    /// #         version: "1.0".to_owned(),
+    /// #         binding: "rust",
+    /// #         provider_class: "builtin-compact".to_owned(),
+    /// #         platform: "macos-aarch64".to_owned(),
+    /// #         settings_hash: None,
+    /// #     },
+    /// #     counts: Counts::of(&results),
+    /// #     results,
+    /// # };
+    ///
+    /// use teistro_ephemeris_kit::corpus::KNOWN;
+    ///
+    /// assert!(report.against(&KNOWN).holds());
+    /// // Held to no divergences, the Moon's miss is unexplained.
+    /// let bare = report.against(&[]);
+    /// assert!(!bare.holds());
+    /// assert_eq!(bare.unexplained, ["c046-kathmandu-2350-01-01: positions.bodies.MOON.sidereal_longitude_deg"]);
+    /// ```
     #[must_use]
     pub fn holds(&self) -> bool {
         self.unexplained.is_empty() && self.idle.is_empty()
@@ -795,6 +1633,35 @@ fn compare(
 }
 
 /// Runs the corpus check against a provider of a class.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::Corpus;
+/// #
+/// # const TOLERANCES: &str = r#"{
+/// #     "provider_classes": {"builtin-compact": "the compact tier", "same-ephemeris": "the recording engine's own"},
+/// #     "fields": {
+/// #         "positions.bodies.*.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.01, "same-ephemeris": 1e-6},
+/// #         "positions.bodies.MOON.sidereal_longitude_deg": {"unit": "deg", "builtin-compact": 0.02, "same-ephemeris": 1e-6}
+/// #     }
+/// # }"#;
+/// # // A corpus of no recorded charts, written where the example can.
+/// # let dir = std::env::temp_dir().join(format!("teistro-kit-doc-{}-run", std::process::id()));
+/// # std::fs::create_dir_all(dir.join("baseline/charts"))?;
+/// # std::fs::write(dir.join("corpus.json"), r#"{"version": "0.0.1"}"#)?;
+/// # std::fs::write(dir.join("tolerances.json"), TOLERANCES)?;
+/// # let corpus = Corpus::open(&dir)?;
+///
+/// use teistro_ephemeris_kit::corpus;
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// // No recorded charts: an empty report, founded under the corpus's profile.
+/// let open = || -> Box<dyn EphemerisProvider> { Box::new(TestProvider::new()) };
+/// let report = corpus::run(&corpus, &open, "builtin-compact")?;
+/// assert!(report.results.is_empty() && report.implementation.settings_hash.is_some());
+/// assert!(corpus::run(&corpus, &open, "acme").is_err());
+/// # std::fs::remove_dir_all(&dir)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
