@@ -92,12 +92,26 @@ impl Body {
 
     /// The stable numeric id used at the C boundary: the discriminant,
     /// which is the body's position in [`Body::ALL`].
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Body::Sun.id(), 0);
+    /// assert_eq!(Body::ALL[usize::from(Body::MeanNode.id())], Body::MeanNode);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u16 {
         self as u16
     }
 
     /// The body with a given id.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Body::from_id(1), Some(Body::Moon));
+    /// assert_eq!(Body::from_id(u16::try_from(Body::ALL.len()).unwrap()), None);
+    /// ```
     #[must_use]
     pub fn from_id(id: u16) -> Option<Body> {
         Body::ALL.get(usize::from(id)).copied()
@@ -167,6 +181,12 @@ impl Body {
     }
 
     /// The upper-case key used in fixtures and bindings.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Body::OsculatingApogee.key(), "OSCULATING_APOGEE");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -188,6 +208,14 @@ impl Body {
     }
 
     /// The body with a key, in any case.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert_eq!(Body::from_key("mean_node"), Some(Body::MeanNode));
+    /// assert_eq!(Body::from_key("Pluto"), Some(Body::Pluto));
+    /// assert_eq!(Body::from_key("Chiron"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Body> {
         let upper = key.to_ascii_uppercase();
@@ -196,6 +224,13 @@ impl Body {
 
     /// Whether the body has a physical distance; nodes and apogees are
     /// directions, and a provider may report their distance as zero.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// assert!(Body::Moon.has_distance());
+    /// assert!(!Body::MeanNode.has_distance() && !Body::MeanApogee.has_distance());
+    /// ```
     #[must_use]
     pub const fn has_distance(self) -> bool {
         !matches!(
@@ -254,12 +289,25 @@ pub enum TimeScale {
 
 impl TimeScale {
     /// The stable id at the C boundary: the discriminant.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::TimeScale;
+    ///
+    /// assert_eq!((TimeScale::Ut1.id(), TimeScale::Tt.id()), (0, 1));
+    /// ```
     #[must_use]
     pub const fn id(self) -> u32 {
         self as u32
     }
 
     /// The scale with a given id.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::TimeScale;
+    ///
+    /// assert_eq!(TimeScale::from_id(1), Some(TimeScale::Tt));
+    /// assert_eq!(TimeScale::from_id(2), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u32) -> Option<TimeScale> {
         match id {
@@ -270,6 +318,12 @@ impl TimeScale {
     }
 
     /// The scale's name.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::TimeScale;
+    ///
+    /// assert_eq!(TimeScale::Ut1.name(), "UT1");
+    /// ```
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {

@@ -81,36 +81,76 @@ impl Overrides {
     ];
 
     /// The union.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Overrides;
+    ///
+    /// assert_eq!(Overrides::NONE.with(Overrides::DUT1), Overrides::DUT1);
+    /// ```
     #[must_use]
     pub const fn with(self, other: Overrides) -> Overrides {
         Overrides(self.0 | other.0)
     }
 
     /// Whether every bit of `other` is set.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Overrides;
+    ///
+    /// let set = Overrides::CROSSINGS.with(Overrides::STATIONS);
+    /// assert!(set.contains(Overrides::CROSSINGS) && set.contains(Overrides::NONE));
+    /// assert!(!Overrides::CROSSINGS.contains(set));
+    /// ```
     #[must_use]
     pub const fn contains(self, other: Overrides) -> bool {
         self.0 & other.0 == other.0
     }
 
     /// The set without another's members.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Overrides;
+    ///
+    /// let set = Overrides::CROSSINGS.with(Overrides::STATIONS);
+    /// assert_eq!(set.without(Overrides::STATIONS), Overrides::CROSSINGS);
+    /// ```
     #[must_use]
     pub const fn without(self, other: Overrides) -> Overrides {
         Overrides(self.0 & !other.0)
     }
 
     /// The raw bits for the C boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Overrides;
+    ///
+    /// assert_eq!(Overrides::OBLIQUITY.with(Overrides::ANGLES).bits(), 1 | 1 << 12);
+    /// ```
     #[must_use]
     pub const fn bits(self) -> u32 {
         self.0
     }
 
     /// From raw bits.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Overrides;
+    ///
+    /// assert_eq!(Overrides::from_bits(1 << 11), Overrides::DUT1);
+    /// ```
     #[must_use]
     pub const fn from_bits(bits: u32) -> Overrides {
         Overrides(bits)
     }
 
     /// The names of the set overrides, in bit order.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Overrides;
+    ///
+    /// assert_eq!(Overrides::DUT1.with(Overrides::DELTA_T).names(), ["delta_t", "dut1"]);
+    /// assert_eq!(Overrides::DUT1.with(Overrides::DELTA_T).to_string(), "delta_t, dut1");
+    /// ```
     #[must_use]
     pub fn names(self) -> Vec<&'static str> {
         Overrides::NAMES
@@ -152,6 +192,14 @@ impl fmt::Display for Overrides {
 }
 
 /// The content hash of a data file, part of the provenance envelope.
+///
+/// ```
+/// use teistro_port_ephemeris::DataHash;
+///
+/// let hash = DataHash::of_bytes("sample.txt", b"abc");
+/// assert_eq!(hash.sha256, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+/// assert_eq!(hash.bytes, 3);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DataHash {
@@ -173,6 +221,18 @@ fn hex(digest: &[u8]) -> String {
 
 impl DataHash {
     /// Hashes a file, streaming.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DataHash;
+    ///
+    /// let path = std::env::temp_dir().join("teistro-doc-of-file.txt");
+    /// std::fs::write(&path, b"abc")?;
+    /// // Streamed from disk, the same as the bytes held in memory.
+    /// assert_eq!(DataHash::of_file(&path)?, DataHash::of_bytes("teistro-doc-of-file.txt", b"abc"));
+    /// std::fs::remove_file(&path)?;
+    /// assert!(DataHash::of_file(&path).is_err());
+    /// # Ok::<(), std::io::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -204,6 +264,15 @@ impl DataHash {
     /// over as bytes (downloaded, or read out of an app's bundle) is
     /// described by, the same as [`DataHash::of_file`] describes it on
     /// disk.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DataHash;
+    ///
+    /// // SHA-256 of nothing.
+    /// let empty = DataHash::of_bytes("empty", b"");
+    /// assert_eq!(empty.sha256, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+    /// assert_eq!((empty.file.as_str(), empty.bytes), ("empty", 0));
+    /// ```
     #[must_use]
     pub fn of_bytes(file: &str, bytes: &[u8]) -> DataHash {
         DataHash {
@@ -214,6 +283,14 @@ impl DataHash {
     }
 
     /// The hash as the envelope carries it, when the hex is well formed.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DataHash;
+    ///
+    /// assert!(DataHash::of_bytes("sample.txt", b"abc").envelope_hash().is_some());
+    /// let torn = DataHash { sha256: String::from("not hex"), ..DataHash::of_bytes("sample.txt", b"abc") };
+    /// assert_eq!(torn.envelope_hash(), None);
+    /// ```
     #[must_use]
     pub fn envelope_hash(&self) -> Option<Hash> {
         Hash::from_hex(&self.sha256)
@@ -221,6 +298,15 @@ impl DataHash {
 }
 
 /// Who the provider is.
+///
+/// ```
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// let capabilities = TestProvider::new().capabilities();
+/// let identity = &capabilities.identity;
+/// assert_eq!((identity.name.as_str(), identity.version.as_str(), identity.data_version.as_str()), ("test-provider", "1", "analytic"));
+/// assert_eq!(identity.to_string(), "test-provider 1 (analytic)");
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Identity {
@@ -239,6 +325,15 @@ pub struct Identity {
 impl Identity {
     /// The stamp the result envelope carries: this identity, the frame
     /// returned and the switches used.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, Frame, TestProvider};
+    ///
+    /// let stamp = TestProvider::new().capabilities().identity.stamp(Frame::CANONICAL, vec![String::from("speeds")]);
+    /// assert_eq!(stamp.name, "test-provider");
+    /// assert_eq!(stamp.frame, "GEOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT");
+    /// assert_eq!(stamp.flags_used, ["speeds"]);
+    /// ```
     #[must_use]
     pub fn stamp(&self, frame: Frame, flags_used: Vec<String>) -> ProviderStamp {
         ProviderStamp {
@@ -268,6 +363,15 @@ impl fmt::Display for Identity {
 }
 
 /// What a cell's distance is measured in.
+///
+/// ```
+/// use teistro_port_ephemeris::{DistanceUnit, EphemerisProvider, TestProvider};
+///
+/// let capabilities = TestProvider::new().capabilities();
+///
+/// // The test provider's elements carry no distance, so every body is at 1 AU.
+/// assert_eq!(capabilities.distance_unit, DistanceUnit::AstronomicalUnits);
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -283,12 +387,25 @@ pub enum DistanceUnit {
 
 impl DistanceUnit {
     /// The stable id at the C boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DistanceUnit;
+    ///
+    /// assert_eq!(DistanceUnit::MeanDistances.id(), 1);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u8 {
         self as u8
     }
 
     /// The unit with an id.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DistanceUnit;
+    ///
+    /// assert_eq!(DistanceUnit::from_id(0), Some(DistanceUnit::AstronomicalUnits));
+    /// assert_eq!(DistanceUnit::from_id(2), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u8) -> Option<DistanceUnit> {
         match id {
@@ -299,6 +416,13 @@ impl DistanceUnit {
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DistanceUnit;
+    ///
+    /// assert_eq!(DistanceUnit::AstronomicalUnits.key(), "AU");
+    /// assert_eq!(DistanceUnit::MeanDistances.key(), "MEAN_DISTANCES");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -309,6 +433,14 @@ impl DistanceUnit {
 }
 
 /// How a provider's speeds are defined.
+///
+/// ```
+/// use teistro_port_ephemeris::{SpeedModel, EphemerisProvider, TestProvider};
+///
+/// let capabilities = TestProvider::new().capabilities();
+///
+/// assert_eq!(capabilities.speed_model, SpeedModel::Derivative);
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -325,12 +457,25 @@ pub enum SpeedModel {
 
 impl SpeedModel {
     /// The stable id at the C boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::SpeedModel;
+    ///
+    /// assert_eq!(SpeedModel::Rule.id(), 1);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u8 {
         self as u8
     }
 
     /// The model with an id.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::SpeedModel;
+    ///
+    /// assert_eq!(SpeedModel::from_id(1), Some(SpeedModel::Rule));
+    /// assert_eq!(SpeedModel::from_id(9), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u8) -> Option<SpeedModel> {
         match id {
@@ -342,6 +487,13 @@ impl SpeedModel {
 }
 
 /// Which astronomy a provider computes.
+///
+/// ```
+/// use teistro_port_ephemeris::{Astronomy, Capabilities};
+///
+/// // What an adapter claims by leaving the field out.
+/// assert_eq!(Capabilities::default().astronomy, Astronomy::Modern);
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -360,12 +512,25 @@ pub enum Astronomy {
 
 impl Astronomy {
     /// The stable id at the C boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Astronomy;
+    ///
+    /// assert_eq!(Astronomy::Classical.id(), 1);
+    /// ```
     #[must_use]
     pub const fn id(self) -> u8 {
         self as u8
     }
 
     /// The astronomy with an id.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Astronomy;
+    ///
+    /// assert_eq!(Astronomy::from_id(1), Some(Astronomy::Classical));
+    /// assert_eq!(Astronomy::from_id(2), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u8) -> Option<Astronomy> {
         match id {
@@ -390,6 +555,25 @@ impl Astronomy {
 /// forgotten is a capability *not* claimed, which the SDK answers by
 /// doing the work itself rather than by trusting an adapter that never
 /// said it could.
+///
+/// ```
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_port_ephemeris::{Body, Capabilities, Identity, Overrides};
+///
+/// // An adapter writes what it knows; the rest is the least it can claim.
+/// let capabilities = Capabilities {
+///     identity: Identity { name: String::from("my-engine"), version: String::from("2.1"), ..Capabilities::default().identity },
+///     jd_range: (2_378_496.5, 2_597_641.5),
+///     bodies: vec![Body::Sun, Body::Moon],
+///     speeds: true,
+///     overrides: Overrides::AYANAMSHA,
+///     ayanamshas: vec![Ayanamsha::Lahiri],
+///     deterministic: true,
+///     ..Capabilities::default()
+/// };
+/// assert!(capabilities.has_ayanamsha(Ayanamsha::Lahiri) && !capabilities.has(Overrides::HOUSES));
+/// assert!(!Capabilities::default().deterministic);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Capabilities {
@@ -453,30 +637,76 @@ impl Default for Capabilities {
 
 impl Capabilities {
     /// Whether an instant is inside the coverage.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let capabilities = TestProvider::new().capabilities();
+    /// // Year 0 to year 3000.
+    /// assert!(capabilities.covers(2_451_545.0));
+    /// assert!(!capabilities.covers(2_816_788.0));
+    /// ```
     #[must_use]
     pub fn covers(&self, jd: f64) -> bool {
         jd >= self.jd_range.0 && jd <= self.jd_range.1
     }
 
     /// Whether a body is offered.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, TestProvider};
+    ///
+    /// let capabilities = TestProvider::new().capabilities();
+    /// assert!(capabilities.has_body(Body::MeanNode));
+    /// assert!(!capabilities.has_body(Body::TrueNode));
+    /// ```
     #[must_use]
     pub fn has_body(&self, body: Body) -> bool {
         self.bodies.contains(&body)
     }
 
     /// Whether an override is declared.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, TestProvider};
+    ///
+    /// let capabilities = TestProvider::new().capabilities();
+    /// assert!(capabilities.has(Overrides::NONE));
+    /// assert!(!capabilities.has(Overrides::OBLIQUITY));
+    /// ```
     #[must_use]
     pub const fn has(&self, overrides: Overrides) -> bool {
         self.overrides.contains(overrides)
     }
 
     /// Whether the ayanamsha override knows an ayanamsha.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_port_ephemeris::{Capabilities, Overrides};
+    ///
+    /// let listed = Capabilities { ayanamshas: vec![Ayanamsha::Lahiri], ..Capabilities::default() };
+    /// // Listed but not declared is not known.
+    /// assert!(!listed.has_ayanamsha(Ayanamsha::Lahiri));
+    /// let declared = Capabilities { overrides: Overrides::AYANAMSHA, ..listed };
+    /// assert!(declared.has_ayanamsha(Ayanamsha::Lahiri) && !declared.has_ayanamsha(Ayanamsha::Raman));
+    /// ```
     #[must_use]
     pub fn has_ayanamsha(&self, ayanamsha: Ayanamsha) -> bool {
         self.has(Overrides::AYANAMSHA) && self.ayanamshas.contains(&ayanamsha)
     }
 
     /// One line for a report: bodies, coverage and overrides.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let capabilities = TestProvider::new().capabilities();
+    /// assert_eq!(
+    ///     capabilities.describe(),
+    ///     "test-provider 1 (analytic): 11 bodies, JD 1721057.5 to 2816787.5, native frame GEOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT, distances in AU, overrides [], ayanamshas []"
+    /// );
+    /// ```
     #[must_use]
     pub fn describe(&self) -> String {
         let ayanamshas: Vec<&str> = self.ayanamshas.iter().map(|a| a.key()).collect();
@@ -510,6 +740,14 @@ impl Capabilities {
 }
 
 /// The obliquity of the ecliptic and the nutation, degrees.
+///
+/// ```
+/// use teistro_port_ephemeris::Obliquity;
+///
+/// // The true obliquity is the mean plus the nutation in obliquity.
+/// let at_j2000 = Obliquity { mean_deg: 23.439_291, true_deg: 23.437_644, nutation_lon_deg: -0.003_880, nutation_obl_deg: -0.001_647 };
+/// assert!((at_j2000.mean_deg + at_j2000.nutation_obl_deg - at_j2000.true_deg).abs() < 1e-5);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Obliquity {

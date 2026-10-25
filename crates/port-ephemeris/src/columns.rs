@@ -10,6 +10,13 @@ use crate::frame::Frame;
 
 /// The status of one cell of a response; a failing cell never aborts the
 /// batch.
+///
+/// ```
+/// use teistro_port_ephemeris::CellStatus;
+///
+/// assert_eq!(serde_json::to_string(&CellStatus::OutOfRange).unwrap(), r#"{"kind":"OUT_OF_RANGE"}"#);
+/// assert_eq!(serde_json::to_string(&CellStatus::Provider { code: 7 }).unwrap(), r#"{"kind":"PROVIDER","code":7}"#);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -34,6 +41,13 @@ pub enum CellStatus {
 impl CellStatus {
     /// The key it is serialised as: `OK`, `OUT_OF_RANGE`, `PROVIDER` for
     /// a provider's own code.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::CellStatus;
+    ///
+    /// assert_eq!(CellStatus::UnsupportedBody.key(), "UNSUPPORTED_BODY");
+    /// assert_eq!(CellStatus::Provider { code: 7 }.key(), "PROVIDER");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -48,6 +62,14 @@ impl CellStatus {
 
     /// The stable code at the C boundary: `0` ok, the reserved negatives
     /// as [`crate::ProviderError::code`], anything else the provider's own.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{CellStatus, ProviderError};
+    ///
+    /// // The reserved codes are the request-level errors' codes.
+    /// assert_eq!(CellStatus::OutOfRange.code(), ProviderError::OutOfRange { jd: 0.0 }.code());
+    /// assert_eq!(CellStatus::Provider { code: 7 }.code(), 7);
+    /// ```
     #[must_use]
     pub const fn code(self) -> i32 {
         match self {
@@ -64,6 +86,14 @@ impl CellStatus {
     /// [`crate::ProviderError::status`] maps a refused request: an instant
     /// outside the coverage is `OUT_OF_RANGE` whether one cell or the whole
     /// request was refused for it, and never a failure of the provider.
+    ///
+    /// ```
+    /// use teistro_core::error::Status;
+    /// use teistro_port_ephemeris::CellStatus;
+    ///
+    /// assert_eq!(CellStatus::OutOfRange.status(), Status::OutOfRange);
+    /// assert_eq!(CellStatus::DataMissing.status(), Status::Provider);
+    /// ```
     #[must_use]
     pub const fn status(self) -> Status {
         match self {
@@ -77,6 +107,14 @@ impl CellStatus {
     }
 
     /// The status from its code.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::CellStatus;
+    ///
+    /// for status in [CellStatus::Ok, CellStatus::NotComputed, CellStatus::DataMissing, CellStatus::Provider { code: 42 }] {
+    ///     assert_eq!(CellStatus::from_code(status.code()), status);
+    /// }
+    /// ```
     #[must_use]
     pub const fn from_code(code: i32) -> CellStatus {
         match code {
@@ -91,6 +129,15 @@ impl CellStatus {
 }
 
 /// Which ephemeris produced a cell.
+///
+/// ```
+/// use teistro_port_ephemeris::{Body, EphemerisKind, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+///
+/// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+/// let sun = TestProvider::new().positions(&request)?.at(0, 0).unwrap();
+/// assert_eq!(sun.source.kind, EphemerisKind::Test);
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -109,6 +156,12 @@ pub enum EphemerisKind {
 
 impl EphemerisKind {
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::EphemerisKind;
+    ///
+    /// assert_eq!(EphemerisKind::Jpl.key(), "JPL");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -122,6 +175,15 @@ impl EphemerisKind {
 }
 
 /// Where a cell came from.
+///
+/// ```
+/// use teistro_core::settings::Tier;
+/// use teistro_port_ephemeris::{EphemerisKind, Source};
+///
+/// let source = Source { kind: EphemerisKind::Files, tier: Some(Tier::Standard) };
+/// assert_eq!(Source::from_bits(source.to_bits()), source);
+/// assert_eq!(Source::UNKNOWN.kind, EphemerisKind::Unknown);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Source {
@@ -140,6 +202,15 @@ impl Source {
 
     /// Packed for the C boundary: the kind in the low byte, the tier plus
     /// one in the next.
+    ///
+    /// ```
+    /// use teistro_core::settings::Tier;
+    /// use teistro_port_ephemeris::{EphemerisKind, Source};
+    ///
+    /// // The kind in the low byte, the tier plus one in the next.
+    /// assert_eq!(Source { kind: EphemerisKind::Files, tier: Some(Tier::Standard) }.to_bits(), 0x0201);
+    /// assert_eq!(Source { kind: EphemerisKind::Test, tier: None }.to_bits(), 4);
+    /// ```
     #[must_use]
     pub const fn to_bits(self) -> u32 {
         let kind = match self.kind {
@@ -153,6 +224,13 @@ impl Source {
     }
 
     /// Unpacked from the C boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisKind, Source};
+    ///
+    /// // An unknown kind byte reads as unknown rather than failing.
+    /// assert_eq!(Source::from_bits(0xff).kind, EphemerisKind::Unknown);
+    /// ```
     #[must_use]
     pub const fn from_bits(bits: u32) -> Source {
         let kind = match bits & 0xff {
@@ -170,6 +248,14 @@ impl Source {
 }
 
 /// A tier as the byte the C boundary carries: zero for none.
+///
+/// ```
+/// use teistro_core::settings::Tier;
+/// use teistro_port_ephemeris::columns::tier_bits;
+///
+/// assert_eq!(tier_bits(None), 0);
+/// assert_eq!(tier_bits(Some(Tier::Full)), 3);
+/// ```
 #[must_use]
 pub const fn tier_bits(tier: Option<Tier>) -> u32 {
     match tier {
@@ -184,6 +270,14 @@ pub const fn tier_bits(tier: Option<Tier>) -> u32 {
 }
 
 /// The tier a byte of the C boundary names.
+///
+/// ```
+/// use teistro_core::settings::Tier;
+/// use teistro_port_ephemeris::columns::{tier_bits, tier_from_bits};
+///
+/// assert_eq!(tier_from_bits(tier_bits(Some(Tier::Reference))), Some(Tier::Reference));
+/// assert_eq!(tier_from_bits(9), None);
+/// ```
 #[must_use]
 pub const fn tier_from_bits(bits: u32) -> Option<Tier> {
     match bits {
@@ -196,6 +290,17 @@ pub const fn tier_from_bits(bits: u32) -> Option<Tier> {
 }
 
 /// One cell of a response.
+///
+/// ```
+/// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+///
+/// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+/// let sun = TestProvider::new().positions(&request)?.at(0, 0).unwrap();
+/// // A degree a day, more or less.
+/// assert!(sun.is_ok() && (0.95..1.05).contains(&sun.lon_speed));
+/// assert!((0.0..360.0).contains(&sun.lon));
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Cell {
@@ -231,6 +336,14 @@ impl Cell {
     };
 
     /// A cell that failed with a status, its values zero.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Cell, CellStatus};
+    ///
+    /// let missing = Cell::failed(CellStatus::DataMissing);
+    /// assert!(!missing.is_ok());
+    /// assert_eq!((missing.lon, missing.status), (0.0, CellStatus::DataMissing));
+    /// ```
     #[must_use]
     pub const fn failed(status: CellStatus) -> Cell {
         Cell {
@@ -240,6 +353,13 @@ impl Cell {
     }
 
     /// Whether the cell was computed.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Cell, CellStatus};
+    ///
+    /// assert!(Cell { status: CellStatus::Ok, ..Cell::EMPTY }.is_ok());
+    /// assert!(!Cell::EMPTY.is_ok());
+    /// ```
     #[must_use]
     pub fn is_ok(&self) -> bool {
         self.status == CellStatus::Ok
@@ -287,6 +407,14 @@ pub struct PositionColumns {
 
 impl PositionColumns {
     /// Empty columns of a grid, every cell [`Cell::EMPTY`].
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{CellStatus, Frame, PositionColumns};
+    ///
+    /// let columns = PositionColumns::new(2, 3, Frame::CANONICAL);
+    /// assert_eq!(columns.len(), 6);
+    /// assert!(columns.status.iter().all(|status| *status == CellStatus::NotComputed));
+    /// ```
     #[must_use]
     pub fn new(jd_count: usize, body_count: usize, frame: Frame) -> PositionColumns {
         let n = jd_count.saturating_mul(body_count);
@@ -306,18 +434,41 @@ impl PositionColumns {
     }
 
     /// The number of cells.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Frame, PositionColumns};
+    ///
+    /// assert_eq!(PositionColumns::new(4, 2, Frame::CANONICAL).len(), 8);
+    /// ```
     #[must_use]
     pub fn len(&self) -> usize {
         self.lon.len()
     }
 
     /// Whether the grid is empty.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Frame, PositionColumns};
+    ///
+    /// assert!(PositionColumns::new(0, 2, Frame::CANONICAL).is_empty());
+    /// assert!(!PositionColumns::new(1, 1, Frame::CANONICAL).is_empty());
+    /// ```
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.lon.is_empty()
     }
 
     /// The flat index of a cell.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Frame, PositionColumns};
+    ///
+    /// let columns = PositionColumns::new(2, 3, Frame::CANONICAL);
+    /// // Instants outermost.
+    /// assert_eq!(columns.index(1, 0), Some(3));
+    /// assert_eq!(columns.index(2, 0), None);
+    /// assert_eq!(columns.index(0, 3), None);
+    /// ```
     #[must_use]
     pub fn index(&self, jd_index: usize, body_index: usize) -> Option<usize> {
         (jd_index < self.jd_count && body_index < self.body_count)
@@ -356,6 +507,15 @@ impl PositionColumns {
     }
 
     /// One cell by flat index.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Cell, Frame, PositionColumns};
+    ///
+    /// let mut columns = PositionColumns::new(1, 2, Frame::CANONICAL);
+    /// columns.set(1, Cell { lat: -0.5, ..Cell::EMPTY });
+    /// assert_eq!(columns.cell(1).map(|cell| cell.lat), Some(-0.5));
+    /// assert_eq!(columns.cell(2), None);
+    /// ```
     #[must_use]
     pub fn cell(&self, index: usize) -> Option<Cell> {
         Some(Cell {
@@ -371,12 +531,29 @@ impl PositionColumns {
     }
 
     /// One cell by grid position.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Cell, Frame, PositionColumns};
+    ///
+    /// let mut columns = PositionColumns::new(2, 2, Frame::CANONICAL);
+    /// columns.set(3, Cell { dist: 2.5, ..Cell::EMPTY });
+    /// assert_eq!(columns.at(1, 1).map(|cell| cell.dist), Some(2.5));
+    /// ```
     #[must_use]
     pub fn at(&self, jd_index: usize, body_index: usize) -> Option<Cell> {
         self.cell(self.index(jd_index, body_index)?)
     }
 
     /// Writes one cell by flat index; an index out of range writes nothing.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Cell, Frame, PositionColumns};
+    ///
+    /// let mut columns = PositionColumns::new(1, 1, Frame::CANONICAL);
+    /// // Out of range writes nothing.
+    /// columns.set(5, Cell { lon: 1.0, ..Cell::EMPTY });
+    /// assert_eq!(columns.cell(0), Some(Cell::EMPTY));
+    /// ```
     pub fn set(&mut self, index: usize, cell: Cell) {
         if index >= self.len() {
             return;
@@ -403,6 +580,14 @@ impl PositionColumns {
 
     /// Writes one cell by grid position; a position outside the grid
     /// writes nothing.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Cell, CellStatus, Frame, PositionColumns};
+    ///
+    /// let mut columns = PositionColumns::new(2, 2, Frame::CANONICAL);
+    /// columns.set_at(1, 0, Cell::failed(CellStatus::OutOfRange));
+    /// assert_eq!(columns.status[2], CellStatus::OutOfRange);
+    /// ```
     pub fn set_at(&mut self, jd_index: usize, body_index: usize, cell: Cell) {
         if let Some(index) = self.index(jd_index, body_index) {
             self.set(index, cell);
@@ -410,6 +595,17 @@ impl PositionColumns {
     }
 
     /// Every cell in flat order.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// let columns = TestProvider::new().positions(&request)?;
+    /// // The Moon outruns the Sun in every row.
+    /// let speeds: Vec<f64> = columns.cells().map(|cell| cell.lon_speed).collect();
+    /// assert!(speeds.chunks(2).all(|row| row[1] > row[0]));
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     pub fn cells(&self) -> impl Iterator<Item = Cell> + '_ {
         (0..self.len()).filter_map(|i| self.cell(i))
     }
@@ -446,6 +642,14 @@ impl PositionColumns {
     }
 
     /// Whether every cell is [`CellStatus::Ok`].
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// assert!(TestProvider::new().positions(&request)?.all_ok());
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn all_ok(&self) -> bool {
         self.status.iter().all(|s| *s == CellStatus::Ok)
@@ -453,6 +657,16 @@ impl PositionColumns {
 
     /// Whether two responses are bit-identical in every numeric column
     /// and equal in every status.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// // The test provider is deterministic: the same request, the same bits.
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Moon], Frame::CANONICAL);
+    /// let (first, second) = (TestProvider::new().positions(&request)?, TestProvider::new().positions(&request)?);
+    /// assert!(first.bit_identical(&second));
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn bit_identical(&self, other: &PositionColumns) -> bool {
         let same = |a: &[f64], b: &[f64]| {

@@ -20,6 +20,15 @@ use crate::frame::Frame;
 /// bare key, and the tuple variants are what sixty call sites across the
 /// port's providers write, so the wire names the body and the type keeps
 /// its shape.
+///
+/// ```
+/// use teistro_port_ephemeris::{Body, Lattice, Quantity};
+///
+/// // The tithi lattice reads the Moon less the Sun.
+/// assert_eq!(Quantity::ELONGATION, Quantity::separation(Body::Moon, Body::Sun));
+/// assert_eq!(Quantity::ELONGATION.key(), "1*MOON-1*SUN");
+/// assert_eq!(serde_json::to_string(&Quantity::Longitude(Body::Sun)).unwrap(), r#"{"kind":"LONGITUDE","body":"SUN"}"#);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(from = "QuantityWire", into = "QuantityWire")]
 pub enum Quantity {
@@ -45,6 +54,14 @@ pub enum Quantity {
 
 /// [`Quantity`] as it is written and read: each variant a record, so the
 /// body a single-body quantity names has a field to stand in.
+///
+/// ```
+/// use teistro_port_ephemeris::{Body, Quantity};
+///
+/// // The wire form names the body a single-body quantity reads.
+/// let read: Quantity = serde_json::from_str(r#"{"kind":"SPEED","body":"MERCURY"}"#).unwrap();
+/// assert_eq!(read, Quantity::Speed(Body::Mercury));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "Quantity"))]
@@ -143,6 +160,14 @@ impl Quantity {
 
     /// The angle from `second` to `first`: an aspect searched as a single
     /// target.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Lattice, Quantity};
+    ///
+    /// let aspect = Quantity::separation(Body::Venus, Body::Mars);
+    /// assert_eq!(aspect.bodies(), (Body::Venus, Some(Body::Mars)));
+    /// assert_eq!(aspect.key(), "1*VENUS-1*MARS");
+    /// ```
     #[must_use]
     pub const fn separation(first: Body, second: Body) -> Quantity {
         Quantity::Composite {
@@ -155,12 +180,27 @@ impl Quantity {
 
     /// Whether the quantity is an angle on a circle (a longitude or a
     /// composite) rather than a rate.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Lattice, Quantity};
+    ///
+    /// assert!(Quantity::Longitude(Body::Sun).wraps() && Quantity::MOON_PLUS_SUN.wraps());
+    /// // A station is a speed crossing nought: not an angle.
+    /// assert!(!Quantity::Speed(Body::Mercury).wraps());
+    /// ```
     #[must_use]
     pub const fn wraps(self) -> bool {
         !matches!(self, Quantity::Speed(_))
     }
 
     /// The bodies the quantity reads.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Lattice, Quantity};
+    ///
+    /// assert_eq!(Quantity::Longitude(Body::Moon).bodies(), (Body::Moon, None));
+    /// assert_eq!(Quantity::MOON_PLUS_SUN.bodies(), (Body::Moon, Some(Body::Sun)));
+    /// ```
     #[must_use]
     pub const fn bodies(self) -> (Body, Option<Body>) {
         match self {
@@ -171,6 +211,13 @@ impl Quantity {
 
     /// The kind's stable id at the C boundary: 0 a longitude, 1 a speed,
     /// 2 a composite.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Lattice, Quantity};
+    ///
+    /// assert_eq!(Quantity::Speed(Body::Sun).kind_id(), 1);
+    /// assert_eq!(Quantity::ELONGATION.kind_id(), 2);
+    /// ```
     #[must_use]
     pub const fn kind_id(self) -> u8 {
         match self {
@@ -181,6 +228,15 @@ impl Quantity {
     }
 
     /// The quantity from its C parts.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Lattice, Quantity};
+    ///
+    /// assert_eq!(Quantity::from_parts(2, Body::Moon, Some(Body::Sun), 1.0, -1.0), Some(Quantity::ELONGATION));
+    /// assert_eq!(Quantity::from_parts(0, Body::Sun, None, 0.0, 0.0), Some(Quantity::Longitude(Body::Sun)));
+    /// // A composite needs its second body.
+    /// assert_eq!(Quantity::from_parts(2, Body::Moon, None, 1.0, -1.0), None);
+    /// ```
     #[must_use]
     pub fn from_parts(
         kind: u8,
@@ -203,6 +259,13 @@ impl Quantity {
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Lattice, Quantity};
+    ///
+    /// assert_eq!(Quantity::Longitude(Body::Sun).key(), "LONGITUDE(SUN)");
+    /// assert_eq!(Quantity::MOON_PLUS_SUN.key(), "1*MOON+1*SUN");
+    /// ```
     #[must_use]
     pub fn key(self) -> String {
         match self {
@@ -226,6 +289,14 @@ impl fmt::Display for Quantity {
 
 /// A lattice of boundaries: every `origin + k × step` degrees, or the
 /// single boundary at the origin when the step is zero.
+///
+/// ```
+/// use teistro_port_ephemeris::Lattice;
+///
+/// assert_eq!((Lattice::SIGNS.step_deg, Lattice::TITHIS.step_deg, Lattice::KARANAS.step_deg), (30.0, 12.0, 6.0));
+/// assert!((Lattice::NAKSHATRAS.step_deg * 27.0 - 360.0).abs() < 1e-12);
+/// assert_eq!(Lattice::YOGAS, Lattice::NAKSHATRAS);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Lattice {
@@ -264,6 +335,15 @@ impl Lattice {
     pub const YOGAS: Lattice = Lattice::NAKSHATRAS;
 
     /// One boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Lattice;
+    ///
+    /// // The Sun's return to its natal place, say.
+    /// let target = Lattice::single(123.4);
+    /// assert!(target.is_single());
+    /// assert_eq!(target.line(5), 123.4);
+    /// ```
     #[must_use]
     pub const fn single(target_deg: f64) -> Lattice {
         Lattice {
@@ -273,12 +353,26 @@ impl Lattice {
     }
 
     /// Whether the lattice is one boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Lattice;
+    ///
+    /// assert!(!Lattice::SIGNS.is_single());
+    /// ```
     #[must_use]
     pub fn is_single(&self) -> bool {
         self.step_deg == 0.0
     }
 
     /// The `k`th line, degrees, unwrapped.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Lattice;
+    ///
+    /// // Unwrapped: the twelfth sign line is 360 rather than 0.
+    /// assert_eq!(Lattice::SIGNS.line(12), 360.0);
+    /// assert_eq!(Lattice::TITHIS.line(-1), -12.0);
+    /// ```
     #[must_use]
     pub fn line(&self, k: i64) -> f64 {
         // A line index is a small integer; the conversion is exact far
@@ -293,6 +387,14 @@ impl Lattice {
 }
 
 /// Which way a boundary was passed.
+///
+/// ```
+/// use teistro_port_ephemeris::Direction;
+///
+/// // A retrograde planet re-entering a sign passes the line falling.
+/// assert_eq!(Direction::Falling.key(), "FALLING");
+/// assert_ne!(Direction::Rising, Direction::Falling);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -305,6 +407,12 @@ pub enum Direction {
 
 impl Direction {
     /// The stable id at the C boundary.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Direction;
+    ///
+    /// assert_eq!((Direction::Rising.id(), Direction::Falling.id()), (0, 1));
+    /// ```
     #[must_use]
     pub const fn id(self) -> u8 {
         match self {
@@ -314,6 +422,13 @@ impl Direction {
     }
 
     /// The direction with an id.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Direction;
+    ///
+    /// assert_eq!(Direction::from_id(1), Some(Direction::Falling));
+    /// assert_eq!(Direction::from_id(2), None);
+    /// ```
     #[must_use]
     pub const fn from_id(id: u8) -> Option<Direction> {
         match id {
@@ -324,6 +439,12 @@ impl Direction {
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Direction;
+    ///
+    /// assert_eq!(Direction::Rising.key(), "RISING");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -334,6 +455,15 @@ impl Direction {
 }
 
 /// A crossing found.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_port_ephemeris::{CrossingEvent, Direction};
+///
+/// // What a provider's own search reports: no evaluations of the SDK's.
+/// let ingress = CrossingEvent { instant: JulianDay::literal(2_460_324.6), boundary_deg: 270.0, direction: Direction::Rising, evaluations: 0 };
+/// assert_eq!(ingress.boundary_deg, 270.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Event {
@@ -350,6 +480,23 @@ pub struct Event {
 
 /// A request for every crossing of a quantity over a lattice inside a
 /// window, from a provider's own search.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_port_ephemeris::{CrossingRequest, Frame, Lattice, Quantity};
+///
+/// // Every tithi boundary of January 2024.
+/// let request = CrossingRequest {
+///     quantity: Quantity::ELONGATION,
+///     lattice: Lattice::TITHIS,
+///     from: JulianDay::literal(2_460_310.5),
+///     to: JulianDay::literal(2_460_341.5),
+///     tolerance_days: 1e-6,
+///     frame: Frame::CANONICAL,
+///     observer: None,
+/// };
+/// assert!(request.to.get() > request.from.get());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct CrossingRequest {
     /// What is searched.

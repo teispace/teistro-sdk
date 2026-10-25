@@ -65,10 +65,25 @@ use crate::provider::EphemerisProvider;
 /// can read it, and a manifest that failed to parse because of one
 /// unknown word would break every function in it, including the ones the
 /// SDK does understand.
+///
+/// ```
+/// use teistro_port_ephemeris::native::Role;
+///
+/// // A role this SDK has never heard of is kept, and read as an input.
+/// let unknown: Role = serde_json::from_str(r#""callback""#).unwrap();
+/// assert_eq!(unknown, Role::Other(String::from("callback")));
+/// assert!(unknown.is_supplied());
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Role {
+    /// An input, where the manifest says no more than that: the
+    /// direction a JSON dispatcher needs, which is all the Teimeris
+    /// adapter's manifest gives, every array carrying its own length.
+    In,
+    /// An output the engine writes, likewise.
+    Out,
     /// Passed by value.
     Value,
     /// The engine's own context or object.
@@ -110,15 +125,24 @@ impl Role {
     /// Whether the caller supplies this parameter.
     ///
     /// The out roles are the engine's to fill and a caller does not
-    /// name them; the lengths and capacities follow from the arrays they
-    /// belong to. An unknown role is treated as an input, because a
+    /// name them, nor a capacity, which follows from the out it sizes. A
+    /// length is the caller's, as the C signature takes it. An unknown role is treated as an input, because a
     /// caller that supplies it gets an error from the engine and one
     /// that does not gets silence.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::native::Role;
+    ///
+    /// assert!(Role::In.is_supplied() && Role::ArrayIn.is_supplied());
+    /// // Outs and the capacities that size them are the engine's to write.
+    /// assert!(!Role::Out.is_supplied() && !Role::ArrayCap.is_supplied());
+    /// ```
     #[must_use]
     pub fn is_supplied(&self) -> bool {
         !matches!(
             self,
-            Role::HandleOut
+            Role::Out
+                | Role::HandleOut
                 | Role::StructOut
                 | Role::OutStructSize
                 | Role::ScalarOut
@@ -132,6 +156,17 @@ impl Role {
 }
 
 /// One parameter of an engine's function.
+///
+/// ```
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// let provider = TestProvider::new();
+/// let native = provider.native().unwrap();
+/// let manifest = native.manifest()?;
+/// let value = &manifest.function("tp_echo").unwrap().params[0];
+/// assert_eq!((value.name.as_str(), value.kind.as_deref()), ("value", Some("double")));
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct NativeParam {
@@ -140,15 +175,32 @@ pub struct NativeParam {
     /// What it is for.
     pub role: Role,
     /// The engine's own spelling of its type, for a caller that wants to
-    /// show it; the SDK does not interpret it.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// show it; the SDK does not interpret it. Read from `type` too, the
+    /// key the Teimeris manifest writes.
+    #[serde(default, alias = "type", skip_serializing_if = "Option::is_none")]
     pub kind: Option<String>,
+    /// Whether a caller may leave it out: an input the engine reads as
+    /// null when absent.
+    #[serde(default, skip_serializing_if = "core::ops::Not::not")]
+    pub optional: bool,
     /// What it means, when the engine says.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub doc: Option<String>,
 }
 
 /// One operation an engine offers beyond the port's eight.
+///
+/// ```
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// let provider = TestProvider::new();
+/// let native = provider.native().unwrap();
+/// let manifest = native.manifest()?;
+/// let sum = manifest.function("tp_sum").unwrap();
+/// assert_eq!(sum.params.len(), 3);
+/// assert_eq!(sum.returns.as_deref(), Some("object"));
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct NativeFunction {
@@ -163,10 +215,31 @@ pub struct NativeFunction {
     /// What it does, when the engine says.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub doc: Option<String>,
+    /// Whether the call changes the engine's own state (a data path, a
+    /// cache), when the engine says; a caller that cannot tell reads it
+    /// as possibly so.
+    #[serde(
+        default,
+        rename = "mutatesEngineState",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub mutates_engine_state: Option<bool>,
 }
 
 impl NativeFunction {
     /// The parameters a caller supplies, in order.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let native = provider.native().unwrap();
+    /// let manifest = native.manifest()?;
+    /// // The caller gives the array and its length; the total is the engine's.
+    /// let names: Vec<&str> = manifest.function("tp_sum").unwrap().supplied().map(|param| param.name.as_str()).collect();
+    /// assert_eq!(names, ["values", "count"]);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     pub fn supplied(&self) -> impl Iterator<Item = &NativeParam> {
         self.params.iter().filter(|param| param.role.is_supplied())
     }
@@ -177,6 +250,16 @@ impl NativeFunction {
 /// Unknown fields are kept rather than refused: a manifest is the
 /// engine's document, and an engine that adds to it must not stop
 /// working with an SDK that has not been told.
+///
+/// ```
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// let provider = TestProvider::new();
+/// let native = provider.native().unwrap();
+/// let manifest = native.manifest()?;
+/// assert_eq!((manifest.engine.as_str(), manifest.version.as_str()), ("test-provider", "1"));
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct NativeManifest {
@@ -193,18 +276,49 @@ pub struct NativeManifest {
 
 impl NativeManifest {
     /// One operation by name.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let native = provider.native().unwrap();
+    /// let manifest = native.manifest()?;
+    /// assert!(manifest.function("tp_echo").is_some());
+    /// assert!(manifest.function("tp_nope").is_none());
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn function(&self, name: &str) -> Option<&NativeFunction> {
         self.functions.iter().find(|f| f.name == name)
     }
 
     /// How many operations it names.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let native = provider.native().unwrap();
+    /// let manifest = native.manifest()?;
+    /// assert_eq!(manifest.len(), 2);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn len(&self) -> usize {
         self.functions.len()
     }
 
     /// Whether it names none.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let native = provider.native().unwrap();
+    /// let manifest = native.manifest()?;
+    /// assert!(!manifest.is_empty());
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.functions.is_empty()
@@ -241,12 +355,31 @@ impl core::fmt::Debug for Native<'_> {
 
 impl<'p> Native<'p> {
     /// The engine's operations over a provider.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Native, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let native = Native::new(&provider);
+    /// assert_eq!(native.call_json("tp_echo", r#"{"value": 1}"#)?, r#"{"value":1.0}"#);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub const fn new(provider: &'p dyn EphemerisProvider) -> Native<'p> {
         Native { provider }
     }
 
     /// What the engine says it offers, parsed.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let native = provider.native().unwrap();
+    /// let manifest = native.manifest()?;
+    /// assert_eq!(manifest.functions.iter().map(|f| f.name.as_str()).collect::<Vec<_>>(), ["tp_echo", "tp_sum"]);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -263,6 +396,16 @@ impl<'p> Native<'p> {
     /// hand it on rather than read it — a binding building a proxy, or a
     /// consumer caching it against the engine's version.
     ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let native = provider.native().unwrap();
+    /// // The engine's own text, to hand on unread.
+    /// assert_eq!(native.manifest_json()?, provider.native_manifest()?);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// The provider's refusal.
@@ -275,6 +418,16 @@ impl<'p> Native<'p> {
     /// The arguments are an object keyed by the parameter names the
     /// manifest gives. What comes back is whatever the engine's adapter
     /// answers with, unread by the SDK.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let native = provider.native().unwrap();
+    /// let answer = native.call("tp_sum", &serde_json::json!({ "values": [0.5, 0.25] }))?;
+    /// assert_eq!(answer["total"], 0.75);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -295,6 +448,14 @@ impl<'p> Native<'p> {
     /// Calls an operation with the arguments already written as JSON, and
     /// answers with the engine's own JSON: the relay a binding uses,
     /// where parsing twice would be waste.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, ProviderError, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let native = provider.native().unwrap();
+    /// assert!(matches!(native.call_json("tp_nope", "{}"), Err(ProviderError::Unsupported { .. })));
+    /// ```
     ///
     /// # Errors
     ///
@@ -442,6 +603,26 @@ mod tests {
         // the function stays callable rather than becoming unreachable.
         assert!(function.params[1].role.is_supplied());
         assert_eq!(function.supplied().count(), 2);
+    }
+
+    /// The Teimeris adapter's manifest speaks `in`/`out`, `type`,
+    /// `optional` and `mutatesEngineState`: each is read, and an out is
+    /// not offered to a caller.
+    #[test]
+    fn the_teimeris_spelling_of_a_manifest_is_read() {
+        let text = r#"{"engine":"teimeris","version":"0.1.0","functions":[
+          {"name":"tm_julian_day","params":[
+            {"name":"dt","role":"in","type":"tm_datetime","optional":true},
+            {"name":"cal","role":"in","type":"tm_calendar"},
+            {"name":"out_jd","role":"out","type":"double"}],
+           "returns":"status","mutatesEngineState":false}]}"#;
+        let manifest: NativeManifest = serde_json::from_str(text).unwrap();
+        let function = manifest.function("tm_julian_day").unwrap();
+        assert_eq!(function.params[0].kind.as_deref(), Some("tm_datetime"));
+        assert!(function.params[0].optional && !function.params[1].optional);
+        assert_eq!(function.mutates_engine_state, Some(false));
+        let supplied: Vec<&str> = function.supplied().map(|p| p.name.as_str()).collect();
+        assert_eq!(supplied, ["dt", "cal"]);
     }
 
     #[test]

@@ -8132,8 +8132,8 @@ export interface EngineParam {
   /** The name, which is the key a caller uses. */
   name: string;
   /**
-   * What it is for: `value`, `handle`, `struct_in`, `array_in`,
-   * `array_len`, `scalar_out` and the rest — or a word this package has
+   * What it is for: `in` and `out`, or finer, `value`, `handle`,
+   * `struct_in`, `array_in`, `array_len`, `scalar_out` and the rest — or a word this package has
    * never heard of, kept as the engine spelled it, because an engine
    * that gains a role must still describe itself.
    */
@@ -8156,6 +8156,8 @@ export interface EngineFunction {
   returns?: string;
   /** What it does, when the engine says. */
   doc?: string;
+  /** Whether the call changes the engine's own state, when the engine says. */
+  mutatesEngineState?: boolean;
 }
 
 /** What an engine says it offers. */

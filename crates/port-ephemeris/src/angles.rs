@@ -16,6 +16,15 @@ use teistro_core::quantity::Place;
 use crate::body::TimeScale;
 
 /// What the angles are asked for: an instant and a place.
+///
+/// ```
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_port_ephemeris::{AnglesRequest, TimeScale};
+///
+/// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// let request = AnglesRequest { jd: 2_460_310.5, scale: TimeScale::Ut1, place: kathmandu };
+/// assert_eq!(serde_json::to_value(request).unwrap()["scale"], "UT1");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AnglesRequest {
@@ -30,6 +39,14 @@ pub struct AnglesRequest {
 /// A provider's angles, **tropical** degrees of date, with the obliquity
 /// its own reckoning takes: the chart measures them in its zodiac, as it
 /// does every other longitude.
+///
+/// ```
+/// use teistro_port_ephemeris::Angles;
+///
+/// // Tropical degrees of date: the chart measures them in its own zodiac.
+/// let angles = Angles { ascendant_deg: 285.2, midheaven_deg: 196.4, obliquity_deg: 23.436 };
+/// assert!(angles.ascendant_deg != angles.midheaven_deg);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Angles {

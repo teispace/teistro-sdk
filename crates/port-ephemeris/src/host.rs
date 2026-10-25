@@ -58,6 +58,17 @@ pub const DEFAULT_JD_MAX: f64 = 2_816_787.5;
 /// the bodies has a default, because a provider that answers the canonical
 /// frame with apparent geocentric positions is the common case and should
 /// not have to say so.
+///
+/// ```
+/// use teistro_port_ephemeris::Body;
+/// use teistro_port_ephemeris::host::{DEFAULT_JD_MAX, Declared};
+///
+/// let declared = Declared { version: Some(String::from("0.3")), deterministic: Some(false), ..Declared::named("remote", vec!["graha.SUN".into(), "MOON".into()]) };
+/// let capabilities = declared.capabilities().unwrap();
+/// assert_eq!(capabilities.bodies, [Body::Sun, Body::Moon]);
+/// assert_eq!(capabilities.jd_range.1, DEFAULT_JD_MAX);
+/// assert!(!capabilities.deterministic && capabilities.speeds);
+/// ```
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Declared {
     /// What the provider is, stamped in every result's provenance.
@@ -86,6 +97,15 @@ pub struct Declared {
 
 impl Declared {
     /// A provider's name and bodies, every other field at its default.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Frame;
+    /// use teistro_port_ephemeris::host::Declared;
+    ///
+    /// let capabilities = Declared::named("remote", vec!["SUN".into()]).capabilities().unwrap();
+    /// assert_eq!(capabilities.native_frame, Frame::CANONICAL);
+    /// assert!(capabilities.deterministic);
+    /// ```
     #[must_use]
     pub fn named(name: impl Into<String>, bodies: Vec<String>) -> Declared {
         Declared {
@@ -96,6 +116,16 @@ impl Declared {
     }
 
     /// The capabilities the SDK drives the provider by.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::Declared;
+    ///
+    /// // Each refusal is the sentence a binding throws.
+    /// assert!(Declared::named("remote", vec!["CHIRON".into()]).capabilities().unwrap_err().contains("CHIRON"));
+    /// assert!(Declared::named("remote", Vec::new()).capabilities().is_err());
+    /// let reserved = Declared { native_frame_bits: Some(1 << 9), ..Declared::named("remote", vec!["SUN".into()]) };
+    /// assert!(reserved.capabilities().is_err());
+    /// ```
     ///
     /// # Errors
     ///
@@ -149,6 +179,18 @@ impl Declared {
 /// request's order. A column left empty reads as zero, except `status`,
 /// which reads as `Ok`, and `source`, which reads as unknown; the four a
 /// cell cannot do without (`lon`, `lat`, `dist`, `status`) must be full.
+///
+/// ```
+/// use teistro_port_ephemeris::host::Answer;
+/// use teistro_port_ephemeris::{Body, CellStatus, Frame, PositionRequest, TimeScale};
+///
+/// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+/// // The speeds left out read as zero; the status column says which cell failed.
+/// let answer = Answer { frame_bits: Frame::CANONICAL.to_bits(), lon: vec![280.0, 0.0], lat: vec![0.0; 2], dist: vec![1.0, 0.0], status: vec![0, -2], ..Answer::default() };
+/// let columns = answer.columns(&request).unwrap();
+/// assert_eq!(columns.status, [CellStatus::Ok, CellStatus::OutOfRange]);
+/// assert_eq!(columns.lon_speed, [0.0, 0.0]);
+/// ```
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Answer {
     /// `Frame::to_bits` of the values.
@@ -174,6 +216,16 @@ pub struct Answer {
 impl Answer {
     /// The answer read into the port's own shape. A column of the wrong
     /// length is refused by name rather than read past its end.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::Answer;
+    /// use teistro_port_ephemeris::{Body, Frame, PositionRequest, TimeScale};
+    ///
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// // One longitude for two cells is refused by name, not read past its end.
+    /// let short = Answer { lon: vec![280.0], lat: vec![0.0; 2], dist: vec![1.0; 2], status: vec![0; 2], ..Answer::default() };
+    /// assert!(short.columns(&request).unwrap_err().contains("lon"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -228,6 +280,26 @@ impl Answer {
 }
 
 /// Why a host callback gave no answer.
+///
+/// ```
+/// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+/// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, ProviderError, TimeScale};
+///
+/// /// A host whose callback throws.
+/// struct Throws;
+///
+/// impl HostCallback for Throws {
+///     fn positions(&self, _: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+///         Err(Unanswered::Threw(String::from("TypeError: no ephemeris")))
+///     }
+/// }
+///
+/// let bound = Bound::new(Declared::named("throws", vec!["SUN".into()]), Throws).unwrap();
+/// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+/// assert!(matches!(bound.provider().positions(&request), Err(ProviderError::Refused { .. })));
+/// // The sentence is kept for the layer above to rethrow.
+/// assert_eq!(bound.leave(), Err(String::from("the ephemeris provider threw: TypeError: no ephemeris")));
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub enum Unanswered {
     /// The callback threw; the sentence is what it threw, and it is kept
@@ -239,6 +311,25 @@ pub enum Unanswered {
 }
 
 /// A binding's way of asking the host for positions.
+///
+/// ```
+/// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+/// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+///
+/// /// A host that answers every cell at 0°.
+/// struct Zero;
+///
+/// impl HostCallback for Zero {
+///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+///         let cells = request.cell_count();
+///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+///     }
+/// }
+///
+/// let bound = Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).unwrap();
+/// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+/// assert_eq!(bound.provider().positions(&request).unwrap().lon, [0.0]);
+/// ```
 pub trait HostCallback {
     /// The positions the host gives for a request the port has already
     /// validated against the declared capabilities.
@@ -246,6 +337,28 @@ pub trait HostCallback {
     /// `Ok(None)` is a provider saying it cannot produce the frame asked
     /// for; the SDK then asks for its native frame and completes the rest
     /// itself.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+    /// use teistro_port_ephemeris::{Body, Coordinates, EphemerisProvider, Frame, PositionRequest, ProviderError, TimeScale};
+    ///
+    /// /// A host that answers only the canonical frame.
+    /// struct CanonicalOnly;
+    ///
+    /// impl HostCallback for CanonicalOnly {
+    ///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+    ///         Ok((request.frame == Frame::CANONICAL).then(|| {
+    ///             let cells = request.cell_count();
+    ///             Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }
+    ///         }))
+    ///     }
+    /// }
+    ///
+    /// let bound = Bound::new(Declared::named("canonical", vec!["SUN".into()]), CanonicalOnly).unwrap();
+    /// let equatorial = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL.with_coordinates(Coordinates::Equatorial));
+    /// // `None` is the frame refused; the SDK then completes it from the native one.
+    /// assert!(matches!(bound.provider().positions(&equatorial), Err(ProviderError::Unsupported { .. })));
+    /// ```
     ///
     /// # Errors
     ///
@@ -255,6 +368,27 @@ pub trait HostCallback {
 
 /// A host provider: its capabilities, its callback, and what the callback
 /// last threw.
+///
+/// ```
+/// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+/// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+///
+/// /// A host that answers every cell at 0°.
+/// struct Zero;
+///
+/// impl HostCallback for Zero {
+///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+///         let cells = request.cell_count();
+///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+///     }
+/// }
+///
+/// let bound = Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).unwrap();
+/// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Moon], Frame::CANONICAL);
+/// // The port's own check runs first: the host declared the Sun alone.
+/// assert!(bound.provider().positions(&request).is_err());
+/// assert_eq!(bound.provider().take_thrown(), None);
+/// ```
 #[derive(Debug)]
 pub struct HostProvider<C> {
     capabilities: Capabilities,
@@ -267,17 +401,76 @@ pub struct HostProvider<C> {
 
 impl<C> HostProvider<C> {
     /// The binding's callback.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+    ///
+    /// /// A host that answers every cell at 0°.
+    /// struct Zero;
+    ///
+    /// impl HostCallback for Zero {
+    ///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+    ///         let cells = request.cell_count();
+    ///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+    ///     }
+    /// }
+    ///
+    /// let bound = Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).unwrap();
+    /// let _zero: &Zero = bound.provider().callback();
+    /// ```
     #[must_use]
     pub fn callback(&self) -> &C {
         &self.callback
     }
 
     /// Forgets what an earlier call threw, before a new call starts.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, ProviderError, TimeScale};
+    ///
+    /// /// A host whose callback throws.
+    /// struct Throws;
+    ///
+    /// impl HostCallback for Throws {
+    ///     fn positions(&self, _: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+    ///         Err(Unanswered::Threw(String::from("TypeError: no ephemeris")))
+    ///     }
+    /// }
+    ///
+    /// let bound = Bound::new(Declared::named("throws", vec!["SUN".into()]), Throws).unwrap();
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+    /// assert!(matches!(bound.provider().positions(&request), Err(ProviderError::Refused { .. })));
+    /// bound.provider().forget_thrown();
+    /// assert_eq!(bound.provider().take_thrown(), None);
+    /// ```
     pub fn forget_thrown(&self) {
         self.set_thrown(None);
     }
 
     /// What the callback threw during the call that just ended, taken.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, ProviderError, TimeScale};
+    ///
+    /// /// A host whose callback throws.
+    /// struct Throws;
+    ///
+    /// impl HostCallback for Throws {
+    ///     fn positions(&self, _: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+    ///         Err(Unanswered::Threw(String::from("TypeError: no ephemeris")))
+    ///     }
+    /// }
+    ///
+    /// let bound = Bound::new(Declared::named("throws", vec!["SUN".into()]), Throws).unwrap();
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+    /// assert!(matches!(bound.provider().positions(&request), Err(ProviderError::Refused { .. })));
+    /// assert_eq!(bound.provider().take_thrown().as_deref(), Some("threw: TypeError: no ephemeris"));
+    /// // Taken: a second read finds nothing.
+    /// assert_eq!(bound.provider().take_thrown(), None);
+    /// ```
     #[must_use]
     pub fn take_thrown(&self) -> Option<String> {
         self.thrown.lock().map_or(None, |mut thrown| thrown.take())
@@ -323,6 +516,25 @@ impl<C: HostCallback + Send + Sync> EphemerisProvider for HostProvider<C> {
 
 /// A host provider bound into the port's vtable: the boxed provider the
 /// vtable points at, kept alive by the context that owns it.
+///
+/// ```
+/// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+/// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+///
+/// /// A host that answers every cell at 0°.
+/// struct Zero;
+///
+/// impl HostCallback for Zero {
+///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+///         let cells = request.cell_count();
+///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+///     }
+/// }
+///
+/// let bound = Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).unwrap();
+/// assert_eq!(bound.provider().capabilities().identity.name, "zero");
+/// assert!(bound.leave().is_ok());
+/// ```
 pub struct Bound<C: HostCallback + Send + Sync> {
     exported: Box<Exported<HostProvider<C>>>,
 }
@@ -335,6 +547,24 @@ impl<C: HostCallback + Send + Sync> core::fmt::Debug for Bound<C> {
 
 impl<C: HostCallback + Send + Sync> Bound<C> {
     /// Binds a provider's declaration and its callback.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+    ///
+    /// /// A host that answers every cell at 0°.
+    /// struct Zero;
+    ///
+    /// impl HostCallback for Zero {
+    ///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+    ///         let cells = request.cell_count();
+    ///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+    ///     }
+    /// }
+    ///
+    /// assert!(Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).is_ok());
+    /// assert!(Bound::new(Declared::named("zero", vec!["PHOBOS".into()]), Zero).is_err());
+    /// ```
     ///
     /// # Errors
     ///
@@ -350,18 +580,76 @@ impl<C: HostCallback + Send + Sync> Bound<C> {
     }
 
     /// The provider inside.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+    ///
+    /// /// A host that answers every cell at 0°.
+    /// struct Zero;
+    ///
+    /// impl HostCallback for Zero {
+    ///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+    ///         let cells = request.cell_count();
+    ///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+    ///     }
+    /// }
+    ///
+    /// let bound = Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).unwrap();
+    /// assert_eq!(bound.provider().capabilities().bodies, [Body::Sun]);
+    /// ```
     #[must_use]
     pub fn provider(&self) -> &HostProvider<C> {
         self.exported.provider()
     }
 
     /// The vtable the SDK drives the provider through.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+    ///
+    /// /// A host that answers every cell at 0°.
+    /// struct Zero;
+    ///
+    /// impl HostCallback for Zero {
+    ///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+    ///         let cells = request.cell_count();
+    ///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+    ///     }
+    /// }
+    ///
+    /// let bound = Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).unwrap();
+    /// use teistro_port_ephemeris::VTABLE_ABI_VERSION;
+    ///
+    /// let vtable = Bound::<Zero>::vtable();
+    /// assert_eq!(vtable.abi_version, VTABLE_ABI_VERSION);
+    /// assert!(vtable.positions.is_some() && vtable.capabilities.is_some());
+    /// ```
     #[must_use]
     pub fn vtable() -> ProviderVtable {
         Exported::<HostProvider<C>>::vtable()
     }
 
     /// The pointer the SDK hands back to every callback.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+    ///
+    /// /// A host that answers every cell at 0°.
+    /// struct Zero;
+    ///
+    /// impl HostCallback for Zero {
+    ///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+    ///         let cells = request.cell_count();
+    ///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+    ///     }
+    /// }
+    ///
+    /// let bound = Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).unwrap();
+    /// assert!(!bound.user_data().is_null());
+    /// ```
     #[must_use]
     pub fn user_data(&self) -> *mut c_void {
         self.exported.user_data()
@@ -369,6 +657,26 @@ impl<C: HostCallback + Send + Sync> Bound<C> {
 
     /// Takes what the callback threw during the call that just ended, as
     /// the sentence a binding throws.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+    ///
+    /// /// A host that answers every cell at 0°.
+    /// struct Zero;
+    ///
+    /// impl HostCallback for Zero {
+    ///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+    ///         let cells = request.cell_count();
+    ///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+    ///     }
+    /// }
+    ///
+    /// let bound = Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).unwrap();
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+    /// bound.provider().positions(&request).unwrap();
+    /// assert_eq!(bound.leave(), Ok(()));
+    /// ```
     ///
     /// # Errors
     ///
@@ -385,6 +693,29 @@ impl<C: HostCallback + Send + Sync> Bound<C> {
 /// The vtable and the user data of an optional host, as a generated
 /// constructor passes them: none, and a null pointer, when there is no
 /// host.
+///
+/// ```
+/// use teistro_port_ephemeris::host::{Answer, Bound, Declared, HostCallback, Unanswered};
+/// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, TimeScale};
+///
+/// /// A host that answers every cell at 0°.
+/// struct Zero;
+///
+/// impl HostCallback for Zero {
+///     fn positions(&self, request: &PositionRequest<'_>) -> Result<Option<Answer>, Unanswered> {
+///         let cells = request.cell_count();
+///         Ok(Some(Answer { frame_bits: request.frame.to_bits(), lon: vec![0.0; cells], lat: vec![0.0; cells], dist: vec![1.0; cells], status: vec![0; cells], ..Answer::default() }))
+///     }
+/// }
+///
+/// let bound = Bound::new(Declared::named("zero", vec!["SUN".into()]), Zero).unwrap();
+/// use teistro_port_ephemeris::host::parts;
+///
+/// let (vtable, user_data) = parts(Some(&bound));
+/// assert!(vtable.is_some() && user_data == bound.user_data());
+/// let (none, null) = parts::<Zero>(None);
+/// assert!(none.is_none() && null.is_null());
+/// ```
 #[must_use]
 pub fn parts<C: HostCallback + Send + Sync>(
     host: Option<&Bound<C>>,

@@ -71,6 +71,53 @@ pub enum ProviderCode {
 
 /// A C observer: degrees and metres, validated into a [`Place`] on the
 /// way in.
+///
+/// ```
+/// use teistro_port_ephemeris::vtable::{ObserverC, PositionColumnsC, PositionRequestC};
+/// use teistro_port_ephemeris::{Body, CellStatus, Exported, Frame, TestProvider, TimeScale};
+///
+/// let exported = Exported::new(TestProvider::new());
+/// let vtable = Exported::<TestProvider>::vtable();
+/// let (jds, bodies) = ([2_451_545.0, 1.0e9], [Body::Sun.id()]);
+/// let request = PositionRequestC {
+///     struct_size: u32::try_from(size_of::<PositionRequestC>()).unwrap(),
+///     scale: TimeScale::Ut1.id(),
+///     frame_bits: Frame::CANONICAL.to_bits(),
+///     speeds: 1,
+///     has_observer: 0,
+///     reserved: [0; 2],
+///     observer: ObserverC { longitude_deg: 0.0, latitude_deg: 0.0, altitude_m: 0.0 },
+///     jds: jds.as_ptr(),
+///     jd_count: jds.len(),
+///     bodies: bodies.as_ptr(),
+///     body_count: bodies.len(),
+/// };
+/// // Caller-owned columns, one cell per instant and body.
+/// let (mut lon, mut lat, mut dist) = ([0.0; 2], [0.0; 2], [0.0; 2]);
+/// let (mut lon_speed, mut lat_speed, mut dist_speed) = ([0.0; 2], [0.0; 2], [0.0; 2]);
+/// let (mut status, mut source) = ([0i32; 2], [0u32; 2]);
+/// let mut columns = PositionColumnsC {
+///     struct_size: u32::try_from(size_of::<PositionColumnsC>()).unwrap(),
+///     frame_bits: 0,
+///     lon: lon.as_mut_ptr(),
+///     lat: lat.as_mut_ptr(),
+///     dist: dist.as_mut_ptr(),
+///     lon_speed: lon_speed.as_mut_ptr(),
+///     lat_speed: lat_speed.as_mut_ptr(),
+///     dist_speed: dist_speed.as_mut_ptr(),
+///     status: status.as_mut_ptr(),
+///     source: source.as_mut_ptr(),
+///     capacity: 2,
+/// };
+/// let positions = vtable.positions.unwrap();
+/// // SAFETY: `user_data` is the live box this vtable was made for, and every
+/// // pointer is valid for the lengths the structs give.
+/// let code = unsafe { positions(exported.user_data(), &request, &mut columns) };
+/// assert_eq!(code, 0);
+/// assert_eq!(status, [CellStatus::Ok.code(), CellStatus::OutOfRange.code()]);
+/// assert!((0.0..360.0).contains(&lon[0]));
+///
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub struct ObserverC {
@@ -101,6 +148,54 @@ impl ObserverC {
 }
 
 /// A C position request over a grid.
+///
+/// ```
+/// use teistro_port_ephemeris::vtable::{ObserverC, PositionColumnsC, PositionRequestC};
+/// use teistro_port_ephemeris::{Body, CellStatus, Exported, Frame, TestProvider, TimeScale};
+///
+/// let exported = Exported::new(TestProvider::new());
+/// let vtable = Exported::<TestProvider>::vtable();
+/// let (jds, bodies) = ([2_451_545.0, 1.0e9], [Body::Sun.id()]);
+/// let request = PositionRequestC {
+///     struct_size: u32::try_from(size_of::<PositionRequestC>()).unwrap(),
+///     scale: TimeScale::Ut1.id(),
+///     frame_bits: Frame::CANONICAL.to_bits(),
+///     speeds: 1,
+///     has_observer: 0,
+///     reserved: [0; 2],
+///     observer: ObserverC { longitude_deg: 0.0, latitude_deg: 0.0, altitude_m: 0.0 },
+///     jds: jds.as_ptr(),
+///     jd_count: jds.len(),
+///     bodies: bodies.as_ptr(),
+///     body_count: bodies.len(),
+/// };
+/// // Caller-owned columns, one cell per instant and body.
+/// let (mut lon, mut lat, mut dist) = ([0.0; 2], [0.0; 2], [0.0; 2]);
+/// let (mut lon_speed, mut lat_speed, mut dist_speed) = ([0.0; 2], [0.0; 2], [0.0; 2]);
+/// let (mut status, mut source) = ([0i32; 2], [0u32; 2]);
+/// let mut columns = PositionColumnsC {
+///     struct_size: u32::try_from(size_of::<PositionColumnsC>()).unwrap(),
+///     frame_bits: 0,
+///     lon: lon.as_mut_ptr(),
+///     lat: lat.as_mut_ptr(),
+///     dist: dist.as_mut_ptr(),
+///     lon_speed: lon_speed.as_mut_ptr(),
+///     lat_speed: lat_speed.as_mut_ptr(),
+///     dist_speed: dist_speed.as_mut_ptr(),
+///     status: status.as_mut_ptr(),
+///     source: source.as_mut_ptr(),
+///     capacity: 2,
+/// };
+/// let positions = vtable.positions.unwrap();
+/// // SAFETY: `user_data` is the live box this vtable was made for, and every
+/// // pointer is valid for the lengths the structs give.
+/// let code = unsafe { positions(exported.user_data(), &request, &mut columns) };
+/// assert_eq!(code, 0);
+/// assert_eq!(status, [CellStatus::Ok.code(), CellStatus::OutOfRange.code()]);
+/// // The out-of-range cell's values are left at zero.
+/// assert_eq!(lon[1], 0.0);
+///
+/// ```
 #[repr(C)]
 #[derive(Debug)]
 pub struct PositionRequestC {
@@ -138,6 +233,31 @@ pub struct PositionRequestC {
 
 /// A C request read into Rust: the instants borrowed from the caller, the
 /// bodies decoded from their ids, and the typed fields.
+///
+/// ```
+/// use teistro_port_ephemeris::vtable::{ObserverC, PositionRequestC};
+/// use teistro_port_ephemeris::{Body, Centre, Frame, TimeScale};
+///
+/// let (jds, bodies) = ([2_451_545.0], [Body::Moon.id()]);
+/// let request = PositionRequestC {
+///     struct_size: u32::try_from(size_of::<PositionRequestC>()).unwrap(),
+///     scale: TimeScale::Tt.id(),
+///     frame_bits: Frame::CANONICAL.with_centre(Centre::Topocentric).to_bits(),
+///     speeds: 0,
+///     has_observer: 1,
+///     reserved: [0; 2],
+///     observer: ObserverC { longitude_deg: 85.324, latitude_deg: 27.7172, altitude_m: 1400.0 },
+///     jds: jds.as_ptr(),
+///     jd_count: jds.len(),
+///     bodies: bodies.as_ptr(),
+///     body_count: bodies.len(),
+/// };
+/// // SAFETY: both arrays are valid for their counts while `decoded` is used.
+/// let decoded = unsafe { request.decode() }?;
+/// assert_eq!((decoded.bodies.as_slice(), decoded.scale, decoded.speeds), ([Body::Moon].as_slice(), TimeScale::Tt, false));
+/// assert_eq!(decoded.observer.map(|place| place.latitude.get()), Some(27.7172));
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[derive(Debug)]
 pub struct DecodedRequest<'a> {
     /// The instants.
@@ -156,6 +276,30 @@ pub struct DecodedRequest<'a> {
 
 impl DecodedRequest<'_> {
     /// The request as the trait takes it.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::vtable::{ObserverC, PositionRequestC};
+    /// use teistro_port_ephemeris::{Body, Frame, TimeScale};
+    ///
+    /// let (jds, bodies) = ([2_451_545.0, 2_451_546.0], [Body::Sun.id(), Body::Moon.id()]);
+    /// let request = PositionRequestC {
+    ///     struct_size: u32::try_from(size_of::<PositionRequestC>()).unwrap(),
+    ///     scale: TimeScale::Ut1.id(),
+    ///     frame_bits: Frame::CANONICAL.to_bits(),
+    ///     speeds: 1,
+    ///     has_observer: 0,
+    ///     reserved: [0; 2],
+    ///     observer: ObserverC { longitude_deg: 0.0, latitude_deg: 0.0, altitude_m: 0.0 },
+    ///     jds: jds.as_ptr(),
+    ///     jd_count: jds.len(),
+    ///     bodies: bodies.as_ptr(),
+    ///     body_count: bodies.len(),
+    /// };
+    /// // SAFETY: both arrays outlive `decoded`.
+    /// let decoded = unsafe { request.decode() }?;
+    /// assert_eq!(decoded.request().cell_count(), 4);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn request(&self) -> PositionRequest<'_> {
         PositionRequest {
@@ -172,6 +316,34 @@ impl DecodedRequest<'_> {
 impl PositionRequestC {
     /// Reads a C request: the size handshake, the scale and frame ids, the
     /// observer, the instants and the body ids.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::vtable::{ObserverC, PositionRequestC};
+    /// use teistro_port_ephemeris::{Frame, ProviderError, TimeScale};
+    ///
+    /// let jds = [2_451_545.0];
+    /// // A body id past the port's catalogue.
+    /// let bodies = [999u16];
+    /// let request = PositionRequestC {
+    ///     struct_size: u32::try_from(size_of::<PositionRequestC>()).unwrap(),
+    ///     scale: TimeScale::Ut1.id(),
+    ///     frame_bits: Frame::CANONICAL.to_bits(),
+    ///     speeds: 1,
+    ///     has_observer: 0,
+    ///     reserved: [0; 2],
+    ///     observer: ObserverC { longitude_deg: 0.0, latitude_deg: 0.0, altitude_m: 0.0 },
+    ///     jds: jds.as_ptr(),
+    ///     jd_count: jds.len(),
+    ///     bodies: bodies.as_ptr(),
+    ///     body_count: bodies.len(),
+    /// };
+    /// // SAFETY: both arrays are valid for their counts.
+    /// assert!(matches!(unsafe { request.decode() }, Err(ProviderError::Unsupported { .. })));
+    /// // The size handshake: a struct from another header is refused.
+    /// let older = PositionRequestC { struct_size: 8, ..request };
+    /// // SAFETY: as above.
+    /// assert!(matches!(unsafe { older.decode() }, Err(ProviderError::Invalid { .. })));
+    /// ```
     ///
     /// # Safety
     ///
@@ -225,6 +397,54 @@ impl PositionRequestC {
 /// instants outermost.
 ///
 /// `api: role=columns`
+///
+/// ```
+/// use teistro_port_ephemeris::vtable::{ObserverC, PositionColumnsC, PositionRequestC};
+/// use teistro_port_ephemeris::{Body, CellStatus, Exported, Frame, TestProvider, TimeScale};
+///
+/// let exported = Exported::new(TestProvider::new());
+/// let vtable = Exported::<TestProvider>::vtable();
+/// let (jds, bodies) = ([2_451_545.0, 1.0e9], [Body::Sun.id()]);
+/// let request = PositionRequestC {
+///     struct_size: u32::try_from(size_of::<PositionRequestC>()).unwrap(),
+///     scale: TimeScale::Ut1.id(),
+///     frame_bits: Frame::CANONICAL.to_bits(),
+///     speeds: 1,
+///     has_observer: 0,
+///     reserved: [0; 2],
+///     observer: ObserverC { longitude_deg: 0.0, latitude_deg: 0.0, altitude_m: 0.0 },
+///     jds: jds.as_ptr(),
+///     jd_count: jds.len(),
+///     bodies: bodies.as_ptr(),
+///     body_count: bodies.len(),
+/// };
+/// // Caller-owned columns, one cell per instant and body.
+/// let (mut lon, mut lat, mut dist) = ([0.0; 2], [0.0; 2], [0.0; 2]);
+/// let (mut lon_speed, mut lat_speed, mut dist_speed) = ([0.0; 2], [0.0; 2], [0.0; 2]);
+/// let (mut status, mut source) = ([0i32; 2], [0u32; 2]);
+/// let mut columns = PositionColumnsC {
+///     struct_size: u32::try_from(size_of::<PositionColumnsC>()).unwrap(),
+///     frame_bits: 0,
+///     lon: lon.as_mut_ptr(),
+///     lat: lat.as_mut_ptr(),
+///     dist: dist.as_mut_ptr(),
+///     lon_speed: lon_speed.as_mut_ptr(),
+///     lat_speed: lat_speed.as_mut_ptr(),
+///     dist_speed: dist_speed.as_mut_ptr(),
+///     status: status.as_mut_ptr(),
+///     source: source.as_mut_ptr(),
+///     capacity: 2,
+/// };
+/// let positions = vtable.positions.unwrap();
+/// // SAFETY: `user_data` is the live box this vtable was made for, and every
+/// // pointer is valid for the lengths the structs give.
+/// let code = unsafe { positions(exported.user_data(), &request, &mut columns) };
+/// assert_eq!(code, 0);
+/// assert_eq!(status, [CellStatus::Ok.code(), CellStatus::OutOfRange.code()]);
+/// // The provider says which frame the values are in.
+/// assert_eq!(columns.frame_bits, Frame::CANONICAL.to_bits());
+///
+/// ```
 #[repr(C)]
 #[derive(Debug)]
 pub struct PositionColumnsC {
@@ -261,6 +481,19 @@ pub struct PositionColumnsC {
 }
 
 /// A C obliquity.
+///
+/// ```
+/// use teistro_port_ephemeris::vtable::ObliquityC;
+/// use teistro_port_ephemeris::{Exported, ProviderCode, TestProvider, TimeScale};
+///
+/// let exported = Exported::new(TestProvider::new());
+/// let obliquity = Exported::<TestProvider>::vtable().obliquity.unwrap();
+/// let mut out = ObliquityC { mean_deg: 0.0, true_deg: 0.0, nutation_lon_deg: 0.0, nutation_obl_deg: 0.0 };
+/// // SAFETY: the box is live and `out` is writable.
+/// let code = unsafe { obliquity(exported.user_data(), 2_451_545.0, TimeScale::Tt.id(), &mut out) };
+/// // The test provider declares no obliquity, and says so with a code.
+/// assert_eq!(code, ProviderCode::Unsupported as i32);
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub struct ObliquityC {
@@ -279,6 +512,24 @@ pub struct ObliquityC {
 }
 
 /// A C horizon-event request.
+///
+/// ```
+/// use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// use teistro_port_ephemeris::vtable::HorizonRequestC;
+/// use teistro_port_ephemeris::{Body, DiscPoint, Horizon, HorizonEventKind, HorizonRequest};
+///
+/// let request = HorizonRequest {
+///     body: Body::Sun,
+///     kind: HorizonEventKind::Set,
+///     place: Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0)),
+///     from: JulianDay::literal(2_460_310.5),
+///     window_days: 1.0,
+///     horizon: Horizon::UPPER_LIMB_REFRACTION,
+/// };
+/// let c = HorizonRequestC::of(&request);
+/// assert_eq!((c.body, c.kind, c.disc), (Body::Sun.id(), HorizonEventKind::Set.id(), DiscPoint::UpperLimb.id()));
+/// assert_eq!(c.observer.latitude_deg, 27.7172);
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct HorizonRequestC {
@@ -320,6 +571,29 @@ impl HorizonRequestC {
     /// The C form of a request: an atmosphere's air crosses resolved at
     /// the request's place, so an engine is given exactly the air the
     /// SDK's own solver would refract by.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro_core::settings::Atmosphere;
+    /// use teistro_port_ephemeris::vtable::HorizonRequestC;
+    /// use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind, HorizonRequest, Refraction};
+    ///
+    /// // A named air crosses resolved: the given pressure and temperature.
+    /// let air = Horizon { refraction: Refraction::Atmosphere(Atmosphere::given(860.0, 12.0)), ..Horizon::UPPER_LIMB_REFRACTION };
+    /// let request = HorizonRequest {
+    ///     body: Body::Sun,
+    ///     kind: HorizonEventKind::Rise,
+    ///     place: Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0)),
+    ///     from: JulianDay::literal(2_460_310.5),
+    ///     window_days: 1.0,
+    ///     horizon: air,
+    /// };
+    /// let c = HorizonRequestC::of(&request);
+    /// assert_eq!((c.pressure_hpa, c.temperature_c), (860.0, 12.0));
+    /// // No atmosphere, no air.
+    /// let plain = HorizonRequestC::of(&HorizonRequest { horizon: Horizon::UPPER_LIMB_REFRACTION, ..request });
+    /// assert_eq!((plain.pressure_hpa, plain.temperature_c), (0.0, 0.0));
+    /// ```
     #[must_use]
     pub fn of(request: &HorizonRequest) -> HorizonRequestC {
         let air = match request.horizon.refraction {
@@ -344,6 +618,36 @@ impl HorizonRequestC {
 }
 
 /// A C crossings request.
+///
+/// ```
+/// use teistro_port_ephemeris::vtable::{CrossingEventC, CrossingRequestC, ObserverC};
+/// use teistro_port_ephemeris::{Body, Exported, Frame, Lattice, ProviderCode, Quantity, TestProvider};
+///
+/// // The tithi boundaries of January 2024, asked of a provider that has no search of its own.
+/// let request = CrossingRequestC {
+///     struct_size: u32::try_from(size_of::<CrossingRequestC>()).unwrap(),
+///     frame_bits: Frame::CANONICAL.to_bits(),
+///     quantity_kind: Quantity::ELONGATION.kind_id(),
+///     has_observer: 0,
+///     reserved: [0; 2],
+///     first_body: Body::Moon.id(),
+///     second_body: Body::Sun.id(),
+///     coefficient_a: 1.0,
+///     coefficient_b: -1.0,
+///     origin_deg: Lattice::TITHIS.origin_deg,
+///     step_deg: Lattice::TITHIS.step_deg,
+///     from_jd_ut1: 2_460_310.5,
+///     to_jd_ut1: 2_460_341.5,
+///     tolerance_days: 1e-6,
+///     observer: ObserverC { longitude_deg: 0.0, latitude_deg: 0.0, altitude_m: 0.0 },
+/// };
+/// let exported = Exported::new(TestProvider::new());
+/// let crossings = Exported::<TestProvider>::vtable().crossings.unwrap();
+/// let mut count = 0u32;
+/// // SAFETY: the box is live; a capacity of nought writes no events.
+/// let code = unsafe { crossings(exported.user_data(), &request, core::ptr::null_mut::<CrossingEventC>(), 0, &mut count) };
+/// assert_eq!(code, ProviderCode::Unsupported as i32);
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct CrossingRequestC {
@@ -387,6 +691,15 @@ pub struct CrossingRequestC {
 }
 
 /// A C crossing event.
+///
+/// ```
+/// use teistro_port_ephemeris::Direction;
+/// use teistro_port_ephemeris::vtable::CrossingEventC;
+///
+/// // The Sun entering Makara, as an engine's search writes it.
+/// let event = CrossingEventC { jd_ut1: 2_460_324.6, boundary_deg: 270.0, direction: Direction::Rising.id(), reserved: [0; 7] };
+/// assert_eq!(Direction::from_id(event.direction), Some(Direction::Rising));
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub struct CrossingEventC {
@@ -431,6 +744,16 @@ impl CrossingEventC {
 }
 
 /// A C data hash.
+///
+/// ```
+/// use core::ffi::CStr;
+/// use teistro_port_ephemeris::vtable::DataHashC;
+///
+/// let (file, sha) = (c"sepl_18.se1", c"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+/// let hash = DataHashC { file: file.as_ptr(), sha256: sha.as_ptr(), bytes: 0 };
+/// // SAFETY: both pointers are NUL-terminated literals.
+/// assert_eq!(unsafe { CStr::from_ptr(hash.file) }.to_str(), Ok("sepl_18.se1"));
+/// ```
 #[repr(C)]
 #[derive(Debug)]
 pub struct DataHashC {
@@ -444,6 +767,16 @@ pub struct DataHashC {
 
 /// C capabilities; every pointer is owned by the provider and valid for
 /// its lifetime.
+///
+/// ```
+/// use teistro_port_ephemeris::{EphemerisProvider, Exported, TestProvider};
+///
+/// // Read through the vtable, the capabilities are the provider's own.
+/// let exported = Exported::new(TestProvider::new());
+/// let through_c = exported.bound()?.capabilities();
+/// assert_eq!(through_c.describe(), TestProvider::new().capabilities().describe());
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[repr(C)]
 #[derive(Debug)]
 pub struct CapabilitiesC {
@@ -589,6 +922,16 @@ pub type NativeCallFn = unsafe extern "C" fn(
 /// The vtable: `user_data` is whatever the provider registered and is
 /// passed back to every function; a null function is an undeclared
 /// operation.
+///
+/// ```
+/// use teistro_port_ephemeris::{Exported, ProviderVtable, TestProvider, VTABLE_ABI_VERSION};
+///
+/// let vtable = Exported::<TestProvider>::vtable();
+/// assert_eq!(vtable.abi_version, VTABLE_ABI_VERSION);
+/// // What a loader hands an adapter to fill: zeroed, so it binds only once written.
+/// assert_eq!(ProviderVtable::EMPTY.struct_size, 0);
+/// assert!(ProviderVtable::EMPTY.positions.is_none());
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct ProviderVtable {
@@ -686,6 +1029,19 @@ fn invalid_call() -> i32 {
 /// Any vtable as an [`EphemerisProvider`]. The capabilities are read once
 /// at construction and owned in Rust; every call after that goes through
 /// the function pointers.
+///
+/// ```
+/// use teistro_port_ephemeris::{EphemerisProvider, Exported, ProviderVtable, TestProvider, VtableProvider};
+///
+/// let exported = Exported::new(TestProvider::new());
+/// // SAFETY: the vtable is the box's own, and the box outlives the provider.
+/// let provider = unsafe { VtableProvider::bind(Exported::<TestProvider>::vtable(), exported.user_data()) }?;
+/// assert_eq!(provider.capabilities().identity.name, "test-provider");
+/// // An empty table is refused for its size and version.
+/// // SAFETY: nothing is called through a refused table.
+/// assert!(unsafe { VtableProvider::bind(ProviderVtable::EMPTY, exported.user_data()) }.is_err());
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 pub struct VtableProvider {
     vtable: ProviderVtable,
     user_data: *mut c_void,
@@ -715,6 +1071,18 @@ impl core::fmt::Debug for VtableProvider {
 
 impl VtableProvider {
     /// Binds a vtable.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Exported, Frame, PositionRequest, TestProvider, TimeScale, VtableProvider};
+    ///
+    /// let exported = Exported::new(TestProvider::new());
+    /// // SAFETY: the vtable is the box's own, and the box outlives the provider.
+    /// let through_c = unsafe { VtableProvider::bind(Exported::<TestProvider>::vtable(), exported.user_data()) }?;
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Moon], Frame::CANONICAL);
+    /// // Every bit survives the boundary.
+    /// assert!(through_c.positions(&request)?.bit_identical(&TestProvider::new().positions(&request)?));
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     ///
     /// # Safety
     ///
@@ -789,6 +1157,18 @@ impl VtableProvider {
     /// keeps the vtable's code and `user_data` valid, carried with the
     /// provider rather than beside it, so no holder can drop one before
     /// the other.
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro_port_ephemeris::{EphemerisProvider, Exported, TestProvider, VtableProvider};
+    ///
+    /// let exported: Arc<Box<Exported<TestProvider>>> = Arc::new(Exported::new(TestProvider::new()));
+    /// let user_data = exported.user_data();
+    /// // SAFETY: `keeping` holds the box for as long as the provider lives.
+    /// let provider = unsafe { VtableProvider::bind(Exported::<TestProvider>::vtable(), user_data) }?.keeping(exported);
+    /// assert!(provider.capabilities().deterministic);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn keeping(mut self, owner: Arc<dyn Any + Send + Sync>) -> VtableProvider {
         self.keep = Some(owner);
@@ -1144,6 +1524,15 @@ impl EphemerisProvider for VtableProvider {
 /// A Rust provider behind a vtable: owns the provider and the C-side
 /// copies of its capabilities, so a binding or a native caller can drive
 /// it through [`ProviderVtable`].
+///
+/// ```
+/// use teistro_port_ephemeris::{EphemerisProvider, Exported, TestProvider};
+///
+/// let exported = Exported::new(TestProvider::new());
+/// // The safe way to drive a provider through its own C path.
+/// assert_eq!(exported.bound()?.capabilities().identity.name, "test-provider");
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 pub struct Exported<P: EphemerisProvider> {
     provider: P,
     name: CString,
@@ -1172,6 +1561,13 @@ impl<P: EphemerisProvider> core::fmt::Debug for Exported<P> {
 
 impl<P: EphemerisProvider> Exported<P> {
     /// Wraps a provider; the box keeps its address stable for `user_data`.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, Exported, TestProvider};
+    ///
+    /// let exported = Exported::new(TestProvider::new());
+    /// assert_eq!(exported.provider().capabilities().bodies.len(), 11);
+    /// ```
     #[must_use]
     pub fn new(provider: P) -> Box<Exported<P>> {
         let capabilities = provider.capabilities();
@@ -1207,6 +1603,14 @@ impl<P: EphemerisProvider> Exported<P> {
     }
 
     /// The vtable for this provider type.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Exported, TestProvider};
+    ///
+    /// // Every operation is wired; an undeclared one answers `Unsupported`.
+    /// let vtable = Exported::<TestProvider>::vtable();
+    /// assert!(vtable.obliquity.is_some() && vtable.native_call.is_some());
+    /// ```
     #[must_use]
     pub fn vtable() -> ProviderVtable {
         ProviderVtable {
@@ -1226,6 +1630,15 @@ impl<P: EphemerisProvider> Exported<P> {
     }
 
     /// The `user_data` to pass with [`Exported::vtable`]: this box.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, Exported, TestProvider};
+    ///
+    /// let exported = Exported::new(TestProvider::new());
+    /// // The box itself, stable for as long as it lives.
+    /// assert_eq!(exported.user_data(), exported.user_data());
+    /// assert!(!exported.user_data().is_null());
+    /// ```
     #[must_use]
     pub fn user_data(&self) -> *mut c_void {
         ptr::from_ref::<Exported<P>>(self).cast_mut().cast()
@@ -1233,6 +1646,16 @@ impl<P: EphemerisProvider> Exported<P> {
 
     /// This provider driven through its own vtable, borrowed for as long
     /// as the box lives: the safe way to measure or test the C path.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, EphemerisProvider, Exported, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let exported = Exported::new(TestProvider::new());
+    /// let bound = exported.bound()?;
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// assert!(bound.positions(&request)?.bit_identical(&TestProvider::new().positions(&request)?));
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1249,6 +1672,13 @@ impl<P: EphemerisProvider> Exported<P> {
     }
 
     /// The provider inside.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, Exported, TestProvider};
+    ///
+    /// let exported = Exported::new(TestProvider::new());
+    /// assert!(exported.provider().native().is_some());
+    /// ```
     pub fn provider(&self) -> &P {
         &self.provider
     }
@@ -1676,6 +2106,16 @@ unsafe extern "C" fn crossings_trampoline<P: EphemerisProvider>(
 
 /// An [`Exported`] provider seen through its vtable, tied to the box's
 /// lifetime so the pointers inside stay valid.
+///
+/// ```
+/// use teistro_port_ephemeris::{EphemerisProvider, Exported, TestProvider};
+///
+/// let exported = Exported::new(TestProvider::new());
+/// let bound = exported.bound()?;
+/// // The native operations cross too.
+/// assert_eq!(bound.native_call("tp_echo", r#"{"value": 3}"#)?, r#"{"value":3.0}"#);
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 pub struct ExportedVtable<'a> {
     provider: VtableProvider,
     owner: core::marker::PhantomData<&'a ()>,
@@ -1730,6 +2170,14 @@ impl EphemerisProvider for ExportedVtable<'_> {
 
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
         self.provider.crossings(request)
+    }
+
+    fn native_manifest(&self) -> Result<String, ProviderError> {
+        self.provider.native_manifest()
+    }
+
+    fn native_call(&self, function: &str, arguments_json: &str) -> Result<String, ProviderError> {
+        self.provider.native_call(function, arguments_json)
     }
 }
 
@@ -1810,6 +2258,27 @@ mod tests {
                 .bit_identical(&via_trait)
         );
         assert!(format!("{through_box:?}").contains("test-provider"));
+    }
+
+    /// The engine's own operations cross the box's C path as the
+    /// positions do: a forward left out answered them `Unsupported`.
+    #[test]
+    fn the_native_operations_cross_the_boxed_vtable() {
+        let exported = Exported::new(TestProvider::new());
+        let bound = exported.bound().unwrap();
+        assert_eq!(
+            bound.native_manifest().unwrap(),
+            TestProvider::new().native_manifest().unwrap()
+        );
+        assert_eq!(
+            bound
+                .native_call("tp_sum", r#"{"values": [1, 2]}"#)
+                .unwrap(),
+            TestProvider::new()
+                .native_call("tp_sum", r#"{"values": [1, 2]}"#)
+                .unwrap()
+        );
+        assert!(bound.native().is_some());
     }
 
     /// The test provider with a horizon override that keeps what it was

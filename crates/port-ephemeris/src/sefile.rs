@@ -19,6 +19,18 @@ use teistro_core::catalogue::{Ayanamsha, AyanamshaCategory, Catalogued};
 use crate::capabilities::DataHash;
 
 /// What a data directory offers.
+///
+/// ```
+/// use teistro_port_ephemeris::DataHash;
+/// use teistro_port_ephemeris::sefile::{SeFiles, julian_day};
+///
+/// // The planets and the Moon for 1800 to 2399, without the star catalogue.
+/// let files = SeFiles::of([DataHash::of_bytes("sepl_18.se1", b""), DataHash::of_bytes("semo_18.se1", b"")], false);
+/// assert_eq!(files.names, ["semo_18.se1", "sepl_18.se1"]);
+/// // From 0h of 1 January 1800 to 0h of the day after 31 December 2399.
+/// assert_eq!(files.jd_range, Some((julian_day(1800, 1, 1), julian_day(2400, 1, 1))));
+/// assert!(files.missing().is_empty() && !files.star_catalogue);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SeFiles {
@@ -40,6 +52,21 @@ impl SeFiles {
     /// The ayanamshas the directory supports: every catalogued one whose
     /// definition is a formula, and the star-anchored and galactic ones
     /// only with the star catalogue.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_port_ephemeris::DataHash;
+    /// use teistro_port_ephemeris::sefile::{SeFiles, julian_day};
+    ///
+    /// // The planets and the Moon for 1800 to 2399, without the star catalogue.
+    /// let files = SeFiles::of([DataHash::of_bytes("sepl_18.se1", b""), DataHash::of_bytes("semo_18.se1", b"")], false);
+    /// let offered = files.ayanamshas();
+    /// assert!(offered.contains(&Ayanamsha::Lahiri));
+    /// // True Chitra is measured from Spica: it needs the star catalogue.
+    /// assert!(!offered.contains(&Ayanamsha::TrueChitra));
+    /// let with_stars = SeFiles { star_catalogue: true, ..files };
+    /// assert!(with_stars.ayanamshas().contains(&Ayanamsha::TrueChitra));
+    /// ```
     #[must_use]
     pub fn ayanamshas(&self) -> Vec<Ayanamsha> {
         Ayanamsha::all()
@@ -61,6 +88,15 @@ impl SeFiles {
     /// its analytic fallback; a planet block without its Moon does the
     /// same for the Moon. A caller who opens a set names these files in
     /// its refusal, which is all a consumer needs to fetch the rest.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DataHash;
+    /// use teistro_port_ephemeris::sefile::{SeFiles, julian_day};
+    ///
+    /// // Two planet blocks with a hole between them, and no Moon at all.
+    /// let files = SeFiles::of([DataHash::of_bytes("sepl_12.se1", b""), DataHash::of_bytes("sepl_24.se1", b"")], false);
+    /// assert_eq!(files.missing(), ["semo_12.se1", "sepl_18.se1", "semo_18.se1", "semo_24.se1"]);
+    /// ```
     #[must_use]
     pub fn missing(&self) -> Vec<String> {
         let first_century = |stem: &str| -> Vec<i32> {
@@ -95,6 +131,13 @@ impl SeFiles {
 /// The file of one block: `block_name("sepl", 18)` is `sepl_18.se1` and
 /// `block_name("semo", -6)` is `semom06.se1`, the naming [`block_years`]
 /// reads.
+///
+/// ```
+/// use teistro_port_ephemeris::sefile::block_name;
+///
+/// assert_eq!(block_name("sepl", 18), "sepl_18.se1");
+/// assert_eq!(block_name("semo", -6), "semom06.se1");
+/// ```
 #[must_use]
 pub fn block_name(stem: &str, first_century: i32) -> String {
     let sign = if first_century < 0 { 'm' } else { '_' };
@@ -102,6 +145,14 @@ pub fn block_name(stem: &str, first_century: i32) -> String {
 }
 
 /// Whether an ayanamsha is defined through a star's position.
+///
+/// ```
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_port_ephemeris::sefile::needs_star_catalogue;
+///
+/// assert!(needs_star_catalogue(Ayanamsha::TrueChitra) && needs_star_catalogue(Ayanamsha::Galcent0sag));
+/// assert!(!needs_star_catalogue(Ayanamsha::Lahiri));
+/// ```
 #[must_use]
 pub fn needs_star_catalogue(ayanamsha: Ayanamsha) -> bool {
     matches!(
@@ -119,6 +170,14 @@ pub fn needs_star_catalogue(ayanamsha: Ayanamsha) -> bool {
 /// engines' naming rule read backwards: an instant in year `y` is served
 /// by the block whose first century is `y / 100` rounded down to a
 /// multiple of six.
+///
+/// ```
+/// use teistro_port_ephemeris::sefile::block_years;
+///
+/// assert_eq!(block_years("sepl_18.se1"), Some((1800, 2399)));
+/// assert_eq!(block_years("seplm06.se1"), Some((-600, -1)));
+/// assert_eq!(block_years("sefstars.txt"), None);
+/// ```
 #[must_use]
 pub fn block_years(name: &str) -> Option<(i32, i32)> {
     let stem = name.strip_suffix(".se1")?;
@@ -151,6 +210,15 @@ pub fn block_years(name: &str) -> Option<(i32, i32)> {
 /// the rule by which an instant is given its block. A block's first and
 /// last days are read in it, so the coverage claimed for a block before
 /// 1582 is the coverage its file records.
+///
+/// ```
+/// use teistro_port_ephemeris::sefile::{civil_julian_day, julian_day};
+///
+/// // The reform: Julian 4 October 1582 was followed by Gregorian 15 October.
+/// assert_eq!(civil_julian_day(1582, 10, 15), 2_299_160.5);
+/// assert_eq!(civil_julian_day(1582, 10, 4), 2_299_159.5);
+/// assert_eq!(civil_julian_day(2000, 1, 1), julian_day(2000, 1, 1));
+/// ```
 #[must_use]
 pub fn civil_julian_day(year: i32, month: u32, day: u32) -> f64 {
     let gregorian = julian_day(year, month, day);
@@ -180,6 +248,13 @@ fn julian_calendar_day(year: i32, month: u32, day: u32) -> f64 {
 
 /// The Julian day at 0h UT of a proleptic Gregorian date (Meeus,
 /// *Astronomical Algorithms*, chapter 7), for the block boundaries.
+///
+/// ```
+/// use teistro_port_ephemeris::sefile::julian_day;
+///
+/// assert_eq!(julian_day(2000, 1, 1), 2_451_544.5);
+/// assert_eq!(julian_day(2024, 1, 1), 2_460_310.5);
+/// ```
 #[must_use]
 pub fn julian_day(year: i32, month: u32, day: u32) -> f64 {
     let (y, m) = if month <= 2 {
@@ -199,6 +274,21 @@ pub fn julian_day(year: i32, month: u32, day: u32) -> f64 {
 }
 
 /// Scans a directory for the family and hashes what it finds.
+///
+/// ```
+/// use teistro_port_ephemeris::sefile::scan;
+///
+/// let dir = std::env::temp_dir().join("teistro-doc-sefile-scan");
+/// std::fs::create_dir_all(&dir)?;
+/// std::fs::write(dir.join("sepl_18.se1"), b"")?;
+/// std::fs::write(dir.join("README"), b"not a block")?;
+/// let files = scan(&dir)?;
+/// assert_eq!(files.names, ["sepl_18.se1"]);
+/// // A planet block without its Moon.
+/// assert_eq!(files.missing(), ["semo_18.se1"]);
+/// std::fs::remove_dir_all(&dir)?;
+/// # Ok::<(), std::io::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -228,6 +318,16 @@ impl SeFiles {
     /// however they are carried and nothing is hashed at run time. A file
     /// that is not a block (the star catalogue, the orbital elements) is
     /// left out of `names` and `hashes`, as `scan` leaves it out.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::DataHash;
+    /// use teistro_port_ephemeris::sefile::{SeFiles, julian_day};
+    ///
+    /// // Hashed when an engine was built, carried in its binary.
+    /// let files = SeFiles::of([DataHash::of_bytes("sepl_18.se1", b""), DataHash::of_bytes("seorbel.txt", b"")], true);
+    /// assert_eq!(files.names, ["sepl_18.se1"]);
+    /// assert!(files.star_catalogue);
+    /// ```
     #[must_use]
     pub fn of(hashes: impl IntoIterator<Item = DataHash>, star_catalogue: bool) -> SeFiles {
         let mut hashes: Vec<DataHash> = hashes

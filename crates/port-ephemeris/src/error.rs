@@ -10,6 +10,15 @@ use crate::vtable::ProviderCode;
 
 /// Why a provider could not answer. A per-cell failure is a
 /// [`crate::CellStatus`], not an error.
+///
+/// ```
+/// use teistro_core::error::Status;
+/// use teistro_port_ephemeris::ProviderError;
+///
+/// let error = ProviderError::OutOfRange { jd: 1.0e9 };
+/// assert_eq!(error.status(), Status::OutOfRange);
+/// assert_eq!(ProviderError::unsupported("houses").to_string(), "the provider does not support houses");
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -56,6 +65,14 @@ impl ProviderError {
 
     /// The stable code at the C boundary, which every binding reads from
     /// [`ProviderCode`] rather than writing as a number.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{ProviderCode, ProviderError};
+    ///
+    /// assert_eq!(ProviderError::invalid("bad").code(), ProviderCode::Invalid as i32);
+    /// // A provider's own code crosses as itself.
+    /// assert_eq!(ProviderError::Provider { code: 17, detail: String::new() }.code(), 17);
+    /// ```
     #[must_use]
     pub fn code(&self) -> i32 {
         let named = match self {
@@ -70,6 +87,13 @@ impl ProviderError {
     }
 
     /// The error a C code stands for, with a context string as detail.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::ProviderError;
+    ///
+    /// assert!(matches!(ProviderError::from_code(-3, "de441.bsp"), ProviderError::DataMissing { detail } if detail == "de441.bsp"));
+    /// assert!(matches!(ProviderError::from_code(17, ""), ProviderError::Provider { code: 17, .. }));
+    /// ```
     #[must_use]
     pub fn from_code(code: i32, context: &str) -> ProviderError {
         if code == ProviderCode::Unsupported as i32 {
@@ -95,12 +119,24 @@ impl ProviderError {
     }
 
     /// An unsupported-operation error.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::ProviderError;
+    ///
+    /// assert!(matches!(ProviderError::unsupported("eclipses"), ProviderError::Unsupported { what } if what == "eclipses"));
+    /// ```
     #[must_use]
     pub fn unsupported(what: impl Into<String>) -> ProviderError {
         ProviderError::Unsupported { what: what.into() }
     }
 
     /// A malformed-request error.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::ProviderError;
+    ///
+    /// assert_eq!(ProviderError::invalid("no instants").to_string(), "invalid request: no instants");
+    /// ```
     #[must_use]
     pub fn invalid(detail: impl Into<String>) -> ProviderError {
         ProviderError::Invalid {
@@ -109,6 +145,14 @@ impl ProviderError {
     }
 
     /// The SDK status the error maps to.
+    ///
+    /// ```
+    /// use teistro_core::error::Status;
+    /// use teistro_port_ephemeris::ProviderError;
+    ///
+    /// assert_eq!(ProviderError::unsupported("houses").status(), Status::Unsupported);
+    /// assert_eq!(ProviderError::invalid("bad").status(), Status::InvalidArg);
+    /// ```
     #[must_use]
     pub const fn status(&self) -> Status {
         match self {

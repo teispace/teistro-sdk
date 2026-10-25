@@ -140,6 +140,36 @@ days and a little over eleven hours", when the text's mean Jupiter takes
 corrected and the example asserts the figure. `teistro-calendar` joins
 `check-doc-examples`' list.
 
+**Every public item of `teistro-port-ephemeris` has a run example, and
+writing them found two dead ends.** **Numbers:** none; rustdoc counts 249
+such items, and all 249 have one, up from 17. `export_provider!`'s
+example, until now `ignore`, exports a provider and opens, binds and
+closes it through its three symbols. The C structs are driven through a
+real vtable over caller-owned arrays.
+
+- **`Exported::bound()` answered `native_call` and `native_manifest`
+  `Unsupported`.** It forwarded every other operation, so a provider
+  driven through its own C path lost the engine's operations, though the
+  vtable carries them. It now forwards both, and a unit test holds it.
+- **The SDK misread the one real engine's manifest.** The Teimeris
+  adapter's manifest writes the roles `in` and `out`, and spells a type
+  `type`. The port's `Role` knew neither, so all 122 of Teimeris's outs
+  read as unknown roles, which count as inputs. MCP's engine tools
+  therefore offered `out_jd`, `major` and the rest as arguments. `Role`
+  gains `In` and `Out`, and `NativeParam.kind` reads `type` too.
+  `NativeParam` gains `optional` and `NativeFunction` gains
+  `mutates_engine_state` (the manifest's `mutatesEngineState`), both of
+  which Teimeris already writes. Node's `EngineParam` already had
+  `optional`, and `EngineFunction` now has `mutatesEngineState`. MCP
+  uses them: an engine tool lists its non-optional inputs as `required`,
+  types `in` parameters from the plain C type (`double`, an integer,
+  `string`, `T[]`), and is read-only and idempotent only where the engine
+  says the call leaves its state alone.
+
+One doctest also compared a JSON answer as text, and failed whenever
+`teistro-mcp` was built alongside: its feature `preserve_order` changes
+serde_json's key order. The example now compares the parsed value.
+
 **The Node and Python suites run with the SDK under AddressSanitizer.**
 **Numbers:** Node's six files and Python's 200 tests pass with every access
 the SDK makes checked. A one-byte heap over-read planted in the addon,

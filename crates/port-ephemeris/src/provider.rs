@@ -43,6 +43,14 @@ pub struct PositionRequest<'a> {
 
 impl<'a> PositionRequest<'a> {
     /// A geocentric request with speeds.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Frame, PositionRequest, TimeScale};
+    ///
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// assert_eq!((request.observer, request.speeds), (None, true));
+    /// assert_eq!(request.frame, Frame::CANONICAL);
+    /// ```
     #[must_use]
     pub const fn new(
         jds: &'a [f64],
@@ -61,6 +69,17 @@ impl<'a> PositionRequest<'a> {
     }
 
     /// The same request seen from a place, in the topocentric frame.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro_port_ephemeris::{Body, Centre, Frame, PositionRequest, TimeScale};
+    ///
+    /// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// let seen = request.from_place(kathmandu);
+    /// assert_eq!(seen.frame.centre, Centre::Topocentric);
+    /// assert_eq!(seen.observer, Some(kathmandu));
+    /// ```
     #[must_use]
     pub const fn from_place(self, place: Place) -> PositionRequest<'a> {
         PositionRequest {
@@ -71,6 +90,13 @@ impl<'a> PositionRequest<'a> {
     }
 
     /// The same request without speeds.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Frame, PositionRequest, TimeScale};
+    ///
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// assert!(!request.without_speeds().speeds);
+    /// ```
     #[must_use]
     pub const fn without_speeds(self) -> PositionRequest<'a> {
         PositionRequest {
@@ -80,12 +106,27 @@ impl<'a> PositionRequest<'a> {
     }
 
     /// The same request in another frame.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequest, TimeScale};
+    ///
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// let equatorial = Frame::CANONICAL.with_coordinates(Coordinates::Equatorial);
+    /// assert_eq!(request.in_frame(equatorial).frame, equatorial);
+    /// ```
     #[must_use]
     pub const fn in_frame(self, frame: Frame) -> PositionRequest<'a> {
         PositionRequest { frame, ..self }
     }
 
     /// The number of cells: instants times bodies.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Frame, PositionRequest, TimeScale};
+    ///
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0, 2_451_547.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// assert_eq!(request.cell_count(), 6);
+    /// ```
     #[must_use]
     pub fn cell_count(&self) -> usize {
         self.jds.len().saturating_mul(self.bodies.len())
@@ -96,14 +137,55 @@ impl<'a> PositionRequest<'a> {
 /// an override the provider declares in its capabilities and the SDK uses
 /// when the profile's policy allows (ADR-0013). A provider is shared
 /// between threads by the context, so it is `Send + Sync`.
+///
+/// ```
+/// use teistro_port_ephemeris::{
+///     Capabilities, EphemerisProvider, PositionColumns, PositionRequest, ProviderError, TestProvider,
+/// };
+///
+/// // A provider needs two methods; every override defaults to refusing.
+/// struct Delegating(TestProvider);
+///
+/// impl EphemerisProvider for Delegating {
+///     fn capabilities(&self) -> Capabilities {
+///         self.0.capabilities()
+///     }
+///     fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
+///         self.0.positions(request)
+///     }
+/// }
+///
+/// let provider = Delegating(TestProvider::new());
+/// assert!(provider.delta_t_seconds(2_451_545.0).is_err());
+/// assert_eq!(provider.capabilities().identity.name, "test-provider");
+/// ```
 pub trait EphemerisProvider: Send + Sync {
     /// What the provider is and can do; stable for its lifetime.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let capabilities = TestProvider::new().capabilities();
+    /// assert_eq!(capabilities.identity.to_string(), "test-provider 1 (analytic)");
+    /// assert!(capabilities.deterministic && capabilities.native);
+    /// ```
     fn capabilities(&self) -> Capabilities;
 
     /// Positions over a grid of instants and bodies, in the provider's
     /// native frame or any frame it can produce natively. A frame it cannot
     /// produce is [`ProviderError::Unsupported`]; the SDK's completion then
     /// asks for the native frame and completes the rest.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CellStatus, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// // A failing cell never fails the batch: 1e9 is beyond the coverage.
+    /// let jds = [2_451_545.0, 1.0e9];
+    /// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+    /// let columns = TestProvider::new().positions(&request)?;
+    /// assert_eq!(columns.status, [CellStatus::Ok, CellStatus::OutOfRange]);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -114,6 +196,16 @@ pub trait EphemerisProvider: Send + Sync {
 
     /// The obliquity and nutation at an instant; an override.
     ///
+    /// ```
+    /// use teistro_port_ephemeris::TimeScale;
+    /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
+    ///
+    /// // The test provider declares no overrides, so the SDK does the work itself.
+    /// let provider = TestProvider::new();
+    /// assert!(!provider.capabilities().has(Overrides::OBLIQUITY));
+    /// assert!(matches!(provider.obliquity(2_451_545.0, TimeScale::Tt), Err(ProviderError::Unsupported { .. })));
+    /// ```
+    ///
     /// # Errors
     ///
     /// [`ProviderError::Unsupported`] unless declared.
@@ -123,6 +215,15 @@ pub trait EphemerisProvider: Send + Sync {
     }
 
     /// Delta T in seconds at a UT1 instant; an override.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
+    ///
+    /// // The test provider declares no overrides, so the SDK does the work itself.
+    /// let provider = TestProvider::new();
+    /// assert!(!provider.capabilities().has(Overrides::DELTA_T));
+    /// assert!(matches!(provider.delta_t_seconds(2_451_545.0), Err(ProviderError::Unsupported { .. })));
+    /// ```
     ///
     /// # Errors
     ///
@@ -135,6 +236,17 @@ pub trait EphemerisProvider: Send + Sync {
     /// The mean ayanamsha in degrees at an instant, the value sidereal
     /// longitudes subtract (without the nutation in longitude); an
     /// override.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_port_ephemeris::TimeScale;
+    /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
+    ///
+    /// // The test provider declares no overrides, so the SDK does the work itself.
+    /// let provider = TestProvider::new();
+    /// assert!(!provider.capabilities().has(Overrides::AYANAMSHA));
+    /// assert!(matches!(provider.ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Lahiri), Err(ProviderError::Unsupported { .. })));
+    /// ```
     ///
     /// # Errors
     ///
@@ -154,6 +266,15 @@ pub trait EphemerisProvider: Send + Sync {
     /// copy of the IERS bulletins; an override. By definition within
     /// ±0.9 s.
     ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
+    ///
+    /// // The test provider declares no overrides, so the SDK does the work itself.
+    /// let provider = TestProvider::new();
+    /// assert!(!provider.capabilities().has(Overrides::DUT1));
+    /// assert!(matches!(provider.dut1_seconds(2_460_310.5), Err(ProviderError::Unsupported { .. })));
+    /// ```
+    ///
     /// # Errors
     ///
     /// [`ProviderError::Unsupported`] unless declared, or an instant the
@@ -166,6 +287,28 @@ pub trait EphemerisProvider: Send + Sync {
     /// The next horizon event of a body at a place from the provider's own
     /// search, or `None` when the event does not happen inside the
     /// request's window (a polar day, a circumpolar body); an override.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind, HorizonRequest};
+    /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
+    ///
+    /// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// let sunrise = HorizonRequest {
+    ///     body: Body::Sun,
+    ///     kind: HorizonEventKind::Rise,
+    ///     place: kathmandu,
+    ///     from: JulianDay::literal(2_460_310.5),
+    ///     window_days: 1.0,
+    ///     horizon: Horizon::UPPER_LIMB_REFRACTION,
+    /// };
+    ///
+    /// // The test provider declares no overrides, so the SDK does the work itself.
+    /// let provider = TestProvider::new();
+    /// assert!(!provider.capabilities().has(Overrides::RISE_SET));
+    /// assert!(matches!(provider.horizon_event(&sunrise), Err(ProviderError::Unsupported { .. })));
+    /// ```
     ///
     /// # Errors
     ///
@@ -184,6 +327,20 @@ pub trait EphemerisProvider: Send + Sync {
     /// ([`Overrides::ANGLES`](crate::capabilities::Overrides::ANGLES)),
     /// which the SDK's spherical astronomy stands in for otherwise.
     ///
+    /// ```
+    /// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro_port_ephemeris::{AnglesRequest, TimeScale};
+    /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
+    ///
+    /// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// let request = AnglesRequest { jd: 2_460_310.5, scale: TimeScale::Ut1, place: kathmandu };
+    ///
+    /// // The test provider declares no overrides, so the SDK does the work itself.
+    /// let provider = TestProvider::new();
+    /// assert!(!provider.capabilities().has(Overrides::ANGLES));
+    /// assert!(matches!(provider.angles(&request), Err(ProviderError::Unsupported { .. })));
+    /// ```
+    ///
     /// # Errors
     ///
     /// [`ProviderError::Unsupported`] unless declared, or at a place the
@@ -198,6 +355,28 @@ pub trait EphemerisProvider: Send + Sync {
     /// provider's own search, in time order; an override
     /// ([`Overrides::CROSSINGS`](crate::capabilities::Overrides::CROSSINGS)),
     /// which the SDK's kernel stands in for otherwise.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_port_ephemeris::{Body, CrossingRequest, Frame, Lattice, Quantity};
+    /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
+    ///
+    /// // The Sun's ingresses into the signs over 2024.
+    /// let ingresses = CrossingRequest {
+    ///     quantity: Quantity::Longitude(Body::Sun),
+    ///     lattice: Lattice::SIGNS,
+    ///     from: JulianDay::literal(2_460_310.5),
+    ///     to: JulianDay::literal(2_460_676.5),
+    ///     tolerance_days: 1e-6,
+    ///     frame: Frame::CANONICAL,
+    ///     observer: None,
+    /// };
+    ///
+    /// // The test provider declares no overrides, so the SDK does the work itself.
+    /// let provider = TestProvider::new();
+    /// assert!(!provider.capabilities().has(Overrides::CROSSINGS));
+    /// assert!(matches!(provider.crossings(&ingresses), Err(ProviderError::Unsupported { .. })));
+    /// ```
     ///
     /// # Errors
     ///
@@ -217,6 +396,14 @@ pub trait EphemerisProvider: Send + Sync {
     /// day it appears in this. A provider that offers none says so by
     /// leaving this alone.
     ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let manifest: serde_json::Value = serde_json::from_str(&TestProvider::new().native_manifest()?).unwrap();
+    /// assert_eq!(manifest["engine"], "test-provider");
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `Unsupported` when the provider offers no native operations, or
@@ -233,6 +420,18 @@ pub trait EphemerisProvider: Send + Sync {
     /// engine's manifest, because a typed C call per function is what
     /// keeps a double in a floating-point register. The SDK relays.
     ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, ProviderError, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let answer = provider.native_call("tp_sum", r#"{"values": [1, 2, 3.5]}"#)?;
+    /// // Read as JSON: the key order is serde_json's, which a feature can change.
+    /// let answer: serde_json::Value = serde_json::from_str(&answer).unwrap();
+    /// assert_eq!(answer, serde_json::json!({ "count": 3, "total": 6.5 }));
+    /// assert!(matches!(provider.native_call("tp_nope", "{}"), Err(ProviderError::Unsupported { .. })));
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `Unsupported` when the provider offers no native operations, and
@@ -247,6 +446,13 @@ pub trait EphemerisProvider: Send + Sync {
     ///
     /// `None` rather than a handle that fails on every call, so that a
     /// caller asks once instead of discovering it per operation.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// // The test provider describes two operations of its own.
+    /// assert!(TestProvider::new().native().is_some());
+    /// ```
     fn native(&self) -> Option<crate::native::Native<'_>>
     where
         Self: Sized,
@@ -385,6 +591,19 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Box<P> {
 /// The order is the order a reader would ask in: what the frame needs,
 /// then what the provider answers, then what the instants are.
 ///
+/// ```
+/// use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, PositionRequest, ProviderError, TestProvider, TimeScale, validate};
+///
+/// let capabilities = TestProvider::new().capabilities();
+/// let jds = [2_451_545.0];
+/// let true_node = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::TrueNode], Frame::CANONICAL);
+/// // The refusal names the body and what the provider does answer.
+/// let Err(ProviderError::Unsupported { what }) = validate(&capabilities, &true_node) else { panic!() };
+/// assert!(what.starts_with("TRUE_NODE; it answers SUN, MOON"));
+/// let nan = [f64::NAN];
+/// assert!(validate(&capabilities, &PositionRequest::new(&nan, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL)).is_err());
+/// ```
+///
 /// # Errors
 ///
 /// [`ProviderError::Invalid`] or [`ProviderError::Unsupported`] naming the
@@ -441,6 +660,20 @@ pub fn validate(
 /// with no copy. One it covers in part is asked as the covered instants
 /// alone, in order, and the answer is scattered back into the rows they
 /// came from; one it covers not at all never reaches it.
+///
+/// ```
+/// use teistro_port_ephemeris::{Body, CellStatus, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale, ask_positions};
+///
+/// let provider = TestProvider::new();
+/// let capabilities = provider.capabilities();
+/// // The second instant is past the coverage: its cells are out of range and
+/// // the provider is asked for the first alone.
+/// let jds = [2_451_545.0, 1.0e9];
+/// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+/// let columns = ask_positions(&provider, &capabilities, &request)?;
+/// assert_eq!(columns.status, [CellStatus::Ok, CellStatus::OutOfRange]);
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 ///
 /// # Errors
 ///

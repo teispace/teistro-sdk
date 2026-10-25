@@ -124,6 +124,19 @@ struct Stored {
 }
 
 /// What a cache did, for a caller that wants to know whether it helped.
+///
+/// ```
+/// use teistro_port_ephemeris::{Body, CachingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+///
+/// let caching = CachingProvider::new(TestProvider::new());
+/// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+/// caching.positions(&request)?;
+/// caching.positions(&request)?;
+/// let stats = caching.stats();
+/// // The second call is answered from memory, all four cells.
+/// assert_eq!((stats.hits, stats.misses, stats.stored), (4, 4, 4));
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct CacheStats {
     /// Cells answered from the cache.
@@ -147,6 +160,17 @@ pub struct CacheStats {
 impl CacheStats {
     /// The share of cells answered without touching the ephemeris, in
     /// `[0, 1]`; zero when nothing was asked for.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CachingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let caching = CachingProvider::new(TestProvider::new());
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// caching.positions(&request)?;
+    /// caching.positions(&request)?;
+    /// assert_eq!(caching.stats().hit_share(), 0.5);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn hit_share(&self) -> f64 {
         let asked = self.hits + self.misses;
@@ -168,6 +192,18 @@ impl CacheStats {
 /// Wraps any provider, including a borrowed one — `EphemerisProvider` is
 /// implemented for `&P`, so `CachingProvider::new(&provider)` leaves the
 /// provider where it is.
+///
+/// ```
+/// use teistro_port_ephemeris::{Body, CachingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+///
+/// let caching = CachingProvider::new(TestProvider::new());
+/// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+/// caching.positions(&request)?;
+/// caching.positions(&request)?;
+/// // The same bits either way: a cache that changed an answer would be a bug.
+/// assert!(caching.positions(&request)?.bit_identical(&TestProvider::new().positions(&request)?));
+/// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+/// ```
 #[derive(Debug)]
 pub struct CachingProvider<P> {
     inner: P,
@@ -189,6 +225,13 @@ impl<P: EphemerisProvider> CachingProvider<P> {
     /// A provider that does not declare `deterministic` is wrapped but
     /// not cached: every call goes through, and [`Self::caching`] is
     /// false.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{CachingProvider, TestProvider};
+    ///
+    /// // The test provider is deterministic, so its cells are remembered.
+    /// assert!(CachingProvider::new(TestProvider::new()).caching());
+    /// ```
     #[must_use]
     pub fn new(inner: P) -> CachingProvider<P> {
         Self::with_capacity(inner, DEFAULT_CAPACITY)
@@ -197,6 +240,18 @@ impl<P: EphemerisProvider> CachingProvider<P> {
     /// A cache holding at most `capacity` cells. Zero disables it, which
     /// is the same as not wrapping at all but keeps a caller's code the
     /// one shape.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CachingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let off = CachingProvider::with_capacity(TestProvider::new(), 0);
+    /// assert!(!off.caching());
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// off.positions(&request)?;
+    /// off.positions(&request)?;
+    /// assert_eq!(off.stats().hits, 0);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     #[must_use]
     pub fn with_capacity(inner: P, capacity: usize) -> CachingProvider<P> {
         let caching = capacity > 0 && inner.capabilities().deterministic;
@@ -216,17 +271,36 @@ impl<P: EphemerisProvider> CachingProvider<P> {
 
     /// Whether cells are being remembered: the capacity is positive and
     /// the provider declares that identical requests get identical bits.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{CachingProvider, TestProvider};
+    ///
+    /// assert!(CachingProvider::with_capacity(TestProvider::new(), 64).caching());
+    /// ```
     #[must_use]
     pub const fn caching(&self) -> bool {
         self.caching
     }
 
     /// The provider underneath.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{CachingProvider, EphemerisProvider, TestProvider};
+    ///
+    /// let caching = CachingProvider::new(TestProvider::new());
+    /// assert_eq!(caching.inner().capabilities().identity.name, "test-provider");
+    /// ```
     pub const fn inner(&self) -> &P {
         &self.inner
     }
 
     /// What the cache has done so far.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{CacheStats, CachingProvider, TestProvider};
+    ///
+    /// assert_eq!(CachingProvider::new(TestProvider::new()).stats(), CacheStats::default());
+    /// ```
     #[must_use]
     pub fn stats(&self) -> CacheStats {
         CacheStats {
@@ -243,6 +317,18 @@ impl<P: EphemerisProvider> CachingProvider<P> {
     }
 
     /// Forgets everything and zeroes the counts.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, CachingProvider, EphemerisProvider, Frame, PositionRequest, TestProvider, TimeScale};
+    ///
+    /// let caching = CachingProvider::new(TestProvider::new());
+    /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
+    /// caching.positions(&request)?;
+    /// caching.positions(&request)?;
+    /// caching.clear();
+    /// assert_eq!(caching.stats().stored, 0);
+    /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
+    /// ```
     pub fn clear(&self) {
         if let Ok(mut cells) = self.cells.lock() {
             cells.clear();
