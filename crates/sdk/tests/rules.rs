@@ -295,6 +295,7 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     let mut special = [0_usize; 2];
     let mut decided = std::collections::BTreeMap::new();
     let mut refused = Vec::new();
+    let mut withheld: Vec<String> = Vec::new();
     for (name, chart) in common::charts() {
         let document =
             match common::reading_of(&sdk, &chart, |request| request.with_rule_inputs(rules)) {
@@ -318,32 +319,45 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
         // BPHS ch. 4 vv. 2 to 5: the bhava lagna moves a sign in five ghatis
         // and the hora lagna in two and a half, both from the Sun, so the one
         // is always half as far round as the other.
+        // A polar birth withholds both, as the verses count no lagna that
+        // far from a sunrise; every other chart has both.
         let sun = document.foundation.graha(Graha::Sun).unwrap().longitude_deg;
+        let derived = document.points.as_ref().unwrap();
         let from_sun = |point: Point| {
-            let at = document
-                .points
-                .as_ref()
-                .and_then(|found| found.at(point))
-                .unwrap();
-            (at.longitude_deg - sun).rem_euclid(360.0)
+            derived
+                .at(point)
+                .map(|at| (at.longitude_deg - sun).rem_euclid(360.0))
         };
         let (bhava, hora) = (from_sun(Point::BhavaLagna), from_sun(Point::HoraLagna));
-        assert!(
-            ((2.0 * bhava).rem_euclid(360.0) - hora).abs() < 1e-6,
-            "{name}: {bhava} {hora}"
+        assert_eq!(
+            bhava.is_some(),
+            hora.is_some(),
+            "{name}: one time lagna alone"
         );
+        if let (Some(bhava), Some(hora)) = (bhava, hora) {
+            assert!(
+                ((2.0 * bhava).rem_euclid(360.0) - hora).abs() < 1e-6,
+                "{name}: {bhava} {hora}"
+            );
+        } else {
+            withheld.push(name.clone());
+        }
         let evaluator = inputs.evaluator(Readings::TEXTS).with_rules(rules);
         for (count, key) in special.iter_mut().zip(SPECIAL) {
             let rule = rules.iter().find(|rule| rule.key == key).unwrap();
             *count += usize::from(evaluator.evaluate(rule).present);
         }
-        // BPHS ch. 43 vv. 33 to 50 on every chart with a hora lagna.
-        let pairs = evaluator
-            .three_pairs(teistro::rules::longevity::ThreePairsRules::VERSE)
-            .expect("a hora lagna");
-        *decided
-            .entry(format!("{:?}/{:?}", pairs.decided, pairs.class))
-            .or_insert(0) += 1;
+        // BPHS ch. 43 vv. 33 to 50 on every chart with a hora lagna, and
+        // none on one that withholds it.
+        let pairs = evaluator.three_pairs(teistro::rules::longevity::ThreePairsRules::VERSE);
+        if withheld.last() == Some(&name) {
+            assert!(pairs.is_none(), "{name}");
+        } else {
+            let pairs = pairs.expect("a hora lagna");
+            *decided
+                .entry(format!("{:?}/{:?}", pairs.decided, pairs.class))
+                .or_insert(0) += 1;
+        }
         points += inputs.points.len();
         charts += 1;
     }
@@ -359,7 +373,8 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     // than fails. No field differs anywhere else. Thirteen points from the
     // longitudes (the Indu lagna among them), and nineteen with the six the
     // day divides: Gulika and Mandi, Kala, Mrityu, Yamaghantaka and
-    // Ardhaprahara. The first special-lagna figure holds
+    // Ardhaprahara; fifteen at Tromsø, without the four time lagnas. The
+    // first special-lagna figure holds
     // on no chart; the second on one, c034, whose hora lagna stands 0.24°
     // into Cancer, 28 seconds of sunrise from Gemini, so that it holds or
     // not with the sunrise's last half-minute (it did not until the
@@ -367,17 +382,21 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     // record the special lagnas, so the count is the SDK's own.
     assert_eq!(
         (charts, points, differ, special),
-        (51, 51 * 19, [1, 1, 1, 0, 7], [0, 1])
+        (53, 51 * 19 + 2 * 15, [1, 1, 1, 0, 7], [0, 1])
     );
     let decided: Vec<(&str, usize)> = decided
         .iter()
         .map(|(key, count)| (key.as_str(), *count))
         .collect();
     assert_eq!(decided, THREE_PAIRS);
-    // Refused, each for what it cannot have: Tromsø's midnight sun and polar
-    // night, whose days have no sunrise for a special lagna to count from; and
-    // the two charts at the built-in ephemeris's edges, whose strength reads
-    // the year before a birth outside 1800 to 2400.
+    // Tromsø's midnight sun and polar night have no sunrise for a time
+    // lagna to count from, so they withhold the four and keep the rest.
+    assert_eq!(
+        withheld,
+        ["c028-troms-1988-06-21.json", "c029-troms-1988-12-21.json"]
+    );
+    // Refused: the two charts at the built-in ephemeris's edges, whose
+    // strength reads the year before a birth outside 1800 to 2400.
     let refused: Vec<(&str, teistro::Status)> = refused
         .iter()
         .map(|(name, status)| (name.as_str(), *status))
@@ -385,8 +404,6 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     assert_eq!(
         refused,
         [
-            ("c028-troms-1988-06-21.json", teistro::Status::OutOfRange),
-            ("c029-troms-1988-12-21.json", teistro::Status::OutOfRange),
             ("c047-london-1800-01-02.json", teistro::Status::OutOfRange),
             (
                 "c048-kathmandu-2399-12-30.json",
@@ -536,12 +553,14 @@ fn a_chart_s_maraka_windows_lie_in_the_ages_its_class_of_life_runs_to() {
 /// side a body falls is below a tier's accuracy, so the count is the
 /// tier's own; the comparison with the kernel holds on every tier.
 fn present_on_the_tier(charts: usize, present: usize, rules: usize) {
+    // Tromsø's two charts keep every point but the time lagnas, and one
+    // rule reading the rest holds there on every tier.
     let on_the_tier = if cfg!(feature = "builtin-full") {
-        17_092
+        17_093
     } else if cfg!(feature = "builtin-standard") {
-        17_090
+        17_091
     } else {
-        17_088
+        17_089
     };
     assert_eq!((charts, present, rules), (53, on_the_tier, 4605));
 }

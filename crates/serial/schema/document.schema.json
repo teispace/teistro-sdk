@@ -5809,6 +5809,13 @@
             "$ref": "#/$defs/Derived"
           },
           "type": "array"
+        },
+        "withheld": {
+          "description": "The points this chart cannot have, each with its reason; absent when there are none.",
+          "items": {
+            "$ref": "#/$defs/Withheld"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -6899,6 +6906,66 @@
         }
       ]
     },
+    "Status": {
+      "description": "The status of a call, with the code it has at the C boundary.",
+      "oneOf": [
+        {
+          "const": "OK",
+          "description": "Success.",
+          "type": "string"
+        },
+        {
+          "const": "INVALID_ARG",
+          "description": "A value refused at construction, or a request that contradicts itself.",
+          "type": "string"
+        },
+        {
+          "const": "OUT_OF_RANGE",
+          "description": "An instant or place outside the provider's or the calendar's coverage.",
+          "type": "string"
+        },
+        {
+          "const": "CAPABILITY",
+          "description": "The settings need something the provider does not declare.",
+          "type": "string"
+        },
+        {
+          "const": "PROVIDER",
+          "description": "The provider failed; its own code and message are carried.",
+          "type": "string"
+        },
+        {
+          "const": "NOT_CONVERGED",
+          "description": "A search hit its iteration cap.",
+          "type": "string"
+        },
+        {
+          "const": "UNSUPPORTED",
+          "description": "A registered but unimplemented variant, or an unknown key.",
+          "type": "string"
+        },
+        {
+          "const": "PACK",
+          "description": "A pack failed validation or targets another catalogue version.",
+          "type": "string"
+        },
+        {
+          "const": "LIMIT",
+          "description": "A batch, range or cache limit was exceeded.",
+          "type": "string"
+        },
+        {
+          "const": "SCHEMA_VERSION",
+          "description": "A struct or blob from an incompatible version.",
+          "type": "string"
+        },
+        {
+          "const": "INTERNAL",
+          "description": "A panic caught at the boundary; never expected.",
+          "type": "string"
+        }
+      ]
+    },
     "SthanaBala": {
       "description": "A graha's Sthana bala by component, virupas.",
       "properties": {
@@ -7855,6 +7922,29 @@
           "type": "string"
         }
       ]
+    },
+    "Withheld": {
+      "description": "A point a chart cannot have, and why: a time lagna whose birth is further from its sunrise than the verses count (`lagna::LONGEST_HOURS`), or a portion of a day with no arc to divide.",
+      "properties": {
+        "point": {
+          "$ref": "#/$defs/Point",
+          "description": "Which point, by the catalogue's own key."
+        },
+        "reason": {
+          "description": "The refusal's message.",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "description": "The refusal's status: `OUT_OF_RANGE` for a time lagna, `UNSUPPORTED` for a portion of a day without an arc."
+        }
+      },
+      "required": [
+        "point",
+        "status",
+        "reason"
+      ],
+      "type": "object"
     },
     "Written": {
       "description": "A balance written as years, months, days, hours and minutes.",
