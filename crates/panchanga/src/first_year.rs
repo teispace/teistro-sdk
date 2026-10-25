@@ -25,6 +25,47 @@ use crate::limb::Member;
 const LAST_MONTHLY: u8 = 12;
 
 /// When the first abdika is kept (DS p. 330, two views).
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # use teistro_panchanga::first_year::FirstYear;
+/// #
+/// # // A death at noon on Wednesday 25 November 2026, in Kathmandu.
+/// # let sunrise = almanac.day(&date(11, 25), &kathmandu)?.value.day.sunrise;
+/// # let death = JulianDay::literal(sunrise.get() + 0.25);
+///
+/// use teistro_panchanga::first_year::Rite;
+///
+/// // Nepal's view keeps an abdika on the eleventh day, and the
+/// // anniversary is the second.
+/// let nepal = almanac.first_year(&FirstYear::nepal("parent", death), &kathmandu)?.value;
+/// let abdikas: Vec<_> = nepal.rites.iter().filter(|r| r.rite == Rite::Abdika).collect();
+/// assert_eq!(abdikas.last().and_then(|r| r.year), Some(2));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -40,6 +81,45 @@ pub enum FirstAbdika {
 }
 
 /// The day the sapindana is kept on (DS p. 331).
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # use teistro_panchanga::first_year::FirstYear;
+/// #
+/// # // A death at noon on Wednesday 25 November 2026, in Kathmandu.
+/// # let sunrise = almanac.day(&date(11, 25), &kathmandu)?.value.day.sunrise;
+/// # let death = JulianDay::literal(sunrise.get() + 0.25);
+///
+/// use teistro_panchanga::first_year::SapindanaAt;
+///
+/// let asked = FirstYear { sapindana: SapindanaAt::EleventhDay, ..FirstYear::dharmasindhu("parent", death) };
+/// let schedule = almanac.first_year(&asked, &kathmandu)?.value;
+/// assert_eq!(schedule.sapindana, schedule.eleventh_day);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -57,6 +137,17 @@ pub enum SapindanaAt {
 }
 
 /// How far short an *ūna* rite is kept (DS p. 330).
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_panchanga::first_year::{FirstYear, UnaDay};
+///
+/// // Madhava's day before, unless a request names a tithi.
+/// let asked = FirstYear::dharmasindhu("parent", JulianDay::literal(2_461_370.0));
+/// assert_eq!(asked.una, UnaDay::DayBefore);
+/// assert_eq!(serde_json::to_string(&UnaDay::TwoTithis)?, r#""TWO_TITHIS""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -131,6 +222,15 @@ const fn thirds() -> NightRule {
 
 impl FirstYear {
     /// The *Dharmasindhu*'s defaults for a death at `at`.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::first_year::{FirstAbdika, FirstYear, SapindanaAt};
+    ///
+    /// let asked = FirstYear::dharmasindhu("parent", JulianDay::literal(2_461_370.0));
+    /// assert_eq!((asked.first_abdika, asked.sapindana), (FirstAbdika::SecondYear, SapindanaAt::TwelfthDay));
+    /// assert!(asked.window.is_none());
+    /// ```
     #[must_use]
     pub fn dharmasindhu(key: &str, at: JulianDay<Utc>) -> FirstYear {
         FirstYear {
@@ -147,6 +247,15 @@ impl FirstYear {
 
     /// Dhakal's readings for Nepal: the first abdika on the eleventh day,
     /// and the anniversary, the barkhi, in the ordinary month.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::festival::FirstYearAdhika;
+    /// use teistro_panchanga::first_year::{FirstAbdika, FirstYear};
+    ///
+    /// let asked = FirstYear::nepal("parent", JulianDay::literal(2_461_370.0));
+    /// assert_eq!((asked.first_abdika, asked.first_year_adhika), (FirstAbdika::EleventhDay, FirstYearAdhika::Nija));
+    /// ```
     #[must_use]
     pub fn nepal(key: &str, at: JulianDay<Utc>) -> FirstYear {
         FirstYear {
@@ -157,6 +266,15 @@ impl FirstYear {
     }
 
     /// Refuses an empty key.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::first_year::FirstYear;
+    ///
+    /// let at = JulianDay::literal(2_461_370.0);
+    /// assert!(FirstYear::dharmasindhu("parent", at).check().is_ok());
+    /// assert_eq!(FirstYear::dharmasindhu(" ", at).check().unwrap_err().field(), Some("key"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -171,6 +289,15 @@ impl FirstYear {
     /// The days the schedule reads: from two days before the death to
     /// fourteen lunations after it, which holds a first anniversary kept
     /// in an adhika thirteenth month and the day after it.
+    ///
+    /// ```
+    /// use teistro_panchanga::first_year::FirstYear;
+    ///
+    /// // Fourteen lunations hold a thirteenth month and the day after.
+    /// let (back, ahead) = FirstYear::reach();
+    /// assert_eq!(back, 2);
+    /// assert!(ahead as f64 > 14.0 * 29.53);
+    /// ```
     #[must_use]
     pub const fn reach() -> (i64, i64) {
         (2, 420)
@@ -183,6 +310,46 @@ impl FirstYear {
 }
 
 /// Which rite.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # use teistro_panchanga::first_year::FirstYear;
+/// #
+/// # // A death at noon on Wednesday 25 November 2026, in Kathmandu.
+/// # let sunrise = almanac.day(&date(11, 25), &kathmandu)?.value.day.sunrise;
+/// # let death = JulianDay::literal(sunrise.get() + 0.25);
+/// # let schedule = almanac.first_year(&FirstYear::dharmasindhu("parent", death), &kathmandu)?.value;
+///
+/// use teistro_panchanga::first_year::Rite;
+///
+/// // The first monthly, then the other eleven months' monthlies.
+/// assert_eq!(schedule.rites.iter().filter(|r| r.rite == Rite::AdyaMasika).count(), 1);
+/// assert!(schedule.rites.iter().filter(|r| r.rite == Rite::Masika).count() >= 11);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -207,6 +374,50 @@ pub enum Rite {
 }
 
 /// How a rite is performed.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # use teistro_panchanga::first_year::FirstYear;
+/// #
+/// # // A death at noon on Wednesday 25 November 2026, in Kathmandu.
+/// # let sunrise = almanac.day(&date(11, 25), &kathmandu)?.value.day.sunrise;
+/// # let death = JulianDay::literal(sunrise.get() + 0.25);
+/// # let schedule = almanac.first_year(&FirstYear::dharmasindhu("parent", death), &kathmandu)?.value;
+///
+/// use teistro_panchanga::first_year::{Rite, RiteForm};
+///
+/// // The first monthly falls before the sapindana and keeps the
+/// // ekoddishta; a monthly after it is done again by the parvana, drawn
+/// // forward to the sapindana's day.
+/// let first = schedule.rites.iter().find(|r| r.rite == Rite::AdyaMasika).ok_or("the first monthly")?;
+/// assert_eq!((first.form, first.drawn_to.as_ref()), (Some(RiteForm::Ekoddishta), None));
+/// let last = schedule.rites.iter().rfind(|r| r.rite == Rite::Masika).ok_or("a monthly")?;
+/// assert_eq!((last.form, last.drawn_to.as_ref()), (Some(RiteForm::Parvana), Some(&schedule.sapindana)));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -227,6 +438,47 @@ impl RiteForm {
 }
 
 /// What DS bars an *ūna* rite's day for, found at its sunrise.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # use teistro_panchanga::first_year::FirstYear;
+/// #
+/// # // A death at noon on Wednesday 25 November 2026, in Kathmandu.
+/// # let sunrise = almanac.day(&date(11, 25), &kathmandu)?.value.day.sunrise;
+/// # let death = JulianDay::literal(sunrise.get() + 0.25);
+/// # let schedule = almanac.first_year(&FirstYear::dharmasindhu("parent", death), &kathmandu)?.value;
+///
+/// use teistro_panchanga::first_year::{Rite, UnaBar};
+///
+/// // Only an ūna rite's day carries bars.
+/// let una = [Rite::UnaMasika, Rite::UnaShanmasika, Rite::UnaAbdika];
+/// assert!(schedule.rites.iter().all(|r| r.bars.is_empty() || una.contains(&r.rite)));
+/// assert_eq!(serde_json::to_string(&UnaBar::Chaturdashi)?, r#""CHATURDASHI""#);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -243,6 +495,47 @@ pub enum UnaBar {
 }
 
 /// One rite of the first year.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # use teistro_panchanga::first_year::FirstYear;
+/// #
+/// # // A death at noon on Wednesday 25 November 2026, in Kathmandu.
+/// # let sunrise = almanac.day(&date(11, 25), &kathmandu)?.value.day.sunrise;
+/// # let death = JulianDay::literal(sunrise.get() + 0.25);
+/// # let schedule = almanac.first_year(&FirstYear::dharmasindhu("parent", death), &kathmandu)?.value;
+///
+/// use std::collections::BTreeSet;
+///
+/// // The sixteen, each in its place.
+/// let places: BTreeSet<u8> = schedule.rites.iter().filter_map(|r| r.place).collect();
+/// assert_eq!(places, (1..=16).collect());
+/// assert!(schedule.rites.iter().all(|r| !r.clause.is_empty()));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -286,6 +579,47 @@ pub struct FirstYearRite {
 }
 
 /// A death's first year.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # use teistro_panchanga::first_year::FirstYear;
+/// #
+/// # // A death at noon on Wednesday 25 November 2026, in Kathmandu.
+/// # let sunrise = almanac.day(&date(11, 25), &kathmandu)?.value.day.sunrise;
+/// # let death = JulianDay::literal(sunrise.get() + 0.25);
+/// # let schedule = almanac.first_year(&FirstYear::dharmasindhu("parent", death), &kathmandu)?.value;
+///
+/// use teistro_calendar::CalendarSystem;
+///
+/// // The eleventh day is the count's first plus ten.
+/// let day = |date| Gregorian.fixed_of(date);
+/// assert_eq!(day(&schedule.day_one)?.plus_days(10), day(&schedule.eleventh_day)?);
+/// assert_eq!(schedule.key, "parent");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -340,6 +674,44 @@ impl FirstYearSchedule {
     ];
 
     /// The answer as JSON, every catalogue member written as its full key.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # use teistro_panchanga::first_year::FirstYear;
+    /// #
+    /// # // A death at noon on Wednesday 25 November 2026, in Kathmandu.
+    /// # let sunrise = almanac.day(&date(11, 25), &kathmandu)?.value.day.sunrise;
+    /// # let death = JulianDay::literal(sunrise.get() + 0.25);
+    /// # let schedule = almanac.first_year(&FirstYear::dharmasindhu("parent", death), &kathmandu)?.value;
+    ///
+    /// let json = schedule.in_full()?;
+    /// assert!(json["origin"]["tithi"].as_str().is_some_and(|key| key.starts_with("tithi.")));
+    /// assert_eq!(json["dayOne"]["calendar"], "calendar.GREGORIAN");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -656,6 +1028,60 @@ impl Reading<'_> {
 /// A death's first year over consecutive sunrise days holding
 /// [`FirstYear::reach`] around it, its origin already found at the
 /// instant.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+/// # // elements that need no engine. A real provider reads the real sky.
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+/// # use teistro_panchanga::first_year::FirstYear;
+/// #
+/// # // A death at noon on Wednesday 25 November 2026, in Kathmandu.
+/// # let sunrise = almanac.day(&date(11, 25), &kathmandu)?.value.day.sunrise;
+/// # let death = JulianDay::literal(sunrise.get() + 0.25);
+///
+/// use teistro_calendar::CalendarSystem;
+/// use teistro_panchanga::festival::Origin;
+/// use teistro_panchanga::first_year::first_year;
+///
+/// // The almanac's own steps: the origin at the death, then the days
+/// // from two before it to the reach after.
+/// let asked = FirstYear::dharmasindhu("parent", death);
+/// let origin = almanac.origin(&Origin::Instant { at: death }, &kathmandu)?;
+/// let (back, ahead) = FirstYear::reach();
+/// let civil = Gregorian.fixed_of(&date(11, 25))?;
+/// // A run holds at most a year, so the reach is founded in two that join.
+/// let middle = ahead / 2;
+/// let run = |from: i64, to: i64| -> Result<_, teistro_core::error::Error> {
+///     let (from, to) = (Gregorian.date_of(civil.plus_days(from))?, Gregorian.date_of(civil.plus_days(to))?);
+///     Ok(almanac.festival_days(&from, &to, &kathmandu)?.value)
+/// };
+/// let mut days = run(-back, middle)?;
+/// days.extend(run(middle + 1, ahead)?);
+/// let schedule = first_year(&asked, &origin, &days, &clock)?;
+/// assert_eq!(schedule, almanac.first_year(&asked, &kathmandu)?.value);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

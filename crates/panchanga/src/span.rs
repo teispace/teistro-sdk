@@ -44,6 +44,21 @@ pub struct Span<T> {
 impl<T> Span<T> {
     /// A span of a member over a window, or `None` when the member does
     /// not touch the window at all.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::span::Span;
+    ///
+    /// // A day from 100.25 to 101.25, and a tithi from 99.9 to 100.6.
+    /// let day = Interval::literal(100.25, 101.25);
+    /// let tithi = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+    ///
+    /// // What the day holds of it, from its sunrise.
+    /// assert_eq!(tithi.inside, Interval::literal(100.25, 100.6));
+    /// assert!(Span::new("Panchami", Interval::literal(101.5, 102.0), day).is_none());
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn new(member: T, whole: Interval, window: Interval) -> Option<Span<T>> {
         whole.clipped_to(window).map(|inside| Span {
@@ -54,12 +69,38 @@ impl<T> Span<T> {
     }
 
     /// Whether the member began before the day did.
+    ///
+    /// ```
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // A day from 100.25 to 101.25, and a tithi from 99.9 to 100.6.
+    /// # let day = Interval::literal(100.25, 101.25);
+    /// # let tithi = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+    ///
+    /// assert!(tithi.began_before());
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn began_before(&self) -> bool {
         self.whole.from.get() < self.inside.from.get()
     }
 
     /// Whether the member outlasts the day.
+    ///
+    /// ```
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // A day from 100.25 to 101.25, and a tithi from 99.9 to 100.6.
+    /// # let day = Interval::literal(100.25, 101.25);
+    /// # let tithi = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+    ///
+    /// assert!(!tithi.ends_after());
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn ends_after(&self) -> bool {
         self.whole.to.get() > self.inside.to.get()
@@ -68,12 +109,41 @@ impl<T> Span<T> {
     /// How far through the member an instant is: 0 when it began, 1 when
     /// it ends. Measured over the member's own span, not the clipped one,
     /// because that is the fraction every rule that reads one wants.
+    ///
+    /// ```
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // A day from 100.25 to 101.25, and a tithi from 99.9 to 100.6.
+    /// # let day = Interval::literal(100.25, 101.25);
+    /// # let tithi = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+    ///
+    /// // Halfway through the tithi itself, not through the day's part of it.
+    /// assert!((tithi.fraction_at(JulianDay::literal(100.25)) - 0.5).abs() < 1e-9);
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn fraction_at(&self, instant: JulianDay<Utc>) -> f64 {
         self.whole.fraction_at(instant)
     }
 
     /// Whether the member was running at an instant, by its own bounds.
+    ///
+    /// ```
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // A day from 100.25 to 101.25, and a tithi from 99.9 to 100.6.
+    /// # let day = Interval::literal(100.25, 101.25);
+    /// # let tithi = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+    ///
+    /// // By its own bounds: before the day began, it was running.
+    /// assert!(tithi.contains(JulianDay::literal(100.0)));
+    /// assert!(!tithi.contains(JulianDay::literal(100.7)));
+    /// # Ok::<(), &str>(())
+    /// ```
     #[must_use]
     pub fn contains(&self, instant: JulianDay<Utc>) -> bool {
         self.whole.contains(instant)
@@ -112,6 +182,20 @@ impl<T> Span<T> {
     }
 
     /// The same span with the member mapped, keeping both intervals.
+    ///
+    /// ```
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // A day from 100.25 to 101.25, and a tithi from 99.9 to 100.6.
+    /// # let day = Interval::literal(100.25, 101.25);
+    /// # let tithi = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+    ///
+    /// let length = tithi.map(str::len);
+    /// assert_eq!((length.member, length.whole), (7, Interval::literal(99.9, 100.6)));
+    /// # Ok::<(), &str>(())
+    /// ```
     pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Span<U> {
         Span {
             member: f(self.member),
@@ -123,6 +207,23 @@ impl<T> Span<T> {
 
 /// Which of a day's two sunrises a member was running at
 /// ([`Span::sunrises`]).
+///
+/// ```
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // A day from 100.25 to 101.25, and a tithi from 99.9 to 100.6.
+/// # let day = Interval::literal(100.25, 101.25);
+/// # let tithi = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+///
+/// use teistro_panchanga::span::Sunrises;
+///
+/// assert_eq!(tithi.sunrises(day.from, day.to), Sunrises::Opening);
+/// let long = Span::new("Ashtami", Interval::literal(100.1, 101.4), day).ok_or("it meets the day")?;
+/// assert_eq!(long.sunrises(day.from, day.to), Sunrises::Both);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -139,12 +240,26 @@ pub enum Sunrises {
 
 impl Sunrises {
     /// Whether the member names two days running.
+    ///
+    /// ```
+    /// use teistro_panchanga::span::Sunrises;
+    ///
+    /// assert!(Sunrises::Both.is_vriddhi());
+    /// assert!(!Sunrises::Opening.is_vriddhi());
+    /// ```
     #[must_use]
     pub const fn is_vriddhi(self) -> bool {
         matches!(self, Sunrises::Both)
     }
 
     /// Whether the member names no day.
+    ///
+    /// ```
+    /// use teistro_panchanga::span::Sunrises;
+    ///
+    /// assert!(Sunrises::Neither.is_kshaya());
+    /// assert!(!Sunrises::Next.is_kshaya());
+    /// ```
     #[must_use]
     pub const fn is_kshaya(self) -> bool {
         matches!(self, Sunrises::Neither)
@@ -156,6 +271,23 @@ impl Sunrises {
 /// The lists a day carries are short — one to four entries — so this is a
 /// scan, and it is here rather than written out four times at each call
 /// site.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_panchanga::span::Span;
+///
+/// // A day from 100.25 to 101.25, and a tithi from 99.9 to 100.6.
+/// let day = Interval::literal(100.25, 101.25);
+/// let tithi = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+/// use teistro_panchanga::span::at;
+///
+/// let next = Span::new("Chaturthi", Interval::literal(100.6, 101.5), day).ok_or("it meets the day")?;
+/// let spans = [tithi, next];
+/// assert_eq!(at(&spans, JulianDay::literal(100.8)).map(|span| span.member), Some("Chaturthi"));
+/// assert!(at(&spans, JulianDay::literal(102.0)).is_none());
+/// # Ok::<(), &str>(())
+/// ```
 #[must_use]
 pub fn at<T>(spans: &[Span<T>], instant: JulianDay<Utc>) -> Option<&Span<T>> {
     spans

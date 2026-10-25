@@ -30,9 +30,134 @@ use crate::festival::FestivalDay;
 
 /// The full period when the request gives none: ten days, for every
 /// family (Aṅgiras in the Mitākṣarā on Yājñavalkya III.22).
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
+/// use teistro_panchanga::ashauch::FULL_DAYS;
+///
+/// assert_eq!(found.days, Some(FULL_DAYS));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const FULL_DAYS: u8 = 10;
 
 /// The longest count a table row or a request may name, in days.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::MOST_DAYS;
+///
+/// let mut long = asked(death(10.25), Relation::Child);
+/// long.full_days = Some(MOST_DAYS + 1);
+/// assert_eq!(long.check().unwrap_err().field(), Some("fullDays"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const MOST_DAYS: u8 = 60;
 
 /// A month of the age bands, in days.
@@ -48,6 +173,74 @@ const JOINED: f64 = 1e-6;
 
 /// Which day an event at night belongs to (the Mitākṣarā on Yājñavalkya
 /// III.20: three *kalpas*, "arranged by the custom of the land").
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::{DayOneBy, NightRule};
+///
+/// // At 10.9, in the night's last third: the day after's.
+/// let found = ashauch(&table, &asked(death(10.9), Relation::Child), &days, &UtcOffset::UTC)?;
+/// assert_eq!(found.day_one_by, DayOneBy::Night { rule: NightRule::Thirds });
+/// assert_eq!((found.day_one, found.end.get()), (date(11), 21.0));
+/// // From sunrise to sunrise, the day before's.
+/// let sunrise = AshauchTable { night: NightRule::Sunrise, ..table };
+/// let found = ashauch(&sunrise, &asked(death(10.9), Relation::Child), &days, &UtcOffset::UTC)?;
+/// assert_eq!(found.day_one, date(10));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -67,6 +260,73 @@ pub enum NightRule {
 }
 
 /// A span the texts name.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::Length;
+///
+/// // A maternal grandmother's, a pakṣiṇī: that day, its night, and the next
+/// // day to nightfall.
+/// let found = ashauch(&table, &asked(death(10.25), Relation::MaternalGrandmother), &days, &UtcOffset::UTC)?;
+/// assert_eq!((found.length, found.end.get()), (Length::Pakshini, 11.5));
+/// // The ruler's, sajyotiḥ: by day, to nightfall.
+/// let found = ashauch(&table, &asked(death(10.25), Relation::Subject), &days, &UtcOffset::UTC)?;
+/// assert_eq!((found.length, found.end.get()), (Length::Sajyotih, 10.5));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchLength"))]
@@ -93,6 +353,14 @@ pub enum Length {
 impl Length {
     /// Its days as a count, `full` standing for [`Length::Full`]; none for
     /// the lengths that are not one.
+    ///
+    /// ```
+    /// use teistro_panchanga::ashauch::Length;
+    ///
+    /// assert_eq!(Length::Days { days: 3 }.count(10), Some(3));
+    /// assert_eq!(Length::Full.count(12), Some(12));
+    /// assert_eq!(Length::Pakshini.count(10), None);
+    /// ```
     #[must_use]
     pub const fn count(self, full: u8) -> Option<u8> {
         match self {
@@ -116,6 +384,72 @@ impl Length {
 }
 
 /// Where a *pakṣiṇī* begun at night ends (*Dharmasindhu* p. 303).
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::PakshiniNight;
+///
+/// // A pakṣiṇī begun at night, 10.75: to the second sunrise, or to the
+/// // next day's nightfall.
+/// let asked = asked(death(10.75), Relation::MaternalGrandmother);
+/// assert_eq!(ashauch(&table, &asked, &days, &UtcOffset::UTC)?.end.get(), 12.0);
+/// let some = AshauchTable { pakshini_at_night: PakshiniNight::NextNightfall, ..table };
+/// assert_eq!(ashauch(&some, &asked, &days, &UtcOffset::UTC)?.end.get(), 11.5);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -129,6 +463,71 @@ pub enum PakshiniNight {
 
 /// A son or a daughter, which the texts' bands and the mother's further
 /// bar read.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::Sex;
+///
+/// // The mother's further bar after a son, to the 30th day.
+/// let birth = AshauchEvent::Birth { at: jd(10.25), child: Some(Sex::Male) };
+/// let found = ashauch(&table, &asked(birth, Relation::Mother), &days, &UtcOffset::UTC)?;
+/// assert_eq!(found.sex, Some(Sex::Male));
+/// assert!(found.rites_from.is_some());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchSex"))]
@@ -141,6 +540,76 @@ pub enum Sex {
 }
 
 /// Whether the deceased had the upanayana.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::{Sex, Upanayana};
+///
+/// // A son of eight, before his upanayana: three days for the father.
+/// let deceased = Deceased {
+///     born: Some(jd(-2900.0)),
+///     sex: Some(Sex::Male),
+///     upanayana: Some(Upanayana::NotDone),
+///     ..Deceased::default()
+/// };
+/// let event = AshauchEvent::Death { at: jd(10.25), cremated_at: None, ahitagni: false, deceased };
+/// let found = ashauch(&table, &asked(event, Relation::Father), &days, &UtcOffset::UTC)?;
+/// assert_eq!(found.days, Some(3));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -159,6 +628,76 @@ pub enum Upanayana {
 /// left out with no `born`, the deceased is an adult who had every rite;
 /// left out with a `born`, a fact a band needs is asked for by a refusal
 /// rather than guessed.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::{Clause, Sex};
+///
+/// // A son of two months, cremated: the parents three days by the band.
+/// let deceased = Deceased { born: Some(jd(40.25)), sex: Some(Sex::Male), ..Deceased::default() };
+/// let event = AshauchEvent::Death { at: jd(100.25), cremated_at: None, ahitagni: false, deceased };
+/// let found = ashauch(&table, &asked(event, Relation::Father), &days, &UtcOffset::UTC)?;
+/// assert_eq!(found.days, Some(3));
+/// assert!(matches!(found.clause, Clause::Band { row: 1, .. }));
+/// // With a birth given, a fact a band needs is asked for, not guessed.
+/// let unsexed = Deceased { born: Some(jd(40.25)), ..Deceased::default() };
+/// let event = AshauchEvent::Death { at: jd(100.25), cremated_at: None, ahitagni: false, deceased: unsexed };
+/// assert!(ashauch(&table, &asked(event, Relation::Father), &days, &UtcOffset::UTC).is_err());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
@@ -190,6 +729,72 @@ pub struct Deceased {
 }
 
 /// What happened.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::Clause;
+///
+/// // A loss in the 5th month: the mother five days, the father three.
+/// let loss = AshauchEvent::Loss { at: jd(10.25), month: 5 };
+/// let mother = ashauch(&table, &asked(loss, Relation::Mother), &days, &UtcOffset::UTC)?;
+/// let father = ashauch(&table, &asked(loss, Relation::Father), &days, &UtcOffset::UTC)?;
+/// assert_eq!((mother.days, father.days), (Some(5), Some(3)));
+/// assert!(matches!(mother.clause, Clause::Loss { row: 2, .. }));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
@@ -236,6 +841,14 @@ pub enum AshauchEvent {
 
 impl AshauchEvent {
     /// When it happened.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::ashauch::AshauchEvent;
+    ///
+    /// let birth = AshauchEvent::Birth { at: JulianDay::literal(2_460_000.75), child: None };
+    /// assert_eq!(birth.at().get(), 2_460_000.75);
+    /// ```
     #[must_use]
     pub const fn at(&self) -> JulianDay<Utc> {
         match *self {
@@ -246,6 +859,15 @@ impl AshauchEvent {
     }
 
     /// A birth's (a loss's too) or a death's.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::ashauch::{AshauchEvent, AshauchKind};
+    ///
+    /// // A loss is a birth's impurity.
+    /// let loss = AshauchEvent::Loss { at: JulianDay::literal(2_460_000.75), month: 2 };
+    /// assert_eq!(loss.kind(), AshauchKind::Birth);
+    /// ```
     #[must_use]
     pub const fn kind(&self) -> AshauchKind {
         match self {
@@ -256,6 +878,20 @@ impl AshauchEvent {
 
     /// The instant the count starts from: the cremation for an
     /// āhitāgni's death, otherwise the event.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::ashauch::{AshauchEvent, Deceased};
+    ///
+    /// // An āhitāgni's count starts at the cremation.
+    /// let death = AshauchEvent::Death {
+    ///     at: JulianDay::literal(2_460_000.25),
+    ///     cremated_at: Some(JulianDay::literal(2_460_001.4)),
+    ///     ahitagni: true,
+    ///     deceased: Deceased::default(),
+    /// };
+    /// assert_eq!(death.counted_from().get(), 2_460_001.4);
+    /// ```
     #[must_use]
     pub const fn counted_from(&self) -> JulianDay<Utc> {
         match *self {
@@ -279,6 +915,68 @@ impl AshauchEvent {
 }
 
 /// Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
+/// use teistro_panchanga::ashauch::AshauchKind;
+///
+/// assert_eq!(found.kind, AshauchKind::Death);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -291,6 +989,68 @@ pub enum AshauchKind {
 
 /// Who the observer is to the one born or deceased, as the app resolves
 /// it.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// // A sagotra keeps one night, a samānodaka three.
+/// let sagotra = ashauch(&table, &asked(death(10.25), Relation::Sagotra), &days, &UtcOffset::UTC)?;
+/// let samanodaka = ashauch(&table, &asked(death(10.25), Relation::Samanodaka), &days, &UtcOffset::UTC)?;
+/// assert_eq!((sagotra.days, samanodaka.days), (Some(1), Some(3)));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchRelation"))]
@@ -344,6 +1104,71 @@ pub enum Relation {
 }
 
 /// Where the death was, to the observer: the rows that turn on it.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// // A married sister dying in one's house is three days, in another
+/// // village one.
+/// let mut asked = asked(death(10.25), Relation::MarriedSibling);
+/// asked.nearness = Nearness::ObserversHouse;
+/// assert_eq!(ashauch(&table, &asked, &days, &UtcOffset::UTC)?.days, Some(3));
+/// asked.nearness = Nearness::OtherVillage;
+/// assert_eq!(ashauch(&table, &asked, &days, &UtcOffset::UTC)?.days, Some(1));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -358,6 +1183,19 @@ pub enum Nearness {
 }
 
 /// One relation's length, under its conditions.
+///
+/// ```
+/// use teistro_panchanga::ashauch::{AshauchKind, AshauchTable, Length, Relation};
+///
+/// let table = AshauchTable::dharmasindhu();
+/// let child = table
+///     .relations
+///     .iter()
+///     .find(|row| row.relation == Relation::Child && row.kind == AshauchKind::Death)
+///     .ok_or("a parent's death")?;
+/// assert_eq!((child.length, child.heard_late), (Length::Full, Some(Length::Full)));
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchRelationRow"))]
@@ -385,6 +1223,13 @@ pub struct RelationRow {
 }
 
 /// A mark of the deceased's age a band ends before.
+///
+/// ```
+/// use teistro_panchanga::ashauch::{AshauchTable, Mark};
+///
+/// // A son's first band ends at the naming, the 12th day.
+/// assert_eq!(AshauchTable::dharmasindhu().bands[0].before, Mark::Day { day: 12 });
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchMark"))]
@@ -418,6 +1263,15 @@ pub enum Mark {
 }
 
 /// What a death before a mark takes (*Dharmasindhu* pp. 300–301).
+///
+/// ```
+/// use teistro_panchanga::ashauch::{AshauchTable, Length, Mark, Sex};
+///
+/// let table = AshauchTable::dharmasindhu();
+/// let band = &table.bands[1];
+/// assert_eq!((band.sex, band.before, band.buried), (Sex::Male, Mark::Month { month: 7 }, Some(false)));
+/// assert_eq!((band.parents, band.sapindas), (Length::Days { days: 3 }, Length::Days { days: 1 }));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchBand"))]
@@ -450,6 +1304,13 @@ pub struct Band {
 }
 
 /// A loss before the 7th month, by the month (*Dharmasindhu* p. 299).
+///
+/// ```
+/// use teistro_panchanga::ashauch::{AshauchTable, Length};
+///
+/// let first = &AshauchTable::dharmasindhu().losses[0];
+/// assert_eq!((first.to_month, first.mother, first.others), (3, Length::Days { days: 3 }, Length::Bath));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchLossRow"))]
@@ -467,6 +1328,72 @@ pub struct LossRow {
 }
 
 /// Late news, past the period, within some days of the event.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::Clause;
+///
+/// // A sapiṇḍa's death heard on the 41st day: three days from the hearing.
+/// let mut late = asked(death(10.25), Relation::Sapinda);
+/// late.heard_at = Some(jd(50.25));
+/// let found = ashauch(&table, &late, &days, &UtcOffset::UTC)?;
+/// assert_eq!(found.clause, Clause::Late { within_days: 90, abroad: false });
+/// assert_eq!((found.start.get(), found.end.get()), (50.25, 53.0));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchLateRow"))]
@@ -480,6 +1407,75 @@ pub struct LateRow {
 }
 
 /// What a period known during another does (*āśauca-saṃpāta*).
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::{Overlapped, Running};
+///
+/// // A second death known in the first's last night's last quarter: three
+/// // days past its end.
+/// let first = ashauch(&table, &asked(death(10.25), Relation::Sapinda), &days, &UtcOffset::UTC)?;
+/// let mut second = asked(death(19.9), Relation::Sapinda);
+/// second.key = String::from("second");
+/// second.during = vec![Running::from(&first)];
+/// let found = ashauch(&table, &second, &days, &UtcOffset::UTC)?;
+/// assert_eq!(found.overlap, Some(Overlapped::LastNight { earlier: String::from("first"), days: 3 }));
+/// assert_eq!(found.end.get(), 23.0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchOverlap"))]
@@ -497,6 +1493,12 @@ pub struct Overlap {
 
 /// The mother's further bar on rites after a birth period, to the
 /// `son`th or `daughter`th day (*Dharmasindhu* p. 299, Paiṭhīnasi).
+///
+/// ```
+/// use teistro_panchanga::ashauch::{AshauchTable, MotherRites};
+///
+/// assert_eq!(AshauchTable::dharmasindhu().mother_rites, Some(MotherRites { son: 30, daughter: 40 }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -510,6 +1512,15 @@ pub struct MotherRites {
 /// A tradition, as data: every row with its clause and source. A
 /// consumer loads one from JSON and changes any row
 /// ([`AshauchTable::dharmasindhu`] is the default).
+///
+/// ```
+/// use teistro_panchanga::ashauch::{AshauchTable, NightRule};
+///
+/// let table = AshauchTable::dharmasindhu();
+/// assert_eq!((table.name.as_str(), table.night), (AshauchTable::DHARMASINDHU, NightRule::Thirds));
+/// table.check()?;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -540,6 +1551,74 @@ pub struct AshauchTable {
 }
 
 /// One request: one event, one observer.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::Clause;
+///
+/// // Heard on the 16th day of a ten-day period: the days left.
+/// let mut heard = asked(death(10.25), Relation::Sapinda);
+/// heard.heard_at = Some(jd(15.25));
+/// let found = ashauch(&table, &heard, &days, &UtcOffset::UTC)?;
+/// assert_eq!((found.clause, found.end.get()), (Clause::Remainder, 20.0));
+/// // A family whose period is twelve days.
+/// let twelve = AshauchRequest { full_days: Some(12), ..asked(death(10.25), Relation::Sapinda) };
+/// assert_eq!(ashauch(&table, &twelve, &days, &UtcOffset::UTC)?.end.get(), 22.0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -574,6 +1653,73 @@ pub struct AshauchRequest {
 
 /// A period already running, as the overlap rules read it: the parts of
 /// an earlier [`Ashauch`] they need.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::{Overlapped, Running};
+///
+/// // A second death in the first's period ends with it.
+/// let first = ashauch(&table, &asked(death(10.25), Relation::Sapinda), &days, &UtcOffset::UTC)?;
+/// let mut second = asked(death(12.25), Relation::Sapinda);
+/// second.during = vec![Running::from(&first)];
+/// let found = ashauch(&table, &second, &days, &UtcOffset::UTC)?;
+/// assert_eq!(found.overlap, Some(Overlapped::EndsWithEarlier { earlier: String::from("first") }));
+/// assert_eq!(found.end, first.end);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchRunning"))]
@@ -615,6 +1761,68 @@ impl From<&Ashauch> for Running {
 }
 
 /// Why the first day is the day it is.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
+/// use teistro_panchanga::ashauch::DayOneBy;
+///
+/// assert_eq!(found.day_one_by, DayOneBy::Daylight);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchDayOneBy"))]
@@ -630,6 +1838,74 @@ pub enum DayOneBy {
 }
 
 /// The clause that set the span.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::{Clause, Sex};
+///
+/// // A child dying inside its birth period: the birth period runs on.
+/// let born = AshauchEvent::Birth { at: jd(10.25), child: Some(Sex::Female) };
+/// let first = ashauch(&table, &asked(born, Relation::Father), &days, &UtcOffset::UTC)?;
+/// let deceased = Deceased { born: Some(jd(10.25)), sex: Some(Sex::Female), ..Deceased::default() };
+/// let event = AshauchEvent::Death { at: jd(14.25), cremated_at: None, ahitagni: false, deceased };
+/// let found = ashauch(&table, &asked(event, Relation::Father), &days, &UtcOffset::UTC)?;
+/// assert_eq!(found.clause, Clause::BirthPeriodRuns);
+/// assert_eq!(found.end, first.end);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchClause"))]
@@ -689,6 +1965,72 @@ pub enum Clause {
 }
 
 /// What an overlap did.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// use teistro_panchanga::ashauch::{Overlapped, Running};
+///
+/// // Known in the first's last night before its last quarter: two days.
+/// let first = ashauch(&table, &asked(death(10.25), Relation::Sapinda), &days, &UtcOffset::UTC)?;
+/// let mut second = asked(death(19.8), Relation::Sapinda);
+/// second.during = vec![Running::from(&first)];
+/// let found = ashauch(&table, &second, &days, &UtcOffset::UTC)?;
+/// assert!(matches!(found.overlap, Some(Overlapped::LastNight { days: 2, .. })));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchOverlapped"))]
@@ -716,6 +2058,69 @@ pub enum Overlapped {
 }
 
 /// The answer: the span of impurity, and the clause that set it.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
+/// // Day 1 is the 11th of January; the tenth day's next sunrise ends it.
+/// assert_eq!((found.day_one, found.last_day), (date(10), Some(date(19))));
+/// assert_eq!((found.start.get(), found.end.get()), (10.25, 20.0));
+/// assert_eq!(found.table, AshauchTable::DHARMASINDHU);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -763,6 +2168,12 @@ impl Ashauch {
     /// Where an answer names catalogue members, and of which kind: its
     /// days' calendars and eras. What the boundary writes in full; the
     /// SDK's tests hold it to serde, both ways.
+    ///
+    /// ```
+    /// use teistro_panchanga::ashauch::Ashauch;
+    ///
+    /// assert_eq!(Ashauch::MEMBERS[0].0, "dayOne.calendar");
+    /// ```
     pub const MEMBERS: [(&'static str, Kind); 4] = [
         ("dayOne.calendar", Kind::Calendar),
         ("dayOne.era.era", Kind::Era),
@@ -772,6 +2183,68 @@ impl Ashauch {
 
     /// The answer as JSON, every catalogue member written as its full
     /// key: what the boundary carries and seals.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+    /// # use teistro_panchanga::month;
+    /// #
+    /// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+    /// # // the (k + 1)th day of 2024.
+    /// # let date = |k: u8| {
+    /// #     let (mut month, mut left) = (1, k);
+    /// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+    /// #         if left < length {
+    /// #             break;
+    /// #         }
+    /// #         left -= length;
+    /// #         month += 1;
+    /// #     }
+    /// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+    /// # };
+    /// # let days: Vec<FestivalDay> = (0..200u8)
+    /// #     .map(|k| FestivalDay {
+    /// #         date: date(k),
+    /// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #         sunrise: JulianDay::literal(f64::from(k)),
+    /// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+    /// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+    /// #         normal: true,
+    /// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+    /// #         tithi: Vec::new(),
+    /// #         nakshatra: Vec::new(),
+    /// #         moonrise: Moonrise::Unsearched,
+    /// #         sun_entry: SunEntry::Unsearched,
+    /// #         moon_arcs: MoonArcs::Unsearched,
+    /// #     })
+    /// #     .collect();
+    /// # let jd = JulianDay::<Utc>::literal;
+    /// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+    /// #
+    /// # let table = AshauchTable::dharmasindhu();
+    /// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+    /// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+    /// #     key: String::from("first"),
+    /// #     event,
+    /// #     relation,
+    /// #     heard_at: None,
+    /// #     abroad: false,
+    /// #     nearness: Nearness::SameVillage,
+    /// #     full_days: None,
+    /// #     during: Vec::new(),
+    /// # };
+    ///
+    /// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
+    /// let json = found.in_full()?;
+    /// assert_eq!(json["dayOne"]["calendar"], "calendar.GREGORIAN");
+    /// assert_eq!(json["relation"], "CHILD");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -789,6 +2262,16 @@ impl Ashauch {
 
 impl AshauchTable {
     /// Refuses a row a count cannot be made from, and tables out of order.
+    ///
+    /// ```
+    /// use teistro_panchanga::ashauch::{AshauchTable, Length};
+    ///
+    /// let mut table = AshauchTable::dharmasindhu();
+    /// table.check()?;
+    /// table.relations[0].length = Length::Days { days: 0 };
+    /// assert_eq!(table.check().unwrap_err().field(), Some("relations[0].length"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -885,6 +2368,69 @@ impl AshauchTable {
 impl AshauchRequest {
     /// Refuses what cannot be counted.
     ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+    /// # use teistro_panchanga::month;
+    /// #
+    /// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+    /// # // the (k + 1)th day of 2024.
+    /// # let date = |k: u8| {
+    /// #     let (mut month, mut left) = (1, k);
+    /// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+    /// #         if left < length {
+    /// #             break;
+    /// #         }
+    /// #         left -= length;
+    /// #         month += 1;
+    /// #     }
+    /// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+    /// # };
+    /// # let days: Vec<FestivalDay> = (0..200u8)
+    /// #     .map(|k| FestivalDay {
+    /// #         date: date(k),
+    /// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #         sunrise: JulianDay::literal(f64::from(k)),
+    /// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+    /// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+    /// #         normal: true,
+    /// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+    /// #         tithi: Vec::new(),
+    /// #         nakshatra: Vec::new(),
+    /// #         moonrise: Moonrise::Unsearched,
+    /// #         sun_entry: SunEntry::Unsearched,
+    /// #         moon_arcs: MoonArcs::Unsearched,
+    /// #     })
+    /// #     .collect();
+    /// # let jd = JulianDay::<Utc>::literal;
+    /// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+    /// #
+    /// # let table = AshauchTable::dharmasindhu();
+    /// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+    /// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+    /// #     key: String::from("first"),
+    /// #     event,
+    /// #     relation,
+    /// #     heard_at: None,
+    /// #     abroad: false,
+    /// #     nearness: Nearness::SameVillage,
+    /// #     full_days: None,
+    /// #     during: Vec::new(),
+    /// # };
+    ///
+    /// let mut early = asked(death(10.25), Relation::Child);
+    /// early.heard_at = Some(jd(9.0));
+    /// assert_eq!(early.check().unwrap_err().field(), Some("heardAt"));
+    /// let loss = asked(AshauchEvent::Loss { at: jd(10.25), month: 7 }, Relation::Mother);
+    /// assert_eq!(loss.check().unwrap_err().field(), Some("event.month"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A full period of no days or more than [`MOST_DAYS`], a loss's month
@@ -968,12 +2514,136 @@ impl AshauchRequest {
     }
 
     /// The full period, in days.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+    /// # use teistro_panchanga::month;
+    /// #
+    /// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+    /// # // the (k + 1)th day of 2024.
+    /// # let date = |k: u8| {
+    /// #     let (mut month, mut left) = (1, k);
+    /// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+    /// #         if left < length {
+    /// #             break;
+    /// #         }
+    /// #         left -= length;
+    /// #         month += 1;
+    /// #     }
+    /// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+    /// # };
+    /// # let days: Vec<FestivalDay> = (0..200u8)
+    /// #     .map(|k| FestivalDay {
+    /// #         date: date(k),
+    /// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #         sunrise: JulianDay::literal(f64::from(k)),
+    /// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+    /// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+    /// #         normal: true,
+    /// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+    /// #         tithi: Vec::new(),
+    /// #         nakshatra: Vec::new(),
+    /// #         moonrise: Moonrise::Unsearched,
+    /// #         sun_entry: SunEntry::Unsearched,
+    /// #         moon_arcs: MoonArcs::Unsearched,
+    /// #     })
+    /// #     .collect();
+    /// # let jd = JulianDay::<Utc>::literal;
+    /// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+    /// #
+    /// # let table = AshauchTable::dharmasindhu();
+    /// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+    /// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+    /// #     key: String::from("first"),
+    /// #     event,
+    /// #     relation,
+    /// #     heard_at: None,
+    /// #     abroad: false,
+    /// #     nearness: Nearness::SameVillage,
+    /// #     full_days: None,
+    /// #     during: Vec::new(),
+    /// # };
+    ///
+    /// let mut request = asked(death(10.25), Relation::Child);
+    /// assert_eq!(request.full(), 10);
+    /// request.full_days = Some(15);
+    /// assert_eq!(request.full(), 15);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn full(&self) -> u8 {
         self.full_days.unwrap_or(FULL_DAYS)
     }
 
     /// When the news is known: the hearing, or the event.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+    /// # use teistro_panchanga::month;
+    /// #
+    /// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+    /// # // the (k + 1)th day of 2024.
+    /// # let date = |k: u8| {
+    /// #     let (mut month, mut left) = (1, k);
+    /// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+    /// #         if left < length {
+    /// #             break;
+    /// #         }
+    /// #         left -= length;
+    /// #         month += 1;
+    /// #     }
+    /// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+    /// # };
+    /// # let days: Vec<FestivalDay> = (0..200u8)
+    /// #     .map(|k| FestivalDay {
+    /// #         date: date(k),
+    /// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #         sunrise: JulianDay::literal(f64::from(k)),
+    /// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+    /// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+    /// #         normal: true,
+    /// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+    /// #         tithi: Vec::new(),
+    /// #         nakshatra: Vec::new(),
+    /// #         moonrise: Moonrise::Unsearched,
+    /// #         sun_entry: SunEntry::Unsearched,
+    /// #         moon_arcs: MoonArcs::Unsearched,
+    /// #     })
+    /// #     .collect();
+    /// # let jd = JulianDay::<Utc>::literal;
+    /// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+    /// #
+    /// # let table = AshauchTable::dharmasindhu();
+    /// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+    /// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+    /// #     key: String::from("first"),
+    /// #     event,
+    /// #     relation,
+    /// #     heard_at: None,
+    /// #     abroad: false,
+    /// #     nearness: Nearness::SameVillage,
+    /// #     full_days: None,
+    /// #     during: Vec::new(),
+    /// # };
+    ///
+    /// let mut request = asked(death(10.25), Relation::Child);
+    /// assert_eq!(request.known().get(), 10.25);
+    /// request.heard_at = Some(jd(12.0));
+    /// assert_eq!(request.known().get(), 12.0);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn known(&self) -> JulianDay<Utc> {
         self.heard_at.unwrap_or_else(|| self.event.at())
@@ -982,6 +2652,68 @@ impl AshauchRequest {
     /// The instants a run of days must hold, each with the day before it
     /// and [`AshauchRequest::reach`] days after: the birth, the count's
     /// start, the hearing and each earlier period's end.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+    /// # use teistro_panchanga::month;
+    /// #
+    /// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+    /// # // the (k + 1)th day of 2024.
+    /// # let date = |k: u8| {
+    /// #     let (mut month, mut left) = (1, k);
+    /// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+    /// #         if left < length {
+    /// #             break;
+    /// #         }
+    /// #         left -= length;
+    /// #         month += 1;
+    /// #     }
+    /// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+    /// # };
+    /// # let days: Vec<FestivalDay> = (0..200u8)
+    /// #     .map(|k| FestivalDay {
+    /// #         date: date(k),
+    /// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #         sunrise: JulianDay::literal(f64::from(k)),
+    /// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+    /// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+    /// #         normal: true,
+    /// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+    /// #         tithi: Vec::new(),
+    /// #         nakshatra: Vec::new(),
+    /// #         moonrise: Moonrise::Unsearched,
+    /// #         sun_entry: SunEntry::Unsearched,
+    /// #         moon_arcs: MoonArcs::Unsearched,
+    /// #     })
+    /// #     .collect();
+    /// # let jd = JulianDay::<Utc>::literal;
+    /// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+    /// #
+    /// # let table = AshauchTable::dharmasindhu();
+    /// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+    /// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+    /// #     key: String::from("first"),
+    /// #     event,
+    /// #     relation,
+    /// #     heard_at: None,
+    /// #     abroad: false,
+    /// #     nearness: Nearness::SameVillage,
+    /// #     full_days: None,
+    /// #     during: Vec::new(),
+    /// # };
+    ///
+    /// let mut request = asked(death(10.25), Relation::Child);
+    /// request.heard_at = Some(jd(12.0));
+    /// let anchors: Vec<f64> = request.anchors().iter().map(|at| at.get()).collect();
+    /// assert_eq!(anchors, [10.25, 12.0]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn anchors(&self) -> Vec<JulianDay<Utc>> {
         let mut anchors = vec![self.event.counted_from(), self.known()];
@@ -996,6 +2728,67 @@ impl AshauchRequest {
 
     /// The days after an anchor a run must hold under `table`: the
     /// longest count, and the four the overlap and pakṣiṇī rules can add.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+    /// # use teistro_panchanga::month;
+    /// #
+    /// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+    /// # // the (k + 1)th day of 2024.
+    /// # let date = |k: u8| {
+    /// #     let (mut month, mut left) = (1, k);
+    /// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+    /// #         if left < length {
+    /// #             break;
+    /// #         }
+    /// #         left -= length;
+    /// #         month += 1;
+    /// #     }
+    /// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+    /// # };
+    /// # let days: Vec<FestivalDay> = (0..200u8)
+    /// #     .map(|k| FestivalDay {
+    /// #         date: date(k),
+    /// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #         sunrise: JulianDay::literal(f64::from(k)),
+    /// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+    /// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+    /// #         normal: true,
+    /// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+    /// #         tithi: Vec::new(),
+    /// #         nakshatra: Vec::new(),
+    /// #         moonrise: Moonrise::Unsearched,
+    /// #         sun_entry: SunEntry::Unsearched,
+    /// #         moon_arcs: MoonArcs::Unsearched,
+    /// #     })
+    /// #     .collect();
+    /// # let jd = JulianDay::<Utc>::literal;
+    /// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+    /// #
+    /// # let table = AshauchTable::dharmasindhu();
+    /// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+    /// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+    /// #     key: String::from("first"),
+    /// #     event,
+    /// #     relation,
+    /// #     heard_at: None,
+    /// #     abroad: false,
+    /// #     nearness: Nearness::SameVillage,
+    /// #     full_days: None,
+    /// #     during: Vec::new(),
+    /// # };
+    ///
+    /// // The longest row's days, and the four the rules can add.
+    /// let request = asked(death(10.25), Relation::Child);
+    /// assert!(request.reach(&table) >= 10 + 4);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn reach(&self, table: &AshauchTable) -> u16 {
         let earlier = self
@@ -1362,6 +3155,70 @@ fn no_row(table: &AshauchTable, request: &AshauchRequest) -> Error {
 /// days holding each of [`AshauchRequest::anchors`] with the day before
 /// it and [`AshauchRequest::reach`] days after, `clock` the place's
 /// clock for [`NightRule::CivilMidnight`].
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::festival::{FestivalDay, MoonArcs, Moonrise, SunEntry};
+/// # use teistro_panchanga::month;
+/// #
+/// # // Synthetic days: day k rises at Julian day k, sets at k + 0.5, and is
+/// # // the (k + 1)th day of 2024.
+/// # let date = |k: u8| {
+/// #     let (mut month, mut left) = (1, k);
+/// #     for length in [31, 29, 31, 30, 31, 30, 31] {
+/// #         if left < length {
+/// #             break;
+/// #         }
+/// #         left -= length;
+/// #         month += 1;
+/// #     }
+/// #     CalendarDate::defined(Calendar::Gregorian, 2024, month, left + 1)
+/// # };
+/// # let days: Vec<FestivalDay> = (0..200u8)
+/// #     .map(|k| FestivalDay {
+/// #         date: date(k),
+/// #         vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #         sunrise: JulianDay::literal(f64::from(k)),
+/// #         sunset: JulianDay::literal(f64::from(k) + 0.5),
+/// #         next_sunrise: JulianDay::literal(f64::from(k) + 1.0),
+/// #         normal: true,
+/// #         month: month::of(Masa::Pausha, Tithi::ShuklaPratipada, LunarMonth::Amanta, MonthKind::Nija),
+/// #         tithi: Vec::new(),
+/// #         nakshatra: Vec::new(),
+/// #         moonrise: Moonrise::Unsearched,
+/// #         sun_entry: SunEntry::Unsearched,
+/// #         moon_arcs: MoonArcs::Unsearched,
+/// #     })
+/// #     .collect();
+/// # let jd = JulianDay::<Utc>::literal;
+/// # use teistro_panchanga::ashauch::{AshauchEvent, AshauchRequest, AshauchTable, Deceased, Nearness, Relation, ashauch};
+/// #
+/// # let table = AshauchTable::dharmasindhu();
+/// # let death = |at: f64| AshauchEvent::Death { at: jd(at), cremated_at: None, ahitagni: false, deceased: Deceased::default() };
+/// # let asked = |event: AshauchEvent, relation: Relation| AshauchRequest {
+/// #     key: String::from("first"),
+/// #     event,
+/// #     relation,
+/// #     heard_at: None,
+/// #     abroad: false,
+/// #     nearness: Nearness::SameVillage,
+/// #     full_days: None,
+/// #     during: Vec::new(),
+/// # };
+///
+/// // A parent's death by day: ten days from it.
+/// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
+/// assert_eq!((found.days, found.end.get()), (Some(10), 20.0));
+/// // An ascetic's sapiṇḍas bathe, and are pure at once.
+/// let bath = ashauch(&table, &asked(death(10.25), Relation::OfAscetic), &days, &UtcOffset::UTC)?;
+/// assert_eq!((bath.end, bath.last_day), (bath.start, None));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///

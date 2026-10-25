@@ -56,6 +56,86 @@ pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
 /// A fifth of the daylight (*Dharmasindhu*, p. 6). Its schema name is
 /// `DayFifth`, the chart's daylight or night being the boundary's
 /// `DayPart`.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// use teistro_panchanga::festival::DayPart;
+///
+/// // Midday on the 2nd, 2.2 to 2.3, holds the ashtami; on the 1st it begins as
+/// // midday ends.
+/// let found = first(Window::Part { part: DayPart::Madhyahna })?;
+/// assert_eq!((found.case, found.day.day), (Case::LaterOnly, 3));
+/// // Both afternoons hold it wholly.
+/// assert_eq!(first(Window::Part { part: DayPart::Aparahna })?.case, Case::Both);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "DayFifth"))]
@@ -86,6 +166,82 @@ impl DayPart {
 }
 
 /// The time of a rite, on a sunrise day.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// // The evening and the night's middle hold it on the 1st alone.
+/// assert_eq!(first(Window::Pradosha)?.case, Case::EarlierOnly);
+/// assert_eq!(first(Window::Nishitha)?.case, Case::EarlierOnly);
+/// assert_eq!(first(Window::Sunrise)?.case, Case::LaterOnly);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "window", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -174,6 +330,15 @@ impl Window {
 }
 
 /// One of the two days a tithi is judged between.
+///
+/// ```
+/// use teistro_core::catalogue::Tithi;
+/// use teistro_panchanga::festival::{Which, yugma};
+///
+/// // The new moon is kept on the day it runs into the bright 1st.
+/// assert_eq!(yugma(Tithi::Amavasya), Some(Which::Later));
+/// assert_eq!(yugma(Tithi::ShuklaTritiya), Some(Which::Earlier));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -185,6 +350,81 @@ pub enum Which {
 }
 
 /// How the tithi held the rite's time on the two days (pp. 6–7).
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// let found = first(Window::Sunrise)?;
+/// assert_eq!(found.case, Case::LaterOnly);
+/// assert_eq!((found.extents[0].held, found.extents[1].held), (0.0, 1.0));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -204,6 +444,90 @@ pub enum Case {
 }
 
 /// Something a guard asks of the two days.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// use teistro_panchanga::festival::{Edge, Which};
+///
+/// // The ashtami lasts 24 ghatis past the 2nd's sunrise: at least six.
+/// let lasts = FestivalRule {
+///     decide: vec![Guard::new(
+///         [Predicate::Lasts { day: Which::Later, from: Edge::Sunrise, ghatis: 6 }],
+///         Choice::Later,
+///     )],
+///     ..rule(Window::Pradosha)
+/// };
+/// let found = observances(&[lasts], &days)?;
+/// assert_eq!(found.observances[0].choice, Choice::Later);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "is", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -286,6 +610,90 @@ pub enum Predicate {
 }
 
 /// The edge of a day a [`Predicate::Lasts`] counts from.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// use teistro_panchanga::festival::{Decided, Edge, Which};
+///
+/// // Not 30 ghatis past it: the guard fails and the rule's otherwise decides.
+/// let lasts = FestivalRule {
+///     decide: vec![Guard::new(
+///         [Predicate::Lasts { day: Which::Later, from: Edge::Sunrise, ghatis: 30 }],
+///         Choice::Later,
+///     )],
+///     ..rule(Window::Pradosha)
+/// };
+/// let found = observances(&[lasts], &days)?;
+/// assert_eq!(found.observances[0].decided_by, Decided::Otherwise);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -297,6 +705,82 @@ pub enum Edge {
 }
 
 /// What a guard, or a rule's `otherwise`, decides.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// let found = first(Window::Sunrise)?;
+/// assert_eq!(found.choice, Choice::Later);
+/// // By no guard, the earlier day.
+/// assert_eq!(first(Window::Pradosha)?.choice, Choice::Earlier);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -314,6 +798,13 @@ pub enum Choice {
 }
 
 /// A choice when every predicate holds.
+///
+/// ```
+/// use teistro_panchanga::festival::{Case, Choice, Guard, Predicate};
+///
+/// let guard = Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later);
+/// assert_eq!((guard.when.len(), guard.choose), (1, Choice::Later));
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Guard {
@@ -341,6 +832,14 @@ pub(crate) fn by_share() -> (Vec<Guard>, Choice) {
 
 impl Guard {
     /// A guard.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::{Choice, Guard, Predicate, Which};
+    ///
+    /// // Every predicate must hold: here the later day holds the window wholly.
+    /// let guard = Guard::new(vec![Predicate::Wholly { day: Which::Later }], Choice::Later);
+    /// assert_eq!(guard.when, [Predicate::Wholly { day: Which::Later }]);
+    /// ```
     #[must_use]
     pub fn new(when: impl Into<Vec<Predicate>>, choose: Choice) -> Guard {
         Guard {
@@ -452,6 +951,15 @@ impl From<Tithi> for Occurs {
 
 impl Occurs {
     /// The tithi, for a rule kept on one.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Nakshatra, Paksha, Tithi};
+    /// use teistro_panchanga::festival::Occurs;
+    ///
+    /// assert_eq!(Occurs::from(Tithi::Purnima).tithi(), Some(Tithi::Purnima));
+    /// let hasta = Occurs::Nakshatra { nakshatra: Nakshatra::Hasta, paksha: Paksha::Shukla };
+    /// assert_eq!(hasta.tithi(), None);
+    /// ```
     #[must_use]
     pub const fn tithi(self) -> Option<Tithi> {
         match self {
@@ -462,6 +970,14 @@ impl Occurs {
 
     /// Whether the rule is kept on a tithi, one or a day of either
     /// paksha, rather than on a nakshatra.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Nakshatra, Paksha};
+    /// use teistro_panchanga::festival::Occurs;
+    ///
+    /// assert!(Occurs::DayOfPaksha { day_of_paksha: 13 }.on_a_tithi());
+    /// assert!(!Occurs::Nakshatra { nakshatra: Nakshatra::Hasta, paksha: Paksha::Shukla }.on_a_tithi());
+    /// ```
     #[must_use]
     pub const fn on_a_tithi(self) -> bool {
         matches!(self, Occurs::Tithi { .. } | Occurs::DayOfPaksha { .. })
@@ -515,6 +1031,12 @@ pub enum InAdhika {
 
 impl InAdhika {
     /// The four, in the order they are written.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::InAdhika;
+    ///
+    /// assert_eq!(InAdhika::ALL.map(InAdhika::key), ["NIJA", "ALSO", "ONLY", "FIRST"]);
+    /// ```
     pub const ALL: [InAdhika; 4] = [
         InAdhika::Nija,
         InAdhika::Also,
@@ -523,6 +1045,12 @@ impl InAdhika {
     ];
 
     /// The value's key, `"FIRST"`.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::InAdhika;
+    ///
+    /// assert_eq!(InAdhika::Only.key(), "ONLY");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -677,6 +1205,17 @@ impl TryFrom<OccursFields> for Occurs {
 /// The yugma verse's reading of a tithi (p. 6): 2 with 3, 4 with 5,
 /// 6 with 7, 8 with 9, 11 with 12, the bright 14th with the full moon,
 /// the new moon with the bright 1st. `None` for a tithi in no pair.
+///
+/// ```
+/// use teistro_core::catalogue::Tithi;
+/// use teistro_panchanga::festival::{Which, yugma};
+///
+/// // 2 with 3: the 2nd on the day it runs into the 3rd, the 3rd on the day the
+/// // 2nd runs into it.
+/// assert_eq!(yugma(Tithi::ShuklaDvitiya), Some(Which::Later));
+/// assert_eq!(yugma(Tithi::ShuklaTritiya), Some(Which::Earlier));
+/// assert_eq!(yugma(Tithi::ShuklaDashami), None);
+/// ```
 #[must_use]
 pub fn yugma(tithi: Tithi) -> Option<Which> {
     match tithi {
@@ -694,6 +1233,82 @@ pub fn yugma(tithi: Tithi) -> Option<Which> {
 impl FestivalRule {
     /// The shares of nakshatras its guards join, as each arc in sidereal
     /// degrees, which the days must carry ([`FestivalDay::moon_arcs`]).
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_panchanga::festival::{
+    /// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+    /// #     SunEntry, Window, observances,
+    /// # };
+    /// # use teistro_panchanga::month;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+    /// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+    /// # // and day 1's afternoon and evening.
+    /// # let ends = [
+    /// #     (Tithi::KrishnaSaptami, 1.3),
+    /// #     (Tithi::KrishnaAshtami, 2.4),
+    /// #     (Tithi::KrishnaNavami, 3.5),
+    /// #     (Tithi::KrishnaDashami, 4.6),
+    /// #     (Tithi::KrishnaEkadashi, 5.7),
+    /// #     (Tithi::KrishnaDwadashi, 6.8),
+    /// # ];
+    /// # let days: Vec<FestivalDay> = (0..6u8)
+    /// #     .map(|k| {
+    /// #         let rise = f64::from(k);
+    /// #         let window = Interval::literal(rise, rise + 1.0);
+    /// #         let mut from = 0.0;
+    /// #         let mut tithi = Vec::new();
+    /// #         for (member, to) in ends {
+    /// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+    /// #             from = to;
+    /// #         }
+    /// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+    /// #         FestivalDay {
+    /// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+    /// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #             sunrise: JulianDay::literal(rise),
+    /// #             sunset: JulianDay::literal(rise + 0.5),
+    /// #             next_sunrise: JulianDay::literal(rise + 1.0),
+    /// #             normal: true,
+    /// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+    /// #             tithi,
+    /// #             nakshatra: Vec::new(),
+    /// #             moonrise: Moonrise::Unsearched,
+    /// #             sun_entry: SunEntry::Unsearched,
+    /// #             moon_arcs: MoonArcs::Unsearched,
+    /// #         }
+    /// #     })
+    /// #     .collect();
+    /// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+    /// # let rule = |at: Window| FestivalRule {
+    /// #     key: String::from("ACME_ASHTAMI"),
+    /// #     source: String::from("an example"),
+    /// #     month: Some(Masa::Shravana),
+    /// #     convention: LunarMonth::Amanta,
+    /// #     occurs: Tithi::KrishnaAshtami.into(),
+    /// #     in_adhika: InAdhika::Nija,
+    /// #     at,
+    /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+    /// #     otherwise: Choice::Earlier,
+    /// #     parana: Vec::new(),
+    /// # };
+    /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+    /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+    /// # };
+    ///
+    /// // A rule that joins no share of a nakshatra needs no arcs.
+    /// assert!(rule(Window::Sunrise).moon_arcs().is_empty());
+    /// let shipped = FestivalRule::dharmasindhu();
+    /// assert!(shipped.iter().flat_map(FestivalRule::moon_arcs).all(|(_, (from, to))| from < to));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn moon_arcs(&self) -> Vec<(Nakshatra, (f64, f64))> {
         self.decide
@@ -746,6 +1361,83 @@ impl FestivalRule {
     /// outside its fifteen, the yugma verse asked of a tithi it pairs
     /// with nothing or of a nakshatra, or a tithi joined to a nakshatra
     /// asked of a rule kept on a nakshatra.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_panchanga::festival::{
+    /// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+    /// #     SunEntry, Window, observances,
+    /// # };
+    /// # use teistro_panchanga::month;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+    /// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+    /// # // and day 1's afternoon and evening.
+    /// # let ends = [
+    /// #     (Tithi::KrishnaSaptami, 1.3),
+    /// #     (Tithi::KrishnaAshtami, 2.4),
+    /// #     (Tithi::KrishnaNavami, 3.5),
+    /// #     (Tithi::KrishnaDashami, 4.6),
+    /// #     (Tithi::KrishnaEkadashi, 5.7),
+    /// #     (Tithi::KrishnaDwadashi, 6.8),
+    /// # ];
+    /// # let days: Vec<FestivalDay> = (0..6u8)
+    /// #     .map(|k| {
+    /// #         let rise = f64::from(k);
+    /// #         let window = Interval::literal(rise, rise + 1.0);
+    /// #         let mut from = 0.0;
+    /// #         let mut tithi = Vec::new();
+    /// #         for (member, to) in ends {
+    /// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+    /// #             from = to;
+    /// #         }
+    /// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+    /// #         FestivalDay {
+    /// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+    /// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #             sunrise: JulianDay::literal(rise),
+    /// #             sunset: JulianDay::literal(rise + 0.5),
+    /// #             next_sunrise: JulianDay::literal(rise + 1.0),
+    /// #             normal: true,
+    /// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+    /// #             tithi,
+    /// #             nakshatra: Vec::new(),
+    /// #             moonrise: Moonrise::Unsearched,
+    /// #             sun_entry: SunEntry::Unsearched,
+    /// #             moon_arcs: MoonArcs::Unsearched,
+    /// #         }
+    /// #     })
+    /// #     .collect();
+    /// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+    /// # let rule = |at: Window| FestivalRule {
+    /// #     key: String::from("ACME_ASHTAMI"),
+    /// #     source: String::from("an example"),
+    /// #     month: Some(Masa::Shravana),
+    /// #     convention: LunarMonth::Amanta,
+    /// #     occurs: Tithi::KrishnaAshtami.into(),
+    /// #     in_adhika: InAdhika::Nija,
+    /// #     at,
+    /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+    /// #     otherwise: Choice::Earlier,
+    /// #     parana: Vec::new(),
+    /// # };
+    /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+    /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+    /// # };
+    ///
+    /// rule(Window::Sunrise).check()?;
+    /// let unnamed = FestivalRule { key: String::from(" "), ..rule(Window::Sunrise) };
+    /// assert_eq!(unnamed.check().unwrap_err().field(), Some("key"));
+    /// let muhurta = rule(Window::NightMuhurta { muhurta: 16 });
+    /// assert!(muhurta.check().is_err(), "a night has fifteen");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -840,6 +1532,81 @@ fn check_window(key: &str, window: Window, at: &str) -> Result<(), Error> {
 }
 
 /// What the evaluator reads of one sunrise day.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// // The 2nd's sunrise holds the ashtami; its day holds the navami's start.
+/// assert_eq!(days[2].tithi[0].member, Tithi::KrishnaAshtami);
+/// assert_eq!(days[2].tithi.len(), 2);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct FestivalDay {
     /// The civil date.
@@ -873,6 +1640,79 @@ pub struct FestivalDay {
 }
 
 /// The Moon's stays in the sidereal arcs the rules read, over a day.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// assert_eq!(days[0].moon_arcs, MoonArcs::Unsearched);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub enum MoonArcs {
     /// Not searched: no rule read them. A rule reading them over such a
@@ -884,6 +1724,16 @@ pub enum MoonArcs {
 
 /// The Moon's stay in one sidereal arc: from its crossing of `from_deg` to
 /// its crossing of `to_deg`.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::festival::MoonArc;
+///
+/// // Shravana's last quarter, 290° to 293°20′.
+/// let arc = (290.0, 290.0 + 10.0 / 3.0);
+/// let stay = MoonArc { from_deg: arc.0, to_deg: arc.1, span: Interval::literal(2_460_000.2, 2_460_000.45) };
+/// assert!(stay.is_of(arc));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MoonArc {
     /// Where the arc starts, in degrees of the sidereal zodiac.
@@ -898,6 +1748,15 @@ impl MoonArc {
     /// Whether this is the stay in the arc `(from_deg, to_deg)`. Both
     /// come from one rule's [`NakshatraBar::arc_deg`], so the same arc is
     /// the same bits.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_panchanga::festival::MoonArc;
+    ///
+    /// let stay = MoonArc { from_deg: 290.0, to_deg: 293.0, span: Interval::literal(2_460_000.2, 2_460_000.45) };
+    /// assert!(stay.is_of((290.0, 293.0)));
+    /// assert!(!stay.is_of((290.0, 293.000_000_1)), "the same bits");
+    /// ```
     #[must_use]
     pub fn is_of(&self, (from_deg, to_deg): (f64, f64)) -> bool {
         self.from_deg.to_bits() == from_deg.to_bits() && self.to_deg.to_bits() == to_deg.to_bits()
@@ -907,6 +1766,15 @@ impl MoonArc {
 /// Whether the sidereal Sun entered a nakshatra in a civil day, local
 /// midnight to the next. The Sun is never retrograde and stays more than
 /// thirteen days in a nakshatra, so a day holds one entry at most.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_panchanga::festival::SunEntry;
+///
+/// let entered = SunEntry::Entered(Nakshatra::Ashwini);
+/// assert_ne!(entered, SunEntry::Stayed);
+/// assert_ne!(SunEntry::Stayed, SunEntry::Unsearched);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SunEntry {
     /// Not read: no rule asked. A rule asking over such a day is refused
@@ -919,6 +1787,88 @@ pub enum SunEntry {
 }
 
 /// A day's first moonrise, from its sunrise to the next.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// // A rule kept at moonrise over days whose moonrise no search found is
+/// // refused; over days the Moon did not rise on, it is unjudged.
+/// assert!(observances(&[rule(Window::Moonrise)], &days).is_err());
+/// let moonless: Vec<FestivalDay> = days
+///     .iter()
+///     .cloned()
+///     .map(|day| FestivalDay { moonrise: Moonrise::NoRise, ..day })
+///     .collect();
+/// let found = observances(&[rule(Window::Moonrise)], &moonless)?;
+/// assert_eq!(found.unjudged.len(), 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Moonrise {
     /// Not searched: no rule read it. A rule reading it over such a day is
@@ -975,6 +1925,79 @@ impl FestivalDay {
 
     /// The day a rite is kept on, sunrise to the next: the window a
     /// moonrise is searched in.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_panchanga::festival::{
+    /// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+    /// #     SunEntry, Window, observances,
+    /// # };
+    /// # use teistro_panchanga::month;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+    /// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+    /// # // and day 1's afternoon and evening.
+    /// # let ends = [
+    /// #     (Tithi::KrishnaSaptami, 1.3),
+    /// #     (Tithi::KrishnaAshtami, 2.4),
+    /// #     (Tithi::KrishnaNavami, 3.5),
+    /// #     (Tithi::KrishnaDashami, 4.6),
+    /// #     (Tithi::KrishnaEkadashi, 5.7),
+    /// #     (Tithi::KrishnaDwadashi, 6.8),
+    /// # ];
+    /// # let days: Vec<FestivalDay> = (0..6u8)
+    /// #     .map(|k| {
+    /// #         let rise = f64::from(k);
+    /// #         let window = Interval::literal(rise, rise + 1.0);
+    /// #         let mut from = 0.0;
+    /// #         let mut tithi = Vec::new();
+    /// #         for (member, to) in ends {
+    /// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+    /// #             from = to;
+    /// #         }
+    /// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+    /// #         FestivalDay {
+    /// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+    /// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #             sunrise: JulianDay::literal(rise),
+    /// #             sunset: JulianDay::literal(rise + 0.5),
+    /// #             next_sunrise: JulianDay::literal(rise + 1.0),
+    /// #             normal: true,
+    /// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+    /// #             tithi,
+    /// #             nakshatra: Vec::new(),
+    /// #             moonrise: Moonrise::Unsearched,
+    /// #             sun_entry: SunEntry::Unsearched,
+    /// #             moon_arcs: MoonArcs::Unsearched,
+    /// #         }
+    /// #     })
+    /// #     .collect();
+    /// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+    /// # let rule = |at: Window| FestivalRule {
+    /// #     key: String::from("ACME_ASHTAMI"),
+    /// #     source: String::from("an example"),
+    /// #     month: Some(Masa::Shravana),
+    /// #     convention: LunarMonth::Amanta,
+    /// #     occurs: Tithi::KrishnaAshtami.into(),
+    /// #     in_adhika: InAdhika::Nija,
+    /// #     at,
+    /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+    /// #     otherwise: Choice::Earlier,
+    /// #     parana: Vec::new(),
+    /// # };
+    /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+    /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+    /// # };
+    ///
+    /// assert_eq!(days[1].sunrise_day(), Interval::literal(1.0, 2.0));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn sunrise_day(&self) -> Interval {
         Interval::literal(self.sunrise.get(), self.next_sunrise.get())
@@ -1024,6 +2047,82 @@ impl FestivalDay {
 }
 
 /// How much of one day's window the tithi held.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// // At the afternoon, 1.3 to 1.4 and 2.3 to 2.4, both wholly.
+/// let found = first(Window::Part { part: teistro_panchanga::festival::DayPart::Aparahna })?;
+/// assert_eq!((found.extents[0].held, found.extents[1].held), (1.0, 1.0));
+/// assert_eq!(found.extents[0].day.day, 2);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Extent {
@@ -1036,6 +2135,82 @@ pub struct Extent {
 }
 
 /// What decided an observance's day.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// use teistro_panchanga::festival::Decided;
+///
+/// assert_eq!(first(Window::Sunrise)?.decided_by, Decided::Guard { index: 0 });
+/// assert_eq!(first(Window::Pradosha)?.decided_by, Decided::Otherwise);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "FestivalDecided"))]
@@ -1059,6 +2234,85 @@ pub enum Decided {
 }
 
 /// An observance: the day a rule falls on, and why.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// let found = first(Window::Sunrise)?;
+/// assert_eq!((found.rule.as_str(), found.day.day), ("ACME_ASHTAMI", 3));
+/// assert_eq!((found.month, found.adhika), (Masa::Shravana, false));
+/// assert_eq!(found.tithi, Interval::literal(1.3, 2.4));
+/// // The decision stands while the place moves the sunrises less than
+/// // the 0.3 days to the tithi's start.
+/// assert!(found.margin_seconds > 0.0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -1100,6 +2354,86 @@ pub struct Observance {
 }
 
 /// An occurrence a rule could not judge, and why.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// let moonless: Vec<FestivalDay> = days
+///     .iter()
+///     .cloned()
+///     .map(|day| FestivalDay { moonrise: Moonrise::NoRise, ..day })
+///     .collect();
+/// let found = observances(&[rule(Window::Moonrise)], &moonless)?;
+/// assert_eq!(found.unjudged[0].rule, "ACME_ASHTAMI");
+/// assert_eq!(found.unjudged[0].tithi, Interval::literal(1.3, 2.4));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -1114,6 +2448,81 @@ pub struct Unjudged {
 }
 
 /// What a set of rules gives over a run of days.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// let found = observances(&[rule(Window::Sunrise)], &days)?;
+/// assert_eq!(found.observances.len(), 1);
+/// assert!(found.ekadashis.is_empty() && found.unjudged.is_empty());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Observances {
@@ -1138,6 +2547,13 @@ impl Observances {
     /// of [`Observances`], then a dotted path through each item. What a
     /// boundary section writes in full; the crate's tests hold it to
     /// serde, both ways.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Kind;
+    /// use teistro_panchanga::festival::Observances;
+    ///
+    /// assert_eq!(Observances::MEMBERS[0], ("observances", "month", Kind::Masa));
+    /// ```
     pub const MEMBERS: [(&'static str, &'static str, Kind); 33] = [
         ("observances", "month", Kind::Masa),
         ("observances", "day.calendar", Kind::Calendar),
@@ -1181,6 +2597,81 @@ impl Observances {
     /// Both answers as one, the occurrences no day was given to in the
     /// order of their tithis: how the karmakala rules' answer and the
     /// Ekadashi rules' are handed back together.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_panchanga::festival::{
+    /// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+    /// #     SunEntry, Window, observances,
+    /// # };
+    /// # use teistro_panchanga::month;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+    /// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+    /// # // and day 1's afternoon and evening.
+    /// # let ends = [
+    /// #     (Tithi::KrishnaSaptami, 1.3),
+    /// #     (Tithi::KrishnaAshtami, 2.4),
+    /// #     (Tithi::KrishnaNavami, 3.5),
+    /// #     (Tithi::KrishnaDashami, 4.6),
+    /// #     (Tithi::KrishnaEkadashi, 5.7),
+    /// #     (Tithi::KrishnaDwadashi, 6.8),
+    /// # ];
+    /// # let days: Vec<FestivalDay> = (0..6u8)
+    /// #     .map(|k| {
+    /// #         let rise = f64::from(k);
+    /// #         let window = Interval::literal(rise, rise + 1.0);
+    /// #         let mut from = 0.0;
+    /// #         let mut tithi = Vec::new();
+    /// #         for (member, to) in ends {
+    /// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+    /// #             from = to;
+    /// #         }
+    /// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+    /// #         FestivalDay {
+    /// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+    /// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #             sunrise: JulianDay::literal(rise),
+    /// #             sunset: JulianDay::literal(rise + 0.5),
+    /// #             next_sunrise: JulianDay::literal(rise + 1.0),
+    /// #             normal: true,
+    /// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+    /// #             tithi,
+    /// #             nakshatra: Vec::new(),
+    /// #             moonrise: Moonrise::Unsearched,
+    /// #             sun_entry: SunEntry::Unsearched,
+    /// #             moon_arcs: MoonArcs::Unsearched,
+    /// #         }
+    /// #     })
+    /// #     .collect();
+    /// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+    /// # let rule = |at: Window| FestivalRule {
+    /// #     key: String::from("ACME_ASHTAMI"),
+    /// #     source: String::from("an example"),
+    /// #     month: Some(Masa::Shravana),
+    /// #     convention: LunarMonth::Amanta,
+    /// #     occurs: Tithi::KrishnaAshtami.into(),
+    /// #     in_adhika: InAdhika::Nija,
+    /// #     at,
+    /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+    /// #     otherwise: Choice::Earlier,
+    /// #     parana: Vec::new(),
+    /// # };
+    /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+    /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+    /// # };
+    ///
+    /// let sunrise = observances(&[rule(Window::Sunrise)], &days)?;
+    /// let evening = observances(&[FestivalRule { key: String::from("ACME_EVENING"), ..rule(Window::Pradosha) }], &days)?;
+    /// assert_eq!(sunrise.merged(evening).observances.len(), 2);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn merged(mut self, other: Observances) -> Observances {
         self.observances.extend(other.observances);
@@ -1203,6 +2694,80 @@ impl Observances {
     /// The answer as JSON, every catalogue member written as its full key
     /// where [`Observances::MEMBERS`] says: what a boundary section carries
     /// and seals.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_panchanga::festival::{
+    /// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+    /// #     SunEntry, Window, observances,
+    /// # };
+    /// # use teistro_panchanga::month;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+    /// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+    /// # // and day 1's afternoon and evening.
+    /// # let ends = [
+    /// #     (Tithi::KrishnaSaptami, 1.3),
+    /// #     (Tithi::KrishnaAshtami, 2.4),
+    /// #     (Tithi::KrishnaNavami, 3.5),
+    /// #     (Tithi::KrishnaDashami, 4.6),
+    /// #     (Tithi::KrishnaEkadashi, 5.7),
+    /// #     (Tithi::KrishnaDwadashi, 6.8),
+    /// # ];
+    /// # let days: Vec<FestivalDay> = (0..6u8)
+    /// #     .map(|k| {
+    /// #         let rise = f64::from(k);
+    /// #         let window = Interval::literal(rise, rise + 1.0);
+    /// #         let mut from = 0.0;
+    /// #         let mut tithi = Vec::new();
+    /// #         for (member, to) in ends {
+    /// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+    /// #             from = to;
+    /// #         }
+    /// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+    /// #         FestivalDay {
+    /// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+    /// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #             sunrise: JulianDay::literal(rise),
+    /// #             sunset: JulianDay::literal(rise + 0.5),
+    /// #             next_sunrise: JulianDay::literal(rise + 1.0),
+    /// #             normal: true,
+    /// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+    /// #             tithi,
+    /// #             nakshatra: Vec::new(),
+    /// #             moonrise: Moonrise::Unsearched,
+    /// #             sun_entry: SunEntry::Unsearched,
+    /// #             moon_arcs: MoonArcs::Unsearched,
+    /// #         }
+    /// #     })
+    /// #     .collect();
+    /// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+    /// # let rule = |at: Window| FestivalRule {
+    /// #     key: String::from("ACME_ASHTAMI"),
+    /// #     source: String::from("an example"),
+    /// #     month: Some(Masa::Shravana),
+    /// #     convention: LunarMonth::Amanta,
+    /// #     occurs: Tithi::KrishnaAshtami.into(),
+    /// #     in_adhika: InAdhika::Nija,
+    /// #     at,
+    /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+    /// #     otherwise: Choice::Earlier,
+    /// #     parana: Vec::new(),
+    /// # };
+    /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+    /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+    /// # };
+    ///
+    /// let json = observances(&[rule(Window::Sunrise)], &days)?.in_full()?;
+    /// assert_eq!(json["observances"][0]["month"], "masa.SHRAVANA");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -1227,6 +2792,84 @@ impl Observances {
 /// on, begins on one of the days and the days hold both it and the one
 /// after (C172); the caller widens the run by a day on each side for a
 /// range's edges. The answer is in the order the occurrences begin.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_calendar::lunisolar::MonthKind;
+/// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::LunarMonth;
+/// # use teistro_panchanga::festival::{
+/// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+/// #     SunEntry, Window, observances,
+/// # };
+/// # use teistro_panchanga::month;
+/// # use teistro_panchanga::span::Span;
+/// #
+/// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+/// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+/// # // and day 1's afternoon and evening.
+/// # let ends = [
+/// #     (Tithi::KrishnaSaptami, 1.3),
+/// #     (Tithi::KrishnaAshtami, 2.4),
+/// #     (Tithi::KrishnaNavami, 3.5),
+/// #     (Tithi::KrishnaDashami, 4.6),
+/// #     (Tithi::KrishnaEkadashi, 5.7),
+/// #     (Tithi::KrishnaDwadashi, 6.8),
+/// # ];
+/// # let days: Vec<FestivalDay> = (0..6u8)
+/// #     .map(|k| {
+/// #         let rise = f64::from(k);
+/// #         let window = Interval::literal(rise, rise + 1.0);
+/// #         let mut from = 0.0;
+/// #         let mut tithi = Vec::new();
+/// #         for (member, to) in ends {
+/// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+/// #             from = to;
+/// #         }
+/// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+/// #         FestivalDay {
+/// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+/// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+/// #             sunrise: JulianDay::literal(rise),
+/// #             sunset: JulianDay::literal(rise + 0.5),
+/// #             next_sunrise: JulianDay::literal(rise + 1.0),
+/// #             normal: true,
+/// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+/// #             tithi,
+/// #             nakshatra: Vec::new(),
+/// #             moonrise: Moonrise::Unsearched,
+/// #             sun_entry: SunEntry::Unsearched,
+/// #             moon_arcs: MoonArcs::Unsearched,
+/// #         }
+/// #     })
+/// #     .collect();
+/// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+/// # let rule = |at: Window| FestivalRule {
+/// #     key: String::from("ACME_ASHTAMI"),
+/// #     source: String::from("an example"),
+/// #     month: Some(Masa::Shravana),
+/// #     convention: LunarMonth::Amanta,
+/// #     occurs: Tithi::KrishnaAshtami.into(),
+/// #     in_adhika: InAdhika::Nija,
+/// #     at,
+/// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+/// #     otherwise: Choice::Earlier,
+/// #     parana: Vec::new(),
+/// # };
+/// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+/// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+/// # };
+///
+/// // The 3rd of January's sunrise holds the ashtami; the 2nd's does not.
+/// let found = observances(&[rule(Window::Sunrise)], &days)?;
+/// assert_eq!(found.observances[0].day.day, 3);
+/// // A rule its own check refuses is refused here.
+/// let unnamed = FestivalRule { key: String::new(), ..rule(Window::Sunrise) };
+/// assert!(observances(&[unnamed], &days).is_err());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -1848,6 +3491,16 @@ impl FestivalRule {
     /// (§9), then three schools' upakarma (§9.5, §9.7), then the two
     /// chaturthis kept at moonrise (`festival-rule-language.md` §3.1),
     /// then the Navaratri's Mahanavami and visarjana (§8.7).
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::FestivalRule;
+    ///
+    /// let rules = FestivalRule::dharmasindhu();
+    /// for key in ["RAMA_NAVAMI", "JANMASHTAMI", "VIJAYA_DASHAMI", "LAKSHMI_PUJA"] {
+    ///     assert!(rules.iter().any(|rule| rule.key == key), "{key}");
+    /// }
+    /// assert!(rules.iter().all(|rule| rule.check().is_ok()));
+    /// ```
     #[must_use]
     pub fn dharmasindhu() -> Vec<FestivalRule> {
         let mut rules = FestivalRule::printed_in_nepal();
@@ -2019,6 +3672,85 @@ impl FestivalRule {
     /// sunrise does, else the earlier (both sunrises, or the day an
     /// occurrence holding none falls in). Its source says so, and names
     /// C197.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_calendar::lunisolar::MonthKind;
+    /// # use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::LunarMonth;
+    /// # use teistro_panchanga::festival::{
+    /// #     Case, Choice, FestivalDay, FestivalRule, Guard, InAdhika, MoonArcs, Moonrise, Predicate,
+    /// #     SunEntry, Window, observances,
+    /// # };
+    /// # use teistro_panchanga::month;
+    /// # use teistro_panchanga::span::Span;
+    /// #
+    /// # // Six synthetic days: day k rises at Julian day k and sets at k + 0.5.
+    /// # // The krishna ashtami runs from 1.3 to 2.4, so it holds day 2's sunrise
+    /// # // and day 1's afternoon and evening.
+    /// # let ends = [
+    /// #     (Tithi::KrishnaSaptami, 1.3),
+    /// #     (Tithi::KrishnaAshtami, 2.4),
+    /// #     (Tithi::KrishnaNavami, 3.5),
+    /// #     (Tithi::KrishnaDashami, 4.6),
+    /// #     (Tithi::KrishnaEkadashi, 5.7),
+    /// #     (Tithi::KrishnaDwadashi, 6.8),
+    /// # ];
+    /// # let days: Vec<FestivalDay> = (0..6u8)
+    /// #     .map(|k| {
+    /// #         let rise = f64::from(k);
+    /// #         let window = Interval::literal(rise, rise + 1.0);
+    /// #         let mut from = 0.0;
+    /// #         let mut tithi = Vec::new();
+    /// #         for (member, to) in ends {
+    /// #             tithi.extend(Span::new(member, Interval::literal(from, to), window));
+    /// #             from = to;
+    /// #         }
+    /// #         let at_sunrise = tithi.first().map_or(Tithi::KrishnaSaptami, |span| span.member);
+    /// #         FestivalDay {
+    /// #             date: CalendarDate::defined(Calendar::Gregorian, 2024, 1, k + 1),
+    /// #             vara: Vara::ALL[(usize::from(k) + 1) % 7],
+    /// #             sunrise: JulianDay::literal(rise),
+    /// #             sunset: JulianDay::literal(rise + 0.5),
+    /// #             next_sunrise: JulianDay::literal(rise + 1.0),
+    /// #             normal: true,
+    /// #             month: month::of(Masa::Shravana, at_sunrise, LunarMonth::Amanta, MonthKind::Nija),
+    /// #             tithi,
+    /// #             nakshatra: Vec::new(),
+    /// #             moonrise: Moonrise::Unsearched,
+    /// #             sun_entry: SunEntry::Unsearched,
+    /// #             moon_arcs: MoonArcs::Unsearched,
+    /// #         }
+    /// #     })
+    /// #     .collect();
+    /// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
+    /// # let rule = |at: Window| FestivalRule {
+    /// #     key: String::from("ACME_ASHTAMI"),
+    /// #     source: String::from("an example"),
+    /// #     month: Some(Masa::Shravana),
+    /// #     convention: LunarMonth::Amanta,
+    /// #     occurs: Tithi::KrishnaAshtami.into(),
+    /// #     in_adhika: InAdhika::Nija,
+    /// #     at,
+    /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
+    /// #     otherwise: Choice::Earlier,
+    /// #     parana: Vec::new(),
+    /// # };
+    /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
+    /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
+    /// # };
+    ///
+    /// // At the evening the 1st keeps it; read by its sunrise, the 2nd.
+    /// let evening = rule(Window::Pradosha);
+    /// let by_sunrise = evening.clone().udaya();
+    /// assert_eq!(by_sunrise.at, Window::Sunrise);
+    /// assert!(by_sunrise.source.contains("C197"));
+    /// let found = observances(&[by_sunrise], &days)?;
+    /// assert_eq!(found.observances[0].day.day, 3);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn udaya(self) -> FestivalRule {
         FestivalRule {

@@ -28,6 +28,12 @@ const OWN: [Relation; 8] = [
 
 impl AshauchTable {
     /// The name [`AshauchTable::mitakshara`] answers under.
+    ///
+    /// ```
+    /// use teistro_panchanga::ashauch::AshauchTable;
+    ///
+    /// assert_eq!(AshauchTable::mitakshara().name, AshauchTable::MITAKSHARA);
+    /// ```
     pub const MITAKSHARA: &'static str = "MITAKSHARA";
 
     /// The *Mitākṣarā*'s table (`03-design/ashauch.md` §2.10): the night
@@ -39,6 +45,18 @@ impl AshauchTable {
     /// ninth, and a bath for news from another land (on III.21); and the
     /// mother's bar to the 20th or 30th day (Paiṭhīnasi, on III.19).
     /// Every other row is the *Dharmasindhu*'s.
+    ///
+    /// ```
+    /// use teistro_panchanga::ashauch::{AshauchTable, MotherRites, NightRule};
+    ///
+    /// // The night halved, and the mother's bar to the 20th or 30th day.
+    /// let table = AshauchTable::mitakshara();
+    /// assert_eq!(table.night, NightRule::HalfNight);
+    /// assert_eq!(table.mother_rites, Some(MotherRites { son: 20, daughter: 30 }));
+    /// assert!(table.late_abroad.is_empty());
+    /// table.check()?;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn mitakshara() -> AshauchTable {
         let texts = AshauchTable::dharmasindhu();

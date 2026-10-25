@@ -37,6 +37,7 @@ const EXAMPLED: &[&str] = &[
     "teistro-muhurta",
     "teistro-numerology",
     "teistro-pakshi",
+    "teistro-panchanga",
     "teistro-points",
     "teistro-port-ephemeris",
     "teistro-port-timezone",

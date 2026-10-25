@@ -41,6 +41,23 @@ const NIGHT_STEP: u8 = 4;
 const NIGHT_START: u8 = 4;
 
 /// One inauspicious eighth of the daylight.
+///
+/// ```
+/// # use teistro_core::catalogue::{Kaala, Vara};
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+///
+/// use teistro_panchanga::period::kaalas;
+///
+/// // Sunday's rahu kaala is the daylight's last eighth, 4:30 to 6 p.m.
+/// let found = kaalas(daylight, Vara::Ravivara);
+/// let rahu = found.iter().find(|k| k.kaala == Kaala::RahuKaala).ok_or("rahu kaala")?;
+/// assert!((rahu.at.from.get() - (100.25 + 0.5 * 7.0 / 8.0)).abs() < 1e-9);
+/// # Ok::<(), &str>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Kaalas {
@@ -51,6 +68,23 @@ pub struct Kaalas {
 }
 
 /// One choghadiya, of the daylight or of the night.
+///
+/// ```
+/// # use teistro_core::catalogue::{Kaala, Vara};
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+///
+/// use teistro_core::catalogue::{Choghadiya, Graha};
+/// use teistro_panchanga::period::choghadiya;
+///
+/// // A Sunday's daylight opens with the Sun's Udveg.
+/// let parts = choghadiya(daylight, night, Vara::Ravivara);
+/// assert_eq!((parts[0].choghadiya, parts[0].lord), (Choghadiya::Udveg, Graha::Sun));
+/// assert!(parts[0].is_daytime && !parts[8].is_daytime);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Part {
@@ -66,6 +100,22 @@ pub struct Part {
 }
 
 /// The thirty muhurtas of a day, with the two that have names.
+///
+/// ```
+/// # use teistro_core::catalogue::{Kaala, Vara};
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+///
+/// use teistro_panchanga::period::muhurtas;
+///
+/// // Abhijit is the eighth of the fifteen, straddling noon.
+/// let day = muhurtas(daylight, night, None, Vara::Ravivara);
+/// assert_eq!(day.abhijit, Some(day.daylight[7]));
+/// assert!(day.abhijit_effective && day.brahma.is_none());
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Muhurtas {
@@ -195,6 +245,24 @@ const RAMAN: [&[Censured]; 7] = [
 /// the night of a polar day — is absent rather than a muhurta of no
 /// length, as every period of the module is.
 ///
+/// ```
+/// # use teistro_core::catalogue::{Kaala, Vara};
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+///
+/// use teistro_core::settings::DurmuhurtaTable;
+/// use teistro_panchanga::period::{durmuhurtas, muhurtas};
+///
+/// // A Monday's two, Brahma's and Rakshasa's muhurtas.
+/// let day = muhurtas(daylight, night, None, Vara::Somavara);
+/// let found = durmuhurtas(&day, Vara::Somavara, DurmuhurtaTable::MuhurtaChintamani)?;
+/// assert_eq!(found.len(), 2);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// `UNSUPPORTED` for a table this build does not know, naming the
@@ -263,6 +331,14 @@ fn walk_vara(vara: Vara, steps: u8) -> Vara {
 }
 
 /// The choghadiya a graha gives its name to.
+///
+/// ```
+/// use teistro_core::catalogue::{Choghadiya, Graha};
+/// use teistro_panchanga::period::choghadiya_of;
+///
+/// assert_eq!(choghadiya_of(Graha::Jupiter), Some(Choghadiya::Shubha));
+/// assert_eq!(choghadiya_of(Graha::Rahu), None);
+/// ```
 #[must_use]
 pub fn choghadiya_of(lord: Graha) -> Option<Choghadiya> {
     Choghadiya::ALL
@@ -279,6 +355,21 @@ pub fn choghadiya_of(lord: Graha) -> Option<Choghadiya> {
 /// to begin and end at one instant, and code that asks whether rahu kaal
 /// is running gets an answer out of it
 /// (`03-design/panchanga-day-conventions.md` §11).
+///
+/// ```
+/// # use teistro_core::catalogue::{Kaala, Vara};
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+///
+/// use teistro_panchanga::period::kaalas;
+///
+/// assert_eq!(kaalas(daylight, Vara::Ravivara).len(), 3);
+/// // A polar night has no daylight, and none of them.
+/// assert!(kaalas(Interval::literal(100.25, 100.25), Vara::Ravivara).is_empty());
+/// ```
 #[must_use]
 pub fn kaalas(daylight: Interval, vara: Vara) -> Vec<Kaalas> {
     if daylight.is_empty() {
@@ -306,6 +397,21 @@ pub fn kaalas(daylight: Interval, vara: Vara) -> Vec<Kaalas> {
 ///
 /// A half with no arc contributes none, which is what a polar day and a
 /// polar night mean.
+///
+/// ```
+/// # use teistro_core::catalogue::{Kaala, Vara};
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+///
+/// use teistro_panchanga::period::choghadiya;
+///
+/// let parts = choghadiya(daylight, night, Vara::Ravivara);
+/// assert_eq!(parts.len(), 16);
+/// assert_eq!(parts[0].at, Interval::literal(100.25, 100.25 + 0.5 / 8.0));
+/// ```
 #[must_use]
 pub fn choghadiya(daylight: Interval, night: Interval, vara: Vara) -> Vec<Part> {
     let mut parts = Vec::with_capacity(16);
@@ -340,6 +446,25 @@ fn half(arc: Interval, from: Vara, step: u8, is_daytime: bool) -> Vec<Part> {
 /// which is the night Brahma muhurta belongs to. The recording engine
 /// sizes it from the night that follows the day instead — a median ten
 /// seconds out, and entry 17 of the deliberate-difference registry.
+///
+/// ```
+/// # use teistro_core::catalogue::{Kaala, Vara};
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+///
+/// use teistro_panchanga::period::muhurtas;
+///
+/// // Brahma muhurta is the fourteenth of the night that ends at sunrise.
+/// let before = Interval::literal(99.75, 100.25);
+/// let day = muhurtas(daylight, night, Some(before), Vara::Ravivara);
+/// assert_eq!((day.daylight.len(), day.night.len()), (15, 15));
+/// let brahma = day.brahma.ok_or("the night before is known")?;
+/// assert!((brahma.from.get() - (99.75 + 0.5 * 13.0 / 15.0)).abs() < 1e-9);
+/// # Ok::<(), &str>(())
+/// ```
 #[must_use]
 pub fn muhurtas(
     daylight: Interval,
@@ -370,6 +495,21 @@ pub fn muhurtas(
 }
 
 /// The choghadiya running at an instant, if one is.
+///
+/// ```
+/// # use teistro_core::catalogue::{Kaala, Vara};
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+///
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_panchanga::period::{choghadiya, choghadiya_at};
+///
+/// let parts = choghadiya(daylight, night, Vara::Ravivara);
+/// assert_eq!(choghadiya_at(&parts, JulianDay::literal(100.26)), parts.first());
+/// ```
 #[must_use]
 pub fn choghadiya_at(parts: &[Part], instant: JulianDay<Utc>) -> Option<&Part> {
     parts
@@ -383,6 +523,23 @@ pub fn choghadiya_at(parts: &[Part], instant: JulianDay<Utc>) -> Option<&Part> {
 }
 
 /// Whether an instant falls inside one of the day's inauspicious eighths.
+///
+/// ```
+/// # use teistro_core::catalogue::{Kaala, Vara};
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+///
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_panchanga::period::{is_inauspicious, kaalas};
+///
+/// // 5 p.m. on a Sunday is rahu kaala; 9 a.m. is none of the three.
+/// let found = kaalas(daylight, Vara::Ravivara);
+/// assert!(is_inauspicious(&found, JulianDay::literal(100.25 + 11.0 / 24.0)));
+/// assert!(!is_inauspicious(&found, JulianDay::literal(100.25 + 3.0 / 24.0)));
+/// ```
 #[must_use]
 pub fn is_inauspicious(kaalas: &[Kaalas], instant: JulianDay<Utc>) -> bool {
     kaalas.iter().any(|kaala| kaala.at.contains(instant))

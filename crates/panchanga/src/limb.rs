@@ -50,6 +50,42 @@ use crate::span::Span;
 pub const LONGEST_SPAN_DAYS: f64 = 1.5;
 
 /// The four moving limbs of one day.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::limbs;
+///
+/// // Each limb's spans run end to end through the day.
+/// let day = limbs(&longitudes, window, zodiac)?;
+/// for pair in day.tithi.windows(2) {
+///     assert_eq!(pair[0].whole.to, pair[1].whole.from);
+/// }
+/// assert!(day.tithi[0].whole.contains(window.from));
+/// assert!(day.karana.len() >= day.tithi.len());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Limbs {
@@ -112,6 +148,16 @@ impl Limb {
 /// and the seven movable karanas repeat through everything between. The
 /// corpus's own successor relation holds over all 109 consecutive pairs
 /// it records (`03-design/panchanga-day-conventions.md` §2).
+///
+/// ```
+/// use teistro_core::catalogue::Karana;
+/// use teistro_panchanga::limb::karana_of;
+///
+/// assert_eq!(karana_of(0), Karana::Kimstughna);
+/// // Bava again after the seven.
+/// assert_eq!((karana_of(1), karana_of(8)), (Karana::Bava, Karana::Bava));
+/// assert_eq!(karana_of(59), Karana::Naga);
+/// ```
 #[must_use]
 pub fn karana_of(half_tithi: u32) -> Karana {
     match half_tithi % 60 {
@@ -135,6 +181,39 @@ pub use teistro_astro::sidereal::{Sidereal, Zodiac};
 
 /// The nakshatra the Moon stands in at an instant, with the whole of its
 /// stay there: what a temporal dasha balance reads.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{limbs, nakshatra_at};
+///
+/// // The day's first nakshatra, whole, holds the Moon at its start.
+/// let stay = nakshatra_at(&longitudes, window.from, zodiac)?;
+/// assert!(stay.whole.contains_inclusive(window.from));
+/// assert_eq!(stay.member, limbs(&longitudes, window, zodiac)?.nakshatra[0].member);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -162,6 +241,39 @@ pub fn nakshatra_at<S: Longitudes + ?Sized>(
 /// The nakshatra the Sun stands in at an instant, on the integer path the
 /// limbs read (ADR-0016): what a festival kept on the Sun's entry into a
 /// nakshatra compares at the two midnights of a civil day.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::sun_nakshatra_at;
+///
+/// // A degree a day: the same nakshatra a day on, or the next.
+/// let today = sun_nakshatra_at(&longitudes, window.from, zodiac)?.id();
+/// let tomorrow = sun_nakshatra_at(&longitudes, window.to, zodiac)?.id();
+/// assert!(tomorrow == today || tomorrow == (today + 1) % 27);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -191,6 +303,41 @@ pub fn sun_nakshatra_at<S: Longitudes + ?Sized>(
 /// where no nakshatra boundary falls, so the span is searched at the
 /// segment's own bounds rather than read off the nakshatras
 /// (`03-design/dasha-kernels.md`, "The 28-nakshatra wheel").
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{moon_between, nakshatra_at};
+///
+/// // Between a nakshatra's own bounds, its stay.
+/// let stay = nakshatra_at(&longitudes, window.from, zodiac)?;
+/// let from_deg = f64::from(stay.member.id()) * 360.0 / 27.0;
+/// let between = moon_between(&longitudes, window.from, zodiac, (from_deg, from_deg + 360.0 / 27.0))?;
+/// assert!((between.from.get() - stay.whole.from.get()).abs() < 1e-6);
+/// assert!((between.to.get() - stay.whole.to.get()).abs() < 1e-6);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -239,6 +386,39 @@ pub fn moon_between<S: Longitudes + ?Sized>(
 
 /// The four limbs of a window.
 ///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::limbs;
+///
+/// // Two karanas to a tithi, so a day touches at least two.
+/// let day = limbs(&longitudes, window, zodiac)?;
+/// assert!(!day.nakshatra.is_empty() && !day.yoga.is_empty());
+/// assert!(day.karana.len() >= 2);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// The source's own refusal (an instant or a body it cannot answer for),
@@ -257,6 +437,37 @@ pub fn limbs<S: Longitudes + ?Sized>(
 /// range ([`RangeCrossings`]) when they cover the window under the same
 /// zodiac, and searching for them otherwise. The answer is [`limbs`]'s
 /// either way, to the bit.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{limbs, limbs_with};
+///
+/// // With nothing known it searches, as `limbs` does.
+/// assert_eq!(limbs_with(&longitudes, window, zodiac, None)?, limbs(&longitudes, window, zodiac)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -387,6 +598,39 @@ impl RangeCrossings {
     /// The crossings every window inside `run` reads, found by one search
     /// a limb and one a body.
     ///
+    /// ```
+    /// # use teistro_astro::ayanamsha::Basis;
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_core::catalogue::Ayanamsha;
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+    /// # use teistro_panchanga::limb::Zodiac;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+    /// #
+    /// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+    /// # let provider = TestProvider::new();
+    /// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+    /// # let zodiac = Zodiac {
+    /// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+    /// #     basis: Basis::Mean,
+    /// #     precession: PrecessionModel::Iau2006,
+    /// #     delta_t: DeltaTModel::TableThenModel,
+    /// # };
+    /// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+    ///
+    /// use teistro_panchanga::limb::RangeCrossings;
+    ///
+    /// // A week's crossings, found once.
+    /// let week = Interval::literal(2_460_000.5, 2_460_007.5);
+    /// let known = RangeCrossings::over(&longitudes, zodiac, week)?;
+    /// assert!(known.answers(zodiac, window));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`limbs`].
@@ -480,6 +724,40 @@ impl RangeCrossings {
     /// Whether these crossings answer for a window: found under the same
     /// zodiac, over a run that holds the window, so that the run's own
     /// widening covers the window's.
+    ///
+    /// ```
+    /// # use teistro_astro::ayanamsha::Basis;
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_core::catalogue::Ayanamsha;
+    /// # use teistro_core::interval::Interval;
+    /// # use teistro_core::quantity::JulianDay;
+    /// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+    /// # use teistro_panchanga::limb::Zodiac;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+    /// #
+    /// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+    /// # let provider = TestProvider::new();
+    /// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+    /// # let zodiac = Zodiac {
+    /// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+    /// #     basis: Basis::Mean,
+    /// #     precession: PrecessionModel::Iau2006,
+    /// #     delta_t: DeltaTModel::TableThenModel,
+    /// # };
+    /// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+    ///
+    /// use teistro_panchanga::limb::RangeCrossings;
+    ///
+    /// let known = RangeCrossings::over(&longitudes, zodiac, window)?;
+    /// // Not a window past its run, nor another zodiac.
+    /// assert!(!known.answers(zodiac, Interval::literal(2_460_001.0, 2_460_002.0)));
+    /// let tropical = Zodiac { ayanamsha: None, ..zodiac };
+    /// assert!(!known.answers(tropical, window));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn answers(&self, zodiac: Zodiac, window: Interval) -> bool {
         self.zodiac == zodiac
@@ -651,6 +929,41 @@ fn classify<S: Longitudes + ?Sized>(source: &S, limb: Limb, jd: f64) -> Result<u
 /// the limbs use, so the sign a span names is in the chart's zodiac like
 /// everything else.
 ///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::signs;
+///
+/// // The Moon touches one sign in a day, or two end to end.
+/// let moon = signs(&longitudes, Body::Moon, window, zodiac)?;
+/// assert!((1..=2).contains(&moon.len()));
+/// if let [first, second] = moon.as_slice() {
+///     assert_eq!(first.whole.to, second.whole.from);
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`limbs`].
@@ -670,6 +983,42 @@ pub fn signs<S: Longitudes + ?Sized>(
 /// [`sign_reach_days`]; a caller that wants a slow body's true span, or
 /// that knows its own bound, gives one in days.
 ///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{signs, signs_within};
+///
+/// // A wider reach names the same signs.
+/// let named = |reach| -> Result<Vec<_>, teistro_core::error::Error> {
+///     Ok(signs_within(&longitudes, Body::Moon, window, zodiac, reach)?.iter().map(|span| span.member).collect())
+/// };
+/// let usual: Vec<_> = signs(&longitudes, Body::Moon, window, zodiac)?.iter().map(|span| span.member).collect();
+/// assert_eq!(named(Some(5.0))?, usual);
+/// assert_eq!(named(Some(-1.0)).unwrap_err().field(), Some("reach_days"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`signs`], plus `INVALID_ARG` for a reach that is not a positive
@@ -688,6 +1037,39 @@ pub fn signs_within<S: Longitudes + ?Sized>(
 /// ([`RangeCrossings`]) when they cover the window under the same zodiac
 /// at the body's own reach. The answer is [`signs_within`]'s either way,
 /// to the bit.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{RangeCrossings, signs_known, signs_within};
+///
+/// let week = Interval::literal(2_460_000.5, 2_460_007.5);
+/// let known = RangeCrossings::over(&longitudes, zodiac, week)?;
+/// let read = signs_known(&longitudes, Body::Sun, window, zodiac, None, Some(&known))?;
+/// assert_eq!(read, signs_within(&longitudes, Body::Sun, window, zodiac, None)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -775,6 +1157,16 @@ pub const SIGN_SEARCH_CAP_DAYS: f64 = 40.0;
 /// the two signs a day can touch, which measured **44% of an almanac
 /// day's ephemeris calls**
 /// (`07-roadmap/02-plan-performance-and-passthrough.md`, A1).
+///
+/// ```
+/// use teistro_panchanga::limb::{SIGN_SEARCH_CAP_DAYS, sign_reach_days};
+/// use teistro_port_ephemeris::Body;
+///
+/// // The Moon's few days, the Sun's month, and a planet that turns capped.
+/// assert!(sign_reach_days(Body::Moon) < 3.0);
+/// assert!((30.0..SIGN_SEARCH_CAP_DAYS).contains(&sign_reach_days(Body::Sun)));
+/// assert_eq!(sign_reach_days(Body::Saturn), SIGN_SEARCH_CAP_DAYS);
+/// ```
 #[must_use]
 pub fn sign_reach_days(body: Body) -> f64 {
     teistro_astro::events::longest_dwell_days(Quantity::Longitude(body), &Lattice::SIGNS)
@@ -812,6 +1204,38 @@ fn sign_edges(boundaries: &[f64], window: Interval, reach: f64) -> Vec<f64> {
 /// the second is adhika; naming them is right either way, and marking
 /// which is the Indian lunisolar calendar's to do.
 ///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{amanta_month, lunar_month_span, masa_at};
+///
+/// // Named by the Sun at the new moon that opened it.
+/// let opened = lunar_month_span(&longitudes, window, zodiac)?.from;
+/// assert_eq!(amanta_month(&longitudes, window, zodiac)?, masa_at(&longitudes, opened, zodiac)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// The source's own refusal, or a window with no new moon in the
@@ -832,6 +1256,38 @@ pub fn amanta_month<S: Longitudes + ?Sized>(
 /// ([`masa_at`]) and its **kind** from the sankrantis between the two
 /// ([`teistro_calendar::lunisolar::kind_of`]), so both want this and it
 /// is found once.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::lunar_month_span;
+///
+/// let month = lunar_month_span(&longitudes, window, zodiac)?;
+/// assert!(month.contains(window.from));
+/// assert!((29.2..29.9).contains(&month.days()));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -876,6 +1332,38 @@ pub fn lunar_month_span<S: Longitudes + ?Sized>(
 
 /// The lunar month the Sun's sign at an instant names.
 ///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{masa_at, signs};
+///
+/// // The month whose solar sign the Sun stands in.
+/// let sun = signs(&longitudes, Body::Sun, Interval::new(window.from, window.from)?, zodiac)?;
+/// assert_eq!(Some(masa_at(&longitudes, window.from, zodiac)?.attributes().solar_sign), sun.first().map(|span| span.member));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// The source's own refusal, or a sign no masa claims, which the
@@ -904,9 +1392,26 @@ pub fn masa_at<S: Longitudes + ?Sized>(
 const SYNODIC_SEARCH_DAYS: f64 = 31.0;
 
 /// A limb's member, named by its index around the circle.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Tithi};
+/// use teistro_panchanga::limb::Member;
+///
+/// // An index past the circle comes round again.
+/// assert_eq!(<Tithi as Member>::of(30), Tithi::ShuklaPratipada);
+/// assert_eq!(<Nakshatra as Member>::of(28), Nakshatra::Bharani);
+/// ```
 pub trait Member: Sized {
     /// The member an index names; an index the catalogue does not have is
     /// impossible by construction, and the first member stands in.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Karana, Yoga};
+    /// use teistro_panchanga::limb::Member;
+    ///
+    /// assert_eq!(<Yoga as Member>::of(0), Yoga::Vishkambha);
+    /// assert_eq!(<Karana as Member>::of(0), Karana::Kimstughna);
+    /// ```
     fn of(index: u32) -> Self;
 }
 
