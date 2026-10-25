@@ -2272,10 +2272,11 @@ public final class Messages {
                 /**
                  * `sdk.calendar.BANGLADESHI.monthShort`
                  *
+                 * @param month `month`
                  * @return the text
                  */
-                public String monthShort() {
-                    return r.render("sdk.calendar.BANGLADESHI.monthShort", Map.of());
+                public String monthShort(long month) {
+                    return r.render("sdk.calendar.BANGLADESHI.monthShort", Map.ofEntries(Map.entry("month", month)));
                 }
             }
 
@@ -2697,10 +2698,13 @@ public final class Messages {
                     /**
                      * `sdk.calendar.ISO_WEEK.date.full`
                      *
+                     * @param day `day`
+                     * @param month `month`
+                     * @param year `year`
                      * @return the text
                      */
-                    public String full() {
-                        return r.render("sdk.calendar.ISO_WEEK.date.full", Map.of());
+                    public String full(long day, long month, long year) {
+                        return r.render("sdk.calendar.ISO_WEEK.date.full", Map.ofEntries(Map.entry("day", day), Map.entry("month", month), Map.entry("year", year)));
                     }
 
                     /**
@@ -2768,28 +2772,38 @@ public final class Messages {
                     /**
                      * `sdk.calendar.JULIAN.date.full`
                      *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param weekdayName `weekdayName`
+                     * @param year `year`
                      * @return the text
                      */
-                    public String full() {
-                        return r.render("sdk.calendar.JULIAN.date.full", Map.of());
+                    public String full(long day, String monthName, String weekdayName, long year) {
+                        return r.render("sdk.calendar.JULIAN.date.full", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("weekdayName", weekdayName), Map.entry("year", year)));
                     }
 
                     /**
                      * `sdk.calendar.JULIAN.date.long`
                      *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param year `year`
                      * @return the text
                      */
-                    public String long_() {
-                        return r.render("sdk.calendar.JULIAN.date.long", Map.of());
+                    public String long_(long day, String monthName, long year) {
+                        return r.render("sdk.calendar.JULIAN.date.long", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("year", year)));
                     }
 
                     /**
                      * `sdk.calendar.JULIAN.date.numeric`
                      *
+                     * @param day `day`
+                     * @param month `month`
+                     * @param year `year`
                      * @return the text
                      */
-                    public String numeric() {
-                        return r.render("sdk.calendar.JULIAN.date.numeric", Map.of());
+                    public String numeric(long day, long month, long year) {
+                        return r.render("sdk.calendar.JULIAN.date.numeric", Map.ofEntries(Map.entry("day", day), Map.entry("month", month), Map.entry("year", year)));
                     }
                 }
 
@@ -2797,19 +2811,21 @@ public final class Messages {
                 /**
                  * `sdk.calendar.JULIAN.monthName`
                  *
+                 * @param month `month`
                  * @return the text
                  */
-                public String monthName() {
-                    return r.render("sdk.calendar.JULIAN.monthName", Map.of());
+                public String monthName(long month) {
+                    return r.render("sdk.calendar.JULIAN.monthName", Map.ofEntries(Map.entry("month", month)));
                 }
 
                 /**
                  * `sdk.calendar.JULIAN.monthShort`
                  *
+                 * @param month `month`
                  * @return the text
                  */
-                public String monthShort() {
-                    return r.render("sdk.calendar.JULIAN.monthShort", Map.of());
+                public String monthShort(long month) {
+                    return r.render("sdk.calendar.JULIAN.monthShort", Map.ofEntries(Map.entry("month", month)));
                 }
             }
 
@@ -2851,28 +2867,38 @@ public final class Messages {
                     /**
                      * `sdk.calendar.MIXED.date.full`
                      *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param weekdayName `weekdayName`
+                     * @param year `year`
                      * @return the text
                      */
-                    public String full() {
-                        return r.render("sdk.calendar.MIXED.date.full", Map.of());
+                    public String full(long day, String monthName, String weekdayName, long year) {
+                        return r.render("sdk.calendar.MIXED.date.full", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("weekdayName", weekdayName), Map.entry("year", year)));
                     }
 
                     /**
                      * `sdk.calendar.MIXED.date.long`
                      *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param year `year`
                      * @return the text
                      */
-                    public String long_() {
-                        return r.render("sdk.calendar.MIXED.date.long", Map.of());
+                    public String long_(long day, String monthName, long year) {
+                        return r.render("sdk.calendar.MIXED.date.long", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("year", year)));
                     }
 
                     /**
                      * `sdk.calendar.MIXED.date.numeric`
                      *
+                     * @param day `day`
+                     * @param month `month`
+                     * @param year `year`
                      * @return the text
                      */
-                    public String numeric() {
-                        return r.render("sdk.calendar.MIXED.date.numeric", Map.of());
+                    public String numeric(long day, long month, long year) {
+                        return r.render("sdk.calendar.MIXED.date.numeric", Map.ofEntries(Map.entry("day", day), Map.entry("month", month), Map.entry("year", year)));
                     }
                 }
 
@@ -2880,19 +2906,21 @@ public final class Messages {
                 /**
                  * `sdk.calendar.MIXED.monthName`
                  *
+                 * @param month `month`
                  * @return the text
                  */
-                public String monthName() {
-                    return r.render("sdk.calendar.MIXED.monthName", Map.of());
+                public String monthName(long month) {
+                    return r.render("sdk.calendar.MIXED.monthName", Map.ofEntries(Map.entry("month", month)));
                 }
 
                 /**
                  * `sdk.calendar.MIXED.monthShort`
                  *
+                 * @param month `month`
                  * @return the text
                  */
-                public String monthShort() {
-                    return r.render("sdk.calendar.MIXED.monthShort", Map.of());
+                public String monthShort(long month) {
+                    return r.render("sdk.calendar.MIXED.monthShort", Map.ofEntries(Map.entry("month", month)));
                 }
             }
 

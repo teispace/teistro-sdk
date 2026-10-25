@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A message that renders another takes its parameters.**
+**Numbers:** none. `sdk.calendar.JULIAN.date.full` is
+`{sdk.calendar.GREGORIAN.date.full :msg}`, and `:msg` renders its target
+with the caller's own parameters, but the generators typed a message by
+the parameters it names itself, so the Julian and mixed-calendar dates
+and month names were unit structs (and parameterless accessors in every
+binding) that could only render warnings. A message now takes the
+parameters of every message it reaches through `:msg`, its own type
+winning where both name one; the ten affected accessors in Rust,
+TypeScript, Dart, Python and Java gain the Gregorian ones' fields.
+
+**`teistro-intl` has a run example on every public item.**
+**Numbers:** none. Its 420 items join the crates `check-doc-examples`
+holds there, forty-one in all. The generated `messages` module carries
+one per message, written by `cargo xtask gen intl` from sample values
+and rendered from the SDK's sources; a message naming no entity is held
+to rendering with no warning, while one naming an entity is not, its
+text in a form being a pack's to give. `RustPaths` gains `examples`, the
+module the examples import from, `None` for a consumer's own generated
+code. Writing them found the Julian date above, and that `Model::keys`
+is in source order rather than sorted, which its documentation now says.
+
 **`teistro-astro` has a run example on every public item.**
 **Numbers:** none. Its 408 items join the crates `check-doc-examples`
 holds there, forty in all. The examples run on the analytic test

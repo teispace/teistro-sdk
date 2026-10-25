@@ -7339,13 +7339,19 @@ class MessagesSdkCalendarMixed:
         """The messages under `date`."""
         return MessagesSdkCalendarMixedDate(self._r)
 
-    def month_name(self) -> str:
+    def month_name(self, *, month: int) -> str:
         """`sdk.calendar.MIXED.monthName`"""
-        return self._r.render("sdk.calendar.MIXED.monthName")
+        return self._r.render(
+            "sdk.calendar.MIXED.monthName",
+            {"month": month},
+        )
 
-    def month_short(self) -> str:
+    def month_short(self, *, month: int) -> str:
         """`sdk.calendar.MIXED.monthShort`"""
-        return self._r.render("sdk.calendar.MIXED.monthShort")
+        return self._r.render(
+            "sdk.calendar.MIXED.monthShort",
+            {"month": month},
+        )
 
 
 class MessagesSdkCalendarMixedDate:
@@ -7355,17 +7361,26 @@ class MessagesSdkCalendarMixedDate:
         self._r = renderer
 
 
-    def full(self) -> str:
+    def full(self, *, day: int, month_name: str, weekday_name: str, year: int) -> str:
         """`sdk.calendar.MIXED.date.full`"""
-        return self._r.render("sdk.calendar.MIXED.date.full")
+        return self._r.render(
+            "sdk.calendar.MIXED.date.full",
+            {"day": day, "monthName": month_name, "weekdayName": weekday_name, "year": year},
+        )
 
-    def long(self) -> str:
+    def long(self, *, day: int, month_name: str, year: int) -> str:
         """`sdk.calendar.MIXED.date.long`"""
-        return self._r.render("sdk.calendar.MIXED.date.long")
+        return self._r.render(
+            "sdk.calendar.MIXED.date.long",
+            {"day": day, "monthName": month_name, "year": year},
+        )
 
-    def numeric(self) -> str:
+    def numeric(self, *, day: int, month: int, year: int) -> str:
         """`sdk.calendar.MIXED.date.numeric`"""
-        return self._r.render("sdk.calendar.MIXED.date.numeric")
+        return self._r.render(
+            "sdk.calendar.MIXED.date.numeric",
+            {"day": day, "month": month, "year": year},
+        )
 
 
 class MessagesSdkCalendarJulian:
@@ -7380,13 +7395,19 @@ class MessagesSdkCalendarJulian:
         """The messages under `date`."""
         return MessagesSdkCalendarJulianDate(self._r)
 
-    def month_name(self) -> str:
+    def month_name(self, *, month: int) -> str:
         """`sdk.calendar.JULIAN.monthName`"""
-        return self._r.render("sdk.calendar.JULIAN.monthName")
+        return self._r.render(
+            "sdk.calendar.JULIAN.monthName",
+            {"month": month},
+        )
 
-    def month_short(self) -> str:
+    def month_short(self, *, month: int) -> str:
         """`sdk.calendar.JULIAN.monthShort`"""
-        return self._r.render("sdk.calendar.JULIAN.monthShort")
+        return self._r.render(
+            "sdk.calendar.JULIAN.monthShort",
+            {"month": month},
+        )
 
 
 class MessagesSdkCalendarJulianDate:
@@ -7396,17 +7417,26 @@ class MessagesSdkCalendarJulianDate:
         self._r = renderer
 
 
-    def full(self) -> str:
+    def full(self, *, day: int, month_name: str, weekday_name: str, year: int) -> str:
         """`sdk.calendar.JULIAN.date.full`"""
-        return self._r.render("sdk.calendar.JULIAN.date.full")
+        return self._r.render(
+            "sdk.calendar.JULIAN.date.full",
+            {"day": day, "monthName": month_name, "weekdayName": weekday_name, "year": year},
+        )
 
-    def long(self) -> str:
+    def long(self, *, day: int, month_name: str, year: int) -> str:
         """`sdk.calendar.JULIAN.date.long`"""
-        return self._r.render("sdk.calendar.JULIAN.date.long")
+        return self._r.render(
+            "sdk.calendar.JULIAN.date.long",
+            {"day": day, "monthName": month_name, "year": year},
+        )
 
-    def numeric(self) -> str:
+    def numeric(self, *, day: int, month: int, year: int) -> str:
         """`sdk.calendar.JULIAN.date.numeric`"""
-        return self._r.render("sdk.calendar.JULIAN.date.numeric")
+        return self._r.render(
+            "sdk.calendar.JULIAN.date.numeric",
+            {"day": day, "month": month, "year": year},
+        )
 
 
 class MessagesSdkCalendarIsoWeek:
@@ -7429,9 +7459,12 @@ class MessagesSdkCalendarIsoWeekDate:
         self._r = renderer
 
 
-    def full(self) -> str:
+    def full(self, *, day: int, month: int, year: int) -> str:
         """`sdk.calendar.ISO_WEEK.date.full`"""
-        return self._r.render("sdk.calendar.ISO_WEEK.date.full")
+        return self._r.render(
+            "sdk.calendar.ISO_WEEK.date.full",
+            {"day": day, "month": month, "year": year},
+        )
 
     def long(self, *, day: int, month: int, year: int) -> str:
         """`sdk.calendar.ISO_WEEK.date.long`"""
@@ -7691,9 +7724,12 @@ class MessagesSdkCalendarBangladeshi:
             {"month": month},
         )
 
-    def month_short(self) -> str:
+    def month_short(self, *, month: int) -> str:
         """`sdk.calendar.BANGLADESHI.monthShort`"""
-        return self._r.render("sdk.calendar.BANGLADESHI.monthShort")
+        return self._r.render(
+            "sdk.calendar.BANGLADESHI.monthShort",
+            {"month": month},
+        )
 
 
 class MessagesSdkCalendarBangladeshiDate:

@@ -18,6 +18,26 @@ use crate::source::{BASE_LOCALE, Entry, Landed, LocaleSource, Meta, Namespace};
 
 /// A pack or bundle loaded at runtime: what the provenance envelope
 /// records (ADR-0020).
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// use teistro_intl::pack;
+///
+/// // A consumer's Nepali pack of one namespace, loaded over the shipped one.
+/// let bytes = pack::build(&tree.locales["ne-Deva-NP"], "sdk.reason")?;
+/// let loaded = intl.load_pack(&bytes)?;
+/// // Every entry stood already, and a message keeps nothing of what it replaces.
+/// assert_eq!((loaded.locale.as_str(), loaded.namespaces.as_slice()), ("ne-Deva-NP", &[String::from("sdk.reason")][..]));
+/// assert_eq!(loaded.replaced, loaded.entries);
+/// assert_eq!(loaded.merged, 0);
+/// assert_eq!(loaded.sha256.len(), 64);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Loaded {
     /// The locale.
@@ -38,6 +58,21 @@ pub struct Loaded {
 }
 
 /// One locale in the runtime report.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// let report = intl.report();
+/// let nepali = report.locales.iter().find(|locale| locale.tag == "ne-Deva-NP").ok_or("loaded")?;
+/// // Strict: every base key present.
+/// assert!(nepali.coverage.is_some_and(|(present, total)| present == total));
+/// assert_eq!(nepali.overrides, 0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct LocaleReport {
     /// The tag.
@@ -55,6 +90,21 @@ pub struct LocaleReport {
 
 /// What the engine holds: the current locale, every locale with its
 /// coverage, the files loaded at runtime and the overrides in force.
+///
+/// ```
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::{Intl, sdk_root};
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let mut intl = Intl::from_tree(&tree)?;
+///
+/// intl.set_override("en-Latn", "sdk.reason.appName", "Teistro Almanac")?;
+/// let report = intl.report();
+/// assert_eq!((report.current.as_str(), report.overrides), ("en-Latn", 1));
+/// assert_eq!(report.locales.len(), 5);
+/// assert!(report.loaded.is_empty());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct RuntimeReport {
     /// The current locale.
@@ -69,6 +119,18 @@ pub struct RuntimeReport {
 
 impl RuntimeReport {
     /// The report as Markdown.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// let markdown = intl.report().markdown();
+    /// assert!(markdown.contains("ne-Deva-NP"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn markdown(&self) -> String {
         let mut out = format!(
@@ -168,6 +230,24 @@ impl Intl {
     /// The file is verified as on any read; its hash goes to the record
     /// returned and to [`Intl::report`].
     ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::pack;
+    ///
+    /// // A consumer's Nepali pack of one namespace, loaded over the shipped one.
+    /// let bytes = pack::build(&tree.locales["ne-Deva-NP"], "sdk.reason")?;
+    /// let loaded = intl.load_pack(&bytes)?;
+    /// assert_eq!(intl.loaded(), [loaded]);
+    /// // Bytes that are not a pack are refused.
+    /// assert!(intl.load_pack(b"not a pack").is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A file that does not parse or verify; a pack without metadata for a
@@ -230,6 +310,22 @@ impl Intl {
     /// now and stands before the locale's own entry, and before any
     /// fallback, until cleared. A key the locale lacks becomes available.
     ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// intl.set_override("en-Latn", "sdk.reason.appName", "Teistro Almanac")?;
+    /// let name = intl.render("sdk.reason.appName", &teistro_intl::Params::new());
+    /// assert_eq!(name.text, "Teistro Almanac");
+    /// assert!(name.is_override);
+    /// // A source that does not parse is refused now, not at render.
+    /// assert!(intl.set_override("en-Latn", "sdk.reason.appName", "{$unclosed").is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An unknown locale, or a source that does not parse (with its
@@ -250,6 +346,20 @@ impl Intl {
 
     /// Several overrides of one locale at once.
     ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// intl.set_overrides("en-Latn", [("sdk.reason.appName", "Almanac"), ("app.tagline", "Days, read well")])?;
+    /// assert_eq!(intl.override_count(), 2);
+    /// // A key the locale lacked is now there.
+    /// assert!(intl.has("app.tagline"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Intl::set_override`]; the overrides before the failing one
@@ -266,6 +376,20 @@ impl Intl {
     }
 
     /// Clears one override; whether there was one.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// intl.set_override("en-Latn", "sdk.reason.appName", "Almanac")?;
+    /// assert!(intl.clear_override("en-Latn", "sdk.reason.appName"));
+    /// assert!(!intl.clear_override("en-Latn", "sdk.reason.appName"));
+    /// assert_eq!(intl.render("sdk.reason.appName", &teistro_intl::Params::new()).text, "Teistro");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn clear_override(&mut self, tag: &str, key: &str) -> bool {
         let cleared = self
             .overrides
@@ -278,6 +402,22 @@ impl Intl {
     }
 
     /// Clears every override of a locale, or of every locale.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// intl.set_override("en-Latn", "sdk.reason.appName", "Almanac")?;
+    /// intl.set_override("ne-Deva-NP", "sdk.reason.appName", "पात्रो")?;
+    /// intl.clear_overrides(Some("ne-Deva-NP"));
+    /// assert_eq!(intl.override_count(), 1);
+    /// intl.clear_overrides(None);
+    /// assert_eq!(intl.override_count(), 0);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn clear_overrides(&mut self, tag: Option<&str>) {
         if let Some(tag) = tag {
             self.overrides.remove(tag);
@@ -292,12 +432,37 @@ impl Intl {
     }
 
     /// The overrides in force, every locale's.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// assert_eq!(intl.override_count(), 0);
+    /// intl.set_override("hi-Deva-IN", "sdk.reason.appName", "टेइस्ट्रो")?;
+    /// assert_eq!(intl.override_count(), 1);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn override_count(&self) -> usize {
         self.overrides.values().map(BTreeMap::len).sum()
     }
 
     /// The files loaded at runtime, in order.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// // Nothing loaded after construction yet.
+    /// assert!(intl.loaded().is_empty());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn loaded(&self) -> &[Loaded] {
         &self.loaded
@@ -305,6 +470,24 @@ impl Intl {
 
     /// What the engine holds: every locale with its coverage of the base
     /// locale's keys, the files loaded at runtime, the overrides in force.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let mut intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::pack;
+    ///
+    /// // A consumer's Nepali pack of one namespace, loaded over the shipped one.
+    /// let bytes = pack::build(&tree.locales["ne-Deva-NP"], "sdk.reason")?;
+    /// let loaded = intl.load_pack(&bytes)?;
+    /// let report = intl.report();
+    /// assert_eq!(report.loaded.len(), 1);
+    /// assert_eq!(report.loaded[0].sha256, loaded.sha256);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn report(&self) -> RuntimeReport {
         let base_keys: Option<BTreeSet<String>> = self

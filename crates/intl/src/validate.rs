@@ -18,6 +18,26 @@ use crate::source::{
 };
 
 /// How bad a finding is.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::validate::validate;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// use teistro_intl::source::Entry;
+///
+/// // A Nepali message that does not parse.
+/// let mut tree = tree;
+/// let reason = tree.locales.get_mut("ne-Deva-NP").and_then(|locale| locale.namespaces.get_mut("sdk.reason")).ok_or("shipped")?;
+/// reason.insert(String::from("appName"), Entry::Message(String::from("{$unclosed")));
+/// let report = validate(&tree);
+/// use teistro_intl::validate::Severity;
+///
+/// assert_eq!(report.diagnostics[0].severity, Severity::Error);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Severity {
@@ -28,6 +48,27 @@ pub enum Severity {
 }
 
 /// One finding.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::validate::validate;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// use teistro_intl::source::Entry;
+///
+/// // A Nepali message that does not parse.
+/// let mut tree = tree;
+/// let reason = tree.locales.get_mut("ne-Deva-NP").and_then(|locale| locale.namespaces.get_mut("sdk.reason")).ok_or("shipped")?;
+/// reason.insert(String::from("appName"), Entry::Message(String::from("{$unclosed")));
+/// let report = validate(&tree);
+/// // Errors first: the broken message, by locale and key.
+/// let first = &report.diagnostics[0];
+/// assert_eq!((first.locale.as_str(), first.key.as_str()), ("ne-Deva-NP", "sdk.reason.appName"));
+/// assert!(!first.message.is_empty());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Diagnostic {
     /// Error or warning.
@@ -41,6 +82,24 @@ pub struct Diagnostic {
 }
 
 /// Coverage of the base keys by one locale.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::validate::validate;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let report = validate(&tree);
+/// // A strict locale has every base key; a base one, part of them.
+/// let nepali = &report.coverage["ne-Deva-NP"];
+/// assert_eq!(nepali.present, nepali.total);
+/// assert!(nepali.missing.is_empty());
+/// let hindi = &report.coverage["hi-Deva-IN"];
+/// assert!(hindi.present < hindi.total);
+/// assert_eq!(hindi.missing.len(), hindi.total - hindi.present);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct Coverage {
     /// Base keys present.
@@ -53,6 +112,19 @@ pub struct Coverage {
 
 /// How many of a catalogue kind's members the base locale's entity
 /// namespace describes.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::validate::validate;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// // Every rashi has an English record.
+/// let rashi = &validate(&tree).catalogue["rashi"];
+/// assert_eq!((rashi.present, rashi.total), (12, 12));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct KindCoverage {
     /// Members with a record.
@@ -62,6 +134,19 @@ pub struct KindCoverage {
 }
 
 /// The validation report.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::validate::validate;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// let report = validate(&tree);
+/// assert!(report.messages > 0 && report.entities > 0);
+/// assert_eq!(report.coverage.len(), tree.locales.len());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct Report {
     /// Findings, errors first, then by locale and key.
@@ -80,12 +165,48 @@ pub struct Report {
 
 impl Report {
     /// Whether the tree may be built: no errors.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::validate::validate;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// use teistro_intl::source::Entry;
+    ///
+    /// // A Nepali message that does not parse.
+    /// let mut tree = tree;
+    /// let reason = tree.locales.get_mut("ne-Deva-NP").and_then(|locale| locale.namespaces.get_mut("sdk.reason")).ok_or("shipped")?;
+    /// reason.insert(String::from("appName"), Entry::Message(String::from("{$unclosed")));
+    /// let report = validate(&tree);
+    /// assert!(!report.passed());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn passed(&self) -> bool {
         self.errors() == 0
     }
 
     /// The number of errors.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::validate::validate;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// use teistro_intl::source::Entry;
+    ///
+    /// // A Nepali message that does not parse.
+    /// let mut tree = tree;
+    /// let reason = tree.locales.get_mut("ne-Deva-NP").and_then(|locale| locale.namespaces.get_mut("sdk.reason")).ok_or("shipped")?;
+    /// reason.insert(String::from("appName"), Entry::Message(String::from("{$unclosed")));
+    /// let report = validate(&tree);
+    /// assert!(report.errors() >= 1);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn errors(&self) -> usize {
         self.diagnostics
@@ -95,6 +216,24 @@ impl Report {
     }
 
     /// The report as Markdown.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::validate::validate;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// use teistro_intl::source::Entry;
+    ///
+    /// // A Nepali message that does not parse.
+    /// let mut tree = tree;
+    /// let reason = tree.locales.get_mut("ne-Deva-NP").and_then(|locale| locale.namespaces.get_mut("sdk.reason")).ok_or("shipped")?;
+    /// reason.insert(String::from("appName"), Entry::Message(String::from("{$unclosed")));
+    /// let report = validate(&tree);
+    /// assert!(report.markdown().contains("sdk.reason.appName"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn markdown(&self) -> String {
         let mut out = String::new();
@@ -187,6 +326,20 @@ struct Context<'a> {
 }
 
 /// Validates a tree against its base locale.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # use teistro_intl::validate::validate;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+///
+/// // The SDK's own sources build.
+/// let report = validate(&tree);
+/// assert!(report.passed(), "{}", report.markdown());
+/// assert_eq!(report.errors(), 0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn validate(tree: &Tree) -> Report {
     let mut findings = Findings(Vec::new());

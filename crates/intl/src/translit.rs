@@ -18,6 +18,13 @@ use std::fmt;
 use std::sync::LazyLock;
 
 /// A script a term is written in.
+///
+/// ```
+/// use teistro_intl::translit::{Script, transliterate};
+///
+/// assert_eq!(transliterate("सूर्य", Script::Devanagari, Script::Iast)?, "sūrya");
+/// # Ok::<(), teistro_intl::translit::Unsupported>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Script {
     /// Devanagari, as Sanskrit, Nepali and Hindi are written.
@@ -29,6 +36,13 @@ pub enum Script {
 impl Script {
     /// The script a tag names (`deva`, `iast`), or `None` for one this
     /// build does not know.
+    ///
+    /// ```
+    /// use teistro_intl::translit::Script;
+    ///
+    /// assert_eq!(Script::from_key("deva"), Some(Script::Devanagari));
+    /// assert_eq!(Script::from_key("taml"), None);
+    /// ```
     #[must_use]
     pub fn from_key(key: &str) -> Option<Script> {
         match key.to_ascii_lowercase().as_str() {
@@ -39,6 +53,13 @@ impl Script {
     }
 
     /// The key the tag uses.
+    ///
+    /// ```
+    /// use teistro_intl::translit::Script;
+    ///
+    /// assert_eq!(Script::Iast.key(), "iast");
+    /// assert_eq!(Script::from_key(Script::Devanagari.key()), Some(Script::Devanagari));
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -55,6 +76,15 @@ impl fmt::Display for Script {
 }
 
 /// A pair a script conversion does not know how to make.
+///
+/// ```
+/// use teistro_intl::translit::{Script, transliterate};
+///
+/// // Only Devanagari to IAST is built.
+/// let refused = transliterate("sūrya", Script::Iast, Script::Devanagari).unwrap_err();
+/// assert_eq!((refused.from, refused.to), (Script::Iast, Script::Devanagari));
+/// assert_eq!(refused.to_string(), "no transliteration from iast to deva");
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Unsupported {
     /// The script asked from.
@@ -310,6 +340,15 @@ fn fold_nukta(text: &str) -> Vec<char> {
 }
 
 /// Text from one script into another, or the pair the tables do not know.
+///
+/// ```
+/// use teistro_intl::translit::{Script, transliterate};
+///
+/// // The inherent vowel, the virama and the visarga.
+/// assert_eq!(transliterate("राजयोगः", Script::Devanagari, Script::Iast)?, "rājayogaḥ");
+/// assert_eq!(transliterate("कृष्ण", Script::Devanagari, Script::Iast)?, "kṛṣṇa");
+/// # Ok::<(), teistro_intl::translit::Unsupported>(())
+/// ```
 ///
 /// # Errors
 ///

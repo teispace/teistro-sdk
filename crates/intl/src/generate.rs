@@ -10,11 +10,27 @@ use std::fmt::Write;
 use teistro_core::catalogue::{Kind, key_of};
 use teistro_core::key::KeyId;
 
-use crate::analysis::{ParamType, signature};
+use crate::analysis::{ParamType, Signature, signature};
 use crate::mf2::parse;
 use crate::source::{ENTITY_NAMESPACE, Entry, LocaleSource};
 
 /// A tree of accessors.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::Node;
+///
+/// // The tree follows the key's segments: `sdk`, then `reason`.
+/// let Some(Node::Group(sdk)) = model.root.children.get("sdk") else { unreachable!() };
+/// assert!(sdk.children.contains_key("reason"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Group {
     /// Children by segment, sorted.
@@ -22,6 +38,23 @@ pub struct Group {
 }
 
 /// One node of the tree.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::Node;
+///
+/// let Some(Node::Group(sdk)) = model.root.children.get("sdk") else { unreachable!() };
+/// let Some(Node::Group(reason)) = sdk.children.get("reason") else { unreachable!() };
+/// let Some(Node::Message(graha_in_bhava)) = reason.children.get("grahaInBhava") else { unreachable!() };
+/// assert_eq!(graha_in_bhava.key, "sdk.reason.grahaInBhava");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Node {
     /// A nested group.
@@ -33,6 +66,27 @@ pub enum Node {
 }
 
 /// A message's accessor shape.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::Node;
+/// use teistro_intl::analysis::ParamType;
+///
+/// let Some(Node::Group(sdk)) = model.root.children.get("sdk") else { unreachable!() };
+/// let Some(Node::Group(reason)) = sdk.children.get("reason") else { unreachable!() };
+/// let Some(Node::Message(graha_in_bhava)) = reason.children.get("grahaInBhava") else { unreachable!() };
+/// // Its parameters in name order, typed by the functions that read them.
+/// let names: Vec<&str> = graha_in_bhava.params.iter().map(|(name, _)| name.as_str()).collect();
+/// assert_eq!(names, ["bhava", "graha"]);
+/// assert_eq!(graha_in_bhava.params[0].1, ParamType::Integer);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MessageModel {
     /// The full key.
@@ -52,9 +106,42 @@ pub struct MessageModel {
 /// (`docs/03-design/entity-names.md` §3). The bindings' tests already held
 /// `iast` to always being a string; this is that promise, written where
 /// the generators read it.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::GUARANTEED_FORMS;
+///
+/// assert_eq!(GUARANTEED_FORMS, ["name", "prose", "iast"]);
+/// assert!(GUARANTEED_FORMS.iter().all(|form| model.forms.0.contains(*form)));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const GUARANTEED_FORMS: [&str; 3] = [crate::source::NAME_FORM, "prose", "iast"];
 
 /// What the generators emit from.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// assert_eq!(model.locale, "en-Latn");
+/// assert_eq!(model.contexts["gender"], ["m", "f", "n"]);
+/// // The Sun before the Moon, as the sources list them.
+/// assert_eq!(model.kinds["graha"][..2], ["SUN", "MOON"]);
+/// // Every message key, namespace by namespace in source order.
+/// assert!(model.keys.iter().all(|key| key.starts_with("sdk.")));
+/// assert!(model.keys.iter().any(|key| key == "sdk.reason.appName"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Model {
     /// The base locale tag.
@@ -69,12 +156,24 @@ pub struct Model {
     pub forms: (BTreeSet<String>, BTreeSet<String>),
     /// The accessor tree, rooted at the first namespace segments.
     pub root: Group,
-    /// Every message key, sorted.
+    /// Every message key, namespace by namespace, each in source order.
     pub keys: Vec<String>,
 }
 
 impl Model {
     /// The model of a locale, which must be the validated base locale.
+    ///
+    /// ```
+    /// # use teistro_intl::generate::Model;
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+    ///
+    /// assert!(model.keys.iter().any(|key| key == "sdk.reason.appName"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -86,17 +185,25 @@ impl Model {
             ..Model::default()
         };
         let mut all: BTreeSet<String> = BTreeSet::new();
+        let mut signatures = BTreeMap::new();
+        for (namespace, ns) in &base.namespaces {
+            for (key, entry) in ns.in_source_order() {
+                if let Entry::Message(source) = entry {
+                    let full = format!("{namespace}.{key}");
+                    let message = parse(source).map_err(|e| format!("{full}: {e}"))?;
+                    signatures.insert(full, signature(&message, &base.meta));
+                }
+            }
+        }
         for (namespace, ns) in &base.namespaces {
             for (key, entry) in ns.in_source_order() {
                 let full = format!("{namespace}.{key}");
                 let node = match entry {
-                    Entry::Message(source) => {
-                        let message = parse(source).map_err(|e| format!("{full}: {e}"))?;
-                        let sig = signature(&message, &base.meta);
+                    Entry::Message(_) => {
                         model.keys.push(full.clone());
                         Node::Message(MessageModel {
+                            params: inherited(&full, &signatures).into_iter().collect(),
                             key: full.clone(),
-                            params: sig.params.into_iter().collect(),
                         })
                     }
                     Entry::Entity(entity) => {
@@ -184,6 +291,31 @@ impl Model {
     }
 }
 
+/// A message's parameters with those of every message it renders through
+/// `:msg`, which the renderer hands the caller's own: a message that is
+/// only `{sdk.calendar.GREGORIAN.date.full :msg}` takes the Gregorian
+/// date's parameters, or its typed form could never render it. A
+/// parameter the message declares itself keeps its own type, and a cycle
+/// or a key that is not a message adds nothing.
+fn inherited(key: &str, signatures: &BTreeMap<String, Signature>) -> BTreeMap<String, ParamType> {
+    let mut params = BTreeMap::new();
+    let mut seen = BTreeSet::new();
+    let mut queue = vec![key];
+    while let Some(next) = queue.pop() {
+        if !seen.insert(next) {
+            continue;
+        }
+        let Some(sig) = signatures.get(next) else {
+            continue;
+        };
+        for (name, ty) in &sig.params {
+            params.entry(name.clone()).or_insert_with(|| ty.clone());
+        }
+        queue.extend(sig.links.iter().rev().map(String::as_str));
+    }
+    params
+}
+
 fn insert(root: &mut Group, full_key: &str, node: Node) {
     let mut segments = full_key.split('.').peekable();
     let mut group = root;
@@ -204,6 +336,13 @@ fn insert(root: &mut Group, full_key: &str, node: Node) {
 }
 
 /// `PURVA_PHALGUNI` or `sdk` as `purvaPhalguni`, `sdk`.
+///
+/// ```
+/// use teistro_intl::generate::camel;
+///
+/// assert_eq!(camel("PURVA_PHALGUNI"), "purvaPhalguni");
+/// assert_eq!(camel("sdk"), "sdk");
+/// ```
 #[must_use]
 pub fn camel(segment: &str) -> String {
     if !segment.contains('_')
@@ -226,6 +365,13 @@ pub fn camel(segment: &str) -> String {
 }
 
 /// `strength` or `PURVA_PHALGUNI` as `Strength`, `PurvaPhalguni`.
+///
+/// ```
+/// use teistro_intl::generate::pascal;
+///
+/// assert_eq!(pascal("strength"), "Strength");
+/// assert_eq!(pascal("PURVA_PHALGUNI"), "PurvaPhalguni");
+/// ```
 #[must_use]
 pub fn pascal(segment: &str) -> String {
     capitalise(&camel(segment))
@@ -344,6 +490,23 @@ final class GhatiValue {
 const EVERY_FORM_DOC: &str = "  /**\n   * Every form the locale carries, including any a loaded pack brought:\n   * a record's forms are an open set, and the fields above are only the\n   * ones `i18n/` guarantees.\n   */\n";
 
 /// The TypeScript surface.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::typescript;
+///
+/// let surface = typescript(&model);
+/// assert!(surface.contains("grahaInBhava"));
+/// // Keys and shapes only, never text.
+/// assert!(!surface.contains("in the 7th house"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn typescript(model: &Model) -> String {
     let mut out = ts_types(model);
@@ -498,6 +661,20 @@ fn ts_tree(out: &mut String, group: &Group, depth: usize, shape: TsShape) {
 /// The declarations a JavaScript package ships beside the module: every
 /// type, the shape `messages` hands back as an interface, and the two
 /// functions the module exports.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::typescript_declarations;
+///
+/// assert!(typescript_declarations(&model).contains("export "));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn typescript_declarations(model: &Model) -> String {
     let mut out = ts_types(model);
@@ -511,6 +688,22 @@ pub fn typescript_declarations(model: &Model) -> String {
 
 /// The module itself: the same tree in plain JavaScript, so a package
 /// needs no compiler.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::javascript;
+///
+/// let module = javascript(&model);
+/// assert!(module.contains("sdk.reason.grahaInBhava"));
+/// assert!(!module.contains(": string"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn javascript(model: &Model) -> String {
     let mut out = String::new();
@@ -600,6 +793,20 @@ fn js_value(name: &str, kind: &ParamType) -> String {
 }
 
 /// The Dart surface.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::dart;
+///
+/// assert!(dart(&model).contains("sdk.reason.grahaInBhava"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn dart(model: &Model) -> String {
     let mut out = String::new();
@@ -854,6 +1061,21 @@ const PYTHON_KEYWORDS: [&str; 35] = [
 /// The Python surface: a `str` enum per context and per entity kind, the
 /// value shapes, an entity's forms, and the accessor tree as a class per
 /// group. Keys and shapes only, never text.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::python;
+///
+/// let module = python(&model);
+/// assert!(module.contains("class ") && module.contains("sdk.reason.grahaInBhava"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn python(model: &Model) -> String {
     let mut out = String::new();
@@ -1005,6 +1227,15 @@ fn python_group(classes: &mut Vec<String>, name: &str, group: &Group) {
 
 /// `grahaInBhava` or `PURVA_PHALGUNI` as `graha_in_bhava`, `purva_phalguni`:
 /// a Rust module or field name, a keyword getting a trailing underscore.
+///
+/// ```
+/// use teistro_intl::generate::snake;
+///
+/// assert_eq!(snake("grahaInBhava"), "graha_in_bhava");
+/// assert_eq!(snake("PURVA_PHALGUNI"), "purva_phalguni");
+/// // A keyword takes a trailing underscore.
+/// assert_eq!(snake("type"), "type_");
+/// ```
 #[must_use]
 pub fn snake(segment: &str) -> String {
     let mut out = String::with_capacity(segment.len() + 4);
@@ -1036,6 +1267,24 @@ const RUST_KEYWORDS: [&str; 14] = [
 ];
 
 /// Where the generated Rust reaches the engine and itself.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::{RustPaths, rust};
+///
+/// // A consumer's module reaches the engine by its crate name and carries
+/// // no examples; the SDK's own reaches it as `crate`.
+/// let consumer = rust(&model, RustPaths::CONSUMER);
+/// assert!(consumer.contains("impl teistro_intl::TypedMessage for GrahaInBhava"));
+/// assert!(!consumer.contains("```"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RustPaths<'a> {
     /// The path of the `teistro_intl` crate from the generated module.
@@ -1043,19 +1292,49 @@ pub struct RustPaths<'a> {
     /// The path of the generated module itself, where the context enums
     /// live.
     pub root: &'a str,
+    /// The path a doctest names the generated module by, when each
+    /// message should carry a run example rendering it from the SDK's
+    /// own sources; `None` for a consumer's crate, whose name and sources
+    /// the generator does not know.
+    pub examples: Option<&'a str>,
 }
 
 impl RustPaths<'_> {
     /// A consumer's crate: `teistro_intl` and a `crate::messages` module.
+    ///
+    /// ```
+    /// use teistro_intl::generate::RustPaths;
+    ///
+    /// assert_eq!(RustPaths::CONSUMER.intl, "teistro_intl");
+    /// assert_eq!(RustPaths::CONSUMER.examples, None);
+    /// ```
     pub const CONSUMER: RustPaths<'static> = RustPaths {
         intl: "teistro_intl",
         root: "crate::messages",
+        examples: None,
     };
 
     /// The SDK's own module inside the `teistro-intl` crate.
+    ///
+    /// ```
+    /// # use teistro_intl::generate::Model;
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+    ///
+    /// use teistro_intl::generate::{RustPaths, rust};
+    ///
+    /// // What `cargo xtask gen intl` writes to `crates/intl/src/messages.rs`.
+    /// let written = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/messages.rs"))?;
+    /// assert_eq!(rust(&model, RustPaths::SDK), written);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub const SDK: RustPaths<'static> = RustPaths {
         intl: "crate",
         root: "crate::messages",
+        examples: Some("teistro_intl::messages"),
     };
 }
 
@@ -1119,6 +1398,22 @@ fn rust_value(name: &str, kind: &ParamType, paths: RustPaths<'_>) -> String {
 /// follow the key's segments (`sdk.reason.grahaInBhava` is
 /// `sdk::reason::GrahaInBhava`). Entities need no accessor: the catalogue's
 /// own enums are the typed keys. Keys and shapes only, never text.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::{RustPaths, rust};
+///
+/// let module = rust(&model, RustPaths::CONSUMER);
+/// assert!(module.contains("pub struct GrahaInBhava {"));
+/// assert!(module.contains("pub enum Gender {"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn rust(model: &Model, paths: RustPaths<'_>) -> String {
     let mut out = String::new();
@@ -1130,15 +1425,26 @@ pub fn rust(model: &Model, paths: RustPaths<'_>) -> String {
     for (context, values) in &model.contexts {
         let name = pascal(context);
         let _ = writeln!(out, "/// The `{context}` context.");
+        let example = paths.examples.zip(values.first()).map(|(module, first)| {
+            format!(
+                "///\n/// ```\n/// use {module}::{name};\n///\n/// assert_eq!({name}::{}.key(), \"{first}\");\n/// ```\n",
+                pascal(first)
+            )
+        });
+        out.push_str(example.as_deref().unwrap_or_default());
         let _ = writeln!(out, "#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]");
         let _ = writeln!(out, "pub enum {name} {{");
         for value in values {
             let _ = writeln!(out, "    /// `{value}`.\n    {},", pascal(value));
         }
         out.push_str("}\n\n");
+        let _ = writeln!(out, "impl {name} {{\n    /// The value's key.");
+        if let Some(example) = &example {
+            out.push_str(&example.replace("///", "    ///"));
+        }
         let _ = writeln!(
             out,
-            "impl {name} {{\n    /// The value's key.\n    #[must_use]\n    pub const fn key(self) -> &'static str {{\n        match self {{"
+            "    #[must_use]\n    pub const fn key(self) -> &'static str {{\n        match self {{"
         );
         for value in values {
             let _ = writeln!(out, "            {name}::{} => \"{value}\",", pascal(value));
@@ -1150,23 +1456,146 @@ pub fn rust(model: &Model, paths: RustPaths<'_>) -> String {
             intl = paths.intl
         );
     }
-    rust_group(&mut out, &model.root, paths, 0);
+    rust_group(&mut out, model, &model.root, paths, 0);
     out
 }
 
-fn rust_group(out: &mut String, group: &Group, paths: RustPaths<'_>, depth: usize) {
+/// A value of a parameter's type for a message's run example, as a Rust
+/// expression in a doctest that names the generated module by `module`:
+/// the first member of a catalogue kind or a context, the first key the
+/// base locale gives an open kind. `None` for a date, which needs a
+/// calendar to make; such a message is left without an example, and the
+/// examples gate names it.
+fn rust_sample(name: &str, kind: &ParamType, model: &Model, module: &str) -> Option<String> {
+    let text = |value: &str| format!("String::from(\"{value}\")");
+    Some(match kind {
+        ParamType::String | ParamType::Entity(None) => text(name),
+        ParamType::Context(context) => {
+            let first = model.contexts.get(context)?.first()?;
+            format!("{module}::{}::{}", pascal(context), pascal(first))
+        }
+        ParamType::Integer => String::from("2"),
+        ParamType::Number => String::from("2.5"),
+        ParamType::Entity(Some(kind)) if closed_catalogue_kind(kind) => {
+            format!("teistro_core::catalogue::{}::ALL[0]", pascal(kind))
+        }
+        ParamType::Entity(Some(kind)) => {
+            match model.kinds.get(kind).and_then(|keys| keys.first()) {
+                Some(first) => text(&format!("{kind}.{first}")),
+                None => text(name),
+            }
+        }
+        ParamType::List => String::from(
+            "vec![teistro_intl::Value::Str(String::from(\"one\")), teistro_intl::Value::Str(String::from(\"two\"))]",
+        ),
+        ParamType::Time => {
+            String::from("teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 }")
+        }
+        ParamType::Ghati => String::from("teistro_intl::Ghati { ghati: 12, pala: 30, vipala: 0 }"),
+        ParamType::Instant => String::from("teistro_core::quantity::JulianDay::J2000"),
+        ParamType::Date | ParamType::DateTime => return None,
+    })
+}
+
+/// A message's run example: the message built from sample values and
+/// rendered from the SDK's sources, which shows a reader the fields to
+/// fill; a message naming no entity is held to rendering with no
+/// warning.
+fn rust_example(message: &MessageModel, model: &Model, module: &str, pad: &str) -> Option<String> {
+    let segments: Vec<&str> = message.key.split('.').collect();
+    let (last, groups) = segments.split_last()?;
+    let name = pascal(last);
+    let mut path = String::from(module);
+    for group in groups {
+        path.push_str("::");
+        path.push_str(&snake(group));
+    }
+    let built = if message.params.is_empty() {
+        name.clone()
+    } else {
+        // Text beside an instant is the zone its `timeZone` reads, and an
+        // offset is one the engine reads with no zone database.
+        let zoned = message
+            .params
+            .iter()
+            .any(|(_, kind)| *kind == ParamType::Instant);
+        let mut fields = Vec::new();
+        for (param, kind) in &message.params {
+            let sample = if zoned && *kind == ParamType::String {
+                String::from("String::from(\"+05:45\")")
+            } else {
+                rust_sample(param, kind, model, module)?
+            };
+            fields.push(format!("{}: {sample}", snake(param)));
+        }
+        let one_line = format!("{name} {{ {} }}", fields.join(", "));
+        if one_line.len() <= 80 {
+            one_line
+        } else {
+            let rows: Vec<String> = fields.iter().map(|field| format!("    {field},")).collect();
+            format!("{name} {{\n{}\n}}", rows.join("\n"))
+        }
+    };
+    // An entity's text in a form is a pack's to give (a phala's reading,
+    // a rule's), so only a message naming none is held to rendering from
+    // the SDK's own sources with no warning.
+    let clean = if message
+        .params
+        .iter()
+        .any(|(_, kind)| matches!(kind, ParamType::Entity(_)))
+    {
+        String::from(
+            "// An entity's record may be a pack's; without it the message says what is missing.",
+        )
+    } else {
+        String::from("assert!(rendered.warnings.is_empty(), \"{:?}\", rendered.warnings);")
+    };
+    let lines = [
+        "```".to_string(),
+        format!("use {path}::{name};"),
+        "use teistro_intl::source::Tree;".to_string(),
+        "use teistro_intl::{Intl, TypedMessage, sdk_root};".to_string(),
+        String::new(),
+        format!("let message = {built};"),
+        format!("assert_eq!({name}::KEY, \"{}\");", message.key),
+        "let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect(\"the SDK's sources\"))"
+            .to_string(),
+        "    .expect(\"plural rules for every locale\");".to_string(),
+        "let rendered = intl.render_typed(&message);".to_string(),
+        clean,
+        "assert!(!rendered.text.is_empty());".to_string(),
+        "```".to_string(),
+    ];
+    let mut out = format!("{pad}///\n");
+    for line in lines.iter().flat_map(|line| line.split('\n')) {
+        if line.is_empty() {
+            let _ = writeln!(out, "{pad}///");
+        } else {
+            let _ = writeln!(out, "{pad}/// {line}");
+        }
+    }
+    Some(out)
+}
+
+fn rust_group(out: &mut String, model: &Model, group: &Group, paths: RustPaths<'_>, depth: usize) {
     let pad = "    ".repeat(depth);
     for (segment, node) in &group.children {
         match node {
             Node::Group(child) => {
                 let _ = writeln!(out, "{pad}/// The `{segment}` group.");
                 let _ = writeln!(out, "{pad}pub mod {} {{", snake(segment));
-                rust_group(out, child, paths, depth + 1);
+                rust_group(out, model, child, paths, depth + 1);
                 let _ = writeln!(out, "{pad}}}\n");
             }
             Node::Message(message) => {
                 let name = pascal(segment);
                 let _ = writeln!(out, "{pad}/// The message `{}`.", message.key);
+                if let Some(example) = paths
+                    .examples
+                    .and_then(|module| rust_example(message, model, module, &pad))
+                {
+                    out.push_str(&example);
+                }
                 let _ = writeln!(out, "{pad}#[derive(Clone, Debug, PartialEq)]");
                 if message.params.is_empty() {
                     let _ = writeln!(out, "{pad}pub struct {name};\n");
@@ -1542,6 +1971,21 @@ fn java_members(out: &mut String, name: &str, group: &Group, depth: usize) {
 /// accessor tree as a nested class per group. Parameters are positional
 /// in name order, as Java has no named arguments. Keys and shapes only,
 /// never text.
+///
+/// ```
+/// # use teistro_intl::generate::Model;
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// #
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+///
+/// use teistro_intl::generate::java;
+///
+/// let file = java(&model, "com.example.intl");
+/// assert!(file.starts_with("package com.example.intl;") || file.contains("\npackage com.example.intl;"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn java(model: &Model, package: &str) -> String {
     let mut out = format!(
@@ -1592,6 +2036,42 @@ mod tests {
     fn model() -> Model {
         let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
         Model::of(tree.base().unwrap_or_else(|| panic!("base"))).unwrap_or_else(|e| panic!("{e}"))
+    }
+
+    fn message<'m>(group: &'m Group, key: &str) -> &'m MessageModel {
+        let mut node = None;
+        let mut at = group;
+        for segment in key.split('.') {
+            node = at.children.get(segment);
+            if let Some(Node::Group(child)) = node {
+                at = child;
+            }
+        }
+        match node {
+            Some(Node::Message(message)) => message,
+            _ => panic!("no message `{key}`"),
+        }
+    }
+
+    /// A message that renders another through `:msg` hands it the
+    /// caller's parameters, so its typed form takes them; before, the
+    /// Julian date was a unit struct that could only render warnings.
+    #[test]
+    fn a_message_takes_the_parameters_of_what_it_renders() {
+        let model = model();
+        let gregorian = message(&model.root, "sdk.calendar.GREGORIAN.date.full");
+        let julian = message(&model.root, "sdk.calendar.JULIAN.date.full");
+        assert!(gregorian.params.iter().any(|(name, _)| name == "year"));
+        assert_eq!(julian.params, gregorian.params);
+        // A cycle adds nothing and ends.
+        let mut signatures = BTreeMap::new();
+        for (key, link) in [("a", "b"), ("b", "a")] {
+            let mut sig = Signature::default();
+            sig.params.insert(key.to_string(), ParamType::Integer);
+            sig.links.push(link.to_string());
+            signatures.insert(key.to_string(), sig);
+        }
+        assert_eq!(inherited("a", &signatures).len(), 2);
     }
 
     #[test]

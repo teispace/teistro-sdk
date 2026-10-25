@@ -11,6 +11,14 @@ use super::ast::{
 };
 
 /// Why a message did not parse.
+///
+/// ```
+/// use teistro_intl::mf2::parse;
+///
+/// let refused = parse("Hello {$name").unwrap_err();
+/// assert!(refused.offset.is_some());
+/// assert!(!refused.message.is_empty());
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ParseError {
     /// The byte offset in the source, when the error is at a place.
@@ -31,6 +39,17 @@ impl fmt::Display for ParseError {
 impl std::error::Error for ParseError {}
 
 /// Parses a message and checks it against the data-model rules.
+///
+/// ```
+/// use teistro_intl::mf2::parse;
+///
+/// // Display writes source that parses to the same message.
+/// let message = parse(".input {$n :integer} {{{$n} days}}")?;
+/// assert_eq!(parse(&message.to_string())?, message);
+/// // A data-model error is refused too: a selector without an annotation.
+/// assert!(parse(".input {$n} .match $n * {{x}}").is_err());
+/// # Ok::<(), teistro_intl::mf2::ParseError>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -85,6 +104,13 @@ fn is_name_char(c: char) -> bool {
 }
 
 /// Whether `s` is a `name` of the grammar.
+///
+/// ```
+/// use teistro_intl::mf2::parser::is_name;
+///
+/// assert!(is_name("grahaInBhava") && is_name("time-zone"));
+/// assert!(!is_name("2nd") && !is_name(""));
+/// ```
 #[must_use]
 pub fn is_name(s: &str) -> bool {
     let mut chars = s.chars();
@@ -92,6 +118,13 @@ pub fn is_name(s: &str) -> bool {
 }
 
 /// Whether `s` is a `number-literal` of the grammar.
+///
+/// ```
+/// use teistro_intl::mf2::parser::is_number_literal;
+///
+/// assert!(is_number_literal("-1.5e3") && is_number_literal("0"));
+/// assert!(!is_number_literal("01") && !is_number_literal("1."));
+/// ```
 #[must_use]
 pub fn is_number_literal(s: &str) -> bool {
     let s = s.strip_prefix('-').unwrap_or(s);

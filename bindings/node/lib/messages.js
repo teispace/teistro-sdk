@@ -17,7 +17,7 @@ export function messages(r) {
             numeric: (p) => r.render('sdk.calendar.BANGLADESHI.date.numeric', { day: p.day, month: p.month, year: p.year }),
           },
           monthName: (p) => r.render('sdk.calendar.BANGLADESHI.monthName', { month: p.month }),
-          monthShort: () => r.render('sdk.calendar.BANGLADESHI.monthShort'),
+          monthShort: (p) => r.render('sdk.calendar.BANGLADESHI.monthShort', { month: p.month }),
         },
         bikramSambat: {
           date: {
@@ -57,28 +57,28 @@ export function messages(r) {
         },
         isoWeek: {
           date: {
-            full: () => r.render('sdk.calendar.ISO_WEEK.date.full'),
+            full: (p) => r.render('sdk.calendar.ISO_WEEK.date.full', { day: p.day, month: p.month, year: p.year }),
             long: (p) => r.render('sdk.calendar.ISO_WEEK.date.long', { day: p.day, month: p.month, year: p.year }),
             numeric: (p) => r.render('sdk.calendar.ISO_WEEK.date.numeric', { day: p.day, month: p.month, year: p.year }),
           },
         },
         julian: {
           date: {
-            full: () => r.render('sdk.calendar.JULIAN.date.full'),
-            long: () => r.render('sdk.calendar.JULIAN.date.long'),
-            numeric: () => r.render('sdk.calendar.JULIAN.date.numeric'),
+            full: (p) => r.render('sdk.calendar.JULIAN.date.full', { day: p.day, monthName: p.monthName, weekdayName: p.weekdayName, year: p.year }),
+            long: (p) => r.render('sdk.calendar.JULIAN.date.long', { day: p.day, monthName: p.monthName, year: p.year }),
+            numeric: (p) => r.render('sdk.calendar.JULIAN.date.numeric', { day: p.day, month: p.month, year: p.year }),
           },
-          monthName: () => r.render('sdk.calendar.JULIAN.monthName'),
-          monthShort: () => r.render('sdk.calendar.JULIAN.monthShort'),
+          monthName: (p) => r.render('sdk.calendar.JULIAN.monthName', { month: p.month }),
+          monthShort: (p) => r.render('sdk.calendar.JULIAN.monthShort', { month: p.month }),
         },
         mixed: {
           date: {
-            full: () => r.render('sdk.calendar.MIXED.date.full'),
-            long: () => r.render('sdk.calendar.MIXED.date.long'),
-            numeric: () => r.render('sdk.calendar.MIXED.date.numeric'),
+            full: (p) => r.render('sdk.calendar.MIXED.date.full', { day: p.day, monthName: p.monthName, weekdayName: p.weekdayName, year: p.year }),
+            long: (p) => r.render('sdk.calendar.MIXED.date.long', { day: p.day, monthName: p.monthName, year: p.year }),
+            numeric: (p) => r.render('sdk.calendar.MIXED.date.numeric', { day: p.day, month: p.month, year: p.year }),
           },
-          monthName: () => r.render('sdk.calendar.MIXED.monthName'),
-          monthShort: () => r.render('sdk.calendar.MIXED.monthShort'),
+          monthName: (p) => r.render('sdk.calendar.MIXED.monthName', { month: p.month }),
+          monthShort: (p) => r.render('sdk.calendar.MIXED.monthShort', { month: p.month }),
         },
         tibetanPhugpa: {
           date: {

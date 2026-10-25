@@ -2,6 +2,12 @@
 //! Keys and parameter shapes only; text comes from packs.
 
 /// The `gender` context.
+///
+/// ```
+/// use teistro_intl::messages::Gender;
+///
+/// assert_eq!(Gender::M.key(), "m");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Gender {
     /// `m`.
@@ -14,6 +20,12 @@ pub enum Gender {
 
 impl Gender {
     /// The value's key.
+    ///
+    /// ```
+    /// use teistro_intl::messages::Gender;
+    ///
+    /// assert_eq!(Gender::M.key(), "m");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -35,6 +47,24 @@ pub mod sdk {
     /// The `aspect` group.
     pub mod aspect {
         /// The message `sdk.aspect.cast`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::aspect::Cast;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Cast {
+        ///     from: teistro_core::catalogue::Graha::ALL[0],
+        ///     strength: String::from("strength"),
+        ///     to: teistro_core::catalogue::Graha::ALL[0],
+        /// };
+        /// assert_eq!(Cast::KEY, "sdk.aspect.cast");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Cast {
             /// The `from` parameter.
@@ -57,6 +87,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.aspect.mutual`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::aspect::Mutual;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Mutual {
+        ///     first: teistro_core::catalogue::Graha::ALL[0],
+        ///     second: teistro_core::catalogue::Graha::ALL[0],
+        /// };
+        /// assert_eq!(Mutual::KEY, "sdk.aspect.mutual");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Mutual {
             /// The `first` parameter.
@@ -84,6 +131,25 @@ pub mod sdk {
             /// The `date` group.
             pub mod date {
                 /// The message `sdk.calendar.BANGLADESHI.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::bangladeshi::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.BANGLADESHI.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Full {
                     /// The `day` parameter.
@@ -109,6 +175,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.BANGLADESHI.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::bangladeshi::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.BANGLADESHI.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Long {
                     /// The `day` parameter.
@@ -131,6 +211,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.BANGLADESHI.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::bangladeshi::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.BANGLADESHI.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Numeric {
                     /// The `day` parameter.
@@ -155,6 +249,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.BANGLADESHI.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::bangladeshi::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthName { month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.BANGLADESHI.monthName");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthName {
                 /// The `month` parameter.
@@ -171,13 +279,32 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.BANGLADESHI.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::bangladeshi::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthShort { month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.BANGLADESHI.monthShort");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
-            pub struct MonthShort;
+            pub struct MonthShort {
+                /// The `month` parameter.
+                pub month: i64,
+            }
 
             impl crate::TypedMessage for MonthShort {
                 const KEY: &'static str = "sdk.calendar.BANGLADESHI.monthShort";
                 fn params(&self) -> crate::Params {
-                    crate::Params::new()
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
                 }
             }
 
@@ -188,6 +315,25 @@ pub mod sdk {
             /// The `date` group.
             pub mod date {
                 /// The message `sdk.calendar.BIKRAM_SAMBAT.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::bikram_sambat::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.BIKRAM_SAMBAT.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Full {
                     /// The `day` parameter.
@@ -213,6 +359,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.BIKRAM_SAMBAT.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::bikram_sambat::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.BIKRAM_SAMBAT.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Long {
                     /// The `day` parameter.
@@ -235,6 +395,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.BIKRAM_SAMBAT.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::bikram_sambat::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.BIKRAM_SAMBAT.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Numeric {
                     /// The `day` parameter.
@@ -259,6 +433,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.BIKRAM_SAMBAT.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::bikram_sambat::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthName { month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.BIKRAM_SAMBAT.monthName");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthName {
                 /// The `month` parameter.
@@ -275,6 +463,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.BIKRAM_SAMBAT.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::bikram_sambat::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthShort { month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.BIKRAM_SAMBAT.monthShort");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthShort {
                 /// The `month` parameter.
@@ -297,6 +499,25 @@ pub mod sdk {
             /// The `date` group.
             pub mod date {
                 /// The message `sdk.calendar.GREGORIAN.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::gregorian::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.GREGORIAN.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Full {
                     /// The `day` parameter.
@@ -322,6 +543,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.GREGORIAN.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::gregorian::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.GREGORIAN.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Long {
                     /// The `day` parameter.
@@ -344,6 +579,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.GREGORIAN.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::gregorian::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.GREGORIAN.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Numeric {
                     /// The `day` parameter.
@@ -368,6 +617,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.GREGORIAN.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::gregorian::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthName { month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.GREGORIAN.monthName");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthName {
                 /// The `month` parameter.
@@ -384,6 +647,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.GREGORIAN.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::gregorian::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthShort { month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.GREGORIAN.monthShort");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthShort {
                 /// The `month` parameter.
@@ -406,6 +683,25 @@ pub mod sdk {
             /// The `date` group.
             pub mod date {
                 /// The message `sdk.calendar.HIJRI_TABULAR.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::hijri_tabular::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.HIJRI_TABULAR.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Full {
                     /// The `day` parameter.
@@ -431,6 +727,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.HIJRI_TABULAR.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::hijri_tabular::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.HIJRI_TABULAR.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Long {
                     /// The `day` parameter.
@@ -453,6 +763,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.HIJRI_TABULAR.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::hijri_tabular::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.HIJRI_TABULAR.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Numeric {
                     /// The `day` parameter.
@@ -477,6 +801,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.HIJRI_TABULAR.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::hijri_tabular::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthName { month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.HIJRI_TABULAR.monthName");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthName {
                 /// The `month` parameter.
@@ -493,6 +831,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.HIJRI_TABULAR.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::hijri_tabular::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthShort { month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.HIJRI_TABULAR.monthShort");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthShort {
                 /// The `month` parameter.
@@ -515,6 +867,25 @@ pub mod sdk {
             /// The `date` group.
             pub mod date {
                 /// The message `sdk.calendar.INDIAN_NATIONAL.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::indian_national::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.INDIAN_NATIONAL.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Full {
                     /// The `day` parameter.
@@ -540,6 +911,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.INDIAN_NATIONAL.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::indian_national::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.INDIAN_NATIONAL.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Long {
                     /// The `day` parameter.
@@ -562,6 +947,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.INDIAN_NATIONAL.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::indian_national::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.INDIAN_NATIONAL.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Numeric {
                     /// The `day` parameter.
@@ -586,6 +985,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.INDIAN_NATIONAL.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::indian_national::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthName { month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.INDIAN_NATIONAL.monthName");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthName {
                 /// The `month` parameter.
@@ -602,6 +1015,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.INDIAN_NATIONAL.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::indian_national::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthShort { month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.INDIAN_NATIONAL.monthShort");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthShort {
                 /// The `month` parameter.
@@ -624,17 +1051,56 @@ pub mod sdk {
             /// The `date` group.
             pub mod date {
                 /// The message `sdk.calendar.ISO_WEEK.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::iso_week::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Full::KEY, "sdk.calendar.ISO_WEEK.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
-                pub struct Full;
+                pub struct Full {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
 
                 impl crate::TypedMessage for Full {
                     const KEY: &'static str = "sdk.calendar.ISO_WEEK.date.full";
                     fn params(&self) -> crate::Params {
-                        crate::Params::new()
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
                     }
                 }
 
                 /// The message `sdk.calendar.ISO_WEEK.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::iso_week::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.ISO_WEEK.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Long {
                     /// The `day` parameter.
@@ -657,6 +1123,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.ISO_WEEK.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::iso_week::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.ISO_WEEK.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Numeric {
                     /// The `day` parameter.
@@ -687,59 +1167,180 @@ pub mod sdk {
             /// The `date` group.
             pub mod date {
                 /// The message `sdk.calendar.JULIAN.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::julian::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.JULIAN.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
-                pub struct Full;
+                pub struct Full {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `weekdayName` parameter.
+                    pub weekday_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
 
                 impl crate::TypedMessage for Full {
                     const KEY: &'static str = "sdk.calendar.JULIAN.date.full";
                     fn params(&self) -> crate::Params {
-                        crate::Params::new()
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("weekdayName", crate::Value::Str(self.weekday_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
                     }
                 }
 
                 /// The message `sdk.calendar.JULIAN.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::julian::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.JULIAN.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
-                pub struct Long;
+                pub struct Long {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
 
                 impl crate::TypedMessage for Long {
                     const KEY: &'static str = "sdk.calendar.JULIAN.date.long";
                     fn params(&self) -> crate::Params {
-                        crate::Params::new()
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
                     }
                 }
 
                 /// The message `sdk.calendar.JULIAN.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::julian::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.JULIAN.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
-                pub struct Numeric;
+                pub struct Numeric {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
 
                 impl crate::TypedMessage for Numeric {
                     const KEY: &'static str = "sdk.calendar.JULIAN.date.numeric";
                     fn params(&self) -> crate::Params {
-                        crate::Params::new()
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
                     }
                 }
 
             }
 
             /// The message `sdk.calendar.JULIAN.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::julian::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthName { month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.JULIAN.monthName");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
-            pub struct MonthName;
+            pub struct MonthName {
+                /// The `month` parameter.
+                pub month: i64,
+            }
 
             impl crate::TypedMessage for MonthName {
                 const KEY: &'static str = "sdk.calendar.JULIAN.monthName";
                 fn params(&self) -> crate::Params {
-                    crate::Params::new()
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
                 }
             }
 
             /// The message `sdk.calendar.JULIAN.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::julian::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthShort { month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.JULIAN.monthShort");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
-            pub struct MonthShort;
+            pub struct MonthShort {
+                /// The `month` parameter.
+                pub month: i64,
+            }
 
             impl crate::TypedMessage for MonthShort {
                 const KEY: &'static str = "sdk.calendar.JULIAN.monthShort";
                 fn params(&self) -> crate::Params {
-                    crate::Params::new()
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
                 }
             }
 
@@ -750,59 +1351,180 @@ pub mod sdk {
             /// The `date` group.
             pub mod date {
                 /// The message `sdk.calendar.MIXED.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::mixed::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.MIXED.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
-                pub struct Full;
+                pub struct Full {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `weekdayName` parameter.
+                    pub weekday_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
 
                 impl crate::TypedMessage for Full {
                     const KEY: &'static str = "sdk.calendar.MIXED.date.full";
                     fn params(&self) -> crate::Params {
-                        crate::Params::new()
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("weekdayName", crate::Value::Str(self.weekday_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
                     }
                 }
 
                 /// The message `sdk.calendar.MIXED.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::mixed::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.MIXED.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
-                pub struct Long;
+                pub struct Long {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
 
                 impl crate::TypedMessage for Long {
                     const KEY: &'static str = "sdk.calendar.MIXED.date.long";
                     fn params(&self) -> crate::Params {
-                        crate::Params::new()
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
                     }
                 }
 
                 /// The message `sdk.calendar.MIXED.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::mixed::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.MIXED.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
-                pub struct Numeric;
+                pub struct Numeric {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
 
                 impl crate::TypedMessage for Numeric {
                     const KEY: &'static str = "sdk.calendar.MIXED.date.numeric";
                     fn params(&self) -> crate::Params {
-                        crate::Params::new()
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
                     }
                 }
 
             }
 
             /// The message `sdk.calendar.MIXED.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::mixed::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthName { month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.MIXED.monthName");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
-            pub struct MonthName;
+            pub struct MonthName {
+                /// The `month` parameter.
+                pub month: i64,
+            }
 
             impl crate::TypedMessage for MonthName {
                 const KEY: &'static str = "sdk.calendar.MIXED.monthName";
                 fn params(&self) -> crate::Params {
-                    crate::Params::new()
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
                 }
             }
 
             /// The message `sdk.calendar.MIXED.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::mixed::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthShort { month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.MIXED.monthShort");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
-            pub struct MonthShort;
+            pub struct MonthShort {
+                /// The `month` parameter.
+                pub month: i64,
+            }
 
             impl crate::TypedMessage for MonthShort {
                 const KEY: &'static str = "sdk.calendar.MIXED.monthShort";
                 fn params(&self) -> crate::Params {
-                    crate::Params::new()
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
                 }
             }
 
@@ -813,6 +1535,26 @@ pub mod sdk {
             /// The `date` group.
             pub mod date {
                 /// The message `sdk.calendar.TIBETAN_PHUGPA.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     leap: String::from("leap"),
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.TIBETAN_PHUGPA.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Full {
                     /// The `day` parameter.
@@ -841,6 +1583,25 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.TIBETAN_PHUGPA.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long {
+                ///     day: 2,
+                ///     leap: String::from("leap"),
+                ///     month_name: String::from("monthName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Long::KEY, "sdk.calendar.TIBETAN_PHUGPA.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Long {
                     /// The `day` parameter.
@@ -866,6 +1627,20 @@ pub mod sdk {
                 }
 
                 /// The message `sdk.calendar.TIBETAN_PHUGPA.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, leap: String::from("leap"), month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.TIBETAN_PHUGPA.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct Numeric {
                     /// The `day` parameter.
@@ -893,6 +1668,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.TIBETAN_PHUGPA.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthName { leap: String::from("leap"), month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.TIBETAN_PHUGPA.monthName");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthName {
                 /// The `leap` parameter.
@@ -912,6 +1701,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.TIBETAN_PHUGPA.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthShort { leap: String::from("leap"), month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.TIBETAN_PHUGPA.monthShort");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct MonthShort {
                 /// The `leap` parameter.
@@ -935,6 +1738,23 @@ pub mod sdk {
         /// The `datetime` group.
         pub mod datetime {
             /// The message `sdk.calendar.datetime.inZone`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::datetime::InZone;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = InZone {
+            ///     at: teistro_core::quantity::JulianDay::J2000,
+            ///     zone: String::from("+05:45"),
+            /// };
+            /// assert_eq!(InZone::KEY, "sdk.calendar.datetime.inZone");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct InZone {
                 /// The `at` parameter.
@@ -954,6 +1774,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.datetime.join`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::datetime::Join;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Join { date: String::from("date"), time: String::from("time") };
+            /// assert_eq!(Join::KEY, "sdk.calendar.datetime.join");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Join {
                 /// The `date` parameter.
@@ -977,6 +1811,20 @@ pub mod sdk {
         /// The `dayPeriod` group.
         pub mod day_period {
             /// The message `sdk.calendar.dayPeriod.afternoon`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::day_period::Afternoon;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Afternoon;
+            /// assert_eq!(Afternoon::KEY, "sdk.calendar.dayPeriod.afternoon");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Afternoon;
 
@@ -988,6 +1836,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.dayPeriod.am`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::day_period::Am;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Am;
+            /// assert_eq!(Am::KEY, "sdk.calendar.dayPeriod.am");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Am;
 
@@ -999,6 +1861,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.dayPeriod.evening`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::day_period::Evening;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Evening;
+            /// assert_eq!(Evening::KEY, "sdk.calendar.dayPeriod.evening");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Evening;
 
@@ -1010,6 +1886,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.dayPeriod.morning`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::day_period::Morning;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Morning;
+            /// assert_eq!(Morning::KEY, "sdk.calendar.dayPeriod.morning");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Morning;
 
@@ -1021,6 +1911,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.dayPeriod.night`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::day_period::Night;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Night;
+            /// assert_eq!(Night::KEY, "sdk.calendar.dayPeriod.night");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Night;
 
@@ -1032,6 +1936,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.dayPeriod.pm`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::day_period::Pm;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Pm;
+            /// assert_eq!(Pm::KEY, "sdk.calendar.dayPeriod.pm");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Pm;
 
@@ -1047,6 +1965,20 @@ pub mod sdk {
         /// The `duration` group.
         pub mod duration {
             /// The message `sdk.calendar.duration.day`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::Day;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Day { n: 2.5 };
+            /// assert_eq!(Day::KEY, "sdk.calendar.duration.day");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Day {
                 /// The `n` parameter.
@@ -1063,6 +1995,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.duration.hour`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::Hour;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Hour { n: 2.5 };
+            /// assert_eq!(Hour::KEY, "sdk.calendar.duration.hour");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Hour {
                 /// The `n` parameter.
@@ -1079,6 +2025,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.duration.minute`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::Minute;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Minute { n: 2.5 };
+            /// assert_eq!(Minute::KEY, "sdk.calendar.duration.minute");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Minute {
                 /// The `n` parameter.
@@ -1095,6 +2055,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.duration.second`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::Second;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Second { n: 2.5 };
+            /// assert_eq!(Second::KEY, "sdk.calendar.duration.second");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Second {
                 /// The `n` parameter.
@@ -1115,6 +2089,20 @@ pub mod sdk {
         /// The `ghati` group.
         pub mod ghati {
             /// The message `sdk.calendar.ghati.long`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::ghati::Long;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Long { ghati: 2, pala: 2 };
+            /// assert_eq!(Long::KEY, "sdk.calendar.ghati.long");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Long {
                 /// The `ghati` parameter.
@@ -1134,6 +2122,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.ghati.numeric`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::ghati::Numeric;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Numeric { ghati: 2, pala: 2 };
+            /// assert_eq!(Numeric::KEY, "sdk.calendar.ghati.numeric");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Numeric {
                 /// The `ghati` parameter.
@@ -1155,6 +2157,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.calendar.lunarMonth`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::calendar::LunarMonth;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = LunarMonth {
+        ///     kind: String::from("kind"),
+        ///     masa: teistro_core::catalogue::Masa::ALL[0],
+        /// };
+        /// assert_eq!(LunarMonth::KEY, "sdk.calendar.lunarMonth");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct LunarMonth {
             /// The `kind` parameter.
@@ -1174,6 +2193,25 @@ pub mod sdk {
         }
 
         /// The message `sdk.calendar.nepalSambatDate`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::calendar::NepalSambatDate;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = NepalSambatDate {
+        ///     kind: String::from("kind"),
+        ///     month: 2,
+        ///     paksha: String::from("paksha"),
+        ///     year: 2,
+        /// };
+        /// assert_eq!(NepalSambatDate::KEY, "sdk.calendar.nepalSambatDate");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct NepalSambatDate {
             /// The `kind` parameter.
@@ -1199,6 +2237,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.calendar.nepalSambatHalf`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::calendar::NepalSambatHalf;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = NepalSambatHalf { paksha: String::from("paksha") };
+        /// assert_eq!(NepalSambatHalf::KEY, "sdk.calendar.nepalSambatHalf");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct NepalSambatHalf {
             /// The `paksha` parameter.
@@ -1215,6 +2267,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.calendar.nepalSambatMonth`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::calendar::NepalSambatMonth;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = NepalSambatMonth { kind: String::from("kind"), month: 2 };
+        /// assert_eq!(NepalSambatMonth::KEY, "sdk.calendar.nepalSambatMonth");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct NepalSambatMonth {
             /// The `kind` parameter.
@@ -1234,6 +2300,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.calendar.parana`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::calendar::Parana;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Parana { fast: String::from("fast") };
+        /// assert_eq!(Parana::KEY, "sdk.calendar.parana");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Parana {
             /// The `fast` parameter.
@@ -1252,6 +2332,20 @@ pub mod sdk {
         /// The `time` group.
         pub mod time {
             /// The message `sdk.calendar.time.long`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::time::Long;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Long { hour: 2, minute: 2, second: 2 };
+            /// assert_eq!(Long::KEY, "sdk.calendar.time.long");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Long {
                 /// The `hour` parameter.
@@ -1274,6 +2368,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.time.long12`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::time::Long12;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Long12 { hour12: 2, meridiem: String::from("meridiem"), minute: 2, second: 2 };
+            /// assert_eq!(Long12::KEY, "sdk.calendar.time.long12");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Long12 {
                 /// The `hour12` parameter.
@@ -1299,6 +2407,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.time.numeric`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::time::Numeric;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Numeric { hour: 2, minute: 2 };
+            /// assert_eq!(Numeric::KEY, "sdk.calendar.time.numeric");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Numeric {
                 /// The `hour` parameter.
@@ -1318,6 +2440,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.calendar.time.numeric12`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::time::Numeric12;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Numeric12 { hour12: 2, meridiem: String::from("meridiem"), minute: 2 };
+            /// assert_eq!(Numeric12::KEY, "sdk.calendar.time.numeric12");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Numeric12 {
                 /// The `hour12` parameter.
@@ -1342,6 +2478,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.calendar.weekdayName`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::calendar::WeekdayName;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = WeekdayName { weekday: 2 };
+        /// assert_eq!(WeekdayName::KEY, "sdk.calendar.weekdayName");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct WeekdayName {
             /// The `weekday` parameter.
@@ -1358,6 +2508,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.calendar.weekdayShort`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::calendar::WeekdayShort;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = WeekdayShort { weekday: 2 };
+        /// assert_eq!(WeekdayShort::KEY, "sdk.calendar.weekdayShort");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct WeekdayShort {
             /// The `weekday` parameter.
@@ -1378,6 +2542,23 @@ pub mod sdk {
     /// The `condition` group.
     pub mod condition {
         /// The message `sdk.condition.age`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Age;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Age {
+        ///     age: teistro_core::catalogue::AvasthaBaladi::ALL[0],
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        /// };
+        /// assert_eq!(Age::KEY, "sdk.condition.age");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Age {
             /// The `age` parameter.
@@ -1397,6 +2578,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.brightness`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Brightness;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Brightness {
+        ///     deeptadi: teistro_core::catalogue::AvasthaDeeptadi::ALL[0],
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        /// };
+        /// assert_eq!(Brightness::KEY, "sdk.condition.brightness");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Brightness {
             /// The `deeptadi` parameter.
@@ -1416,6 +2614,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.combust`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Combust;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Combust { graha: teistro_core::catalogue::Graha::ALL[0] };
+        /// assert_eq!(Combust::KEY, "sdk.condition.combust");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Combust {
             /// The `graha` parameter.
@@ -1432,6 +2644,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.dignity`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Dignity;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Dignity {
+        ///     dignity: teistro_core::catalogue::Dignity::ALL[0],
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        /// };
+        /// assert_eq!(Dignity::KEY, "sdk.condition.dignity");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Dignity {
             /// The `dignity` parameter.
@@ -1451,6 +2680,26 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.friendship`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Friendship;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Friendship {
+        ///     compound: teistro_core::catalogue::Relationship::ALL[0],
+        ///     dispositor: teistro_core::catalogue::Graha::ALL[0],
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     natural: teistro_core::catalogue::Relationship::ALL[0],
+        ///     temporary: teistro_core::catalogue::Relationship::ALL[0],
+        /// };
+        /// assert_eq!(Friendship::KEY, "sdk.condition.friendship");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Friendship {
             /// The `compound` parameter.
@@ -1479,6 +2728,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.lajjitadi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Lajjitadi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Lajjitadi {
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     states: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+        /// };
+        /// assert_eq!(Lajjitadi::KEY, "sdk.condition.lajjitadi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Lajjitadi {
             /// The `graha` parameter.
@@ -1498,6 +2764,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.navamsha`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Navamsha;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Navamsha {
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        /// };
+        /// assert_eq!(Navamsha::KEY, "sdk.condition.navamsha");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Navamsha {
             /// The `graha` parameter.
@@ -1517,6 +2800,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.retrograde`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Retrograde;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Retrograde { graha: teistro_core::catalogue::Graha::ALL[0] };
+        /// assert_eq!(Retrograde::KEY, "sdk.condition.retrograde");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Retrograde {
             /// The `graha` parameter.
@@ -1533,6 +2830,24 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.undecided`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Undecided;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Undecided {
+        ///     count: 2,
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     states: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+        /// };
+        /// assert_eq!(Undecided::KEY, "sdk.condition.undecided");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Undecided {
             /// The `count` parameter.
@@ -1555,6 +2870,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.vargottama`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Vargottama;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Vargottama { graha: teistro_core::catalogue::Graha::ALL[0] };
+        /// assert_eq!(Vargottama::KEY, "sdk.condition.vargottama");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Vargottama {
             /// The `graha` parameter.
@@ -1571,6 +2900,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.condition.wakefulness`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::condition::Wakefulness;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Wakefulness {
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     wakefulness: teistro_core::catalogue::AvasthaJagradadi::ALL[0],
+        /// };
+        /// assert_eq!(Wakefulness::KEY, "sdk.condition.wakefulness");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Wakefulness {
             /// The `graha` parameter.
@@ -1774,6 +3120,23 @@ pub mod sdk {
     /// The `karaka` group.
     pub mod karaka {
         /// The message `sdk.karaka.ofEight`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::karaka::OfEight;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = OfEight {
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     karaka: teistro_core::catalogue::CharaKaraka::ALL[0],
+        /// };
+        /// assert_eq!(OfEight::KEY, "sdk.karaka.ofEight");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct OfEight {
             /// The `graha` parameter.
@@ -1793,6 +3156,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.karaka.ofSeven`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::karaka::OfSeven;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = OfSeven {
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     karaka: teistro_core::catalogue::CharaKaraka::ALL[0],
+        /// };
+        /// assert_eq!(OfSeven::KEY, "sdk.karaka.ofSeven");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct OfSeven {
             /// The `graha` parameter.
@@ -1816,6 +3196,20 @@ pub mod sdk {
     /// The `phala` group.
     pub mod phala {
         /// The message `sdk.phala.avasthaBaladi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::AvasthaBaladi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = AvasthaBaladi { avastha: teistro_core::catalogue::AvasthaBaladi::ALL[0] };
+        /// assert_eq!(AvasthaBaladi::KEY, "sdk.phala.avasthaBaladi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct AvasthaBaladi {
             /// The `avastha` parameter.
@@ -1832,6 +3226,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.avasthaDeeptadi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::AvasthaDeeptadi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = AvasthaDeeptadi { avastha: teistro_core::catalogue::AvasthaDeeptadi::ALL[0] };
+        /// assert_eq!(AvasthaDeeptadi::KEY, "sdk.phala.avasthaDeeptadi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct AvasthaDeeptadi {
             /// The `avastha` parameter.
@@ -1848,6 +3256,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.avasthaJagradadi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::AvasthaJagradadi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = AvasthaJagradadi { avastha: teistro_core::catalogue::AvasthaJagradadi::ALL[0] };
+        /// assert_eq!(AvasthaJagradadi::KEY, "sdk.phala.avasthaJagradadi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct AvasthaJagradadi {
             /// The `avastha` parameter.
@@ -1864,6 +3286,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.avasthaLajjitadi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::AvasthaLajjitadi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = AvasthaLajjitadi { avastha: teistro_core::catalogue::AvasthaLajjitadi::ALL[0] };
+        /// assert_eq!(AvasthaLajjitadi::KEY, "sdk.phala.avasthaLajjitadi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct AvasthaLajjitadi {
             /// The `avastha` parameter.
@@ -1880,6 +3316,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.dashaActivation`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::DashaActivation;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = DashaActivation { graha: teistro_core::catalogue::Graha::ALL[0] };
+        /// assert_eq!(DashaActivation::KEY, "sdk.phala.dashaActivation");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct DashaActivation {
             /// The `graha` parameter.
@@ -1896,6 +3346,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.dashaLord`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::DashaLord;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = DashaLord { graha: teistro_core::catalogue::Graha::ALL[0] };
+        /// assert_eq!(DashaLord::KEY, "sdk.phala.dashaLord");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct DashaLord {
             /// The `graha` parameter.
@@ -1912,6 +3376,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.dignity`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Dignity;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Dignity { dignity: teistro_core::catalogue::Dignity::ALL[0] };
+        /// assert_eq!(Dignity::KEY, "sdk.phala.dignity");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Dignity {
             /// The `dignity` parameter.
@@ -1928,6 +3406,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.gana`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Gana;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Gana { gana: teistro_core::catalogue::Gana::ALL[0] };
+        /// assert_eq!(Gana::KEY, "sdk.phala.gana");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Gana {
             /// The `gana` parameter.
@@ -1944,6 +3436,24 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.grahaInBhava`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::GrahaInBhava;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = GrahaInBhava {
+        ///     bhava: 2,
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     phala: String::from("phala"),
+        /// };
+        /// assert_eq!(GrahaInBhava::KEY, "sdk.phala.grahaInBhava");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct GrahaInBhava {
             /// The `bhava` parameter.
@@ -1966,6 +3476,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.lagnaRashi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::LagnaRashi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = LagnaRashi { rashi: teistro_core::catalogue::Rashi::ALL[0] };
+        /// assert_eq!(LagnaRashi::KEY, "sdk.phala.lagnaRashi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct LagnaRashi {
             /// The `rashi` parameter.
@@ -1982,6 +3506,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.nadi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Nadi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Nadi { nadi: teistro_core::catalogue::Nadi::ALL[0] };
+        /// assert_eq!(Nadi::KEY, "sdk.phala.nadi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Nadi {
             /// The `nadi` parameter.
@@ -1998,6 +3536,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.nakshatra`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Nakshatra;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Nakshatra { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] };
+        /// assert_eq!(Nakshatra::KEY, "sdk.phala.nakshatra");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Nakshatra {
             /// The `nakshatra` parameter.
@@ -2014,6 +3566,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.namakarana`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Namakarana;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Namakarana { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] };
+        /// assert_eq!(Namakarana::KEY, "sdk.phala.namakarana");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Namakarana {
             /// The `nakshatra` parameter.
@@ -2030,6 +3596,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.sadeSati`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::SadeSati;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = SadeSati { house: 2, phala: String::from("phala") };
+        /// assert_eq!(SadeSati::KEY, "sdk.phala.sadeSati");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct SadeSati {
             /// The `house` parameter.
@@ -2049,6 +3629,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.state`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::State;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = State { state: teistro_core::catalogue::State::ALL[0] };
+        /// assert_eq!(State::KEY, "sdk.phala.state");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct State {
             /// The `state` parameter.
@@ -2065,6 +3659,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.tatwa`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Tatwa;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Tatwa { tatwa: teistro_core::catalogue::Tatwa::ALL[0] };
+        /// assert_eq!(Tatwa::KEY, "sdk.phala.tatwa");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Tatwa {
             /// The `tatwa` parameter.
@@ -2081,6 +3689,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.tithi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Tithi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Tithi { tithi: teistro_core::catalogue::Tithi::ALL[0] };
+        /// assert_eq!(Tithi::KEY, "sdk.phala.tithi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Tithi {
             /// The `tithi` parameter.
@@ -2097,6 +3719,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.vara`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Vara;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Vara { vara: teistro_core::catalogue::Vara::ALL[0] };
+        /// assert_eq!(Vara::KEY, "sdk.phala.vara");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Vara {
             /// The `vara` parameter.
@@ -2113,6 +3749,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.varna`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Varna;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Varna { varna: teistro_core::catalogue::Varna::ALL[0] };
+        /// assert_eq!(Varna::KEY, "sdk.phala.varna");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Varna {
             /// The `varna` parameter.
@@ -2129,6 +3779,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.yoga`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Yoga;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Yoga { yoga: teistro_core::catalogue::Yoga::ALL[0] };
+        /// assert_eq!(Yoga::KEY, "sdk.phala.yoga");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Yoga {
             /// The `yoga` parameter.
@@ -2145,6 +3809,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.phala.yoni`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::phala::Yoni;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Yoni { yoni: teistro_core::catalogue::Yoni::ALL[0] };
+        /// assert_eq!(Yoni::KEY, "sdk.phala.yoni");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Yoni {
             /// The `yoni` parameter.
@@ -2165,6 +3843,20 @@ pub mod sdk {
     /// The `reading` group.
     pub mod reading {
         /// The message `sdk.reading.effect`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reading::Effect;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Effect { rule: String::from("rule"), text: String::from("text") };
+        /// assert_eq!(Effect::KEY, "sdk.reading.effect");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Effect {
             /// The `rule` parameter.
@@ -2184,6 +3876,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reading.lifeClass`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reading::LifeClass;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = LifeClass { class: String::from("class"), rule: String::from("rule") };
+        /// assert_eq!(LifeClass::KEY, "sdk.reading.lifeClass");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct LifeClass {
             /// The `class` parameter.
@@ -2203,6 +3909,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reading.lifeSpan`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reading::LifeSpan;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = LifeSpan { count: 2, rule: String::from("rule"), unit: String::from("unit") };
+        /// assert_eq!(LifeSpan::KEY, "sdk.reading.lifeSpan");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct LifeSpan {
             /// The `count` parameter.
@@ -2225,6 +3945,24 @@ pub mod sdk {
         }
 
         /// The message `sdk.reading.participants`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reading::Participants;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Participants {
+        ///     count: 2,
+        ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+        ///     rule: String::from("rule"),
+        /// };
+        /// assert_eq!(Participants::KEY, "sdk.reading.participants");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Participants {
             /// The `count` parameter.
@@ -2247,6 +3985,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reading.says`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reading::Says;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Says { reading: String::from("reading"), rule: String::from("rule") };
+        /// assert_eq!(Says::KEY, "sdk.reading.says");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Says {
             /// The `reading` parameter.
@@ -2266,6 +4018,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reading.severity`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reading::Severity;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Severity { rule: String::from("rule"), severity: 2 };
+        /// assert_eq!(Severity::KEY, "sdk.reading.severity");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Severity {
             /// The `rule` parameter.
@@ -2285,6 +4051,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reading.status`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reading::Status;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Status { rule: String::from("rule"), status: String::from("status") };
+        /// assert_eq!(Status::KEY, "sdk.reading.status");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Status {
             /// The `rule` parameter.
@@ -2304,6 +4084,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reading.timing`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reading::Timing;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Timing { reading: String::from("reading"), rule: String::from("rule") };
+        /// assert_eq!(Timing::KEY, "sdk.reading.timing");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Timing {
             /// The `reading` parameter.
@@ -2327,6 +4121,20 @@ pub mod sdk {
     /// The `reason` group.
     pub mod reason {
         /// The message `sdk.reason.appName`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::AppName;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = AppName;
+        /// assert_eq!(AppName::KEY, "sdk.reason.appName");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct AppName;
 
@@ -2338,6 +4146,24 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.ashtakavarga`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::Ashtakavarga;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Ashtakavarga {
+        ///     bindus: 2,
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        /// };
+        /// assert_eq!(Ashtakavarga::KEY, "sdk.reason.ashtakavarga");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Ashtakavarga {
             /// The `bindus` parameter.
@@ -2360,6 +4186,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.bhavaBala`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::BhavaBala;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = BhavaBala { bhava: 2, virupas: 2.5 };
+        /// assert_eq!(BhavaBala::KEY, "sdk.reason.bhavaBala");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct BhavaBala {
             /// The `bhava` parameter.
@@ -2379,6 +4219,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.bhavaInRashi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::BhavaInRashi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = BhavaInRashi { bhava: 2, rashi: teistro_core::catalogue::Rashi::ALL[0] };
+        /// assert_eq!(BhavaInRashi::KEY, "sdk.reason.bhavaInRashi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct BhavaInRashi {
             /// The `bhava` parameter.
@@ -2398,6 +4252,24 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.chalitShift`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::ChalitShift;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = ChalitShift {
+        ///     bhava: 2,
+        ///     chalit: 2,
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        /// };
+        /// assert_eq!(ChalitShift::KEY, "sdk.reason.chalitShift");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct ChalitShift {
             /// The `bhava` parameter.
@@ -2420,6 +4292,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.conjunction`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::Conjunction;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Conjunction { count: 2, graha: teistro_core::catalogue::Graha::ALL[0] };
+        /// assert_eq!(Conjunction::KEY, "sdk.reason.conjunction");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Conjunction {
             /// The `count` parameter.
@@ -2441,6 +4327,23 @@ pub mod sdk {
         /// The `dasha` group.
         pub mod dasha {
             /// The message `sdk.reason.dasha.favour`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::dasha::Favour;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Favour {
+            ///     favour: String::from("favour"),
+            ///     graha: teistro_core::catalogue::Graha::ALL[0],
+            /// };
+            /// assert_eq!(Favour::KEY, "sdk.reason.dasha.favour");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Favour {
                 /// The `favour` parameter.
@@ -2460,6 +4363,23 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.dasha.phase`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::dasha::Phase;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Phase {
+            ///     graha: teistro_core::catalogue::Graha::ALL[0],
+            ///     phase: String::from("phase"),
+            /// };
+            /// assert_eq!(Phase::KEY, "sdk.reason.dasha.phase");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Phase {
                 /// The `graha` parameter.
@@ -2479,6 +4399,23 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.dasha.place`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::dasha::Place;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Place {
+            ///     graha: teistro_core::catalogue::Graha::ALL[0],
+            ///     nature: String::from("nature"),
+            /// };
+            /// assert_eq!(Place::KEY, "sdk.reason.dasha.place");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Place {
                 /// The `graha` parameter.
@@ -2498,6 +4435,24 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.dasha.points`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::dasha::Points;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Points {
+            ///     asubhanka: 2.5,
+            ///     graha: teistro_core::catalogue::Graha::ALL[0],
+            ///     subhanka: 2.5,
+            /// };
+            /// assert_eq!(Points::KEY, "sdk.reason.dasha.points");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Points {
                 /// The `asubhanka` parameter.
@@ -2522,6 +4477,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.exactLongitude`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::ExactLongitude;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = ExactLongitude { longitude: 2.5 };
+        /// assert_eq!(ExactLongitude::KEY, "sdk.reason.exactLongitude");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct ExactLongitude {
             /// The `longitude` parameter.
@@ -2540,6 +4509,24 @@ pub mod sdk {
         /// The `gochar` group.
         pub mod gochar {
             /// The message `sdk.reason.gochar.ashtakavarga`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::gochar::Ashtakavarga;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Ashtakavarga {
+            ///     bindus: 2,
+            ///     good: String::from("good"),
+            ///     graha: teistro_core::catalogue::Graha::ALL[0],
+            /// };
+            /// assert_eq!(Ashtakavarga::KEY, "sdk.reason.gochar.ashtakavarga");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Ashtakavarga {
                 /// The `bindus` parameter.
@@ -2562,6 +4549,23 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.gochar.from`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::gochar::From;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = From {
+            ///     from: String::from("from"),
+            ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+            /// };
+            /// assert_eq!(From::KEY, "sdk.reason.gochar.from");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct From {
                 /// The `from` parameter.
@@ -2581,6 +4585,24 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.gochar.fruition`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::gochar::Fruition;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Fruition {
+            ///     graha: teistro_core::catalogue::Graha::ALL[0],
+            ///     now: String::from("now"),
+            ///     part: String::from("part"),
+            /// };
+            /// assert_eq!(Fruition::KEY, "sdk.reason.gochar.fruition");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Fruition {
                 /// The `graha` parameter.
@@ -2603,6 +4625,24 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.gochar.transit`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::gochar::Transit;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Transit {
+            ///     graha: teistro_core::catalogue::Graha::ALL[0],
+            ///     house: 2,
+            ///     verdict: String::from("verdict"),
+            /// };
+            /// assert_eq!(Transit::KEY, "sdk.reason.gochar.transit");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Transit {
                 /// The `graha` parameter.
@@ -2625,6 +4665,23 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.gochar.vedha`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::gochar::Vedha;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Vedha {
+            ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+            ///     house: 2,
+            /// };
+            /// assert_eq!(Vedha::KEY, "sdk.reason.gochar.vedha");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Vedha {
                 /// The `grahas` parameter.
@@ -2646,6 +4703,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.grahaAt`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::GrahaAt;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = GrahaAt { graha: teistro_core::catalogue::Graha::ALL[0], longitude: 2.5 };
+        /// assert_eq!(GrahaAt::KEY, "sdk.reason.grahaAt");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct GrahaAt {
             /// The `graha` parameter.
@@ -2665,6 +4736,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.grahaInBhava`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::GrahaInBhava;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = GrahaInBhava { bhava: 2, graha: teistro_core::catalogue::Graha::ALL[0] };
+        /// assert_eq!(GrahaInBhava::KEY, "sdk.reason.grahaInBhava");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct GrahaInBhava {
             /// The `bhava` parameter.
@@ -2684,6 +4769,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.grahaInRashi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::GrahaInRashi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = GrahaInRashi {
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        /// };
+        /// assert_eq!(GrahaInRashi::KEY, "sdk.reason.grahaInRashi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct GrahaInRashi {
             /// The `graha` parameter.
@@ -2703,6 +4805,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.greeting`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::Greeting;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Greeting {
+        ///     gender: teistro_intl::messages::Gender::M,
+        ///     name: String::from("name"),
+        /// };
+        /// assert_eq!(Greeting::KEY, "sdk.reason.greeting");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Greeting {
             /// The `gender` parameter.
@@ -2722,6 +4841,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.lordship`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::Lordship;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Lordship { bhava: 2, graha: teistro_core::catalogue::Graha::ALL[0] };
+        /// assert_eq!(Lordship::KEY, "sdk.reason.lordship");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Lordship {
             /// The `bhava` parameter.
@@ -2741,6 +4874,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.occupants`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::Occupants;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Occupants {
+        ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        /// };
+        /// assert_eq!(Occupants::KEY, "sdk.reason.occupants");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Occupants {
             /// The `grahas` parameter.
@@ -2762,6 +4912,20 @@ pub mod sdk {
         /// The `panchanga` group.
         pub mod panchanga {
             /// The message `sdk.reason.panchanga.byDay`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::panchanga::ByDay;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = ByDay { by_day: String::from("byDay") };
+            /// assert_eq!(ByDay::KEY, "sdk.reason.panchanga.byDay");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct ByDay {
                 /// The `byDay` parameter.
@@ -2778,6 +4942,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.panchanga.karana`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::panchanga::Karana;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Karana { karana: teistro_core::catalogue::Karana::ALL[0] };
+            /// assert_eq!(Karana::KEY, "sdk.reason.panchanga.karana");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Karana {
                 /// The `karana` parameter.
@@ -2794,6 +4972,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.panchanga.nakshatra`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::panchanga::Nakshatra;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Nakshatra { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] };
+            /// assert_eq!(Nakshatra::KEY, "sdk.reason.panchanga.nakshatra");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Nakshatra {
                 /// The `nakshatra` parameter.
@@ -2810,6 +5002,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.panchanga.pada`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::panchanga::Pada;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Pada { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0], pada: 2 };
+            /// assert_eq!(Pada::KEY, "sdk.reason.panchanga.pada");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Pada {
                 /// The `nakshatra` parameter.
@@ -2829,6 +5035,23 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.panchanga.tithi`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::panchanga::Tithi;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Tithi {
+            ///     paksha: teistro_core::catalogue::Paksha::ALL[0],
+            ///     tithi: teistro_core::catalogue::Tithi::ALL[0],
+            /// };
+            /// assert_eq!(Tithi::KEY, "sdk.reason.panchanga.tithi");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Tithi {
                 /// The `paksha` parameter.
@@ -2848,6 +5071,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.panchanga.vara`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::panchanga::Vara;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Vara { vara: teistro_core::catalogue::Vara::ALL[0] };
+            /// assert_eq!(Vara::KEY, "sdk.reason.panchanga.vara");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Vara {
                 /// The `vara` parameter.
@@ -2864,6 +5101,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.panchanga.yoga`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::panchanga::Yoga;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Yoga { yoga: teistro_core::catalogue::Yoga::ALL[0] };
+            /// assert_eq!(Yoga::KEY, "sdk.reason.panchanga.yoga");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Yoga {
                 /// The `yoga` parameter.
@@ -2882,6 +5133,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.pointAt`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::PointAt;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = PointAt { longitude: 2.5, point: teistro_core::catalogue::Point::ALL[0] };
+        /// assert_eq!(PointAt::KEY, "sdk.reason.pointAt");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct PointAt {
             /// The `longitude` parameter.
@@ -2901,6 +5166,23 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.pointInRashi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::PointInRashi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = PointInRashi {
+        ///     point: teistro_core::catalogue::Point::ALL[0],
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        /// };
+        /// assert_eq!(PointInRashi::KEY, "sdk.reason.pointInRashi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct PointInRashi {
             /// The `point` parameter.
@@ -2920,6 +5202,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.rashiNature`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::RashiNature;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = RashiNature { rashi: teistro_core::catalogue::Rashi::ALL[0] };
+        /// assert_eq!(RashiNature::KEY, "sdk.reason.rashiNature");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct RashiNature {
             /// The `rashi` parameter.
@@ -2936,6 +5232,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.sarvashtakavarga`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::Sarvashtakavarga;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Sarvashtakavarga { bindus: 2, rashi: teistro_core::catalogue::Rashi::ALL[0] };
+        /// assert_eq!(Sarvashtakavarga::KEY, "sdk.reason.sarvashtakavarga");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Sarvashtakavarga {
             /// The `bindus` parameter.
@@ -2957,6 +5267,24 @@ pub mod sdk {
         /// The `strength` group.
         pub mod strength {
             /// The message `sdk.reason.strength.meets`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::strength::Meets;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Meets {
+            ///     graha: teistro_core::catalogue::Graha::ALL[0],
+            ///     reaches: String::from("reaches"),
+            ///     required: 2.5,
+            /// };
+            /// assert_eq!(Meets::KEY, "sdk.reason.strength.meets");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Meets {
                 /// The `graha` parameter.
@@ -2979,6 +5307,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.strength.rank`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::strength::Rank;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Rank { rank: 2 };
+            /// assert_eq!(Rank::KEY, "sdk.reason.strength.rank");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Rank {
                 /// The `rank` parameter.
@@ -2995,6 +5337,20 @@ pub mod sdk {
             }
 
             /// The message `sdk.reason.strength.score`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::reason::strength::Score;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Score { graha: teistro_core::catalogue::Graha::ALL[0], score: 2.5 };
+            /// assert_eq!(Score::KEY, "sdk.reason.strength.score");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Score {
                 /// The `graha` parameter.
@@ -3016,6 +5372,24 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.vimshopaka`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::Vimshopaka;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Vimshopaka {
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     scheme: String::from("scheme"),
+        ///     score: 2.5,
+        /// };
+        /// assert_eq!(Vimshopaka::KEY, "sdk.reason.vimshopaka");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Vimshopaka {
             /// The `graha` parameter.
@@ -3038,6 +5412,20 @@ pub mod sdk {
         }
 
         /// The message `sdk.reason.welcome`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::reason::Welcome;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Welcome;
+        /// assert_eq!(Welcome::KEY, "sdk.reason.welcome");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct Welcome;
 

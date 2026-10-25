@@ -1363,7 +1363,8 @@ final class MessagesSdkCalendarBangladeshi {
   MessagesSdkCalendarBangladeshiDate get date => MessagesSdkCalendarBangladeshiDate(_r);
   String monthName({required int month}) =>
       _r.render('sdk.calendar.BANGLADESHI.monthName', {'month': month});
-  String monthShort() => _r.render('sdk.calendar.BANGLADESHI.monthShort');
+  String monthShort({required int month}) =>
+      _r.render('sdk.calendar.BANGLADESHI.monthShort', {'month': month});
 }
 
 final class MessagesSdkCalendarBikramSambatDate {
@@ -1471,7 +1472,8 @@ final class MessagesSdkCalendarIsoWeekDate {
 
   final Renderer _r;
 
-  String full() => _r.render('sdk.calendar.ISO_WEEK.date.full');
+  String full({required int day, required int month, required int year}) =>
+      _r.render('sdk.calendar.ISO_WEEK.date.full', {'day': day, 'month': month, 'year': year});
   String long({required int day, required int month, required int year}) =>
       _r.render('sdk.calendar.ISO_WEEK.date.long', {'day': day, 'month': month, 'year': year});
   String numeric({required int day, required int month, required int year}) =>
@@ -1491,9 +1493,12 @@ final class MessagesSdkCalendarJulianDate {
 
   final Renderer _r;
 
-  String full() => _r.render('sdk.calendar.JULIAN.date.full');
-  String long() => _r.render('sdk.calendar.JULIAN.date.long');
-  String numeric() => _r.render('sdk.calendar.JULIAN.date.numeric');
+  String full({required int day, required String monthName, required String weekdayName, required int year}) =>
+      _r.render('sdk.calendar.JULIAN.date.full', {'day': day, 'monthName': monthName, 'weekdayName': weekdayName, 'year': year});
+  String long({required int day, required String monthName, required int year}) =>
+      _r.render('sdk.calendar.JULIAN.date.long', {'day': day, 'monthName': monthName, 'year': year});
+  String numeric({required int day, required int month, required int year}) =>
+      _r.render('sdk.calendar.JULIAN.date.numeric', {'day': day, 'month': month, 'year': year});
 }
 
 final class MessagesSdkCalendarJulian {
@@ -1502,8 +1507,10 @@ final class MessagesSdkCalendarJulian {
   final Renderer _r;
 
   MessagesSdkCalendarJulianDate get date => MessagesSdkCalendarJulianDate(_r);
-  String monthName() => _r.render('sdk.calendar.JULIAN.monthName');
-  String monthShort() => _r.render('sdk.calendar.JULIAN.monthShort');
+  String monthName({required int month}) =>
+      _r.render('sdk.calendar.JULIAN.monthName', {'month': month});
+  String monthShort({required int month}) =>
+      _r.render('sdk.calendar.JULIAN.monthShort', {'month': month});
 }
 
 final class MessagesSdkCalendarMixedDate {
@@ -1511,9 +1518,12 @@ final class MessagesSdkCalendarMixedDate {
 
   final Renderer _r;
 
-  String full() => _r.render('sdk.calendar.MIXED.date.full');
-  String long() => _r.render('sdk.calendar.MIXED.date.long');
-  String numeric() => _r.render('sdk.calendar.MIXED.date.numeric');
+  String full({required int day, required String monthName, required String weekdayName, required int year}) =>
+      _r.render('sdk.calendar.MIXED.date.full', {'day': day, 'monthName': monthName, 'weekdayName': weekdayName, 'year': year});
+  String long({required int day, required String monthName, required int year}) =>
+      _r.render('sdk.calendar.MIXED.date.long', {'day': day, 'monthName': monthName, 'year': year});
+  String numeric({required int day, required int month, required int year}) =>
+      _r.render('sdk.calendar.MIXED.date.numeric', {'day': day, 'month': month, 'year': year});
 }
 
 final class MessagesSdkCalendarMixed {
@@ -1522,8 +1532,10 @@ final class MessagesSdkCalendarMixed {
   final Renderer _r;
 
   MessagesSdkCalendarMixedDate get date => MessagesSdkCalendarMixedDate(_r);
-  String monthName() => _r.render('sdk.calendar.MIXED.monthName');
-  String monthShort() => _r.render('sdk.calendar.MIXED.monthShort');
+  String monthName({required int month}) =>
+      _r.render('sdk.calendar.MIXED.monthName', {'month': month});
+  String monthShort({required int month}) =>
+      _r.render('sdk.calendar.MIXED.monthShort', {'month': month});
 }
 
 final class MessagesSdkCalendarTibetanPhugpaDate {
