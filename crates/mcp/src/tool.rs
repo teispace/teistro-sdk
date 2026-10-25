@@ -12,6 +12,15 @@ use crate::watch;
 
 /// What a tool's handler answers: its structured content, or the
 /// refusal the model corrects, the SDK's own error record (D7).
+///
+/// ```
+/// use serde_json::json;
+/// use teistro_mcp::{Call, Handler};
+///
+/// // A handler answers its structured content, or a refusal.
+/// let handler: Box<Handler> = Box::new(|call: &Call<'_>| Ok(json!({ "tool": call.name() })));
+/// # let _ = handler;
+/// ```
 pub type Handler = dyn Fn(&Call<'_>) -> Result<Value, Error> + Send + Sync;
 
 /// A tool of the embedding program's own.
@@ -60,6 +69,41 @@ impl Tool {
     /// A tool called `name`, described for a model by `description`,
     /// whose arguments `input_schema` states (a JSON Schema object) and
     /// `handler` answers.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    /// # use teistro_mcp::Tool;
+    /// #
+    /// # let greet = Tool::new(
+    /// #     "acme.greet",
+    /// #     "Greets a querent by name.",
+    /// #     json!({ "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] }),
+    /// #     |call| {
+    /// #         let name: String = call.argument("name")?.unwrap_or_default();
+    /// #         Ok(json!({ "greeting": format!("Namaste, {name}") }))
+    /// #     },
+    /// # );
+    ///
+    /// let mut server = Server::new(Engine::None).with_tool(greet)?;
+    /// let tool = listed(&mut server, "acme.greet");
+    /// assert_eq!(tool["description"], "Greets a querent by name.");
+    /// assert_eq!(tool["inputSchema"]["required"], json!(["name"]));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     #[must_use]
     pub fn new(
         name: impl Into<String>,
@@ -80,6 +124,39 @@ impl Tool {
     }
 
     /// The same tool, with a title for a person choosing it.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    /// # use teistro_mcp::Tool;
+    /// #
+    /// # let greet = Tool::new(
+    /// #     "acme.greet",
+    /// #     "Greets a querent by name.",
+    /// #     json!({ "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] }),
+    /// #     |call| {
+    /// #         let name: String = call.argument("name")?.unwrap_or_default();
+    /// #         Ok(json!({ "greeting": format!("Namaste, {name}") }))
+    /// #     },
+    /// # );
+    ///
+    /// let mut server = Server::new(Engine::None).with_tool(greet.titled("Greet"))?;
+    /// assert_eq!(listed(&mut server, "acme.greet")["title"], "Greet");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     #[must_use]
     pub fn titled(self, title: impl Into<String>) -> Tool {
         Tool {
@@ -90,6 +167,42 @@ impl Tool {
 
     /// The same tool, its structured content held to `output_schema`,
     /// listed under [`crate::Detail::Full`] as the SDK's answers are.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    /// # use teistro_mcp::Tool;
+    /// #
+    /// # let greet = Tool::new(
+    /// #     "acme.greet",
+    /// #     "Greets a querent by name.",
+    /// #     json!({ "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] }),
+    /// #     |call| {
+    /// #         let name: String = call.argument("name")?.unwrap_or_default();
+    /// #         Ok(json!({ "greeting": format!("Namaste, {name}") }))
+    /// #     },
+    /// # );
+    ///
+    /// use teistro_mcp::Detail;
+    ///
+    /// let answer = json!({ "type": "object", "properties": { "greeting": { "type": "string" } } });
+    /// let mut server = Server::new(Engine::None).with_detail(Detail::Full).with_tool(greet.answering(answer.clone()))?;
+    /// assert_eq!(listed(&mut server, "acme.greet")["outputSchema"], answer);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     #[must_use]
     pub fn answering(self, output_schema: Value) -> Tool {
         Tool {
@@ -101,6 +214,40 @@ impl Tool {
     /// The same tool, annotated read-only, idempotent and closed-world, as
     /// every SDK tool is. Without it a host assumes the protocol's
     /// defaults: that the tool may write and is not idempotent.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    /// # use teistro_mcp::Tool;
+    /// #
+    /// # let greet = Tool::new(
+    /// #     "acme.greet",
+    /// #     "Greets a querent by name.",
+    /// #     json!({ "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] }),
+    /// #     |call| {
+    /// #         let name: String = call.argument("name")?.unwrap_or_default();
+    /// #         Ok(json!({ "greeting": format!("Namaste, {name}") }))
+    /// #     },
+    /// # );
+    ///
+    /// let mut server = Server::new(Engine::None).with_tool(greet.read_only())?;
+    /// let annotations = &listed(&mut server, "acme.greet")["annotations"];
+    /// assert_eq!((&annotations["readOnlyHint"], &annotations["idempotentHint"]), (&json!(true), &json!(true)));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     #[must_use]
     pub fn read_only(self) -> Tool {
         let title = self.title.clone().unwrap_or_else(|| self.name.clone());
@@ -111,6 +258,39 @@ impl Tool {
     }
 
     /// The same tool, with annotations of the program's own choosing.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    /// # use teistro_mcp::Tool;
+    /// #
+    /// # let greet = Tool::new(
+    /// #     "acme.greet",
+    /// #     "Greets a querent by name.",
+    /// #     json!({ "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] }),
+    /// #     |call| {
+    /// #         let name: String = call.argument("name")?.unwrap_or_default();
+    /// #         Ok(json!({ "greeting": format!("Namaste, {name}") }))
+    /// #     },
+    /// # );
+    ///
+    /// let mut server = Server::new(Engine::None).with_tool(greet.annotated(json!({ "openWorldHint": true })))?;
+    /// assert_eq!(listed(&mut server, "acme.greet")["annotations"], json!({ "openWorldHint": true }));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     #[must_use]
     pub fn annotated(self, annotations: Value) -> Tool {
         Tool {
@@ -123,6 +303,37 @@ impl Tool {
     /// its own arguments as a record tool does (D5); its handler reaches
     /// the context they name through [`Call::context`], with the server's
     /// engine, watch and packs.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    ///
+    /// use teistro_mcp::Tool;
+    ///
+    /// // It reads the context the call's profile names.
+    /// let tool = Tool::new("acme.hash", "The settings hash a call computes under.", json!({ "type": "object" }), |call| {
+    ///     Ok(json!({ "hash": call.context()?.settings_hash().to_string() }))
+    /// })
+    /// .in_context();
+    /// let mut server = Server::new(Engine::None).with_tool(tool)?;
+    /// assert!(listed(&mut server, "acme.hash")["inputSchema"]["properties"].get("profile").is_some());
+    /// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.hash", "arguments": { "profile": "nepali-default" } }));
+    /// assert!(reply["result"]["structuredContent"]["hash"].is_string(), "{reply}");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     #[must_use]
     pub fn in_context(self) -> Tool {
         Tool {
@@ -132,6 +343,37 @@ impl Tool {
     }
 
     /// The tool's name.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    /// # use teistro_mcp::Tool;
+    /// #
+    /// # let greet = Tool::new(
+    /// #     "acme.greet",
+    /// #     "Greets a querent by name.",
+    /// #     json!({ "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] }),
+    /// #     |call| {
+    /// #         let name: String = call.argument("name")?.unwrap_or_default();
+    /// #         Ok(json!({ "greeting": format!("Namaste, {name}") }))
+    /// #     },
+    /// # );
+    ///
+    /// assert_eq!(greet.name(), "acme.greet");
+    /// ```
     #[must_use]
     pub fn name(&self) -> &str {
         &self.name
@@ -231,6 +473,35 @@ impl Tool {
 }
 
 /// One call of a tool, as its handler receives it.
+///
+/// ```
+/// # use serde_json::{Value, json};
+/// # use teistro_mcp::{Engine, Server};
+/// #
+/// # // One request under the stateless revision, its reply read back.
+/// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+/// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+/// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+/// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+/// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+/// # }
+/// # // The tool called `name` as `tools/list` states it.
+/// # fn listed(server: &mut Server, name: &str) -> Value {
+/// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+/// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+/// # }
+///
+/// use teistro_mcp::Tool;
+///
+/// // What a handler is given: its name and arguments.
+/// let echo = Tool::new("acme.echo", "Echoes its arguments.", json!({ "type": "object" }), |call| {
+///     Ok(json!({ "tool": call.name(), "arguments": call.arguments() }))
+/// });
+/// let mut server = Server::new(Engine::None).with_tool(echo)?;
+/// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.echo", "arguments": { "n": 3 } }));
+/// assert_eq!(reply["result"]["structuredContent"], json!({ "tool": "acme.echo", "arguments": { "n": 3 } }));
+/// # Ok::<(), teistro::Error>(())
+/// ```
 pub struct Call<'a> {
     pub(crate) name: &'a str,
     pub(crate) arguments: &'a Map<String, Value>,
@@ -250,6 +521,33 @@ impl core::fmt::Debug for Call<'_> {
 
 impl<'a> Call<'a> {
     /// The tool called.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    ///
+    /// use teistro_mcp::Tool;
+    ///
+    /// // One handler can answer two tools.
+    /// let named = |name: &str| Tool::new(name, "Says its name.", json!({ "type": "object" }), |call| Ok(json!(call.name())));
+    /// let mut server = Server::new(Engine::None).with_tool(named("acme.one"))?.with_tool(named("acme.two"))?;
+    /// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.two", "arguments": {} }));
+    /// assert_eq!(reply["result"]["structuredContent"], "acme.two");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     #[must_use]
     pub fn name(&self) -> &str {
         self.name
@@ -257,12 +555,74 @@ impl<'a> Call<'a> {
 
     /// The call's arguments, without `profile`, `settings` and `locale`
     /// for a tool in context.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    ///
+    /// use teistro_mcp::Tool;
+    ///
+    /// let count = Tool::new("acme.count", "Counts its arguments.", json!({ "type": "object" }), |call| Ok(json!(call.arguments().len())));
+    /// let mut server = Server::new(Engine::None).with_tool(count)?;
+    /// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.count", "arguments": { "a": 1, "b": 2 } }));
+    /// assert_eq!(reply["result"]["structuredContent"], 2);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     #[must_use]
     pub fn arguments(&self) -> &Map<String, Value> {
         self.arguments
     }
 
     /// The argument `key` read as `T`, or `None` where it is absent.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    /// # use teistro_mcp::Tool;
+    /// #
+    /// # let greet = Tool::new(
+    /// #     "acme.greet",
+    /// #     "Greets a querent by name.",
+    /// #     json!({ "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] }),
+    /// #     |call| {
+    /// #         let name: String = call.argument("name")?.unwrap_or_default();
+    /// #         Ok(json!({ "greeting": format!("Namaste, {name}") }))
+    /// #     },
+    /// # );
+    ///
+    /// // A value that does not read is the tool's refusal, naming the argument.
+    /// let mut server = Server::new(Engine::None).with_tool(greet)?;
+    /// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.greet", "arguments": { "name": 7 } }));
+    /// assert_eq!(reply["result"]["isError"], true);
+    /// assert!(reply.to_string().contains("arguments.name"), "{reply}");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -283,6 +643,35 @@ impl<'a> Call<'a> {
     /// The context the call names, from the server's cache: its engine,
     /// its watch and its packs.
     ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    ///
+    /// use teistro_mcp::Tool;
+    ///
+    /// // A tool not made `in_context` has none to read.
+    /// let bare = Tool::new("acme.bare", "Reads a context it was not given.", json!({ "type": "object" }), |call| {
+    ///     call.context().map(|_| json!(true))
+    /// });
+    /// let mut server = Server::new(Engine::None).with_tool(bare)?;
+    /// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.bare", "arguments": {} }));
+    /// assert_eq!(reply["result"]["isError"], true, "{reply}");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// `INTERNAL` for a tool not made [`Tool::in_context`].
@@ -298,6 +687,33 @@ impl<'a> Call<'a> {
     /// Whether the call was cancelled. A handler computing through
     /// [`Call::context`] stops at its next engine request by itself; one
     /// looping without the engine asks this.
+    ///
+    /// ```
+    /// # use serde_json::{Value, json};
+    /// # use teistro_mcp::{Engine, Server};
+    /// #
+    /// # // One request under the stateless revision, its reply read back.
+    /// # fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {
+    /// #     params["_meta"] = json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    /// #                               "io.modelcontextprotocol/clientCapabilities": {} });
+    /// #     let message = json!({ "jsonrpc": "2.0", "id": 1, "method": method, "params": params });
+    /// #     server.handle(&message.to_string()).and_then(|reply| serde_json::from_str(&reply).ok()).unwrap_or(Value::Null)
+    /// # }
+    /// # // The tool called `name` as `tools/list` states it.
+    /// # fn listed(server: &mut Server, name: &str) -> Value {
+    /// #     let tools = ask(server, "tools/list", json!({}))["result"]["tools"].clone();
+    /// #     tools.as_array().and_then(|tools| tools.iter().find(|tool| tool["name"] == name).cloned()).unwrap_or(Value::Null)
+    /// # }
+    ///
+    /// use teistro_mcp::Tool;
+    ///
+    /// // A call running uncancelled says so.
+    /// let looking = Tool::new("acme.look", "Looks whether it was cancelled.", json!({ "type": "object" }), |call| Ok(json!(call.cancelled())));
+    /// let mut server = Server::new(Engine::None).with_tool(looking)?;
+    /// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.look", "arguments": {} }));
+    /// assert_eq!(reply["result"]["structuredContent"], false);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     #[must_use]
     pub fn cancelled(&self) -> bool {
         self.watch.stopping()

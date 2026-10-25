@@ -44,6 +44,14 @@ pub struct Limits {
 
 impl Limits {
     /// Nothing bounded, for a host that bounds its callers itself.
+    ///
+    /// ```
+    /// use teistro_mcp::Limits;
+    ///
+    /// let unbounded = Limits::UNBOUNDED;
+    /// assert_eq!((unbounded.message_bytes, unbounded.items, unbounded.years), (None, None, None));
+    /// assert_ne!(unbounded, Limits::default());
+    /// ```
     pub const UNBOUNDED: Limits = Limits {
         message_bytes: None,
         items: None,

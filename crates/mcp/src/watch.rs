@@ -38,10 +38,31 @@ const PART: usize = 512;
 const REMEMBERED: usize = 256;
 
 /// What reports a call's progress: the notification as a line of JSON.
+///
+/// ```
+/// use std::sync::Arc;
+/// use teistro_mcp::{Engine, Notify, Server};
+///
+/// // A sink a transport shares: stdio writes each line to its output.
+/// let notify: Notify = Arc::new(|line| println!("{line}"));
+/// let server = Server::new(Engine::None).with_notify(move |line| notify(line));
+/// # let _ = server;
+/// ```
 pub type Notify = Arc<dyn Fn(String) + Send + Sync>;
 
 /// A handle a transport keeps beside the server, on whatever thread
 /// reads its input, to cancel a request while the server computes it.
+///
+/// ```
+/// use serde_json::json;
+/// use teistro_mcp::{Engine, Server};
+///
+/// // Kept on the thread that reads input, while the server computes.
+/// let server = Server::new(Engine::None);
+/// let interrupt = server.interrupt();
+/// std::thread::spawn(move || interrupt.cancel(&json!(7))).join().ok();
+/// # let _ = server;
+/// ```
 #[derive(Clone)]
 pub struct Interrupt {
     shared: Arc<Shared>,
@@ -57,6 +78,18 @@ impl Interrupt {
     /// Cancels the request `id`: stopped at its engine's next request if
     /// it is running, and never answered if it has not begun. An id the
     /// server has already answered changes nothing.
+    ///
+    /// ```
+    /// use serde_json::json;
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// // An id no request carries changes nothing.
+    /// let mut server = Server::new(Engine::None);
+    /// server.interrupt().cancel(&json!(99));
+    /// let ping = json!({ "jsonrpc": "2.0", "id": 4, "method": "ping", "params": { "_meta": {
+    ///     "io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {} } } });
+    /// assert!(server.handle(&ping.to_string()).is_some());
+    /// ```
     pub fn cancel(&self, id: &Value) {
         self.shared.cancel(id);
     }

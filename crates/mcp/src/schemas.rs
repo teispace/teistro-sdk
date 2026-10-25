@@ -29,6 +29,12 @@ use crate::tools::annotations;
 pub(crate) const DESCRIBE: &str = "schema.describe";
 
 /// How much of each record's schema a tool list states.
+///
+/// ```
+/// use teistro_mcp::Detail;
+///
+/// assert_eq!(Detail::default(), Detail::Lean);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Detail {
     /// Each record a request carries by name stated by a line naming
@@ -42,9 +48,22 @@ pub enum Detail {
 
 impl Detail {
     /// The names [`Detail::from_name`] reads.
+    ///
+    /// ```
+    /// use teistro_mcp::Detail;
+    ///
+    /// assert_eq!(Detail::NAMES.map(Detail::from_name), [Some(Detail::Lean), Some(Detail::Full)]);
+    /// ```
     pub const NAMES: [&'static str; 2] = ["lean", "full"];
 
     /// The detail called `name`.
+    ///
+    /// ```
+    /// use teistro_mcp::Detail;
+    ///
+    /// assert_eq!(Detail::from_name("full"), Some(Detail::Full));
+    /// assert_eq!(Detail::from_name("FULL"), None);
+    /// ```
     #[must_use]
     pub fn from_name(name: &str) -> Option<Detail> {
         match name {
