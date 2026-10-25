@@ -25,6 +25,16 @@ pub use teistro_astro::scale::{SECONDS_PER_DAY, tt_from_ut1, tt_of, ut1_from_tt}
 pub const TT_MINUS_TAI_SECONDS: f64 = 32.184;
 
 /// What a UTC conversion assumed.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_time::scale::ut1_from_utc;
+///
+/// // 1960 precedes the leap-second table, so UTC is read as UT1.
+/// let (_, basis) = ut1_from_utc(JulianDay::<Utc>::try_new(2_436_934.5).unwrap());
+/// assert!(basis.proleptic_utc);
+/// assert_eq!(basis.dut1_applied_seconds, 0.0);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct TimeBasis {
@@ -37,6 +47,14 @@ pub struct TimeBasis {
 
 impl TimeBasis {
     /// The note the envelope's `time_basis_applied` carries, if any.
+    ///
+    /// ```
+    /// use teistro_time::scale::TimeBasis;
+    ///
+    /// assert_eq!(TimeBasis::default().describe(), None);
+    /// let proleptic = TimeBasis { proleptic_utc: true, ..TimeBasis::default() };
+    /// assert!(proleptic.describe().is_some_and(|note| note.contains("1972")));
+    /// ```
     #[must_use]
     pub fn describe(&self) -> Option<String> {
         self.proleptic_utc
@@ -45,6 +63,19 @@ impl TimeBasis {
 }
 
 /// A conversion to TT with what it applied.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_time::DeltaTSource;
+/// use teistro_time::delta_t::DeltaTModel;
+/// use teistro_time::scale::tt_from_utc;
+///
+/// let utc = JulianDay::<Utc>::try_new(2_451_544.5)?; // 2000-01-01
+/// let conversion = tt_from_utc(utc, DeltaTModel::TableThenModel)?;
+/// assert_eq!(conversion.delta_t.source, DeltaTSource::LeapSeconds);
+/// assert!(!conversion.basis.proleptic_utc);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct TtConversion {
@@ -57,6 +88,17 @@ pub struct TtConversion {
 }
 
 /// UT1 from UTC with DUT1 taken as zero.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_time::scale::ut1_from_utc;
+///
+/// let utc = JulianDay::<Utc>::try_new(2_451_545.0).unwrap();
+/// let (ut1, basis) = ut1_from_utc(utc);
+/// // DUT1 is taken as zero, and the basis says so.
+/// assert_eq!(ut1.get(), utc.get());
+/// assert_eq!(basis.dut1_applied_seconds, 0.0);
+/// ```
 #[must_use]
 pub fn ut1_from_utc(instant: JulianDay<Utc>) -> (JulianDay<Ut1>, TimeBasis) {
     (
@@ -97,6 +139,19 @@ fn provider_dut1(
 /// UT1 from UTC with the DUT1 a provider supplies, when it declares the
 /// override, and zero otherwise; the basis says which.
 ///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_port_ephemeris::TestProvider;
+/// use teistro_time::scale::ut1_from_utc_with;
+///
+/// // A provider that declares no DUT1 override: zero is applied.
+/// let utc = JulianDay::<Utc>::try_new(2_451_545.0)?;
+/// let (ut1, basis) = ut1_from_utc_with(utc, &TestProvider::new())?;
+/// assert_eq!(ut1.get(), utc.get());
+/// assert_eq!(basis.dut1_applied_seconds, 0.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A declared override that fails, or a value outside the definition's
@@ -118,6 +173,18 @@ pub fn ut1_from_utc_with(
 /// UTC from UT1 with the DUT1 a provider supplies (read at the UT1
 /// instant, which is within a second of the UTC one), and zero otherwise.
 ///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Ut1};
+/// use teistro_port_ephemeris::TestProvider;
+/// use teistro_time::scale::utc_from_ut1_with;
+///
+/// let ut1 = JulianDay::<Ut1>::try_new(2_451_545.0)?;
+/// let (utc, basis) = utc_from_ut1_with(ut1, &TestProvider::new())?;
+/// assert_eq!(utc.get(), ut1.get());
+/// assert!(!basis.proleptic_utc);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`ut1_from_utc_with`].
@@ -138,6 +205,15 @@ pub fn utc_from_ut1_with(
 }
 
 /// UTC from UT1 with DUT1 taken as zero.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Ut1};
+/// use teistro_time::scale::utc_from_ut1;
+///
+/// let (utc, basis) = utc_from_ut1(JulianDay::<Ut1>::try_new(2_451_545.0).unwrap());
+/// assert_eq!(utc.get(), 2_451_545.0);
+/// assert_eq!(basis.dut1_applied_seconds, 0.0);
+/// ```
 #[must_use]
 pub fn utc_from_ut1(instant: JulianDay<Ut1>) -> (JulianDay<Utc>, TimeBasis) {
     let utc: JulianDay<Utc> = instant.relabel();
@@ -152,6 +228,20 @@ pub fn utc_from_ut1(instant: JulianDay<Ut1>) -> (JulianDay<Utc>, TimeBasis) {
 
 /// TT from UTC: through the leap-second table from 1972, exactly; before
 /// it, UTC read as UT1 with the model's Delta T.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_time::delta_t::DeltaTModel;
+/// use teistro_time::scale::{SECONDS_PER_DAY, tt_from_utc};
+///
+/// // On 1 January 2000 TAI was 32 s ahead of UTC, and TT is 32.184 s
+/// // ahead of TAI.
+/// let utc = JulianDay::<Utc>::try_new(2_451_544.5)?;
+/// let conversion = tt_from_utc(utc, DeltaTModel::TableThenModel)?;
+/// assert_eq!(conversion.delta_t.seconds, 64.184);
+/// assert!((conversion.tt.get() - (2_451_544.5 + 64.184 / SECONDS_PER_DAY)).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -184,6 +274,18 @@ pub fn tt_from_utc(instant: JulianDay<Utc>, model: DeltaTModel) -> Result<TtConv
 /// UTC from TT: the inverse of [`tt_from_utc`], through the table where
 /// it applies.
 ///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Tt};
+/// use teistro_time::delta_t::DeltaTModel;
+/// use teistro_time::scale::{SECONDS_PER_DAY, utc_from_tt};
+///
+/// let tt = JulianDay::<Tt>::try_new(2_451_544.5 + 64.184 / SECONDS_PER_DAY)?;
+/// let (utc, conversion) = utc_from_tt(tt, DeltaTModel::TableThenModel)?;
+/// assert!((utc.get() - 2_451_544.5).abs() < 1e-9);
+/// assert_eq!(conversion.delta_t.seconds, 64.184);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A model that cannot answer, for an instant before 1972.
@@ -205,6 +307,19 @@ pub fn utc_from_tt(
 
 /// The envelope's time stamp from a Delta T, a UTC basis and the zone
 /// database's version.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_time::delta_t::DeltaTModel;
+/// use teistro_time::scale::{stamp, tt_from_utc};
+///
+/// let conversion = tt_from_utc(JulianDay::<Utc>::try_new(2_451_544.5)?, DeltaTModel::TableThenModel)?;
+/// let stamped = stamp(&conversion.delta_t, &conversion.basis, "2026c");
+/// assert_eq!(stamped.delta_t_seconds, 64.184);
+/// assert_eq!(stamped.tzdb_version, "2026c");
+/// assert_eq!(stamped.leap_table, teistro_time::leap::version());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn stamp(delta_t: &DeltaT, basis: &TimeBasis, tzdb_version: &str) -> TimeStamp {
     TimeStamp {

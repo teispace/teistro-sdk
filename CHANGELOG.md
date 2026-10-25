@@ -116,6 +116,16 @@ catalogue member as serde does, `BIKRAM_SAMBAT` rather than
 coverage job, keeps it so: it runs rustdoc's missing-examples lint as an
 error over the crates it lists.
 
+**Every public item of `teistro-time` has a run example.**
+**Numbers:** rustdoc counts 91 such items, and all 91 have one, up from 2.
+The examples cover the leap-second table (37 s from 2017), the time
+scales, civil times, ghati-pala and hora, the local day (Kathmandu's on
+1 January 2024, and a polar night at Tromsø refused or kept by the policy
+asked for), the embedded tzdb (Kathmandu's +05:30 to +05:45 move, the
+names suggested for a misspelt zone), and resolution through each
+daylight-saving and unknown-time policy. `teistro-time` joins `teistro`
+on `check-doc-examples`' list, so an item added without an example fails.
+
 **The Node and Python suites run with the SDK under AddressSanitizer.**
 **Numbers:** Node's six files and Python's 200 tests pass with every access
 the SDK makes checked. A one-byte heap over-read planted in the addon,

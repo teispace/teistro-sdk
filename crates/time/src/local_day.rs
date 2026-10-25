@@ -17,6 +17,25 @@ use teistro_core::time::LocalClock;
 const NEAREST_SEARCH_DAYS: i64 = 190;
 
 /// Which polar state a day is in.
+///
+/// ```
+/// use teistro_calendar::{CalendarDate, Gregorian};
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_core::settings::PolarDayPolicy;
+/// use teistro_core::time::UtcOffset;
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_time::{DayState, PolarKind, local_day};
+///
+/// // Tromsø at midwinter: the Sun does not rise.
+/// let tromso = Place::new(Latitude::literal(69.6492), Longitude::literal(18.9553), Altitude::literal(0.0));
+/// let date = CalendarDate::defined(Calendar::Gregorian, 2024, 12, 21);
+/// let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(1, 0, 0));
+/// assert!(local_day(&text, &Gregorian, &clock, &tromso, &date, PolarDayPolicy::Undefined).is_err());
+/// let day = local_day(&text, &Gregorian, &clock, &tromso, &date, PolarDayPolicy::CivilMidnight)?;
+/// assert_eq!(day.state, DayState::Polar { kind: PolarKind::Night, policy: PolarDayPolicy::CivilMidnight });
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -28,6 +47,24 @@ pub enum PolarKind {
 }
 
 /// Whether the day had a sunrise, and what was done when it had not.
+///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+/// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?;
+/// use teistro_time::DayState;
+///
+/// assert_eq!(day.state, DayState::Normal);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "state", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -44,6 +81,25 @@ pub enum DayState {
 }
 
 /// A local day.
+///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+/// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?;
+/// use teistro_core::catalogue::Vara;
+///
+/// assert_eq!(day.vara, Vara::Somavara);
+/// assert!(day.sunrise.get() < day.sunset.get() && day.sunset.get() < day.next_sunrise.get());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct LocalDay {
@@ -70,12 +126,46 @@ pub struct LocalDay {
 
 impl LocalDay {
     /// The daylight, in days.
+    ///
+    /// ```
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::Calendar;
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::PolarDayPolicy;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+    /// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?;
+    /// // A Kathmandu winter day: between ten and eleven hours of light.
+    /// let hours = day.daylight_days() * 24.0;
+    /// assert!((10.0..11.0).contains(&hours), "{hours}");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn daylight_days(&self) -> f64 {
         self.sunset.get() - self.sunrise.get()
     }
 
     /// The night, in days.
+    ///
+    /// ```
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::Calendar;
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::PolarDayPolicy;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+    /// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?;
+    /// assert!((day.daylight_days() + day.night_days() - 1.0).abs() < 0.01);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn night_days(&self) -> f64 {
         self.next_sunrise.get() - self.sunset.get()
@@ -84,6 +174,23 @@ impl LocalDay {
     /// The air the horizon was refracted through, resolved at the place,
     /// when the convention named one (`03-design/horizon-atmosphere.md`);
     /// `None` for the almanac's fixed 34′ or no refraction.
+    ///
+    /// ```
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::Calendar;
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::PolarDayPolicy;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+    /// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?;
+    /// // The text's sunrise is its own, refracted through no named air.
+    /// assert_eq!(day.air(), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn air(&self) -> Option<Air> {
         match self.convention {
@@ -93,6 +200,23 @@ impl LocalDay {
     }
 
     /// Whether an instant lies in this day, from its sunrise to the next.
+    ///
+    /// ```
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::Calendar;
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::PolarDayPolicy;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+    /// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?;
+    /// assert!(day.contains(day.sunrise));
+    /// assert!(!day.contains(day.next_sunrise));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn contains(&self, instant: JulianDay<Utc>) -> bool {
         instant.get() >= self.sunrise.get() && instant.get() < self.next_sunrise.get()
@@ -115,6 +239,17 @@ impl fmt::Display for LocalDay {
 /// panchanga, whose window is the civil day under a midnight boundary and
 /// whose moonrise may be searched from one — so it is public rather than
 /// written twice.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_core::time::UtcOffset;
+/// use teistro_time::local_day::local_midnight;
+///
+/// // Kathmandu's midnight is 18:15 UTC the day before.
+/// let midnight = local_midnight(&UtcOffset::literal(5, 45, 0), fixed_from_gregorian(2024, 1, 1))?;
+/// assert!((midnight.get() - (2_460_310.5 - 5.75 / 24.0)).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -193,6 +328,24 @@ fn nearest_arc(
 
 /// The local day of a civil date at a place.
 ///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+/// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?;
+/// // The day is named by its civil date and runs from that date's sunrise.
+/// assert_eq!(day.date, date);
+/// assert!(day.sunrise.get() > 2_460_310.5 - 5.75 / 24.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A date the calendar does not have; the model's refusal; a polar day
@@ -225,6 +378,25 @@ pub fn local_day(
 /// it once. It holds for one model and one clock; the day and the place
 /// are checked, and a carry from any other day or place is reckoned
 /// afresh, so a stale one costs a reading and never changes an answer.
+///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// use teistro_time::local_day::{Carried, local_day, local_day_carrying};
+///
+/// let text = SuryaSiddhanta::text();
+/// let mut carried = Carried::default();
+/// let first = local_day_carrying(&text, &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined, &mut carried)?;
+/// assert_eq!(first, local_day(&text, &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Carried(Option<(FixedDay, Place, DayLight)>);
 
@@ -287,6 +459,31 @@ pub fn local_day_carrying(
 /// [`teistro_calendar::solar::civil_day_lights`]). The answer is
 /// [`local_day`]'s for the same lights, to the bit; a polar day still
 /// asks the model for the days its policy reaches for.
+///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::solar::civil_day_light;
+/// use teistro_time::local_day::{local_day, local_day_lit};
+///
+/// let text = SuryaSiddhanta::text();
+/// let fixed = fixed_from_gregorian(2024, 1, 1);
+/// let lights = (
+///     civil_day_light(&text, &clock, &kathmandu, fixed)?,
+///     civil_day_light(&text, &clock, &kathmandu, fixed.plus_days(1))?,
+/// );
+/// let lit = local_day_lit(&text, &clock, &kathmandu, (&date, fixed), PolarDayPolicy::Undefined, lights)?;
+/// assert_eq!(lit, local_day(&text, &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

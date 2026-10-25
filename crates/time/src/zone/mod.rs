@@ -22,6 +22,20 @@ use crate::leap;
 use crate::local_day::local_day;
 
 /// How a zone is given.
+///
+/// ```
+/// use teistro_core::quantity::Longitude;
+/// use teistro_core::time::UtcOffset;
+/// use teistro_time::ZoneSpec;
+///
+/// assert_eq!(ZoneSpec::iana("Asia/Kathmandu").to_string(), "Asia/Kathmandu");
+/// assert_eq!(ZoneSpec::fixed(UtcOffset::literal(5, 45, 0)).to_string(), "+05:45");
+/// assert!(ZoneSpec::local_mean(Longitude::literal(85.324)).to_string().starts_with("LMT "));
+///
+/// // Serialised with its kind, as a stored chart keeps it.
+/// let json = serde_json::to_string(&ZoneSpec::iana("Asia/Kathmandu")).unwrap();
+/// assert_eq!(json, r#"{"kind":"IANA","zone":"Asia/Kathmandu"}"#);
+/// ```
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -45,17 +59,45 @@ pub enum ZoneSpec {
 
 impl ZoneSpec {
     /// A zone of the database.
+    ///
+    /// ```
+    /// use teistro_time::ZoneSpec;
+    ///
+    /// assert_eq!(ZoneSpec::iana("Europe/London"), ZoneSpec::Iana { zone: "Europe/London".into() });
+    /// ```
     pub fn iana(zone: impl Into<String>) -> ZoneSpec {
         ZoneSpec::Iana { zone: zone.into() }
     }
 
     /// Local mean time at a longitude.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_core::catalogue::Calendar;
+    /// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+    /// use teistro_core::quantity::Longitude;
+    /// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+    ///
+    /// // Four minutes a degree: 85.324° east is 5 h 41 min 18 s ahead.
+    /// let lmt = ZoneSpec::local_mean(Longitude::literal(85.324));
+    /// let read = resolve(&noon(2024, 1, 1), &lmt, &Policy::default(), EmbeddedTzdb::shared())?;
+    /// assert_eq!(read.zone.offset.seconds(), 20_478);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn local_mean(longitude: Longitude) -> ZoneSpec {
         ZoneSpec::LocalMean { longitude }
     }
 
     /// A fixed offset.
+    ///
+    /// ```
+    /// use teistro_core::time::UtcOffset;
+    /// use teistro_time::ZoneSpec;
+    ///
+    /// let offset = UtcOffset::literal(5, 45, 0);
+    /// assert_eq!(ZoneSpec::fixed(offset), ZoneSpec::Fixed { offset });
+    /// ```
     #[must_use]
     pub const fn fixed(offset: UtcOffset) -> ZoneSpec {
         ZoneSpec::Fixed { offset }
@@ -73,6 +115,27 @@ impl fmt::Display for ZoneSpec {
 }
 
 /// The policies a resolution applies: the settings' time knobs.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::Calendar;
+/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+/// use teistro_core::settings::DstOverlap;
+/// let new_york = ZoneSpec::iana("America/New_York");
+/// let twice = CivilDateTime::at(
+///     CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3),
+///     CivilTime::new(1, 30, 0)?,
+/// );
+/// let later = Policy { overlap: DstOverlap::Later, ..Policy::default() };
+///
+/// let earlier = resolve(&twice, &new_york, &Policy::default(), EmbeddedTzdb::shared())?;
+/// let second = resolve(&twice, &new_york, &later, EmbeddedTzdb::shared())?;
+/// // The two 01:30s are an hour apart.
+/// let apart = (second.instant.get() - earlier.instant.get()) * 86_400.0;
+/// assert!((apart - 3600.0).abs() < 1e-3, "{apart}");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
@@ -87,6 +150,13 @@ pub struct Policy {
 
 impl Policy {
     /// The policies of a settings value.
+    ///
+    /// ```
+    /// use teistro_core::settings;
+    /// use teistro_time::Policy;
+    ///
+    /// assert_eq!(Policy::of(&settings::root()), Policy::default());
+    /// ```
     #[must_use]
     pub const fn of(settings: &Settings) -> Policy {
         Policy {
@@ -110,6 +180,22 @@ impl Default for Policy {
 }
 
 /// Where the offset came from.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::Calendar;
+/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+/// use teistro_core::time::UtcOffset;
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+/// use teistro_time::ZoneSource;
+///
+/// let tzdb = EmbeddedTzdb::shared();
+/// let fixed = ZoneSpec::fixed(UtcOffset::literal(5, 45, 0));
+/// assert_eq!(resolve(&noon(2024, 1, 1), &fixed, &Policy::default(), tzdb)?.zone.source, ZoneSource::Manual);
+/// let zone = ZoneSpec::iana("Asia/Kathmandu");
+/// assert_eq!(resolve(&noon(2024, 1, 1), &zone, &Policy::default(), tzdb)?.zone.source, ZoneSource::Iana);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -124,6 +210,12 @@ pub enum ZoneSource {
 
 impl ZoneSource {
     /// The key it is serialised as: `IANA`, `LOCAL_MEAN`, `MANUAL`.
+    ///
+    /// ```
+    /// use teistro_time::ZoneSource;
+    ///
+    /// assert_eq!(ZoneSource::LocalMean.key(), "LOCAL_MEAN");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -135,6 +227,22 @@ impl ZoneSource {
 }
 
 /// Which rules produced the offset.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::Calendar;
+/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+/// use teistro_time::ZoneEra;
+///
+/// let kathmandu = ZoneSpec::iana("Asia/Kathmandu");
+/// let era = |y| resolve(&noon(y, 1, 1), &kathmandu, &Policy::default(), EmbeddedTzdb::shared()).map(|read| read.zone.era);
+/// // +05:45 today, +05:30 in 1985, local mean time before the first rule.
+/// assert_eq!(era(2024)?, ZoneEra::Current);
+/// assert_eq!(era(1985)?, ZoneEra::Historical);
+/// assert_eq!(era(1900)?, ZoneEra::BeforeRules);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -148,6 +256,25 @@ pub enum ZoneEra {
 }
 
 /// Which occurrence an overlap resolved to.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::Calendar;
+/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+/// use teistro_time::{Chosen, DstOutcome};
+///
+/// use teistro_core::settings::DstOverlap;
+/// let new_york = ZoneSpec::iana("America/New_York");
+/// let twice = CivilDateTime::at(
+///     CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3),
+///     CivilTime::new(1, 30, 0)?,
+/// );
+/// let later = Policy { overlap: DstOverlap::Later, ..Policy::default() };
+/// let read = resolve(&twice, &new_york, &later, EmbeddedTzdb::shared())?;
+/// assert_eq!(read.zone.dst, DstOutcome::Overlap { chosen: Chosen::Later });
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -159,6 +286,22 @@ pub enum Chosen {
 }
 
 /// What the daylight-saving policy did.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::Calendar;
+/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+/// use teistro_core::settings::DstGap;
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+/// use teistro_time::DstOutcome;
+///
+/// // 02:30 on 10 March 2024 never happened in New York.
+/// let lost = CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, 2024, 3, 10), CivilTime::new(2, 30, 0)?);
+/// let shift = Policy { gap: DstGap::ShiftForward, ..Policy::default() };
+/// let read = resolve(&lost, &ZoneSpec::iana("America/New_York"), &shift, EmbeddedTzdb::shared())?;
+/// assert_eq!(read.zone.dst, DstOutcome::Gap { shifted_by_seconds: 3600 });
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -178,6 +321,20 @@ pub enum DstOutcome {
 }
 
 /// What a resolution wants the consumer to know.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::Calendar;
+/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+/// use teistro_time::Warning;
+///
+/// let kathmandu = ZoneSpec::iana("Asia/Kathmandu");
+/// // 1985's +05:30 is not the offset Kathmandu keeps today.
+/// let read = resolve(&noon(1985, 1, 1), &kathmandu, &Policy::default(), EmbeddedTzdb::shared())?;
+/// assert_eq!(read.zone.warnings, [Warning::OffsetDiffersFromCurrentRules]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -198,6 +355,13 @@ pub enum Warning {
 
 impl Warning {
     /// The key the locale packs and the fixtures use.
+    ///
+    /// ```
+    /// use teistro_time::Warning;
+    ///
+    /// assert_eq!(Warning::DstGapShifted.key(), "DST_GAP_SHIFTED");
+    /// assert_eq!(Warning::DstGapShifted.to_string(), "DST_GAP_SHIFTED");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -219,6 +383,22 @@ impl fmt::Display for Warning {
 
 /// What a stored chart keeps beside its instant: enough to replay the
 /// resolution under a newer database and to report the difference.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::Calendar;
+/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+/// use teistro_time::LocalClock;
+///
+/// let kathmandu = ZoneSpec::iana("Asia/Kathmandu");
+/// let read = resolve(&noon(2024, 1, 1), &kathmandu, &Policy::default(), EmbeddedTzdb::shared())?;
+/// assert_eq!(read.zone.tzdb_version, EmbeddedTzdb::bundled_version());
+/// assert_eq!(read.zone.abbreviation.as_deref(), Some("+0545"));
+/// // Stored, it replays as a clock whatever a newer database says.
+/// assert_eq!(read.zone.offset_at(read.instant), read.zone.offset);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ZoneResolution {
@@ -242,6 +422,19 @@ pub struct ZoneResolution {
 
 impl ZoneResolution {
     /// Whether a warning was raised.
+    ///
+    /// ```
+    /// # use teistro_calendar::CalendarDate;
+    /// # use teistro_core::catalogue::Calendar;
+    /// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+    /// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+    /// use teistro_time::Warning;
+    ///
+    /// let read = resolve(&noon(2024, 1, 1), &ZoneSpec::iana("Asia/Kathmandu"), &Policy::default(), EmbeddedTzdb::shared())?;
+    /// assert!(!read.zone.has(Warning::DstAmbiguous));
+    /// assert!(read.zone.time_known);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn has(&self, warning: Warning) -> bool {
         self.warnings.contains(&warning)
@@ -264,6 +457,19 @@ impl LocalClock for ZoneResolution {
 }
 
 /// A resolved civil date-time.
+///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::Calendar;
+/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+///
+/// let read = resolve(&noon(2024, 1, 1), &ZoneSpec::iana("Asia/Kathmandu"), &Policy::default(), EmbeddedTzdb::shared())?;
+/// // Noon at +05:45 is 06:15 UTC.
+/// assert!((read.instant.get() - (2_460_310.5 + 6.25 / 24.0)).abs() < 1e-9);
+/// assert_eq!(read.civil, noon(2024, 1, 1));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Resolved {
@@ -312,6 +518,22 @@ fn calendar_of(calendar: Calendar) -> Result<&'static dyn CalendarSystem, Error>
 /// Resolves a civil date-time in a zone to an instant, through the
 /// shipped calendar the date names.
 ///
+/// ```
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::Calendar;
+/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
+///
+/// let tzdb = EmbeddedTzdb::shared();
+/// let read = resolve(&noon(2024, 1, 1), &ZoneSpec::iana("Asia/Kathmandu"), &Policy::default(), tzdb)?;
+/// assert_eq!(read.zone.offset.seconds(), 5 * 3600 + 45 * 60);
+///
+/// // An unknown zone is refused with the nearest names.
+/// let refused = resolve(&noon(2024, 1, 1), &ZoneSpec::iana("Asia/Kathmandoo"), &Policy::default(), tzdb).unwrap_err();
+/// assert!(refused.hint().is_some_and(|hint| hint.contains("Asia/Kathmandu")));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A date the calendar does not have; a missing time under `REFUSE`
@@ -335,6 +557,20 @@ pub fn resolve(
 }
 
 /// Resolves through a given calendar (one that needs a context, say).
+///
+/// ```
+/// use teistro_calendar::{BikramSambat, CalendarDate};
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve, resolve_with};
+///
+/// // 16 Poush 2080 is 1 January 2024.
+/// let bs = CivilDateTime::at(CalendarDate::defined(Calendar::BikramSambat, 2080, 9, 16), CivilTime::NOON);
+/// let ad = CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1), CivilTime::NOON);
+/// let (zone, policy, tzdb) = (ZoneSpec::iana("Asia/Kathmandu"), Policy::default(), EmbeddedTzdb::shared());
+/// let read = resolve_with(BikramSambat::shipped(), &bs, &zone, &policy, tzdb)?;
+/// assert_eq!(read.instant, resolve(&ad, &zone, &policy, tzdb)?.instant);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -408,6 +644,30 @@ pub fn resolve_with(
 
 /// What the `SUNRISE` unknown-time fallback needs: a solar model, the
 /// place, and the policy for a day without a sunrise.
+///
+/// ```
+/// use teistro_calendar::CalendarDate;
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_core::settings::{PolarDayPolicy, UnknownTime};
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_time::{CivilDateTime, DayContext, EmbeddedTzdb, Policy, Warning, ZoneSpec, resolve_at_place};
+///
+/// let text = SuryaSiddhanta::text();
+/// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// let day = DayContext { model: &text, place: kathmandu, polar_day_policy: PolarDayPolicy::Undefined };
+/// let sunrise = Policy { unknown_time: UnknownTime::Sunrise, ..Policy::default() };
+/// let zone = ZoneSpec::iana("Asia/Kathmandu");
+///
+/// // A birth with a date and no time, read at that day's sunrise.
+/// let birth = CivilDateTime::date_only(CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1));
+/// let read = resolve_at_place(&birth, &zone, &sunrise, EmbeddedTzdb::shared(), day)?;
+/// assert!(read.zone.has(Warning::TimeUnknownFallback) && !read.zone.time_known);
+/// // Winter sunrise at Kathmandu is a little before seven.
+/// let time = read.civil.time.unwrap();
+/// assert!((6..8).contains(&time.hour()), "{time}");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy)]
 pub struct DayContext<'a> {
     /// The solar model the sunrise comes from.
@@ -462,6 +722,28 @@ impl LocalClock for ProviderClock<'_> {
 /// zone, with `time_known` false and the fallback warning raised. With a
 /// time given, or another policy, this is [`resolve`].
 ///
+/// ```
+/// use teistro_calendar::CalendarDate;
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_core::settings::{PolarDayPolicy, UnknownTime};
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_time::{CivilDateTime, DayContext, EmbeddedTzdb, Policy, Warning, ZoneSpec, resolve_at_place};
+///
+/// let text = SuryaSiddhanta::text();
+/// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// let day = DayContext { model: &text, place: kathmandu, polar_day_policy: PolarDayPolicy::Undefined };
+/// let sunrise = Policy { unknown_time: UnknownTime::Sunrise, ..Policy::default() };
+/// let zone = ZoneSpec::iana("Asia/Kathmandu");
+/// use teistro_time::{CivilTime, resolve};
+///
+/// // A time given is read as given: this is `resolve`.
+/// let noon = CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1), CivilTime::NOON);
+/// let tzdb = EmbeddedTzdb::shared();
+/// assert_eq!(resolve_at_place(&noon, &zone, &sunrise, tzdb, day)?, resolve(&noon, &zone, &sunrise, tzdb)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`resolve`], plus the model's refusal and a polar day under the
@@ -484,6 +766,31 @@ pub fn resolve_at_place(
 }
 
 /// [`resolve_at_place`] through a given calendar.
+///
+/// ```
+/// use teistro_calendar::CalendarDate;
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_core::settings::{PolarDayPolicy, UnknownTime};
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_time::{CivilDateTime, DayContext, EmbeddedTzdb, Policy, Warning, ZoneSpec, resolve_at_place};
+///
+/// let text = SuryaSiddhanta::text();
+/// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// let day = DayContext { model: &text, place: kathmandu, polar_day_policy: PolarDayPolicy::Undefined };
+/// let sunrise = Policy { unknown_time: UnknownTime::Sunrise, ..Policy::default() };
+/// let zone = ZoneSpec::iana("Asia/Kathmandu");
+/// use teistro_calendar::BikramSambat;
+/// use teistro_time::resolve_at_place_with;
+///
+/// // 16 Poush 2080 is 1 January 2024: the same sunrise either way.
+/// let bs = CivilDateTime::date_only(CalendarDate::defined(Calendar::BikramSambat, 2080, 9, 16));
+/// let ad = CivilDateTime::date_only(CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1));
+/// let tzdb = EmbeddedTzdb::shared();
+/// let read = resolve_at_place_with(BikramSambat::shipped(), &bs, &zone, &sunrise, tzdb, day)?;
+/// assert_eq!(read.instant, resolve_at_place(&ad, &zone, &sunrise, tzdb, day)?.instant);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -667,6 +974,19 @@ fn fold_leap_second(
 /// The civil date-time of an instant in a zone, in the Gregorian
 /// calendar, with the resolution that applied.
 ///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_time::{CivilTime, EmbeddedTzdb, ZoneSpec, civil_of};
+///
+/// // 06:15 UTC on 1 January 2024.
+/// let instant = JulianDay::<Utc>::try_new(2_460_310.5 + 6.25 / 24.0)?;
+/// let (civil, zone) = civil_of(instant, &ZoneSpec::iana("Asia/Kathmandu"), EmbeddedTzdb::shared())?;
+/// assert_eq!((civil.date.year, civil.date.month, civil.date.day), (2024, 1, 1));
+/// assert_eq!(civil.time, Some(CivilTime::NOON));
+/// assert_eq!(zone.offset.seconds(), 5 * 3600 + 45 * 60);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// An unknown zone, or an instant outside the calendar.
@@ -679,6 +999,18 @@ pub fn civil_of(
 }
 
 /// The civil date-time of an instant in a zone, in a given calendar.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_time::{CivilTime, EmbeddedTzdb, ZoneSpec, civil_of_with};
+/// use teistro_calendar::BikramSambat;
+///
+/// // 06:15 UTC on 1 January 2024.
+/// let instant = JulianDay::<Utc>::try_new(2_460_310.5 + 6.25 / 24.0)?;
+/// let (civil, _) = civil_of_with(BikramSambat::shipped(), instant, &ZoneSpec::iana("Asia/Kathmandu"), EmbeddedTzdb::shared())?;
+/// assert_eq!((civil.date.year, civil.date.month, civil.date.day), (2080, 9, 16));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -756,6 +1088,20 @@ pub fn civil_of_with(
 
 /// The date of an instant under a clock, in a calendar: the civil day
 /// the instant falls in.
+///
+/// ```
+/// use teistro_calendar::Gregorian;
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_core::time::UtcOffset;
+/// use teistro_time::zone::date_of;
+///
+/// // 20:00 UTC on 31 December 2023 is already 1 January at Kathmandu.
+/// let instant = JulianDay::<Utc>::try_new(2_460_310.5 - 4.0 / 24.0)?;
+/// let ymd = |offset| date_of(instant, &offset, &Gregorian).map(|date| (date.year, date.month, date.day));
+/// assert_eq!(ymd(UtcOffset::literal(5, 45, 0))?, (2024, 1, 1));
+/// assert_eq!(ymd(UtcOffset::UTC)?, (2023, 12, 31));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
