@@ -1,11 +1,23 @@
 {
   "os": "macos",
   "arch": "aarch64",
-  "commit": "d9965f0d3",
+  "commit": "749d9f824",
   "node": "v26.12.0",
   "corpus": 55,
   "differ": [],
   "refused": [
+    {
+      "id": "c028",
+      "side": "sdk",
+      "request": "month",
+      "reason": "the month-start rule needs a sunrise on RD 725934 at 69.6492°N 18.9553°E 10 m, where the Sun does not rise"
+    },
+    {
+      "id": "c029",
+      "side": "sdk",
+      "request": "month",
+      "reason": "the month-start rule needs a sunrise on RD 726115 at 69.6492°N 18.9553°E 10 m, where the Sun does not rise"
+    },
     {
       "id": "c047",
       "side": "sdk",
@@ -13,9 +25,69 @@
       "reason": "MOON at JD 2378496.179673321: OutOfRange"
     },
     {
+      "id": "c047",
+      "side": "sdk",
+      "request": "full",
+      "reason": "MOON at JD 2378496.179673321: OutOfRange"
+    },
+    {
+      "id": "c047",
+      "side": "sdk",
+      "request": "yogas",
+      "reason": "MOON at JD 2378496.179673321: OutOfRange"
+    },
+    {
+      "id": "c047",
+      "side": "sdk",
+      "request": "month",
+      "reason": "MOON at JD 2378496.179673321: OutOfRange"
+    },
+    {
+      "id": "c047",
+      "side": "sdk",
+      "request": "batch",
+      "reason": "MOON at JD 2378496.179673321: OutOfRange"
+    },
+    {
       "id": "c048",
       "side": "sdk",
       "request": "day",
+      "reason": "MOON at JD 2597641.5517241377: OutOfRange"
+    },
+    {
+      "id": "c048",
+      "side": "sdk",
+      "request": "full",
+      "reason": "MOON at JD 2597641.5517241377: OutOfRange"
+    },
+    {
+      "id": "c048",
+      "side": "sdk",
+      "request": "yogas",
+      "reason": "MOON at JD 2597641.5517241377: OutOfRange"
+    },
+    {
+      "id": "c048",
+      "side": "sdk",
+      "request": "month",
+      "reason": "SUN at JD 2597642.2629888887 UT1: the provider answered OutOfRange"
+    },
+    {
+      "id": "c048",
+      "side": "sdk",
+      "request": "varsha",
+      "reason": "Cannot read properties of undefined (reading 'annual')"
+    },
+    {
+      "id": "c048",
+      "side": "sdk",
+      "request": "gochar",
+      "reason": "the provider could not place SUN: OutOfRange"
+    },
+    {
+      "id": "c048",
+      "side": "sdk",
+      "request": "batch",
       "reason": "MOON at JD 2597641.5517241377: OutOfRange"
     }
   ],
@@ -26,9 +98,9 @@
       "request": "chart",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 1232.2681818181743,
-      "min_us": 1183.984090909094,
-      "max_us": 1813.0083454545622
+      "median_us": 1454.836363636423,
+      "min_us": 1384.4605999998748,
+      "max_us": 1647.3136363635685
     },
     {
       "side": "baseline",
@@ -36,9 +108,9 @@
       "request": "chart",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 7276.845454545467,
-      "min_us": 7158.981818181813,
-      "max_us": 7707.73332727273
+      "median_us": 7617.087109090856,
+      "min_us": 7527.657581818163,
+      "max_us": 8423.99090909087
     },
     {
       "side": "sdk",
@@ -46,9 +118,9 @@
       "request": "day",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 617.0290943396054,
-      "min_us": 601.0959245283269,
-      "max_us": 624.0856981132207
+      "median_us": 1125.4308113206687,
+      "min_us": 1111.0880566038245,
+      "max_us": 1165.4976415093702
     },
     {
       "side": "baseline",
@@ -56,9 +128,4615 @@
       "request": "day",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 11886.969339622636,
-      "min_us": 11774.444169811311,
-      "max_us": 12459.878924528313
+      "median_us": 11946.697339622571,
+      "min_us": 11829.15015094326,
+      "max_us": 12459.558962264158
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "full",
+      "rounds": 15,
+      "inputs": 53,
+      "median_us": 34072.56052830149,
+      "min_us": 33817.336471698065,
+      "max_us": 34840.23192452837
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "full",
+      "rounds": 15,
+      "inputs": 53,
+      "median_us": 52841.65016981116,
+      "min_us": 52292.44654716975,
+      "max_us": 54677.41586792449
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "vargas",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 853.1901454547716,
+      "min_us": 822.7931818178728,
+      "max_us": 874.349254545417
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "vargas",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 5784.719709091058,
+      "min_us": 5714.115909090668,
+      "max_us": 6840.962890909181
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "yogas",
+      "rounds": 15,
+      "inputs": 53,
+      "median_us": 12654.421377358716,
+      "min_us": 12446.459132075344,
+      "max_us": 13226.717754717441
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "yogas",
+      "rounds": 15,
+      "inputs": 53,
+      "median_us": 5934.2908679248485,
+      "min_us": 5889.036169811042,
+      "max_us": 6317.488207547148
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "strength",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 562.4121090910525,
+      "min_us": 536.9325818181758,
+      "max_us": 592.9772727270822
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "strength",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 5906.6878727272115,
+      "min_us": 5792.71060000015,
+      "max_us": 6380.912872727177
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "dashas",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 15658.418181817979,
+      "min_us": 15487.112127273047,
+      "max_us": 16242.1628727276
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "dashas",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 41209.77878181835,
+      "min_us": 40764.65150909127,
+      "max_us": 42289.34016363611
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "month",
+      "rounds": 15,
+      "inputs": 51,
+      "median_us": 12093.024509804844,
+      "min_us": 11955.848039215769,
+      "max_us": 12696.745921567757
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "month",
+      "rounds": 15,
+      "inputs": 51,
+      "median_us": 363310.72468627425,
+      "min_us": 356268.0580000001,
+      "max_us": 365105.93382352917
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "milan",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 669.973490910012,
+      "min_us": 637.4545454555614,
+      "max_us": 716.6249999988147
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "milan",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 11481.466654546304,
+      "min_us": 11405.850000000051,
+      "max_us": 12552.213636364533
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "varsha",
+      "rounds": 15,
+      "inputs": 54,
+      "median_us": 2618.570203703173,
+      "min_us": 2551.6226851851334,
+      "max_us": 3103.6388888907686
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "varsha",
+      "rounds": 15,
+      "inputs": 54,
+      "median_us": 6733.707555554617,
+      "min_us": 6417.797833334016,
+      "max_us": 7282.761574073919
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "kp",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 580.0537999994544,
+      "min_us": 549.6431818189608,
+      "max_us": 612.1704545464705
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "kp",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 5767.843181817708,
+      "min_us": 5728.561363635923,
+      "max_us": 6407.821218182587
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "gochar",
+      "rounds": 15,
+      "inputs": 54,
+      "median_us": 566.6010740721874,
+      "min_us": 542.887351852928,
+      "max_us": 706.0594074083148
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "gochar",
+      "rounds": 15,
+      "inputs": 54,
+      "median_us": 6217.773148147562,
+      "min_us": 5896.0107962958755,
+      "max_us": 7262.124999999759
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "sadeSati",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 2505.7530363640662,
+      "min_us": 2455.3166545461863,
+      "max_us": 3003.306072728116
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "sadeSati",
+      "rounds": 15,
+      "inputs": 55,
+      "median_us": 23072.764399999076,
+      "min_us": 22787.24999999924,
+      "max_us": 24091.527272727002
+    },
+    {
+      "side": "sdk",
+      "version": "teistro 0.0.0",
+      "request": "batch",
+      "rounds": 15,
+      "inputs": 53,
+      "median_us": 228273.78696226075,
+      "min_us": 224828.7209056599,
+      "max_us": 236004.1808113214
+    },
+    {
+      "side": "baseline",
+      "version": "baseline 0.6.173",
+      "request": "batch",
+      "rounds": 15,
+      "inputs": 53,
+      "median_us": 547668.2248301847,
+      "min_us": 536045.194962264,
+      "max_us": 563806.9119433947
     }
-  ]
+  ],
+  "parallelism": 10,
+  "load": [
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 756.3333333333334,
+      "min_rps": 744.3333333333334,
+      "max_rps": 758.3333333333334
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 758.0,
+      "min_rps": 746.6666666666666,
+      "max_rps": 761.3333333333334
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 140.0,
+      "min_rps": 137.0,
+      "max_rps": 140.66666666666666
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 144.0,
+      "min_rps": 142.33333333333334,
+      "max_rps": 144.33333333333334
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 2,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 284.6666666666667,
+      "min_rps": 278.6666666666667,
+      "max_rps": 286.0
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 2,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 1455.0,
+      "min_rps": 1445.3333333333333,
+      "max_rps": 1460.3333333333333
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 2,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 1486.3333333333333,
+      "min_rps": 1467.3333333333333,
+      "max_rps": 1494.6666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 4,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 2770.3333333333335,
+      "min_rps": 2744.6666666666665,
+      "max_rps": 2798.6666666666665
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 4,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 2936.0,
+      "min_rps": 2929.0,
+      "max_rps": 2992.0
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 4,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 562.6666666666666,
+      "min_rps": 561.6666666666666,
+      "max_rps": 563.0
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 8,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 916.0,
+      "min_rps": 906.0,
+      "max_rps": 924.6666666666666
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 8,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 4452.0,
+      "min_rps": 4333.666666666667,
+      "max_rps": 4472.666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 8,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 4806.0,
+      "min_rps": 4552.0,
+      "max_rps": 4909.666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 10,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 4164.666666666667,
+      "min_rps": 3888.6666666666665,
+      "max_rps": 4341.333333333333
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 10,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 5031.0,
+      "min_rps": 4519.0,
+      "max_rps": 5076.666666666667
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "processes",
+      "threads": 10,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 975.0,
+      "min_rps": 949.6666666666666,
+      "max_rps": 985.6666666666666
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "threads",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 84.0,
+      "min_rps": 83.0,
+      "max_rps": 84.66666666666667
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "processes",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 82.33333333333333,
+      "min_rps": 82.33333333333333,
+      "max_rps": 83.66666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "threads",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 1632.6666666666667,
+      "min_rps": 1599.0,
+      "max_rps": 1640.6666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "processes",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 1617.3333333333333,
+      "min_rps": 1614.0,
+      "max_rps": 1641.6666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "threads",
+      "threads": 2,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 2994.0,
+      "min_rps": 2902.0,
+      "max_rps": 3032.3333333333335
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "processes",
+      "threads": 2,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 3311.3333333333335,
+      "min_rps": 3253.0,
+      "max_rps": 3319.6666666666665
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "processes",
+      "threads": 2,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 168.0,
+      "min_rps": 168.0,
+      "max_rps": 168.66666666666666
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "processes",
+      "threads": 4,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 332.6666666666667,
+      "min_rps": 329.0,
+      "max_rps": 333.6666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "threads",
+      "threads": 4,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 5799.333333333333,
+      "min_rps": 5766.666666666667,
+      "max_rps": 5813.0
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "processes",
+      "threads": 4,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 6649.333333333333,
+      "min_rps": 6587.333333333333,
+      "max_rps": 6670.666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "threads",
+      "threads": 8,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 8898.0,
+      "min_rps": 8831.0,
+      "max_rps": 9023.0
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "processes",
+      "threads": 8,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 10744.333333333334,
+      "min_rps": 10615.333333333334,
+      "max_rps": 10855.0
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "processes",
+      "threads": 8,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 486.6666666666667,
+      "min_rps": 441.0,
+      "max_rps": 490.6666666666667
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "processes",
+      "threads": 10,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 551.6666666666666,
+      "min_rps": 550.0,
+      "max_rps": 570.0
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "threads",
+      "threads": 10,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 9592.666666666666,
+      "min_rps": 9234.666666666666,
+      "max_rps": 9681.0
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "mode": "processes",
+      "threads": 10,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 11125.666666666666,
+      "min_rps": 10875.666666666666,
+      "max_rps": 11501.0
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "threads",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 30.0,
+      "min_rps": 29.666666666666668,
+      "max_rps": 30.666666666666668
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "processes",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 31.0,
+      "min_rps": 29.666666666666668,
+      "max_rps": 31.0
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "threads",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 18.0,
+      "min_rps": 17.666666666666668,
+      "max_rps": 18.333333333333332
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "processes",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 18.666666666666668,
+      "min_rps": 18.0,
+      "max_rps": 18.666666666666668
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "processes",
+      "threads": 2,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 37.0,
+      "min_rps": 35.666666666666664,
+      "max_rps": 38.333333333333336
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "threads",
+      "threads": 2,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 54.0,
+      "min_rps": 46.0,
+      "max_rps": 54.666666666666664
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "processes",
+      "threads": 2,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 46.333333333333336,
+      "min_rps": 22.666666666666668,
+      "max_rps": 58.0
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "threads",
+      "threads": 4,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 96.66666666666667,
+      "min_rps": 91.66666666666667,
+      "max_rps": 101.66666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "processes",
+      "threads": 4,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 110.66666666666667,
+      "min_rps": 102.33333333333333,
+      "max_rps": 113.33333333333333
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "processes",
+      "threads": 4,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 45.666666666666664,
+      "min_rps": 42.666666666666664,
+      "max_rps": 63.333333333333336
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "processes",
+      "threads": 8,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 96.0,
+      "min_rps": 91.33333333333333,
+      "max_rps": 98.66666666666667
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "threads",
+      "threads": 8,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 167.66666666666666,
+      "min_rps": 167.33333333333334,
+      "max_rps": 172.66666666666666
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "processes",
+      "threads": 8,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 158.33333333333334,
+      "min_rps": 146.66666666666666,
+      "max_rps": 161.0
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "threads",
+      "threads": 10,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 190.33333333333334,
+      "min_rps": 188.0,
+      "max_rps": 194.66666666666666
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "mode": "processes",
+      "threads": 10,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 175.0,
+      "min_rps": 130.33333333333334,
+      "max_rps": 182.33333333333334
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "processes",
+      "threads": 10,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 79.0,
+      "min_rps": 78.66666666666667,
+      "max_rps": 96.33333333333333
+    }
+  ],
+  "unloaded": [
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 2,
+      "reason": "died of SIGSEGV: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 4,
+      "reason": "died of SIGSEGV: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 8,
+      "reason": "died of SIGSEGV: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "mode": "threads",
+      "threads": 10,
+      "reason": "died of SIGABRT: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "threads",
+      "threads": 2,
+      "reason": "died of SIGSEGV: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "threads",
+      "threads": 4,
+      "reason": "died of SIGSEGV: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "threads",
+      "threads": 8,
+      "reason": "died of SIGSEGV: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "mode": "threads",
+      "threads": 10,
+      "reason": "died of SIGABRT: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "threads",
+      "threads": 2,
+      "reason": "died of SIGSEGV: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "threads",
+      "threads": 4,
+      "reason": "died of SIGSEGV: nothing on stderr"
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "threads",
+      "threads": 8,
+      "reason": "died of SIGABRT: 9: warmed (file:///Users/iamkrishnaa/Projects/Teispace/teistro/teistro-sdk/.claude/worktrees/agent-a253d46103ea6b3f0/bindings/node/bench/ab-load.mjs:92:20)"
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "threads",
+      "threads": 10,
+      "reason": "died of SIGSEGV: nothing on stderr"
+    }
+  ],
+  "tail": [
+    {
+      "side": "baseline",
+      "request": "chart",
+      "percentile": 50,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 4159,
+      "median_us": 7136.04199999827,
+      "min_us": 7047.375000001921,
+      "max_us": 7247.499999999491
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "percentile": 95,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 4159,
+      "median_us": 8698.875000000044,
+      "min_us": 8462.625000000116,
+      "max_us": 8823.54099999975
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "percentile": 99,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 4159,
+      "median_us": 9437.458000000333,
+      "min_us": 8911.499999998341,
+      "max_us": 12581.208000003244
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "percentile": 50,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 21706,
+      "median_us": 1330.0830000007409,
+      "min_us": 1290.1249999995343,
+      "max_us": 1363.24999999988
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "percentile": 95,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 21706,
+      "median_us": 1575.0829999997222,
+      "min_us": 1497.3329999993439,
+      "max_us": 1815.0840000016615
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "percentile": 99,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 21706,
+      "median_us": 2309.625000001688,
+      "min_us": 2120.7919999997102,
+      "max_us": 3018.458999998984
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "percentile": 50,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 49111,
+      "median_us": 593.9999999991414,
+      "min_us": 580.8329999999842,
+      "max_us": 597.1669999998994
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "percentile": 95,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 49111,
+      "median_us": 722.6249999994252,
+      "min_us": 683.9579999978014,
+      "max_us": 764.500000001135
+    },
+    {
+      "side": "sdk",
+      "request": "day",
+      "percentile": 99,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 49111,
+      "median_us": 917.4999999995634,
+      "min_us": 872.0000000030268,
+      "max_us": 1073.7090000002354
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "percentile": 50,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 2532,
+      "median_us": 11840.4589999991,
+      "min_us": 11756.333999997878,
+      "max_us": 11870.999999999185
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "percentile": 95,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 2532,
+      "median_us": 12791.625000001659,
+      "min_us": 12631.124999999884,
+      "max_us": 12841.500000000451
+    },
+    {
+      "side": "baseline",
+      "request": "day",
+      "percentile": 99,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 2532,
+      "median_us": 13410.166000001482,
+      "min_us": 13141.749999998865,
+      "max_us": 14931.125000002794
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "percentile": 50,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 576,
+      "median_us": 51039.54200000044,
+      "min_us": 49145.2500000014,
+      "max_us": 52722.750000000815
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "percentile": 95,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 576,
+      "median_us": 65418.87500000121,
+      "min_us": 63749.08299999879,
+      "max_us": 71809.45799999972
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "percentile": 99,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 576,
+      "median_us": 72104.04199999903,
+      "min_us": 70548.12499999935,
+      "max_us": 85711.20899999733
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "percentile": 50,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 899,
+      "median_us": 33377.20900000204,
+      "min_us": 32043.4580000001,
+      "max_us": 33994.707999998354
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "percentile": 95,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 899,
+      "median_us": 35886.70800000182,
+      "min_us": 34156.041999998706,
+      "max_us": 36959.95799999946
+    },
+    {
+      "side": "sdk",
+      "request": "full",
+      "percentile": 99,
+      "seconds": 30.0,
+      "windows": 10,
+      "requests": 899,
+      "median_us": 42764.66699999946,
+      "min_us": 35724.70799999974,
+      "max_us": 175197.2910000004
+    }
+  ],
+  "cold": [
+    {
+      "side": "sdk",
+      "phase": "open",
+      "runs": 9,
+      "median_ms": 32.385416,
+      "min_ms": 30.387083,
+      "max_ms": 40.892375
+    },
+    {
+      "side": "sdk",
+      "phase": "first",
+      "runs": 9,
+      "median_ms": 28.460917,
+      "min_ms": 26.474208,
+      "max_ms": 63.715625
+    },
+    {
+      "side": "sdk",
+      "phase": "process",
+      "runs": 9,
+      "median_ms": 152.19482421875,
+      "min_ms": 145.92529296875,
+      "max_ms": 201.0947265625
+    },
+    {
+      "side": "baseline",
+      "phase": "open",
+      "runs": 9,
+      "median_ms": 729.126167,
+      "min_ms": 687.338375,
+      "max_ms": 804.028208
+    },
+    {
+      "side": "baseline",
+      "phase": "first",
+      "runs": 9,
+      "median_ms": 35.27662500000008,
+      "min_ms": 33.810499999999934,
+      "max_ms": 106.15116699999999
+    },
+    {
+      "side": "baseline",
+      "phase": "process",
+      "runs": 9,
+      "median_ms": 911.421875,
+      "min_ms": 816.50146484375,
+      "max_ms": 941.141357421875
+    }
+  ],
+  "memory": [
+    {
+      "side": "sdk",
+      "request": "chart",
+      "measure": "peak-rss",
+      "unit": "MB",
+      "runs": 3,
+      "requests": 10000,
+      "median_value": 465.75,
+      "min_value": 400.328125,
+      "max_value": 610.1875
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "measure": "heap",
+      "unit": "MB",
+      "runs": 3,
+      "requests": 10000,
+      "median_value": 8.86328125,
+      "min_value": 8.86328125,
+      "max_value": 8.8642578125
+    },
+    {
+      "side": "sdk",
+      "request": "chart",
+      "measure": "heap-growth",
+      "unit": "KB",
+      "runs": 3,
+      "requests": 10000,
+      "median_value": -1037.0,
+      "min_value": -1037.0,
+      "max_value": -1037.0
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "measure": "peak-rss",
+      "unit": "MB",
+      "runs": 3,
+      "requests": 10000,
+      "median_value": 297.484375,
+      "min_value": 297.15625,
+      "max_value": 297.640625
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "measure": "heap",
+      "unit": "MB",
+      "runs": 3,
+      "requests": 10000,
+      "median_value": 46.0126953125,
+      "min_value": 46.01171875,
+      "max_value": 46.1767578125
+    },
+    {
+      "side": "baseline",
+      "request": "chart",
+      "measure": "heap-growth",
+      "unit": "KB",
+      "runs": 3,
+      "requests": 10000,
+      "median_value": 220.0,
+      "min_value": 220.0,
+      "max_value": 388.0
+    }
+  ],
+  "accuracy": {
+    "agree": [
+      {
+        "convention": "timed",
+        "request": "chart",
+        "family": "longitude",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 550,
+        "matches": 5,
+        "share": 0.00909090909090909,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 13.920803394830727,
+        "max": 3576.0832788790594,
+        "worst": {
+          "id": "c007",
+          "key": "longitude/MOON",
+          "apart": 3576.0832788790594
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "chart",
+        "family": "sign",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 550,
+        "matches": 548,
+        "share": 0.9963636363636363,
+        "mismatches": [
+          {
+            "id": "c052",
+            "key": "sign/SUN",
+            "sdk": 11,
+            "baseline": 0
+          },
+          {
+            "id": "c054",
+            "key": "sign/LAGNA",
+            "sdk": 0,
+            "baseline": 1
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "chart",
+        "family": "nakshatra",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 550,
+        "matches": 545,
+        "share": 0.990909090909091,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "nakshatra/MOON",
+            "sdk": 12,
+            "baseline": 13
+          },
+          {
+            "id": "c015",
+            "key": "nakshatra/MOON",
+            "sdk": 9,
+            "baseline": 10
+          },
+          {
+            "id": "c021",
+            "key": "nakshatra/MOON",
+            "sdk": 13,
+            "baseline": 14
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "chart",
+        "family": "pada",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 550,
+        "matches": 536,
+        "share": 0.9745454545454545,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "pada/MOON",
+            "sdk": 3,
+            "baseline": 0
+          },
+          {
+            "id": "c014",
+            "key": "pada/MOON",
+            "sdk": 2,
+            "baseline": 3
+          },
+          {
+            "id": "c015",
+            "key": "pada/MOON",
+            "sdk": 3,
+            "baseline": 0
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "chart",
+        "family": "retrograde",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 495,
+        "matches": 495,
+        "share": 1.0
+      },
+      {
+        "convention": "timed",
+        "request": "chart",
+        "family": "dashaLord",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 4950,
+        "matches": 4590,
+        "share": 0.9272727272727272,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/0",
+            "sdk": "MOON",
+            "baseline": "MARS"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/0.0",
+            "sdk": "MOON",
+            "baseline": "MARS"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/0.1",
+            "sdk": "MARS",
+            "baseline": "RAHU"
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "chart",
+        "family": "dashaStart",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 4840,
+        "matches": 90,
+        "share": 0.01859504132231405,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 158.17197570484132,
+        "max": 7240.789024983533,
+        "worst": {
+          "id": "c049",
+          "key": "dashaStart/VIMSHOTTARI/8",
+          "apart": 7240.789024983533
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "day",
+        "family": "event",
+        "inputs": 53,
+        "unpaired": 1,
+        "compared": 376,
+        "matches": 266,
+        "share": 0.7074468085106383,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 17.335814237594604,
+        "max": 86400.0,
+        "worst": {
+          "id": "c029",
+          "key": "event/sunset",
+          "apart": 86400
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "day",
+        "family": "limb",
+        "inputs": 53,
+        "unpaired": 1,
+        "compared": 482,
+        "matches": 480,
+        "share": 0.995850622406639,
+        "mismatches": [
+          {
+            "id": "c021",
+            "key": "limb/karana/0",
+            "sdk": 6,
+            "baseline": 5
+          },
+          {
+            "id": "c021",
+            "key": "limb/karana/1",
+            "sdk": 0,
+            "baseline": 6
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "longitude",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 5,
+        "share": 0.009433962264150943,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 13.975320104646016,
+        "max": 3576.0832788790594,
+        "worst": {
+          "id": "c007",
+          "key": "longitude/MOON",
+          "apart": 3576.0832788790594
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "sign",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 528,
+        "share": 0.9962264150943396,
+        "mismatches": [
+          {
+            "id": "c052",
+            "key": "sign/SUN",
+            "sdk": 11,
+            "baseline": 0
+          },
+          {
+            "id": "c054",
+            "key": "sign/LAGNA",
+            "sdk": 0,
+            "baseline": 1
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "nakshatra",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 525,
+        "share": 0.9905660377358491,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "nakshatra/MOON",
+            "sdk": 12,
+            "baseline": 13
+          },
+          {
+            "id": "c015",
+            "key": "nakshatra/MOON",
+            "sdk": 9,
+            "baseline": 10
+          },
+          {
+            "id": "c021",
+            "key": "nakshatra/MOON",
+            "sdk": 13,
+            "baseline": 14
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "pada",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 516,
+        "share": 0.9735849056603774,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "pada/MOON",
+            "sdk": 3,
+            "baseline": 0
+          },
+          {
+            "id": "c014",
+            "key": "pada/MOON",
+            "sdk": 2,
+            "baseline": 3
+          },
+          {
+            "id": "c015",
+            "key": "pada/MOON",
+            "sdk": 3,
+            "baseline": 0
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "retrograde",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 477,
+        "matches": 477,
+        "share": 1.0
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "varga",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 11130,
+        "matches": 10799,
+        "share": 0.9702605570530098,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "varga/D5/MOON",
+            "sdk": 11,
+            "baseline": 5
+          },
+          {
+            "id": "c001",
+            "key": "varga/D10/MOON",
+            "sdk": 7,
+            "baseline": 6
+          },
+          {
+            "id": "c001",
+            "key": "varga/D20/MOON",
+            "sdk": 4,
+            "baseline": 3
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 19716,
+        "compared": 118932,
+        "matches": 101388,
+        "share": 0.8524871355060034,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "dashaLord/SHOOLA/0",
+            "sdk": 0,
+            "baseline": 11
+          },
+          {
+            "id": "c001",
+            "key": "dashaLord/SHOOLA/0.0",
+            "sdk": 0,
+            "baseline": 11
+          },
+          {
+            "id": "c001",
+            "key": "dashaLord/SHOOLA/0.1",
+            "sdk": 1,
+            "baseline": 10
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 19292,
+        "compared": 117024,
+        "matches": 44528,
+        "share": 0.3805031446540881,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 83.08732224721462,
+        "max": 21936.93202197971,
+        "worst": {
+          "id": "c021",
+          "key": "dashaStart/KALACHAKRA/17",
+          "apart": 21936.93202197971
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "shadbala",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 2597,
+        "matches": 794,
+        "share": 0.3057373892953408,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 11.858910491674365,
+        "max": 393.2222256932864,
+        "worst": {
+          "id": "c043",
+          "key": "shadbala/MOON/total",
+          "apart": 393.2222256932864
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "bhavaBala",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 636,
+        "matches": 7,
+        "share": 0.0110062893081761,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 78.59463632381278,
+        "max": 453.2218024267969,
+        "worst": {
+          "id": "c043",
+          "key": "bhavaBala/8",
+          "apart": 453.2218024267969
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "bindus",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 5088,
+        "matches": 4979,
+        "share": 0.9785770440251572,
+        "mismatches": [
+          {
+            "id": "c052",
+            "key": "bindus/SUN/1",
+            "sdk": 3,
+            "baseline": 4
+          },
+          {
+            "id": "c052",
+            "key": "bindus/SUN/2",
+            "sdk": 2,
+            "baseline": 1
+          },
+          {
+            "id": "c052",
+            "key": "bindus/SUN/3",
+            "sdk": 4,
+            "baseline": 5
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "full",
+        "family": "yoga",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4611,
+        "matches": 4466,
+        "share": 0.9685534591194969,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c002",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c003",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "vargas",
+        "family": "varga",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 11550,
+        "matches": 11211,
+        "share": 0.9706493506493507,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "varga/D5/MOON",
+            "sdk": 11,
+            "baseline": 5
+          },
+          {
+            "id": "c001",
+            "key": "varga/D10/MOON",
+            "sdk": 7,
+            "baseline": 6
+          },
+          {
+            "id": "c001",
+            "key": "varga/D20/MOON",
+            "sdk": 4,
+            "baseline": 3
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "yogas",
+        "family": "yoga",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4611,
+        "matches": 4466,
+        "share": 0.9685534591194969,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c002",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c003",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "strength",
+        "family": "shadbala",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 2695,
+        "matches": 832,
+        "share": 0.30871985157699444,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 11.46024157084025,
+        "max": 393.2222256932864,
+        "worst": {
+          "id": "c043",
+          "key": "shadbala/MOON/total",
+          "apart": 393.2222256932864
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "strength",
+        "family": "bhavaBala",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 660,
+        "matches": 7,
+        "share": 0.010606060606060607,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 77.336786363986,
+        "max": 453.2218024267969,
+        "worst": {
+          "id": "c043",
+          "key": "bhavaBala/8",
+          "apart": 453.2218024267969
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "strength",
+        "family": "bindus",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 5280,
+        "matches": 5171,
+        "share": 0.9793560606060606,
+        "mismatches": [
+          {
+            "id": "c052",
+            "key": "bindus/SUN/1",
+            "sdk": 3,
+            "baseline": 4
+          },
+          {
+            "id": "c052",
+            "key": "bindus/SUN/2",
+            "sdk": 2,
+            "baseline": 1
+          },
+          {
+            "id": "c052",
+            "key": "bindus/SUN/3",
+            "sdk": 4,
+            "baseline": 5
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "dashas",
+        "family": "dashaLord",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 123420,
+        "matches": 105492,
+        "share": 0.8547399124939232,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "dashaLord/SHOOLA/0",
+            "sdk": 0,
+            "baseline": 11
+          },
+          {
+            "id": "c001",
+            "key": "dashaLord/SHOOLA/0.0",
+            "sdk": 0,
+            "baseline": 11
+          },
+          {
+            "id": "c001",
+            "key": "dashaLord/SHOOLA/0.1",
+            "sdk": 1,
+            "baseline": 10
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "dashas",
+        "family": "dashaStart",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 121440,
+        "matches": 46102,
+        "share": 0.3796277997364954,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 83.08732224721462,
+        "max": 21936.93202197971,
+        "worst": {
+          "id": "c021",
+          "key": "dashaStart/KALACHAKRA/17",
+          "apart": 21936.93202197971
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "month",
+        "family": "event",
+        "inputs": 51,
+        "unpaired": 71,
+        "compared": 10810,
+        "matches": 7511,
+        "share": 0.6948196114708604,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 18.55475753545761,
+        "max": 85775.05428493023,
+        "worst": {
+          "id": "c024",
+          "key": "event/yoga@24/0",
+          "apart": 85775.05428493023
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "month",
+        "family": "limb",
+        "inputs": 51,
+        "unpaired": 71,
+        "compared": 13870,
+        "matches": 13800,
+        "share": 0.9949531362653208,
+        "mismatches": [
+          {
+            "id": "c004",
+            "key": "limb/tithi@2/0",
+            "sdk": 26,
+            "baseline": 25
+          },
+          {
+            "id": "c004",
+            "key": "limb/karana@2/0",
+            "sdk": 2,
+            "baseline": 1
+          },
+          {
+            "id": "c004",
+            "key": "limb/karana@2/1",
+            "sdk": 3,
+            "baseline": 2
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "milan",
+        "family": "koota",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 495,
+        "matches": 329,
+        "share": 0.6646464646464646,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "koota/VASHYA",
+            "sdk": 0,
+            "baseline": 1
+          },
+          {
+            "id": "c001",
+            "key": "koota/GANA",
+            "sdk": 5,
+            "baseline": 6
+          },
+          {
+            "id": "c001",
+            "key": "koota/TOTAL",
+            "sdk": 27.5,
+            "baseline": 29.5
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "milan",
+        "family": "porutham",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 220,
+        "matches": 196,
+        "share": 0.8909090909090909,
+        "mismatches": [
+          {
+            "id": "c004",
+            "key": "porutham/STREE_DEERGHA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c006",
+            "key": "porutham/MAHENDRA",
+            "sdk": true,
+            "baseline": false
+          },
+          {
+            "id": "c006",
+            "key": "porutham/RAJJU",
+            "sdk": false,
+            "baseline": true
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "varsha",
+        "family": "event",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 54,
+        "matches": 13,
+        "share": 0.24074074074074073,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 112.42087483406067,
+        "max": 334.89333540201187,
+        "worst": {
+          "id": "c039",
+          "key": "event/return",
+          "apart": 334.89333540201187
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "varsha",
+        "family": "office",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 378,
+        "matches": 197,
+        "share": 0.5211640211640212,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "office/yearLord",
+            "sdk": "VENUS",
+            "baseline": "SUN"
+          },
+          {
+            "id": "c001",
+            "key": "office/triRashi",
+            "sdk": "VENUS",
+            "baseline": "MARS"
+          },
+          {
+            "id": "c001",
+            "key": "office/dinaRatri",
+            "sdk": "MARS",
+            "baseline": "SUN"
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "varsha",
+        "family": "longitude",
+        "inputs": 54,
+        "unpaired": 1350,
+        "compared": 864,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 243443.9970518436,
+        "max": 647871.0177157976,
+        "worst": {
+          "id": "c036",
+          "key": "longitude/saham/ASHA",
+          "apart": 647871.0177157976
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "varsha",
+        "family": "dashaLord",
+        "inputs": 54,
+        "unpaired": 540,
+        "compared": 4860,
+        "matches": 2340,
+        "share": 0.48148148148148145,
+        "mismatches": [
+          {
+            "id": "c003",
+            "key": "dashaLord/MUDDA/0",
+            "sdk": "VENUS",
+            "baseline": "SUN"
+          },
+          {
+            "id": "c003",
+            "key": "dashaLord/MUDDA/0.0",
+            "sdk": "VENUS",
+            "baseline": "SUN"
+          },
+          {
+            "id": "c003",
+            "key": "dashaLord/MUDDA/0.1",
+            "sdk": "SUN",
+            "baseline": "MOON"
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "varsha",
+        "family": "dashaStart",
+        "inputs": 54,
+        "unpaired": 540,
+        "compared": 4752,
+        "matches": 293,
+        "share": 0.061658249158249155,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 12.972872270271182,
+        "max": 56.385310888290405,
+        "worst": {
+          "id": "c038",
+          "key": "dashaStart/MUDDA/8.8",
+          "apart": 56.385310888290405
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "kp",
+        "family": "longitude",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 1155,
+        "matches": 13,
+        "share": 0.011255411255411256,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 14.537645979726221,
+        "max": 335680.91489561077,
+        "worst": {
+          "id": "c043",
+          "key": "longitude/cusp/2",
+          "apart": 335680.91489561077
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "kp",
+        "family": "kpLord",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 4620,
+        "matches": 4296,
+        "share": 0.9298701298701298,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "kpLord/MOON/sub",
+            "sdk": "MARS",
+            "baseline": "MOON"
+          },
+          {
+            "id": "c001",
+            "key": "kpLord/MOON/subSub",
+            "sdk": "JUPITER",
+            "baseline": "VENUS"
+          },
+          {
+            "id": "c001",
+            "key": "kpLord/RAHU/sub",
+            "sdk": "KETU",
+            "baseline": "MERCURY"
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "gochar",
+        "family": "longitude",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 486,
+        "matches": 36,
+        "share": 0.07407407407407407,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 12.029008670833718,
+        "max": 18.338771520438968,
+        "worst": {
+          "id": "c004",
+          "key": "longitude/transit/SATURN",
+          "apart": 18.338771520438968
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "gochar",
+        "family": "house",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 486,
+        "matches": 486,
+        "share": 1.0
+      },
+      {
+        "convention": "timed",
+        "request": "gochar",
+        "family": "bindus",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 378,
+        "matches": 368,
+        "share": 0.9735449735449735,
+        "mismatches": [
+          {
+            "id": "c052",
+            "key": "bindus/transit/SUN",
+            "sdk": 2,
+            "baseline": 1
+          },
+          {
+            "id": "c052",
+            "key": "bindus/transit/MOON",
+            "sdk": 5,
+            "baseline": 4
+          },
+          {
+            "id": "c052",
+            "key": "bindus/transit/MARS",
+            "sdk": 4,
+            "baseline": 3
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "sadeSati",
+        "family": "event",
+        "inputs": 54,
+        "unpaired": 7,
+        "compared": 328,
+        "matches": 25,
+        "share": 0.07621951219512195,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 2684.375059604645,
+        "max": 35385.156489908695,
+        "worst": {
+          "id": "c010",
+          "key": "event/sadeSati/setting/2/start",
+          "apart": 35385.156489908695
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "longitude",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 5300,
+        "matches": 72,
+        "share": 0.013584905660377358,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 14.732162939935733,
+        "max": 3623.9115496397517,
+        "worst": {
+          "id": "c007",
+          "key": "longitude/MOON@1",
+          "apart": 3623.9115496397517
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "sign",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 5300,
+        "matches": 5289,
+        "share": 0.9979245283018868,
+        "mismatches": [
+          {
+            "id": "c020",
+            "key": "sign/MOON@5",
+            "sdk": 10,
+            "baseline": 11
+          },
+          {
+            "id": "c028",
+            "key": "sign/MOON@9",
+            "sdk": 4,
+            "baseline": 5
+          },
+          {
+            "id": "c036",
+            "key": "sign/MOON@9",
+            "sdk": 7,
+            "baseline": 8
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "nakshatra",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 5300,
+        "matches": 5272,
+        "share": 0.9947169811320755,
+        "mismatches": [
+          {
+            "id": "c002",
+            "key": "nakshatra/MOON@1",
+            "sdk": 4,
+            "baseline": 3
+          },
+          {
+            "id": "c002",
+            "key": "nakshatra/JUPITER@5",
+            "sdk": 21,
+            "baseline": 22
+          },
+          {
+            "id": "c003",
+            "key": "nakshatra/MOON@9",
+            "sdk": 10,
+            "baseline": 9
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "pada",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 5300,
+        "matches": 5216,
+        "share": 0.9841509433962264,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "pada/MOON@3",
+            "sdk": 3,
+            "baseline": 2
+          },
+          {
+            "id": "c002",
+            "key": "pada/MOON@1",
+            "sdk": 0,
+            "baseline": 3
+          },
+          {
+            "id": "c002",
+            "key": "pada/JUPITER@5",
+            "sdk": 3,
+            "baseline": 0
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "retrograde",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4770,
+        "matches": 4770,
+        "share": 1.0
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "varga",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 111300,
+        "matches": 108032,
+        "share": 0.9706379155435759,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "varga/D5/MOON@0",
+            "sdk": 11,
+            "baseline": 5
+          },
+          {
+            "id": "c001",
+            "key": "varga/D10/MOON@0",
+            "sdk": 7,
+            "baseline": 6
+          },
+          {
+            "id": "c001",
+            "key": "varga/D20/MOON@0",
+            "sdk": 4,
+            "baseline": 3
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 197160,
+        "compared": 1189320,
+        "matches": 1036428,
+        "share": 0.8714458682272223,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "dashaLord/SHOOLA/0@0",
+            "sdk": 0,
+            "baseline": 11
+          },
+          {
+            "id": "c001",
+            "key": "dashaLord/SHOOLA/0.0@0",
+            "sdk": 0,
+            "baseline": 11
+          },
+          {
+            "id": "c001",
+            "key": "dashaLord/SHOOLA/0.1@0",
+            "sdk": 1,
+            "baseline": 10
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 192920,
+        "compared": 1170240,
+        "matches": 448998,
+        "share": 0.38368027071369976,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 81.25815292820334,
+        "max": 22769.280007918365,
+        "worst": {
+          "id": "c004",
+          "key": "dashaStart/KALACHAKRA/17@9",
+          "apart": 22769.280007918365
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "shadbala",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 25970,
+        "matches": 7845,
+        "share": 0.3020793222949557,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 12.338144505496366,
+        "max": 393.2222256932864,
+        "worst": {
+          "id": "c043",
+          "key": "shadbala/MOON/total@0",
+          "apart": 393.2222256932864
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "bhavaBala",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 6360,
+        "matches": 33,
+        "share": 0.005188679245283019,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 78.59703667760658,
+        "max": 453.2218024267969,
+        "worst": {
+          "id": "c043",
+          "key": "bhavaBala/8@0",
+          "apart": 453.2218024267969
+        }
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "bindus",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 50880,
+        "matches": 50240,
+        "share": 0.9874213836477987,
+        "mismatches": [
+          {
+            "id": "c020",
+            "key": "bindus/SUN/0@5",
+            "sdk": 5,
+            "baseline": 4
+          },
+          {
+            "id": "c020",
+            "key": "bindus/SUN/1@5",
+            "sdk": 3,
+            "baseline": 4
+          },
+          {
+            "id": "c020",
+            "key": "bindus/SUN/3@5",
+            "sdk": 6,
+            "baseline": 5
+          }
+        ]
+      },
+      {
+        "convention": "timed",
+        "request": "batch",
+        "family": "yoga",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 46110,
+        "matches": 44775,
+        "share": 0.9710474951203644,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "yoga/LUNAR_KEMADRUMA@0",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c001",
+            "key": "yoga/LUNAR_KEMADRUMA@1",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c001",
+            "key": "yoga/NABHASA_SARPA@1",
+            "sdk": true,
+            "baseline": false
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "chart",
+        "family": "longitude",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 528,
+        "share": 0.9962264150943396,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.0001349920239590574,
+        "max": 12.047052557090865,
+        "worst": {
+          "id": "c048",
+          "key": "longitude/LAGNA",
+          "apart": 12.047052557090865
+        }
+      },
+      {
+        "convention": "same",
+        "request": "chart",
+        "family": "sign",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 530,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "chart",
+        "family": "nakshatra",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 530,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "chart",
+        "family": "pada",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 530,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "chart",
+        "family": "retrograde",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 477,
+        "matches": 477,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "chart",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4770,
+        "matches": 4770,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "chart",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4664,
+        "matches": 4664,
+        "share": 1.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 0.00001676846295595169,
+        "max": 0.0011359928175807,
+        "worst": {
+          "id": "c046",
+          "key": "dashaStart/VIMSHOTTARI/1",
+          "apart": 0.0011359928175807
+        }
+      },
+      {
+        "convention": "same",
+        "request": "day",
+        "family": "event",
+        "inputs": 53,
+        "unpaired": 1,
+        "compared": 377,
+        "matches": 363,
+        "share": 0.9628647214854111,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 2.4996042251586914,
+        "max": 3038077.886867523,
+        "worst": {
+          "id": "c028",
+          "key": "event/yoga/0",
+          "apart": 3038077.886867523
+        }
+      },
+      {
+        "convention": "same",
+        "request": "day",
+        "family": "limb",
+        "inputs": 53,
+        "unpaired": 1,
+        "compared": 483,
+        "matches": 467,
+        "share": 0.9668737060041408,
+        "mismatches": [
+          {
+            "id": "c028",
+            "key": "limb/tithi/0",
+            "sdk": 11,
+            "baseline": 6
+          },
+          {
+            "id": "c028",
+            "key": "limb/tithi/1",
+            "sdk": 12,
+            "baseline": 7
+          },
+          {
+            "id": "c028",
+            "key": "limb/nakshatra/0",
+            "sdk": 17,
+            "baseline": 10
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "longitude",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 510,
+        "matches": 509,
+        "share": 0.9980392156862745,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.00013464332369039766,
+        "max": 7.089713628920435,
+        "worst": {
+          "id": "c046",
+          "key": "longitude/LAGNA",
+          "apart": 7.089713628920435
+        }
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "sign",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 510,
+        "matches": 510,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "nakshatra",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 510,
+        "matches": 510,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "pada",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 510,
+        "matches": 510,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "retrograde",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 459,
+        "matches": 459,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "varga",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 10710,
+        "matches": 10710,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "dashaLord",
+        "inputs": 51,
+        "unpaired": 18972,
+        "compared": 114444,
+        "matches": 114444,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "dashaStart",
+        "inputs": 51,
+        "unpaired": 18564,
+        "compared": 112608,
+        "matches": 112608,
+        "share": 1.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 0.0,
+        "max": 0.0022719851695001125,
+        "worst": {
+          "id": "c046",
+          "key": "dashaStart/KALACHAKRA/1",
+          "apart": 0.0022719851695001125
+        }
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "shadbala",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 2499,
+        "matches": 2459,
+        "share": 0.9839935974389756,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 5.606505482091961e-9,
+        "max": 120.00000001082026,
+        "worst": {
+          "id": "c022",
+          "key": "shadbala/MARS/total",
+          "apart": 120.00000001082026
+        }
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "bhavaBala",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 612,
+        "matches": 578,
+        "share": 0.9444444444444444,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 0.0027812188559437345,
+        "max": 120.0001850415224,
+        "worst": {
+          "id": "c022",
+          "key": "bhavaBala/5",
+          "apart": 120.0001850415224
+        }
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "bindus",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 4896,
+        "matches": 4896,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "family": "yoga",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 4437,
+        "matches": 4309,
+        "share": 0.9711516790624296,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c002",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c003",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "vargas",
+        "family": "varga",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 11130,
+        "matches": 11130,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "yogas",
+        "family": "yoga",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4611,
+        "matches": 4477,
+        "share": 0.9709390587725005,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c002",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c003",
+            "key": "yoga/LUNAR_KEMADRUMA",
+            "sdk": false,
+            "baseline": true
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "strength",
+        "family": "shadbala",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 2597,
+        "matches": 2535,
+        "share": 0.9761262995764344,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 5.785626200349725e-9,
+        "max": 120.00000001082026,
+        "worst": {
+          "id": "c022",
+          "key": "shadbala/MARS/total",
+          "apart": 120.00000001082026
+        }
+      },
+      {
+        "convention": "same",
+        "request": "strength",
+        "family": "bhavaBala",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 636,
+        "matches": 583,
+        "share": 0.9166666666666666,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 0.002825458506265477,
+        "max": 120.0001850415224,
+        "worst": {
+          "id": "c022",
+          "key": "bhavaBala/5",
+          "apart": 120.0001850415224
+        }
+      },
+      {
+        "convention": "same",
+        "request": "strength",
+        "family": "bindus",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 5088,
+        "matches": 5088,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "dashas",
+        "family": "dashaLord",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 123420,
+        "matches": 123420,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "dashas",
+        "family": "dashaStart",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 121440,
+        "matches": 121440,
+        "share": 1.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 0.0,
+        "max": 0.003693203441798687,
+        "worst": {
+          "id": "c048",
+          "key": "dashaStart/KALACHAKRA/1.2",
+          "apart": 0.003693203441798687
+        }
+      },
+      {
+        "convention": "same",
+        "request": "month",
+        "family": "event",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 10846,
+        "matches": 10846,
+        "share": 1.0,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 2.3350104689598083,
+        "max": 9.772266447544098,
+        "worst": {
+          "id": "c043",
+          "key": "event/sunrise@1",
+          "apart": 9.772266447544098
+        }
+      },
+      {
+        "convention": "same",
+        "request": "month",
+        "family": "limb",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 13906,
+        "matches": 13906,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "milan",
+        "family": "koota",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 495,
+        "matches": 339,
+        "share": 0.6848484848484848,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "koota/VASHYA",
+            "sdk": 0,
+            "baseline": 1
+          },
+          {
+            "id": "c001",
+            "key": "koota/GANA",
+            "sdk": 5,
+            "baseline": 6
+          },
+          {
+            "id": "c001",
+            "key": "koota/TOTAL",
+            "sdk": 27.5,
+            "baseline": 29.5
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "milan",
+        "family": "porutham",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 220,
+        "matches": 207,
+        "share": 0.9409090909090909,
+        "mismatches": [
+          {
+            "id": "c004",
+            "key": "porutham/STREE_DEERGHA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c009",
+            "key": "porutham/STREE_DEERGHA",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c016",
+            "key": "porutham/STREE_DEERGHA",
+            "sdk": false,
+            "baseline": true
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "varsha",
+        "family": "event",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 54,
+        "matches": 9,
+        "share": 0.16666666666666666,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 139.09198343753815,
+        "max": 213.202303647995,
+        "worst": {
+          "id": "c008",
+          "key": "event/return",
+          "apart": 213.202303647995
+        }
+      },
+      {
+        "convention": "same",
+        "request": "varsha",
+        "family": "office",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 378,
+        "matches": 198,
+        "share": 0.5238095238095238,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "office/yearLord",
+            "sdk": "VENUS",
+            "baseline": "SUN"
+          },
+          {
+            "id": "c001",
+            "key": "office/triRashi",
+            "sdk": "VENUS",
+            "baseline": "MARS"
+          },
+          {
+            "id": "c001",
+            "key": "office/dinaRatri",
+            "sdk": "MARS",
+            "baseline": "SUN"
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "varsha",
+        "family": "longitude",
+        "inputs": 54,
+        "unpaired": 1350,
+        "compared": 864,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 244083.15285797202,
+        "max": 647101.3036810888,
+        "worst": {
+          "id": "c037",
+          "key": "longitude/saham/YASHA",
+          "apart": 647101.3036810888
+        }
+      },
+      {
+        "convention": "same",
+        "request": "varsha",
+        "family": "dashaLord",
+        "inputs": 54,
+        "unpaired": 540,
+        "compared": 4860,
+        "matches": 2160,
+        "share": 0.4444444444444444,
+        "mismatches": [
+          {
+            "id": "c003",
+            "key": "dashaLord/MUDDA/0",
+            "sdk": "VENUS",
+            "baseline": "SUN"
+          },
+          {
+            "id": "c003",
+            "key": "dashaLord/MUDDA/0.0",
+            "sdk": "VENUS",
+            "baseline": "SUN"
+          },
+          {
+            "id": "c003",
+            "key": "dashaLord/MUDDA/0.1",
+            "sdk": "SUN",
+            "baseline": "MOON"
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "varsha",
+        "family": "dashaStart",
+        "inputs": 54,
+        "unpaired": 540,
+        "compared": 4752,
+        "matches": 290,
+        "share": 0.06102693602693603,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 12.744464022573084,
+        "max": 52.97822916554287,
+        "worst": {
+          "id": "c038",
+          "key": "dashaStart/MUDDA/8.8",
+          "apart": 52.97822916554287
+        }
+      },
+      {
+        "convention": "same",
+        "request": "kp",
+        "family": "longitude",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 1155,
+        "matches": 1111,
+        "share": 0.9619047619047619,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.00013305370885063894,
+        "max": 335678.9151418638,
+        "worst": {
+          "id": "c043",
+          "key": "longitude/cusp/2",
+          "apart": 335678.9151418638
+        }
+      },
+      {
+        "convention": "same",
+        "request": "kp",
+        "family": "kpLord",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 4620,
+        "matches": 4544,
+        "share": 0.9835497835497835,
+        "mismatches": [
+          {
+            "id": "c027",
+            "key": "kpLord/cusp/2/sign",
+            "sdk": "MARS",
+            "baseline": "SATURN"
+          },
+          {
+            "id": "c027",
+            "key": "kpLord/cusp/2/star",
+            "sdk": "KETU",
+            "baseline": "MOON"
+          },
+          {
+            "id": "c027",
+            "key": "kpLord/cusp/2/subSub",
+            "sdk": "SATURN",
+            "baseline": "JUPITER"
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "gochar",
+        "family": "longitude",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 486,
+        "matches": 486,
+        "share": 1.0,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.00014566012396244332,
+        "max": 0.00844077826513967,
+        "worst": {
+          "id": "c046",
+          "key": "longitude/transit/MARS",
+          "apart": 0.00844077826513967
+        }
+      },
+      {
+        "convention": "same",
+        "request": "gochar",
+        "family": "house",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 486,
+        "matches": 486,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "gochar",
+        "family": "bindus",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 378,
+        "matches": 374,
+        "share": 0.9894179894179894,
+        "mismatches": [
+          {
+            "id": "c051",
+            "key": "bindus/transit/SUN",
+            "sdk": 1,
+            "baseline": 2
+          },
+          {
+            "id": "c051",
+            "key": "bindus/transit/MOON",
+            "sdk": 4,
+            "baseline": 5
+          },
+          {
+            "id": "c051",
+            "key": "bindus/transit/MARS",
+            "sdk": 3,
+            "baseline": 4
+          }
+        ]
+      },
+      {
+        "convention": "same",
+        "request": "sadeSati",
+        "family": "event",
+        "inputs": 54,
+        "unpaired": 7,
+        "compared": 328,
+        "matches": 328,
+        "share": 1.0,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 0.15441477298736572,
+        "max": 1.666899025440216,
+        "worst": {
+          "id": "c046",
+          "key": "event/sadeSati/peak/1/end",
+          "apart": 1.666899025440216
+        }
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "longitude",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 5100,
+        "matches": 5090,
+        "share": 0.9980392156862745,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.0001349916146864416,
+        "max": 7.089713628920435,
+        "worst": {
+          "id": "c046",
+          "key": "longitude/LAGNA@0",
+          "apart": 7.089713628920435
+        }
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "sign",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 5100,
+        "matches": 5100,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "nakshatra",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 5100,
+        "matches": 5100,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "pada",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 5100,
+        "matches": 5100,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "retrograde",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 4590,
+        "matches": 4590,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "varga",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 107100,
+        "matches": 107100,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "dashaLord",
+        "inputs": 51,
+        "unpaired": 189720,
+        "compared": 1144440,
+        "matches": 1144440,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "dashaStart",
+        "inputs": 51,
+        "unpaired": 185640,
+        "compared": 1126080,
+        "matches": 1126080,
+        "share": 1.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 0.0,
+        "max": 0.002274816855788231,
+        "worst": {
+          "id": "c046",
+          "key": "dashaStart/KALACHAKRA/1.2@9",
+          "apart": 0.002274816855788231
+        }
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "shadbala",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 24990,
+        "matches": 24730,
+        "share": 0.9895958383353342,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 5.6063900188974e-9,
+        "max": 214.895235413436,
+        "worst": {
+          "id": "c022",
+          "key": "shadbala/SUN/total@5",
+          "apart": 214.895235413436
+        }
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "bhavaBala",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 6120,
+        "matches": 5888,
+        "share": 0.9620915032679739,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 0.0026609626320919233,
+        "max": 214.89195994599385,
+        "worst": {
+          "id": "c022",
+          "key": "bhavaBala/6@5",
+          "apart": 214.89195994599385
+        }
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "bindus",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 48960,
+        "matches": 48960,
+        "share": 1.0
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "family": "yoga",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 44370,
+        "matches": 43110,
+        "share": 0.9716024340770791,
+        "mismatches": [
+          {
+            "id": "c001",
+            "key": "yoga/LUNAR_KEMADRUMA@0",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c001",
+            "key": "yoga/LUNAR_KEMADRUMA@1",
+            "sdk": false,
+            "baseline": true
+          },
+          {
+            "id": "c001",
+            "key": "yoga/NABHASA_SARPA@1",
+            "sdk": true,
+            "baseline": false
+          }
+        ]
+      }
+    ],
+    "reference": [
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "chart",
+        "family": "longitude",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 550,
+        "matches": 548,
+        "share": 0.9963636363636363,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 3.6425262806005776e-8,
+        "max": 12.040305302252818,
+        "worst": {
+          "id": "c048",
+          "key": "longitude/LAGNA",
+          "apart": 12.040305302252818
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "full",
+        "family": "longitude",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 529,
+        "share": 0.9981132075471698,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 3.437889972701669e-8,
+        "max": 7.097928484199656,
+        "worst": {
+          "id": "c046",
+          "key": "longitude/LAGNA",
+          "apart": 7.097928484199656
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "batch",
+        "family": "longitude",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 5300,
+        "matches": 5290,
+        "share": 0.9981132075471698,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 3.437889972701669e-8,
+        "max": 7.097928484199656,
+        "worst": {
+          "id": "c046",
+          "key": "longitude/LAGNA@0",
+          "apart": 7.097928484199656
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "kp",
+        "family": "longitude",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 1131,
+        "matches": 1107,
+        "share": 0.9787798408488063,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.000046888317228876986,
+        "max": 12.040305302252818,
+        "worst": {
+          "id": "c048",
+          "key": "longitude/cusp/1",
+          "apart": 12.040305302252818
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "gochar",
+        "family": "longitude",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 486,
+        "matches": 486,
+        "share": 1.0,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 4.620687832357362e-7,
+        "max": 0.0008040332431846764,
+        "worst": {
+          "id": "c046",
+          "key": "longitude/transit/SUN",
+          "apart": 0.0008040332431846764
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "same",
+        "request": "chart",
+        "family": "longitude",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 528,
+        "share": 0.9962264150943396,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.0001349920239590574,
+        "max": 12.047052557500137,
+        "worst": {
+          "id": "c048",
+          "key": "longitude/LAGNA",
+          "apart": 12.047052557500137
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "same",
+        "request": "full",
+        "family": "longitude",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 510,
+        "matches": 509,
+        "share": 0.9980392156862745,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.00013464332369039766,
+        "max": 7.089713628920435,
+        "worst": {
+          "id": "c046",
+          "key": "longitude/LAGNA",
+          "apart": 7.089713628920435
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "same",
+        "request": "batch",
+        "family": "longitude",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 5100,
+        "matches": 5090,
+        "share": 0.9980392156862745,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.0001349916146864416,
+        "max": 7.089713628920435,
+        "worst": {
+          "id": "c046",
+          "key": "longitude/LAGNA@0",
+          "apart": 7.089713628920435
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "same",
+        "request": "kp",
+        "family": "longitude",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 1131,
+        "matches": 1107,
+        "share": 0.9787798408488063,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.00013303815649123862,
+        "max": 12.047052557090865,
+        "worst": {
+          "id": "c048",
+          "key": "longitude/cusp/1",
+          "apart": 12.047052557090865
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "same",
+        "request": "gochar",
+        "family": "longitude",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 486,
+        "matches": 486,
+        "share": 1.0,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.00014566012396244332,
+        "max": 0.00844077826513967,
+        "worst": {
+          "id": "c046",
+          "key": "longitude/transit/MARS",
+          "apart": 0.00844077826513967
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "chart",
+        "family": "longitude",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 550,
+        "matches": 550,
+        "share": 1.0,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.0,
+        "max": 0.0006563799615832977,
+        "worst": {
+          "id": "c047",
+          "key": "longitude/JUPITER",
+          "apart": 0.0006563799615832977
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "full",
+        "family": "longitude",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 530,
+        "matches": 530,
+        "share": 1.0,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.0,
+        "max": 0.0,
+        "worst": {
+          "id": "c001",
+          "key": "longitude/SUN",
+          "apart": 0
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "batch",
+        "family": "longitude",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 5300,
+        "matches": 5300,
+        "share": 1.0,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.0,
+        "max": 0.0,
+        "worst": {
+          "id": "c001",
+          "key": "longitude/SUN@0",
+          "apart": 0
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "kp",
+        "family": "longitude",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 1131,
+        "matches": 1111,
+        "share": 0.982316534040672,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.0,
+        "max": 335678.91400106245,
+        "worst": {
+          "id": "c043",
+          "key": "longitude/cusp/8",
+          "apart": 335678.91400106245
+        }
+      },
+      {
+        "rung": "swiss-ephemeris",
+        "rank": 2,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "gochar",
+        "family": "longitude",
+        "inputs": 54,
+        "unpaired": 0,
+        "compared": 486,
+        "matches": 486,
+        "share": 1.0,
+        "unit": "″",
+        "tolerance": 1.0,
+        "median": 0.0,
+        "max": 0.0,
+        "worst": {
+          "id": "c001",
+          "key": "longitude/transit/SUN",
+          "apart": 0
+        }
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "chart",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4293,
+        "matches": 4293,
+        "share": 1.0
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "chart",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4240,
+        "matches": 1920,
+        "share": 0.4528301886792453,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 1.2417946085333824,
+        "max": 2.9490162120200694,
+        "worst": {
+          "id": "c051",
+          "key": "dashaStart/VIMSHOTTARI/1.1",
+          "apart": 2.9490162120200694
+        }
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "full",
+        "family": "dashaLord",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 4131,
+        "matches": 4131,
+        "share": 1.0
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "full",
+        "family": "dashaStart",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 4080,
+        "matches": 1840,
+        "share": 0.45098039215686275,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 1.4464425877667964,
+        "max": 2.9490162120200694,
+        "worst": {
+          "id": "c051",
+          "key": "dashaStart/VIMSHOTTARI/1.1",
+          "apart": 2.9490162120200694
+        }
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "dashas",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4293,
+        "matches": 4293,
+        "share": 1.0
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "dashas",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4240,
+        "matches": 1920,
+        "share": 0.4528301886792453,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 1.2417946085333824,
+        "max": 2.9490162120200694,
+        "worst": {
+          "id": "c051",
+          "key": "dashaStart/VIMSHOTTARI/1.1",
+          "apart": 2.9490162120200694
+        }
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "same",
+        "request": "chart",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4293,
+        "matches": 3969,
+        "share": 0.9245283018867925,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/0",
+            "got": "MARS",
+            "reference": "MOON"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1",
+            "got": "RAHU",
+            "reference": "MARS"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1.0",
+            "got": "RAHU",
+            "reference": "MARS"
+          }
+        ]
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "same",
+        "request": "chart",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4240,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 164.6335978526622,
+        "max": 7240.064921699464,
+        "worst": {
+          "id": "c049",
+          "key": "dashaStart/VIMSHOTTARI/8",
+          "apart": 7240.064921699464
+        }
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "same",
+        "request": "full",
+        "family": "dashaLord",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 4131,
+        "matches": 3807,
+        "share": 0.9215686274509803,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/0",
+            "got": "MARS",
+            "reference": "MOON"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1",
+            "got": "RAHU",
+            "reference": "MARS"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1.0",
+            "got": "RAHU",
+            "reference": "MARS"
+          }
+        ]
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "same",
+        "request": "full",
+        "family": "dashaStart",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 4080,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 169.3789560198784,
+        "max": 7240.064921699464,
+        "worst": {
+          "id": "c049",
+          "key": "dashaStart/VIMSHOTTARI/8",
+          "apart": 7240.064921699464
+        }
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "same",
+        "request": "dashas",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4293,
+        "matches": 3969,
+        "share": 0.9245283018867925,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/0",
+            "got": "MARS",
+            "reference": "MOON"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1",
+            "got": "RAHU",
+            "reference": "MARS"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1.0",
+            "got": "RAHU",
+            "reference": "MARS"
+          }
+        ]
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "same",
+        "request": "dashas",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4240,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 164.6335978526622,
+        "max": 7240.064921699464,
+        "worst": {
+          "id": "c049",
+          "key": "dashaStart/VIMSHOTTARI/8",
+          "apart": 7240.064921699464
+        }
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "chart",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4293,
+        "matches": 3969,
+        "share": 0.9245283018867925,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/0",
+            "got": "MARS",
+            "reference": "MOON"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1",
+            "got": "RAHU",
+            "reference": "MARS"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1.0",
+            "got": "RAHU",
+            "reference": "MARS"
+          }
+        ]
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "chart",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4240,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 164.63360403524712,
+        "max": 7240.064931823872,
+        "worst": {
+          "id": "c049",
+          "key": "dashaStart/VIMSHOTTARI/8",
+          "apart": 7240.064931823872
+        }
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "full",
+        "family": "dashaLord",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 4131,
+        "matches": 3807,
+        "share": 0.9215686274509803,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/0",
+            "got": "MARS",
+            "reference": "MOON"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1",
+            "got": "RAHU",
+            "reference": "MARS"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1.0",
+            "got": "RAHU",
+            "reference": "MARS"
+          }
+        ]
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "full",
+        "family": "dashaStart",
+        "inputs": 51,
+        "unpaired": 0,
+        "compared": 4080,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 169.37893775338307,
+        "max": 7240.064931823872,
+        "worst": {
+          "id": "c049",
+          "key": "dashaStart/VIMSHOTTARI/8",
+          "apart": 7240.064931823872
+        }
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "dashas",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4293,
+        "matches": 3969,
+        "share": 0.9245283018867925,
+        "mismatches": [
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/0",
+            "got": "MARS",
+            "reference": "MOON"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1",
+            "got": "RAHU",
+            "reference": "MARS"
+          },
+          {
+            "id": "c007",
+            "key": "dashaLord/VIMSHOTTARI/1.0",
+            "got": "RAHU",
+            "reference": "MARS"
+          }
+        ]
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "dashas",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4240,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 164.63360403524712,
+        "max": 7240.064931823872,
+        "worst": {
+          "id": "c049",
+          "key": "dashaStart/VIMSHOTTARI/8",
+          "apart": 7240.064931823872
+        }
+      },
+      {
+        "rung": "committee",
+        "rank": 1,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "day",
+        "family": "event",
+        "inputs": 22,
+        "unpaired": 0,
+        "compared": 52,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 170.43673396110535,
+        "max": 11334.657450020313,
+        "worst": {
+          "id": "npns 2025-04-17",
+          "key": "event/tithi/0",
+          "apart": 11334.657450020313
+        }
+      },
+      {
+        "rung": "committee",
+        "rank": 1,
+        "side": "sdk",
+        "convention": "same",
+        "request": "day",
+        "family": "event",
+        "inputs": 22,
+        "unpaired": 0,
+        "compared": 52,
+        "matches": 18,
+        "share": 0.34615384615384615,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 124.10980761051178,
+        "max": 11334.657450020313,
+        "worst": {
+          "id": "npns 2025-04-17",
+          "key": "event/tithi/0",
+          "apart": 11334.657450020313
+        }
+      },
+      {
+        "rung": "committee",
+        "rank": 1,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "day",
+        "family": "event",
+        "inputs": 22,
+        "unpaired": 0,
+        "compared": 52,
+        "matches": 18,
+        "share": 0.34615384615384615,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 124.6329590678215,
+        "max": 11340.941262245178,
+        "worst": {
+          "id": "npns 2025-04-17",
+          "key": "event/tithi/0",
+          "apart": 11340.941262245178
+        }
+      },
+      {
+        "rung": "raman",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "strength",
+        "family": "shadbala",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 7,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 40.304271437672014,
+        "max": 152.6112836247808,
+        "worst": {
+          "id": "raman",
+          "key": "shadbala/MOON/total",
+          "apart": 152.6112836247808
+        }
+      },
+      {
+        "rung": "raman",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "same",
+        "request": "strength",
+        "family": "shadbala",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 7,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 24.49112197727368,
+        "max": 38.561479060495515,
+        "worst": {
+          "id": "raman",
+          "key": "shadbala/MOON/total",
+          "apart": 38.561479060495515
+        }
+      },
+      {
+        "rung": "raman",
+        "rank": 2,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "strength",
+        "family": "shadbala",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 7,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 24.491121999223424,
+        "max": 38.561479006315324,
+        "worst": {
+          "id": "raman",
+          "key": "shadbala/MOON/total",
+          "apart": 38.561479006315324
+        }
+      },
+      {
+        "rung": "raman",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "source",
+        "request": "strength",
+        "family": "shadbala",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 7,
+        "matches": 7,
+        "share": 1.0,
+        "unit": "virupas",
+        "tolerance": 1.0,
+        "median": 0.0425480608822113,
+        "max": 0.6930669892469723,
+        "worst": {
+          "id": "raman",
+          "key": "shadbala/SUN/total",
+          "apart": 0.6930669892469723
+        }
+      },
+      {
+        "rung": "charak",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "varsha",
+        "family": "event",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 1,
+        "matches": 1,
+        "share": 1.0,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 51.01883411407471,
+        "max": 51.01883411407471,
+        "worst": {
+          "id": "charak",
+          "key": "event/return",
+          "apart": 51.01883411407471
+        }
+      },
+      {
+        "rung": "charak",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "varsha",
+        "family": "office",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 7,
+        "matches": 7,
+        "share": 1.0
+      },
+      {
+        "rung": "charak",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "same",
+        "request": "varsha",
+        "family": "event",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 1,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 285.999695956707,
+        "max": 285.999695956707,
+        "worst": {
+          "id": "charak",
+          "key": "event/return",
+          "apart": 285.999695956707
+        }
+      },
+      {
+        "rung": "charak",
+        "rank": 2,
+        "side": "sdk",
+        "convention": "same",
+        "request": "varsha",
+        "family": "office",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 7,
+        "matches": 7,
+        "share": 1.0
+      },
+      {
+        "rung": "charak",
+        "rank": 2,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "varsha",
+        "family": "event",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 1,
+        "matches": 0,
+        "share": 0.0,
+        "unit": "s",
+        "tolerance": 60.0,
+        "median": 267.88557171821594,
+        "max": 267.88557171821594,
+        "worst": {
+          "id": "charak",
+          "key": "event/return",
+          "apart": 267.88557171821594
+        }
+      },
+      {
+        "rung": "charak",
+        "rank": 2,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "varsha",
+        "family": "office",
+        "inputs": 1,
+        "unpaired": 0,
+        "compared": 7,
+        "matches": 3,
+        "share": 0.42857142857142855,
+        "mismatches": [
+          {
+            "id": "charak",
+            "key": "office/yearLord",
+            "got": "MOON",
+            "reference": "SUN"
+          },
+          {
+            "id": "charak",
+            "key": "office/dinaRatri",
+            "got": "MOON",
+            "reference": "SUN"
+          },
+          {
+            "id": "charak",
+            "key": "office/triRashi",
+            "got": "JUPITER",
+            "reference": "MARS"
+          }
+        ]
+      },
+      {
+        "rung": "kalaprakasika",
+        "rank": 1,
+        "side": "sdk",
+        "convention": "timed",
+        "request": "milan",
+        "family": "porutham",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 165,
+        "matches": 165,
+        "share": 1.0
+      },
+      {
+        "rung": "kalaprakasika",
+        "rank": 1,
+        "side": "sdk",
+        "convention": "same",
+        "request": "milan",
+        "family": "porutham",
+        "inputs": 52,
+        "unpaired": 0,
+        "compared": 156,
+        "matches": 156,
+        "share": 1.0
+      },
+      {
+        "rung": "kalaprakasika",
+        "rank": 1,
+        "side": "baseline",
+        "convention": "timed",
+        "request": "milan",
+        "family": "porutham",
+        "inputs": 55,
+        "unpaired": 0,
+        "compared": 165,
+        "matches": 152,
+        "share": 0.9212121212121213,
+        "mismatches": [
+          {
+            "id": "c004",
+            "key": "porutham/STREE_DEERGHA",
+            "got": true,
+            "reference": false
+          },
+          {
+            "id": "c009",
+            "key": "porutham/STREE_DEERGHA",
+            "got": true,
+            "reference": false
+          },
+          {
+            "id": "c016",
+            "key": "porutham/STREE_DEERGHA",
+            "got": true,
+            "reference": false
+          }
+        ]
+      }
+    ],
+    "unanswered": [
+      {
+        "convention": "same",
+        "request": "chart",
+        "id": "c028",
+        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.11188888888888"
+      },
+      {
+        "convention": "same",
+        "request": "chart",
+        "id": "c029",
+        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.18277777777777"
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "id": "c028",
+        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.11188888888888"
+      },
+      {
+        "convention": "same",
+        "request": "full",
+        "id": "c029",
+        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.18277777777777"
+      },
+      {
+        "convention": "same",
+        "request": "vargas",
+        "id": "c028",
+        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.11188888888888"
+      },
+      {
+        "convention": "same",
+        "request": "vargas",
+        "id": "c029",
+        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.18277777777777"
+      },
+      {
+        "convention": "same",
+        "request": "strength",
+        "id": "c047",
+        "reason": "the Sun at JD 2378132.0006944444: the provider answered OutOfRange"
+      },
+      {
+        "convention": "same",
+        "request": "strength",
+        "id": "c048",
+        "reason": "the Sun at JD 2597685.2871633684: the provider answered OutOfRange"
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "id": "c028",
+        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.11188888888888"
+      },
+      {
+        "convention": "same",
+        "request": "batch",
+        "id": "c029",
+        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.18277777777777"
+      }
+    ]
+  }
 }

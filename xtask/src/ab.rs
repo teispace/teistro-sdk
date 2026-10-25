@@ -97,6 +97,18 @@ const REQUESTS: [(&str, &str); 14] = [
     ("batch", "ten whole charts an hour apart, at one place"),
 ];
 
+/// The requests the SDK is measurably slower at, each with the most it may
+/// take of the baseline's time and why (§8): a request past its bound
+/// fails, and so does one listed here that is no longer slower, so the
+/// list cannot outlive what it explains.
+const SLOWER: [(&str, f64, &str); 1] = [(
+    "yogas",
+    2.5,
+    "the shipped Nabhasa set bundles about 2 500 of the SDK's 3 130 classical rules and cannot \
+     be asked for in part, so the SDK evaluates about five times the baseline's 650 or so; its \
+     cost a rule is the lower of the two",
+)];
+
 /// The requests driven under load and for their tail: the runner's
 /// `LOAD_REQUESTS`.
 const LOAD_REQUESTS: [&str; 3] = ["chart", "day", "full"];
@@ -445,15 +457,28 @@ fn request_faults(name: &str, record: &Record, excused: &[Excused], found: &mut 
             record.figure("baseline", request),
         ) {
             (Some(sdk), Some(baseline)) => {
-                if let Comparison::Measured(r) = ratio(&sdk.figure(), &baseline.figure()) {
-                    if r > 1.0 {
-                        found.push(format!(
-                            "{name}: `{request}` through the SDK is {r:.2}× the baseline's, {} µs \
-                             against {} µs, and the ranges are apart",
-                            us(sdk.median_us),
-                            us(baseline.median_us)
-                        ));
-                    }
+                let measured = match ratio(&sdk.figure(), &baseline.figure()) {
+                    Comparison::Measured(r) if r > 1.0 => Some(r),
+                    _ => None,
+                };
+                let bound = SLOWER
+                    .iter()
+                    .find(|(r, _, _)| *r == request)
+                    .map(|(_, bound, _)| *bound);
+                match (measured, bound) {
+                    (Some(r), Some(bound)) if r <= bound => {}
+                    (Some(r), _) => found.push(format!(
+                        "{name}: `{request}` through the SDK is {r:.2}× the baseline's, {} µs \
+                         against {} µs, and the ranges are apart{}",
+                        us(sdk.median_us),
+                        us(baseline.median_us),
+                        bound.map_or_else(String::new, |b| format!(", past its bound of {b:.2}×"))
+                    )),
+                    (None, Some(_)) => found.push(format!(
+                        "{name}: `{request}` is listed as slower through the SDK and is not; drop \
+                         it from `SLOWER`"
+                    )),
+                    (None, None) => {}
                 }
             }
             _ => found.push(format!(
@@ -841,10 +866,19 @@ fn page(records: &[(String, Record)], excused: &[Excused]) -> String {
          record shows.\n"
     );
     let found = faults(records, excused);
+    let _ = writeln!(
+        out,
+        "**Measurably slower through the SDK**, each held to a bound of the baseline's time:\n"
+    );
+    for (request, bound, why) in SLOWER {
+        let _ = writeln!(out, "- `{request}`, at most {bound:.2}×: {why}.");
+    }
+    out.push('\n');
     if found.is_empty() {
         let _ = writeln!(
             out,
-            "No request, throughput or percentile is measurably slower through the SDK.\n"
+            "No other request, and no throughput or percentile, is measurably slower through the \
+             SDK.\n"
         );
     } else {
         let _ = writeln!(out, "**Not a claim:**\n");
@@ -1209,6 +1243,10 @@ mod tests {
             if request == "day" {
                 figures.push(timed("sdk", request, 1500.0, 1400.0, 1600.0));
                 figures.push(timed("baseline", request, 1550.0, 1450.0, 1700.0));
+            } else if request == "yogas" {
+                // Slower, and within its bound in `SLOWER`.
+                figures.push(timed("sdk", request, 2000.0, 1900.0, 2100.0));
+                figures.push(timed("baseline", request, 1000.0, 950.0, 1050.0));
             } else {
                 figures.push(timed("sdk", request, 1000.0, 900.0, 1100.0));
                 figures.push(timed("baseline", request, 3000.0, 2800.0, 3300.0));
@@ -1241,6 +1279,29 @@ mod tests {
         let found = faults(&[("m".into(), record(slow))], &[]);
         assert_eq!(found.len(), 1, "{found:?}");
         assert!(found[0].contains("1.33×"), "{found:?}");
+
+        // A slower request listed in `SLOWER` past its bound, and one listed
+        // that is not slower.
+        let mut past = whole();
+        for t in past
+            .iter_mut()
+            .filter(|t| t.request == "yogas" && t.side == "sdk")
+        {
+            *t = timed("sdk", "yogas", 3000.0, 2900.0, 3100.0);
+        }
+        let found = faults(&[("m".into(), record(past))], &[]);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert!(found[0].contains("past its bound of 2.50×"), "{found:?}");
+        let mut quick = whole();
+        for t in quick
+            .iter_mut()
+            .filter(|t| t.request == "yogas" && t.side == "sdk")
+        {
+            *t = timed("sdk", "yogas", 500.0, 450.0, 550.0);
+        }
+        let found = faults(&[("m".into(), record(quick))], &[]);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert!(found[0].contains("drop it from `SLOWER`"), "{found:?}");
 
         let mut partial = record(whole());
         partial.differ = vec!["c007".into()];
