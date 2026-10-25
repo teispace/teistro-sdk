@@ -32,6 +32,32 @@ use crate::support::with_context;
 /// no letter, or a date the calendar does not have is `INVALID_ARG`,
 /// named under `numerology`.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::string::TsString;
+/// use teistro_ffi::numerology::ts_numerology_profile;
+///
+/// let request = c"{\"name\": \"Henry Elder\", \"date\": {\"year\": 1872, \"month\": 1, \"day\": 17}}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_numerology_profile(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // The name's letters summed and reduced: 15, then 6.
+/// assert_eq!(answer["pythagoreanName"]["reduction"]["steps"], serde_json::json!([15, 6]));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;

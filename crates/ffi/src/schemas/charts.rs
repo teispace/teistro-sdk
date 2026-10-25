@@ -297,6 +297,16 @@ fn chart_readings_section(id: u32) -> SectionSchema {
 /// The one columnar group is the grahas — everything else is one value
 /// per chart — which is why a `columns` section is right for them and
 /// wrong for the rest (`03-design/chart-at-the-boundary.md` §2).
+///
+/// ```
+/// use teistro_ffi::schemas;
+///
+/// // Section ids are unique within the schema.
+/// let charts = schemas::charts();
+/// let mut ids: Vec<u32> = charts.sections.iter().map(|section| section.id).collect();
+/// ids.dedup();
+/// assert_eq!(ids.len(), charts.sections.len());
+/// ```
 #[must_use]
 pub fn charts() -> BlobSchema {
     BlobSchema {
@@ -4901,6 +4911,12 @@ fn chart_states_section(id: u32) -> SectionSchema {
 /// vargas, and the Ashta Koota and the ten considerations of the two name
 /// stars, in the sections a chart's match crosses as (`matching.md`,
 /// C291 to C296).
+///
+/// ```
+/// use teistro_ffi::schemas;
+///
+/// assert_eq!(schemas::naam().name, schemas::NAAM);
+/// ```
 #[must_use]
 pub fn naam() -> BlobSchema {
     let one = "One row: the two names' match.";

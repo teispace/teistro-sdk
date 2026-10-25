@@ -45,6 +45,33 @@ use crate::support::with_context;
 /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
 /// `research` family out.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::string::TsString;
+/// use teistro_ffi::research::ts_research;
+///
+/// let request = c"{\"study\": \"COMPARE\", \"rules\": {\"shipped\": [\"YOGAS\"]}, \"births\": [{\"instant\": 2447000.25, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}, {\"instant\": 2447977.55, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}, {\"instant\": 2448954.85, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}, {\"instant\": 2449932.15, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}, {\"instant\": 2450909.45, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}, {\"instant\": 2451886.75, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}, {\"instant\": 2452864.05, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}, {\"instant\": 2453841.35, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}], \"design\": {\"groups\": [0, 1, 0, 1, 0, 1, 0, 1]}, \"test\": {\"seed\": 5, \"permutations\": 99, \"contrast\": {\"kind\": \"CASE_VS_REST\", \"case\": 1}}}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_research(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // The study's envelope whole: what produced it can be quoted.
+/// assert!(answer["provenance"]["input_hash"].is_string());
+/// assert!(answer["value"].is_object());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;

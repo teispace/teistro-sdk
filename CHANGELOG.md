@@ -23,6 +23,20 @@ parameters of every message it reaches through `:msg`, its own type
 winning where both name one; the ten affected accessors in Rust,
 TypeScript, Dart, Python and Java gain the Gregorian ones' fields.
 
+**Every crate has a run example on every public item.**
+**Numbers:** none. `teistro-ffi` (265 items), `teistro-scenario` (5),
+`teistro-test-adapter` (2) and `teistro-test-allocator` (7) join the
+crates `check-doc-examples` holds there, forty-six in all: every crate in
+the workspace but the two spikes. The C entry points' examples call them
+from Rust as a C caller would, sizing each record and freeing what the
+library hands back, and the description's extractor leaves them out of
+the header and the bindings as it leaves out every Rust example.
+`TsChartRequest` gains `Default`, every field zero, so a Rust caller
+names only the fields it means; `TsZoneSpec` already had one. Writing
+them found `encode`'s documentation split in two, its opening sentences
+sitting above `Composed`, whose own said it held three sections when it
+holds every section composed beside the numbers; both are mended.
+
 **`teistro-idl` writes its validator corpus in its own order.**
 **Numbers:** none; every checked-in file is unchanged. `validators::corpus`
 builds the corpus as a `serde_json::Value`, whose keys keep their order

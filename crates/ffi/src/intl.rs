@@ -24,6 +24,19 @@ use crate::string::TsStr;
 use crate::support::{bytes, c_struct, optional_text, text, with_context, write_out, write_plain};
 
 /// What a loaded pack or bundle carried.
+///
+/// ```
+/// use teistro_ffi::intl::TsIntlLoaded;
+///
+/// // What a caller allocates for `ts_intl_load_pack` to fill.
+/// let loaded = TsIntlLoaded {
+///     struct_size: u32::try_from(size_of::<TsIntlLoaded>())?,
+///     entries: 0, replaced: 0, merged: 0,
+///     locale: core::ptr::null(), sha256: core::ptr::null(),
+/// };
+/// assert_eq!(loaded.entries, 0);
+/// # Ok::<(), core::num::TryFromIntError>(())
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct TsIntlLoaded {
@@ -51,6 +64,26 @@ c_struct!(TsIntlLoaded);
 /// a message replaces, and two entity records merge their forms, so a pack
 /// giving every nakshatra a `phala` leaves its `name` standing. A file that
 /// does not verify is `PACK`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::{TsIntlLoaded, ts_intl_load_pack};
+///
+/// let mut loaded = TsIntlLoaded {
+///     struct_size: u32::try_from(size_of::<TsIntlLoaded>())?,
+///     entries: 0, replaced: 0, merged: 0, locale: core::ptr::null(), sha256: core::ptr::null(),
+/// };
+/// // Bytes that are no pack are refused, and nothing loads.
+/// let bytes = b"not a pack";
+/// // SAFETY: a live context, readable bytes and a sized record.
+/// let status = unsafe { ts_intl_load_pack(&raw const ctx, bytes.as_ptr(), bytes.len(), &raw mut loaded) };
+/// assert_ne!(status, Status::Ok);
+/// assert_eq!(loaded.entries, 0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -86,6 +119,22 @@ pub unsafe extern "C" fn ts_intl_load_pack(
 /// Selects the locale every render resolves from; an unknown one is
 /// `UNSUPPORTED` naming the loaded locales.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_set_locale;
+///
+/// // SAFETY: a live context and NUL-terminated tags.
+/// assert_eq!(unsafe { ts_intl_set_locale(&raw const ctx, c"ne-Deva-NP".as_ptr()) }, Status::Ok);
+/// assert_eq!(ctx.intl().locale(), "ne-Deva-NP");
+/// // A locale with no source is refused.
+/// // SAFETY: as above.
+/// assert_ne!(unsafe { ts_intl_set_locale(&raw const ctx, c"xx-Nope".as_ptr()) }, Status::Ok);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `locale` a NUL-terminated string.
@@ -106,6 +155,24 @@ pub unsafe extern "C" fn ts_intl_set_locale(
 /// The locale every render resolves from, lent until the next call on the
 /// context.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { locale: Some("ne-Deva-NP"), ..OptionTexts::default() }, teistro::Ephemeris::Test)?;
+/// # fn lent(out: teistro_ffi::string::TsStr) -> String {
+/// #     // SAFETY: the library lent `len` bytes of UTF-8 at `data`.
+/// #     String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data.cast::<u8>(), out.len) }).into_owned()
+/// # }
+/// # let mut out = teistro_ffi::string::TsStr { data: core::ptr::null(), len: 0 };
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_locale;
+///
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_intl_locale(&raw const ctx, &raw mut out) }, Status::Ok);
+/// assert_eq!(lent(out), "ne-Deva-NP");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_locale` valid for a write.
@@ -122,6 +189,26 @@ pub unsafe extern "C" fn ts_intl_locale(
 }
 
 /// Whether the current locale or its fallbacks have a message: `1` or `0`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_has;
+///
+/// let has = |key: &core::ffi::CStr| -> Result<u8, Status> {
+///     let mut has = 9_u8;
+///     // SAFETY: a live context, a NUL-terminated key and a writable slot.
+///     match unsafe { ts_intl_has(&raw const ctx, key.as_ptr(), &raw mut has) } {
+///         Status::Ok => Ok(has),
+///         refused => Err(refused),
+///     }
+/// };
+/// assert_eq!(has(c"sdk.reason.grahaInBhava"), Ok(1));
+/// assert_eq!(has(c"sdk.nope.missing"), Ok(0));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -147,6 +234,26 @@ pub unsafe extern "C" fn ts_intl_has(
 /// is `UNSUPPORTED` naming both scripts; anything the table does not know
 /// passes through, so a name written in two scripts is transliterated in
 /// the half that needs it.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # fn lent(out: teistro_ffi::string::TsStr) -> String {
+/// #     // SAFETY: the library lent `len` bytes of UTF-8 at `data`.
+/// #     String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data.cast::<u8>(), out.len) }).into_owned()
+/// # }
+/// # let mut out = teistro_ffi::string::TsStr { data: core::ptr::null(), len: 0 };
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_transliterate;
+///
+/// // Devanagari into IAST.
+/// // SAFETY: a live context, NUL-terminated strings and a writable slot.
+/// let status = unsafe { ts_intl_transliterate(&raw const ctx, c"सूर्य".as_ptr(), c"deva".as_ptr(), c"iast".as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// assert_eq!(lent(out), "sūrya");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -194,6 +301,26 @@ pub unsafe extern "C" fn ts_intl_transliterate(
 ///
 /// The typed accessors each binding generates read entities through this,
 /// so an application spells `graha.SUN` once and never a name.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # fn lent(out: teistro_ffi::string::TsStr) -> String {
+/// #     // SAFETY: the library lent `len` bytes of UTF-8 at `data`.
+/// #     String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data.cast::<u8>(), out.len) }).into_owned()
+/// # }
+/// # let mut out = teistro_ffi::string::TsStr { data: core::ptr::null(), len: 0 };
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_entity;
+///
+/// // The Sun's record in the context's locale, as JSON.
+/// // SAFETY: a live context, a NUL-terminated key and a writable slot.
+/// assert_eq!(unsafe { ts_intl_entity(&raw const ctx, c"graha.SUN".as_ptr(), &raw mut out) }, Status::Ok);
+/// let record: serde_json::Value = serde_json::from_str(&lent(out))?;
+/// assert!(record.is_object());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -281,6 +408,36 @@ fn json_string(text: &str) -> String {
 /// `api: blob=intl_render`
 /// `api: params_json: nullable`
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { locale: Some("ne-Deva-NP"), ..OptionTexts::default() }, teistro::Ephemeris::Test)?;
+/// # fn bytes(mut blob: teistro_ffi::blob::TsBlob) -> Vec<u8> {
+/// #     // SAFETY: the library wrote `len` bytes at `data`.
+/// #     let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::blob::ts_blob_free(&raw mut blob) };
+/// #     bytes
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::blob::TsBlob;
+/// use teistro_ffi::intl::ts_intl_render;
+/// use teistro_idl::blob::Reader;
+///
+/// let params = c"{\"graha\": {\"$entity\": \"graha.JUPITER\"}, \"bhava\": 7}";
+/// let mut blob = TsBlob::empty();
+/// // SAFETY: a live context, NUL-terminated strings and a writable slot.
+/// let status = unsafe { ts_intl_render(&raw const ctx, c"sdk.reason.grahaInBhava".as_ptr(), params.as_ptr(), &raw mut blob) };
+/// assert_eq!(status, Status::Ok);
+/// let bytes = bytes(blob);
+/// let schema = teistro_ffi::schemas::intl_render();
+/// let reader = Reader::parse(&bytes, &schema)?;
+/// // In Nepali, its digits Devanagari.
+/// assert_eq!(reader.text("resolved_from")?, "ne-Deva-NP");
+/// assert!(reader.text("text")?.contains('७'));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `key` a NUL-terminated string;
@@ -342,6 +499,16 @@ pub unsafe extern "C" fn ts_intl_render(
 /// ([`teistro_intl::wire`]): a consumer writing parameters and a composer
 /// writing a narrative plan therefore cannot be told apart by the reader,
 /// and a shape added there is taken here without a second reading of it.
+///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::params_from_json;
+///
+/// assert!(params_from_json(r#"{"count": 3, "name": "Ram"}"#).is_ok());
+/// // Anything but an object of values is refused, naming the field.
+/// let refused = params_from_json("[1, 2]").unwrap_err();
+/// assert_eq!((refused.status, refused.field()), (Status::InvalidArg, Some("params_json")));
+/// ```
 ///
 /// # Errors
 ///

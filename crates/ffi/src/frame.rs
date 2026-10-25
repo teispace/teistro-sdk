@@ -19,6 +19,16 @@ use crate::support::{c_struct, read_in, write_out};
 
 /// A frame by name: what a position is seen from, in which equinox and
 /// coordinates, in which zodiac, with which corrections applied.
+///
+/// ```
+/// use teistro_ffi::frame::TsFrame;
+/// use teistro_port_ephemeris::Frame;
+///
+/// // The canonical frame: geocentric, of date, ecliptic, tropical, apparent.
+/// let frame = TsFrame::of(Frame::CANONICAL);
+/// assert_eq!((frame.centre, frame.sidereal, frame.ayanamsha), (0, 0, 0xFFFF));
+/// assert_eq!((frame.light_time, frame.aberration, frame.nutation), (1, 1, 1));
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TsFrame {
@@ -59,6 +69,15 @@ c_struct!(TsFrame);
 
 impl TsFrame {
     /// The boundary form of a frame.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_ffi::frame::TsFrame;
+    /// use teistro_port_ephemeris::{Frame, Zodiac};
+    ///
+    /// let lahiri = TsFrame::of(Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)));
+    /// assert_eq!((lahiri.sidereal, lahiri.ayanamsha), (1, teistro_core::catalogue::Catalogued::id(Ayanamsha::Lahiri)));
+    /// ```
     #[must_use]
     pub fn of(frame: Frame) -> TsFrame {
         TsFrame {
@@ -79,6 +98,19 @@ impl TsFrame {
     }
 
     /// The frame this struct names.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_ffi::frame::TsFrame;
+    /// use teistro_port_ephemeris::{Frame, Zodiac};
+    ///
+    /// let sidereal = Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri));
+    /// assert_eq!(TsFrame::of(sidereal).to_frame()?, sidereal);
+    /// // A centre the catalogue does not have is refused, naming the field.
+    /// let unknown = TsFrame { centre: 9, ..TsFrame::of(Frame::CANONICAL) };
+    /// assert_eq!(unknown.to_frame().unwrap_err().field(), Some("frame.centre"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -157,6 +189,18 @@ fn coordinates(value: u8) -> Result<Coordinates, Error> {
 /// tropical, which both licensed engines return by default and every chart
 /// module consumes. Set `struct_size` before the call.
 ///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::frame::{TsFrame, ts_frame_canonical, ts_frame_pack, ts_frame_unpack};
+/// use teistro_port_ephemeris::Frame;
+///
+/// # let mut frame = TsFrame { struct_size: u32::try_from(size_of::<TsFrame>())?, ..TsFrame::of(Frame::CANONICAL) };
+/// // SAFETY: a sized, writable frame.
+/// assert_eq!(unsafe { ts_frame_canonical(&raw mut frame) }, Status::Ok);
+/// assert_eq!(frame.to_frame()?, Frame::CANONICAL);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `out_frame` must be valid for a read of its `struct_size` and a write.
@@ -170,6 +214,20 @@ pub unsafe extern "C" fn ts_frame_canonical(out_frame: *mut TsFrame) -> Status {
 }
 
 /// Packs a frame into the bits a position request carries.
+///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::frame::{TsFrame, ts_frame_canonical, ts_frame_pack, ts_frame_unpack};
+/// use teistro_port_ephemeris::Frame;
+///
+/// # let mut frame = TsFrame { struct_size: u32::try_from(size_of::<TsFrame>())?, ..TsFrame::of(Frame::CANONICAL) };
+/// let mut bits = 0_u32;
+/// // SAFETY: a sized frame and a writable slot.
+/// assert_eq!(unsafe { ts_frame_pack(&raw const frame, &raw mut bits) }, Status::Ok);
+/// assert_eq!(bits, Frame::CANONICAL.to_bits());
+/// # let _ = (ts_frame_canonical, ts_frame_unpack);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -194,6 +252,20 @@ pub unsafe extern "C" fn ts_frame_pack(frame: *const TsFrame, out_bits: *mut u32
 
 /// Reads packed frame bits back into their fields; bits no frame sets are
 /// `INVALID_ARG`.
+///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::frame::{TsFrame, ts_frame_canonical, ts_frame_pack, ts_frame_unpack};
+/// use teistro_port_ephemeris::Frame;
+///
+/// # let mut frame = TsFrame { struct_size: u32::try_from(size_of::<TsFrame>())?, ..TsFrame::of(Frame::CANONICAL) };
+/// // The 32 bits a position request carries, back into fields.
+/// // SAFETY: a sized, writable frame.
+/// assert_eq!(unsafe { ts_frame_unpack(Frame::CANONICAL.to_bits(), &raw mut frame) }, Status::Ok);
+/// assert_eq!((frame.centre, frame.sidereal), (0, 0));
+/// # let _ = (ts_frame_canonical, ts_frame_pack);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///

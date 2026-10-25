@@ -50,6 +50,28 @@ use crate::support::optional_text;
 /// An ephemeris loaded from a shared library. Free with
 /// [`ts_provider_free`]; a context built from it keeps its own reference,
 /// so the order does not matter.
+///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::context::{TsError, ts_error_free};
+/// use teistro_ffi::provider::{TsProvider, ts_provider_load};
+///
+/// let mut provider: *mut TsProvider = core::ptr::null_mut();
+/// let mut error = TsError {
+///     struct_size: u32::try_from(size_of::<TsError>())?,
+///     status: 0, provider_code: 0, flags: 0,
+///     detail: core::ptr::null(), message: core::ptr::null(), field: core::ptr::null(),
+///     hint: core::ptr::null(), key: core::ptr::null(),
+/// };
+/// // A file that is not there is refused, and no provider is written.
+/// // SAFETY: NUL-terminated strings and writable records; a missing file runs nothing.
+/// let status = unsafe { ts_provider_load(c"no-such-adapter".as_ptr(), core::ptr::null(), &raw mut provider, &raw mut error) };
+/// assert_ne!(status, Status::Ok);
+/// assert!(provider.is_null());
+/// // SAFETY: the record the call wrote, freed once.
+/// unsafe { ts_error_free(&raw mut error) };
+/// # Ok::<(), core::num::TryFromIntError>(())
+/// ```
 #[derive(Debug)]
 pub struct TsProvider {
     adapter: Adapter,
@@ -65,6 +87,28 @@ pub struct TsProvider {
 /// `DATA_MISSING` when it is and its data is not there, `INVALID_ARG`
 /// when its configuration is wrong — each of them the adapter's own
 /// judgement, passed through with its message rather than replaced.
+///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::context::{TsError, ts_error_free};
+/// use teistro_ffi::provider::{TsProvider, ts_provider_load};
+///
+/// let mut provider: *mut TsProvider = core::ptr::null_mut();
+/// let mut error = TsError {
+///     struct_size: u32::try_from(size_of::<TsError>())?,
+///     status: 0, provider_code: 0, flags: 0,
+///     detail: core::ptr::null(), message: core::ptr::null(), field: core::ptr::null(),
+///     hint: core::ptr::null(), key: core::ptr::null(),
+/// };
+/// // A path that names no adapter is refused, the reason in the record.
+/// // SAFETY: NUL-terminated strings and writable records; a missing file runs nothing.
+/// let status = unsafe { ts_provider_load(c"no-such-adapter".as_ptr(), core::ptr::null(), &raw mut provider, &raw mut error) };
+/// assert_ne!(status, Status::Ok);
+/// assert!(!error.message.is_null());
+/// // SAFETY: the record the call wrote, freed once.
+/// unsafe { ts_error_free(&raw mut error) };
+/// # Ok::<(), core::num::TryFromIntError>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -114,6 +158,28 @@ unsafe fn load(path: *const c_char, config_json: *const c_char) -> Result<TsProv
 /// be freed immediately afterwards or kept to found another context; the
 /// library is unloaded when the last of them goes.
 ///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::context::{TsContext, TsError, ts_error_free};
+/// use teistro_ffi::provider::ts_context_new_with_provider;
+///
+/// let mut context: *mut TsContext = core::ptr::null_mut();
+/// let mut error = TsError {
+///     struct_size: u32::try_from(size_of::<TsError>())?,
+///     status: 0, provider_code: 0, flags: 0,
+///     detail: core::ptr::null(), message: core::ptr::null(), field: core::ptr::null(),
+///     hint: core::ptr::null(), key: core::ptr::null(),
+/// };
+/// // A null provider is refused by name: this constructor is for a loaded one.
+/// // SAFETY: null options and provider, and writable slots.
+/// let status = unsafe { ts_context_new_with_provider(core::ptr::null(), core::ptr::null(), &raw mut context, &raw mut error) };
+/// assert_eq!(status, Status::InvalidArg);
+/// assert!(context.is_null());
+/// // SAFETY: the record the call wrote, freed once.
+/// unsafe { ts_error_free(&raw mut error) };
+/// # Ok::<(), core::num::TryFromIntError>(())
+/// ```
+///
 /// # Safety
 ///
 /// `provider` must be a live handle from [`ts_provider_load`]; every
@@ -159,6 +225,14 @@ unsafe fn with_provider(
 /// The library is unloaded when the last reference goes, so a context
 /// still using it keeps it alive and the order of these calls does not
 /// matter.
+///
+/// ```
+/// use teistro_ffi::provider::ts_provider_free;
+///
+/// // Null is ignored, so freeing on every path is never wrong.
+/// // SAFETY: null.
+/// unsafe { ts_provider_free(core::ptr::null_mut()) };
+/// ```
 ///
 /// # Safety
 ///

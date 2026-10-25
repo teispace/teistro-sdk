@@ -12,6 +12,12 @@ impl TsWesternAspect {
     /// The code an aspect crosses as, or none for a member added to the
     /// non-exhaustive `WesternAspect` before it was given one here; the
     /// spelling gate (`tests/keys.rs`) fails on that member until it is.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsWesternAspect;
+    ///
+    /// assert_eq!(TsWesternAspect::of(teistro::WesternAspect::Quincunx), Some(TsWesternAspect::Quincunx));
+    /// ```
     #[must_use]
     pub const fn of(aspect: teistro::WesternAspect) -> Option<TsWesternAspect> {
         use teistro::WesternAspect;

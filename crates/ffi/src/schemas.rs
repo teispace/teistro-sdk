@@ -6,15 +6,45 @@
 use teistro_idl::model::{BlobSchema, ColumnDef, Scalar, SectionSchema};
 
 /// The schema `ts_positions` fills.
+///
+/// ```
+/// use teistro_ffi::schemas::{self, POSITIONS};
+///
+/// assert_eq!(schemas::schema(POSITIONS), Some(schemas::positions()));
+/// ```
 pub const POSITIONS: &str = "positions";
 /// The schema `ts_intl_render` fills.
+///
+/// ```
+/// use teistro_ffi::schemas::{self, INTL_RENDER};
+///
+/// assert_eq!(schemas::schema(INTL_RENDER), Some(schemas::intl_render()));
+/// ```
 pub const INTL_RENDER: &str = "intl_render";
 /// The schema `ts_chart_found` fills.
+///
+/// ```
+/// use teistro_ffi::schemas::{self, CHARTS};
+///
+/// assert_eq!(schemas::schema(CHARTS), Some(schemas::charts()));
+/// ```
 pub const CHARTS: &str = "charts";
 
 /// The panchanga blob's name.
+///
+/// ```
+/// use teistro_ffi::schemas::{self, PANCHANGA};
+///
+/// assert_eq!(schemas::schema(PANCHANGA), Some(schemas::panchanga()));
+/// ```
 pub const PANCHANGA: &str = "panchanga";
 /// The naam milan blob's name.
+///
+/// ```
+/// use teistro_ffi::schemas::{self, NAAM};
+///
+/// assert_eq!(schemas::schema(NAAM), Some(schemas::naam()));
+/// ```
 pub const NAAM: &str = "naam";
 
 #[cfg(feature = "chart")]
@@ -26,6 +56,15 @@ pub use charts::{charts, naam};
 
 /// Every schema this build writes, in id order: a build without the chart
 /// area writes no chart or naam blob.
+///
+/// ```
+/// use teistro_ffi::schemas;
+///
+/// // In id order, each id its own.
+/// let ids: Vec<u32> = schemas::schemas().iter().map(|schema| schema.id).collect();
+/// assert!(ids.windows(2).all(|pair| pair[0] < pair[1]));
+/// assert_eq!(ids.len(), 5);
+/// ```
 #[must_use]
 pub fn schemas() -> Vec<BlobSchema> {
     let mut all = vec![positions(), intl_render()];
@@ -52,17 +91,64 @@ fn content_hashes_section(id: u32, item: &str, hashed: &str) -> SectionSchema {
 /// The name every section holding a day arc declares, so that two blobs
 /// carrying the same day decode into **one** type in each binding rather
 /// than two identical ones (`03-design/chart-at-the-boundary.md` §8).
+///
+/// ```
+/// use teistro_ffi::schemas;
+/// use teistro_idl::model::BlobSchema;
+///
+/// let shaped = |blob: &BlobSchema, shape: &str| blob.sections.iter().any(|section| section.shape.as_deref() == Some(shape));
+///
+/// // A chart's day and a panchanga's are one shape.
+/// assert!(shaped(&schemas::charts(), schemas::DAY_SHAPE) && shaped(&schemas::panchanga(), schemas::DAY_SHAPE));
+/// ```
 pub const DAY_SHAPE: &str = "day";
 
 /// The shapes a match crosses as, shared by a chart's match with its
 /// partner and two names' match, so each binding reads both through one
 /// type and one reader (`03-design/matching.md`).
+///
+/// ```
+/// use teistro_ffi::schemas;
+/// use teistro_idl::model::BlobSchema;
+///
+/// let shaped = |blob: &BlobSchema, shape: &str| blob.sections.iter().any(|section| section.shape.as_deref() == Some(shape));
+///
+/// // A chart's match with its partner and two names' match are one shape.
+/// assert!(shaped(&schemas::charts(), schemas::MATCHINGS_SHAPE) && shaped(&schemas::naam(), schemas::MATCHINGS_SHAPE));
+/// ```
 pub const MATCHINGS_SHAPE: &str = "matchings";
 /// See [`MATCHINGS_SHAPE`].
+///
+/// ```
+/// use teistro_ffi::schemas;
+/// use teistro_idl::model::BlobSchema;
+///
+/// let shaped = |blob: &BlobSchema, shape: &str| blob.sections.iter().any(|section| section.shape.as_deref() == Some(shape));
+///
+/// assert!(shaped(&schemas::charts(), schemas::MATCHING_KOOTAS_SHAPE) && shaped(&schemas::naam(), schemas::MATCHING_KOOTAS_SHAPE));
+/// ```
 pub const MATCHING_KOOTAS_SHAPE: &str = "matching_kootas";
 /// See [`MATCHINGS_SHAPE`].
+///
+/// ```
+/// use teistro_ffi::schemas;
+/// use teistro_idl::model::BlobSchema;
+///
+/// let shaped = |blob: &BlobSchema, shape: &str| blob.sections.iter().any(|section| section.shape.as_deref() == Some(shape));
+///
+/// assert!(shaped(&schemas::charts(), schemas::PORUTHAMS_SHAPE) && shaped(&schemas::naam(), schemas::PORUTHAMS_SHAPE));
+/// ```
 pub const PORUTHAMS_SHAPE: &str = "poruthams";
 /// See [`MATCHINGS_SHAPE`].
+///
+/// ```
+/// use teistro_ffi::schemas;
+/// use teistro_idl::model::BlobSchema;
+///
+/// let shaped = |blob: &BlobSchema, shape: &str| blob.sections.iter().any(|section| section.shape.as_deref() == Some(shape));
+///
+/// assert!(shaped(&schemas::charts(), schemas::PORUTHAM_ROWS_SHAPE) && shaped(&schemas::naam(), schemas::PORUTHAM_ROWS_SHAPE));
+/// ```
 pub const PORUTHAM_ROWS_SHAPE: &str = "porutham_rows";
 
 /// The day an instant belongs to, which is not always its civil date.
@@ -90,6 +176,15 @@ pub const PORUTHAM_ROWS_SHAPE: &str = "porutham_rows";
 /// scalars: `state` has none today, and `convention` puts a `TsSunrise`
 /// id in its value for a named convention and an altitude in degrees for
 /// a custom one.
+///
+/// ```
+/// use teistro_ffi::schemas;
+/// use teistro_idl::model::SectionKind;
+///
+/// let day = schemas::day_section(8);
+/// assert_eq!((day.id, day.name.as_str(), day.kind), (8, "day", SectionKind::Columns));
+/// assert_eq!(day.fields[0].name, "sunrise");
+/// ```
 #[must_use]
 pub fn day_section(id: u32) -> SectionSchema {
     SectionSchema::columns(
@@ -177,6 +272,13 @@ pub fn day_section(id: u32) -> SectionSchema {
 }
 
 /// The schema with a name.
+///
+/// ```
+/// use teistro_ffi::schemas;
+///
+/// assert_eq!(schemas::schema("panchanga").map(|schema| schema.name), Some(String::from("panchanga")));
+/// assert_eq!(schemas::schema("horoscope"), None);
+/// ```
 #[must_use]
 pub fn schema(name: &str) -> Option<BlobSchema> {
     schemas().into_iter().find(|s| s.name == name)
@@ -184,6 +286,14 @@ pub fn schema(name: &str) -> Option<BlobSchema> {
 
 /// Positions over a grid of instants and bodies, completed into the
 /// requested frame, with the steps that produced them and the provenance.
+///
+/// ```
+/// use teistro_ffi::schemas;
+///
+/// let positions = schemas::positions();
+/// assert_eq!(positions.name, schemas::POSITIONS);
+/// assert!(positions.sections.iter().any(|section| section.name == "provenance_json"));
+/// ```
 #[must_use]
 pub fn positions() -> BlobSchema {
     BlobSchema {
@@ -235,6 +345,12 @@ pub fn positions() -> BlobSchema {
 
 /// A rendered message: the text, its parts, where it resolved from, and the
 /// warnings.
+///
+/// ```
+/// use teistro_ffi::schemas;
+///
+/// assert_eq!(schemas::intl_render().name, schemas::INTL_RENDER);
+/// ```
 #[must_use]
 pub fn intl_render() -> BlobSchema {
     BlobSchema {
@@ -620,6 +736,14 @@ fn panchanga_muhurta_yogas_section(id: u32) -> SectionSchema {
 }
 
 /// A batch of almanacs: one day at one place, many times over.
+///
+/// ```
+/// use teistro_ffi::schemas;
+///
+/// let panchanga = schemas::panchanga();
+/// assert_eq!(panchanga.sections[0].name, "summary");
+/// assert!(panchanga.sections.iter().any(|section| section.name == "festivals"));
+/// ```
 #[must_use]
 pub fn panchanga() -> BlobSchema {
     BlobSchema {

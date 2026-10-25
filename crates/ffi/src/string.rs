@@ -18,6 +18,13 @@ use teistro_core::envelope::Hash;
 /// `len` bytes before the NUL, freed by `ts_string_free`.
 ///
 /// `api: role=owned_string`
+///
+/// ```
+/// use teistro_ffi::string::TsString;
+///
+/// let string = TsString::empty();
+/// assert!(string.data.is_null() && string.len == 0);
+/// ```
 #[repr(C)]
 #[derive(Debug)]
 pub struct TsString {
@@ -31,6 +38,12 @@ pub struct TsString {
 
 impl TsString {
     /// The empty string, which frees as a no-op.
+    ///
+    /// ```
+    /// use teistro_ffi::string::TsString;
+    ///
+    /// assert_eq!(TsString::empty().cap, 0);
+    /// ```
     #[must_use]
     pub const fn empty() -> TsString {
         TsString {
@@ -58,6 +71,15 @@ impl TsString {
 /// the NUL, valid until the next call on the same context.
 ///
 /// `api: role=borrowed_string`
+///
+/// ```
+/// use teistro_ffi::string::TsStr;
+///
+/// // A lent string points into the library's own text, NUL after `len` bytes.
+/// let text = c"lagna";
+/// let lent = TsStr { data: text.as_ptr(), len: text.count_bytes() };
+/// assert_eq!(lent.len, 5);
+/// ```
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct TsStr {
@@ -69,6 +91,14 @@ pub struct TsStr {
 
 /// A SHA-256 as thirty-two bytes; every hash the SDK reports in
 /// provenance is one, rendered as sixty-four hex digits in JSON.
+///
+/// ```
+/// use teistro_core::envelope::Hash;
+/// use teistro_ffi::string::TsHash;
+///
+/// let hash = Hash::of(b"input");
+/// assert_eq!(TsHash::from(hash).bytes, *hash.bytes());
+/// ```
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TsHash {
@@ -86,6 +116,24 @@ impl From<Hash> for TsHash {
 
 /// Frees a string the library allocated and zeroes the descriptor; null
 /// or an empty string is ignored.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::context::ts_context_settings_json;
+/// use teistro_ffi::string::{TsString, ts_string_free};
+///
+/// let mut json = TsString::empty();
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_context_settings_json(&raw const ctx, &raw mut json) }, Status::Ok);
+/// // Freed, the descriptor is zeroed, so a second free is harmless.
+/// // SAFETY: a descriptor the library wrote.
+/// unsafe { ts_string_free(&raw mut json) };
+/// assert!(json.data.is_null() && json.len == 0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///

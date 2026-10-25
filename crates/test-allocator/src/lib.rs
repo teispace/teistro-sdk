@@ -61,6 +61,24 @@ thread_local! {
 }
 
 /// What a measurement counted.
+///
+/// ```
+/// use teistro_test_allocator::{Counting, measure};
+///
+/// #[global_allocator]
+/// static ALLOCATOR: Counting = Counting::system();
+///
+/// // A vector grown from nothing to five: each growth a reallocation, counted.
+/// let (numbers, counts) = measure(|| {
+///     let mut numbers = Vec::new();
+///     numbers.extend([1_u64, 2, 3, 4, 5]);
+///     numbers
+/// });
+/// assert_eq!(numbers.len(), 5);
+/// assert!(counts.allocations >= 1 && counts.bytes >= 40);
+/// // The vector left the measurement alive: it is what was retained.
+/// assert_eq!(counts.retained(), i128::from(counts.bytes - counts.freed));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Counts {
     /// How many times the thread asked for memory, reallocations
@@ -85,6 +103,20 @@ impl Counts {
     /// allocated less what it freed. Zero over repeated create-use-free
     /// cycles is the absence of a leak; negative when it freed memory
     /// allocated before it began.
+    ///
+    /// ```
+    /// use teistro_test_allocator::{Counting, measure};
+    ///
+    /// #[global_allocator]
+    /// static ALLOCATOR: Counting = Counting::system();
+    ///
+    /// // Kept past the measurement: forty bytes retained.
+    /// let (kept, counts) = measure(|| vec![0_u8; 40]);
+    /// assert_eq!(counts.retained(), 40);
+    /// // Freeing in a measurement what was allocated before it reads negative.
+    /// let ((), counts) = measure(|| drop(kept));
+    /// assert_eq!(counts.retained(), -40);
+    /// ```
     #[must_use]
     pub const fn retained(&self) -> i128 {
         self.bytes as i128 - self.freed as i128
@@ -93,6 +125,18 @@ impl Counts {
 
 /// A global allocator that counts the calling thread's allocations while
 /// a [`measure`] is running, and hands every request to the one it wraps.
+///
+/// ```
+/// use teistro_test_allocator::{Counting, measure};
+///
+/// #[global_allocator]
+/// static ALLOCATOR: Counting = Counting::system();
+///
+/// // Nothing counted outside a measurement.
+/// let before = String::from("uncounted");
+/// let (len, counts) = measure(|| before.len());
+/// assert_eq!((len, counts.allocations), (9, 0));
+/// ```
 #[derive(Debug)]
 pub struct Counting<A = System> {
     /// The allocator every request is handed to.
@@ -101,6 +145,16 @@ pub struct Counting<A = System> {
 
 impl Counting<System> {
     /// The system allocator, counted.
+    ///
+    /// ```
+    /// use teistro_test_allocator::{Counting, measure};
+    ///
+    /// #[global_allocator]
+    /// static ALLOCATOR: Counting = Counting::system();
+    ///
+    /// let (boxed, counts) = measure(|| Box::new(7_u32));
+    /// assert_eq!((*boxed, counts.allocations, counts.bytes), (7, 1, 4));
+    /// ```
     #[must_use]
     pub const fn system() -> Counting<System> {
         Counting { inner: System }
@@ -109,6 +163,18 @@ impl Counting<System> {
 
 impl<A> Counting<A> {
     /// Another allocator, counted.
+    ///
+    /// ```
+    /// use std::alloc::System;
+    /// use teistro_test_allocator::{Counting, measure};
+    ///
+    /// // Any allocator the program would have used, counted on its way through.
+    /// #[global_allocator]
+    /// static ALLOCATOR: Counting<System> = Counting::wrapping(System);
+    ///
+    /// let ((), counts) = measure(|| drop(vec![0_u16; 8]));
+    /// assert_eq!((counts.allocations, counts.bytes, counts.freed), (1, 16, 16));
+    /// ```
     #[must_use]
     pub const fn wrapping(inner: A) -> Counting<A> {
         Counting { inner }
@@ -182,6 +248,21 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for Counting<A> {
 /// the outer one resumes where it left off, which is what a helper that
 /// measures inside a measured block would want. The outer peak takes the
 /// inner one on top of what the outer held when the inner began.
+///
+/// ```
+/// use teistro_test_allocator::{Counting, measure};
+///
+/// #[global_allocator]
+/// static ALLOCATOR: Counting = Counting::system();
+///
+/// // Each thread counts its own: work on another thread is not this one's.
+/// let ((), counts) = measure(|| {
+///     std::thread::scope(|scope| {
+///         scope.spawn(|| drop(vec![0_u8; 1024]));
+///     });
+/// });
+/// assert!(counts.bytes < 1024);
+/// ```
 pub fn measure<T>(f: impl FnOnce() -> T) -> (T, Counts) {
     let outer = (
         MEASURING.with(Cell::get),

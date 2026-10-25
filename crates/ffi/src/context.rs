@@ -33,6 +33,13 @@ use crate::{TS_CONTEXT_TEST_PROVIDER, TS_ERROR_OWNED};
 /// this is ignored, except that `SURYA_SIDDHANTA` puts the text in front
 /// of that provider for its modern sunrise. The states are exclusive,
 /// which is why they are an enum and not flag bits (ADR-0028).
+///
+/// ```
+/// use teistro_ffi::context::TsEphemeris;
+///
+/// // A member crosses the boundary as its number: `None` is 0, `SuryaSiddhanta` 3.
+/// assert_eq!((TsEphemeris::None as u8, TsEphemeris::SuryaSiddhanta as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum TsEphemeris {
@@ -77,6 +84,24 @@ impl TsEphemeris {
 /// patches nothing, a null `locale` renders in the base locale, and a
 /// zero `ephemeris` leaves the context without one unless a vtable is
 /// passed.
+///
+/// ```
+/// use teistro_ffi::context::{TsContextOptions, TsEphemeris};
+///
+/// // Every field at zero but its size: the default profile, no patch, the base locale.
+/// let options = TsContextOptions {
+///     struct_size: u32::try_from(size_of::<TsContextOptions>())?,
+///     flags: 0,
+///     profile: c"nepali-default".as_ptr(),
+///     settings_json: core::ptr::null(),
+///     locale: core::ptr::null(),
+///     layouts_json: core::ptr::null(),
+///     dashas_json: core::ptr::null(),
+///     ephemeris: TsEphemeris::Builtin as u8,
+/// };
+/// assert_eq!(options.ephemeris, 1);
+/// # Ok::<(), core::num::TryFromIntError>(())
+/// ```
 #[repr(C)]
 #[derive(Debug)]
 pub struct TsContextOptions {
@@ -147,6 +172,21 @@ pub struct TsContextOptions {
 /// on a lent record does nothing, so freeing every record is never wrong.
 ///
 /// `api: role=error`
+///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::context::TsError;
+///
+/// // What a caller allocates for `ts_context_last_error` to fill.
+/// let record = TsError {
+///     struct_size: u32::try_from(size_of::<TsError>())?,
+///     status: Status::Ok.code(), provider_code: 0, flags: 0,
+///     detail: core::ptr::null(), message: core::ptr::null(), field: core::ptr::null(),
+///     hint: core::ptr::null(), key: core::ptr::null(),
+/// };
+/// assert_eq!(record.status, 0);
+/// # Ok::<(), core::num::TryFromIntError>(())
+/// ```
 #[repr(C)]
 #[derive(Debug)]
 pub struct TsError {
@@ -179,6 +219,15 @@ c_struct!(TsContextOptions, TsError);
 
 /// An opaque context: settings, a provider, the locale engine, the last
 /// error. Used by one thread at a time.
+///
+/// ```
+/// use teistro_ffi::context::{OptionTexts, TsContext};
+///
+/// let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Test)?;
+/// assert_eq!(ctx.profile(), "nepali-default");
+/// assert!(ctx.provider().is_some());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 // **Everything above this line is the C header's documentation**, which
 // `cargo xtask gen ffi` extracts and `check-ffi` holds — so a note to
 // this repository's maintainers goes here, in a comment the generator
@@ -338,6 +387,39 @@ pub(crate) unsafe fn refuse_into(out_error: *mut TsError, error: &Error) {
 /// zeroes it but for its size; null, a lent record from
 /// `ts_context_last_error`, and a record already freed are all ignored.
 ///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::context::{TsContext, TsError, ts_context_free, ts_context_new};
+///
+/// # let blank = || -> Result<TsError, core::num::TryFromIntError> {
+/// #     Ok(TsError {
+/// #         struct_size: u32::try_from(size_of::<TsError>())?,
+/// #         status: 0, provider_code: 0, flags: 0,
+/// #         detail: core::ptr::null(), message: core::ptr::null(), field: core::ptr::null(),
+/// #         hint: core::ptr::null(), key: core::ptr::null(),
+/// #     })
+/// # };
+/// use teistro_ffi::context::{TsContextOptions, ts_error_free};
+///
+/// // A profile the SDK does not ship: the record owns its strings, and is freed.
+/// let options = TsContextOptions {
+///     struct_size: u32::try_from(size_of::<TsContextOptions>())?,
+///     flags: 0, profile: c"no-such-profile".as_ptr(), settings_json: core::ptr::null(),
+///     locale: core::ptr::null(), layouts_json: core::ptr::null(), dashas_json: core::ptr::null(),
+///     ephemeris: 0,
+/// };
+/// let mut context: *mut TsContext = core::ptr::null_mut();
+/// let mut error = blank()?;
+/// // SAFETY: sized records, a null provider and writable slots.
+/// let status = unsafe { ts_context_new(&raw const options, core::ptr::null(), core::ptr::null_mut(), &raw mut context, &raw mut error) };
+/// assert_ne!(status, Status::Ok);
+/// assert_eq!(error.flags, teistro_ffi::TS_ERROR_OWNED);
+/// // SAFETY: the record the call wrote, freed once.
+/// unsafe { ts_error_free(&raw mut error) };
+/// assert!(error.message.is_null());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `error` must be null or a `TsError` valid for reads and writes, whose
@@ -386,6 +468,17 @@ impl TsError {
 impl TsContext {
     /// Builds a context from options, a provider and a locale.
     ///
+    /// ```
+    /// use teistro_ffi::context::{OptionTexts, TsContext};
+    ///
+    /// // A profile the SDK does not ship is refused.
+    /// let unknown = OptionTexts { profile: Some("no-such-profile"), ..OptionTexts::default() };
+    /// assert!(TsContext::build(&unknown, teistro::Ephemeris::Test).is_err());
+    /// // No ephemeris is a context still: positions are then `CAPABILITY`.
+    /// assert!(TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?.provider().is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// An unknown profile, a patch that does not parse or contradicts the
@@ -399,6 +492,16 @@ impl TsContext {
 
     /// [`TsContext::build`] over an ordered chain, as the façade takes it:
     /// the Surya Siddhanta takes the entries after it for its sunrise.
+    ///
+    /// ```
+    /// use teistro_ffi::context::{OptionTexts, TsContext};
+    ///
+    /// // The text in front of a provider, which gives it the day's modern sunrise.
+    /// let chain = vec![teistro::Ephemeris::SuryaSiddhanta, teistro::Ephemeris::Test];
+    /// let ctx = TsContext::build_chain(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, chain)?;
+    /// assert!(ctx.provider().is_some());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -471,12 +574,28 @@ impl TsContext {
 
     /// The SDK's own context, for what a binding reaches through this
     /// one.
+    ///
+    /// ```
+    /// # use teistro_ffi::context::{OptionTexts, TsContext};
+    /// #
+    /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+    /// assert_eq!(ctx.sdk().profile(), ctx.profile());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn sdk(&self) -> &teistro::Context {
         &self.inner
     }
 
     /// The resolved settings.
+    ///
+    /// ```
+    /// # use teistro_ffi::context::{OptionTexts, TsContext};
+    /// #
+    /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+    /// assert_eq!(ctx.settings(), &ctx.resolved().settings);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn settings(&self) -> &Settings {
         self.inner.settings()
@@ -484,36 +603,86 @@ impl TsContext {
 
     /// The whole resolution, which the chart layer takes: the settings
     /// with the profile they came from and what was applied to get them.
+    ///
+    /// ```
+    /// # use teistro_ffi::context::{OptionTexts, TsContext};
+    /// #
+    /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+    /// assert_eq!(ctx.resolved().profile.as_str(), teistro_core::settings::DEFAULT_PROFILE);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn resolved(&self) -> &Resolved {
         self.inner.resolved()
     }
 
     /// The profile the settings came from.
+    ///
+    /// ```
+    /// # use teistro_ffi::context::{OptionTexts, TsContext};
+    /// #
+    /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+    /// // No profile named is the default one.
+    /// assert_eq!(ctx.profile(), teistro_core::settings::DEFAULT_PROFILE);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn profile(&self) -> &str {
         self.inner.profile()
     }
 
     /// The provider, when the context has one.
+    ///
+    /// ```
+    /// use teistro_ffi::context::{OptionTexts, TsContext};
+    ///
+    /// let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+    /// assert!(ctx.provider().is_some());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn provider(&self) -> Option<&dyn EphemerisProvider> {
         self.inner.ephemeris()
     }
 
     /// The Delta T model the settings chose.
+    ///
+    /// ```
+    /// # use teistro_ffi::context::{OptionTexts, TsContext};
+    /// #
+    /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+    /// assert_eq!(ctx.delta_t().key(), "TABLE_THEN_MODEL");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn delta_t(&self) -> DeltaTModel {
         self.inner.delta_t()
     }
 
     /// The locale engine.
+    ///
+    /// ```
+    /// use teistro_ffi::context::{OptionTexts, TsContext};
+    ///
+    /// let ctx = TsContext::build(&OptionTexts { locale: Some("ne-Deva-NP"), ..OptionTexts::default() }, teistro::Ephemeris::None)?;
+    /// assert_eq!(ctx.intl().locale(), "ne-Deva-NP");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn intl(&self) -> Ref<'_, Intl> {
         self.inner.locale_engine()
     }
 
     /// The locale engine, to change it.
+    ///
+    /// ```
+    /// # use teistro_ffi::context::{OptionTexts, TsContext};
+    /// #
+    /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+    /// ctx.intl_mut().set_locale("ne-Deva-NP")?;
+    /// assert_eq!(ctx.intl().locale(), "ne-Deva-NP");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn intl_mut(&self) -> RefMut<'_, Intl> {
         self.inner.locale_engine_mut()
@@ -601,6 +770,30 @@ fn resolve(ephemeris: u8, flags: u32) -> Result<TsEphemeris, Error> {
 /// on failure, when `out_error` is not null, it receives the whole
 /// refusal as a record that owns its strings, released by
 /// `ts_error_free`.
+///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::context::{TsContext, TsError, ts_context_free, ts_context_new};
+///
+/// # let blank = || -> Result<TsError, core::num::TryFromIntError> {
+/// #     Ok(TsError {
+/// #         struct_size: u32::try_from(size_of::<TsError>())?,
+/// #         status: 0, provider_code: 0, flags: 0,
+/// #         detail: core::ptr::null(), message: core::ptr::null(), field: core::ptr::null(),
+/// #         hint: core::ptr::null(), key: core::ptr::null(),
+/// #     })
+/// # };
+/// // Null options for every default, the test provider by its flag.
+/// let mut context: *mut TsContext = core::ptr::null_mut();
+/// let mut error = blank()?;
+/// // SAFETY: null options and provider, and writable slots.
+/// let status = unsafe { ts_context_new(core::ptr::null(), core::ptr::null(), core::ptr::null_mut(), &raw mut context, &raw mut error) };
+/// assert_eq!(status, Status::Ok);
+/// assert!(!context.is_null());
+/// // SAFETY: the handle the call made, freed once.
+/// unsafe { ts_context_free(context) };
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -710,6 +903,14 @@ fn builtin() -> Result<teistro::Ephemeris, Error> {
 
 /// The strings an options record carries, each optional, by name: a tuple
 /// of them let two constructors transpose one without a compiler noticing.
+///
+/// ```
+/// use teistro_ffi::context::OptionTexts;
+///
+/// // Each left out takes its default.
+/// let texts = OptionTexts { locale: Some("en-Latn"), ..OptionTexts::default() };
+/// assert!(texts.profile.is_none() && texts.settings_json.is_none());
+/// ```
 #[derive(Clone, Copy, Debug, Default)]
 pub struct OptionTexts<'a> {
     /// The shipped profile's id.
@@ -770,6 +971,30 @@ unsafe fn texts_of<'a>(options: Option<&TsContextOptions>) -> Result<OptionTexts
 
 /// Frees a context; null is ignored.
 ///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::context::{TsContext, TsError, ts_context_free, ts_context_new};
+///
+/// # let blank = || -> Result<TsError, core::num::TryFromIntError> {
+/// #     Ok(TsError {
+/// #         struct_size: u32::try_from(size_of::<TsError>())?,
+/// #         status: 0, provider_code: 0, flags: 0,
+/// #         detail: core::ptr::null(), message: core::ptr::null(), field: core::ptr::null(),
+/// #         hint: core::ptr::null(), key: core::ptr::null(),
+/// #     })
+/// # };
+/// let mut context: *mut TsContext = core::ptr::null_mut();
+/// let mut error = blank()?;
+/// // SAFETY: null options and provider, and writable slots.
+/// assert_eq!(unsafe { ts_context_new(core::ptr::null(), core::ptr::null(), core::ptr::null_mut(), &raw mut context, &raw mut error) }, Status::Ok);
+/// // SAFETY: the handle the call made, freed once; null is ignored.
+/// unsafe {
+///     ts_context_free(context);
+///     ts_context_free(core::ptr::null_mut());
+/// }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be null or a handle from `ts_context_new` that is not
@@ -788,6 +1013,36 @@ pub unsafe extern "C" fn ts_context_free(context: *mut TsContext) {
 /// code, and the message, field, hint and key as strings lent until the
 /// next call other than this one. After a successful call the record is
 /// `OK` with a null message.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::context::{TsError, ts_context_last_error};
+/// use teistro_ffi::time::ts_time_delta_t;
+///
+/// # let blank = || -> Result<TsError, core::num::TryFromIntError> {
+/// #     Ok(TsError {
+/// #         struct_size: u32::try_from(size_of::<TsError>())?,
+/// #         status: 0, provider_code: 0, flags: 0,
+/// #         detail: core::ptr::null(), message: core::ptr::null(), field: core::ptr::null(),
+/// #         hint: core::ptr::null(), key: core::ptr::null(),
+/// #     })
+/// # };
+/// // A Julian day that is no number is refused; the context says why.
+/// // SAFETY: a live context; a null out is never written on a refusal this early.
+/// let status = unsafe { ts_time_delta_t(&raw const ctx, f64::NAN, core::ptr::null_mut()) };
+/// assert_eq!(status, Status::InvalidArg);
+/// let mut error = blank()?;
+/// // SAFETY: a live context and a sized record.
+/// assert_eq!(unsafe { ts_context_last_error(&raw const ctx, &raw mut error) }, Status::Ok);
+/// assert_eq!(error.status, Status::InvalidArg.code());
+/// // SAFETY: the field the context lent.
+/// let field = unsafe { core::ffi::CStr::from_ptr(error.field) };
+/// assert_eq!(field.to_str()?, "jd_ut1");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -818,6 +1073,24 @@ pub unsafe extern "C" fn ts_context_last_error(
 /// The id of the profile the context's settings came from, lent until the
 /// next call on the context.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Test)?;
+/// # fn lent(out: teistro_ffi::string::TsStr) -> String {
+/// #     // SAFETY: the library lent `len` bytes of UTF-8 at `data`.
+/// #     String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data.cast::<u8>(), out.len) }).into_owned()
+/// # }
+/// # let mut out = teistro_ffi::string::TsStr { data: core::ptr::null(), len: 0 };
+/// use teistro_core::Status;
+/// use teistro_ffi::context::ts_context_profile;
+///
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_context_profile(&raw const ctx, &raw mut out) }, Status::Ok);
+/// assert_eq!(lent(out), "nepali-default");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_profile` valid for a write.
@@ -837,6 +1110,30 @@ pub unsafe extern "C" fn ts_context_profile(
 /// the caller; free it with `ts_string_free`. Two contexts with the same
 /// document compute the same numbers.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::context::ts_context_settings_json;
+/// use teistro_ffi::string::TsString;
+///
+/// let mut json = TsString::empty();
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_context_settings_json(&raw const ctx, &raw mut json) }, Status::Ok);
+/// // The resolved settings, every group written.
+/// let settings: serde_json::Value = serde_json::from_str(&owned(json))?;
+/// assert_eq!(settings, serde_json::to_value(ctx.settings())?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `out_json` valid for a write.
@@ -854,6 +1151,22 @@ pub unsafe extern "C" fn ts_context_settings_json(
 
 /// The SHA-256 of the canonical settings document: the `settings_hash`
 /// every result's provenance carries.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::context::ts_context_settings_hash;
+/// use teistro_ffi::string::TsHash;
+///
+/// let mut hash = TsHash { bytes: [0; 32] };
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_context_settings_hash(&raw const ctx, &raw mut hash) }, Status::Ok);
+/// // What every result under these settings carries in its provenance.
+/// assert_eq!(hash.bytes, *ctx.resolved().provenance(teistro_core::envelope::Version::new(0, 1, 0), teistro_core::envelope::Hash::of(&[])).settings_hash.bytes());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///

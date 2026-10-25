@@ -48,6 +48,13 @@ use crate::string::TsString;
 use crate::support::{c_struct, optional_text, read_in, with_context, write_plain};
 
 /// Which lunar-month convention a day's month leads with.
+///
+/// ```
+/// use teistro_ffi::panchanga::TsLunarMonth;
+///
+/// // A member crosses the boundary as its number: `Amanta` is 0, `Purnimanta` 1.
+/// assert_eq!((TsLunarMonth::Amanta as u8, TsLunarMonth::Purnimanta as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsLunarMonth {
@@ -61,6 +68,13 @@ impl TsLunarMonth {
     /// The id this build gives a member, or `None` for one it does not
     /// know — a member added to the knob since this was written, which
     /// is refused by name rather than defaulted.
+    ///
+    /// ```
+    /// use teistro_core::settings::LunarMonth;
+    /// use teistro_ffi::panchanga::TsLunarMonth;
+    ///
+    /// assert_eq!(TsLunarMonth::of(LunarMonth::Purnimanta), Some(TsLunarMonth::Purnimanta));
+    /// ```
     #[must_use]
     pub fn of(month: LunarMonth) -> Option<TsLunarMonth> {
         match month {
@@ -77,6 +91,13 @@ impl TsLunarMonth {
 /// muhurtas' `daylight` and the choghadiya's `daytime` do: a day's moon
 /// events are one question asked twice, and two sections of one column
 /// each would be two counts, two offsets and two types for it.
+///
+/// ```
+/// use teistro_ffi::panchanga::TsMoonEvent;
+///
+/// // A member crosses the boundary as its number: `Rise` is 0, `Set` 1.
+/// assert_eq!((TsMoonEvent::Rise as u8, TsMoonEvent::Set as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsMoonEvent {
@@ -92,6 +113,13 @@ pub enum TsMoonEvent {
 /// (`03-design/chart-at-the-boundary.md` §8). Both variants carry a vara
 /// and a nakshatra; only the second carries a tithi, and the first leaves
 /// `because_tithi` at zero.
+///
+/// ```
+/// use teistro_ffi::panchanga::TsYogaCause;
+///
+/// // A member crosses the boundary as its number: `VaraNakshatra` is 0, `VaraTithiNakshatra` 1.
+/// assert_eq!((TsYogaCause::VaraNakshatra as u8, TsYogaCause::VaraTithiNakshatra as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsYogaCause {
@@ -117,6 +145,13 @@ impl From<YogaCause> for TsYogaCause {
 /// kshaya (`03-design/calendar-indian-lunisolar.md` §2). An exhaustive
 /// match, so a kind added to the calendar breaks this build rather than
 /// silently crossing as whatever came first.
+///
+/// ```
+/// use teistro_ffi::panchanga::TsMonthKind;
+///
+/// // A member crosses the boundary as its number: `Nija` is 0, `Kshaya` 2.
+/// assert_eq!((TsMonthKind::Nija as u8, TsMonthKind::Kshaya as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsMonthKind {
@@ -142,6 +177,13 @@ impl From<MonthKind> for TsMonthKind {
 /// is how a patro marks a member naming two days (vriddhi) or none
 /// (kshaya) (`teistro::Sunrises`). An exhaustive match, as the month kind
 /// is.
+///
+/// ```
+/// use teistro_ffi::panchanga::TsSunrises;
+///
+/// // A member crosses the boundary as its number: `Opening` is 0, `Neither` 3.
+/// assert_eq!((TsSunrises::Opening as u8, TsSunrises::Neither as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSunrises {
@@ -173,6 +215,32 @@ impl From<Sunrises> for TsSunrises {
 /// consecutive windows share a boundary, so day *n*'s next sunrise is day
 /// *n+1*'s sunrise (`03-design/panchanga-day.md` §14). A caller wanting
 /// one day passes a range of one.
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_YEARS, TsPanchangaRequest};
+///
+/// // September 2026 at Kathmandu, its years and eclipses beside the days.
+/// let request = TsPanchangaRequest {
+///     struct_size: u32::try_from(size_of::<TsPanchangaRequest>())?,
+///     calendar: 0,
+///     reserved: 0,
+///     from_year: 2026,
+///     from_month: 9,
+///     from_day: 1,
+///     to_month: 9,
+///     to_day: 30,
+///     to_year: 2026,
+///     latitude_deg: 27.7172,
+///     longitude_deg: 85.324,
+///     altitude_m: 1400.0,
+///     utc_offset_seconds: 5 * 3600 + 45 * 60,
+///     sections: TS_PANCHANGA_YEARS | TS_PANCHANGA_ECLIPSES,
+///     muhurta_json: core::ptr::null(),
+///     festivals_json: core::ptr::null(),
+/// };
+/// assert_eq!(request.sections, 3);
+/// # Ok::<(), core::num::TryFromIntError>(())
+/// ```
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct TsPanchangaRequest {
@@ -293,6 +361,14 @@ c_struct!(TsPanchangaRequest);
 /// for nothing, as a chart request's does.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_YEARS};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_YEARS, 1 << 0);
+/// assert_eq!((TS_PANCHANGA_YEARS | TS_PANCHANGA_ECLIPSES) & TS_PANCHANGA_YEARS, TS_PANCHANGA_YEARS);
+/// ```
 pub const TS_PANCHANGA_YEARS: u32 = 1;
 
 /// `TS_PANCHANGA_ECLIPSES`, the bit a caller sets in a panchanga
@@ -300,6 +376,14 @@ pub const TS_PANCHANGA_YEARS: u32 = 1;
 /// of each (`03-design/eclipses.md`).
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_YEARS};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_ECLIPSES, 1 << 1);
+/// assert_eq!((TS_PANCHANGA_ECLIPSES | TS_PANCHANGA_YEARS) & TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_ECLIPSES);
+/// ```
 pub const TS_PANCHANGA_ECLIPSES: u32 = 2;
 
 /// `TS_PANCHANGA_NEPAL_SAMBAT`, the bit a caller sets in a panchanga
@@ -307,6 +391,14 @@ pub const TS_PANCHANGA_ECLIPSES: u32 = 2;
 /// (`03-design/calendar-indian-lunisolar.md` §11).
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_YEARS};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_NEPAL_SAMBAT, 1 << 2);
+/// assert_eq!((TS_PANCHANGA_NEPAL_SAMBAT | TS_PANCHANGA_YEARS) & TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_NEPAL_SAMBAT);
+/// ```
 pub const TS_PANCHANGA_NEPAL_SAMBAT: u32 = 4;
 
 /// `TS_PANCHANGA_WITHOUT_DAYS`, the bit a caller sets in a panchanga
@@ -318,6 +410,14 @@ pub const TS_PANCHANGA_NEPAL_SAMBAT: u32 = 4;
 /// days, founded and not written.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_WITHOUT_DAYS, 1 << 3);
+/// assert_eq!((TS_PANCHANGA_WITHOUT_DAYS | TS_PANCHANGA_YEARS) & TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_WITHOUT_DAYS);
+/// ```
 pub const TS_PANCHANGA_WITHOUT_DAYS: u32 = 8;
 
 /// `TS_PANCHANGA_LAGNAS`, the bit a caller sets in a panchanga request's
@@ -328,6 +428,14 @@ pub const TS_PANCHANGA_WITHOUT_DAYS: u32 = 8;
 /// ascendants a day, so a request that does not set it pays nothing.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_LAGNAS, TS_PANCHANGA_YEARS};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_LAGNAS, 1 << 4);
+/// assert_eq!((TS_PANCHANGA_LAGNAS | TS_PANCHANGA_YEARS) & TS_PANCHANGA_LAGNAS, TS_PANCHANGA_LAGNAS);
+/// ```
 pub const TS_PANCHANGA_LAGNAS: u32 = 16;
 
 /// A day's own values, in the order `days` declares them.
@@ -674,6 +782,14 @@ impl RaggedRows {
 
 /// The JSON sections answered beside the days, each the canonical
 /// envelope a section carries and empty when it was not asked for.
+///
+/// ```
+/// use teistro_ffi::panchanga::Beside;
+///
+/// // Nothing asked beside the days.
+/// let beside = Beside::default();
+/// assert!(beside.muhurta.is_empty() && beside.festivals.is_empty());
+/// ```
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Beside<'a> {
     /// The `muhurta` section.
@@ -693,6 +809,23 @@ pub struct Beside<'a> {
 /// Every per-day list runs days outermost and is concatenated across the
 /// batch, with `counts` saying how many rows are each day's. A batch of
 /// one is the ordinary case and the counts say so.
+///
+/// ```
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_core::envelope::{Hash, Provenance, Version};
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_ffi::panchanga::{Beside, encode};
+///
+/// let place = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// let provenance = Provenance::new(
+///     Version::new(0, 1, 0), 1, 1, "nepali-default",
+///     Hash::of(b"settings"), Hash::of(b"input"),
+/// );
+/// // A batch of no days is still a blob, its counts saying so.
+/// let blob = encode(&[], &place, Calendar::Gregorian, &provenance, &[], &Beside::default())?;
+/// assert_eq!(blob[..4], *b"TSRB");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -800,6 +933,42 @@ pub fn encode(
 /// policies that would synthesise one.
 ///
 /// `api: blob=panchanga`
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn bytes(mut blob: teistro_ffi::blob::TsBlob) -> Vec<u8> {
+/// #     // SAFETY: the library wrote `len` bytes at `data`.
+/// #     let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::blob::ts_blob_free(&raw mut blob) };
+/// #     bytes
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::blob::TsBlob;
+/// use teistro_ffi::panchanga::{TsPanchangaRequest, ts_panchanga_days};
+/// use teistro_idl::blob::Reader;
+///
+/// // A week of September 2026 at Kathmandu.
+/// let request = TsPanchangaRequest {
+///     struct_size: u32::try_from(size_of::<TsPanchangaRequest>())?,
+///     calendar: 0, reserved: 0,
+///     from_year: 2026, from_month: 9, from_day: 1,
+///     to_month: 9, to_day: 7, to_year: 2026,
+///     latitude_deg: 27.7172, longitude_deg: 85.324, altitude_m: 1400.0,
+///     utc_offset_seconds: 20_700, sections: 0,
+///     muhurta_json: core::ptr::null(), festivals_json: core::ptr::null(),
+/// };
+/// let mut blob = TsBlob::empty();
+/// // SAFETY: a live context, a sized request and a writable slot.
+/// assert_eq!(unsafe { ts_panchanga_days(&raw const ctx, &raw const request, &raw mut blob) }, Status::Ok);
+/// let bytes = bytes(blob);
+/// let schema = teistro_ffi::schemas::panchanga();
+/// let reader = Reader::parse(&bytes, &schema)?;
+/// assert_eq!(reader.field("summary", "day_count")?.as_i64(), 7);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
@@ -945,6 +1114,35 @@ pub unsafe extern "C" fn ts_panchanga_days(
 /// context without an ephemeris `CAPABILITY`. A failure of either
 /// context's reckoning is recorded on this one.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let official = TsContext::build_chain(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, vec![teistro::Ephemeris::SuryaSiddhanta, teistro::Ephemeris::Builtin])?;
+/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_disagreements;
+/// use teistro_ffi::string::TsString;
+///
+/// // November 2025 at Kathmandu, by the text and by the modern sky.
+/// let month = c"{\"first\": {\"year\": 2025, \"month\": 11, \"day\": 1}, \"last\": {\"year\": 2025, \"month\": 11, \"day\": 30}, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700, \"festivals\": {\"rules\": \"NEPAL\"}}";
+/// let mut out = TsString::empty();
+/// // SAFETY: two live contexts, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_disagreements(&raw const official, &raw const modern, month.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // The tithi differs on several of the month's days.
+/// let days = answer["days"]["value"]["days"].as_array().ok_or("days")?;
+/// assert!(!days.is_empty());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` and `other` must be live handles; `request_json`
@@ -998,6 +1196,33 @@ pub unsafe extern "C" fn ts_almanac_disagreements(
 /// instant in no day's window (a polar day the policy leaves undefined)
 /// `OUT_OF_RANGE`.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::string::TsString;
+/// use teistro_ffi::panchanga::ts_almanac_sankalpa;
+///
+/// let request = c"{\"at\": 2461055.59375, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700, \"ayana\": \"TROPICAL\"}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_sankalpa(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // The Sun's sign at the instant, the ayana by the tropical reckoning.
+/// assert_eq!(answer["value"]["sun"], "rashi.CAPRICORN");
+/// assert_eq!(answer["value"]["ayanaReckoning"], "TROPICAL");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
@@ -1048,6 +1273,33 @@ pub unsafe extern "C" fn ts_almanac_sankalpa(
 /// row for is `UNSUPPORTED`; a context without an ephemeris is
 /// `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::string::TsString;
+/// use teistro_ffi::panchanga::ts_almanac_ashauch;
+///
+/// let request = c"{\"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1337, \"utcOffsetSeconds\": 20700, \"request\": {\"key\": \"grandfather\", \"relation\": \"SAPINDA\", \"event\": {\"event\": \"DEATH\", \"at\": 2461051.677083}}}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_ashauch(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // Ten days for a sapinda, by the clause the relation reads.
+/// assert_eq!(answer["value"]["days"], 10);
+/// assert_eq!(answer["value"]["clause"]["clause"], "RELATION");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
@@ -1092,6 +1344,33 @@ pub unsafe extern "C" fn ts_almanac_ashauch(
 /// under `firstYear`; a context without an ephemeris is `CAPABILITY`, and
 /// a polar day `OUT_OF_RANGE`.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::string::TsString;
+/// use teistro_ffi::panchanga::ts_almanac_first_year;
+///
+/// let request = c"{\"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1337, \"utcOffsetSeconds\": 20700, \"request\": {\"key\": \"grandfather\", \"at\": 2461333.677083}}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_first_year(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // Sixteen of the first year's rites fall at a place.
+/// let rites = answer["value"]["rites"].as_array().ok_or("rites")?;
+/// assert_eq!(rites.iter().filter(|rite| rite.get("place").is_some()).count(), 16);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
@@ -1132,6 +1411,32 @@ pub unsafe extern "C" fn ts_almanac_first_year(
 /// `festivalCalendar`. A range of more than a year and a day, or a day
 /// outside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without
 /// an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, teistro::Ephemeris::SuryaSiddhanta)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_festival_calendar;
+/// use teistro_ffi::string::TsString;
+///
+/// let season = c"{\"first\": {\"year\": 2025, \"month\": 9, \"day\": 20}, \"last\": {\"year\": 2025, \"month\": 11, \"day\": 10}, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700, \"festivals\": {\"rules\": \"NEPAL_PANCHANGA\"}, \"stampUnixSeconds\": 1767225600}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_almanac_festival_calendar(&raw const ctx, season.as_ptr(), &raw mut out) }, Status::Ok);
+/// // An iCalendar feed, the season's festivals whole-day events.
+/// let feed = owned(out);
+/// assert!(feed.starts_with("BEGIN:VCALENDAR\r\n"));
+/// assert!(feed.contains("SUMMARY:Vijaya Dashami\r\n"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///

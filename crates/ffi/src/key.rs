@@ -21,6 +21,21 @@ use crate::support::{text, with_context, write_plain};
 /// unknown key is `UNSUPPORTED` with the nearest known key as the hint in
 /// the context's last error.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_core::catalogue::{Catalogued, Graha};
+/// use teistro_ffi::key::ts_key_parse;
+///
+/// let mut id = 0_u32;
+/// // SAFETY: a live context, a NUL-terminated key and a writable slot.
+/// assert_eq!(unsafe { ts_key_parse(&raw const ctx, c"graha.SUN".as_ptr(), &raw mut id) }, Status::Ok);
+/// assert_eq!(id, Graha::Sun.key_id().bits());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `key` a NUL-terminated string; `out_id`
@@ -43,6 +58,25 @@ pub unsafe extern "C" fn ts_key_parse(
 
 /// The full key of a packed id (`graha.SUN`), lent until the next call on
 /// the context. An id no catalogued member has is `UNSUPPORTED`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # fn lent(out: teistro_ffi::string::TsStr) -> String {
+/// #     // SAFETY: the library lent `len` bytes of UTF-8 at `data`.
+/// #     String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data.cast::<u8>(), out.len) }).into_owned()
+/// # }
+/// # let mut out = teistro_ffi::string::TsStr { data: core::ptr::null(), len: 0 };
+/// use teistro_core::Status;
+/// use teistro_core::catalogue::{Catalogued, Graha};
+/// use teistro_ffi::key::ts_key_name;
+///
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_key_name(&raw const ctx, Graha::Moon.key_id().bits(), &raw mut out) }, Status::Ok);
+/// assert_eq!(lent(out), "graha.MOON");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///

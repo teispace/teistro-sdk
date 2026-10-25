@@ -39,6 +39,33 @@ use crate::support::with_context;
 /// under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
 /// a build that leaves the `rashifal` family out.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::string::TsString;
+/// use teistro_ffi::rashifal::ts_rashifal;
+///
+/// let request = c"{\"periods\": [{\"first\": {\"year\": 2026, \"month\": 10, \"day\": 4}, \"last\": {\"year\": 2026, \"month\": 10, \"day\": 10}, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700}]}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_rashifal(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // One period asked, one answered, sealed by its provenance.
+/// assert!(answer["provenance"]["input_hash"].is_string());
+/// assert_eq!(answer["value"].as_array().map(Vec::len), Some(1));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;

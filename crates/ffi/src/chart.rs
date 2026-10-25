@@ -53,6 +53,13 @@ use crate::string::TsString;
 use crate::support::{optional_text, read_in, slice, with_context, write_plain};
 
 /// Which bound of a bhava a placement was read against.
+///
+/// ```
+/// use teistro_ffi::chart::TsReading;
+///
+/// // A member crosses the boundary as its number: `Sandhi` is 0, `Madhya` 1.
+/// assert_eq!((TsReading::Sandhi as u8, TsReading::Madhya as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsReading {
@@ -72,6 +79,13 @@ impl From<Reading> for TsReading {
 }
 
 /// How badly the Sun burns a body.
+///
+/// ```
+/// use teistro_ffi::chart::TsBurning;
+///
+/// // A member crosses the boundary as its number: `None` is 0, `Deep` 2.
+/// assert_eq!((TsBurning::None as u8, TsBurning::Deep as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsBurning {
@@ -98,6 +112,13 @@ impl From<Burning> for TsBurning {
 /// The houses crate's own `Quadrant`, which is not a catalogue member —
 /// it is a classification of a number rather than a thing with a key —
 /// so it crosses as this boundary's own enum, as `TsStrength` does.
+///
+/// ```
+/// use teistro_ffi::chart::TsQuadrant;
+///
+/// // A member crosses the boundary as its number: `Kendra` is 0, `Apoklima` 2.
+/// assert_eq!((TsQuadrant::Kendra as u8, TsQuadrant::Apoklima as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsQuadrant {
@@ -125,6 +146,13 @@ impl From<Quadrant> for TsQuadrant {
 /// it is a property of a relation rather than a thing with a key — so it
 /// crosses as this boundary's own enum, as `TsReading` and `TsDayPart`
 /// do.
+///
+/// ```
+/// use teistro_ffi::chart::TsStrength;
+///
+/// // A member crosses the boundary as its number: `None` is 0, `Full` 4.
+/// assert_eq!((TsStrength::None as u8, TsStrength::Full as u8), (0, 4));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsStrength {
@@ -156,6 +184,13 @@ impl From<Strength> for TsStrength {
 ///
 /// The settings' own `Balance`, which is a knob and not a catalogue member,
 /// so it crosses as this boundary's own enum, as `TsStrength` does.
+///
+/// ```
+/// use teistro_ffi::chart::TsBalance;
+///
+/// // A member crosses the boundary as its number: `Spatial` is 0, `Temporal` 1.
+/// assert_eq!((TsBalance::Spatial as u8, TsBalance::Temporal as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsBalance {
@@ -176,6 +211,13 @@ impl From<teistro_core::settings::Balance> for TsBalance {
 
 /// Where an Ashtakavarga's reductions and pindas were made: the settings'
 /// own `Shodhana`, which is a knob and not a catalogue member.
+///
+/// ```
+/// use teistro_ffi::chart::TsShodhana;
+///
+/// // A member crosses the boundary as its number: `EachGraha` is 0, `Sarva` 1.
+/// assert_eq!((TsShodhana::EachGraha as u8, TsShodhana::Sarva as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsShodhana {
@@ -196,6 +238,13 @@ impl From<teistro_core::settings::Shodhana> for TsShodhana {
 
 /// How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
 /// an occupied one: the settings' own `Ekadhipatya`.
+///
+/// ```
+/// use teistro_ffi::chart::TsEkadhipatya;
+///
+/// // A member crosses the boundary as its number: `Bphs` is 0, `EmptyToZero` 1.
+/// assert_eq!((TsEkadhipatya::Bphs as u8, TsEkadhipatya::EmptyToZero as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsEkadhipatya {
@@ -216,6 +265,13 @@ impl From<teistro_core::settings::Ekadhipatya> for TsEkadhipatya {
 
 /// How a Vimshopaka scored a graha in a varga: the settings' own
 /// `Vimshopaka`.
+///
+/// ```
+/// use teistro_ffi::chart::TsVimshopakaScoring;
+///
+/// // A member crosses the boundary as its number: `Bphs` is 0, `SaptavargajaVirupas` 1.
+/// assert_eq!((TsVimshopakaScoring::Bphs as u8, TsVimshopakaScoring::SaptavargajaVirupas as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsVimshopakaScoring {
@@ -240,6 +296,13 @@ impl From<teistro_core::settings::Vimshopaka> for TsVimshopakaScoring {
 
 /// Which rule a chart's Brahma graha was sought under: the settings' own
 /// `jaimini.brahma` (`03-design/jaimini-significators.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsBrahmaRule;
+///
+/// // A member crosses the boundary as its number: `Verses` is 0, `TranslatorsNote` 1.
+/// assert_eq!((TsBrahmaRule::Verses as u8, TsBrahmaRule::TranslatorsNote as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsBrahmaRule {
@@ -261,6 +324,13 @@ impl From<teistro_core::settings::BrahmaRule> for TsBrahmaRule {
 /// Whether a chart's Brahma graha was found, and when not, why (C127,
 /// C128). One code rather than a presence flag beside a reason, so the two
 /// cannot disagree.
+///
+/// ```
+/// use teistro_ffi::chart::TsBrahmaOutcome;
+///
+/// // A member crosses the boundary as its number: `Found` is 0, `NoPlanetQualifies` 3.
+/// assert_eq!((TsBrahmaOutcome::Found as u8, TsBrahmaOutcome::NoPlanetQualifies as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsBrahmaOutcome {
@@ -291,6 +361,13 @@ impl From<Option<teistro::dasha::jaimini::NoBrahma>> for TsBrahmaOutcome {
 
 /// What a fixed significator signifies (BPHS ch. 32 vv. 18 to 24): a
 /// relative, or death (`03-design/jaimini-significators.md` §7).
+///
+/// ```
+/// use teistro_ffi::chart::TsSignification;
+///
+/// // A member crosses the boundary as its number: `Father` is 0, `Death` 12.
+/// assert_eq!((TsSignification::Father as u16, TsSignification::Death as u16), (0, 12));
+/// ```
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSignification {
@@ -346,6 +423,13 @@ impl From<teistro::dasha::jaimini::Signification> for TsSignification {
 
 /// How a sthira karaka was chosen (C408, C409), so a reader checks the
 /// choice against the chart rather than trusting it.
+///
+/// ```
+/// use teistro_ffi::chart::TsChosenBy;
+///
+/// // A member crosses the boundary as its number: `Alone` is 0, `Caller` 4.
+/// assert_eq!((TsChosenBy::Alone as u8, TsChosenBy::Caller as u8), (0, 4));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsChosenBy {
@@ -455,6 +539,13 @@ impl KarakaColumns {
 }
 
 /// What a gochar reading counted its houses from (crux C139).
+///
+/// ```
+/// use teistro_ffi::chart::TsGocharFrom;
+///
+/// // A member crosses the boundary as its number: `Moon` is 0, `Lagna` 1.
+/// assert_eq!((TsGocharFrom::Moon as u8, TsGocharFrom::Lagna as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsGocharFrom {
@@ -467,6 +558,12 @@ pub enum TsGocharFrom {
 impl TsGocharFrom {
     /// The code a reference crosses as; `None` for one this boundary
     /// does not know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsGocharFrom;
+    ///
+    /// assert_eq!(TsGocharFrom::of(teistro::GocharFrom::Lagna), Some(TsGocharFrom::Lagna));
+    /// ```
     #[must_use]
     pub const fn of(from: teistro::GocharFrom) -> Option<TsGocharFrom> {
         match from {
@@ -478,6 +575,13 @@ impl TsGocharFrom {
 }
 
 /// What Sade Sati's houses are reckoned in (C147, `03-design/sade-sati.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsReckoning;
+///
+/// // A member crosses the boundary as its number: `Sign` is 0, `Degree` 1.
+/// assert_eq!((TsReckoning::Sign as u8, TsReckoning::Degree as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsReckoning {
@@ -490,6 +594,12 @@ pub enum TsReckoning {
 impl TsReckoning {
     /// The code a reckoning crosses as; `None` for one this boundary does
     /// not know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsReckoning;
+    ///
+    /// assert_eq!(TsReckoning::of(teistro::sade_sati::Reckoning::Degree), Some(TsReckoning::Degree));
+    /// ```
     #[must_use]
     pub const fn of(reckoning: teistro::sade_sati::Reckoning) -> Option<TsReckoning> {
         match reckoning {
@@ -502,6 +612,13 @@ impl TsReckoning {
 
 /// Whether a chart is of the day or of the night
 /// (`03-design/essential-dignities.md` §Sect).
+///
+/// ```
+/// use teistro_ffi::chart::TsSect;
+///
+/// // A member crosses the boundary as its number: `Day` is 0, `Night` 1.
+/// assert_eq!((TsSect::Day as u8, TsSect::Night as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSect {
@@ -522,6 +639,13 @@ impl From<teistro::Sect> for TsSect {
 
 /// How a chart's sect is read (C209, `03-design/essential-dignities.md`
 /// §Sect).
+///
+/// ```
+/// use teistro_ffi::chart::TsSectRule;
+///
+/// // A member crosses the boundary as its number: `Horizon` is 0, `Night` 3.
+/// assert_eq!((TsSectRule::Horizon as u8, TsSectRule::Night as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSectRule {
@@ -538,6 +662,12 @@ pub enum TsSectRule {
 impl TsSectRule {
     /// The code a rule crosses as; `None` for one this boundary does not
     /// know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsSectRule;
+    ///
+    /// assert_eq!(TsSectRule::of(teistro::SectRule::Horizon), Some(TsSectRule::Horizon));
+    /// ```
     #[must_use]
     pub const fn of(rule: teistro::SectRule) -> Option<TsSectRule> {
         match rule {
@@ -552,6 +682,13 @@ impl TsSectRule {
 
 /// Which system of terms a reading used (C208,
 /// `03-design/essential-dignities.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsTerms;
+///
+/// // A member crosses the boundary as its number: `Egyptian` is 0, `Table` 4.
+/// assert_eq!((TsTerms::Egyptian as u8, TsTerms::Table as u8), (0, 4));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsTerms {
@@ -570,6 +707,13 @@ pub enum TsTerms {
 impl TsTerms {
     /// The code a system crosses as; `None` for one this boundary does not
     /// know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsTerms;
+    ///
+    /// assert_eq!(TsTerms::of(&teistro::Terms::Egyptian), Some(TsTerms::Egyptian));
+    /// assert_eq!(TsTerms::of(&teistro::Terms::Chaldean).map(|terms| terms as u8), Some(3));
+    /// ```
     #[must_use]
     pub const fn of(terms: &teistro::Terms) -> Option<TsTerms> {
         match terms {
@@ -584,6 +728,13 @@ impl TsTerms {
 }
 
 /// Who rules each triplicity (`03-design/essential-dignities.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsTriplicities;
+///
+/// // A member crosses the boundary as its number: `Ptolemy` is 0, `Lilly` 1.
+/// assert_eq!((TsTriplicities::Ptolemy as u8, TsTriplicities::Lilly as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsTriplicities {
@@ -596,6 +747,12 @@ pub enum TsTriplicities {
 impl TsTriplicities {
     /// The code a scheme crosses as; `None` for one this boundary does
     /// not know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsTriplicities;
+    ///
+    /// assert_eq!(TsTriplicities::of(teistro::Triplicities::Lilly), Some(TsTriplicities::Lilly));
+    /// ```
     #[must_use]
     pub const fn of(triplicities: teistro::Triplicities) -> Option<TsTriplicities> {
         match triplicities {
@@ -608,6 +765,13 @@ impl TsTriplicities {
 
 /// One of Lilly's accidental fortitudes or debilities (p. 115,
 /// `03-design/essential-dignities.md` §Accidental fortitudes).
+///
+/// ```
+/// use teistro_ffi::chart::TsAccident;
+///
+/// // A member crosses the boundary as its number: `Direct` is 0, `Algol` 23.
+/// assert_eq!((TsAccident::Direct as u8, TsAccident::Algol as u8), (0, 23));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsAccident {
@@ -664,6 +828,12 @@ pub enum TsAccident {
 impl TsAccident {
     /// The code an accident crosses as; `None` for one this boundary does
     /// not know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsAccident;
+    ///
+    /// assert_eq!(TsAccident::of(teistro::Accident::Retrograde), Some(TsAccident::Retrograde));
+    /// ```
     #[must_use]
     pub const fn of(accident: teistro::Accident) -> Option<TsAccident> {
         use teistro::Accident as A;
@@ -699,6 +869,13 @@ impl TsAccident {
 
 /// When two planets are in partile aspect (C216,
 /// `03-design/essential-dignities.md` §Accidental fortitudes).
+///
+/// ```
+/// use teistro_ffi::chart::TsPartile;
+///
+/// // A member crosses the boundary as its number: `SameDegree` is 0, `Within` 1.
+/// assert_eq!((TsPartile::SameDegree as u8, TsPartile::Within as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsPartile {
@@ -712,6 +889,14 @@ impl TsPartile {
     /// The code a reading crosses as, with its orb (0 for
     /// [`TsPartile::SameDegree`]); `None` for one this boundary does not
     /// know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsPartile;
+    ///
+    /// // The orb crosses beside the code; the same degree has none.
+    /// assert_eq!(TsPartile::of(teistro::Partile::Within { orb_deg: 1.5 }), Some((TsPartile::Within, 1.5)));
+    /// assert_eq!(TsPartile::of(teistro::Partile::SameDegree), Some((TsPartile::SameDegree, 0.0)));
+    /// ```
     #[must_use]
     pub const fn of(partile: teistro::Partile) -> Option<(TsPartile, f64)> {
         match partile {
@@ -724,6 +909,13 @@ impl TsPartile {
 
 /// When a planet is besieged by Saturn and Mars (C215,
 /// `03-design/essential-dignities.md` §Accidental fortitudes).
+///
+/// ```
+/// use teistro_ffi::chart::TsSiege;
+///
+/// // A member crosses the boundary as its number: `SameSign` is 0, `Within` 1.
+/// assert_eq!((TsSiege::SameSign as u8, TsSiege::Within as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSiege {
@@ -737,6 +929,12 @@ impl TsSiege {
     /// The code a reading crosses as, with its span (0 for
     /// [`TsSiege::SameSign`]); `None` for one this boundary does not know
     /// yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsSiege;
+    ///
+    /// assert_eq!(TsSiege::of(teistro::Siege::Within { span_deg: 30.0 }), Some((TsSiege::Within, 30.0)));
+    /// ```
     #[must_use]
     pub const fn of(siege: teistro::Siege) -> Option<(TsSiege, f64)> {
         match siege {
@@ -749,6 +947,13 @@ impl TsSiege {
 
 /// What of a place an almuten's dignities are counted from (C218,
 /// `03-design/essential-dignities.md` §The almuten).
+///
+/// ```
+/// use teistro_ffi::chart::TsPlaceReading;
+///
+/// // A member crosses the boundary as its number: `Degree` is 0, `Sign` 1.
+/// assert_eq!((TsPlaceReading::Degree as u8, TsPlaceReading::Sign as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsPlaceReading {
@@ -761,6 +966,12 @@ pub enum TsPlaceReading {
 impl TsPlaceReading {
     /// The code a reading crosses as; `None` for one this boundary does
     /// not know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsPlaceReading;
+    ///
+    /// assert_eq!(TsPlaceReading::of(teistro::PlaceReading::Sign), Some(TsPlaceReading::Sign));
+    /// ```
     #[must_use]
     pub const fn of(reading: teistro::PlaceReading) -> Option<TsPlaceReading> {
         match reading {
@@ -773,6 +984,13 @@ impl TsPlaceReading {
 
 /// How the Part of Fortune is taken by night (C220,
 /// `03-design/essential-dignities.md` §The almuten).
+///
+/// ```
+/// use teistro_ffi::chart::TsFortuneRule;
+///
+/// // A member crosses the boundary as its number: `DayAndNight` is 0, `ReversedWhileMoonUp` 2.
+/// assert_eq!((TsFortuneRule::DayAndNight as u8, TsFortuneRule::ReversedWhileMoonUp as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsFortuneRule {
@@ -788,6 +1006,12 @@ pub enum TsFortuneRule {
 impl TsFortuneRule {
     /// The code a rule crosses as; `None` for one this boundary does not
     /// know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsFortuneRule;
+    ///
+    /// assert_eq!(TsFortuneRule::of(teistro::FortuneRule::ReversedByNight), Some(TsFortuneRule::ReversedByNight));
+    /// ```
     #[must_use]
     pub const fn of(rule: teistro::FortuneRule) -> Option<TsFortuneRule> {
         match rule {
@@ -800,6 +1024,13 @@ impl TsFortuneRule {
 }
 
 /// One of Valens's lots (`03-design/hellenistic-lots.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsLot;
+///
+/// // A member crosses the boundary as its number: `Fortune` is 0, `Crisis` 13.
+/// assert_eq!((TsLot::Fortune as u8, TsLot::Crisis as u8), (0, 13));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsLot {
@@ -838,6 +1069,12 @@ pub enum TsLot {
 impl TsLot {
     /// The code a lot crosses as; `None` for one this boundary does not
     /// know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsLot;
+    ///
+    /// assert_eq!(TsLot::of(teistro::Lot::Fortune).map(|lot| lot as u8), Some(0));
+    /// ```
     #[must_use]
     pub const fn of(lot: teistro::Lot) -> Option<TsLot> {
         use teistro::Lot;
@@ -864,6 +1101,13 @@ impl TsLot {
 /// Why a horary figure is radical (Lilly p. 121,
 /// `03-design/hellenistic-considerations.md`); a figure's grounds cross as
 /// a bit set, bit `n` the member with code `n`.
+///
+/// ```
+/// use teistro_ffi::chart::TsRadicalGround;
+///
+/// // A member crosses the boundary as its number: `OneLord` is 0, `Nature` 2.
+/// assert_eq!((TsRadicalGround::OneLord as u8, TsRadicalGround::Nature as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsRadicalGround {
@@ -878,6 +1122,12 @@ pub enum TsRadicalGround {
 impl TsRadicalGround {
     /// The code a ground crosses as; `None` for one this boundary does not
     /// know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsRadicalGround;
+    ///
+    /// assert_eq!(TsRadicalGround::of(teistro::RadicalGround::Triplicity), Some(TsRadicalGround::Triplicity));
+    /// ```
     #[must_use]
     pub const fn of(ground: teistro::RadicalGround) -> Option<TsRadicalGround> {
         use teistro::RadicalGround;
@@ -901,6 +1151,13 @@ fn bit_set(ids: impl IntoIterator<Item = u16>) -> Option<u8> {
 
 /// A Ptolemaic aspect the Moon perfects before judgement
 /// (`03-design/hellenistic-considerations.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsPtolemaicAspect;
+///
+/// // A member crosses the boundary as its number: `Conjunction` is 0, `Opposition` 4.
+/// assert_eq!((TsPtolemaicAspect::Conjunction as u8, TsPtolemaicAspect::Opposition as u8), (0, 4));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsPtolemaicAspect {
@@ -919,6 +1176,12 @@ pub enum TsPtolemaicAspect {
 impl TsPtolemaicAspect {
     /// The code an aspect crosses as; `None` for one this boundary does
     /// not know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsPtolemaicAspect;
+    ///
+    /// assert_eq!(TsPtolemaicAspect::of(teistro::PtolemaicAspect::Trine), Some(TsPtolemaicAspect::Trine));
+    /// ```
     #[must_use]
     pub const fn of(aspect: teistro::PtolemaicAspect) -> Option<TsPtolemaicAspect> {
         use teistro::PtolemaicAspect;
@@ -935,6 +1198,13 @@ impl TsPtolemaicAspect {
 
 /// Which of Lilly's three kinds an application is (p. 107,
 /// `03-design/hellenistic-perfection.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsApplicationKind;
+///
+/// // A member crosses the boundary as its number: `BothDirect` is 0, `AgainstRetrograde` 2.
+/// assert_eq!((TsApplicationKind::BothDirect as u8, TsApplicationKind::AgainstRetrograde as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsApplicationKind {
@@ -949,6 +1219,12 @@ pub enum TsApplicationKind {
 impl TsApplicationKind {
     /// The code a kind crosses as; `None` for one this boundary does not
     /// know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsApplicationKind;
+    ///
+    /// assert_eq!(TsApplicationKind::of(teistro::ApplicationKind::BothDirect), Some(TsApplicationKind::BothDirect));
+    /// ```
     #[must_use]
     pub const fn of(kind: teistro::ApplicationKind) -> Option<TsApplicationKind> {
         use teistro::ApplicationKind;
@@ -963,6 +1239,13 @@ impl TsApplicationKind {
 
 /// What stops or hinders two significators' application (pp. 110–113,
 /// `03-design/hellenistic-perfection.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsImpedimentKind;
+///
+/// // A member crosses the boundary as its number: `Prohibition` is 0, `Refranation` 2.
+/// assert_eq!((TsImpedimentKind::Prohibition as u8, TsImpedimentKind::Refranation as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsImpedimentKind {
@@ -977,6 +1260,12 @@ pub enum TsImpedimentKind {
 impl TsImpedimentKind {
     /// The code a kind crosses as; `None` for one this boundary does not
     /// know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsImpedimentKind;
+    ///
+    /// assert_eq!(TsImpedimentKind::of(teistro::ImpedimentKind::Refranation), Some(TsImpedimentKind::Refranation));
+    /// ```
     #[must_use]
     pub const fn of(kind: teistro::ImpedimentKind) -> Option<TsImpedimentKind> {
         use teistro::ImpedimentKind;
@@ -992,6 +1281,13 @@ impl TsImpedimentKind {
 /// One of Lilly's seven ways a matter is perfected (pp. 125–127,
 /// `03-design/hellenistic-perfection.md`); the ways a figure holds cross
 /// as a bit set, bit `n` the member with code `n`.
+///
+/// ```
+/// use teistro_ffi::chart::TsWay;
+///
+/// // A member crosses the boundary as its number: `Conjunction` is 0, `Dwelling` 6.
+/// assert_eq!((TsWay::Conjunction as u8, TsWay::Dwelling as u8), (0, 6));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsWay {
@@ -1015,6 +1311,12 @@ pub enum TsWay {
 impl TsWay {
     /// The code a way crosses as; `None` for one this boundary does not
     /// know yet, which the encoder refuses rather than guessing.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsWay;
+    ///
+    /// assert_eq!(TsWay::of(teistro::Way::Translation), Some(TsWay::Translation));
+    /// ```
     #[must_use]
     pub const fn of(way: teistro::Way) -> Option<TsWay> {
         use teistro::Way;
@@ -1032,6 +1334,13 @@ impl TsWay {
 }
 
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsHitKind;
+///
+/// // A member crosses the boundary as its number: `SignIngress` is 0, `LunarEclipse` 8.
+/// assert_eq!((TsHitKind::SignIngress as u8, TsHitKind::LunarEclipse as u8), (0, 8));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsHitKind {
@@ -1076,6 +1385,13 @@ impl From<&teistro::gochar::hits::HitEvent> for TsHitKind {
 }
 
 /// Which way a graha was moving, through a line or out of a station.
+///
+/// ```
+/// use teistro_ffi::chart::TsMotion;
+///
+/// // A member crosses the boundary as its number: `Direct` is 0, `Retrograde` 1.
+/// assert_eq!((TsMotion::Direct as u8, TsMotion::Retrograde as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsMotion {
@@ -1096,6 +1412,13 @@ impl From<teistro::gochar::hits::Motion> for TsMotion {
 }
 
 /// A Western aspect, one of Leo's nine (`03-design/western-aspects.md`).
+///
+/// ```
+/// use teistro_ffi::chart::TsWesternAspect;
+///
+/// // A member crosses the boundary as its number: `Conjunction` is 0, `Opposition` 8.
+/// assert_eq!((TsWesternAspect::Conjunction as u8, TsWesternAspect::Opposition as u8), (0, 8));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsWesternAspect {
@@ -1120,6 +1443,13 @@ pub enum TsWesternAspect {
 }
 
 /// Where in an aspect's window a hit falls (C146).
+///
+/// ```
+/// use teistro_ffi::chart::TsAspectPhase;
+///
+/// // A member crosses the boundary as its number: `Entering` is 0, `Leaving` 2.
+/// assert_eq!((TsAspectPhase::Entering as u8, TsAspectPhase::Leaving as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsAspectPhase {
@@ -1145,6 +1475,13 @@ impl From<teistro::gochar::hits::AspectPhase> for TsAspectPhase {
 /// Which lunar apogee a chart request places as the Black Moon Lilith, if
 /// any (`03-design/lilith.md`, C438 to C442): a choice between two, so a
 /// field rather than two section bits a caller could set together.
+///
+/// ```
+/// use teistro_ffi::chart::TsLilith;
+///
+/// // A member crosses the boundary as its number: `None` is 0, `Osculating` 2.
+/// assert_eq!((TsLilith::None as u16, TsLilith::Osculating as u16), (0, 2));
+/// ```
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsLilith {
@@ -1193,6 +1530,13 @@ impl TryFrom<teistro::Apogee> for TsLilith {
 
 /// A principal phase of the Moon, the Moon's elongation from the Sun a
 /// multiple of 90° (C419).
+///
+/// ```
+/// use teistro_ffi::chart::TsMoonPhase;
+///
+/// // A member crosses the boundary as its number: `New` is 0, `LastQuarter` 3.
+/// assert_eq!((TsMoonPhase::New as u8, TsMoonPhase::LastQuarter as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsMoonPhase {
@@ -1219,6 +1563,13 @@ impl From<teistro::gochar::hits::MoonPhase> for TsMoonPhase {
 }
 
 /// The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).
+///
+/// ```
+/// use teistro_ffi::chart::TsNodeVedha;
+///
+/// // A member crosses the boundary as its number: `LikeTheSun` is 0, `None` 1.
+/// assert_eq!((TsNodeVedha::LikeTheSun as u8, TsNodeVedha::None as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsNodeVedha {
@@ -1231,6 +1582,13 @@ pub enum TsNodeVedha {
 impl TsNodeVedha {
     /// The code a reading crosses as; `None` for one this boundary does not
     /// know yet.
+    ///
+    /// ```
+    /// use teistro_core::settings::NodeVedha;
+    /// use teistro_ffi::chart::TsNodeVedha;
+    ///
+    /// assert_eq!(TsNodeVedha::of(NodeVedha::LikeTheSun), Some(TsNodeVedha::LikeTheSun));
+    /// ```
     #[must_use]
     pub const fn of(vedha: teistro_core::settings::NodeVedha) -> Option<TsNodeVedha> {
         use teistro_core::settings::NodeVedha;
@@ -1244,6 +1602,13 @@ impl TsNodeVedha {
 
 /// Whom the nodes obstruct in transit, the settings' `gochar.node_obstruction`
 /// (C137, C140).
+///
+/// ```
+/// use teistro_ffi::chart::TsNodeObstruction;
+///
+/// // A member crosses the boundary as its number: `NotEachOther` is 0, `None` 2.
+/// assert_eq!((TsNodeObstruction::NotEachOther as u8, TsNodeObstruction::None as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsNodeObstruction {
@@ -1258,6 +1623,13 @@ pub enum TsNodeObstruction {
 impl TsNodeObstruction {
     /// The code a reading crosses as; `None` for one this boundary does not
     /// know yet.
+    ///
+    /// ```
+    /// use teistro_core::settings::NodeObstruction;
+    /// use teistro_ffi::chart::TsNodeObstruction;
+    ///
+    /// assert_eq!(TsNodeObstruction::of(NodeObstruction::EachOtherToo), Some(TsNodeObstruction::EachOtherToo));
+    /// ```
     #[must_use]
     pub const fn of(
         obstruction: teistro_core::settings::NodeObstruction,
@@ -1273,6 +1645,13 @@ impl TsNodeObstruction {
 }
 
 /// What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
+///
+/// ```
+/// use teistro_ffi::chart::TsGocharVerdict;
+///
+/// // A member crosses the boundary as its number: `Good` is 0, `NotGood` 2.
+/// assert_eq!((TsGocharVerdict::Good as u8, TsGocharVerdict::NotGood as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsGocharVerdict {
@@ -1296,6 +1675,13 @@ impl From<teistro::gochar::Verdict> for TsGocharVerdict {
 }
 
 /// Where in a sign a graha's transit bears fruit (v. 25).
+///
+/// ```
+/// use teistro_ffi::chart::TsFruition;
+///
+/// // A member crosses the boundary as its number: `First` is 0, `Throughout` 3.
+/// assert_eq!((TsFruition::First as u8, TsFruition::Throughout as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsFruition {
@@ -1323,6 +1709,13 @@ impl From<teistro::gochar::Fruition> for TsFruition {
 
 /// How many bindus make a transit good, the settings'
 /// `gochar.ashtakavarga_good_from` (C141).
+///
+/// ```
+/// use teistro_ffi::chart::TsAshtakavargaGoodFrom;
+///
+/// // A member crosses the boundary as its number: `Five` is 0, `Four` 1.
+/// assert_eq!((TsAshtakavargaGoodFrom::Five as u8, TsAshtakavargaGoodFrom::Four as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsAshtakavargaGoodFrom {
@@ -1335,6 +1728,13 @@ pub enum TsAshtakavargaGoodFrom {
 impl TsAshtakavargaGoodFrom {
     /// The code a reading crosses as; `None` for one this boundary does not
     /// know yet.
+    ///
+    /// ```
+    /// use teistro_core::settings::AshtakavargaGoodFrom;
+    /// use teistro_ffi::chart::TsAshtakavargaGoodFrom;
+    ///
+    /// assert_eq!(TsAshtakavargaGoodFrom::of(AshtakavargaGoodFrom::Four), Some(TsAshtakavargaGoodFrom::Four));
+    /// ```
     #[must_use]
     pub const fn of(
         good_from: teistro_core::settings::AshtakavargaGoodFrom,
@@ -1349,6 +1749,13 @@ impl TsAshtakavargaGoodFrom {
 }
 
 /// Who lords an eighth of a sign (Phaladeepika ch. 23 vv. 18 and 19).
+///
+/// ```
+/// use teistro_ffi::chart::TsKakshyaLord;
+///
+/// // A member crosses the boundary as its number: `Saturn` is 0, `Lagna` 7.
+/// assert_eq!((TsKakshyaLord::Saturn as u8, TsKakshyaLord::Lagna as u8), (0, 7));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsKakshyaLord {
@@ -1387,6 +1794,13 @@ impl From<teistro::gochar::ashtakavarga::KakshyaLord> for TsKakshyaLord {
 }
 
 /// Where a sign's sarvashtakavarga stands against v. 20's 28.
+///
+/// ```
+/// use teistro_ffi::chart::TsSarvaStanding;
+///
+/// // A member crosses the boundary as its number: `Above` is 0, `Below` 2.
+/// assert_eq!((TsSarvaStanding::Above as u8, TsSarvaStanding::Below as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSarvaStanding {
@@ -1410,6 +1824,13 @@ impl From<teistro::gochar::ashtakavarga::SarvaStanding> for TsSarvaStanding {
 }
 
 /// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+///
+/// ```
+/// use teistro_ffi::chart::TsDashaPhase;
+///
+/// // A member crosses the boundary as its number: `Commencement` is 0, `End` 2.
+/// assert_eq!((TsDashaPhase::Commencement as u8, TsDashaPhase::End as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsDashaPhase {
@@ -1453,68 +1874,187 @@ type SectionBit = (u32, fn(ChartRequest) -> ChartRequest);
 /// A chart request's `sections` bit: the day's almanac.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::TS_CHART_PANCHANGA;
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_PANCHANGA, 1 << 0);
+/// ```
 pub const TS_CHART_PANCHANGA: u32 = 1;
 /// A chart request's `sections` bit: the planetary states.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_STATE};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_STATE, 1 << 1);
+/// assert_eq!((TS_CHART_STATE | TS_CHART_PANCHANGA) & TS_CHART_STATE, TS_CHART_STATE);
+/// ```
 pub const TS_CHART_STATE: u32 = 2;
 /// A chart request's `sections` bit: the drishti.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_ASPECTS};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_ASPECTS, 1 << 2);
+/// assert_eq!((TS_CHART_ASPECTS | TS_CHART_PANCHANGA) & TS_CHART_ASPECTS, TS_CHART_ASPECTS);
+/// ```
 pub const TS_CHART_ASPECTS: u32 = 4;
 /// A chart request's `sections` bit: the derived points.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_POINTS};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_POINTS, 1 << 3);
+/// assert_eq!((TS_CHART_POINTS | TS_CHART_PANCHANGA) & TS_CHART_POINTS, TS_CHART_POINTS);
+/// ```
 pub const TS_CHART_POINTS: u32 = 8;
 /// A chart request's `sections` bit: the houses service.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_HOUSES};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_HOUSES, 1 << 4);
+/// assert_eq!((TS_CHART_HOUSES | TS_CHART_PANCHANGA) & TS_CHART_HOUSES, TS_CHART_HOUSES);
+/// ```
 pub const TS_CHART_HOUSES: u32 = 16;
 /// A chart request's `sections` bit: the Ashtakavarga.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_ASHTAKAVARGA};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_ASHTAKAVARGA, 1 << 5);
+/// assert_eq!((TS_CHART_ASHTAKAVARGA | TS_CHART_PANCHANGA) & TS_CHART_ASHTAKAVARGA, TS_CHART_ASHTAKAVARGA);
+/// ```
 pub const TS_CHART_ASHTAKAVARGA: u32 = 32;
 /// A chart request's `sections` bit: the Vimshopaka.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_VIMSHOPAKA};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_VIMSHOPAKA, 1 << 6);
+/// assert_eq!((TS_CHART_VIMSHOPAKA | TS_CHART_PANCHANGA) & TS_CHART_VIMSHOPAKA, TS_CHART_VIMSHOPAKA);
+/// ```
 pub const TS_CHART_VIMSHOPAKA: u32 = 64;
 /// A chart request's `sections` bit: the Shadbala.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_SHADBALA};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_SHADBALA, 1 << 7);
+/// assert_eq!((TS_CHART_SHADBALA | TS_CHART_PANCHANGA) & TS_CHART_SHADBALA, TS_CHART_SHADBALA);
+/// ```
 pub const TS_CHART_SHADBALA: u32 = 128;
 /// A chart request's `sections` bit: the Bhava bala.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_BHAVA_BALA};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_BHAVA_BALA, 1 << 8);
+/// assert_eq!((TS_CHART_BHAVA_BALA | TS_CHART_PANCHANGA) & TS_CHART_BHAVA_BALA, TS_CHART_BHAVA_BALA);
+/// ```
 pub const TS_CHART_BHAVA_BALA: u32 = 256;
 /// A chart request's `sections` bit: the Vaiseshikamsa.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_VAISESHIKAMSA};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_VAISESHIKAMSA, 1 << 9);
+/// assert_eq!((TS_CHART_VAISESHIKAMSA | TS_CHART_PANCHANGA) & TS_CHART_VAISESHIKAMSA, TS_CHART_VAISESHIKAMSA);
+/// ```
 pub const TS_CHART_VAISESHIKAMSA: u32 = 512;
 /// A chart request's `sections` bit: the dasha phala.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_DASHA_PHALA};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_DASHA_PHALA, 1 << 10);
+/// assert_eq!((TS_CHART_DASHA_PHALA | TS_CHART_PANCHANGA) & TS_CHART_DASHA_PHALA, TS_CHART_DASHA_PHALA);
+/// ```
 pub const TS_CHART_DASHA_PHALA: u32 = 1024;
 /// A chart request's `sections` bit: Jaimini's significators, the
 /// karakamsha and the Brahma graha.
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_JAIMINI};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_JAIMINI, 1 << 11);
+/// assert_eq!((TS_CHART_JAIMINI | TS_CHART_PANCHANGA) & TS_CHART_JAIMINI, TS_CHART_JAIMINI);
+/// ```
 pub const TS_CHART_JAIMINI: u32 = 2048;
 /// A chart request's `sections` bit: Uranus, Neptune and Pluto beside
 /// the nine, in the `outer` section (`03-design/western-outer-planets.md`).
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_OUTER};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_OUTER, 1 << 12);
+/// assert_eq!((TS_CHART_OUTER | TS_CHART_PANCHANGA) & TS_CHART_OUTER, TS_CHART_OUTER);
+/// ```
 pub const TS_CHART_OUTER: u32 = 4096;
 /// A chart request's `sections` bit: the Moon's avakahada, in the
 /// `avakahada` and `avakahada_syllables` sections; a tropical chart
 /// refuses it (`03-design/matching.md`, C301).
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_AVAKAHADA};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_AVAKAHADA, 1 << 13);
+/// assert_eq!((TS_CHART_AVAKAHADA | TS_CHART_PANCHANGA) & TS_CHART_AVAKAHADA, TS_CHART_AVAKAHADA);
+/// ```
 pub const TS_CHART_AVAKAHADA: u32 = 8192;
 /// A chart request's `sections` bit: what the chart's instant falls in,
 /// the rising sign's span and the eclipse seen where it is cast, in the
 /// `moment` section (C378).
 ///
 /// `api: constant`
+///
+/// ```
+/// use teistro_ffi::chart::{TS_CHART_PANCHANGA, TS_CHART_MOMENT};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_CHART_MOMENT, 1 << 14);
+/// assert_eq!((TS_CHART_MOMENT | TS_CHART_PANCHANGA) & TS_CHART_MOMENT, TS_CHART_MOMENT);
+/// ```
 pub const TS_CHART_MOMENT: u32 = 16384;
 
 const SECTION_BITS: [SectionBit; 15] = [
@@ -2366,6 +2906,13 @@ impl AvakahadaColumns {
 
 /// The eclipse a chart's instant falls in, as the `moment` section's
 /// `eclipse` column carries it (C378).
+///
+/// ```
+/// use teistro_ffi::chart::TsBirthEclipse;
+///
+/// // A member crosses the boundary as its number: `None` is 0, `Unjudged` 3.
+/// assert_eq!((TsBirthEclipse::None as u8, TsBirthEclipse::Unjudged as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsBirthEclipse {
@@ -2383,6 +2930,15 @@ pub enum TsBirthEclipse {
 impl TsBirthEclipse {
     /// The code an eclipse crosses as, and its greatest moment (UT1), NaN
     /// unless one is seen.
+    ///
+    /// ```
+    /// use teistro_ffi::chart::TsBirthEclipse;
+    ///
+    /// // No eclipse has no greatest moment.
+    /// let (code, greatest) = TsBirthEclipse::of(teistro::BirthEclipse::None);
+    /// assert_eq!(code, TsBirthEclipse::None);
+    /// assert!(greatest.is_nan());
+    /// ```
     #[must_use]
     pub fn of(eclipse: teistro::BirthEclipse) -> (TsBirthEclipse, f64) {
         use teistro::BirthEclipse;
@@ -3607,6 +4163,13 @@ impl DignityColumns {
 
 /// Where a chain of dispositors stops (`03-design/dignities.md`
 /// §Dispositors, C415).
+///
+/// ```
+/// use teistro_ffi::chart::TsChainEnd;
+///
+/// // A member crosses the boundary as its number: `OwnSign` is 0, `Cycle` 1.
+/// assert_eq!((TsChainEnd::OwnSign as u8, TsChainEnd::Cycle as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsChainEnd {
@@ -3620,6 +4183,15 @@ pub enum TsChainEnd {
 impl TsChainEnd {
     /// The code for an end, and its planets in the order they cross; `None`
     /// for an end the façade gained and this boundary was not given.
+    ///
+    /// ```
+    /// use teistro::catalogue::Graha;
+    /// use teistro_ffi::chart::TsChainEnd;
+    ///
+    /// // A chain that stops at Jupiter in its own sign: one member.
+    /// let own = teistro::ChainEnd::OwnSign(Graha::Jupiter);
+    /// assert_eq!(TsChainEnd::of(&own), Some((TsChainEnd::OwnSign, &[Graha::Jupiter][..])));
+    /// ```
     #[must_use]
     pub fn of(end: &teistro::ChainEnd) -> Option<(TsChainEnd, &[teistro::catalogue::Graha])> {
         match end {
@@ -5379,16 +5951,20 @@ impl BatchOnce {
     }
 }
 
-/// A batch of founded charts as the blob its schema describes.
+/// What every chart was asked to say beyond its numbers, each section
+/// written once per chart and each empty where the request did not ask
+/// for it.
 ///
-/// Every per-chart section runs charts outermost, so a batch of one is
-/// the same blob a one-chart entry point would have written, with the
-/// The blob's three JSON sections, each written once per chart and each
-/// empty where the request did not ask for it.
+/// They travel together because they are the same kind of thing, and a
+/// new one is a field here rather than another positional argument.
 ///
-/// They travel together because they are the same kind of thing — what a
-/// chart was asked to say beyond its numbers — and because a fourth of them
-/// is likelier than a fourth positional argument is welcome.
+/// ```
+/// use teistro_ffi::chart::Composed;
+///
+/// // Nothing asked for: every section empty.
+/// let composed = Composed::default();
+/// assert!(composed.svgs.is_empty() && composed.praveshas.is_empty() && composed.hashes.is_empty());
+/// ```
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Composed<'a> {
     /// Every chart's drawings as SVG strings (`render-svg.md`).
@@ -5530,6 +6106,10 @@ impl Composed<'_> {
     }
 }
 
+/// A batch of founded charts as the blob its schema describes.
+///
+/// Every per-chart section runs charts outermost, so a batch of one is
+/// the same blob a one-chart entry point would have written, with the
 /// counts saying so.
 ///
 /// The sections that describe the batch rather than a chart — the place,
@@ -5548,6 +6128,24 @@ impl Composed<'_> {
 /// function rather than a caller's mistake. Charts of differing graha
 /// counts are `INTERNAL`, since the blob's layout is one count for the
 /// batch.
+///
+/// ```
+/// use teistro_core::catalogue::ChartKind;
+/// use teistro_core::envelope::{Hash, Provenance, Version};
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_ffi::chart::{Composed, encode};
+///
+/// let place = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// let provenance = Provenance::new(
+///     Version::new(0, 1, 0), 1, 1, "nepali-default",
+///     Hash::of(b"settings"), Hash::of(b"input"),
+/// );
+/// // A batch of none is still a blob, its counts saying so.
+/// let registered = teistro::dasha::DashaSystems::new();
+/// let blob = encode(&[], &place, ChartKind::Natal, &provenance, Composed::default(), &registered)?;
+/// assert_eq!(blob[..4], *b"TSRB");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub fn encode(
     documents: &[Document],
     place: &Place,
@@ -5697,6 +6295,34 @@ fn drawings_json(documents: &[Document]) -> String {
 /// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
 /// `INVALID_ARG` with the keys the context knows as the hint.
 ///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::chart::ts_chart_layout_row;
+/// use teistro_ffi::string::TsString;
+///
+/// // A shipped layout's row, named in full or bare.
+/// let row = |key: &core::ffi::CStr| {
+///     let mut json = TsString::empty();
+///     // SAFETY: a live context, a NUL-terminated key and a writable slot.
+///     let status = unsafe { ts_chart_layout_row(&raw const ctx, key.as_ptr(), &raw mut json) };
+///     (status, owned(json))
+/// };
+/// let (status, full) = row(c"chart_layout.SOUTH_INDIAN");
+/// assert_eq!(status, Status::Ok);
+/// assert_eq!(row(c"SOUTH_INDIAN").1, full);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
 /// # Safety
 ///
 /// `context` must be a live handle; `key` a NUL-terminated string;
@@ -5723,6 +6349,13 @@ pub unsafe extern "C" fn ts_chart_layout_row(
 /// Mirrors `teistro::Chosen` through an **exhaustive** match, which is
 /// what stops the two drifting: a step added stops this crate compiling
 /// rather than silently crossing as whatever was first.
+///
+/// ```
+/// use teistro_ffi::chart::TsVarsheshaChosen;
+///
+/// // A member crosses the boundary as its number: `Strongest` is 0, `MoonsSignLord` 9.
+/// assert_eq!((TsVarsheshaChosen::Strongest as u8, TsVarsheshaChosen::MoonsSignLord as u8), (0, 9));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsVarsheshaChosen {
@@ -5758,6 +6391,13 @@ pub enum TsVarsheshaChosen {
 ///
 /// Not the Parashari drishti, which crosses elsewhere: this one is a
 /// relation between signs, and its neutral houses give no aspect at all.
+///
+/// ```
+/// use teistro_ffi::chart::TsTajikaDrishti;
+///
+/// // A member crosses the boundary as its number: `Friendly` is 0, `None` 4.
+/// assert_eq!((TsTajikaDrishti::Friendly as u8, TsTajikaDrishti::None as u8), (0, 4));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsTajikaDrishti {
@@ -5778,6 +6418,13 @@ pub enum TsTajikaDrishti {
 ///
 /// Three of the four are kinds of Ithasala, the coming-together, which is
 /// how the source's Table X-3 enumerates them.
+///
+/// ```
+/// use teistro_ffi::chart::TsTajikaYoga;
+///
+/// // A member crosses the boundary as its number: `IthasalaVartamana` is 0, `Ishrafa` 3.
+/// assert_eq!((TsTajikaYoga::IthasalaVartamana as u8, TsTajikaYoga::Ishrafa as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsTajikaYoga {
@@ -5801,6 +6448,13 @@ pub enum TsTajikaYoga {
 /// Mirrors `teistro::YearYoga` through an **exhaustive** match, so a yoga
 /// added there stops this crate compiling rather than crossing as another.
 /// Its ids are also the bit positions of `year_matters.unanswered`.
+///
+/// ```
+/// use teistro_ffi::chart::TsYearYoga;
+///
+/// // A member crosses the boundary as its number: `Ikabala` is 0, `Durapha` 15.
+/// assert_eq!((TsYearYoga::Ikabala as u8, TsYearYoga::Durapha as u8), (0, 15));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsYearYoga {
@@ -5849,6 +6503,13 @@ pub enum TsYearYoga {
 ///
 /// Mirrors `teistro::Saham` through an **exhaustive** match, so a saham
 /// added there stops this crate compiling rather than crossing as another.
+///
+/// ```
+/// use teistro_ffi::chart::TsSaham;
+///
+/// // A member crosses the boundary as its number: `Punya` is 0, `Labha` 40.
+/// assert_eq!((TsSaham::Punya as u8, TsSaham::Labha as u8), (0, 40));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSaham {
@@ -5940,6 +6601,13 @@ pub enum TsSaham {
 /// saham's company is read by (`03-design/tajika-saham-strength.md`).
 ///
 /// Mirrors `teistro::TajikaRelation` through an **exhaustive** match.
+///
+/// ```
+/// use teistro_ffi::chart::TsTajikaRelation;
+///
+/// // A member crosses the boundary as its number: `Own` is 0, `Enemy` 3.
+/// assert_eq!((TsTajikaRelation::Own as u8, TsTajikaRelation::Enemy as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsTajikaRelation {
@@ -5957,6 +6625,13 @@ pub enum TsTajikaRelation {
 ///
 /// Mirrors `teistro::matching::VashyaRelation` through an **exhaustive**
 /// match.
+///
+/// ```
+/// use teistro_ffi::chart::TsVashyaRelation;
+///
+/// // A member crosses the boundary as its number: `Mutual` is 0, `Neither` 3.
+/// assert_eq!((TsVashyaRelation::Mutual as u8, TsVashyaRelation::Neither as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsVashyaRelation {
@@ -5986,6 +6661,13 @@ impl From<teistro::matching::VashyaRelation> for TsVashyaRelation {
 ///
 /// Mirrors `teistro::matching::YoniRelation` through an **exhaustive**
 /// match.
+///
+/// ```
+/// use teistro_ffi::chart::TsYoniRelation;
+///
+/// // A member crosses the boundary as its number: `Same` is 0, `GreatEnemy` 2.
+/// assert_eq!((TsYoniRelation::Same as u8, TsYoniRelation::GreatEnemy as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsYoniRelation {
@@ -6013,6 +6695,13 @@ impl From<teistro::matching::YoniRelation> for TsYoniRelation {
 ///
 /// Mirrors `teistro::matching::MaitriRelation` through an **exhaustive**
 /// match.
+///
+/// ```
+/// use teistro_ffi::chart::TsMaitriRelation;
+///
+/// // A member crosses the boundary as its number: `OneLord` is 0, `MutualEnemies` 6.
+/// assert_eq!((TsMaitriRelation::OneLord as u8, TsMaitriRelation::MutualEnemies as u8), (0, 6));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsMaitriRelation {
@@ -6053,6 +6742,13 @@ impl From<teistro::matching::MaitriRelation> for TsMaitriRelation {
 /// Mirrors `Option<teistro::matching::BhakootDosha>` through an
 /// **exhaustive** match: `NONE` is the absence of a dosha, which no Rust
 /// type spells.
+///
+/// ```
+/// use teistro_ffi::chart::TsBhakootDosha;
+///
+/// // A member crosses the boundary as its number: `None` is 0, `TwoTwelve` 3.
+/// assert_eq!((TsBhakootDosha::None as u8, TsBhakootDosha::TwoTwelve as u8), (0, 3));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsBhakootDosha {
@@ -6083,6 +6779,13 @@ impl From<Option<teistro::matching::BhakootDosha>> for TsBhakootDosha {
 ///
 /// Mirrors `teistro::matching::DhinamRule` through an **exhaustive**
 /// match.
+///
+/// ```
+/// use teistro_ffi::chart::TsDhinamRule;
+///
+/// // A member crosses the boundary as its number: `Count` is 0, `HappyPair` 10.
+/// assert_eq!((TsDhinamRule::Count as u8, TsDhinamRule::HappyPair as u8), (0, 10));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsDhinamRule {
@@ -6132,6 +6835,13 @@ impl From<teistro::matching::DhinamRule> for TsDhinamRule {
 /// A Rajju division, foot to head (`03-design/matching.md`, p. 75).
 ///
 /// Mirrors `teistro::matching::Rajju` through an **exhaustive** match.
+///
+/// ```
+/// use teistro_ffi::chart::TsRajju;
+///
+/// // A member crosses the boundary as its number: `Padha` is 0, `Siro` 4.
+/// assert_eq!((TsRajju::Padha as u8, TsRajju::Siro as u8), (0, 4));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsRajju {
@@ -6165,6 +6875,13 @@ impl From<teistro::matching::Rajju> for TsRajju {
 ///
 /// Mirrors `teistro::matching::DoshaSystem` through an **exhaustive**
 /// match.
+///
+/// ```
+/// use teistro_ffi::chart::TsDoshaSystem;
+///
+/// // A member crosses the boundary as its number: `AshtaKoota` is 0, `Kuja` 2.
+/// assert_eq!((TsDoshaSystem::AshtaKoota as u8, TsDoshaSystem::Kuja as u8), (0, 2));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsDoshaSystem {
@@ -6190,6 +6907,13 @@ impl From<teistro::matching::DoshaSystem> for TsDoshaSystem {
 /// The side of a match a birth stands on (`03-design/matching.md`).
 ///
 /// Mirrors `teistro::MatchRole` through an **exhaustive** match.
+///
+/// ```
+/// use teistro_ffi::chart::TsMatchRole;
+///
+/// // A member crosses the boundary as its number: `Bride` is 0, `Groom` 1.
+/// assert_eq!((TsMatchRole::Bride as u8, TsMatchRole::Groom as u8), (0, 1));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsMatchRole {
@@ -6212,6 +6936,13 @@ impl From<teistro::MatchRole> for TsMatchRole {
 /// (`03-design/tajika-harsha.md`).
 ///
 /// Mirrors `teistro::HarshaGrade` through an **exhaustive** match.
+///
+/// ```
+/// use teistro_ffi::chart::TsHarshaGrade;
+///
+/// // A member crosses the boundary as its number: `Nirbala` is 0, `Extraordinary` 4.
+/// assert_eq!((TsHarshaGrade::Nirbala as u8, TsHarshaGrade::Extraordinary as u8), (0, 4));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsHarshaGrade {
@@ -6232,6 +6963,13 @@ pub enum TsHarshaGrade {
 /// positions of a saham row's `strong` column.
 ///
 /// Mirrors `teistro::StrongClause` through an **exhaustive** match.
+///
+/// ```
+/// use teistro_ffi::chart::TsSahamStrong;
+///
+/// // A member crosses the boundary as its number: `LordExalted` is 0, `LordAspectsLagna` 11.
+/// assert_eq!((TsSahamStrong::LordExalted as u8, TsSahamStrong::LordAspectsLagna as u8), (0, 11));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSahamStrong {
@@ -6265,6 +7003,13 @@ pub enum TsSahamStrong {
 /// order. Its ids are the bit positions of a saham row's `weak` column.
 ///
 /// Mirrors `teistro::WeakClause` through an **exhaustive** match.
+///
+/// ```
+/// use teistro_ffi::chart::TsSahamWeak;
+///
+/// // A member crosses the boundary as its number: `LordWeakVishwa` is 0, `WithMalefic` 4.
+/// assert_eq!((TsSahamWeak::LordWeakVishwa as u8, TsSahamWeak::WithMalefic as u8), (0, 4));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsSahamWeak {
@@ -6283,6 +7028,13 @@ pub enum TsSahamWeak {
 /// One of the five clauses of the source's **affliction**, which Rudda
 /// and Durapha read. Its ids are the bit positions of
 /// `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
+///
+/// ```
+/// use teistro_ffi::chart::TsAffliction;
+///
+/// // A member crosses the boundary as its number: `Retrograde` is 0, `UnderMalefic` 4.
+/// assert_eq!((TsAffliction::Retrograde as u8, TsAffliction::UnderMalefic as u8), (0, 4));
+/// ```
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsAffliction {
@@ -6598,6 +7350,44 @@ macro_rules! section {
 /// `PROVIDER` with the provider's own code in the last error.
 ///
 /// `api: blob=charts`
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # fn bytes(mut blob: teistro_ffi::blob::TsBlob) -> Vec<u8> {
+/// #     // SAFETY: the library wrote `len` bytes at `data`.
+/// #     let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::blob::ts_blob_free(&raw mut blob) };
+/// #     bytes
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::blob::TsBlob;
+/// use teistro_ffi::chart::ts_chart_found;
+/// use teistro_ffi::chart_request::TsChartRequest;
+/// use teistro_idl::blob::Reader;
+///
+/// // Two charts at Kathmandu in one call.
+/// let instants = [2_460_482.5, 2_460_600.25];
+/// let request = TsChartRequest {
+///     struct_size: u32::try_from(size_of::<TsChartRequest>())?,
+///     instants: instants.as_ptr(),
+///     instant_count: instants.len(),
+///     latitude_deg: 27.7172,
+///     longitude_deg: 85.324,
+///     utc_offset_seconds: 20_700,
+///     ..TsChartRequest::default()
+/// };
+/// let mut blob = TsBlob::empty();
+/// // SAFETY: a live context, a sized request and a writable slot.
+/// assert_eq!(unsafe { ts_chart_found(&raw const ctx, &raw const request, &raw mut blob) }, Status::Ok);
+/// let bytes = bytes(blob);
+/// let schema = teistro_ffi::schemas::charts();
+/// let reader = Reader::parse(&bytes, &schema)?;
+/// assert_eq!(reader.field("summary", "chart_count")?.as_i64(), 2);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Safety
 ///
