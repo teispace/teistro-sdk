@@ -172,7 +172,8 @@ pub fn standard_bhavas() -> BhavaBalaChart {
         venus,
         saturn,
         node(rahu),
-        node((rahu + 180.0).rem_euclid(360.0)),
+        // Ketu opposite, 54° 23′ 47″.
+        node(dms(54.0, 23.0, 47.0)),
     ];
     BhavaBalaChart {
         madhya,
@@ -188,5 +189,38 @@ pub fn standard_bhavas() -> BhavaBalaChart {
         ],
         instant: horoscope.instant,
         day: (horoscope.sunrise, horoscope.sunset, horoscope.next_sunrise),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(
+        clippy::float_cmp,
+        clippy::indexing_slicing,
+        reason = "tests compare exact values and index what they built"
+    )]
+
+    use super::*;
+
+    /// The inputs are Raman's printed figures, held here because the
+    /// readings over them carry tolerances a slip in a second, or in a
+    /// sign the Bhava bala does not weigh, passes inside.
+    #[test]
+    fn the_inputs_are_ramans_figures() {
+        let horoscope = standard_horoscope();
+        // Jupiter at 84° 0′ 49″ (Art. 6): the seconds count forward.
+        let jupiter = horoscope.grahas[Graha::Jupiter as usize].longitude;
+        assert!(
+            (jupiter - (84.0 + 49.0 / 3600.0)).abs() < 1e-12,
+            "{jupiter}"
+        );
+        assert_eq!(horoscope.next_sunrise, horoscope.sunrise + 1.0);
+        let bhavas = standard_bhavas();
+        // Ketu opposite Rahu.
+        let (rahu, ketu) = (bhavas.grahas[7].longitude, bhavas.grahas[8].longitude);
+        assert!((rahu - ketu - 180.0).abs() < 1e-9, "{rahu} {ketu}");
+        // Example 58's Drik balas, the Moon's and Jupiter's below nought.
+        assert_eq!(bhavas.shadbala[Graha::Moon as usize], (389.80, -21.73));
+        assert_eq!(bhavas.shadbala[Graha::Jupiter as usize], (433.77, -16.04));
     }
 }
