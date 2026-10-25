@@ -50,6 +50,13 @@ impl Definition for Layout {
 }
 
 /// The shipped layouts and the registered ones, looked up by key.
+///
+/// ```
+/// use teistro_geometry::Layouts;
+///
+/// let layouts = Layouts::default();
+/// assert_eq!(layouts.iter().count(), 6);
+/// ```
 #[derive(Clone, Debug)]
 pub struct Layouts {
     shipped: Vec<Layout>,
@@ -64,6 +71,12 @@ impl Default for Layouts {
 
 impl Layouts {
     /// The shipped layouts, with nothing registered yet.
+    ///
+    /// ```
+    /// use teistro_geometry::Layouts;
+    ///
+    /// assert!(Layouts::new().get("SUDARSHAN_CHAKRA").is_some());
+    /// ```
     #[must_use]
     pub fn new() -> Layouts {
         Layouts {
@@ -73,6 +86,22 @@ impl Layouts {
     }
 
     /// Registers a consumer's layout.
+    ///
+    /// ```
+    /// use teistro_geometry::{Layouts, rows};
+    ///
+    /// let mut layouts = Layouts::new();
+    /// let mut own = rows::east_indian();
+    /// own.key = String::from("ACME_ODIA");
+    /// assert!(layouts.register(own.clone()).is_ok());
+    /// // Its key is taken now.
+    /// assert!(layouts.register(own).is_err());
+    /// // A row the checks refuse is refused by the field.
+    /// let mut broken = rows::east_indian();
+    /// broken.key = String::from("ACME_BROKEN");
+    /// broken.sources.clear();
+    /// assert_eq!(layouts.register(broken).unwrap_err().field(), Some("sources"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -91,11 +120,29 @@ impl Layouts {
 
     /// Refuses further registrations, so nothing changes under a context
     /// that has started drawing.
+    ///
+    /// ```
+    /// use teistro_geometry::{Layouts, rows};
+    ///
+    /// let mut layouts = Layouts::new();
+    /// layouts.seal();
+    /// let mut late = rows::south_indian();
+    /// late.key = String::from("ACME_LATE");
+    /// assert!(layouts.register(late).is_err());
+    /// ```
     pub fn seal(&mut self) {
         self.registered.seal();
     }
 
     /// The layout with a key, shipped or registered.
+    ///
+    /// ```
+    /// use teistro_geometry::Layouts;
+    ///
+    /// let layouts = Layouts::new();
+    /// assert_eq!(layouts.get("NEPALI_LOTUS").map(|layout| layout.key.as_str()), Some("NEPALI_LOTUS"));
+    /// assert!(layouts.get("ACME_UNKNOWN").is_none());
+    /// ```
     #[must_use]
     pub fn get(&self, key: &str) -> Option<&Layout> {
         self.shipped
@@ -106,6 +153,15 @@ impl Layouts {
 
     /// The id of the layout with a key: its catalogue id when the SDK ships
     /// it, or the one this registry gave it.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartLayout;
+    /// use teistro_geometry::Layouts;
+    ///
+    /// let layouts = Layouts::new();
+    /// assert_eq!(layouts.id("WESTERN_WHEEL"), Some(ChartLayout::WesternWheel.key_id()));
+    /// assert_eq!(layouts.id("ACME_UNKNOWN"), None);
+    /// ```
     #[must_use]
     pub fn id(&self, key: &str) -> Option<KeyId> {
         match ChartLayout::from_key(key) {
@@ -115,6 +171,19 @@ impl Layouts {
     }
 
     /// The layout with an id: a shipped member's, or one this registry gave.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ChartLayout;
+    /// use teistro_geometry::{Layouts, rows};
+    ///
+    /// let mut layouts = Layouts::new();
+    /// assert_eq!(layouts.by_id(ChartLayout::SouthIndian.key_id()).map(|layout| layout.key.as_str()), Some("SOUTH_INDIAN"));
+    /// let mut own = rows::south_indian();
+    /// own.key = String::from("ACME_TAMIL");
+    /// let id = layouts.register(own)?;
+    /// assert_eq!(layouts.by_id(id).map(|layout| layout.key.as_str()), Some("ACME_TAMIL"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn by_id(&self, id: KeyId) -> Option<&Layout> {
         match ChartLayout::try_from(id) {
@@ -124,6 +193,20 @@ impl Layouts {
     }
 
     /// Every layout, the shipped ones first in catalogue order.
+    ///
+    /// ```
+    /// use teistro_geometry::{Layouts, rows};
+    ///
+    /// let mut layouts = Layouts::new();
+    /// let mut own = rows::north_indian();
+    /// own.key = String::from("ACME_OWN");
+    /// layouts.register(own)?;
+    /// let keys: Vec<&str> = layouts.iter().map(|layout| layout.key.as_str()).collect();
+    /// // The shipped ones first, in catalogue order; then the registered.
+    /// assert_eq!(keys.first(), Some(&"NORTH_INDIAN"));
+    /// assert_eq!(keys.last(), Some(&"ACME_OWN"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn iter(&self) -> impl Iterator<Item = &Layout> {
         self.shipped
             .iter()

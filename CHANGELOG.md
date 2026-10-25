@@ -12,6 +12,41 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Nine more crates have a run example on every public item.**
+**Numbers:** none. `teistro-chart` (87), `teistro-geometry` (59),
+`teistro-houses` (42), `teistro-numerology` (31), `teistro-pakshi` (34),
+`teistro-port-timezone` (13), `teistro-rashifal` (18),
+`teistro-render-svg` (20) and `teistro-vargas` (45) join the crates
+`check-doc-examples` holds there. The numerology examples are Balliett's
+and Cheiro's worked figures (Lloyd George 16, by letters 43); the pakshi
+ones Agastya's and Ayyar's tables (a bright Wednesday's first eater by
+day is the owl).
+
+**`teistro_chart::sample` founds a chart to try things on.** Kathmandu at
+05:45 on 21 June 2024 over the test provider, under the default
+profile: `sample::foundation()` for the chart, and `Sample::founder()`
+for a founder that answers transits, lagna tables and batches. Every
+crate above the foundation documents itself with it rather than
+founding its own in each example. It is not the sky: the test provider
+computes no astronomy.
+
+**`teistro_port_timezone::FixedZone` is a zone at one offset.**
+`FixedZone::new("Asia/Kathmandu", offset)` answers every instant with that
+offset, abbreviated as tzdb writes a numeric one (`+0545`): what a
+caller pinning a zone, or a test, needs without a time-zone database.
+
+**A pakshi day's yamas meet to the bit.** **Numbers:** a yama's end
+could stand one ulp before the next one's start (0.7999999999999999
+against 0.8), so `pakshi::now` could find an instant in no yama. Each end
+is now computed as the next start is; a reading's yama ends may move by
+that ulp, and its hash with them.
+
+**A kept block in a doc comment no longer swallows what follows it.**
+The IDL's example filter took a `text` block's closing fence for the
+opening of a Rust example, and dropped the rest of the comment. No
+generated file changed, since no boundary item had such a block; MCP's
+schemas now use the same filter rather than a copy.
+
 **Every public item of `teistro-core` has a run example, and an example
 no longer reaches what a binding or a model reads.** **Numbers:** none;
 rustdoc counts 887 such items, and all 887 have one. The catalogue's

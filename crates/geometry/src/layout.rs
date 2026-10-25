@@ -22,6 +22,17 @@ use teistro_core::math;
 use crate::path::{Path, Point};
 
 /// What a grid cell carries, which is what the layout keeps fixed.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_geometry::{Holds, rows};
+///
+/// // North Indian cells hold houses, South Indian cells hold signs.
+/// let north = rows::north_indian();
+/// assert_eq!(north.shape.as_grid().unwrap().cells[0].holds, Holds::House(1));
+/// let south = rows::south_indian();
+/// assert!(south.shape.as_grid().unwrap().cells.iter().any(|cell| cell.holds == Holds::Sign(Rashi::Pisces)));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", content = "value", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -34,6 +45,13 @@ pub enum Holds {
 }
 
 /// The way signs or houses run around a layout, as a reader sees it.
+///
+/// ```
+/// use teistro_geometry::{Direction, rows};
+///
+/// assert_eq!(rows::north_indian().shape.as_grid().unwrap().direction, Direction::Anticlockwise);
+/// assert_eq!(rows::south_indian().shape.as_grid().unwrap().direction, Direction::Clockwise);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -45,6 +63,16 @@ pub enum Direction {
 }
 
 /// One region of a grid layout.
+///
+/// ```
+/// use teistro_geometry::rows;
+///
+/// let layout = rows::north_indian();
+/// // Every cell's label and bodies sit inside its outline.
+/// for cell in &layout.shape.as_grid().unwrap().cells {
+///     assert!(cell.outline.contains(cell.label) && cell.outline.contains(cell.bodies));
+/// }
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Cell {
@@ -59,6 +87,18 @@ pub struct Cell {
 }
 
 /// A grid layout: twelve cells, fixed in the row.
+///
+/// ```
+/// use teistro_geometry::layout::CELLS;
+/// use teistro_geometry::rows;
+///
+/// let layout = rows::east_indian();
+/// let grid = layout.shape.as_grid().unwrap();
+/// assert_eq!(grid.cells.len(), CELLS);
+/// // The twelve cells share the square without overlapping.
+/// let area: f64 = grid.cells.iter().map(|cell| cell.outline.area()).sum();
+/// assert!(area <= 1.0 + 1e-9);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Grid {
@@ -71,6 +111,15 @@ pub struct Grid {
 }
 
 /// What a radial ring counts its first house from.
+///
+/// ```
+/// use teistro_geometry::{Reference, rows};
+///
+/// let chakra = rows::sudarshan_chakra();
+/// let rings: Vec<Reference> = chakra.shape.as_radial().unwrap().rings.iter().map(|ring| ring.counts_from).collect();
+/// // The lagna's ring innermost, then the Moon's, then the Sun's.
+/// assert_eq!(rings, [Reference::Lagna, Reference::Moon, Reference::Sun]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -93,6 +142,15 @@ pub enum Reference {
 /// into twelve sectors. A ring counting from a sign cuts them one clock hour
 /// each; a ring of cusps or of the zodiac cuts them where the chart's
 /// longitudes fall.
+///
+/// ```
+/// use teistro_geometry::rows;
+///
+/// let wheel = rows::western_wheel();
+/// for ring in &wheel.shape.as_radial().unwrap().rings {
+///     assert!(0.0 <= ring.inner && ring.inner < ring.outer && ring.outer <= 0.5);
+/// }
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Ring {
@@ -107,6 +165,13 @@ pub struct Ring {
 /// A radial layout: rings of sectors, from the innermost outwards. The
 /// Sudarshan Chakra is three rings counting from signs; the Western wheel is
 /// a ring of cusps inside a ring of the zodiac.
+///
+/// ```
+/// use teistro_geometry::rows;
+///
+/// // The Western wheel puts its ascendant at nine o'clock.
+/// assert_eq!(rows::western_wheel().shape.as_radial().unwrap().starts_at, 9);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Radial {
@@ -120,6 +185,13 @@ pub struct Radial {
 }
 
 /// The shape of a layout: fixed cells, or rings computed per chart.
+///
+/// ```
+/// use teistro_geometry::{Shape, rows};
+///
+/// assert!(matches!(rows::north_indian().shape, Shape::Grid(_)));
+/// assert!(matches!(rows::sudarshan_chakra().shape, Shape::Radial(_)));
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -132,6 +204,13 @@ pub enum Shape {
 
 impl Shape {
     /// The grid, when the layout is one.
+    ///
+    /// ```
+    /// use teistro_geometry::rows;
+    ///
+    /// assert!(rows::south_indian().shape.as_grid().is_some());
+    /// assert!(rows::western_wheel().shape.as_grid().is_none());
+    /// ```
     #[must_use]
     pub const fn as_grid(&self) -> Option<&Grid> {
         match self {
@@ -141,6 +220,16 @@ impl Shape {
     }
 
     /// The grid, to change, when the layout is one.
+    ///
+    /// ```
+    /// use teistro_geometry::rows;
+    ///
+    /// // A consumer's variant of a shipped row: the same cells, no frame.
+    /// let mut plain = rows::north_indian();
+    /// plain.key = String::from("ACME_PLAIN");
+    /// plain.shape.as_grid_mut().unwrap().frame.clear();
+    /// assert!(plain.validate().is_ok());
+    /// ```
     #[must_use]
     pub const fn as_grid_mut(&mut self) -> Option<&mut Grid> {
         match self {
@@ -150,6 +239,13 @@ impl Shape {
     }
 
     /// The rings, when the layout is radial.
+    ///
+    /// ```
+    /// use teistro_geometry::rows;
+    ///
+    /// assert_eq!(rows::sudarshan_chakra().shape.as_radial().map(|radial| radial.rings.len()), Some(3));
+    /// assert!(rows::north_indian().shape.as_radial().is_none());
+    /// ```
     #[must_use]
     pub const fn as_radial(&self) -> Option<&Radial> {
         match self {
@@ -160,6 +256,17 @@ impl Shape {
 }
 
 /// A chart layout: a key, what cites it, and its shape.
+///
+/// ```
+/// use teistro_geometry::{Layout, rows};
+///
+/// let layout = rows::north_indian();
+/// assert_eq!(layout.key, "NORTH_INDIAN");
+/// assert!(!layout.sources.is_empty());
+/// // A layout is a row of data, and reads back from JSON whole.
+/// let read: Layout = serde_json::from_value(serde_json::to_value(&layout).unwrap()).unwrap();
+/// assert_eq!(read, layout);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Layout {
@@ -187,6 +294,19 @@ const SHARED_AREA: f64 = 1e-6;
 
 impl Layout {
     /// Every check a row passes before it is accepted, shipped or registered.
+    ///
+    /// ```
+    /// use teistro_geometry::rows;
+    ///
+    /// assert!(rows::nepali_lotus().validate().is_ok());
+    /// // A wrong row is refused by the field it gets wrong.
+    /// let mut short = rows::south_indian();
+    /// short.shape.as_grid_mut().unwrap().cells.pop();
+    /// assert_eq!(short.validate().unwrap_err().field(), Some("shape.cells"));
+    /// let mut unnamed = rows::south_indian();
+    /// unnamed.key = String::from("south indian");
+    /// assert_eq!(unnamed.validate().unwrap_err().field(), Some("key"));
+    /// ```
     ///
     /// # Errors
     ///

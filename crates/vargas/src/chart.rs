@@ -21,6 +21,14 @@ use crate::scheme::Scheme;
 /// Which chart the grahas are read in, and which the lagna is.
 ///
 /// Defaulting to the rashi for both, which is the plain chart.
+///
+/// ```
+/// use teistro_core::catalogue::Varga;
+/// use teistro_vargas::{Axis, Scheme};
+///
+/// assert_eq!(Axis::default(), Axis::of(Varga::D1));
+/// assert_eq!(Axis::of(Varga::D9).lagna, Scheme::of(Varga::D9));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Axis {
@@ -32,6 +40,14 @@ pub struct Axis {
 
 impl Axis {
     /// One chart for both, which is what almost every caller wants.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::Axis;
+    ///
+    /// let d9 = Axis::of(Varga::D9);
+    /// assert_eq!(d9.grahas, d9.lagna);
+    /// ```
     #[must_use]
     pub fn of(varga: Varga) -> Axis {
         let scheme = Scheme::of(varga);
@@ -42,6 +58,15 @@ impl Axis {
     }
 
     /// The grahas in one chart and the lagna in another.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::{Axis, Scheme};
+    ///
+    /// // The grahas in the navamsha, the lagna still in the rashi.
+    /// let axis = Axis::mixed(Scheme::of(Varga::D9), Scheme::of(Varga::D1));
+    /// assert_ne!(axis, Axis::of(Varga::D9));
+    /// ```
     #[must_use]
     pub const fn mixed(grahas: Scheme, lagna: Scheme) -> Axis {
         Axis { grahas, lagna }
@@ -49,6 +74,14 @@ impl Axis {
 
     /// What the axis is called, for a stamp: `D9` when both agree, and
     /// `D9/D1` when they do not.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::{Axis, Scheme};
+    ///
+    /// assert_eq!(Axis::of(Varga::D9).key(), "D9");
+    /// assert_eq!(Axis::mixed(Scheme::of(Varga::D9), Scheme::of(Varga::D1)).key(), "D9/D1");
+    /// ```
     #[must_use]
     pub fn key(&self) -> String {
         if self.grahas == self.lagna {
@@ -66,6 +99,15 @@ impl Default for Axis {
 }
 
 /// Where one graha stands in a divisional chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Varga};
+/// use teistro_vargas::{Axis, chart};
+///
+/// let d9 = chart(&teistro_chart::sample::foundation()?, Axis::of(Varga::D9))?;
+/// assert_eq!(d9.grahas[0].graha, Graha::Sun);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaPlacement {
@@ -76,6 +118,17 @@ pub struct GrahaPlacement {
 }
 
 /// One divisional chart of one founded moment.
+///
+/// ```
+/// use teistro_core::catalogue::Varga;
+/// use teistro_vargas::{Axis, chart};
+///
+/// let foundation = teistro_chart::sample::foundation()?;
+/// let d9 = chart(&foundation, Axis::of(Varga::D9))?;
+/// assert_eq!(d9.grahas.len(), foundation.grahas.len());
+/// assert_eq!(d9.lagna.rashi as u8, foundation.lagna_sign_index());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct VargaChart {
@@ -89,6 +142,16 @@ pub struct VargaChart {
 
 impl VargaChart {
     /// Where a graha stands, if the chart carries it.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Varga};
+    /// use teistro_vargas::{Axis, chart};
+    ///
+    /// let d9 = chart(&teistro_chart::sample::foundation()?, Axis::of(Varga::D9))?;
+    /// assert!(d9.graha(Graha::Moon).is_some());
+    /// assert!(d9.graha(Graha::Uranus).is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn graha(&self, graha: Graha) -> Option<&Placement> {
         self.grahas
@@ -98,6 +161,17 @@ impl VargaChart {
     }
 
     /// The signs of the chart, lagna first, as an almanac prints them.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::{Axis, chart};
+    ///
+    /// let d9 = chart(&teistro_chart::sample::foundation()?, Axis::of(Varga::D9))?;
+    /// let signs = d9.signs();
+    /// assert_eq!(signs.len(), 10);
+    /// assert_eq!(signs[0], (String::from("LAGNA"), d9.lagna.sign));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn signs(&self) -> Vec<(String, Rashi)> {
         let mut signs = vec![(String::from("LAGNA"), self.lagna.sign)];
@@ -114,6 +188,16 @@ impl VargaChart {
     /// In the navamsha these are the **vargottama** bodies, which is what
     /// [`VargaChart::vargottama`] answers; in another chart the same fact
     /// has no special name.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::{Axis, chart};
+    ///
+    /// // In the rashi chart every graha keeps its sign.
+    /// let d1 = chart(&teistro_chart::sample::foundation()?, Axis::of(Varga::D1))?;
+    /// assert_eq!(d1.keeping_their_sign().len(), 9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn keeping_their_sign(&self) -> Vec<Graha> {
         self.grahas
@@ -125,6 +209,16 @@ impl VargaChart {
 }
 
 /// Every divisional chart of a founded moment, on one axis.
+///
+/// ```
+/// use teistro_core::catalogue::Varga;
+/// use teistro_vargas::{Axis, chart};
+///
+/// let foundation = teistro_chart::sample::foundation()?;
+/// let d1 = chart(&foundation, Axis::of(Varga::D1))?;
+/// assert_eq!(d1.grahas[0].at.sign as u8, foundation.grahas[0].sign_index());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -158,6 +252,15 @@ pub fn chart(foundation: &ChartFoundation, axis: Axis) -> Result<VargaChart, Err
 /// twenty-one charts of one moment, computed from the same longitudes
 /// and costing twenty-one lookups a body.
 ///
+/// ```
+/// use teistro_core::catalogue::Varga;
+/// use teistro_vargas::every_chart;
+///
+/// let charts = every_chart(&teistro_chart::sample::foundation()?)?;
+/// assert_eq!(charts.len(), Varga::ALL.len());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`chart`].
@@ -182,6 +285,17 @@ impl VargaChart {
     /// Answered only for a chart whose grahas are in the navamsha, so
     /// that "vargottama in D10" cannot be asked by accident; the general
     /// fact is [`VargaChart::keeping_their_sign`].
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Varga};
+    /// use teistro_vargas::{Axis, chart};
+    ///
+    /// let foundation = teistro_chart::sample::foundation()?;
+    /// assert!(chart(&foundation, Axis::of(Varga::D9))?.vargottama(Graha::Sun).is_some());
+    /// // Not asked of the dashamsha.
+    /// assert_eq!(chart(&foundation, Axis::of(Varga::D10))?.vargottama(Graha::Sun), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn vargottama(&self, graha: Graha) -> Option<bool> {
         (self.axis.grahas.varga == Some(Varga::D9))
@@ -192,6 +306,17 @@ impl VargaChart {
     /// Whether the **lagna** is vargottama, which the recording engine
     /// never reports and the texts do (entry 20 of the
     /// deliberate-difference registry).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::{Axis, Scheme, chart};
+    ///
+    /// let foundation = teistro_chart::sample::foundation()?;
+    /// let grahas_only = Axis::mixed(Scheme::of(Varga::D9), Scheme::of(Varga::D1));
+    /// assert_eq!(chart(&foundation, grahas_only)?.lagna_vargottama(), None);
+    /// assert!(chart(&foundation, Axis::of(Varga::D9))?.lagna_vargottama().is_some());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn lagna_vargottama(&self) -> Option<bool> {
         (self.axis.lagna.varga == Some(Varga::D9)).then(|| self.lagna.keeps_its_sign())

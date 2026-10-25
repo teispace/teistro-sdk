@@ -39,12 +39,29 @@ use teistro_core::settings::{Settings, UnattestedDn};
 /// where a part is smaller than the ephemeris's own uncertainty. A caller
 /// asking for more has a bug rather than a requirement, and the refusal
 /// names the limit.
+///
+/// ```
+/// use teistro_vargas::{MOST_DIVISIONS, Scheme};
+///
+/// assert!(Scheme::cyclic(MOST_DIVISIONS).is_ok());
+/// assert!(Scheme::cyclic(MOST_DIVISIONS + 1).is_err());
+/// ```
 pub const MOST_DIVISIONS: u16 = 300;
 
 /// The signs of the zodiac.
 const SIGNS: u16 = 12;
 
 /// How a sign is sorted into groups, each with its own rule.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_vargas::Classifier;
+///
+/// // Taurus is even, fixed and earthy.
+/// assert_eq!(Classifier::Parity.group_of(Rashi::Taurus), 1);
+/// assert_eq!(Classifier::Modality.group_of(Rashi::Taurus), 1);
+/// assert_eq!(Classifier::Element.group_of(Rashi::Taurus), 1);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -61,6 +78,12 @@ pub enum Classifier {
 
 impl Classifier {
     /// How many groups it sorts the twelve signs into.
+    ///
+    /// ```
+    /// use teistro_vargas::Classifier;
+    ///
+    /// assert_eq!(Classifier::Element.groups(), 4);
+    /// ```
     #[must_use]
     pub const fn groups(self) -> u8 {
         match self {
@@ -78,6 +101,15 @@ impl Classifier {
     /// threes and the elements in fours from Aries. That is arithmetic
     /// rather than a coincidence, and it is why one classifier covers
     /// all four.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_vargas::Classifier;
+    ///
+    /// // Sagittarius is dual: the third modality.
+    /// assert_eq!(Classifier::Modality.group_of(Rashi::Sagittarius), 2);
+    /// assert_eq!(Classifier::All.group_of(Rashi::Sagittarius), 0);
+    /// ```
     #[must_use]
     pub const fn group_of(self, sign: Rashi) -> usize {
         (sign as u8 % self.groups()) as usize
@@ -85,6 +117,12 @@ impl Classifier {
 }
 
 /// The multiplier a stepping rule puts on the sign.
+///
+/// ```
+/// use teistro_vargas::SignBase;
+///
+/// assert_eq!(SignBase::Same.multiplier(9), 1);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -100,6 +138,14 @@ pub enum SignBase {
 
 impl SignBase {
     /// The multiplier for a chart of so many divisions.
+    ///
+    /// ```
+    /// use teistro_vargas::SignBase;
+    ///
+    /// assert_eq!(SignBase::Fixed.multiplier(9), 0);
+    /// // The navamsha counts on round the zodiac: nine parts a sign.
+    /// assert_eq!(SignBase::Cyclic.multiplier(9), 9);
+    /// ```
     #[must_use]
     pub const fn multiplier(self, divisions: u16) -> u32 {
         match self {
@@ -111,6 +157,15 @@ impl SignBase {
 }
 
 /// How a part of a sign becomes a sign.
+///
+/// ```
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_vargas::{Map, Scheme};
+///
+/// // The hora lists its two signs: an odd sign's first half is Leo's.
+/// let hora = Scheme::of(Varga::D2);
+/// assert_eq!(hora.group(Rashi::Aries).map, Map::Listed { signs: &[4, 3] });
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "VargaMap"))]
@@ -138,6 +193,15 @@ pub enum Map {
 }
 
 /// Where the parts of a sign begin.
+///
+/// ```
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_vargas::{Scheme, Spans};
+///
+/// let d30 = Scheme::of(Varga::D30);
+/// assert_eq!(d30.group(Rashi::Aries).spans, Spans::Degrees { widths: &[5, 5, 8, 7, 5] });
+/// assert_eq!(d30.group(Rashi::Taurus).spans, Spans::Degrees { widths: &[5, 7, 8, 5, 5] });
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "spans", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -158,6 +222,14 @@ pub enum Spans {
 
 /// One classifier group's rule: how wide its parts are, and where each
 /// one sends a body.
+///
+/// ```
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_vargas::{Scheme, Spans};
+///
+/// let d9 = Scheme::of(Varga::D9);
+/// assert_eq!(d9.group(Rashi::Leo).spans, Spans::Equal);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "VargaGroup"))]
@@ -173,6 +245,14 @@ impl Group {
     ///
     /// Not always the chart's divisions: D30 is called thirty and cuts a
     /// sign into five.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Rashi, Varga};
+    /// use teistro_vargas::Scheme;
+    ///
+    /// let d30 = Scheme::of(Varga::D30);
+    /// assert_eq!(d30.group(Rashi::Aries).parts(d30.divisions), 5);
+    /// ```
     #[must_use]
     #[expect(
         clippy::cast_possible_truncation,
@@ -187,6 +267,14 @@ impl Group {
 }
 
 /// A divisional chart's rule.
+///
+/// ```
+/// use teistro_core::catalogue::Varga;
+/// use teistro_vargas::{Classifier, Scheme};
+///
+/// let d7 = Scheme::of(Varga::D7);
+/// assert_eq!((d7.divisions, d7.classifier, d7.groups.len()), (7, Classifier::Parity, 2));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Scheme {
@@ -367,6 +455,14 @@ const fn row(
 }
 
 /// The twenty-one divisional charts the SDK ships, in catalogue order.
+///
+/// ```
+/// use teistro_core::catalogue::Varga;
+/// use teistro_vargas::SCHEMES;
+///
+/// assert_eq!(SCHEMES.len(), Varga::ALL.len());
+/// assert_eq!(SCHEMES[8].key(), "D9");
+/// ```
 pub const SCHEMES: [Scheme; 21] = [
     row(Varga::D1, 1, Classifier::All, &IDENTITY),
     row(Varga::D2, 2, Classifier::Parity, &HORA),
@@ -397,6 +493,13 @@ impl Scheme {
     /// Every member of the catalogue has one, so this cannot fail; a
     /// chart the catalogue gains without a row here is caught by the
     /// crate's own test rather than at run time.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::Scheme;
+    ///
+    /// assert_eq!(Scheme::of(Varga::D60).divisions, 60);
+    /// ```
     #[must_use]
     pub fn of(varga: Varga) -> Scheme {
         SCHEMES
@@ -418,6 +521,15 @@ impl Scheme {
     /// to the catalogue forces a decision here rather than being
     /// silently ignored — which is what the knob having no reader had
     /// meant until now (`check-lints`, `knob-has-a-reader`).
+    ///
+    /// ```
+    /// use teistro_core::settings::UnattestedDn;
+    /// use teistro_vargas::Scheme;
+    ///
+    /// assert_eq!(Scheme::unattested(37, UnattestedDn::Cyclic)?, Scheme::cyclic(37)?);
+    /// assert!(Scheme::unattested(0, UnattestedDn::Cyclic).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -447,6 +559,14 @@ impl Scheme {
     /// settings in hand asks here rather than choosing a convention and
     /// hoping it is the one the chart was computed under.
     ///
+    /// ```
+    /// use teistro_vargas::Scheme;
+    ///
+    /// let settings = teistro_chart::sample::resolved().settings;
+    /// assert_eq!(Scheme::for_settings(37, &settings)?.key(), "D37");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Scheme::unattested`].
@@ -457,6 +577,16 @@ impl Scheme {
     /// The rule of an arbitrary D-N under the parivritti (cyclic)
     /// convention, which is what [`Scheme::unattested`] resolves
     /// `vargas.unattested_dn` to.
+    ///
+    /// ```
+    /// use teistro_core::error::Status;
+    /// use teistro_vargas::Scheme;
+    ///
+    /// let d37 = Scheme::cyclic(37)?;
+    /// assert_eq!(d37.varga, None);
+    /// assert_eq!(Scheme::cyclic(400).map_err(|error| error.status), Err(Status::OutOfRange));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -485,6 +615,15 @@ impl Scheme {
     }
 
     /// The group a sign belongs to.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Rashi, Varga};
+    /// use teistro_vargas::Scheme;
+    ///
+    /// // The saptamsha's even signs count from the seventh.
+    /// let d7 = Scheme::of(Varga::D7);
+    /// assert_eq!(d7.group(Rashi::Taurus), &d7.groups[1]);
+    /// ```
     #[must_use]
     pub fn group(&self, sign: Rashi) -> &Group {
         self.groups
@@ -497,6 +636,15 @@ impl Scheme {
 
     /// How many parts a sign is cut into, which is the same for every
     /// group of every shipped chart.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Rashi, Varga};
+    /// use teistro_vargas::Scheme;
+    ///
+    /// assert_eq!(Scheme::of(Varga::D9).parts(Rashi::Aries), 9);
+    /// // Called thirty, cut into five.
+    /// assert_eq!(Scheme::of(Varga::D30).parts(Rashi::Aries), 5);
+    /// ```
     #[must_use]
     pub fn parts(&self, sign: Rashi) -> u16 {
         self.group(sign).parts(self.divisions)
@@ -504,6 +652,15 @@ impl Scheme {
 
     /// What the chart is called: `D9`, or `D37` for one the catalogue
     /// does not name.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::Scheme;
+    ///
+    /// assert_eq!(Scheme::of(Varga::D9).key(), "D9");
+    /// assert_eq!(Scheme::cyclic(37)?.key(), "D37");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn key(&self) -> String {
         self.varga.map_or_else(
@@ -517,6 +674,17 @@ impl Scheme {
 ///
 /// Returns `None` only for a listed group asked for a part it does not
 /// list, which the crate's own invariants rule out.
+///
+/// ```
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_vargas::Scheme;
+/// use teistro_vargas::scheme::target;
+///
+/// let d9 = Scheme::of(Varga::D9);
+/// // Aries's fourth navamsha is Cancer; Taurus's first is Capricorn.
+/// assert_eq!(target(d9.group(Rashi::Aries), Rashi::Aries, 3, 9), Some(Rashi::Cancer));
+/// assert_eq!(target(d9.group(Rashi::Taurus), Rashi::Taurus, 0, 9), Some(Rashi::Capricorn));
+/// ```
 #[must_use]
 pub fn target(group: &Group, sign: Rashi, part: u16, divisions: u16) -> Option<Rashi> {
     let index = match group.map {
@@ -537,6 +705,22 @@ pub fn target(group: &Group, sign: Rashi, part: u16, divisions: u16) -> Option<R
 /// `floor(deg / (30/N))` in floating point, and none of 30/7, 30/11,
 /// 30/27 or 0.2 is representable, so a body exactly on a part boundary
 /// can land either side of it depending on the platform.
+///
+/// ```
+/// use teistro_core::angle::Nas;
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_vargas::Scheme;
+/// use teistro_vargas::scheme::part_of;
+///
+/// let d30 = Scheme::of(Varga::D30);
+/// // Twelve degrees of Aries is past the 5 and 5 into the 8.
+/// let longitude = Nas::try_from_degrees(12.0)?;
+/// assert_eq!(part_of(d30.group(Rashi::Aries), longitude, 30), 2);
+/// // Exactly on a navamsha's edge, 10° of Aries, is the next one.
+/// let d9 = Scheme::of(Varga::D9);
+/// assert_eq!(part_of(d9.group(Rashi::Aries), Nas::try_from_degrees(10.0)?, 9), 3);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn part_of(group: &Group, longitude: Nas, divisions: u16) -> u16 {
     match group.spans {

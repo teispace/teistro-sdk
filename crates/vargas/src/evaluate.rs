@@ -48,6 +48,16 @@ impl Placement {
     /// in another chart it is the same fact without the name, which is
     /// why it reads as what it is rather than as `is_vargottama`. The
     /// chart-level accessor names it.
+    ///
+    /// ```
+    /// use teistro_core::angle::Nas;
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::{Scheme, place};
+    ///
+    /// // The first navamsha of Aries is Aries: vargottama.
+    /// assert!(place(&Scheme::of(Varga::D9), Nas::try_from_degrees(1.0)?).keeps_its_sign());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn keeps_its_sign(&self) -> bool {
         self.rashi as u8 == self.sign as u8
@@ -55,6 +65,17 @@ impl Placement {
 }
 
 /// Where a longitude stands in a divisional chart.
+///
+/// ```
+/// use teistro_core::angle::Nas;
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_vargas::{Scheme, place};
+///
+/// // Twelve degrees of Aries: the trimshamsha's third part, Jupiter's.
+/// let placement = place(&Scheme::of(Varga::D30), Nas::try_from_degrees(12.0)?);
+/// assert_eq!((placement.part, placement.sign), (2, Rashi::Sagittarius));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn place(scheme: &Scheme, longitude: Nas) -> Placement {
     let rashi = longitude.sign();
@@ -71,6 +92,16 @@ pub fn place(scheme: &Scheme, longitude: Nas) -> Placement {
 }
 
 /// Which sign a divisional chart puts a longitude in.
+///
+/// ```
+/// use teistro_core::angle::Nas;
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_vargas::{Scheme, sign};
+///
+/// // The middle drekkana of Aries is its trine, Leo.
+/// assert_eq!(sign(&Scheme::of(Varga::D3), Nas::try_from_degrees(15.0)?), Rashi::Leo);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn sign(scheme: &Scheme, longitude: Nas) -> Rashi {
     place(scheme, longitude).sign
@@ -82,6 +113,17 @@ pub fn sign(scheme: &Scheme, longitude: Nas) -> Rashi {
 /// Twelve rows, each as long as that sign's parts. What the kernel's own
 /// tests generate and compare against the rule, and what a caller
 /// printing a chart's definition wants.
+///
+/// ```
+/// use teistro_core::catalogue::{Rashi, Varga};
+/// use teistro_vargas::{Scheme, table};
+///
+/// let d9 = table(&Scheme::of(Varga::D9));
+/// assert_eq!(d9.len(), 12);
+/// assert_eq!(d9[0].first(), Some(&Rashi::Aries));
+/// assert_eq!(d9[0].last(), Some(&Rashi::Sagittarius));
+/// assert_eq!(table(&Scheme::of(Varga::D30))[0].len(), 5);
+/// ```
 #[must_use]
 pub fn table(scheme: &Scheme) -> Vec<Vec<Rashi>> {
     Rashi::ALL

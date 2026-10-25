@@ -20,6 +20,12 @@ use teistro_gochar::{GRAHAS, GocharReading, Verdict};
 use crate::RashiReading;
 
 /// The period a score is weighed for, which sets the Moon's weight.
+///
+/// ```
+/// use teistro_rashifal::Period;
+///
+/// assert_eq!(serde_json::to_value(Period::Weekly).unwrap(), "WEEKLY");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -38,6 +44,13 @@ pub enum Period {
 /// running at sunrise, the yoga running then, and how many of the five
 /// muhurta yogas (Amrita Siddhi, Sarvartha Siddhi, Siddha, Dvipushkara,
 /// Tripushkara) hold.
+///
+/// ```
+/// # use teistro_core::catalogue::{Tithi, Yoga};
+/// # use teistro_rashifal::baseline::Panchanga;
+/// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
+/// assert_eq!(panchanga.muhurta_yogas, 1);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RashifalPanchanga"))]
@@ -52,6 +65,12 @@ pub struct Panchanga {
 }
 
 /// The eight areas a score is split into.
+///
+/// ```
+/// use teistro_rashifal::baseline::LifeArea;
+///
+/// assert_eq!(serde_json::to_value(LifeArea::Relationships).unwrap(), "RELATIONSHIPS");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -76,6 +95,13 @@ pub enum LifeArea {
 
 impl LifeArea {
     /// The eight, in the baseline's order.
+    ///
+    /// ```
+    /// use teistro_rashifal::baseline::LifeArea;
+    ///
+    /// assert_eq!(LifeArea::ALL.first(), Some(&LifeArea::Overall));
+    /// assert_eq!(LifeArea::ALL.len(), 8);
+    /// ```
     pub const ALL: [LifeArea; 8] = [
         LifeArea::Overall,
         LifeArea::Career,
@@ -89,6 +115,12 @@ impl LifeArea {
 }
 
 /// A colour the baseline names lucky.
+///
+/// ```
+/// use teistro_rashifal::baseline::Colour;
+///
+/// assert_eq!(serde_json::to_value(Colour::Yellow).unwrap(), "YELLOW");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -109,6 +141,29 @@ pub enum Colour {
 
 /// A sign's lucky elements, looked up by its lord: the same every day,
 /// and the same for the two signs one graha rules.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_gochar::Transit;
+/// # // Saturn in Pisces, the nodes opposite, the rest in Aries.
+/// # let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
+/// # transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
+/// # transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
+/// # transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
+/// # use teistro_rashifal::{RashifalRules, rashifal};
+/// # let read = rashifal(&transits, &[], &RashifalRules::default());
+/// # use teistro_core::catalogue::{Tithi, Yoga};
+/// # use teistro_rashifal::baseline::Panchanga;
+/// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
+/// use teistro_core::catalogue::{Direction, Vara};
+/// use teistro_rashifal::Period;
+/// use teistro_rashifal::baseline::{Colour, baseline_score};
+///
+/// // Aries's lord is Mars: red, 9, the south, Tuesday.
+/// let lucky = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily).lucky;
+/// assert_eq!((lucky.colour, lucky.number), (Colour::Red, 9));
+/// assert_eq!((lucky.direction, lucky.day), (Direction::South, Vara::Mangalavara));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -124,6 +179,27 @@ pub struct LuckyElements {
 }
 
 /// One of the transits a score names as weighing most.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_gochar::Transit;
+/// # // Saturn in Pisces, the nodes opposite, the rest in Aries.
+/// # let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
+/// # transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
+/// # transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
+/// # transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
+/// # use teistro_rashifal::{RashifalRules, rashifal};
+/// # let read = rashifal(&transits, &[], &RashifalRules::default());
+/// # use teistro_core::catalogue::{Tithi, Yoga};
+/// # use teistro_rashifal::baseline::Panchanga;
+/// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
+/// use teistro_rashifal::Period;
+/// use teistro_rashifal::baseline::baseline_score;
+///
+/// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily);
+/// assert!(score.key_influences.len() <= 5);
+/// assert!(score.key_influences.iter().all(|influence| (1..=12).contains(&influence.house)));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -137,6 +213,27 @@ pub struct KeyInfluence {
 }
 
 /// The baseline's score of one sign's reading.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_gochar::Transit;
+/// # // Saturn in Pisces, the nodes opposite, the rest in Aries.
+/// # let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
+/// # transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
+/// # transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
+/// # transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
+/// # use teistro_rashifal::{RashifalRules, rashifal};
+/// # let read = rashifal(&transits, &[], &RashifalRules::default());
+/// # use teistro_core::catalogue::{Tithi, Yoga};
+/// # use teistro_rashifal::baseline::Panchanga;
+/// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
+/// use teistro_rashifal::Period;
+/// use teistro_rashifal::baseline::{LifeArea, baseline_score};
+///
+/// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Weekly);
+/// assert!(score.overall <= 100);
+/// assert_eq!(score.areas.map(|(area, _)| area), LifeArea::ALL);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -293,6 +390,30 @@ fn rounded(score: f64) -> u8 {
 /// The baseline's score of `reading` for `period`, with each graha's
 /// motion at the snapshot (`retrograde`, the Sun to Ketu: the mean nodes
 /// always are) and the reference day's `panchanga`.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_gochar::Transit;
+/// # // Saturn in Pisces, the nodes opposite, the rest in Aries.
+/// # let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
+/// # transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
+/// # transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
+/// # transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
+/// # use teistro_rashifal::{RashifalRules, rashifal};
+/// # let read = rashifal(&transits, &[], &RashifalRules::default());
+/// # use teistro_core::catalogue::{Tithi, Yoga};
+/// # use teistro_rashifal::baseline::Panchanga;
+/// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
+/// use teistro_rashifal::Period;
+/// use teistro_rashifal::baseline::baseline_score;
+///
+/// // The same reading weighed for a day and for a year: the Moon counts
+/// // for the one and not the other.
+/// let day = baseline_score(&read[3], &[false; 9], panchanga, Period::Daily);
+/// let year = baseline_score(&read[3], &[false; 9], panchanga, Period::Yearly);
+/// assert!(day.overall <= 100 && year.overall <= 100);
+/// assert_eq!(day.lucky, year.lucky);
+/// ```
 #[must_use]
 pub fn baseline_score(
     reading: &RashiReading,
@@ -419,6 +540,25 @@ const fn baseline_obstructs(other: Graha, graha: Graha) -> bool {
 /// good houses are the text's, which the baseline's agree with. The
 /// reading's `rules` are kept as they came and no longer describe its
 /// verdicts.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Rashi};
+/// # use teistro_gochar::Transit;
+/// # // Saturn in Pisces, the nodes opposite, the rest in Aries.
+/// # let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
+/// # transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
+/// # transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
+/// # transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
+/// # use teistro_rashifal::{RashifalRules, rashifal};
+/// # let read = rashifal(&transits, &[], &RashifalRules::default());
+/// use teistro_rashifal::baseline::baseline_gochar;
+///
+/// let judged = baseline_gochar(&read[0].gochar);
+/// // The houses stand; only the vedha and the verdicts are read again.
+/// for (text, baseline) in read[0].gochar.grahas.iter().zip(&judged.grahas) {
+///     assert_eq!((text.house, text.good_house), (baseline.house, baseline.good_house));
+/// }
+/// ```
 #[must_use]
 pub fn baseline_gochar(reading: &GocharReading) -> GocharReading {
     let houses = reading.grahas.each_ref().map(|one| one.house);

@@ -21,6 +21,14 @@ use crate::layout::{Direction, Grid, Holds, Layout, Radial, Reference, Ring, Sha
 use crate::path::{Path, Point, Segment};
 
 /// One body as placement reads it.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_geometry::Body;
+///
+/// let mars = Body::at(Graha::Mars.key_id(), 95.0);
+/// assert_eq!((mars.sign, mars.longitude_deg), (Rashi::Cancer, Some(95.0)));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Body {
     /// The body's catalogue key (`graha.SUN`, `point.GULIKA`).
@@ -34,6 +42,15 @@ pub struct Body {
 
 impl Body {
     /// A body known by its sign alone.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_geometry::Body;
+    ///
+    /// // A divisional chart's body: a sign and no degree.
+    /// let venus = Body::in_sign(Graha::Venus.key_id(), Rashi::Pisces);
+    /// assert_eq!(venus.longitude_deg, None);
+    /// ```
     #[must_use]
     pub const fn in_sign(key: KeyId, sign: Rashi) -> Body {
         Body {
@@ -44,6 +61,14 @@ impl Body {
     }
 
     /// A body at a longitude, which also gives its sign.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_geometry::Body;
+    ///
+    /// assert_eq!(Body::at(Graha::Sun.key_id(), 0.0).sign, Rashi::Aries);
+    /// assert_eq!(Body::at(Graha::Sun.key_id(), 359.5).sign, Rashi::Pisces);
+    /// ```
     #[must_use]
     pub fn at(key: KeyId, longitude_deg: f64) -> Body {
         Body {
@@ -55,6 +80,15 @@ impl Body {
 }
 
 /// What placement reads of a chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_geometry::{Body, Placements};
+///
+/// let chart = Placements::new(Rashi::Leo).with(Body::in_sign(Graha::Moon.key_id(), Rashi::Virgo));
+/// assert_eq!((chart.lagna, chart.bodies.len()), (Rashi::Leo, 1));
+/// assert!(chart.houses.is_none());
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Placements {
     /// The sign the lagna is in.
@@ -71,6 +105,14 @@ pub struct Placements {
 
 impl Placements {
     /// A chart known by its lagna's sign, with no bodies yet.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_geometry::Placements;
+    ///
+    /// let chart = Placements::new(Rashi::Scorpio);
+    /// assert!(chart.bodies.is_empty() && chart.lagna_deg.is_none());
+    /// ```
     #[must_use]
     pub const fn new(lagna: Rashi) -> Placements {
         Placements {
@@ -82,6 +124,17 @@ impl Placements {
     }
 
     /// The same chart with a body added.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_geometry::{Body, Placements};
+    ///
+    /// let chart = Placements::new(Rashi::Aries)
+    ///     .with(Body::in_sign(Graha::Sun.key_id(), Rashi::Aries))
+    ///     .with(Body::in_sign(Graha::Moon.key_id(), Rashi::Taurus));
+    /// // The bodies keep the order they were added in.
+    /// assert_eq!(chart.bodies[1].key, Graha::Moon.key_id());
+    /// ```
     #[must_use]
     pub fn with(mut self, body: Body) -> Placements {
         self.bodies.push(body);
@@ -90,6 +143,17 @@ impl Placements {
 
     /// A founded chart: its lagna and grahas at their longitudes, and the
     /// cusps of the bhavas it places its grahas in.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_geometry::Placements;
+    ///
+    /// let chart = Placements::of_chart(&foundation);
+    /// assert_eq!(chart.lagna_deg, Some(foundation.lagna_deg));
+    /// assert_eq!(chart.bodies.len(), foundation.grahas.len());
+    /// assert!(chart.houses.is_some());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn of_chart(chart: &ChartFoundation) -> Placements {
         Placements {
@@ -105,6 +169,20 @@ impl Placements {
     }
 
     /// A divisional chart's own lagna and grahas, by sign.
+    ///
+    /// ```
+    /// # let foundation = teistro_chart::sample::foundation()?;
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_geometry::Placements;
+    /// use teistro_vargas::chart::{Axis, chart};
+    ///
+    /// let navamsha = chart(&foundation, Axis::of(Varga::D9))?;
+    /// let placements = Placements::of_varga(&navamsha);
+    /// assert_eq!(placements.lagna, navamsha.lagna.sign);
+    /// // By sign alone: a divisional chart has no degrees and no cusps.
+    /// assert!(placements.bodies.iter().all(|body| body.longitude_deg.is_none()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn of_varga(chart: &VargaChart) -> Placements {
         Placements {
@@ -119,6 +197,17 @@ impl Placements {
 }
 
 /// One cell of a placed chart.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_geometry::{Body, Placements, place, rows};
+///
+/// let chart = Placements::new(Rashi::Leo).with(Body::in_sign(Graha::Mars.key_id(), Rashi::Aries));
+/// let placed = place(&rows::south_indian(), &chart)?;
+/// let lagna = placed.cells.iter().find(|cell| cell.lagna).unwrap();
+/// assert_eq!((lagna.sign, lagna.house, lagna.ring), (Rashi::Leo, 1, 0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PlacedCell {
@@ -143,6 +232,17 @@ pub struct PlacedCell {
 
 /// A body drawn where it stands on a wheel: at its own longitude, not stacked
 /// in a cell.
+///
+/// ```
+/// # let foundation = teistro_chart::sample::foundation()?;
+/// use teistro_geometry::{Placements, place, rows};
+///
+/// let placed = place(&rows::western_wheel(), &Placements::of_chart(&foundation))?;
+/// // A wheel draws each graha at its longitude rather than stacking it.
+/// assert_eq!(placed.marks.len(), foundation.grahas.len());
+/// assert!(placed.marks.iter().all(|mark| mark.at.in_unit_square()));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Mark {
@@ -157,6 +257,18 @@ pub struct Mark {
 }
 
 /// A chart placed in a layout: what a renderer draws, in any language.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_geometry::{Placements, place, rows};
+///
+/// let placed = place(&rows::north_indian(), &Placements::new(Rashi::Gemini))?;
+/// assert_eq!(placed.layout, "NORTH_INDIAN");
+/// assert_eq!(placed.cells.len(), 12);
+/// // A grid draws no marks.
+/// assert!(placed.marks.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Placed {
