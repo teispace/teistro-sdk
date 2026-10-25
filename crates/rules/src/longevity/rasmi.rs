@@ -376,6 +376,22 @@ mod tests {
         let rays = graha_rays(Graha::Mars, 5.0, &mars, &chart, RasmiRules::VERSE);
         assert!(rays.doubled && rays.eclipsed);
         assert!((rays.rays - rays.basic).abs() < 1e-12);
+
+        // By the sign, as the verse reads: Saturn in the Sun's Leo with the
+        // Sun himself, a natural enemy in the same sign and so a temporary
+        // one too, loses a twelfth.
+        crate::test_chart::place(&mut chart, Body::Graha(Graha::Sun), Rashi::Leo);
+        crate::test_chart::place(&mut chart, Body::Graha(Graha::Saturn), Rashi::Leo);
+        let mut saturn = *chart.placement(Body::Graha(Graha::Saturn));
+        saturn.retrograde = false;
+        let rays = graha_rays(Graha::Saturn, 5.0, &saturn, &chart, RasmiRules::VERSE);
+        assert!(
+            (rays.enemy_share - 1.0 / 12.0).abs() < 1e-15,
+            "{}",
+            rays.enemy_share
+        );
+        assert!(!rays.doubled && !rays.eclipsed);
+        assert!((rays.rays - rays.basic * 11.0 / 12.0).abs() < 1e-12);
     }
 
     /// A graha climbs from just past its debilitation to its exaltation.

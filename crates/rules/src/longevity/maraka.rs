@@ -546,6 +546,31 @@ mod tests {
         assert!(has(Graha::Saturn, Reason::MaleficLordFromMoon));
         assert!(has(Graha::Mars, Reason::MaleficLordFromMoon));
         assert!(!marakas.of(Graha::Jupiter).is_prime());
+        // Neither is the benefic lord, and Jupiter lords neither house.
+        for graha in [Graha::Saturn, Graha::Mars, Graha::Jupiter] {
+            assert!(!has(graha, Reason::BeneficLordFromMoon), "{graha:?}");
+        }
+        assert!(!has(Graha::Jupiter, Reason::MaleficLordFromMoon));
+        // From a Moon in Aries the second's lord is Venus and the twelfth's
+        // Jupiter, both benefics.
+        let mut aries = c;
+        place(&mut aries, body(Graha::Moon), Rashi::Aries);
+        let from_aries = Evaluator::new(&aries, Readings::TEXTS).marakas();
+        for graha in [Graha::Venus, Graha::Jupiter] {
+            assert!(
+                from_aries.of(graha).contains(Reason::BeneficLordFromMoon),
+                "{graha:?}"
+            );
+            assert!(
+                !from_aries.of(graha).contains(Reason::MaleficLordFromMoon),
+                "{graha:?}"
+            );
+        }
+        assert!(
+            !from_aries
+                .of(Graha::Saturn)
+                .contains(Reason::BeneficLordFromMoon)
+        );
         // The prime reasons are the kernel's maraka class, graha for graha.
         for (graha, reasons) in NINE.map(|graha| (graha, marakas.of(graha))) {
             let class = evaluator.holds(

@@ -90,6 +90,20 @@ test now holds `shipped::packs` to every rule the build stages, each in
 exactly one pack. Without it, `packs` could return six empty packs and
 every test still passed.
 
+**Every mutant the full run left is now killed or shown equivalent.**
+**Numbers:** of the 16 survivors, 10 now fail a test and 6 are recorded
+as equivalent, each with its reason.
+
+The new tests:
+- under `END`, every nakshatra, sign and Kalachakra timeline finishes
+  with its birth cycle, and a row its text repeats for life (the
+  Sudarshana chakra, BPHS ch. 74 v. 26) still runs a second cycle;
+- a firdaria seventh has no children of its own;
+- the lords from the Moon are given the maraka reason for a benefic
+  lord or a malefic lord, never the other;
+- Rasmi by the sign takes a twelfth in a great enemy's sign;
+- the Samudaya and Bhinna spans convert from nakshatra years at 7/27.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:
