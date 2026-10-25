@@ -104,6 +104,16 @@ The new tests:
 - Rasmi by the sign takes a twelfth in a great enemy's sign;
 - the Samudaya and Bhinna spans convert from nakshatra years at 7/27.
 
+**Every façade item that can carry an example carries one.**
+**Numbers:** rustdoc counts 47 such items in `teistro`, and 47 now have an
+example, up from 39. The eight new ones are the JSON record entry points
+(`Record`, `Record::answer`, `Answered`, `Answered::json`,
+`records::records` and `records::record`) and the two Julian-day helpers,
+`jd_of_fixed` and `fixed_of_jd`. Each runs as a doctest. The record
+examples convert a date to Bikram Sambat and show that an answer spells a
+catalogue member as serde does, `BIKRAM_SAMBAT` rather than
+`calendar.BIKRAM_SAMBAT`.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:

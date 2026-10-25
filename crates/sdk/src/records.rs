@@ -13,6 +13,21 @@ use teistro_core::error::Error;
 use crate::Context;
 
 /// One record entry point.
+///
+/// ```
+/// # use teistro::{Context, Ephemeris};
+/// # fn main() -> Result<(), teistro::Error> {
+/// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+/// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+/// let answered = convert.answer(
+///     &sdk,
+///     r#"{"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}"#,
+/// )?;
+/// assert_eq!(convert.boundary, "ts_calendar_convert");
+/// assert_eq!(answered.value["weekday"], "SATURDAY");
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Clone, Copy)]
 pub struct Record {
     /// Its name, `area.operation`, as a tool is called.
@@ -171,6 +186,18 @@ impl core::fmt::Debug for Record {
 impl Record {
     /// The record `json` read and answered under `context`.
     ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let resolve = teistro::records::record("time.resolve").expect("every build carries it");
+    /// // A field the record does not have is refused, not ignored.
+    /// let refused = resolve.answer(&sdk, r#"{"when": "noon"}"#).unwrap_err();
+    /// assert_eq!(refused.status, teistro::Status::InvalidArg);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
     /// # Errors
     ///
     /// Whatever the record's reader refuses, named under its area, and
@@ -217,6 +244,23 @@ impl Record {
 /// What a record answers: its value, and its provenance where the area
 /// seals one. An answer that reads no sky and no setting, a numerology
 /// profile or a match of two names, has none.
+///
+/// ```
+/// # use teistro::{Context, Ephemeris};
+/// # fn main() -> Result<(), teistro::Error> {
+/// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+/// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+/// let answered = convert.answer(
+///     &sdk,
+///     r#"{"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}"#,
+/// )?;
+/// // The answer speaks serde's bare spelling of a catalogue member.
+/// assert_eq!(answered.value["date"]["calendar"], "BIKRAM_SAMBAT");
+/// assert_eq!(answered.value["date"]["year"], 2083);
+/// assert!(answered.provenance.is_none(), "a date converts without a sky");
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct Answered {
     /// The value, as serde writes it.
@@ -242,6 +286,22 @@ impl Answered {
 
     /// The answer as canonical JSON: `{value, provenance}` where it is
     /// sealed, the value alone where it is not.
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+    /// let answered = convert.answer(
+    ///     &sdk,
+    ///     r#"{"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}"#,
+    /// )?;
+    /// let json = answered.json();
+    /// assert!(json.starts_with(r#"{"date":"#), "{json}");
+    /// assert_eq!(serde_json::from_str::<serde_json::Value>(&json)?, answered.value);
+    /// # Ok(())
+    /// # }
+    /// ```
     #[must_use]
     pub fn json(&self) -> String {
         match &self.provenance {
@@ -257,6 +317,12 @@ fn written<T: serde::Serialize>(value: &T) -> Result<serde_json::Value, Error> {
 }
 
 /// Every record entry point this build carries, in name order.
+///
+/// ```
+/// let names: Vec<&str> = teistro::records::records().iter().map(|record| record.name).collect();
+/// assert!(names.contains(&"calendar.convert"));
+/// assert!(names.is_sorted());
+/// ```
 #[must_use]
 pub fn records() -> Vec<Record> {
     let mut all: Vec<Record> = vec![
@@ -510,6 +576,12 @@ fn time_records() -> [Record; 4] {
 }
 
 /// The record entry point called `name`, if this build carries it.
+///
+/// ```
+/// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+/// assert_eq!(convert.name, "calendar.convert");
+/// assert!(teistro::records::record("calendar.unknown").is_none());
+/// ```
 #[must_use]
 pub fn record(name: &str) -> Option<Record> {
     records().into_iter().find(|record| record.name == name)
