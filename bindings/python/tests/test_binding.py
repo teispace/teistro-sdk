@@ -4517,6 +4517,34 @@ class AnEngine(WithLibrary):
                     ctx.almanac.of(**days, festivals=bad)
                 self.assertEqual(refused.exception.field, field)
 
+    def test_a_festival_day_carries_its_elected_sait(self) -> None:
+        """A festival's sait (`03-design/festival-sait.md`): the NEPAL pack
+        elects Ghatasthapana's in 2025 at the committee's printed 09:13, a
+        Pisces navamsa in a Libra lagna inside the first ten ghatis."""
+        from teistro import FestivalSait, date
+        from teistro.catalogue import Calendar, Rashi
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        day = date(Calendar.GREGORIAN, 2025, 9, 22)
+        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            answer = ctx.almanac.festivals(
+                from_date=day, to_date=day, place=observer, utc_offset_seconds=20700, festivals={"rules": "NEPAL"}
+            )
+            ghatasthapana = next(o for o in answer.observances if o.rule == "NAVARATRA_ARAMBHA")
+            sait = ghatasthapana.sait
+            self.assertIsInstance(sait, FestivalSait)
+            assert sait is not None and sait.chosen is not None and sait.at is not None
+            chosen = sait.candidates[sait.chosen]
+            self.assertEqual((chosen.lagna, chosen.navamsa, chosen.whole), (Rashi.LIBRA, Rashi.PISCES, True))
+            self.assertEqual(sait.window, 0)
+            # Minutes after midnight on Nepal's clock: the printed 09:13.
+            minutes = ((sait.at + 0.5 + 5.75 / 24) % 1) * 1440
+            self.assertLess(abs(minutes - (9 * 60 + 13)), 2)
+            # A rule with no sait carries none.
+            self.assertTrue(all(o.sait is None for o in answer.observances if o.rule != "NAVARATRA_ARAMBHA"))
+
     def test_a_published_set_lays_its_days_over_the_rules(self) -> None:
         """A published set over the rules' answer
         (`03-design/published-overrides.md`): a `SET` moves an occurrence

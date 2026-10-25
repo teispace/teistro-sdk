@@ -2050,21 +2050,55 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// As [`Founder::ascendant_at`], and an instant outside the Delta T
     /// model's range.
     pub fn lagna_table(&self, within: Interval, place: &Place) -> Result<Vec<RisingSign>, Error> {
-        let middle = JulianDay::<Ut1>::literal(f64::midpoint(within.from.get(), within.to.get()));
-        let (tt, _) = tt_of(middle, self.delta_t)?;
-        match self.settings().panchanga.lagna_table {
-            LagnaTable::Chart => {
-                let (zodiac, _, _) = self.zodiac(&self.completion(), tt)?;
-                risings(within, |at| self.ascendant_at(at, place, &zodiac))
-            }
+        let middle = JulianDay::<Utc>::literal(f64::midpoint(within.from.get(), within.to.get()));
+        risings(within, self.lagna_table_ascendant(middle, place)?)
+    }
+
+    /// The ascendant a lagna table reads (crux C680), as a function of
+    /// the instant: this founder's chart ascendant under `CHART`, the
+    /// sphere's in the named ayanamsha under `SPHERE`, both in the zodiac
+    /// at `near`. Whatever else times the rising signs of a day, a
+    /// festival's sait among them, reads this one so it agrees with the
+    /// day's printed table.
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let ascendant = founder.lagna_table_ascendant(sample::INSTANT, &sample::place())?;
+    /// let lagna = ascendant(sample::INSTANT)?;
+    /// // The sample's table is the chart's own, so it reads the chart's lagna.
+    /// assert!((lagna - sample::foundation()?.lagna_deg).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Founder::ascendant_at`], and an instant outside the Delta T
+    /// model's range.
+    pub fn lagna_table_ascendant<'s>(
+        &'s self,
+        near: JulianDay<Utc>,
+        place: &'s Place,
+    ) -> Result<impl Fn(JulianDay<Utc>) -> Result<f64, Error> + 's, Error> {
+        let (tt, _) = tt_of(JulianDay::<Ut1>::literal(near.get()), self.delta_t)?;
+        let (zodiac, sphere) = match self.settings().panchanga.lagna_table {
+            LagnaTable::Chart => (self.zodiac(&self.completion(), tt)?.0, false),
             LagnaTable::Sphere { ayanamsha } => {
                 let mut settings = self.settings().clone();
                 settings.frame.zodiac = Zodiac::Sidereal;
                 settings.frame.ayanamsha = ayanamsha;
                 let zodiac = ChartZodiac::of(&settings, tt, self.precession, self.delta_t)?;
-                risings(within, |at| self.spheres_ascendant_at(at, place, &zodiac))
+                (zodiac, true)
             }
-        }
+        };
+        Ok(move |at| {
+            if sphere {
+                self.spheres_ascendant_at(at, place, &zodiac)
+            } else {
+                self.ascendant_at(at, place, &zodiac)
+            }
+        })
     }
 
     /// The ascendant, the midheaven and the true obliquity at an instant,

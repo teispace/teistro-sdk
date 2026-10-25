@@ -1499,6 +1499,25 @@ public final class BindingTest {
                     same("key", refusal(() -> sky.almanac().publishedFromSigned(signedPack, packSignature,
                             java.util.Arrays.copyOf(publisherKey, 31), 0)).field(), "a short key");
                 }
+                // A festival's sait (festival-sait.md): the NEPAL pack elects
+                // Ghatasthapana's in 2025 at the committee's printed 09:13, a
+                // Pisces navamsa in a Libra lagna.
+                {
+                    CalendarDate on = Civil.date(Calendar.GREGORIAN, 2025, 9, 22);
+                    FestivalAnswer nepal = sky.almanac().festivals(on, on, kathmandu, 20_700,
+                            new com.teispace.teistro.request.FestivalRequest("NEPAL"));
+                    FestivalSait sait = nepal.observances().stream()
+                            .filter(o -> o.rule().equals("NAVARATRA_ARAMBHA")).findFirst().orElseThrow().sait();
+                    FestivalSait.Candidate chosen = sait.candidates().get(sait.chosen());
+                    same(List.of(Rashi.LIBRA, Rashi.PISCES, true, 0),
+                            List.of(chosen.lagna(), chosen.navamsa(), chosen.whole(), sait.window()),
+                            "a Pisces navamsa in a Libra lagna, in the first window");
+                    double minutes = ((sait.at() + 0.5 + 5.75 / 24) % 1) * 1440;
+                    check(Math.abs(minutes - (9 * 60 + 13)) < 2, "at the printed 09:13, not " + minutes);
+                    check(nepal.observances().stream()
+                            .filter(o -> !o.rule().equals("NAVARATRA_ARAMBHA")).allMatch(o -> o.sait() == null),
+                            "a rule with no sait carries none");
+                }
                 // A published set over the rules (published-overrides.md): a
                 // SET moves an occurrence and keeps the rule's day, a
                 // WITHDRAW marks one, an ADD keeps a day no rule computes, an

@@ -188,6 +188,10 @@ name = "published"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "sait"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "disagreements"
 required-features = ["builtin-ephemeris"]
 

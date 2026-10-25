@@ -10,6 +10,7 @@ import type {
   Ayanamsha,
   Balance,
   Ephemeris,
+  Modality,
   AvasthaBaladi,
   AvasthaDeeptadi,
   AvasthaSayanadi,
@@ -6549,6 +6550,7 @@ export interface FestivalRequest {
   /**
    * A pack the SDK ships, by name; or a list whose items each name a pack
    * or spell a rule out, in order: an Ekadashi rule when it has a `vedha`,
+   * a sait rule when it has `windows` (`03-design/festival-sait.md`),
    * a following rule when it has an `after`, a dated rule when it has a
    * `civilDate`, a `civilWeekday`, a `sunEnters` or an `easter`, an anniversary when it
    * has an `origin`, else a festival rule. A later rule
@@ -6556,7 +6558,7 @@ export interface FestivalRequest {
    */
   readonly rules:
     | FestivalPack
-    | readonly (FestivalPack | FestivalRule | EkadashiRule | FollowingRule | DatedRule | Anniversary)[];
+    | readonly (FestivalPack | FestivalRule | EkadashiRule | FollowingRule | DatedRule | Anniversary | SaitRule)[];
   /**
    * Published sets laid over the rules' answer in order, a later set's
    * entry replacing an earlier one's for the same occurrence
@@ -7157,6 +7159,85 @@ export interface FestivalObservance {
   readonly parana?: readonly VrataParanaTime[];
   /** What a published entry did to the day; a moved day has no `parana` unless the entry gave a window. */
   readonly published?: Published;
+  /** The rite's time on the day, elected by the rule's sait (`03-design/festival-sait.md`); absent for a rule with none. */
+  readonly sait?: FestivalSait;
+}
+
+/**
+ * How a rule elects its sait, the rite's time on its day
+ * (`03-design/festival-sait.md`): the text's windows in order, what each
+ * avoids, the rising sign preferred, and which candidate is taken.
+ *
+ * @example
+ * const ghatasthapana: SaitRule = {
+ *   rule: 'NAVARATRA_ARAMBHA', source: 'Dharmasindhu p. 65',
+ *   windows: [
+ *     { within: { window: 'GHATIS', ghatis: 10 }, avoid: [{ avoid: 'TITHI_START', nadis: 16 }] },
+ *     { within: { window: 'DAY_MUHURTA', from: 8, to: 8 } },
+ *   ],
+ *   rising: { of: 'NAVAMSA', modalities: ['modality.DWISWABHAVA'], freeOf: ['graha.SUN'] },
+ *   choose: 'LATEST',
+ * };
+ */
+export interface SaitRule {
+  /** The festival rule's key, a rule of the request. */
+  readonly rule: string;
+  /** Where the text says it. */
+  readonly source: string;
+  /** The windows in order: the first holding a candidate gives the sait. */
+  readonly windows: readonly SaitWindowRule[];
+  /** The rising sign preferred; none takes each free stretch whole. */
+  readonly rising?: {
+    readonly of: 'NAVAMSA' | 'LAGNA' | 'NAVAMSA_OR_LAGNA';
+    readonly modalities: readonly Modality[];
+    /** The grahas the lagna must not hold, read by sign. */
+    readonly freeOf?: readonly Graha[];
+  };
+  /** Which whole candidate: `LATEST` when left out. */
+  readonly choose?: 'EARLIEST' | 'LATEST';
+}
+
+/** One window a sait may fall in, with what it avoids there. */
+export interface SaitWindowRule {
+  readonly within:
+    | { readonly window: 'GHATIS'; readonly ghatis: number }
+    | { readonly window: 'DAY_MUHURTA'; readonly from: number; readonly to: number }
+    | { readonly window: 'PART'; readonly part: FestivalDayPart }
+    | { readonly window: 'PRADOSHA' }
+    | { readonly window: 'NIGHT_MUHURTA'; readonly muhurta: number };
+  readonly avoid?: readonly (
+    | { readonly avoid: 'TITHI_START'; readonly nadis: number }
+    | { readonly avoid: 'NAKSHATRA'; readonly nakshatra: Nakshatra; readonly quarters?: number }
+    | { readonly avoid: 'YOGA'; readonly yoga: Yoga; readonly quarters?: number }
+    | { readonly avoid: 'KAALA'; readonly kaala: Kaala }
+    | { readonly avoid: 'VISHTI' }
+  )[];
+}
+
+/** A festival day's sait: the window it was found in, every candidate there, and the one chosen. */
+export interface FestivalSait {
+  /** Which of the rule's windows gave it, from 0; the last when none did. */
+  readonly window: number;
+  /** That window on the day. */
+  readonly within: Interval;
+  /** Every candidate in it, in order. */
+  readonly candidates: readonly FestivalSaitCandidate[];
+  /** The chosen candidate's index; absent when the window holds none. */
+  readonly chosen?: number;
+  /** The chosen candidate's middle, a UTC Julian day: the instant an almanac prints. */
+  readonly at?: number;
+}
+
+/** A stretch a sait may be in. */
+export interface FestivalSaitCandidate {
+  /** When. */
+  readonly span: Interval;
+  /** Whether its navamsa lies wholly inside the free window; always for a rule reading no rising sign. */
+  readonly whole: boolean;
+  /** The lagna's sign, when the rule reads a rising sign. */
+  readonly lagna?: Rashi;
+  /** The navamsa's sign, when the rule reads a rising sign. */
+  readonly navamsa?: Rashi;
 }
 
 /**

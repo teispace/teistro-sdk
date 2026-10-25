@@ -128,6 +128,7 @@ pub fn following(
                         days: rule.days,
                     },
                     parana: Vec::new(),
+                    sait: None,
                     ..observance.clone()
                 }),
                 None => answer.unjudged.push(Unjudged {

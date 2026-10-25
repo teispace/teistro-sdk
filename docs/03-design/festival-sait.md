@@ -1,8 +1,10 @@
 # Festival saits: the rite's time on a festival day
 
-Status: `designed`, 2026-10-25. Written from the sources and from the
-committee's printed times before any code; the building is expected to
-correct it.
+Status: `built`, 2026-10-26. Written from the sources and from the
+committee's printed times before any code (2026-10-25); §5 says what the
+building corrected. Not the muhurta days of `saait-measured.md`, which
+are the days a rite may be done in a year; a sait here is the time on a
+festival's own day.
 
 A festival answer says which day. Many festivals also have a **sait**,
 the time a rite is done: the kalash set at Ghatasthapana, the tika at
@@ -26,7 +28,7 @@ No rank-1 text was found for the dual-sign preference. The nearest is
 Raman's *Muhurtha* (rank 2), ch. XVI, which allows a common sign for a
 female deity's installation. So the window is the text's, and the
 lagna preference is a **reading** (crux C745), shipped as an option
-and on by default in the Nepal profiles.
+and on by default in the Nepal packs.
 
 | Rite | Year | Printed | The sky there (modern, Lahiri) |
 |---|---|---|---|
@@ -140,9 +142,9 @@ New pieces:
 5. a **sign-class filter** on the lagna or navamsa (chara, sthira,
    dvisvabhava), and a **choice rule** naming one instant: the midpoint
    of a whole navamsa inside the window. Which navamsa, when several
-   fit, is open: "the latest whole one before the window ends" fits
-   2024 and 2025 but rests on two years, so it is a crux to measure,
-   not a rule (C746);
+   fit, was open: "the latest whole one before the window ends" fits
+   2024 and 2025 but rests on two years, so it was a crux to measure,
+   not a rule (C746, measured in §5);
 6. a **post-dusk window** for the vijaya muhurta, from a twilight.
 
 A sait is a field of the festival day's answer, not a separate request:
@@ -155,4 +157,33 @@ Abhijit" as the committee does.
 Every printed time in §1, recomputed on the committee's own sky, must
 fall in the elected navamsa. The elected midpoint's distance from the
 printed minute is measured and published, not asserted, until more
-years are in hand.
+years are in hand. `festival-measured.md` §8 is that gate: it holds the
+six printed times shipped rules cover on both skies, and measures each
+reading below against the one it was chosen over.
+
+## 5. What the building found
+
+- **The rising follows the lagna table.** The committee's printed times
+  fall in navamsas of the sphere's ascendant in Lahiri, not of its own
+  Surya Siddhanta chart: over that, 0 of the 6 lie in a candidate, as its
+  navamsas run about one navamsa (13–17 minutes) late. Its profile already
+  says the same of its printed lagna table (`LagnaTable::Sphere`, C680),
+  so a sait reads the ascendant `Founder::lagna_table_ascendant` gives,
+  the table's own, and the two cannot part.
+- **The lagna holds no Sun (C747).** Every dual navamsa the committee
+  passed over for a later one lay in the lagna the Sun stood in (Virgo,
+  the Sun in Virgo, on the mornings of Ghatasthapana 2024 and 2025 and of
+  Phulpati 2024). Barring that lagna is the muhurta texts' rule that the
+  lagna be free of a malefic, read for the Sun alone: barring Mars,
+  Saturn and the nodes too loses Ghatasthapana 2025, printed in Libra
+  with Mars there. `SaitRising.freeOf` names the grahas; the Nepal saits
+  name the Sun. A reading, as C745's is.
+- **Which navamsa (C746).** With the Sun's lagna barred, Ghatasthapana
+  takes the latest whole one in its window and Phulpati the earliest in
+  its forenoon; each turned round loses its printed time. Where the
+  window cuts every candidate short (Abhijit in 2023, Chitra holding the
+  forenoon), the longest stretch is taken, not a stub at the edge.
+- **Not shipped.** The Vijaya Dashami tika (no choice among its candidates
+  fits all four years), Laxmi Puja's lagna, Rakshabandhan and Holika:
+  their windows are the text's, but the elections the committee prints
+  are not yet measured.

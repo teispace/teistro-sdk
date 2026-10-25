@@ -875,3 +875,29 @@ a month the committee reckons otherwise, §6):
 - VS 2083 MANGALA_CHATURTHI, printed 5 May
 - VS 2083 BUDHASHTAMI, printed 22 Jul
 - VS 2083 MANGALA_CHATURTHI, printed 26 Jan
+
+## 8. Saits against the print
+
+Each printed sait (`festival-sait.md` §1) is the rite's day asked of
+the `NEPAL_PANCHANGA` pack, whose saits elect a navamsa of a dual sign
+in a lagna the Sun does not stand in, inside the text's window less
+what it avoids. The pass holds every printed minute to the candidate
+the committee's sky elects, within a printed minute; the elected
+middle's distance from the print is measured, not held.
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| the committee's sky elects every printed sait | **holds** | 0 of 6 disagree |
+| the modern sky elects every printed sait | **holds** | 0 of 6 disagree |
+| C747: without the Sun's lagna barred, the print is still elected | falsified | 1 of 6 disagree |
+| C747: with every malefic's lagna barred, the print is still elected | falsified | 1 of 6 disagree |
+| C746: with each rule's choice turned round, the print is still elected | falsified | 2 of 6 disagree |
+
+| rite | day | printed | the committee's sky | lagna / navamsa | middle | the modern sky's middle |
+|---|---|---|---|---|---|---|
+| NAVARATRA_ARAMBHA | 2023-10-15 | 11:29 | 11:26–11:40 | Sagittarius / Gemini | +4.4 min | +4.4 min |
+| NAVARATRA_ARAMBHA | 2024-10-03 | 09:16 | 09:07–09:23 | Libra / Gemini | -0.8 min | -0.8 min |
+| NAVARATRA_ARAMBHA | 2025-09-22 | 09:13 | 09:05–09:21 | Libra / Pisces | -0.1 min | -0.1 min |
+| NAVARATRA_ARAMBHA | 2026-10-11 | 11:47 | 11:41–11:55 | Sagittarius / Gemini | +1.1 min | +1.1 min |
+| PHULPATI | 2024-10-10 | 07:11 | 07:07–07:23 | Libra / Sagittarius | +3.9 min | +3.9 min |
+| YAMA_DWITIYA | 2025-10-23 | 11:39 | 11:35–11:49 | Sagittarius / Virgo | +2.7 min | +2.7 min |

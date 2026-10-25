@@ -3464,6 +3464,45 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a festival day carries its elected sait', () {
+    // The NEPAL pack elects Ghatasthapana's in 2025 at the committee's
+    // printed 09:13, a Pisces navamsa in a Libra lagna
+    // (`03-design/festival-sait.md`).
+    final ctx = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(ctx.dispose);
+    final answer = ctx.almanac.festivals(
+      from: gregorian(2025, 9, 22),
+      to: gregorian(2025, 9, 22),
+      place: Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      ),
+      utcOffsetSeconds: 20700,
+      festivals: FestivalRequest(rules: FestivalPack.nepal),
+    );
+    final sait =
+        answer.observances
+            .firstWhere((o) => o.rule == 'NAVARATRA_ARAMBHA')
+            .sait!;
+    final chosen = sait.candidates[sait.chosen!];
+    expect(
+      [chosen.lagna, chosen.navamsa, chosen.whole, sait.window],
+      [Rashi.libra, Rashi.pisces, true, 0],
+    );
+    final minutes = ((sait.at! + 0.5 + 5.75 / 24) % 1) * 1440;
+    expect((minutes - (9 * 60 + 13)).abs(), lessThan(2));
+    expect(
+      answer.observances
+          .where((o) => o.rule != 'NAVARATRA_ARAMBHA')
+          .every((o) => o.sait == null),
+      isTrue,
+    );
+  });
+
   test('a published set lays its days over the rules', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

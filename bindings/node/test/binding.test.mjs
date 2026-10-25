@@ -4469,6 +4469,49 @@ test('a published day is explained by the change that gives it', () => {
   committee.dispose();
 });
 
+test('a festival day carries its elected sait', () => {
+  // The NEPAL pack elects Ghatasthapana's in 2025 at the committee's
+  // printed 09:13, a Pisces navamsa in a Libra lagna (`festival-sait.md`).
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const day = date(Calendar.Gregorian, 2025, 9, 22);
+  const answer = ctx.almanac.festivals({
+    from: day,
+    to: day,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    festivals: { rules: 'NEPAL' },
+  });
+  const { sait } = answer.observances.find((o) => o.rule === 'NAVARATRA_ARAMBHA');
+  const chosen = sait.candidates[sait.chosen];
+  assert.deepEqual([chosen.lagna, chosen.navamsa, chosen.whole, sait.window], ['rashi.LIBRA', 'rashi.PISCES', true, 0]);
+  const minutes = ((sait.at + 0.5 + 5.75 / 24) % 1) * 1440;
+  assert.ok(Math.abs(minutes - (9 * 60 + 13)) < 2, `${minutes}`);
+  assert.ok(answer.observances.filter((o) => o.rule !== 'NAVARATRA_ARAMBHA').every((o) => o.sait === undefined));
+
+  // A request's own sait replaces the pack's for its rule: Abhijit alone,
+  // the earliest whole dual navamsa there.
+  const abhijit = ctx.almanac.festivals({
+    from: day,
+    to: day,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    festivals: {
+      rules: [
+        'NEPAL',
+        {
+          rule: 'NAVARATRA_ARAMBHA',
+          source: 'mine',
+          windows: [{ within: { window: 'DAY_MUHURTA', from: 8, to: 8 } }],
+          rising: { of: 'NAVAMSA', modalities: ['modality.DWISWABHAVA'], freeOf: ['graha.SUN'] },
+          choose: 'EARLIEST',
+        },
+      ],
+    },
+  }).observances.find((o) => o.rule === 'NAVARATRA_ARAMBHA').sait;
+  assert.equal(abhijit.window, 0);
+  assert.ok(abhijit.at > sait.at, 'midday, after the forenoon navamsa');
+});
+
 test('a published set lays its days over the rules', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const days = {

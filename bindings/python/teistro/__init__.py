@@ -670,6 +670,8 @@ __all__ = [
     "AnniversaryDay",
     "AnniversaryOrigin",
     "FestivalAnswer",
+    "FestivalSait",
+    "FestivalSaitCandidate",
     "Published",
     "PublishedAdded",
     "PublishedApplied",
@@ -7509,7 +7511,9 @@ class FestivalRequest(TypedDict, total=False):
     SDK ships, or a list whose items each name a pack or spell a rule out as
     a mapping in its record's spelling (an Ekadashi rule when it has a
     `vedha`, with its `parana` `{at, hariVasara, bars}` if it says when the fast
-    is broken, a following rule when it has an `after`, which counts `days`
+    is broken, a sait rule when it has `windows`, which elects the rite's
+    time on its rule's day (`03-design/festival-sait.md`), a following rule
+    when it has an `after`, which counts `days`
     civil days from that festival rule's day, a dated rule when it has a
     `civilDate` or a `civilWeekday`, kept on a date of a calendar, or a
     `sunEnters`, kept on the civil day the Sun enters a `nakshatra`, or an
@@ -7605,6 +7609,10 @@ class FestivalObservance:
     published: Optional["Published"] = None
     """What a published entry did to the day; None when none touched it,
     so the day is the rule's (`03-design/published-overrides.md`)."""
+
+    sait: Optional["FestivalSait"] = None
+    """The rite's time on the day, elected by the rule's sait
+    (`03-design/festival-sait.md`); None for a rule with none."""
 
 
 @dataclass(frozen=True)
@@ -7883,6 +7891,43 @@ class Published:
 
     window: Optional[Interval] = None
     """A published time."""
+
+
+@dataclass(frozen=True)
+class FestivalSaitCandidate:
+    """A stretch a sait may be in."""
+
+    span: Interval
+    whole: bool
+    """Whether its navamsa lies wholly inside the free window; always for
+    a rule reading no rising sign."""
+
+    lagna: Optional[Rashi] = None
+    """The lagna's sign, when the rule reads a rising sign."""
+
+    navamsa: Optional[Rashi] = None
+    """The navamsa's sign, when the rule reads a rising sign."""
+
+
+@dataclass(frozen=True)
+class FestivalSait:
+    """A festival day's sait: the window it was found in, every candidate
+    there, and the one chosen."""
+
+    window: int
+    """Which of the rule's windows gave it, from 0; the last when none
+    did."""
+
+    within: Interval
+    """That window on the day."""
+
+    candidates: Tuple[FestivalSaitCandidate, ...]
+    chosen: Optional[int] = None
+    """The chosen candidate's index; None when the window holds none."""
+
+    at: Optional[float] = None
+    """The chosen candidate's middle, a UTC Julian day: the instant an
+    almanac prints."""
 
 
 @dataclass(frozen=True)
@@ -15387,6 +15432,29 @@ def _festival_observance(raw: Mapping[str, Any]) -> FestivalObservance:
         margin_seconds=float(raw["marginSeconds"]),
         parana=tuple(_vrata_parana(time) for time in raw.get("parana", ())),
         published=_published(raw),
+        sait=_sait(raw["sait"]) if raw.get("sait") is not None else None,
+    )
+
+
+def _sait(raw: Mapping[str, Any]) -> FestivalSait:
+    """A sait as a festival answer writes it."""
+    def sign(key: Optional[str]) -> Optional[Rashi]:
+        return None if key is None else _member(Rashi, key)
+
+    return FestivalSait(
+        window=int(raw["window"]),
+        within=_interval(raw["within"]),
+        candidates=tuple(
+            FestivalSaitCandidate(
+                span=_interval(c["span"]),
+                whole=c["whole"],
+                lagna=sign(c.get("lagna")),
+                navamsa=sign(c.get("navamsa")),
+            )
+            for c in raw["candidates"]
+        ),
+        chosen=raw.get("chosen"),
+        at=float(raw["at"]) if raw.get("at") is not None else None,
     )
 
 

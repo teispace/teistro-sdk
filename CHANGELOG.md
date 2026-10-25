@@ -12,6 +12,31 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A festival day says when its rite is done.**
+**Numbers:** a festival answer under the `NEPAL` or `NEPAL_PANCHANGA`
+pack moves, hash included: Ghatasthapana's, Bhai Tika's and (in
+`NEPAL_PANCHANGA`) Phulpati's observances gain `sait`. Every day is as
+before, and an answer under any other pack is byte-identical, as `sait`
+is left out when no rule elects one.
+- *Saits* (`03-design/festival-sait.md`). A `SaitRule`, keyed by its
+  festival rule and carried in a pack or a request's `rules` (a JSON item
+  with `windows`), names the text's windows in order (ghatis from
+  sunrise, day or night muhurtas, a fifth of the day, pradosha), what
+  each avoids (a tithi's first nadis, a nakshatra or yoga by quarters, a
+  kaala, bhadra), the rising sign it prefers by modality in a lagna free
+  of the grahas named, and which candidate it takes. The observance's
+  `sait` lists every candidate with its lagna and navamsa, the one
+  chosen and the instant an almanac prints. The rising is the lagna
+  table's own (`Founder::lagna_table_ascendant`), so the committee's
+  saits read the sphere's Lahiri ascendant as its printed table does.
+- *Measured against the print* (`festival-measured.md` §8): the 6
+  printed times shipped rules cover fall in the elected navamsa on both
+  skies, the middle within 4.4 minutes; the Sun's lagna barred (C747)
+  and each rule's choice (C746) are each measured against the reading
+  they were chosen over.
+- `lagna_cuts` moved to `teistro_panchanga::rising`, which the festivals
+  read in every build; `teistro_muhurta::window` re-exports it.
+
 **A day an authority decides is laid over the rules, and explained.**
 **Numbers:** none. A festival answer asked without published sets is
 byte-identical, hash included: every new field and list is left out when
@@ -25,7 +50,7 @@ empty. A feed asked without sets writes the same bytes.
   rule's own day when it differs); the answer gains `added`, `unplaced`
   and `applied`, the last with each set's SHA-256, so a stored answer
   says which data made it. In every binding, through the parity runners.
-- *Signed packs* (feature `signed-packs`, in `full`).
+- *Signed packs* (feature `signed-packs`, on by default).
   `PublishedSet::from_signed` checks a detached Ed25519 signature over the
   pack's exact bytes with `verify_strict` (`ed25519-dalek` 3, default
   features off) against a key the app fixes at its build: the SDK embeds

@@ -17,7 +17,7 @@
 
 use teistro_calendar::EraNumber;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Era, Masa, Nakshatra, Paksha, Tithi, Vara};
+use teistro_core::catalogue::{Era, Masa, Nakshatra, Paksha, Rashi, Tithi, Vara};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
@@ -25,8 +25,9 @@ use teistro_panchanga::festival::{
     AddedDay, AnniversaryDay, AnniversaryKind, Case, Choice, Dated, DatedObservance, DatedRule,
     DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule, Guard, Half,
     InAdhika, MonthClause, MoonArcs, Moonrise, NakshatraBar, Observances, Occurs, OriginFound,
-    ParanaBarred, Predicate, Published, PublishedStatus, SunEntry, Unjudged, Unplaced, VrataEdge,
-    VrataParana, VrataParanaTime, Which, Window, dated, ekadashis, following, observances, yugma,
+    ParanaBarred, Predicate, Published, PublishedStatus, Sait, SaitCandidate, SunEntry, Unjudged,
+    Unplaced, VrataEdge, VrataParana, VrataParanaTime, Which, Window, dated, ekadashis, following,
+    observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -1846,6 +1847,23 @@ const NOT_MEMBERS: [&str; 65] = [
 /// `Observances::MEMBERS` names every catalogue member an answer holds,
 /// and nothing else: each string in its JSON is either listed there or
 /// listed here as not a member, and each of both lists is present.
+/// A sait with one whole candidate, its lagna and navamsa named.
+fn elected() -> Sait {
+    let span = Interval::literal(0.25, 0.5);
+    Sait {
+        window: 0,
+        within: span,
+        candidates: vec![SaitCandidate {
+            span,
+            whole: true,
+            lagna: Some(Rashi::Sagittarius),
+            navamsa: Some(Rashi::Gemini),
+        }],
+        chosen: Some(0),
+        at: span.at_fraction(0.5).ok(),
+    }
+}
+
 /// Marks an answer's first observance, fast and dated day published, and
 /// adds a published day and an unplaced entry, so each is written.
 fn mark_published(answer: &mut Observances) {
@@ -1961,6 +1979,8 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
     });
     // A published set's marks, its added day and its unplaced entry.
     mark_published(&mut answer);
+    // A sait, its candidate's lagna and navamsa named.
+    answer.observances[0].sait = Some(elected());
     let mut found = std::collections::BTreeSet::new();
     string_paths(&serde_json::to_value(&answer).unwrap(), "", &mut found);
     let members: std::collections::BTreeSet<String> = Observances::MEMBERS

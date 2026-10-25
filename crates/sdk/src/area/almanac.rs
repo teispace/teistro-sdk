@@ -58,6 +58,7 @@ mod feed;
 #[cfg(feature = "muhurta")]
 mod muhurta;
 mod reasons;
+mod sait;
 
 pub use disagreement::{
     DayDisagreement, DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement,
@@ -416,6 +417,9 @@ impl<'a> AlmanacArea<'a> {
             start.is_some_and(|start| unjudged.tithi.to.get() > start)
                 && end.is_some_and(|end| unjudged.tithi.from.get() < end)
         });
+        // On the days as published, after the trim, so only the range's
+        // observances pay for a founded day.
+        self.with_saits(&mut found, request, from.calendar, (place, offset))?;
         provenance.input_hash = content_hash(&FestivalInput {
             from: from.to_string(),
             to: to.to_string(),
