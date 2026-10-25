@@ -557,7 +557,7 @@ is missing is evidence. "None" means no form would decide the row.
 | 22 | `NALASWANE_CHARHE` | a charhe; 9 of 14 | aparahna to pradosha, 9 of 14 | none | C614 |
 | 23 | `KOJAGRAT_PURNIMA` | 9 of 14; the Kojagara rule (midnight) 7 of 14; the source lists the eve and the day in 2081–2083 | sunrise, 12 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 74, nishitha, the earlier day only when it alone holds it (C617); both editions print one day, the text's |
 | 24 | `GOVATSA_DWADASHI` | 8 of 14 | madhyahna, aparahna or sayahna with `GREATER`, 13 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 76 keeps it at pradosha, the later day when neither holds it and the earlier when both do, as most authorities say; both editions print it there (2025-10-17, 2026-11-05), on the day whose sunrise holds the 11th. The source's days fit a daylight share better, and the print parts from them |
-| 25 | `VISHNU_BAIKUNTHA_CHATURDASHI` | 9 of 14 | sayahna or pradosha, 12 of 14 | an arunodaya window | *Dharmasindhu* p. 81 (the OCR's page) fasts the day before and worships on the 14th that holds the arunodaya ("पूर्वेद्युरुपवासं कृत्वा अरुणोदयव्यापिन्यां चतुर्दश्यां"), and both editions print बैकुण्ठ चतुर्दशीव्रत there (VS 2082 p. 15, 4 November 2025; VS 2083 p. 17, 23 November 2026). In both years the 14th began in the night before, so the sunrise and the arunodaya agree and the print cannot tell them apart. The rule waits on a `Window` reading the night before a day, four of its thirtieths before sunrise as the Ekadashi's vedha does (C176), which a `FestivalDay` does not carry |
+| 25 | `VISHNU_BAIKUNTHA_CHATURDASHI` | 9 of 14 | sayahna or pradosha, 12 of 14 | none | evidence. *Dharmasindhu* pp. 80–81 (the running headers' ८१ and, misread as ८२, ८०) fasts the day before and worships Vishnu on the 14th that holds the arunodaya ("पूर्वेद्युरुपवासं कृत्वा अरुणोदयव्यापिन्यां चतुर्दश्यां"): the earlier day only when its arunodaya alone holds it, the later when both or neither do; "केचित्" take nishitha, and nishitha with pradosha when both days hold it. Both editions print one row, बैकुण्ठ चतुर्दशीव्रत (VS 2082 p. 15, 4 November 2025; VS 2083 p. 17, 23 November 2026), which `SHIVA_BAIKUNTHA_CHATURDASHI` already gives at sunrise. Measured over the committee's sky at Kathmandu, 2013–2027 (2026-10-25): an arunodaya window gives the sunrise rule's day in all fifteen years, so it would add no day; the consumer keeps Vishnu's day a day before Shiva's in 2017, 2019, 2020, 2021 and 2023, which nishitha gives but which misses both printed days and five more, and pradosha with the earlier day holding it gives 11 of 14. No window gives the consumer's days and the print together, so the form is not built until a source settles which day a patro printed in Nepal keeps for Vishnu |
 | 26 | `ARJUNDHARA_MELA` | 12 of 14 in the morning | day muhurtas 1–6, 12 of 14 | none new | **shipped** on Halesi mela's day: both editions print it in the continuation of that row; the source's day after is not printed in VS 2083 (C693) |
 | 27 | `GURU_GOBIND_SINGH_JAYANTI` | Poush 21 or 20, or 5 January; 12 of 14 at best | a civil date | §3.6 a civil date | the community's own calendar sets it (C619) |
 | 28 | `KASHI_BADA_GANESH_UTSAV` | 8 of 14 | moonrise, sayahna or pradosha, 12 of 14 | none new | **shipped** by the text: Magha's dark 4th (purnimanta; the amanta Pausha's) is a Sankashta chaturthi, kept at moonrise and on the earlier day when both hold it (*Dharmasindhu* p. 9); both editions print it on the day whose sunrise holds the 3rd and whose moonrise the 4th (2026-01-06, 2027-01-25) |
@@ -593,13 +593,12 @@ is missing is evidence. "None" means no form would decide the row.
 
 | form | rows |
 |---|---:|
-| moonrise (§3.1) | 2 |
+| moonrise (§3.1) | 1 |
 | day muhurtas (§3.2) | 3 |
-| `GREATER` (§3.3) | 1 |
 | civil and solar dates (§3.6) | 3 |
 | counts and two days (§3.9) | 0: both rows proposed for a count are refuted by the print (rows 18 and 20) |
-| none new: the language can say it; 12 of them are shipped, the committee's print of both years settling each, and the evidence is short for the other 9 | 21 |
-| none: a charhe, a sighting, a day set each year, one verified day, or a count the print refutes | 27 |
+| none new: the language can say it; 16 of them are shipped, the committee's print of both years settling each, and the evidence is short for the other 7 | 23 |
+| none: a charhe, a sighting, a day set each year, one verified day, a count the print refutes, or a window no year's day tells from sunrise (row 25) | 27 |
 
 ## 5. Janmashtami
 
