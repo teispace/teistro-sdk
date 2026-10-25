@@ -496,6 +496,9 @@ jobs:
           if-no-files-found: ignore
       - name: Each crate at or over its floors
         run: cargo +nightly-2026-10-21 xtask check-coverage --from coverage.json
+      # The same pinned nightly counts the items that can carry an example.
+      - name: Every item of the held crates carries an example
+        run: cargo +nightly-2026-10-21 xtask check-doc-examples
 
   # The same crates' unit and integration tests built with
   # AddressSanitizer, which on Linux brings LeakSanitizer: every ABI test
