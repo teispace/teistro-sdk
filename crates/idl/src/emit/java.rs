@@ -711,6 +711,46 @@ mod tests {
         api
     }
 
+    /// A request with an optional field has a constructor taking the
+    /// required ones alone, the optional left null, beside its builder.
+    #[test]
+    fn a_request_with_an_optional_field_takes_its_required_ones_alone() {
+        let mut api = toy();
+        let schema = serde_json::json!({"$defs": {"Ask": {
+            "type": "object", "description": "A question.",
+            "properties": {
+                "year": {"type": "integer", "description": "Its year."},
+                "place": {"type": ["string", "null"], "description": "Where."}
+            },
+            "required": ["year"]
+        }}});
+        api.requests.records = crate::records::from_schema(&schema, &["Ask"]).unwrap();
+        api.requests.roots.push(crate::records::RequestRoot {
+            record: String::from("x.ask"),
+            name: String::from("Ask"),
+        });
+        let files = render(&api);
+        let ask = files
+            .iter()
+            .find(|f| f.path.ends_with("/request/Ask.java"))
+            .unwrap();
+        assert!(
+            ask.text.contains("The required fields alone"),
+            "{}",
+            ask.text
+        );
+        assert!(
+            ask.text.contains("        this(null, year);\n"),
+            "{}",
+            ask.text
+        );
+        assert!(
+            ask.text.contains("     * @param year Its year."),
+            "{}",
+            ask.text
+        );
+    }
+
     #[test]
     fn a_shown_struct_is_a_record_that_checks_what_c_cannot_hold() {
         let files = render(&toy());

@@ -45,8 +45,8 @@ use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::panchanga::{
-    TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_YEARS, TsPanchangaRequest,
-    ts_panchanga_days,
+    TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_LAGNAS, TS_PANCHANGA_NEPAL_SAMBAT,
+    TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
 };
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
@@ -1338,55 +1338,17 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
     let dashas = [DashaSystem::Vimshottari.id()];
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
             drawings: drawings.as_ptr(),
             drawing_count: drawings.len(),
             dashas: dashas.as_ptr(),
             dasha_count: dashas.len(),
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -1499,55 +1461,15 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
     ];
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
             dashas: dashas.as_ptr(),
             dasha_count: dashas.len(),
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -1658,55 +1580,14 @@ fn a_chart_request_answers_the_transits() {
     let gochar = CString::new(text).unwrap();
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: births.as_ptr(),
             instant_count: births.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
             gochar_json: gochar.as_ptr(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -1872,55 +1753,14 @@ fn a_chart_request_answers_the_transits() {
 fn hit_list_request(births: &[f64; 2], hits: &CString) -> TsChartRequest {
     sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: births.as_ptr(),
             instant_count: births.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
             hits_json: hits.as_ptr(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     )
@@ -2154,55 +1994,14 @@ fn a_chart_request_answers_sade_sati() {
     let json = CString::new(text).unwrap();
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: births.as_ptr(),
             instant_count: births.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
             sade_sati_json: json.as_ptr(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -2426,55 +2225,13 @@ fn a_chart_request_answers_the_dignities() {
     let request = |dignities_json: *const core::ffi::c_char| {
         sized(
             TsChartRequest {
-                struct_size: 0,
-                kind: 0,
-                lilith: 0,
                 instants: instants.as_ptr(),
                 instant_count: instants.len(),
                 latitude_deg: 27.7172,
                 longitude_deg: 85.324,
-                altitude_m: 0.0,
                 utc_offset_seconds: 20_700,
-                reserved_tail: 0,
-                sections: 0,
-                reserved_sections: 0,
-                vargas: ptr::null(),
-                varga_count: 0,
-                drawings: ptr::null(),
-                drawing_count: 0,
-                dashas: ptr::null(),
-                dasha_count: 0,
-                theme_json: ptr::null(),
-                rules_json: ptr::null(),
-                interpret_json: ptr::null(),
-                varsha_json: ptr::null(),
-                gochar_json: ptr::null(),
-                hits_json: ptr::null(),
-                sade_sati_json: ptr::null(),
-                kp_json: ptr::null(),
                 dignities_json,
-                fortitudes_json: ptr::null(),
-                lots_json: ptr::null(),
-                considerations_json: ptr::null(),
-                perfection_json: ptr::null(),
-                progressions_json: ptr::null(),
-                western_aspects_json: ptr::null(),
-                synastry_json: ptr::null(),
-                parallels_json: ptr::null(),
-                antiscia_json: ptr::null(),
-                midpoints_json: ptr::null(),
-                western_houses_json: ptr::null(),
-                harmonic_json: ptr::null(),
-                matching_json: ptr::null(),
-                prashna_json: ptr::null(),
-                remedies_json: ptr::null(),
-                rectification_json: ptr::null(),
-                lalkitab_json: ptr::null(),
-                sarvatobhadra_json: ptr::null(),
-                tithi_pravesha_json: ptr::null(),
-                dossier_json: ptr::null(),
-                masa_pravesha_json: ptr::null(),
-                western_configurations_json: ptr::null(),
+                ..TsChartRequest::default()
             },
             |r, s| r.struct_size = s,
         )
@@ -2802,55 +2559,12 @@ fn a_chart_request_answers_the_fortitudes() {
     let text = r#"{"dignities":{"sectRule":"DAYLIGHT"},"rules":{"beamsDeg":15,"partile":{"WITHIN":{"orbDeg":1}},"siege":{"WITHIN":{"spanDeg":30}}},"scores":{"regulus":5,"houses":[5,3,1,4,3,-2,4,-2,2,5,4,-5]},"almuten":{"place":"SIGN","fortune":"REVERSED_BY_NIGHT"}}"#;
     let base = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
-            altitude_m: 0.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -4119,55 +3833,14 @@ fn a_chart_request_answers_kp() {
     let json = CString::new(text).unwrap();
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: births.as_ptr(),
             instant_count: births.len(),
             latitude_deg: 13.08,
             longitude_deg: 80.27,
             altitude_m: 6.0,
             utc_offset_seconds: 19_800,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
             kp_json: json.as_ptr(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -4329,55 +4002,13 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
     let sade_sati = CString::new(r#"{"from":2460676.5}"#).unwrap();
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
-            instants: ptr::null(),
-            instant_count: 0,
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
             hits_json: hits.as_ptr(),
             sade_sati_json: sade_sati.as_ptr(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -4451,55 +4082,14 @@ fn a_chart_request_answers_the_annual_charts_instants() {
     let varsha = CString::new(r#"{"reading":"SIDEREAL","through":12}"#).unwrap();
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
             varsha_json: varsha.as_ptr(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -4602,55 +4192,14 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
     let text = CString::new(varsha).unwrap();
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
             varsha_json: text.as_ptr(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -4758,55 +4307,14 @@ fn a_years_chart_carries_the_lord_of_that_year() {
     let varsha = CString::new(r#"{"through":4,"place":"birth"}"#).unwrap();
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
             varsha_json: varsha.as_ptr(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -5545,55 +5053,15 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
     let dashas = [u16::try_from(id & 0xFFFF).unwrap(), DashaSystem::Chara.id()];
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
             dashas: dashas.as_ptr(),
             dasha_count: dashas.len(),
-            theme_json: ptr::null(),
-            rules_json: ptr::null(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -5669,55 +5137,14 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     let rules = CString::new(r#"{"shipped": ["NABHASAS"], "longevity": true}"#).unwrap();
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
             rules_json: rules.as_ptr(),
-            interpret_json: ptr::null(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -5862,55 +5289,15 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     .unwrap();
     let request = sized(
         TsChartRequest {
-            struct_size: 0,
-            kind: 0,
-            lilith: 0,
             instants: instants.as_ptr(),
             instant_count: instants.len(),
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
-            sections: 0,
-            reserved_sections: 0,
-            vargas: ptr::null(),
-            varga_count: 0,
-            drawings: ptr::null(),
-            drawing_count: 0,
-            dashas: ptr::null(),
-            dasha_count: 0,
-            theme_json: ptr::null(),
             rules_json: rules.as_ptr(),
             interpret_json: plans.as_ptr(),
-            varsha_json: ptr::null(),
-            gochar_json: ptr::null(),
-            hits_json: ptr::null(),
-            sade_sati_json: ptr::null(),
-            kp_json: ptr::null(),
-            dignities_json: ptr::null(),
-            fortitudes_json: ptr::null(),
-            lots_json: ptr::null(),
-            considerations_json: ptr::null(),
-            perfection_json: ptr::null(),
-            progressions_json: ptr::null(),
-            western_aspects_json: ptr::null(),
-            synastry_json: ptr::null(),
-            parallels_json: ptr::null(),
-            antiscia_json: ptr::null(),
-            midpoints_json: ptr::null(),
-            western_houses_json: ptr::null(),
-            harmonic_json: ptr::null(),
-            matching_json: ptr::null(),
-            prashna_json: ptr::null(),
-            remedies_json: ptr::null(),
-            rectification_json: ptr::null(),
-            lalkitab_json: ptr::null(),
-            sarvatobhadra_json: ptr::null(),
-            tithi_pravesha_json: ptr::null(),
-            dossier_json: ptr::null(),
-            masa_pravesha_json: ptr::null(),
-            western_configurations_json: ptr::null(),
+            ..TsChartRequest::default()
         },
         |r, s| r.struct_size = s,
     );
@@ -6159,57 +5546,19 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
         let plans = CString::new(format!(r#"{{"{member}": true}}"#)).unwrap();
         let request = sized(
             TsChartRequest {
-                struct_size: 0,
-                kind: 0,
-                lilith: 0,
                 instants: instants.as_ptr(),
                 instant_count: instants.len(),
                 latitude_deg: 27.7172,
                 longitude_deg: 85.324,
                 altitude_m: 1400.0,
                 utc_offset_seconds: 20_700,
-                reserved_tail: 0,
                 // Nothing asked for: a composer's own section is the
                 // library's job, which is the whole point of the check.
-                sections: 0,
-                reserved_sections: 0,
-                vargas: ptr::null(),
-                varga_count: 0,
-                drawings: ptr::null(),
-                drawing_count: 0,
-                dashas: ptr::null(),
-                dasha_count: 0,
-                theme_json: ptr::null(),
                 rules_json: rules.as_ptr(),
                 interpret_json: plans.as_ptr(),
-                varsha_json: ptr::null(),
                 gochar_json: gochar.as_ptr(),
-                hits_json: ptr::null(),
                 sade_sati_json: window.as_ptr(),
-                kp_json: ptr::null(),
-                dignities_json: ptr::null(),
-                fortitudes_json: ptr::null(),
-                lots_json: ptr::null(),
-                considerations_json: ptr::null(),
-                perfection_json: ptr::null(),
-                progressions_json: ptr::null(),
-                western_aspects_json: ptr::null(),
-                synastry_json: ptr::null(),
-                parallels_json: ptr::null(),
-                antiscia_json: ptr::null(),
-                midpoints_json: ptr::null(),
-                western_houses_json: ptr::null(),
-                harmonic_json: ptr::null(),
-                matching_json: ptr::null(),
-                prashna_json: ptr::null(),
-                remedies_json: ptr::null(),
-                rectification_json: ptr::null(),
-                lalkitab_json: ptr::null(),
-                sarvatobhadra_json: ptr::null(),
-                tithi_pravesha_json: ptr::null(),
-                dossier_json: ptr::null(),
-                masa_pravesha_json: ptr::null(),
-                western_configurations_json: ptr::null(),
+                ..TsChartRequest::default()
             },
             |r, s| r.struct_size = s,
         );
@@ -6729,6 +6078,64 @@ fn a_panchanga_request_answers_the_eclipses_its_days_hold() {
         .unwrap();
     assert_eq!(envelope["value"], expected.value.in_full().unwrap());
     assert_eq!(provenance.input_hash, expected.provenance.input_hash);
+}
+
+/// A day's lagna table crosses only when its bit asks for it, and the
+/// days themselves stay out when theirs does, what was asked beside them
+/// still answered (`amrit-kalam-and-lagnas.md` §2).
+#[test]
+fn a_panchanga_request_carries_lagnas_and_leaves_out_days_by_their_bits() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let range = ((10, 20), (10, 20));
+    let asked = |sections| panchanga_asked_in(&ctx, 2025, range, (None, None), sections).unwrap();
+    let schema = schemas::panchanga();
+    let (lagnas, plain, without) = (
+        asked(TS_PANCHANGA_LAGNAS),
+        asked(0),
+        asked(TS_PANCHANGA_WITHOUT_DAYS | TS_PANCHANGA_NEPAL_SAMBAT),
+    );
+    let (lagnas, plain, without) = (
+        Reader::parse(&lagnas, &schema).unwrap(),
+        Reader::parse(&plain, &schema).unwrap(),
+        Reader::parse(&without, &schema).unwrap(),
+    );
+    assert!(lagnas.count("lagnas").unwrap() > 0);
+    assert_eq!(plain.count("lagnas"), Some(0));
+    assert_eq!(plain.count("days"), Some(1));
+    assert_eq!(without.count("days"), Some(0));
+    assert_ne!(without.text("nepal_sambat").unwrap(), "");
+}
+
+/// A calendar id no calendar has is refused by its field.
+#[test]
+fn a_panchanga_request_in_no_calendar_is_refused_by_its_field() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let request = sized(
+        TsPanchangaRequest {
+            struct_size: 0,
+            calendar: 0xFFFF,
+            reserved: 0,
+            from_year: 2026,
+            from_month: 1,
+            from_day: 1,
+            to_month: 1,
+            to_day: 1,
+            to_year: 2026,
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            sections: 0,
+            muhurta_json: ptr::null(),
+            festivals_json: ptr::null(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    let status = unsafe { ts_panchanga_days(ctx.handle, &raw const request, &raw mut blob) };
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("calendar"));
 }
 
 /// Each day's Nepal Sambat date beside a panchanga request's days
@@ -11154,6 +10561,174 @@ fn a_tibetan_year_crosses_with_its_names() {
     assert_eq!(ctx.last_error().2.as_deref(), Some("year"));
     // SAFETY: the empty descriptor a refusal leaves.
     unsafe { ts_string_free(&raw mut refused) };
+}
+
+/// The vector the façade's suite and every binding pin
+/// (`crates/sdk/tests/signed_pack.rs`): a set, its publisher's key made
+/// from a fixed seed, and that key's signature over the exact bytes.
+const SIGNED_SET: &str = r#"{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,"entries":[{"action":"SET","rule":"GHATASTHAPANA","day":{"calendar":"GREGORIAN","year":2026,"month":10,"day":11},"source":"p. 41"}]}"#;
+const SIGNED_KEY: &str = "ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c";
+const SIGNED_SIGNATURE: &str = "cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e21332fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e";
+
+fn bytes_of(hex: &str) -> Vec<u8> {
+    (0..hex.len())
+        .step_by(2)
+        .map(|at| u8::from_str_radix(&hex[at..at + 2], 16).unwrap())
+        .collect()
+}
+
+fn verified(ctx: &Ctx, pack: &[u8], signature: &[u8], at_least: u32) -> Result<String, Status> {
+    let key = bytes_of(SIGNED_KEY);
+    let mut out = TsString::empty();
+    // SAFETY: a live context, readable byte ranges and a writable slot.
+    let status = unsafe {
+        teistro_ffi::published::ts_published_verify(
+            ctx.handle,
+            pack.as_ptr(),
+            pack.len(),
+            signature.as_ptr(),
+            signature.len(),
+            key.as_ptr(),
+            key.len(),
+            at_least,
+            &raw mut out,
+        )
+    };
+    if status == Status::Ok {
+        Ok(owned(out))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut out) };
+        Err(status)
+    }
+}
+
+/// A signed pack crosses as the set it covers, written as the façade
+/// writes it; a tampered byte is refused on `signature`, and a version
+/// under the newest applied on `version` (`published-overrides.md` §5).
+#[cfg(feature = "signed-packs")]
+#[test]
+fn a_signed_pack_crosses_as_its_set_and_a_tampered_one_is_refused() {
+    let ctx = Ctx::defaults();
+    let signature = bytes_of(SIGNED_SIGNATURE);
+    let crossed = verified(&ctx, SIGNED_SET.as_bytes(), &signature, 3).unwrap();
+    let kernel = teistro::festival::PublishedSet::from_json(SIGNED_SET).unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let tampered = SIGNED_SET.replace(r#""day":11"#, r#""day":12"#);
+    assert_eq!(
+        verified(&ctx, tampered.as_bytes(), &signature, 0),
+        Err(Status::InvalidArg)
+    );
+    assert_eq!(ctx.last_error().2.as_deref(), Some("signature"));
+    assert_eq!(
+        verified(&ctx, SIGNED_SET.as_bytes(), &signature, 4),
+        Err(Status::InvalidArg)
+    );
+    assert_eq!(ctx.last_error().2.as_deref(), Some("version"));
+}
+
+/// A build without signed packs refuses the call as `CAPABILITY`.
+#[cfg(not(feature = "signed-packs"))]
+#[test]
+fn a_signed_pack_is_refused_without_its_feature() {
+    let ctx = Ctx::defaults();
+    let signature = bytes_of(SIGNED_SIGNATURE);
+    assert_eq!(
+        verified(&ctx, SIGNED_SET.as_bytes(), &signature, 0),
+        Err(Status::Capability)
+    );
+}
+
+fn published_reasons_of(
+    ctx: &Ctx,
+    other: *const TsContext,
+    request: &str,
+) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut out = TsString::empty();
+    // SAFETY: live contexts (or null), a NUL-terminated request and a
+    // valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_published_reasons(
+            ctx.handle,
+            other,
+            request.as_ptr(),
+            &raw mut out,
+        )
+    };
+    if status == Status::Ok {
+        Ok(owned(out))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut out) };
+        Err(status)
+    }
+}
+
+/// Why a published day differs crosses as the façade answers it: with no
+/// other sky, with the context itself named as the other (no other sky),
+/// and with the committee's sky tried beside the modern one; a request
+/// the reader refuses is refused by name.
+#[test]
+fn why_a_published_day_differs_crosses_as_the_facade_answers_it() {
+    // Navaratra's first day of 2026 published a day after the rule's
+    // 11 October, which no change tried gives.
+    let request = r#"{"first": {"year": 2026, "month": 10, "day": 1},
+        "last": {"year": 2026, "month": 10, "day": 20},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700,
+        "festivals": {"rules": "NEPAL", "published": [{"format": "teistro.published/1",
+            "publisher": "a patro printed in Nepal", "id": "np", "version": 1,
+            "entries": [{"action": "SET", "rule": "NAVARATRA_ARAMBHA",
+                "day": {"calendar": "GREGORIAN", "year": 2026, "month": 10, "day": 12}, "source": "p. 1"}]}]}}"#;
+    let modern =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+    let committee = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::SuryaSiddhanta,
+        Some("nepali-committee"),
+        None,
+        None,
+    )
+    .unwrap();
+    let asked = teistro::PublishedReasonsRequest::from_json(request).unwrap();
+    // SAFETY: both handles are live for the test.
+    let (sky, beside_sky) = unsafe { (&*modern.handle, &*committee.handle) };
+    let kernel = |skies: &[&teistro::Context]| {
+        teistro_core::envelope::canonical_json(
+            &sky.sdk()
+                .almanac()
+                .published_reasons_request(skies, &asked)
+                .unwrap(),
+        )
+    };
+    let alone = published_reasons_of(&modern, ptr::null(), request).unwrap();
+    assert_eq!(alone, kernel(&[]));
+    assert_eq!(
+        published_reasons_of(&modern, modern.handle, request).unwrap(),
+        alone
+    );
+    let beside = published_reasons_of(&modern, committee.handle, request).unwrap();
+    assert_eq!(beside, kernel(&[beside_sky.sdk()]));
+    let reasons = |answer: &str| {
+        let answer: serde_json::Value = serde_json::from_str(answer).unwrap();
+        answer["value"]["reasons"].as_array().unwrap().clone()
+    };
+    let [alone] = <[_; 1]>::try_from(reasons(&alone)).unwrap();
+    let [beside] = <[_; 1]>::try_from(reasons(&beside)).unwrap();
+    assert_eq!(alone["computed"]["day"], 11);
+    // The committee's sky is tried first, before each pack's rule.
+    let count = |reason: &serde_json::Value| reason["tried"].as_array().map(Vec::len);
+    assert_eq!(count(&beside), count(&alone).map(|n| n + 1));
+    assert_eq!(beside["tried"][0]["change"]["profile"], "nepali-committee");
+    let stray = request.replace("\"latitudeDeg\": 27.7172", "\"latitudeDeg\": 95");
+    assert_eq!(
+        published_reasons_of(&modern, ptr::null(), &stray),
+        Err(Status::InvalidArg)
+    );
+    assert_eq!(
+        modern.last_error().2.as_deref(),
+        Some("publishedReasons.latitudeDeg")
+    );
 }
 
 fn festival_calendar_text(ctx: &Ctx, request: &str) -> Result<String, Status> {

@@ -919,3 +919,31 @@ fn one_benefic_on_the_lagna_and_its_lord_is_less_a_quarter() {
     assert_eq!(graded.on_lagnesha, [Graha::Venus]);
     assert_eq!(graded.grades, [Grade::Padona]);
 }
+
+/// Each clause kind names the verse it reads, the 1941 gloss marked
+/// where the shadvarga reading rests on it.
+#[test]
+fn each_clause_kind_names_its_verse() {
+    let sources = [
+        ClauseKind::LagnaRising,
+        ClauseKind::InLagna,
+        ClauseKind::RisingNavamsha,
+        ClauseKind::RisingShadvarga,
+        ClauseKind::AspectsLagna,
+        ClauseKind::AspectsMoon,
+        ClauseKind::KaryaHouse,
+    ]
+    .map(ClauseKind::source);
+    assert_eq!(
+        sources,
+        [
+            "Shatpanchashika I.4",
+            "Shatpanchashika I.4",
+            "Shatpanchashika I.4",
+            "Shatpanchashika I.4, the 1941 gloss",
+            "Shatpanchashika II.2",
+            "Shatpanchashika II.2",
+            "Shatpanchashika I.3",
+        ]
+    );
+}
