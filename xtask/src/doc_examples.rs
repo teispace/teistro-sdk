@@ -46,6 +46,7 @@ const EXAMPLED: &[&str] = &[
     "teistro-rectification",
     "teistro-remedies",
     "teistro-render-svg",
+    "teistro-research",
     "teistro-serial",
     "teistro-siddhanta",
     "teistro-state",

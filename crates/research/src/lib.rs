@@ -73,12 +73,74 @@ use engine::{Layout, Permuted as _, Walk};
 /// (charts × predicates × permutations / 64 popcounts), and its
 /// resolution, `1/(m + 1)`, is finer than any correction a study of a
 /// few thousand predicates needs.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// use teistro_research::MAX_PERMUTATIONS;
+///
+/// let more = GroupTest { permutations: MAX_PERMUTATIONS + 1, ..test };
+/// assert_eq!(compare(&matrix, &design, &more).unwrap_err().field(), Some("permutations"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const MAX_PERMUTATIONS: u32 = 10_000_000;
 
 /// The most groups a design may have.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// use teistro_research::MAX_GROUPS;
+///
+/// // A label of 64 makes 65 groups.
+/// let mut groups = design.groups.clone();
+/// groups[9] = MAX_GROUPS;
+/// assert_eq!(compare(&matrix, &Design::new(groups), &test).unwrap_err().field(), Some("groups"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub const MAX_GROUPS: u16 = 64;
 
 /// What the labels are compared by.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// // With two groups the chi-square is the case count's square, so the
+/// // two contrasts rank every labelling alike.
+/// let any = GroupTest::new(8, 9_999, Contrast::AnyDifference);
+/// assert_eq!(compare(&matrix, &design, &any)?.rows[0].p, row.p);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
@@ -104,6 +166,27 @@ pub enum Contrast {
 
 /// The direction a case-against-rest test looks in. A directional
 /// hypothesis is declared before the data, never chosen after.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// use teistro_research::Alternative;
+///
+/// // Four or five of the cases: 25 + 1 of the 252 choices.
+/// let greater = GroupTest { alternative: Alternative::Greater, ..test };
+/// assert_eq!(compare(&matrix, &design, &greater)?.rows[0].p.value, 26.0 / 252.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -119,6 +202,31 @@ pub enum Alternative {
 
 /// How many threads count the permutations. The answer is the same bits
 /// for every choice (`research.md` §2.2); only the time differs.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// use std::num::NonZeroU16;
+/// use teistro_research::Parallelism;
+///
+/// // The same bits on any number of threads.
+/// let threads = NonZeroU16::new(2).ok_or_else(|| teistro_core::error::Error::internal("two"))?;
+/// let sampled = GroupTest::new(8, 999, Contrast::CaseVsRest { case: 1 });
+/// let one = compare(&matrix, &design, &sampled)?;
+/// let two = compare(&matrix, &design, &GroupTest { parallelism: Parallelism::Threads(threads), ..sampled })?;
+/// assert_eq!(one, two);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -131,6 +239,14 @@ pub enum Parallelism {
 }
 
 /// Who is in which group, and inside which strata the labels may move.
+///
+/// ```
+/// use teistro_research::Design;
+///
+/// let design: Design = serde_json::from_str(r#"{"groups": [1, 0, 1, 0], "strata": [0, 0, 1, 1]}"#)?;
+/// assert_eq!(design, Design::new(vec![1, 0, 1, 0]).with_strata(vec![0, 0, 1, 1]));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -146,6 +262,13 @@ pub struct Design {
 
 impl Design {
     /// A design of `groups`, one per chart, shuffled across the whole batch.
+    ///
+    /// ```
+    /// use teistro_research::Design;
+    ///
+    /// let design = Design::new(vec![1, 1, 0, 0]);
+    /// assert!(design.strata.is_none());
+    /// ```
     #[must_use]
     pub fn new(groups: Vec<u16>) -> Design {
         Design {
@@ -156,6 +279,25 @@ impl Design {
 
     /// The same design, its labels shuffled only inside `strata`, one key
     /// per chart.
+    ///
+    /// ```
+    /// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+    /// #
+    /// # // Ten charts, the first five cases; the predicate holds on four cases
+    /// # // and one other. 252 ways of choosing five cases, each walked once.
+    /// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+    /// # let mut matrix = Matrix::new(10);
+    /// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+    /// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+    /// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+    /// # let tested = compare(&matrix, &design, &test)?;
+    /// # let row = &tested.rows[0];
+    ///
+    /// // One stratum holding every chart is no stratum at all.
+    /// let one = compare(&matrix, &design.clone().with_strata(vec![0; 10]), &test)?;
+    /// assert_eq!(one.rows[0].p, row.p);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn with_strata(mut self, strata: Vec<u32>) -> Design {
         self.strata = Some(strata);
@@ -164,6 +306,16 @@ impl Design {
 }
 
 /// A permutation test of the design's groups.
+///
+/// ```
+/// use teistro_research::{Contrast, GroupTest};
+///
+/// let asked: GroupTest = serde_json::from_str(
+///     r#"{"seed": 8, "permutations": 9999, "contrast": {"kind": "CASE_VS_REST", "case": 1}}"#,
+/// )?;
+/// assert_eq!(asked, GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 }));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -202,6 +354,13 @@ pub(crate) const fn default_level() -> f64 {
 impl GroupTest {
     /// A two-sided test of `contrast` over `permutations` permutations
     /// drawn from `seed`, at 95% intervals, on one thread.
+    ///
+    /// ```
+    /// use teistro_research::{Alternative, Contrast, GroupTest};
+    ///
+    /// let test = GroupTest::new(8, 9_999, Contrast::AnyDifference);
+    /// assert_eq!((test.alternative, test.level, test.alpha), (Alternative::TwoSided, 0.95, None));
+    /// ```
     #[must_use]
     pub fn new(seed: u64, permutations: u32, contrast: Contrast) -> GroupTest {
         GroupTest {
@@ -218,6 +377,27 @@ impl GroupTest {
 }
 
 /// A predicate's charts in one group.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// use teistro_research::GroupCount;
+///
+/// // Groups in index order: the rest, then the cases.
+/// assert_eq!(row.counts[1], GroupCount { present: 4, absent: 1, unreadable: 0, unstable: 0 });
+/// assert_eq!(row.counts[0].present, 1);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GroupCount {
@@ -233,6 +413,25 @@ pub struct GroupCount {
 }
 
 /// A permutation p-value and its Monte Carlo uncertainty.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// // Walked whole, so exact: 52 of the 252 at least as far from the mean.
+/// assert_eq!(row.p.exceed, 52);
+/// assert!(row.p.low <= row.p.value && row.p.value <= row.p.high);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PValue {
@@ -252,6 +451,24 @@ pub struct PValue {
 
 /// The family's adjusted p-values: every predicate in one request is one
 /// family (`research.md` §1.5).
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// // A family of one: every correction leaves the p where it is.
+/// assert_eq!((row.adjusted.holm, row.adjusted.bonferroni, row.adjusted.bh), (row.p.value, row.p.value, row.p.value));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -271,6 +488,21 @@ pub struct Adjusted {
 }
 
 /// A one-group design's share against what its null expects.
+///
+/// ```
+/// # use teistro_research::{Alternative, Cell, EventTest, PairMatrix, timed};
+/// #
+/// # // Four subjects; the predicate holds for each at its own event and never
+/// # // at another's. Four events pair four subjects 24 ways.
+/// # let mut matrix = PairMatrix::new(4)?;
+/// # matrix.push("at own event", |subject, event| if subject == event { Cell::Present } else { Cell::Absent })?;
+/// # let test = EventTest { alternative: Alternative::Greater, ..EventTest::new(7, 9_999) };
+///
+/// // Every subject at its own event, against a quarter of all pairings.
+/// let expected = timed(&matrix, None, &test)?.rows[0].expected.ok_or_else(|| teistro_core::error::Error::internal("expected"))?;
+/// assert_eq!((expected.observed, expected.expected, expected.ratio), (1.0, 0.25, Some(4.0)));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Expectation {
@@ -286,6 +518,26 @@ pub struct Expectation {
 }
 
 /// Which methods put a predicate at or under the caller's alpha.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// // Under an alpha of 0.25 the raw p of 52/252 falls, and so does every
+/// // correction of a family of one.
+/// let under = compare(&matrix, &design, &GroupTest { alpha: Some(0.25), ..test })?.rows[0].under_alpha;
+/// assert!(under.is_some_and(|under| under.raw && under.holm && under.max_t));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[allow(
     clippy::struct_excessive_bools,
     reason = "one answer per method, each independent of the others"
@@ -309,6 +561,25 @@ pub struct UnderAlpha {
 }
 
 /// One predicate's answer.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// assert_eq!(row.predicate, "holds");
+/// // A case-against-rest row read on every chart carries its exact p and effect.
+/// assert!(row.exact.is_some() && row.effect.is_some() && row.expected.is_none());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -348,6 +619,24 @@ pub struct PredicateRow {
 }
 
 /// What a test answers: per predicate, never a single verdict.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// assert!(tested.enumerated);
+/// assert_eq!((tested.permutations, tested.resolution), (252, 1.0 / 252.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -654,6 +943,25 @@ impl Contiguous {
 /// Tests whether the design's groups differ on each predicate, by
 /// permuting the labels (within strata when the design has them).
 ///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// // One label per chart, or the design is refused.
+/// let short = Design::new(vec![1, 0]);
+/// assert_eq!(compare(&matrix, &short, &test).unwrap_err().field(), Some("groups"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// `INVALID_ARG` naming the field: fewer than two charts, labels or
@@ -919,6 +1227,26 @@ impl RowContext<'_> {
 }
 
 /// How often one predicate holds in each group.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// use teistro_research::counts;
+///
+/// let table = counts(&matrix, &design)?;
+/// assert_eq!((table.rows[0].predicate.as_str(), table.rows[0].counts.len()), ("holds", 2));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CountRow {
@@ -930,6 +1258,26 @@ pub struct CountRow {
 
 /// How often every predicate holds in each group: a study's first table,
 /// with no null and no shuffle.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// use teistro_research::counts;
+///
+/// // The same counts a test's rows carry, with no shuffle.
+/// assert_eq!(counts(&matrix, &design)?.rows[0].counts, row.counts);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Counts {
@@ -940,6 +1288,26 @@ pub struct Counts {
 /// How often each predicate holds in each of the design's groups, with
 /// the charts it could not be read on and those it is unstable on
 /// counted apart.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// use teistro_research::counts;
+///
+/// assert_eq!(counts(&matrix, &design)?.rows[0].counts[1].present, 4);
+/// assert!(counts(&Matrix::new(10), &design).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -964,6 +1332,24 @@ pub fn counts(matrix: &Matrix, design: &Design) -> Result<Counts, Error> {
 impl Matrix {
     /// Every predicate's cells over the whole batch, as one group: what a
     /// one-group design counts.
+    ///
+    /// ```
+    /// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+    /// #
+    /// # // Ten charts, the first five cases; the predicate holds on four cases
+    /// # // and one other. 252 ways of choosing five cases, each walked once.
+    /// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+    /// # let mut matrix = Matrix::new(10);
+    /// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+    /// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+    /// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+    /// # let tested = compare(&matrix, &design, &test)?;
+    /// # let row = &tested.rows[0];
+    ///
+    /// // Over the whole batch, as one group.
+    /// assert_eq!((matrix.tallies()[0].present, matrix.tallies()[0].absent), (5, 5));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn tallies(&self) -> Vec<GroupCount> {
         let one = vec![0; self.charts()];

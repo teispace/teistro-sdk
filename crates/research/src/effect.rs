@@ -7,6 +7,26 @@ use teistro_core::math;
 use crate::special;
 
 /// An estimate with its interval at the test's confidence level.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// let effect = row.effect.ok_or_else(|| teistro_core::error::Error::internal("an effect"))?;
+/// let case = effect.risk_case;
+/// assert_eq!(case.estimate, 0.8);
+/// assert!(case.low < 0.8 && 0.8 < case.high);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "EffectEstimate"))]
@@ -21,6 +41,27 @@ pub struct Interval {
 
 /// How much commoner a predicate is among the cases than among the rest,
 /// over the charts it was read on.
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// // Four of five cases against one of five others.
+/// let effect = row.effect.ok_or_else(|| teistro_core::error::Error::internal("an effect"))?;
+/// assert!((effect.risk_difference.estimate - 0.6).abs() < 1e-12);
+/// assert_eq!(effect.risk_ratio.map(|ratio| ratio.estimate), Some(4.0));
+/// assert_eq!(effect.odds_ratio, Some(16.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -55,6 +96,27 @@ pub struct Effect {
 }
 
 /// The cases against the rest within strata, pooled (`research.md` §1.6).
+///
+/// ```
+/// # use teistro_research::{Cell, Contrast, Design, GroupTest, Matrix, compare};
+/// #
+/// # // Ten charts, the first five cases; the predicate holds on four cases
+/// # // and one other. 252 ways of choosing five cases, each walked once.
+/// # let cell = |holds: &u8| if *holds == 1 { Cell::Present } else { Cell::Absent };
+/// # let mut matrix = Matrix::new(10);
+/// # matrix.push("holds", &[1, 1, 1, 1, 0, 1, 0, 0, 0, 0].iter().map(cell).collect::<Vec<_>>())?;
+/// # let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+/// # let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
+/// # let tested = compare(&matrix, &design, &test)?;
+/// # let row = &tested.rows[0];
+///
+/// // Pooled only for a design with strata.
+/// assert!(row.effect.is_some_and(|effect| effect.pooled.is_none()));
+/// let strata = design.clone().with_strata(vec![0, 0, 0, 1, 1, 0, 0, 0, 1, 1]);
+/// let pooled = compare(&matrix, &strata, &test)?.rows[0].effect.and_then(|effect| effect.pooled);
+/// assert!(pooled.is_some());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
