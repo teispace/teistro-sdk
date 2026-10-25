@@ -23,6 +23,18 @@ const AULTY: f64 = AULT / DAYSEC / DJY;
 /// catalogue epoch and seen from the observer's barycentric position `pob`
 /// (au); returns the coordinate direction as a BCRS unit vector. A star
 /// with no parallax is placed at infinity, its radial velocity idle.
+///
+/// ```
+/// use teistro_astro::iau::apparent::pmpx;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's t_pmpx: a star carried 8.75 years and seen from (0.9, 0.4, 0.1) au.
+/// let p = pmpx(1.234, 0.789, 1e-5, -2e-5, 1e-2, 10.0, 8.75, &[0.9, 0.4, 0.1]);
+/// assert!(near(p[0], 0.232_813_762_396_030_84));
+/// assert!(near(p[1], 0.665_109_708_539_785_5));
+/// assert!(near(p[2], 0.709_525_776_589_635_98));
+/// ```
 #[must_use]
 #[allow(
     clippy::many_single_char_names,
@@ -77,6 +89,20 @@ pub fn pmpx(
 /// the source (unit), `e` the direction from the body to the observer
 /// (unit), `em` the body-to-observer distance (au) and `dlim` the
 /// deflection limiter; returns the deflected direction.
+///
+/// ```
+/// use teistro_astro::iau::apparent::ld;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's t_ld: Jupiter's mass in solar masses, 8.9 au away.
+/// let p = [-0.763_276_255, -0.608_633_767, -0.216_735_543];
+/// let e = [0.767_004_21, 0.605_629_598, 0.211_937_094];
+/// let bent = ld(0.000_285_74, &p, &p, &e, 8.912_769_83, 3e-10);
+/// assert!(near(bent[0], -0.763_276_254_896_816));
+/// assert!(near(bent[1], -0.608_633_767_082_376_3));
+/// assert!(near(bent[2], -0.216_735_543_132_054_7));
+/// ```
 #[must_use]
 pub fn ld(bm: f64, p: &Vector3, q: &Vector3, e: &Vector3, em: f64, dlim: f64) -> Vector3 {
     // q . (q + e).
@@ -102,6 +128,20 @@ pub fn ld(bm: f64, p: &Vector3, q: &Vector3, e: &Vector3, em: f64, dlim: f64) ->
 /// `p` the direction from the observer to the source (unit), `e` the
 /// direction from the Sun to the observer (unit), `em` the Sun-to-observer
 /// distance (au); the limiter keeps a source behind the Sun finite.
+///
+/// ```
+/// use teistro_astro::iau::apparent::ldsun;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's t_ldsun.
+/// let p = [-0.763_276_255, -0.608_633_767, -0.216_735_543];
+/// let e = [-0.973_644_023, -0.209_255_23, -0.090_716_955_2];
+/// let bent = ldsun(&p, &e, 0.999_809_214);
+/// assert!(near(bent[0], -0.763_276_258_073_141_3));
+/// assert!(near(bent[1], -0.608_633_763_526_264_8));
+/// assert!(near(bent[2], -0.216_735_541_932_232_13));
+/// ```
 #[must_use]
 pub fn ldsun(p: &Vector3, e: &Vector3, em: f64) -> Vector3 {
     let em2 = (em * em).max(1.0);
@@ -114,6 +154,20 @@ pub fn ldsun(p: &Vector3, e: &Vector3, em: f64) -> Vector3 {
 /// `s` the observer's distance from the Sun (au) and `bm1` the reciprocal
 /// Lorenz factor `√(1 − |v|²)`; returns the proper direction, with the
 /// relativistic terms and the Sun's gravitational potential.
+///
+/// ```
+/// use teistro_astro::iau::apparent::ab;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's t_ab: the natural direction, the observer's velocity in units of c.
+/// let pnat = [-0.763_219_685_467_379_5, -0.608_694_539_830_603_8, -0.216_764_085_806_398_83];
+/// let v = [2.104_401_889_365_378_6e-5, -8.910_892_330_442_932e-5, -3.863_371_479_771_657e-5];
+/// let seen = ab(&pnat, &v, 0.999_809_213_957_087_9, 0.999_999_995_062_092_6);
+/// assert!(near(seen[0], -0.763_163_109_421_955_6));
+/// assert!(near(seen[1], -0.608_755_308_250_559_1));
+/// assert!(near(seen[2], -0.216_792_626_936_847_13));
+/// ```
 #[must_use]
 pub fn ab(pnat: &Vector3, v: &Vector3, s: f64, bm1: f64) -> Vector3 {
     let pdv = pdp(pnat, v);
@@ -129,6 +183,18 @@ pub fn ab(pnat: &Vector3, v: &Vector3, s: f64, bm1: f64) -> Vector3 {
 /// The nutation matrix (`eraNumat`) from the mean obliquity `epsa` and the
 /// nutation in longitude and obliquity `dpsi`, `deps`, radians: mean
 /// equator and equinox of date to true.
+///
+/// ```
+/// use teistro_astro::iau::apparent::numat;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's t_numat.
+/// let r = numat(0.409_078_976_335_650_99, -0.963_090_910_711_558_24e-5, 0.406_323_917_400_167_9e-4);
+/// assert!(near(r[0][0], 0.999_999_999_953_622_8));
+/// assert!(near(r[1][2], -0.406_324_086_536_185_8e-4));
+/// assert!(near(r[2][2], 0.999_999_999_167_166));
+/// ```
 #[must_use]
 pub fn numat(epsa: f64, dpsi: f64, deps: f64) -> Matrix3 {
     let mut rmatn = ir();

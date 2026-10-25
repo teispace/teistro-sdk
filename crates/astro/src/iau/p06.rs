@@ -20,6 +20,15 @@ use super::{DAS2R, DJM00, DJM0, centuries, obl06};
 /// mean obliquity of date, the planetary precession and the equatorial
 /// precession angles, the general precession in longitude, and the
 /// Fukushima-Williams angles.
+///
+/// ```
+/// use teistro_astro::iau::p06::p06e;
+///
+/// // At J2000.0 the obliquity of date is the mean obliquity of the epoch.
+/// let angles = p06e(2_451_545.0, 0.0);
+/// assert!((angles.epsa - angles.eps0).abs() < 1e-15);
+/// assert!(angles.psia.abs() < 1e-15);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PrecessionAngles {
     /// The obliquity at J2000.0.
@@ -68,6 +77,19 @@ fn poly(t: f64, coefficients: &[f64], leading_t: bool) -> f64 {
 }
 
 /// The IAU 2006 precession angles (`eraP06e`).
+///
+/// ```
+/// use teistro_astro::iau::p06::p06e;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-14;
+///
+///
+/// // ERFA's test date, MJD 52541.
+/// let angles = p06e(2_400_000.5, 52_541.0);
+/// assert!(near(angles.eps0, 0.409_092_600_600_582_87));
+/// assert!(near(angles.psia, 0.666_436_963_019_161_3e-3));
+/// assert!(near(angles.za, 0.292_178_984_665_179_05e-3));
+/// assert!(near(angles.psi, 0.666_446_480_748_092e-3));
+/// ```
 #[must_use]
 #[allow(
     clippy::too_many_lines,
@@ -258,6 +280,17 @@ pub fn p06e(date1: f64, date2: f64) -> PrecessionAngles {
 
 /// The IAU 2006 bias-precession Fukushima-Williams angles at a TT date
 /// (`eraPfw06`): γ̄, φ̄, ψ̄ and the mean obliquity, radians.
+///
+/// ```
+/// use teistro_astro::iau::p06::pfw06;
+///
+/// // ERFA's test date, MJD 50123.9999.
+/// let (gamb, phib, psib, epsa) = pfw06(2_400_000.5, 50_123.999_9);
+/// assert!((gamb - -0.224_338_767_099_799_57e-5).abs() < 1e-16);
+/// assert!((phib - 0.409_101_460_239_131_3).abs() < 1e-12);
+/// assert!((psib - -0.950_195_417_801_303_2e-3).abs() < 1e-14);
+/// assert!((epsa - 0.409_101_431_658_736_75).abs() < 1e-12);
+/// ```
 #[must_use]
 pub fn pfw06(date1: f64, date2: f64) -> (f64, f64, f64, f64) {
     let t = centuries(date1, date2);
@@ -302,6 +335,17 @@ pub fn pfw06(date1: f64, date2: f64) -> (f64, f64, f64, f64) {
 
 /// A rotation matrix from Fukushima-Williams angles (`eraFw2m`): the
 /// four rotations in ERFA's order.
+///
+/// ```
+/// use teistro_astro::iau::p06::fw2m;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// let r = fw2m(-0.224_338_767_099_799_24e-5, 0.409_101_460_239_131_3, -0.950_195_417_801_301_5e-3, 0.409_101_431_658_736_75);
+/// assert!(near(r[0][0], 0.999_999_550_517_600_7));
+/// assert!(near(r[1][2], -0.136_175_249_688_710_03e-6));
+/// assert!(near(r[2][2], 0.999_999_928_567_997_2));
+/// ```
 #[must_use]
 pub fn fw2m(gamb: f64, phib: f64, psi: f64, eps: f64) -> Matrix3 {
     let mut r = ir();
@@ -314,6 +358,16 @@ pub fn fw2m(gamb: f64, phib: f64, psi: f64, eps: f64) -> Matrix3 {
 
 /// The IAU 2006 bias-precession matrix, GCRS to mean equator and equinox
 /// of date (`eraPmat06`).
+///
+/// ```
+/// use teistro_astro::iau::p06::{fw2m, pfw06, pmat06};
+///
+/// let (a, b) = (2_400_000.5, 50_123.999_9);
+/// assert!((pmat06(a, b)[0][1] - 0.869_540_461_734_820_8e-3).abs() < 1e-14);
+/// // The Fukushima-Williams angles of date, as a matrix.
+/// let (gamb, phib, psib, epsa) = pfw06(a, b);
+/// assert_eq!(pmat06(a, b), fw2m(gamb, phib, psib, epsa));
+/// ```
 #[must_use]
 pub fn pmat06(date1: f64, date2: f64) -> Matrix3 {
     let (gamb, phib, psib, epsa) = pfw06(date1, date2);
@@ -323,6 +377,20 @@ pub fn pmat06(date1: f64, date2: f64) -> Matrix3 {
 /// The frame bias matrix, the precession matrix and their product
 /// (`eraBp06`): `rb` GCRS to J2000.0, `rp` J2000.0 to mean of date, `rbp`
 /// GCRS to mean of date.
+///
+/// ```
+/// use teistro_astro::iau::p06::{bp06, pmat06};
+/// use teistro_astro::iau::vector::rxr;
+///
+/// let (a, b) = (2_400_000.5, 50_123.999_9);
+/// let (rb, rp, rbp) = bp06(a, b);
+/// assert!((rb[0][2] - 0.805_621_397_761_318_6e-7).abs() < 1e-14);
+/// assert!((rp[0][1] - 0.869_611_257_885_540_5e-3).abs() < 1e-14);
+/// assert_eq!(rbp, pmat06(a, b));
+/// // The bias then the precession.
+/// let product = rxr(&rp, &rb);
+/// assert!((product[0][1] - rbp[0][1]).abs() < 1e-15);
+/// ```
 #[must_use]
 pub fn bp06(date1: f64, date2: f64) -> (Matrix3, Matrix3, Matrix3) {
     // The bias matrix is the bias-precession matrix at J2000.0 itself.
@@ -336,6 +404,16 @@ pub fn bp06(date1: f64, date2: f64) -> (Matrix3, Matrix3, Matrix3) {
 /// The frame bias components of the IAU 2000 precession-nutation models
 /// (`eraBi00`): the corrections in longitude and obliquity and the ICRS
 /// right ascension of the J2000.0 equinox, radians.
+///
+/// ```
+/// use teistro_astro::iau::{DAS2R, p06::bi00};
+///
+/// // In milliarcseconds: -41.775, -6.8192 and -14.6.
+/// let (dpsibi, depsbi, dra) = bi00();
+/// assert!((dpsibi / DAS2R * 1e3 - -41.775).abs() < 1e-9);
+/// assert!((depsbi / DAS2R * 1e3 - -6.8192).abs() < 1e-9);
+/// assert!((dra / DAS2R * 1e3 - -14.6).abs() < 1e-9);
+/// ```
 #[must_use]
 pub const fn bi00() -> (f64, f64, f64) {
     (-0.041_775 * DAS2R, -0.006_819_2 * DAS2R, -0.0146 * DAS2R)

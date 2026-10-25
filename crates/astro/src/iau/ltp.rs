@@ -38,6 +38,18 @@ fn series(t: f64, periodic: &[[f64; 5]], polynomial: [&[f64]; 2]) -> (f64, f64) 
 
 /// The ecliptic pole as a unit vector in the J2000.0 mean equatorial triad
 /// at a Julian epoch (`eraLtpecl`).
+///
+/// ```
+/// use teistro_astro::iau::ltp::ltpecl;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-14;
+///
+///
+/// // ERFA's test epoch, 1500 BC.
+/// let pole = ltpecl(-1500.0);
+/// assert!(near(pole[0], 0.476_862_567_647_709_65e-3));
+/// assert!(near(pole[1], -0.405_225_953_309_187_5));
+/// assert!(near(pole[2], 0.914_216_440_109_644_8));
+/// ```
 #[must_use]
 pub fn ltpecl(epj: f64) -> Vector3 {
     const EPS0: f64 = 84_381.406 * DAS2R;
@@ -92,6 +104,18 @@ pub fn ltpecl(epj: f64) -> Vector3 {
 
 /// The equator pole as a unit vector in the J2000.0 mean equatorial triad
 /// at a Julian epoch (`eraLtpequ`).
+///
+/// ```
+/// use teistro_astro::iau::ltp::ltpequ;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-14;
+///
+///
+/// // ERFA's test epoch, 2500 BC.
+/// let pole = ltpequ(-2500.0);
+/// assert!(near(pole[0], -0.358_665_256_023_732_67));
+/// assert!(near(pole[1], -0.199_697_891_077_112_85));
+/// assert!(near(pole[2], 0.911_855_244_225_081_96));
+/// ```
 #[must_use]
 pub fn ltpequ(epj: f64) -> Vector3 {
     const PERIODIC: [[f64; 5]; 14] = [
@@ -173,6 +197,17 @@ pub fn ltpequ(epj: f64) -> Vector3 {
 
 /// The long-term precession matrix, J2000.0 mean equator and equinox to
 /// the mean of a Julian epoch (`eraLtp`).
+///
+/// ```
+/// use teistro_astro::iau::ltp::ltp;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-14;
+///
+///
+/// let rp = ltp(1666.666);
+/// assert!(near(rp[0][0], 0.996_704_414_115_921_4));
+/// assert!(near(rp[1][2], -0.120_576_884_272_359_33e-2));
+/// assert!(near(rp[2][2], 0.999_475_024_670_401_1));
+/// ```
 #[must_use]
 pub fn ltp(epj: f64) -> Matrix3 {
     let peqr = ltpequ(epj);
@@ -184,6 +219,17 @@ pub fn ltp(epj: f64) -> Matrix3 {
 
 /// The long-term precession matrix with the frame bias, GCRS to the mean
 /// of a Julian epoch (`eraLtpb`).
+///
+/// ```
+/// use teistro_astro::iau::ltp::ltpb;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-14;
+///
+///
+/// let rpb = ltpb(1666.666);
+/// assert!(near(rpb[0][0], 0.996_704_416_772_327_2));
+/// assert!(near(rpb[1][2], -0.120_574_186_591_124_32e-2));
+/// assert!(near(rpb[2][2], 0.999_475_022_022_243_9));
+/// ```
 #[must_use]
 pub fn ltpb(epj: f64) -> Matrix3 {
     const DX: f64 = -0.016_617 * DAS2R;
@@ -205,6 +251,15 @@ pub fn ltpb(epj: f64) -> Matrix3 {
 /// the ecliptic at a Julian epoch, radians: Vondrák, Capitaine and Wallace
 /// (2011), equations 10 with Table 5 (a cubic and ten periodic terms each).
 /// At J2000.0 the obliquity is the IAU 2006 value, 84381.406″.
+///
+/// ```
+/// use teistro_astro::iau::{DAS2R, ltp::ltpeps};
+///
+/// // At J2000.0: no general precession yet, and the IAU 2006 obliquity, 84381.406″.
+/// let (pa, eps) = ltpeps(2000.0);
+/// assert!(pa.abs() < 1e-5 * DAS2R);
+/// assert!((eps - 84_381.406 * DAS2R).abs() < 1e-5 * DAS2R);
+/// ```
 #[must_use]
 pub fn ltpeps(epj: f64) -> (f64, f64) {
     const PERIODIC: [[f64; 5]; 10] = [

@@ -40,12 +40,28 @@ pub enum Ellipsoid {
 
 impl Ellipsoid {
     /// Every ellipsoid, in ERFA's identifier order.
+    ///
+    /// ```
+    /// use teistro_astro::iau::earth::Ellipsoid;
+    ///
+    /// assert_eq!(Ellipsoid::ALL.map(Ellipsoid::key), ["WGS84", "GRS80", "WGS72"]);
+    /// ```
     pub const ALL: [Ellipsoid; 3] = [Ellipsoid::Wgs84, Ellipsoid::Grs80, Ellipsoid::Wgs72];
 
     /// The equatorial radius in metres and the flattening (`eraEform`).
     /// ERFA returns these through pointers with a status for an
     /// identifier it does not know; the enumeration makes that status
     /// unreachable, so there is none.
+    ///
+    /// ```
+    /// use teistro_astro::iau::earth::Ellipsoid;
+    ///
+    /// // GRS80 and WGS84 share a radius and differ in the flattening's eleventh digit.
+    /// let (a, f) = Ellipsoid::Grs80.parameters();
+    /// assert_eq!(a, 6_378_137.0);
+    /// assert!((f - 0.335_281_068_118_231_9e-2).abs() < 1e-18);
+    /// assert_eq!(Ellipsoid::Wgs72.parameters().0, 6_378_135.0);
+    /// ```
     #[must_use]
     pub const fn parameters(self) -> (f64, f64) {
         match self {
@@ -56,6 +72,12 @@ impl Ellipsoid {
     }
 
     /// The name stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_astro::iau::earth::Ellipsoid;
+    ///
+    /// assert_eq!(Ellipsoid::default().key(), "WGS84");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -75,6 +97,17 @@ impl Ellipsoid {
 /// ERFA's `-1`. The quantity it guards is a sum of squares, so no
 /// flattening and latitude a caller can write actually reaches it; the
 /// refusal is kept because the signature takes both.
+///
+/// ```
+/// use teistro_astro::iau::earth::gd2gce;
+///
+/// // ERFA's t_gd2gce.
+/// let [x, y, z] = gd2gce(6_378_136.0, 0.003_352_8, 3.1, -0.5, 2500.0).ok_or("inverts")?;
+/// assert!((x - -5_598_999.666_511_633).abs() < 1e-7);
+/// assert!((y - 233_011.635_146_305_7).abs() < 1e-7);
+/// assert!((z - -3_040_909.051_731_413).abs() < 1e-7);
+/// # Ok::<(), &str>(())
+/// ```
 #[must_use]
 #[allow(
     clippy::many_single_char_names,
@@ -105,6 +138,18 @@ pub fn gd2gce(a: f64, f: f64, elong: f64, phi: f64, height: f64) -> Option<Vecto
 /// (`eraGd2gc`), metres. ERFA's two error returns — an unknown
 /// identifier and a flattening it cannot invert — are an enumeration and
 /// an ellipsoid whose flattening always inverts, so this cannot fail.
+///
+/// ```
+/// use teistro_astro::iau::earth::{Ellipsoid, gd2gc};
+///
+/// // ERFA's t_gd2gc on WGS84.
+/// let [x, y, z] = gd2gc(Ellipsoid::Wgs84, 3.1, -0.5, 2500.0);
+/// assert!((x - -5_599_000.557_704_995).abs() < 1e-7);
+/// assert!((y - 233_011.672_234_792).abs() < 1e-7);
+/// assert!((z - -3_040_909.470_698_336).abs() < 1e-7);
+/// // On the equator at Greenwich, one equatorial radius out.
+/// assert_eq!(gd2gc(Ellipsoid::Wgs84, 0.0, 0.0, 0.0), [6_378_137.0, 0.0, 0.0]);
+/// ```
 #[must_use]
 pub fn gd2gc(ellipsoid: Ellipsoid, elong: f64, phi: f64, height: f64) -> Vector3 {
     let (a, f) = ellipsoid.parameters();
@@ -115,6 +160,13 @@ pub fn gd2gc(ellipsoid: Ellipsoid, elong: f64, phi: f64, height: f64) -> Vector3
 /// positioning of the terrestrial intermediate origin on the equator,
 /// −47 microarcseconds a century, which is the only part of it that is
 /// predictable.
+///
+/// ```
+/// use teistro_astro::iau::earth::sp00;
+///
+/// assert!((sp00(2_400_000.5, 52_541.0) - -0.621_669_846_998_102e-11).abs() < 1e-12);
+/// assert_eq!(sp00(2_451_545.0, 0.0), 0.0);
+/// ```
 #[must_use]
 pub fn sp00(date1: f64, date2: f64) -> f64 {
     // Interval between fundamental epoch J2000.0 and current date (JC).
@@ -126,6 +178,16 @@ pub fn sp00(date1: f64, date2: f64) -> f64 {
 /// The polar motion matrix (`eraPom00`) from the pole's coordinates and
 /// the TIO locator, all radians: the rotation from the international
 /// terrestrial system to the terrestrial intermediate one.
+///
+/// ```
+/// use teistro_astro::iau::earth::pom00;
+///
+/// // ERFA's t_pom00.
+/// let r = pom00(2.550_602_38e-7, 1.860_359_247e-6, -0.136_717_458_072_889_15e-10);
+/// assert!((r[0][2] - 0.255_060_237_999_997_23e-6).abs() < 1e-16);
+/// assert!((r[1][2] - -0.186_035_924_699_886_64e-5).abs() < 1e-16);
+/// assert!((r[2][2] - 0.999_999_999_998_237).abs() < 1e-12);
+/// ```
 #[must_use]
 pub fn pom00(xp: f64, yp: f64, sp: f64) -> Matrix3 {
     // Construct the matrix.
@@ -139,6 +201,13 @@ pub fn pom00(xp: f64, yp: f64, sp: f64) -> Matrix3 {
 /// The Earth's rotation rate in radians per UT1 second, the constant
 /// `eraPvtob` carries: the sidereal rate, so a station returns to the
 /// same direction in a sidereal day rather than a solar one.
+///
+/// ```
+/// use teistro_astro::iau::earth::ROTATION_RATE;
+///
+/// // About 7.292e-5 radians a second: a turn a sidereal day.
+/// assert!((ROTATION_RATE - 7.292_115e-5).abs() < 1e-10);
+/// ```
 #[allow(
     clippy::excessive_precision,
     reason = "the ratio is quoted as ERFA writes it"
@@ -155,6 +224,18 @@ pub const ROTATION_RATE: f64 = 1.002_737_811_911_354_48 * D2PI / DAYSEC;
 /// in radians. Pass the Earth rotation angle as ERFA does for a
 /// celestial-intermediate answer, or Greenwich apparent sidereal time
 /// for one in the true equator and equinox of date.
+///
+/// ```
+/// use teistro_astro::iau::earth::pvtob;
+///
+/// // ERFA's t_pvtob.
+/// let [p, v] = pvtob(2.0, 0.5, 3000.0, 1e-6, -0.5e-6, 1e-8, 5.0);
+/// assert!((p[0] - 4_225_081.367_071_159).abs() < 1e-5 && (p[2] - 3_041_149.399_241_261).abs() < 1e-5);
+/// assert!((v[0] - -268.491_538_936_599_9).abs() < 1e-9 && v[2] == 0.0);
+/// // On the equator, 465 m/s eastward.
+/// let [_, equator] = pvtob(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+/// assert!((equator[1] - 465.101).abs() < 1e-3);
+/// ```
 #[must_use]
 #[allow(
     clippy::many_single_char_names,

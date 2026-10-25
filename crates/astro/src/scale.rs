@@ -10,6 +10,12 @@ use teistro_core::quantity::{JulianDay, Tt, Ut1};
 use crate::delta_t::{DeltaT, DeltaTModel, delta_t};
 
 /// Seconds in a day.
+///
+/// ```
+/// use teistro_astro::scale::SECONDS_PER_DAY;
+///
+/// assert_eq!(SECONDS_PER_DAY / 3600.0, 24.0);
+/// ```
 pub const SECONDS_PER_DAY: f64 = 86_400.0;
 
 /// TT from UT1 by adding Delta T.
@@ -33,6 +39,20 @@ pub fn tt_from_ut1(instant: JulianDay<Ut1>, delta_t: &DeltaT) -> JulianDay<Tt> {
 /// converges on (one refinement, which is exact to a microsecond because
 /// Delta T changes by under a second a year).
 ///
+/// ```
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_astro::scale::{tt_of, ut1_from_tt};
+/// use teistro_core::quantity::{JulianDay, Ut1};
+///
+/// let ut1 = JulianDay::<Ut1>::literal(2_451_544.5);
+/// let (tt, _) = tt_of(ut1, DeltaTModel::TableThenModel)?;
+/// // Back again, to a microsecond.
+/// let (back, applied) = ut1_from_tt(tt, DeltaTModel::TableThenModel)?;
+/// assert!((back.get() - ut1.get()).abs() * 86_400.0 < 1e-6);
+/// assert!(applied.seconds > 63.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A model that cannot answer (`delta_t`).
@@ -48,6 +68,19 @@ pub fn ut1_from_tt(
 }
 
 /// TT from a UT1 instant under a model, with the Delta T applied.
+///
+/// ```
+/// use teistro_astro::delta_t::{DeltaTModel, DeltaTSource};
+/// use teistro_astro::scale::tt_of;
+/// use teistro_core::quantity::{JulianDay, Ut1};
+///
+/// let ut1 = JulianDay::<Ut1>::literal(2_451_544.5);
+/// let (tt, applied) = tt_of(ut1, DeltaTModel::Custom { seconds: 64.0 })?;
+/// assert_eq!(applied.source, DeltaTSource::Custom);
+/// // To the resolution of a Julian day near 2.45 million, some 4e-5 s.
+/// assert!(((tt.get() - ut1.get()) * 86_400.0 - 64.0).abs() < 1e-4);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -33,6 +33,38 @@ use crate::scale::tt_of;
 /// instant rather than once for the window: the ayanamsha moves about
 /// 0.00014 degrees a day, which over a four-day search is two seconds of
 /// the Moon's time — wider than the tolerance the corpus declares.
+///
+/// ```
+/// # use teistro_astro::events::Longitudes;
+/// # use teistro_core::error::Error;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # struct Still;
+/// # impl Longitudes for Still {
+/// #     fn longitude_and_speed(&self, _: Body, _: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
+/// #         Ok((100.0, 1.0))
+/// #     }
+/// #     fn describe(&self) -> String {
+/// #         "still".to_owned()
+/// #     }
+/// # }
+///
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_astro::precession::PrecessionModel;
+/// use teistro_astro::sidereal::{Sidereal, Zodiac};
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_core::settings::AyanamshaBasis;
+///
+/// let lahiri = Zodiac::of(Some(Ayanamsha::Lahiri.into()), AyanamshaBasis::Mean, PrecessionModel::Vondrak2011, DeltaTModel::TableThenModel);
+/// // 100° tropical in 2000 is about 76.14° in Lahiri's zodiac.
+/// let sidereal = Sidereal::over(&Still, lahiri);
+/// let (longitude, speed) = sidereal.longitude_and_speed(Body::Sun, JulianDay::<Ut1>::J2000)?;
+/// assert!((longitude - (100.0 - 23.857)).abs() < 0.002);
+/// // Less the ayanamsha's own 50″ a year.
+/// assert!(speed < 1.0 && speed > 0.9999);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Debug)]
 pub struct Sidereal<'a, S: Longitudes + ?Sized> {
     /// The source the provider answers in.
@@ -49,6 +81,36 @@ pub struct Sidereal<'a, S: Longitudes + ?Sized> {
 
 impl<'a, S: Longitudes + ?Sized> Sidereal<'a, S> {
     /// A tropical source read in `zodiac`.
+    ///
+    /// ```
+    /// # use teistro_astro::events::Longitudes;
+    /// # use teistro_core::error::Error;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_port_ephemeris::Body;
+    /// #
+    /// # struct Still;
+    /// # impl Longitudes for Still {
+    /// #     fn longitude_and_speed(&self, _: Body, _: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
+    /// #         Ok((100.0, 1.0))
+    /// #     }
+    /// #     fn describe(&self) -> String {
+    /// #         "still".to_owned()
+    /// #     }
+    /// # }
+    ///
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_astro::sidereal::{Sidereal, Zodiac};
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::AyanamshaBasis;
+    ///
+    /// // No ayanamsha: the tropical reading as it is.
+    /// let tropical = Zodiac::of(None, AyanamshaBasis::Mean, PrecessionModel::Vondrak2011, DeltaTModel::TableThenModel);
+    /// let reading = Sidereal::over(&Still, tropical);
+    /// assert_eq!(reading.longitude_and_speed(Body::Moon, JulianDay::<Ut1>::J2000)?, (100.0, 1.0));
+    /// assert_eq!(reading.describe(), "still");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn over(tropical: &'a S, zodiac: Zodiac) -> Sidereal<'a, S> {
         Sidereal {
@@ -163,6 +225,20 @@ impl<S: Longitudes + ?Sized> Longitudes for Sidereal<'_, S> {
 
 /// A zodiac to read longitudes in: which ayanamsha, on which basis, under
 /// which models.
+///
+/// ```
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_astro::precession::PrecessionModel;
+/// use teistro_astro::sidereal::{Sidereal, Zodiac};
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_core::settings::AyanamshaBasis;
+///
+/// use teistro_astro::ayanamsha::Basis;
+///
+/// let lahiri = Zodiac::of(Some(Ayanamsha::Lahiri.into()), AyanamshaBasis::Mean, PrecessionModel::Vondrak2011, DeltaTModel::TableThenModel);
+/// assert_eq!(lahiri.basis, Basis::Mean);
+/// assert!(lahiri.ayanamsha.is_some());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Zodiac {
     /// The ayanamsha the day's limbs are measured from, or `None` for a
@@ -185,6 +261,37 @@ impl Zodiac {
     /// one, and the two are 18.46 arcseconds apart — which for the Sun is
     /// about seven minutes of time, and for a solar return about two
     /// degrees of lagna (`03-design/annual-chart-measured.md`).
+    ///
+    /// ```
+    /// # use teistro_astro::events::Longitudes;
+    /// # use teistro_core::error::Error;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_port_ephemeris::Body;
+    /// #
+    /// # struct Still;
+    /// # impl Longitudes for Still {
+    /// #     fn longitude_and_speed(&self, _: Body, _: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
+    /// #         Ok((100.0, 1.0))
+    /// #     }
+    /// #     fn describe(&self) -> String {
+    /// #         "still".to_owned()
+    /// #     }
+    /// # }
+    ///
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_astro::sidereal::{Sidereal, Zodiac};
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::AyanamshaBasis;
+    ///
+    /// // The nutated basis moves the zodiac by the nutation in longitude, -13.9″ in 2000.
+    /// let zodiac = |basis| Zodiac::of(Some(Ayanamsha::Lahiri.into()), basis, PrecessionModel::Vondrak2011, DeltaTModel::TableThenModel);
+    /// let at = JulianDay::<Ut1>::J2000;
+    /// let (mean, _) = Sidereal::over(&Still, zodiac(AyanamshaBasis::Mean)).longitude_and_speed(Body::Sun, at)?;
+    /// let (nutated, _) = Sidereal::over(&Still, zodiac(AyanamshaBasis::True)).longitude_and_speed(Body::Sun, at)?;
+    /// assert!(((nutated - mean) * 3600.0 - 13.9).abs() < 0.3);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn of(
         ayanamsha: Option<AyanamshaChoice>,

@@ -109,6 +109,15 @@ impl Default for Lockstep<'_> {
 
 impl<'s> Lockstep<'s> {
     /// A run with no search in it yet.
+    ///
+    /// ```
+    /// use teistro_astro::lockstep::Lockstep;
+    ///
+    /// // Nothing waits, so nothing is asked.
+    /// let lockstep = Lockstep::new();
+    /// let answer = |n: u8| async move { n };
+    /// assert_eq!(lockstep.run([answer(1), answer(2)]), [1, 2]);
+    /// ```
     #[must_use]
     pub const fn new() -> Lockstep<'s> {
         Lockstep {
@@ -143,6 +152,27 @@ impl<'s> Lockstep<'s> {
     /// the searches still going, asks each source once a body for every
     /// instant they wait on, and hands each its share. The outputs come
     /// back in the order the searches were given.
+    ///
+    /// ```
+    /// use teistro_astro::completion::Completion;
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::lockstep::Lockstep;
+    /// use teistro_astro::sky::ApparentPositions;
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_core::settings::OverridePolicy;
+    /// use teistro_port_ephemeris::{Body, CountingProvider, TestProvider};
+    ///
+    /// let provider = CountingProvider::new(TestProvider::new());
+    /// let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// let lockstep = Lockstep::new();
+    /// // Three searches, each reading the Moon once: one request for all three.
+    /// let days = [0.0, 1.0, 2.0].map(|d| JulianDay::<Ut1>::literal(2_460_000.5 + d));
+    /// let sky: &dyn ApparentPositions = &sky;
+    /// let read = lockstep.run(days.iter().map(|day| lockstep.apparent(sky, Body::Moon, core::slice::from_ref(day))));
+    /// assert_eq!(read.len(), 3);
+    /// assert!(read.iter().all(Result::is_ok));
+    /// assert_eq!(provider.calls().positions, 1);
+    /// ```
     pub fn run<'f, T, F>(&self, searches: impl IntoIterator<Item = F>) -> Vec<T>
     where
         F: Future<Output = T> + 'f,

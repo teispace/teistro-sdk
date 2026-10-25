@@ -40,6 +40,27 @@ use crate::iau::{AULT, DAYSEC, DEG2RAD, DJ00, DJC, RAD2DEG};
 use crate::rise_set::{AU_KM, Disc, EARTH_EQUATORIAL_RADIUS_KM};
 
 /// A position in ecliptic coordinates of date with its distance.
+///
+/// ```
+/// # use teistro_astro::phenomena::{EclipticPosition, Geometry, Phenomena};
+/// # use teistro_core::quantity::{JulianDay, Tt};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # // A full Moon: opposite the Sun, a little off the ecliptic.
+/// # let full = Geometry {
+/// #     body: EclipticPosition::new(180.0, 1.0, 0.002_57),
+/// #     sun: EclipticPosition::new(0.0, 0.0, 1.0),
+/// #     body_from_sun: None,
+/// # };
+/// # let at = JulianDay::<Tt>::literal(2_451_545.0);
+/// # let moon = Phenomena::from_geometry(Body::Moon, &full, at)?;
+///
+/// assert_eq!(full.body.lon_deg, 180.0);
+/// // A negative distance is refused, naming the position.
+/// let behind = Geometry { sun: EclipticPosition::new(0.0, 0.0, -1.0), ..full };
+/// assert_eq!(Phenomena::from_geometry(Body::Moon, &behind, at).unwrap_err().field(), Some("sun"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct EclipticPosition {
     /// Longitude, degrees.
@@ -52,6 +73,14 @@ pub struct EclipticPosition {
 
 impl EclipticPosition {
     /// A position from its parts.
+    ///
+    /// ```
+    /// use teistro_astro::phenomena::EclipticPosition;
+    ///
+    /// let point = EclipticPosition::new(10.0, 0.0, 0.0);
+    /// // A point without a distance has none.
+    /// assert_eq!(point.dist_au, 0.0);
+    /// ```
     #[must_use]
     pub const fn new(lon_deg: f64, lat_deg: f64, dist_au: f64) -> EclipticPosition {
         EclipticPosition {
@@ -93,6 +122,27 @@ impl EclipticPosition {
 /// The geometry a body's phenomena are read from: the body and the Sun as
 /// the observer sees them (apparent, ecliptic of date), and the body from
 /// the Sun at the instant the light now arriving left it.
+///
+/// ```
+/// # use teistro_astro::phenomena::{EclipticPosition, Geometry, Phenomena};
+/// # use teistro_core::quantity::{JulianDay, Tt};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # // A full Moon: opposite the Sun, a little off the ecliptic.
+/// # let full = Geometry {
+/// #     body: EclipticPosition::new(180.0, 1.0, 0.002_57),
+/// #     sun: EclipticPosition::new(0.0, 0.0, 1.0),
+/// #     body_from_sun: None,
+/// # };
+/// # let at = JulianDay::<Tt>::literal(2_451_545.0);
+/// # let moon = Phenomena::from_geometry(Body::Moon, &full, at)?;
+///
+/// use teistro_astro::phenomena::HeliocentricLeg;
+///
+/// // No heliocentric leg given: the difference of the two apparent vectors.
+/// assert_eq!(moon.heliocentric_leg, HeliocentricLeg::FromGeocentric);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Geometry {
     /// The body from the observer.
@@ -106,6 +156,28 @@ pub struct Geometry {
 }
 
 /// Where the Sun-to-body leg of the geometry came from.
+///
+/// ```
+/// # use teistro_astro::phenomena::{EclipticPosition, Geometry, Phenomena};
+/// # use teistro_core::quantity::{JulianDay, Tt};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # // A full Moon: opposite the Sun, a little off the ecliptic.
+/// # let full = Geometry {
+/// #     body: EclipticPosition::new(180.0, 1.0, 0.002_57),
+/// #     sun: EclipticPosition::new(0.0, 0.0, 1.0),
+/// #     body_from_sun: None,
+/// # };
+/// # let at = JulianDay::<Tt>::literal(2_451_545.0);
+/// # let moon = Phenomena::from_geometry(Body::Moon, &full, at)?;
+///
+/// use teistro_astro::phenomena::HeliocentricLeg;
+///
+/// let given = Geometry { body_from_sun: Some(EclipticPosition::new(180.0, 0.0, 1.002_57)), ..full };
+/// let read = Phenomena::from_geometry(Body::Moon, &given, at)?;
+/// assert_eq!(read.heliocentric_leg, HeliocentricLeg::Provider);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum HeliocentricLeg {
     /// The provider's heliocentric position at the retarded instant.
@@ -117,6 +189,27 @@ pub enum HeliocentricLeg {
 
 /// The phase of a body: the angle at the body between the Sun and the
 /// observer, and the fraction of its disc that is lit.
+///
+/// ```
+/// # use teistro_astro::phenomena::{EclipticPosition, Geometry, Phenomena};
+/// # use teistro_core::quantity::{JulianDay, Tt};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # // A full Moon: opposite the Sun, a little off the ecliptic.
+/// # let full = Geometry {
+/// #     body: EclipticPosition::new(180.0, 1.0, 0.002_57),
+/// #     sun: EclipticPosition::new(0.0, 0.0, 1.0),
+/// #     body_from_sun: None,
+/// # };
+/// # let at = JulianDay::<Tt>::literal(2_451_545.0);
+/// # let moon = Phenomena::from_geometry(Body::Moon, &full, at)?;
+///
+/// // Almost wholly lit, the phase angle only a degree.
+/// let phase = moon.phase.ok_or("the Moon has a phase")?;
+/// assert!(phase.angle_deg < 1.5);
+/// assert!(phase.illuminated_fraction > 0.999);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Phase {
     /// The phase angle, degrees, 0 at full and 180 at new.
@@ -126,6 +219,27 @@ pub struct Phase {
 }
 
 /// What a body looks like from the observer.
+///
+/// ```
+/// # use teistro_astro::phenomena::{EclipticPosition, Geometry, Phenomena};
+/// # use teistro_core::quantity::{JulianDay, Tt};
+/// # use teistro_port_ephemeris::Body;
+/// #
+/// # // A full Moon: opposite the Sun, a little off the ecliptic.
+/// # let full = Geometry {
+/// #     body: EclipticPosition::new(180.0, 1.0, 0.002_57),
+/// #     sun: EclipticPosition::new(0.0, 0.0, 1.0),
+/// #     body_from_sun: None,
+/// # };
+/// # let at = JulianDay::<Tt>::literal(2_451_545.0);
+/// # let moon = Phenomena::from_geometry(Body::Moon, &full, at)?;
+///
+/// assert!((moon.elongation_deg - 179.0).abs() < 0.01);
+/// // The full Moon's visual magnitude, about −12.7.
+/// let magnitude = moon.magnitude.ok_or("a magnitude")?;
+/// assert!((magnitude - -12.7).abs() < 0.3);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Phenomena {
     /// The body.
@@ -148,6 +262,25 @@ pub struct Phenomena {
 
 impl Phenomena {
     /// The apparent diameter, degrees.
+    ///
+    /// ```
+    /// # use teistro_astro::phenomena::{EclipticPosition, Geometry, Phenomena};
+    /// # use teistro_core::quantity::{JulianDay, Tt};
+    /// # use teistro_port_ephemeris::Body;
+    /// #
+    /// # // A full Moon: opposite the Sun, a little off the ecliptic.
+    /// # let full = Geometry {
+    /// #     body: EclipticPosition::new(180.0, 1.0, 0.002_57),
+    /// #     sun: EclipticPosition::new(0.0, 0.0, 1.0),
+    /// #     body_from_sun: None,
+    /// # };
+    /// # let at = JulianDay::<Tt>::literal(2_451_545.0);
+    /// # let moon = Phenomena::from_geometry(Body::Moon, &full, at)?;
+    ///
+    /// // About half a degree.
+    /// assert!((moon.apparent_diameter_deg() - 0.53).abs() < 0.02);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn apparent_diameter_deg(&self) -> f64 {
         self.disc.semidiameter_deg * 2.0
@@ -155,6 +288,26 @@ impl Phenomena {
 
     /// The phenomena from a geometry at a TT instant (the instant only
     /// enters Saturn's ring tilt and Neptune's slow drift).
+    ///
+    /// ```
+    /// # use teistro_astro::phenomena::{EclipticPosition, Geometry, Phenomena};
+    /// # use teistro_core::quantity::{JulianDay, Tt};
+    /// # use teistro_port_ephemeris::Body;
+    /// #
+    /// # // A full Moon: opposite the Sun, a little off the ecliptic.
+    /// # let full = Geometry {
+    /// #     body: EclipticPosition::new(180.0, 1.0, 0.002_57),
+    /// #     sun: EclipticPosition::new(0.0, 0.0, 1.0),
+    /// #     body_from_sun: None,
+    /// # };
+    /// # let at = JulianDay::<Tt>::literal(2_451_545.0);
+    /// # let moon = Phenomena::from_geometry(Body::Moon, &full, at)?;
+    ///
+    /// // The Sun has no phase and no elongation from itself.
+    /// let sun = Phenomena::from_geometry(Body::Sun, &Geometry { body: full.sun, ..full }, at)?;
+    /// assert_eq!((sun.elongation_deg, sun.phase), (0.0, None));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -354,6 +507,23 @@ fn ecliptic_of(v: &Vector3) -> (f64, f64) {
 /// heliocentric position at the retarded instant when the provider gives
 /// one (`HeliocentricLeg::Provider`), else the difference of the two
 /// (`FromGeocentric`).
+///
+/// ```
+/// use teistro_astro::completion::Completion;
+/// use teistro_astro::delta_t::DeltaTModel;
+/// use teistro_astro::phenomena::phenomena;
+/// use teistro_core::quantity::{JulianDay, Tt};
+/// use teistro_core::settings::OverridePolicy;
+/// use teistro_port_ephemeris::{Body, TestProvider};
+///
+/// let provider = TestProvider::new();
+/// let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// let venus = phenomena(&completion, Body::Venus, JulianDay::<Tt>::literal(2_460_483.25))?;
+/// // Venus never strays more than 48° from the Sun.
+/// assert!(venus.elongation_deg < 48.0);
+/// assert!(venus.phase.is_some());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

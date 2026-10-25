@@ -16,6 +16,14 @@ use crate::scale::tt_from_ut1;
 
 /// A spherical position: longitude or right ascension and latitude or
 /// declination, degrees.
+///
+/// ```
+/// use teistro_astro::sky::{Spherical, ecliptic_to_equatorial};
+///
+/// // The summer solstice point: right ascension 90°, declination the obliquity.
+/// let solstice = ecliptic_to_equatorial(Spherical { lon_deg: 90.0, lat_deg: 0.0 }, 23.44);
+/// assert!((solstice.lon_deg - 90.0).abs() < 1e-9 && (solstice.lat_deg - 23.44).abs() < 1e-9);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Spherical {
     /// Longitude or right ascension, degrees.
@@ -93,6 +101,19 @@ pub fn sidereal_time_and_obliquity(
 /// equinox-based expression of IERS Conventions 2010 (ERFA's `gst06a`
 /// differs by the IAU 2000A nutation, under a milliarcsecond), so the
 /// meridian agrees with the precession the frames are built with.
+///
+/// ```
+/// use teistro_astro::sky::greenwich_sidereal_time_deg;
+/// use teistro_astro::iau::{RAD2DEG, gst06b};
+/// use teistro_core::quantity::{JulianDay, Tt, Ut1};
+///
+/// // ERFA's gst06b, in degrees.
+/// let (ut1, tt) = (JulianDay::<Ut1>::literal(2_453_736.5), JulianDay::<Tt>::literal(2_453_736.5));
+/// let expected = gst06b(2_453_736.5, 0.0, 2_453_736.5, 0.0) * RAD2DEG;
+/// assert!((greenwich_sidereal_time_deg(ut1, tt) - expected).abs() < 1e-9);
+/// // About 100.5° at 2006 January 1, 0h.
+/// assert!((greenwich_sidereal_time_deg(ut1, tt) - 100.5).abs() < 0.1);
+/// ```
 #[must_use]
 pub fn greenwich_sidereal_time_deg(ut1: JulianDay<Ut1>, tt: JulianDay<Tt>) -> f64 {
     let (uta, utb) = ut1.split();
@@ -146,6 +167,20 @@ pub fn sidereal_time_deg(ut1: JulianDay<Ut1>, tt: JulianDay<Tt>, longitude: Long
 /// them, in the frame the sky's own positions are in: the true equator
 /// and equinox of date, astronomical units and astronomical units a day,
 /// measured from the centre of the Earth.
+///
+/// ```
+/// use teistro_astro::sky::observer;
+/// use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
+///
+/// // On the equator the station moves about 465 m/s, 0.000269 au a day.
+/// let place = Place::try_from_degrees(0.0, 0.0, 0.0)?;
+/// let at = observer(place, JulianDay::<Ut1>::J2000, JulianDay::<Tt>::literal(2_451_545.0));
+/// let speed = at.velocity_au_per_day.iter().map(|c| c * c).sum::<f64>().sqrt();
+/// assert!((speed - 465.101 * 86_400.0 / 149_597_870_700.0).abs() < 1e-9);
+/// // And accelerates towards the axis.
+/// assert_eq!(at.acceleration_au_per_day2[2], 0.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Observer {
     /// The station's geocentric position, astronomical units.
@@ -210,6 +245,17 @@ pub fn observer(place: Place, ut1: JulianDay<Ut1>, tt: JulianDay<Tt>) -> Observe
 }
 
 /// Where the Earth is and how fast, as the aberration needs it.
+///
+/// ```
+/// use teistro_astro::sky::earth_at;
+/// use teistro_core::quantity::{JulianDay, Tt, Ut1};
+///
+/// // Near perihelion in early January: 0.983 au, moving about 30 km/s.
+/// let at = earth_at(JulianDay::<Tt>::literal(2_451_545.0));
+/// assert!((at.sun_distance_au - 0.9833).abs() < 1e-3);
+/// let speed = at.velocity_au_per_day.iter().map(|c| c * c).sum::<f64>().sqrt();
+/// assert!((speed * 149_597_870.7 / 86_400.0 - 30.0).abs() < 0.5);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct EarthAt {
     /// The Earth's barycentric velocity in the true equator and equinox
@@ -301,6 +347,16 @@ thread_local! {
 /// a ten-millionth of a milliarcsecond of aberration.
 /// The segments are a fixed grid from J2000, so an instant's answer is
 /// the same bits whatever was asked before it.
+///
+/// ```
+/// use teistro_astro::sky::{earth_at, earth_at_fitted};
+/// use teistro_core::quantity::{JulianDay, Tt, Ut1};
+///
+/// let tt = JulianDay::<Tt>::literal(2_460_483.25);
+/// let (exact, fitted) = (earth_at(tt), earth_at_fitted(tt));
+/// assert!((exact.sun_distance_au - fitted.sun_distance_au).abs() < 1e-10);
+/// assert!(exact.velocity_au_per_day.iter().zip(fitted.velocity_au_per_day).all(|(a, b)| (a - b).abs() < 1e-10));
+/// ```
 #[must_use]
 pub fn earth_at_fitted(tt: JulianDay<Tt>) -> EarthAt {
     let state = |jd: f64| {
@@ -323,6 +379,14 @@ pub fn earth_at_fitted(tt: JulianDay<Tt>) -> EarthAt {
 
 /// Rotates ecliptic longitude and latitude to right ascension and
 /// declination with an obliquity, all degrees.
+///
+/// ```
+/// use teistro_astro::sky::{Spherical, ecliptic_to_equatorial};
+///
+/// // The ecliptic's north pole stands at right ascension 270°, declination 90° less the obliquity.
+/// let pole = ecliptic_to_equatorial(Spherical { lon_deg: 0.0, lat_deg: 89.999_999 }, 23.44);
+/// assert!((pole.lat_deg - (90.0 - 23.44)).abs() < 1e-5 && (pole.lon_deg - 270.0).abs() < 1e-3);
+/// ```
 #[must_use]
 pub fn ecliptic_to_equatorial(p: Spherical, obliquity_deg: f64) -> Spherical {
     let (sl, cl) = math::sin_cos(p.lon_deg * DEG2RAD);
@@ -338,6 +402,14 @@ pub fn ecliptic_to_equatorial(p: Spherical, obliquity_deg: f64) -> Spherical {
 
 /// Rotates right ascension and declination to ecliptic longitude and
 /// latitude with an obliquity, all degrees.
+///
+/// ```
+/// use teistro_astro::sky::{Spherical, ecliptic_to_equatorial, equatorial_to_ecliptic};
+///
+/// let star = Spherical { lon_deg: 201.3, lat_deg: -11.2 };
+/// let back = equatorial_to_ecliptic(ecliptic_to_equatorial(star, 23.44), 23.44);
+/// assert!((back.lon_deg - star.lon_deg).abs() < 1e-9 && (back.lat_deg - star.lat_deg).abs() < 1e-9);
+/// ```
 #[must_use]
 pub fn equatorial_to_ecliptic(p: Spherical, obliquity_deg: f64) -> Spherical {
     let (sa, ca) = math::sin_cos(p.lon_deg * DEG2RAD);
@@ -394,6 +466,26 @@ pub fn altitude_by_midheaven_deg(
 
 /// The apparent geocentric equatorial position of a body: what an
 /// observer's horizon is reckoned against.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+///
+/// use teistro_astro::sky::ApparentPositions;
+///
+/// // The test provider's analytic Sun at the June solstice of 2024: within
+/// // a tenth of a degree of the obliquity north, at its fixed one au.
+/// let sun = sky.apparent(Body::Sun, JulianDay::<Ut1>::literal(2_460_483.4))?;
+/// assert!((sun.dec_deg - 23.44).abs() < 0.1);
+/// assert_eq!(sun.distance_au, 1.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Apparent {
@@ -407,6 +499,28 @@ pub struct Apparent {
 
 /// A source of apparent geocentric equatorial positions of date: the
 /// frame completion over a provider, or a classical model.
+///
+/// ```
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::{Body, TestProvider};
+/// #
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+///
+/// use teistro_astro::sky::ApparentPositions;
+///
+/// // A grid answers what one instant at a time answers, to the bit.
+/// let instants: Vec<JulianDay<Ut1>> = (0..3).map(|d| JulianDay::literal(2_460_000.5 + f64::from(d))).collect();
+/// let mut grid = Vec::new();
+/// sky.apparent_many(Body::Moon, &instants, &mut grid)?;
+/// for (at, row) in instants.iter().zip(&grid) {
+///     assert_eq!(*row, sky.apparent(Body::Moon, *at)?);
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub trait ApparentPositions: Send + Sync {
     /// The body's apparent position at a UT1 instant.
     ///

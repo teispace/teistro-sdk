@@ -69,6 +69,16 @@ pub struct Astrometry {
 
 impl Astrometry {
     /// A fixed direction at J2000.0 with no motion, parallax or velocity.
+    ///
+    /// ```
+    /// use teistro_astro::stars::{Astrometry, Options, place};
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// // The ICRS origin at J2000.0: on the equator, near the equinox.
+    /// let origin = place(&Astrometry::icrs(0.0, 0.0), JulianDay::<Tt>::J2000, &Options::GEOMETRIC)?;
+    /// assert!(origin.dec_deg.abs() < 1e-4 && (origin.ra_deg < 1e-4 || origin.ra_deg > 360.0 - 1e-4));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn icrs(ra_deg: f64, dec_deg: f64) -> Astrometry {
         Astrometry {
@@ -83,6 +93,16 @@ impl Astrometry {
     }
 
     /// The catalogue's astrometry of a member, at J2000.0.
+    ///
+    /// ```
+    /// use teistro_astro::stars::Astrometry;
+    /// use teistro_core::catalogue::Star;
+    ///
+    /// // Spica, at J2000.0.
+    /// let spica = Astrometry::of(Star::Spica);
+    /// assert!((spica.ra_deg - 201.298).abs() < 0.001 && (spica.dec_deg - -11.161).abs() < 0.001);
+    /// assert!(spica.parallax_mas > 0.0);
+    /// ```
     #[must_use]
     pub fn of(star: Star) -> Astrometry {
         let a = &star.attributes().astrometry;
@@ -99,6 +119,18 @@ impl Astrometry {
 
     /// With a proper motion (the right ascension rate with cos δ applied),
     /// milliarcseconds a year.
+    ///
+    /// ```
+    /// use teistro_astro::stars::{Astrometry, Options, place};
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// // A star moving a degree a century northward has moved a degree.
+    /// let moving = Astrometry::icrs(90.0, 0.0).with_proper_motion(0.0, 36_000.0);
+    /// let century = JulianDay::<Tt>::literal(2_451_545.0 + 36_525.0);
+    /// let (still, moved) = (place(&Astrometry::icrs(90.0, 0.0), century, &Options::GEOMETRIC)?, place(&moving, century, &Options::GEOMETRIC)?);
+    /// assert!((moved.dec_deg - still.dec_deg - 1.0).abs() < 0.01);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_proper_motion(mut self, pm_ra_mas_yr: f64, pm_dec_mas_yr: f64) -> Astrometry {
         self.pm_ra_mas_yr = pm_ra_mas_yr;
@@ -107,6 +139,13 @@ impl Astrometry {
     }
 
     /// With a parallax, milliarcseconds.
+    ///
+    /// ```
+    /// use teistro_astro::stars::Astrometry;
+    ///
+    /// let near = Astrometry::icrs(10.0, 20.0).with_parallax(768.0);
+    /// assert_eq!(near.parallax_mas, 768.0);
+    /// ```
     #[must_use]
     pub const fn with_parallax(mut self, parallax_mas: f64) -> Astrometry {
         self.parallax_mas = parallax_mas;
@@ -114,6 +153,13 @@ impl Astrometry {
     }
 
     /// With a radial velocity, km/s, positive receding.
+    ///
+    /// ```
+    /// use teistro_astro::stars::Astrometry;
+    ///
+    /// let receding = Astrometry::icrs(10.0, 20.0).with_radial_velocity(-22.4);
+    /// assert_eq!(receding.radial_velocity_km_s, -22.4);
+    /// ```
     #[must_use]
     pub const fn with_radial_velocity(mut self, km_s: f64) -> Astrometry {
         self.radial_velocity_km_s = km_s;
@@ -121,6 +167,15 @@ impl Astrometry {
     }
 
     /// Stated at another epoch (Gaia's rows are J2016.0).
+    ///
+    /// ```
+    /// use teistro_astro::stars::Astrometry;
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// // Gaia's J2016.0.
+    /// let gaia = Astrometry::icrs(10.0, 20.0).at_epoch(JulianDay::<Tt>::literal(2_457_389.0));
+    /// assert_eq!(gaia.epoch.get(), 2_457_389.0);
+    /// ```
     #[must_use]
     pub const fn at_epoch(mut self, epoch: JulianDay<Tt>) -> Astrometry {
         self.epoch = epoch;
@@ -170,6 +225,14 @@ impl From<Star> for Astrometry {
 }
 
 /// Which effects a place carries.
+///
+/// ```
+/// use teistro_astro::stars::Corrections;
+///
+/// // The mean place differs from the apparent only in nutation.
+/// assert_eq!(Corrections { nutation: true, ..Corrections::MEAN }, Corrections::APPARENT);
+/// assert!(!Corrections::GEOMETRIC.aberration);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[allow(
     clippy::struct_excessive_bools,
@@ -188,6 +251,13 @@ pub struct Corrections {
 
 impl Corrections {
     /// Everything: the apparent place on the true equator of date.
+    ///
+    /// ```
+    /// use teistro_astro::stars::Corrections;
+    ///
+    /// let all = Corrections::APPARENT;
+    /// assert!(all.nutation && all.aberration && all.deflection && all.parallax);
+    /// ```
     pub const APPARENT: Corrections = Corrections {
         nutation: true,
         aberration: true,
@@ -197,6 +267,12 @@ impl Corrections {
 
     /// The apparent place on the mean equator of date (what a mean
     /// ayanamsha reads).
+    ///
+    /// ```
+    /// use teistro_astro::stars::Corrections;
+    ///
+    /// assert!(!Corrections::MEAN.nutation && Corrections::MEAN.aberration);
+    /// ```
     pub const MEAN: Corrections = Corrections {
         nutation: false,
         ..Corrections::APPARENT
@@ -204,6 +280,13 @@ impl Corrections {
 
     /// The direction itself on the mean equator of date: proper motion and
     /// precession only.
+    ///
+    /// ```
+    /// use teistro_astro::stars::Corrections;
+    ///
+    /// let bare = Corrections::GEOMETRIC;
+    /// assert!(!(bare.nutation || bare.aberration || bare.deflection || bare.parallax));
+    /// ```
     pub const GEOMETRIC: Corrections = Corrections {
         nutation: false,
         aberration: false,
@@ -213,6 +296,14 @@ impl Corrections {
 }
 
 /// How a place is computed.
+///
+/// ```
+/// use teistro_astro::stars::Options;
+/// use teistro_astro::precession::PrecessionModel;
+///
+/// assert_eq!(Options::default(), Options::APPARENT);
+/// assert_eq!(Options::APPARENT.precession, PrecessionModel::Vondrak2011);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Options {
     /// The precession model carrying the direction to the date.
@@ -223,24 +314,74 @@ pub struct Options {
 
 impl Options {
     /// The apparent place under the default precession model.
+    ///
+    /// ```
+    /// use teistro_astro::stars::{Options, place_of};
+    /// use teistro_core::catalogue::Star;
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// // Aberration moves Spica by up to 20″ from her geometric place.
+    /// let at = JulianDay::<Tt>::J2000;
+    /// let (seen, bare) = (place_of(Star::Spica, at, &Options::APPARENT)?, place_of(Star::Spica, at, &Options::GEOMETRIC)?);
+    /// let moved = (seen.lon_deg - bare.lon_deg).abs() * 3600.0;
+    /// assert!(moved > 1.0 && moved < 40.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const APPARENT: Options = Options {
         precession: PrecessionModel::Vondrak2011,
         corrections: Corrections::APPARENT,
     };
 
     /// The apparent place on the mean equator of date.
+    ///
+    /// ```
+    /// use teistro_astro::stars::{Options, place_of};
+    /// use teistro_core::catalogue::Star;
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// // The mean and apparent longitudes differ by the nutation in longitude, −13.9″ at J2000.0.
+    /// let at = JulianDay::<Tt>::J2000;
+    /// let (apparent, mean) = (place_of(Star::Spica, at, &Options::APPARENT)?, place_of(Star::Spica, at, &Options::MEAN)?);
+    /// assert!(((apparent.lon_deg - mean.lon_deg) * 3600.0 + 13.9).abs() < 0.3);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const MEAN: Options = Options {
         corrections: Corrections::MEAN,
         ..Options::APPARENT
     };
 
     /// The geometric direction on the mean equator of date.
+    ///
+    /// ```
+    /// use teistro_astro::stars::{Options, place_of};
+    /// use teistro_core::catalogue::Star;
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// // Spica 23°50′ into Libra at J2000.0.
+    /// let spica = place_of(Star::Spica, JulianDay::<Tt>::J2000, &Options::GEOMETRIC)?;
+    /// assert!((spica.lon_deg - 203.84).abs() < 0.02);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const GEOMETRIC: Options = Options {
         corrections: Corrections::GEOMETRIC,
         ..Options::APPARENT
     };
 
     /// The same corrections under another precession model.
+    ///
+    /// ```
+    /// use teistro_astro::stars::{Options, place_of};
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_core::catalogue::Star;
+    /// use teistro_core::quantity::{JulianDay, Tt};
+    ///
+    /// // The models agree to an arcsecond a few decades from J2000.0.
+    /// let at = JulianDay::<Tt>::literal(2_460_000.5);
+    /// let iau = Options::APPARENT.with_precession(PrecessionModel::Iau2006);
+    /// let (vondrak, iau) = (place_of(Star::Spica, at, &Options::APPARENT)?, place_of(Star::Spica, at, &iau)?);
+    /// assert!((vondrak.lon_deg - iau.lon_deg).abs() * 3600.0 < 1.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_precession(mut self, model: PrecessionModel) -> Options {
         self.precession = model;
@@ -255,6 +396,18 @@ impl Default for Options {
 }
 
 /// A place on the equator and ecliptic of date, degrees.
+///
+/// ```
+/// use teistro_astro::stars::{Options, place_of};
+/// use teistro_core::catalogue::Star;
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// let spica = place_of(Star::Spica, JulianDay::<Tt>::J2000, &Options::APPARENT)?;
+/// // South of both the equator and the ecliptic.
+/// assert!(spica.dec_deg < 0.0 && spica.lat_deg < 0.0);
+/// assert!((0.0..360.0).contains(&spica.ra_deg));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Place {
     /// Ecliptic longitude, `[0, 360)`.
@@ -268,6 +421,16 @@ pub struct Place {
 }
 
 /// A catalogued member's place at a TT instant.
+///
+/// ```
+/// use teistro_astro::stars::{Astrometry, Options, place, place_of};
+/// use teistro_core::catalogue::Star;
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// let at = JulianDay::<Tt>::literal(2_460_483.25);
+/// assert_eq!(place_of(Star::Aldebaran, at, &Options::APPARENT)?, place(&Astrometry::of(Star::Aldebaran), at, &Options::APPARENT)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -284,6 +447,18 @@ pub fn place_of(star: Star, tt: JulianDay<Tt>, options: &Options) -> Result<Plac
 /// Earth ephemeris), rotated from the ICRS by the frame bias, precessed
 /// under the model, nutated when asked, and read on the equator and the
 /// ecliptic of date with the obliquity the model is consistent with.
+///
+/// ```
+/// use teistro_astro::stars::{Astrometry, Options, place};
+/// use teistro_core::quantity::{JulianDay, Tt};
+///
+/// // A pole has no right ascension to carry.
+/// let pole = place(&Astrometry::icrs(0.0, 90.0), JulianDay::<Tt>::J2000, &Options::APPARENT);
+/// assert!(pole.is_err());
+/// // A negative parallax is refused too.
+/// assert!(place(&Astrometry::icrs(0.0, 0.0).with_parallax(-1.0), JulianDay::<Tt>::J2000, &Options::APPARENT).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

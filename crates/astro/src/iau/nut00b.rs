@@ -5,6 +5,16 @@
 //! same per Julian century for the `t` terms.
 
 /// One term of the series.
+///
+/// ```
+/// use teistro_astro::iau::nut00b::TERMS;
+///
+/// // The largest: the node's 18.6-year term, -17.2″ in longitude, 9.2″ in obliquity.
+/// let node = TERMS[0];
+/// assert_eq!((node.nl, node.nlp, node.nf, node.nd, node.nom), (0, 0, 0, 0, 1));
+/// assert!((node.ps * 1e-7 - -17.206_416_1).abs() < 1e-12);
+/// assert!((node.ec * 1e-7 - 9.205_233_1).abs() < 1e-12);
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Term {
     /// Multiplier of the Moon's mean anomaly.
@@ -61,6 +71,13 @@ const fn t(
 }
 
 /// The series, largest terms first.
+///
+/// ```
+/// use teistro_astro::iau::nut00b::TERMS;
+///
+/// // Largest first, by the longitude's sine coefficient.
+/// assert!(TERMS.iter().skip(1).all(|term| term.ps.abs() < TERMS[0].ps.abs()));
+/// ```
 pub const TERMS: [Term; 77] = [
     t(
         0,

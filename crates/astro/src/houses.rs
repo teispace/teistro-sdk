@@ -54,6 +54,25 @@ const PLACIDUS_TOLERANCE_DEG: f64 = 1.0 / 360_000.0;
 const SUN_DECLINATION_BOUND_DEG: f64 = 24.0;
 
 /// What the computation needs.
+///
+/// ```
+/// # use teistro_astro::houses::Input;
+/// #
+/// # // ARMC 0 on the equator, with the obliquity of the 2000s.
+/// # let equator = Input { armc_deg: 0.0, latitude_deg: 0.0, obliquity_deg: 23.4393, sun_declination_deg: None, sidereal_offset_deg: 0.0 };
+/// # // Tromsø, inside the polar circle.
+/// # let tromso = Input { latitude_deg: 69.65, ..equator };
+///
+/// use teistro_astro::houses::houses;
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// // Sunshine trisects the Sun's arcs, and needs his declination.
+/// let sunshine = houses(HouseSystem::Sunshine, &equator, PolarPolicy::Error).unwrap_err();
+/// assert!(sunshine.message.contains("declination"));
+/// let with_sun = Input { sun_declination_deg: Some(10.0), ..equator };
+/// assert!(houses(HouseSystem::Sunshine, &with_sun, PolarPolicy::Error).is_ok());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Input {
     /// The right ascension of the meridian (local apparent sidereal time),
@@ -74,6 +93,25 @@ pub struct Input {
 }
 
 /// The auxiliary points every system shares, tropical degrees of date.
+///
+/// ```
+/// # use teistro_astro::houses::Input;
+/// #
+/// # // ARMC 0 on the equator, with the obliquity of the 2000s.
+/// # let equator = Input { armc_deg: 0.0, latitude_deg: 0.0, obliquity_deg: 23.4393, sun_declination_deg: None, sidereal_offset_deg: 0.0 };
+/// # // Tromsø, inside the polar circle.
+/// # let tromso = Input { latitude_deg: 69.65, ..equator };
+///
+/// use teistro_astro::houses::houses;
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// // At the equator with ARMC 0 the midheaven is 0° Aries and the ascendant 0° Cancer.
+/// let angles = houses(HouseSystem::Equal, &equator, PolarPolicy::Error)?.angles;
+/// assert_eq!((angles.midheaven_deg, angles.ascendant_deg), (0.0, 90.0));
+/// assert_eq!(angles.armc_deg, 0.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Angles {
@@ -97,6 +135,28 @@ pub struct Angles {
 }
 
 /// What happened to a system undefined at the place.
+///
+/// ```
+/// # use teistro_astro::houses::Input;
+/// #
+/// # // ARMC 0 on the equator, with the obliquity of the 2000s.
+/// # let equator = Input { armc_deg: 0.0, latitude_deg: 0.0, obliquity_deg: 23.4393, sun_declination_deg: None, sidereal_offset_deg: 0.0 };
+/// # // Tromsø, inside the polar circle.
+/// # let tromso = Input { latitude_deg: 69.65, ..equator };
+///
+/// use teistro_astro::houses::{Outcome, houses};
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// // Placidus is undefined at Tromsø: Porphyry stands in, and says so.
+/// let stood_in = houses(HouseSystem::Placidus, &tromso, PolarPolicy::FallbackPorphyry)?;
+/// assert_eq!(stood_in.system, HouseSystem::Porphyry);
+/// assert_eq!(stood_in.outcome, Outcome::Substituted { asked: HouseSystem::Placidus });
+/// // Or at the polar circle's edge.
+/// let clamped = houses(HouseSystem::Placidus, &tromso, PolarPolicy::Clamp)?;
+/// assert_eq!(clamped.outcome, Outcome::Clamped { asked_latitude_deg: 69.65 });
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -117,6 +177,26 @@ pub enum Outcome {
 }
 
 /// The cusps and points of one system at one place and instant.
+///
+/// ```
+/// # use teistro_astro::houses::Input;
+/// #
+/// # // ARMC 0 on the equator, with the obliquity of the 2000s.
+/// # let equator = Input { armc_deg: 0.0, latitude_deg: 0.0, obliquity_deg: 23.4393, sun_declination_deg: None, sidereal_offset_deg: 0.0 };
+/// # // Tromsø, inside the polar circle.
+/// # let tromso = Input { latitude_deg: 69.65, ..equator };
+///
+/// use teistro_astro::houses::{Outcome, houses};
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// let equal = houses(HouseSystem::Equal, &equator, PolarPolicy::Error)?;
+/// // Thirty degrees apart from the ascendant.
+/// assert_eq!(equal.cusps[0], 90.0);
+/// assert!((equal.cusps[3] - 180.0).abs() < 1e-9);
+/// assert_eq!(equal.outcome, Outcome::Defined);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Houses {
@@ -132,6 +212,15 @@ pub struct Houses {
 
 /// Whether a latitude lies inside the polar circle for an obliquity, where
 /// the midheaven can sink below the horizon.
+///
+/// ```
+/// use teistro_astro::houses::is_polar;
+///
+/// assert!(is_polar(69.65, 23.44));
+/// assert!(!is_polar(27.7, 23.44));
+/// // The south too.
+/// assert!(is_polar(-70.0, 23.44));
+/// ```
 #[must_use]
 pub fn is_polar(latitude_deg: f64, obliquity_deg: f64) -> bool {
     latitude_deg.abs() >= 90.0 - obliquity_deg
@@ -141,6 +230,16 @@ pub fn is_polar(latitude_deg: f64, obliquity_deg: f64) -> bool {
 /// `pole_deg` whose ascending intersection with the equator is at right
 /// ascension `ra_deg` crosses the ecliptic of obliquity `eps`: the horizon
 /// gives the ascendant, an hour circle the midheaven.
+///
+/// ```
+/// use teistro_astro::houses::{Obliquity, circle_point};
+///
+/// let eps = Obliquity::new(23.4393);
+/// // The meridian (pole height 0) at right ascension 90° meets the ecliptic at 90°.
+/// assert_eq!(circle_point(90.0, 0.0, &eps), 90.0);
+/// // Snapped exactly onto the cardinal point.
+/// assert_eq!(circle_point(180.0, 0.0, &eps), 180.0);
+/// ```
 #[must_use]
 pub fn circle_point(ra_deg: f64, pole_deg: f64, eps: &Obliquity) -> f64 {
     let (sin_ra, cos_ra) = math::sin_cos(ra_deg * DEG2RAD);
@@ -163,6 +262,15 @@ fn snap_cardinal(value: f64) -> f64 {
 }
 
 /// The obliquity with its trigonometry, computed once.
+///
+/// ```
+/// use teistro_astro::houses::{Obliquity, circle_point};
+///
+/// // Computed once and handed to every circle a system draws.
+/// let eps = Obliquity::new(23.4393);
+/// let points: Vec<f64> = [0.0, 30.0, 60.0].iter().map(|ra| circle_point(*ra, 0.0, &eps)).collect();
+/// assert!(points.windows(2).all(|pair| pair[0] < pair[1]));
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Obliquity {
     deg: f64,
@@ -173,6 +281,13 @@ pub struct Obliquity {
 
 impl Obliquity {
     /// The obliquity of `deg` degrees, for [`circle_point`].
+    ///
+    /// ```
+    /// use teistro_astro::houses::{Obliquity, circle_point};
+    ///
+    /// // With no obliquity the ecliptic is the equator, and a right ascension its own longitude.
+    /// assert!((circle_point(40.0, 0.0, &Obliquity::new(0.0)) - 40.0).abs() < 1e-12);
+    /// ```
     #[must_use]
     pub fn new(deg: f64) -> Obliquity {
         let (sin, cos) = math::sin_cos(deg * DEG2RAD);
@@ -967,6 +1082,15 @@ fn angles(frame: &Frame, system: HouseSystem) -> Angles {
 /// meridian are its own reckoning (III.46 to 49) — can have them built
 /// from its angles ([`cusps_from_angles`]) and the rest refused
 /// (`03-design/classical-chart.md` §5).
+///
+/// ```
+/// use teistro_astro::houses::{FROM_ANGLES, cusps_from_angles};
+/// use teistro_core::catalogue::HouseSystem;
+///
+/// assert!(FROM_ANGLES.contains(&HouseSystem::Sripati));
+/// // Each builds its cusps from the two angles alone.
+/// assert!(FROM_ANGLES.iter().all(|system| cusps_from_angles(*system, 100.0, 10.0, 0.0).is_ok()));
+/// ```
 pub const FROM_ANGLES: [HouseSystem; 9] = [
     HouseSystem::WholeSign,
     HouseSystem::Equal,
@@ -1095,6 +1219,25 @@ fn known(system: HouseSystem) -> bool {
 /// and the obliquity, the polar policy deciding what a system undefined
 /// inside the polar circle does.
 ///
+/// ```
+/// # use teistro_astro::houses::Input;
+/// #
+/// # // ARMC 0 on the equator, with the obliquity of the 2000s.
+/// # let equator = Input { armc_deg: 0.0, latitude_deg: 0.0, obliquity_deg: 23.4393, sun_declination_deg: None, sidereal_offset_deg: 0.0 };
+/// # // Tromsø, inside the polar circle.
+/// # let tromso = Input { latitude_deg: 69.65, ..equator };
+///
+/// use teistro_astro::houses::houses;
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// // Undefined at Tromsø and asked to refuse: refused, naming the policies that would answer.
+/// let refused = houses(HouseSystem::Koch, &tromso, PolarPolicy::Error).unwrap_err();
+/// assert!(refused.message.contains("KOCH") && refused.message.contains("CLAMP"));
+/// // Whole sign is defined everywhere.
+/// assert!(houses(HouseSystem::WholeSign, &tromso, PolarPolicy::Error).is_ok());
+/// ```
+///
 /// # Errors
 ///
 /// `UNSUPPORTED` for a system this build has no construction for; `INVALID_ARG`
@@ -1209,6 +1352,24 @@ fn undefined(system: HouseSystem, latitude_deg: f64, note: &str) -> Error {
 /// The houses at a UT1 instant and a place: the meridian from apparent
 /// sidereal time and the true obliquity from the SDK's own record.
 ///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
+/// #
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+/// # let ut1 = JulianDay::<Ut1>::literal(2_460_483.25);
+/// # let tt = JulianDay::<Tt>::literal(2_460_483.250_8);
+///
+/// use teistro_astro::houses::{ChartFrame, houses_at};
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// // Kathmandu, 2024-06-21 18:00 UT.
+/// let placidus = houses_at(HouseSystem::Placidus, ut1, tt, &kathmandu, &ChartFrame::default(), PolarPolicy::Error)?;
+/// // The first cusp is the ascendant.
+/// assert_eq!(placidus.cusps[0], placidus.angles.ascendant_deg);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`houses`].
@@ -1225,6 +1386,24 @@ pub fn houses_at(
 
 /// [`houses_at`] and the obliquity record the houses were built on, from
 /// one sum of the nutation series.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
+/// #
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+/// # let ut1 = JulianDay::<Ut1>::literal(2_460_483.25);
+/// # let tt = JulianDay::<Tt>::literal(2_460_483.250_8);
+///
+/// use teistro_astro::houses::{ChartFrame, houses_and_obliquity_at, houses_at};
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// let chart = ChartFrame::default();
+/// let (houses, obliquity) = houses_and_obliquity_at(HouseSystem::Equal, ut1, tt, &kathmandu, &chart, PolarPolicy::Error)?;
+/// assert_eq!(houses, houses_at(HouseSystem::Equal, ut1, tt, &kathmandu, &chart, PolarPolicy::Error)?);
+/// assert!((obliquity.true_deg - 23.44).abs() < 0.01);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -1249,6 +1428,25 @@ pub fn houses_and_obliquity_at(
 }
 
 /// What a chart brings to the houses beside its instant and place.
+///
+/// ```
+/// # use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
+/// #
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+/// # let ut1 = JulianDay::<Ut1>::literal(2_460_483.25);
+/// # let tt = JulianDay::<Tt>::literal(2_460_483.250_8);
+///
+/// use teistro_astro::houses::{ChartFrame, houses_at};
+/// use teistro_core::catalogue::HouseSystem;
+/// use teistro_core::settings::PolarPolicy;
+///
+/// // A sidereal chart's whole signs begin at the sidereal sign boundaries, given tropically.
+/// let sidereal = ChartFrame { sidereal_offset_deg: 24.0, sun_declination_deg: None };
+/// let whole = houses_at(HouseSystem::WholeSign, ut1, tt, &kathmandu, &sidereal, PolarPolicy::Error)?;
+/// let past = (whole.cusps[0] - 24.0).rem_euclid(30.0);
+/// assert!(past < 1e-9 || past > 30.0 - 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct ChartFrame {
     /// The ayanamsha of a sidereal chart, degrees; zero for a tropical one.
