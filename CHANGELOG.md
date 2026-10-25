@@ -136,6 +136,12 @@ a syntax error. The loader's own message suggested that command.
 opens the file with `process.dlopen`, and a test opens the addon under
 Cargo's name.
 
+**The C ABI's leak test also runs under valgrind.** **Numbers:** none
+yet; the first run is verify's. A new `valgrind` job runs
+`crates/ffi/tests/leaks.rs` under memcheck. Its errors are reads of
+memory never written or already freed, bad frees, and definite or
+indirect leaks.
+
 **An app-speed record taken from a changed tree is refused.**
 **Numbers:** none. Both recorders now mark a commit `-dirty` when the
 tree holds changes, as the FFI-cost, micro and A/B records already did:
