@@ -133,20 +133,39 @@ Future<Future<void> Function()?> _collector() async {
 /// [budget]. A failure names every run's growth and one run's over four
 /// times the cycles: a leak grows with the cycles, and what the allocator
 /// keeps for itself does not. With [collect], each run is read after a
-/// full collection, so what finalisers free is counted as freed.
+/// full collection once the bytes in use stop moving, so what finalisers
+/// free is counted as freed.
 Future<void> givesBack(
   void Function() cycle, {
   Future<void> Function()? collect,
 }) async {
   final read = inUse!;
+  // A finaliser runs on its own schedule, so a read after one collection
+  // is a guess about the machine: collect until two reads agree.
+  Future<int> settled() async {
+    final collector = collect;
+    if (collector == null) {
+      return read();
+    }
+    var last = -1;
+    for (var pass = 0; pass < 100; pass += 1) {
+      await collector();
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      final now = read();
+      if (last >= 0 && (now - last).abs() <= 4096) {
+        return now;
+      }
+      last = now;
+    }
+    return last;
+  }
+
   Future<int> run(int count) async {
-    await collect?.call();
-    final before = read();
+    final before = await settled();
     for (var at = 0; at < count; at += 1) {
       cycle();
     }
-    await collect?.call();
-    return read() - before;
+    return await settled() - before;
   }
 
   await run(cycles);
