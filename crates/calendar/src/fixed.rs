@@ -8,6 +8,16 @@ use teistro_core::catalogue::Vara;
 use teistro_core::quantity::{InvalidValue, JulianDay, Utc};
 
 /// A fixed day number.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::FixedDay;
+///
+/// // Day 1 is 1 January 1 CE; days count on with no gap for any reform.
+/// assert_eq!(fixed_from_gregorian(1, 1, 1), FixedDay::EPOCH);
+/// assert_eq!(fixed_from_gregorian(1970, 1, 1), FixedDay::UNIX_EPOCH);
+/// assert_eq!(fixed_from_gregorian(2024, 1, 1).get(), 738_886);
+/// ```
 #[derive(
     Clone,
     Copy,
@@ -34,30 +44,65 @@ impl FixedDay {
     pub const UNIX_EPOCH: FixedDay = FixedDay(719_163);
 
     /// A fixed day.
+    ///
+    /// ```
+    /// use teistro_calendar::FixedDay;
+    ///
+    /// assert_eq!(FixedDay::new(719_163), FixedDay::UNIX_EPOCH);
+    /// ```
     #[must_use]
     pub const fn new(day: i64) -> FixedDay {
         FixedDay(day)
     }
 
     /// The number.
+    ///
+    /// ```
+    /// use teistro_calendar::FixedDay;
+    ///
+    /// assert_eq!(FixedDay::EPOCH.get(), 1);
+    /// ```
     #[must_use]
     pub const fn get(self) -> i64 {
         self.0
     }
 
     /// The day `days` later, or earlier when negative.
+    ///
+    /// ```
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    ///
+    /// let new_year = fixed_from_gregorian(2024, 1, 1);
+    /// assert_eq!(new_year.plus_days(-1), fixed_from_gregorian(2023, 12, 31));
+    /// assert_eq!(new_year.plus_days(366), fixed_from_gregorian(2025, 1, 1));
+    /// ```
     #[must_use]
     pub const fn plus_days(self, days: i64) -> FixedDay {
         FixedDay(self.0 + days)
     }
 
     /// The days from `self` to `other`.
+    ///
+    /// ```
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    ///
+    /// // 2024 is a leap year.
+    /// assert_eq!(fixed_from_gregorian(2024, 1, 1).days_until(fixed_from_gregorian(2025, 1, 1)), 366);
+    /// assert_eq!(fixed_from_gregorian(2025, 1, 1).days_until(fixed_from_gregorian(2024, 1, 1)), -366);
+    /// ```
     #[must_use]
     pub const fn days_until(self, other: FixedDay) -> i64 {
         other.0 - self.0
     }
 
     /// The Julian day at the midnight that begins this day.
+    ///
+    /// ```
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    ///
+    /// assert_eq!(fixed_from_gregorian(2024, 1, 1).jd_at_midnight()?.get(), 2_460_310.5);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -69,6 +114,17 @@ impl FixedDay {
 
     /// The fixed day a Julian day falls in, and the fraction of that day
     /// elapsed since its midnight.
+    ///
+    /// ```
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    /// use teistro_calendar::FixedDay;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// // Noon UTC on 1 January 2024: that day, half gone.
+    /// let (day, fraction) = FixedDay::from_jd(JulianDay::<Utc>::try_new(2_460_311.0)?);
+    /// assert_eq!((day, fraction), (fixed_from_gregorian(2024, 1, 1), 0.5));
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
@@ -82,6 +138,18 @@ impl FixedDay {
     /// day elapsed, for a value already shifted to a local clock (a UTC
     /// Julian day plus the clock's offset), where the typed instant does
     /// not apply.
+    ///
+    /// ```
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    /// use teistro_calendar::FixedDay;
+    ///
+    /// // 20:00 UTC on 31 December 2023, read on Kathmandu's clock (+05:45),
+    /// // is 01:45 on 1 January.
+    /// let local = 2_460_310.5 - 4.0 / 24.0 + 5.75 / 24.0;
+    /// let (day, fraction) = FixedDay::from_local_jd(local);
+    /// assert_eq!(day, fixed_from_gregorian(2024, 1, 1));
+    /// assert!((fraction * 24.0 - 1.75).abs() < 1e-6);
+    /// ```
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
@@ -94,6 +162,13 @@ impl FixedDay {
     }
 
     /// The weekday.
+    ///
+    /// ```
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    /// use teistro_calendar::Weekday;
+    ///
+    /// assert_eq!(fixed_from_gregorian(2024, 1, 1).weekday(), Weekday::Monday);
+    /// ```
     #[must_use]
     #[allow(clippy::cast_possible_truncation, reason = "a residue below seven")]
     pub const fn weekday(self) -> Weekday {
@@ -109,6 +184,15 @@ impl FixedDay {
     }
 
     /// The most recent day on or before `self` that falls on `weekday`.
+    ///
+    /// ```
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    /// use teistro_calendar::Weekday;
+    ///
+    /// let monday = fixed_from_gregorian(2024, 1, 1);
+    /// assert_eq!(monday.on_or_before(Weekday::Sunday), fixed_from_gregorian(2023, 12, 31));
+    /// assert_eq!(monday.on_or_before(Weekday::Monday), monday);
+    /// ```
     #[must_use]
     pub const fn on_or_before(self, weekday: Weekday) -> FixedDay {
         FixedDay(self.0 - (self.0 - weekday as i64).rem_euclid(7))
@@ -122,6 +206,13 @@ impl fmt::Display for FixedDay {
 }
 
 /// A weekday; Sunday is 0, as fixed day 0 was a Sunday.
+///
+/// ```
+/// use teistro_calendar::Weekday;
+///
+/// assert_eq!(Weekday::ALL[0], Weekday::Sunday);
+/// assert_eq!(Weekday::Saturday as u8, 6);
+/// ```
 #[repr(u8)]
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
@@ -158,6 +249,13 @@ impl Weekday {
     ];
 
     /// The ISO number, Monday 1 to Sunday 7.
+    ///
+    /// ```
+    /// use teistro_calendar::Weekday;
+    ///
+    /// assert_eq!(Weekday::Monday.iso_number(), 1);
+    /// assert_eq!(Weekday::Sunday.iso_number(), 7);
+    /// ```
     #[must_use]
     pub const fn iso_number(self) -> u8 {
         match self {
@@ -167,6 +265,14 @@ impl Weekday {
     }
 
     /// The weekday with an ISO number.
+    ///
+    /// ```
+    /// use teistro_calendar::Weekday;
+    ///
+    /// assert_eq!(Weekday::from_iso_number(7), Some(Weekday::Sunday));
+    /// assert_eq!(Weekday::from_iso_number(0), None);
+    /// assert_eq!(Weekday::from_iso_number(8), None);
+    /// ```
     #[must_use]
     pub const fn from_iso_number(number: u8) -> Option<Weekday> {
         match number {
@@ -183,12 +289,26 @@ impl Weekday {
 
     /// The vara of the same day under the sunrise-anchored reckoning,
     /// which the panchanga applies; the number is the same.
+    ///
+    /// ```
+    /// use teistro_calendar::Weekday;
+    /// use teistro_core::catalogue::Vara;
+    ///
+    /// assert_eq!(Weekday::Monday.vara(), Vara::Somavara);
+    /// assert_eq!(Weekday::Sunday.vara(), Vara::Ravivara);
+    /// ```
     #[must_use]
     pub fn vara(self) -> Vara {
         Vara::from_id(self as u16).unwrap_or(Vara::Ravivara)
     }
 
     /// The English name.
+    ///
+    /// ```
+    /// use teistro_calendar::Weekday;
+    ///
+    /// assert_eq!(Weekday::Thursday.name(), "Thursday");
+    /// ```
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {

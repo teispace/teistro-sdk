@@ -22,6 +22,20 @@ use crate::fixed::FixedDay;
 use crate::gregorian::{self, YEAR_RANGE, fixed_from_gregorian};
 
 /// The Bangladeshi national calendar.
+///
+/// ```
+/// use teistro_calendar::bangladeshi::Bangladeshi;
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+///
+/// // 21 February is 8 Falgun, and 16 December 1 Poush, every year.
+/// for year in [2024, 2025] {
+///     let ekushey = Bangladeshi.date_of(Gregorian.to_fixed_ymd(year, 2, 21)?)?;
+///     assert_eq!((ekushey.month, ekushey.day), (11, 8));
+///     let victory = Bangladeshi.date_of(Gregorian.to_fixed_ymd(year, 12, 16)?)?;
+///     assert_eq!((victory.month, victory.day), (9, 1));
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Bangladeshi;
 
@@ -35,12 +49,26 @@ pub const BENGALI_RANGE: (i32, i32) = (YEAR_RANGE.0 - OFFSET, YEAR_RANGE.1 - OFF
 
 /// Whether a Bengali year is a leap year: when the Gregorian year its
 /// Falgun falls in, the one after the year it begins in, is one.
+///
+/// ```
+/// use teistro_calendar::bangladeshi::is_leap_year;
+///
+/// // 1430's Falgun fell in February 2024.
+/// assert!(is_leap_year(1430) && !is_leap_year(1431));
+/// ```
 #[must_use]
 pub const fn is_leap_year(year: i32) -> bool {
     gregorian::is_leap_year(year + OFFSET + 1)
 }
 
 /// The length of a month, or `None` for a month outside 1 to 12.
+///
+/// ```
+/// use teistro_calendar::bangladeshi::month_length;
+///
+/// assert_eq!((month_length(1431, 6), month_length(1431, 7)), (Some(31), Some(30)));
+/// assert_eq!((month_length(1430, 11), month_length(1431, 11)), (Some(30), Some(29)));
+/// ```
 #[must_use]
 pub const fn month_length(year: i32, month: u8) -> Option<u8> {
     match month {
@@ -53,6 +81,13 @@ pub const fn month_length(year: i32, month: u8) -> Option<u8> {
 }
 
 /// The fixed day of 1 Boishakh of a Bengali year.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::bangladeshi::new_year;
+///
+/// assert_eq!(new_year(1431), fixed_from_gregorian(2024, 4, 14));
+/// ```
 #[must_use]
 pub const fn new_year(year: i32) -> FixedDay {
     fixed_from_gregorian(year + OFFSET, 4, 14)
@@ -71,12 +106,26 @@ const fn days_before(year: i32, month: u8) -> i64 {
 }
 
 /// The fixed day of a Bengali date; the date is not validated.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::bangladeshi::fixed_from_bangladeshi;
+///
+/// assert_eq!(fixed_from_bangladeshi(1431, 9, 1), fixed_from_gregorian(2024, 12, 16));
+/// ```
 #[must_use]
 pub const fn fixed_from_bangladeshi(year: i32, month: u8, day: u8) -> FixedDay {
     new_year(year).plus_days(days_before(year, month) + day as i64 - 1)
 }
 
 /// The Bengali date of a fixed day.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::bangladeshi::bangladeshi_from_fixed;
+///
+/// assert_eq!(bangladeshi_from_fixed(fixed_from_gregorian(2025, 4, 13)), (1431, 12, 30));
+/// ```
 #[must_use]
 #[allow(
     clippy::cast_possible_truncation,

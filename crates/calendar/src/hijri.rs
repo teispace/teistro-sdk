@@ -21,6 +21,19 @@ use crate::fixed::FixedDay;
 use crate::julian::fixed_from_julian;
 
 /// The tabular Hijri calendar.
+///
+/// ```
+/// use teistro_calendar::hijri::HijriTabular;
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::{CalendarDate, CalendarSystem};
+/// use teistro_core::catalogue::Calendar;
+///
+/// // The arithmetic year 1446 begins on 8 July 2024; a sighted crescent
+/// // may put it a day either side.
+/// let new_year = HijriTabular.fixed_of(&CalendarDate::defined(Calendar::HijriTabular, 1446, 1, 1))?;
+/// assert_eq!(new_year, fixed_from_gregorian(2024, 7, 8));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct HijriTabular;
 
@@ -32,12 +45,30 @@ pub const EPOCH: FixedDay = fixed_from_julian(622, 7, 16);
 pub const HIJRI_RANGE: (i32, i32) = (-10_946, 9_665);
 
 /// Whether a Hijri year is a leap year: its Dhu al-Hijja has 30 days.
+///
+/// ```
+/// use teistro_calendar::hijri::is_leap_year;
+///
+/// // The 2nd, 5th, 7th … 29th years of each thirty are leap.
+/// assert!(is_leap_year(2) && is_leap_year(29) && is_leap_year(32));
+/// assert!(!is_leap_year(1) && !is_leap_year(30));
+/// ```
 #[must_use]
 pub const fn is_leap_year(year: i32) -> bool {
     (14 + 11 * year as i64).rem_euclid(30) < 11
 }
 
 /// The length of a month, or `None` for a month outside 1 to 12.
+///
+/// ```
+/// use teistro_calendar::hijri::month_length;
+///
+/// // The months alternate 30 and 29; Dhu al-Hijja has 30 in a leap year.
+/// assert_eq!(month_length(1446, 1), Some(30));
+/// assert_eq!(month_length(1446, 2), Some(29));
+/// assert_eq!(month_length(2, 12), Some(30));
+/// assert_eq!(month_length(1, 12), Some(29));
+/// ```
 #[must_use]
 pub const fn month_length(year: i32, month: u8) -> Option<u8> {
     match month {
@@ -49,6 +80,12 @@ pub const fn month_length(year: i32, month: u8) -> Option<u8> {
 }
 
 /// The fixed day of a Hijri date; the date is not validated.
+///
+/// ```
+/// use teistro_calendar::hijri::{EPOCH, fixed_from_hijri};
+///
+/// assert_eq!(fixed_from_hijri(1, 1, 1), EPOCH);
+/// ```
 #[must_use]
 pub const fn fixed_from_hijri(year: i32, month: u8, day: u8) -> FixedDay {
     let y = year as i64;
@@ -63,6 +100,13 @@ pub const fn fixed_from_hijri(year: i32, month: u8, day: u8) -> FixedDay {
 }
 
 /// The Hijri date of a fixed day.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::hijri::hijri_from_fixed;
+///
+/// assert_eq!(hijri_from_fixed(fixed_from_gregorian(2024, 7, 7)), (1445, 12, 30));
+/// ```
 #[must_use]
 #[allow(
     clippy::cast_possible_truncation,

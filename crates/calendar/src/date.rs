@@ -10,6 +10,16 @@ use teistro_core::error::{Detail, Error, Status};
 use crate::fixed::{FixedDay, Weekday};
 
 /// A year in an era, for presentation.
+///
+/// ```
+/// use teistro_calendar::{BikramSambat, CalendarSystem, EraNumber};
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_core::catalogue::Era;
+///
+/// let date = BikramSambat::shipped().date_of(fixed_from_gregorian(2024, 1, 1))?;
+/// assert_eq!(date.era, Some(EraNumber { era: Era::Vikrama, year: 2080 }));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct EraNumber {
@@ -21,6 +31,20 @@ pub struct EraNumber {
 
 /// A date in a calendar. Years are astronomical (1 BCE is 0); an era is
 /// attached for presentation only.
+///
+/// ```
+/// use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
+/// use teistro_core::catalogue::Calendar;
+///
+/// let new_year = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+///
+/// assert_eq!(Gregorian.weekday(&new_year)?.name(), "Monday");
+/// assert_eq!(new_year.to_string(), "GREGORIAN 2024-01-01");
+/// // Years are astronomical: 1 BCE is year 0.
+/// let bce = Gregorian.date_of(Gregorian.to_fixed_ymd(0, 1, 1)?)?;
+/// assert_eq!(bce.era.map(|era| era.year), Some(1));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CalendarDate {
@@ -47,6 +71,20 @@ pub struct CalendarDate {
 /// Which part of a date is the first of a repeated pair: the leap month
 /// comes before the month whose number it takes, and the leap day before
 /// the day whose number it repeats.
+///
+/// ```
+/// use teistro_calendar::tibetan::{TibetanPhugpa, has_leap_month};
+/// use teistro_calendar::{CalendarDate, CalendarSystem, Leap};
+/// use teistro_core::catalogue::Calendar;
+///
+/// // 2024's sixth Tibetan month was doubled; the leap month comes first.
+/// assert!(has_leap_month(2024, 6));
+/// let regular = CalendarDate::defined(Calendar::TibetanPhugpa, 2024, 6, 1);
+/// let leap = regular.clone().with_leap(Some(Leap::Month));
+/// let days = TibetanPhugpa.fixed_of(&leap)?.days_until(TibetanPhugpa.fixed_of(&regular)?);
+/// assert!((29..=30).contains(&days), "{days}");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -61,6 +99,13 @@ pub enum Leap {
 
 impl Leap {
     /// The mark of a month and a day, `None` when neither is a leap.
+    ///
+    /// ```
+    /// use teistro_calendar::Leap;
+    ///
+    /// assert_eq!(Leap::of(false, false), None);
+    /// assert_eq!(Leap::of(true, true), Some(Leap::MonthAndDay));
+    /// ```
     #[must_use]
     pub const fn of(month: bool, day: bool) -> Option<Leap> {
         match (month, day) {
@@ -72,18 +117,36 @@ impl Leap {
     }
 
     /// Whether the month is the leap month.
+    ///
+    /// ```
+    /// use teistro_calendar::Leap;
+    ///
+    /// assert!(Leap::MonthAndDay.month() && !Leap::Day.month());
+    /// ```
     #[must_use]
     pub const fn month(self) -> bool {
         matches!(self, Leap::Month | Leap::MonthAndDay)
     }
 
     /// Whether the day is the leap day.
+    ///
+    /// ```
+    /// use teistro_calendar::Leap;
+    ///
+    /// assert!(Leap::MonthAndDay.day() && !Leap::Month.day());
+    /// ```
     #[must_use]
     pub const fn day(self) -> bool {
         matches!(self, Leap::Day | Leap::MonthAndDay)
     }
 
     /// The mark's key, as the wire spells it.
+    ///
+    /// ```
+    /// use teistro_calendar::Leap;
+    ///
+    /// assert_eq!(Leap::MonthAndDay.key(), "MONTH_AND_DAY");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -96,6 +159,18 @@ impl Leap {
 
 impl CalendarDate {
     /// A date in a calendar that is a mathematical definition.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
+    /// use teistro_core::catalogue::Calendar;
+    ///
+    /// let new_year = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    ///
+    /// assert_eq!((new_year.year, new_year.month, new_year.day), (2024, 1, 1));
+    /// assert_eq!((new_year.era, new_year.leap), (None, None));
+    /// assert_eq!(Gregorian.fixed_of(&new_year)?.get(), 738_886);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn defined(calendar: Calendar, year: i32, month: u8, day: u8) -> CalendarDate {
         CalendarDate {
@@ -110,6 +185,18 @@ impl CalendarDate {
     }
 
     /// The same date with its leap mark.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
+    /// use teistro_core::catalogue::Calendar;
+    ///
+    /// let new_year = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    /// use teistro_calendar::Leap;
+    ///
+    /// // A calendar that repeats no month refuses a leap mark.
+    /// assert!(Gregorian.fixed_of(&new_year.with_leap(Some(Leap::Month))).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_leap(mut self, leap: Option<Leap>) -> CalendarDate {
         self.leap = leap;
@@ -117,6 +204,14 @@ impl CalendarDate {
     }
 
     /// The same date with an era attached.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarDate, EraNumber};
+    /// use teistro_core::catalogue::{Calendar, Era};
+    ///
+    /// let date = CalendarDate::defined(Calendar::Gregorian, 0, 1, 1).with_era(Era::BeforeCommonEra, 1);
+    /// assert_eq!(date.era, Some(EraNumber { era: Era::BeforeCommonEra, year: 1 }));
+    /// ```
     #[must_use]
     pub const fn with_era(mut self, era: Era, year: i32) -> CalendarDate {
         self.era = Some(EraNumber { era, year });
@@ -138,6 +233,16 @@ impl fmt::Display for CalendarDate {
 }
 
 /// What a calendar declares.
+///
+/// ```
+/// use teistro_calendar::{BikramSambat, CalendarSystem, Gregorian};
+/// use teistro_core::catalogue::Era;
+///
+/// let gregorian = Gregorian.capabilities();
+/// assert!(!gregorian.needs_place && !gregorian.needs_ephemeris);
+/// assert_eq!(gregorian.eras, [Era::CommonEra, Era::BeforeCommonEra]);
+/// assert_eq!(BikramSambat::shipped().capabilities().eras, [Era::Vikrama]);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CalendarCapabilities {
     /// The first and last fixed day the calendar converts.
@@ -152,14 +257,50 @@ pub struct CalendarCapabilities {
 
 /// A calendar: conversions to and from the fixed day, month lengths and
 /// leap years.
+///
+/// ```
+/// use teistro_calendar::{BikramSambat, CalendarDate, CalendarSystem, Gregorian};
+/// use teistro_core::catalogue::Calendar;
+///
+/// // Every calendar meets the others at the fixed day.
+/// let ad = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// let bs = Gregorian.convert(&ad, BikramSambat::shipped())?;
+/// assert_eq!((bs.year, bs.month, bs.day), (2080, 9, 16));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub trait CalendarSystem: Send + Sync {
     /// The calendar's key.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarSystem, Gregorian};
+    /// use teistro_core::catalogue::Calendar;
+    ///
+    /// assert_eq!(Gregorian.id(), Calendar::Gregorian);
+    /// ```
     fn id(&self) -> Calendar;
 
     /// What the calendar declares.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarSystem, Gregorian, Julian};
+    ///
+    /// // The years -9999 to 9999.
+    /// let (first, last) = Gregorian.capabilities().range;
+    /// assert_eq!((first, last), (Gregorian.to_fixed_ymd(-9999, 1, 1)?, Gregorian.to_fixed_ymd(9999, 12, 31)?));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     fn capabilities(&self) -> CalendarCapabilities;
 
     /// The date a fixed day falls on.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarSystem, FixedDay, Gregorian};
+    ///
+    /// let date = Gregorian.date_of(FixedDay::UNIX_EPOCH)?;
+    /// assert_eq!((date.year, date.month, date.day), (1970, 1, 1));
+    /// assert!(Gregorian.date_of(FixedDay::new(i64::MAX / 2)).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -167,6 +308,19 @@ pub trait CalendarSystem: Send + Sync {
     fn date_of(&self, fixed: FixedDay) -> Result<CalendarDate, Error>;
 
     /// The fixed day of a date, validated.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
+    /// use teistro_core::catalogue::Calendar;
+    ///
+    /// let new_year = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    /// use teistro_core::error::{Detail, Status};
+    ///
+    /// assert_eq!(Gregorian.fixed_of(&new_year)?.get(), 738_886);
+    /// let refused = Gregorian.fixed_of(&CalendarDate::defined(Calendar::Gregorian, 2023, 2, 29)).unwrap_err();
+    /// assert_eq!((refused.status, refused.detail), (Status::InvalidArg, Some(Detail::NonexistentDate)));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -176,15 +330,38 @@ pub trait CalendarSystem: Send + Sync {
 
     /// The length of a month.
     ///
+    /// ```
+    /// use teistro_calendar::{CalendarSystem, Gregorian};
+    ///
+    /// assert_eq!(Gregorian.month_length(2024, 2)?, 29);
+    /// assert!(Gregorian.month_length(2024, 13).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// A month the calendar does not have, or a year outside its coverage.
     fn month_length(&self, year: i32, month: u8) -> Result<u8, Error>;
 
     /// Whether a year is a leap year.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarSystem, Gregorian, Julian};
+    ///
+    /// assert!(Julian.is_leap(1900) && !Gregorian.is_leap(1900));
+    /// ```
     fn is_leap(&self, year: i32) -> bool;
 
     /// The fixed day of a year, month and day in this calendar.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarSystem, Gregorian};
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    ///
+    /// assert_eq!(Gregorian.to_fixed_ymd(2024, 1, 1)?, fixed_from_gregorian(2024, 1, 1));
+    /// assert!(Gregorian.to_fixed_ymd(2024, 4, 31).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -195,6 +372,17 @@ pub trait CalendarSystem: Send + Sync {
 
     /// The weekday of a date.
     ///
+    /// ```
+    /// use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
+    /// use teistro_core::catalogue::Calendar;
+    ///
+    /// let new_year = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    /// use teistro_calendar::Weekday;
+    ///
+    /// assert_eq!(Gregorian.weekday(&new_year)?, Weekday::Monday);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`CalendarSystem::fixed_of`].
@@ -203,6 +391,18 @@ pub trait CalendarSystem: Send + Sync {
     }
 
     /// Converts a date into another calendar.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
+    /// use teistro_core::catalogue::Calendar;
+    ///
+    /// let new_year = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    /// use teistro_calendar::Julian;
+    ///
+    /// let julian = Gregorian.convert(&new_year, &Julian)?;
+    /// assert_eq!((julian.calendar, julian.year, julian.month, julian.day), (Calendar::Julian, 2023, 12, 19));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -289,6 +489,15 @@ pub(crate) fn check_day(
 
 /// The shipped calendar with a key, or `None` for one that needs a
 /// context (the lunisolar calendar takes the ephemeris port).
+///
+/// ```
+/// use teistro_calendar::shipped;
+/// use teistro_core::catalogue::Calendar;
+///
+/// assert_eq!(shipped(Calendar::BikramSambat).map(|calendar| calendar.id()), Some(Calendar::BikramSambat));
+/// // The lunisolar calendar needs an ephemeris, so a context builds it.
+/// assert!(shipped(Calendar::IndianLunisolar).is_none());
+/// ```
 #[must_use]
 pub fn shipped(id: Calendar) -> Option<&'static dyn CalendarSystem> {
     match id {

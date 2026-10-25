@@ -10,6 +10,14 @@ use crate::gregorian::{Gregorian, check_year, fixed_from_gregorian};
 use crate::julian::Julian;
 
 /// A named transition: the first Gregorian day and the last Julian day.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::mixed::BRITAIN_1752;
+///
+/// assert_eq!(BRITAIN_1752.transition.key, "BRITAIN_1752");
+/// assert_eq!(BRITAIN_1752.transition.first_gregorian, fixed_from_gregorian(1752, 9, 14));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Transition {
     /// The key (`GREGORIAN_1582`).
@@ -50,6 +58,19 @@ pub const RUSSIA_1918: Mixed = Mixed {
 };
 
 /// The mixed calendar with one transition.
+///
+/// ```
+/// use teistro_calendar::mixed::GREGORIAN_1582;
+/// use teistro_calendar::{CalendarDate, CalendarSystem};
+/// use teistro_core::catalogue::Calendar;
+///
+/// let date = |d| CalendarDate::defined(Calendar::Mixed, 1582, 10, d);
+/// // Thursday 4 October was followed by Friday 15 October.
+/// assert_eq!(GREGORIAN_1582.fixed_of(&date(4))?.plus_days(1), GREGORIAN_1582.fixed_of(&date(15))?);
+/// // The ten days between never happened.
+/// assert!(GREGORIAN_1582.fixed_of(&date(10)).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Mixed {
     /// The transition.
@@ -58,6 +79,13 @@ pub struct Mixed {
 
 impl Mixed {
     /// The shipped transitions by key.
+    ///
+    /// ```
+    /// use teistro_calendar::Mixed;
+    ///
+    /// assert!(Mixed::named("RUSSIA_1918").is_some());
+    /// assert!(Mixed::named("FRANCE_1582").is_none());
+    /// ```
     #[must_use]
     pub fn named(key: &str) -> Option<Mixed> {
         match key {

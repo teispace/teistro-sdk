@@ -33,6 +33,16 @@ use crate::date::{
 use crate::fixed::FixedDay;
 
 /// The Tibetan calendar, Phugpa.
+///
+/// ```
+/// use teistro_calendar::tibetan::TibetanPhugpa;
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+///
+/// // Losar 2024, the first day of the Wood Dragon year, was 10 February.
+/// let losar = TibetanPhugpa.date_of(Gregorian.to_fixed_ymd(2024, 2, 10)?)?;
+/// assert_eq!((losar.year, losar.month, losar.day, losar.leap), (2024, 1, 1, None));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct TibetanPhugpa;
 
@@ -119,6 +129,14 @@ fn true_month(year: i64, month: i64, leap: bool) -> i64 {
 
 /// Whether month `month` of `year` is doubled, a leap month before it
 /// (5.24).
+///
+/// ```
+/// use teistro_calendar::tibetan::has_leap_month;
+///
+/// // The leap months the Tibetan Nuns Project printed: 4 in 2016, 9 in 2021, 6 in 2024.
+/// assert!(has_leap_month(2016, 4) && has_leap_month(2021, 9) && has_leap_month(2024, 6));
+/// assert!(!has_leap_month(2024, 5));
+/// ```
 #[must_use]
 pub fn has_leap_month(year: i32, month: u8) -> bool {
     leap_month_in(i64::from(year), i64::from(month))
@@ -179,6 +197,15 @@ fn tibetan_from_fixed(fixed: i64) -> (i64, i64, Option<Leap>, i64) {
 /// day of the year before's (regular) month 12, which is the first day of
 /// a leap month 1 when there is one, and day 2 when day 1 is skipped
 /// (Janson §8).
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::tibetan::losar;
+///
+/// assert_eq!(losar(2024), fixed_from_gregorian(2024, 2, 10));
+/// assert_eq!(losar(2025), fixed_from_gregorian(2025, 2, 28));
+/// assert_eq!(losar(2026), fixed_from_gregorian(2026, 2, 18));
+/// ```
 #[must_use]
 pub fn losar(year: i32) -> FixedDay {
     let k = 30 * true_month(i64::from(year) - 1, 12, false) + 29;
@@ -192,6 +219,16 @@ pub fn losar(year: i32) -> FixedDay {
 /// of month 1 was skipped, on 1 March, the 14th; Tushita, in Dharamsala,
 /// printed 2 March, the 16th. The preceding day is the one in which the
 /// skipped lunar day ends.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::tibetan::{SkippedDay, observed};
+///
+/// // Chotrul Duchen 2018: the 15th of month 1 was skipped.
+/// assert_eq!(observed(2018, 1, 15, SkippedDay::Before)?, fixed_from_gregorian(2018, 3, 1));
+/// assert_eq!(observed(2018, 1, 15, SkippedDay::After)?, fixed_from_gregorian(2018, 3, 2));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -269,6 +306,16 @@ pub fn observed(year: i32, month: u8, day: u8, skipped: SkippedDay) -> Result<Fi
 /// numbered sixty-year rabjung cycles, with the Indian cycle's name, and
 /// the Chinese cycle's element, gender and animal, which name it as
 /// "Fire–male–Horse".
+///
+/// ```
+/// use teistro_calendar::tibetan::year_name;
+/// use teistro_core::catalogue::{Gender, TibetanAnimal, TibetanElement};
+///
+/// let year = year_name(2024)?;
+/// assert_eq!((year.rabjung, year.year_in_rabjung), (17, 38));
+/// assert_eq!((year.element, year.gender, year.animal), (TibetanElement::Wood, Gender::Male, TibetanAnimal::Dragon));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

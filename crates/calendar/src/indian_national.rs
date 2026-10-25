@@ -19,6 +19,16 @@ use crate::fixed::FixedDay;
 use crate::gregorian::{self, YEAR_RANGE, fixed_from_gregorian};
 
 /// The Indian national calendar.
+///
+/// ```
+/// use teistro_calendar::indian_national::IndianNational;
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+///
+/// // 1 January 2024 is 11 Pausha 1945 Saka.
+/// let saka = IndianNational.date_of(Gregorian.to_fixed_ymd(2024, 1, 1)?)?;
+/// assert_eq!((saka.year, saka.month, saka.day), (1945, 10, 11));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct IndianNational;
 
@@ -31,12 +41,27 @@ pub const SAKA_RANGE: (i32, i32) = (YEAR_RANGE.0 - OFFSET, YEAR_RANGE.1 - OFFSET
 
 /// Whether a Saka year is a leap year: when the Gregorian year it begins in
 /// is one.
+///
+/// ```
+/// use teistro_calendar::indian_national::is_leap_year;
+///
+/// // Saka 1946 began in 2024, a Gregorian leap year.
+/// assert!(is_leap_year(1946) && !is_leap_year(1945));
+/// ```
 #[must_use]
 pub const fn is_leap_year(year: i32) -> bool {
     gregorian::is_leap_year(year + OFFSET)
 }
 
 /// The length of a month, or `None` for a month outside 1 to 12.
+///
+/// ```
+/// use teistro_calendar::indian_national::month_length;
+///
+/// assert_eq!(month_length(1946, 1), Some(31));
+/// assert_eq!(month_length(1945, 1), Some(30));
+/// assert_eq!((month_length(1946, 6), month_length(1946, 7)), (Some(31), Some(30)));
+/// ```
 #[must_use]
 pub const fn month_length(year: i32, month: u8) -> Option<u8> {
     match month {
@@ -48,6 +73,15 @@ pub const fn month_length(year: i32, month: u8) -> Option<u8> {
 }
 
 /// The fixed day of 1 Chaitra of a Saka year.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::indian_national::new_year;
+///
+/// // 1 Chaitra is 21 March in a leap year and 22 March otherwise.
+/// assert_eq!(new_year(1946), fixed_from_gregorian(2024, 3, 21));
+/// assert_eq!(new_year(1947), fixed_from_gregorian(2025, 3, 22));
+/// ```
 #[must_use]
 pub const fn new_year(year: i32) -> FixedDay {
     let gregorian = year + OFFSET;
@@ -72,12 +106,26 @@ const fn days_before(year: i32, month: u8) -> i64 {
 }
 
 /// The fixed day of a Saka date; the date is not validated.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::indian_national::fixed_from_indian_national;
+///
+/// assert_eq!(fixed_from_indian_national(1945, 10, 11), fixed_from_gregorian(2024, 1, 1));
+/// ```
 #[must_use]
 pub const fn fixed_from_indian_national(year: i32, month: u8, day: u8) -> FixedDay {
     new_year(year).plus_days(days_before(year, month) + day as i64 - 1)
 }
 
 /// The Saka date of a fixed day.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::indian_national::indian_national_from_fixed;
+///
+/// assert_eq!(indian_national_from_fixed(fixed_from_gregorian(2024, 3, 21)), (1946, 1, 1));
+/// ```
 #[must_use]
 #[allow(
     clippy::cast_possible_truncation,

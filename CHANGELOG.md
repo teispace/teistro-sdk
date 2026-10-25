@@ -126,6 +126,20 @@ names suggested for a misspelt zone), and resolution through each
 daylight-saving and unknown-time policy. `teistro-time` joins `teistro`
 on `check-doc-examples`' list, so an item added without an example fails.
 
+**Every public item of `teistro-calendar` has a run example.**
+**Numbers:** rustdoc counts 162 such items, and all 162 have one, up from 7.
+The examples are dated facts each calendar must reproduce: 1 Baisakh 2081
+on 13 April 2024, with the engine's months for that year equal to the
+committee's; the text's Makara sankranti on 15 January 2024; Losar 2024 on
+10 February; 1 Chaitra 1946 Saka on 21 March 2024; 8 Falgun on
+21 February in every Bengali year; the arithmetic Hijri year 1446 from
+8 July 2024; and the adhika Shravana of August 1947. Writing them found
+the samvatsara module's own prose wrong: it called a Jovian year "361
+days and a little over eleven hours", when the text's mean Jupiter takes
+361 days and about 38 minutes (a twelfth of 4332.32 days). The prose is
+corrected and the example asserts the figure. `teistro-calendar` joins
+`check-doc-examples`' list.
+
 **The Node and Python suites run with the SDK under AddressSanitizer.**
 **Numbers:** Node's six files and Python's 200 tests pass with every access
 the SDK makes checked. A one-byte heap over-read planted in the addon,
