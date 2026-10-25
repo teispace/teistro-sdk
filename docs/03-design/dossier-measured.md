@@ -22,12 +22,12 @@ built-in ephemeris does not reach: `c047-london-1800-01-02`,
 | proposed rule | verdict | measured |
 |---|---|---|
 | every chart's whole dossier is fewer bytes than its document's canonical JSON | **holds** | 0 of 53 disagree |
-| every section's dossier is fewer bytes than the JSON of what it writes, chart by chart | **holds** | 0 of 687 disagree |
+| every section's dossier is fewer bytes than the JSON of what it writes, chart by chart | **holds** | 0 of 689 disagree |
 
 ## A chart whole
 
-Over 53 births the dossiers come to 2 677 362 bytes and the documents'
-canonical JSON to 6 879 374: 0.39 of it, a chart's own ratio between
+Over 53 births the dossiers come to 2 678 785 bytes and the documents'
+canonical JSON to 6 886 029: 0.39 of it, a chart's own ratio between
 0.25 and 0.41.
 
 ## Section by section
@@ -49,7 +49,7 @@ against the foundation and the state), summed over the births.
 | `BHAVA_BALA` | 53 | 43 571 | 82 834 | 0.53 | 0 |
 | `VIMSHOPAKA` | 53 | 24 866 | 37 072 | 0.67 | 0 |
 | `JAIMINI` | 53 | 18 324 | 95 569 | 0.19 | 0 |
-| `POINTS` | 51 | 44 727 | 175 983 | 0.25 | 0 |
+| `POINTS` | 53 | 46 150 | 182 640 | 0.25 | 0 |
 | `ASPECTS` | 53 | 57 384 | 628 449 | 0.09 | 0 |
 | `AVAKAHADA` | 53 | 12 313 | 13 123 | 0.94 | 0 |
 
