@@ -55,6 +55,26 @@ const LIGHT_TIME_PER_AU: f64 = AULT / DAYSEC;
 /// the ecliptic of the same date, so that columns in either coordinate
 /// system are transformed in the frame they are already in rather than
 /// rotated twice a cell.
+///
+/// ```
+/// # use teistro_astro::topocentric::Station;
+/// # use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
+/// # use teistro_port_ephemeris::{Body, Cell, CellStatus, Corrections, Source};
+/// #
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+/// # let station = Station::at(kathmandu, JulianDay::<Ut1>::literal(2_460_000.5), JulianDay::<Tt>::literal(2_460_000.5));
+/// # // The Moon as the Earth's centre sees it, some 385 000 km away.
+/// # let moon = Cell {
+/// #     lon: 100.0, lat: 0.0, dist: 0.002_569_555,
+/// #     lon_speed: 13.0, lat_speed: 0.0, dist_speed: 0.0,
+/// #     status: CellStatus::Ok, source: Source::UNKNOWN,
+/// # };
+///
+/// // Kathmandu is about an Earth radius, 4.26e-5 au, from the centre.
+/// let [x, y, z] = station.position_au;
+/// assert!(((x * x + y * y + z * z).sqrt() - 4.26e-5).abs() < 1e-6);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Station {
     /// The station's geocentric position, astronomical units.
@@ -96,6 +116,28 @@ impl Station {
 
     /// The same station with every vector turned into the ecliptic of
     /// date, for columns that are ecliptic.
+    ///
+    /// ```
+    /// # use teistro_astro::topocentric::Station;
+    /// # use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
+    /// # use teistro_port_ephemeris::{Body, Cell, CellStatus, Corrections, Source};
+    /// #
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let station = Station::at(kathmandu, JulianDay::<Ut1>::literal(2_460_000.5), JulianDay::<Tt>::literal(2_460_000.5));
+    /// # // The Moon as the Earth's centre sees it, some 385 000 km away.
+    /// # let moon = Cell {
+    /// #     lon: 100.0, lat: 0.0, dist: 0.002_569_555,
+    /// #     lon_speed: 13.0, lat_speed: 0.0, dist_speed: 0.0,
+    /// #     status: CellStatus::Ok, source: Source::UNKNOWN,
+    /// # };
+    ///
+    /// // A turn about the x axis keeps every length.
+    /// let turned = station.in_ecliptic(23.44);
+    /// let length = |[x, y, z]: [f64; 3]| (x * x + y * y + z * z).sqrt();
+    /// assert!((length(turned.position_au) - length(station.position_au)).abs() < 1e-18);
+    /// assert_eq!(turned.sun_distance_au, station.sun_distance_au);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn in_ecliptic(self, obliquity_deg: f64) -> Station {
         let (se, ce) = math::sin_cos(obliquity_deg * DEG2RAD);
@@ -118,6 +160,28 @@ impl Station {
     /// `corrections` says which of the terms belong: the aberration ones
     /// are skipped for a geometric position, and the light-time carry for
     /// one with no light time.
+    ///
+    /// ```
+    /// # use teistro_astro::topocentric::Station;
+    /// # use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
+    /// # use teistro_port_ephemeris::{Body, Cell, CellStatus, Corrections, Source};
+    /// #
+    /// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+    /// # let station = Station::at(kathmandu, JulianDay::<Ut1>::literal(2_460_000.5), JulianDay::<Tt>::literal(2_460_000.5));
+    /// # // The Moon as the Earth's centre sees it, some 385 000 km away.
+    /// # let moon = Cell {
+    /// #     lon: 100.0, lat: 0.0, dist: 0.002_569_555,
+    /// #     lon_speed: 13.0, lat_speed: 0.0, dist_speed: 0.0,
+    /// #     status: CellStatus::Ok, source: Source::UNKNOWN,
+    /// # };
+    ///
+    /// // The Moon's parallax moves her by up to a degree.
+    /// let seen = station.seen(moon, Body::Moon, Corrections::APPARENT, true);
+    /// assert!((seen.lon - moon.lon).abs() < 1.0 && seen.lon != moon.lon);
+    /// // A node is a direction, which no observer sees displaced.
+    /// assert_eq!(station.seen(moon, Body::MeanNode, Corrections::APPARENT, true), moon);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn seen(&self, cell: Cell, body: Body, corrections: Corrections, speeds: bool) -> Cell {
         if !body.is_placed() || !cell.is_ok() {
@@ -259,6 +323,14 @@ fn subtract(left: Vector3, right: Vector3) -> Vector3 {
 }
 
 /// The spherical position a direction points at, degrees.
+///
+/// ```
+/// use teistro_astro::topocentric::direction_of;
+///
+/// let down_y = direction_of(&[0.0, -1.0, 0.0]);
+/// // Longitudes come out in [0, 360).
+/// assert!((down_y.lon_deg - 270.0).abs() < 1e-12 && down_y.lat_deg == 0.0);
+/// ```
 #[must_use]
 pub fn direction_of(p: &Vector3) -> Spherical {
     let (lon, lat) = vector::c2s(p);

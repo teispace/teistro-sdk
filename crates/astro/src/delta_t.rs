@@ -25,6 +25,16 @@ const LINEAR_TAIL_YEARS: f64 = 10.0;
 const SEAM_TAPER_YEARS: f64 = 10.0;
 
 /// Which Delta T.
+///
+/// ```
+/// use teistro_astro::delta_t::DeltaTModel;
+///
+/// // Written with its kind.
+/// let custom: DeltaTModel = serde_json::from_str(r#"{"kind": "CUSTOM", "seconds": 69.2}"#)?;
+/// assert_eq!(custom, DeltaTModel::Custom { seconds: 69.2 });
+/// assert_eq!(DeltaTModel::default(), DeltaTModel::TableThenModel);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -49,6 +59,13 @@ pub enum DeltaTModel {
 impl DeltaTModel {
     /// The model a settings knob names; `None` for the provider's own,
     /// which the context supplies through the ephemeris port.
+    ///
+    /// ```
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_core::settings::DeltaT;
+    ///
+    /// assert_eq!(DeltaTModel::from_knob(DeltaT::EspenakMeeus2006), Some(DeltaTModel::EspenakMeeus2006));
+    /// ```
     #[must_use]
     pub const fn from_knob(knob: teistro_core::settings::DeltaT) -> Option<DeltaTModel> {
         use teistro_core::settings::DeltaT as Knob;
@@ -65,6 +82,13 @@ impl DeltaTModel {
     }
 
     /// The key stamped in provenance.
+    ///
+    /// ```
+    /// use teistro_astro::delta_t::DeltaTModel;
+    ///
+    /// assert_eq!(DeltaTModel::TableThenModel.key(), "TABLE_THEN_MODEL");
+    /// assert_eq!(DeltaTModel::Custom { seconds: 1.0 }.key(), "CUSTOM");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -77,6 +101,18 @@ impl DeltaTModel {
 }
 
 /// Where a value came from.
+///
+/// ```
+/// use teistro_astro::delta_t::{DeltaTModel, DeltaTSource, delta_t};
+/// use teistro_core::quantity::{JulianDay, Ut1};
+///
+/// // Measured in 2000, so the table answers; in 1000 BC only a model can.
+/// let measured = delta_t(JulianDay::<Ut1>::literal(2_451_544.5), DeltaTModel::TableThenModel)?;
+/// assert_eq!(measured.source, DeltaTSource::Table);
+/// let ancient = delta_t(JulianDay::<Ut1>::literal(1_355_818.5), DeltaTModel::TableThenModel)?;
+/// assert_eq!(ancient.source, DeltaTSource::Model);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -93,6 +129,18 @@ pub enum DeltaTSource {
 }
 
 /// Delta T at an instant, with what produced it.
+///
+/// ```
+/// use teistro_astro::delta_t::{DeltaTModel, delta_t};
+/// use teistro_core::quantity::{JulianDay, Ut1};
+///
+/// let ut1 = JulianDay::<Ut1>::literal(2_451_544.5);
+/// let applied = delta_t(ut1, DeltaTModel::TableThenModel)?;
+/// // About 63.8 s at the start of 2000.
+/// assert!(applied.seconds > 63.0 && applied.seconds < 64.5);
+/// assert!(applied.to_string().starts_with("Delta T 63."));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DeltaT {
@@ -108,6 +156,16 @@ pub struct DeltaT {
 
 impl DeltaT {
     /// The value in days, for Julian-day arithmetic.
+    ///
+    /// ```
+    /// use teistro_astro::delta_t::{DeltaTModel, delta_t};
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    ///
+    /// let ut1 = JulianDay::<Ut1>::literal(2_451_544.5);
+    /// let applied = delta_t(ut1, DeltaTModel::Custom { seconds: 86_400.0 })?;
+    /// assert_eq!(applied.days(), 1.0);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn days(&self) -> f64 {
         self.seconds / 86_400.0
@@ -125,18 +183,39 @@ impl fmt::Display for DeltaT {
 }
 
 /// The IERS series the table comes from.
+///
+/// ```
+/// use teistro_astro::delta_t::table_source;
+///
+/// assert!(!table_source().is_empty());
+/// ```
 #[must_use]
 pub const fn table_source() -> &'static str {
     DELTA_T_SOURCE
 }
 
 /// The historical table the uncertainties before the IERS era come from.
+///
+/// ```
+/// use teistro_astro::delta_t::historical_source;
+///
+/// assert!(!historical_source().is_empty());
+/// ```
 #[must_use]
 pub const fn historical_source() -> &'static str {
     HISTORICAL_SOURCE
 }
 
 /// The span the table covers, as Julian days.
+///
+/// ```
+/// use teistro_astro::delta_t::{decimal_year, table_span};
+///
+/// // The IERS table begins in the 1950s or 1970s and runs to the present.
+/// let (first, last) = table_span().ok_or("a table")?;
+/// assert!(decimal_year(first) < 1975.0 && decimal_year(last) > 2020.0);
+/// # Ok::<(), &str>(())
+/// ```
 #[must_use]
 pub fn table_span() -> Option<(f64, f64)> {
     let first = DELTA_T_ROWS.first()?;
@@ -148,6 +227,13 @@ pub fn table_span() -> Option<(f64, f64)> {
 }
 
 /// The decimal year of a Julian day, in Julian years from J2000.0.
+///
+/// ```
+/// use teistro_astro::delta_t::decimal_year;
+///
+/// assert_eq!(decimal_year(2_451_545.0), 2000.0);
+/// assert_eq!(decimal_year(2_451_545.0 + 365.25), 2001.0);
+/// ```
 #[must_use]
 pub fn decimal_year(jd: f64) -> f64 {
     2000.0 + (jd - J2000) / DAYS_PER_YEAR
@@ -159,6 +245,15 @@ pub fn decimal_year(jd: f64) -> f64 {
 /// year: the long-term parabola before −500 and after 2150, and twelve
 /// piecewise polynomials between, with the 2050 to 2150 expression that
 /// joins the parabola. Seconds.
+///
+/// ```
+/// use teistro_astro::delta_t::espenak_meeus_2006;
+///
+/// // The 500 to 1600 polynomial at its centre, 1000.
+/// assert_eq!(espenak_meeus_2006(1000.0), 1574.2);
+/// // And 2000, 63.86 s by the 1986 to 2005 fit.
+/// assert!((espenak_meeus_2006(2000.0) - 63.86).abs() < 0.01);
+/// ```
 #[must_use]
 pub fn espenak_meeus_2006(year: f64) -> f64 {
     let parabola = |y: f64| {
@@ -365,6 +460,20 @@ fn end_slope(last_year: f64) -> f64 {
 }
 
 /// Delta T at a UT1 instant under a model.
+///
+/// ```
+/// use teistro_astro::delta_t::{DeltaTModel, delta_t};
+/// use teistro_core::quantity::{JulianDay, Ut1};
+///
+/// let ut1 = JulianDay::<Ut1>::literal(2_451_544.5);
+/// let table = delta_t(ut1, DeltaTModel::TableThenModel)?;
+/// let fit = delta_t(ut1, DeltaTModel::EspenakMeeus2006)?;
+/// // The fit is within a second of the measurement here.
+/// assert!((table.seconds - fit.seconds).abs() < 1.0);
+/// // An unsourced model refuses.
+/// assert!(delta_t(ut1, DeltaTModel::StephensonMorrisonHohenkerk2016).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

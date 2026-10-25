@@ -9,12 +9,33 @@ use teistro_core::math;
 use super::D2PI;
 
 /// A Cartesian vector.
+///
+/// ```
+/// use teistro_astro::iau::vector::{Vector3, pm};
+///
+/// let p: Vector3 = [3.0, 4.0, 12.0];
+/// assert_eq!(pm(&p), 13.0);
+/// ```
 pub type Vector3 = [f64; 3];
 
 /// A rotation matrix, row-major.
+///
+/// ```
+/// use teistro_astro::iau::vector::{Matrix3, rxp};
+///
+/// // Row-major: the first row gives the first component.
+/// let swap: Matrix3 = [[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]];
+/// assert_eq!(rxp(&swap, &[1.0, 2.0, 3.0]), [2.0, 1.0, 3.0]);
+/// ```
 pub type Matrix3 = [[f64; 3]; 3];
 
 /// The identity matrix (`eraIr`).
+///
+/// ```
+/// use teistro_astro::iau::vector::{ir, rxp};
+///
+/// assert_eq!(rxp(&ir(), &[0.2, 1.5, 0.1]), [0.2, 1.5, 0.1]);
+/// ```
 #[must_use]
 pub const fn ir() -> Matrix3 {
     [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
@@ -22,6 +43,18 @@ pub const fn ir() -> Matrix3 {
 
 /// Rotates the matrix about the x axis by `phi` (`eraRx`): the rotation
 /// is applied after the matrix's own, as ERFA composes them.
+///
+/// ```
+/// use teistro_astro::iau::vector::{ir, rx, rxp};
+/// # let near = |a: f64, b: f64| (a - b).abs() < 1e-12;
+///
+///
+/// // A quarter turn about x carries y onto -z: the frame turns, not the vector.
+/// let mut r = ir();
+/// rx(core::f64::consts::FRAC_PI_2, &mut r);
+/// let [x, y, z] = rxp(&r, &[0.0, 1.0, 0.0]);
+/// assert!(near(x, 0.0) && near(y, 0.0) && near(z, -1.0));
+/// ```
 pub fn rx(phi: f64, r: &mut Matrix3) {
     let (s, c) = math::sin_cos(phi);
     let a10 = c * r[1][0] + s * r[2][0];
@@ -35,6 +68,17 @@ pub fn rx(phi: f64, r: &mut Matrix3) {
 }
 
 /// Rotates the matrix about the y axis by `theta` (`eraRy`).
+///
+/// ```
+/// use teistro_astro::iau::vector::{ir, ry, rxp};
+/// # let near = |a: f64, b: f64| (a - b).abs() < 1e-12;
+///
+///
+/// let mut r = ir();
+/// ry(core::f64::consts::FRAC_PI_2, &mut r);
+/// let [x, y, z] = rxp(&r, &[0.0, 0.0, 1.0]);
+/// assert!(near(x, -1.0) && near(y, 0.0) && near(z, 0.0));
+/// ```
 pub fn ry(theta: f64, r: &mut Matrix3) {
     let (s, c) = math::sin_cos(theta);
     let a00 = c * r[0][0] - s * r[2][0];
@@ -48,6 +92,17 @@ pub fn ry(theta: f64, r: &mut Matrix3) {
 }
 
 /// Rotates the matrix about the z axis by `psi` (`eraRz`).
+///
+/// ```
+/// use teistro_astro::iau::vector::{ir, rz, rxp};
+/// # let near = |a: f64, b: f64| (a - b).abs() < 1e-12;
+///
+///
+/// let mut r = ir();
+/// rz(core::f64::consts::FRAC_PI_2, &mut r);
+/// let [x, y, z] = rxp(&r, &[1.0, 0.0, 0.0]);
+/// assert!(near(x, 0.0) && near(y, -1.0) && near(z, 0.0));
+/// ```
 pub fn rz(psi: f64, r: &mut Matrix3) {
     let (s, c) = math::sin_cos(psi);
     let a00 = c * r[0][0] + s * r[1][0];
@@ -62,6 +117,16 @@ pub fn rz(psi: f64, r: &mut Matrix3) {
 
 /// The matrix product `a b` (`eraRxr`): each entry the scalar product of a
 /// row of `a` with a column of `b`.
+///
+/// ```
+/// use teistro_astro::iau::vector::{ir, rxr};
+///
+/// // ERFA's test matrix.
+/// let r = [[2.0, 3.0, 2.0], [3.0, 2.0, 3.0], [3.0, 4.0, 5.0]];
+/// assert_eq!(rxr(&r, &ir()), r);
+/// // ERFA's eraRxr test: r times itself.
+/// assert_eq!(rxr(&r, &r), [[19.0, 20.0, 23.0], [21.0, 25.0, 27.0], [33.0, 37.0, 43.0]]);
+/// ```
 #[must_use]
 pub fn rxr(a: &Matrix3, b: &Matrix3) -> Matrix3 {
     let columns = tr(b);
@@ -76,6 +141,15 @@ pub fn rxr(a: &Matrix3, b: &Matrix3) -> Matrix3 {
 }
 
 /// The transpose (`eraTr`).
+///
+/// ```
+/// use teistro_astro::iau::vector::tr;
+///
+/// // ERFA's test matrix.
+/// let r = [[2.0, 3.0, 2.0], [3.0, 2.0, 3.0], [3.0, 4.0, 5.0]];
+/// assert_eq!(tr(&r)[0], [2.0, 3.0, 3.0]);
+/// assert_eq!(tr(&tr(&r)), r);
+/// ```
 #[must_use]
 pub const fn tr(r: &Matrix3) -> Matrix3 {
     [
@@ -86,18 +160,48 @@ pub const fn tr(r: &Matrix3) -> Matrix3 {
 }
 
 /// The matrix times a vector (`eraRxp`).
+///
+/// ```
+/// use teistro_astro::iau::vector::rxp;
+/// # let near = |a: f64, b: f64| (a - b).abs() < 1e-12;
+///
+///
+/// // ERFA's test matrix.
+/// let r = [[2.0, 3.0, 2.0], [3.0, 2.0, 3.0], [3.0, 4.0, 5.0]];
+/// let [x, y, z] = rxp(&r, &[0.2, 1.5, 0.1]);
+/// assert!(near(x, 5.1) && near(y, 3.9) && near(z, 7.1));
+/// ```
 #[must_use]
 pub fn rxp(r: &Matrix3, p: &Vector3) -> Vector3 {
     [pdp(&r[0], p), pdp(&r[1], p), pdp(&r[2], p)]
 }
 
 /// The transposed matrix times a vector (`eraTrxp`).
+///
+/// ```
+/// use teistro_astro::iau::vector::trxp;
+/// # let near = |a: f64, b: f64| (a - b).abs() < 1e-12;
+///
+///
+/// // ERFA's test matrix.
+/// let r = [[2.0, 3.0, 2.0], [3.0, 2.0, 3.0], [3.0, 4.0, 5.0]];
+/// let [x, y, z] = trxp(&r, &[0.2, 1.5, 0.1]);
+/// assert!(near(x, 5.2) && near(y, 4.0) && near(z, 5.4));
+/// ```
 #[must_use]
 pub fn trxp(r: &Matrix3, p: &Vector3) -> Vector3 {
     rxp(&tr(r), p)
 }
 
 /// The vector product `a × b` (`eraPxp`).
+///
+/// ```
+/// use teistro_astro::iau::vector::pxp;
+///
+/// assert_eq!(pxp(&[2.0, 2.0, 3.0], &[1.0, 3.0, 4.0]), [-1.0, -5.0, 4.0]);
+/// // x × y is z.
+/// assert_eq!(pxp(&[1.0, 0.0, 0.0], &[0.0, 1.0, 0.0]), [0.0, 0.0, 1.0]);
+/// ```
 #[must_use]
 pub fn pxp(a: &Vector3, b: &Vector3) -> Vector3 {
     [
@@ -108,24 +212,52 @@ pub fn pxp(a: &Vector3, b: &Vector3) -> Vector3 {
 }
 
 /// The scalar product (`eraPdp`).
+///
+/// ```
+/// use teistro_astro::iau::vector::pdp;
+///
+/// assert_eq!(pdp(&[2.0, 2.0, 3.0], &[1.0, 3.0, 4.0]), 20.0);
+/// ```
 #[must_use]
 pub fn pdp(a: &Vector3, b: &Vector3) -> f64 {
     a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 }
 
 /// The modulus (`eraPm`).
+///
+/// ```
+/// use teistro_astro::iau::vector::pm;
+///
+/// assert!((pm(&[0.3, 1.2, -2.5]) - 2.789_265_136_196_270_6).abs() < 1e-12);
+/// ```
 #[must_use]
 pub fn pm(p: &Vector3) -> f64 {
     (p[0] * p[0] + p[1] * p[1] + p[2] * p[2]).sqrt()
 }
 
 /// A vector scaled (`eraSxp`).
+///
+/// ```
+/// use teistro_astro::iau::vector::sxp;
+///
+/// assert_eq!(sxp(2.0, &[0.5, -1.0, 1.5]), [1.0, -2.0, 3.0]);
+/// ```
 #[must_use]
 pub fn sxp(s: f64, p: &Vector3) -> Vector3 {
     [s * p[0], s * p[1], s * p[2]]
 }
 
 /// The unit vector and the modulus (`eraPn`); the zero vector stays zero.
+///
+/// ```
+/// use teistro_astro::iau::vector::{pm, pn};
+///
+/// let (modulus, unit) = pn(&[0.3, 1.2, -2.5]);
+/// assert!((modulus - 2.789_265_136_196_270_6).abs() < 1e-12);
+/// assert!((pm(&unit) - 1.0).abs() < 1e-15);
+/// // The zero vector stays zero.
+/// assert_eq!(pn(&[0.0; 3]), (0.0, [0.0; 3]));
+/// ```
 #[must_use]
 pub fn pn(p: &Vector3) -> (f64, Vector3) {
     let w = pm(p);
@@ -138,6 +270,14 @@ pub fn pn(p: &Vector3) -> (f64, Vector3) {
 
 /// Cartesian to spherical (`eraC2s`): longitude and latitude in radians,
 /// the longitude in `(-π, π]`.
+///
+/// ```
+/// use teistro_astro::iau::vector::c2s;
+///
+/// let (theta, phi) = c2s(&[100.0, -50.0, 25.0]);
+/// assert!((theta - -0.463_647_609_000_806_1).abs() < 1e-14);
+/// assert!((phi - 0.219_987_977_395_459_4).abs() < 1e-14);
+/// ```
 #[must_use]
 pub fn c2s(p: &Vector3) -> (f64, f64) {
     let d2 = p[0] * p[0] + p[1] * p[1];
@@ -155,6 +295,18 @@ pub fn c2s(p: &Vector3) -> (f64, f64) {
 }
 
 /// Spherical to a unit Cartesian vector (`eraS2c`).
+///
+/// ```
+/// use teistro_astro::iau::vector::{c2s, s2c};
+///
+/// let [x, y, z] = s2c(3.0123, -0.999);
+/// assert!((x - -0.536_626_766_726_052_4).abs() < 1e-12);
+/// assert!((y - 0.069_771_110_976_514_5).abs() < 1e-12);
+/// assert!((z - -0.840_930_261_856_621_4).abs() < 1e-12);
+/// // And back.
+/// let (theta, phi) = c2s(&[x, y, z]);
+/// assert!((theta - 3.0123).abs() < 1e-12 && (phi - -0.999).abs() < 1e-12);
+/// ```
 #[must_use]
 pub fn s2c(theta: f64, phi: f64) -> Vector3 {
     let cp = math::cos(phi);
@@ -162,6 +314,13 @@ pub fn s2c(theta: f64, phi: f64) -> Vector3 {
 }
 
 /// An angle into `(-π, π]` (`eraAnpm`).
+///
+/// ```
+/// use teistro_astro::iau::vector::anpm;
+///
+/// assert!((anpm(-4.0) - 2.283_185_307_179_586_5).abs() < 1e-12);
+/// assert_eq!(anpm(1.0), 1.0);
+/// ```
 #[must_use]
 pub fn anpm(a: f64) -> f64 {
     let mut w = a % D2PI;

@@ -46,6 +46,19 @@ use crate::scale::tt_from_ut1;
 use crate::stars;
 
 /// The time scale a definition's epoch is stated in.
+///
+/// ```
+/// use teistro_astro::ayanamsha::{Definition, EpochScale, definition};
+/// use teistro_core::catalogue::Ayanamsha;
+///
+/// // Lahiri's epoch is stated in TT; the Surya Siddhanta's in civil time.
+/// let scale = |id| match definition(id) {
+///     Definition::Epoch(epoch) => Some(epoch.scale),
+///     _ => None,
+/// };
+/// assert_eq!(scale(Ayanamsha::Lahiri), Some(EpochScale::Tt));
+/// assert_eq!(scale(Ayanamsha::Suryasiddhanta), Some(EpochScale::Ut));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum EpochScale {
     /// Terrestrial Time (the modern definitions).
@@ -58,6 +71,15 @@ pub enum EpochScale {
 /// The precession model a published constant was fitted with, when it was
 /// not the model in use: the value is corrected for the difference so the
 /// published number keeps its meaning under any model.
+///
+/// ```
+/// use teistro_astro::ayanamsha::{Definition, Fitted, definition};
+/// use teistro_core::catalogue::Ayanamsha;
+///
+/// // Lahiri's constant was fitted with IAU 1976 precession.
+/// let Definition::Epoch(epoch) = definition(Ayanamsha::Lahiri) else { unreachable!() };
+/// assert_eq!(epoch.fitted, Fitted::Iau1976);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Fitted {
     /// Fitted with whatever model the SDK uses; no correction.
@@ -70,6 +92,16 @@ pub enum Fitted {
 
 /// An epoch-defined ayanamsha: the value at a reference epoch, carried to
 /// any date by precession.
+///
+/// ```
+/// use teistro_astro::ayanamsha::{Definition, definition};
+/// use teistro_core::catalogue::Ayanamsha;
+///
+/// // Fagan-Bradley: 24.042° at B1950.
+/// let Definition::Epoch(epoch) = definition(Ayanamsha::FaganBradley) else { unreachable!() };
+/// assert!((epoch.value_deg - 24.042).abs() < 1e-3);
+/// assert!((epoch.jd - 2_433_282.423).abs() < 1e-3);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Epoch {
     /// The reference epoch, a Julian day.
@@ -83,6 +115,14 @@ pub struct Epoch {
 }
 
 /// How a catalogued ayanamsha is defined.
+///
+/// ```
+/// use teistro_astro::ayanamsha::{Definition, definition};
+/// use teistro_core::catalogue::Ayanamsha;
+///
+/// assert!(matches!(definition(Ayanamsha::J2000), Definition::Frame(_)));
+/// assert!(matches!(definition(Ayanamsha::TrueChitra), Definition::Object { .. }));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Definition {
     /// A value at an epoch carried by precession.
@@ -110,6 +150,15 @@ pub enum Definition {
 }
 
 /// How an anchored definition reads its anchor's place of date.
+///
+/// ```
+/// use teistro_astro::ayanamsha::{Definition, Reading, definition};
+/// use teistro_core::catalogue::Ayanamsha;
+///
+/// // True Chitra holds Spica at 180° of longitude.
+/// let Definition::Object { held_deg, reading, .. } = definition(Ayanamsha::TrueChitra) else { unreachable!() };
+/// assert_eq!((held_deg, reading), ([180.0, 0.0], Reading::Longitude));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Reading {
     /// The apparent longitude on the mean ecliptic of date: aberration and
@@ -166,6 +215,16 @@ const fn anchored(anchor: Star, held_deg: [f64; 2], reading: Reading) -> Definit
 /// values as the Swiss Ephemeris documents them and Teimeris carries them
 /// (`docs/03-design/astro-ayanamsha-catalogue.md` lists each with its
 /// author's source).
+///
+/// ```
+/// use teistro_astro::ayanamsha::{Definition, definition};
+/// use teistro_core::catalogue::Ayanamsha;
+///
+/// // Raman's: 360° less 338.98556° at J1900.
+/// let Definition::Epoch(epoch) = definition(Ayanamsha::Raman) else { unreachable!() };
+/// assert_eq!(epoch.jd, 2_415_020.0);
+/// assert!((epoch.value_deg - (360.0 - 338.985_56)).abs() < 1e-12);
+/// ```
 #[must_use]
 pub const fn definition(id: Ayanamsha) -> Definition {
     match id {
@@ -250,6 +309,14 @@ pub const fn definition(id: Ayanamsha) -> Definition {
 /// Whether the SDK computes a catalogued ayanamsha itself: every defined
 /// member, epoch, frame or anchored; only a member without a definition in
 /// this build is not.
+///
+/// ```
+/// use teistro_astro::ayanamsha::is_computable;
+/// use teistro_core::catalogue::Ayanamsha;
+///
+/// assert!(is_computable(Ayanamsha::Lahiri));
+/// assert!(is_computable(Ayanamsha::TrueChitra));
+/// ```
 #[must_use]
 pub const fn is_computable(id: Ayanamsha) -> bool {
     !matches!(definition(id), Definition::Unsourced)
@@ -415,6 +482,28 @@ fn meridian_longitude_deg(ra_deg: f64, obliquity_rad: f64) -> f64 {
 /// has a reader somewhere, not that every computation the knob governs
 /// consults it.
 ///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::quantity::{JulianDay, Tt};
+/// # use teistro_core::settings::AyanamshaChoice;
+/// #
+/// # let j2000 = JulianDay::<Tt>::literal(2_451_545.0);
+/// # let (model, delta_t) = (PrecessionModel::Vondrak2011, DeltaTModel::TableThenModel);
+/// # let lahiri: AyanamshaChoice = Ayanamsha::Lahiri.into();
+///
+/// use teistro_astro::ayanamsha::mean_deg;
+///
+/// // Lahiri at J2000.0, 23°51′.
+/// assert!((mean_deg(&lahiri, j2000, model, delta_t)? - 23.857).abs() < 0.002);
+/// // A custom ayanamsha runs at its own rate.
+/// let custom = AyanamshaChoice::Custom { epoch_jd_tt: 2_451_545.0, value_deg: 23.0, rate_deg_per_year: 0.01 };
+/// let later = mean_deg(&custom, JulianDay::<Tt>::literal(2_451_545.0 + 36_525.0), model, delta_t)?;
+/// assert!((later - 24.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A member without a definition in this build (`UNSUPPORTED`), a custom
@@ -467,6 +556,27 @@ pub fn mean_deg(
 /// mean value with the IAU 2000B nutation in longitude added (what a
 /// tropical longitude of the true equinox subtracts).
 ///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::quantity::{JulianDay, Tt};
+/// # use teistro_core::settings::AyanamshaChoice;
+/// #
+/// # let j2000 = JulianDay::<Tt>::literal(2_451_545.0);
+/// # let (model, delta_t) = (PrecessionModel::Vondrak2011, DeltaTModel::TableThenModel);
+/// # let lahiri: AyanamshaChoice = Ayanamsha::Lahiri.into();
+///
+/// use teistro_astro::ayanamsha::{Basis, mean_deg, value_deg};
+///
+/// // The true value adds the nutation in longitude: −13.9″ at J2000.0.
+/// let mean = mean_deg(&lahiri, j2000, model, delta_t)?;
+/// let true_value = value_deg(&lahiri, j2000, Basis::True, model, delta_t)?;
+/// assert!(((true_value - mean) * 3600.0 + 13.93).abs() < 0.2);
+/// assert_eq!(value_deg(&lahiri, j2000, Basis::Mean, model, delta_t)?, mean);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`mean_deg`].
@@ -490,6 +600,25 @@ pub fn value_deg(
 
 /// The rate of the mean ayanamsha, degrees per day, by a central
 /// difference over a day: the general precession, about 50″ a year.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::quantity::{JulianDay, Tt};
+/// # use teistro_core::settings::AyanamshaChoice;
+/// #
+/// # let j2000 = JulianDay::<Tt>::literal(2_451_545.0);
+/// # let (model, delta_t) = (PrecessionModel::Vondrak2011, DeltaTModel::TableThenModel);
+/// # let lahiri: AyanamshaChoice = Ayanamsha::Lahiri.into();
+///
+/// use teistro_astro::ayanamsha::speed_deg_per_day;
+///
+/// // The general precession, about 50.29″ a year.
+/// let speed = speed_deg_per_day(&lahiri, j2000, model, delta_t)?;
+/// assert!((speed * 365.25 * 3600.0 - 50.29).abs() < 0.1);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

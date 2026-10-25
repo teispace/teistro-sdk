@@ -66,53 +66,184 @@ pub mod p06;
 pub mod vector;
 
 /// J2000.0 as a Julian day (`ERFA_DJ00`).
+///
+/// ```
+/// use teistro_astro::iau::{DJ00, centuries};
+///
+/// assert_eq!(centuries(DJ00, 0.0), 0.0);
+/// ```
 pub const DJ00: f64 = 2_451_545.0;
 /// Days per Julian century (`ERFA_DJC`).
+///
+/// ```
+/// use teistro_astro::iau::{DJC, DJY};
+///
+/// assert_eq!(DJC, 100.0 * DJY);
+/// ```
 pub const DJC: f64 = 36_525.0;
 
 /// The Modified Julian Date zero point, JD 2400000.5.
+///
+/// ```
+/// use teistro_astro::iau::{DJ00, DJM0, DJM00};
+///
+/// // A Modified Julian Date is a Julian date less DJM0.
+/// assert_eq!(DJM0 + DJM00, DJ00);
+/// ```
 pub const DJM0: f64 = 2_400_000.5;
 
 /// J2000.0 as a Modified Julian Date.
+///
+/// ```
+/// use teistro_astro::iau::{DJM0, DJM00, centuries};
+///
+/// // J2000.0 as a two-part date of the zero point and the MJD.
+/// assert_eq!(centuries(DJM0, DJM00), 0.0);
+/// ```
 pub const DJM00: f64 = 51_544.5;
 
 /// Days in a Julian year.
+///
+/// ```
+/// use teistro_astro::iau::DJY;
+///
+/// assert_eq!(DJY * 4.0, 1461.0);
+/// ```
 pub const DJY: f64 = 365.25;
 /// Days in a Julian millennium (`ERFA_DJM`).
+///
+/// ```
+/// use teistro_astro::iau::{DJM, DJY};
+///
+/// assert_eq!(DJM, 1000.0 * DJY);
+/// ```
 pub const DJM: f64 = 365_250.0;
 /// Seconds in a day (`ERFA_DAYSEC`).
+///
+/// ```
+/// use teistro_astro::iau::DAYSEC;
+///
+/// assert_eq!(DAYSEC, 24.0 * 3600.0);
+/// ```
 pub const DAYSEC: f64 = 86_400.0;
 /// The astronomical unit, metres (`ERFA_DAU`, IAU 2012).
+///
+/// ```
+/// use teistro_astro::iau::DAU;
+///
+/// // Exactly, by the IAU's 2012 definition.
+/// assert_eq!(DAU, 149_597_870_700.0);
+/// ```
 pub const DAU: f64 = 149_597_870.7e3;
 /// The speed of light, metres a second (`ERFA_CMPS`).
+///
+/// ```
+/// use teistro_astro::iau::{AULT, CMPS, DAU};
+///
+/// assert_eq!(DAU / CMPS, AULT);
+/// ```
 pub const CMPS: f64 = 299_792_458.0;
 /// The light time for one au, seconds (`ERFA_AULT`).
+///
+/// ```
+/// use teistro_astro::iau::AULT;
+///
+/// // About 499 seconds, light's time from the Sun.
+/// assert!((AULT - 499.004_784).abs() < 1e-6);
+/// ```
 pub const AULT: f64 = DAU / CMPS;
 /// The speed of light, au a day (`ERFA_DC`).
+///
+/// ```
+/// use teistro_astro::iau::DC;
+///
+/// // About 173 au a day.
+/// assert!((DC - 173.144_633).abs() < 1e-6);
+/// ```
 pub const DC: f64 = DAYSEC / AULT;
 /// The Schwarzschild radius of the Sun, au (`ERFA_SRS`: 2 G M☉ / c²).
+///
+/// ```
+/// use teistro_astro::iau::SRS;
+///
+/// // Some 2.95 km, in au.
+/// assert!((SRS * 149_597_870.7 - 2.953).abs() < 1e-3);
+/// ```
 pub const SRS: f64 = 1.974_125_743_36e-8;
 /// Arcseconds to radians (`ERFA_DAS2R`, 4.848136811095359935899141e-6,
 /// written to the double's own precision).
+///
+/// ```
+/// use teistro_astro::iau::{DAS2R, TURNAS, D2PI};
+///
+/// assert!((TURNAS * DAS2R - D2PI).abs() < 1e-12);
+/// ```
 pub const DAS2R: f64 = 4.848_136_811_095_36e-6;
 /// Milliarcseconds to radians (`ERFA_DMAS2R`).
+///
+/// ```
+/// use teistro_astro::iau::{DAS2R, DMAS2R};
+///
+/// assert!((DMAS2R * 1000.0 - DAS2R).abs() < 1e-20);
+/// ```
 pub const DMAS2R: f64 = DAS2R / 1e3;
 /// Arcseconds in a full circle (`ERFA_TURNAS`).
+///
+/// ```
+/// use teistro_astro::iau::TURNAS;
+///
+/// assert_eq!(TURNAS, 360.0 * 3600.0);
+/// ```
 pub const TURNAS: f64 = 1_296_000.0;
 /// Two pi (`ERFA_D2PI`; the same double as the standard library's).
+///
+/// ```
+/// use teistro_astro::iau::D2PI;
+///
+/// assert_eq!(D2PI, 2.0 * core::f64::consts::PI);
+/// ```
 pub const D2PI: f64 = core::f64::consts::TAU;
 /// Degrees to radians.
+///
+/// ```
+/// use teistro_astro::iau::DEG2RAD;
+///
+/// assert!((180.0 * DEG2RAD - core::f64::consts::PI).abs() < 1e-15);
+/// ```
 pub const DEG2RAD: f64 = core::f64::consts::PI / 180.0;
 /// Radians to degrees.
+///
+/// ```
+/// use teistro_astro::iau::{DEG2RAD, RAD2DEG};
+///
+/// assert!((30.0 * DEG2RAD * RAD2DEG - 30.0).abs() < 1e-12);
+/// ```
 pub const RAD2DEG: f64 = 180.0 / core::f64::consts::PI;
 
 /// Julian centuries since J2000.0 of a two-part date.
+///
+/// ```
+/// use teistro_astro::iau::{DJ00, DJC, centuries};
+///
+/// assert_eq!(centuries(DJ00, DJC), 1.0);
+/// // The split of the date does not matter.
+/// assert_eq!(centuries(DJ00 + DJC, 0.0), centuries(DJ00, DJC));
+/// ```
 #[must_use]
 pub fn centuries(date1: f64, date2: f64) -> f64 {
     ((date1 - DJ00) + date2) / DJC
 }
 
 /// Normalises an angle into the range `0 <= a < 2π`. Port of `eraAnp`.
+///
+/// ```
+/// use teistro_astro::iau::anp;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// assert!(near(anp(-0.1), 6.183_185_307_179_586_5));
+/// assert_eq!(anp(1.0), 1.0);
+/// ```
 #[must_use]
 pub fn anp(a: f64) -> f64 {
     let mut w = a % D2PI;
@@ -124,6 +255,15 @@ pub fn anp(a: f64) -> f64 {
 
 /// Earth rotation angle (IAU 2000 model) at a UT1 two-part date, radians.
 /// Port of `eraEra00`.
+///
+/// ```
+/// use teistro_astro::iau::era00;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test date, MJD 54388.
+/// assert!(near(era00(2_400_000.5, 54_388.0), 0.402_283_724_002_815_8));
+/// ```
 #[must_use]
 pub fn era00(dj1: f64, dj2: f64) -> f64 {
     // Days since fundamental epoch.
@@ -138,6 +278,15 @@ pub fn era00(dj1: f64, dj2: f64) -> f64 {
 /// Greenwich mean sidereal time (model consistent with IAU 2000
 /// resolutions), radians, from a UT1 date and a TT date. Port of
 /// `eraGmst00`.
+///
+/// ```
+/// use teistro_astro::iau::gmst00;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test date, MJD 53736.
+/// assert!(near(gmst00(2_400_000.5, 53_736.0, 2_400_000.5, 53_736.0), 1.754_174_972_210_740_6));
+/// ```
 #[must_use]
 pub fn gmst00(uta: f64, utb: f64, tta: f64, ttb: f64) -> f64 {
     // TT Julian centuries since J2000.0.
@@ -152,6 +301,15 @@ pub fn gmst00(uta: f64, utb: f64, tta: f64, ttb: f64) -> f64 {
 
 /// Greenwich mean sidereal time (consistent with IAU 2006 precession),
 /// radians, from a UT1 date and a TT date. Port of `eraGmst06`.
+///
+/// ```
+/// use teistro_astro::iau::gmst06;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test date, MJD 53736.
+/// assert!(near(gmst06(2_400_000.5, 53_736.0, 2_400_000.5, 53_736.0), 1.754_174_971_870_091_2));
+/// ```
 #[must_use]
 pub fn gmst06(uta: f64, utb: f64, tta: f64, ttb: f64) -> f64 {
     // TT Julian centuries since J2000.0.
@@ -169,6 +327,15 @@ pub fn gmst06(uta: f64, utb: f64, tta: f64, ttb: f64) -> f64 {
 
 /// Mean obliquity of the ecliptic, IAU 1980 model, radians, at a TT date.
 /// Port of `eraObl80`.
+///
+/// ```
+/// use teistro_astro::iau::obl80;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-14;
+///
+///
+/// // ERFA's test date, MJD 54388.
+/// assert!(near(obl80(2_400_000.5, 54_388.0), 0.409_075_134_764_381_6));
+/// ```
 #[must_use]
 pub fn obl80(date1: f64, date2: f64) -> f64 {
     // Interval between fundamental epoch J2000.0 and given date (JC).
@@ -179,6 +346,15 @@ pub fn obl80(date1: f64, date2: f64) -> f64 {
 
 /// Mean obliquity of the ecliptic, IAU 2006 precession model, radians, at
 /// a TT date. Port of `eraObl06`.
+///
+/// ```
+/// use teistro_astro::iau::obl06;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-14;
+///
+///
+/// // ERFA's test date, MJD 54388.
+/// assert!(near(obl06(2_400_000.5, 54_388.0), 0.409_074_922_938_725_8));
+/// ```
 #[must_use]
 pub fn obl06(date1: f64, date2: f64) -> f64 {
     // Interval between fundamental date J2000.0 and given date (JC).
@@ -196,6 +372,17 @@ pub fn obl06(date1: f64, date2: f64) -> f64 {
 /// (part of MHB2000): the adjustments to the IAU 1976 precession in
 /// longitude and to the obliquity, radians, at a TT date. Port of
 /// `eraPr00`.
+///
+/// ```
+/// use teistro_astro::iau::pr00;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-22;
+///
+///
+/// // ERFA's test date, MJD 53736.
+/// let (dpsipr, depspr) = pr00(2_400_000.5, 53_736.0);
+/// assert!(near(dpsipr, -0.871_646_517_266_834_8e-7));
+/// assert!(near(depspr, -0.734_201_838_672_281_3e-8));
+/// ```
 #[must_use]
 pub fn pr00(date1: f64, date2: f64) -> (f64, f64) {
     // Precession and obliquity corrections (radians per century).
@@ -208,6 +395,14 @@ pub fn pr00(date1: f64, date2: f64) -> (f64, f64) {
 }
 
 /// Nutation in longitude and obliquity, radians.
+///
+/// ```
+/// use teistro_astro::iau::nut00b;
+///
+/// // Both under twenty arcseconds, in radians.
+/// let nutation = nut00b(2_400_000.5, 53_736.0);
+/// assert!(nutation.dpsi.abs() < 1e-4 && nutation.deps.abs() < 1e-4);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Nutation {
     /// Nutation in longitude, radians.
@@ -219,6 +414,17 @@ pub struct Nutation {
 /// Nutation, IAU 2000B model, at a TT date: the 77 luni-solar terms plus
 /// fixed offsets in lieu of the planetary terms, about a milliarcsecond
 /// over 1995 to 2050. Port of `eraNut00b`.
+///
+/// ```
+/// use teistro_astro::iau::nut00b;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-13;
+///
+///
+/// // ERFA's test date, MJD 53736.
+/// let nutation = nut00b(2_400_000.5, 53_736.0);
+/// assert!(near(nutation.dpsi, -0.963_255_229_114_836_3e-5));
+/// assert!(near(nutation.deps, 0.406_319_710_662_115_9e-4));
+/// ```
 #[must_use]
 pub fn nut00b(date1: f64, date2: f64) -> Nutation {
     // Units of 0.1 microarcsecond to radians.
@@ -271,6 +477,15 @@ pub fn nut00b(date1: f64, date2: f64) -> Nutation {
 
 /// Mean anomaly of the Moon (IERS Conventions 2003), radians, at `t`
 /// Julian centuries since J2000.0. Port of `eraFal03`.
+///
+/// ```
+/// use teistro_astro::iau::fal03;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test value at 0.8 Julian centuries after J2000.0.
+/// assert!(near(fal03(0.80), 5.132_369_751_108_684));
+/// ```
 #[must_use]
 pub fn fal03(t: f64) -> f64 {
     (485_868.249_036
@@ -280,6 +495,15 @@ pub fn fal03(t: f64) -> f64 {
 }
 
 /// Mean anomaly of the Sun (IERS Conventions 2003). Port of `eraFalp03`.
+///
+/// ```
+/// use teistro_astro::iau::falp03;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test value at 0.8 Julian centuries after J2000.0.
+/// assert!(near(falp03(0.80), 6.226_797_973_505_507));
+/// ```
 #[must_use]
 pub fn falp03(t: f64) -> f64 {
     (1_287_104.793_048
@@ -290,6 +514,15 @@ pub fn falp03(t: f64) -> f64 {
 
 /// Mean longitude of the Moon minus that of the ascending node (IERS
 /// Conventions 2003). Port of `eraFaf03`.
+///
+/// ```
+/// use teistro_astro::iau::faf03;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test value at 0.8 Julian centuries after J2000.0.
+/// assert!(near(faf03(0.80), 0.259_771_136_674_549_95));
+/// ```
 #[must_use]
 pub fn faf03(t: f64) -> f64 {
     (335_779.526_232
@@ -300,6 +533,15 @@ pub fn faf03(t: f64) -> f64 {
 
 /// Mean elongation of the Moon from the Sun (IERS Conventions 2003). Port
 /// of `eraFad03`.
+///
+/// ```
+/// use teistro_astro::iau::fad03;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test value at 0.8 Julian centuries after J2000.0.
+/// assert!(near(fad03(0.80), 1.946_709_205_396_925_7));
+/// ```
 #[must_use]
 pub fn fad03(t: f64) -> f64 {
     (1_072_260.703_692
@@ -310,6 +552,15 @@ pub fn fad03(t: f64) -> f64 {
 
 /// Mean longitude of the Moon's ascending node (IERS Conventions 2003).
 /// Port of `eraFaom03`.
+///
+/// ```
+/// use teistro_astro::iau::faom03;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test value at 0.8 Julian centuries after J2000.0.
+/// assert!(near(faom03(0.80), -5.973_618_440_951_302));
+/// ```
 #[must_use]
 pub fn faom03(t: f64) -> f64 {
     (450_160.398_036
@@ -319,12 +570,30 @@ pub fn faom03(t: f64) -> f64 {
 }
 
 /// Mean longitude of Venus (IERS Conventions 2003). Port of `eraFave03`.
+///
+/// ```
+/// use teistro_astro::iau::fave03;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test value at 0.8 Julian centuries after J2000.0.
+/// assert!(near(fave03(0.80), 3.424_900_460_533_758));
+/// ```
 #[must_use]
 pub fn fave03(t: f64) -> f64 {
     (3.176_146_697 + 1_021.328_554_621_1 * t) % D2PI
 }
 
 /// Mean longitude of Earth (IERS Conventions 2003). Port of `eraFae03`.
+///
+/// ```
+/// use teistro_astro::iau::fae03;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test value at 0.8 Julian centuries after J2000.0.
+/// assert!(near(fae03(0.80), 1.744_713_738_913_081_8));
+/// ```
 #[must_use]
 pub fn fae03(t: f64) -> f64 {
     (1.753_470_314 + 628.307_584_999_1 * t) % D2PI
@@ -332,6 +601,15 @@ pub fn fae03(t: f64) -> f64 {
 
 /// General accumulated precession in longitude (IERS Conventions 2003).
 /// Port of `eraFapa03`.
+///
+/// ```
+/// use teistro_astro::iau::fapa03;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test value at 0.8 Julian centuries after J2000.0.
+/// assert!(near(fapa03(0.80), 0.195_088_476_224e-1));
+/// ```
 #[must_use]
 pub fn fapa03(t: f64) -> f64 {
     (0.024_381_750 + 0.000_005_386_91 * t) * t
@@ -406,6 +684,15 @@ fn eect_sum(terms: &[EectTerm], fa: &[f64; 8]) -> f64 {
 
 /// The equation of the equinoxes' complementary terms, consistent with
 /// IAU 2000 resolutions, radians, at a TT date. Port of `eraEect00`.
+///
+/// ```
+/// use teistro_astro::iau::eect00;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-20;
+///
+///
+/// // ERFA's test date, MJD 53736.
+/// assert!(near(eect00(2_400_000.5, 53_736.0), 0.204_608_500_488_512_53e-8));
+/// ```
 #[must_use]
 pub fn eect00(date1: f64, date2: f64) -> f64 {
     // Interval between fundamental epoch J2000.0 and current date (JC).
@@ -430,6 +717,16 @@ pub fn eect00(date1: f64, date2: f64) -> f64 {
 /// The equation of the equinoxes, compatible with IAU 2000 resolutions,
 /// given the nutation in longitude and the mean obliquity, radians. Port
 /// of `eraEe00`.
+///
+/// ```
+/// use teistro_astro::iau::ee00;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-18;
+///
+///
+/// // ERFA's test date, MJD 53736.
+/// let (epsa, dpsi) = (0.409_078_976_335_650_99, -0.963_090_910_711_558_24e-5);
+/// assert!(near(ee00(2_400_000.5, 53_736.0, epsa, dpsi), -0.883_419_323_536_796_55e-5));
+/// ```
 #[must_use]
 pub fn ee00(date1: f64, date2: f64, epsa: f64, dpsi: f64) -> f64 {
     dpsi * math::cos(epsa) + eect00(date1, date2)
@@ -438,6 +735,15 @@ pub fn ee00(date1: f64, date2: f64, epsa: f64, dpsi: f64) -> f64 {
 /// The equation of the equinoxes, compatible with IAU 2000 resolutions
 /// but using the truncated nutation model IAU 2000B, radians, at a TT
 /// date. Port of `eraEe00b`.
+///
+/// ```
+/// use teistro_astro::iau::ee00b;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-18;
+///
+///
+/// // ERFA's test date, MJD 53736.
+/// assert!(near(ee00b(2_400_000.5, 53_736.0), -0.883_570_006_000_303_3e-5));
+/// ```
 #[must_use]
 pub fn ee00b(date1: f64, date2: f64) -> f64 {
     // IAU 2000 precession-rate adjustments.
@@ -453,6 +759,15 @@ pub fn ee00b(date1: f64, date2: f64) -> f64 {
 /// Greenwich apparent sidereal time (consistent with IAU 2000 resolutions
 /// but using the truncated nutation model IAU 2000B), radians, at a UT1
 /// date taken as TT too. Port of `eraGst00b`.
+///
+/// ```
+/// use teistro_astro::iau::gst00b;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-12;
+///
+///
+/// // ERFA's test date, MJD 53736.
+/// assert!(near(gst00b(2_400_000.5, 53_736.0), 1.754_166_136_510_680_6));
+/// ```
 #[must_use]
 pub fn gst00b(uta: f64, utb: f64) -> f64 {
     let gmst = gmst00(uta, utb, uta, utb);
@@ -467,6 +782,13 @@ pub fn gst00b(uta: f64, utb: f64) -> f64 {
 /// 2010 (§5.5.7) with the truncated nutation. ERFA's `ee06a` is the same
 /// with the IAU 2000A nutation; the two differ by that nutation's
 /// truncation, under a milliarcsecond in the modern era.
+///
+/// ```
+/// use teistro_astro::iau::ee06b;
+///
+/// // Within a milliarcsecond of ERFA's ee06a, which uses the full 2000A nutation.
+/// assert!((ee06b(2_400_000.5, 53_736.0) - -0.883_419_507_204_379e-5).abs() < 4.85e-9);
+/// ```
 #[must_use]
 pub fn ee06b(date1: f64, date2: f64) -> f64 {
     let epsa = obl06(date1, date2);
@@ -478,6 +800,15 @@ pub fn ee06b(date1: f64, date2: f64) -> f64 {
 /// and the IAU 2000B nutation, radians, from a UT1 date (the Earth's
 /// rotation) and a TT date (the precession and nutation): [`gmst06`] plus
 /// [`ee06b`]. ERFA's `gst06a` is the same with the IAU 2000A nutation.
+///
+/// ```
+/// use teistro_astro::iau::{anp, ee06b, gmst06, gst06b};
+///
+/// let (a, b) = (2_400_000.5, 53_736.0);
+/// // The mean sidereal time and the equation of the equinoxes, exactly.
+/// assert_eq!(gst06b(a, b, a, b), anp(gmst06(a, b, a, b) + ee06b(a, b)));
+/// assert!((gst06b(a, b, a, b) - 1.754_166_137_675_019_2).abs() < 4.85e-9);
+/// ```
 #[must_use]
 pub fn gst06b(uta: f64, utb: f64, tta: f64, ttb: f64) -> f64 {
     anp(gmst06(uta, utb, tta, ttb) + ee06b(tta, ttb))
@@ -487,6 +818,15 @@ pub fn gst06b(uta: f64, utb: f64, tta: f64, ttb: f64) -> f64 {
 /// in longitude the caller already holds for the TT date, radians: the
 /// same value bit for bit, for a caller that needs the obliquity too and
 /// would otherwise sum the nutation series twice.
+///
+/// ```
+/// use teistro_astro::iau::{gst06b, gst06b_with, nut00b, obl06};
+///
+/// let (a, b) = (2_400_000.5, 53_736.0);
+/// // Given the obliquity and nutation gst06b computes, the same answer.
+/// let with = gst06b_with(a, b, a, b, obl06(a, b), nut00b(a, b).dpsi);
+/// assert_eq!(with, gst06b(a, b, a, b));
+/// ```
 #[must_use]
 pub fn gst06b_with(uta: f64, utb: f64, tta: f64, ttb: f64, epsa: f64, dpsi: f64) -> f64 {
     anp(gmst06(uta, utb, tta, ttb) + ee00(tta, ttb, epsa, dpsi))
@@ -504,6 +844,15 @@ fn restrict(value: f64, lower: f64, upper: f64) -> f64 {
 /// for a standard atmosphere at a pressure in hectopascals, a temperature
 /// in Celsius, a relative humidity in `0..=1` and a wavelength in
 /// micrometres. Port of `eraRefco`.
+///
+/// ```
+/// use teistro_astro::iau::refco;
+///
+/// // 800 hPa, 10 °C, 90% humidity, 0.4 μm.
+/// let (a, b) = refco(800.0, 10.0, 0.9, 0.4);
+/// assert!((a - 0.226_494_995_624_141_5e-3).abs() < 1e-15);
+/// assert!((b - -0.259_865_826_172_934_4e-6).abs() < 1e-18);
+/// ```
 #[must_use]
 pub fn refco(phpa: f64, tc: f64, rh: f64, wl: f64) -> (f64, f64) {
     // Decide whether optical/IR or radio case: switch at 100 microns.

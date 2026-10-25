@@ -20,6 +20,15 @@ use teistro_core::math;
 
 /// A position (au) and velocity (au/day) in the Barycentric Celestial
 /// Reference System.
+///
+/// ```
+/// use teistro_astro::iau::{epv00::epv00, vector::pm};
+///
+/// // The Earth is about an au from the Sun, moving about a degree a day.
+/// let earth = epv00(2_451_545.0, 0.0).heliocentric;
+/// assert!((pm(&earth.position) - 1.0).abs() < 0.02);
+/// assert!((pm(&earth.velocity) - 0.0172).abs() < 0.001);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PositionVelocity {
     /// Position, au.
@@ -29,6 +38,14 @@ pub struct PositionVelocity {
 }
 
 /// The Earth's state at an instant.
+///
+/// ```
+/// use teistro_astro::iau::{DJ00, DJY, epv00::epv00};
+///
+/// assert!(epv00(DJ00, 0.0).inside_span);
+/// // Two centuries out, the solution still answers and says so.
+/// assert!(!epv00(DJ00 - 200.0 * DJY, 0.0).inside_span);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct EarthState {
     /// Sun to Earth.
@@ -42,6 +59,19 @@ pub struct EarthState {
 
 /// The Earth's heliocentric and barycentric position and velocity at a
 /// two-part TDB (or TT) date (`eraEpv00`).
+///
+/// ```
+/// use teistro_astro::iau::epv00::epv00;
+/// # let near = |a: f64, b: f64| (a - b).abs() <= 1e-14;
+///
+///
+/// // ERFA's t_epv00: MJD 53411.52501161.
+/// let earth = epv00(2_400_000.5, 53_411.525_011_61);
+/// let [x, y, z] = earth.heliocentric.position;
+/// assert!(near(x, -0.775_723_880_929_770_7) && near(y, 0.559_805_224_136_334_1) && near(z, 0.242_699_846_648_168_7));
+/// let [x, y, z] = earth.barycentric.position;
+/// assert!(near(x, -0.771_410_444_049_111_2) && near(y, 0.559_841_206_182_417_1) && near(z, 0.242_599_627_772_245_24));
+/// ```
 #[must_use]
 pub fn epv00(date1: f64, date2: f64) -> EarthState {
     // Time since the reference epoch, Julian years.
