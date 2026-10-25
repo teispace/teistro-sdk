@@ -114,7 +114,6 @@ impl From<&CalendarDate> for PublishedDay {
 pub enum PublishedEntry {
     /// The day of a rule's occurrence: the one nearest `day`, within
     /// [`NEAREST_DAYS`].
-    #[serde(rename_all = "camelCase")]
     Set {
         /// The rule's key.
         rule: String,
@@ -133,7 +132,6 @@ pub enum PublishedEntry {
         source: String,
     },
     /// A day no rule computes, under its own key.
-    #[serde(rename_all = "camelCase")]
     Add {
         /// Its key, which no rule of the request uses.
         key: String,
@@ -150,7 +148,6 @@ pub enum PublishedEntry {
     },
     /// A rule's occurrence the publisher does not keep, found as `SET`
     /// finds one.
-    #[serde(rename_all = "camelCase")]
     Withdraw {
         /// The rule's key.
         rule: String,

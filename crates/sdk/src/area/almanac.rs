@@ -66,6 +66,8 @@ pub use disagreement::{
 #[cfg(feature = "schema")]
 pub(crate) use feed::FestivalCalendarAsked;
 pub use feed::{FeedOptions, FestivalCalendarRequest};
+#[cfg(feature = "schema")]
+pub(crate) use reasons::ReasonsAsked;
 pub use reasons::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,

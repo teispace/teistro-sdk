@@ -2899,8 +2899,9 @@ const NOT_A_TOOL: [(&str, &str); 3] = [
 /// The JSON readers a tool reaches inside another record rather than by
 /// their own call, each with the record that carries it; the carrier must
 /// itself be reached.
-const CARRIED: [(&str, &str); 2] = [
+const CARRIED: [(&str, &str); 3] = [
     ("PerfectionRules", "PerfectionRequest"),
+    ("PublishedSet", "FestivalRequest"),
     ("SynastryRequest", "PartnerSynastry"),
 ];
 
@@ -3019,7 +3020,7 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
 /// taken does not compile, and this list keeps a new area method from
 /// taking a map in the first place. An entry that no longer matches is
 /// refused too, so the list cannot outlive the parameter it excuses.
-const JAVA_UNTYPED: [(&str, &str); 18] = [
+const JAVA_UNTYPED: [(&str, &str); 19] = [
     ("ChartArea.layout(layout)", MEMBER_OR_KEY),
     ("ChartOptions.ChartOptions(readings)", WRITTEN),
     ("ChartOptions.Drawing(layout)", MEMBER_OR_KEY),
@@ -3038,6 +3039,10 @@ const JAVA_UNTYPED: [(&str, &str); 18] = [
     ("MoonWeakness.MoonWeakness(rules)", ANSWERED),
     ("Plugin.Plugin(config)", OPEN),
     ("Prashna.Prashna(rules)", ANSWERED),
+    (
+        "Published.Added(names)",
+        "an answer's added day, its names by locale as the published set wrote them",
+    ),
     ("RashifalRequest.RashifalRequest(events)", MEMBER_OR_KEY),
     ("RashifalRequest.withEvents(grahas)", MEMBER_OR_KEY),
     ("Remedies.Remedies(rules)", ANSWERED),

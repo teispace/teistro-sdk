@@ -39,7 +39,11 @@ empty. A feed asked without sets writes the same bytes.
   pack's rule of the same key, and names the first change that gives the
   published day, else the publisher's own choice, listing every change
   tried. `ts_almanac_published_reasons`, and `publishedReasons` in every
-  binding.
+  binding; the agent server's `almanac.publishedReasons` tries the places
+  and the packs over its one engine.
+- *Signed packs* are the `signed-packs` feature, on by default beside
+  `full` rather than in it, as it turns on no crate of its own; the wasm
+  package's full module keeps it and a profile's module leaves it out.
 - *The feed* says "Published by" its publisher, set, version and source
   for a decided day, leaves a withdrawn one out with its parana, and
   writes an added day as an event.

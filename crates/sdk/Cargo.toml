@@ -72,18 +72,19 @@ teistro-intl = { path = "../intl", default-features = false }
 # 2026-09-25, when a wasm module asked for `compact` and was 3 KB from
 # `standard`; the tier test in `crates/ffi/tests/tier.rs` now holds it.
 [features]
-default = ["builtin-standard", "full"]
+default = ["builtin-standard", "full", "signed-packs"]
 # Reads a published set from a signed pack, verified against the key the
 # caller fixes at its own build (`03-design/published-overrides.md` §5):
 # `PublishedSet::from_signed`. Off, a consumer verifies with its own
-# transport and passes the set.
+# transport and passes the set. Not a module family, since it turns on no
+# crate of its own, so the default names it beside `full`.
 signed-packs = ["teistro-panchanga/signed-packs"]
 # A module family: a crate, its methods here and its re-exports, left out
 # of a build that does not name it (`03-design/wasm-profiles.md`). A build
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "signed-packs", "svg", "tajika", "western"]
+full = ["chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area: `ChartArea`, the interpretation area and the crates only
 # they reach. Every family read off a chart requires it.
 chart = [
@@ -180,6 +181,10 @@ workspace = true
 
 [[test]]
 name = "sealing"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "published"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
