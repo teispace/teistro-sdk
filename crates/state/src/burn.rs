@@ -42,6 +42,17 @@ pub const BPHS: &str = "BPHS";
 pub const SHIPPED: [&str; 2] = [SURYA_SIDDHANTA, BPHS];
 
 /// The orbs one reading was judged against, degrees.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_state::burn::{BPHS_ORBS, table};
+///
+/// let venus = table("BPHS")?.iter().find(|orbs| orbs.graha == Graha::Venus).copied();
+/// let applied = venus.map(|orbs| orbs.for_motion(true));
+/// assert_eq!(applied.map(|applied| (applied.orb_deg, applied.deep_deg)), Some((8.0, Some(4.0))));
+/// assert_eq!(BPHS_ORBS.len(), 6);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Applied {
@@ -52,6 +63,14 @@ pub struct Applied {
 }
 
 /// One body's orbs, degrees.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_state::Orbs;
+///
+/// let mercury = Orbs::plain(Graha::Mercury, 14.0, 12.0);
+/// assert_eq!((mercury.direct, mercury.retrograde, mercury.deep_direct), (14.0, 12.0, None));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Orbs {
@@ -70,6 +89,13 @@ pub struct Orbs {
 impl Orbs {
     /// A row of a table that gives one orb per motion and nothing
     /// inside it.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_state::Orbs;
+    ///
+    /// assert_eq!(Orbs::plain(Graha::Jupiter, 11.0, 11.0).deep_retrograde, None);
+    /// ```
     #[must_use]
     pub const fn plain(graha: Graha, direct: f64, retrograde: f64) -> Orbs {
         Orbs {
@@ -82,6 +108,14 @@ impl Orbs {
     }
 
     /// A row that gives a deeper orb inside each.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_state::Orbs;
+    ///
+    /// let venus = Orbs::deep(Graha::Venus, (10.0, 5.0), (8.0, 4.0));
+    /// assert_eq!((venus.deep_direct, venus.deep_retrograde), (Some(5.0), Some(4.0)));
+    /// ```
     #[must_use]
     pub const fn deep(graha: Graha, direct: (f64, f64), retrograde: (f64, f64)) -> Orbs {
         Orbs {
@@ -94,6 +128,15 @@ impl Orbs {
     }
 
     /// The orbs that apply to a body going one way or the other.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_state::Orbs;
+    ///
+    /// let venus = Orbs::deep(Graha::Venus, (10.0, 5.0), (8.0, 4.0));
+    /// assert_eq!(venus.for_motion(false).orb_deg, 10.0);
+    /// assert_eq!(venus.for_motion(true).deep_deg, Some(4.0));
+    /// ```
     #[must_use]
     pub const fn for_motion(&self, retrograde: bool) -> Applied {
         if retrograde {
@@ -142,6 +185,12 @@ pub const BPHS_ORBS: [Orbs; 6] = [
 ];
 
 /// How badly the Sun burns a body.
+///
+/// ```
+/// use teistro_state::Burning;
+///
+/// assert_eq!(Burning::ALL, [Burning::None, Burning::Combust, Burning::Deep]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -162,6 +211,12 @@ impl Burning {
     /// The key the document and the settings spell it with, as serde
     /// writes it: the spelling every domain enum's `key()` uses. The
     /// bindings' boundary enums spell the same member in kebab case.
+    ///
+    /// ```
+    /// use teistro_state::Burning;
+    ///
+    /// assert_eq!(Burning::Deep.key(), "DEEP");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -173,6 +228,16 @@ impl Burning {
 }
 
 /// What the Sun does to one body.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_state::Burning;
+/// use teistro_state::burn::{SURYA_SIDDHANTA_ORBS, combustion};
+///
+/// let mercury = combustion(Graha::Mercury, Some(13.0), false, &SURYA_SIDDHANTA_ORBS);
+/// assert_eq!(mercury.burning, Burning::Combust);
+/// assert_eq!(mercury.orbs.map(|orbs| orbs.orb_deg), Some(14.0));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Combustion {
@@ -189,6 +254,14 @@ pub struct Combustion {
 
 impl Combustion {
     /// Nothing burns, because nothing could.
+    ///
+    /// ```
+    /// use teistro_state::Combustion;
+    ///
+    /// let clear = Combustion::clear(Some(40.0));
+    /// assert!(!clear.is_combust());
+    /// assert_eq!(clear.orbs, None);
+    /// ```
     #[must_use]
     pub const fn clear(from_sun_deg: Option<f64>) -> Combustion {
         Combustion {
@@ -199,6 +272,14 @@ impl Combustion {
     }
 
     /// Whether the body is burnt at all.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_state::burn::{BPHS_ORBS, combustion};
+    ///
+    /// assert!(combustion(Graha::Saturn, Some(5.0), false, &BPHS_ORBS).is_combust());
+    /// assert!(!combustion(Graha::Saturn, Some(16.0), false, &BPHS_ORBS).is_combust());
+    /// ```
     #[must_use]
     pub const fn is_combust(&self) -> bool {
         !matches!(self.burning, Burning::None)
@@ -206,6 +287,14 @@ impl Combustion {
 }
 
 /// The table a settings key names, matched without regard to case.
+///
+/// ```
+/// use teistro_state::burn::{SURYA_SIDDHANTA_ORBS, table};
+///
+/// assert_eq!(table("surya_siddhanta")?, &SURYA_SIDDHANTA_ORBS);
+/// assert_eq!(table("MODERN").unwrap_err().field(), Some("state.combustion_orbs"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -230,6 +319,21 @@ pub fn table(key: &str) -> Result<&'static [Orbs], Error> {
 }
 
 /// How the Sun treats one body.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_state::Burning;
+/// use teistro_state::burn::{BPHS_ORBS, SURYA_SIDDHANTA_ORBS, combustion};
+///
+/// // Mercury 13° from the Sun: combust going forward, clear going back.
+/// assert_eq!(combustion(Graha::Mercury, Some(13.0), false, &SURYA_SIDDHANTA_ORBS).burning, Burning::Combust);
+/// assert_eq!(combustion(Graha::Mercury, Some(13.0), true, &SURYA_SIDDHANTA_ORBS).burning, Burning::None);
+/// // Venus retrograde 3° away is deep under the BPHS table.
+/// assert_eq!(combustion(Graha::Venus, Some(3.0), true, &BPHS_ORBS).burning, Burning::Deep);
+/// // Rahu does not burn, and with no Sun nothing does.
+/// assert_eq!(combustion(Graha::Rahu, Some(1.0), false, &BPHS_ORBS).orbs, None);
+/// assert_eq!(combustion(Graha::Venus, None, false, &BPHS_ORBS).from_sun_deg, None);
+/// ```
 #[must_use]
 pub fn combustion(
     graha: Graha,

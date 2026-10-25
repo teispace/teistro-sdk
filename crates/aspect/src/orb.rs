@@ -35,6 +35,13 @@ use teistro_core::error::Error;
 pub const WIDEST_ORB_DEG: f64 = 90.0;
 
 /// A body as this engine sees it: where it is and how fast it is going.
+///
+/// ```
+/// use teistro_aspect::Moving;
+///
+/// let moon = Moving::new(100.0, 13.2);
+/// assert_eq!(moon.speed_deg_per_day, 13.2);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Moving {
@@ -46,6 +53,13 @@ pub struct Moving {
 
 impl Moving {
     /// A body at a longitude, moving at a rate.
+    ///
+    /// ```
+    /// use teistro_aspect::Moving;
+    ///
+    /// // Mercury retrograde.
+    /// assert!(Moving::new(200.0, -0.8).speed_deg_per_day < 0.0);
+    /// ```
     #[must_use]
     pub const fn new(longitude_deg: f64, speed_deg_per_day: f64) -> Moving {
         Moving {
@@ -56,6 +70,12 @@ impl Moving {
 
     /// A body whose motion is not known or does not matter, which no
     /// [`Hit`] from it will call applying.
+    ///
+    /// ```
+    /// use teistro_aspect::Moving;
+    ///
+    /// assert_eq!(Moving::still(42.0), Moving::new(42.0, 0.0));
+    /// ```
     #[must_use]
     pub const fn still(longitude_deg: f64) -> Moving {
         Moving::new(longitude_deg, 0.0)
@@ -63,6 +83,13 @@ impl Moving {
 }
 
 /// An angle two bodies may stand at.
+///
+/// ```
+/// use teistro_aspect::Angle;
+///
+/// assert_eq!(Angle::TRINE.degrees, 120.0);
+/// assert_eq!(Angle::PTOLEMAIC.map(|angle| angle.key)[4], "OPPOSITION");
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Angle {
@@ -184,6 +211,18 @@ impl<'de> Deserialize<'de> for Angle {
 }
 
 /// One angle two bodies stand within an orb of.
+///
+/// ```
+/// use teistro_aspect::orb::nearest;
+/// use teistro_aspect::{Angle, Moving};
+///
+/// // The Moon 8° short of a square to Saturn, and catching it up.
+/// let hit = nearest(Moving::new(82.0, 13.0), Moving::new(0.0, 0.1), &Angle::PTOLEMAIC, 10.0)?;
+/// let hit = hit.ok_or("within the orb")?;
+/// assert_eq!(hit.angle, Angle::SQUARE);
+/// assert!((hit.from_exact_deg - 8.0).abs() < 1e-9 && hit.applying);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Hit {
@@ -199,6 +238,13 @@ pub struct Hit {
 }
 
 /// The angle between two longitudes, degrees, the shorter way round.
+///
+/// ```
+/// use teistro_aspect::orb::separation;
+///
+/// assert_eq!(separation(10.0, 350.0), 20.0);
+/// assert_eq!(separation(0.0, 180.0), 180.0);
+/// ```
 #[must_use]
 pub fn separation(first: f64, second: f64) -> f64 {
     let apart = (first - second).abs().rem_euclid(360.0);
@@ -209,6 +255,21 @@ pub fn separation(first: f64, second: f64) -> f64 {
 ///
 /// The result is in the order the angles were given, so a caller that
 /// passes [`Angle::PTOLEMAIC`] gets them from conjunction to opposition.
+///
+/// ```
+/// use teistro_aspect::orb::hits;
+/// use teistro_aspect::{Angle, Moving};
+///
+/// // 95° apart: within six of a square, not of a trine.
+/// let found = hits(Moving::still(0.0), Moving::still(95.0), &Angle::PTOLEMAIC, 6.0)?;
+/// assert_eq!(found.len(), 1);
+/// assert_eq!(found[0].angle, Angle::SQUARE);
+/// assert!(!found[0].applying);
+/// // An orb past a right angle is refused, by name.
+/// let wide = hits(Moving::still(0.0), Moving::still(95.0), &Angle::PTOLEMAIC, 100.0);
+/// assert_eq!(wide.unwrap_err().field(), Some("aspect.orb_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -246,6 +307,16 @@ pub fn hits(
 }
 
 /// The one angle of a set the bodies stand nearest, within the orb.
+///
+/// ```
+/// use teistro_aspect::orb::nearest;
+/// use teistro_aspect::{Angle, Moving};
+///
+/// // 100° apart is within 20° of a square and of a trine; the square is nearer.
+/// let hit = nearest(Moving::still(0.0), Moving::still(100.0), &Angle::PTOLEMAIC, 20.0)?;
+/// assert_eq!(hit.map(|hit| hit.angle), Some(Angle::SQUARE));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

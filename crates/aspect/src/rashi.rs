@@ -30,6 +30,16 @@ use teistro_core::catalogue::{Modality, Rashi};
 pub const ASPECTED: usize = 3;
 
 /// Whether one sign aspects another.
+///
+/// ```
+/// use teistro_aspect::rashi::aspects;
+/// use teistro_core::catalogue::Rashi;
+///
+/// // Aries aspects the fixed signs but Taurus, next to it.
+/// assert!(aspects(Rashi::Aries, Rashi::Leo));
+/// assert!(!aspects(Rashi::Aries, Rashi::Taurus));
+/// assert!(aspects(Rashi::Gemini, Rashi::Pisces));
+/// ```
 #[must_use]
 pub fn aspects(from: Rashi, to: Rashi) -> bool {
     let ahead = crate::drishti::house_count(from, to);
@@ -49,6 +59,14 @@ pub fn aspects(from: Rashi, to: Rashi) -> bool {
 /// The rule gives every sign exactly three, which
 /// `every_sign_aspects_exactly_three_and_never_itself` proves over all
 /// twelve, so the array is always filled.
+///
+/// ```
+/// use teistro_aspect::rashi::aspected;
+/// use teistro_core::catalogue::Rashi;
+///
+/// assert_eq!(aspected(Rashi::Aries), [Rashi::Leo, Rashi::Scorpio, Rashi::Aquarius]);
+/// assert_eq!(aspected(Rashi::Gemini), [Rashi::Virgo, Rashi::Sagittarius, Rashi::Pisces]);
+/// ```
 #[must_use]
 pub fn aspected(sign: Rashi) -> [Rashi; ASPECTED] {
     let mut found = [sign; ASPECTED];
@@ -63,6 +81,14 @@ pub fn aspected(sign: Rashi) -> [Rashi; ASPECTED] {
 
 /// The three signs that aspect a sign, which are the three it aspects:
 /// the relation is symmetric.
+///
+/// ```
+/// use teistro_aspect::rashi::{aspected, aspecting};
+/// use teistro_core::catalogue::Rashi;
+///
+/// assert_eq!(aspecting(Rashi::Leo), [Rashi::Aries, Rashi::Libra, Rashi::Capricorn]);
+/// assert_eq!(aspecting(Rashi::Leo), aspected(Rashi::Leo));
+/// ```
 #[must_use]
 pub fn aspecting(sign: Rashi) -> [Rashi; ASPECTED] {
     aspected(sign)

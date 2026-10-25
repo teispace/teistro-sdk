@@ -54,6 +54,13 @@ pub const SHIPPED: [&str; 1] = [PARASHARA];
 
 /// How strongly a graha looks at a sign, in the quarters the tradition
 /// counts a drishti in.
+///
+/// ```
+/// use teistro_aspect::Strength;
+///
+/// assert!(Strength::Full > Strength::ThreeQuarters);
+/// assert_eq!(Strength::ALL.len(), 5);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -83,6 +90,12 @@ impl Strength {
     /// The key the document and the settings spell it with, as serde
     /// writes it: the spelling every domain enum's `key()` uses. The
     /// bindings' boundary enums spell the same member in kebab case.
+    ///
+    /// ```
+    /// use teistro_aspect::Strength;
+    ///
+    /// assert_eq!(Strength::ThreeQuarters.key(), "THREE_QUARTERS");
+    /// ```
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
@@ -95,6 +108,12 @@ impl Strength {
     }
 
     /// The quarters of a full aspect this is, 0 to 4.
+    ///
+    /// ```
+    /// use teistro_aspect::Strength;
+    ///
+    /// assert_eq!(Strength::Half.quarters(), 2);
+    /// ```
     #[must_use]
     pub const fn quarters(self) -> u8 {
         match self {
@@ -107,6 +126,13 @@ impl Strength {
     }
 
     /// The one this many quarters make, or `None` past a full aspect.
+    ///
+    /// ```
+    /// use teistro_aspect::Strength;
+    ///
+    /// assert_eq!(Strength::of_quarters(3), Some(Strength::ThreeQuarters));
+    /// assert_eq!(Strength::of_quarters(5), None);
+    /// ```
     #[must_use]
     pub const fn of_quarters(quarters: u8) -> Option<Strength> {
         match quarters {
@@ -125,18 +151,39 @@ impl Strength {
     /// This is not the sphuta drishti ([`crate::sphuta`]), which measures
     /// by degree and gives the special aspects their own additions
     /// (crux C45).
+    ///
+    /// ```
+    /// use teistro_aspect::Strength;
+    ///
+    /// assert_eq!(Strength::Quarter.virupas(), 15);
+    /// assert_eq!(Strength::Full.virupas(), 60);
+    /// ```
     #[must_use]
     pub const fn virupas(self) -> u16 {
         self.quarters() as u16 * (FULL_VIRUPAS / 4)
     }
 
     /// Whether this is a full aspect.
+    ///
+    /// ```
+    /// use teistro_aspect::Strength;
+    ///
+    /// assert!(Strength::Full.is_full());
+    /// assert!(!Strength::ThreeQuarters.is_full());
+    /// ```
     #[must_use]
     pub const fn is_full(self) -> bool {
         matches!(self, Strength::Full)
     }
 
     /// Whether there is any aspect at all.
+    ///
+    /// ```
+    /// use teistro_aspect::Strength;
+    ///
+    /// assert!(Strength::Quarter.is_any());
+    /// assert!(!Strength::None.is_any());
+    /// ```
     #[must_use]
     pub const fn is_any(self) -> bool {
         !matches!(self, Strength::None)
@@ -165,6 +212,14 @@ pub const SPECIAL: [(Graha, [u8; 2]); 3] = [
 
 /// The houses a graha aspects beyond the seventh, which is empty for
 /// every graha but Mars, Jupiter and Saturn.
+///
+/// ```
+/// use teistro_aspect::drishti::special;
+/// use teistro_core::catalogue::Graha;
+///
+/// assert_eq!(special(Graha::Jupiter), &[5, 9]);
+/// assert!(special(Graha::Sun).is_empty());
+/// ```
 #[must_use]
 pub fn special(graha: Graha) -> &'static [u8] {
     SPECIAL
@@ -192,6 +247,14 @@ pub const NODES: [Graha; 2] = [Graha::Rahu, Graha::Ketu];
 /// to compare — so the root's `NONE` stays the default because it claims
 /// least (`03-design/aspect-drishti-measured.md` §6), and a reading this
 /// crate has not been taught claims least too rather than guessing.
+///
+/// ```
+/// use teistro_aspect::drishti::node_special;
+/// use teistro_core::settings::NodeAspects;
+///
+/// assert_eq!(node_special(NodeAspects::FiveSevenNine), &[5, 9]);
+/// assert!(node_special(NodeAspects::None).is_empty());
+/// ```
 #[must_use]
 pub const fn node_special(reading: NodeAspects) -> &'static [u8] {
     match reading {
@@ -206,6 +269,16 @@ pub const fn node_special(reading: NodeAspects) -> &'static [u8] {
 
 /// The houses a graha aspects fully beyond the seventh, with a node's
 /// read from the settings.
+///
+/// ```
+/// use teistro_aspect::drishti::special_under;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::settings::NodeAspects;
+///
+/// assert_eq!(special_under(Graha::Rahu, NodeAspects::ThreeSevenEleven), &[3, 11]);
+/// // Saturn's are its own whatever the nodes' reading.
+/// assert_eq!(special_under(Graha::Saturn, NodeAspects::FiveSevenNine), &[3, 10]);
+/// ```
 #[must_use]
 pub fn special_under(graha: Graha, reading: NodeAspects) -> &'static [u8] {
     if NODES.contains(&graha) {
@@ -217,6 +290,18 @@ pub fn special_under(graha: Graha, reading: NodeAspects) -> &'static [u8] {
 
 /// How strongly a graha aspects the sign that is `houses` from its own,
 /// with a node's special houses read from the settings.
+///
+/// ```
+/// use teistro_aspect::Strength;
+/// use teistro_aspect::drishti::quarters_under;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::settings::NodeAspects;
+///
+/// // Under 3-7-11 Rahu reaches the eleventh, outside the general table.
+/// assert_eq!(quarters_under(Graha::Rahu, 11, NodeAspects::ThreeSevenEleven), Strength::Full);
+/// assert_eq!(quarters_under(Graha::Rahu, 11, NodeAspects::None), Strength::None);
+/// assert_eq!(quarters_under(Graha::Rahu, 5, NodeAspects::None), Strength::Half);
+/// ```
 #[must_use]
 pub fn quarters_under(graha: Graha, houses: u8, reading: NodeAspects) -> Strength {
     if special_under(graha, reading).contains(&houses) {
@@ -230,6 +315,16 @@ pub fn quarters_under(graha: Graha, houses: u8, reading: NodeAspects) -> Strengt
 
 /// How strongly a graha standing in one sign aspects another, with a
 /// node's special houses read from the settings.
+///
+/// ```
+/// use teistro_aspect::Strength;
+/// use teistro_aspect::drishti::between_under;
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_core::settings::NodeAspects;
+///
+/// // Ketu in Aries on Leo, its fifth.
+/// assert_eq!(between_under(Graha::Ketu, Rashi::Aries, Rashi::Leo, NodeAspects::FiveSevenNine), Strength::Full);
+/// ```
 #[must_use]
 pub fn between_under(graha: Graha, from: Rashi, to: Rashi, reading: NodeAspects) -> Strength {
     quarters_under(graha, house_count(from, to), reading)
@@ -249,6 +344,18 @@ fn general(houses: u8) -> Strength {
 /// A count outside 1 to 12 is [`Strength::None`] rather than an error:
 /// no two signs produce one, so it is arithmetic that cannot arise from
 /// a chart.
+///
+/// ```
+/// use teistro_aspect::Strength;
+/// use teistro_aspect::drishti::quarters;
+/// use teistro_core::catalogue::Graha;
+///
+/// assert_eq!(quarters(Graha::Venus, 7), Strength::Full);
+/// assert_eq!(quarters(Graha::Venus, 4), Strength::ThreeQuarters);
+/// // Mars raises its fourth to full.
+/// assert_eq!(quarters(Graha::Mars, 4), Strength::Full);
+/// assert_eq!(quarters(Graha::Venus, 2), Strength::None);
+/// ```
 #[must_use]
 pub fn quarters(graha: Graha, houses: u8) -> Strength {
     if special(graha).contains(&houses) {
@@ -259,6 +366,16 @@ pub fn quarters(graha: Graha, houses: u8) -> Strength {
 
 /// Which house of the first sign the second is, counting inclusively
 /// from one: the count the whole tradition reckons a relation by.
+///
+/// ```
+/// use teistro_aspect::drishti::house_count;
+/// use teistro_core::catalogue::Rashi;
+///
+/// assert_eq!(house_count(Rashi::Aries, Rashi::Aries), 1);
+/// assert_eq!(house_count(Rashi::Aries, Rashi::Libra), 7);
+/// // Counted forward, round past Pisces.
+/// assert_eq!(house_count(Rashi::Capricorn, Rashi::Aries), 4);
+/// ```
 #[must_use]
 pub fn house_count(from: Rashi, to: Rashi) -> u8 {
     let (from, to) = (index(from), index(to));
@@ -272,6 +389,14 @@ pub fn house_count(from: Rashi, to: Rashi) -> u8 {
 /// aspect is nearly always that one; the fourth looks back at the tenth,
 /// which is the exception Mars and Saturn make
 /// (`03-design/aspect-and-drishti.md` §5).
+///
+/// ```
+/// use teistro_aspect::drishti::looking_back;
+///
+/// assert_eq!(looking_back(7), 7);
+/// assert_eq!(looking_back(4), 10);
+/// assert_eq!(looking_back(1), 1);
+/// ```
 #[must_use]
 pub const fn looking_back(houses: u8) -> u8 {
     if houses == 0 || houses > HOUSES {
@@ -281,12 +406,31 @@ pub const fn looking_back(houses: u8) -> u8 {
 }
 
 /// How strongly a graha standing in one sign aspects another.
+///
+/// ```
+/// use teistro_aspect::Strength;
+/// use teistro_aspect::drishti::between;
+/// use teistro_core::catalogue::{Graha, Rashi};
+///
+/// // Saturn in Aquarius on Aries, its third.
+/// assert_eq!(between(Graha::Saturn, Rashi::Aquarius, Rashi::Aries), Strength::Full);
+/// assert_eq!(between(Graha::Moon, Rashi::Aquarius, Rashi::Aries), Strength::Quarter);
+/// ```
 #[must_use]
 pub fn between(graha: Graha, from: Rashi, to: Rashi) -> Strength {
     quarters(graha, house_count(from, to))
 }
 
 /// Whether two grahas standing in two signs aspect each other fully.
+///
+/// ```
+/// use teistro_aspect::drishti::mutually_full;
+/// use teistro_core::catalogue::{Graha, Rashi};
+///
+/// // Mars in Aries and Saturn in Cancer: Mars's fourth, Saturn's tenth.
+/// assert!(mutually_full(Graha::Mars, Rashi::Aries, Graha::Saturn, Rashi::Cancer));
+/// assert!(!mutually_full(Graha::Venus, Rashi::Aries, Graha::Moon, Rashi::Cancer));
+/// ```
 #[must_use]
 pub fn mutually_full(first: Graha, first_sign: Rashi, second: Graha, second_sign: Rashi) -> bool {
     between(first, first_sign, second_sign).is_full()
@@ -298,6 +442,14 @@ pub fn mutually_full(first: Graha, first_sign: Rashi, second: Graha, second_sign
 /// The SDK ships one, and names it in the refusal rather than leaving a
 /// caller to guess. A profile that names another fails here and not in
 /// a consumer's application.
+///
+/// ```
+/// use teistro_aspect::drishti::{PARASHARA, table};
+///
+/// assert_eq!(table("parashara")?, PARASHARA);
+/// assert!(table("JAIMINI").is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

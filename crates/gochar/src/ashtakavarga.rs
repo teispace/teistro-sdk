@@ -48,6 +48,16 @@ pub const LAGNA: u8 = 1 << 7;
 /// For each graha, Sun to Saturn, and each sign, Aries to Pisces, the
 /// contributors that gave it a bindu: bit `n` the graha with id `n`, and
 /// [`LAGNA`] the lagna.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_gochar::ashtakavarga::{LAGNA, Prastara};
+///
+/// let mut prastara: Prastara = [[0; 12]; 7];
+/// // Jupiter and the lagna gave the Sun's Aries a bindu each.
+/// prastara[Graha::Sun as usize][0] = (1 << Graha::Jupiter as u8) | LAGNA;
+/// assert_eq!(prastara[0][0].count_ones(), 2);
+/// ```
 pub type Prastara = [[u8; 12]; 7];
 
 /// The sarvashtakavarga v. 20 measures a sign against: more is auspicious,
@@ -56,6 +66,14 @@ pub const SARVA_MEASURE: u16 = 28;
 
 /// Who lords an eighth of a sign (vv. 18 and 19), in the orbits' order
 /// from the sign's start.
+///
+/// ```
+/// use teistro_gochar::ashtakavarga::{Kakshya, KakshyaLord};
+///
+/// // Saturn's orbit is the outermost, so its eighth comes first.
+/// assert_eq!(KakshyaLord::ALL[0], KakshyaLord::Saturn);
+/// assert_eq!(Kakshya::at(0.0).lord, KakshyaLord::Saturn);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -92,6 +110,14 @@ impl KakshyaLord {
     ];
 
     /// Its bit in a prastara cell.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_gochar::ashtakavarga::{KakshyaLord, LAGNA};
+    ///
+    /// assert_eq!(KakshyaLord::Sun.bit(), 1 << Graha::Sun as u8);
+    /// assert_eq!(KakshyaLord::Lagna.bit(), LAGNA);
+    /// ```
     #[must_use]
     pub const fn bit(self) -> u8 {
         match self {
@@ -108,6 +134,12 @@ impl KakshyaLord {
 }
 
 /// The eighth of a sign a transit stands in, 3°45′ each (v. 16).
+///
+/// ```
+/// use teistro_gochar::ashtakavarga::{Kakshya, KakshyaLord};
+///
+/// assert_eq!(Kakshya::at(12.0), Kakshya { index: 4, lord: KakshyaLord::Sun });
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Kakshya {
@@ -120,6 +152,16 @@ pub struct Kakshya {
 impl Kakshya {
     /// The eighth `degrees` into a sign fall in; a value outside 0 to 30 is
     /// taken into it.
+    ///
+    /// ```
+    /// use teistro_gochar::ashtakavarga::{Kakshya, KakshyaLord};
+    ///
+    /// // 3° 45′ an eighth: 7.5° begins the third.
+    /// assert_eq!(Kakshya::at(7.5).index, 3);
+    /// assert_eq!(Kakshya::at(29.99).lord, KakshyaLord::Lagna);
+    /// // A degree past the sign is taken into it.
+    /// assert_eq!(Kakshya::at(31.0), Kakshya::at(1.0));
+    /// ```
     #[must_use]
     pub fn at(degrees: f64) -> Kakshya {
         let into = degrees.rem_euclid(30.0);
@@ -140,6 +182,12 @@ impl Kakshya {
 }
 
 /// Where a sign's sarvashtakavarga stands against v. 20's 28.
+///
+/// ```
+/// use teistro_gochar::ashtakavarga::SarvaStanding;
+///
+/// assert_eq!(SarvaStanding::of(29), SarvaStanding::Above);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -154,6 +202,13 @@ pub enum SarvaStanding {
 
 impl SarvaStanding {
     /// Where `sarva` stands.
+    ///
+    /// ```
+    /// use teistro_gochar::ashtakavarga::{SARVA_MEASURE, SarvaStanding};
+    ///
+    /// assert_eq!(SarvaStanding::of(SARVA_MEASURE), SarvaStanding::Even);
+    /// assert_eq!(SarvaStanding::of(20), SarvaStanding::Below);
+    /// ```
     #[must_use]
     pub const fn of(sarva: u16) -> SarvaStanding {
         if sarva > SARVA_MEASURE {
@@ -167,6 +222,18 @@ impl SarvaStanding {
 }
 
 /// One graha's transit judged by the natal Ashtakavarga.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_gochar::{GocharRules, Transit};
+/// use teistro_gochar::ashtakavarga::{Prastara, transits};
+///
+/// // Every contributor gave every sign a bindu: eight each, 56 a sign.
+/// let prastara: Prastara = [[u8::MAX; 12]; 7];
+/// let read = transits(&prastara, &[Transit::new(Rashi::Aries, 5.0); 9], GocharRules::TEXT);
+/// let saturn = &read[Graha::Saturn as usize];
+/// assert_eq!((saturn.graha, saturn.bindus, saturn.good), (Graha::Saturn, 8, true));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -192,6 +259,19 @@ pub struct AshtakavargaTransit {
 /// The seven grahas' transits, Sun to Saturn, judged by the natal
 /// `prastara` under the rules' threshold; the nodes, which have no
 /// Ashtakavarga, are not read.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_gochar::{GocharRules, Transit};
+/// use teistro_gochar::ashtakavarga::{Prastara, transits};
+///
+/// // Every contributor gave every sign a bindu: eight each, 56 a sign.
+/// let prastara: Prastara = [[u8::MAX; 12]; 7];
+/// let read = transits(&prastara, &[Transit::new(Rashi::Aries, 5.0); 9], GocharRules::TEXT);
+/// assert!(read.iter().all(|transit| transit.sarva == 56 && transit.kakshya_bindu));
+/// // 5° into Aries is the second eighth, Jupiter's.
+/// assert_eq!(read[0].kakshya.index, 2);
+/// ```
 #[must_use]
 pub fn transits(
     prastara: &Prastara,

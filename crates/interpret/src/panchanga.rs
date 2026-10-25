@@ -53,6 +53,51 @@ const BY_NIGHT: &str = "no";
 ///
 /// A chart with no panchanga says nothing, rather than an empty almanac:
 /// the section is one a request asks for by name.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Rashi};
+/// use teistro_rules::{House, Placement, RuleChart};
+///
+/// // Every body at 15° Aries in the first house.
+/// let placement = Placement {
+///     longitude: 15.0,
+///     sign: Rashi::Aries,
+///     house: House::try_new(1)?,
+///     dignity: Dignity::Neutral,
+///     retrograde: false,
+///     combust: false,
+///     karaka7: None,
+///     karaka8: None,
+///     navamsha: Rashi::Aries,
+/// };
+/// let chart = RuleChart { placements: [placement; 10], panchanga: None, strengths: None };
+/// use teistro_core::catalogue::{Karana, Nakshatra, Tithi, Vara, Yoga};
+/// use teistro_interpret::panchanga;
+/// use teistro_rules::{Pada, Panchanga, Spans};
+///
+/// // A chart with no almanac says nothing.
+/// assert!(panchanga(&chart).is_empty());
+/// let chart = RuleChart {
+///     panchanga: Some(Panchanga {
+///         tithi: Tithi::KrishnaPanchami,
+///         vara: Vara::Ravivara,
+///         nakshatra: Nakshatra::Bharani,
+///         pada: Pada::try_new(3)?,
+///         yoga: Yoga::Vishkambha,
+///         karana: Karana::Bava,
+///         spans: Spans::default(),
+///         by_day: Some(true),
+///         sankranti_hours: None,
+///         eclipse: None,
+///     }),
+///     ..chart
+/// };
+/// let plan = panchanga(&chart);
+/// assert_eq!(plan.items[0].key, "sdk.reason.panchanga.tithi");
+/// // The five limbs, the pada, and that the birth was by day.
+/// assert_eq!(plan.len(), 7);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn panchanga(chart: &RuleChart) -> Plan {
     let mut plan = Plan::default();

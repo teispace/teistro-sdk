@@ -31,6 +31,31 @@ const SADE_SATI_FORM: &str = "sadeSati";
 /// house from the natal Moon, which is what the seven and a half years
 /// are, and a house counted from somewhere else is a different subject
 /// that happens to share a number.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_gochar::sade_sati::{Reckoning, Report, Spell, Visit};
+/// use teistro_gochar::{GocharFrom, Reference};
+/// use teistro_interpret::{NoReadings, Vocabulary, sade_sati};
+///
+/// /// A vocabulary carrying every form of every record.
+/// struct Everything;
+/// impl Vocabulary for Everything {
+///     fn has_form(&self, _key: &str, _form: &str) -> bool {
+///         true
+///     }
+/// }
+/// let twelfth = Spell { house: 12, visits: vec![Visit { from: Some(JulianDay::literal(2_460_000.5)), to: Some(JulianDay::literal(2_460_900.5)) }] };
+/// let report = Report {
+///     reference: Reference { from: GocharFrom::Moon, sign: Rashi::Aries },
+///     reckoning: Reckoning::Sign,
+///     sade_sati: vec![],
+///     spells: vec![twelfth],
+/// };
+/// assert_eq!(sade_sati(&report, &Everything).items[0].key, "sdk.phala.sadeSati");
+/// assert!(sade_sati(&report, &NoReadings).is_empty());
+/// ```
 #[must_use]
 pub fn sade_sati(report: &Report, vocabulary: &dyn Vocabulary) -> Plan {
     let mut plan = Plan::default();

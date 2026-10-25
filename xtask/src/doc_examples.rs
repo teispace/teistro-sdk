@@ -21,17 +21,23 @@ use crate::coverage::COUNTED_BY;
 /// The crates held to an example on every item rustdoc counts.
 const EXAMPLED: &[&str] = &[
     "teistro",
+    "teistro-aspect",
     "teistro-calendar",
     "teistro-chart",
     "teistro-core",
     "teistro-geometry",
+    "teistro-gochar",
     "teistro-houses",
+    "teistro-interpret",
     "teistro-numerology",
     "teistro-pakshi",
+    "teistro-points",
     "teistro-port-ephemeris",
     "teistro-port-timezone",
     "teistro-rashifal",
     "teistro-render-svg",
+    "teistro-state",
+    "teistro-strength",
     "teistro-time",
     "teistro-vargas",
 ];

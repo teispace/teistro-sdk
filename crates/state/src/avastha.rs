@@ -67,6 +67,17 @@ pub const FIGHTERS: [Graha; 5] = [
 ///
 /// The alternation is most of the answer — reading it forward everywhere
 /// is wrong on 359 of the corpus's 837 readings.
+///
+/// ```
+/// use teistro_core::catalogue::{AvasthaBaladi, Rashi};
+/// use teistro_state::avastha::age;
+///
+/// // Forward in an odd sign, backward in an even one.
+/// assert_eq!(age(Rashi::Aries, 3.0), AvasthaBaladi::Bala);
+/// assert_eq!(age(Rashi::Aries, 29.0), AvasthaBaladi::Mrita);
+/// assert_eq!(age(Rashi::Taurus, 3.0), AvasthaBaladi::Mrita);
+/// assert_eq!(age(Rashi::Taurus, 15.0), AvasthaBaladi::Yuva);
+/// ```
 #[must_use]
 pub fn age(sign: Rashi, degrees_in_sign: f64) -> AvasthaBaladi {
     #[expect(
@@ -90,6 +101,15 @@ pub fn age(sign: Rashi, degrees_in_sign: f64) -> AvasthaBaladi {
 /// rather than asleep, which is what a switch that lists the plain
 /// values and defaults for the rest does; the SDK treats the deeper
 /// state as at least as bad, and the difference is registered.
+///
+/// ```
+/// use teistro_core::catalogue::{AvasthaJagradadi, Dignity};
+/// use teistro_state::avastha::wakefulness;
+///
+/// assert_eq!(wakefulness(Dignity::OwnSign), AvasthaJagradadi::Jagrat);
+/// assert_eq!(wakefulness(Dignity::Neutral), AvasthaJagradadi::Swapna);
+/// assert_eq!(wakefulness(Dignity::DeepDebilitated), AvasthaJagradadi::Sushupti);
+/// ```
 #[must_use]
 pub const fn wakefulness(dignity: Dignity) -> AvasthaJagradadi {
     match dignity {
@@ -104,6 +124,22 @@ pub const fn wakefulness(dignity: Dignity) -> AvasthaJagradadi {
 }
 
 /// What the chart says about one body, for the avasthas that read it.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
+/// use teistro_state::Placement;
+///
+/// // The Moon at home in Cancer, in the fifth, with Saturn beside it.
+/// let moon = Placement {
+///     graha: Graha::Moon,
+///     sign: Rashi::Cancer,
+///     house: 5,
+///     dignity: Dignity::OwnSign,
+///     compound: Relationship::Friend,
+/// };
+/// let saturn = Placement { graha: Graha::Saturn, dignity: Dignity::Enemy, compound: Relationship::Enemy, ..moon };
+/// assert_eq!(saturn.sign, moon.sign);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Placement {
     /// Which body.
@@ -124,6 +160,29 @@ pub struct Placement {
 /// The third is not a failure and not a "no". A caller that treats an
 /// undecided state as absent will be wrong about it; one that shows it
 /// as unknown will not.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
+/// use teistro_state::Placement;
+///
+/// // The Moon at home in Cancer, in the fifth, with Saturn beside it.
+/// let moon = Placement {
+///     graha: Graha::Moon,
+///     sign: Rashi::Cancer,
+///     house: 5,
+///     dignity: Dignity::OwnSign,
+///     compound: Relationship::Friend,
+/// };
+/// let saturn = Placement { graha: Graha::Saturn, dignity: Dignity::Enemy, compound: Relationship::Enemy, ..moon };
+/// use teistro_core::catalogue::AvasthaLajjitadi;
+/// use teistro_state::Holds;
+/// use teistro_state::avastha::lajjitadi;
+///
+/// let states = lajjitadi(moon, &[moon, saturn]);
+/// assert_eq!(states.state(AvasthaLajjitadi::Lajjita), Holds::Yes);
+/// assert_eq!(states.state(AvasthaLajjitadi::Trishita), Holds::Undecided);
+/// assert_eq!(states.state(AvasthaLajjitadi::Kshudha), Holds::No);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -138,6 +197,29 @@ pub enum Holds {
 
 /// The lajjitadi a chart decides, the ones it rules out, and the ones it
 /// cannot decide either way.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
+/// use teistro_state::Placement;
+///
+/// // The Moon at home in Cancer, in the fifth, with Saturn beside it.
+/// let moon = Placement {
+///     graha: Graha::Moon,
+///     sign: Rashi::Cancer,
+///     house: 5,
+///     dignity: Dignity::OwnSign,
+///     compound: Relationship::Friend,
+/// };
+/// let saturn = Placement { graha: Graha::Saturn, dignity: Dignity::Enemy, compound: Relationship::Enemy, ..moon };
+/// use teistro_core::catalogue::AvasthaLajjitadi;
+/// use teistro_state::avastha::lajjitadi;
+///
+/// let states = lajjitadi(moon, &[moon, saturn]);
+/// assert_eq!(states.holding, [AvasthaLajjitadi::Lajjita]);
+/// // A friend's watery sign: hungry is ruled out, thirsty and delighted undecided.
+/// assert_eq!(states.ruled_out, [AvasthaLajjitadi::Kshudha]);
+/// assert_eq!(states.undecided, [AvasthaLajjitadi::Trishita, AvasthaLajjitadi::Mudita]);
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Lajjitadi {
@@ -154,6 +236,27 @@ pub struct Lajjitadi {
 
 impl Lajjitadi {
     /// What the chart says about one state.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
+    /// use teistro_state::Placement;
+    ///
+    /// // The Moon at home in Cancer, in the fifth, with Saturn beside it.
+    /// let moon = Placement {
+    ///     graha: Graha::Moon,
+    ///     sign: Rashi::Cancer,
+    ///     house: 5,
+    ///     dignity: Dignity::OwnSign,
+    ///     compound: Relationship::Friend,
+    /// };
+    /// let saturn = Placement { graha: Graha::Saturn, dignity: Dignity::Enemy, compound: Relationship::Enemy, ..moon };
+    /// use teistro_core::catalogue::AvasthaLajjitadi;
+    /// use teistro_state::Holds;
+    /// use teistro_state::avastha::lajjitadi;
+    ///
+    /// // Not proud: the Moon is at home in Cancer, not exalted.
+    /// assert_eq!(lajjitadi(moon, &[moon, saturn]).state(AvasthaLajjitadi::Garvita), Holds::No);
+    /// ```
     #[must_use]
     pub fn state(&self, which: AvasthaLajjitadi) -> Holds {
         if self.holding.contains(&which) {
@@ -190,6 +293,29 @@ pub const NARROWED_LAJJITADI: [AvasthaLajjitadi; 3] = [
 
 /// Whether the tradition's necessary condition for one of the three
 /// holds, which is what makes it undecided rather than ruled out.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
+/// use teistro_state::Placement;
+///
+/// // The Moon at home in Cancer, in the fifth, with Saturn beside it.
+/// let moon = Placement {
+///     graha: Graha::Moon,
+///     sign: Rashi::Cancer,
+///     house: 5,
+///     dignity: Dignity::OwnSign,
+///     compound: Relationship::Friend,
+/// };
+/// let saturn = Placement { graha: Graha::Saturn, dignity: Dignity::Enemy, compound: Relationship::Enemy, ..moon };
+/// use teistro_core::catalogue::AvasthaLajjitadi;
+/// use teistro_state::avastha::may_hold;
+///
+/// assert!(may_hold(AvasthaLajjitadi::Trishita, moon));
+/// assert!(!may_hold(AvasthaLajjitadi::Kshudha, moon));
+/// assert!(may_hold(AvasthaLajjitadi::Kshudha, saturn));
+/// // The decided three are never withheld.
+/// assert!(!may_hold(AvasthaLajjitadi::Garvita, moon));
+/// ```
 #[must_use]
 pub fn may_hold(state: AvasthaLajjitadi, placement: Placement) -> bool {
     match state {
@@ -223,6 +349,28 @@ pub fn may_hold(state: AvasthaLajjitadi, placement: Placement) -> bool {
 /// The other three carry a necessary condition and no sufficient one
 /// ([`NARROWED_LAJJITADI`]), so each is either ruled out or undecided
 /// and never asserted.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
+/// use teistro_state::Placement;
+///
+/// // The Moon at home in Cancer, in the fifth, with Saturn beside it.
+/// let moon = Placement {
+///     graha: Graha::Moon,
+///     sign: Rashi::Cancer,
+///     house: 5,
+///     dignity: Dignity::OwnSign,
+///     compound: Relationship::Friend,
+/// };
+/// let saturn = Placement { graha: Graha::Saturn, dignity: Dignity::Enemy, compound: Relationship::Enemy, ..moon };
+/// use teistro_core::catalogue::AvasthaLajjitadi;
+/// use teistro_state::avastha::lajjitadi;
+///
+/// // Out of the fifth, Saturn's company no longer shames it.
+/// let fourth = Placement { house: 4, ..moon };
+/// assert!(lajjitadi(fourth, &[fourth, saturn]).holding.is_empty());
+/// assert!(lajjitadi(moon, &[moon, saturn]).holding.contains(&AvasthaLajjitadi::Lajjita));
+/// ```
 #[must_use]
 pub fn lajjitadi(placement: Placement, chart: &[Placement]) -> Lajjitadi {
     let mut holding = Vec::new();
@@ -260,6 +408,16 @@ pub fn lajjitadi(placement: Placement, chart: &[Placement]) -> Lajjitadi {
 /// sign or a moolatrikona is Swastha, a great friend's sign is Mudita.
 /// Below that six states split on something the corpus does not record
 /// and the SDK cannot yet compute, so the answer is nothing.
+///
+/// ```
+/// use teistro_core::catalogue::{AvasthaDeeptadi, Dignity};
+/// use teistro_state::avastha::deeptadi;
+///
+/// assert_eq!(deeptadi(Dignity::DeepExalted), Some(AvasthaDeeptadi::Deepta));
+/// assert_eq!(deeptadi(Dignity::Mooltrikona), Some(AvasthaDeeptadi::Swastha));
+/// // Below a great friend's sign nothing decides it.
+/// assert_eq!(deeptadi(Dignity::Friend), None);
+/// ```
 #[must_use]
 pub const fn deeptadi(dignity: Dignity) -> Option<AvasthaDeeptadi> {
     match dignity {
@@ -271,6 +429,23 @@ pub const fn deeptadi(dignity: Dignity) -> Option<AvasthaDeeptadi> {
 }
 
 /// Two planets at war, from the point of view of one of them.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_state::AtWar;
+/// use teistro_state::avastha::war;
+///
+/// // Mars and Venus half a degree apart; Mars stands to the north.
+/// let chart = [
+///     AtWar { graha: Graha::Mars, longitude_deg: 100.0, latitude_deg: 1.0 },
+///     AtWar { graha: Graha::Venus, longitude_deg: 100.5, latitude_deg: -0.5 },
+/// ];
+/// let mars = war(Graha::Mars, &chart).ok_or("at war")?;
+/// assert_eq!(mars.opponent, Graha::Venus);
+/// assert!(mars.is_winner);
+/// assert!((mars.apart_deg - 0.5).abs() < 1e-12);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct War {
@@ -283,6 +458,19 @@ pub struct War {
 }
 
 /// Where a body stands, for the war.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_state::AtWar;
+/// use teistro_state::avastha::war;
+///
+/// // Mars and Venus half a degree apart; Mars stands to the north.
+/// let chart = [
+///     AtWar { graha: Graha::Mars, longitude_deg: 100.0, latitude_deg: 1.0 },
+///     AtWar { graha: Graha::Venus, longitude_deg: 100.5, latitude_deg: -0.5 },
+/// ];
+/// assert!(chart[0].latitude_deg > chart[1].latitude_deg);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct AtWar {
     /// Which body.
@@ -299,6 +487,23 @@ pub struct AtWar {
 /// the **northern** body wins — true of all fourteen readings the corpus
 /// carries. A body already at war with one neighbour and near another
 /// takes the nearer of them, so the answer is one war and not a list.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_state::AtWar;
+/// use teistro_state::avastha::war;
+///
+/// // Mars and Venus half a degree apart; Mars stands to the north.
+/// let chart = [
+///     AtWar { graha: Graha::Mars, longitude_deg: 100.0, latitude_deg: 1.0 },
+///     AtWar { graha: Graha::Venus, longitude_deg: 100.5, latitude_deg: -0.5 },
+/// ];
+/// assert_eq!(war(Graha::Venus, &chart).map(|lost| lost.is_winner), Some(false));
+/// // The luminaries never fight.
+/// let with_sun = [chart[0], AtWar { graha: Graha::Sun, ..chart[0] }];
+/// assert_eq!(war(Graha::Sun, &with_sun), None);
+/// assert_eq!(war(Graha::Mars, &with_sun), None);
+/// ```
 #[must_use]
 pub fn war(graha: Graha, chart: &[AtWar]) -> Option<War> {
     if !FIGHTERS.contains(&graha) {
@@ -319,6 +524,12 @@ pub fn war(graha: Graha, chart: &[AtWar]) -> Option<War> {
 }
 
 /// The angle between two longitudes, degrees, the shorter way round.
+///
+/// ```
+/// use teistro_state::avastha::separation;
+///
+/// assert_eq!(separation(359.5, 0.5), 1.0);
+/// ```
 #[must_use]
 pub fn separation(first: f64, second: f64) -> f64 {
     let apart = (first - second).abs().rem_euclid(360.0);

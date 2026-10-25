@@ -44,6 +44,14 @@ use crate::hits::{Motion, entered};
 const HOUSES: i64 = 12;
 
 /// What a Sade Sati's houses are reckoned in (C147).
+///
+/// ```
+/// use teistro_gochar::sade_sati::Reckoning;
+///
+/// assert_eq!(Reckoning::default(), Reckoning::Sign);
+/// // A Moon at 33°: whole signs begin the first house at Taurus's 30°.
+/// assert_eq!(Reckoning::default().origin_deg(33.0), 30.0);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -83,6 +91,12 @@ impl Reckoning {
 }
 
 /// A Sade Sati's three phases, one a house (C147).
+///
+/// ```
+/// use teistro_gochar::sade_sati::Phase;
+///
+/// assert_eq!(Phase::ALL.map(Phase::house), [12, 1, 2]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -100,6 +114,12 @@ impl Phase {
     pub const ALL: [Phase; 3] = [Phase::Rising, Phase::Peak, Phase::Setting];
 
     /// The house from the reference, 1 to 12.
+    ///
+    /// ```
+    /// use teistro_gochar::sade_sati::Phase;
+    ///
+    /// assert_eq!(Phase::Rising.house(), 12);
+    /// ```
     #[must_use]
     pub const fn house(self) -> u8 {
         match self {
@@ -110,6 +130,13 @@ impl Phase {
     }
 
     /// The phase a house is, if it is one of the three.
+    ///
+    /// ```
+    /// use teistro_gochar::sade_sati::Phase;
+    ///
+    /// assert_eq!(Phase::of(2), Some(Phase::Setting));
+    /// assert_eq!(Phase::of(8), None);
+    /// ```
     #[must_use]
     pub const fn of(house: u8) -> Option<Phase> {
         match house {
@@ -128,6 +155,18 @@ pub const DEFAULT_SPELLS: [u8; 2] = [4, 8];
 
 /// One of Saturn's crossings of the lattice: when, over which line, and
 /// which way.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// let at = |jd| JulianDay::<Utc>::literal(jd);
+/// use teistro_gochar::hits::Motion;
+/// use teistro_gochar::sade_sati::Crossing;
+///
+/// // Saturn back over Pisces's first degree.
+/// let crossing = Crossing::new(at(1_000.0), 330.0, Motion::Retrograde);
+/// assert_eq!(crossing.motion, Motion::Retrograde);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Crossing {
     /// When.
@@ -140,6 +179,16 @@ pub struct Crossing {
 
 impl Crossing {
     /// A crossing of `boundary_deg` at `instant`, moving `motion`.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// use teistro_gochar::hits::Motion;
+    /// use teistro_gochar::sade_sati::Crossing;
+    ///
+    /// assert_eq!(Crossing::new(at(1_000.0), 330.0, Motion::Direct).boundary_deg, 330.0);
+    /// ```
     #[must_use]
     pub const fn new(instant: JulianDay<Utc>, boundary_deg: f64, motion: Motion) -> Crossing {
         Crossing {
@@ -153,6 +202,17 @@ impl Crossing {
 /// One unbroken stay of Saturn in a house, half-open: from the instant it
 /// entered to the instant it left. A bound is absent when it lies past what
 /// the ephemeris covers.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// let at = |jd| JulianDay::<Utc>::literal(jd);
+/// use teistro_gochar::sade_sati::Visit;
+///
+/// // A stay already under way when the ephemeris begins.
+/// let visit = Visit { from: None, to: Some(at(500.0)) };
+/// assert!(visit.contains(at(-1.0e6)));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Visit {
@@ -164,6 +224,18 @@ pub struct Visit {
 
 impl Visit {
     /// Whether Saturn was in the house at `instant`.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// use teistro_gochar::sade_sati::Visit;
+    ///
+    /// // Half-open: the day it entered is in, the day it left is not.
+    /// let visit = Visit { from: Some(at(100.0)), to: Some(at(200.0)) };
+    /// assert!(visit.contains(at(100.0)));
+    /// assert!(!visit.contains(at(200.0)));
+    /// ```
     #[must_use]
     pub fn contains(&self, instant: JulianDay<Utc>) -> bool {
         self.from.is_none_or(|from| from.get() <= instant.get())
@@ -180,6 +252,24 @@ impl Visit {
 /// Saturn's stays in one house from the reference during one circuit of
 /// the zodiac: one visit, or several when it turned retrograde across the
 /// house's edge and came back (C148).
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// let at = |jd| JulianDay::<Utc>::literal(jd);
+/// use teistro_gochar::sade_sati::{Phase, Spell, Visit};
+///
+/// // The 12th entered at day 100, left backwards at 200 and re-entered at 300.
+/// let spell = Spell {
+///     house: 12,
+///     visits: vec![
+///         Visit { from: Some(at(100.0)), to: Some(at(200.0)) },
+///         Visit { from: Some(at(300.0)), to: Some(at(400.0)) },
+///     ],
+/// };
+/// assert_eq!(spell.phase(), Some(Phase::Rising));
+/// assert_eq!((spell.begins(), spell.ends()), (Some(at(100.0)), Some(at(400.0))));
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Spell {
@@ -191,12 +281,48 @@ pub struct Spell {
 
 impl Spell {
     /// When Saturn first entered the house; absent before the coverage.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// use teistro_gochar::sade_sati::{Phase, Spell, Visit};
+    ///
+    /// // The 12th entered at day 100, left backwards at 200 and re-entered at 300.
+    /// let spell = Spell {
+    ///     house: 12,
+    ///     visits: vec![
+    ///         Visit { from: Some(at(100.0)), to: Some(at(200.0)) },
+    ///         Visit { from: Some(at(300.0)), to: Some(at(400.0)) },
+    ///     ],
+    /// };
+    /// assert_eq!(spell.begins(), Some(at(100.0)));
+    /// # let _ = Phase::Peak;
+    /// ```
     #[must_use]
     pub fn begins(&self) -> Option<JulianDay<Utc>> {
         self.visits.first().and_then(|visit| visit.from)
     }
 
     /// When it last left; absent after the coverage.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// use teistro_gochar::sade_sati::{Phase, Spell, Visit};
+    ///
+    /// // The 12th entered at day 100, left backwards at 200 and re-entered at 300.
+    /// let spell = Spell {
+    ///     house: 12,
+    ///     visits: vec![
+    ///         Visit { from: Some(at(100.0)), to: Some(at(200.0)) },
+    ///         Visit { from: Some(at(300.0)), to: Some(at(400.0)) },
+    ///     ],
+    /// };
+    /// assert_eq!(spell.ends(), Some(at(400.0)));
+    /// # let _ = Phase::Peak;
+    /// ```
     #[must_use]
     pub fn ends(&self) -> Option<JulianDay<Utc>> {
         self.visits.last().and_then(|visit| visit.to)
@@ -204,12 +330,51 @@ impl Spell {
 
     /// Whether Saturn stood in the house at `instant`: a day between two
     /// visits, when it had stepped back out, is not.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// use teistro_gochar::sade_sati::{Phase, Spell, Visit};
+    ///
+    /// // The 12th entered at day 100, left backwards at 200 and re-entered at 300.
+    /// let spell = Spell {
+    ///     house: 12,
+    ///     visits: vec![
+    ///         Visit { from: Some(at(100.0)), to: Some(at(200.0)) },
+    ///         Visit { from: Some(at(300.0)), to: Some(at(400.0)) },
+    ///     ],
+    /// };
+    /// assert!(spell.contains(at(150.0)));
+    /// // Stepped back out into the 11th between the visits.
+    /// assert!(!spell.contains(at(250.0)));
+    /// # let _ = Phase::Peak;
+    /// ```
     #[must_use]
     pub fn contains(&self, instant: JulianDay<Utc>) -> bool {
         self.visits.iter().any(|visit| visit.contains(instant))
     }
 
     /// The Sade Sati phase this house is, if it is one.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// use teistro_gochar::sade_sati::{Phase, Spell, Visit};
+    ///
+    /// // The 12th entered at day 100, left backwards at 200 and re-entered at 300.
+    /// let spell = Spell {
+    ///     house: 12,
+    ///     visits: vec![
+    ///         Visit { from: Some(at(100.0)), to: Some(at(200.0)) },
+    ///         Visit { from: Some(at(300.0)), to: Some(at(400.0)) },
+    ///     ],
+    /// };
+    /// assert_eq!(spell.phase(), Some(Phase::Rising));
+    /// let eighth = Spell { house: 8, ..spell };
+    /// assert_eq!(eighth.phase(), None);
+    /// ```
     #[must_use]
     pub const fn phase(&self) -> Option<Phase> {
         Phase::of(self.house)
@@ -218,6 +383,27 @@ impl Spell {
 
 /// One Sade Sati: Saturn's spells in the 12th, the 1st and the 2nd from
 /// the reference, on one circuit of the zodiac.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_gochar::hits::Motion;
+/// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+///
+/// let at = |jd| JulianDay::<Utc>::literal(jd);
+/// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+/// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+///     .iter()
+///     .zip(0_u32..)
+///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+///     .collect();
+/// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+/// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+///     unreachable!("the search reaches two houses either side");
+/// };
+/// let sade_sati = &found.sade_sati[0];
+/// assert_eq!(sade_sati.phases.iter().map(|spell| spell.house).collect::<Vec<_>>(), [12, 1, 2]);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SadeSati {
@@ -228,18 +414,82 @@ pub struct SadeSati {
 
 impl SadeSati {
     /// When Saturn first entered the 12th.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_gochar::hits::Motion;
+    /// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+    /// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+    ///     .iter()
+    ///     .zip(0_u32..)
+    ///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+    ///     .collect();
+    /// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+    /// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+    ///     unreachable!("the search reaches two houses either side");
+    /// };
+    /// assert_eq!(found.sade_sati[0].begins(), Some(at(900.0)));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn begins(&self) -> Option<JulianDay<Utc>> {
         self.phases.first().and_then(Spell::begins)
     }
 
     /// When it last left the 2nd.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_gochar::hits::Motion;
+    /// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+    /// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+    ///     .iter()
+    ///     .zip(0_u32..)
+    ///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+    ///     .collect();
+    /// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+    /// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+    ///     unreachable!("the search reaches two houses either side");
+    /// };
+    /// assert_eq!(found.sade_sati[0].ends(), Some(at(3_600.0)));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn ends(&self) -> Option<JulianDay<Utc>> {
         self.phases.last().and_then(Spell::ends)
     }
 
     /// The phase Saturn stood in at `instant`, if it stood in one.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_gochar::hits::Motion;
+    /// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+    /// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+    ///     .iter()
+    ///     .zip(0_u32..)
+    ///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+    ///     .collect();
+    /// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+    /// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+    ///     unreachable!("the search reaches two houses either side");
+    /// };
+    /// use teistro_gochar::sade_sati::Phase;
+    ///
+    /// let sade_sati = &found.sade_sati[0];
+    /// assert_eq!(sade_sati.phase_at(at(3_000.0)), Some(Phase::Setting));
+    /// assert_eq!(sade_sati.phase_at(at(4_000.0)), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn phase_at(&self, instant: JulianDay<Utc>) -> Option<Phase> {
         self.phases
@@ -249,6 +499,29 @@ impl SadeSati {
     }
 
     /// One phase's spell.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_gochar::hits::Motion;
+    /// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+    /// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+    ///     .iter()
+    ///     .zip(0_u32..)
+    ///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+    ///     .collect();
+    /// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+    /// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+    ///     unreachable!("the search reaches two houses either side");
+    /// };
+    /// use teistro_gochar::sade_sati::Phase;
+    ///
+    /// let peak = found.sade_sati[0].phase(Phase::Peak);
+    /// assert_eq!(peak.and_then(|spell| spell.begins()), Some(at(1_800.0)));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn phase(&self, phase: Phase) -> Option<&Spell> {
         self.phases
@@ -260,6 +533,28 @@ impl SadeSati {
 /// Every period of a window: each Sade Sati and each smaller spell asked
 /// for whose span, from its first entry to its last exit, reaches into it;
 /// whole.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_gochar::hits::Motion;
+/// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+///
+/// let at = |jd| JulianDay::<Utc>::literal(jd);
+/// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+/// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+///     .iter()
+///     .zip(0_u32..)
+///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+///     .collect();
+/// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+/// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+///     unreachable!("the search reaches two houses either side");
+/// };
+/// // The 4th begins at day 4500, after the window: no smaller spell reaches it.
+/// assert_eq!(found.sade_sati.len(), 1);
+/// assert!(found.spells.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Periods {
@@ -271,6 +566,31 @@ pub struct Periods {
 
 /// A natal chart's periods over a window, with what they were counted
 /// from and how they were reckoned, so a report says which reading it is.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_gochar::hits::Motion;
+/// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+///
+/// let at = |jd| JulianDay::<Utc>::literal(jd);
+/// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+/// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+///     .iter()
+///     .zip(0_u32..)
+///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+///     .collect();
+/// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+/// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+///     unreachable!("the search reaches two houses either side");
+/// };
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_gochar::Reference;
+/// use teistro_gochar::sade_sati::Report;
+///
+/// let report = Report::new(Reference::moon(Rashi::Aries), Reckoning::Sign, found);
+/// assert_eq!(report.sade_sati.len(), 1);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Report {
@@ -286,6 +606,16 @@ pub struct Report {
 
 impl Report {
     /// The periods found, labelled.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_gochar::Reference;
+    /// use teistro_gochar::sade_sati::{Periods, Reckoning, Report};
+    ///
+    /// let report = Report::new(Reference::moon(Rashi::Leo), Reckoning::Degree, Periods::default());
+    /// assert_eq!(report.reckoning, Reckoning::Degree);
+    /// assert!(report.sade_sati.is_empty());
+    /// ```
     #[must_use]
     pub fn new(reference: Reference, reckoning: Reckoning, periods: Periods) -> Report {
         Report {
@@ -297,6 +627,31 @@ impl Report {
     }
 
     /// The Sade Sati phase Saturn stood in at `instant`, if any.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_gochar::hits::Motion;
+    /// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+    /// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+    ///     .iter()
+    ///     .zip(0_u32..)
+    ///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+    ///     .collect();
+    /// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+    /// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+    ///     unreachable!("the search reaches two houses either side");
+    /// };
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_gochar::Reference;
+    /// use teistro_gochar::sade_sati::{Phase, Report};
+    ///
+    /// let report = Report::new(Reference::moon(Rashi::Aries), Reckoning::Sign, found);
+    /// assert_eq!(report.phase_at(at(1_000.0)), Some(Phase::Rising));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn phase_at(&self, instant: JulianDay<Utc>) -> Option<Phase> {
         self.sade_sati
@@ -305,6 +660,20 @@ impl Report {
     }
 
     /// The smaller spell's house Saturn stood in at `instant`, if any.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_gochar::Reference;
+    /// use teistro_gochar::sade_sati::{Periods, Reckoning, Report, Spell, Visit};
+    ///
+    /// let at = |jd| JulianDay::<Utc>::literal(jd);
+    /// let eighth = Spell { house: 8, visits: vec![Visit { from: Some(at(0.0)), to: Some(at(900.0)) }] };
+    /// let periods = Periods { sade_sati: vec![], spells: vec![eighth] };
+    /// let report = Report::new(Reference::moon(Rashi::Aries), Reckoning::Sign, periods);
+    /// assert_eq!(report.spell_at(at(450.0)), Some(8));
+    /// assert_eq!(report.spell_at(at(900.0)), None);
+    /// ```
     #[must_use]
     pub fn spell_at(&self, instant: JulianDay<Utc>) -> Option<u8> {
         self.spells
@@ -316,6 +685,15 @@ impl Report {
 
 /// What a search found: Saturn's crossings in time order, where the houses
 /// begin, and whether each end of the search is the ephemeris's own.
+///
+/// ```
+/// use teistro_gochar::sade_sati::{Crossing, Searched};
+///
+/// let crossings: [Crossing; 0] = [];
+/// // A search that reached both ends of what the ephemeris covers.
+/// let searched = Searched::new(&crossings, 0.0).at_coverage(true, true);
+/// # let _ = searched;
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Searched<'c> {
     crossings: &'c [Crossing],
@@ -328,6 +706,17 @@ impl<'c> Searched<'c> {
     /// `crossings` of the lattice whose first house begins at `origin_deg`
     /// ([`Reckoning::origin_deg`]), from a search that could still widen
     /// either way.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_gochar::sade_sati::{Outcome, Searched, periods};
+    ///
+    /// // No crossing yet: the search must widen both ways.
+    /// let searched = Searched::new(&[], 0.0);
+    /// let window = (JulianDay::literal(0.0), JulianDay::literal(1.0));
+    /// assert_eq!(periods(&searched, window, &[])?, Outcome::Widen { before: true, after: true });
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn new(crossings: &'c [Crossing], origin_deg: f64) -> Searched<'c> {
         Searched {
@@ -340,6 +729,19 @@ impl<'c> Searched<'c> {
 
     /// The same search, which began (`before`) or ended (`after`) at the
     /// edge of the ephemeris's coverage and so cannot widen that way.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_gochar::sade_sati::{Outcome, Searched, periods};
+    ///
+    /// let window = (JulianDay::literal(0.0), JulianDay::literal(1.0));
+    /// // Already at the coverage's start, so it can only widen later.
+    /// let searched = Searched::new(&[], 0.0).at_coverage(true, false);
+    /// assert_eq!(periods(&searched, window, &[])?, Outcome::Widen { before: false, after: true });
+    /// // And with nowhere left to look, no crossing at all is a fault.
+    /// assert!(periods(&searched.at_coverage(true, true), window, &[]).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn at_coverage(mut self, before: bool, after: bool) -> Searched<'c> {
         self.covered_before = before;
@@ -349,6 +751,29 @@ impl<'c> Searched<'c> {
 }
 
 /// What [`periods`] makes of a search.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_gochar::hits::Motion;
+/// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+///
+/// let at = |jd| JulianDay::<Utc>::literal(jd);
+/// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+/// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+///     .iter()
+///     .zip(0_u32..)
+///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+///     .collect();
+/// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+/// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+///     unreachable!("the search reaches two houses either side");
+/// };
+/// // A narrower search, begun after Saturn entered the 12th, must widen earlier.
+/// let late = Searched::new(&crossings[2..], Reckoning::Sign.origin_deg(10.0));
+/// assert_eq!(periods(&late, (at(2_000.0), at(2_000.0)), &[])?, Outcome::Widen { before: true, after: false });
+/// # let _ = found;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub enum Outcome {
     /// The answer, which no wider search could change.
@@ -419,6 +844,29 @@ struct Stay {
 /// when the search began, and two past the latest when it ended: a
 /// retrograde arc is far shorter than a house, so nothing outside the
 /// search could have belonged to either.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_gochar::hits::Motion;
+/// use teistro_gochar::sade_sati::{Crossing, Outcome, Reckoning, Searched, periods};
+///
+/// let at = |jd| JulianDay::<Utc>::literal(jd);
+/// // The natal Moon in Aries; Saturn into a sign every 900 days, the 12th at 900.
+/// let crossings: Vec<Crossing> = [300.0, 330.0, 0.0, 30.0, 60.0, 90.0]
+///     .iter()
+///     .zip(0_u32..)
+///     .map(|(line, k)| Crossing::new(at(f64::from(k) * 900.0), *line, Motion::Direct))
+///     .collect();
+/// let searched = Searched::new(&crossings, Reckoning::Sign.origin_deg(10.0));
+/// let Outcome::Found(found) = periods(&searched, (at(2_000.0), at(2_000.0)), &[4, 8])? else {
+///     unreachable!("the search reaches two houses either side");
+/// };
+/// assert_eq!(found.sade_sati[0].begins(), Some(at(900.0)));
+/// // The 12th is the Sade Sati's own, not a smaller spell.
+/// let refused = periods(&searched, (at(0.0), at(1.0)), &[12]);
+/// assert_eq!(refused.unwrap_err().field(), Some("houses"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -577,6 +1025,14 @@ fn spells_of(stays: &[Stay]) -> Vec<Spell> {
 }
 
 /// Refuses a smaller spell's house outside 3 to 11, or one named twice.
+///
+/// ```
+/// use teistro_gochar::sade_sati::{DEFAULT_SPELLS, check_houses};
+///
+/// assert!(check_houses(&DEFAULT_SPELLS).is_ok());
+/// assert!(check_houses(&[2]).is_err());
+/// assert!(check_houses(&[4, 4]).is_err());
+/// ```
 ///
 /// # Errors
 ///

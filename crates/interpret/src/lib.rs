@@ -173,6 +173,15 @@ pub const KEYS: [&str; 75] = [
 ];
 
 /// One thing to say: a message key and the slots it is said with.
+///
+/// ```
+/// use teistro_interpret::Item;
+/// use teistro_intl::{Value, params};
+///
+/// let item = Item::new("my.app.greeting", params([("count", Value::Int(3))]));
+/// assert_eq!(serde_json::to_string(&item)?, r#"{"key":"my.app.greeting","params":{"count":3}}"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
@@ -193,6 +202,16 @@ impl Item {
     /// and its like, generated from `i18n/` — which is how a composer says
     /// anything: the key is the message's own, the slots are its fields, and
     /// a message that gains or loses one stops the composer compiling.
+    ///
+    /// ```
+    /// use teistro_interpret::Item;
+    /// use teistro_intl::messages::sdk::reason;
+    /// use teistro_intl::{TypedMessage, Value};
+    ///
+    /// let item = Item::of(&reason::BhavaBala { bhava: 1, virupas: 473.39 });
+    /// assert_eq!(item.key, <reason::BhavaBala as TypedMessage>::KEY);
+    /// assert_eq!(item.params.get("bhava"), Some(&Value::Int(1)));
+    /// ```
     #[must_use]
     pub fn of<M: TypedMessage>(message: &M) -> Item {
         Item {
@@ -202,6 +221,15 @@ impl Item {
     }
 
     /// An item from a key and slots, for a consumer composing its own.
+    ///
+    /// ```
+    /// use teistro_interpret::Item;
+    /// use teistro_intl::params;
+    ///
+    /// let item = Item::new("my.app.footer", params([]));
+    /// assert_eq!(item.key, "my.app.footer");
+    /// assert!(item.params.is_empty());
+    /// ```
     #[must_use]
     pub fn new(key: impl Into<String>, params: Params) -> Item {
         Item {
@@ -238,33 +266,89 @@ pub struct Plan {
 
 impl Plan {
     /// Says a typed message.
+    ///
+    /// ```
+    /// use teistro_interpret::{Item, Plan};
+    /// use teistro_intl::messages::sdk::reason;
+    ///
+    /// let bala = reason::BhavaBala { bhava: 1, virupas: 473.39 };
+    /// let mut plan = Plan::default();
+    /// plan.say(&bala);
+    /// assert_eq!(plan.items, [Item::of(&bala)]);
+    /// ```
     pub fn say<M: TypedMessage>(&mut self, message: &M) {
         self.items.push(Item::of(message));
     }
 
     /// Adds an item, for a consumer composing its own.
+    ///
+    /// ```
+    /// use teistro_interpret::Plan;
+    /// use teistro_intl::params;
+    ///
+    /// let mut plan = Plan::default();
+    /// plan.push("my.app.footer", params([]));
+    /// assert_eq!(plan.keys(), ["my.app.footer"]);
+    /// ```
     pub fn push(&mut self, key: impl Into<String>, params: Params) {
         self.items.push(Item::new(key, params));
     }
 
     /// Whether it says nothing.
+    ///
+    /// ```
+    /// use teistro_interpret::Plan;
+    ///
+    /// assert!(Plan::default().is_empty());
+    /// ```
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
 
     /// How many things it says.
+    ///
+    /// ```
+    /// use teistro_interpret::Plan;
+    /// use teistro_intl::params;
+    ///
+    /// let mut plan = Plan::default();
+    /// plan.push("my.app.footer", params([]));
+    /// plan.push("my.app.footer", params([]));
+    /// assert_eq!(plan.len(), 2);
+    /// ```
     #[must_use]
     pub fn len(&self) -> usize {
         self.items.len()
     }
 
     /// Its items, borrowed.
+    ///
+    /// ```
+    /// use teistro_interpret::Plan;
+    /// use teistro_intl::params;
+    ///
+    /// let mut plan = Plan::default();
+    /// plan.push("my.app.footer", params([]));
+    /// assert!(plan.iter().all(|item| item.params.is_empty()));
+    /// ```
     pub fn iter(&self) -> std::slice::Iter<'_, Item> {
         self.items.iter()
     }
 
     /// Every key it uses, in the order it uses them, each once.
+    ///
+    /// ```
+    /// use teistro_interpret::Plan;
+    /// use teistro_intl::params;
+    ///
+    /// let mut plan = Plan::default();
+    /// for key in ["a.first", "a.second", "a.first"] {
+    ///     plan.push(key, params([]));
+    /// }
+    /// // Each once, in the order first used: the messages a page must load.
+    /// assert_eq!(plan.keys(), ["a.first", "a.second"]);
+    /// ```
     #[must_use]
     pub fn keys(&self) -> Vec<&str> {
         let mut keys: Vec<&str> = Vec::new();
@@ -317,6 +401,20 @@ impl<'p> IntoIterator for &'p Plan {
 /// It is a trait rather than an `&Intl` so a composer can be tested without
 /// building a locale engine, and so the question a composer asks is
 /// visible in its signature.
+///
+/// ```
+/// use teistro_interpret::{NoReadings, Vocabulary};
+///
+/// /// A consumer's own pack, which reads one rule.
+/// struct Ruchaka;
+/// impl Vocabulary for Ruchaka {
+///     fn has_form(&self, key: &str, form: &str) -> bool {
+///         key == "rule.RUCHAKA" && form == teistro_interpret::NAME_FORM
+///     }
+/// }
+/// assert!(Ruchaka.has_reading("RUCHAKA"));
+/// assert!(!NoReadings.has_reading("RUCHAKA"));
+/// ```
 pub trait Vocabulary {
     /// Whether the base locale carries this form of the record at this
     /// **full** catalogue key (`nakshatra.ASHWINI`, `phala`).
@@ -326,10 +424,28 @@ pub trait Vocabulary {
     /// thing of the same records. A reading of a rule is the `name` form
     /// of a `rule` record, which is what [`Vocabulary::has_reading`]
     /// spells.
+    ///
+    /// ```
+    /// use teistro_interpret::{NoReadings, Vocabulary};
+    ///
+    /// assert!(!NoReadings.has_form("nakshatra.ASHWINI", "phala"));
+    /// ```
     fn has_form(&self, key: &str, form: &str) -> bool;
 
     /// Whether the base locale carries a reading of this rule, named by
     /// the rule's own key (`RUCHAKA`, not `rule.RUCHAKA`).
+    ///
+    /// ```
+    /// use teistro_interpret::{Vocabulary, reading_key};
+    ///
+    /// struct Carries;
+    /// impl Vocabulary for Carries {
+    ///     fn has_form(&self, key: &str, form: &str) -> bool {
+    ///         key == reading_key("GAJAKESARI") && form == "name"
+    ///     }
+    /// }
+    /// assert!(Carries.has_reading("GAJAKESARI"));
+    /// ```
     fn has_reading(&self, rule: &str) -> bool {
         self.has_form(&reading_key(rule), NAME_FORM)
     }
@@ -343,6 +459,12 @@ pub const NAME_FORM: &str = "name";
 ///
 /// `rule` is the catalogue's only **open** kind, so this is a spelling and
 /// not a lookup (`03-design/interpretation-records.md` §4).
+///
+/// ```
+/// use teistro_interpret::reading_key;
+///
+/// assert_eq!(reading_key("RUCHAKA"), "rule.RUCHAKA");
+/// ```
 #[must_use]
 pub fn reading_key(rule: &str) -> String {
     format!("rule.{rule}")
@@ -354,6 +476,13 @@ pub fn reading_key(rule: &str) -> String {
 /// This is what a consumer that has not loaded a readings pack has, and it
 /// is named rather than defaulted — a composer that silently assumed one
 /// or the other would be making the consumer's choice for it.
+///
+/// ```
+/// use teistro_interpret::{NoReadings, Vocabulary};
+///
+/// // Every rule falls back to its verse's cited words.
+/// assert!(!NoReadings.has_reading("RUCHAKA"));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct NoReadings;
 

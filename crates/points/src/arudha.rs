@@ -15,6 +15,18 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 
 /// One house's arudha pada.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_points::arudha::arudha;
+///
+/// // Mars, Aries's lord, in Cancer.
+/// let sign_of = |graha: Graha| if graha == Graha::Mars { Rashi::Cancer } else { Rashi::Pisces };
+/// // Four signs on is Libra, the seventh from Aries, so the pada moves to
+/// // the tenth from there: Cancer.
+/// let lagna = arudha(Rashi::Aries, 1, sign_of);
+/// assert_eq!((lagna.counted, lagna.moved, lagna.sign), (Rashi::Libra, true, Rashi::Cancer));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Arudha {
@@ -44,12 +56,35 @@ fn steps(from: Rashi, to: Rashi) -> usize {
 
 /// The pada of `house` (1 to 12) for a chart whose lagna is in `lagna` and
 /// whose grahas stand where `sign_of` says.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_points::arudha::arudha;
+///
+/// // Mars, Aries's lord, in Gemini.
+/// let sign_of = |graha: Graha| if graha == Graha::Mars { Rashi::Gemini } else { Rashi::Pisces };
+/// // Three signs on, and three again: Leo.
+/// assert_eq!(arudha(Rashi::Aries, 1, sign_of).sign, Rashi::Leo);
+/// // In its own sign the count stays put, and moves to the tenth.
+/// assert_eq!(arudha(Rashi::Aries, 1, |_| Rashi::Aries).sign, Rashi::Capricorn);
+/// ```
 #[must_use]
 pub fn arudha(lagna: Rashi, house: u8, sign_of: impl Fn(Graha) -> Rashi) -> Arudha {
     arudha_by(lagna, house, catalogue_lord, sign_of)
 }
 
 /// [`arudha`] with the lord each sign counts to named by `lord_of`.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_points::arudha::arudha_by;
+///
+/// // A school that counts Scorpio to Ketu rather than Mars.
+/// let lord_of = |sign: Rashi| if sign == Rashi::Scorpio { Graha::Ketu } else { sign.attributes().lord };
+/// let sign_of = |graha: Graha| if graha == Graha::Ketu { Rashi::Capricorn } else { Rashi::Scorpio };
+/// // Scorpio lagna, Ketu in the third: three on from Capricorn is Pisces.
+/// assert_eq!(arudha_by(Rashi::Scorpio, 1, lord_of, sign_of).sign, Rashi::Pisces);
+/// ```
 #[must_use]
 pub fn arudha_by(
     lagna: Rashi,
@@ -70,12 +105,30 @@ pub fn arudha_by(
 /// The pada of whichever house stands in `sign`, counted from that sign
 /// whatever the lagna: a pada counted from another pada, as the upapada's
 /// seventh is, as well as a house's.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_points::arudha::pada;
+///
+/// // Taurus's lord Venus in Cancer, the third: three on is Virgo.
+/// let sign_of = |graha: Graha| if graha == Graha::Venus { Rashi::Cancer } else { Rashi::Aries };
+/// assert_eq!(pada(Rashi::Taurus, sign_of), Rashi::Virgo);
+/// ```
 #[must_use]
 pub fn pada(sign: Rashi, sign_of: impl Fn(Graha) -> Rashi) -> Rashi {
     pada_by(sign, catalogue_lord, sign_of)
 }
 
 /// [`pada`] with the lord each sign counts to named by `lord_of`.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_points::arudha::{pada, pada_by};
+///
+/// let sign_of = |graha: Graha| if graha == Graha::Venus { Rashi::Cancer } else { Rashi::Aries };
+/// // With the catalogue's lords it is the plain pada.
+/// assert_eq!(pada_by(Rashi::Taurus, |sign: Rashi| sign.attributes().lord, sign_of), pada(Rashi::Taurus, sign_of));
+/// ```
 #[must_use]
 pub fn pada_by(
     sign: Rashi,
@@ -104,12 +157,31 @@ fn count(
 }
 
 /// All twelve padas, the first house's first: the arudha lagna.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_points::arudha::{arudha, arudha_padas};
+///
+/// let sign_of = |graha: Graha| match graha { Graha::Mars => Rashi::Gemini, Graha::Venus => Rashi::Cancer, _ => Rashi::Leo };
+/// let padas = arudha_padas(Rashi::Aries, sign_of);
+/// assert_eq!(padas[0], arudha(Rashi::Aries, 1, sign_of));
+/// assert_eq!(padas.map(|pada| pada.house), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+/// ```
 #[must_use]
 pub fn arudha_padas(lagna: Rashi, sign_of: impl Fn(Graha) -> Rashi) -> [Arudha; 12] {
     arudha_padas_by(lagna, catalogue_lord, sign_of)
 }
 
 /// [`arudha_padas`] with the lord each sign counts to named by `lord_of`.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_points::arudha::{arudha_padas, arudha_padas_by};
+///
+/// let sign_of = |_: Graha| Rashi::Leo;
+/// let lords = |sign: Rashi| sign.attributes().lord;
+/// assert_eq!(arudha_padas_by(Rashi::Aries, lords, sign_of), arudha_padas(Rashi::Aries, sign_of));
+/// ```
 #[must_use]
 pub fn arudha_padas_by(
     lagna: Rashi,

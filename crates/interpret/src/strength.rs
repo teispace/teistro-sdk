@@ -40,6 +40,18 @@ use crate::Plan;
 ///
 /// Ties keep the reading's own order, which is the catalogue's — the Sun to
 /// Saturn — so the same chart always gives the same plan.
+///
+/// ```
+/// use teistro_interpret::strength;
+/// use teistro_intl::Value;
+/// use teistro_strength::{ShadbalaReading, ShadbalaRules, sample};
+///
+/// let reading = ShadbalaReading::of(&sample::standard_horoscope(), ShadbalaRules::SRIPATI);
+/// let plan = strength(&reading);
+/// // A score and a verdict each, Raman's strongest first: Mercury.
+/// assert_eq!(plan.len(), 14);
+/// assert_eq!(plan.items[0].params.get("graha"), Some(&Value::catalogued(teistro_core::catalogue::Graha::Mercury)));
+/// ```
 #[must_use]
 pub fn strength(shadbala: &ShadbalaReading) -> Plan {
     let mut ranked: Vec<&teistro_strength::shadbala::GrahaShadbala> =

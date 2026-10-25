@@ -97,6 +97,40 @@ fn body(body: Body) -> Value {
 ///
 /// The question goes to the **base** locale, so a plan is the same whoever
 /// reads it ([`Vocabulary`]).
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Rashi};
+/// use teistro_rules::{House, Placement, RuleChart};
+///
+/// // Every body at 15° Aries in the first house.
+/// let placement = Placement {
+///     longitude: 15.0,
+///     sign: Rashi::Aries,
+///     house: House::try_new(1)?,
+///     dignity: Dignity::Neutral,
+///     retrograde: false,
+///     combust: false,
+///     karaka7: None,
+///     karaka8: None,
+///     navamsha: Rashi::Aries,
+/// };
+/// let chart = RuleChart { placements: [placement; 10], panchanga: None, strengths: None };
+/// use teistro_interpret::{NoReadings, readings};
+/// use teistro_rules::{Evaluator, Readings, Rule};
+///
+/// let rule: Rule = serde_json::from_str(r#"{
+///     "key": "AN_EXAMPLE",
+///     "category": "example",
+///     "source": { "text": "an example" },
+///     "conditions": [{ "type": "planet-in-house", "planet": "SUN", "houses": [1] }],
+///     "outcomes": [{ "type": "effect", "text": "wealth and a kingdom" }]
+/// }"#)?;
+/// let result = Evaluator::new(&chart, Readings::TEXTS).evaluate(&rule);
+/// let plan = readings([(&rule, &result)], &NoReadings);
+/// // No pack reads the rule, so its verse's own words, then who took part.
+/// assert_eq!(plan.keys(), ["sdk.reading.effect", "sdk.reading.participants"]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn readings<'r, I>(present: I, vocabulary: &dyn Vocabulary) -> Plan
 where
