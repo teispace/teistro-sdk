@@ -28,6 +28,12 @@
 //! read as a new survivor. A mutant that cannot change what the code
 //! computes is listed, with why, in `.cargo/mutants.toml`, and is never
 //! generated.
+//!
+//! That list is anchored by line and column, so code that moves above an
+//! entry frees its mutant, and only a run that makes it notices. Every
+//! `check-mutants` reads each entry against the source and fails on one
+//! whose line no longer holds its change: doc examples once moved fourteen
+//! of them, and a pull request's own run found the one it touched.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
@@ -44,6 +50,8 @@ use crate::generated::{Output, check, on_main, write};
 const RECORD: &str = "docs/05-testing/mutants.json";
 /// The page rendered from it.
 const PAGE: &str = "docs/05-testing/mutants-measured.md";
+/// Where the equivalent mutants are listed, each anchored to its line.
+const CONFIG: &str = ".cargo/mutants.toml";
 /// The record's schema.
 const SCHEMA: &str = "teistro-mutants/1";
 /// The caught share the quality bar asks of a kernel crate.
@@ -474,6 +482,15 @@ fn check_mutants(root: &Path, from: Option<&Path>) -> Result<i32, String> {
         &[Output::new(PAGE, render(&record))],
         "cargo xtask mutants --from DIR",
     );
+    let config = fs::read_to_string(root.join(CONFIG)).map_err(|e| format!("{CONFIG}: {e}"))?;
+    let stale = stale_anchors(&config, |file| fs::read_to_string(root.join(file)).ok())?;
+    for entry in &stale {
+        println!("FAIL  {CONFIG}: {entry}");
+        failures += 1;
+    }
+    if stale.is_empty() {
+        println!("ok    {CONFIG}: every equivalent mutant's anchor holds its change");
+    }
     match on_main(root, RECORD).map(|text| parse_record(&text)) {
         Some(Ok(main)) => {
             for (name, was) in &main.crates {
@@ -509,6 +526,101 @@ fn check_mutants(root: &Path, from: Option<&Path>) -> Result<i32, String> {
         }
     }
     Ok(i32::from(failures != 0))
+}
+
+/// Each `exclude_re` entry whose line and column no longer hold the change
+/// it names, with what is there instead; `source` reads a file by its
+/// repository path.
+fn stale_anchors(
+    config: &str,
+    source: impl Fn(&str) -> Option<String>,
+) -> Result<Vec<String>, String> {
+    let table = config
+        .parse::<toml::Table>()
+        .map_err(|e| format!("{CONFIG}: {e}"))?;
+    let entries = table
+        .get("exclude_re")
+        .and_then(toml::Value::as_array)
+        .ok_or_else(|| format!("{CONFIG} lists no `exclude_re`"))?;
+    let mut stale = Vec::new();
+    for entry in entries {
+        let Some(pattern) = entry.as_str() else {
+            stale.push(format!("{entry} is not a string"));
+            continue;
+        };
+        if let Some(why) = anchor_problem(&unescape(pattern), &source) {
+            stale.push(format!("`{pattern}`: {why}"));
+        }
+    }
+    Ok(stale)
+}
+
+/// A regex's literal text: every escaped character as itself.
+fn unescape(pattern: &str) -> String {
+    let mut out = String::with_capacity(pattern.len());
+    let mut chars = pattern.chars();
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => out.extend(chars.next()),
+            _ => out.push(c),
+        }
+    }
+    out
+}
+
+/// Why a mutant's name no longer matches the source, if it does not: an
+/// operator's change must start at its column, and a whole function's
+/// replacement must sit in that function.
+fn anchor_problem(name: &str, source: &impl Fn(&str) -> Option<String>) -> Option<String> {
+    let Some((head, change)) = name.split_once(": ") else {
+        return Some("not `file:line:column: change`".to_owned());
+    };
+    let mut parts = head.rsplitn(3, ':');
+    let (Some(column), Some(line), Some(file)) = (parts.next(), parts.next(), parts.next()) else {
+        return Some("not `file:line:column: change`".to_owned());
+    };
+    let (Ok(column), Ok(line)) = (column.parse::<usize>(), line.parse::<usize>()) else {
+        return Some("its line and column are not numbers".to_owned());
+    };
+    let Some(replaced) = change
+        .strip_prefix("replace ")
+        .and_then(|rest| rest.split_once(" with "))
+        .map(|(replaced, _)| replaced)
+    else {
+        return Some("not a `replace … with …` change".to_owned());
+    };
+    let Some(text) = source(file) else {
+        return Some(format!("`{file}` cannot be read"));
+    };
+    let lines: Vec<&str> = text.lines().collect();
+    let Some(at) = line.checked_sub(1).and_then(|index| lines.get(index)) else {
+        return Some(format!("`{file}` has no line {line}"));
+    };
+    if let Some((path, _)) = replaced.split_once(" -> ") {
+        // A whole function's body: the nearest `fn` at or above the line
+        // must be the one named.
+        let function = path.rsplit("::").next().unwrap_or(path);
+        let declared = lines
+            .get(..line)
+            .unwrap_or_default()
+            .iter()
+            .rev()
+            .find(|text| text.contains("fn "));
+        return match declared {
+            Some(text) if text.contains(&format!("fn {function}")) => None,
+            _ => Some(format!("line {line} is not in `fn {function}`")),
+        };
+    }
+    let operator = replaced.strip_prefix("match guard ").unwrap_or(replaced);
+    let rest: String = at.chars().skip(column.saturating_sub(1)).collect();
+    if rest.starts_with(operator) {
+        None
+    } else {
+        Some(format!(
+            "line {line}, column {column} reads `{}`, not `{operator}`",
+            rest.trim()
+        ))
+    }
 }
 
 fn render(record: &Record) -> String {
@@ -782,5 +894,64 @@ mod tests {
         assert_eq!(rows.len(), usize::try_from(shards).unwrap());
         assert_eq!(rows[0]["package"], "teistro-dasha");
         assert_eq!(rows[2]["shard"], 2);
+    }
+
+    /// A two-function file: an operator on line 2 and a body on line 5.
+    fn file(path: &str) -> Option<String> {
+        (path == "crates/x/src/a.rs").then(|| {
+            "fn near(a: f64) -> bool {\n    a.abs() < 1e-9\n}\nfn breadth(&self) -> usize {\n    0\n}\n"
+                .to_owned()
+        })
+    }
+
+    #[test]
+    fn an_anchor_that_holds_its_change_passes() {
+        let config = r"exclude_re = [
+  'crates/x/src/a\.rs:2:13: replace < with <= in near',
+  'crates/x/src/a\.rs:5:5: replace <impl T for X>::breadth -> usize with 1',
+]";
+        assert_eq!(stale_anchors(config, file).unwrap(), Vec::<String>::new());
+    }
+
+    /// The case that moved fourteen: a line inserted above an entry.
+    #[test]
+    fn an_anchor_the_code_moved_from_fails() {
+        let config = r"exclude_re = [
+  'crates/x/src/a\.rs:3:13: replace < with <= in near',
+  'crates/x/src/a\.rs:2:5: replace <impl T for X>::breadth -> usize with 1',
+  'crates/x/src/b\.rs:1:1: replace < with <= in gone',
+  'crates/x/src/a\.rs:9:1: replace < with <= in near',
+]";
+        let stale = stale_anchors(config, file).unwrap();
+        assert_eq!(stale.len(), 4, "{stale:?}");
+        assert!(
+            stale[0].ends_with("line 3, column 13 reads ``, not `<`"),
+            "{}",
+            stale[0]
+        );
+        assert!(
+            stale[1].ends_with("line 2 is not in `fn breadth`"),
+            "{}",
+            stale[1]
+        );
+        assert!(
+            stale[2].ends_with("`crates/x/src/b.rs` cannot be read"),
+            "{}",
+            stale[2]
+        );
+        assert!(
+            stale[3].ends_with("`crates/x/src/a.rs` has no line 9"),
+            "{}",
+            stale[3]
+        );
+    }
+
+    #[test]
+    fn the_committed_anchors_hold() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let config = fs::read_to_string(root.join(CONFIG)).unwrap();
+        let stale =
+            stale_anchors(&config, |path| fs::read_to_string(root.join(path)).ok()).unwrap();
+        assert!(stale.is_empty(), "{stale:#?}");
     }
 }
