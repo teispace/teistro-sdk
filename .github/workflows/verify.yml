@@ -543,6 +543,34 @@ jobs:
           TEISTRO_STRICT: "1"
         run: cargo xtask check-node-asan
 
+  # The C ABI's leak test again, under valgrind's memcheck: the counting
+  # allocator proves every byte comes back, and memcheck adds what it
+  # cannot see, a read of memory never written or already freed, and a
+  # free of what was never allocated. Built by the stable compiler and
+  # run uninstrumented, so it checks the code the bindings load. Leaks
+  # count as errors only when definite or indirect: a lazily built table
+  # is still reachable at exit by design.
+  valgrind:
+    name: no invalid access or leak under valgrind (C ABI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: valgrind
+      - name: Install valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+      - name: The C ABI's leak test under memcheck
+        env:
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER: >-
+            valgrind --error-exitcode=1 --leak-check=full
+            --errors-for-leak-kinds=definite,indirect
+            --show-leak-kinds=definite,indirect
+        run: cargo test -p teistro-ffi --test leaks
+
   # Phase 3's exit asks for the conformance kit against **every tier**,
   # and a tier is a cargo feature, so the kit is whichever one is
   # compiled: running it three times is running it three times. Without
