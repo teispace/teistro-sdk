@@ -411,9 +411,10 @@ pub fn records() -> Vec<Record> {
 }
 
 /// The almanac's records every build carries: a range's days with what is
-/// asked beside them, its festivals as a feed, a sankalpa's time, an
-/// ashauch, and a death's first year.
-fn almanac_records() -> [Record; 5] {
+/// asked beside them, its festivals as a feed, why a published day differs
+/// from the rule's, a sankalpa's time, an ashauch, and a death's first
+/// year.
+fn almanac_records() -> [Record; 6] {
     [
         Record {
             name: "almanac.ashauch",
@@ -452,6 +453,20 @@ fn almanac_records() -> [Record; 5] {
             reads: None,
             run: festival_calendar,
             schemas: schemas!(crate::area::FestivalCalendarAsked => String),
+        },
+        Record {
+            name: "almanac.publishedReasons",
+            boundary: "ts_almanac_published_reasons",
+            title: "Why each published festival day differs from the rule's: the place, the sky or the shipped rule that gives it, or the publisher's own choice",
+            reads: None,
+            // The agent server computes over the one engine its command
+            // line chose (`mcp-server.md` D6), so no other sky is tried;
+            // the places and the shipped packs are.
+            run: |context, json| {
+                let asked = crate::PublishedReasonsRequest::from_json(json)?;
+                Answered::sealed(context.almanac().published_reasons_request(&[], &asked)?)
+            },
+            schemas: schemas!(crate::area::ReasonsAsked => crate::PublishedReasons),
         },
         Record {
             name: "almanac.sankalpa",

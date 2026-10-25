@@ -402,6 +402,8 @@ pub(crate) struct ReasonsAsked {
     #[serde(default)]
     altitude_m: f64,
     utc_offset_seconds: i32,
+    /// The festivals, as a festival request with its published sets.
+    #[cfg_attr(feature = "schema", schemars(with = "crate::festival_request::Asked"))]
     festivals: Value,
     #[serde(default)]
     places: Vec<PlaceAsked>,

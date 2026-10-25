@@ -22,11 +22,11 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
-    AnniversaryDay, AnniversaryKind, Case, Choice, Dated, DatedObservance, DatedRule, DayPart,
-    Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule, Guard, Half, InAdhika,
-    MonthClause, MoonArcs, Moonrise, NakshatraBar, Observances, Occurs, OriginFound, ParanaBarred,
-    Predicate, SunEntry, Unjudged, VrataEdge, VrataParana, VrataParanaTime, Which, Window, dated,
-    ekadashis, following, observances, yugma,
+    AddedDay, AnniversaryDay, AnniversaryKind, Case, Choice, Dated, DatedObservance, DatedRule,
+    DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule, Guard, Half,
+    InAdhika, MonthClause, MoonArcs, Moonrise, NakshatraBar, Observances, Occurs, OriginFound,
+    ParanaBarred, Predicate, Published, PublishedStatus, SunEntry, Unjudged, Unplaced, VrataEdge,
+    VrataParana, VrataParanaTime, Which, Window, dated, ekadashis, following, observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -1775,7 +1775,7 @@ fn every_reading(parana: &mut Vec<VrataParanaTime>, era: Option<EraNumber>) {
 }
 
 /// The string paths of a festival answer that name no catalogue member.
-const NOT_MEMBERS: [&str; 40] = [
+const NOT_MEMBERS: [&str; 65] = [
     "observances.rule",
     "observances.decidedBy.rule",
     "observances.day.resolution.kind",
@@ -1816,11 +1816,68 @@ const NOT_MEMBERS: [&str; 40] = [
     "anniversaries.observance.decidedBy.by",
     "anniversaries.observance.day.resolution.kind",
     "anniversaries.observance.extents.day.resolution.kind",
+    "observances.published.status",
+    "observances.published.publisher",
+    "observances.published.set",
+    "observances.published.source",
+    "observances.published.computed.resolution.kind",
+    "ekadashis.published.status",
+    "ekadashis.published.publisher",
+    "ekadashis.published.set",
+    "ekadashis.published.source",
+    "ekadashis.published.computed.resolution.kind",
+    "dated.published.status",
+    "dated.published.publisher",
+    "dated.published.set",
+    "dated.published.source",
+    "dated.published.computed.resolution.kind",
+    "added.key",
+    "added.names.en-Latn",
+    "added.day.resolution.kind",
+    "added.published.status",
+    "added.published.publisher",
+    "added.published.set",
+    "added.published.source",
+    "unplaced.rule",
+    "unplaced.set",
+    "unplaced.day.resolution.kind",
 ];
 
 /// `Observances::MEMBERS` names every catalogue member an answer holds,
 /// and nothing else: each string in its JSON is either listed there or
 /// listed here as not a member, and each of both lists is present.
+/// Marks an answer's first observance, fast and dated day published, and
+/// adds a published day and an unplaced entry, so each is written.
+fn mark_published(answer: &mut Observances) {
+    let published = Published {
+        status: PublishedStatus::Published,
+        publisher: "a publisher".to_owned(),
+        set: "a set".to_owned(),
+        version: 1,
+        source: "a page".to_owned(),
+        computed: Some(answer.dated[0].day.clone()),
+        window: None,
+    };
+    answer.observances[0].published = Some(published.clone());
+    answer.ekadashis[0].published = Some(published.clone());
+    answer.dated[0].published = Some(published.clone());
+    answer.added.push(AddedDay {
+        key: "A_DAY".to_owned(),
+        day: answer.dated[0].day.clone(),
+        names: std::collections::BTreeMap::from([("en-Latn".to_owned(), "A day".to_owned())]),
+        published: Published {
+            computed: None,
+            ..published
+        },
+    });
+    answer.unplaced.push(Unplaced {
+        set: "a set".to_owned(),
+        entry: 0,
+        rule: "JANMASHTAMI".to_owned(),
+        day: answer.dated[0].day.clone(),
+    });
+}
+
 #[test]
 fn an_answer_names_its_catalogue_members_where_its_table_says() {
     // Every string an answer holds that is not a catalogue member.
@@ -1902,6 +1959,8 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
         month_by: MonthClause::Nija,
         observance,
     });
+    // A published set's marks, its added day and its unplaced entry.
+    mark_published(&mut answer);
     let mut found = std::collections::BTreeSet::new();
     string_paths(&serde_json::to_value(&answer).unwrap(), "", &mut found);
     let members: std::collections::BTreeSet<String> = Observances::MEMBERS
