@@ -29,6 +29,14 @@ const HORAS_PER_HALF: u8 = 12;
 const WEEKDAY_STEP: u16 = 5;
 
 /// How the horas are counted.
+///
+/// ```
+/// use teistro_core::settings::HoraReckoning;
+/// use teistro_time::hora::Reckoning;
+///
+/// assert_eq!(Reckoning::try_from(HoraReckoning::Equal)?, Reckoning::Equal);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -57,6 +65,27 @@ impl TryFrom<HoraReckoning> for Reckoning {
 }
 
 /// One hora of a day.
+///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+/// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &UtcOffset::literal(5, 45, 0), &kathmandu, &date, PolarDayPolicy::Undefined)?;
+/// use teistro_core::catalogue::Graha;
+/// use teistro_time::hora::{Reckoning, horas};
+///
+/// let first = horas(&day, Reckoning::Proportional)?.remove(0);
+/// // A Monday's first hora is the Moon's, and it begins at sunrise.
+/// assert_eq!((first.number, first.lord), (1, Graha::Moon));
+/// assert_eq!(first.start, day.sunrise);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Hora {
@@ -72,6 +101,25 @@ pub struct Hora {
 
 impl Hora {
     /// Whether the hora is one of the twelve of the daylight.
+    ///
+    /// ```
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::Calendar;
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::PolarDayPolicy;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+    /// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+    /// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &UtcOffset::literal(5, 45, 0), &kathmandu, &date, PolarDayPolicy::Undefined)?;
+    /// use teistro_time::hora::{Reckoning, horas};
+    ///
+    /// let all = horas(&day, Reckoning::Proportional)?;
+    /// assert!(all[11].is_daytime());
+    /// assert!(!all[12].is_daytime());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn is_daytime(&self) -> bool {
         self.number <= HORAS_PER_HALF
@@ -94,6 +142,16 @@ impl fmt::Display for Hora {
 /// The lord of a day's hora by its number, from the day's vara: the
 /// first hora's lord is the day's, each next the lord of the sixth
 /// weekday on.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Vara};
+/// use teistro_time::hora::lord_of;
+///
+/// // Sunday's first hora is the Sun's, its second Venus's: the sixth
+/// // weekday on from Sunday is Friday.
+/// assert_eq!(lord_of(Vara::Ravivara, 1), Graha::Sun);
+/// assert_eq!(lord_of(Vara::Ravivara, 2), Graha::Venus);
+/// ```
 #[must_use]
 pub fn lord_of(vara: Vara, number: u8) -> Graha {
     let steps = u16::from(number.saturating_sub(1)) * WEEKDAY_STEP;
@@ -130,6 +188,27 @@ fn boundaries(day: &LocalDay, reckoning: Reckoning) -> [f64; 25] {
 
 /// The twenty-four horas of a local day.
 ///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+/// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &UtcOffset::literal(5, 45, 0), &kathmandu, &date, PolarDayPolicy::Undefined)?;
+/// use teistro_time::hora::{Reckoning, horas};
+///
+/// let all = horas(&day, Reckoning::Proportional)?;
+/// assert_eq!(all.len(), 24);
+/// // Proportional horas meet at sunset and end at the next sunrise.
+/// assert_eq!(all[11].end, day.sunset);
+/// assert_eq!(all[23].end, day.next_sunrise);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// A day whose boundaries are not instants (never for a day the local
@@ -156,6 +235,24 @@ pub fn horas(day: &LocalDay, reckoning: Reckoning) -> Result<Vec<Hora>, Error> {
 }
 
 /// The hora an instant falls in.
+///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// // Monday 1 January 2024 at Kathmandu, sunrise to sunrise.
+/// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &UtcOffset::literal(5, 45, 0), &kathmandu, &date, PolarDayPolicy::Undefined)?;
+/// use teistro_time::hora::{Reckoning, hora_at};
+///
+/// assert_eq!(hora_at(&day, day.sunrise, Reckoning::Equal)?.number, 1);
+/// assert!(hora_at(&day, day.next_sunrise, Reckoning::Equal).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

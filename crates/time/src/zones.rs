@@ -10,6 +10,16 @@ static NEPAL: OnceLock<ZoneClock> = OnceLock::new();
 /// Nepal's clock, `Asia/Kathmandu`: local mean time +05:41:16 until
 /// 1920, +05:30 until 1986, +05:45 since (tzdb `asia`).
 ///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_time::{LocalClock, UtcOffset, zones};
+///
+/// let today = JulianDay::<Utc>::try_new(2_460_310.5)?;
+/// assert_eq!(zones::nepal().offset_at(today), UtcOffset::literal(5, 45, 0));
+/// assert_eq!(zones::nepal().name(), "Asia/Kathmandu");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Panics
 ///
 /// Never with the bundled database, which carries the zone; a build

@@ -15,6 +15,15 @@ pub const SECONDS_PER_DAY: u32 = 86_400;
 /// A time of day: hours, minutes, seconds and nanoseconds. The second
 /// may be 60 for a leap second; whether the day had one is checked when
 /// the time is resolved in a zone.
+///
+/// ```
+/// use teistro_time::CivilTime;
+///
+/// let dawn: CivilTime = "05:45:30.25".parse()?;
+/// assert_eq!(dawn.to_string(), "05:45:30.250");
+/// assert!(dawn < CivilTime::NOON);
+/// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CivilTime {
@@ -44,6 +53,16 @@ impl CivilTime {
     };
 
     /// A time from its parts.
+    ///
+    /// ```
+    /// use teistro_time::CivilTime;
+    ///
+    /// assert_eq!(CivilTime::new(12, 0, 0)?, CivilTime::NOON);
+    /// // A leap second is a time; whether the day had one is the zone's question.
+    /// assert!(CivilTime::new(23, 59, 60)?.is_leap_second());
+    /// assert_eq!(CivilTime::new(24, 0, 0).unwrap_err().field.as_deref(), Some("hour"));
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -75,6 +94,15 @@ impl CivilTime {
 
     /// The same time with nanoseconds within the second.
     ///
+    /// ```
+    /// use teistro_time::CivilTime;
+    ///
+    /// let t = CivilTime::new(5, 30, 0)?.with_nanos(123_456_789)?;
+    /// assert_eq!(t.to_string(), "05:30:00.123456789");
+    /// assert!(CivilTime::NOON.with_nanos(1_000_000_000).is_err());
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Nanoseconds of a thousand million or more.
@@ -92,6 +120,14 @@ impl CivilTime {
     }
 
     /// A time from the seconds elapsed in the day, with nanoseconds.
+    ///
+    /// ```
+    /// use teistro_time::CivilTime;
+    ///
+    /// assert_eq!(CivilTime::from_seconds_of_day(19_800, 0)?, CivilTime::new(5, 30, 0)?);
+    /// assert!(CivilTime::from_seconds_of_day(86_400, 0).is_err());
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -113,42 +149,87 @@ impl CivilTime {
     }
 
     /// The hour, 0 to 23.
+    ///
+    /// ```
+    /// assert_eq!(teistro_time::CivilTime::NOON.hour(), 12);
+    /// ```
     #[must_use]
     pub const fn hour(self) -> u8 {
         self.hour
     }
 
     /// The minute, 0 to 59.
+    ///
+    /// ```
+    /// let t: teistro_time::CivilTime = "05:45".parse()?;
+    /// assert_eq!(t.minute(), 45);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn minute(self) -> u8 {
         self.minute
     }
 
     /// The second, 0 to 60.
+    ///
+    /// ```
+    /// let t: teistro_time::CivilTime = "23:59:60".parse()?;
+    /// assert_eq!(t.second(), 60);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn second(self) -> u8 {
         self.second
     }
 
     /// The nanoseconds within the second.
+    ///
+    /// ```
+    /// let t: teistro_time::CivilTime = "23:59:59.25".parse()?;
+    /// assert_eq!(t.nanos(), 250_000_000);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn nanos(self) -> u32 {
         self.nanos
     }
 
     /// Whether the time names a leap second (a second of 60).
+    ///
+    /// ```
+    /// use teistro_time::CivilTime;
+    ///
+    /// assert!(CivilTime::new(23, 59, 60)?.is_leap_second());
+    /// assert!(!CivilTime::new(23, 59, 59)?.is_leap_second());
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn is_leap_second(self) -> bool {
         self.second == 60
     }
 
     /// The whole seconds elapsed in the day; 86 400 for 23:59:60.
+    ///
+    /// ```
+    /// use teistro_time::CivilTime;
+    ///
+    /// assert_eq!(CivilTime::NOON.seconds_of_day(), 43_200);
+    /// assert_eq!(CivilTime::new(23, 59, 60)?.seconds_of_day(), 86_400);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn seconds_of_day(self) -> u32 {
         self.hour as u32 * 3600 + self.minute as u32 * 60 + self.second as u32
     }
 
     /// The fraction of the day elapsed, for Julian-day arithmetic.
+    ///
+    /// ```
+    /// use teistro_time::CivilTime;
+    ///
+    /// assert_eq!(CivilTime::NOON.day_fraction(), 0.5);
+    /// assert_eq!(CivilTime::MIDNIGHT.day_fraction(), 0.0);
+    /// ```
     #[must_use]
     pub fn day_fraction(self) -> f64 {
         (f64::from(self.seconds_of_day()) + f64::from(self.nanos) / f64::from(NANOS_PER_SECOND))
@@ -232,6 +313,17 @@ impl<'de> serde::Deserialize<'de> for CivilTime {
 }
 
 /// A civil date in a calendar and, when known, the time of day.
+///
+/// ```
+/// use teistro_calendar::CalendarDate;
+/// use teistro_core::catalogue::Calendar;
+/// use teistro_time::{CivilDateTime, CivilTime};
+///
+/// let date = CalendarDate::defined(Calendar::Gregorian, 2024, 3, 10);
+/// let known = CivilDateTime::at(date.clone(), CivilTime::NOON);
+/// assert_eq!(known.time, Some(CivilTime::NOON));
+/// assert_eq!(CivilDateTime::date_only(date).time, None);
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CivilDateTime {
@@ -243,6 +335,19 @@ pub struct CivilDateTime {
 
 impl CivilDateTime {
     /// A date at a time.
+    ///
+    /// ```
+    /// use teistro_calendar::CalendarDate;
+    /// use teistro_core::catalogue::Calendar;
+    /// use teistro_time::{CivilDateTime, CivilTime};
+    ///
+    /// let birth = CivilDateTime::at(
+    ///     CalendarDate::defined(Calendar::BikramSambat, 2081, 1, 1),
+    ///     CivilTime::new(5, 45, 0)?,
+    /// );
+    /// assert_eq!(birth.date.calendar, Calendar::BikramSambat);
+    /// # Ok::<(), teistro_core::quantity::InvalidValue>(())
+    /// ```
     #[must_use]
     pub const fn at(date: CalendarDate, time: CivilTime) -> CivilDateTime {
         CivilDateTime {
@@ -252,6 +357,16 @@ impl CivilDateTime {
     }
 
     /// A date whose time is not known.
+    ///
+    /// ```
+    /// use teistro_calendar::CalendarDate;
+    /// use teistro_core::catalogue::Calendar;
+    /// use teistro_time::CivilDateTime;
+    ///
+    /// // The unknown-time policy supplies a time when the instant is resolved.
+    /// let day = CivilDateTime::date_only(CalendarDate::defined(Calendar::Gregorian, 2024, 6, 1));
+    /// assert!(day.time.is_none());
+    /// ```
     #[must_use]
     pub const fn date_only(date: CalendarDate) -> CivilDateTime {
         CivilDateTime { date, time: None }

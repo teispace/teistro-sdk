@@ -23,6 +23,15 @@ const VIPALAS_PER_HOUR: u32 = 9000;
 const VIPALAS_PER_HALF: i128 = 108_000;
 
 /// A ghati-pala count from sunrise.
+///
+/// ```
+/// use teistro_time::GhatiPala;
+///
+/// let count = GhatiPala { ghati: 7, pala: 30, vipala: 0 };
+/// assert_eq!(count.to_string(), "7-30-00");
+/// // Seven and a half ghatis of twenty-four minutes are three hours.
+/// assert_eq!(count.to_hours(), 3.0);
+/// ```
 #[derive(
     Clone,
     Copy,
@@ -49,6 +58,12 @@ pub struct GhatiPala {
 
 impl GhatiPala {
     /// The count as whole vipalas.
+    ///
+    /// ```
+    /// use teistro_time::GhatiPala;
+    ///
+    /// assert_eq!(GhatiPala { ghati: 1, pala: 1, vipala: 1 }.total_vipalas(), 3661);
+    /// ```
     #[must_use]
     pub const fn total_vipalas(self) -> u32 {
         self.ghati as u32 * VIPALAS_PER_GHATI + self.pala as u32 * 60 + self.vipala as u32
@@ -59,12 +74,24 @@ impl GhatiPala {
     ///
     /// A vipala is two fifths of a second, so this is exact to that and
     /// no finer — which is the resolution the count itself has.
+    ///
+    /// ```
+    /// use teistro_time::GhatiPala;
+    ///
+    /// assert_eq!(GhatiPala { ghati: 2, pala: 30, vipala: 0 }.to_hours(), 1.0);
+    /// ```
     #[must_use]
     pub fn to_hours(self) -> f64 {
         f64::from(self.total_vipalas()) / f64::from(VIPALAS_PER_HOUR)
     }
 
     /// A count from whole vipalas.
+    ///
+    /// ```
+    /// use teistro_time::GhatiPala;
+    ///
+    /// assert_eq!(GhatiPala::from_vipalas(3661), GhatiPala { ghati: 1, pala: 1, vipala: 1 });
+    /// ```
     #[must_use]
     pub fn from_vipalas(vipalas: u32) -> GhatiPala {
         GhatiPala {
@@ -82,6 +109,14 @@ impl fmt::Display for GhatiPala {
 }
 
 /// How ghatis are counted.
+///
+/// ```
+/// use teistro_core::settings::GhatiReckoning;
+/// use teistro_time::Reckoning;
+///
+/// assert_eq!(Reckoning::try_from(GhatiReckoning::Proportional)?, Reckoning::Proportional);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -144,6 +179,27 @@ fn micros_between(from: JulianDay<Utc>, to: JulianDay<Utc>) -> i128 {
 /// proportional reckoning, and under civil the day's length in ghatis of
 /// twenty-four minutes, which a day longer than twenty-four hours carries
 /// past sixty.
+///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// // 1 January 2024 at Kathmandu, sunrise to sunrise.
+/// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &UtcOffset::literal(5, 45, 0), &kathmandu, &date, PolarDayPolicy::Undefined)?;
+/// use teistro_time::ghati::day_length;
+/// use teistro_time::{GhatiPala, Reckoning};
+///
+/// // Proportional reckoning always counts sixty ghatis.
+/// assert_eq!(day_length(&day, Reckoning::Proportional), GhatiPala { ghati: 60, pala: 0, vipala: 0 });
+/// // Civil reckoning counts the day's own length, a little over or under.
+/// assert!((59..=60).contains(&day_length(&day, Reckoning::Civil).ghati));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[must_use]
 pub fn day_length(day: &LocalDay, reckoning: Reckoning) -> GhatiPala {
     let vipalas = match reckoning {
@@ -154,6 +210,27 @@ pub fn day_length(day: &LocalDay, reckoning: Reckoning) -> GhatiPala {
 }
 
 /// The ghati-pala of an instant in a local day.
+///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// // 1 January 2024 at Kathmandu, sunrise to sunrise.
+/// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &UtcOffset::literal(5, 45, 0), &kathmandu, &date, PolarDayPolicy::Undefined)?;
+/// use teistro_time::{GhatiPala, Reckoning, ghati_pala};
+///
+/// assert_eq!(ghati_pala(&day, day.sunrise, Reckoning::Civil)?, GhatiPala::default());
+/// // Sunset, under proportional reckoning, is thirty ghatis in.
+/// assert_eq!(ghati_pala(&day, day.sunset, Reckoning::Proportional)?.ghati, 30);
+/// // An instant before sunrise is not in the day.
+/// assert!(ghati_pala(&day, day.sunrise.plus_days(-0.01)?, Reckoning::Civil).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -192,6 +269,25 @@ pub fn ghati_pala(
 
 /// The instant a ghati-pala names in a local day: the first instant with
 /// that count, so that [`ghati_pala`] of it is the count again.
+///
+/// ```
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::Calendar;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::PolarDayPolicy;
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_siddhanta::SuryaSiddhanta;
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let date = CalendarDate::defined(Calendar::Gregorian, 2024, 1, 1);
+/// // 1 January 2024 at Kathmandu, sunrise to sunrise.
+/// let day = teistro_time::local_day(&SuryaSiddhanta::text(), &Gregorian, &UtcOffset::literal(5, 45, 0), &kathmandu, &date, PolarDayPolicy::Undefined)?;
+/// use teistro_time::{GhatiPala, Reckoning, ghati_pala, instant_of};
+///
+/// let count = GhatiPala { ghati: 7, pala: 30, vipala: 0 };
+/// let instant = instant_of(&day, count, Reckoning::Civil)?;
+/// assert_eq!(ghati_pala(&day, instant, Reckoning::Civil)?, count);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

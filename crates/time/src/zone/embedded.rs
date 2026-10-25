@@ -28,6 +28,14 @@ const SUGGESTIONS: usize = 3;
 const SUGGESTION_DISTANCE: usize = 2;
 
 /// The embedded database.
+///
+/// ```
+/// use teistro_time::{EmbeddedTzdb, TimeZoneProvider};
+///
+/// let tzdb = EmbeddedTzdb::shared();
+/// assert!(tzdb.has_zone("Asia/Kathmandu"));
+/// assert!(!tzdb.has_zone("Asia/Katmandoo"));
+/// ```
 #[derive(Debug)]
 pub struct EmbeddedTzdb {
     db: TimeZoneDatabase,
@@ -37,11 +45,25 @@ static SHARED: OnceLock<EmbeddedTzdb> = OnceLock::new();
 
 impl EmbeddedTzdb {
     /// The process-wide database, built on first use.
+    ///
+    /// ```
+    /// use teistro_time::EmbeddedTzdb;
+    ///
+    /// // Every call answers the same database.
+    /// assert!(std::ptr::eq(EmbeddedTzdb::shared(), EmbeddedTzdb::shared()));
+    /// ```
     pub fn shared() -> &'static EmbeddedTzdb {
         SHARED.get_or_init(EmbeddedTzdb::new)
     }
 
     /// A database over the bundled data.
+    ///
+    /// ```
+    /// use teistro_time::{EmbeddedTzdb, TimeZoneProvider};
+    ///
+    /// let tzdb = EmbeddedTzdb::new();
+    /// assert_eq!(tzdb.zones().len(), EmbeddedTzdb::shared().zones().len());
+    /// ```
     #[must_use]
     pub fn new() -> EmbeddedTzdb {
         EmbeddedTzdb {
@@ -50,6 +72,14 @@ impl EmbeddedTzdb {
     }
 
     /// The bundled tzdb's version (`2026a`), or `unknown`.
+    ///
+    /// ```
+    /// use teistro_time::{EmbeddedTzdb, TimeZoneProvider};
+    ///
+    /// let version = EmbeddedTzdb::bundled_version();
+    /// assert!(version.starts_with("20"), "{version}");
+    /// assert_eq!(EmbeddedTzdb::shared().version(), version);
+    /// ```
     #[must_use]
     pub fn bundled_version() -> &'static str {
         jiff_tzdb::VERSION.unwrap_or("unknown")
@@ -63,6 +93,13 @@ impl EmbeddedTzdb {
 
     /// The nearest known names to an unknown one, within two edits on the
     /// lower-cased names.
+    ///
+    /// ```
+    /// use teistro_time::EmbeddedTzdb;
+    ///
+    /// let near = EmbeddedTzdb::shared().suggest("asia/kathmandoo");
+    /// assert_eq!(near.first().map(String::as_str), Some("Asia/Kathmandu"));
+    /// ```
     #[must_use]
     pub fn suggest(&self, name: &str) -> Vec<String> {
         let wanted = name.to_ascii_lowercase();
@@ -84,6 +121,21 @@ impl EmbeddedTzdb {
     }
 
     /// A zone of the database as a clock.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_time::{EmbeddedTzdb, LocalClock, UtcOffset};
+    ///
+    /// let kathmandu = EmbeddedTzdb::shared().clock("Asia/Kathmandu")?;
+    /// // +05:30 in 1985, +05:45 since the start of 1986.
+    /// let (in_1985, in_2024) = (JulianDay::<Utc>::try_new(2_446_247.5)?, JulianDay::<Utc>::try_new(2_460_310.5)?);
+    /// assert_eq!(kathmandu.offset_at(in_1985), UtcOffset::literal(5, 30, 0));
+    /// assert_eq!(kathmandu.offset_at(in_2024), UtcOffset::literal(5, 45, 0));
+    ///
+    /// let unknown = EmbeddedTzdb::shared().clock("Asia/Kathmandoo").unwrap_err();
+    /// assert!(unknown.hint().is_some_and(|hint| hint.contains("Asia/Kathmandu")));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -208,6 +260,18 @@ impl TimeZoneProvider for EmbeddedTzdb {
 }
 
 /// A zone of the embedded database as a clock.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_time::{EmbeddedTzdb, LocalClock, UtcOffset};
+///
+/// let new_york = EmbeddedTzdb::shared().clock("America/New_York")?;
+/// let (january, july) = (JulianDay::<Utc>::try_new(2_460_311.0)?, JulianDay::<Utc>::try_new(2_460_492.0)?);
+/// assert_eq!(new_york.offset_at(january), UtcOffset::literal(-5, 0, 0));
+/// assert_eq!(new_york.offset_at(july), UtcOffset::literal(-4, 0, 0));
+/// assert!(new_york.describe().starts_with("America/New_York (tzdb "));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug)]
 pub struct ZoneClock {
     tz: TimeZone,
@@ -217,6 +281,13 @@ pub struct ZoneClock {
 
 impl ZoneClock {
     /// The zone's name.
+    ///
+    /// ```
+    /// use teistro_time::EmbeddedTzdb;
+    ///
+    /// assert_eq!(EmbeddedTzdb::shared().clock("Europe/London")?.name(), "Europe/London");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn name(&self) -> &str {
         &self.name
