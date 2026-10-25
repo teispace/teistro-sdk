@@ -46,6 +46,7 @@ use crate::support::with_context;
 /// `research` family out.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
@@ -69,6 +70,7 @@ use crate::support::with_context;
 /// // The study's envelope whole: what produced it can be quoted.
 /// assert!(answer["provenance"]["input_hash"].is_string());
 /// assert!(answer["value"].is_object());
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///

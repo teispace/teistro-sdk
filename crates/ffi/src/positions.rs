@@ -29,6 +29,7 @@ use crate::support::{with_context, write_plain};
 /// `api: blob=positions`
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
@@ -62,6 +63,7 @@ use crate::support::{with_context, write_plain};
 /// let reader = Reader::parse(&bytes, &schema)?;
 /// let sun = reader.column("cells", "lon")?[0].as_f64();
 /// assert!((280.0..281.0).contains(&sun), "{sun}");
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///

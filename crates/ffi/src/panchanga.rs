@@ -935,6 +935,7 @@ pub fn encode(
 /// `api: blob=panchanga`
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
@@ -967,6 +968,7 @@ pub fn encode(
 /// let schema = teistro_ffi::schemas::panchanga();
 /// let reader = Reader::parse(&bytes, &schema)?;
 /// assert_eq!(reader.field("summary", "day_count")?.as_i64(), 7);
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
@@ -1115,6 +1117,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
 /// context's reckoning is recorded on this one.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let official = TsContext::build_chain(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, vec![teistro::Ephemeris::SuryaSiddhanta, teistro::Ephemeris::Builtin])?;
@@ -1140,6 +1143,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
 /// // The tithi differs on several of the month's days.
 /// let days = answer["days"]["value"]["days"].as_array().ok_or("days")?;
 /// assert!(!days.is_empty());
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
@@ -1197,6 +1201,7 @@ pub unsafe extern "C" fn ts_almanac_disagreements(
 /// `OUT_OF_RANGE`.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
@@ -1220,6 +1225,7 @@ pub unsafe extern "C" fn ts_almanac_disagreements(
 /// // The Sun's sign at the instant, the ayana by the tropical reckoning.
 /// assert_eq!(answer["value"]["sun"], "rashi.CAPRICORN");
 /// assert_eq!(answer["value"]["ayanaReckoning"], "TROPICAL");
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
@@ -1274,6 +1280,7 @@ pub unsafe extern "C" fn ts_almanac_sankalpa(
 /// `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
@@ -1297,6 +1304,7 @@ pub unsafe extern "C" fn ts_almanac_sankalpa(
 /// // Ten days for a sapinda, by the clause the relation reads.
 /// assert_eq!(answer["value"]["days"], 10);
 /// assert_eq!(answer["value"]["clause"]["clause"], "RELATION");
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
@@ -1345,6 +1353,7 @@ pub unsafe extern "C" fn ts_almanac_ashauch(
 /// a polar day `OUT_OF_RANGE`.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
@@ -1368,6 +1377,7 @@ pub unsafe extern "C" fn ts_almanac_ashauch(
 /// // Sixteen of the first year's rites fall at a place.
 /// let rites = answer["value"]["rites"].as_array().ok_or("rites")?;
 /// assert_eq!(rites.iter().filter(|rite| rite.get("place").is_some()).count(), 16);
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
@@ -1413,6 +1423,7 @@ pub unsafe extern "C" fn ts_almanac_first_year(
 /// an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, teistro::Ephemeris::SuryaSiddhanta)?;
@@ -1435,6 +1446,7 @@ pub unsafe extern "C" fn ts_almanac_first_year(
 /// let feed = owned(out);
 /// assert!(feed.starts_with("BEGIN:VCALENDAR\r\n"));
 /// assert!(feed.contains("SUMMARY:Vijaya Dashami\r\n"));
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
