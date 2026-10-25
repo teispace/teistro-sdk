@@ -59,10 +59,23 @@ use crate::tables;
 
 /// A segment's length, days: a power of two, so an instant's place in
 /// its segment is exact.
+///
+/// ```
+/// use teistro_ephemeris_builtin::fitted::SEGMENT_DAYS;
+///
+/// assert_eq!(SEGMENT_DAYS.log2().fract(), 0.0, "a power of two");
+/// ```
 pub const SEGMENT_DAYS: f64 = 2.0;
 
 /// The series' degree; a segment is fitted through one more value than
 /// this.
+///
+/// ```
+/// use teistro_ephemeris_builtin::fitted::{DEGREE, SEGMENT_DAYS};
+///
+/// // Nine values to a two-day segment.
+/// assert_eq!((DEGREE + 1, SEGMENT_DAYS), (9, 2.0));
+/// ```
 pub const DEGREE: usize = 8;
 
 /// The values a segment is fitted through.
@@ -94,6 +107,21 @@ fn from(
 /// [`elp::position_and_rate_from`] answers in.
 ///
 /// An instant that is not finite is answered by the series itself.
+///
+/// ```
+/// use teistro_ephemeris_builtin::{elp, fitted, tables};
+///
+/// // The fit against the series it was fitted from, a quarter-day off a node.
+/// let jd = 2_460_000.3;
+/// let (fit, fit_rate) = fitted::moon(jd);
+/// let (series, series_rate) = elp::position_and_rate_from(&tables::MOON_MAIN, &tables::MOON_PERTURBATIONS, jd);
+/// for axis in 0..3 {
+///     assert!((fit[axis] - series[axis]).abs() < 1e-4, "under ten centimetres");
+///     assert!((fit_rate[axis] - series_rate[axis]).abs() < 1e-2, "of some 90 000 km a day");
+/// }
+/// // An instant that is not finite is the series' own answer.
+/// assert!(fitted::moon(f64::NAN).0[0].is_nan());
+/// ```
 #[must_use]
 pub fn moon(jd: f64) -> ([f64; 3], [f64; 3]) {
     from(&MOON, jd, |at| {
@@ -111,6 +139,22 @@ pub fn moon(jd: f64) -> ([f64; 3], [f64; 3]) {
 ///
 /// `None` for an instant that is not finite, which the caller answers
 /// from the theory itself.
+///
+/// ```
+/// use teistro_ephemeris_builtin::fitted;
+/// use teistro_ephemeris_builtin::series::{millennia, sum};
+/// use teistro_ephemeris_builtin::tables::PLANETS;
+///
+/// // The Earth's VSOP87A position, as the provider sums it.
+/// let theory = |jd: f64| PLANETS[2].1.map(|terms| sum(terms, millennia(jd)));
+/// let jd = 2_460_000.3;
+/// let (fit, _) = fitted::earth(jd, theory).ok_or("a finite instant")?;
+/// for (fit, series) in fit.iter().zip(theory(jd)) {
+///     assert!((fit - series).abs() < 1e-11, "under two metres");
+/// }
+/// assert!(fitted::earth(f64::NAN, theory).is_none());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub fn earth(jd: f64, theory: impl FnMut(f64) -> [f64; 3]) -> Option<([f64; 3], [f64; 3])> {
     from(&EARTH, jd, theory)

@@ -12,6 +12,20 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`teistro-ephemeris-builtin` has a run example on every public item.**
+**Numbers:** none. Its 68 items join the crates `check-doc-examples`
+holds there, thirty-seven in all. The tables and Pluto's fit are
+generated, so their examples are written by `ephemgen` and `pluto` and
+the modules regenerated: VSOP87A (CDS VI/81) and ELP2000-82B (CDS VI/79)
+reproduce every committed coefficient to the byte, and the compact
+tier's last checkpoint moves in its seventeenth digit. Each example
+holds for every tier: a tier's truncation inside its own target, its
+term counts and bytes against its arrays, the Earth 0.983 au out at
+J2000 and the Moon between perigee and apogee. `ephemgen` no longer
+writes the no-tier refusal into the tables' module: the crate root
+makes it and leaves that module out, so the copy could never fire, and
+the committed module had dropped it by hand.
+
 **`teistro-mcp` has a run example on every public item.**
 **Numbers:** none. Its 35 items join the crates `check-doc-examples`
 holds there, thirty-six in all. Each server example asks under the

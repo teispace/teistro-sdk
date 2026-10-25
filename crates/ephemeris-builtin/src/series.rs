@@ -35,6 +35,14 @@ pub struct Term {
 
 impl Term {
     /// One term.
+    ///
+    /// ```
+    /// use teistro_ephemeris_builtin::series::Term;
+    ///
+    /// // Half a turn a millennium: the cosine is -1 a millennium on.
+    /// let term = Term::new(1.0, 0.0, std::f64::consts::PI, 0);
+    /// assert!((term.at(1.0) + 1.0).abs() < 1e-15);
+    /// ```
     #[must_use]
     pub const fn new(amplitude: f64, phase: f64, frequency: f64, power: u8) -> Term {
         Term {
@@ -46,6 +54,14 @@ impl Term {
     }
 
     /// The term's contribution at `t`, in Julian millennia from J2000.
+    ///
+    /// ```
+    /// use teistro_ephemeris_builtin::series::Term;
+    ///
+    /// // A secular term: the amplitude times t.
+    /// assert_eq!(Term::new(2.0, 0.0, 0.0, 1).at(3.0), 6.0);
+    /// assert_eq!(Term::new(2.0, 0.0, 0.0, 1).at(0.0), 0.0);
+    /// ```
     #[must_use]
     pub fn at(self, t: f64) -> f64 {
         // `powi` rather than `powf`: the power is a small integer and
@@ -135,6 +151,15 @@ pub fn sum(terms: &[Term], t: f64) -> f64 {
 }
 
 /// The sum of a coordinate's rates at `t`, per Julian millennium.
+///
+/// ```
+/// use std::f64::consts::FRAC_PI_2;
+/// use teistro_ephemeris_builtin::series::{Term, rate};
+///
+/// // cos(pi/2 + 2t) falls at two a millennium through t = 0, and 0.5 t rises at a half.
+/// let terms = [Term::new(1.0, FRAC_PI_2, 2.0, 0), Term::new(0.5, 0.0, 0.0, 1)];
+/// assert!((rate(&terms, 0.0) - (-2.0 + 0.5)).abs() < 1e-15);
+/// ```
 #[must_use]
 pub fn rate(terms: &[Term], t: f64) -> f64 {
     terms.iter().map(|term| term.rate_at(t)).sum()
@@ -163,10 +188,23 @@ pub fn sum_and_rate(terms: &[Term], t: f64) -> (f64, f64) {
 }
 
 /// Julian days in the millennium the time argument counts.
+///
+/// ```
+/// use teistro_ephemeris_builtin::series::{DAYS_PER_MILLENNIUM, J2000, millennia};
+///
+/// assert_eq!(millennia(J2000 + DAYS_PER_MILLENNIUM), 1.0);
+/// ```
 pub const DAYS_PER_MILLENNIUM: f64 = 365_250.0;
 
 /// The epoch the time argument is measured from: J2000.0, as a Julian
 /// day in Barycentric Dynamical Time.
+///
+/// ```
+/// use teistro_ephemeris_builtin::series::{J2000, millennia};
+///
+/// // Noon on 1 January 2000, where the series' time argument is zero.
+/// assert_eq!(millennia(J2000), 0.0);
+/// ```
 pub const J2000: f64 = 2_451_545.0;
 
 /// A Julian day as the time argument the series take.

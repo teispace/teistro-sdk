@@ -77,6 +77,17 @@ pub const fn coordinate_of(file: u8) -> usize {
 }
 
 /// The polynomial arguments, evaluated once and shared by every term.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::Arguments;
+///
+/// // At J2000 every power of time past the zeroth is zero.
+/// let arguments = Arguments::at(2_451_545.0);
+/// assert_eq!(arguments.t, [1.0, 0.0, 0.0, 0.0, 0.0]);
+/// // The Moon's mean longitude comes round in a tropical month of 27.32 days.
+/// let (_, rate) = arguments.mean_longitude(arguments.w1);
+/// assert!((std::f64::consts::TAU / rate - 27.3216).abs() < 1e-3);
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Arguments {
     /// `t^0` to `t^4`, where `t` is Julian centuries from J2000.
@@ -116,6 +127,16 @@ impl Arguments {
     /// The rate is the polynomial's derivative, not a difference — these
     /// are the one place in the theory where an exact derivative costs
     /// nothing at all.
+    ///
+    /// ```
+    /// use teistro_ephemeris_builtin::elp::Arguments;
+    ///
+    /// // The node regresses: once round in 18.6 years.
+    /// let arguments = Arguments::at(2_451_545.0);
+    /// let (_, rate) = arguments.mean_longitude(arguments.w3);
+    /// assert!(rate < 0.0);
+    /// assert!((std::f64::consts::TAU / -rate / 365.25 - 18.6).abs() < 0.01);
+    /// ```
     #[must_use]
     pub fn mean_longitude(&self, coefficients: [f64; 5]) -> (f64, f64) {
         let mut angle = 0.0;
@@ -256,6 +277,14 @@ fn fit(w1_rate: f64) -> Fit {
 
 impl Arguments {
     /// The arguments at a Julian day in Barycentric Dynamical Time.
+    ///
+    /// ```
+    /// use teistro_ephemeris_builtin::elp::Arguments;
+    ///
+    /// // A Julian century on from J2000, in Barycentric Dynamical Time.
+    /// let arguments = Arguments::at(2_451_545.0 + 36_525.0);
+    /// assert_eq!(arguments.t, [1.0; 5]);
+    /// ```
     #[must_use]
     pub fn at(jd: f64) -> Arguments {
         let Constants {
@@ -328,6 +357,17 @@ impl Arguments {
 
 /// One term of the main problem: four Delaunay multipliers and the seven
 /// coefficients its amplitude is rebuilt from.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::{Arguments, MainTerm, main_contribution, main_rate};
+///
+/// // The first record of ELP1: longitude, 2F, 411.6 arcseconds.
+/// let term = MainTerm::new([0, 0, 0, 2], [-411.60287, 168.48, -18433.81, -121.62, 0.4, -0.18, 0.0]);
+///
+/// assert_eq!(term.multipliers, [0, 0, 0, 2]);
+/// let value = main_contribution(&term, 1, &Arguments::at(2_451_545.0));
+/// assert!(value.abs() <= 411.7);
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct MainTerm {
     /// The four Delaunay multipliers.
@@ -338,6 +378,14 @@ pub struct MainTerm {
 
 impl MainTerm {
     /// One term, `const` so a generated table is a constant.
+    ///
+    /// ```
+    /// use teistro_ephemeris_builtin::elp::MainTerm;
+    ///
+    /// // `const`, so a table of them is a constant.
+    /// const TERM: MainTerm = MainTerm::new([0, 0, 0, 2], [-411.60287, 168.48, -18433.81, -121.62, 0.4, -0.18, 0.0]);
+    /// assert_eq!(TERM.coefficients[0], -411.60287);
+    /// ```
     #[must_use]
     pub const fn new(multipliers: [i8; 4], coefficients: [f64; 7]) -> MainTerm {
         MainTerm {
@@ -349,6 +397,17 @@ impl MainTerm {
 
 /// One term of every other group: a phase in degrees, an amplitude, and
 /// the multipliers its argument is built from.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::{Arguments, PerturbationTerm, perturbation_contribution, perturbation_rate};
+///
+/// // The first record of ELP4: longitude, 2l' - F, 0.022 arcseconds.
+/// let term = PerturbationTerm::new([0, 2, 0, -1, 0, 0, 0, 0, 0, 0, 0], 0.0, 0.02206);
+///
+/// assert_eq!((term.phase_deg, term.amplitude), (0.0, 0.02206));
+/// let value = perturbation_contribution(&term, 4, &Arguments::at(2_451_545.0));
+/// assert!(value.abs() <= 0.02206);
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct PerturbationTerm {
     /// The multipliers, in the order the file gives them.
@@ -361,6 +420,13 @@ pub struct PerturbationTerm {
 
 impl PerturbationTerm {
     /// One term, `const` so a generated table is a constant.
+    ///
+    /// ```
+    /// use teistro_ephemeris_builtin::elp::PerturbationTerm;
+    ///
+    /// const TERM: PerturbationTerm = PerturbationTerm::new([0, 2, 0, -1, 0, 0, 0, 0, 0, 0, 0], 0.0, 0.02206);
+    /// assert_eq!(TERM.multipliers[1], 2);
+    /// ```
     #[must_use]
     pub const fn new(multipliers: [i8; 11], phase_deg: f64, amplitude: f64) -> PerturbationTerm {
         PerturbationTerm {
@@ -373,6 +439,13 @@ impl PerturbationTerm {
 
 /// The three groups a file belongs to, which decide how its argument is
 /// built and whether its amplitude carries a power of time.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::Group;
+///
+/// let groups: Vec<Option<Group>> = [3, 4, 21, 36].into_iter().map(Group::of).collect();
+/// assert_eq!(groups, [Some(Group::Main), Some(Group::Figure), Some(Group::Planetary), Some(Group::Figure)]);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Group {
     /// Files 1 to 3.
@@ -479,6 +552,18 @@ fn main_amplitude_and_angle(term: &MainTerm, file: u8, arguments: &Arguments) ->
 }
 
 /// The main problem's contribution to a coordinate.
+///
+/// ```
+/// # use teistro_ephemeris_builtin::elp::{Arguments, MainTerm, main_contribution, main_rate};
+/// #
+/// # // The first record of ELP1: longitude, 2F, 411.6 arcseconds.
+/// # let term = MainTerm::new([0, 0, 0, 2], [-411.60287, 168.48, -18433.81, -121.62, 0.4, -0.18, 0.0]);
+/// // 2F is zero at no instant in particular; the amplitude bounds the term.
+/// for century in [-2.0, 0.0, 4.0] {
+///     let value = main_contribution(&term, 1, &Arguments::at(2_451_545.0 + century * 36_525.0));
+///     assert!(value.abs() <= 412.0);
+/// }
+/// ```
 #[must_use]
 pub fn main_contribution(term: &MainTerm, file: u8, arguments: &Arguments) -> f64 {
     let (amplitude, angle) = main_amplitude_and_angle(term, file, arguments);
@@ -490,6 +575,19 @@ pub fn main_contribution(term: &MainTerm, file: u8, arguments: &Arguments) -> f6
 ///
 /// `A * sin(theta)` differentiates to `A * cos(theta) * theta'`, and the
 /// amplitude is the one the fit rebuilds, exactly as the value uses.
+///
+/// ```
+/// # use teistro_ephemeris_builtin::elp::{Arguments, MainTerm, main_contribution, main_rate};
+/// #
+/// # // The first record of ELP1: longitude, 2F, 411.6 arcseconds.
+/// # let term = MainTerm::new([0, 0, 0, 2], [-411.60287, 168.48, -18433.81, -121.62, 0.4, -0.18, 0.0]);
+/// // A central difference over a ten-millionth of a century, five minutes.
+/// let h = 1e-7;
+/// let at = |century: f64| Arguments::at(2_451_545.0 + century * 36_525.0);
+/// let difference = (main_contribution(&term, 1, &at(h)) - main_contribution(&term, 1, &at(-h))) / (2.0 * h);
+/// let rate = main_rate(&term, 1, &at(0.0));
+/// assert!((rate - difference).abs() < 1e-5 * rate.abs());
+/// ```
 #[must_use]
 pub fn main_rate(term: &MainTerm, file: u8, arguments: &Arguments) -> f64 {
     let (amplitude, angle) = main_amplitude_and_angle(term, file, arguments);
@@ -581,6 +679,17 @@ fn perturbation_amplitude_and_angle(
 }
 
 /// A perturbation term's contribution to a coordinate.
+///
+/// ```
+/// # use teistro_ephemeris_builtin::elp::{Arguments, PerturbationTerm, perturbation_contribution, perturbation_rate};
+/// #
+/// # // The first record of ELP4: longitude, 2l' - F, 0.022 arcseconds.
+/// # let term = PerturbationTerm::new([0, 2, 0, -1, 0, 0, 0, 0, 0, 0, 0], 0.0, 0.02206);
+/// for century in [-2.0, 0.0, 4.0] {
+///     let value = perturbation_contribution(&term, 4, &Arguments::at(2_451_545.0 + century * 36_525.0));
+///     assert!(value.abs() <= 0.02206);
+/// }
+/// ```
 #[must_use]
 pub fn perturbation_contribution(term: &PerturbationTerm, file: u8, arguments: &Arguments) -> f64 {
     let (amplitude, angle) = perturbation_amplitude_and_angle(term, file, arguments);
@@ -634,6 +743,16 @@ fn perturbation_turning(term: &PerturbationTerm, file: u8, arguments: &Arguments
 /// This is the evaluator the shipped tables use and the one the
 /// ingester uses, so a generated table and the series it came from
 /// cannot diverge through two implementations of the same sum.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::position_from;
+/// use teistro_ephemeris_builtin::tables::{MOON_MAIN, MOON_PERTURBATIONS};
+///
+/// let length = |v: [f64; 3]| v.iter().map(|x| x * x).sum::<f64>().sqrt();
+/// // Between perigee and apogee, kilometres from the Earth's centre.
+/// let moon = position_from(&MOON_MAIN, &MOON_PERTURBATIONS, 2_451_545.0);
+/// assert!((356_000.0..407_000.0).contains(&length(moon)));
+/// ```
 #[must_use]
 pub fn position_from(
     main: &[(u8, MainTerm)],
@@ -661,6 +780,19 @@ pub fn position_from(
 ///
 /// Both halves of the product rule: the amplitude carries a power of
 /// time for four of the file ranges, and the argument turns.
+///
+/// ```
+/// # use teistro_ephemeris_builtin::elp::{Arguments, PerturbationTerm, perturbation_contribution, perturbation_rate};
+/// #
+/// # // The first record of ELP4: longitude, 2l' - F, 0.022 arcseconds.
+/// # let term = PerturbationTerm::new([0, 2, 0, -1, 0, 0, 0, 0, 0, 0, 0], 0.0, 0.02206);
+/// // A central difference over a ten-millionth of a century, five minutes.
+/// let h = 1e-7;
+/// let at = |century: f64| Arguments::at(2_451_545.0 + century * 36_525.0);
+/// let difference = (perturbation_contribution(&term, 4, &at(h)) - perturbation_contribution(&term, 4, &at(-h))) / (2.0 * h);
+/// let rate = perturbation_rate(&term, 4, &at(0.0));
+/// assert!((rate - difference).abs() < 1e-5 * rate.abs());
+/// ```
 #[must_use]
 pub fn perturbation_rate(term: &PerturbationTerm, file: u8, arguments: &Arguments) -> f64 {
     let power = time_power(file);
@@ -694,6 +826,17 @@ pub fn perturbation_rate(term: &PerturbationTerm, file: u8, arguments: &Argument
 /// the of-date frame and have to reach J2000 by the same path the
 /// Moon's own position does. Two rotations would be two things to keep
 /// in step.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::to_j2000;
+///
+/// let length = |v: [f64; 3]| v.iter().map(|x| x * x).sum::<f64>().sqrt();
+/// // The identity at J2000, and a rotation away from it.
+/// assert_eq!(to_j2000([1.0, 2.0, 3.0], 2_451_545.0), [1.0, 2.0, 3.0]);
+/// let turned = to_j2000([1.0, 2.0, 3.0], 2_451_545.0 + 36_525.0);
+/// assert!((length(turned) - 14f64.sqrt()).abs() < 1e-14);
+/// assert_ne!(turned, [1.0, 2.0, 3.0]);
+/// ```
 #[must_use]
 pub fn to_j2000(v: [f64; 3], jd: f64) -> [f64; 3] {
     let [_, t1, t2, t3, t4] = Arguments::at(jd).t;
@@ -733,6 +876,22 @@ pub fn to_j2000(v: [f64; 3], jd: f64) -> [f64; 3] {
 /// century, so it is applied to the rate as a constant matrix. That is
 /// an approximation and it is stated: it costs the Moon's rate about
 /// 1e-9 degrees a day, six orders below the bound.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::{position_and_rate_from, position_from};
+/// use teistro_ephemeris_builtin::tables::{MOON_MAIN, MOON_PERTURBATIONS};
+///
+/// let jd = 2_460_000.3;
+/// let (position, rate) = position_and_rate_from(&MOON_MAIN, &MOON_PERTURBATIONS, jd);
+/// let alone = position_from(&MOON_MAIN, &MOON_PERTURBATIONS, jd);
+/// // A difference over a tenth of a day, against the analytic rate.
+/// let ahead = position_from(&MOON_MAIN, &MOON_PERTURBATIONS, jd + 0.05);
+/// let behind = position_from(&MOON_MAIN, &MOON_PERTURBATIONS, jd - 0.05);
+/// for axis in 0..3 {
+///     assert!((position[axis] - alone[axis]).abs() < 1e-6);
+///     assert!((rate[axis] - (ahead[axis] - behind[axis]) / 0.1).abs() < 10.0, "km a day");
+/// }
+/// ```
 #[must_use]
 pub fn position_and_rate_from(
     main: &[(u8, MainTerm)],
@@ -777,6 +936,19 @@ pub fn position_and_rate_from(
 ///
 /// `sums` are the raw series totals: longitude and latitude in
 /// arcseconds, distance in kilometres before its scale.
+///
+/// ```
+/// use std::f64::consts::TAU;
+/// use teistro_ephemeris_builtin::elp::{Arguments, to_rectangular};
+///
+/// // With no series at all the Moon sits on its mean longitude, in the ecliptic.
+/// let jd = 2_451_545.0;
+/// let [x, y, z] = to_rectangular([0.0, 0.0, 385_000.0], jd);
+/// assert_eq!(z, 0.0);
+/// let mean = Arguments::at(jd).w1[0].rem_euclid(TAU);
+/// assert!((y.atan2(x).rem_euclid(TAU) - mean).abs() < 1e-12);
+/// assert!((x.hypot(y) - 385_000.0).abs() < 1e-3);
+/// ```
 #[must_use]
 pub fn to_rectangular(sums: [f64; 3], jd: f64) -> [f64; 3] {
     let arguments = Arguments::at(jd);
@@ -824,6 +996,21 @@ pub fn to_rectangular(sums: [f64; 3], jd: f64) -> [f64; 3] {
 /// kilometres and a rate in kilometres per day.
 ///
 /// `rates` are the series' own derivatives, per Julian century.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::{Arguments, to_rectangular, to_rectangular_and_rate};
+///
+/// let length = |v: [f64; 3]| v.iter().map(|x| x * x).sum::<f64>().sqrt();
+/// // Still series: the position as `to_rectangular` has it, carried round at
+/// // the mean longitude's own rate.
+/// let jd = 2_451_545.0;
+/// let sums = [0.0, 0.0, 385_000.0];
+/// let (position, rate) = to_rectangular_and_rate(sums, [0.0; 3], jd);
+/// let alone = to_rectangular(sums, jd);
+/// assert!((0..3).all(|axis| (position[axis] - alone[axis]).abs() < 1e-6));
+/// let per_day = Arguments::at(jd).w1[1] / 36_525.0;
+/// assert!((length(rate) - length(position) * per_day).abs() < 1e-6);
+/// ```
 #[must_use]
 pub fn to_rectangular_and_rate(sums: [f64; 3], rates: [f64; 3], jd: f64) -> ([f64; 3], [f64; 3]) {
     let arguments = Arguments::at(jd);

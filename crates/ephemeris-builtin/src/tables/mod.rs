@@ -9,9 +9,9 @@
 //!
 //! | tier | planets | Moon | data of budget | source |
 //! |---|---|---|---:|---:|
-//! | `compact` | 3e-6 au, 21.2729″, 2503 terms | 1, 18.0895″, 160 terms | 83 of 128 KB | 129 KB |
-//! | `standard` | 3e-8 au, 0.6190″, 15860 terms | 0.01, 0.7131″, 1139 terms | 531 of 640 KB | 763 KB |
-//! | `full` | whole theory, 0.0000″, 39198 terms | whole theory, 0.0000″, 37872 terms | 2408 of 4096 KB | 4231 KB |
+//! | `compact` | 3e-6 au, 21.2729″, 2503 terms | 1, 18.0895″, 160 terms | 83 of 128 KB | 134 KB |
+//! | `standard` | 3e-8 au, 0.6190″, 15860 terms | 0.01, 0.7131″, 1139 terms | 531 of 640 KB | 768 KB |
+//! | `full` | whole theory, 0.0000″, 39198 terms | whole theory, 0.0000″, 37872 terms | 2408 of 4096 KB | 4236 KB |
 
 #[cfg(all(feature = "compact", not(feature = "standard"), not(feature = "full")))]
 #[rustfmt::skip]
@@ -34,6 +34,13 @@ pub use full::*;
 /// The tier these tables came from, for provenance: a chart says
 /// which tier computed it, and a cached one says which tier it was
 /// cached from (ADR-0020).
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::TIER;
+///
+/// // The richest tier enabled: `standard` by default.
+/// assert!(["compact", "standard", "full"].contains(&TIER));
+/// ```
 pub const TIER: &str = {
     #[cfg(feature = "full")]
     { "full" }

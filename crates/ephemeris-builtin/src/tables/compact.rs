@@ -22,10 +22,29 @@ use crate::elp::{MainTerm, PerturbationTerm};
 use crate::series::Term;
 
 /// Every body's three coordinate series, by name.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::{PLANETS, Planets};
+///
+/// let planets: &Planets = &PLANETS;
+/// let names = planets.map(|(name, _)| name);
+/// assert_eq!(names, ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]);
+/// ```
 pub type Planets = [(&'static str, [&'static [Term]; 3]); 8];
 
 /// An instant and what this tier's tables must give at it:
 /// Mars and the Earth heliocentrically, then the Moon.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::{CHECKPOINTS, Checkpoint};
+///
+/// // 1800, J2000 and 2400; the Moon in kilometres, between perigee and apogee.
+/// let checkpoints: &[Checkpoint] = &CHECKPOINTS;
+/// for (_, _, _, moon) in checkpoints {
+///     let distance = moon.iter().map(|x| x * x).sum::<f64>().sqrt();
+///     assert!((356_000.0..407_000.0).contains(&distance));
+/// }
+/// ```
 pub type Checkpoint = (f64, [f64; 3], [f64; 3], [f64; 3]);
 
 /// A planetary term, abbreviated so the table stays readable.
@@ -34,10 +53,23 @@ const fn t(amplitude: f64, phase: f64, frequency: f64, power: u8) -> Term {
 }
 
 /// Which tier these tables are.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::{TIER, TIER_NAME};
+///
+/// assert_eq!(TIER_NAME, TIER);
+/// ```
 pub const TIER_NAME: &str = "compact";
 
 /// The amplitude below which a planetary term was dropped, in
 /// astronomical units. Zero keeps the whole theory.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::{PLANET_THRESHOLD_AU, PLANETS};
+///
+/// let mut terms = PLANETS.iter().flat_map(|(_, coordinates)| coordinates.iter().copied().flatten());
+/// assert!(terms.all(|term| term.amplitude.abs() >= PLANET_THRESHOLD_AU));
+/// ```
 pub const PLANET_THRESHOLD_AU: f64 = 3e-6;
 
 /// The worst the truncation costs a planet's geocentric direction
@@ -47,30 +79,78 @@ pub const PLANET_THRESHOLD_AU: f64 = 3e-6;
 /// the theory's own error against a modern ephemeris is separate
 /// and larger, and is published in
 /// `03-design/builtin-ephemeris-measured.md`.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::PLANET_TRUNCATION_ARCSEC;
+///
+/// // Inside this tier's target.
+/// assert!(PLANET_TRUNCATION_ARCSEC <= 60.0);
+/// ```
 pub const PLANET_TRUNCATION_ARCSEC: f64 = 21.272914954334453;
 
 /// How many planetary terms this tier keeps.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::{PLANET_TERMS, PLANETS};
+///
+/// let kept: usize = PLANETS.iter().flat_map(|(_, coordinates)| coordinates.map(<[_]>::len)).sum();
+/// assert_eq!(kept, PLANET_TERMS);
+/// ```
 pub const PLANET_TERMS: usize = 2503;
 
 /// The amplitude below which a lunar term was dropped, in each
 /// coordinate's own unit.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::{MOON_MAIN, MOON_PERTURBATIONS, MOON_THRESHOLD};
+///
+/// // A main term is judged by its leading coefficient.
+/// assert!(MOON_MAIN.iter().all(|(_, term)| term.coefficients[0].abs() >= MOON_THRESHOLD));
+/// assert!(MOON_PERTURBATIONS.iter().all(|(_, term)| term.amplitude >= MOON_THRESHOLD));
+/// ```
 pub const MOON_THRESHOLD: f64 = 1.0;
 
 /// The worst the truncation costs the Moon's direction over 1800
 /// to 2400, in arcseconds.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::MOON_TRUNCATION_ARCSEC;
+///
+/// // Inside this tier's target.
+/// assert!(MOON_TRUNCATION_ARCSEC <= 30.0);
+/// ```
 pub const MOON_TRUNCATION_ARCSEC: f64 = 18.089460404508007;
 
 /// How many lunar terms this tier keeps, of both kinds.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::{MOON_MAIN, MOON_PERTURBATIONS, MOON_TERMS};
+///
+/// assert_eq!(MOON_MAIN.len() + MOON_PERTURBATIONS.len(), MOON_TERMS);
+/// ```
 pub const MOON_TERMS: usize = 160;
 
 /// What the coefficients cost in a binary: a planetary term is
 /// three `f64` and a power, and a lunar one its multipliers and
 /// two `f64`.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::{DATA_BYTES, MOON_TERMS, PLANET_TERMS};
+///
+/// // Thirty-two bytes a term of either kind.
+/// assert_eq!(DATA_BYTES, (PLANET_TERMS + MOON_TERMS) * 32);
+/// ```
 pub const DATA_BYTES: usize = 85216;
 
 /// What this tier is allowed to cost. The crate's tests hold
 /// [`DATA_BYTES`] to it, so a tier that grew past its budget
 /// fails rather than ships.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::{BUDGET_BYTES, DATA_BYTES};
+///
+/// assert!(DATA_BYTES <= BUDGET_BYTES);
+/// ```
 pub const BUDGET_BYTES: usize = 131072;
 
 /// VSOP87A, truncated at 3e-6 astronomical units.
@@ -82,6 +162,18 @@ pub const BUDGET_BYTES: usize = 131072;
 /// `static` rather than `const`: a `const` array is a value that is
 /// copied into every place it is used, and this one has thousands of
 /// terms in it.
+///
+/// ```
+/// use teistro_ephemeris_builtin::series::sum;
+/// use teistro_ephemeris_builtin::tables::PLANETS;
+///
+/// // The Earth at J2000, two days before perihelion: 0.983 au out.
+/// let (name, coordinates) = PLANETS[2];
+/// assert_eq!(name, "Earth");
+/// let at = coordinates.map(|terms| sum(terms, 0.0));
+/// let distance = at.iter().map(|x| x * x).sum::<f64>().sqrt();
+/// assert!((distance - 0.9833).abs() < 1e-3);
+/// ```
 pub static PLANETS: Planets = [
     ("Mercury", [
         &[t(0.37546291728,4.39651506942,26087.9031415742,0),t(0.03825746672,1.16485604339,52175.8062831484,0),t(0.02625615963,3.14159265359,0.0,0),t(0.00584261333,4.21599394757,78263.70942472259,0),t(0.00105716695,0.98379033182,104351.61256629678,0),t(0.0002101173,4.03469353923,130439.51570787099,0),t(4.433373e-5,0.80236674527,156527.41884944518,0),t(9.74967e-6,3.85319674536,182615.3219910194,0),t(7.00327e-6,4.45478725367,24978.5245894808,0),t(6.26468e-6,1.18563492001,27197.2816936676,0),t(4.46989e-6,2.97507181503,1059.3819301892,0),t(3.98401e-6,1.86487895049,20426.571092422,0),t(0.00318848034,0.0,0.0,1),t(0.00105289019,5.91600475006,52175.8062831484,1),t(0.00032316001,2.68247273347,78263.70942472259,1),t(0.00011992889,5.81575112963,26087.9031415742,1),t(8.7832e-5,5.73285747425,104351.61256629678,1),t(2.329042e-5,2.50023793407,130439.51570787099,1),t(6.14473e-6,5.55087602844,156527.41884944518,1),t(1.484185e-5,4.35401210269,52175.8062831484,2),t(9.07467e-6,1.13216343018,78263.70942472259,2),t(1.214995e-5,0.0,0.0,2),t(3.68809e-6,4.18705944126,104351.61256629678,2)],
@@ -132,9 +224,30 @@ pub static PLANETS: Planets = [
 /// Chapront-Touze and Chapront (1988), CDS catalogue VI/79.
 /// Generated by `cargo xtask ephemgen`; do not edit.
 /// `static` rather than `const`, so the table exists once.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::position_from;
+/// use teistro_ephemeris_builtin::tables::{MOON_MAIN, MOON_PERTURBATIONS};
+///
+/// // The main problem is files 1 to 3, and the Moon is between its
+/// // perigee and apogee at J2000: kilometres, geocentric.
+/// assert!(MOON_MAIN.iter().all(|(file, _)| (1..=3).contains(file)));
+/// let moon = position_from(&MOON_MAIN, &MOON_PERTURBATIONS, 2_451_545.0);
+/// let distance = moon.iter().map(|x| x * x).sum::<f64>().sqrt();
+/// assert!((356_000.0..407_000.0).contains(&distance));
+/// ```
 pub static MOON_MAIN: [(u8, MainTerm); 153] = [(1,MainTerm::new([0,0,0,2],[-411.60287,168.48,-18433.81,-121.62,0.4,-0.18,0.0])),(1,MainTerm::new([0,0,1,-2],[39.53393,-395.24,1788.33,720.91,-2.6,0.9,0.0])),(1,MainTerm::new([0,0,1,0],[22639.55,0.0,0.0,412529.61,0.0,0.0,0.0])),(1,MainTerm::new([0,0,1,2],[-45.10032,17.41,-2019.78,-830.2,0.09,-0.02,0.0])),(1,MainTerm::new([0,0,2,-2],[-1.37259,-7.58,-62.49,-50.12,-0.07,0.0,0.0])),(1,MainTerm::new([0,0,2,0],[769.02326,-257.51,-47.39,28008.99,-6.83,-0.56,0.0])),(1,MainTerm::new([0,0,2,2],[-3.99767,2.4,-178.94,-146.18,0.05,0.0,0.0])),(1,MainTerm::new([0,0,3,0],[36.12364,-28.42,-5.1,1972.74,-0.93,-0.08,0.0])),(1,MainTerm::new([0,0,4,0],[1.93367,-2.65,-0.44,140.75,-0.1,0.0,0.0])),(1,MainTerm::new([0,1,-2,0],[-9.67938,-235.29,4.9,-352.52,-579.94,-0.15,0.0])),(1,MainTerm::new([0,1,-1,0],[-147.32654,-3778.62,68.68,-2688.53,-8829.17,-0.76,0.0])),(1,MainTerm::new([0,1,0,0],[-666.44186,-5206.84,258.79,-555.98,-39887.79,1.73,0.0])),(1,MainTerm::new([0,1,1,0],[-109.38419,-2193.78,51.64,-2018.13,-6556.1,0.54,0.0])),(1,MainTerm::new([0,1,2,0],[-7.63041,-156.07,4.09,-279.89,-457.41,0.12,0.0])),(1,MainTerm::new([0,2,-1,0],[-2.56813,-81.06,1.44,-46.94,-307.62,0.0,0.0])),(1,MainTerm::new([0,2,0,0],[-7.44804,-12.64,2.98,-9.32,-891.27,0.03,0.0])),(1,MainTerm::new([0,2,1,0],[-1.16177,-19.75,0.43,-21.52,-139.13,0.0,0.0])),(1,MainTerm::new([1,0,-2,0],[-1.75296,-48.87,1.67,-64.28,-0.51,-681.6,3.59])),(1,MainTerm::new([1,0,-1,0],[-18.58467,-437.66,18.91,-346.51,-1.0,-7226.22,38.1])),(1,MainTerm::new([1,0,0,0],[-124.98806,-2831.88,136.18,-86.6,-2.68,-48598.15,256.21])),(1,MainTerm::new([1,0,1,0],[-8.45308,-187.78,10.1,-158.62,0.77,-3286.75,17.33])),(1,MainTerm::new([1,1,-1,0],[1.07773,9.38,-1.15,21.49,64.24,418.88,-2.21])),(1,MainTerm::new([1,1,0,0],[17.95512,6.59,-11.64,21.84,1074.24,6981.34,-36.8])),(1,MainTerm::new([1,1,1,0],[1.26186,1.83,-0.9,24.5,75.5,490.64,-2.59])),(1,MainTerm::new([2,-2,-1,0],[7.37173,165.38,-1.06,134.79,881.89,-0.04,0.0])),(1,MainTerm::new([2,-2,0,0],[8.05076,289.14,-3.14,21.09,962.91,-0.06,0.0])),(1,MainTerm::new([2,-1,-2,0],[8.60582,187.04,-1.14,313.85,515.03,0.02,0.0])),(1,MainTerm::new([2,-1,-1,0],[205.44315,4157.78,-32.99,3751.43,12284.72,-0.13,0.0])),(1,MainTerm::new([2,-1,0,-2],[2.14619,18.77,95.81,-0.84,128.22,0.05,0.0])),(1,MainTerm::new([2,-1,0,0],[164.73458,5378.28,-77.43,545.71,9844.15,-0.18,0.0])),(1,MainTerm::new([2,-1,1,0],[14.53078,497.46,-9.38,307.25,867.99,0.0,0.0])),(1,MainTerm::new([2,-1,2,0],[1.17704,41.72,-0.96,46.23,70.28,0.0,0.0])),(1,MainTerm::new([2,0,-3,0],[13.194,279.87,-3.19,721.29,0.65,0.14,0.0])),(1,MainTerm::new([2,0,-2,0],[211.65487,4685.54,-42.06,7715.64,7.86,2.12,-0.01])),(1,MainTerm::new([2,0,-1,0],[4586.43061,87132.46,-842.12,83586.18,-191.17,20.31,-0.17])),(1,MainTerm::new([2,0,-1,2],[-9.36601,-173.58,-417.66,-173.7,0.48,-0.06,0.0])),(1,MainTerm::new([2,0,0,-2],[55.17801,530.97,2463.55,-15.35,-6.96,1.2,0.0])),(1,MainTerm::new([2,0,0,0],[2369.91227,69551.14,-1472.5,10817.07,-255.36,22.07,-0.15])),(1,MainTerm::new([2,0,0,2],[-5.7417,-155.85,-254.0,-59.77,0.64,-0.1,0.0])),(1,MainTerm::new([2,0,1,-2],[-6.38325,-72.7,-288.51,-117.47,1.16,0.0,0.0])),(1,MainTerm::new([2,0,1,0],[191.95575,5619.27,-153.09,4250.55,-30.1,2.78,-0.02])),(1,MainTerm::new([2,0,2,0],[14.37964,417.8,-13.71,577.47,-3.08,0.28,0.0])),(1,MainTerm::new([2,0,3,0],[1.05949,30.46,-1.16,61.74,-0.3,0.03,0.0])),(1,MainTerm::new([2,1,-2,0],[2.48897,257.3,-3.72,89.71,150.19,0.26,0.0])),(1,MainTerm::new([2,1,-1,0],[-28.3981,915.46,-16.7,-528.73,-1693.3,-0.38,0.0])),(1,MainTerm::new([2,1,0,-2],[-1.43724,-23.32,-64.11,-0.16,-86.03,-0.04,0.0])),(1,MainTerm::new([2,1,0,0],[-24.3591,-661.0,29.13,-128.06,-1457.61,-5.21,0.03])),(1,MainTerm::new([2,1,1,0],[-2.91464,-100.96,4.26,-66.13,-174.49,-0.75,0.0])),(1,MainTerm::new([2,2,-1,0],[-2.52138,-84.66,0.74,-46.07,-302.13,0.07,0.0])),(1,MainTerm::new([3,0,-2,0],[-1.22412,-28.1,0.42,-44.73,-0.15,-475.97,2.51])),(1,MainTerm::new([3,0,-1,0],[-3.20968,-121.62,3.09,-62.39,1.61,-1248.01,6.58])),(1,MainTerm::new([4,-1,-2,0],[2.73198,106.73,-1.04,99.83,163.2,0.11,0.0])),(1,MainTerm::new([4,-1,-1,0],[4.37416,221.0,-3.71,93.87,260.99,-0.05,0.0])),(1,MainTerm::new([4,-1,0,0],[1.87083,111.8,-2.35,25.65,111.49,0.16,0.0])),(1,MainTerm::new([4,0,-3,0],[1.18682,52.89,-0.5,64.88,0.22,0.25,0.0])),(1,MainTerm::new([4,0,-2,0],[30.77247,1164.74,-12.42,1123.35,-4.25,1.18,0.0])),(1,MainTerm::new([4,0,-1,0],[38.42974,1853.28,-37.86,849.77,-9.84,0.08,0.0])),(1,MainTerm::new([4,0,0,0],[13.89903,782.37,-19.88,215.74,-5.22,1.37,0.0])),(1,MainTerm::new([4,0,1,0],[1.97772,113.34,-3.31,59.21,-0.94,0.18,0.0])),(2,MainTerm::new([0,0,0,1],[18461.4,0.0,412529.61,0.0,0.0,0.0,0.0])),(2,MainTerm::new([0,0,0,3],[-6.29664,7.68,-422.65,-13.21,0.02,-0.02,0.0])),(2,MainTerm::new([0,0,1,-3],[2.79871,-17.13,188.68,50.78,-0.11,0.04,0.0])),(2,MainTerm::new([0,0,1,-1],[999.70079,-563.82,22508.54,18298.82,-0.92,-0.21,0.0])),(2,MainTerm::new([0,0,1,1],[1010.1743,-93.16,22571.83,18386.36,-0.76,-0.17,0.0])),(2,MainTerm::new([0,0,1,3],[-1.01941,0.95,-68.42,-19.88,0.0,0.0,0.0])),(2,MainTerm::new([0,0,2,-1],[31.75985,-167.64,723.95,1159.97,-1.09,0.22,0.0])),(2,MainTerm::new([0,0,2,1],[61.91229,-23.73,1382.4,2253.18,-0.62,-0.06,0.0])),(2,MainTerm::new([0,0,3,-1],[1.58131,-10.25,36.06,86.53,-0.08,0.0,0.0])),(2,MainTerm::new([0,0,3,1],[3.98407,-3.3,88.86,217.43,-0.11,-0.01,0.0])),(2,MainTerm::new([0,1,-1,-1],[-6.73173,-159.36,-146.94,-122.89,-403.36,-0.03,0.0])),(2,MainTerm::new([0,1,-1,1],[-5.6326,-148.81,-123.96,-102.8,-337.62,-0.04,0.0])),(2,MainTerm::new([0,1,0,-1],[-4.83983,70.86,-100.97,-8.74,-289.05,0.02,0.0])),(2,MainTerm::new([0,1,0,1],[-6.46036,28.14,-136.25,-20.21,-386.09,0.29,0.0])),(2,MainTerm::new([0,1,1,-1],[-5.07614,-113.16,-112.23,-93.12,-304.28,0.0,0.0])),(2,MainTerm::new([0,1,1,1],[-5.31151,-99.03,-115.96,-99.19,-318.3,0.06,0.0])),(2,MainTerm::new([1,0,0,-1],[-4.80578,-102.5,-103.39,-3.12,-0.09,-1868.59,9.85])),(2,MainTerm::new([1,0,0,1],[-5.36844,-119.82,-113.86,-3.16,-0.08,-2087.37,11.0])),(2,MainTerm::new([2,-2,0,-1],[1.08587,23.51,24.25,0.47,129.87,0.0,0.0])),(2,MainTerm::new([2,-1,-1,-1],[7.43488,154.99,165.14,135.9,444.61,-0.02,0.0])),(2,MainTerm::new([2,-1,-1,1],[8.86853,174.25,196.33,161.68,530.29,-0.01,0.0])),(2,MainTerm::new([2,-1,0,-1],[29.57794,553.39,661.64,12.43,1767.42,0.16,0.0])),(2,MainTerm::new([2,-1,0,1],[7.95891,253.11,175.21,44.35,475.6,0.0,0.0])),(2,MainTerm::new([2,-1,1,-1],[1.76606,35.98,38.73,33.43,105.5,0.02,0.0])),(2,MainTerm::new([2,-1,1,1],[1.13466,38.36,24.88,25.43,67.78,0.0,0.0])),(2,MainTerm::new([2,0,-3,-1],[1.51564,31.76,33.59,82.84,0.07,0.0,0.0])),(2,MainTerm::new([2,0,-2,-1],[15.56635,330.35,344.99,567.47,0.23,0.03,0.0])),(2,MainTerm::new([2,0,-2,1],[-1.62443,-20.88,-36.38,-59.2,0.18,-0.02,0.0])),(2,MainTerm::new([2,0,-1,-1],[166.57528,3219.29,3695.9,3042.8,-5.99,0.39,0.0])),(2,MainTerm::new([2,0,-1,1],[199.48515,3726.28,4413.25,3627.39,-8.68,0.73,0.0])),(2,MainTerm::new([2,0,0,-3],[2.18637,23.85,146.45,-2.38,-0.27,0.03,0.0])),(2,MainTerm::new([2,0,0,-1],[623.65783,9963.62,13978.19,245.16,-70.26,5.0,-0.03])),(2,MainTerm::new([2,0,0,1],[117.26161,3313.25,2575.66,874.52,-12.65,1.79,-0.01])),(2,MainTerm::new([2,0,1,-1],[33.35743,512.77,735.76,630.31,-5.21,0.43,0.0])),(2,MainTerm::new([2,0,1,1],[15.12165,433.44,331.25,359.2,-2.4,0.31,0.0])),(2,MainTerm::new([2,0,2,-1],[2.14618,33.22,46.62,80.12,-0.45,0.04,0.0])),(2,MainTerm::new([2,0,2,1],[1.51976,43.48,33.21,62.71,-0.33,0.04,0.0])),(2,MainTerm::new([2,1,-1,1],[-1.31788,39.71,-29.98,-24.58,-78.59,0.0,0.0])),(2,MainTerm::new([2,1,0,-1],[-12.0947,-205.76,-271.06,-3.14,-723.84,-0.31,0.0])),(2,MainTerm::new([2,1,0,1],[-1.26433,-30.65,-27.38,-10.59,-75.65,-0.41,0.0])),(2,MainTerm::new([4,0,-2,1],[2.41389,90.53,52.84,87.95,-0.35,0.07,0.0])),(2,MainTerm::new([4,0,-1,-1],[6.57962,223.57,146.75,123.07,-1.94,0.26,0.0])),(2,MainTerm::new([4,0,-1,1],[2.9985,142.57,65.02,71.12,-0.78,0.06,0.0])),(2,MainTerm::new([4,0,0,-1],[3.67449,157.55,81.63,29.57,-1.61,0.06,0.0])),(2,MainTerm::new([4,0,0,1],[1.19188,65.39,25.66,23.11,-0.45,0.08,0.0])),(3,MainTerm::new([0,0,0,0],[385000.52719,-7992.63,-11.06,21578.08,-4.53,11.39,-0.06])),(3,MainTerm::new([0,0,0,2],[-3.14837,-204.48,-138.94,159.64,-0.39,0.12,0.0])),(3,MainTerm::new([0,0,1,-2],[79.66183,-359.45,3583.79,1454.02,-2.37,0.85,0.0])),(3,MainTerm::new([0,0,1,0],[-20905.32206,6888.23,-35.83,-380331.74,22.31,1.77,0.0])),(3,MainTerm::new([0,0,2,-2],[-4.42124,18.29,-198.91,-161.9,0.14,-0.04,0.0])),(3,MainTerm::new([0,0,2,0],[-569.92332,374.44,-1.99,-20737.33,5.79,0.44,0.0])),(3,MainTerm::new([0,0,3,0],[-23.21032,26.49,-0.14,-1266.64,0.63,0.05,0.0])),(3,MainTerm::new([0,0,4,0],[-1.11693,1.98,0.0,-81.26,0.06,0.0,0.0])),(3,MainTerm::new([0,1,-2,0],[-7.00293,-161.63,3.29,-254.78,-419.55,-0.12,0.0])),(3,MainTerm::new([0,1,-1,0],[-129.62476,-3122.77,61.8,-2362.46,-7767.84,-0.74,0.0])),(3,MainTerm::new([0,1,0,0],[48.8901,1082.4,-25.99,156.78,2926.5,-3.76,0.02])),(3,MainTerm::new([0,1,1,0],[104.75896,2165.07,-47.62,1929.1,6279.07,-0.6,0.0])),(3,MainTerm::new([0,1,2,0],[5.75105,119.47,-2.62,210.76,344.76,-0.09,0.0])),(3,MainTerm::new([0,2,-1,0],[-2.11728,-59.78,1.22,-38.7,-253.61,0.0,0.0])),(3,MainTerm::new([0,2,0,0],[1.06575,16.47,-0.6,3.28,127.54,0.0,0.0])),(3,MainTerm::new([0,2,1,0],[1.16562,22.2,-0.39,21.49,139.6,0.0,0.0])),(3,MainTerm::new([1,0,-2,0],[-1.73852,-48.13,1.59,-63.71,-0.5,-675.99,3.56])),(3,MainTerm::new([1,0,-1,0],[-8.37909,-219.27,9.53,-156.07,-0.84,-3257.99,17.18])),(3,MainTerm::new([1,0,0,0],[108.74265,2351.06,-120.48,69.82,2.01,42281.56,-222.9])),(3,MainTerm::new([1,0,1,0],[6.32199,138.54,-6.74,118.1,-0.56,2458.13,-12.96])),(3,MainTerm::new([1,1,0,0],[-16.67533,-4.78,10.81,-19.36,-997.67,-6483.73,34.18])),(3,MainTerm::new([2,-2,-1,0],[-4.95049,-84.9,0.91,-90.35,-592.24,0.03,0.0])),(3,MainTerm::new([2,-2,0,0],[-9.88519,-346.35,1.99,-14.48,-1182.31,0.07,0.0])),(3,MainTerm::new([2,-1,-2,0],[10.05654,188.87,-1.29,366.36,601.57,-0.03,0.0])),(3,MainTerm::new([2,-1,-1,0],[-152.14314,-2564.2,30.4,-2771.74,-9097.84,0.06,0.0])),(3,MainTerm::new([2,-1,0,0],[-204.59357,-6583.8,38.79,-377.95,-12225.82,0.27,0.0])),(3,MainTerm::new([2,-1,1,0],[-12.83185,-434.14,2.98,-260.02,-766.51,0.02,0.0])),(3,MainTerm::new([2,0,-3,0],[14.40262,282.85,-2.35,786.99,0.58,0.14,0.0])),(3,MainTerm::new([2,0,-2,0],[246.15768,4806.36,-51.78,8962.91,-0.43,1.11,0.0])),(3,MainTerm::new([2,0,-1,-2],[8.7517,133.45,390.01,155.98,-0.28,0.2,0.0])),(3,MainTerm::new([2,0,-1,0],[-3699.10468,-63127.05,818.0,-67236.74,147.86,-15.95,0.14])),(3,MainTerm::new([2,0,0,-2],[10.32129,282.08,460.16,-60.76,-1.29,0.06,0.0])),(3,MainTerm::new([2,0,0,0],[-2955.96651,-86674.51,507.99,-7597.69,323.54,-19.09,0.14])),(3,MainTerm::new([2,0,1,-2],[4.13118,20.86,186.87,75.09,-0.76,0.0,0.0])),(3,MainTerm::new([2,0,1,0],[-170.73274,-4963.3,29.72,-3579.16,26.82,-1.82,0.0])),(3,MainTerm::new([2,0,2,0],[-10.44472,-300.48,1.81,-410.75,2.24,-0.17,0.0])),(3,MainTerm::new([2,1,-1,0],[24.20935,-837.26,13.3,449.34,1443.45,0.26,0.0])),(3,MainTerm::new([2,1,0,0],[30.82498,873.36,-8.4,94.4,1844.57,3.86,-0.02])),(3,MainTerm::new([2,1,1,0],[2.6165,90.88,-1.01,56.02,156.64,0.49,0.0])),(3,MainTerm::new([2,2,-1,0],[2.3538,79.52,-0.72,42.86,282.05,-0.06,0.0])),(3,MainTerm::new([3,0,-1,0],[3.25823,117.77,-2.27,61.91,-1.34,1266.88,-6.68])),(3,MainTerm::new([3,0,0,0],[-1.41893,-19.43,-0.69,10.76,-0.63,-551.71,2.91])),(3,MainTerm::new([4,-1,-2,0],[-1.8971,-73.13,0.79,-69.17,-113.34,-0.12,0.0])),(3,MainTerm::new([4,-1,-1,0],[-3.95812,-199.78,1.54,-80.75,-236.16,0.15,0.0])),(3,MainTerm::new([4,-1,0,0],[-1.57145,-94.02,0.59,-18.48,-93.65,-0.26,0.0])),(3,MainTerm::new([4,0,-2,0],[-21.63627,-808.81,9.47,-788.01,2.77,-1.21,0.0])),(3,MainTerm::new([4,0,-1,0],[-34.78245,-1678.73,13.5,-725.23,8.97,0.88,0.0])),(3,MainTerm::new([4,0,0,0],[-11.64993,-657.42,4.13,-155.6,4.42,-2.17,0.0])),(3,MainTerm::new([4,0,1,0],[-1.42255,-81.3,0.5,-40.47,0.68,-0.21,0.0]))];
 
 /// The Moon's perturbation terms at the same threshold.
+///
+/// ```
+/// use teistro_ephemeris_builtin::elp::Group;
+/// use teistro_ephemeris_builtin::tables::MOON_PERTURBATIONS;
+///
+/// // Files 4 to 36, the figure and planetary groups: never the main problem.
+/// let main = |file: u8| Group::of(file) == Some(Group::Main);
+/// assert!(MOON_PERTURBATIONS.iter().all(|(file, _)| (4..=36).contains(file) && !main(*file)));
+/// ```
 pub static MOON_PERTURBATIONS: [(u8, PerturbationTerm); 7] = [(4,PerturbationTerm::new([1,0,0,0,-1,0,0,0,0,0,0],0.00094,7.06304)),(5,PerturbationTerm::new([1,0,0,0,0,0,0,0,0,0,0],180.00071,8.04508)),(10,PerturbationTerm::new([0,0,2,0,-2,0,0,0,2,-1,0],180.11977,1.14307)),(10,PerturbationTerm::new([0,18,-16,0,0,0,0,0,0,-1,0],26.54261,14.24883)),(12,PerturbationTerm::new([0,0,2,0,-2,0,0,0,2,-1,0],90.11969,1.0587)),(17,PerturbationTerm::new([0,0,1,0,0,0,0,1,0,0,0],275.13226,1.37497)),(19,PerturbationTerm::new([0,0,0,0,0,0,0,0,1,0,0],0.0,1.6768))];
 
 /// The bija: a quadratic correction to the Moon's mean longitude,
@@ -151,9 +264,28 @@ pub static MOON_PERTURBATIONS: [(u8, PerturbationTerm); 7] = [(4,PerturbationTer
 /// 0.261 arcsec where fitted, 1800 to 2400 to 3.00 arcsec and 1700 to 2500 to 4.46 arcsec. Refitting is a
 /// calculation-version change under ADR-0020. A consumer who wants
 /// the theory as its authors published it turns it off.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::MOON_BIJA_ARCSEC;
+///
+/// // The correction at a time in Julian centuries from J2000: under an
+/// // arcsecond at the epoch, and more than one at 1800 and at 2400.
+/// let [c0, c1, c2] = MOON_BIJA_ARCSEC;
+/// let at = |t: f64| c0 + c1 * t + c2 * t * t;
+/// assert!(at(0.0).abs() < 1.0);
+/// assert!(at(-2.0).abs() > 1.0 && at(4.0).abs() > 1.0);
+/// ```
 pub const MOON_BIJA_ARCSEC: [f64; 3] = [-0.1179182049433601, -0.38871910705571483, -0.9520031770099446];
 
 /// The span the bija was fitted over, for provenance.
+///
+/// ```
+/// use teistro_ephemeris_builtin::tables::MOON_BIJA_FITTED_OVER;
+///
+/// let (from, to) = MOON_BIJA_FITTED_OVER.split_once(" to ").ok_or("a span")?;
+/// assert!(from.parse::<i32>()? < to.parse::<i32>()?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub const MOON_BIJA_FITTED_OVER: &str = "1900 to 2100";
 
 /// Instants and the values this tier's tables must reproduce:
@@ -163,9 +295,23 @@ pub const MOON_BIJA_FITTED_OVER: &str = "1900 to 2100";
 /// Computed by the generator from the truncated series, so a test
 /// that reproduces them says the emitted literals mean what the
 /// published series meant.
+///
+/// ```
+/// use teistro_ephemeris_builtin::series::{millennia, sum};
+/// use teistro_ephemeris_builtin::tables::{CHECKPOINTS, PLANETS};
+///
+/// // Mars at J2000, summed from the table as the checkpoint has it.
+/// let (jd, mars, _, _) = CHECKPOINTS[1];
+/// assert_eq!(jd, 2_451_545.0);
+/// let (name, coordinates) = PLANETS[3];
+/// assert_eq!(name, "Mars");
+/// for (terms, want) in coordinates.iter().zip(mars) {
+///     assert!((sum(terms, millennia(jd)) - want).abs() < 1e-12);
+/// }
+/// ```
 pub static CHECKPOINTS: [Checkpoint; 3] = [
     (2378497.0, [-1.0910066540836763,-1.1137098806299257,0.004029669040476831], [-0.23352485950868315,0.9550875281440898,0.00042571882208670796], [394165.28414857714,-17243.317549697196,-22288.943429393996]),
     (2451545.0, [1.3907243509309075,-0.013408078692721783,-0.034468669822151465], [-0.1771288316636269,0.9672337640869877,0.0], [-291606.9544602574,-274978.12843945494,36272.4984968087]),
-    (2597641.0, [-1.1206843593042186,-1.0978479821543174,0.0034297401251662052], [-0.06304236831764658,0.9817186724220378,-0.0008811457752999709], [275076.019003811,-294214.9914946398,7430.009897494508]),
+    (2597641.0, [-1.1206843593042186,-1.0978479821543174,0.0034297401251662052], [-0.06304236831764658,0.9817186724220378,-0.0008811457752999709], [275076.01900381094,-294214.9914946398,7430.009897494508]),
 ];
 
