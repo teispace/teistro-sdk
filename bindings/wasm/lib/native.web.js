@@ -21,6 +21,9 @@ export const native = glue;
 /** Never named by an environment variable: a browser has none. */
 export const named = false;
 
+/** No sanitizer build is loaded as wasm. */
+export const sanitizer = '';
+
 /** The package that carries this build: the wasm one, on every host. */
 export function platformPackage() {
   return '@teistro/sdk-wasm';
