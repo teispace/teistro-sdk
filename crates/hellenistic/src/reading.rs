@@ -15,6 +15,22 @@ use crate::reception::{DignityKind, Reception, receptions};
 /// in the chart's zodiac, the Sun's and the Moon's geometric altitudes,
 /// and whether the chart's instant falls between its sunrise and its
 /// sunset.
+///
+/// ```
+/// use teistro_hellenistic::ChartSky;
+///
+/// let chart = ChartSky {
+///     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+///     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+///     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// };
+/// use teistro_hellenistic::DignityRequest;
+///
+/// // A longitude that is not a number is refused by its field.
+/// let broken = ChartSky { moon_deg: f64::NAN, ..chart };
+/// assert_eq!(DignityRequest::default().read(&broken).unwrap_err().field(), Some("moon_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ChartSky {
     /// Saturn's longitude, in degrees.
@@ -167,6 +183,22 @@ impl DignityRequest {
     }
 
     /// The same request, reading the sect by another rule.
+    ///
+    /// ```
+    /// use teistro_hellenistic::ChartSky;
+    ///
+    /// let chart = ChartSky {
+    ///     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    ///     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    ///     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// };
+    /// use teistro_hellenistic::{DignityRequest, Sect, SectRule};
+    ///
+    /// // The Sun high in the sky, but every chart read as a night chart.
+    /// let night = DignityRequest::default().with_sect_rule(SectRule::Night);
+    /// assert_eq!(night.read(&chart)?.sect, Sect::Night);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_sect_rule(mut self, sect_rule: SectRule) -> DignityRequest {
         self.sect_rule = sect_rule;
@@ -174,6 +206,13 @@ impl DignityRequest {
     }
 
     /// The same request, under other terms and triplicities.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRequest, DignityRules};
+    ///
+    /// let asked = DignityRequest::default().with_rules(DignityRules::PTOLEMY_EGYPTIAN);
+    /// assert_eq!(asked.rules(), DignityRules::PTOLEMY_EGYPTIAN);
+    /// ```
     #[must_use]
     pub const fn with_rules(mut self, rules: DignityRules) -> DignityRequest {
         self.rules = rules;
@@ -181,6 +220,25 @@ impl DignityRequest {
     }
 
     /// The same request, scored otherwise.
+    ///
+    /// ```
+    /// # use teistro_hellenistic::ChartSky;
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// use teistro_hellenistic::{DignityRequest, Scores};
+    ///
+    /// // Mars in Libra, his detriment, scored without the detriment's −5.
+    /// let mut scores = Scores::LILLY;
+    /// scores.detriment = 0;
+    /// let mild = DignityRequest::default().with_scores(scores);
+    /// let strict = DignityRequest::default().read(&chart)?.planets[2].score;
+    /// assert_eq!(mild.read(&chart)?.planets[2].score, strict + 5);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_scores(mut self, scores: Scores) -> DignityRequest {
         self.scores = scores;
@@ -188,18 +246,36 @@ impl DignityRequest {
     }
 
     /// How the sect is read.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRequest, SectRule};
+    ///
+    /// assert_eq!(DignityRequest::default().sect_rule(), SectRule::Horizon);
+    /// ```
     #[must_use]
     pub const fn sect_rule(&self) -> SectRule {
         self.sect_rule
     }
 
     /// The terms and triplicities.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRequest, DignityRules};
+    ///
+    /// assert_eq!(DignityRequest::default().rules(), DignityRules::LILLY);
+    /// ```
     #[must_use]
     pub const fn rules(&self) -> DignityRules {
         self.rules
     }
 
     /// The scores.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRequest, Scores};
+    ///
+    /// assert_eq!(DignityRequest::default().scores(), Scores::LILLY);
+    /// ```
     #[must_use]
     pub const fn scores(&self) -> Scores {
         self.scores
@@ -271,6 +347,27 @@ impl DignityRequest {
 }
 
 /// One planet's dignities and its score.
+///
+/// ```
+/// # use teistro_hellenistic::ChartSky;
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::DignityRequest;
+///
+/// let read = DignityRequest::default().read(&chart)?;
+/// let mars = read.planets[2];
+/// assert_eq!((mars.planet, mars.longitude_deg), (Graha::Mars, 190.0));
+/// // In his detriment and peregrine, yet in mutual reception twice: with
+/// // Venus by house (5) and with Saturn, in Capricorn, by exaltation (4).
+/// assert!(mars.dignity.detriment && mars.dignity.peregrine());
+/// assert_eq!(mars.reception, 9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -313,6 +410,24 @@ fn reception_score(planet: Graha, receptions: &[Reception], scores: Scores) -> i
 }
 
 /// The seven's dignities in one chart, with everything that made them.
+///
+/// ```
+/// # use teistro_hellenistic::ChartSky;
+/// #
+/// # let chart = ChartSky {
+/// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+/// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+/// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{DignityRequest, Sect, SectRule};
+///
+/// let read = DignityRequest::default().read(&chart)?;
+/// assert_eq!((read.sect, read.sect_rule), (Sect::Day, SectRule::Horizon));
+/// assert_eq!(read.planets.map(|at| at.planet)[0], Graha::Saturn);
+/// assert!(!read.receptions.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

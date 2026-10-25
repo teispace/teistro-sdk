@@ -11,6 +11,17 @@ use crate::terms::Terms;
 ///
 /// The dignities take it as given; [`SectRule`] says how a chart's is read
 /// (crux C209).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{DignityRules, Sect, essential_dignity};
+///
+/// // The fiery triplicity is the Sun's by day and Jupiter's by night.
+/// let by_day = essential_dignity(Graha::Jupiter, 125.0, Sect::Day, &DignityRules::LILLY)?;
+/// let by_night = essential_dignity(Graha::Jupiter, 125.0, Sect::Night, &DignityRules::LILLY)?;
+/// assert!(!by_day.triplicity && by_night.triplicity);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -53,6 +64,15 @@ impl Sect {
 /// horizon from the apparent one, where refraction and the Sun's limb move
 /// sunrise by minutes. So both are rules, and a caller may also say the
 /// sect outright.
+///
+/// ```
+/// use teistro_hellenistic::{Sect, SectRule};
+///
+/// assert_eq!(SectRule::default(), SectRule::Horizon);
+/// // A rule that says the sect outright reads nothing.
+/// assert_eq!(SectRule::Day.sect(-30.0, false), Sect::Day);
+/// assert_eq!(SectRule::Night.sect(30.0, true), Sect::Night);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -95,6 +115,14 @@ impl SectRule {
 
 /// The seven planets that hold essential dignity, in the Chaldean order,
 /// slowest first.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::CHALDEAN_ORDER;
+///
+/// assert_eq!((CHALDEAN_ORDER[0], CHALDEAN_ORDER[6]), (Graha::Saturn, Graha::Moon));
+/// assert!(!CHALDEAN_ORDER.contains(&Graha::Rahu));
+/// ```
 pub const CHALDEAN_ORDER: [Graha; 7] = [
     Graha::Saturn,
     Graha::Jupiter,
@@ -109,6 +137,17 @@ pub const CHALDEAN_ORDER: [Graha; 7] = [
 ///
 /// A sign's triplicity is its element: fire (Aries, Leo, Sagittarius),
 /// earth, air and water, in that order from Aries.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_hellenistic::{Sect, Triplicities};
+///
+/// // Water: Ptolemy gives Venus the day and Mars both; Lilly, Mars alone.
+/// assert!(Triplicities::Ptolemy.rules(Graha::Venus, Rashi::Cancer, Sect::Day));
+/// assert!(Triplicities::Ptolemy.rules(Graha::Mars, Rashi::Cancer, Sect::Night));
+/// assert!(!Triplicities::Lilly.rules(Graha::Venus, Rashi::Cancer, Sect::Day));
+/// assert!(Triplicities::Lilly.rules(Graha::Mars, Rashi::Pisces, Sect::Day));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -126,6 +165,18 @@ pub enum Triplicities {
 impl Triplicities {
     /// Whether a planet rules the triplicity a sign belongs to, in a chart
     /// of the sect.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_hellenistic::{Sect, Triplicities};
+    ///
+    /// // Air is Saturn's by day and Mercury's by night under both schemes.
+    /// for scheme in [Triplicities::Ptolemy, Triplicities::Lilly] {
+    ///     assert!(scheme.rules(Graha::Saturn, Rashi::Aquarius, Sect::Day));
+    ///     assert!(scheme.rules(Graha::Mercury, Rashi::Gemini, Sect::Night));
+    ///     assert!(!scheme.rules(Graha::Saturn, Rashi::Libra, Sect::Night));
+    /// }
+    /// ```
     #[must_use]
     pub fn rules(self, planet: Graha, sign: Rashi, sect: Sect) -> bool {
         use Graha::{Jupiter, Mars, Mercury, Moon, Saturn, Sun, Venus};
@@ -150,6 +201,17 @@ impl Triplicities {
 ///
 /// Not Ptolemy's "proper face" (I.XXVI), which is a planet's aspect to the
 /// luminaries and no division of a sign.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::face_lord;
+///
+/// // Aries: Mars, the Sun, Venus; Taurus goes on with Mercury.
+/// assert_eq!([face_lord(5.0), face_lord(15.0), face_lord(25.0)], [Graha::Mars, Graha::Sun, Graha::Venus]);
+/// assert_eq!(face_lord(35.0), Graha::Mercury);
+/// // The last face, of Pisces, is Mars's again.
+/// assert_eq!(face_lord(355.0), Graha::Mars);
+/// ```
 #[must_use]
 #[expect(
     clippy::cast_possible_truncation,
@@ -172,6 +234,15 @@ pub fn face_lord(longitude_deg: f64) -> Graha {
 /// reads the degree; it is here to be shown. It is **not** the catalogue's
 /// `Graha::attributes().exaltation`, whose degrees are the Vedic deep
 /// exaltations: the two differ for the Sun, Jupiter and Saturn.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_hellenistic::exaltation_degree;
+///
+/// // Lilly's Sun at 19° Aries, not the deep exaltation at 10°.
+/// assert_eq!(exaltation_degree(Graha::Sun), Some((Rashi::Aries, 19)));
+/// assert_eq!(exaltation_degree(Graha::Rahu), None);
+/// ```
 #[must_use]
 pub fn exaltation_degree(planet: Graha) -> Option<(Rashi, u8)> {
     match planet {
@@ -190,6 +261,13 @@ pub fn exaltation_degree(planet: Graha) -> Option<(Rashi, u8)> {
 ///
 /// The default is [`DignityRules::LILLY`], and a record that names one
 /// member takes the other from it.
+///
+/// ```
+/// use teistro_hellenistic::{DignityRules, Terms, Triplicities};
+///
+/// assert_eq!(DignityRules::default(), DignityRules::LILLY);
+/// assert_eq!((DignityRules::LILLY.terms, DignityRules::LILLY.triplicities), (Terms::PtolemaicLilly, Triplicities::Lilly));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default)]
@@ -209,6 +287,15 @@ impl Default for DignityRules {
 
 impl DignityRules {
     /// Lilly's whole reading: his terms and his triplicities.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{DignityRules, Sect, essential_dignity};
+    ///
+    /// // Lilly gives water to Mars alone, so Venus in Cancer by day has no triplicity.
+    /// assert!(!essential_dignity(Graha::Venus, 95.0, Sect::Day, &DignityRules::LILLY)?.triplicity);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const LILLY: DignityRules = DignityRules {
         terms: Terms::PtolemaicLilly,
         triplicities: Triplicities::Lilly,
@@ -216,12 +303,32 @@ impl DignityRules {
 
     /// Ptolemy's triplicities with the terms he transmits from the
     /// Egyptians, the only table his text certifies by its totals.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{DignityRules, Sect, essential_dignity};
+    ///
+    /// // Ptolemy's water is Venus's by day.
+    /// assert!(essential_dignity(Graha::Venus, 95.0, Sect::Day, &DignityRules::PTOLEMY_EGYPTIAN)?.triplicity);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const PTOLEMY_EGYPTIAN: DignityRules = DignityRules {
         terms: Terms::Egyptian,
         triplicities: Triplicities::Ptolemy,
     };
 
     /// These rules with another system of terms.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{DignityRules, Sect, Terms, essential_dignity};
+    ///
+    /// // 13° Aries is Venus's term in Lilly's table and Mercury's in the Egyptian.
+    /// let egyptian = DignityRules::LILLY.with_terms(Terms::Egyptian);
+    /// assert!(essential_dignity(Graha::Venus, 13.0, Sect::Day, &DignityRules::LILLY)?.term);
+    /// assert!(essential_dignity(Graha::Mercury, 13.0, Sect::Day, &egyptian)?.term);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_terms(mut self, terms: Terms) -> DignityRules {
         self.terms = terms;
@@ -229,6 +336,13 @@ impl DignityRules {
     }
 
     /// These rules with another triplicity scheme.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRules, Terms, Triplicities};
+    ///
+    /// let mixed = DignityRules::LILLY.with_triplicities(Triplicities::Ptolemy);
+    /// assert_eq!((mixed.terms, mixed.triplicities), (Terms::PtolemaicLilly, Triplicities::Ptolemy));
+    /// ```
     #[must_use]
     pub const fn with_triplicities(mut self, triplicities: Triplicities) -> DignityRules {
         self.triplicities = triplicities;
@@ -240,6 +354,13 @@ impl DignityRules {
 ///
 /// The default is [`Scores::LILLY`], and a record that names some scores
 /// takes the rest from it.
+///
+/// ```
+/// use teistro_hellenistic::Scores;
+///
+/// assert_eq!(Scores::default(), Scores::LILLY);
+/// assert_eq!((Scores::LILLY.house, Scores::LILLY.peregrine), (5, -5));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default)]
@@ -273,6 +394,17 @@ impl Scores {
     /// Lilly's "ready Table ... of the Fortitudes and Debilities"
     /// (p. 115): house 5, exaltation 4, triplicity 3, term 2, face 1;
     /// detriment −5, fall −4, peregrine −5.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{DignityRules, Scores, Sect, essential_dignity};
+    ///
+    /// // Saturn at 5° Aries: in his fall and peregrine, −4 and −5.
+    /// let saturn = essential_dignity(Graha::Saturn, 5.0, Sect::Day, &DignityRules::LILLY)?;
+    /// assert!(saturn.fall && saturn.peregrine());
+    /// assert_eq!(saturn.score(&Scores::LILLY), -9);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const LILLY: Scores = Scores {
         house: 5,
         exaltation: 4,
@@ -285,6 +417,17 @@ impl Scores {
     };
 
     /// Scores of the caller's own.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{DignityRules, Scores, Sect, essential_dignity};
+    ///
+    /// // Lilly's worths, a peregrine planet charged nothing.
+    /// let lenient = Scores::new(5, 4, 3, 2, 1, -5, -4, 0);
+    /// let saturn = essential_dignity(Graha::Saturn, 5.0, Sect::Day, &DignityRules::LILLY)?;
+    /// assert_eq!(saturn.score(&lenient), -4);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     #[expect(
         clippy::too_many_arguments,
@@ -317,6 +460,17 @@ impl Scores {
 ///
 /// Several can hold at once: Mars at 5° Aries is in its house and its
 /// face. A score is one reading of these flags, by [`Scores`].
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{DignityRules, Sect, essential_dignity};
+///
+/// // Mars at 5° Aries: his house and his face, in Jupiter's term.
+/// let mars = essential_dignity(Graha::Mars, 5.0, Sect::Day, &DignityRules::LILLY)?;
+/// assert!(mars.house && mars.face && !mars.term);
+/// assert!(!(mars.detriment || mars.fall));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[non_exhaustive]
@@ -344,6 +498,15 @@ pub struct EssentialDignity {
 impl EssentialDignity {
     /// In none of its five dignities (Lilly's "peregrine"), whatever its
     /// debilities.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{DignityRules, Sect, essential_dignity};
+    ///
+    /// assert!(essential_dignity(Graha::Saturn, 5.0, Sect::Day, &DignityRules::LILLY)?.peregrine());
+    /// assert!(!essential_dignity(Graha::Mars, 5.0, Sect::Day, &DignityRules::LILLY)?.peregrine());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn peregrine(&self) -> bool {
         !(self.house || self.exaltation || self.triplicity || self.term || self.face)
@@ -351,6 +514,16 @@ impl EssentialDignity {
 
     /// The dignities' worth by `scores`, each that holds counted once and
     /// peregrine counted as well as any debility.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{DignityRules, Scores, Sect, essential_dignity};
+    ///
+    /// // Mars at 5° Aries: house 5 and face 1.
+    /// let mars = essential_dignity(Graha::Mars, 5.0, Sect::Day, &DignityRules::LILLY)?;
+    /// assert_eq!(mars.score(&Scores::LILLY), 6);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn score(&self, scores: &Scores) -> i16 {
         [

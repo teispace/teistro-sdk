@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Two more crates have a run example on every public item.**
+**Numbers:** none. `teistro-hellenistic` (94) and
+`teistro-rectification` (176) join the crates `check-doc-examples`
+holds there, thirty in all. Mars's dignity example reads his two
+mutual receptions in one figure, with Venus by house and with Saturn by
+exaltation (Lilly's 5 and 4). The rectification examples run the
+baseline over a small orrery that keeps its nodes opposite.
+
 **Eight more crates have a run example on every public item.**
 **Numbers:** none. `teistro-kp` (24), `teistro-lalkitab` (57),
 `teistro-matching` (69), `teistro-prashna` (48), `teistro-remedies`

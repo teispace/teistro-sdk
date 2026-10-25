@@ -23,6 +23,28 @@ use crate::reading::ChartSky;
 ///
 /// Daimon is Fortune reflected in the ascendant, so the rule that
 /// reverses one reverses the other.
+///
+/// ```
+/// # use teistro_hellenistic::{ChartSky, LotSky};
+/// #
+/// # let sky = LotSky {
+/// #     chart: ChartSky {
+/// #         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+/// #         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+/// #         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+/// #     },
+/// #     ascendant_deg: 50.0,
+/// #     midheaven_deg: 320.0,
+/// # };
+/// let night = LotSky { chart: ChartSky { sun_altitude_deg: -30.0, daylight: false, ..sky.chart }, ..sky };
+/// use teistro_hellenistic::{FortuneRule, Lot, LotRequest, lots};
+///
+/// // By night Lilly keeps the day's count, 140°; Valens reverses it, 50 + 10 − 100.
+/// let lilly = LotRequest::VALENS.with_fortune(FortuneRule::DayAndNight);
+/// assert_eq!(lots(&night, &[Lot::Fortune], lilly)?.lots[0].place.longitude_deg, 140.0);
+/// assert_eq!(lots(&night, &[Lot::Fortune], LotRequest::VALENS)?.lots[0].place.longitude_deg, 320.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -106,6 +128,27 @@ fn counted(from: f64, to: f64, counted_from: f64, distance: Distance) -> f64 {
 /// from its own chapter; [`Lot::formula`] is each as data.
 ///
 /// Serialised as its key in screaming snake case (`FOREIGN_LANDS`).
+///
+/// ```
+/// # use teistro_hellenistic::{ChartSky, LotSky};
+/// #
+/// # let sky = LotSky {
+/// #     chart: ChartSky {
+/// #         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+/// #         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+/// #         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+/// #     },
+/// #     ascendant_deg: 50.0,
+/// #     midheaven_deg: 320.0,
+/// # };
+/// use teistro_hellenistic::{Lot, LotRequest, lots};
+///
+/// // Debt, from Mercury to Saturn: 280° on from the ascendant.
+/// let read = lots(&sky, &[Lot::Debt], LotRequest::VALENS)?;
+/// assert_eq!(read.lots[0].place.longitude_deg, 330.0);
+/// assert_eq!(serde_json::to_string(&Lot::ForeignLands).map_err(|_| teistro_core::error::Error::internal("serialises"))?, r#""FOREIGN_LANDS""#);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -156,6 +199,27 @@ pub enum Lot {
 
 impl Lot {
     /// Every lot, in Valens's order as this module lists them.
+    ///
+    /// ```
+    /// # use teistro_hellenistic::{ChartSky, LotSky};
+    /// #
+    /// # let sky = LotSky {
+    /// #     chart: ChartSky {
+    /// #         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+    /// #         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+    /// #         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+    /// #     },
+    /// #     ascendant_deg: 50.0,
+    /// #     midheaven_deg: 320.0,
+    /// # };
+    /// use teistro_hellenistic::{Lot, LotRequest, lots};
+    ///
+    /// // Every lot at once, each in the order asked.
+    /// let read = lots(&sky, &Lot::ALL, LotRequest::VALENS)?;
+    /// assert_eq!(read.lots.len(), 14);
+    /// assert!(read.lots.iter().zip(Lot::ALL).all(|(placed, lot)| placed.lot == lot));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub const ALL: [Lot; 14] = [
         Lot::Fortune,
         Lot::Daimon,
@@ -232,6 +296,30 @@ impl Lot {
 }
 
 /// One point a lot is counted between or from.
+///
+/// ```
+/// # use teistro_hellenistic::{ChartSky, LotSky};
+/// #
+/// # let sky = LotSky {
+/// #     chart: ChartSky {
+/// #         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+/// #         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+/// #         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+/// #     },
+/// #     ascendant_deg: 50.0,
+/// #     midheaven_deg: 320.0,
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{LotPoint, LotRequest, point_place};
+///
+/// // The Sun's exaltation is Lilly's 19° Aries.
+/// let exalted = point_place(&sky, LotPoint::Exaltation(Graha::Sun), LotRequest::VALENS)?;
+/// assert_eq!(exalted.longitude_deg, 19.0);
+/// // A node is not among the seven.
+/// let node = point_place(&sky, LotPoint::Planet(Graha::Rahu), LotRequest::VALENS).unwrap_err();
+/// assert_eq!(node.field(), Some("point"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -253,6 +341,29 @@ pub enum LotPoint {
 }
 
 /// Which way the distance between two points is taken.
+///
+/// ```
+/// # use teistro_hellenistic::{ChartSky, LotSky};
+/// #
+/// # let sky = LotSky {
+/// #     chart: ChartSky {
+/// #         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+/// #         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+/// #         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+/// #     },
+/// #     ascendant_deg: 50.0,
+/// #     midheaven_deg: 320.0,
+/// # };
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{Distance, LotArc, LotFormula, LotPoint, LotRequest, lot_place};
+///
+/// // From the Sun to Saturn is 290° forward and 70° the shorter way.
+/// let forward = LotArc::new(LotPoint::Planet(Graha::Sun), LotPoint::Planet(Graha::Saturn), LotPoint::Ascendant);
+/// assert_eq!(forward.distance, Distance::Forward);
+/// assert_eq!(lot_place(&sky, &LotFormula::same(forward), LotRequest::VALENS)?.longitude_deg, 340.0);
+/// assert_eq!(lot_place(&sky, &LotFormula::same(forward.shorter()), LotRequest::VALENS)?.longitude_deg, 120.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -268,6 +379,15 @@ pub enum Distance {
 
 /// One arc of a lot: the distance from one point to another, counted from
 /// a third.
+///
+/// ```
+/// use teistro_hellenistic::{Lot, LotPoint};
+///
+/// // Basis is the one lot taken the shorter way, between Fortune and Daimon.
+/// let basis = Lot::Basis.formula().day;
+/// assert_eq!((basis.from, basis.to), (LotPoint::Lot(Lot::Fortune), LotPoint::Lot(Lot::Daimon)));
+/// assert_eq!(basis, Lot::Basis.formula().night);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -286,6 +406,15 @@ pub struct LotArc {
 impl LotArc {
     /// The distance from `from` to `to` in the order of the signs, counted
     /// from `counted_from`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{Distance, Lot, LotArc, LotPoint};
+    ///
+    /// let debt = LotArc::new(LotPoint::Planet(Graha::Mercury), LotPoint::Planet(Graha::Saturn), LotPoint::Ascendant);
+    /// assert_eq!(debt.distance, Distance::Forward);
+    /// assert_eq!(debt, Lot::Debt.formula().day);
+    /// ```
     #[must_use]
     pub const fn new(from: LotPoint, to: LotPoint, counted_from: LotPoint) -> LotArc {
         LotArc {
@@ -297,6 +426,13 @@ impl LotArc {
     }
 
     /// The same arc, its distance taken the shorter way round.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{Distance, LotArc, LotPoint};
+    ///
+    /// let arc = LotArc::new(LotPoint::Ascendant, LotPoint::Midheaven, LotPoint::Ascendant).shorter();
+    /// assert_eq!(arc.distance, Distance::Shorter);
+    /// ```
     #[must_use]
     pub const fn shorter(mut self) -> LotArc {
         self.distance = Distance::Shorter;
@@ -331,6 +467,13 @@ pub struct LotFormula {
 
 impl LotFormula {
     /// The same arc by day and by night.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{Lot, LotFormula};
+    ///
+    /// // Debt is counted alike by day and night.
+    /// assert_eq!(Lot::Debt.formula(), LotFormula::same(Lot::Debt.formula().day));
+    /// ```
     #[must_use]
     pub const fn same(arc: LotArc) -> LotFormula {
         LotFormula {
@@ -341,6 +484,15 @@ impl LotFormula {
 
     /// From `from` to `to` by day and from `to` to `from` by night, each
     /// counted from `counted_from`: the shape most lots take.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{Lot, LotFormula, LotPoint};
+    ///
+    /// let marriage = LotFormula::reversed_by_night(LotPoint::Planet(Graha::Jupiter), LotPoint::Planet(Graha::Venus), LotPoint::Ascendant);
+    /// assert_eq!(marriage, Lot::Marriage.formula());
+    /// assert_eq!(marriage.night.from, LotPoint::Planet(Graha::Venus));
+    /// ```
     #[must_use]
     pub const fn reversed_by_night(
         from: LotPoint,
@@ -354,6 +506,16 @@ impl LotFormula {
     }
 
     /// The arc a chart reads: the night arc when `night`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{Lot, LotPoint};
+    ///
+    /// // The father by night is from Venus to the Moon.
+    /// let father = Lot::Father.formula();
+    /// assert_eq!(father.at(true).from, LotPoint::Planet(Graha::Venus));
+    /// assert_eq!(father.at(false).to, LotPoint::Planet(Graha::Saturn));
+    /// ```
     #[must_use]
     pub const fn at(&self, night: bool) -> LotArc {
         if night { self.night } else { self.day }
@@ -392,6 +554,13 @@ impl Default for LotRequest {
 
 impl LotRequest {
     /// Valens's: his horizon, and Fortune reversed by night.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{FortuneRule, LotRequest, SectRule};
+    ///
+    /// assert_eq!(LotRequest::default(), LotRequest::VALENS);
+    /// assert_eq!((LotRequest::VALENS.sect_rule(), LotRequest::VALENS.fortune()), (SectRule::Horizon, FortuneRule::ReversedByNight));
+    /// ```
     pub const VALENS: LotRequest = LotRequest {
         sect_rule: SectRule::Horizon,
         fortune: FortuneRule::ReversedByNight,
@@ -399,6 +568,14 @@ impl LotRequest {
 
     /// The request as the bindings write it, `{"sectRule": ..., "fortune":
     /// ...}`, every member optional and taking Valens's.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{LotRequest, SectRule};
+    ///
+    /// assert_eq!(LotRequest::from_json(r#"{"sectRule": "DAYLIGHT"}"#)?.sect_rule(), SectRule::Daylight);
+    /// assert_eq!(LotRequest::from_json("{}")?, LotRequest::VALENS);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -409,6 +586,26 @@ impl LotRequest {
     }
 
     /// The same request, the sect read otherwise.
+    ///
+    /// ```
+    /// # use teistro_hellenistic::{ChartSky, LotSky};
+    /// #
+    /// # let sky = LotSky {
+    /// #     chart: ChartSky {
+    /// #         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+    /// #         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+    /// #         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+    /// #     },
+    /// #     ascendant_deg: 50.0,
+    /// #     midheaven_deg: 320.0,
+    /// # };
+    /// use teistro_hellenistic::{Lot, LotRequest, Sect, SectRule, lots};
+    ///
+    /// // Read as a night chart, Fortune is reversed.
+    /// let read = lots(&sky, &[Lot::Fortune], LotRequest::VALENS.with_sect_rule(SectRule::Night))?;
+    /// assert_eq!((read.sect, read.fortune_reversed), (Sect::Night, true));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_sect_rule(mut self, sect_rule: SectRule) -> LotRequest {
         self.sect_rule = sect_rule;
@@ -416,6 +613,13 @@ impl LotRequest {
     }
 
     /// The same request, Fortune taken otherwise by night.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{FortuneRule, LotRequest};
+    ///
+    /// let asked = LotRequest::VALENS.with_fortune(FortuneRule::ReversedWhileMoonUp);
+    /// assert_eq!(asked.fortune(), FortuneRule::ReversedWhileMoonUp);
+    /// ```
     #[must_use]
     pub const fn with_fortune(mut self, fortune: FortuneRule) -> LotRequest {
         self.fortune = fortune;
@@ -423,12 +627,24 @@ impl LotRequest {
     }
 
     /// How the sect is read.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{LotRequest, SectRule};
+    ///
+    /// assert_eq!(LotRequest::VALENS.with_sect_rule(SectRule::Day).sect_rule(), SectRule::Day);
+    /// ```
     #[must_use]
     pub const fn sect_rule(&self) -> SectRule {
         self.sect_rule
     }
 
     /// How Fortune is taken by night.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{FortuneRule, LotRequest};
+    ///
+    /// assert_eq!(LotRequest::default().fortune(), FortuneRule::ReversedByNight);
+    /// ```
     #[must_use]
     pub const fn fortune(&self) -> FortuneRule {
         self.fortune
@@ -437,6 +653,25 @@ impl LotRequest {
 
 /// What a chart's lots are read from: its seven and the two altitudes
 /// ([`ChartSky`]), and its angles.
+///
+/// ```
+/// use teistro_hellenistic::{ChartSky, LotSky};
+///
+/// let sky = LotSky {
+///     chart: ChartSky {
+///         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+///         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+///         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+///     },
+///     ascendant_deg: 50.0,
+///     midheaven_deg: 320.0,
+/// };
+/// use teistro_hellenistic::{Lot, LotRequest, lots};
+///
+/// let broken = LotSky { ascendant_deg: f64::INFINITY, ..sky };
+/// assert_eq!(lots(&broken, &[Lot::Fortune], LotRequest::VALENS).unwrap_err().field(), Some("ascendant_deg"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct LotSky {
     /// The seven, the Sun's and the Moon's altitudes, and the daylight.
@@ -448,6 +683,28 @@ pub struct LotSky {
 }
 
 /// Where a lot fell.
+///
+/// ```
+/// # use teistro_hellenistic::{ChartSky, LotSky};
+/// #
+/// # let sky = LotSky {
+/// #     chart: ChartSky {
+/// #         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+/// #         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+/// #         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+/// #     },
+/// #     ascendant_deg: 50.0,
+/// #     midheaven_deg: 320.0,
+/// # };
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_hellenistic::{Lot, LotRequest, lots};
+///
+/// // Fortune at 20° Leo, the Sun's sign, the fourth sign from Taurus rising.
+/// let fortune = lots(&sky, &[Lot::Fortune], LotRequest::VALENS)?.lots[0].place;
+/// assert_eq!((fortune.longitude_deg, fortune.sign, fortune.lord), (140.0, Rashi::Leo, Graha::Sun));
+/// assert_eq!(fortune.house.get(), 4);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -464,6 +721,25 @@ pub struct LotPlace {
 }
 
 /// One of the lots asked for, where it fell.
+///
+/// ```
+/// # use teistro_hellenistic::{ChartSky, LotSky};
+/// #
+/// # let sky = LotSky {
+/// #     chart: ChartSky {
+/// #         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+/// #         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+/// #         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+/// #     },
+/// #     ascendant_deg: 50.0,
+/// #     midheaven_deg: 320.0,
+/// # };
+/// use teistro_hellenistic::{Lot, LotRequest, lots};
+///
+/// let read = lots(&sky, &[Lot::Daimon, Lot::Fortune], LotRequest::VALENS)?;
+/// assert_eq!((read.lots[0].lot, read.lots[0].place.longitude_deg), (Lot::Daimon, 320.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -475,6 +751,25 @@ pub struct PlacedLot {
 }
 
 /// The lots a chart was asked for, and how it was read.
+///
+/// ```
+/// # use teistro_hellenistic::{ChartSky, LotSky};
+/// #
+/// # let sky = LotSky {
+/// #     chart: ChartSky {
+/// #         saturn_deg: 300.0, jupiter_deg: 250.0, mars_deg: 200.0, sun_deg: 10.0,
+/// #         venus_deg: 40.0, mercury_deg: 20.0, moon_deg: 100.0,
+/// #         sun_altitude_deg: 30.0, moon_altitude_deg: 10.0, daylight: true,
+/// #     },
+/// #     ascendant_deg: 50.0,
+/// #     midheaven_deg: 320.0,
+/// # };
+/// use teistro_hellenistic::{Lot, LotRequest, Sect, lots};
+///
+/// let read = lots(&sky, &[Lot::Fortune], LotRequest::VALENS)?;
+/// assert_eq!((read.sect, read.request, read.fortune_reversed), (Sect::Day, LotRequest::VALENS, false));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]

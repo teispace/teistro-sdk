@@ -29,9 +29,110 @@ use crate::{EDGE_TOLERANCE_DAYS, Rules, Sky};
 /// What the conception reports ask of an ephemeris beyond the purifier's
 /// [`Sky`]: a graha's longitude and the midheaven, for Saturn, the lagna's
 /// lord and Sripati's 9th bhava.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// // By default a speed is read across two hours: the Sun's degree a day.
+/// assert!((Orrery.graha_speed_deg(Graha::Sun, birth)? - 0.9856).abs() < 1e-6);
+/// let both = Orrery.grahas_deg(&[Graha::Mars, Graha::Saturn], birth)?;
+/// assert_eq!(both, [Orrery.graha_deg(Graha::Mars, birth)?, Orrery.graha_deg(Graha::Saturn, birth)?]);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 pub trait ConceptionSky: Sky {
     /// A graha's longitude at an instant, in the chart's own zodiac,
     /// degrees.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{ConceptionSky, Day, Sky};
+    /// #
+    /// # const EPOCH: f64 = 2_460_000.25;
+    /// # struct Orrery;
+    /// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+    /// # impl Sky for Orrery {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+    /// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+    /// #     }
+    /// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+    /// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+    /// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+    /// #     }
+    /// # }
+    /// # impl ConceptionSky for Orrery {
+    /// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         let days = at.get() - EPOCH;
+    /// #         Ok(match graha {
+    /// #             Graha::Sun => sun(at.get()),
+    /// #             Graha::Moon => self.moon_deg(at)?,
+    /// #             Graha::Mercury => sun(at.get()) + 15.0,
+    /// #             Graha::Venus => sun(at.get()) - 30.0,
+    /// #             Graha::Mars => 200.0 + 0.5 * days,
+    /// #             Graha::Jupiter => 60.0 + 0.08 * days,
+    /// #             Graha::Saturn => 330.0 + 0.03 * days,
+    /// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+    /// #         }
+    /// #         .rem_euclid(360.0))
+    /// #     }
+    /// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+    /// #     }
+    /// # }
+    /// # // Three hours after a sunrise.
+    /// # let birth = JulianDay::literal(EPOCH + 0.125);
+    ///
+    /// // Mercury rides 15° ahead of the Sun in the orrery.
+    /// let gap = Orrery.graha_deg(Graha::Mercury, birth)? - Orrery.graha_deg(Graha::Sun, birth)?;
+    /// assert!((gap - 15.0).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -39,6 +140,55 @@ pub trait ConceptionSky: Sky {
     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, Error>;
 
     /// The midheaven at an instant, in the chart's own zodiac, degrees.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{ConceptionSky, Day, Sky};
+    /// #
+    /// # const EPOCH: f64 = 2_460_000.25;
+    /// # struct Orrery;
+    /// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+    /// # impl Sky for Orrery {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+    /// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+    /// #     }
+    /// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+    /// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+    /// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+    /// #     }
+    /// # }
+    /// # impl ConceptionSky for Orrery {
+    /// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         let days = at.get() - EPOCH;
+    /// #         Ok(match graha {
+    /// #             Graha::Sun => sun(at.get()),
+    /// #             Graha::Moon => self.moon_deg(at)?,
+    /// #             Graha::Mercury => sun(at.get()) + 15.0,
+    /// #             Graha::Venus => sun(at.get()) - 30.0,
+    /// #             Graha::Mars => 200.0 + 0.5 * days,
+    /// #             Graha::Jupiter => 60.0 + 0.08 * days,
+    /// #             Graha::Saturn => 330.0 + 0.03 * days,
+    /// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+    /// #         }
+    /// #         .rem_euclid(360.0))
+    /// #     }
+    /// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+    /// #     }
+    /// # }
+    /// # // Three hours after a sunrise.
+    /// # let birth = JulianDay::literal(EPOCH + 0.125);
+    ///
+    /// let quarter = (Orrery.ascendant_deg(birth)? - Orrery.midheaven_deg(birth)?).rem_euclid(360.0);
+    /// assert!((quarter - 90.0).abs() < 1e-9);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -49,6 +199,55 @@ pub trait ConceptionSky: Sky {
     /// default one [`ConceptionSky::graha_deg`] each; an implementation
     /// whose ephemeris answers several bodies in one request answers them
     /// so.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{ConceptionSky, Day, Sky};
+    /// #
+    /// # const EPOCH: f64 = 2_460_000.25;
+    /// # struct Orrery;
+    /// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+    /// # impl Sky for Orrery {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+    /// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+    /// #     }
+    /// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+    /// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+    /// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+    /// #     }
+    /// # }
+    /// # impl ConceptionSky for Orrery {
+    /// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         let days = at.get() - EPOCH;
+    /// #         Ok(match graha {
+    /// #             Graha::Sun => sun(at.get()),
+    /// #             Graha::Moon => self.moon_deg(at)?,
+    /// #             Graha::Mercury => sun(at.get()) + 15.0,
+    /// #             Graha::Venus => sun(at.get()) - 30.0,
+    /// #             Graha::Mars => 200.0 + 0.5 * days,
+    /// #             Graha::Jupiter => 60.0 + 0.08 * days,
+    /// #             Graha::Saturn => 330.0 + 0.03 * days,
+    /// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+    /// #         }
+    /// #         .rem_euclid(360.0))
+    /// #     }
+    /// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+    /// #     }
+    /// # }
+    /// # // Three hours after a sunrise.
+    /// # let birth = JulianDay::literal(EPOCH + 0.125);
+    ///
+    /// let both = Orrery.grahas_deg(&[Graha::Mars, Graha::Saturn], birth)?;
+    /// assert_eq!(both, [Orrery.graha_deg(Graha::Mars, birth)?, Orrery.graha_deg(Graha::Saturn, birth)?]);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -65,6 +264,55 @@ pub trait ConceptionSky: Sky {
     /// [`SPEED_STEP_DAYS`] either side, across 0° the short way; an
     /// implementation whose ephemeris gives speeds answers them instead.
     ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Vara};
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{ConceptionSky, Day, Sky};
+    /// #
+    /// # const EPOCH: f64 = 2_460_000.25;
+    /// # struct Orrery;
+    /// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+    /// # impl Sky for Orrery {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+    /// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+    /// #     }
+    /// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+    /// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+    /// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+    /// #     }
+    /// # }
+    /// # impl ConceptionSky for Orrery {
+    /// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         let days = at.get() - EPOCH;
+    /// #         Ok(match graha {
+    /// #             Graha::Sun => sun(at.get()),
+    /// #             Graha::Moon => self.moon_deg(at)?,
+    /// #             Graha::Mercury => sun(at.get()) + 15.0,
+    /// #             Graha::Venus => sun(at.get()) - 30.0,
+    /// #             Graha::Mars => 200.0 + 0.5 * days,
+    /// #             Graha::Jupiter => 60.0 + 0.08 * days,
+    /// #             Graha::Saturn => 330.0 + 0.03 * days,
+    /// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+    /// #         }
+    /// #         .rem_euclid(360.0))
+    /// #     }
+    /// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+    /// #     }
+    /// # }
+    /// # // Three hours after a sunrise.
+    /// # let birth = JulianDay::literal(EPOCH + 0.125);
+    ///
+    /// // The Moon's 13.2° a day, read across the default step.
+    /// assert!((Orrery.graha_speed_deg(Graha::Moon, birth)? - 13.2).abs() < 1e-6);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Whatever [`ConceptionSky::graha_deg`] refuses.
@@ -78,11 +326,72 @@ pub trait ConceptionSky: Sky {
 /// Half the span [`ConceptionSky::graha_speed_deg`] differences a
 /// longitude over by default, days: an hour, short enough that no graha's
 /// station falls inside it unnoticed by more than its own hour.
+///
+/// ```
+/// use teistro_rectification::SPEED_STEP_DAYS;
+///
+/// // An hour either side.
+/// assert_eq!(SPEED_STEP_DAYS * 24.0, 1.0);
+/// ```
 pub const SPEED_STEP_DAYS: f64 = 1.0 / 24.0;
 
 // ── PRANAPADA_HOUSE ────────────────────────────────────────────────────
 
 /// How a house is counted from the lagna to a point.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{HouseCount, PranapadaHouseRules, pranapada_house};
+///
+/// let by_sign = pranapada_house(&Orrery, birth, PranapadaHouseRules::default())?;
+/// let by_bhava = pranapada_house(&Orrery, birth, PranapadaHouseRules { count: HouseCount::SripatiBhava, ..PranapadaHouseRules::default() })?;
+/// // The same pranapada either way; only the counting differs.
+/// assert_eq!(by_sign.pranapada_deg, by_bhava.pranapada_deg);
+/// assert!((1..=12).contains(&by_bhava.house));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -96,6 +405,13 @@ pub enum HouseCount {
 }
 
 /// How [`pranapada_house`] judges (Jha's print ch. 3 vv. 71–74).
+///
+/// ```
+/// use teistro_rectification::{HouseCount, PranapadaHouseRules, PranapadaRule};
+///
+/// let rules = PranapadaHouseRules::default();
+/// assert_eq!((rules.pranapada, rules.count, rules.first_auspicious), (PranapadaRule::Verse, HouseCount::Sign, false));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -123,9 +439,69 @@ impl Default for PranapadaHouseRules {
 }
 
 /// The houses from the lagna Jha's gloss calls an auspicious birth.
+///
+/// ```
+/// use teistro_rectification::AUSPICIOUS_HOUSES;
+///
+/// // The gloss leaves out the lagna's own sign.
+/// assert!(!AUSPICIOUS_HOUSES.contains(&1));
+/// assert!(AUSPICIOUS_HOUSES.contains(&9));
+/// ```
 pub const AUSPICIOUS_HOUSES: [u8; 6] = [2, 4, 5, 9, 10, 11];
 
 /// The pranapada's house from the lagna, and the birth it judges.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{AUSPICIOUS_HOUSES, PranapadaHouseRules, pranapada_house};
+///
+/// let read = pranapada_house(&Orrery, birth, PranapadaHouseRules::default())?;
+/// assert_eq!(read.lagna_deg, Orrery.ascendant_deg(birth)?);
+/// assert_eq!(read.auspicious, AUSPICIOUS_HOUSES.contains(&read.house));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -142,6 +518,13 @@ pub struct PranapadaHouse {
 
 impl PranapadaHouse {
     /// The verses it reads.
+    ///
+    /// ```
+    /// use teistro_rectification::PranapadaHouse;
+    ///
+    /// let read = PranapadaHouse { pranapada_deg: 40.0, lagna_deg: 15.0, house: 2, auspicious: true };
+    /// assert_eq!(read.source(), "BPHS (Jha 1952) ch. 3 vv. 71–74");
+    /// ```
     #[must_use]
     pub const fn source(&self) -> &'static str {
         "BPHS (Jha 1952) ch. 3 vv. 71–74"
@@ -149,6 +532,60 @@ impl PranapadaHouse {
 }
 
 /// The pranapada's house at a candidate instant.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{PranapadaHouseRules, pranapada_house};
+///
+/// // Taking the first as auspicious can only add to the auspicious births.
+/// let trine = PranapadaHouseRules { first_auspicious: true, ..PranapadaHouseRules::default() };
+/// let plain = pranapada_house(&Orrery, birth, PranapadaHouseRules::default())?;
+/// assert!(pranapada_house(&Orrery, birth, trine)?.auspicious >= plain.auspicious);
+/// assert_eq!(plain.source(), "BPHS (Jha 1952) ch. 3 vv. 71–74");
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -200,6 +637,13 @@ fn sripati_house(point_deg: f64, lagna_deg: f64, midheaven_deg: f64) -> House {
 // ── NISHEKA ────────────────────────────────────────────────────────────
 
 /// How long the "month" v. 28 reads a sign as.
+///
+/// ```
+/// use teistro_rectification::NishekaMonth;
+///
+/// assert_eq!(NishekaMonth::default(), NishekaMonth::ThirtyDays);
+/// assert!(NishekaMonth::Synodic.days() < NishekaMonth::ThirtyDays.days());
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -216,6 +660,14 @@ pub enum NishekaMonth {
 
 impl NishekaMonth {
     /// Its length, in days.
+    ///
+    /// ```
+    /// use teistro_rectification::NishekaMonth;
+    ///
+    /// assert_eq!(NishekaMonth::ThirtyDays.days(), 30.0);
+    /// // A twelfth of the sidereal year, a little over thirty days.
+    /// assert!((NishekaMonth::Solar.days() - 30.438).abs() < 0.01);
+    /// ```
     #[must_use]
     pub const fn days(self) -> f64 {
         match self {
@@ -227,6 +679,14 @@ impl NishekaMonth {
 }
 
 /// Which point v. 27's "the lagna to the 9th bhava" measures to.
+///
+/// ```
+/// use teistro_rectification::{NinthBhava, ninth_bhava_deg};
+///
+/// // The lagna at 15° Aries: the 9th sign opens at 240°, eight signs on is 255°.
+/// assert_eq!(ninth_bhava_deg(15.0, 285.0, NinthBhava::WholeSign), 240.0);
+/// assert_eq!(ninth_bhava_deg(15.0, 285.0, NinthBhava::Equal), 255.0);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -242,6 +702,62 @@ pub enum NinthBhava {
 }
 
 /// Which point of Saturn v. 27's "where Saturn stands" measures from.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{NishekaRules, nisheka_count};
+///
+/// let count = nisheka_count(&Orrery, birth, NishekaRules::default())?;
+/// use teistro_rectification::SaturnTerm;
+///
+/// // By longitude, Saturn's own place is read.
+/// assert_eq!(count.points.saturn_deg, Orrery.graha_deg(Graha::Saturn, birth)?);
+/// let madhya = nisheka_count(&Orrery, birth, NishekaRules { saturn: SaturnTerm::BhavaMadhya, ..NishekaRules::default() })?;
+/// assert_eq!(madhya.points.mandi_deg, count.points.mandi_deg);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -255,6 +771,17 @@ pub enum SaturnTerm {
 }
 
 /// How v. 28's "the invisible half" is read.
+///
+/// ```
+/// use teistro_rectification::{InvisibleHalf, NishekaPoints, NishekaRules, nisheka_span};
+///
+/// // The lagna's lord 170° ahead of the lagna, in its seventh sign: in the
+/// // invisible half by longitude, not by sign.
+/// let points = NishekaPoints { mandi_deg: 100.0, saturn_deg: 90.0, lagna_deg: 25.0, ninth_deg: 265.0, lagna_lord_deg: 195.0, moon_deg: 40.0 };
+/// assert_eq!(nisheka_span(&points, NishekaRules::default()).moon_added_deg, Some(10.0));
+/// let by_sign = NishekaRules { invisible_half: InvisibleHalf::BySign, ..NishekaRules::default() };
+/// assert_eq!(nisheka_span(&points, by_sign).moon_added_deg, None);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -268,6 +795,14 @@ pub enum InvisibleHalf {
 }
 
 /// How [`nisheka_span`] counts back (BPHS ch. 3 vv. 25–29).
+///
+/// ```
+/// use teistro_rectification::{InvisibleHalf, NinthBhava, NishekaMandi, NishekaMonth, NishekaRules, SaturnTerm};
+///
+/// let rules = NishekaRules::default();
+/// assert_eq!((rules.month, rules.mandi_at, rules.ninth), (NishekaMonth::ThirtyDays, NishekaMandi::Start, NinthBhava::Sripati));
+/// assert_eq!((rules.saturn, rules.invisible_half), (SaturnTerm::Longitude, InvisibleHalf::ByLongitude));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -289,6 +824,61 @@ pub struct NishekaRules {
 /// Which end of Saturn's eighth Mandi is, for the conception: the start by
 /// default, as Jha (X5 decides the end for the purifier, after the
 /// Subodhini's gloss).
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{NishekaRules, nisheka_count};
+///
+/// let count = nisheka_count(&Orrery, birth, NishekaRules::default())?;
+/// use teistro_rectification::NishekaMandi;
+///
+/// // Mandi at the end of Saturn's eighth stands later in the lagna's turn.
+/// let end = nisheka_count(&Orrery, birth, NishekaRules { mandi_at: NishekaMandi::End, ..NishekaRules::default() })?;
+/// assert_ne!(end.points.mandi_deg, count.points.mandi_deg);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -310,6 +900,15 @@ impl NishekaMandi {
 }
 
 /// The arc v. 28 reads, written as v. 28 reads it.
+///
+/// ```
+/// use teistro_rectification::{NishekaPoints, NishekaRules, nisheka_span};
+///
+/// // 100° from Saturn to Mandi and 180° on to the 9th: nine signs and ten degrees.
+/// let points = NishekaPoints { mandi_deg: 190.0, saturn_deg: 90.0, lagna_deg: 0.0, ninth_deg: 180.0, lagna_lord_deg: 200.0, moon_deg: 40.0 };
+/// let written = nisheka_span(&points, NishekaRules::default()).written;
+/// assert_eq!((written.months, written.days, written.ghatis, written.palas), (9, 10, 0, 0));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -325,6 +924,18 @@ pub struct MonthsBefore {
 }
 
 /// v. 27's two arcs, their sum, and the span before birth they give.
+///
+/// ```
+/// use teistro_rectification::{NishekaMonth, NishekaPoints, NishekaRules, nisheka_span};
+///
+/// let points = NishekaPoints { mandi_deg: 190.0, saturn_deg: 90.0, lagna_deg: 0.0, ninth_deg: 180.0, lagna_lord_deg: 200.0, moon_deg: 40.0 };
+/// let span = nisheka_span(&points, NishekaRules::default());
+/// assert_eq!((span.saturn_to_mandi_deg, span.lagna_to_ninth_deg, span.arc_deg), (100.0, 180.0, 280.0));
+/// // Thirty-day months: the arc is the days.
+/// assert_eq!(span.days_before, 280.0);
+/// let synodic = nisheka_span(&points, NishekaRules { month: NishekaMonth::Synodic, ..NishekaRules::default() });
+/// assert!(synodic.days_before < 280.0);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -345,6 +956,58 @@ pub struct NishekaSpan {
 }
 
 /// The points v. 27 reads, at the birth.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{NishekaRules, nisheka_count};
+///
+/// let count = nisheka_count(&Orrery, birth, NishekaRules::default())?;
+/// let points = count.points;
+/// assert_eq!((points.lagna_deg, points.moon_deg), (Orrery.ascendant_deg(birth)?, Orrery.moon_deg(birth)?));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -432,6 +1095,14 @@ fn written(arc_deg: f64) -> MonthsBefore {
 }
 
 /// The 9th bhava's point from the lagna and the midheaven.
+///
+/// ```
+/// use teistro_rectification::{NinthBhava, ninth_bhava_deg};
+///
+/// // Sripati's 9th mid-point lies between the 9th sign's start and the 10th's mid-point.
+/// let sripati = ninth_bhava_deg(15.0, 285.0, NinthBhava::Sripati);
+/// assert!((240.0..285.0).contains(&sripati));
+/// ```
 #[must_use]
 pub fn ninth_bhava_deg(lagna_deg: f64, midheaven_deg: f64, rule: NinthBhava) -> f64 {
     match rule {
@@ -443,6 +1114,59 @@ pub fn ninth_bhava_deg(lagna_deg: f64, midheaven_deg: f64, rule: NinthBhava) -> 
 
 /// The conception a candidate birth counts back to: the points read at the
 /// birth, the span they give, and the instant.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{NishekaRules, nisheka_count};
+///
+/// let count = nisheka_count(&Orrery, birth, NishekaRules::default())?;
+/// // The conception, the span before the birth.
+/// assert!((count.instant.get() - (birth.get() - count.span.days_before)).abs() < 1e-9);
+/// assert!(count.days_per_birth_minute > 0.0);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -459,6 +1183,58 @@ pub struct NishekaCount {
 }
 
 /// The conception, and its lagna judged.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{ConceptionRules, conception};
+///
+/// let read = conception(&Orrery, birth, &ConceptionRules::default(), |_| Ok(Orrery))?;
+/// assert_eq!(read.nisheka.lagna_deg, Orrery.ascendant_deg(read.nisheka.count.instant)?);
+/// assert!(!read.nisheka.verdict.clauses.is_empty());
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -475,6 +1251,15 @@ pub struct Nisheka {
 
 impl Nisheka {
     /// The verses it reads.
+    ///
+    /// ```
+    /// use teistro_rectification::Nisheka;
+    ///
+    /// fn cite(nisheka: &Nisheka) -> &'static str {
+    ///     nisheka.source()
+    /// }
+    /// # let _ = cite;
+    /// ```
     #[must_use]
     pub const fn source(&self) -> &'static str {
         "BPHS ch. 3 vv. 25–29 (Jha 1952 ch. 4 vv. 25–30)"
@@ -515,6 +1300,58 @@ fn read_points(
 
 /// The conception BPHS counts back to from a candidate birth (vv. 27–28).
 ///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{NishekaRules, nisheka_count};
+///
+/// let count = nisheka_count(&Orrery, birth, NishekaRules::default())?;
+/// // The conception precedes the birth by months.
+/// assert!(count.instant.get() < birth.get() - 100.0);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// Whatever the [`Sky`] refuses at the birth or a minute after it.
@@ -538,6 +1375,62 @@ pub fn nisheka_count(
 /// The conception's lagna judged under the purifier (v. 29), over the sky
 /// of the conception chart: its own zodiac, not the birth's.
 ///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{NishekaRules, nisheka_count};
+///
+/// let count = nisheka_count(&Orrery, birth, NishekaRules::default())?;
+/// use teistro_rectification::{Rules, nisheka_judged};
+///
+/// let judged = nisheka_judged(count, &Orrery, &Rules::default())?;
+/// assert_eq!(judged.source(), "BPHS ch. 3 vv. 25–29 (Jha 1952 ch. 4 vv. 25–30)");
+/// let nothing = Rules { pranapada: false, gulika: false, moon: false, ..Rules::default() };
+/// assert!(nisheka_judged(count, &Orrery, &nothing).is_err());
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// What [`Rules::check`] refuses, and whatever the [`Sky`] refuses at the
@@ -559,6 +1452,17 @@ pub fn nisheka_judged(
 
 /// How BJ IV.21's count runs from the Moon's dvadashamsha at conception to
 /// the sign the Moon holds at birth (X11).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_rectification::{ConceptionCount, moon_count};
+///
+/// // The Moon in the first dvadashamsha of Aries: Taurus after it, Aries itself,
+/// // or Aries from Aries.
+/// assert_eq!(moon_count(1.0, ConceptionCount::NextAfterDvadashamsha).sign, Rashi::Taurus);
+/// assert_eq!(moon_count(1.0, ConceptionCount::FromMoonSign).sign, Rashi::Aries);
+/// assert_eq!(moon_count(1.0, ConceptionCount::FromAries).sign, Rashi::Aries);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -577,6 +1481,62 @@ pub enum ConceptionCount {
 
 /// What of the conception's rising point BJ IV.21 classes as a day or a
 /// night sign.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{ConceptionRules, conception};
+///
+/// let read = conception(&Orrery, birth, &ConceptionRules::default(), |_| Ok(Orrery))?;
+/// use teistro_rectification::{ConceptionMoonRules, ConceptionRising};
+///
+/// let by_navamsha = ConceptionRules { moon: ConceptionMoonRules { rising: ConceptionRising::Navamsha, ..ConceptionMoonRules::default() }, ..ConceptionRules::default() };
+/// let navamsha = conception(&Orrery, birth, &by_navamsha, |_| Ok(Orrery))?;
+/// assert!((0.0..=1.0).contains(&navamsha.moon.risen_fraction));
+/// # let _ = read;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -590,6 +1550,14 @@ pub enum ConceptionRising {
 }
 
 /// What Pisces is, which the prints class two ways.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_rectification::{DayOrNight, PiscesIs, day_or_night};
+///
+/// assert_eq!(day_or_night(Rashi::Pisces, PiscesIs::Either), DayOrNight::Either);
+/// assert_eq!(day_or_night(Rashi::Pisces, PiscesIs::Day), DayOrNight::Day);
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -602,6 +1570,13 @@ pub enum PiscesIs {
 }
 
 /// A day or a night birth, or either.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_rectification::{DayOrNight, PiscesIs, day_or_night};
+///
+/// assert_eq!(day_or_night(Rashi::Leo, PiscesIs::default()), DayOrNight::Day);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -615,6 +1590,13 @@ pub enum DayOrNight {
 }
 
 /// How [`conception_moon`] reads BJ IV.21.
+///
+/// ```
+/// use teistro_rectification::{ConceptionCount, ConceptionMoonRules, ConceptionRising, PiscesIs};
+///
+/// let rules = ConceptionMoonRules::default();
+/// assert_eq!((rules.count, rules.rising, rules.pisces), (ConceptionCount::NextAfterDvadashamsha, ConceptionRising::Sign, PiscesIs::Either));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -629,6 +1611,17 @@ pub struct ConceptionMoonRules {
 
 /// The day and night signs of BJ I.10: Aries, Taurus, Gemini, Cancer,
 /// Sagittarius and Capricorn are night signs.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_rectification::{DayOrNight, PiscesIs, day_or_night};
+///
+/// // BJ I.10's night signs.
+/// for sign in [Rashi::Aries, Rashi::Taurus, Rashi::Gemini, Rashi::Cancer, Rashi::Sagittarius, Rashi::Capricorn] {
+///     assert_eq!(day_or_night(sign, PiscesIs::Either), DayOrNight::Night);
+/// }
+/// assert_eq!(day_or_night(Rashi::Aquarius, PiscesIs::Either), DayOrNight::Day);
+/// ```
 #[must_use]
 pub const fn day_or_night(sign: Rashi, pisces: PiscesIs) -> DayOrNight {
     match sign {
@@ -648,6 +1641,15 @@ pub const fn day_or_night(sign: Rashi, pisces: PiscesIs) -> DayOrNight {
 }
 
 /// What BJ IV.21 predicts from the Moon at conception.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_rectification::{ConceptionCount, moon_count};
+///
+/// // The last dvadashamsha of Pisces.
+/// let count = moon_count(359.0, ConceptionCount::FromMoonSign);
+/// assert_eq!((count.dvadashamsha, count.sign, count.nakshatra), (12, Rashi::Aquarius, None));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -713,6 +1715,62 @@ fn nakshatra_at(longitude_deg: f64) -> Option<Nakshatra> {
 }
 
 /// BJ IV.21 read at a conception and set against the candidate birth.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{ConceptionRules, conception};
+///
+/// let read = conception(&Orrery, birth, &ConceptionRules::default(), |_| Ok(Orrery))?;
+/// let moon = read.moon;
+/// assert_eq!(moon.sign_agrees, moon.moon_sign == moon.predicted.sign);
+/// assert!((0.0..=1.0).contains(&moon.elapsed_fraction));
+/// // Three hours into a day of twelve: a quarter of the daylight gone.
+/// assert!(moon.born_by_day && (moon.elapsed_fraction - 0.25).abs() < 1e-9);
+/// assert_eq!(moon.source(), "Brihat Jataka IV.21, with Bhattotpala");
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -744,6 +1802,15 @@ pub struct ConceptionMoon {
 
 impl ConceptionMoon {
     /// The verse it reads.
+    ///
+    /// ```
+    /// use teistro_rectification::ConceptionMoon;
+    ///
+    /// fn cite(moon: &ConceptionMoon) -> &'static str {
+    ///     moon.source()
+    /// }
+    /// # let _ = cite;
+    /// ```
     #[must_use]
     pub const fn source(&self) -> &'static str {
         "Brihat Jataka IV.21, with Bhattotpala"
@@ -754,6 +1821,61 @@ impl ConceptionMoon {
 /// conception's Moon and rising point over `conceived`, the conception
 /// chart's sky, and the candidate's Moon and day over `sky`. The verse's
 /// fraction is reported and not weighed: no print gives a tolerance.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{ConceptionRules, conception};
+///
+/// let read = conception(&Orrery, birth, &ConceptionRules::default(), |_| Ok(Orrery))?;
+/// use teistro_rectification::{ConceptionMoonRules, conception_moon};
+///
+/// // The same reading, with the conception's instant given directly.
+/// let moon = conception_moon(&Orrery, &Orrery, birth, read.nisheka.count.instant, ConceptionMoonRules::default())?;
+/// assert_eq!(moon, read.moon);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -850,6 +1972,13 @@ fn risen_fraction(sky: &dyn Sky, at: JulianDay<Utc>, width: f64) -> Result<f64, 
 
 /// What [`conception`] reads under: the purifier's rules, which judge the
 /// conception's lagna, and each report's own.
+///
+/// ```
+/// use teistro_rectification::{ConceptionRules, NishekaRules, Rules};
+///
+/// let rules = ConceptionRules::default();
+/// assert_eq!((rules.purifier, rules.nisheka), (Rules::default(), NishekaRules::default()));
+/// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -866,6 +1995,58 @@ pub struct ConceptionRules {
 }
 
 /// The three reports a candidate birth time gives beside the purifier.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{ConceptionRules, conception};
+///
+/// let read = conception(&Orrery, birth, &ConceptionRules::default(), |_| Ok(Orrery))?;
+/// assert_eq!(read.birth, birth);
+/// assert_eq!(read.pranapada_house.lagna_deg, Orrery.ascendant_deg(birth)?);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -884,6 +2065,62 @@ pub struct Conception {
 /// of the conception chart once its instant is known, so the conception
 /// is read in its own zodiac; a sky valid at every instant answers with
 /// itself.
+///
+/// ```
+/// # use teistro_core::catalogue::{Graha, Vara};
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{ConceptionSky, Day, Sky};
+/// #
+/// # const EPOCH: f64 = 2_460_000.25;
+/// # struct Orrery;
+/// # fn sun(t: f64) -> f64 { (10.0 + 0.9856 * (t - EPOCH)).rem_euclid(360.0) }
+/// # impl Sky for Orrery {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((sun(at.get()) + (at.get() - EPOCH).rem_euclid(1.0) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(sun(at.get())) }
+/// #     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((100.0 + 13.2 * (at.get() - EPOCH)).rem_euclid(360.0))
+/// #     }
+/// #     fn day(&self, at: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         let sunrise = EPOCH + (at.get() - EPOCH).floor();
+/// #         let vara = Vara::ALL[((sunrise + 0.5).floor() as usize + 1) % 7];
+/// #         Ok(Day::literal(sunrise, sunrise + 0.5, sunrise + 1.0, vara))
+/// #     }
+/// # }
+/// # impl ConceptionSky for Orrery {
+/// #     fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         let days = at.get() - EPOCH;
+/// #         Ok(match graha {
+/// #             Graha::Sun => sun(at.get()),
+/// #             Graha::Moon => self.moon_deg(at)?,
+/// #             Graha::Mercury => sun(at.get()) + 15.0,
+/// #             Graha::Venus => sun(at.get()) - 30.0,
+/// #             Graha::Mars => 200.0 + 0.5 * days,
+/// #             Graha::Jupiter => 60.0 + 0.08 * days,
+/// #             Graha::Saturn => 330.0 + 0.03 * days,
+/// #             _ => return Err(teistro_core::Error::invalid_arg("not one of the seven")),
+/// #         }
+/// #         .rem_euclid(360.0))
+/// #     }
+/// #     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+/// #     }
+/// # }
+/// # // Three hours after a sunrise.
+/// # let birth = JulianDay::literal(EPOCH + 0.125);
+///
+/// use teistro_rectification::{ConceptionRules, conception};
+///
+/// let read = conception(&Orrery, birth, &ConceptionRules::default(), |_| Ok(Orrery))?;
+/// use teistro_rectification::Rules;
+///
+/// // Rules under which nothing purifies are refused first.
+/// let nothing = ConceptionRules { purifier: Rules { pranapada: false, gulika: false, moon: false, ..Rules::default() }, ..ConceptionRules::default() };
+/// assert!(conception(&Orrery, birth, &nothing, |_| Ok(Orrery)).is_err());
+/// # let _ = read;
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///

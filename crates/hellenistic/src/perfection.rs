@@ -93,6 +93,20 @@ fn not_one_of_the_seven(planet: Graha, field: &str) -> Error {
 }
 
 /// Two planets at an exact Ptolemaic aspect.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_hellenistic::{AspectTimeline, PtolemaicAspect};
+///
+/// // Lilly p. 107's pair, Mercury 5° behind Mars and closing 0.8° a day; the
+/// // rest stand still where they meet neither.
+/// let places = [200.0, 300.0, 10.0, 15.0, 30.0, 5.0, 130.0];
+/// let speeds = [0.0, 0.0, 0.7, 0.0, 0.0, 1.5, 0.0];
+/// let timeline = AspectTimeline::projected(places, speeds, 7.0)?;
+/// let contact = timeline.contacts().iter().find(|one| one.involves(Graha::Mercury) && one.involves(Graha::Mars)).ok_or("they meet")?;
+/// assert_eq!((contact.planets, contact.aspect), ([Graha::Mars, Graha::Mercury], PtolemaicAspect::Conjunction));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -107,6 +121,19 @@ pub struct Contact {
 
 impl Contact {
     /// The contact of two of the seven, put in the Chaldean order.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{Contact, PtolemaicAspect};
+    ///
+    /// // Put in the Chaldean order, the more weighty first.
+    /// let contact = Contact::new(Graha::Moon, Graha::Saturn, PtolemaicAspect::Trine, 1.5)?;
+    /// assert_eq!(contact.planets, [Graha::Saturn, Graha::Moon]);
+    /// let node = Contact::new(Graha::Rahu, Graha::Sun, PtolemaicAspect::Conjunction, 1.0).unwrap_err();
+    /// assert_eq!(node.field(), Some("contacts"));
+    /// assert!(Contact::new(Graha::Sun, Graha::Sun, PtolemaicAspect::Conjunction, 1.0).is_err());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -145,12 +172,31 @@ impl Contact {
     }
 
     /// Whether the planet is one of the two.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{Contact, PtolemaicAspect};
+    ///
+    /// let contact = Contact::new(Graha::Venus, Graha::Mars, PtolemaicAspect::Square, 3.0)?;
+    /// assert!(contact.involves(Graha::Venus) && !contact.involves(Graha::Sun));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn involves(&self, planet: Graha) -> bool {
         self.planets.contains(&planet)
     }
 
     /// The other of the two, when the planet is one of them.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{Contact, PtolemaicAspect};
+    ///
+    /// let contact = Contact::new(Graha::Venus, Graha::Mars, PtolemaicAspect::Square, 3.0)?;
+    /// assert_eq!(contact.other(Graha::Venus), Some(Graha::Mars));
+    /// assert_eq!(contact.other(Graha::Sun), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn other(&self, planet: Graha) -> Option<Graha> {
         match self.planets {
@@ -162,6 +208,26 @@ impl Contact {
 }
 
 /// A planet standing still before it turns.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, Station, perfection};
+///
+/// let places = [250.0, 104.0, 300.0, 110.0, 140.0, 100.0, 200.0];
+/// let speeds = [0.03, 0.1, 0.7, 1.0, 1.2, 0.2, 13.0];
+/// let rules = PerfectionRules { horizon_days: Some(60.0), ..PerfectionRules::LILLY };
+/// let ahead = AspectTimeline::projected(places, speeds, 60.0)?;
+/// let station = Station::new(Graha::Mercury, 5.0, true)?;
+/// let timeline = AspectTimeline::new(places, speeds, 60.0, ahead.contacts().to_vec(), vec![station])?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mercury, Graha::Jupiter, &standing, &rules)?;
+/// // Mercury turns before he reaches Jupiter: a refranation.
+/// let station = timeline.stations()[0];
+/// assert_eq!((station.planet, station.days, station.retrograde), (Graha::Mercury, 5.0, true));
+/// # let _ = matter;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -176,6 +242,15 @@ pub struct Station {
 
 impl Station {
     /// The station `days` after the figure.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::Station;
+    ///
+    /// assert!(Station::new(Graha::Saturn, 12.0, false).is_ok());
+    /// assert_eq!(Station::new(Graha::Saturn, -1.0, false).unwrap_err().field(), Some("stations"));
+    /// assert_eq!(Station::new(Graha::Ketu, 1.0, true).unwrap_err().field(), Some("stations"));
+    /// ```
     ///
     /// # Errors
     ///
@@ -200,6 +275,26 @@ impl Station {
 
 /// What lies ahead of a figure: its seven planets' places and motions, and
 /// every contact and station between them up to a horizon, in time order.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, Station, perfection};
+///
+/// let places = [250.0, 104.0, 300.0, 110.0, 140.0, 100.0, 200.0];
+/// let speeds = [0.03, 0.1, 0.7, 1.0, 1.2, 0.2, 13.0];
+/// let rules = PerfectionRules { horizon_days: Some(60.0), ..PerfectionRules::LILLY };
+/// let ahead = AspectTimeline::projected(places, speeds, 60.0)?;
+/// let station = Station::new(Graha::Mercury, 5.0, true)?;
+/// let timeline = AspectTimeline::new(places, speeds, 60.0, ahead.contacts().to_vec(), vec![station])?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mercury, Graha::Jupiter, &standing, &rules)?;
+/// // Built from a search, the contacts kept in time order.
+/// assert!(timeline.contacts().windows(2).all(|pair| pair[0].days <= pair[1].days));
+/// assert_eq!(timeline.horizon_days(), 60.0);
+/// # let _ = matter;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -216,6 +311,21 @@ impl AspectTimeline {
     /// in the Chaldean order at the figure, the horizon searched to, and
     /// what was found. Contacts and stations past the horizon are dropped,
     /// and the rest are put in time order.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{AspectTimeline, Contact, PtolemaicAspect};
+    ///
+    /// // A contact past the horizon is dropped.
+    /// let places = [250.0, 104.0, 300.0, 110.0, 140.0, 100.0, 200.0];
+    /// let speeds = [0.03, 0.1, 0.7, 1.0, 1.2, 0.2, 13.0];
+    /// let late = Contact::new(Graha::Mercury, Graha::Jupiter, PtolemaicAspect::Conjunction, 40.0)?;
+    /// let timeline = AspectTimeline::new(places, speeds, 30.0, vec![late], Vec::new())?;
+    /// assert!(timeline.contacts().is_empty());
+    /// let never = AspectTimeline::new(places, speeds, f64::INFINITY, Vec::new(), Vec::new()).unwrap_err();
+    /// assert_eq!(never.field(), Some("horizonDays"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -324,18 +434,71 @@ impl AspectTimeline {
     }
 
     /// The contacts, in time order.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::house::House;
+    /// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+    ///
+    /// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+    /// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+    /// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+    /// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+    /// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+    /// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+    /// // Mars and the Sun, exactly 60° apart now, make the first contact.
+    /// let first = timeline.contacts()[0];
+    /// assert_eq!(first.planets, [Graha::Mars, Graha::Sun]);
+    /// assert!(timeline.contacts().windows(2).all(|w| w[0].days <= w[1].days));
+    /// # let _ = matter;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn contacts(&self) -> &[Contact] {
         &self.contacts
     }
 
     /// The stations, in time order.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::house::House;
+    /// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+    ///
+    /// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+    /// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+    /// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+    /// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+    /// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+    /// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+    /// // The motions of the moment never station.
+    /// assert!(timeline.stations().is_empty());
+    /// # let _ = matter;
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn stations(&self) -> &[Station] {
         &self.stations
     }
 
     /// How many days ahead the timeline runs.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::house::House;
+    /// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+    ///
+    /// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+    /// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+    /// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+    /// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+    /// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+    /// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+    /// // Until Venus, the swifter significator, leaves Cancer.
+    /// assert!((timeline.horizon_days() - 5.0 / 1.2).abs() < 1e-12);
+    /// assert_eq!(matter.horizon_days, timeline.horizon_days());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn horizon_days(&self) -> f64 {
         self.horizon_days
@@ -390,6 +553,15 @@ fn closing_arc(arc_deg: f64, side: f64, rate: f64) -> f64 {
 
 /// Days until a planet leaves its sign at its motion of the moment, by
 /// the end it is moving toward; infinite for a planet standing still.
+///
+/// ```
+/// use teistro_hellenistic::days_in_sign;
+///
+/// // 25° Cancer at 1.2° a day forward, or at 0.5° back to 0°.
+/// assert!((days_in_sign(115.0, 1.2) - 5.0 / 1.2).abs() < 1e-12);
+/// assert_eq!(days_in_sign(115.0, -0.5), 50.0);
+/// assert_eq!(days_in_sign(115.0, 0.0), f64::INFINITY);
+/// ```
 #[must_use]
 pub fn days_in_sign(longitude_deg: f64, speed: f64) -> f64 {
     let degree = longitude_deg.rem_euclid(SIGN_DEG);
@@ -403,6 +575,13 @@ pub fn days_in_sign(longitude_deg: f64, speed: f64) -> f64 {
 }
 
 /// How the significators' perfection is read.
+///
+/// ```
+/// use teistro_hellenistic::{LILLY_ORBS_DEG, PerfectionRules};
+///
+/// let lilly = PerfectionRules::default();
+/// assert_eq!((lilly.orbs_deg, lilly.horizon_days, lilly.within_sign), (LILLY_ORBS_DEG, None, true));
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
@@ -426,6 +605,12 @@ pub struct PerfectionRules {
 impl PerfectionRules {
     /// Lilly's orbs, the swifter significator's sign as the horizon, and
     /// a third planet's contacts bounded by the applier's sign.
+    ///
+    /// ```
+    /// use teistro_hellenistic::PerfectionRules;
+    ///
+    /// assert_eq!(PerfectionRules::default(), PerfectionRules::LILLY);
+    /// ```
     pub const LILLY: PerfectionRules = PerfectionRules {
         orbs_deg: LILLY_ORBS_DEG,
         horizon_days: None,
@@ -472,6 +657,23 @@ impl PerfectionRules {
     /// The days to search ahead of a figure for two significators: the
     /// rules' horizon, or the days until the swifter of the two leaves its
     /// sign at its motion of the moment.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::PerfectionRules;
+    ///
+    /// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+    /// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+    /// // Venus is the swifter of the two: until she leaves Cancer.
+    /// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+    /// assert!((horizon - 5.0 / 1.2).abs() < 1e-12);
+    /// // A horizon of the rules' own wins.
+    /// let month = PerfectionRules { horizon_days: Some(30.0), ..PerfectionRules::LILLY };
+    /// assert_eq!(month.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?, 30.0);
+    /// let node = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Rahu, Graha::Venus).unwrap_err();
+    /// assert_eq!(node.field(), Some("querent"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -559,6 +761,36 @@ pub struct PerfectionRequest {
 impl PerfectionRequest {
     /// A question of the matter of one house: the Ascendant's lord for
     /// the querent, the house's for the quesited.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::HouseSystem;
+    /// # use teistro_hellenistic::{AccidentalSky, ChartSky, FortitudeRequest};
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+    ///
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::house::House;
+    /// use teistro_hellenistic::PerfectionRequest;
+    ///
+    /// // Aries rising and Libra on the seventh: Mars and Venus.
+    /// let marriage = PerfectionRequest::of_house(House::try_new(7)?);
+    /// assert_eq!(marriage.significators(&fortitudes)?, (Graha::Mars, Graha::Venus));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn of_house(house: House) -> PerfectionRequest {
         PerfectionRequest {
@@ -570,6 +802,14 @@ impl PerfectionRequest {
     }
 
     /// A question between two named significators.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::PerfectionRequest;
+    ///
+    /// let asked = PerfectionRequest::between(Graha::Saturn, Graha::Moon);
+    /// assert_eq!((asked.querent, asked.quesited, asked.house), (Some(Graha::Saturn), Some(Graha::Moon), None));
+    /// ```
     #[must_use]
     pub const fn between(querent: Graha, quesited: Graha) -> PerfectionRequest {
         PerfectionRequest {
@@ -582,6 +822,36 @@ impl PerfectionRequest {
 
     /// The same question, the querent signified by another planet than
     /// the Ascendant's lord.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::HouseSystem;
+    /// # use teistro_hellenistic::{AccidentalSky, ChartSky, FortitudeRequest};
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+    ///
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::house::House;
+    /// use teistro_hellenistic::PerfectionRequest;
+    ///
+    /// // The querent signified by the Moon, as Lilly lets her be.
+    /// let asked = PerfectionRequest::of_house(House::try_new(7)?).with_querent(Graha::Moon);
+    /// assert_eq!(asked.significators(&fortitudes)?, (Graha::Moon, Graha::Venus));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub const fn with_querent(mut self, querent: Graha) -> PerfectionRequest {
         self.querent = Some(querent);
@@ -589,6 +859,14 @@ impl PerfectionRequest {
     }
 
     /// The same question, read under other rules.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_hellenistic::{PerfectionRequest, PerfectionRules};
+    ///
+    /// let every = PerfectionRules { within_sign: false, ..PerfectionRules::LILLY };
+    /// assert!(!PerfectionRequest::between(Graha::Mars, Graha::Venus).with_rules(every).rules.within_sign);
+    /// ```
     #[must_use]
     pub const fn with_rules(mut self, rules: PerfectionRules) -> PerfectionRequest {
         self.rules = rules;
@@ -598,6 +876,16 @@ impl PerfectionRequest {
     /// Reads the request from JSON, `{"querent", "quesited", "house",
     /// "rules"}`, a significator by its key bare or in full; a refusal is
     /// named from the root, as `perfection.rules.horizonDays`.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    /// use teistro_hellenistic::PerfectionRequest;
+    ///
+    /// assert_eq!(PerfectionRequest::from_json(r#"{"house": 10}"#)?, PerfectionRequest::of_house(House::try_new(10)?));
+    /// let both = PerfectionRequest::from_json(r#"{"quesited": "MARS", "house": 7}"#).unwrap_err();
+    /// assert_eq!(both.field(), Some("perfection.house"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -637,6 +925,38 @@ impl PerfectionRequest {
     /// The two significators on a figure: the named ones, or the lords of
     /// the Ascendant and of the house of the matter's cusp.
     ///
+    /// ```
+    /// # use teistro_core::catalogue::HouseSystem;
+    /// # use teistro_hellenistic::{AccidentalSky, ChartSky, FortitudeRequest};
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+    ///
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_core::house::House;
+    /// use teistro_hellenistic::PerfectionRequest;
+    ///
+    /// // The tenth cusp, Capricorn: Saturn signifies the matter.
+    /// let career = PerfectionRequest::of_house(House::try_new(10)?);
+    /// assert_eq!(career.significators(&fortitudes)?, (Graha::Mars, Graha::Saturn));
+    /// // A request built without either is refused when read.
+    /// assert_eq!(PerfectionRequest::default().significators(&fortitudes).unwrap_err().field(), Some("quesited"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`PerfectionRequest::from_json`] for a request built otherwise.
@@ -665,6 +985,27 @@ impl PerfectionRequest {
 }
 
 /// Lilly's three kinds of application (p. 107).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [205.0, 340.0, 65.0, 110.0, 130.0, 120.0, 300.0];
+/// let speeds = [0.03, 0.08, 0.7, 1.0, 1.2, 1.3, 13.0];
+/// let rules = PerfectionRules { horizon_days: Some(40.0), ..PerfectionRules::LILLY };
+/// let timeline = AspectTimeline::projected(places, speeds, 40.0)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &rules)?;
+/// use teistro_hellenistic::ApplicationKind;
+///
+/// // Both direct: the one kind Lilly calls good.
+/// let both = AspectTimeline::projected(places, speeds, 60.0)?;
+/// let late = perfection(&both, Graha::Mars, Graha::Venus, &standing, &PerfectionRules { horizon_days: Some(60.0), ..rules })?;
+/// assert_eq!(late.application.map(|found| found.kind), Some(ApplicationKind::BothDirect));
+/// # let _ = (matter, timeline);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -679,6 +1020,30 @@ pub enum ApplicationKind {
 }
 
 /// The next aspect the two significators perfect.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [205.0, 340.0, 65.0, 110.0, 130.0, 120.0, 300.0];
+/// let speeds = [0.03, 0.08, 0.7, 1.0, 1.2, 1.3, 13.0];
+/// let rules = PerfectionRules { horizon_days: Some(40.0), ..PerfectionRules::LILLY };
+/// let timeline = AspectTimeline::projected(places, speeds, 40.0)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &rules)?;
+/// use teistro_hellenistic::PtolemaicAspect;
+///
+/// // Within forty days they meet nothing; within sixty Venus comes to Mars's square.
+/// assert!(matter.application.is_none());
+/// let wider = PerfectionRules { horizon_days: Some(60.0), ..rules };
+/// let late = perfection(&AspectTimeline::projected(places, speeds, 60.0)?, Graha::Mars, Graha::Venus, &standing, &wider)?;
+/// let found = late.application.ok_or("they meet")?;
+/// assert_eq!((found.aspect, found.applying), (PtolemaicAspect::Square, Graha::Venus));
+/// assert!((found.gap_deg - 25.0).abs() < 1e-9 && !found.within_moieties);
+/// # let _ = timeline;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -701,6 +1066,26 @@ pub struct Application {
 
 /// An aspect two planets have just perfected and are leaving, still inside
 /// their moieties: "totally separated" only past them (p. 110).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+/// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+/// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+/// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+/// use teistro_hellenistic::PtolemaicAspect;
+///
+/// // The Moon 6° past Mars's body, inside their moieties of 10°.
+/// let separating = matter.translations[0].separating;
+/// assert_eq!(separating.aspect, PtolemaicAspect::Conjunction);
+/// assert!((separating.past_deg - 6.0).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -712,6 +1097,25 @@ pub struct Separation {
 }
 
 /// What stops or hinders the significators' application.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, Station, perfection};
+///
+/// let places = [250.0, 104.0, 300.0, 110.0, 140.0, 100.0, 200.0];
+/// let speeds = [0.03, 0.1, 0.7, 1.0, 1.2, 0.2, 13.0];
+/// let rules = PerfectionRules { horizon_days: Some(60.0), ..PerfectionRules::LILLY };
+/// let ahead = AspectTimeline::projected(places, speeds, 60.0)?;
+/// let station = Station::new(Graha::Mercury, 5.0, true)?;
+/// let timeline = AspectTimeline::new(places, speeds, 60.0, ahead.contacts().to_vec(), vec![station])?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mercury, Graha::Jupiter, &standing, &rules)?;
+/// use teistro_hellenistic::ImpedimentKind;
+///
+/// assert_eq!(matter.impediments[0].kind, ImpedimentKind::Refranation);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -728,6 +1132,27 @@ pub enum ImpedimentKind {
 }
 
 /// One impediment, with what it rests on.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, Station, perfection};
+///
+/// let places = [250.0, 104.0, 300.0, 110.0, 140.0, 100.0, 200.0];
+/// let speeds = [0.03, 0.1, 0.7, 1.0, 1.2, 0.2, 13.0];
+/// let rules = PerfectionRules { horizon_days: Some(60.0), ..PerfectionRules::LILLY };
+/// let ahead = AspectTimeline::projected(places, speeds, 60.0)?;
+/// let station = Station::new(Graha::Mercury, 5.0, true)?;
+/// let timeline = AspectTimeline::new(places, speeds, 60.0, ahead.contacts().to_vec(), vec![station])?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mercury, Graha::Jupiter, &standing, &rules)?;
+/// use teistro_hellenistic::PtolemaicAspect;
+///
+/// // Mercury stations on the fifth day, short of the conjunction.
+/// let stop = matter.impediments[0];
+/// assert_eq!((stop.significator, stop.third, stop.aspect, stop.days), (Graha::Mercury, None, PtolemaicAspect::Conjunction, 5.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -746,6 +1171,28 @@ pub struct Impediment {
 
 /// A lighter planet carrying the light of one significator to the other
 /// (p. 111): it separates from the first and comes next to the second.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+/// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+/// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+/// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+/// use teistro_hellenistic::PtolemaicAspect;
+///
+/// // The Moon carries Mars's light to Venus by a sextile.
+/// let carried = matter.translations[0];
+/// assert_eq!((carried.translator, carried.from, carried.to), (Graha::Moon, Graha::Mars, Graha::Venus));
+/// assert_eq!(carried.aspect, PtolemaicAspect::Sextile);
+/// // At 16° Taurus she stands in none of Mars's dignities.
+/// assert!(carried.received.peregrine());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -769,6 +1216,26 @@ pub struct Translation {
 
 /// A planet more weighty than both significators, to which both apply
 /// while they do not behold each other (p. 126).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [205.0, 340.0, 65.0, 110.0, 130.0, 120.0, 300.0];
+/// let speeds = [0.03, 0.08, 0.7, 1.0, 1.2, 1.3, 13.0];
+/// let rules = PerfectionRules { horizon_days: Some(40.0), ..PerfectionRules::LILLY };
+/// let timeline = AspectTimeline::projected(places, speeds, 40.0)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &rules)?;
+/// // Saturn, heavier than both, collects their light.
+/// let saturn = matter.collections.iter().find(|one| one.collector == Graha::Saturn).ok_or("Saturn collects")?;
+/// assert!(saturn.from_querent.involves(Graha::Mars) && saturn.from_quesited.involves(Graha::Venus));
+/// // In Libra he stands in Venus's house.
+/// assert!(saturn.collector_in_quesited.house);
+/// # let _ = timeline;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -793,6 +1260,23 @@ pub struct Collection {
 
 /// What the ways of perfection weigh of a figure beside its timeline: the
 /// house each of the seven is counted in, and whose dignities stand where.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+/// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+/// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+/// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+/// // Every significator counted in the first house here.
+/// assert_eq!(matter.ways.querent.house.get(), 1);
+/// assert_eq!(standing.sect, Sect::Day);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Standing<'a> {
     /// Each planet's house in the Chaldean order, as the accidental
@@ -807,6 +1291,35 @@ pub struct Standing<'a> {
 impl<'a> Standing<'a> {
     /// The standing a figure's fortitudes give: their houses, sect and
     /// dignity rules.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::HouseSystem;
+    /// # use teistro_hellenistic::{AccidentalSky, ChartSky, FortitudeRequest};
+    /// #
+    /// # let chart = ChartSky {
+    /// #     saturn_deg: 285.0, jupiter_deg: 245.0, mars_deg: 190.0, sun_deg: 15.0,
+    /// #     venus_deg: 25.0, mercury_deg: 40.0, moon_deg: 100.0,
+    /// #     sun_altitude_deg: 30.0, moon_altitude_deg: -20.0, daylight: true,
+    /// # };
+    /// # let sky = AccidentalSky {
+    /// #     speeds_deg_per_day: [0.03, 0.08, 0.5, 0.99, 1.2, 1.6, 13.0],
+    /// #     houses: HouseSystem::Equal,
+    /// #     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+    /// #     ascendant_deg: 0.0,
+    /// #     midheaven_deg: 270.0,
+    /// #     north_node_deg: 250.0,
+    /// #     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
+    /// # };
+    /// # let fortitudes = FortitudeRequest::default().read(&chart, &sky)?;
+    ///
+    /// use teistro_hellenistic::{Sect, Standing};
+    ///
+    /// let standing = Standing::of(&fortitudes);
+    /// assert_eq!(standing.sect, Sect::Day);
+    /// // Mars at 10° Libra, in the seventh of equal houses from 0° Aries.
+    /// assert_eq!(standing.houses[2].get(), 7);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn of(fortitudes: &'a Fortitudes) -> Standing<'a> {
         Standing {
@@ -818,6 +1331,24 @@ impl<'a> Standing<'a> {
 }
 
 /// One of Lilly's seven ways a matter is perfected (pp. 125–127).
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+/// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+/// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+/// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+/// use teistro_hellenistic::Way;
+///
+/// // A translation by a planet received in nothing is no way of perfection.
+/// assert!(!matter.ways.held.contains(&Way::Translation));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -847,6 +1378,12 @@ pub enum Way {
 
 impl Way {
     /// The seven, in Lilly's order.
+    ///
+    /// ```
+    /// use teistro_hellenistic::Way;
+    ///
+    /// assert_eq!((Way::ALL[0], Way::ALL[6]), (Way::Conjunction, Way::Dwelling));
+    /// ```
     pub const ALL: [Way; 7] = [
         Way::Conjunction,
         Way::SextileOrTrine,
@@ -859,6 +1396,24 @@ impl Way {
 }
 
 /// A significator's place in the figure, as the ways weigh it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+/// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+/// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+/// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+/// // Mars at 10° Taurus, Venus's sign: in his detriment, in the first.
+/// let querent = matter.ways.querent;
+/// assert_eq!((querent.planet, querent.house.get()), (Graha::Mars, 1));
+/// assert!(querent.dignity.detriment && !querent.dignity.house);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -878,6 +1433,23 @@ pub struct SignificatorPlace {
 /// "Out of good houses" and "well dignified" are judgements, so they are
 /// left to the reader on [`SignificatorPlace`]; a way is held on the
 /// conditions Lilly states as facts.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+/// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+/// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+/// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+/// let ways = &matter.ways;
+/// assert!(!ways.mutual_by_house && !ways.moon_relays);
+/// assert!(ways.quesited_in_ascendant && ways.infortunes_between.is_empty());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -902,6 +1474,23 @@ pub struct Ways {
 
 /// The relations between two significators, each with the facts it rests
 /// on; never a verdict.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+/// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+/// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+/// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+/// assert_eq!((matter.querent, matter.quesited), (Graha::Mars, Graha::Venus));
+/// assert!(matter.application.is_none() && matter.impediments.is_empty());
+/// assert_eq!(matter.translations.len(), 1);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -979,6 +1568,24 @@ fn separation_of(
 ///
 /// `standing` gives the houses the ways weigh and whose dignities a planet
 /// stands in, for the receptions a translation and a collection report.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
+///
+/// let places = [200.0, 280.0, 40.0, 100.0, 115.0, 85.0, 46.0];
+/// let speeds = [0.03, 0.08, 0.6, 1.0, 1.2, 1.4, 13.0];
+/// let horizon = PerfectionRules::LILLY.horizon_for(&places, &speeds, Graha::Mars, Graha::Venus)?;
+/// let timeline = AspectTimeline::projected(places, speeds, horizon)?;
+/// let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+/// let matter = perfection(&timeline, Graha::Mars, Graha::Venus, &standing, &PerfectionRules::LILLY)?;
+/// // One planet cannot signify both.
+/// let same = perfection(&timeline, Graha::Mars, Graha::Mars, &standing, &PerfectionRules::LILLY).unwrap_err();
+/// assert_eq!(same.field(), Some("quesited"));
+/// # let _ = matter;
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///

@@ -89,11 +89,68 @@ pub use svarodaya::{Nadi, Svarodaya, SvarodayaRun, svarodaya, svarodaya_runs};
 
 /// The longest window a rectification takes, in hours: the bound the
 /// clock-driven lagnas already set, a day and a half.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_rectification::{LONGEST_HOURS, Window};
+///
+/// let from = JulianDay::literal(2_460_000.0);
+/// assert!(Window::between(from, JulianDay::literal(2_460_000.0 + LONGEST_HOURS / 24.0)).is_ok());
+/// let long = Window::between(from, JulianDay::literal(2_460_000.0 + LONGEST_HOURS / 24.0 + 0.01)).unwrap_err();
+/// assert_eq!(long.field(), Some("rectification.window"));
+/// ```
 pub const LONGEST_HOURS: f64 = teistro_points::lagna::LONGEST_HOURS;
 
 /// What the kernel asks of an ephemeris.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_rectification::{Day, Sky};
+///
+/// struct Line;
+/// impl Sky for Line {
+///     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+///         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+///     }
+///     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+///     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+///     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+///         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+///     }
+/// }
+///
+/// // Unless a sky says otherwise, the ishtakaal is the clock's hours since sunrise.
+/// let at = JulianDay::literal(2_460_000.35);
+/// let day = Line.day(at)?;
+/// assert!((Line.ishtakaal_hours(at, &day)? - 2.4).abs() < 1e-6);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 pub trait Sky {
     /// The lagna at an instant, in the chart's own zodiac, degrees.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Vara;
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{Day, Sky};
+    /// #
+    /// # struct Line;
+    /// # impl Sky for Line {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+    /// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+    /// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+    /// #     }
+    /// # }
+    /// # let at = JulianDay::literal(2_460_000.35);
+    ///
+    /// // A tenth of a day after sunrise the line's lagna has turned 36°.
+    /// assert!((Line.ascendant_deg(at)? - 36.0).abs() < 1e-6);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -102,12 +159,56 @@ pub trait Sky {
 
     /// The Sun's longitude at an instant, in the chart's own zodiac, degrees.
     ///
+    /// ```
+    /// # use teistro_core::catalogue::Vara;
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{Day, Sky};
+    /// #
+    /// # struct Line;
+    /// # impl Sky for Line {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+    /// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+    /// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+    /// #     }
+    /// # }
+    /// # let at = JulianDay::literal(2_460_000.35);
+    ///
+    /// assert_eq!(Line.sun_deg(at)?, 10.0);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Whatever the implementation cannot answer, unchanged.
     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error>;
 
     /// The Moon's longitude at an instant, in the chart's own zodiac, degrees.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Vara;
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{Day, Sky};
+    /// #
+    /// # struct Line;
+    /// # impl Sky for Line {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+    /// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+    /// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+    /// #     }
+    /// # }
+    /// # let at = JulianDay::literal(2_460_000.35);
+    ///
+    /// assert_eq!(Line.moon_deg(at)?, 100.0);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -116,6 +217,28 @@ pub trait Sky {
 
     /// The day an instant belongs to, by the chart's own rule: an instant
     /// before sunrise is in the night of the day before (X9).
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Vara;
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{Day, Sky};
+    /// #
+    /// # struct Line;
+    /// # impl Sky for Line {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+    /// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+    /// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+    /// #     }
+    /// # }
+    /// # let at = JulianDay::literal(2_460_000.35);
+    ///
+    /// assert_eq!(Line.day(at)?.vara, Vara::Budhavara);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -129,6 +252,30 @@ pub trait Sky {
     /// gives the daylight thirty ghatis whatever its length answers that.
     /// By default the clock's hours since the day's sunrise.
     ///
+    /// ```
+    /// # use teistro_core::catalogue::Vara;
+    /// # use teistro_core::quantity::{JulianDay, Utc};
+    /// # use teistro_rectification::{Day, Sky};
+    /// #
+    /// # struct Line;
+    /// # impl Sky for Line {
+    /// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+    /// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+    /// #     }
+    /// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+    /// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+    /// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+    /// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+    /// #     }
+    /// # }
+    /// # let at = JulianDay::literal(2_460_000.35);
+    ///
+    /// // Two hours and twenty-four minutes after sunrise.
+    /// let day = Line.day(at)?;
+    /// assert!((Line.ishtakaal_hours(at, &day)? - 2.4).abs() < 1e-6);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// Whatever the implementation cannot answer, unchanged.
@@ -139,6 +286,15 @@ pub trait Sky {
 
 /// The day an instant belongs to: its sunrise, sunset and the next
 /// sunrise, and its weekday.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_rectification::Day;
+///
+/// let wednesday = Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara);
+/// assert_eq!(wednesday.vara, Vara::Budhavara);
+/// assert!(wednesday.sunrise.get() < wednesday.sunset.get());
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -155,6 +311,14 @@ pub struct Day {
 
 impl Day {
     /// A day from bare Julian days, for tests and examples.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_rectification::Day;
+    ///
+    /// let day = Day::literal(0.0, 0.5, 1.0, Vara::Ravivara);
+    /// assert_eq!((day.sunset.get(), day.next_sunrise.get()), (0.5, 1.0));
+    /// ```
     #[must_use]
     pub const fn literal(sunrise: f64, sunset: f64, next_sunrise: f64, vara: Vara) -> Day {
         Day {
@@ -166,12 +330,35 @@ impl Day {
     }
 
     /// Whether an instant falls in this day, sunrise inclusive.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_rectification::Day;
+    ///
+    /// // Sunrise inclusive, the next sunrise not.
+    /// let day = Day::literal(0.0, 0.5, 1.0, Vara::Ravivara);
+    /// assert!(day.holds(JulianDay::literal(0.0)) && day.holds(JulianDay::literal(0.99)));
+    /// assert!(!day.holds(JulianDay::literal(1.0)));
+    /// ```
     #[must_use]
     pub fn holds(&self, at: JulianDay<Utc>) -> bool {
         self.sunrise.get() <= at.get() && at.get() < self.next_sunrise.get()
     }
 
     /// The arc holding an instant, and whether it is the daylight.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_rectification::Day;
+    ///
+    /// let day = Day::literal(0.0, 0.5, 1.0, Vara::Ravivara);
+    /// let (night, daylight) = day.arc(JulianDay::literal(0.7))?;
+    /// assert!(!daylight);
+    /// assert_eq!((night.from.get(), night.to.get()), (0.5, 1.0));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -187,6 +374,15 @@ impl Day {
 }
 
 /// The window a birth record gives.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_rectification::Window;
+///
+/// let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+/// assert!(window.from.get() < window.to.get());
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -199,6 +395,17 @@ pub struct Window {
 
 impl Window {
     /// A window between two instants.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_rectification::Window;
+    ///
+    /// let backwards = Window::between(JulianDay::literal(2.0), JulianDay::literal(1.0)).unwrap_err();
+    /// assert_eq!(backwards.field(), Some("rectification.window.to"));
+    /// let hour = Window::between(JulianDay::literal(2_460_000.0), JulianDay::literal(2_460_000.0 + 1.0 / 24.0))?;
+    /// assert_eq!(hour.from.get(), 2_460_000.0);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -232,6 +439,15 @@ impl Window {
     }
 
     /// The window's length in days.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_rectification::Window;
+    ///
+    /// let six_hours = Window::between(JulianDay::literal(2_460_000.0), JulianDay::literal(2_460_000.25))?;
+    /// assert_eq!(six_hours.days(), 0.25);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
     #[must_use]
     pub fn days(&self) -> f64 {
         self.to.get() - self.from.get()
@@ -240,6 +456,14 @@ impl Window {
 
 /// What a rectification is asked to apply: the purifier's knobs, one per
 /// crux, and the step that seeds the edge search.
+///
+/// ```
+/// use teistro_rectification::{DEFAULT_SEED_MINUTES, Native, PurifyAs, Rules};
+///
+/// let rules = Rules::default();
+/// assert_eq!((rules.native, rules.purify_as, rules.seed_minutes), (Native::Human, PurifyAs::Bar, DEFAULT_SEED_MINUTES));
+/// assert!(rules.pranapada && rules.gulika && rules.moon);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RectificationRules"))]
@@ -287,12 +511,55 @@ impl Default for Rules {
 }
 
 /// The default seed step: a minute, a sixth of the verse's pranapada sign.
+///
+/// ```
+/// use teistro_rectification::DEFAULT_SEED_MINUTES;
+///
+/// // A sixth of the six minutes the verse's pranapada spends in a sign.
+/// assert_eq!(DEFAULT_SEED_MINUTES, 1.0);
+/// ```
 pub const DEFAULT_SEED_MINUTES: f64 = 1.0;
 
 /// The finest seed step a rectification takes, in minutes: a second.
+///
+/// ```
+/// use teistro_rectification::{FINEST_SEED_MINUTES, Rules};
+///
+/// assert!(Rules { seed_minutes: FINEST_SEED_MINUTES, ..Rules::default() }.check().is_ok());
+/// assert!(Rules { seed_minutes: FINEST_SEED_MINUTES / 2.0, ..Rules::default() }.check().is_err());
+/// ```
 pub const FINEST_SEED_MINUTES: f64 = 1.0 / 60.0;
 
 /// One run of the window between two edges, with what was judged in it.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Line;
+/// # impl Sky for Line {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+/// #     }
+/// # }
+/// # use teistro_rectification::{Rules, Window, narrow};
+/// #
+/// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+/// # let found = narrow(window, &Line, &Rules::default())?;
+///
+/// // The runs tile the window, kept and removed together.
+/// let mut runs: Vec<_> = found.intervals.iter().chain(&found.removed).collect();
+/// runs.sort_by(|a, b| a.from.get().total_cmp(&b.from.get()));
+/// assert_eq!(runs[0].from, window.from);
+/// assert!(runs.windows(2).all(|pair| pair[0].to == pair[1].from));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -306,6 +573,33 @@ pub struct Run {
 }
 
 /// The grid that seeded the edges, so a run reproduces.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Line;
+/// # impl Sky for Line {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+/// #     }
+/// # }
+/// # use teistro_rectification::{Rules, Window, narrow};
+/// #
+/// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+/// # let found = narrow(window, &Line, &Rules::default())?;
+///
+/// // A minute's step over a window of 2.4 hours.
+/// assert_eq!(found.grid.step_days, 1.0 / 1440.0);
+/// assert!(found.grid.cells >= 143);
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -317,6 +611,33 @@ pub struct Grid {
 }
 
 /// What a rectification answers.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Line;
+/// # impl Sky for Line {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+/// #     }
+/// # }
+/// # use teistro_rectification::{Rules, Window, narrow};
+/// #
+/// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+/// # let found = narrow(window, &Line, &Rules::default())?;
+///
+/// // One run more than there are edges.
+/// assert_eq!(found.intervals.len() + found.removed.len(), found.edges.len() + 1);
+/// assert!(found.removed.iter().all(|run| !run.verdict.pure));
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "RectificationAnswer"))]
@@ -337,9 +658,46 @@ pub struct Answer {
 }
 
 /// How close an edge is found: a hundredth of a second.
+///
+/// ```
+/// use teistro_rectification::EDGE_TOLERANCE_DAYS;
+///
+/// // Under a hundredth of a second.
+/// assert!(EDGE_TOLERANCE_DAYS * 86_400.0 < 0.01 + 1e-12);
+/// ```
 pub const EDGE_TOLERANCE_DAYS: f64 = 1e-7;
 
 /// Narrows a window by the purifier.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::quantity::{JulianDay, Utc};
+/// # use teistro_rectification::{Day, Sky};
+/// #
+/// # struct Line;
+/// # impl Sky for Line {
+/// #     fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, teistro_core::Error> {
+/// #         Ok(((at.get() - 2_460_000.25) * 360.0).rem_euclid(360.0))
+/// #     }
+/// #     fn sun_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(10.0) }
+/// #     fn moon_deg(&self, _: JulianDay<Utc>) -> Result<f64, teistro_core::Error> { Ok(100.0) }
+/// #     fn day(&self, _: JulianDay<Utc>) -> Result<Day, teistro_core::Error> {
+/// #         Ok(Day::literal(2_460_000.25, 2_460_000.75, 2_460_001.25, Vara::Budhavara))
+/// #     }
+/// # }
+/// # use teistro_rectification::{Rules, Window, narrow};
+/// #
+/// # let window = Window::between(JulianDay::literal(2_460_000.30), JulianDay::literal(2_460_000.40))?;
+/// # let found = narrow(window, &Line, &Rules::default())?;
+///
+/// use teistro_rectification::PurifyAs;
+///
+/// // Weighed rather than barred, nothing is removed.
+/// let weighed = narrow(window, &Line, &Rules { purify_as: PurifyAs::Weight, ..Rules::default() })?;
+/// assert!(weighed.removed.is_empty());
+/// assert_eq!(weighed.intervals.len(), found.intervals.len() + found.removed.len());
+/// # Ok::<(), teistro_core::Error>(())
+/// ```
 ///
 /// # Errors
 ///
@@ -381,6 +739,15 @@ fn known_edges(window: Window, judge: &purifier::Judge<'_>) -> Result<Vec<f64>, 
 
 impl Rules {
     /// Refuses rules no rectification can run under.
+    ///
+    /// ```
+    /// use teistro_rectification::Rules;
+    ///
+    /// let none = Rules { pranapada: false, gulika: false, moon: false, ..Rules::default() };
+    /// assert_eq!(none.check().unwrap_err().field(), Some("rectification.purifiers"));
+    /// let coarse = Rules { seed_minutes: 90.0, ..Rules::default() };
+    /// assert_eq!(coarse.check().unwrap_err().field(), Some("rectification.seedMinutes"));
+    /// ```
     ///
     /// # Errors
     ///

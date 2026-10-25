@@ -26,6 +26,13 @@
 /// The module name the accidental fortitudes' house division is overridden
 /// under, `houses.module_overrides.hellenistic`; unset, Lilly's
 /// Regiomontanus.
+///
+/// ```
+/// use teistro_hellenistic::MODULE;
+///
+/// // `houses.module_overrides.hellenistic` names this reading's division.
+/// assert_eq!(MODULE, "hellenistic");
+/// ```
 pub const MODULE: &str = "hellenistic";
 
 mod accidental;
