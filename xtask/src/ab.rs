@@ -100,8 +100,12 @@ const REQUESTS: [(&str, &str); 14] = [
 /// The requests the SDK is measurably slower at, each with the most it may
 /// take of the baseline's time and why (§8): a request past its bound
 /// fails, and so does one listed here that is no longer slower, so the
-/// list cannot outlive what it explains.
-const SLOWER: [(&str, f64, &str); 0] = [];
+/// list cannot outlive what it explains. None is, since the yogas' rule
+/// set stopped re-validating on every call (26 October 2026).
+const SLOWER: Slower = &[];
+
+/// A list of the requests the SDK is slower at: request, bound, why.
+type Slower = &'static [(&'static str, f64, &'static str)];
 
 /// The requests driven under load and for their tail: the runner's
 /// `LOAD_REQUESTS`.
@@ -401,10 +405,15 @@ fn too_few(name: &str, what: &str, taken: usize, least: usize, of: &str) -> Opti
 /// Why each record is no claim, or where the SDK is measurably slower.
 /// `excused` are the corpus's births a side may refuse, and why.
 fn faults(records: &[(String, Record)], excused: &[Excused]) -> Vec<String> {
+    faults_under(records, excused, SLOWER)
+}
+
+/// [`faults`] under a list of slower requests.
+fn faults_under(records: &[(String, Record)], excused: &[Excused], slower: Slower) -> Vec<String> {
     let mut found = Vec::new();
     for (name, record) in records {
         found.extend(crate::measured::dirty(name, &record.commit));
-        request_faults(name, record, excused, &mut found);
+        request_faults(name, record, excused, slower, &mut found);
         load_faults(name, record, &mut found);
         tail_faults(name, record, &mut found);
         start_and_memory_faults(name, record, &mut found);
@@ -414,7 +423,13 @@ fn faults(records: &[(String, Record)], excused: &[Excused]) -> Vec<String> {
 }
 
 /// The interleaved requests' faults (§2, §3).
-fn request_faults(name: &str, record: &Record, excused: &[Excused], found: &mut Vec<String>) {
+fn request_faults(
+    name: &str,
+    record: &Record,
+    excused: &[Excused],
+    slower: Slower,
+    found: &mut Vec<String>,
+) {
     let forgiven = |r: &Refused| {
         excused
             .iter()
@@ -455,7 +470,7 @@ fn request_faults(name: &str, record: &Record, excused: &[Excused], found: &mut 
                     Comparison::Measured(r) if r > 1.0 => Some(r),
                     _ => None,
                 };
-                let bound = SLOWER
+                let bound = slower
                     .iter()
                     .find(|(r, _, _)| *r == request)
                     .map(|(_, bound, _)| *bound);
@@ -812,6 +827,11 @@ fn start_and_memory_tables(out: &mut String, record: &Record) {
 }
 
 fn page(records: &[(String, Record)], excused: &[Excused]) -> String {
+    page_under(records, excused, SLOWER)
+}
+
+/// [`page`] under a list of slower requests.
+fn page_under(records: &[(String, Record)], excused: &[Excused], slower: Slower) -> String {
     let mut out = String::from("# The SDK against the baseline engine\n\n");
     let _ = writeln!(
         out,
@@ -859,15 +879,17 @@ fn page(records: &[(String, Record)], excused: &[Excused]) -> String {
          share to the floor the record measured, and each request's named cause to what the \
          record shows.\n"
     );
-    let found = faults(records, excused);
-    let _ = writeln!(
-        out,
-        "**Measurably slower through the SDK**, each held to a bound of the baseline's time:\n"
-    );
-    for (request, bound, why) in SLOWER {
-        let _ = writeln!(out, "- `{request}`, at most {bound:.2}×: {why}.");
+    let found = faults_under(records, excused, slower);
+    if !slower.is_empty() {
+        let _ = writeln!(
+            out,
+            "**Measurably slower through the SDK**, each held to a bound of the baseline's time:\n"
+        );
+        for (request, bound, why) in slower {
+            let _ = writeln!(out, "- `{request}`, at most {bound:.2}×: {why}.");
+        }
+        out.push('\n');
     }
-    out.push('\n');
     if found.is_empty() {
         let _ = writeln!(
             out,
@@ -1101,6 +1123,18 @@ pub(crate) fn measure(root: &Path) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// One slower request, so the bound is exercised whatever `SLOWER`
+    /// holds.
+    const SLOW: Slower = &[("yogas", 2.5, "a test's")];
+
+    fn faults(records: &[(String, Record)], excused: &[Excused]) -> Vec<String> {
+        faults_under(records, excused, SLOW)
+    }
+
+    fn page(records: &[(String, Record)], excused: &[Excused]) -> String {
+        page_under(records, excused, SLOW)
+    }
 
     fn timed(side: &str, request: &str, median: f64, min: f64, max: f64) -> Timed {
         Timed {

@@ -168,17 +168,17 @@ const CAUSES: [(&str, Cause, &str); 14] = [
 ];
 
 /// The least share of compared facts each request agrees on, under
-/// `timed` and under `same`: the record's of 25 October 2026, to the
+/// `timed` and under `same`: the record's of 26 October 2026, to the
 /// tenth of a percent below.
 const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
     ("chart", 0.545, 0.999),
-    ("day", 0.869, 0.965),
+    ("day", 0.991, 0.965),
     ("full", 0.643, 0.999),
     ("vargas", 0.97, 1.0),
     ("yogas", 0.968, 0.97),
-    ("strength", 0.696, 0.986),
+    ("strength", 0.691, 0.986),
     ("dashas", 0.619, 1.0),
-    ("month", 0.863, 1.0),
+    ("month", 0.991, 1.0),
     ("milan", 0.734, 0.763),
     ("varsha", 0.26, 0.243),
     ("kp", 0.746, 0.979),
@@ -190,7 +190,7 @@ const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
 /// The least share each side keeps on a rung for a request, under a
 /// convention, from the same record: rung, request, side, convention,
 /// floor.
-const REFERENCE_FLOORS: [(&str, &str, &str, &str, f64); 37] = [
+const REFERENCE_FLOORS: [(&str, &str, &str, &str, f64); 38] = [
     ("swiss-ephemeris", "chart", "sdk", "timed", 0.996),
     ("swiss-ephemeris", "full", "sdk", "timed", 0.998),
     ("swiss-ephemeris", "batch", "sdk", "timed", 0.998),
@@ -212,6 +212,7 @@ const REFERENCE_FLOORS: [(&str, &str, &str, &str, f64); 37] = [
     ("pyjhora", "chart", "sdk", "same", 0.465),
     ("pyjhora", "full", "sdk", "same", 0.463),
     ("pyjhora", "dashas", "sdk", "same", 0.465),
+    ("pyjhora", "dashas", "sdk", "source", 1.0),
     ("pyjhora", "chart", "baseline", "timed", 0.465),
     ("pyjhora", "full", "baseline", "timed", 0.463),
     ("pyjhora", "dashas", "baseline", "timed", 0.465),
@@ -919,7 +920,7 @@ mod tests {
         );
         assert!(
             out.contains(
-                "| strength | 69.6% of 1000 | 98.6% of 1000 | Raman's Example 56 (2) | the SDK: SDK \
+                "| strength | 69.1% of 1000 | 98.6% of 1000 | Raman's Example 56 (2) | the SDK: SDK \
                  100.0% `source`, baseline 0.0% |"
             ),
             "{out}"

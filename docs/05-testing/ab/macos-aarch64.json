@@ -1,7 +1,7 @@
 {
   "os": "macos",
   "arch": "aarch64",
-  "commit": "749d9f824",
+  "commit": "7c50dc188",
   "node": "v26.12.0",
   "corpus": 55,
   "differ": [],
@@ -98,9 +98,9 @@
       "request": "chart",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 1454.836363636423,
-      "min_us": 1384.4605999998748,
-      "max_us": 1647.3136363635685
+      "median_us": 2142.6500000001397,
+      "min_us": 1989.9045454544566,
+      "max_us": 14204.711363636043
     },
     {
       "side": "baseline",
@@ -108,9 +108,9 @@
       "request": "chart",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 7617.087109090856,
-      "min_us": 7527.657581818163,
-      "max_us": 8423.99090909087
+      "median_us": 11807.75985454569,
+      "min_us": 10631.293927272782,
+      "max_us": 97985.13181818205
     },
     {
       "side": "sdk",
@@ -118,9 +118,9 @@
       "request": "day",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 1125.4308113206687,
-      "min_us": 1111.0880566038245,
-      "max_us": 1165.4976415093702
+      "median_us": 1515.3836415095457,
+      "min_us": 1436.6776792448945,
+      "max_us": 2851.94888679236
     },
     {
       "side": "baseline",
@@ -128,9 +128,9 @@
       "request": "day",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 11946.697339622571,
-      "min_us": 11829.15015094326,
-      "max_us": 12459.558962264158
+      "median_us": 18258.886018867895,
+      "min_us": 16979.16037735874,
+      "max_us": 31078.681603773664
     },
     {
       "side": "sdk",
@@ -138,9 +138,9 @@
       "request": "full",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 34072.56052830149,
-      "min_us": 33817.336471698065,
-      "max_us": 34840.23192452837
+      "median_us": 31852.82939622609,
+      "min_us": 30527.00786792425,
+      "max_us": 66014.88835849077
     },
     {
       "side": "baseline",
@@ -148,9 +148,9 @@
       "request": "full",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 52841.65016981116,
-      "min_us": 52292.44654716975,
-      "max_us": 54677.41586792449
+      "median_us": 79631.9795660378,
+      "min_us": 74356.45362264136,
+      "max_us": 174488.81916981135
     },
     {
       "side": "sdk",
@@ -158,9 +158,9 @@
       "request": "vargas",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 853.1901454547716,
-      "min_us": 822.7931818178728,
-      "max_us": 874.349254545417
+      "median_us": 1300.3969636364754,
+      "min_us": 1234.865909090943,
+      "max_us": 1653.7280363644559
     },
     {
       "side": "baseline",
@@ -168,9 +168,9 @@
       "request": "vargas",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 5784.719709091058,
-      "min_us": 5714.115909090668,
-      "max_us": 6840.962890909181
+      "median_us": 8909.170454545792,
+      "min_us": 8400.8333272724,
+      "max_us": 14279.138636363628
     },
     {
       "side": "sdk",
@@ -178,9 +178,9 @@
       "request": "yogas",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 12654.421377358716,
-      "min_us": 12446.459132075344,
-      "max_us": 13226.717754717441
+      "median_us": 4779.921377357755,
+      "min_us": 4604.25784905608,
+      "max_us": 7031.073886792413
     },
     {
       "side": "baseline",
@@ -188,9 +188,9 @@
       "request": "yogas",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 5934.2908679248485,
-      "min_us": 5889.036169811042,
-      "max_us": 6317.488207547148
+      "median_us": 8730.133641509005,
+      "min_us": 8472.262584905246,
+      "max_us": 10708.171396226324
     },
     {
       "side": "sdk",
@@ -198,9 +198,9 @@
       "request": "strength",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 562.4121090910525,
-      "min_us": 536.9325818181758,
-      "max_us": 592.9772727270822
+      "median_us": 808.6954545451921,
+      "min_us": 762.9121272718872,
+      "max_us": 839.506054545795
     },
     {
       "side": "baseline",
@@ -208,9 +208,9 @@
       "request": "strength",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 5906.6878727272115,
-      "min_us": 5792.71060000015,
-      "max_us": 6380.912872727177
+      "median_us": 8417.918945455247,
+      "min_us": 8281.256818181877,
+      "max_us": 8519.709854545496
     },
     {
       "side": "sdk",
@@ -218,9 +218,9 @@
       "request": "dashas",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 15658.418181817979,
-      "min_us": 15487.112127273047,
-      "max_us": 16242.1628727276
+      "median_us": 22878.238636363214,
+      "min_us": 22048.496218182318,
+      "max_us": 34972.89165454514
     },
     {
       "side": "baseline",
@@ -228,9 +228,9 @@
       "request": "dashas",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 41209.77878181835,
-      "min_us": 40764.65150909127,
-      "max_us": 42289.34016363611
+      "median_us": 59510.14318181816,
+      "min_us": 57907.435600000266,
+      "max_us": 79145.12423636307
     },
     {
       "side": "sdk",
@@ -238,9 +238,9 @@
       "request": "month",
       "rounds": 15,
       "inputs": 51,
-      "median_us": 12093.024509804844,
-      "min_us": 11955.848039215769,
-      "max_us": 12696.745921567757
+      "median_us": 18449.310450979014,
+      "min_us": 16893.19362744972,
+      "max_us": 34688.65196078596
     },
     {
       "side": "baseline",
@@ -248,9 +248,9 @@
       "request": "month",
       "rounds": 15,
       "inputs": 51,
-      "median_us": 363310.72468627425,
-      "min_us": 356268.0580000001,
-      "max_us": 365105.93382352917
+      "median_us": 550993.1331764719,
+      "min_us": 512859.12090195937,
+      "max_us": 1042144.9370980388
     },
     {
       "side": "sdk",
@@ -258,9 +258,9 @@
       "request": "milan",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 669.973490910012,
-      "min_us": 637.4545454555614,
-      "max_us": 716.6249999988147
+      "median_us": 703.4355999986557,
+      "min_us": 692.7136363630945,
+      "max_us": 891.9439272722229
     },
     {
       "side": "baseline",
@@ -268,9 +268,9 @@
       "request": "milan",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 11481.466654546304,
-      "min_us": 11405.850000000051,
-      "max_us": 12552.213636364533
+      "median_us": 11930.015145455995,
+      "min_us": 11689.692436363972,
+      "max_us": 19634.554545454343
     },
     {
       "side": "sdk",
@@ -278,9 +278,9 @@
       "request": "varsha",
       "rounds": 15,
       "inputs": 54,
-      "median_us": 2618.570203703173,
-      "min_us": 2551.6226851851334,
-      "max_us": 3103.6388888907686
+      "median_us": 2649.5594259252325,
+      "min_us": 2575.6697407406236,
+      "max_us": 2735.214500000304
     },
     {
       "side": "baseline",
@@ -288,9 +288,9 @@
       "request": "varsha",
       "rounds": 15,
       "inputs": 54,
-      "median_us": 6733.707555554617,
-      "min_us": 6417.797833334016,
-      "max_us": 7282.761574073919
+      "median_us": 6595.367277778375,
+      "min_us": 6401.172833333948,
+      "max_us": 7252.388888888096
     },
     {
       "side": "sdk",
@@ -298,9 +298,9 @@
       "request": "kp",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 580.0537999994544,
-      "min_us": 549.6431818189608,
-      "max_us": 612.1704545464705
+      "median_us": 609.8727272738787,
+      "min_us": 573.7053090918132,
+      "max_us": 950.3249999982389
     },
     {
       "side": "baseline",
@@ -308,9 +308,9 @@
       "request": "kp",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 5767.843181817708,
-      "min_us": 5728.561363635923,
-      "max_us": 6407.821218182587
+      "median_us": 6118.125745455141,
+      "min_us": 5883.634836364284,
+      "max_us": 7326.364400000734
     },
     {
       "side": "sdk",
@@ -318,9 +318,9 @@
       "request": "gochar",
       "rounds": 15,
       "inputs": 54,
-      "median_us": 566.6010740721874,
-      "min_us": 542.887351852928,
-      "max_us": 706.0594074083148
+      "median_us": 569.4629629638425,
+      "min_us": 548.814814813711,
+      "max_us": 598.0478518521758
     },
     {
       "side": "baseline",
@@ -328,9 +328,9 @@
       "request": "gochar",
       "rounds": 15,
       "inputs": 54,
-      "median_us": 6217.773148147562,
-      "min_us": 5896.0107962958755,
-      "max_us": 7262.124999999759
+      "median_us": 6120.260037037682,
+      "min_us": 5989.136574074143,
+      "max_us": 6607.8533888902275
     },
     {
       "side": "sdk",
@@ -338,9 +338,9 @@
       "request": "sadeSati",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 2505.7530363640662,
-      "min_us": 2455.3166545461863,
-      "max_us": 3003.306072728116
+      "median_us": 2567.7469818196682,
+      "min_us": 2419.2795454545626,
+      "max_us": 3719.896963634528
     },
     {
       "side": "baseline",
@@ -348,9 +348,9 @@
       "request": "sadeSati",
       "rounds": 15,
       "inputs": 55,
-      "median_us": 23072.764399999076,
-      "min_us": 22787.24999999924,
-      "max_us": 24091.527272727002
+      "median_us": 23300.29925454662,
+      "min_us": 22709.17576363691,
+      "max_us": 29782.54090909084
     },
     {
       "side": "sdk",
@@ -358,9 +358,9 @@
       "request": "batch",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 228273.78696226075,
-      "min_us": 224828.7209056599,
-      "max_us": 236004.1808113214
+      "median_us": 218236.19024528473,
+      "min_us": 208779.65801887057,
+      "max_us": 445512.7256415117
     },
     {
       "side": "baseline",
@@ -368,9 +368,9 @@
       "request": "batch",
       "rounds": 15,
       "inputs": 53,
-      "median_us": 547668.2248301847,
-      "min_us": 536045.194962264,
-      "max_us": 563806.9119433947
+      "median_us": 571561.7177735812,
+      "min_us": 550014.7995282983,
+      "max_us": 798024.8742264186
     }
   ],
   "parallelism": 10,
@@ -382,9 +382,9 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 756.3333333333334,
-      "min_rps": 744.3333333333334,
-      "max_rps": 758.3333333333334
+      "median_rps": 765.3333333333334,
+      "min_rps": 751.0,
+      "max_rps": 767.6666666666666
     },
     {
       "side": "sdk",
@@ -393,9 +393,9 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 758.0,
-      "min_rps": 746.6666666666666,
-      "max_rps": 761.3333333333334
+      "median_rps": 760.3333333333334,
+      "min_rps": 734.6666666666666,
+      "max_rps": 764.0
     },
     {
       "side": "baseline",
@@ -404,9 +404,9 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 140.0,
-      "min_rps": 137.0,
-      "max_rps": 140.66666666666666
+      "median_rps": 140.66666666666666,
+      "min_rps": 140.66666666666666,
+      "max_rps": 141.66666666666666
     },
     {
       "side": "baseline",
@@ -415,8 +415,8 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 144.0,
-      "min_rps": 142.33333333333334,
+      "median_rps": 144.33333333333334,
+      "min_rps": 144.0,
       "max_rps": 144.33333333333334
     },
     {
@@ -426,9 +426,9 @@
       "threads": 2,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 284.6666666666667,
-      "min_rps": 278.6666666666667,
-      "max_rps": 286.0
+      "median_rps": 286.0,
+      "min_rps": 283.6666666666667,
+      "max_rps": 286.6666666666667
     },
     {
       "side": "sdk",
@@ -437,9 +437,9 @@
       "threads": 2,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 1455.0,
-      "min_rps": 1445.3333333333333,
-      "max_rps": 1460.3333333333333
+      "median_rps": 1454.6666666666667,
+      "min_rps": 1452.0,
+      "max_rps": 1472.6666666666667
     },
     {
       "side": "sdk",
@@ -448,9 +448,9 @@
       "threads": 2,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 1486.3333333333333,
-      "min_rps": 1467.3333333333333,
-      "max_rps": 1494.6666666666667
+      "median_rps": 1501.3333333333333,
+      "min_rps": 1482.3333333333333,
+      "max_rps": 1522.0
     },
     {
       "side": "sdk",
@@ -459,9 +459,9 @@
       "threads": 4,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 2770.3333333333335,
-      "min_rps": 2744.6666666666665,
-      "max_rps": 2798.6666666666665
+      "median_rps": 2805.3333333333335,
+      "min_rps": 2762.6666666666665,
+      "max_rps": 2821.6666666666665
     },
     {
       "side": "sdk",
@@ -470,9 +470,9 @@
       "threads": 4,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 2936.0,
-      "min_rps": 2929.0,
-      "max_rps": 2992.0
+      "median_rps": 2934.6666666666665,
+      "min_rps": 2874.3333333333335,
+      "max_rps": 2955.6666666666665
     },
     {
       "side": "baseline",
@@ -481,9 +481,9 @@
       "threads": 4,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 562.6666666666666,
-      "min_rps": 561.6666666666666,
-      "max_rps": 563.0
+      "median_rps": 564.0,
+      "min_rps": 557.3333333333334,
+      "max_rps": 565.3333333333334
     },
     {
       "side": "baseline",
@@ -492,9 +492,9 @@
       "threads": 8,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 916.0,
-      "min_rps": 906.0,
-      "max_rps": 924.6666666666666
+      "median_rps": 915.0,
+      "min_rps": 901.6666666666666,
+      "max_rps": 930.6666666666666
     },
     {
       "side": "sdk",
@@ -503,9 +503,9 @@
       "threads": 8,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 4452.0,
-      "min_rps": 4333.666666666667,
-      "max_rps": 4472.666666666667
+      "median_rps": 4496.333333333333,
+      "min_rps": 4464.666666666667,
+      "max_rps": 4574.333333333333
     },
     {
       "side": "sdk",
@@ -514,9 +514,9 @@
       "threads": 8,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 4806.0,
-      "min_rps": 4552.0,
-      "max_rps": 4909.666666666667
+      "median_rps": 4860.333333333333,
+      "min_rps": 4792.333333333333,
+      "max_rps": 4907.666666666667
     },
     {
       "side": "sdk",
@@ -525,9 +525,9 @@
       "threads": 10,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 4164.666666666667,
-      "min_rps": 3888.6666666666665,
-      "max_rps": 4341.333333333333
+      "median_rps": 4657.0,
+      "min_rps": 4656.0,
+      "max_rps": 4711.333333333333
     },
     {
       "side": "sdk",
@@ -536,9 +536,9 @@
       "threads": 10,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 5031.0,
-      "min_rps": 4519.0,
-      "max_rps": 5076.666666666667
+      "median_rps": 5181.0,
+      "min_rps": 5143.666666666667,
+      "max_rps": 5239.0
     },
     {
       "side": "baseline",
@@ -547,9 +547,9 @@
       "threads": 10,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 975.0,
-      "min_rps": 949.6666666666666,
-      "max_rps": 985.6666666666666
+      "median_rps": 945.0,
+      "min_rps": 920.3333333333334,
+      "max_rps": 978.0
     },
     {
       "side": "baseline",
@@ -558,9 +558,9 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 84.0,
-      "min_rps": 83.0,
-      "max_rps": 84.66666666666667
+      "median_rps": 85.33333333333333,
+      "min_rps": 84.66666666666667,
+      "max_rps": 85.66666666666667
     },
     {
       "side": "baseline",
@@ -569,9 +569,9 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 82.33333333333333,
-      "min_rps": 82.33333333333333,
-      "max_rps": 83.66666666666667
+      "median_rps": 85.66666666666667,
+      "min_rps": 85.66666666666667,
+      "max_rps": 85.66666666666667
     },
     {
       "side": "sdk",
@@ -580,9 +580,9 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 1632.6666666666667,
-      "min_rps": 1599.0,
-      "max_rps": 1640.6666666666667
+      "median_rps": 1786.3333333333333,
+      "min_rps": 1773.3333333333333,
+      "max_rps": 1798.3333333333333
     },
     {
       "side": "sdk",
@@ -591,9 +591,9 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 1617.3333333333333,
-      "min_rps": 1614.0,
-      "max_rps": 1641.6666666666667
+      "median_rps": 1795.6666666666667,
+      "min_rps": 1795.3333333333333,
+      "max_rps": 1799.3333333333333
     },
     {
       "side": "sdk",
@@ -602,9 +602,9 @@
       "threads": 2,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 2994.0,
-      "min_rps": 2902.0,
-      "max_rps": 3032.3333333333335
+      "median_rps": 3194.3333333333335,
+      "min_rps": 3191.6666666666665,
+      "max_rps": 3204.3333333333335
     },
     {
       "side": "sdk",
@@ -613,9 +613,9 @@
       "threads": 2,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 3311.3333333333335,
-      "min_rps": 3253.0,
-      "max_rps": 3319.6666666666665
+      "median_rps": 3527.0,
+      "min_rps": 3521.3333333333335,
+      "max_rps": 3542.0
     },
     {
       "side": "baseline",
@@ -624,9 +624,9 @@
       "threads": 2,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 168.0,
-      "min_rps": 168.0,
-      "max_rps": 168.66666666666666
+      "median_rps": 169.33333333333334,
+      "min_rps": 168.66666666666666,
+      "max_rps": 169.33333333333334
     },
     {
       "side": "baseline",
@@ -635,9 +635,9 @@
       "threads": 4,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 332.6666666666667,
-      "min_rps": 329.0,
-      "max_rps": 333.6666666666667
+      "median_rps": 333.3333333333333,
+      "min_rps": 329.3333333333333,
+      "max_rps": 333.3333333333333
     },
     {
       "side": "sdk",
@@ -646,9 +646,9 @@
       "threads": 4,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 5799.333333333333,
-      "min_rps": 5766.666666666667,
-      "max_rps": 5813.0
+      "median_rps": 5902.666666666667,
+      "min_rps": 5897.0,
+      "max_rps": 5932.333333333333
     },
     {
       "side": "sdk",
@@ -657,9 +657,9 @@
       "threads": 4,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 6649.333333333333,
-      "min_rps": 6587.333333333333,
-      "max_rps": 6670.666666666667
+      "median_rps": 6996.0,
+      "min_rps": 6988.666666666667,
+      "max_rps": 6997.666666666667
     },
     {
       "side": "sdk",
@@ -668,9 +668,9 @@
       "threads": 8,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 8898.0,
-      "min_rps": 8831.0,
-      "max_rps": 9023.0
+      "median_rps": 9414.666666666666,
+      "min_rps": 9223.666666666666,
+      "max_rps": 9434.666666666666
     },
     {
       "side": "sdk",
@@ -679,9 +679,9 @@
       "threads": 8,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 10744.333333333334,
-      "min_rps": 10615.333333333334,
-      "max_rps": 10855.0
+      "median_rps": 11463.0,
+      "min_rps": 11087.666666666666,
+      "max_rps": 11516.666666666666
     },
     {
       "side": "baseline",
@@ -690,9 +690,9 @@
       "threads": 8,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 486.6666666666667,
-      "min_rps": 441.0,
-      "max_rps": 490.6666666666667
+      "median_rps": 536.6666666666666,
+      "min_rps": 532.3333333333334,
+      "max_rps": 537.0
     },
     {
       "side": "baseline",
@@ -701,9 +701,9 @@
       "threads": 10,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 551.6666666666666,
-      "min_rps": 550.0,
-      "max_rps": 570.0
+      "median_rps": 563.3333333333334,
+      "min_rps": 556.3333333333334,
+      "max_rps": 564.0
     },
     {
       "side": "sdk",
@@ -712,9 +712,9 @@
       "threads": 10,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 9592.666666666666,
-      "min_rps": 9234.666666666666,
-      "max_rps": 9681.0
+      "median_rps": 10040.333333333334,
+      "min_rps": 9911.0,
+      "max_rps": 10066.333333333334
     },
     {
       "side": "sdk",
@@ -723,9 +723,9 @@
       "threads": 10,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 11125.666666666666,
-      "min_rps": 10875.666666666666,
-      "max_rps": 11501.0
+      "median_rps": 12167.666666666666,
+      "min_rps": 12072.333333333334,
+      "max_rps": 12413.0
     },
     {
       "side": "sdk",
@@ -734,9 +734,9 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 30.0,
-      "min_rps": 29.666666666666668,
-      "max_rps": 30.666666666666668
+      "median_rps": 48.333333333333336,
+      "min_rps": 48.0,
+      "max_rps": 48.333333333333336
     },
     {
       "side": "sdk",
@@ -745,31 +745,31 @@
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 31.0,
-      "min_rps": 29.666666666666668,
-      "max_rps": 31.0
+      "median_rps": 48.333333333333336,
+      "min_rps": 48.0,
+      "max_rps": 48.333333333333336
     },
     {
       "side": "baseline",
       "request": "full",
       "mode": "threads",
-      "threads": 1,
-      "trials": 3,
-      "seconds": 3.0,
-      "median_rps": 18.0,
-      "min_rps": 17.666666666666668,
-      "max_rps": 18.333333333333332
-    },
-    {
-      "side": "baseline",
-      "request": "full",
-      "mode": "processes",
       "threads": 1,
       "trials": 3,
       "seconds": 3.0,
       "median_rps": 18.666666666666668,
-      "min_rps": 18.0,
-      "max_rps": 18.666666666666668
+      "min_rps": 18.666666666666668,
+      "max_rps": 19.0
+    },
+    {
+      "side": "baseline",
+      "request": "full",
+      "mode": "processes",
+      "threads": 1,
+      "trials": 3,
+      "seconds": 3.0,
+      "median_rps": 19.333333333333332,
+      "min_rps": 17.0,
+      "max_rps": 19.666666666666668
     },
     {
       "side": "baseline",
@@ -778,9 +778,9 @@
       "threads": 2,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 37.0,
-      "min_rps": 35.666666666666664,
-      "max_rps": 38.333333333333336
+      "median_rps": 38.0,
+      "min_rps": 38.0,
+      "max_rps": 38.0
     },
     {
       "side": "sdk",
@@ -789,9 +789,9 @@
       "threads": 2,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 54.0,
-      "min_rps": 46.0,
-      "max_rps": 54.666666666666664
+      "median_rps": 94.0,
+      "min_rps": 94.0,
+      "max_rps": 94.66666666666667
     },
     {
       "side": "sdk",
@@ -800,9 +800,9 @@
       "threads": 2,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 46.333333333333336,
-      "min_rps": 22.666666666666668,
-      "max_rps": 58.0
+      "median_rps": 95.33333333333333,
+      "min_rps": 95.33333333333333,
+      "max_rps": 95.33333333333333
     },
     {
       "side": "sdk",
@@ -811,9 +811,9 @@
       "threads": 4,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 96.66666666666667,
-      "min_rps": 91.66666666666667,
-      "max_rps": 101.66666666666667
+      "median_rps": 186.66666666666666,
+      "min_rps": 184.0,
+      "max_rps": 186.66666666666666
     },
     {
       "side": "sdk",
@@ -822,9 +822,9 @@
       "threads": 4,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 110.66666666666667,
-      "min_rps": 102.33333333333333,
-      "max_rps": 113.33333333333333
+      "median_rps": 186.33333333333334,
+      "min_rps": 185.33333333333334,
+      "max_rps": 186.66666666666666
     },
     {
       "side": "baseline",
@@ -833,9 +833,9 @@
       "threads": 4,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 45.666666666666664,
-      "min_rps": 42.666666666666664,
-      "max_rps": 63.333333333333336
+      "median_rps": 73.66666666666667,
+      "min_rps": 72.66666666666667,
+      "max_rps": 75.0
     },
     {
       "side": "baseline",
@@ -844,9 +844,9 @@
       "threads": 8,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 96.0,
-      "min_rps": 91.33333333333333,
-      "max_rps": 98.66666666666667
+      "median_rps": 90.0,
+      "min_rps": 88.0,
+      "max_rps": 93.66666666666667
     },
     {
       "side": "sdk",
@@ -855,9 +855,9 @@
       "threads": 8,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 167.66666666666666,
-      "min_rps": 167.33333333333334,
-      "max_rps": 172.66666666666666
+      "median_rps": 207.0,
+      "min_rps": 162.0,
+      "max_rps": 224.33333333333334
     },
     {
       "side": "sdk",
@@ -866,9 +866,9 @@
       "threads": 8,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 158.33333333333334,
-      "min_rps": 146.66666666666666,
-      "max_rps": 161.0
+      "median_rps": 231.0,
+      "min_rps": 188.33333333333334,
+      "max_rps": 282.3333333333333
     },
     {
       "side": "sdk",
@@ -877,9 +877,9 @@
       "threads": 10,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 190.33333333333334,
-      "min_rps": 188.0,
-      "max_rps": 194.66666666666666
+      "median_rps": 323.6666666666667,
+      "min_rps": 318.3333333333333,
+      "max_rps": 330.3333333333333
     },
     {
       "side": "sdk",
@@ -888,9 +888,9 @@
       "threads": 10,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 175.0,
-      "min_rps": 130.33333333333334,
-      "max_rps": 182.33333333333334
+      "median_rps": 325.0,
+      "min_rps": 323.6666666666667,
+      "max_rps": 335.3333333333333
     },
     {
       "side": "baseline",
@@ -899,9 +899,9 @@
       "threads": 10,
       "trials": 3,
       "seconds": 3.0,
-      "median_rps": 79.0,
-      "min_rps": 78.66666666666667,
-      "max_rps": 96.33333333333333
+      "median_rps": 105.66666666666667,
+      "min_rps": 94.66666666666667,
+      "max_rps": 112.33333333333333
     }
   ],
   "unloaded": [
@@ -910,14 +910,14 @@
       "request": "chart",
       "mode": "threads",
       "threads": 2,
-      "reason": "died of SIGSEGV: nothing on stderr"
+      "reason": "died of SIGABRT: 8: warmed (file:///Users/iamkrishnaa/Projects/Teispace/teistro/teistro-sdk/bindings/node/bench/ab-load.mjs:92:20)"
     },
     {
       "side": "baseline",
       "request": "chart",
       "mode": "threads",
       "threads": 4,
-      "reason": "died of SIGSEGV: nothing on stderr"
+      "reason": "died of SIGABRT: nothing on stderr"
     },
     {
       "side": "baseline",
@@ -931,21 +931,21 @@
       "request": "chart",
       "mode": "threads",
       "threads": 10,
-      "reason": "died of SIGABRT: nothing on stderr"
+      "reason": "died of SIGTRAP: nothing on stderr"
     },
     {
       "side": "baseline",
       "request": "day",
       "mode": "threads",
       "threads": 2,
-      "reason": "died of SIGSEGV: nothing on stderr"
+      "reason": "Entity not found: TITHI/undefined"
     },
     {
       "side": "baseline",
       "request": "day",
       "mode": "threads",
       "threads": 4,
-      "reason": "died of SIGSEGV: nothing on stderr"
+      "reason": "died of SIGABRT: nothing on stderr"
     },
     {
       "side": "baseline",
@@ -959,7 +959,7 @@
       "request": "day",
       "mode": "threads",
       "threads": 10,
-      "reason": "died of SIGABRT: nothing on stderr"
+      "reason": "died of SIGABRT: 9: warmed (file:///Users/iamkrishnaa/Projects/Teispace/teistro/teistro-sdk/bindings/node/bench/ab-load.mjs:92:20)"
     },
     {
       "side": "baseline",
@@ -980,7 +980,7 @@
       "request": "full",
       "mode": "threads",
       "threads": 8,
-      "reason": "died of SIGABRT: 9: warmed (file:///Users/iamkrishnaa/Projects/Teispace/teistro/teistro-sdk/.claude/worktrees/agent-a253d46103ea6b3f0/bindings/node/bench/ab-load.mjs:92:20)"
+      "reason": "died of SIGSEGV: nothing on stderr"
     },
     {
       "side": "baseline",
@@ -997,10 +997,10 @@
       "percentile": 50,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 4159,
-      "median_us": 7136.04199999827,
-      "min_us": 7047.375000001921,
-      "max_us": 7247.499999999491
+      "requests": 2148,
+      "median_us": 12044.625000000451,
+      "min_us": 7195.125000000189,
+      "max_us": 20354.833000001236
     },
     {
       "side": "baseline",
@@ -1008,10 +1008,10 @@
       "percentile": 95,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 4159,
-      "median_us": 8698.875000000044,
-      "min_us": 8462.625000000116,
-      "max_us": 8823.54099999975
+      "requests": 2148,
+      "median_us": 32266.66599999953,
+      "min_us": 8973.54200000018,
+      "max_us": 52590.83400000236
     },
     {
       "side": "baseline",
@@ -1019,10 +1019,10 @@
       "percentile": 99,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 4159,
-      "median_us": 9437.458000000333,
-      "min_us": 8911.499999998341,
-      "max_us": 12581.208000003244
+      "requests": 2148,
+      "median_us": 49999.125000002095,
+      "min_us": 10898.25000000019,
+      "max_us": 962790.4170000001
     },
     {
       "side": "sdk",
@@ -1030,10 +1030,10 @@
       "percentile": 50,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 21706,
-      "median_us": 1330.0830000007409,
-      "min_us": 1290.1249999995343,
-      "max_us": 1363.24999999988
+      "requests": 21369,
+      "median_us": 1314.5409999997355,
+      "min_us": 1246.4160000017728,
+      "max_us": 1395.2500000000327
     },
     {
       "side": "sdk",
@@ -1041,10 +1041,10 @@
       "percentile": 95,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 21706,
-      "median_us": 1575.0829999997222,
-      "min_us": 1497.3329999993439,
-      "max_us": 1815.0840000016615
+      "requests": 21369,
+      "median_us": 1809.1669999994338,
+      "min_us": 1363.1249999998545,
+      "max_us": 3206.5410000000156
     },
     {
       "side": "sdk",
@@ -1052,10 +1052,10 @@
       "percentile": 99,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 21706,
-      "median_us": 2309.625000001688,
-      "min_us": 2120.7919999997102,
-      "max_us": 3018.458999998984
+      "requests": 21369,
+      "median_us": 2736.4999999990687,
+      "min_us": 2025.3330000014103,
+      "max_us": 5727.958000000399
     },
     {
       "side": "sdk",
@@ -1063,10 +1063,10 @@
       "percentile": 50,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 49111,
-      "median_us": 593.9999999991414,
-      "min_us": 580.8329999999842,
-      "max_us": 597.1669999998994
+      "requests": 52997,
+      "median_us": 547.6660000003903,
+      "min_us": 540.7500000001164,
+      "max_us": 567.2079999985726
     },
     {
       "side": "sdk",
@@ -1074,10 +1074,10 @@
       "percentile": 95,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 49111,
-      "median_us": 722.6249999994252,
-      "min_us": 683.9579999978014,
-      "max_us": 764.500000001135
+      "requests": 52997,
+      "median_us": 656.1250000013388,
+      "min_us": 628.7499999998545,
+      "max_us": 709.6670000000813
     },
     {
       "side": "sdk",
@@ -1085,10 +1085,10 @@
       "percentile": 99,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 49111,
-      "median_us": 917.4999999995634,
-      "min_us": 872.0000000030268,
-      "max_us": 1073.7090000002354
+      "requests": 52997,
+      "median_us": 862.7080000005662,
+      "min_us": 852.3329999989073,
+      "max_us": 1079.6249999998508
     },
     {
       "side": "baseline",
@@ -1096,10 +1096,10 @@
       "percentile": 50,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 2532,
-      "median_us": 11840.4589999991,
-      "min_us": 11756.333999997878,
-      "max_us": 11870.999999999185
+      "requests": 2551,
+      "median_us": 11730.499999999665,
+      "min_us": 11667.916999998852,
+      "max_us": 11955.54200000015
     },
     {
       "side": "baseline",
@@ -1107,10 +1107,10 @@
       "percentile": 95,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 2532,
-      "median_us": 12791.625000001659,
-      "min_us": 12631.124999999884,
-      "max_us": 12841.500000000451
+      "requests": 2551,
+      "median_us": 12593.833999999333,
+      "min_us": 12548.208000000159,
+      "max_us": 14183.250000000044
     },
     {
       "side": "baseline",
@@ -1118,10 +1118,10 @@
       "percentile": 99,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 2532,
-      "median_us": 13410.166000001482,
-      "min_us": 13141.749999998865,
-      "max_us": 14931.125000002794
+      "requests": 2551,
+      "median_us": 13094.499999999243,
+      "min_us": 12927.749999998923,
+      "max_us": 15331.083000000035
     },
     {
       "side": "baseline",
@@ -1129,10 +1129,10 @@
       "percentile": 50,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 576,
-      "median_us": 51039.54200000044,
-      "min_us": 49145.2500000014,
-      "max_us": 52722.750000000815
+      "requests": 578,
+      "median_us": 50748.58399999994,
+      "min_us": 49730.74999999881,
+      "max_us": 52252.166999998735
     },
     {
       "side": "baseline",
@@ -1140,10 +1140,10 @@
       "percentile": 95,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 576,
-      "median_us": 65418.87500000121,
-      "min_us": 63749.08299999879,
-      "max_us": 71809.45799999972
+      "requests": 578,
+      "median_us": 66331.66699999856,
+      "min_us": 62905.125000000226,
+      "max_us": 69262.2080000001
     },
     {
       "side": "baseline",
@@ -1151,10 +1151,10 @@
       "percentile": 99,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 576,
-      "median_us": 72104.04199999903,
-      "min_us": 70548.12499999935,
-      "max_us": 85711.20899999733
+      "requests": 578,
+      "median_us": 72354.04200000085,
+      "min_us": 69678.41700000281,
+      "max_us": 88084.08400000008
     },
     {
       "side": "sdk",
@@ -1162,10 +1162,10 @@
       "percentile": 50,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 899,
-      "median_us": 33377.20900000204,
-      "min_us": 32043.4580000001,
-      "max_us": 33994.707999998354
+      "requests": 1458,
+      "median_us": 20308.291000000056,
+      "min_us": 20083.582999999635,
+      "max_us": 20515.50000000134
     },
     {
       "side": "sdk",
@@ -1173,10 +1173,10 @@
       "percentile": 95,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 899,
-      "median_us": 35886.70800000182,
-      "min_us": 34156.041999998706,
-      "max_us": 36959.95799999946
+      "requests": 1458,
+      "median_us": 22436.083000000508,
+      "min_us": 22157.749999999396,
+      "max_us": 22757.000000001426
     },
     {
       "side": "sdk",
@@ -1184,10 +1184,10 @@
       "percentile": 99,
       "seconds": 30.0,
       "windows": 10,
-      "requests": 899,
-      "median_us": 42764.66699999946,
-      "min_us": 35724.70799999974,
-      "max_us": 175197.2910000004
+      "requests": 1458,
+      "median_us": 23545.207999999548,
+      "min_us": 22824.00000000007,
+      "max_us": 24309.833000001163
     }
   ],
   "cold": [
@@ -1195,49 +1195,49 @@
       "side": "sdk",
       "phase": "open",
       "runs": 9,
-      "median_ms": 32.385416,
-      "min_ms": 30.387083,
-      "max_ms": 40.892375
+      "median_ms": 30.689166,
+      "min_ms": 29.69775,
+      "max_ms": 35.743666
     },
     {
       "side": "sdk",
       "phase": "first",
       "runs": 9,
-      "median_ms": 28.460917,
-      "min_ms": 26.474208,
-      "max_ms": 63.715625
+      "median_ms": 26.476582999999998,
+      "min_ms": 25.611709,
+      "max_ms": 46.587709
     },
     {
       "side": "sdk",
       "phase": "process",
       "runs": 9,
-      "median_ms": 152.19482421875,
-      "min_ms": 145.92529296875,
-      "max_ms": 201.0947265625
+      "median_ms": 145.9130859375,
+      "min_ms": 141.17578125,
+      "max_ms": 176.80615234375
     },
     {
       "side": "baseline",
       "phase": "open",
       "runs": 9,
-      "median_ms": 729.126167,
-      "min_ms": 687.338375,
-      "max_ms": 804.028208
+      "median_ms": 669.28675,
+      "min_ms": 666.433917,
+      "max_ms": 717.940291
     },
     {
       "side": "baseline",
       "phase": "first",
       "runs": 9,
-      "median_ms": 35.27662500000008,
-      "min_ms": 33.810499999999934,
-      "max_ms": 106.15116699999999
+      "median_ms": 33.807583999999906,
+      "min_ms": 32.90879200000006,
+      "max_ms": 35.20941700000003
     },
     {
       "side": "baseline",
       "phase": "process",
       "runs": 9,
-      "median_ms": 911.421875,
-      "min_ms": 816.50146484375,
-      "max_ms": 941.141357421875
+      "median_ms": 798.051025390625,
+      "min_ms": 791.823486328125,
+      "max_ms": 843.84033203125
     }
   ],
   "memory": [
@@ -1248,9 +1248,9 @@
       "unit": "MB",
       "runs": 3,
       "requests": 10000,
-      "median_value": 465.75,
-      "min_value": 400.328125,
-      "max_value": 610.1875
+      "median_value": 185.859375,
+      "min_value": 185.0625,
+      "max_value": 187.46875
     },
     {
       "side": "sdk",
@@ -1259,9 +1259,9 @@
       "unit": "MB",
       "runs": 3,
       "requests": 10000,
-      "median_value": 8.86328125,
-      "min_value": 8.86328125,
-      "max_value": 8.8642578125
+      "median_value": 8.8818359375,
+      "min_value": 8.8779296875,
+      "max_value": 8.88671875
     },
     {
       "side": "sdk",
@@ -1270,9 +1270,9 @@
       "unit": "KB",
       "runs": 3,
       "requests": 10000,
-      "median_value": -1037.0,
-      "min_value": -1037.0,
-      "max_value": -1037.0
+      "median_value": -1041.0,
+      "min_value": -1044.0,
+      "max_value": -1035.0
     },
     {
       "side": "baseline",
@@ -1281,9 +1281,9 @@
       "unit": "MB",
       "runs": 3,
       "requests": 10000,
-      "median_value": 297.484375,
-      "min_value": 297.15625,
-      "max_value": 297.640625
+      "median_value": 298.359375,
+      "min_value": 298.359375,
+      "max_value": 299.046875
     },
     {
       "side": "baseline",
@@ -1292,9 +1292,9 @@
       "unit": "MB",
       "runs": 3,
       "requests": 10000,
-      "median_value": 46.0126953125,
-      "min_value": 46.01171875,
-      "max_value": 46.1767578125
+      "median_value": 46.1748046875,
+      "min_value": 46.1748046875,
+      "max_value": 46.1748046875
     },
     {
       "side": "baseline",
@@ -1303,8 +1303,8 @@
       "unit": "KB",
       "runs": 3,
       "requests": 10000,
-      "median_value": 220.0,
-      "min_value": 220.0,
+      "median_value": 388.0,
+      "min_value": 388.0,
       "max_value": 388.0
     }
   ],
@@ -1477,13 +1477,13 @@
         "request": "day",
         "family": "event",
         "inputs": 53,
-        "unpaired": 1,
-        "compared": 376,
-        "matches": 266,
-        "share": 0.7074468085106383,
+        "unpaired": 0,
+        "compared": 377,
+        "matches": 370,
+        "share": 0.9814323607427056,
         "unit": "s",
         "tolerance": 60.0,
-        "median": 17.335814237594604,
+        "median": 3.6676928400993347,
         "max": 86400.0,
         "worst": {
           "id": "c029",
@@ -1496,24 +1496,10 @@
         "request": "day",
         "family": "limb",
         "inputs": 53,
-        "unpaired": 1,
-        "compared": 482,
-        "matches": 480,
-        "share": 0.995850622406639,
-        "mismatches": [
-          {
-            "id": "c021",
-            "key": "limb/karana/0",
-            "sdk": 6,
-            "baseline": 5
-          },
-          {
-            "id": "c021",
-            "key": "limb/karana/1",
-            "sdk": 0,
-            "baseline": 6
-          }
-        ]
+        "unpaired": 0,
+        "compared": 483,
+        "matches": 483,
+        "share": 1.0
       },
       {
         "convention": "timed",
@@ -1714,16 +1700,16 @@
         "inputs": 53,
         "unpaired": 0,
         "compared": 2597,
-        "matches": 794,
-        "share": 0.3057373892953408,
+        "matches": 755,
+        "share": 0.2907200616095495,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 11.858910491674365,
-        "max": 393.2222256932864,
+        "median": 12.280950166424141,
+        "max": 333.91069316053915,
         "worst": {
           "id": "c043",
           "key": "shadbala/MOON/total",
-          "apart": 393.2222256932864
+          "apart": 333.91069316053915
         }
       },
       {
@@ -1733,16 +1719,16 @@
         "inputs": 53,
         "unpaired": 0,
         "compared": 636,
-        "matches": 7,
-        "share": 0.0110062893081761,
+        "matches": 4,
+        "share": 0.006289308176100629,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 78.59463632381278,
-        "max": 453.2218024267969,
+        "median": 73.24685966998982,
+        "max": 328.078578191715,
         "worst": {
-          "id": "c043",
-          "key": "bhavaBala/8",
-          "apart": 453.2218024267969
+          "id": "c051",
+          "key": "bhavaBala/9",
+          "apart": 328.078578191715
         }
       },
       {
@@ -1872,16 +1858,16 @@
         "inputs": 55,
         "unpaired": 0,
         "compared": 2695,
-        "matches": 832,
-        "share": 0.30871985157699444,
+        "matches": 795,
+        "share": 0.2949907235621521,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 11.46024157084025,
-        "max": 393.2222256932864,
+        "median": 11.665216018098796,
+        "max": 333.91069316053915,
         "worst": {
           "id": "c043",
           "key": "shadbala/MOON/total",
-          "apart": 393.2222256932864
+          "apart": 333.91069316053915
         }
       },
       {
@@ -1891,16 +1877,16 @@
         "inputs": 55,
         "unpaired": 0,
         "compared": 660,
-        "matches": 7,
-        "share": 0.010606060606060607,
+        "matches": 4,
+        "share": 0.006060606060606061,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 77.336786363986,
-        "max": 453.2218024267969,
+        "median": 72.72019637882613,
+        "max": 345.116471293084,
         "worst": {
-          "id": "c043",
-          "key": "bhavaBala/8",
-          "apart": 453.2218024267969
+          "id": "c047",
+          "key": "bhavaBala/10",
+          "apart": 345.116471293084
         }
       },
       {
@@ -1987,18 +1973,18 @@
         "request": "month",
         "family": "event",
         "inputs": 51,
-        "unpaired": 71,
-        "compared": 10810,
-        "matches": 7511,
-        "share": 0.6948196114708604,
+        "unpaired": 6,
+        "compared": 10843,
+        "matches": 10635,
+        "share": 0.9808171170340312,
         "unit": "s",
         "tolerance": 60.0,
-        "median": 18.55475753545761,
-        "max": 85775.05428493023,
+        "median": 3.53085994720459,
+        "max": 83415.99381566048,
         "worst": {
-          "id": "c024",
-          "key": "event/yoga@24/0",
-          "apart": 85775.05428493023
+          "id": "c051",
+          "key": "event/nakshatra@27/0",
+          "apart": 83415.99381566048
         }
       },
       {
@@ -2006,28 +1992,28 @@
         "request": "month",
         "family": "limb",
         "inputs": 51,
-        "unpaired": 71,
-        "compared": 13870,
-        "matches": 13800,
-        "share": 0.9949531362653208,
+        "unpaired": 6,
+        "compared": 13903,
+        "matches": 13897,
+        "share": 0.999568438466518,
         "mismatches": [
           {
-            "id": "c004",
-            "key": "limb/tithi@2/0",
-            "sdk": 26,
-            "baseline": 25
+            "id": "c051",
+            "key": "limb/nakshatra@27/0",
+            "sdk": 17,
+            "baseline": 18
           },
           {
-            "id": "c004",
-            "key": "limb/karana@2/0",
-            "sdk": 2,
-            "baseline": 1
+            "id": "c051",
+            "key": "limb/nakshatra@27/1",
+            "sdk": 18,
+            "baseline": 19
           },
           {
-            "id": "c004",
-            "key": "limb/karana@2/1",
-            "sdk": 3,
-            "baseline": 2
+            "id": "c052",
+            "key": "limb/nakshatra@27/0",
+            "sdk": 17,
+            "baseline": 18
           }
         ]
       },
@@ -2117,8 +2103,8 @@
         "inputs": 54,
         "unpaired": 0,
         "compared": 378,
-        "matches": 197,
-        "share": 0.5211640211640212,
+        "matches": 198,
+        "share": 0.5238095238095238,
         "mismatches": [
           {
             "id": "c001",
@@ -2151,12 +2137,12 @@
         "share": 0.0,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 243443.9970518436,
-        "max": 647871.0177157976,
+        "median": 241223.08029761445,
+        "max": 647394.3417341493,
         "worst": {
-          "id": "c036",
+          "id": "c010",
           "key": "longitude/saham/ASHA",
-          "apart": 647871.0177157976
+          "apart": 647394.3417341493
         }
       },
       {
@@ -2540,16 +2526,16 @@
         "inputs": 53,
         "unpaired": 0,
         "compared": 25970,
-        "matches": 7845,
-        "share": 0.3020793222949557,
+        "matches": 7468,
+        "share": 0.2875625721986908,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 12.338144505496366,
-        "max": 393.2222256932864,
+        "median": 12.429150151522833,
+        "max": 333.91069316053915,
         "worst": {
           "id": "c043",
           "key": "shadbala/MOON/total@0",
-          "apart": 393.2222256932864
+          "apart": 333.91069316053915
         }
       },
       {
@@ -2559,16 +2545,16 @@
         "inputs": 53,
         "unpaired": 0,
         "compared": 6360,
-        "matches": 33,
-        "share": 0.005188679245283019,
+        "matches": 34,
+        "share": 0.005345911949685534,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 78.59703667760658,
-        "max": 453.2218024267969,
+        "median": 74.16640382514106,
+        "max": 432.30497685563694,
         "worst": {
-          "id": "c043",
-          "key": "bhavaBala/8@0",
-          "apart": 453.2218024267969
+          "id": "c028",
+          "key": "bhavaBala/11@3",
+          "apart": 432.30497685563694
         }
       },
       {
@@ -2608,8 +2594,8 @@
         "inputs": 53,
         "unpaired": 0,
         "compared": 46110,
-        "matches": 44775,
-        "share": 0.9710474951203644,
+        "matches": 44779,
+        "share": 0.9711342441986553,
         "mismatches": [
           {
             "id": "c001",
@@ -2635,14 +2621,14 @@
         "convention": "same",
         "request": "chart",
         "family": "longitude",
-        "inputs": 53,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 530,
-        "matches": 528,
-        "share": 0.9962264150943396,
+        "compared": 550,
+        "matches": 548,
+        "share": 0.9963636363636363,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 0.0001349920239590574,
+        "median": 0.00013464373296301346,
         "max": 12.047052557090865,
         "worst": {
           "id": "c048",
@@ -2654,60 +2640,60 @@
         "convention": "same",
         "request": "chart",
         "family": "sign",
-        "inputs": 53,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 530,
-        "matches": 530,
+        "compared": 550,
+        "matches": 550,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "chart",
         "family": "nakshatra",
-        "inputs": 53,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 530,
-        "matches": 530,
+        "compared": 550,
+        "matches": 550,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "chart",
         "family": "pada",
-        "inputs": 53,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 530,
-        "matches": 530,
+        "compared": 550,
+        "matches": 550,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "chart",
         "family": "retrograde",
-        "inputs": 53,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 477,
-        "matches": 477,
+        "compared": 495,
+        "matches": 495,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "chart",
         "family": "dashaLord",
-        "inputs": 53,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 4770,
-        "matches": 4770,
+        "compared": 4950,
+        "matches": 4950,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "chart",
         "family": "dashaStart",
-        "inputs": 53,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 4664,
-        "matches": 4664,
+        "compared": 4840,
+        "matches": 4840,
         "share": 1.0,
         "unit": "d",
         "tolerance": 1.0,
@@ -2772,14 +2758,14 @@
         "convention": "same",
         "request": "full",
         "family": "longitude",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 510,
-        "matches": 509,
-        "share": 0.9980392156862745,
+        "compared": 530,
+        "matches": 529,
+        "share": 0.9981132075471698,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 0.00013464332369039766,
+        "median": 0.00013451112863549497,
         "max": 7.089713628920435,
         "worst": {
           "id": "c046",
@@ -2791,70 +2777,70 @@
         "convention": "same",
         "request": "full",
         "family": "sign",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 510,
-        "matches": 510,
+        "compared": 530,
+        "matches": 530,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "full",
         "family": "nakshatra",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 510,
-        "matches": 510,
+        "compared": 530,
+        "matches": 530,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "full",
         "family": "pada",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 510,
-        "matches": 510,
+        "compared": 530,
+        "matches": 530,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "full",
         "family": "retrograde",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 459,
-        "matches": 459,
+        "compared": 477,
+        "matches": 477,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "full",
         "family": "varga",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 10710,
-        "matches": 10710,
+        "compared": 11130,
+        "matches": 11130,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "full",
         "family": "dashaLord",
-        "inputs": 51,
-        "unpaired": 18972,
-        "compared": 114444,
-        "matches": 114444,
+        "inputs": 53,
+        "unpaired": 19716,
+        "compared": 118932,
+        "matches": 118932,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "full",
         "family": "dashaStart",
-        "inputs": 51,
-        "unpaired": 18564,
-        "compared": 112608,
-        "matches": 112608,
+        "inputs": 53,
+        "unpaired": 19292,
+        "compared": 117024,
+        "matches": 117024,
         "share": 1.0,
         "unit": "d",
         "tolerance": 1.0,
@@ -2870,14 +2856,14 @@
         "convention": "same",
         "request": "full",
         "family": "shadbala",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 2499,
-        "matches": 2459,
-        "share": 0.9839935974389756,
+        "compared": 2597,
+        "matches": 2535,
+        "share": 0.9761262995764344,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 5.606505482091961e-9,
+        "median": 5.785626200349725e-9,
         "max": 120.00000001082026,
         "worst": {
           "id": "c022",
@@ -2889,14 +2875,14 @@
         "convention": "same",
         "request": "full",
         "family": "bhavaBala",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 612,
-        "matches": 578,
-        "share": 0.9444444444444444,
+        "compared": 636,
+        "matches": 583,
+        "share": 0.9166666666666666,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 0.0027812188559437345,
+        "median": 0.002825458506265477,
         "max": 120.0001850415224,
         "worst": {
           "id": "c022",
@@ -2908,21 +2894,21 @@
         "convention": "same",
         "request": "full",
         "family": "bindus",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 4896,
-        "matches": 4896,
+        "compared": 5088,
+        "matches": 5088,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "full",
         "family": "yoga",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 4437,
-        "matches": 4309,
-        "share": 0.9711516790624296,
+        "compared": 4611,
+        "matches": 4477,
+        "share": 0.9709390587725005,
         "mismatches": [
           {
             "id": "c001",
@@ -2948,10 +2934,10 @@
         "convention": "same",
         "request": "vargas",
         "family": "varga",
-        "inputs": 53,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 11130,
-        "matches": 11130,
+        "compared": 11550,
+        "matches": 11550,
         "share": 1.0
       },
       {
@@ -3398,14 +3384,14 @@
         "convention": "same",
         "request": "batch",
         "family": "longitude",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 5100,
-        "matches": 5090,
-        "share": 0.9980392156862745,
+        "compared": 5300,
+        "matches": 5290,
+        "share": 0.9981132075471698,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 0.0001349916146864416,
+        "median": 0.0001346380031463923,
         "max": 7.089713628920435,
         "worst": {
           "id": "c046",
@@ -3417,70 +3403,70 @@
         "convention": "same",
         "request": "batch",
         "family": "sign",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 5100,
-        "matches": 5100,
+        "compared": 5300,
+        "matches": 5300,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "batch",
         "family": "nakshatra",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 5100,
-        "matches": 5100,
+        "compared": 5300,
+        "matches": 5300,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "batch",
         "family": "pada",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 5100,
-        "matches": 5100,
+        "compared": 5300,
+        "matches": 5300,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "batch",
         "family": "retrograde",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 4590,
-        "matches": 4590,
+        "compared": 4770,
+        "matches": 4770,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "batch",
         "family": "varga",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 107100,
-        "matches": 107100,
+        "compared": 111300,
+        "matches": 111300,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "batch",
         "family": "dashaLord",
-        "inputs": 51,
-        "unpaired": 189720,
-        "compared": 1144440,
-        "matches": 1144440,
+        "inputs": 53,
+        "unpaired": 197160,
+        "compared": 1189320,
+        "matches": 1189320,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "batch",
         "family": "dashaStart",
-        "inputs": 51,
-        "unpaired": 185640,
-        "compared": 1126080,
-        "matches": 1126080,
+        "inputs": 53,
+        "unpaired": 192920,
+        "compared": 1170240,
+        "matches": 1170240,
         "share": 1.0,
         "unit": "d",
         "tolerance": 1.0,
@@ -3496,14 +3482,14 @@
         "convention": "same",
         "request": "batch",
         "family": "shadbala",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 24990,
-        "matches": 24730,
-        "share": 0.9895958383353342,
+        "compared": 25970,
+        "matches": 25506,
+        "share": 0.9821332306507509,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 5.6063900188974e-9,
+        "median": 5.79378500731309e-9,
         "max": 214.895235413436,
         "worst": {
           "id": "c022",
@@ -3515,14 +3501,14 @@
         "convention": "same",
         "request": "batch",
         "family": "bhavaBala",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 6120,
-        "matches": 5888,
-        "share": 0.9620915032679739,
+        "compared": 6360,
+        "matches": 5955,
+        "share": 0.9363207547169812,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 0.0026609626320919233,
+        "median": 0.0027282721094366025,
         "max": 214.89195994599385,
         "worst": {
           "id": "c022",
@@ -3534,21 +3520,21 @@
         "convention": "same",
         "request": "batch",
         "family": "bindus",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 48960,
-        "matches": 48960,
+        "compared": 50880,
+        "matches": 50880,
         "share": 1.0
       },
       {
         "convention": "same",
         "request": "batch",
         "family": "yoga",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 44370,
-        "matches": 43110,
-        "share": 0.9716024340770791,
+        "compared": 46110,
+        "matches": 44802,
+        "share": 0.9716330513988289,
         "mismatches": [
           {
             "id": "c001",
@@ -3586,12 +3572,12 @@
         "share": 0.9963636363636363,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 3.6425262806005776e-8,
-        "max": 12.040305302252818,
+        "median": 3.765308065339923e-8,
+        "max": 12.040305302662091,
         "worst": {
           "id": "c048",
           "key": "longitude/LAGNA",
-          "apart": 12.040305302252818
+          "apart": 12.040305302662091
         }
       },
       {
@@ -3608,12 +3594,12 @@
         "share": 0.9981132075471698,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 3.437889972701669e-8,
-        "max": 7.097928484199656,
+        "median": 3.601599019020796e-8,
+        "max": 7.097928629900707,
         "worst": {
           "id": "c046",
           "key": "longitude/LAGNA",
-          "apart": 7.097928484199656
+          "apart": 7.097928629900707
         }
       },
       {
@@ -3630,12 +3616,12 @@
         "share": 0.9981132075471698,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 3.437889972701669e-8,
-        "max": 7.097928484199656,
+        "median": 3.6425262806005776e-8,
+        "max": 7.097928629900707,
         "worst": {
           "id": "c046",
           "key": "longitude/LAGNA@0",
-          "apart": 7.097928484199656
+          "apart": 7.097928629900707
         }
       },
       {
@@ -3675,11 +3661,11 @@
         "unit": "″",
         "tolerance": 1.0,
         "median": 4.620687832357362e-7,
-        "max": 0.0008040332431846764,
+        "max": 0.0008042714398470707,
         "worst": {
           "id": "c046",
-          "key": "longitude/transit/SUN",
-          "apart": 0.0008040332431846764
+          "key": "longitude/transit/RAHU",
+          "apart": 0.0008042714398470707
         }
       },
       {
@@ -3689,14 +3675,14 @@
         "convention": "same",
         "request": "chart",
         "family": "longitude",
-        "inputs": 53,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 530,
-        "matches": 528,
-        "share": 0.9962264150943396,
+        "compared": 550,
+        "matches": 548,
+        "share": 0.9963636363636363,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 0.0001349920239590574,
+        "median": 0.00013464332369039766,
         "max": 12.047052557500137,
         "worst": {
           "id": "c048",
@@ -3711,19 +3697,19 @@
         "convention": "same",
         "request": "full",
         "family": "longitude",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 510,
-        "matches": 509,
-        "share": 0.9980392156862745,
+        "compared": 530,
+        "matches": 529,
+        "share": 0.9981132075471698,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 0.00013464332369039766,
-        "max": 7.089713628920435,
+        "median": 0.00013451153790811077,
+        "max": 7.089713774621487,
         "worst": {
           "id": "c046",
           "key": "longitude/LAGNA",
-          "apart": 7.089713628920435
+          "apart": 7.089713774621487
         }
       },
       {
@@ -3733,19 +3719,19 @@
         "convention": "same",
         "request": "batch",
         "family": "longitude",
-        "inputs": 51,
+        "inputs": 53,
         "unpaired": 0,
-        "compared": 5100,
-        "matches": 5090,
-        "share": 0.9980392156862745,
+        "compared": 5300,
+        "matches": 5290,
+        "share": 0.9981132075471698,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 0.0001349916146864416,
-        "max": 7.089713628920435,
+        "median": 0.00013462122296914458,
+        "max": 7.089713774621487,
         "worst": {
           "id": "c046",
           "key": "longitude/LAGNA@0",
-          "apart": 7.089713628920435
+          "apart": 7.089713774621487
         }
       },
       {
@@ -3762,7 +3748,7 @@
         "share": 0.9787798408488063,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 0.00013303815649123862,
+        "median": 0.00013228591342340223,
         "max": 12.047052557090865,
         "worst": {
           "id": "c048",
@@ -3784,12 +3770,12 @@
         "share": 1.0,
         "unit": "″",
         "tolerance": 1.0,
-        "median": 0.00014566012396244332,
-        "max": 0.00844077826513967,
+        "median": 0.00014560037016053684,
+        "max": 0.00844101687107468,
         "worst": {
           "id": "c046",
-          "key": "longitude/transit/MARS",
-          "apart": 0.00844077826513967
+          "key": "longitude/transit/RAHU",
+          "apart": 0.00844101687107468
         }
       },
       {
@@ -3829,11 +3815,11 @@
         "unit": "″",
         "tolerance": 1.0,
         "median": 0.0,
-        "max": 0.0,
+        "max": 0.00002473889253451489,
         "worst": {
-          "id": "c001",
-          "key": "longitude/SUN",
-          "apart": 0
+          "id": "c054",
+          "key": "longitude/MOON",
+          "apart": 0.00002473889253451489
         }
       },
       {
@@ -3851,11 +3837,11 @@
         "unit": "″",
         "tolerance": 1.0,
         "median": 0.0,
-        "max": 0.0,
+        "max": 0.000024908740670070983,
         "worst": {
-          "id": "c001",
-          "key": "longitude/SUN@0",
-          "apart": 0
+          "id": "c054",
+          "key": "longitude/MOON@9",
+          "apart": 0.000024908740670070983
         }
       },
       {
@@ -3873,11 +3859,11 @@
         "unit": "″",
         "tolerance": 1.0,
         "median": 0.0,
-        "max": 335678.91400106245,
+        "max": 335678.9140010622,
         "worst": {
           "id": "c043",
-          "key": "longitude/cusp/8",
-          "apart": 335678.91400106245
+          "key": "longitude/cusp/2",
+          "apart": 335678.9140010622
         }
       },
       {
@@ -3895,11 +3881,11 @@
         "unit": "″",
         "tolerance": 1.0,
         "median": 0.0,
-        "max": 0.0,
+        "max": 1.275293470826e-6,
         "worst": {
-          "id": "c001",
-          "key": "longitude/transit/SUN",
-          "apart": 0
+          "id": "c034",
+          "key": "longitude/transit/VENUS",
+          "apart": 1.275293470826e-6
         }
       },
       {
@@ -4338,6 +4324,41 @@
         }
       },
       {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "source",
+        "request": "dashas",
+        "family": "dashaLord",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4293,
+        "matches": 4293,
+        "share": 1.0
+      },
+      {
+        "rung": "pyjhora",
+        "rank": 3,
+        "side": "sdk",
+        "convention": "source",
+        "request": "dashas",
+        "family": "dashaStart",
+        "inputs": 53,
+        "unpaired": 0,
+        "compared": 4240,
+        "matches": 4240,
+        "share": 1.0,
+        "unit": "d",
+        "tolerance": 1.0,
+        "median": 0.09723877720534801,
+        "max": 0.3217856572009623,
+        "worst": {
+          "id": "c005",
+          "key": "dashaStart/VIMSHOTTARI/1.3",
+          "apart": 0.3217856572009623
+        }
+      },
+      {
         "rung": "committee",
         "rank": 1,
         "side": "sdk",
@@ -4347,11 +4368,11 @@
         "inputs": 22,
         "unpaired": 0,
         "compared": 52,
-        "matches": 0,
-        "share": 0.0,
+        "matches": 18,
+        "share": 0.34615384615384615,
         "unit": "s",
         "tolerance": 60.0,
-        "median": 170.43673396110535,
+        "median": 124.10980761051178,
         "max": 11334.657450020313,
         "worst": {
           "id": "npns 2025-04-17",
@@ -4413,16 +4434,16 @@
         "inputs": 1,
         "unpaired": 0,
         "compared": 7,
-        "matches": 0,
-        "share": 0.0,
+        "matches": 7,
+        "share": 1.0,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 40.304271437672014,
-        "max": 152.6112836247808,
+        "median": 0.04253844963324127,
+        "max": 0.6930766004959423,
         "worst": {
           "id": "raman",
-          "key": "shadbala/MOON/total",
-          "apart": 152.6112836247808
+          "key": "shadbala/SUN/total",
+          "apart": 0.6930766004959423
         }
       },
       {
@@ -4483,12 +4504,12 @@
         "share": 1.0,
         "unit": "virupas",
         "tolerance": 1.0,
-        "median": 0.0425480608822113,
-        "max": 0.6930669892469723,
+        "median": 0.04253844963324127,
+        "max": 0.6930766004959423,
         "worst": {
           "id": "raman",
           "key": "shadbala/SUN/total",
-          "apart": 0.6930669892469723
+          "apart": 0.6930766004959423
         }
       },
       {
@@ -4636,10 +4657,10 @@
         "convention": "same",
         "request": "milan",
         "family": "porutham",
-        "inputs": 52,
+        "inputs": 55,
         "unpaired": 0,
-        "compared": 156,
-        "matches": 156,
+        "compared": 165,
+        "matches": 165,
         "share": 1.0
       },
       {
@@ -4679,42 +4700,6 @@
     "unanswered": [
       {
         "convention": "same",
-        "request": "chart",
-        "id": "c028",
-        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.11188888888888"
-      },
-      {
-        "convention": "same",
-        "request": "chart",
-        "id": "c029",
-        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.18277777777777"
-      },
-      {
-        "convention": "same",
-        "request": "full",
-        "id": "c028",
-        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.11188888888888"
-      },
-      {
-        "convention": "same",
-        "request": "full",
-        "id": "c029",
-        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.18277777777777"
-      },
-      {
-        "convention": "same",
-        "request": "vargas",
-        "id": "c028",
-        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.11188888888888"
-      },
-      {
-        "convention": "same",
-        "request": "vargas",
-        "id": "c029",
-        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.18277777777777"
-      },
-      {
-        "convention": "same",
         "request": "strength",
         "id": "c047",
         "reason": "the Sun at JD 2378132.0006944444: the provider answered OutOfRange"
@@ -4724,18 +4709,6 @@
         "request": "strength",
         "id": "c048",
         "reason": "the Sun at JD 2597685.2871633684: the provider answered OutOfRange"
-      },
-      {
-        "convention": "same",
-        "request": "batch",
-        "id": "c028",
-        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.11188888888888"
-      },
-      {
-        "convention": "same",
-        "request": "batch",
-        "id": "c029",
-        "reason": "BHAVA_LAGNA needs an elapsed time of 0 to 36 hours since sunrise, not 102.18277777777777"
       }
     ]
   }
