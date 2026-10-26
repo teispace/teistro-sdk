@@ -7,6 +7,8 @@
 //! carries, so Rust and every binding read one type. [`RuleRequest::rule_set`]
 //! validates it into a [`RuleSet`], which a reading evaluates.
 
+use std::sync::{Arc, Mutex, PoisonError};
+
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_rules::ThreePairsRules;
@@ -14,7 +16,9 @@ use teistro_rules::longevity::{
     AshtakavargaAyus, AshtakavargaAyusRules, Ayurdaya, AyurdayaRules, Chakrayus, ChakrayusRules,
     Dasayus, Marakas, Rasmi, RasmiRules, SpanChoice, ThreePairs,
 };
-use teistro_rules::{HouseReading, Readings, Rule, RuleResult, Tables, check_references, shipped};
+use teistro_rules::{
+    HouseReading, Readings, Rule, RuleIndex, RuleResult, Tables, check_references, shipped,
+};
 
 use crate::reading::RuleNeeds;
 
@@ -337,31 +341,21 @@ impl RuleRequest {
     /// `INVALID_ARG` for a key given twice or a reference the set cannot
     /// resolve, naming it.
     pub fn rule_set(&self) -> Result<RuleSet, Error> {
-        let mut rules: Vec<Rule> = self
-            .shipped
-            .iter()
-            .flat_map(|set| set.rules().iter().cloned())
-            .collect();
-        rules.extend(self.rules.iter().cloned());
-        let mut keys = std::collections::BTreeSet::new();
-        for rule in &rules {
-            if !keys.insert(rule.key.as_str()) {
-                return Err(Error::invalid_arg(format!(
-                    "the rule `{}` is given twice, once in a shipped set or twice among the rules",
-                    rule.key
-                ))
-                .with_field("rules"));
-            }
-        }
-        check_references(&rules)
-            .map_err(|reason| Error::invalid_arg(reason).with_field("rules"))?;
-        // A table no evaluator holds would leave its predicate silently
-        // false, so a rule naming one is refused here instead.
-        for rule in &rules {
-            Tables::classical()
-                .check(rule)
-                .map_err(|reason| Error::invalid_arg(reason).with_field("rules"))?;
-        }
+        let Checked {
+            rules,
+            index,
+            needs,
+        } = if self.rules.is_empty() {
+            shipped_selection(&self.shipped)?
+        } else {
+            let rules: Vec<Rule> = self
+                .shipped
+                .iter()
+                .flat_map(|set| set.rules().iter().cloned())
+                .chain(self.rules.iter().cloned())
+                .collect();
+            validated(rules)?
+        };
         // A longevity choice without the longevity readings would be read
         // by nothing, so it is refused rather than ignored.
         for (field, given) in [
@@ -380,8 +374,9 @@ impl RuleRequest {
             }
         }
         Ok(RuleSet {
-            needs: RuleNeeds::of(&rules),
+            needs,
             rules,
+            index,
             readings: self.readings,
             houses: self.houses,
             longevity: self.longevity.then(|| LongevityRules {
@@ -393,6 +388,78 @@ impl RuleRequest {
             }),
         })
     }
+}
+
+/// Rules checked into a set's: each key once, every key a rule names in
+/// the set and no rule reaching itself, and every table a rule names one
+/// an evaluator holds, with what the rules read of a chart.
+fn validated(rules: Vec<Rule>) -> Result<Checked, Error> {
+    let mut keys = std::collections::BTreeSet::new();
+    for rule in &rules {
+        if !keys.insert(rule.key.as_str()) {
+            return Err(Error::invalid_arg(format!(
+                "the rule `{}` is given twice, once in a shipped set or twice among the rules",
+                rule.key
+            ))
+            .with_field("rules"));
+        }
+    }
+    check_references(&rules).map_err(|reason| Error::invalid_arg(reason).with_field("rules"))?;
+    // A table no evaluator holds would leave its predicate silently
+    // false, so a rule naming one is refused here instead.
+    for rule in &rules {
+        Tables::classical()
+            .check(rule)
+            .map_err(|reason| Error::invalid_arg(reason).with_field("rules"))?;
+    }
+    Ok(Checked {
+        needs: RuleNeeds::of(&rules),
+        index: RuleIndex::of(&rules),
+        rules: rules.into(),
+    })
+}
+
+/// A set's rules checked, with their index and what they read of a chart:
+/// what [`RuleSet`] is built of and [`shipped_selection`] keeps.
+#[derive(Clone, Debug)]
+struct Checked {
+    rules: Arc<[Rule]>,
+    index: RuleIndex,
+    needs: RuleNeeds,
+}
+
+/// The most selections of shipped sets [`shipped_selection`] keeps: an
+/// application asks for a few, and one that asks for every order of every
+/// set is validated each time past this rather than held forever.
+const SELECTIONS_KEPT: usize = 16;
+
+/// A selection of the shipped sets validated as [`validated`] does, once a
+/// process: it is the same answer every time, and over the five shipped
+/// sets it was 8 ms of cloning and walking 3,130 rules on every request a
+/// binding made, longer than the rules took to evaluate. A refused
+/// selection is not kept, so it is refused alike each time.
+fn shipped_selection(sets: &[ShippedRules]) -> Result<Checked, Error> {
+    type Kept = Vec<(Vec<ShippedRules>, Checked)>;
+    static KEPT: Mutex<Kept> = Mutex::new(Vec::new());
+    let kept = |kept: &Kept| {
+        kept.iter()
+            .find(|(asked, _)| asked == sets)
+            .map(|(_, checked)| checked.clone())
+    };
+    // A poisoned lock held only a list of answers, each whole when pushed.
+    if let Some(found) = kept(&KEPT.lock().unwrap_or_else(PoisonError::into_inner)) {
+        return Ok(found);
+    }
+    let found = validated(
+        sets.iter()
+            .flat_map(|set| set.rules().iter().cloned())
+            .collect(),
+    )?;
+    let mut held = KEPT.lock().unwrap_or_else(PoisonError::into_inner);
+    if kept(&held).is_none() && held.len() < SELECTIONS_KEPT {
+        held.push((sets.to_vec(), found.clone()));
+    }
+    Ok(found)
 }
 
 /// The choices the longevity readings are read under.
@@ -408,7 +475,10 @@ pub(crate) struct LongevityRules {
 /// A validated set of rules with what else a reading should answer.
 #[derive(Clone, Debug, PartialEq)]
 pub struct RuleSet {
-    rules: Vec<Rule>,
+    /// Shared with every set of the same shipped selection.
+    rules: Arc<[Rule]>,
+    /// Their index by key, which a reference is found through.
+    index: RuleIndex,
     /// What its rules read of a chart, decided once when the set is built.
     needs: RuleNeeds,
     readings: RuleReadings,
@@ -440,6 +510,11 @@ impl RuleSet {
     #[must_use]
     pub fn rules(&self) -> &[Rule] {
         &self.rules
+    }
+
+    /// Its rules' index by key.
+    pub(crate) const fn index(&self) -> &RuleIndex {
+        &self.index
     }
 
     /// What its rules read of a chart.
