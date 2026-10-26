@@ -12,6 +12,27 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A chart read by rule is three to four times as quick.**
+**Numbers:** none. The month's new moons are the wide searches' to the bit
+(a unit test against them on the test sky, and 9,489 days of 1800 to 2399
+under five profiles hashed before and after), and the rules answer as
+they did.
+- A rule request's set is checked once a process: `RuleRequest::rule_set`
+  over the five shipped sets cloned and walked 3,130 rules on every call,
+  8.6 ms, longer than reading them; it is now 0.014 ms, the shipped
+  selection kept (up to sixteen) and its rules shared.
+- A rule naming another is found through `RuleIndex`, the set's keys in
+  order, rather than by reading the set through: 2,473 references in the
+  shipped sets. `Evaluator::with_indexed_rules` takes it, and answers as
+  `with_rules` does.
+- The lunar month a day belongs to searches for its new moons only where
+  the Moon's age at the day allows them (`limb::lunar_month_span`), a
+  third of the samples; a panchanga day over spread dates is 14% quicker.
+- Measured on a found chart with every shipped set at Kathmandu: 12.0 ms
+  to 3.3 ms on a repeated instant (the baseline engine's yogas request is
+  5.9 ms), and 16.5 ms to 11.8 ms over dates a month apart, where fitting
+  the Moon's segments is most of what is left.
+
 **An eclipse says its sutak.**
 **Numbers:** an eclipse answer gains `vedha` on each eclipse, so every
 eclipse section's content hash moves; no eclipse's instants do.

@@ -466,7 +466,7 @@ impl<'a> ChartArea<'a> {
             let lords = self.pada_lords_of(&document)?;
             let evaluator = inputs
                 .evaluator(readings)
-                .with_rules(set.rules())
+                .with_indexed_rules(set.rules(), set.index())
                 .with_pada_lords(&lords);
             let present = set
                 .rules()

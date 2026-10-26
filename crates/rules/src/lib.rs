@@ -72,7 +72,7 @@ pub use longevity::{
 };
 pub use reference::{BodyRef, BodySubject, Class, SignRef, Subject};
 pub use rule::{
-    Cancellation, Group, LifeClass, NetStatus, Outcome, Rule, Scope, Severity, Unit,
+    Cancellation, Group, LifeClass, NetStatus, Outcome, Rule, RuleIndex, Scope, Severity, Unit,
     check_references, key_of,
 };
 pub use table::{SignDegree, Table, TableKey, Tables};

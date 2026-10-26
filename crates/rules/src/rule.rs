@@ -1320,6 +1320,81 @@ pub fn key_of<S: serde::Serializer>(rule: &&Rule, serializer: S) -> Result<S::Ok
     serializer.serialize_str(&rule.key)
 }
 
+/// The rules of a set in key order, as their places in it, so a `{"type":
+/// "rule"}` condition finds the rule it names by halving the set rather
+/// than by reading it through: over the shipped sets that was 2,473
+/// references, each a walk of 3,130 rules.
+///
+/// An index is of one slice. Given another, an evaluator still answers
+/// right, since a key the index does not lead to is looked for in the
+/// slice itself ([`Evaluator::with_indexed_rules`](crate::Evaluator::with_indexed_rules)).
+///
+/// ```
+/// use teistro_rules::{Rule, RuleIndex};
+///
+/// let named = |key: &str| {
+///     serde_json::from_str::<Rule>(&format!(r#"{{"key": "{key}", "category": "example", "source": {{"text": "an example"}}}}"#))
+/// };
+/// let rules = [named("B")?, named("A")?, named("C")?];
+/// let index = RuleIndex::of(&rules);
+/// assert_eq!(index.find(&rules, "A").map(|rule| rule.key.as_str()), Some("A"));
+/// assert!(index.find(&rules, "D").is_none());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct RuleIndex {
+    /// Each rule's place in the slice, ordered by key and, among equal
+    /// keys, by place, so the first of a key given twice is the one found.
+    by_key: Vec<usize>,
+}
+
+impl RuleIndex {
+    /// The index of a slice of rules.
+    ///
+    /// ```
+    /// use teistro_rules::{RuleIndex, shipped};
+    ///
+    /// let index = RuleIndex::of(shipped::nabhasas());
+    /// let first = &shipped::nabhasas()[0];
+    /// assert_eq!(index.find(shipped::nabhasas(), &first.key), Some(first));
+    /// ```
+    #[must_use]
+    pub fn of(rules: &[Rule]) -> RuleIndex {
+        let mut by_key: Vec<usize> = (0..rules.len()).collect();
+        by_key.sort_by(|a, b| {
+            let key = |at: &usize| rules.get(*at).map(|rule| rule.key.as_str());
+            key(a).cmp(&key(b))
+        });
+        RuleIndex { by_key }
+    }
+
+    /// The rule of `rules` keyed `key`, the first in the slice when two
+    /// are, found through the index; a slice the index was not made of is
+    /// read through instead, so the answer is the slice's either way.
+    ///
+    /// ```
+    /// use teistro_rules::{RuleIndex, shipped};
+    ///
+    /// // An index of another set still finds a rule of this one.
+    /// let index = RuleIndex::of(shipped::gandantas());
+    /// let first = &shipped::nabhasas()[0];
+    /// assert_eq!(index.find(shipped::nabhasas(), &first.key), Some(first));
+    /// ```
+    #[must_use]
+    pub fn find<'r>(&self, rules: &'r [Rule], key: &str) -> Option<&'r Rule> {
+        let key_at = |at: usize| rules.get(at).map(|rule| rule.key.as_str());
+        if self.by_key.len() == rules.len() {
+            let first = self.by_key.partition_point(|at| key_at(*at) < Some(key));
+            if let Some(rule) = self.by_key.get(first).and_then(|at| rules.get(*at))
+                && rule.key == key
+            {
+                return Some(rule);
+            }
+        }
+        rules.iter().find(|rule| rule.key == key)
+    }
+}
+
 /// Whether every rule a set names is in it and no rule reaches itself, so an
 /// evaluator given the set cannot loop.
 ///

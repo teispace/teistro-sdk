@@ -16,7 +16,7 @@ use crate::language::{
     Body, Condition, EclipseKind, Edge, House, KarakaScheme, NodeSide, Relation,
 };
 use crate::reference::{BodyRef, BodySubject, Class, SignRef, Subject};
-use crate::rule::{NetStatus, Outcome, Rule, Severity};
+use crate::rule::{NetStatus, Outcome, Rule, RuleIndex, Severity};
 use crate::table::{Table, Tables};
 use crate::trace::{Explanation, NoTrace, Recorder, Resolved, Tracer};
 
@@ -643,6 +643,8 @@ pub struct Evaluator<'a> {
     points: &'a [PointAt],
     /// The rules a `{"type": "rule"}` condition can name.
     rules: &'a [Rule],
+    /// Their index by key, when the caller made one.
+    index: Option<&'a RuleIndex>,
     /// The sky a `transit-in-house` condition reads, when given one.
     transits: Option<&'a TransitSky>,
     /// The lord each sign's pada counts to, Aries to Pisces, when the caller
@@ -739,6 +741,7 @@ impl<'a> Evaluator<'a> {
             vargas: &[],
             points: &[],
             rules: &[],
+            index: None,
             transits: None,
             pada_lords: None,
             bound: None,
@@ -1003,7 +1006,56 @@ impl<'a> Evaluator<'a> {
     /// ```
     #[must_use]
     pub const fn with_rules(self, rules: &'a [Rule]) -> Evaluator<'a> {
-        Evaluator { rules, ..self }
+        Evaluator {
+            rules,
+            index: None,
+            ..self
+        }
+    }
+
+    /// The same evaluator, finding a rule a condition names through
+    /// `index`, which [`RuleIndex::of`] made of `rules` once for every
+    /// chart a set is read over. The answers are [`Evaluator::with_rules`]'s.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{House, Placement, RuleChart};
+    /// # let chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// use teistro_rules::{Evaluator, Readings, RuleIndex, shipped};
+    ///
+    /// let rules = shipped::nabhasas();
+    /// let index = RuleIndex::of(rules);
+    /// let plain = Evaluator::new(&chart, Readings::TEXTS).with_rules(rules);
+    /// let indexed = Evaluator::new(&chart, Readings::TEXTS).with_indexed_rules(rules, &index);
+    /// for rule in rules {
+    ///     assert_eq!(indexed.evaluate(rule), plain.evaluate(rule));
+    /// }
+    /// ```
+    #[must_use]
+    pub const fn with_indexed_rules(
+        self,
+        rules: &'a [Rule],
+        index: &'a RuleIndex,
+    ) -> Evaluator<'a> {
+        Evaluator {
+            rules,
+            index: Some(index),
+            ..self
+        }
     }
 
     /// The same evaluator, counting each sign's pada to the lord named here,
@@ -2245,7 +2297,11 @@ impl<'a> Evaluator<'a> {
                 held
             }
             Condition::RuleHolds { key } => {
-                let Some(rule) = self.rules.iter().find(|rule| rule.key == *key) else {
+                let found = match self.index {
+                    Some(index) => index.find(self.rules, key),
+                    None => self.rules.iter().find(|rule| rule.key == *key),
+                };
+                let Some(rule) = found else {
                     return false;
                 };
                 // A referenced rule answers as it would on its own, and what it
