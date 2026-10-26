@@ -1,5 +1,6 @@
-//! What a chart's instant falls in: the span of the sign rising and the
-//! eclipse, if any, seen where the chart is cast.
+//! What a chart's instant falls in: the span of the sign rising, the
+//! Moon's stay in its nakshatra, and the eclipse, if any, seen where the
+//! chart is cast.
 //!
 //! Neither is a limb of the day. The day's almanac holds the tithi's and
 //! the nakshatra's spans, but the lagna moves at its own rate through a
@@ -13,6 +14,7 @@ use teistro_core::Error;
 use teistro_core::catalogue::Rashi;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Ut1, Utc};
+use teistro_time::GhatiPala;
 
 /// How far the sign's edges are looked for either side of the instant,
 /// days. A sign rises in under six hours outside the polar circles; inside
@@ -34,6 +36,7 @@ const TOLERANCE_DAYS: f64 = 1.0 / 86_400.0;
 ///
 /// let moment = Moment {
 ///     rising: RisingSign { sign: Rashi::Leo, rose: None, sets: None },
+///     nakshatra: None,
 ///     eclipse: BirthEclipse::None,
 /// };
 /// assert_eq!(serde_json::to_value(moment).unwrap()["eclipse"]["kind"], "NONE");
@@ -43,8 +46,103 @@ const TOLERANCE_DAYS: f64 = 1.0 / 86_400.0;
 pub struct Moment {
     /// The sign rising at the instant and when it rose and sets.
     pub rising: RisingSign,
+    /// The Moon's stay in its nakshatra, with the bhayat and bhabhoga a
+    /// janma patrika prints; `None` on a tropical chart, where a
+    /// nakshatra means nothing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nakshatra: Option<MoonStay>,
     /// The eclipse the instant falls in, as seen where the chart is cast.
     pub eclipse: BirthEclipse,
+}
+
+/// The vipalas in a day: sixty ghatis of sixty palas of sixty vipalas.
+const VIPALAS_PER_DAY: f64 = 216_000.0;
+
+/// The Moon's stay in the nakshatra it holds at an instant: when it
+/// entered it and when it leaves, and the two counts a janma patrika
+/// prints of them in ghatis of twenty-four minutes, sixty to a day
+/// (C756). The **bhayat** is how much of the stay had passed at the
+/// instant, the **bhabhoga** the whole stay, which runs to some
+/// sixty-seven ghatis, past the sixty a day's count holds; the share
+/// left, `1 - bhayat / bhabhoga`, is the Vimshottari balance at birth.
+///
+/// ```
+/// use teistro_chart::MoonStay;
+/// use teistro_core::interval::Interval;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_time::GhatiPala;
+///
+/// // A star held for a day and a tenth, the birth a quarter of a day in.
+/// let stay = MoonStay::of(Interval::literal(2_460_000.0, 2_460_001.1), JulianDay::literal(2_460_000.25))?;
+/// assert_eq!(stay.bhayat, GhatiPala { ghati: 15, pala: 0, vipala: 0 });
+/// assert_eq!(stay.bhabhoga, GhatiPala { ghati: 66, pala: 0, vipala: 0 });
+/// // An instant outside the stay is refused.
+/// assert!(MoonStay::of(Interval::literal(2_460_000.0, 2_460_001.1), JulianDay::literal(2_459_999.0)).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct MoonStay {
+    /// When the Moon entered the nakshatra, UTC.
+    pub entered: JulianDay<Utc>,
+    /// When it leaves it, UTC.
+    pub leaves: JulianDay<Utc>,
+    /// The part of the stay passed at the instant, in ghati, pala and vipala.
+    pub bhayat: GhatiPala,
+    /// The whole stay, likewise.
+    pub bhabhoga: GhatiPala,
+}
+
+impl MoonStay {
+    /// The stay `span` the instant `at` falls in, its counts rounded to
+    /// the vipala.
+    ///
+    /// ```
+    /// use teistro_chart::MoonStay;
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_time::GhatiPala;
+    ///
+    /// // Born as the Moon leaves the star: the whole stay has passed.
+    /// let span = Interval::literal(2_460_000.0, 2_460_001.0);
+    /// let stay = MoonStay::of(span, JulianDay::literal(2_460_001.0))?;
+    /// assert_eq!(stay.bhayat, stay.bhabhoga);
+    /// assert_eq!(stay.bhabhoga, GhatiPala { ghati: 60, pala: 0, vipala: 0 });
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// An instant outside the span, named `at`.
+    pub fn of(span: Interval, at: JulianDay<Utc>) -> Result<MoonStay, Error> {
+        if !(span.from.get() <= at.get() && at.get() <= span.to.get()) {
+            return Err(Error::invalid_arg(format!(
+                "the instant {} lies outside the Moon's stay, {} to {}",
+                at.get(),
+                span.from.get(),
+                span.to.get()
+            ))
+            .with_field("at"));
+        }
+        let count = |days: f64| GhatiPala::from_vipalas(rounded_vipalas(days));
+        Ok(MoonStay {
+            entered: span.from,
+            leaves: span.to,
+            bhayat: count(at.get() - span.from.get()),
+            bhabhoga: count(span.days()),
+        })
+    }
+}
+
+/// A span of days as whole vipalas, which a nakshatra's stay of under
+/// three days holds far inside a `u32`.
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "a stay is non-negative and under three days, some 650 000 vipalas"
+)]
+fn rounded_vipalas(days: f64) -> u32 {
+    (days * VIPALAS_PER_DAY).round().max(0.0) as u32
 }
 
 /// The sign rising at an instant, and its span.

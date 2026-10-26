@@ -1636,6 +1636,15 @@ void main() {
           '${numberOrDash(fell.rising.sets)} ${fell.eclipse.kind.key} '
           '${numberOrDash(fell.eclipse.greatest)}',
     );
+    final stay = fell.nakshatra;
+    String count(GhatiPala g) => '${g.ghati}-${g.pala}-${g.vipala}';
+    put(
+      'chart-$i-moon-stay',
+      stay == null
+          ? '-'
+          : '${number(stay.entered)} ${number(stay.leaves)} '
+              '${count(stay.bhayat)} ${count(stay.bhabhoga)}',
+    );
     final qualified = b.qualified.map((g) => g.fullKey).join(',');
     put(
       'chart-$i-brahma',

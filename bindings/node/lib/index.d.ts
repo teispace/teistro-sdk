@@ -843,17 +843,38 @@ export interface MomentEclipse {
 }
 
 /**
+ * The Moon's stay in the nakshatra it holds at a chart's instant, and the
+ * two counts a janma patrika prints of it in ghatis of twenty-four minutes
+ * (C756): the bhayat, how much had passed, and the bhabhoga, the whole stay,
+ * which can run past sixty ghatis.
+ */
+export interface MoonStay {
+  /** When the Moon entered the nakshatra, a UTC Julian day. */
+  readonly entered: number;
+  /** When it leaves it, a UTC Julian day. */
+  readonly leaves: number;
+  /** The stay passed at the instant. */
+  readonly bhayat: GhatiPala;
+  /** The whole stay. */
+  readonly bhabhoga: GhatiPala;
+}
+
+/**
  * What a chart's instant falls in: the sign rising and its span, which BPHS
- * ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart
- * is cast, which Brihat Jataka ch. 6 v. 9 reads (C378).
+ * ch. 92 v. 4's lagna gandanta reads, the eclipse seen where the chart is
+ * cast, which Brihat Jataka ch. 6 v. 9 reads (C378), and the Moon's stay in
+ * its nakshatra.
  *
  * @example
  * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, moment: true });
  * console.log(chart.moment?.rising.sign, chart.moment?.eclipse.kind);
+ * console.log(chart.moment?.nakshatra?.bhayat, chart.moment?.nakshatra?.bhabhoga);
  */
 export interface Moment {
   readonly rising: RisingSign;
   readonly eclipse: MomentEclipse;
+  /** The Moon's stay in its nakshatra; `null` on a tropical chart, where a nakshatra means nothing. */
+  readonly nakshatra: MoonStay | null;
 }
 
 /** What a gochar reading counted its houses from, and that point's sign. */

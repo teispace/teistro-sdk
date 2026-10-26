@@ -110,6 +110,11 @@ public final class ParityRunner {
         return keys.isEmpty() ? "-" : String.join("+", keys);
     }
 
+    /** A ghati count as the other runners print it. */
+    private static String count(GhatiPala g) {
+        return g.ghati() + "-" + g.pala() + "-" + g.vipala();
+    }
+
     /** Python's {@code number} on an int: {@code str(value)}. */
     static String number(long value) {
         return Long.toString(value);
@@ -1864,6 +1869,10 @@ public final class ParityRunner {
         put(c + "-moment", fell.rising().sign().fullKey() + " " + bound(fell.rising().rose()) + " "
                 + bound(fell.rising().sets()) + " " + fell.eclipse().kind().key() + " "
                 + bound(fell.eclipse().greatest()));
+        put(c + "-moon-stay", fell.nakshatra()
+                .map(stay -> number(stay.entered()) + " " + number(stay.leaves()) + " "
+                        + count(stay.bhayat()) + " " + count(stay.bhabhoga()))
+                .orElse("-"));
         put(c + "-brahma", brahma.rule().key() + " " + brahma.countedFrom().fullKey() + " "
                 + grahaKeys(brahma.qualified())
                 + " " + (brahma.graha() != null ? brahma.graha().fullKey() : "-")

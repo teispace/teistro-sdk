@@ -4669,6 +4669,17 @@
           "$ref": "#/$defs/BirthEclipse",
           "description": "The eclipse the instant falls in, as seen where the chart is cast."
         },
+        "nakshatra": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MoonStay"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The Moon's stay in its nakshatra, with the bhayat and bhabhoga a janma patrika prints; `None` on a tropical chart, where a nakshatra means nothing."
+        },
         "rising": {
           "$ref": "#/$defs/RisingSign",
           "description": "The sign rising at the instant and when it rose and sets."
@@ -4790,6 +4801,34 @@
           "type": "string"
         }
       ]
+    },
+    "MoonStay": {
+      "description": "The Moon's stay in the nakshatra it holds at an instant: when it entered it and when it leaves, and the two counts a janma patrika prints of them in ghatis of twenty-four minutes, sixty to a day (C756). The **bhayat** is how much of the stay had passed at the instant, the **bhabhoga** the whole stay, which runs to some sixty-seven ghatis, past the sixty a day's count holds; the share left, `1 - bhayat / bhabhoga`, is the Vimshottari balance at birth.",
+      "properties": {
+        "bhabhoga": {
+          "$ref": "#/$defs/GhatiPala",
+          "description": "The whole stay, likewise."
+        },
+        "bhayat": {
+          "$ref": "#/$defs/GhatiPala",
+          "description": "The part of the stay passed at the instant, in ghati, pala and vipala."
+        },
+        "entered": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "When the Moon entered the nakshatra, UTC."
+        },
+        "leaves": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "When it leaves it, UTC."
+        }
+      },
+      "required": [
+        "entered",
+        "leaves",
+        "bhayat",
+        "bhabhoga"
+      ],
+      "type": "object"
     },
     "Motion": {
       "description": "Which way a body is going, and how fast.",

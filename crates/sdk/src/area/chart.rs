@@ -13,7 +13,7 @@ use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{
     ChartAngles, ChartFoundation, Founder, TransitEventKind, angles_of, cusps_of,
 };
-use teistro_chart::moment::{BirthEclipse, Moment, rising};
+use teistro_chart::moment::{BirthEclipse, Moment, MoonStay, rising};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
     CharaKaraka, ChartKind, DashaSystem, Graha, HouseSystem, Rashi, Star, Vara, Varga,
@@ -3210,6 +3210,12 @@ impl<'a> ChartArea<'a> {
         let rising = rising(foundation.instant, |at| {
             founder.ascendant_at(at, place, zodiac)
         })?;
+        let nakshatra = if zodiac.is_sidereal() {
+            let span = self.moon_span(foundation, Wheel::Nakshatras)?;
+            Some(MoonStay::of(span, foundation.instant)?)
+        } else {
+            None
+        };
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let settings = self.context.settings();
         let delta_t = self.context.delta_t();
@@ -3217,6 +3223,7 @@ impl<'a> ChartArea<'a> {
         if sky.capabilities().astronomy == Astronomy::Classical {
             return Ok(Moment {
                 rising,
+                nakshatra,
                 eclipse: BirthEclipse::Unjudged,
             });
         }
@@ -3250,6 +3257,7 @@ impl<'a> ChartArea<'a> {
             });
         Ok(Moment {
             rising,
+            nakshatra,
             eclipse: lunar.or(solar).unwrap_or(BirthEclipse::None),
         })
     }

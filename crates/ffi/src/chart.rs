@@ -2959,6 +2959,10 @@ struct MomentColumns {
     sets: Vec<f64>,
     eclipse: Vec<u8>,
     greatest: Vec<f64>,
+    entered: Vec<f64>,
+    leaves: Vec<f64>,
+    /// The bhayat's and then the bhabhoga's ghati, pala and vipala.
+    counts: [Vec<u8>; 6],
 }
 
 impl MomentColumns {
@@ -2972,11 +2976,22 @@ impl MomentColumns {
             columns.sets.push(edge(moment.rising.sets));
             columns.eclipse.push(eclipse as u8);
             columns.greatest.push(greatest);
+            let stay = moment.nakshatra;
+            columns.entered.push(edge(stay.map(|s| s.entered)));
+            columns.leaves.push(edge(stay.map(|s| s.leaves)));
+            let counts = stay.map_or([0; 6], |s| {
+                let (b, w) = (s.bhayat, s.bhabhoga);
+                [b.ghati, b.pala, b.vipala, w.ghati, w.pala, w.vipala]
+            });
+            for (column, count) in columns.counts.iter_mut().zip(counts) {
+                column.push(count);
+            }
         }
         columns
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let [bg, bp, bv, wg, wp, wv] = &self.counts;
         writer.columns(
             "moment",
             self.sign.len(),
@@ -2986,6 +3001,14 @@ impl MomentColumns {
                 ColumnData::F64(&self.sets),
                 ColumnData::U8(&self.eclipse),
                 ColumnData::F64(&self.greatest),
+                ColumnData::F64(&self.entered),
+                ColumnData::F64(&self.leaves),
+                ColumnData::U8(bg),
+                ColumnData::U8(bp),
+                ColumnData::U8(bv),
+                ColumnData::U8(wg),
+                ColumnData::U8(wp),
+                ColumnData::U8(wv),
             ],
         )
     }

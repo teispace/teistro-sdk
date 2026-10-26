@@ -154,3 +154,64 @@ fn the_lagna_gandanta_holds_at_a_fire_signs_first_minutes() {
     assert!(gandanta(fire + 3.0 * minute));
     assert!(!gandanta(fire + 30.0 * minute));
 }
+
+/// The Moon's nakshatra at an instant, from a chart founded there.
+fn star(sdk: &Context, jd: f64, at: Place) -> u32 {
+    let request = ChartRequest::at(at, UtcOffset::UTC);
+    let chart = sdk
+        .chart()
+        .reading(JulianDay::<Utc>::literal(jd), &request)
+        .expect("a chart")
+        .value;
+    let moon = chart
+        .foundation
+        .graha(teistro::catalogue::Graha::Moon)
+        .expect("the Moon")
+        .longitude_deg;
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a longitude in [0, 360) over 13°20′ is 0 to 26"
+    )]
+    let star = (moon.rem_euclid(360.0) / (360.0 / 27.0)) as u32;
+    star
+}
+
+/// The Moon's stay, read back through charts founded either side of its
+/// edges: the star changes a minute outside each and holds a minute
+/// inside, and the counts are the stay's days in ghatis of 24 minutes.
+#[test]
+fn a_chart_carries_the_moons_stay_with_its_bhayat_and_bhabhoga() {
+    let sdk = sdk();
+    let kathmandu = place(27.7172, 85.324);
+    let minute = 1.0 / 1440.0;
+    for jd in [2_447_892.5, 2_451_545.0, 2_460_000.3, 2_461_000.7] {
+        let stay = moment(&sdk, jd, kathmandu)
+            .nakshatra
+            .expect("a sidereal chart");
+        let (entered, leaves) = (stay.entered.get(), stay.leaves.get());
+        assert!(entered <= jd && jd <= leaves, "{jd}: {entered} to {leaves}");
+        let held = star(&sdk, jd, kathmandu);
+        assert_eq!(star(&sdk, entered + minute, kathmandu), held);
+        assert_eq!(star(&sdk, leaves - minute, kathmandu), held);
+        assert_ne!(star(&sdk, entered - minute, kathmandu), held);
+        assert_ne!(star(&sdk, leaves + minute, kathmandu), held);
+        let ghatis = |days: f64| days * 60.0;
+        let read = |g: teistro::GhatiPala| f64::from(g.total_vipalas()) / 3600.0;
+        assert!((read(stay.bhayat) - ghatis(jd - entered)).abs() < 1.0 / 3600.0);
+        assert!((read(stay.bhabhoga) - ghatis(leaves - entered)).abs() < 1.0 / 3600.0);
+        // A star's stay runs some 54 to 67 ghatis as the Moon's speed varies.
+        assert!(
+            (50..=70).contains(&stay.bhabhoga.ghati),
+            "{:?}",
+            stay.bhabhoga
+        );
+    }
+    // A tropical chart holds no nakshatra.
+    let western = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .expect("the western profile");
+    assert_eq!(moment(&western, 2_451_545.0, kathmandu).nakshatra, None);
+}

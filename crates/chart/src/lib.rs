@@ -45,5 +45,5 @@ pub use foundation::{
     Apogee, Carried, ChartAngles, ChartFoundation, Founder, GrahaPosition, LilithPosition, OUTER,
     OuterPlanets, body_of,
 };
-pub use moment::{BirthEclipse, Moment, RisingSign};
+pub use moment::{BirthEclipse, Moment, MoonStay, RisingSign};
 pub use zodiac::ChartZodiac;

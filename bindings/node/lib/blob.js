@@ -1811,6 +1811,14 @@ export function decodeCharts(bytes) {
       sets: column(blob, at, 2, 'f64', at.count),
       eclipse: column(blob, at, 3, 'u8', at.count),
       greatest: column(blob, at, 4, 'f64', at.count),
+      nakshatraEntered: column(blob, at, 5, 'f64', at.count),
+      nakshatraLeaves: column(blob, at, 6, 'f64', at.count),
+      bhayatGhati: column(blob, at, 7, 'u8', at.count),
+      bhayatPala: column(blob, at, 8, 'u8', at.count),
+      bhayatVipala: column(blob, at, 9, 'u8', at.count),
+      bhabhogaGhati: column(blob, at, 10, 'u8', at.count),
+      bhabhogaPala: column(blob, at, 11, 'u8', at.count),
+      bhabhogaVipala: column(blob, at, 12, 'u8', at.count),
       length: at.count,
     };
   }

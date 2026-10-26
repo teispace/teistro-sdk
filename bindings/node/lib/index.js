@@ -6611,6 +6611,18 @@ function momentsOf(batch) {
           kind: BirthEclipseById.get(c.eclipse[chart]) ?? 'unknown',
           greatest: numberOrNull(c.greatest[chart]),
         }),
+        nakshatra: Number.isNaN(c.nakshatraEntered[chart])
+          ? null
+          : Object.freeze({
+              entered: c.nakshatraEntered[chart],
+              leaves: c.nakshatraLeaves[chart],
+              bhayat: Object.freeze({ ghati: c.bhayatGhati[chart], pala: c.bhayatPala[chart], vipala: c.bhayatVipala[chart] }),
+              bhabhoga: Object.freeze({
+                ghati: c.bhabhogaGhati[chart],
+                pala: c.bhabhogaPala[chart],
+                vipala: c.bhabhogaVipala[chart],
+              }),
+            }),
       }),
     );
     MOMENTS.set(batch, decoded);

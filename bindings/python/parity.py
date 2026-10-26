@@ -1676,6 +1676,16 @@ def main() -> None:
                 f"{fell.rising.sign.full_key} {number_or_dash(fell.rising.rose)} {number_or_dash(fell.rising.sets)} "
                 + f"{fell.eclipse.kind.key} {number_or_dash(fell.eclipse.greatest)}",
             )
+            stay = fell.nakshatra
+            put(
+                f"chart-{i}-moon-stay",
+                "-"
+                if stay is None
+                else f"{number(stay.entered)} {number(stay.leaves)} "
+                + "-".join(str(n) for n in (stay.bhayat.ghati, stay.bhayat.pala, stay.bhayat.vipala))
+                + " "
+                + "-".join(str(n) for n in (stay.bhabhoga.ghati, stay.bhabhoga.pala, stay.bhabhoga.vipala)),
+            )
             put(
                 f"chart-{i}-brahma",
                 f"{brahma_graha.rule.key} {brahma_graha.counted_from.full_key} "
