@@ -2768,8 +2768,13 @@ void _engineTests() {
       EclipseSeen(from: lunar.here.u1!.at, to: lunar.here.u4!.at),
     );
     expect(() => answer.value.lunar.add(lunar), throwsUnsupportedError);
+    // The sutak opens praharas before the umbra is seen and closes as it
+    // ends (Dharmasindhu p. 28); the unseen solar eclipse has none.
+    expect(lunar.vedha!.from, lessThan(lunar.here.umbralSeen!.from));
+    expect(lunar.vedha!.to, lunar.here.umbralSeen!.to);
     final solar = answer.value.solar.single;
     expect(solar.here == null || solar.here!.seen == null, isTrue);
+    expect(solar.vedha, isNull);
     expect(
       answer.provenance.appliedConventions.map((c) => c.knob),
       contains('eclipse.window'),

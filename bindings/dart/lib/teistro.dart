@@ -17933,25 +17933,42 @@ final class SolarEclipseView extends _Value {
 
 /// A lunar eclipse and how the place sees it.
 final class LunarEclipseHere extends _Value {
-  const LunarEclipseHere({required this.eclipse, required this.here});
+  const LunarEclipseHere({
+    required this.eclipse,
+    required this.here,
+    required this.vedha,
+  });
 
   final LunarEclipse eclipse;
   final LunarEclipseView here;
 
+  /// The vedha, the sutak, under `panchanga.eclipse_vedha`: from when food
+  /// is given up to the eclipse's end as seen; `null` where the place does
+  /// not see it.
+  final EclipseSeen? vedha;
+
   @override
-  List<Object?> get _fields => [eclipse, here];
+  List<Object?> get _fields => [eclipse, here, vedha];
 }
 
 /// A solar eclipse and how the place sees it, `null` where the penumbra
 /// never reaches.
 final class SolarEclipseHere extends _Value {
-  const SolarEclipseHere({required this.eclipse, required this.here});
+  const SolarEclipseHere({
+    required this.eclipse,
+    required this.here,
+    required this.vedha,
+  });
 
   final SolarEclipse eclipse;
   final SolarEclipseView? here;
 
+  /// The vedha, the sutak, as a lunar eclipse's; `null` where the place
+  /// does not see it.
+  final EclipseSeen? vedha;
+
   @override
-  List<Object?> get _fields => [eclipse, here];
+  List<Object?> get _fields => [eclipse, here, vedha];
 }
 
 /// The eclipses whose greatest moment falls in an almanac's days, each kind
@@ -18036,6 +18053,7 @@ Eclipses _eclipses(String json) {
         seen: seen(h['seen']),
         umbralSeen: seen(h['umbralSeen']),
       ),
+      vedha: seen(raw['vedha']),
     );
   }
 
@@ -18070,6 +18088,7 @@ Eclipses _eclipses(String json) {
                 maximum: moment(h['maximum']),
                 seen: seen(h['seen']),
               ),
+      vedha: seen(raw['vedha']),
     );
   }
 

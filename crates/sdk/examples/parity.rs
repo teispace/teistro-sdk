@@ -6790,7 +6790,15 @@ fn eclipses(report: &mut Report, place: &Place, offset: UtcOffset) {
         "eclipses-count",
         format!("{} {}", value.lunar.len(), value.solar.len()),
     );
-    for (k, LunarHere { eclipse, here }) in value.lunar.iter().enumerate() {
+    for (
+        k,
+        LunarHere {
+            eclipse,
+            here,
+            vedha,
+        },
+    ) in value.lunar.iter().enumerate()
+    {
         put(
             report,
             &format!("eclipses-lunar-{k}"),
@@ -6826,6 +6834,11 @@ fn eclipses(report: &mut Report, place: &Place, offset: UtcOffset) {
         line.push(seen(here.seen.as_ref()));
         line.push(seen(here.umbral_seen.as_ref()));
         put(report, &format!("eclipses-lunar-{k}-here"), line.join(" "));
+        put(
+            report,
+            &format!("eclipses-lunar-{k}-vedha"),
+            stretch(*vedha),
+        );
     }
     solar_eclipses(report, &value.solar);
 }
@@ -6853,7 +6866,15 @@ fn seen(s: Option<&Visible>) -> String {
 
 /// The solar eclipses of [`eclipses`], as the report prints them.
 fn solar_eclipses(report: &mut Report, solar: &[SolarHere]) {
-    for (k, SolarHere { eclipse, here }) in solar.iter().enumerate() {
+    for (
+        k,
+        SolarHere {
+            eclipse,
+            here,
+            vedha,
+        },
+    ) in solar.iter().enumerate()
+    {
         put(
             report,
             &format!("eclipses-solar-{k}"),
@@ -6890,7 +6911,20 @@ fn solar_eclipses(report: &mut Report, solar: &[SolarHere]) {
             },
         );
         put(report, &format!("eclipses-solar-{k}-here"), line);
+        put(
+            report,
+            &format!("eclipses-solar-{k}-vedha"),
+            stretch(*vedha),
+        );
     }
+}
+
+/// An eclipse's vedha as `from..to`, or `-`.
+fn stretch(s: Option<Interval>) -> String {
+    s.map_or_else(
+        || "-".to_owned(),
+        |s| format!("{}..{}", number(s.from.get()), number(s.to.get())),
+    )
 }
 
 /// A muhurta window's unwanted placements, as the report prints them.

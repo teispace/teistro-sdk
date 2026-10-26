@@ -2875,6 +2875,7 @@ def main() -> None:
             f"eclipses-lunar-{k}-here",
             " ".join([eclipse_moment(m) for m in (lunar_view.p1, lunar_view.u1, lunar_view.u2, lunar_view.greatest, lunar_view.u3, lunar_view.u4, lunar_view.p4)] + [eclipse_seen(lunar_view.seen), eclipse_seen(lunar_view.umbral_seen)]),
         )
+        put(f"eclipses-lunar-{k}-vedha", eclipse_seen(lunar_eclipse.vedha))
     for k, solar_eclipse in enumerate(eclipses.value.solar):
         solar_found, solar_view = solar_eclipse.eclipse, solar_eclipse.here
         put(
@@ -2900,6 +2901,7 @@ def main() -> None:
                 + [eclipse_seen(solar_view.seen)]
             ),
         )
+        put(f"eclipses-solar-{k}-vedha", eclipse_seen(solar_eclipse.vedha))
 
     # ── The surface's shape ───────────────────────────────────────────
     #

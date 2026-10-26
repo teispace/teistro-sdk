@@ -4220,8 +4220,15 @@ class AnEngine(WithLibrary):
         self.assertEqual((umbral.from_, umbral.to), (u1.at, u4.at))
         with self.assertRaises(dataclasses.FrozenInstanceError):
             seen.to = 0  # type: ignore[misc]
+        # The sutak opens praharas before the umbra is seen and closes as
+        # it ends (Dharmasindhu p. 28); the unseen solar eclipse has none.
+        vedha = lunar.vedha
+        assert vedha is not None
+        self.assertLess(vedha.from_, umbral.from_)
+        self.assertEqual(vedha.to, umbral.to)
         solar = answer.value.solar[0]
         self.assertTrue(solar.here is None or solar.here.seen is None)
+        self.assertIsNone(solar.vedha)
         self.assertIn("eclipse.window", [c.knob for c in answer.provenance.applied_conventions])
 
         chauvenet, _ = asked({"panchanga": {"eclipse_shadow": "CHAUVENET"}})

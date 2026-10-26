@@ -814,6 +814,22 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a seen eclipse carries its sutak", () -> {
+            // September 2025's total lunar eclipse, seen whole from Kathmandu: the vedha opens
+            // praharas before the umbra is seen and closes as it ends (Dharmasindhu p. 28);
+            // the solar eclipse Nepal does not see has none.
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                Eclipses eclipses = sky.almanac().of(Civil.date(Calendar.GREGORIAN, 2025, 9, 1),
+                        Civil.date(Calendar.GREGORIAN, 2025, 9, 30), kathmandu, 20_700, null, null, false, true,
+                        false).eclipses().orElseThrow();
+                LunarEclipseHere lunar = eclipses.value().lunar().get(0);
+                EclipseSeen umbral = lunar.here().umbralSeen();
+                check(lunar.vedha().from() < umbral.from(), "the sutak opens before the umbra is seen");
+                same(umbral.to(), lunar.vedha().to(), "and closes as it ends");
+                check(eclipses.value().solar().get(0).vedha() == null, "an unseen eclipse has none");
+            }
+        });
         tests.put("a chart carries its moment, the eclipse its place sees", () -> {
             // The rising sign's edges bound the instant, and the lunar eclipse of 2025 March 14,
             // seen from New York, is the instant's and not a day later's (C378).

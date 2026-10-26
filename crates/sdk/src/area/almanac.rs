@@ -5,18 +5,19 @@ use serde::Serialize;
 use teistro_astro::Completion;
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::precession::PrecessionModel;
-use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
+use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::{Convention, Envelope, Hash, content_hash};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::settings::LunarMonth;
-use teistro_core::time::UtcOffset;
+use teistro_core::settings::{EclipseVedha, LunarMonth};
+use teistro_core::time::{LocalClock, UtcOffset};
 #[cfg(feature = "muhurta")]
 use teistro_muhurta::Answer;
+use teistro_muhurta::season::{SeenEclipse, SeenKind, VEDHA_DAYS_AROUND, vedha_over_days};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::ashauch::{Ashauch, AshauchRequest, AshauchTable};
 use teistro_panchanga::festival::{
@@ -654,7 +655,9 @@ impl<'a> AlmanacArea<'a> {
     /// eye's by default: the upper limb, with refraction. A lunar eclipse comes back
     /// with its contacts and the Moon's altitude at each; a solar one with
     /// the place's own contacts and magnitude. `seen` on each view is
-    /// `None` where the place does not see it, which is what a sutak asks.
+    /// `None` where the place does not see it, which is what a sutak asks,
+    /// and each eclipse the place sees carries its `vedha`, the sutak,
+    /// under `panchanga.eclipse_vedha` (`muhurta.md` §4.1.1).
     ///
     /// ```no_run
     /// use teistro::{CalendarDate, Context, UtcOffset};
@@ -696,9 +699,13 @@ impl<'a> AlmanacArea<'a> {
         let delta_t = self.context.delta_t();
         let sky = Completion::new(provider, settings.provider.overrides, delta_t);
         let horizon = Horizon::from_convention(settings.panchanga.eclipse_horizon);
-        let found = Eclipses::new(&sky, delta_t)
+        let mut found = Eclipses::new(&sky, delta_t)
             .with_shadow(ShadowRule::of_setting(settings.panchanga.eclipse_shadow)?)
             .here_between(start.relabel(), end.relabel(), *place, &horizon)?;
+        let vedha = settings.panchanga.eclipse_vedha;
+        self.with_almanac(from.calendar, offset, |almanac| {
+            with_vedhas(&mut found, (almanac, calendar, &offset), place, vedha)
+        })?;
         let mut provenance = self.context.stamped(
             content_hash(&EclipseInput {
                 from: from.to_string(),
@@ -1185,4 +1192,45 @@ struct FestivalInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     request: &'r FestivalRequest,
+}
+
+/// Each seen eclipse's vedha, read off the almanac's days around its first
+/// moment seen (`muhurta.md` §4.1.1): the window the muhurta search bars
+/// as `ECLIPSE_VEDHA`, here on the eclipse itself.
+fn with_vedhas(
+    found: &mut EclipsesHere,
+    (almanac, calendar, clock): (
+        &Almanac<'_, dyn EphemerisProvider + '_>,
+        &dyn CalendarSystem,
+        &UtcOffset,
+    ),
+    place: &Place,
+    rule: EclipseVedha,
+) -> Result<(), Error> {
+    for seen in SeenEclipse::all_of(found)? {
+        let first = JulianDay::<Utc>::literal(seen.seen.from.get());
+        let (fixed, _) = FixedDay::from_local_jd(clock.local_jd(first));
+        let days = (-VEDHA_DAYS_AROUND..=VEDHA_DAYS_AROUND)
+            .map(|n| {
+                let date = calendar.date_of(fixed.plus_days(n))?;
+                Ok(almanac.day(&date, place)?.value)
+            })
+            .collect::<Result<Vec<Panchanga>, Error>>()?;
+        let vedha = Some(vedha_over_days(&seen, &days, rule)?.at);
+        let greatest = |at: f64| at.to_bits() == seen.greatest.to_bits();
+        if seen.kind == SeenKind::Solar {
+            for solar in &mut found.solar {
+                if greatest(solar.eclipse.greatest.get()) {
+                    solar.vedha = vedha;
+                }
+            }
+        } else {
+            for lunar in &mut found.lunar {
+                if greatest(lunar.eclipse.greatest.get()) {
+                    lunar.vedha = vedha;
+                }
+            }
+        }
+    }
+    Ok(())
 }

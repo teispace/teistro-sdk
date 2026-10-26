@@ -902,6 +902,102 @@ pub fn eclipse_vedha(
     ))
 }
 
+/// How many civil days either side of the one holding an eclipse's first
+/// moment seen [`vedha_over_days`] reads: four praharas back and a rising
+/// after a body set eclipsed both lie within two.
+pub const VEDHA_DAYS_AROUND: i64 = 2;
+
+/// An eclipse's vedha read off the almanac days around it: their sunrises
+/// and sunsets are the turns [`eclipse_vedha`] counts praharas in, and the
+/// next sunrise, or the Moon's next rise, after the eclipse ends as seen
+/// is where a body that set eclipsed closes it. `days` are the civil days
+/// from [`VEDHA_DAYS_AROUND`] before the one holding the first moment seen
+/// to as many after, in order; what the muhurta search and the almanac's
+/// eclipses both read.
+///
+/// ```
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_calendar::solar::drik::DrikSun;
+/// # use teistro_calendar::{CalendarDate, Gregorian};
+/// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+/// # use teistro_core::time::UtcOffset;
+/// # use teistro_panchanga::Almanac;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+/// # let provider = TestProvider;
+/// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+/// #     .ok_or("a shipped profile")?
+/// #     .resolve(&SettingsPatch::default())
+/// #     .map_err(|d| format!("{d:?}"))?;
+/// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+/// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+/// # let clock = UtcOffset::literal(5, 45, 0);
+/// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+/// # let date = |day| CalendarDate::defined(Calendar::Gregorian, 2026, 11, day);
+/// use teistro_core::settings::EclipseVedha;
+/// use teistro_muhurta::season::{SeenEclipse, SeenKind, vedha_over_days};
+///
+/// // Five days around 25 November 2026, and a lunar eclipse seen from the
+/// // middle day's evening for an hour.
+/// let days = (23..=27)
+///     .map(|day| Ok(almanac.day(&date(day), &kathmandu)?.value))
+///     .collect::<Result<Vec<_>, teistro_core::Error>>()?;
+/// let evening = days[2].day.sunset.get() + 0.05;
+/// let eclipse = SeenEclipse {
+///     kind: SeenKind::Lunar,
+///     greatest: evening + 0.02,
+///     seen: Interval::literal(evening, evening + 0.04),
+///     rose_eclipsed: false,
+///     set_eclipsed: false,
+/// };
+/// let vedha = vedha_over_days(&eclipse, &days, EclipseVedha::Dharmasindhu)?;
+/// // Three praharas before the night's first, so from the day's second.
+/// assert!(vedha.at.from.get() > days[2].day.sunrise.get());
+/// assert_eq!(vedha.at.to.get(), evening + 0.04);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Errors
+///
+/// `INTERNAL` for days that do not reach far enough round the eclipse.
+pub fn vedha_over_days(
+    eclipse: &SeenEclipse,
+    days: &[teistro_panchanga::Panchanga],
+    rule: EclipseVedha,
+) -> Result<Blackout, Error> {
+    let mut turns: Vec<f64> = days
+        .iter()
+        .flat_map(|p| [p.day.sunrise.get(), p.day.sunset.get()])
+        .collect();
+    turns.extend(days.last().map(|p| p.day.next_sunrise.get()));
+    let after = eclipse.seen.to.get();
+    let rising = if eclipse.kind == SeenKind::Solar {
+        days.iter()
+            .map(|p| p.day.next_sunrise.get())
+            .find(|t| *t > after)
+    } else {
+        days.iter()
+            .flat_map(|p| p.moon.rises.iter().map(|r| r.get()))
+            .find(|t| *t > after)
+    };
+    // Asked only when the body set eclipsed; otherwise the end is seen.
+    let next_rising = match rising {
+        Some(at) => at,
+        None if !eclipse.set_eclipsed => after,
+        None => {
+            return Err(Error::internal(format!(
+                "no rising in the two days after the eclipse that set at {after}"
+            )));
+        }
+    };
+    eclipse_vedha(eclipse, &turns, next_rising, rule)
+}
+
 const fn blackout(kind: BlackoutKind, at: Interval) -> Blackout {
     Blackout { kind, at }
 }

@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**An eclipse says its sutak.**
+**Numbers:** an eclipse answer gains `vedha` on each eclipse, so every
+eclipse section's content hash moves; no eclipse's instants do.
+- Each eclipse the almanac answers carries its `vedha`, the sutak, under
+  `panchanga.eclipse_vedha` (`03-design/muhurta.md` §4.1.1): from when
+  food is given up to the eclipse's end as seen, or the body's next
+  rising when it set eclipsed; `None`/`null` where the place does not
+  see it. The window is the muhurta search's `ECLIPSE_VEDHA` blackout,
+  read by the one function both now share
+  (`season::vedha_over_days`); under `nepali-default` 2025-09-07's is the
+  committee's 13:11 to 01:41. `vedha` on `LunarHere`/`SolarHere`, and on
+  every binding's eclipse.
+
 **A day says when its sankranti's punya kala falls.**
 **Numbers:** every settings hash moved with the new knob, and a day whose
 daylight holds a punya kala, some twelve a year, gains it in its

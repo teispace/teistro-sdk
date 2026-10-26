@@ -35,8 +35,8 @@ use crate::activity::Unjudged;
 use crate::instant::Sky;
 use crate::search::{Season, Sources, same_day};
 use crate::season::{
-    Blackout, BlackoutKind, ECLIPSE_STAR_REACH_DAYS, SeenEclipse, SeenKind, asta_over, blackouts,
-    eclipse_stars, eclipse_vedha,
+    Blackout, BlackoutKind, ECLIPSE_STAR_REACH_DAYS, SeenEclipse, VEDHA_DAYS_AROUND, asta_over,
+    blackouts, eclipse_stars, vedha_over_days,
 };
 
 /// How far beyond a range an eclipse's vedha can reach into it, days: it
@@ -476,35 +476,10 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
     fn vedha_of(&self, eclipse: &SeenEclipse) -> Result<Blackout, Error> {
         let first = JulianDay::<Utc>::literal(eclipse.seen.from.get());
         let (fixed, _) = FixedDay::from_local_jd(self.clock.local_jd(first));
-        let days = (-2..=2)
+        let days = (-VEDHA_DAYS_AROUND..=VEDHA_DAYS_AROUND)
             .map(|n| self.day(&self.calendar.date_of(fixed.plus_days(n))?))
             .collect::<Result<Vec<Panchanga>, Error>>()?;
-        let mut turns: Vec<f64> = days
-            .iter()
-            .flat_map(|p| [p.day.sunrise.get(), p.day.sunset.get()])
-            .collect();
-        turns.extend(days.last().map(|p| p.day.next_sunrise.get()));
-        let after = eclipse.seen.to.get();
-        let rising = if eclipse.kind == SeenKind::Solar {
-            days.iter()
-                .map(|p| p.day.next_sunrise.get())
-                .find(|t| *t > after)
-        } else {
-            days.iter()
-                .flat_map(|p| p.moon.rises.iter().map(|r| r.get()))
-                .find(|t| *t > after)
-        };
-        // Asked only when the body set eclipsed; otherwise the end is seen.
-        let next_rising = match rising {
-            Some(at) => at,
-            None if !eclipse.set_eclipsed => after,
-            None => {
-                return Err(Error::internal(format!(
-                    "no rising in the two days after the eclipse that set at {after}"
-                )));
-            }
-        };
-        eclipse_vedha(eclipse, &turns, next_rising, self.vedha)
+        vedha_over_days(eclipse, &days, self.vedha)
     }
 
     /// The grahas' source: the chart's own frame, at the place.
