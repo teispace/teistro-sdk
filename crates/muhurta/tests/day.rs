@@ -18,7 +18,7 @@ use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarDate, Gregorian};
-use teistro_core::catalogue::{Ayanamsha, Calendar, Nakshatra, Rashi, Vara};
+use teistro_core::catalogue::{AshubhaYoga, Ayanamsha, Calendar, Nakshatra, Rashi, Vara};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::settings::{OverridePolicy, Profile, SettingsPatch, Sunrise};
@@ -319,6 +319,40 @@ fn each_star_s_varjyam_is_a_clause_against_the_time_inside_its_star() {
     }
     // A star lasts about a day, so a week holds about seven windows.
     assert!((5..=9).contains(&seen), "{seen}");
+}
+
+#[test]
+fn each_inauspicious_yoga_is_a_clause_against_the_time_over_its_limb() {
+    // Muhurta Chintamani, Shubhashubha-prakarana vv. 8-9 (C760): a native
+    // changes nothing, and each yoga holds over the part of the day its
+    // tithi or nakshatra held, in the order the day carries them.
+    let mut seen = 0;
+    for d in 10..=24 {
+        let day = day(2024, 6, d);
+        for native in [None, Some(native())] {
+            let found: Vec<(AshubhaYoga, Interval)> =
+                clauses(&day, native.as_ref(), &DayRules::raman())
+                    .into_iter()
+                    .filter_map(|c| match c.kind {
+                        ClauseKind::AshubhaYoga { yoga } => {
+                            assert!(!c.favourable(), "{d}: {yoga:?}");
+                            Some((yoga, c.at))
+                        }
+                        _ => None,
+                    })
+                    .collect();
+            let expected: Vec<(AshubhaYoga, Interval)> = day
+                .ashubha_yogas()
+                .iter()
+                .map(|span| (span.member, span.inside))
+                .collect();
+            assert_eq!(found, expected, "{d}");
+            seen += found.len();
+        }
+    }
+    // A tithi makes one with its vara about one time in five, so fifteen
+    // days hold some.
+    assert!(seen > 0);
 }
 
 #[test]

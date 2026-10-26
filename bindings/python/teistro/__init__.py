@@ -803,6 +803,7 @@ __all__ = [
     "UnwantedPlacementClause",
     "VarjyamClause",
     "GhataClause",
+    "AshubhaYogaClause",
     "Ghata",
     "MuhurtaActivity",
     "KpChart",
@@ -7490,6 +7491,17 @@ class GhataClause(MuhurtaClauseKind):
 
     CLAUSE: ClassVar[str] = "GHATA"
     row: Literal["CHANDRA", "TITHI", "VARA", "NAKSHATRA"]
+
+
+@dataclass(frozen=True)
+class AshubhaYogaClause(MuhurtaClauseKind):
+    """An inauspicious yoga of the day's vara with a tithi or nakshatra:
+    dagdha, visha, hutashana or yamaghanta (Muhurta Chintamani,
+    Shubhashubha-prakarana vv. 8-9, C760). Against the time; no shipped
+    rite bars it."""
+
+    CLAUSE: ClassVar[str] = "ASHUBHA_YOGA"
+    yoga: AshubhaYoga
 
 
 MUHURTA_CLAUSES: Mapping[str, type] = MappingProxyType(

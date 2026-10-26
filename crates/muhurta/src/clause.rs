@@ -8,8 +8,8 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    Choghadiya, Graha, Kaala, Karana, Masa, MuhurtaYoga, Nakshatra, Panchaka, Rashi, Tithi, Vara,
-    Yoga,
+    AshubhaYoga, Choghadiya, Graha, Kaala, Karana, Masa, MuhurtaYoga, Nakshatra, Panchaka, Rashi,
+    Tithi, Vara, Yoga,
 };
 use teistro_core::interval::Interval;
 
@@ -129,6 +129,16 @@ pub enum ClauseKind {
     Ghata {
         /// Which row struck.
         row: GhataRow,
+    },
+    /// An inauspicious yoga of the day's vara with a tithi or nakshatra:
+    /// dagdha, visha, hutashana or yamaghanta (Muhurta Chintamani,
+    /// Shubhashubha-prakarana vv. 8–9; C760). Against the time. The verse
+    /// shuns them in auspicious work and without fail on a journey; the
+    /// shipped rites follow Raman, so none bars them, and a caller who
+    /// keeps the verse names `ASHUBHA_YOGA` among its bars.
+    AshubhaYoga {
+        /// Which.
+        yoga: AshubhaYoga,
     },
     /// The day's Moon sign counted from the native's.
     Chandrabala {
@@ -317,6 +327,8 @@ pub enum ClauseKey {
     Varjyam,
     /// [`ClauseKind::Ghata`].
     Ghata,
+    /// [`ClauseKind::AshubhaYoga`].
+    AshubhaYoga,
 }
 
 impl ClauseKey {
@@ -329,7 +341,7 @@ impl ClauseKey {
     ///
     /// assert!(ClauseKey::ALL.iter().enumerate().all(|(place, key)| *key as usize == place));
     /// ```
-    pub const ALL: [ClauseKey; 33] = [
+    pub const ALL: [ClauseKey; 34] = [
         ClauseKey::Tithi,
         ClauseKey::Nakshatra,
         ClauseKey::Yoga,
@@ -363,6 +375,7 @@ impl ClauseKey {
         ClauseKey::UnwantedPlacement,
         ClauseKey::Varjyam,
         ClauseKey::Ghata,
+        ClauseKey::AshubhaYoga,
     ];
 }
 
@@ -411,6 +424,7 @@ impl ClauseKind {
             ClauseKind::UnwantedPlacement { .. } => ClauseKey::UnwantedPlacement,
             ClauseKind::Varjyam { .. } => ClauseKey::Varjyam,
             ClauseKind::Ghata { .. } => ClauseKey::Ghata,
+            ClauseKind::AshubhaYoga { .. } => ClauseKey::AshubhaYoga,
         }
     }
 

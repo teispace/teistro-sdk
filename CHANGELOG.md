@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The inauspicious weekday yogas in a muhurta search.**
+**Numbers:** a muhurta answer's windows gain `ASHUBHA_YOGA` clauses
+against the time, so their clauses and hash change, and under `TEXTS`
+a window inside one ranks after an otherwise equal window outside it.
+No shipped rite bars them, so no window closes; `BASELINE` ranks as
+before.
+- `ClauseKind::AshubhaYoga` (`ASHUBHA_YOGA`): each of the day's
+  dagdha, visha, hutashana and yamaghanta yogas over the part of the
+  day its limb held (Muhurta Chintamani, Shubhashubha-prakarana
+  vv. 8–9; C760). Every binding reads it (`AshubhaYogaClause`).
+
 **The inauspicious weekday yogas: dagdha, visha, hutashana, yamaghanta.**
 **Numbers:** none for a day, whose hash does not change; a rule set
 holding the two new births reports them.

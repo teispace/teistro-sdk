@@ -50,6 +50,7 @@ impl ClauseKey {
             ClauseKey::Kaala => &[("kaala", Kind::Kaala)],
             ClauseKey::Choghadiya => &[("choghadiya", Kind::Choghadiya)],
             ClauseKey::MuhurtaYoga => &[("yoga", Kind::MuhurtaYoga)],
+            ClauseKey::AshubhaYoga => &[("yoga", Kind::AshubhaYoga)],
             ClauseKey::Kartari => &[("second", Kind::Graha), ("twelfth", Kind::Graha)],
             ClauseKey::MoonJoined => &[("with", Kind::Graha)],
             ClauseKey::Kunavamsa => &[("navamsa", Kind::Rashi), ("lord", Kind::Graha)],
@@ -219,8 +220,8 @@ mod tests {
     use serde_json::Value;
     use teistro_calendar::{CalendarDate, EraNumber};
     use teistro_core::catalogue::{
-        Calendar, Choghadiya, Era, Graha, Kaala, Karana, Kind, Masa, MuhurtaYoga, Nakshatra,
-        Panchaka, Rashi, Tithi, Vara, Yoga,
+        AshubhaYoga, Calendar, Choghadiya, Era, Graha, Kaala, Karana, Kind, Masa, MuhurtaYoga,
+        Nakshatra, Panchaka, Rashi, Tithi, Vara, Yoga,
     };
     use teistro_core::interval::Interval;
     use teistro_core::quantity::JulianDay;
@@ -332,6 +333,9 @@ mod tests {
             },
             ClauseKey::Ghata => ClauseKind::Ghata {
                 row: GhataRow::Tithi,
+            },
+            ClauseKey::AshubhaYoga => ClauseKind::AshubhaYoga {
+                yoga: AshubhaYoga::Yamaghanta,
             },
         }
     }

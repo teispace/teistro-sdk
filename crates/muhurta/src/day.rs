@@ -284,6 +284,12 @@ pub fn clauses(day: &Panchanga, native: Option<&Native>, rules: &DayRules) -> Ve
         kind: ClauseKind::MuhurtaYoga { yoga: yoga.yoga },
         at: yoga.at,
     }));
+    // The inauspicious yogas, each over the part of the day its limb held
+    // (C760).
+    found.extend(day.ashubha_yogas().iter().map(|span| Clause {
+        kind: ClauseKind::AshubhaYoga { yoga: span.member },
+        at: span.inside,
+    }));
     found.extend(day.omens.varjyam.iter().map(|span| Clause {
         kind: ClauseKind::Varjyam {
             nakshatra: span.member,

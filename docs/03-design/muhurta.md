@@ -367,6 +367,15 @@ of what it reads, and says which layer it belongs to:
   shipped rite bars it; a rite that will not have it names
   `"GHATA"` among its bars. Its spans are a day's tithi, nakshatra and
   Moon-sign spans and the day itself, which the window already cuts at.
+  Each of the day's **inauspicious yogas** (dagdha, visha, hutashana
+  and yamaghanta: Muhurta Chintamani, Shubhashubha-prakarana vv. 8–9;
+  C760, `panchanga-day.md` §21.6) is an `ASHUBHA_YOGA` clause against
+  the time over the part of the day its tithi or nakshatra held, with
+  or without a native. The verse shuns them in auspicious work and
+  without fail on a journey (*śubhe vivarjyā gamane tv avaśyam*); the
+  shipped rites take their bars from Raman (C205), not from this verse,
+  so the yogas weigh under `TEXTS` and no shipped rite bars them. A caller keeping
+  the verse names `"ASHUBHA_YOGA"` among a rite's bars.
 - **of an instant**: everything that reads the lagna or a placement.
 
 ### 4.3 The window

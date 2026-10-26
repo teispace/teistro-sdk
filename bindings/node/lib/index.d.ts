@@ -7783,7 +7783,8 @@ export type MuhurtaClauseKind =
   | { readonly clause: 'KENDRA_BENEFICS'; readonly grahas: readonly Graha[] }
   | { readonly clause: 'UNWANTED_PLACEMENT'; readonly house: number; readonly by: readonly Graha[] }
   | { readonly clause: 'VARJYAM'; readonly nakshatra: Nakshatra }
-  | { readonly clause: 'GHATA'; readonly row: 'CHANDRA' | 'TITHI' | 'VARA' | 'NAKSHATRA' };
+  | { readonly clause: 'GHATA'; readonly row: 'CHANDRA' | 'TITHI' | 'VARA' | 'NAKSHATRA' }
+  | { readonly clause: 'ASHUBHA_YOGA'; readonly yoga: AshubhaYoga };
 
 /** A clause and the interval it held over. */
 export type MuhurtaClause = MuhurtaClauseKind & { readonly at: Interval };
