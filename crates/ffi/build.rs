@@ -89,9 +89,45 @@ fn main() {
         .parent()
         .and_then(std::path::Path::parent)
         .map_or_else(|| manifest.clone(), std::path::Path::to_path_buf);
-    println!(
-        "cargo:rerun-if-changed={}",
-        repository.join(".git/HEAD").display()
-    );
+    watch(&repository);
     build_info(&out, &repository);
+}
+
+/// Tells cargo when the stamp goes stale, so it is written again. HEAD
+/// alone changes only when the branch does: a commit moves the branch's
+/// ref, staging moves the index, and an edit to what the library is
+/// built from changes the tree without touching git at all, so each is
+/// watched. Git names its own paths, which a worktree keeps elsewhere.
+fn watch(root: &std::path::Path) {
+    let git = |args: &[&str]| -> Option<PathBuf> {
+        let output = Command::new("git")
+            .args(args)
+            .current_dir(root)
+            .output()
+            .ok()?;
+        output
+            .status
+            .success()
+            .then(|| root.join(String::from_utf8_lossy(&output.stdout).trim()))
+    };
+    let branch = Command::new("git")
+        .args(["symbolic-ref", "-q", "HEAD"])
+        .current_dir(root)
+        .output()
+        .ok()
+        .filter(|output| output.status.success())
+        .map(|output| String::from_utf8_lossy(&output.stdout).trim().to_string());
+    let mut paths: Vec<PathBuf> = ["HEAD", "index", "packed-refs"]
+        .into_iter()
+        .chain(branch.as_deref())
+        .filter_map(|name| git(&["rev-parse", "--git-path", name]))
+        .collect();
+    paths.extend(
+        ["crates", "catalogue", "i18n", "Cargo.toml", "Cargo.lock"]
+            .into_iter()
+            .map(|source| root.join(source)),
+    );
+    for path in paths {
+        println!("cargo:rerun-if-changed={}", path.display());
+    }
 }
