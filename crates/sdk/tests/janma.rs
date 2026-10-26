@@ -36,7 +36,7 @@ fn hours() -> Vec<BTreeSet<String>> {
         .filter(|rule| rule.category == "ashubha-janma")
         .cloned()
         .collect();
-    assert_eq!(pack.len(), 96);
+    assert_eq!(pack.len(), 98);
     let set = RuleRequest::shipped([ShippedRules::Arishtas])
         .with_rules(pack)
         .rule_set()
@@ -181,6 +181,52 @@ fn an_avama_birth_is_one_in_a_tithi_the_almanac_calls_kshaya() {
     // Twenty days hold a kshaya tithi, so the comparison is not of nothing.
     assert!(!expected.is_empty(), "{kshaya:?}");
     assert_eq!(avama, expected);
+}
+
+/// A birth in a dagdha yoga or Yamaghanta (BPHS ch. 85 v. 3 by Muhurta
+/// Chintamani's vv. 8–9, C760) is one at an hour the almanac's own day,
+/// sunrise to sunrise, carries that yoga over: the rule and the day's
+/// reading are written apart, the one as rule JSON and the other in Rust.
+#[test]
+fn a_dagdha_or_yamaghanta_birth_is_one_the_day_calls_so() {
+    use teistro::catalogue::AshubhaYoga;
+    let hours = hours();
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = Place::new(
+        Latitude::try_new(27.7172).unwrap(),
+        Longitude::try_new(85.324).unwrap(),
+        Altitude::try_new(0.0).unwrap(),
+    );
+    let date = |day| CalendarDate::defined(Calendar::Gregorian, 2000, 1, day);
+    let days = sdk
+        .almanac()
+        .of(&date(1), &date(22), &place, UtcOffset::UTC)
+        .unwrap()
+        .value;
+    for (yoga, key) in [
+        (AshubhaYoga::Dagdha, "BPHS_BIRTH_IN_DAGDHA_YOGA"),
+        (AshubhaYoga::Yamaghanta, "BPHS_BIRTH_IN_YAMAGHANTA"),
+    ] {
+        let expected: Vec<usize> = (0..hours.len())
+            .filter(|hour| {
+                let at = 2_451_545.0 + f64::from(u32::try_from(*hour).unwrap()) / 24.0;
+                days.iter()
+                    .find(|day| day.day.sunrise.get() <= at && at < day.day.next_sunrise.get())
+                    .is_some_and(|day| {
+                        day.ashubha_yogas().iter().any(|span| {
+                            span.member == yoga
+                                && span.whole.from.get() <= at
+                                && at < span.whole.to.get()
+                        })
+                    })
+            })
+            .collect();
+        assert!(!expected.is_empty(), "{key}: twenty days hold one");
+        assert_eq!(held(&hours, key), expected, "{key}");
+    }
 }
 
 /// The hours at which `key` holds, as indexes into the twenty days.

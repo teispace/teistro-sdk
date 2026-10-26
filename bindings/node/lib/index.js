@@ -61,6 +61,7 @@ import {
   ChoghadiyaById,
   DirectionById,
   AgniVasaById,
+  AshubhaYogaById,
   GhatiReckoningById,
   GrahaById,
   HouseSystemById,
@@ -2152,6 +2153,16 @@ export class AlmanacDay {
    */
   get agniVasa() {
     return this.#spans('agniVasa', AgniVasaById);
+  }
+
+  /**
+   * The inauspicious yogas the day's tithis and nakshatras make with its
+   * vara (Muhurta Chintamani, Shubhashubha-prakarana vv. 8-9, crux C760):
+   * dagdha, visha and hutashana by the tithi, yamaghanta by the
+   * nakshatra, each span the limb's own.
+   */
+  get ashubhaYogas() {
+    return this.#spans('ashubhaYogas', AshubhaYogaById);
   }
 
   /**

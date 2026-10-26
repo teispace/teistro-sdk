@@ -57,6 +57,7 @@ from teistro import (
     TithiClass,
     Samvatsara,
     AgniVasa,
+    AshubhaYoga,
     Direction,
     Scale,
     Shodhana,
@@ -5991,6 +5992,36 @@ class ADaysOmens(AJuneWeek):
             self.assertEqual([span.member for span in day.rahu_vasa], walk)
             self.assertEqual(day.rahu_vasa[0].whole.from_jd, day.day.sunrise)
             self.assertAlmostEqual(day.rahu_vasa[-1].whole.to_jd, day.day.sunset, delta=1e-9)
+
+    def test_the_inauspicious_yogas_follow_the_verse(self) -> None:
+        # Muhurta Chintamani, Shubhashubha-prakarana vv. 8-9 (C760): the
+        # dagdha, visha and hutashana tithis by number in either paksha,
+        # Sunday first, and the Yamaghanta nakshatra; each yoga runs as its
+        # limb does.
+        rows = [(12, 4, 12), (11, 6, 6), (5, 7, 7), (3, 2, 8), (6, 8, 9), (8, 9, 10), (9, 7, 11)]
+        yogas = (AshubhaYoga.DAGDHA, AshubhaYoga.VISHA, AshubhaYoga.HUTASHANA)
+        stars = (
+            Nakshatra.MAGHA,
+            Nakshatra.VISHAKHA,
+            Nakshatra.ARDRA,
+            Nakshatra.MULA,
+            Nakshatra.KRITTIKA,
+            Nakshatra.ROHINI,
+            Nakshatra.HASTA,
+        )
+        shunned = 0
+        for day in self.days():
+            vara = int(day.day.vara)
+            expected = [
+                (yoga, tithi.whole)
+                for tithi in day.tithi
+                for yoga, number in zip(yogas, rows[vara])
+                if int(tithi.member) % 15 + 1 == number
+            ] + [(AshubhaYoga.YAMAGHANTA, star.whole) for star in day.nakshatra if star.member is stars[vara]]
+            expected.sort(key=lambda found: found[1].from_jd)
+            self.assertEqual([(span.member, span.whole) for span in day.ashubha_yogas], expected)
+            shunned += len(expected)
+        self.assertGreater(shunned, 0)
 
     def test_mithuna_s_punya_kala_falls_in_one_daylight(self) -> None:
         # The Sun entered Mithuna on 15 June 2024: one day of the week holds

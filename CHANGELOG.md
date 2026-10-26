@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The inauspicious weekday yogas: dagdha, visha, hutashana, yamaghanta.**
+**Numbers:** none for a day, whose hash does not change; a rule set
+holding the two new births reports them.
+- `omen::ashubha_yogas`, `omen::tithi_yogas` and `omen::yamaghanta`, and
+  `Panchanga::ashubha_yogas`: the tithis and nakshatra Muhurta
+  Chintamani's Shubhashubha-prakarana vv. 8–9 shun on each weekday, one
+  span for each limb that makes one (C760), as the catalogue kind
+  `ashubha_yoga`, named in English and Nepali.
+- The C boundary writes the span section `ashubha_yogas`; every binding's
+  day reads it (`ashubha_yogas`, `ashubhaYogas`).
+- `BPHS_BIRTH_IN_DAGDHA_YOGA` and `BPHS_BIRTH_IN_YAMAGHANTA` (BPHS ch. 85
+  v. 3) join the inauspicious births.
+
 **The avama birth: a birth in a tithi that touches no sunrise.**
 **Numbers:** a rule set holding `BPHS_BIRTH_IN_AVAMA` reports it for a
 birth in a kshaya tithi; nothing else moves.

@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-5476 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1688 in `READINGS`, 2918 in `NABHASAS`, 657 in `the corpus's own`. Their 26 869 conditions are written 9243 ways, which say 9218 things, and the renderer gives those 9238 sentences.
+5478 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1688 in `READINGS`, 2920 in `NABHASAS`, 657 in `the corpus's own`. Their 26 913 conditions are written 9265 ways, which say 9240 things, and the renderer gives those 9260 sentences.
 
-The 4819 shipped rules are what a consumer evaluates; the corpus's own
+The 4821 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | falsified | 1 of 9218 disagree |
-| every condition of every rule renders | **holds** | 0 of 26869 disagree |
+| no two conditions that differ in meaning read alike | falsified | 1 of 9240 disagree |
+| every condition of every rule renders | **holds** | 0 of 26913 disagree |
 
 These renderings are shared, each by the conditions beneath it:
 
@@ -47,8 +47,8 @@ These renderings are shared, each by the conditions beneath it:
 
 | kind | occurrences | as it reads |
 |---|---|---|
-| `and` | 2743 | MOON aspects SUN and SUN aspects MOON |
-| `or` | 1771 | MARS is combust or MARS is retrograde |
+| `and` | 2757 | MOON aspects SUN and SUN aspects MOON |
+| `or` | 1773 | MARS is combust or MARS is retrograde |
 | `not` | 1754 | it is not the case that SATURN is weak |
 | `planet-in-house` | 2714 | SUN stands in the 1st house |
 | `planet-in-sign` | 2333 | SUN stands in LEO |
@@ -83,10 +83,10 @@ These renderings are shared, each by the conditions beneath it:
 | `planet-in-house-and-sign` | 26 | SUN stands in the 1st house and in LEO |
 | `planet-at-gandanta` | 4 | SUN stands at a gandanta junction, within the usual 3°20′ |
 | `planet-in-degrees` | 1036 | SUN stands between 0° and 5° of its sign |
-| `panchanga-tithi` | 63 | the birth tithi is AMAVASYA |
+| `panchanga-tithi` | 70 | the birth tithi is AMAVASYA |
 | `panchanga-paksha` | 60 | the birth falls in the SHUKLA paksha |
-| `panchanga-vara` | 20 | the birth weekday is GURUVARA |
-| `panchanga-nakshatra` | 79 | the Moon's birth nakshatra is MULA |
+| `panchanga-vara` | 34 | the birth weekday is GURUVARA |
+| `panchanga-nakshatra` | 86 | the Moon's birth nakshatra is MULA |
 | `panchanga-yoga` | 9 | the panchanga yoga at birth is GANDA |
 | `panchanga-karana` | 3 | the karana at birth is VISHTI |
 | `birth-during-eclipse` | 6 | the birth falls in an eclipse |

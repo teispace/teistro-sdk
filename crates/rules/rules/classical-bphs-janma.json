@@ -271,6 +271,299 @@
       ]
     },
     {
+      "key": "BPHS_BIRTH_IN_DAGDHA_YOGA",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "85",
+        "verse": "3",
+        "rank": 1,
+        "note": "A birth in a dagdha yoga, which ch. 85 v. 3 names among the inauspicious births without defining it. The definition is Muhurta Chintamani's, Shubhashubha-prakarana v. 8 (with the Piyushadhara, 1954): the 12th, 11th, 5th, 3rd, 6th, 8th and 9th tithi of either paksha on Sunday to Saturday, which the commentary backs with Narada and Vasishtha; the weekday-and-nakshatra dagdha some lists give is not this (C760). Read in R. Santhanam's translation with the Sanskrit e-text for ch. 85 v. 3."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "RAVIVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_DWADASHI",
+                    "KRISHNA_DWADASHI"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "SOMAVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_EKADASHI",
+                    "KRISHNA_EKADASHI"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "MANGALAVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_PANCHAMI",
+                    "KRISHNA_PANCHAMI"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "BUDHAVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_TRITIYA",
+                    "KRISHNA_TRITIYA"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "GURUVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_SHASHTHI",
+                    "KRISHNA_SHASHTHI"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "SHUKRAVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_ASHTAMI",
+                    "KRISHNA_ASHTAMI"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "SHANIVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_NAVAMI",
+                    "KRISHNA_NAVAMI"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an inauspicious birth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BIRTH_IN_YAMAGHANTA",
+      "category": "ashubha-janma",
+      "source": {
+        "text": "BPHS",
+        "chapter": "85",
+        "verse": "3",
+        "rank": 1,
+        "note": "A birth in Yamaghanta, which ch. 85 v. 3 names among the inauspicious births without defining it. The definition is Muhurta Chintamani's, Shubhashubha-prakarana v. 9 (with the Piyushadhara, 1954): Magha, Vishakha, Ardra, Mula, Krittika, Rohini and Hasta on Sunday to Saturday, Garga's list in the Daivajna-manohara; the weekday and the nakshatra both, where a nakshatra alone over-reaches (C760). Read in R. Santhanam's translation with the Sanskrit e-text for ch. 85 v. 3."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "RAVIVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "MAGHA"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "SOMAVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "VISHAKHA"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "MANGALAVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "ARDRA"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "BUDHAVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "MULA"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "GURUVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "KRITTIKA"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "SHUKRAVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "ROHINI"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-vara",
+                  "varas": [
+                    "SHANIVARA"
+                  ]
+                },
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "HASTA"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an inauspicious birth"
+        }
+      ]
+    },
+    {
       "key": "BPHS_BIRTH_IN_AN_INAUSPICIOUS_YOGA",
       "category": "ashubha-janma",
       "source": {

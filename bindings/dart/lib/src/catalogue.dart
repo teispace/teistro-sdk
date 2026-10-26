@@ -289,7 +289,9 @@ enum Kind {
   /// The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
   tibetanAnimal(72, 'tibetan_animal'),
   /// Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
-  agniVasa(73, 'agni_vasa');
+  agniVasa(73, 'agni_vasa'),
+  /// The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).
+  ashubhaYoga(74, 'ashubha_yoga');
 
   const Kind(this.id, this.key);
 
@@ -4576,6 +4578,51 @@ enum AgniVasa implements KeyOf<AgniVasa> {
 
   /// The member with a key, or `null` for one this build does not know.
   static AgniVasa? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760). Members are the catalogue's ids; the full key id is `(TS_KIND_ASHUBHA_YOGA << 16) | member`.
+enum AshubhaYoga implements KeyOf<AshubhaYoga> {
+  /// Dagdha, burnt: the 12th, 11th, 5th, 3rd, 6th, 8th and 9th tithi of either paksha on Sunday to Saturday
+  dagdha(0, 'DAGDHA'),
+  /// Visha, poison: the 4th, 6th, 7th, 2nd, 8th, 9th and 7th tithi of either paksha on Sunday to Saturday
+  visha(1, 'VISHA'),
+  /// Hutashana, fire: the 12th, 6th, 7th, 8th, 9th, 10th and 11th tithi of either paksha on Sunday to Saturday
+  hutashana(2, 'HUTASHANA'),
+  /// Yamaghanta, Yama's bell: Magha, Vishakha, Ardra, Mula, Krittika, Rohini and Hasta on Sunday to Saturday
+  yamaghanta(3, 'YAMAGHANTA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const AshubhaYoga(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'ashubha_yoga.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<AshubhaYoga> registered(String key) => Registered._('ashubha_yoga.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static AshubhaYoga byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => AshubhaYoga.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static AshubhaYoga? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

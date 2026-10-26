@@ -21343,6 +21343,84 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "ashubha_yoga",
+      "number": 74,
+      "version": 1,
+      "doc": "The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "DAGDHA",
+          "id": 0,
+          "doc": "Dagdha, burnt: the 12th, 11th, 5th, 3rd, 6th, 8th and 9th tithi of either paksha on Sunday to Saturday",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Shubhashubha-prakarana v. 8: सूर्येशपञ्चाग्निरसाष्टनन्दा … दग्धा; the commentary cites Narada's upagraha chapter and Vasishtha"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "VISHA",
+          "id": 1,
+          "doc": "Visha, poison: the 4th, 6th, 7th, 2nd, 8th, 9th and 7th tithi of either paksha on Sunday to Saturday",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Shubhashubha-prakarana v. 8: वेदाङ्गसप्ताश्विगजाङ्कशैलाः … विषाख्याः; the commentary cites Brihaspati and Vasishtha"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HUTASHANA",
+          "id": 2,
+          "doc": "Hutashana, fire: the 12th, 6th, 7th, 8th, 9th, 10th and 11th tithi of either paksha on Sunday to Saturday",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Shubhashubha-prakarana v. 8: सूर्याङ्गसप्तोरगगोदिगीशाः … हुताशनाः; the commentary cites Guru (both pakshas) and Vasishtha"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "YAMAGHANTA",
+          "id": 3,
+          "doc": "Yamaghanta, Yama's bell: Magha, Vishakha, Ardra, Mula, Krittika, Rohini and Hasta on Sunday to Saturday",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Shubhashubha-prakarana v. 9: मघाविशाखाशिवमूलवह्निब्राह्मं करोऽर्कादि यमघण्टकाश्च; the commentary cites Garga in the Daivajna-manohara"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

@@ -21,7 +21,9 @@ use teistro_calendar::lunisolar::{MonthKind, SAMSARPA_REACH_MONTHS};
 use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
-use teistro_core::catalogue::{AgniVasa, Direction, Graha, Nakshatra, Rashi, Ritu, Tithi, Vara};
+use teistro_core::catalogue::{
+    AgniVasa, AshubhaYoga, Direction, Graha, Nakshatra, Rashi, Ritu, Tithi, Vara,
+};
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
@@ -517,6 +519,52 @@ impl Panchanga {
     #[must_use]
     pub fn chandra_vasa(&self) -> Vec<Span<Direction>> {
         omen::chandra_vasas(&self.moon.signs)
+    }
+
+    /// The day's inauspicious yogas, its vara with a tithi or a nakshatra
+    /// ([`omen::ashubha_yogas`], Muhurta Chintamani,
+    /// Shubhashubha-prakarana vv. 8–9, crux C760): a span for each tithi
+    /// that is dagdha, visha or hutashana on the day's vara, and for the
+    /// nakshatra that is its Yamaghanta. Read from the stored day, so it
+    /// costs nothing until asked and changes no day's hash.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// // Each yoga runs over a tithi or a nakshatra the day held.
+    /// let wholes: Vec<_> = day.limbs.tithi.iter().map(|t| t.whole).chain(day.limbs.nakshatra.iter().map(|n| n.whole)).collect();
+    /// assert!(day.ashubha_yogas().iter().all(|yoga| wholes.contains(&yoga.whole)));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn ashubha_yogas(&self) -> Vec<Span<AshubhaYoga>> {
+        omen::ashubha_yogas(&self.limbs.tithi, &self.limbs.nakshatra, self.day.vara)
     }
 
     /// Where fire dwells over the day for a kamya homa, one span for each

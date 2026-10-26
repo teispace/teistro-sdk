@@ -294,6 +294,19 @@ public final class AlmanacDay {
     }
 
     /**
+     * The inauspicious yogas the day's tithis and nakshatras make with its vara (Muhurta Chintamani,
+     * Shubhashubha-prakarana vv. 8-9, crux C760): dagdha, visha and hutashana by the tithi, yamaghanta by the
+     * nakshatra, each span the limb's own.
+     *
+     * @return the spans
+     */
+    public List<Span<AshubhaYoga>> ashubhaYogas() {
+        Panchanga.AshubhaYogas c = batch.decoded().ashubhaYogas();
+        return spans("ashubha_yogas", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), AshubhaYoga::of);
+    }
+
+    /**
      * Rahu's direction over the daylight, an eighth of sunrise to sunset each from the east (Jyotirnibandha p. 337,
      * crux C749); none after sunset, and none on a day with no daylight.
      *

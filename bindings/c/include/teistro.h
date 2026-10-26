@@ -452,6 +452,10 @@ typedef enum ts_kind {
      * Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
      */
     TS_KIND_AGNI_VASA = 73,
+    /**
+     * The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).
+     */
+    TS_KIND_ASHUBHA_YOGA = 74,
 } ts_kind;
 
 /**
@@ -4497,6 +4501,30 @@ typedef enum ts_agni_vasa {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_AGNI_VASA_UNKNOWN = -1,
 } ts_agni_vasa;
+
+/**
+ * The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760). Members are the catalogue's ids; the full key id is `(TS_KIND_ASHUBHA_YOGA << 16) | member`.
+ */
+typedef enum ts_ashubha_yoga {
+    /**
+     * Dagdha, burnt: the 12th, 11th, 5th, 3rd, 6th, 8th and 9th tithi of either paksha on Sunday to Saturday
+     */
+    TS_ASHUBHA_YOGA_DAGDHA = 0,
+    /**
+     * Visha, poison: the 4th, 6th, 7th, 2nd, 8th, 9th and 7th tithi of either paksha on Sunday to Saturday
+     */
+    TS_ASHUBHA_YOGA_VISHA = 1,
+    /**
+     * Hutashana, fire: the 12th, 6th, 7th, 8th, 9th, 10th and 11th tithi of either paksha on Sunday to Saturday
+     */
+    TS_ASHUBHA_YOGA_HUTASHANA = 2,
+    /**
+     * Yamaghanta, Yama's bell: Magha, Vishakha, Ardra, Mula, Krittika, Rohini and Hasta on Sunday to Saturday
+     */
+    TS_ASHUBHA_YOGA_YAMAGHANTA = 3,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_ASHUBHA_YOGA_UNKNOWN = -1,
+} ts_ashubha_yoga;
 
 /**
  * The status of a call, with the code it has at the C boundary.

@@ -622,6 +622,12 @@
           "value": 73,
           "doc": "Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).",
           "key": "agni_vasa"
+        },
+        {
+          "name": "AshubhaYoga",
+          "value": 74,
+          "doc": "The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).",
+          "key": "ashubha_yoga"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6484,6 +6490,39 @@
           "value": 2,
           "doc": "Below the earth, the remainder two: a homa then costs wealth",
           "key": "PATALA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "AshubhaYoga",
+      "doc": "The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760). Members are the catalogue's ids; the full key id is `(TS_KIND_ASHUBHA_YOGA << 16) | member`.",
+      "repr": "u16",
+      "kind": "ashubha_yoga",
+      "values": [
+        {
+          "name": "Dagdha",
+          "value": 0,
+          "doc": "Dagdha, burnt: the 12th, 11th, 5th, 3rd, 6th, 8th and 9th tithi of either paksha on Sunday to Saturday",
+          "key": "DAGDHA"
+        },
+        {
+          "name": "Visha",
+          "value": 1,
+          "doc": "Visha, poison: the 4th, 6th, 7th, 2nd, 8th, 9th and 7th tithi of either paksha on Sunday to Saturday",
+          "key": "VISHA"
+        },
+        {
+          "name": "Hutashana",
+          "value": 2,
+          "doc": "Hutashana, fire: the 12th, 6th, 7th, 8th, 9th, 10th and 11th tithi of either paksha on Sunday to Saturday",
+          "key": "HUTASHANA"
+        },
+        {
+          "name": "Yamaghanta",
+          "value": 3,
+          "doc": "Yamaghanta, Yama's bell: Magha, Vishakha, Ardra, Mula, Krittika, Rohini and Hasta on Sunday to Saturday",
+          "key": "YAMAGHANTA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -23392,6 +23431,11 @@
               "name": "homa_ahuti",
               "scalar": "u32",
               "doc": "How many rows of `homa_ahuti` belong to this day."
+            },
+            {
+              "name": "ashubha_yogas",
+              "scalar": "u32",
+              "doc": "How many rows of `ashubha_yogas` belong to this day."
             }
           ]
         },
@@ -24642,6 +24686,61 @@
               "scalar": "u16",
               "doc": "The graha the oblation falls to.",
               "enum": "Graha"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 36,
+          "name": "ashubha_yogas",
+          "doc": "The day's inauspicious yogas (Muhurta Chintamani, Shubhashubha-prakarana vv. 8–9, crux C760): a span for each tithi the day held that is dagdha (`DAGDHA`), visha (`VISHA`) or hutashana (`HUTASHANA`) with the day's vara, by its number in either paksha, and for the nakshatra that is the vara's Yamaghanta (`YAMAGHANTA`), each over that limb's own span and in the order they begin. Vasishtha lifts them at night; the spans run as the limbs do and the reader judges.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The inauspicious yoga.",
+              "enum": "AshubhaYoga"
             },
             {
               "name": "whole_from",

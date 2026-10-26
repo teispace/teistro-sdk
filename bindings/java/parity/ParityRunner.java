@@ -2709,6 +2709,7 @@ public final class ParityRunner {
             put(d + "-chandrashtama-count", almanacDay.chandrashtama().size());
             put(d + "-amrit-kalam-count", almanacDay.amritKalam().size());
             put(d + "-agni-vasa-count", almanacDay.agniVasa().size());
+            put(d + "-ashubha-yoga-count", almanacDay.ashubhaYogas().size());
             put(d + "-rahu-vasa-count", almanacDay.rahuVasa().size());
             put(d + "-punya-kala-count", almanacDay.punyaKala().size());
             putSpans(d + "-tithi", almanacDay.tithi(), Tithi::fullKey);
@@ -2721,6 +2722,7 @@ public final class ParityRunner {
             putSpans(d + "-chandrashtama", almanacDay.chandrashtama(), Rashi::fullKey);
             putSpans(d + "-amrit-kalam", almanacDay.amritKalam(), Nakshatra::fullKey);
             putSpans(d + "-agni-vasa", almanacDay.agniVasa(), AgniVasa::fullKey);
+            putSpans(d + "-ashubha-yoga", almanacDay.ashubhaYogas(), AshubhaYoga::fullKey);
             putSpans(d + "-rahu-vasa", almanacDay.rahuVasa(), Direction::fullKey);
             putSpans(d + "-punya-kala", almanacDay.punyaKala(), Rashi::fullKey);
             for (int j = 0; j < almanacDay.kaalas().size(); j += 1) {

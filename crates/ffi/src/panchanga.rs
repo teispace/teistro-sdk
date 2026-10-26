@@ -520,6 +520,7 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         day.rahu_vasa().len(),
         usize::from(day.punya_kala.is_some()),
         day.homa_ahuti.len(),
+        day.ashubha_yogas().len(),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -782,6 +783,7 @@ struct RaggedRows {
     rahu_vasa: Vec<Vec<FixedValue>>,
     punya_kala: Vec<Vec<FixedValue>>,
     homa_ahuti: Vec<Vec<FixedValue>>,
+    ashubha_yogas: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -816,6 +818,7 @@ impl RaggedRows {
                 |m| m.id(),
             )?,
             homa_ahuti: span_rows(days, |day| &day.homa_ahuti, |m| m.id())?,
+            ashubha_yogas: owned_span_rows(days, Panchanga::ashubha_yogas, |m| m.id())?,
         })
     }
 }
@@ -948,6 +951,7 @@ pub fn encode(
         writer.rows("rahu_vasa", &ragged.rahu_vasa)?;
         writer.rows("punya_kala", &ragged.punya_kala)?;
         writer.rows("homa_ahuti", &ragged.homa_ahuti)?;
+        writer.rows("ashubha_yogas", &ragged.ashubha_yogas)?;
         writer.finish()
     };
     write().map_err(|error| {

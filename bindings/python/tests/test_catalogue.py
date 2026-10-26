@@ -103,8 +103,9 @@ class TheCatalogue(unittest.TestCase):
         # Indian national calendar, by two with the tabular Hijri calendar
         # and its era, and by one with the Tibetan calendar; 166 since the
         # Tibetan year's `TibetanElement` and `TibetanAnimal`; 167 since
-        # the agni vasa's `AgniVasa`.
-        self.assertEqual(len(every_enum()), 167)
+        # the agni vasa's `AgniVasa`; 168 since the inauspicious yogas'
+        # `AshubhaYoga`.
+        self.assertEqual(len(every_enum()), 168)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
             946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3 + 2 + 4 + 1 + 13 + 4 + 5 + 3 + 2 + 4 + 5 + 2 + 24 + 2 + 2 + 2 + 3 + 14 + 5 + 2 + 2 + 5 + 3 + 3 + 3 + 7 + 9 + 4 + 3 + 7 + 4 + 11 + 5 + 3 + 2 + 8 + 3 + 4 + 5 + 4 + 3 + 13 + 5 + 2 + 1 + 2 + 1 + 3
@@ -117,7 +118,10 @@ class TheCatalogue(unittest.TestCase):
             + 1
             # `AgniVasa`'s three places and its UNKNOWN, and its member of
             # `Kind`.
-            + 4 + 1,
+            + 4 + 1
+            # `AshubhaYoga`'s four yogas and its UNKNOWN, and its member of
+            # `Kind`.
+            + 5 + 1,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

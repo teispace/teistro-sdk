@@ -24,6 +24,7 @@ from .catalogue import (
     AgniVasa,
     ApplicationKind,
     AshtakavargaGoodFrom,
+    AshubhaYoga,
     AspectPhase,
     Astronomy,
     Auspiciousness,

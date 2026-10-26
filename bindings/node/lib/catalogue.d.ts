@@ -259,7 +259,8 @@ export type Kind =
   | 'solar_eclipse_kind'
   | 'tibetan_element'
   | 'tibetan_animal'
-  | 'agni_vasa';
+  | 'agni_vasa'
+  | 'ashubha_yoga';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -535,6 +536,10 @@ export declare const Kind: {
    * Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
    */
   readonly AgniVasa: 'agni_vasa';
+  /**
+   * The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).
+   */
+  readonly AshubhaYoga: 'ashubha_yoga';
 };
 
 /**
@@ -5872,6 +5877,37 @@ export declare const AgniVasa: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const AgniVasaById: ReadonlyMap<number, AgniVasa>;
+
+/**
+ * The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760). Members are the catalogue's ids; the full key id is `(TS_KIND_ASHUBHA_YOGA << 16) | member`.
+ */
+export type AshubhaYoga = 'ashubha_yoga.DAGDHA' | 'ashubha_yoga.VISHA' | 'ashubha_yoga.HUTASHANA' | 'ashubha_yoga.YAMAGHANTA' | 'unknown';
+
+/** Every AshubhaYoga by name; the values are the strings the union accepts. */
+export declare const AshubhaYoga: {
+  /**
+   * Dagdha, burnt: the 12th, 11th, 5th, 3rd, 6th, 8th and 9th tithi of either paksha on Sunday to Saturday
+   */
+  readonly Dagdha: 'ashubha_yoga.DAGDHA';
+  /**
+   * Visha, poison: the 4th, 6th, 7th, 2nd, 8th, 9th and 7th tithi of either paksha on Sunday to Saturday
+   */
+  readonly Visha: 'ashubha_yoga.VISHA';
+  /**
+   * Hutashana, fire: the 12th, 6th, 7th, 8th, 9th, 10th and 11th tithi of either paksha on Sunday to Saturday
+   */
+  readonly Hutashana: 'ashubha_yoga.HUTASHANA';
+  /**
+   * Yamaghanta, Yama's bell: Magha, Vishakha, Ardra, Mula, Krittika, Rohini and Hasta on Sunday to Saturday
+   */
+  readonly Yamaghanta: 'ashubha_yoga.YAMAGHANTA';
+};
+
+/**
+ * Every AshubhaYoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AshubhaYogaById: ReadonlyMap<number, AshubhaYoga>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

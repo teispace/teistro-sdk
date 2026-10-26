@@ -144,6 +144,12 @@ export function messages(r) {
           prithvi: () => r.entity('agni_vasa.PRITHVI'),
           svarga: () => r.entity('agni_vasa.SVARGA'),
         },
+        ashubhaYoga: {
+          dagdha: () => r.entity('ashubha_yoga.DAGDHA'),
+          hutashana: () => r.entity('ashubha_yoga.HUTASHANA'),
+          visha: () => r.entity('ashubha_yoga.VISHA'),
+          yamaghanta: () => r.entity('ashubha_yoga.YAMAGHANTA'),
+        },
         avasthaBaladi: {
           bala: () => r.entity('avastha_baladi.BALA'),
           kumara: () => r.entity('avastha_baladi.KUMARA'),

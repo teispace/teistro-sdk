@@ -124,7 +124,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 3131 rules this pass composes carry a reading, and they
+rule: 12 of the 3133 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 
@@ -446,10 +446,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 2597 | 862 |
-| `ne-Deva-NP` | 2597 | 8 |
-| `sa-Deva` | 2597 | 1229 |
-| `sa-Latn` | 2597 | 1229 |
+| `hi-Deva-IN` | 2609 | 874 |
+| `ne-Deva-NP` | 2609 | 8 |
+| `sa-Deva` | 2609 | 1241 |
+| `sa-Latn` | 2609 | 1241 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

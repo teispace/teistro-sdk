@@ -2943,6 +2943,10 @@ pub mod sdk {
         pub mod agni_vasa {
         }
 
+        /// The `ashubha_yoga` group.
+        pub mod ashubha_yoga {
+        }
+
         /// The `avastha_baladi` group.
         pub mod avastha_baladi {
         }
