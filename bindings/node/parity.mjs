@@ -2148,7 +2148,7 @@ geo.dispose();
   const seen = (s) => (s === null ? '-' : `${number(s.from)}..${number(s.to)}`);
   put('eclipses-hash', eclipses.provenance.contentHash);
   put('eclipses-count', `${eclipses.value.lunar.length} ${eclipses.value.solar.length}`);
-  eclipses.value.lunar.forEach(({ eclipse, here }, k) => {
+  eclipses.value.lunar.forEach(({ eclipse, here, vedha }, k) => {
     const c = eclipse.contacts;
     put(
       `eclipses-lunar-${k}`,
@@ -2159,8 +2159,9 @@ geo.dispose();
       `eclipses-lunar-${k}-here`,
       [here.p1, here.u1, here.u2, here.greatest, here.u3, here.u4, here.p4].map(moment).concat(seen(here.seen), seen(here.umbralSeen)).join(' '),
     );
+    put(`eclipses-lunar-${k}-vedha`, seen(vedha));
   });
-  eclipses.value.solar.forEach(({ eclipse, here }, k) => {
+  eclipses.value.solar.forEach(({ eclipse, here, vedha }, k) => {
     put(
       `eclipses-solar-${k}`,
       [eclipse.kind, number(eclipse.greatest), number(eclipse.gamma), number(eclipse.magnitude), number(eclipse.point.latitude), number(eclipse.point.longitude)].join(' '),
@@ -2173,6 +2174,7 @@ geo.dispose();
             .concat([here.first, here.second, here.third, here.fourth, here.maximum].map(moment), seen(here.seen))
             .join(' '),
     );
+    put(`eclipses-solar-${k}-vedha`, seen(vedha));
   });
 }
 

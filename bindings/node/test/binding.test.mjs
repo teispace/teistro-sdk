@@ -4120,8 +4120,13 @@ test('an almanac carries the eclipses it was asked for', () => {
   assert.deepEqual(lunar.here.seen, { from: lunar.here.p1.at, to: lunar.here.p4.at });
   assert.deepEqual(lunar.here.umbralSeen, { from: lunar.here.u1.at, to: lunar.here.u4.at });
   assert.ok(Object.isFrozen(lunar.here.seen), 'frozen to its leaves');
+  // The sutak opens praharas before the umbra is seen and closes as it
+  // ends (Dharmasindhu p. 28); the unseen solar eclipse has none.
+  assert.ok(lunar.vedha.from < lunar.here.umbralSeen.from);
+  assert.equal(lunar.vedha.to, lunar.here.umbralSeen.to);
   const [solar] = value.solar;
   assert.ok(solar.here === null || solar.here.seen === null);
+  assert.equal(solar.vedha, null);
   assert.ok(provenance.appliedConventions.some((c) => c.knob === 'eclipse.window'));
 
   const chauvenet = asked({ panchanga: { eclipse_shadow: 'CHAUVENET' } }).almanac.eclipses;

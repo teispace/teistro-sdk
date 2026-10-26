@@ -614,7 +614,8 @@ final class AlmanacReads {
                         reached(h, "u4"),
                         moment(Reads.field(h, "p4")),
                         seen(h, "seen"),
-                        seen(h, "umbralSeen")));
+                        seen(h, "umbralSeen")),
+                seen(both, "vedha"));
     }
 
     private static SolarEclipseHere solar(Object raw) {
@@ -643,6 +644,7 @@ final class AlmanacReads {
                         Reads.number(e, "gamma"),
                         Reads.number(e, "magnitude"),
                         new EclipsePoint(Reads.number(point, "latitude"), Reads.number(point, "longitude"))),
-                view);
+                view,
+                seen(both, "vedha"));
     }
 }

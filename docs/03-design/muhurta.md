@@ -266,6 +266,14 @@ cannot see, makes neither.
 The praharas are read off the almanac's own days, so they move with
 `panchanga.sunrise` as every other part of the day does.
 
+The same window rides on the eclipse itself: every eclipse the almanac
+answers (`sdk.almanac().eclipses`, or the `eclipses` section beside the
+days) carries its `vedha`, read by `season::vedha_over_days` over the
+almanac's days from two before the first moment seen to two after, the
+one function the search's blackout reads too. A consumer showing the
+sutak on the eclipse's day reads it there, with no search and no rules
+naming the blackout; an eclipse the place does not see carries none.
+
 A sky that cannot see an eclipse does not fail the search. Both kinds
 are then reported among the answer's `unjudged`, each with why, and the
 rest of the search goes on. That happens in two cases. A classical sky's

@@ -7309,6 +7309,8 @@ export interface LunarEclipseHere {
   readonly eclipse: LunarEclipse;
   /** Its contacts with the Moon's altitude at the place. */
   readonly here: LunarEclipseView;
+  /** The vedha, the sutak, under `panchanga.eclipse_vedha`: from when food is given up to the eclipse's end as seen; `null` where the place does not see it. */
+  readonly vedha: EclipseSeen | null;
 }
 
 /** A solar eclipse and the place's view of it. */
@@ -7317,6 +7319,8 @@ export interface SolarEclipseHere {
   readonly eclipse: SolarEclipse;
   /** The place's own contacts and magnitude, or `null` where the Moon's disc never touches the Sun's from it. */
   readonly here: SolarEclipseView | null;
+  /** The vedha, the sutak, as a lunar eclipse's; `null` where the place does not see it. */
+  readonly vedha: EclipseSeen | null;
 }
 
 /** A lunar eclipse: its kind, gamma, magnitudes and contacts under a rule for the Earth's shadow. */

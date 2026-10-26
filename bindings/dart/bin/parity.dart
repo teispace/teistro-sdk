@@ -3344,7 +3344,7 @@ void main() {
     'eclipses-count',
     '${eclipses.value.lunar.length} ${eclipses.value.solar.length}',
   );
-  for (final (k, LunarEclipseHere(:eclipse, :here))
+  for (final (k, LunarEclipseHere(:eclipse, :here, :vedha))
       in eclipses.value.lunar.indexed) {
     final c = eclipse.contacts;
     put(
@@ -3379,8 +3379,9 @@ void main() {
         seen(here.umbralSeen),
       ].join(' '),
     );
+    put('eclipses-lunar-$k-vedha', seen(vedha));
   }
-  for (final (k, SolarEclipseHere(:eclipse, :here))
+  for (final (k, SolarEclipseHere(:eclipse, :here, :vedha))
       in eclipses.value.solar.indexed) {
     put(
       'eclipses-solar-$k',
@@ -3412,6 +3413,7 @@ void main() {
             seen(here.seen),
           ].join(' '),
     );
+    put('eclipses-solar-$k-vedha', seen(vedha));
   }
 
   // ── The surface's shape ───────────────────────────────────────────

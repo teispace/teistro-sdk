@@ -12,6 +12,7 @@
 use serde::Serialize;
 use teistro_core::catalogue::{Kind, write_in_full};
 use teistro_core::error::Error;
+use teistro_core::interval::Interval;
 use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{Body, Horizon};
@@ -312,6 +313,11 @@ pub struct LunarHere {
     pub eclipse: LunarEclipse,
     /// The place's view of it.
     pub here: LunarView,
+    /// The vedha, the sutak: when food is given up before the eclipse
+    /// until it ends as seen, under `panchanga.eclipse_vedha`. Read off
+    /// the almanac's days, so the almanac fills it (`muhurta.md` §4.1.1);
+    /// `None` where the place does not see the umbra, and here.
+    pub vedha: Option<Interval>,
 }
 
 /// A solar eclipse and how one place sees it.
@@ -375,6 +381,9 @@ pub struct SolarHere {
     /// The place's view of it; `None` when the Moon's disc never touches
     /// the Sun's from there.
     pub here: Option<SolarView>,
+    /// The vedha, the sutak, as a lunar eclipse's
+    /// ([`LunarHere::vedha`]); `None` where the place does not see it.
+    pub vedha: Option<Interval>,
 }
 
 /// Every eclipse of a window, each with one place's view of it: what an
@@ -876,6 +885,7 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
                 Ok(LunarHere {
                     here: self.lunar_seen(&eclipse, place, horizon)?,
                     eclipse,
+                    vedha: None,
                 })
             })
             .collect::<Result<_, Error>>()?;
@@ -886,6 +896,7 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
                 Ok(SolarHere {
                     here: self.solar_seen(&eclipse, place, horizon)?,
                     eclipse,
+                    vedha: None,
                 })
             })
             .collect::<Result<_, Error>>()?;

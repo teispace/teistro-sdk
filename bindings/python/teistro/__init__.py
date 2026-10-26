@@ -9104,6 +9104,10 @@ class LunarEclipseHere:
 
     eclipse: LunarEclipse
     here: LunarEclipseView
+    vedha: Optional[EclipseSeen]
+    """The vedha, the sutak, under ``panchanga.eclipse_vedha``: from when
+    food is given up to the eclipse's end as seen; `None` where the place
+    does not see it."""
 
 
 @dataclass(frozen=True)
@@ -9113,6 +9117,9 @@ class SolarEclipseHere:
 
     eclipse: SolarEclipse
     here: Optional[SolarEclipseView]
+    vedha: Optional[EclipseSeen]
+    """The vedha, the sutak, as a lunar eclipse's; `None` where the place
+    does not see it."""
 
 
 @dataclass(frozen=True)
@@ -15953,6 +15960,7 @@ def _eclipses_answer(text: str) -> Eclipses:
                 seen=seen(h["seen"]),
                 umbral_seen=seen(h["umbralSeen"]),
             ),
+            vedha=seen(raw["vedha"]),
         )
 
     def solar(raw: Mapping[str, Any]) -> SolarEclipseHere:
@@ -15978,6 +15986,7 @@ def _eclipses_answer(text: str) -> Eclipses:
                 maximum=moment(h["maximum"]),
                 seen=seen(h["seen"]),
             ),
+            vedha=seen(raw["vedha"]),
         )
 
     value = envelope["value"]

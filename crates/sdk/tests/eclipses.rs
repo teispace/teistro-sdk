@@ -220,3 +220,36 @@ fn the_eclipses_name_their_kinds_where_their_table_says() {
     );
     assert_eq!(full["lunar"][0]["eclipse"]["shadow"], "DANJON");
 }
+
+/// Each eclipse the place sees carries its vedha, the sutak, as the
+/// muhurta search bars it (`muhurta.md` §4.1.1): under `nepali-default`
+/// the committee's fixed hours, so 2025-09-07's no food from 13:11 to
+/// 01:41 on Nepal's clock, printed to the minute; and none for an eclipse
+/// the place does not see.
+#[test]
+fn a_seen_eclipse_carries_its_sutak() {
+    const MINUTES: f64 = 3.0 / 1440.0;
+    let found = year(&context("nepali-default", None)).unwrap().value;
+    assert_eq!(found.lunar[0].vedha, None, "March's was not seen");
+    let vedha = found.lunar[1].vedha.unwrap();
+    assert!(
+        (vedha.from.get() - 2_460_925.809_7).abs() < MINUTES,
+        "{vedha:?}"
+    );
+    assert!(
+        (vedha.to.get() - 2_460_926.330_6).abs() < MINUTES,
+        "{vedha:?}"
+    );
+    assert!(found.solar.iter().all(|solar| solar.vedha.is_none()));
+    // The text's praharas open it earlier or later, never at the same
+    // instant as the fixed hours, and close it alike.
+    let text = year(&context(
+        "nepali-default",
+        Some(r#"{"panchanga": {"eclipse_vedha": "DHARMASINDHU"}}"#),
+    ))
+    .unwrap()
+    .value;
+    let by_text = text.lunar[1].vedha.unwrap();
+    assert_ne!(by_text.from, vedha.from);
+    assert_eq!(by_text.to, vedha.to);
+}

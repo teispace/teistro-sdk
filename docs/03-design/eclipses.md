@@ -460,4 +460,6 @@ and those three stay unnamed until a source does.
 - **The sutak's hours**, answered by the muhurta page (§4.1.1, C192):
   `panchanga.eclipse_vedha` counts them *Dharmasindhu*'s way or Nepal's
   committee's fixed hours, and a lunar eclipse is seen by its umbral
-  phase, so a penumbral one has none.
+  phase, so a penumbral one has none. Each eclipse the almanac answers
+  carries the window as its `vedha`, the committee's 2025-09-07 hours
+  held to the minute through the façade.

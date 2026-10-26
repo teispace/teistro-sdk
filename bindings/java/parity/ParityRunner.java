@@ -1422,6 +1422,7 @@ public final class ParityRunner {
                         eclipseMoment(view.u1()), eclipseMoment(view.u2()), eclipseMoment(view.greatest()),
                         eclipseMoment(view.u3()), eclipseMoment(view.u4()), eclipseMoment(view.p4()),
                         eclipseSeen(view.seen()), eclipseSeen(view.umbralSeen())));
+                put("eclipses-lunar-" + k + "-vedha", eclipseSeen(lunarEclipse.vedha()));
             }
             for (int k = 0; k < eclipses.value().solar().size(); k += 1) {
                 SolarEclipseHere solarEclipse = eclipses.value().solar().get(k);
@@ -1436,6 +1437,7 @@ public final class ParityRunner {
                                 eclipseMoment(view.first()), eclipseMoment(view.second()),
                                 eclipseMoment(view.third()), eclipseMoment(view.fourth()),
                                 eclipseMoment(view.maximum()), eclipseSeen(view.seen())));
+                put("eclipses-solar-" + k + "-vedha", eclipseSeen(solarEclipse.vedha()));
             }
 
             // ── The surface's shape ───────────────────────────────────────
