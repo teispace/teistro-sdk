@@ -416,6 +416,7 @@ pub struct RuleChart {
 /// #     },
 /// #     by_day: Some(true),
 /// #     sankranti_hours: None,
+/// #     tithi_kshaya: None,
 /// #     eclipse: None,
 /// # };
 ///
@@ -448,6 +449,11 @@ pub struct Panchanga {
     /// sunrise, to the birth: negative for a birth before it. None when the
     /// day has no sankranti, or the chart does not say.
     pub sankranti_hours: Option<f64>,
+    /// Whether the birth's tithi touched no sunrise, beginning after the
+    /// birth day's and ending before the next: the avama, or kshaya, tithi
+    /// BPHS ch. 85 v. 3 names among the inauspicious births. None when the
+    /// chart does not say.
+    pub tithi_kshaya: Option<bool>,
     /// The eclipse the birth falls in, if any.
     pub eclipse: Option<Eclipse>,
 }
@@ -475,6 +481,7 @@ pub struct Panchanga {
 /// #     },
 /// #     by_day: Some(true),
 /// #     sankranti_hours: None,
+/// #     tithi_kshaya: None,
 /// #     eclipse: None,
 /// # };
 ///
@@ -649,6 +656,7 @@ pub enum Limb {
 /// #     },
 /// #     by_day: Some(true),
 /// #     sankranti_hours: None,
+/// #     tithi_kshaya: None,
 /// #     eclipse: None,
 /// # };
 ///

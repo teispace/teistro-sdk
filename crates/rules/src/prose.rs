@@ -723,6 +723,9 @@ impl Display for Condition {
                 write!(f, " of {of} equal parts of {limb}")
             }
             Condition::BirthByDay => f.write_str("the birth fell by day"),
+            Condition::BirthInKshayaTithi => {
+                f.write_str("the birth's tithi touched no sunrise, a kshaya tithi")
+            }
             Condition::SameSign { of, as_sign } => {
                 write!(f, "{of} and {as_sign} stand in one sign")
             }
@@ -989,7 +992,7 @@ mod tests {
     /// One written condition for each kind of the language, with the sentence
     /// it must read as. Hand-written rather than captured: a phrasing that
     /// changes is a phrasing a reviewer agreed to change.
-    const SENTENCES: [(&str, &str); 67] = [
+    const SENTENCES: [(&str, &str); 68] = [
         (
             r#"{"type": "and", "conditions": [{"type": "birth-by-day"}, {"type": "planet-combust", "planet": "MOON"}]}"#,
             "the birth fell by day and MOON is combust",
@@ -1236,6 +1239,10 @@ mod tests {
             "the birth falls in the 2nd or 3rd of 6 equal parts of the tithi",
         ),
         (r#"{"type": "birth-by-day"}"#, "the birth fell by day"),
+        (
+            r#"{"type": "birth-in-kshaya-tithi"}"#,
+            "the birth's tithi touched no sunrise, a kshaya tithi",
+        ),
         (
             r#"{"type": "same-sign", "of": "MOON", "as": 7}"#,
             "MOON and house 7 stand in one sign",

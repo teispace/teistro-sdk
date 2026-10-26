@@ -88,6 +88,7 @@ const BY_NIGHT: &str = "no";
 ///         spans: Spans::default(),
 ///         by_day: Some(true),
 ///         sankranti_hours: None,
+///         tithi_kshaya: None,
 ///         eclipse: None,
 ///     }),
 ///     ..chart
@@ -158,6 +159,7 @@ mod tests {
             spans: Spans::default(),
             by_day: None,
             sankranti_hours: None,
+            tithi_kshaya: None,
             eclipse: None,
         }
     }

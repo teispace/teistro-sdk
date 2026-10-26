@@ -1018,10 +1018,22 @@ do not carry these chapters, as they did not ch. 92):
   in-laws, the verse's girl named in the effect since the chart cannot say.
 
 The gandantas and Abhukta Moola of chs. 92 to 94 were built before, in their
-own set. The birth in a parent's or brother's nakshatra (ch. 89), the
-tithi-kshaya, Yamaghanta and Dagdha yoga (ch. 85 names them and no chapter
-defines them), and chs. 95 and 96's birth order and unusual deliveries are
-not built: the chart does not hold them.
+own set. The birth in a parent's or brother's nakshatra (ch. 89), Yamaghanta and
+Dagdha yoga (ch. 85 names them and no chapter defines them), and chs. 95
+and 96's birth order and unusual deliveries are not built: the chart does
+not hold them.
+
+**The avama birth, built (2026-10-26).** Ch. 85 v. 3 names the avama
+among the inauspicious births and ch. 88 gives it the remedy of Bhadra and
+the bad yogas; no chapter defines it, and the panchanga's avama is a
+kshaya tithi, one touching no sunrise (C759). The chart's panchanga
+carries `tithi_kshaya`, whether the birth's tithi began after the birth
+day's sunrise and ended before the next, read from the almanac's own
+sunrises, and the condition `birth-in-kshaya-tithi` reads it; a chart
+that does not say never holds it. `BPHS_BIRTH_IN_AVAMA` is the rule.
+`crates/sdk/tests/janma.rs` reads it at each hour of its twenty days and
+finds it holding exactly where a tithi the almanac calls kshaya holds the
+hour.
 
 **Found building it:** the chart's `on_sankranti` flag was set false by
 every maker, so `birth-on-sankranti` could never hold. The chart now carries
