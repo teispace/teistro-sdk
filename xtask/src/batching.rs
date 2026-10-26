@@ -556,12 +556,27 @@ fn text(
     }
     let _ = writeln!(out, "{saved}");
     if let (Some(first), Some(last)) = (memos.first(), memos.last()) {
+        // The verb is the figures', so the sentence cannot outlive them.
+        let reading = if last.hit_share > first.hit_share {
+            "**rises with the batch**"
+        } else if last.hit_share < first.hit_share {
+            "**falls with the batch**"
+        } else {
+            "**holds across the batch**"
+        };
+        let why = if last.hit_share > first.hit_share {
+            "which is the same finding as §4 read from the other side, and\n\
+             the reason the memo is worth more than a cache of one call's own\n\
+             repeats"
+        } else {
+            "since the almanac's range walk already shares between its days\n\
+             what a memo would (a lunation found once for every day it\n\
+             holds), and the memo answers what each day repeats of its own"
+        };
         let _ = writeln!(
             out,
-            "The share answered from memory **rises with the batch** — {}\n\
-             for a single day, {} across {} — which is the same finding as\n\
-             §4 read from the other side, and the reason the memo is worth\n\
-             more than a cache of one call's own repeats. A range of {}\n\
+            "The share answered from memory {reading} — {}\n\
+             for a single day, {} across {} — {why}. A range of {}\n\
              days asks the ephemeris for {} cells instead of {}, in {}\n\
              calls instead of {}.\n",
             share(first.hit_share),

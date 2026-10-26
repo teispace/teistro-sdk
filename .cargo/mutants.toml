@@ -36,7 +36,7 @@ exclude_re = [
   'crates/dasha/src/kalachakra\.rs:520:36: replace \|\| with && in <impl Timeline for KalachakraDasha>::mahadasha',
   # A body on either node's sign has already ended the count, so `from`
   # never equals `arc` where the side is chosen.
-  'crates/rules/src/eval\.rs:1763:72: replace > with >= in Evaluator<.a>::predicate',
+  'crates/rules/src/eval\.rs:1815:72: replace > with >= in Evaluator<.a>::predicate',
   # Two strengths a span's chosen by differ by exactly the epsilon only by
   # chance no chart's arithmetic makes, so the bound's own point is never
   # met.
