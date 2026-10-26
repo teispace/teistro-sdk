@@ -22,11 +22,13 @@ import java.util.function.LongSupplier;
  * glibc's {@code mallinfo2} on Linux. The resident set will not do, since
  * macOS compresses idle pages and a process keeping its contexts shrinks.
  *
- * <p>Each family runs its cycles once to settle, then {@link #RUNS} times
- * measured, and at least one measured run must leave the bytes in use within
- * {@link #BUDGET} of where it began: a leak grows them in every run, while
- * what the JVM allocates for itself moves them a little, and now and then
- * once. Unread on Windows, on musl, and on Intel macOS, whose zones'
+ * <p>Each family runs its cycles {@link #WARMING} times to settle, then
+ * {@link #RUNS} times measured, and at least one measured run must leave the
+ * bytes in use within {@link #BUDGET} of where it began: a leak grows them in
+ * every run, while what the JVM allocates for itself moves them a little, and
+ * now and then a lot. On a loaded macOS runner the JIT was still compiling
+ * after one run to settle: three measured runs grew 35 MB, 92 KB and 2.1 MB,
+ * with the library freeing every blob in the call that made it. Unread on Windows, on musl, and on Intel macOS, whose zones'
  * {@code size_in_use} is not the bytes live (the Python test says why).
  */
 final class BytesInUse {
@@ -34,8 +36,10 @@ final class BytesInUse {
     static final long BUDGET = 64 * 1024;
     /** The cycles of one run. */
     static final int CYCLES = 500;
+    /** The runs of each family that settle the JVM before any is measured. */
+    static final int WARMING = 2;
     /** The measured runs of each family. */
-    static final int RUNS = 3;
+    static final int RUNS = 6;
 
     private BytesInUse() {}
 
@@ -145,7 +149,9 @@ final class BytesInUse {
                 throw new AssertionError("interrupted", e);
             }
         };
-        run.applyAsLong(CYCLES);
+        for (int at = 0; at < WARMING; at += 1) {
+            run.applyAsLong(CYCLES);
+        }
         long least = Long.MAX_VALUE;
         for (int at = 0; at < RUNS; at += 1) {
             grown[at] = run.applyAsLong(CYCLES);
