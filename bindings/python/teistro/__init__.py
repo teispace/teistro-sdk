@@ -133,6 +133,7 @@ from ._records import *  # noqa: F403 - the records' own __all__ names them
 from ._records import Provenance, Step, decode_provenance, decode_step
 from .catalogue import (
     Catalogued,
+    AgniVasa,
     AvasthaCheshta,
     Member,
     AvasthaSayanadi,
@@ -1201,6 +1202,7 @@ __all__ = [
     "DayPart",
     "Degeneracy",
     "Deity",
+    "AgniVasa",
     "Direction",
     "Gana",
     "Gender",
@@ -19535,6 +19537,26 @@ class AlmanacDay:
         return self._spans("chandrashtama", self.batch.decoded.chandrashtama, Rashi)
 
     @property
+    def agni_vasa(self) -> list[Span[AgniVasa]]:
+        """Where fire dwells for a kamya homa, one span for each tithi the
+        day held, read with the day's vara (Muhurta Chintamani,
+        Nakshatra-prakarana v. 36, crux C748).
+
+        ``AgniVasa.PRITHVI``, the earth, is the favourable one; the sky
+        and below the earth are not.
+        """
+        return self._spans("agni_vasa", self.batch.decoded.agni_vasa, AgniVasa)
+
+    @property
+    def rahu_vasa(self) -> list[Span[Direction]]:
+        """Rahu's direction over the daylight, an eighth of sunrise to
+        sunset each from the east (Jyotirnibandha p. 337, crux C749).
+
+        None after sunset, and none on a day with no daylight.
+        """
+        return self._spans("rahu_vasa", self.batch.decoded.rahu_vasa, Direction)
+
+    @property
     def moon_signs(self) -> list[Span[Rashi]]:
         """The signs the Moon stood in."""
         return self._spans("moon_signs", self.batch.decoded.moon_signs, Rashi)
@@ -19682,6 +19704,8 @@ class Almanac:
             "chandrashtama",
             "amrit_kalam",
             "lagnas",
+            "agni_vasa",
+            "rahu_vasa",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

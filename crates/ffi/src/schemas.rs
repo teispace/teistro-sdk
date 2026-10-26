@@ -536,6 +536,8 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("chandrashtama", "chandrashtama"),
             count("amrit_kalam", "amrit_kalam"),
             count("lagnas", "lagnas"),
+            count("agni_vasa", "agni_vasa"),
+            count("rahu_vasa", "rahu_vasa"),
         ],
     )
 }
@@ -822,6 +824,8 @@ pub fn panchanga() -> BlobSchema {
             span_section(29, "chandrashtama", "Whose chandrashtama the day holds (Kalaprakasika, the eighth sign counted inclusively, crux C404): the member is a **natal** Moon sign, and the intervals are the Moon's own run through the eighth sign from it.", "The natal Moon sign the span is chandrashtama for.", "Rashi"),
             span_section(30, "amrit_kalam", "The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677). `whole` is the window itself, four sixtieths of the star from the reading's ghati, and `inside` the part of it in the day; empty under `NONE`.", "Whose amrita kalam it is.", "Nakshatra"),
             span_section(31, "lagnas", "The lagna table, when `sections` asked for `TS_PANCHANGA_LAGNAS`: each sign rising from sunrise to the next sunrise, from the ascendant `panchanga.lagna_table` names (crux C680). `whole` is the sign's rising, which for the first and the last can begin before sunrise or end after the next, and `inside` the part of it in the day (C681). Empty when not asked for.", "The sign rising.", "Rashi"),
+            span_section(32, "agni_vasa", "The agni vasa: where fire dwells for a kamya homa, one span for each tithi the day held, read with the day's vara (Muhurta Chintamani, Nakshatra-prakarana v. 36, crux C748): the tithi from Shukla Pratipada as 1, one more and the vara from Sunday as 1, by four, three or nothing over the earth (`PRITHVI`, favourable), one the sky (`SVARGA`) and two below (`PATALA`).", "Where fire dwells.", "AgniVasa"),
+            span_section(33, "rahu_vasa", "Rahu's direction over the daylight (Jyotirnibandha p. 337, Rahu-bhumi v. 1, crux C749): eight spans, an eighth of sunrise to sunset each, east, northwest, south, northeast, west, southeast, north, southwest. The verse names no night, so none after sunset; empty on a day with no daylight.", "The direction Rahu stands in.", "Direction"),
         ],
     }
 }

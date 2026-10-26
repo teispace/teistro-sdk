@@ -278,7 +278,9 @@ enum Kind {
   /// The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female.
   tibetanElement(71, 'tibetan_element'),
   /// The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
-  tibetanAnimal(72, 'tibetan_animal');
+  tibetanAnimal(72, 'tibetan_animal'),
+  /// Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
+  agniVasa(73, 'agni_vasa');
 
   const Kind(this.id, this.key);
 
@@ -4522,6 +4524,49 @@ enum TibetanAnimal implements KeyOf<TibetanAnimal> {
 
   /// The member with a key, or `null` for one this build does not know.
   static TibetanAnimal? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748). Members are the catalogue's ids; the full key id is `(TS_KIND_AGNI_VASA << 16) | member`.
+enum AgniVasa implements KeyOf<AgniVasa> {
+  /// On the earth, the remainder three or nothing: a homa then brings ease
+  prithvi(0, 'PRITHVI'),
+  /// In the sky, the remainder one: a homa then costs life
+  svarga(1, 'SVARGA'),
+  /// Below the earth, the remainder two: a homa then costs wealth
+  patala(2, 'PATALA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const AgniVasa(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'agni_vasa.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<AgniVasa> registered(String key) => Registered._('agni_vasa.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static AgniVasa byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => AgniVasa.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static AgniVasa? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

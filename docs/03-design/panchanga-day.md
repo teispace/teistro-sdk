@@ -799,3 +799,63 @@ span lists.
 
 No catalogue kind is added (§21.1), so `migrate::STATE_REFUSALS` keeps
 `dur-muhurta`, its reason naming the Rust answer.
+
+### 21.4 Where fire and Rahu stand: the agni vasa and Rahu's walk
+
+A homa asks where fire dwells, and a journey or a contest where Rahu
+stands. Both are readings of what a day already carries, the tithi spans
+with the vara and the daylight, so each is a method over the stored day,
+like §21.2's, and costs nothing until asked. Each verse was read off the
+page:
+
+| reading | what it reads | source | built as |
+|---|---|---|---|
+| agni vasa | each tithi and the day's vara | Muhurta Chintamani, Nakshatra-prakarana v. 36 (Kapileshvar Shastri's edition, Chowkhamba 1948, p. 73; the 1892 Piyushadhara edition, p. 46) | `Panchanga::agni_vasa`, `omen::agni_vasa`, catalogue kind `agni_vasa` (C748) |
+| Rahu's direction | the daylight's eighths | *Jyotirnibandha* (Anandashrama 85), Rahu-bhumi v. 1, p. 337 | `Panchanga::rahu_vasa`, `omen::rahu_vasas`, `omen::RAHU_WALK` (C749) |
+| Shiva vasa | the tithi | none in hand | not built (C750) |
+| homa ahuti | the Moon's nakshatra from the Sun's | Muhurta Chintamani, Nakshatra-prakarana v. 35 | not built yet (C751) |
+
+**The agni vasa.** "सैका तिथिर्वारयुता कृताप्ता शेषे गुणेऽभ्रे भुवि
+वह्निवासः । सौख्याय होमे शशियुग्मशेषे प्राणार्थनाशो दिवि भूतले च": the
+tithi with one added and the vara added, divided by four; a remainder of
+three or nothing puts fire on the earth, and a homa then brings ease;
+one puts it in the sky and two below the earth, costing life and wealth.
+The Hindi counts the tithi from Shukla Pratipada, a Krishna tithi fifteen
+on, and the vara from Sunday, and works a case: a Thursday's Krishna
+Dvitiya is 17 + 1 + 5 = 23, three over, the earth. That case is the doc
+example, and a unit test reads every one of the 210 pairs through the
+tithis' paksha and number and the varas' weekday rather than their ids,
+so a slip in the ids' arithmetic would show. A day's answer is one span
+for each tithi it held, all with the day's vara, which the sunrise-
+anchored reckoning keeps from sunrise to sunrise. The verse is asked of
+a kamya homa, a homa done for an end; the nitya and naimittika homas are
+done whatever it says, which the doc says and the SDK does not enforce.
+
+**Rahu's walk.** "इन्द्रवायुयमे रुद्रे तोयाग्निशशिराक्षसे । यामार्धमुदितो
+राहुर्भ्रमत्येव दिगष्टके": from sunrise Rahu walks the eight directions, half
+a yama each, east (Indra), northwest (Vayu), south (Yama), northeast
+(Rudra), west (Varuna's water), southeast (Agni), north (the Moon) and
+southwest (the Rakshasa). A yama is a quarter of the daylight, so half
+of one is an eighth, the division `period::kaalas` already makes. The
+verse names the daylight's eight and no night, so after sunset there is
+no answer rather than a guess (C749), and a day with no daylight has
+none. Almanacs that print a "Rahu vasa" by weekday, one direction for
+the whole day, follow a table no text in hand gives, so it is not built.
+
+**What is not built.** Shiva vasa, (2t + 5) mod 7 over the thirty
+tithis read as kailasha, gauri, sabha, krida, vrishabha, bhojana and
+shmashana, is what almanacs print, and no text read gives it (C750): a
+consumer that wants it computes it from the tithi spans the day carries.
+The homa ahuti, verse 35's share of the oblation by the Moon's nakshatra
+counted in threes from the Sun's (Sun, Mercury, Venus, Saturn, Moon,
+Mars, Jupiter, Rahu, Ketu; a malefic's share barred), needs the Sun's
+nakshatra spans, which a day does not yet carry (C751).
+
+**What crosses.** The Rust surface has the two methods. The C boundary
+writes `agni_vasa` and `rahu_vasa` as span sections, ids 32 and 33,
+counted in `counts` after `lagnas`; every binding's day reads them with
+the span reader it has (`agni_vasa`/`agniVasa`, `rahu_vasa`/`rahuVasa`),
+the agni vasa as the new catalogue kind, named in English and Nepali.
+Each binding's test holds the week of 15 to 21 June 2024 at Kathmandu to
+the verse's remainder for every tithi span and to Jyotirnibandha's eight
+from sunrise to sunset, and each parity runner prints both span lists.

@@ -2577,6 +2577,54 @@ void _engineTests() {
     expect(plain.lagnas, isEmpty);
   });
 
+  test('fire follows each tithi with the vara, and Rahu walks the daylight '
+      'from the east', () {
+    // Muhurta Chintamani, Nakshatra-prakarana v. 36: the tithi from Shukla
+    // Pratipada as 1, one more, the vara from Sunday as 1, by four (C748);
+    // Jyotirnibandha p. 337's eight directions from the east (C749).
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final days = ctx.almanac.of(
+      from: gregorian(2024, 6, 15),
+      to: gregorian(2024, 6, 21),
+      place: Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      ),
+      utcOffsetSeconds: 20700,
+    );
+    final week = [for (var i = 0; i < days.length; i += 1) days.at(i)];
+    ctx.dispose();
+    const walk = [
+      Direction.east,
+      Direction.northwest,
+      Direction.south,
+      Direction.northeast,
+      Direction.west,
+      Direction.southeast,
+      Direction.north,
+      Direction.southwest,
+    ];
+    for (final day in week) {
+      expect(day.agniVasa.length, day.tithi.length);
+      for (var k = 0; k < day.tithi.length; k += 1) {
+        expect(day.agniVasa[k].whole.from, day.tithi[k].whole.from);
+        final remainder =
+            (day.tithi[k].member.id + 1 + 1 + day.day.vara.id + 1) % 4;
+        expect(day.agniVasa[k].member, switch (remainder) {
+          1 => AgniVasa.svarga,
+          2 => AgniVasa.patala,
+          _ => AgniVasa.prithvi,
+        });
+      }
+      expect([for (final span in day.rahuVasa) span.member], walk);
+      expect(day.rahuVasa.first.whole.from, day.day.sunrise);
+      expect(day.rahuVasa.last.whole.to, closeTo(day.day.sunset, 1e-9));
+    }
+  });
+
   test('a day marks its durmuhurtas and carries the shool, the chandra vasa '
       'and the chandrashtama', () {
     // 15 to 21 June 2024 at Kathmandu, Saturday first (crux C398): Muhurta

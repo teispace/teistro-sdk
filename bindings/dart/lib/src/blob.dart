@@ -7618,6 +7618,8 @@ final class PanchangaCounts {
     required this.chandrashtama,
     required this.amritKalam,
     required this.lagnas,
+    required this.agniVasa,
+    required this.rahuVasa,
     required this.length,
   });
 
@@ -7677,6 +7679,12 @@ final class PanchangaCounts {
 
   /// How many rows of `lagnas` belong to this day.
   final Uint32List lagnas;
+
+  /// How many rows of `agni_vasa` belong to this day.
+  final Uint32List agniVasa;
+
+  /// How many rows of `rahu_vasa` belong to this day.
+  final Uint32List rahuVasa;
 
   /// The number of rows every column holds.
   final int length;
@@ -8497,6 +8505,104 @@ final class PanchangaLagnas {
   final int length;
 }
 
+/// The `agni_vasa` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The agni vasa: where fire dwells for a kamya homa, one span for each tithi the day held, read with the day's vara (Muhurta Chintamani, Nakshatra-prakarana v. 36, crux C748): the tithi from Shukla Pratipada as 1, one more and the vara from Sunday as 1, by four, three or nothing over the earth (`PRITHVI`, favourable), one the sky (`SVARGA`) and two below (`PATALA`).
+final class PanchangaAgniVasa {
+  const PanchangaAgniVasa({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// Where fire dwells.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `rahu_vasa` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Rahu's direction over the daylight (Jyotirnibandha p. 337, Rahu-bhumi v. 1, crux C749): eight spans, an eighth of sunrise to sunset each, east, northwest, south, northeast, west, southeast, north, southwest. The verse names no night, so none after sunset; empty on a day with no daylight.
+final class PanchangaRahuVasa {
+  const PanchangaRahuVasa({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// The direction Rahu stands in.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -8538,6 +8644,8 @@ final class Panchanga {
     required this.chandrashtama,
     required this.amritKalam,
     required this.lagnas,
+    required this.agniVasa,
+    required this.rahuVasa,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -8648,6 +8756,12 @@ final class Panchanga {
   /// The lagna table, when `sections` asked for `TS_PANCHANGA_LAGNAS`: each sign rising from sunrise to the next sunrise, from the ascendant `panchanga.lagna_table` names (crux C680). `whole` is the sign's rising, which for the first and the last can begin before sunrise or end after the next, and `inside` the part of it in the day (C681). Empty when not asked for.
   final PanchangaLagnas lagnas;
 
+  /// The agni vasa: where fire dwells for a kamya homa, one span for each tithi the day held, read with the day's vara (Muhurta Chintamani, Nakshatra-prakarana v. 36, crux C748): the tithi from Shukla Pratipada as 1, one more and the vara from Sunday as 1, by four, three or nothing over the earth (`PRITHVI`, favourable), one the sky (`SVARGA`) and two below (`PATALA`).
+  final PanchangaAgniVasa agniVasa;
+
+  /// Rahu's direction over the daylight (Jyotirnibandha p. 337, Rahu-bhumi v. 1, crux C749): eight spans, an eighth of sunrise to sunset each, east, northwest, south, northeast, west, southeast, north, southwest. The verse names no night, so none after sunset; empty on a day with no daylight.
+  final PanchangaRahuVasa rahuVasa;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -8686,6 +8800,8 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atChandrashtama = blob.section(29, 'chandrashtama');
   final atAmritKalam = blob.section(30, 'amrit_kalam');
   final atLagnas = blob.section(31, 'lagnas');
+  final atAgniVasa = blob.section(32, 'agni_vasa');
+  final atRahuVasa = blob.section(33, 'rahu_vasa');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -8737,6 +8853,8 @@ Panchanga decodePanchanga(Uint8List bytes) {
       chandrashtama: blob.column(atCounts, 16, 4, Uint32List.sublistView),
       amritKalam: blob.column(atCounts, 17, 4, Uint32List.sublistView),
       lagnas: blob.column(atCounts, 18, 4, Uint32List.sublistView),
+      agniVasa: blob.column(atCounts, 19, 4, Uint32List.sublistView),
+      rahuVasa: blob.column(atCounts, 20, 4, Uint32List.sublistView),
       length: atCounts.count,
     ),
     day: Day(
@@ -8968,6 +9086,30 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsPala: blob.column(atLagnas, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atLagnas, 8, 1, Uint8List.sublistView),
       length: atLagnas.count,
+    ),
+    agniVasa: PanchangaAgniVasa(
+      member: blob.column(atAgniVasa, 0, 2, Uint16List.sublistView),
+      wholeFrom: blob.column(atAgniVasa, 1, 8, Float64List.sublistView),
+      wholeTo: blob.column(atAgniVasa, 2, 8, Float64List.sublistView),
+      insideFrom: blob.column(atAgniVasa, 3, 8, Float64List.sublistView),
+      insideTo: blob.column(atAgniVasa, 4, 8, Float64List.sublistView),
+      sunrises: blob.column(atAgniVasa, 5, 1, Uint8List.sublistView),
+      endsGhati: blob.column(atAgniVasa, 6, 1, Uint8List.sublistView),
+      endsPala: blob.column(atAgniVasa, 7, 1, Uint8List.sublistView),
+      endsVipala: blob.column(atAgniVasa, 8, 1, Uint8List.sublistView),
+      length: atAgniVasa.count,
+    ),
+    rahuVasa: PanchangaRahuVasa(
+      member: blob.column(atRahuVasa, 0, 2, Uint16List.sublistView),
+      wholeFrom: blob.column(atRahuVasa, 1, 8, Float64List.sublistView),
+      wholeTo: blob.column(atRahuVasa, 2, 8, Float64List.sublistView),
+      insideFrom: blob.column(atRahuVasa, 3, 8, Float64List.sublistView),
+      insideTo: blob.column(atRahuVasa, 4, 8, Float64List.sublistView),
+      sunrises: blob.column(atRahuVasa, 5, 1, Uint8List.sublistView),
+      endsGhati: blob.column(atRahuVasa, 6, 1, Uint8List.sublistView),
+      endsPala: blob.column(atRahuVasa, 7, 1, Uint8List.sublistView),
+      endsVipala: blob.column(atRahuVasa, 8, 1, Uint8List.sublistView),
+      length: atRahuVasa.count,
     ),
   );
 }

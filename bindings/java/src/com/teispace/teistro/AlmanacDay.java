@@ -282,6 +282,30 @@ public final class AlmanacDay {
     }
 
     /**
+     * Where fire dwells for a kamya homa, one span for each tithi the day held, read with the day's vara (Muhurta
+     * Chintamani, Nakshatra-prakarana v. 36, crux C748); {@link AgniVasa#PRITHVI}, the earth, is the favourable one.
+     *
+     * @return the spans
+     */
+    public List<Span<AgniVasa>> agniVasa() {
+        Panchanga.AgniVasa c = batch.decoded().agniVasa();
+        return spans("agni_vasa", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), AgniVasa::of);
+    }
+
+    /**
+     * Rahu's direction over the daylight, an eighth of sunrise to sunset each from the east (Jyotirnibandha p. 337,
+     * crux C749); none after sunset, and none on a day with no daylight.
+     *
+     * @return the spans
+     */
+    public List<Span<Direction>> rahuVasa() {
+        Panchanga.RahuVasa c = batch.decoded().rahuVasa();
+        return spans("rahu_vasa", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Direction::of);
+    }
+
+    /**
      * The signs the Moon stood in.
      *
      * @return the spans

@@ -69,6 +69,7 @@ mod lunar_eclipse_kind;
 mod solar_eclipse_kind;
 mod tibetan_element;
 mod tibetan_animal;
+mod agni_vasa;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -138,6 +139,7 @@ pub use lunar_eclipse_kind::*;
 pub use solar_eclipse_kind::*;
 pub use tibetan_element::*;
 pub use tibetan_animal::*;
+pub use agni_vasa::*;
 
 use crate::key::KeyId;
 
@@ -221,6 +223,7 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::SolarEclipseKind => SolarEclipseKind::from_key(key).map(SolarEclipseKind::key_id),
         Kind::TibetanElement => TibetanElement::from_key(key).map(TibetanElement::key_id),
         Kind::TibetanAnimal => TibetanAnimal::from_key(key).map(TibetanAnimal::key_id),
+        Kind::AgniVasa => AgniVasa::from_key(key).map(AgniVasa::key_id),
         _ => None,
     }
 }
@@ -302,6 +305,7 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::SolarEclipseKind => SolarEclipseKind::from_id(id.id()).map(SolarEclipseKind::key),
         Kind::TibetanElement => TibetanElement::from_id(id.id()).map(TibetanElement::key),
         Kind::TibetanAnimal => TibetanAnimal::from_id(id.id()).map(TibetanAnimal::key),
+        Kind::AgniVasa => AgniVasa::from_id(id.id()).map(AgniVasa::key),
         _ => None,
     }
 }

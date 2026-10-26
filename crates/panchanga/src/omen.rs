@@ -27,7 +27,7 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, TithiClass, Vara,
+    AgniVasa, Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, TithiClass, Vara,
 };
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
@@ -548,6 +548,111 @@ pub fn chandra_vasas(moon_signs: &[Span<Rashi>]) -> Vec<Span<Direction>> {
         .collect()
 }
 
+/// Where fire dwells for a homa, the agni vasa, from the tithi and the
+/// vara: Muhurta Chintamani, Nakshatra-prakarana v. 36 (crux C748).
+///
+/// The verse adds one to the tithi, counted from Shukla Pratipada as 1 to
+/// Amavasya as 30, adds the vara, Sunday as 1, and divides by four: a
+/// remainder of three or nothing is the earth, where a homa brings ease;
+/// one is the sky and two below the earth, where it costs life and
+/// wealth. The commentary's worked case is a Thursday's Krishna Dvitiya,
+/// 17 + 1 + 5 = 23, three over, on the earth. The verse is asked of a
+/// kamya homa; the nitya and naimittika homas are done whatever it says.
+///
+/// ```
+/// use teistro_core::catalogue::{AgniVasa, Tithi, Vara};
+/// use teistro_panchanga::omen::agni_vasa;
+///
+/// // The commentary's own case.
+/// assert_eq!(agni_vasa(Tithi::KrishnaDvitiya, Vara::Guruvara), AgniVasa::Prithvi);
+/// // A Sunday's Shukla Pratipada: 1 + 1 + 1 = 3, the earth.
+/// assert_eq!(agni_vasa(Tithi::ShuklaPratipada, Vara::Ravivara), AgniVasa::Prithvi);
+/// // A Monday's: 4, nothing over, the earth; a Tuesday's: 5, one, the sky.
+/// assert_eq!(agni_vasa(Tithi::ShuklaPratipada, Vara::Mangalavara), AgniVasa::Svarga);
+/// assert!(!AgniVasa::Patala.attributes().favourable);
+/// ```
+#[must_use]
+pub const fn agni_vasa(tithi: Tithi, vara: Vara) -> AgniVasa {
+    // Both ids count from zero: the tithi's number is one on, and so is
+    // the vara's, so the verse's sum is the ids and three.
+    match (tithi.id() + vara.id() + 3) % 4 {
+        1 => AgniVasa::Svarga,
+        2 => AgniVasa::Patala,
+        _ => AgniVasa::Prithvi,
+    }
+}
+
+/// The agni vasa over a day, one span for each tithi it held, all read
+/// with the day's own vara, which turns at sunrise.
+///
+/// ```
+/// use teistro_core::catalogue::{AgniVasa, Tithi, Vara};
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::omen::agni_vasas;
+/// use teistro_panchanga::span::Span;
+///
+/// // A Thursday that turns from Krishna Pratipada to Dvitiya at 100.6.
+/// let day = Interval::literal(100.25, 101.25);
+/// let tithi = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// let tithis: Vec<_> =
+///     [tithi(Tithi::KrishnaPratipada, 99.6, 100.6), tithi(Tithi::KrishnaDvitiya, 100.6, 101.6)].into_iter().flatten().collect();
+/// let vasas: Vec<_> = agni_vasas(&tithis, Vara::Guruvara).iter().map(|span| span.member).collect();
+/// assert_eq!(vasas, [AgniVasa::Patala, AgniVasa::Prithvi]);
+/// ```
+#[must_use]
+pub fn agni_vasas(tithis: &[Span<Tithi>], vara: Vara) -> Vec<Span<AgniVasa>> {
+    tithis
+        .iter()
+        .map(|span| span.map(|tithi| agni_vasa(tithi, vara)))
+        .collect()
+}
+
+/// The directions Rahu walks over the daylight, one an eighth of it from
+/// sunrise: *Jyotirnibandha* (Anandashrama 85, p. 337), Rahu-bhumi v. 1,
+/// "इन्द्रवायुयमे रुद्रे तोयाग्निशशिराक्षसे । यामार्धमुदितो राहुर्भ्रमत्येव
+/// दिगष्टके", that is Indra's east, Vayu's northwest, Yama's south,
+/// Rudra's northeast, Varuna's west, Agni's southeast, the Moon's north
+/// and the Rakshasa's southwest, half a yama each (crux C749).
+pub const RAHU_WALK: [Direction; 8] = [
+    Direction::East,
+    Direction::Northwest,
+    Direction::South,
+    Direction::Northeast,
+    Direction::West,
+    Direction::Southeast,
+    Direction::North,
+    Direction::Southwest,
+];
+
+/// Rahu's direction over a day's daylight, the eighths of sunrise to
+/// sunset in [`RAHU_WALK`]'s order; the verse names no night, so the
+/// night has none, and a polar day or night with no daylight none at all.
+///
+/// ```
+/// use teistro_core::catalogue::Direction;
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::omen::rahu_vasas;
+///
+/// // Twelve hours of daylight from 6 a.m.: an hour and a half each.
+/// let (daylight, day) = (Interval::literal(100.25, 100.75), Interval::literal(100.25, 101.25));
+/// let walk = rahu_vasas(daylight, day);
+/// assert_eq!(walk.len(), 8);
+/// assert_eq!((walk[0].member, walk[0].whole), (Direction::East, Interval::literal(100.25, 100.25 + 0.0625)));
+/// assert_eq!(walk[7].member, Direction::Southwest);
+/// assert!(rahu_vasas(Interval::literal(100.25, 100.25), day).is_empty());
+/// ```
+#[must_use]
+pub fn rahu_vasas(daylight: Interval, window: Interval) -> Vec<Span<Direction>> {
+    if daylight.is_empty() {
+        return Vec::new();
+    }
+    daylight
+        .divided(8)
+        .zip(RAHU_WALK)
+        .filter_map(|(part, direction)| Span::new(direction, part, window))
+        .collect()
+}
+
 /// The panchaka a nakshatra carries, if it is one of the last five.
 ///
 /// ```
@@ -897,12 +1002,12 @@ mod tests {
     )]
 
     use super::{
-        CLASSICAL, amrit_kalam, amrit_kalam_start, chandra_vasa, chandra_vasas, chandrashtama,
-        chandrashtama_of, disha_shool, nakshatra_shool, nakshatra_shools, panchaka, panchaka_of,
-        panchaka_remainder, varjyam, varjyam_start, yogas,
+        CLASSICAL, RAHU_WALK, agni_vasa, amrit_kalam, amrit_kalam_start, chandra_vasa,
+        chandra_vasas, chandrashtama, chandrashtama_of, disha_shool, nakshatra_shool,
+        nakshatra_shools, panchaka, panchaka_of, panchaka_remainder, varjyam, varjyam_start, yogas,
     };
     use teistro_core::catalogue::{
-        Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, Vara,
+        AgniVasa, Direction, MuhurtaYoga as Kind, Nakshatra, Paksha, Panchaka, Rashi, Tithi, Vara,
     };
     use teistro_core::error::Error;
     use teistro_core::interval::Interval;
@@ -1370,5 +1475,44 @@ mod tests {
             amrit_kalam(&spans, AmritKalam::None, Varjyam::MuhurtaChintamani).unwrap(),
             []
         );
+    }
+
+    /// v. 36 by its own numbers: the tithi from Shukla Pratipada as 1 to
+    /// Amavasya as 30, read from each tithi's paksha and number rather
+    /// than its id, Sunday as 1, so a slip in the ids' arithmetic shows.
+    #[test]
+    fn the_agni_vasa_is_the_verse_s_remainder_for_every_tithi_and_vara() {
+        for tithi in Tithi::ALL {
+            let held = tithi.attributes();
+            let t = u16::from(held.number)
+                + if held.paksha == Paksha::Krishna {
+                    15
+                } else {
+                    0
+                };
+            for vara in Vara::ALL {
+                let sum = t + 1 + u16::from(vara.attributes().weekday) + 1;
+                let expected = match sum % 4 {
+                    0 | 3 => AgniVasa::Prithvi,
+                    1 => AgniVasa::Svarga,
+                    _ => AgniVasa::Patala,
+                };
+                assert_eq!(agni_vasa(tithi, vara), expected, "{tithi:?} {vara:?}");
+            }
+        }
+        // Each place comes round: 30 tithis by 7 varas reach all three.
+        assert!(AgniVasa::ALL.iter().all(|place| {
+            Tithi::ALL
+                .iter()
+                .any(|tithi| agni_vasa(*tithi, Vara::Ravivara) == *place)
+        }));
+    }
+
+    /// The verse's eight directions are the eight, each once.
+    #[test]
+    fn rahu_walks_every_direction_once() {
+        let mut walked = RAHU_WALK.to_vec();
+        walked.sort_by_key(|direction| direction.id());
+        assert_eq!(walked, Direction::ALL.to_vec());
     }
 }

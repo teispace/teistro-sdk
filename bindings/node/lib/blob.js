@@ -2005,6 +2005,8 @@ export function decodePanchanga(bytes) {
       chandrashtama: column(blob, at, 16, 'u32', at.count),
       amritKalam: column(blob, at, 17, 'u32', at.count),
       lagnas: column(blob, at, 18, 'u32', at.count),
+      agniVasa: column(blob, at, 19, 'u32', at.count),
+      rahuVasa: column(blob, at, 20, 'u32', at.count),
       length: at.count,
     };
   }
@@ -2310,6 +2312,36 @@ export function decodePanchanga(bytes) {
   {
     const at = section(blob, 31, 'lagnas');
     out.lagnas = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      sunrises: column(blob, at, 5, 'u8', at.count),
+      endsGhati: column(blob, at, 6, 'u8', at.count),
+      endsPala: column(blob, at, 7, 'u8', at.count),
+      endsVipala: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 32, 'agni_vasa');
+    out.agniVasa = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      sunrises: column(blob, at, 5, 'u8', at.count),
+      endsGhati: column(blob, at, 6, 'u8', at.count),
+      endsPala: column(blob, at, 7, 'u8', at.count),
+      endsVipala: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 33, 'rahu_vasa');
+    out.rahuVasa = {
       member: column(blob, at, 0, 'u16', at.count),
       wholeFrom: column(blob, at, 1, 'f64', at.count),
       wholeTo: column(blob, at, 2, 'f64', at.count),

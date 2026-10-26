@@ -17,6 +17,16 @@ enum Gender {
   final String key;
 }
 
+enum AgniVasaKey {
+  prithvi('agni_vasa.PRITHVI'),
+  svarga('agni_vasa.SVARGA'),
+  patala('agni_vasa.PATALA');
+
+  const AgniVasaKey(this.key);
+
+  final String key;
+}
+
 enum AvasthaBaladiKey {
   bala('avastha_baladi.BALA'),
   kumara('avastha_baladi.KUMARA'),
@@ -1692,6 +1702,16 @@ final class MessagesSdkCondition {
       _r.render('sdk.condition.wakefulness', {'graha': {r'$entity': graha.key}, 'wakefulness': {r'$entity': wakefulness.key}});
 }
 
+final class MessagesSdkEntityAgniVasa {
+  const MessagesSdkEntityAgniVasa(this._r);
+
+  final Renderer _r;
+
+  EntityForms get patala => _r.entity('agni_vasa.PATALA');
+  EntityForms get prithvi => _r.entity('agni_vasa.PRITHVI');
+  EntityForms get svarga => _r.entity('agni_vasa.SVARGA');
+}
+
 final class MessagesSdkEntityAvasthaBaladi {
   const MessagesSdkEntityAvasthaBaladi(this._r);
 
@@ -2898,6 +2918,7 @@ final class MessagesSdkEntity {
 
   final Renderer _r;
 
+  MessagesSdkEntityAgniVasa get agniVasa => MessagesSdkEntityAgniVasa(_r);
   MessagesSdkEntityAvasthaBaladi get avasthaBaladi => MessagesSdkEntityAvasthaBaladi(_r);
   MessagesSdkEntityAvasthaCheshta get avasthaCheshta => MessagesSdkEntityAvasthaCheshta(_r);
   MessagesSdkEntityAvasthaDeeptadi get avasthaDeeptadi => MessagesSdkEntityAvasthaDeeptadi(_r);

@@ -12,6 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A day says where fire and Rahu stand.**
+**Numbers:** none. No answer moves: the panchanga blob gains two
+sections and the catalogue a kind.
+- *The agni vasa* (`03-design/panchanga-day.md` §21.4, C748): where fire
+  dwells for a kamya homa, from the tithi and the vara by Muhurta
+  Chintamani's Nakshatra-prakarana v. 36, one span a tithi, as the new
+  catalogue kind `agni_vasa` (`PRITHVI`, the favourable one, `SVARGA`,
+  `PATALA`), named in English and Nepali. `Panchanga::agni_vasa`, the
+  `agni_vasa` section, and `agni_vasa`/`agniVasa` on every binding's day.
+- *Rahu's walk* (C749): the eight directions Rahu stands in over the
+  daylight, an eighth each from the east, by Jyotirnibandha p. 337.
+  `Panchanga::rahu_vasa`, the `rahu_vasa` section, and
+  `rahu_vasa`/`rahuVasa` on every binding's day; none at night, the verse
+  naming none.
+- Not built: Shiva vasa, which no text in hand gives (C750), and the
+  homa ahuti, which waits on the Sun's nakshatra spans (C751).
+
 **A festival day says when its rite is done.**
 **Numbers:** a festival answer under the `NEPAL` or `NEPAL_PANCHANGA`
 pack moves, hash included: Ghatasthapana's, Bhai Tika's and (in

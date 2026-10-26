@@ -12,6 +12,7 @@ import type {
   Ephemeris,
   Modality,
   AvasthaBaladi,
+  AgniVasa,
   AvasthaDeeptadi,
   AvasthaSayanadi,
   AvasthaCheshta,
@@ -6495,6 +6496,16 @@ export declare class AlmanacDay {
    * intervals the Moon's own run through the eighth sign from it.
    */
   readonly chandrashtama: readonly Span<Rashi>[];
+  /**
+   * Where fire dwells for a kamya homa, one span for each tithi the day held, read with the day's vara (Muhurta
+   * Chintamani, Nakshatra-prakarana v. 36, crux C748); `PRITHVI`, the earth, is the favourable one.
+   */
+  readonly agniVasa: readonly Span<AgniVasa>[];
+  /**
+   * Rahu's direction over the daylight, an eighth of sunrise to sunset each from the east (Jyotirnibandha p. 337,
+   * crux C749); none after sunset, and none on a day with no daylight.
+   */
+  readonly rahuVasa: readonly Span<Direction>[];
   /** The signs the Moon stood in. */
   readonly moonSigns: readonly Span<Rashi>[];
   /** The signs the Sun stood in. */

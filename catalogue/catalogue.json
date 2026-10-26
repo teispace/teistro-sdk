@@ -21274,6 +21274,75 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "agni_vasa",
+      "number": 73,
+      "version": 1,
+      "doc": "Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).",
+      "types": {},
+      "attributes": {
+        "favourable": "bool"
+      },
+      "members": [
+        {
+          "key": "PRITHVI",
+          "id": 0,
+          "doc": "On the earth, the remainder three or nothing: a homa then brings ease",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "favourable": true
+          },
+          "sources": [
+            {
+              "text": "Muhurta Chintamani, Kapileshvar Shastri's edition (Chowkhamba, 1948)",
+              "ref": "Nakshatra-prakarana v. 36, p. 73: गुणेऽब्धे च शेषे भुवि वह्निवासः होमे सौख्याय"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SVARGA",
+          "id": 1,
+          "doc": "In the sky, the remainder one: a homa then costs life",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "favourable": false
+          },
+          "sources": [
+            {
+              "text": "Muhurta Chintamani, Kapileshvar Shastri's edition (Chowkhamba, 1948)",
+              "ref": "Nakshatra-prakarana v. 36, p. 73: शशियुग्मशेषे … दिवि, प्राणार्थनाशो"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "PATALA",
+          "id": 2,
+          "doc": "Below the earth, the remainder two: a homa then costs wealth",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "favourable": false
+          },
+          "sources": [
+            {
+              "text": "Muhurta Chintamani, Kapileshvar Shastri's edition (Chowkhamba, 1948)",
+              "ref": "Nakshatra-prakarana v. 36, p. 73: शशियुग्मशेषे … भूतले, प्राणार्थनाशो"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

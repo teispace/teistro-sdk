@@ -139,6 +139,11 @@ export function messages(r) {
         wakefulness: (p) => r.render('sdk.condition.wakefulness', { graha: { '$entity': p.graha }, wakefulness: { '$entity': p.wakefulness } }),
       },
       entity: {
+        agniVasa: {
+          patala: () => r.entity('agni_vasa.PATALA'),
+          prithvi: () => r.entity('agni_vasa.PRITHVI'),
+          svarga: () => r.entity('agni_vasa.SVARGA'),
+        },
         avasthaBaladi: {
           bala: () => r.entity('avastha_baladi.BALA'),
           kumara: () => r.entity('avastha_baladi.KUMARA'),

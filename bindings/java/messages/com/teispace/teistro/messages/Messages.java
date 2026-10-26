@@ -50,6 +50,31 @@ public final class Messages {
         }
     }
 
+    /** A `agni_vasa` as a message names it: the full catalogue key. */
+    public enum AgniVasaKey {
+        /** `agni_vasa.PRITHVI`. */
+        PRITHVI("agni_vasa.PRITHVI"),
+        /** `agni_vasa.SVARGA`. */
+        SVARGA("agni_vasa.SVARGA"),
+        /** `agni_vasa.PATALA`. */
+        PATALA("agni_vasa.PATALA");
+
+        private final String value;
+
+        AgniVasaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `avastha_baladi` as a message names it: the full catalogue key. */
     public enum AvasthaBaladiKey {
         /** `avastha_baladi.BALA`. */
@@ -3540,6 +3565,52 @@ public final class Messages {
             SdkEntity(Renderer r) {
                 this.r = r;
             }
+
+            /**
+             * The messages under `agni_vasa`.
+             *
+             * @return the group
+             */
+            public SdkEntityAgniVasa agniVasa() {
+                return new SdkEntityAgniVasa(r);
+            }
+
+            /** The messages under `SdkEntityAgniVasa`, each rendered by its own key. */
+            public static final class SdkEntityAgniVasa {
+                private final Renderer r;
+
+                SdkEntityAgniVasa(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `agni_vasa.PATALA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms patala() {
+                    return r.entity("agni_vasa.PATALA");
+                }
+
+                /**
+                 * The forms of `agni_vasa.PRITHVI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms prithvi() {
+                    return r.entity("agni_vasa.PRITHVI");
+                }
+
+                /**
+                 * The forms of `agni_vasa.SVARGA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms svarga() {
+                    return r.entity("agni_vasa.SVARGA");
+                }
+            }
+
 
             /**
              * The messages under `avastha_baladi`.

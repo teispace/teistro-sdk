@@ -279,6 +279,9 @@ class Kind(Member):
     tibetan_animal = 72
     """The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse."""
 
+    agni_vasa = 73
+    """Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748)."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3499,6 +3502,24 @@ class TibetanAnimal(Catalogued):
     """
 
 
+class AgniVasa(Catalogued):
+    """Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748). Members are the catalogue's ids; the full key id is `(TS_KIND_AGNI_VASA << 16) | member`."""
+
+    PRITHVI = 0
+    """On the earth, the remainder three or nothing: a homa then brings ease"""
+
+    SVARGA = 1
+    """In the sky, the remainder one: a homa then costs life"""
+
+    PATALA = 2
+    """Below the earth, the remainder two: a homa then costs wealth"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -5674,6 +5695,7 @@ _KEYS: dict[str, dict[int, str]] = {
         69: "solar_eclipse_kind",
         71: "tibetan_element",
         72: "tibetan_animal",
+        73: "agni_vasa",
     },
     "Graha": {
         0: "SUN",
@@ -6748,6 +6770,12 @@ _KEYS: dict[str, dict[int, str]] = {
         11: "PIG",
         -1: "UNKNOWN",
     },
+    "AgniVasa": {
+        0: "PRITHVI",
+        1: "SVARGA",
+        2: "PATALA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -7480,4 +7508,5 @@ _KINDS: dict[str, str] = {
     "SolarEclipseKind": "solar_eclipse_kind",
     "TibetanElement": "tibetan_element",
     "TibetanAnimal": "tibetan_animal",
+    "AgniVasa": "agni_vasa",
 }

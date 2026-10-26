@@ -19,6 +19,14 @@ class Gender(enum.StrEnum):
     N = "n"
 
 
+class AgniVasaKey(enum.StrEnum):
+    """A `agni_vasa` as a message names it: the full catalogue key."""
+
+    PRITHVI = "agni_vasa.PRITHVI"
+    SVARGA = "agni_vasa.SVARGA"
+    PATALA = "agni_vasa.PATALA"
+
+
 class AvasthaBaladiKey(enum.StrEnum):
     """A `avastha_baladi` as a message names it: the full catalogue key."""
 
@@ -1872,6 +1880,11 @@ class MessagesSdkEntity:
     def __init__(self, renderer: Renderer) -> None:
         self._r = renderer
 
+
+    @property
+    def agni_vasa(self) -> MessagesSdkEntityAgniVasa:
+        """The messages under `agni_vasa`."""
+        return MessagesSdkEntityAgniVasa(self._r)
 
     @property
     def avastha_baladi(self) -> MessagesSdkEntityAvasthaBaladi:
@@ -6909,6 +6922,29 @@ class MessagesSdkEntityAvasthaBaladi:
     def yuva(self) -> EntityForms:
         """The forms of `avastha_baladi.YUVA` in the current locale."""
         return self._r.entity("avastha_baladi.YUVA")
+
+
+class MessagesSdkEntityAgniVasa:
+    """The messages under `MessagesSdkEntityAgniVasa`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def patala(self) -> EntityForms:
+        """The forms of `agni_vasa.PATALA` in the current locale."""
+        return self._r.entity("agni_vasa.PATALA")
+
+    @property
+    def prithvi(self) -> EntityForms:
+        """The forms of `agni_vasa.PRITHVI` in the current locale."""
+        return self._r.entity("agni_vasa.PRITHVI")
+
+    @property
+    def svarga(self) -> EntityForms:
+        """The forms of `agni_vasa.SVARGA` in the current locale."""
+        return self._r.entity("agni_vasa.SVARGA")
 
 
 class MessagesSdkCondition:

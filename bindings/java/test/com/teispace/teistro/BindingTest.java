@@ -1771,6 +1771,27 @@ public final class BindingTest {
                     }
                 }
                 check(shools >= 1 && shools <= 3, "a shool or two a week: " + shools);
+                // Fire follows each tithi with the vara (Muhurta Chintamani,
+                // Nakshatra-prakarana v. 36, C748), and Rahu walks the daylight
+                // from the east (Jyotirnibandha p. 337, C749).
+                List<Direction> walk = List.of(Direction.EAST, Direction.NORTHWEST, Direction.SOUTH,
+                        Direction.NORTHEAST, Direction.WEST, Direction.SOUTHEAST, Direction.NORTH, Direction.SOUTHWEST);
+                for (AlmanacDay day : week) {
+                    List<Span<Tithi>> tithis = day.tithi();
+                    List<Span<AgniVasa>> fire = day.agniVasa();
+                    same(tithis.size(), fire.size(), "a place a tithi");
+                    for (int k = 0; k < tithis.size(); k += 1) {
+                        same(tithis.get(k).whole(), fire.get(k).whole(), "the place is the tithi's run");
+                        int remainder = (tithis.get(k).member().id() + 1 + 1 + day.day().vara().id() + 1) % 4;
+                        AgniVasa expected = remainder == 1 ? AgniVasa.SVARGA
+                                : remainder == 2 ? AgniVasa.PATALA : AgniVasa.PRITHVI;
+                        same(expected, fire.get(k).member(), "v. 36's remainder");
+                    }
+                    same(walk, day.rahuVasa().stream().map(Span::member).toList(), "the eight from the east");
+                    same(day.day().sunrise(), day.rahuVasa().get(0).whole().fromJd(), "Rahu sets out at sunrise");
+                    check(Math.abs(day.rahuVasa().get(7).whole().toJd() - day.day().sunset()) < 1e-9,
+                            "and is home at sunset");
+                }
                 RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
                 check(read.period() != null, "a rashifal period");
                 check(sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700)

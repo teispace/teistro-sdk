@@ -609,6 +609,12 @@
           "value": 72,
           "doc": "The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.",
           "key": "tibetan_animal"
+        },
+        {
+          "name": "AgniVasa",
+          "value": 73,
+          "doc": "Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).",
+          "key": "agni_vasa"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6444,6 +6450,33 @@
           "value": 11,
           "doc": "Pig",
           "key": "PIG"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "AgniVasa",
+      "doc": "Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748). Members are the catalogue's ids; the full key id is `(TS_KIND_AGNI_VASA << 16) | member`.",
+      "repr": "u16",
+      "kind": "agni_vasa",
+      "values": [
+        {
+          "name": "Prithvi",
+          "value": 0,
+          "doc": "On the earth, the remainder three or nothing: a homa then brings ease",
+          "key": "PRITHVI"
+        },
+        {
+          "name": "Svarga",
+          "value": 1,
+          "doc": "In the sky, the remainder one: a homa then costs life",
+          "key": "SVARGA"
+        },
+        {
+          "name": "Patala",
+          "value": 2,
+          "doc": "Below the earth, the remainder two: a homa then costs wealth",
+          "key": "PATALA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -23248,6 +23281,16 @@
               "name": "lagnas",
               "scalar": "u32",
               "doc": "How many rows of `lagnas` belong to this day."
+            },
+            {
+              "name": "agni_vasa",
+              "scalar": "u32",
+              "doc": "How many rows of `agni_vasa` belong to this day."
+            },
+            {
+              "name": "rahu_vasa",
+              "scalar": "u32",
+              "doc": "How many rows of `rahu_vasa` belong to this day."
             }
           ]
         },
@@ -24278,6 +24321,116 @@
               "scalar": "u16",
               "doc": "The sign rising.",
               "enum": "Rashi"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 32,
+          "name": "agni_vasa",
+          "doc": "The agni vasa: where fire dwells for a kamya homa, one span for each tithi the day held, read with the day's vara (Muhurta Chintamani, Nakshatra-prakarana v. 36, crux C748): the tithi from Shukla Pratipada as 1, one more and the vara from Sunday as 1, by four, three or nothing over the earth (`PRITHVI`, favourable), one the sky (`SVARGA`) and two below (`PATALA`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Where fire dwells.",
+              "enum": "AgniVasa"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 33,
+          "name": "rahu_vasa",
+          "doc": "Rahu's direction over the daylight (Jyotirnibandha p. 337, Rahu-bhumi v. 1, crux C749): eight spans, an eighth of sunrise to sunset each, east, northwest, south, northeast, west, southeast, north, southwest. The verse names no night, so none after sunset; empty on a day with no daylight.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The direction Rahu stands in.",
+              "enum": "Direction"
             },
             {
               "name": "whole_from",

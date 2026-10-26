@@ -21,7 +21,7 @@ use teistro_calendar::lunisolar::{MonthKind, SAMSARPA_REACH_MONTHS};
 use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
-use teistro_core::catalogue::{Direction, Nakshatra, Rashi, Ritu, Tithi, Vara};
+use teistro_core::catalogue::{AgniVasa, Direction, Nakshatra, Rashi, Ritu, Tithi, Vara};
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
@@ -500,6 +500,99 @@ impl Panchanga {
     #[must_use]
     pub fn chandra_vasa(&self) -> Vec<Span<Direction>> {
         omen::chandra_vasas(&self.moon.signs)
+    }
+
+    /// Where fire dwells over the day for a kamya homa, one span for each
+    /// tithi the day held, read with the day's vara
+    /// ([`omen::agni_vasa`], Muhurta Chintamani, Nakshatra-prakarana
+    /// v. 36).
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// // One place for each tithi the day held.
+    /// assert_eq!(day.agni_vasa().len(), day.limbs.tithi.len());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn agni_vasa(&self) -> Vec<Span<AgniVasa>> {
+        omen::agni_vasas(&self.limbs.tithi, self.day.vara)
+    }
+
+    /// The directions Rahu walks over the daylight, an eighth of sunrise
+    /// to sunset each, from the east ([`omen::rahu_vasas`],
+    /// *Jyotirnibandha* p. 337); none at night, and none on a day with no
+    /// daylight.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// // Eight from sunrise, the first in the east, the last ending at sunset.
+    /// let walk = day.rahu_vasa();
+    /// assert_eq!(walk.len(), 8);
+    /// assert_eq!(walk[0].whole.from, sunrise);
+    /// assert!((walk[7].whole.to.get() - day.day.sunset.get()).abs() < 1e-9);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn rahu_vasa(&self) -> Vec<Span<Direction>> {
+        let daylight = Interval::literal(
+            self.day.sunrise.get(),
+            self.day.sunset.get().max(self.day.sunrise.get()),
+        );
+        omen::rahu_vasas(daylight, self.window)
     }
 
     /// Whose chandrashtama the day holds: each member is a **natal** Moon

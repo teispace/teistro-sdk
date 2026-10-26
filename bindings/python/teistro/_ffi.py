@@ -21,6 +21,7 @@ from typing import Any, Final, NamedTuple, Optional, Sequence
 from .catalogue import (
     Accident,
     Affliction,
+    AgniVasa,
     ApplicationKind,
     AshtakavargaGoodFrom,
     AspectPhase,
