@@ -393,10 +393,10 @@ fn is_lagna(from: &SignRef) -> bool {
 /// ```
 /// use teistro_rules::language::KINDS;
 ///
-/// assert_eq!(KINDS.len(), 67);
+/// assert_eq!(KINDS.len(), 68);
 /// assert!(KINDS.contains(&"planet-in-kendra"));
 /// ```
-pub const KINDS: [&str; 67] = [
+pub const KINDS: [&str; 68] = [
     "and",
     "or",
     "not",
@@ -460,6 +460,7 @@ pub const KINDS: [&str; 67] = [
     "at-limb-edge",
     "limb-part",
     "birth-by-day",
+    "birth-in-kshaya-tithi",
     "same-sign",
     "same-body",
     "planet-is",
@@ -941,6 +942,12 @@ pub enum Condition {
     /// The birth fell by day, between sunrise and sunset; a chart that does
     /// not say never holds it, and `not` of it is not "by night" there.
     BirthByDay,
+    /// The birth's tithi touched no sunrise: it began after the birth day's
+    /// sunrise and ended before the next, so no day is named by it. This is
+    /// the avama, or kshaya, tithi BPHS ch. 85 v. 3 lists among the
+    /// inauspicious births and ch. 88 gives the remedy of (crux C759). A
+    /// chart that does not say never holds it.
+    BirthInKshayaTithi,
     /// The body stands in one of these nakshatras, in one of the padas when
     /// the rule names any. It is read from the body's own sidereal longitude,
     /// 13°20′ to a nakshatra and a quarter of that to a pada, where
@@ -1371,6 +1378,7 @@ impl Condition {
             Condition::AtLimbEdge { .. } => "at-limb-edge",
             Condition::LimbPart { .. } => "limb-part",
             Condition::BirthByDay => "birth-by-day",
+            Condition::BirthInKshayaTithi => "birth-in-kshaya-tithi",
             Condition::SameSign { .. } => "same-sign",
             Condition::SameBody { .. } => "same-body",
             Condition::PlanetIs { .. } => "planet-is",
@@ -1639,6 +1647,7 @@ impl Condition {
                 | Condition::AtLimbEdge { .. }
                 | Condition::LimbPart { .. }
                 | Condition::BirthByDay
+                | Condition::BirthInKshayaTithi
         )
     }
 

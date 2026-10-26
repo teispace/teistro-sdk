@@ -15,9 +15,12 @@
 
 use std::collections::BTreeSet;
 
+use teistro::catalogue::Calendar;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rules::shipped;
-use teistro::{ChartRequest, Context, Ephemeris, RuleRequest, ShippedRules, UtcOffset};
+use teistro::{
+    CalendarDate, ChartRequest, Context, Ephemeris, RuleRequest, ShippedRules, UtcOffset,
+};
 
 /// The packs' rules that a moment's limbs decide, read at each hour of the
 /// twenty days from JD 2 451 545 (2000 January 1, noon) at Kathmandu, with
@@ -33,7 +36,7 @@ fn hours() -> Vec<BTreeSet<String>> {
         .filter(|rule| rule.category == "ashubha-janma")
         .cloned()
         .collect();
-    assert_eq!(pack.len(), 95);
+    assert_eq!(pack.len(), 96);
     let set = RuleRequest::shipped([ShippedRules::Arishtas])
         .with_rules(pack)
         .rule_set()
@@ -135,6 +138,49 @@ fn chaturdashi_s_parts_follow_one_another_and_a_sankranti_names_its_day() {
         (18..=28).contains(&amavasya),
         "{amavasya} hours of Amavasya"
     );
+}
+
+/// An avama birth (BPHS ch. 85 v. 3, C759) is one in a tithi the almanac
+/// of the same days calls kshaya, touching no sunrise, read back hour by
+/// hour: the rule holds exactly where a kshaya tithi's span holds the hour.
+#[test]
+fn an_avama_birth_is_one_in_a_tithi_the_almanac_calls_kshaya() {
+    let hours = hours();
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = Place::new(
+        Latitude::try_new(27.7172).unwrap(),
+        Longitude::try_new(85.324).unwrap(),
+        Altitude::try_new(0.0).unwrap(),
+    );
+    let date = |day| CalendarDate::defined(Calendar::Gregorian, 2000, 1, day);
+    let days = sdk
+        .almanac()
+        .of(&date(1), &date(22), &place, UtcOffset::UTC)
+        .unwrap()
+        .value;
+    let kshaya: Vec<(f64, f64)> = days
+        .iter()
+        .flat_map(|day| {
+            day.limbs
+                .tithi
+                .iter()
+                .filter(|span| day.sunrises(span).is_kshaya())
+                .map(|span| (span.whole.from.get(), span.whole.to.get()))
+        })
+        .collect();
+    let expected: Vec<usize> = (0..hours.len())
+        .filter(|hour| {
+            let at = 2_451_545.0 + f64::from(u32::try_from(*hour).unwrap()) / 24.0;
+            kshaya.iter().any(|(from, to)| *from <= at && at < *to)
+        })
+        .collect();
+    let avama = held(&hours, "BPHS_BIRTH_IN_AVAMA");
+    // Twenty days hold a kshaya tithi, so the comparison is not of nothing.
+    assert!(!expected.is_empty(), "{kshaya:?}");
+    assert_eq!(avama, expected);
 }
 
 /// The hours at which `key` holds, as indexes into the twenty days.

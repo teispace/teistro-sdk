@@ -2169,6 +2169,9 @@ impl<'a> Evaluator<'a> {
                     | (Some(EclipseKind::Lunar), Eclipse::Solar) => false,
                 }),
             Condition::BirthByDay => self.panchanga().is_some_and(|p| p.by_day == Some(true)),
+            Condition::BirthInKshayaTithi => self
+                .panchanga()
+                .is_some_and(|p| p.tithi_kshaya == Some(true)),
             Condition::BirthOnSankranti { window_hours } => self
                 .panchanga()
                 .and_then(|p| p.sankranti_hours)
@@ -3312,6 +3315,7 @@ mod tests {
             spans: crate::chart::Spans::default(),
             by_day: None,
             sankranti_hours: None,
+            tithi_kshaya: None,
             eclipse: None,
         }
     }
@@ -3734,6 +3738,13 @@ mod tests {
             )
             .0
         );
+        // An avama birth holds only where the chart says the tithi was
+        // kshaya; one that does not say, or says not, never holds it.
+        let avama = written(r#"{"type": "birth-in-kshaya-tithi"}"#);
+        for (kshaya, expected) in [(None, false), (Some(false), false), (Some(true), true)] {
+            c.panchanga.as_mut().unwrap().tithi_kshaya = kshaya;
+            assert_eq!(holds(&c, ENGINE, &avama).0, expected, "{kshaya:?}");
+        }
         for (json, reason) in [
             (
                 r#"{"type": "panchanga-paksha", "paksha": "waxing"}"#,

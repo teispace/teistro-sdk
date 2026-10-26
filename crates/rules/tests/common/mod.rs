@@ -190,6 +190,7 @@ fn panchanga(recorded: &Value) -> Option<Panchanga> {
         spans: Spans::default(),
         by_day: None,
         sankranti_hours: None,
+        tithi_kshaya: None,
         eclipse: None,
     })
 }

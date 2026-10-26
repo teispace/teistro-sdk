@@ -102,6 +102,7 @@ fn birth_limbs(
             .sun
             .sankranti
             .map(|at| (instant.get() - at.get()) * HOURS_PER_DAY),
+        tithi_kshaya: Some(day.sunrises(tithi).is_kshaya()),
         eclipse: moment.and_then(|moment| match moment.eclipse {
             BirthEclipse::Lunar { .. } => Some(Eclipse::Lunar),
             BirthEclipse::Solar { .. } => Some(Eclipse::Solar),

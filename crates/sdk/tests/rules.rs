@@ -556,13 +556,13 @@ fn present_on_the_tier(charts: usize, present: usize, rules: usize) {
     // Tromsø's two charts keep every point but the time lagnas, and one
     // rule reading the rest holds there on every tier.
     let on_the_tier = if cfg!(feature = "builtin-full") {
-        17_093
+        17_097
     } else if cfg!(feature = "builtin-standard") {
-        17_091
+        17_095
     } else {
-        17_089
+        17_093
     };
-    assert_eq!((charts, present, rules), (53, on_the_tier, 4605));
+    assert_eq!((charts, present, rules), (53, on_the_tier, 4606));
 }
 
 /// A reading asked to answer rules, over every corpus chart: each chart's

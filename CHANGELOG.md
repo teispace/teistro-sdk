@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The avama birth: a birth in a tithi that touches no sunrise.**
+**Numbers:** a rule set holding `BPHS_BIRTH_IN_AVAMA` reports it for a
+birth in a kshaya tithi; nothing else moves.
+- The rule language gains `birth-in-kshaya-tithi`, and the chart's
+  panchanga `tithi_kshaya`, read from the birth day's sunrises.
+- `BPHS_BIRTH_IN_AVAMA` (BPHS ch. 85 v. 3, ch. 88; C759) joins the
+  inauspicious births.
+
 **The homa ahuti: whose mouth a day's oblation falls in.**
 **Numbers:** none for a day not asked; a day asked for it carries
 `homa_ahuti` and hashes with it.
