@@ -232,6 +232,10 @@ name = "eclipses"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "punya_kala"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "turns"
 required-features = ["builtin-ephemeris"]
 

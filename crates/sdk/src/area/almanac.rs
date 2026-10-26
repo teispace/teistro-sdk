@@ -5,18 +5,25 @@ use serde::Serialize;
 use teistro_astro::Completion;
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::precession::PrecessionModel;
+use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
+#[cfg(feature = "muhurta")]
+use teistro_calendar::{CalendarSystem, FixedDay};
 use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::{Convention, Envelope, Hash, content_hash};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::settings::{EclipseVedha, LunarMonth};
-use teistro_core::time::{LocalClock, UtcOffset};
+#[cfg(feature = "muhurta")]
+use teistro_core::settings::EclipseVedha;
+use teistro_core::settings::LunarMonth;
+#[cfg(feature = "muhurta")]
+use teistro_core::time::LocalClock;
+use teistro_core::time::UtcOffset;
 #[cfg(feature = "muhurta")]
 use teistro_muhurta::Answer;
+#[cfg(feature = "muhurta")]
 use teistro_muhurta::season::{SeenEclipse, SeenKind, VEDHA_DAYS_AROUND, vedha_over_days};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::ashauch::{Ashauch, AshauchRequest, AshauchTable};
@@ -699,13 +706,20 @@ impl<'a> AlmanacArea<'a> {
         let delta_t = self.context.delta_t();
         let sky = Completion::new(provider, settings.provider.overrides, delta_t);
         let horizon = Horizon::from_convention(settings.panchanga.eclipse_horizon);
-        let mut found = Eclipses::new(&sky, delta_t)
+        let found = Eclipses::new(&sky, delta_t)
             .with_shadow(ShadowRule::of_setting(settings.panchanga.eclipse_shadow)?)
             .here_between(start.relabel(), end.relabel(), *place, &horizon)?;
-        let vedha = settings.panchanga.eclipse_vedha;
-        self.with_almanac(from.calendar, offset, |almanac| {
-            with_vedhas(&mut found, (almanac, calendar, &offset), place, vedha)
-        })?;
+        // The sutak is the muhurta family's window, and a build without it
+        // answers each eclipse's `vedha` as `None`.
+        #[cfg(feature = "muhurta")]
+        let found = {
+            let mut found = found;
+            let vedha = settings.panchanga.eclipse_vedha;
+            self.with_almanac(from.calendar, offset, |almanac| {
+                with_vedhas(&mut found, (almanac, calendar, &offset), place, vedha)
+            })?;
+            found
+        };
         let mut provenance = self.context.stamped(
             content_hash(&EclipseInput {
                 from: from.to_string(),
@@ -1197,6 +1211,7 @@ struct FestivalInput<'r> {
 /// Each seen eclipse's vedha, read off the almanac's days around its first
 /// moment seen (`muhurta.md` §4.1.1): the window the muhurta search bars
 /// as `ECLIPSE_VEDHA`, here on the eclipse itself.
+#[cfg(feature = "muhurta")]
 fn with_vedhas(
     found: &mut EclipsesHere,
     (almanac, calendar, clock): (
