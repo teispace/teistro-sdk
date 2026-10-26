@@ -872,6 +872,12 @@ for (const chart of charts) {
     `chart-${i}-moment`,
     `${rising.sign} ${numberOrDash(rising.rose)} ${numberOrDash(rising.sets)} ${eclipse.kind} ${numberOrDash(eclipse.greatest)}`,
   );
+  const stay = chart.moment.nakshatra;
+  const count = (g) => `${g.ghati}-${g.pala}-${g.vipala}`;
+  put(
+    `chart-${i}-moon-stay`,
+    stay === null ? '-' : `${number(stay.entered)} ${number(stay.leaves)} ${count(stay.bhayat)} ${count(stay.bhabhoga)}`,
+  );
   chart.gochar.forEach((reading, at) => {
     const { reference: ref, rules } = reading;
     put(

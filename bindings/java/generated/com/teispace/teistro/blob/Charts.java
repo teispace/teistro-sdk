@@ -1593,7 +1593,7 @@ public final class Charts {
     }
 
     /**
-     * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+     * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads, and the Moon's stay in its nakshatra with the bhayat and bhabhoga a janma patrika prints (C756). Empty when the moment was not asked for.
      *
      * @return the moment
      */
@@ -14610,7 +14610,7 @@ public final class Charts {
     /**
      * The `moment` section of this blob: a getter per column, reading a row from the blob's bytes.
      *
-     * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+     * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads, and the Moon's stay in its nakshatra with the bhayat and bhabhoga a janma patrika prints (C756). Empty when the moment was not asked for.
      */
     public static final class Moment {
         private final ByteBuffer bytes;
@@ -14620,6 +14620,14 @@ public final class Charts {
         private final int setsAt;
         private final int eclipseAt;
         private final int greatestAt;
+        private final int nakshatraEnteredAt;
+        private final int nakshatraLeavesAt;
+        private final int bhayatGhatiAt;
+        private final int bhayatPalaAt;
+        private final int bhayatVipalaAt;
+        private final int bhabhogaGhatiAt;
+        private final int bhabhogaPalaAt;
+        private final int bhabhogaVipalaAt;
 
         Moment(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -14630,6 +14638,14 @@ public final class Charts {
             this.setsAt = blob.column(at, 2, 8);
             this.eclipseAt = blob.column(at, 3, 1);
             this.greatestAt = blob.column(at, 4, 8);
+            this.nakshatraEnteredAt = blob.column(at, 5, 8);
+            this.nakshatraLeavesAt = blob.column(at, 6, 8);
+            this.bhayatGhatiAt = blob.column(at, 7, 1);
+            this.bhayatPalaAt = blob.column(at, 8, 1);
+            this.bhayatVipalaAt = blob.column(at, 9, 1);
+            this.bhabhogaGhatiAt = blob.column(at, 10, 1);
+            this.bhabhogaPalaAt = blob.column(at, 11, 1);
+            this.bhabhogaVipalaAt = blob.column(at, 12, 1);
         }
 
         /**
@@ -14698,6 +14714,94 @@ public final class Charts {
          */
         public double greatest(int row) {
             return bytes.getDouble(greatestAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * When the Moon entered the nakshatra it holds, a UTC Julian day; NaN on a tropical chart, where a nakshatra means nothing, and then the four counts below are 0.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double nakshatraEntered(int row) {
+            return bytes.getDouble(nakshatraEnteredAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * When it leaves it, a UTC Julian day; NaN likewise.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double nakshatraLeaves(int row) {
+            return bytes.getDouble(nakshatraLeavesAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The bhayat, the stay passed at the instant, in ghatis of twenty-four minutes.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int bhayatGhati(int row) {
+            return Byte.toUnsignedInt(bytes.get(bhayatGhatiAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * Its palas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int bhayatPala(int row) {
+            return Byte.toUnsignedInt(bytes.get(bhayatPalaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * Its vipalas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int bhayatVipala(int row) {
+            return Byte.toUnsignedInt(bytes.get(bhayatVipalaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The bhabhoga, the whole stay, in ghatis of twenty-four minutes; past 60 when the stay is longer than a day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int bhabhogaGhati(int row) {
+            return Byte.toUnsignedInt(bytes.get(bhabhogaGhatiAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * Its palas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int bhabhogaPala(int row) {
+            return Byte.toUnsignedInt(bytes.get(bhabhogaPalaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * Its vipalas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int bhabhogaVipala(int row) {
+            return Byte.toUnsignedInt(bytes.get(bhabhogaVipalaAt + Objects.checkIndex(row, length) * 1));
         }
     }
 

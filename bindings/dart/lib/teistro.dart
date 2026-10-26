@@ -7170,6 +7170,23 @@ List<Moment> _decodeMoments(Charts batch) {
         kind: BirthEclipse.byId(c.eclipse[chart]),
         greatest: _numberOrNull(c.greatest[chart]),
       ),
+      nakshatra:
+          c.nakshatraEntered[chart].isNaN
+              ? null
+              : MoonStay(
+                entered: c.nakshatraEntered[chart],
+                leaves: c.nakshatraLeaves[chart],
+                bhayat: GhatiPala(
+                  ghati: c.bhayatGhati[chart],
+                  pala: c.bhayatPala[chart],
+                  vipala: c.bhayatVipala[chart],
+                ),
+                bhabhoga: GhatiPala(
+                  ghati: c.bhabhogaGhati[chart],
+                  pala: c.bhabhogaPala[chart],
+                  vipala: c.bhabhogaVipala[chart],
+                ),
+              ),
     ),
     growable: false,
   );
@@ -11175,7 +11192,11 @@ final class MomentEclipse extends _Value {
 /// final rising = chart.moment!.rising.sign;
 /// ```
 final class Moment extends _Value {
-  const Moment({required this.rising, required this.eclipse});
+  const Moment({
+    required this.rising,
+    required this.eclipse,
+    required this.nakshatra,
+  });
 
   /// The sign rising and when it rose and sets.
   final RisingSign rising;
@@ -11183,8 +11204,49 @@ final class Moment extends _Value {
   /// The eclipse the instant falls in.
   final MomentEclipse eclipse;
 
+  /// The Moon's stay in its nakshatra; null on a tropical chart, where a
+  /// nakshatra means nothing.
+  final MoonStay? nakshatra;
+
   @override
-  List<Object?> get _fields => [rising, eclipse];
+  List<Object?> get _fields => [rising, eclipse, nakshatra];
+}
+
+/// The Moon's stay in the nakshatra it holds at a chart's instant, and the
+/// two counts a janma patrika prints of it in ghatis of twenty-four
+/// minutes (C756): the [bhayat], how much had passed, and the [bhabhoga],
+/// the whole stay, which can run past sixty ghatis.
+final class MoonStay extends _Value {
+  const MoonStay({
+    required this.entered,
+    required this.leaves,
+    required this.bhayat,
+    required this.bhabhoga,
+  });
+
+  /// When the Moon entered the nakshatra, a UTC Julian day.
+  final double entered;
+
+  /// When it leaves it, a UTC Julian day.
+  final double leaves;
+
+  /// The stay passed at the instant.
+  final GhatiPala bhayat;
+
+  /// The whole stay.
+  final GhatiPala bhabhoga;
+
+  @override
+  List<Object?> get _fields => [
+    entered,
+    leaves,
+    bhayat.ghati,
+    bhayat.pala,
+    bhayat.vipala,
+    bhabhoga.ghati,
+    bhabhoga.pala,
+    bhabhoga.vipala,
+  ];
 }
 
 /// Two names' vargas and how they stand (*Muhurta Chintamani* VI.35,

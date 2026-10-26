@@ -188,7 +188,7 @@ pub use teistro_chart::day::ChartDay;
 pub use teistro_chart::foundation::{
     Apogee, ChartAngles, ChartFoundation, GrahaPosition, LilithPosition,
 };
-pub use teistro_chart::moment::{BirthEclipse, Moment, RisingSign};
+pub use teistro_chart::moment::{BirthEclipse, Moment, MoonStay, RisingSign};
 pub use teistro_core::catalogue;
 // `canonical_json` and `content_hash` with them: a stored chart keeps
 // the bytes the provenance was hashed from, and without these a

@@ -273,6 +273,18 @@ The rule: **the foundation holds what is needed to compute, never what is
 computed.** A field belongs in it when more than one module above needs
 it and no module above can produce it.
 
+What the instant falls in is therefore not in the foundation but in the
+`moment` a request asks for (`ChartRequest::with_moment`): the sign
+rising and its span, the eclipse seen at the place (C378), and the
+Moon's stay in its nakshatra (`MoonStay`, C756). The stay is searched in
+the chart's own frame and zodiac, as the dashas' temporal balance is,
+and carries the two counts a janma patrika prints beside the avakahada:
+the **bhayat**, the part of the stay passed at birth, and the
+**bhabhoga**, the whole stay, each in ghatis of twenty-four minutes,
+sixty to a day, rounded to the vipala. The bhabhoga runs to some
+sixty-seven ghatis, past the sixty a day's count holds. A tropical chart
+holds no stay.
+
 ## 10. The mixed-chart axis
 
 `varga-kernel.md` settles that `(varga_for_planets, varga_for_lagna)` is

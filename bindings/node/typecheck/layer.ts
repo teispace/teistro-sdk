@@ -68,6 +68,8 @@ import type {
   BirthEclipse,
   BirthSyllable,
   Moment,
+  MoonStay,
+  GhatiPala,
   RisingSign,
   NaamRules,
   NumerologyProfile,
@@ -2184,7 +2186,9 @@ function theMoment(ctx: Context): string {
   const rose: number | null = rising.rose;
   const kind: BirthEclipse | 'unknown' = moment.eclipse.kind;
   const greatest: number | null = moment.eclipse.greatest;
-  return `${rising.sign} ${rose ?? '-'} ${rising.sets ?? '-'} ${kind} ${greatest ?? '-'}`;
+  const stay: MoonStay | null = moment.nakshatra;
+  const bhayat: GhatiPala | undefined = stay?.bhayat;
+  return `${rising.sign} ${rose ?? '-'} ${rising.sets ?? '-'} ${kind} ${greatest ?? '-'} ${bhayat?.ghati ?? '-'} ${stay?.bhabhoga.ghati ?? '-'}`;
 }
 
 void theMoment;

@@ -368,7 +368,7 @@ impl Document {
     /// use teistro_core::catalogue::Rashi;
     /// use teistro_serial::Document;
     ///
-    /// let moment = Moment { rising: RisingSign { sign: Rashi::Gemini, rose: None, sets: None }, eclipse: BirthEclipse::None };
+    /// let moment = Moment { rising: RisingSign { sign: Rashi::Gemini, rose: None, sets: None }, nakshatra: None, eclipse: BirthEclipse::None };
     /// let document = Document::of(sample::foundation()?).with_moment(moment);
     /// assert_eq!(document.sections(), ["foundation", "moment"]);
     /// # Ok::<(), teistro_core::error::Error>(())

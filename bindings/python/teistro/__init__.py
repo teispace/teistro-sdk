@@ -629,6 +629,7 @@ __all__ = [
     "Avakahada",
     "BirthSyllable",
     "Moment",
+    "MoonStay",
     "RisingSign",
     "MomentEclipse",
     "BirthEclipse",
@@ -6593,10 +6594,31 @@ class MomentEclipse:
 
 
 @dataclass(frozen=True)
+class MoonStay:
+    """The Moon's stay in the nakshatra it holds at a chart's instant, and
+    the two counts a janma patrika prints of it in ghatis of twenty-four
+    minutes (C756): the bhayat, how much had passed, and the bhabhoga, the
+    whole stay, which can run past sixty ghatis."""
+
+    entered: float
+    """When the Moon entered the nakshatra, a UTC Julian day."""
+
+    leaves: float
+    """When it leaves it, a UTC Julian day."""
+
+    bhayat: GhatiPala
+    """The stay passed at the instant."""
+
+    bhabhoga: GhatiPala
+    """The whole stay."""
+
+
+@dataclass(frozen=True)
 class Moment:
     """What a chart's instant falls in: the sign rising and its span,
-    which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen
-    where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads (C378).
+    which BPHS ch. 92 v. 4's lagna gandanta reads, the eclipse seen where
+    the chart is cast, which Brihat Jataka ch. 6 v. 9 reads (C378), and
+    the Moon's stay in its nakshatra.
 
     >>> # chart = ctx.chart.found(..., moment=True)
     >>> # chart.moment.rising.sign, chart.moment.eclipse.kind
@@ -6607,6 +6629,10 @@ class Moment:
 
     eclipse: MomentEclipse
     """The eclipse the instant falls in."""
+
+    nakshatra: Optional[MoonStay]
+    """The Moon's stay in its nakshatra; `None` on a tropical chart, where
+    a nakshatra means nothing."""
 
 
 @dataclass(frozen=True)
@@ -17946,6 +17972,14 @@ class ChartBatch:
                 eclipse=MomentEclipse(
                     kind=BirthEclipse(c.eclipse[chart]),
                     greatest=_number_or_none(c.greatest[chart]),
+                ),
+                nakshatra=None
+                if math.isnan(c.nakshatra_entered[chart])
+                else MoonStay(
+                    entered=c.nakshatra_entered[chart],
+                    leaves=c.nakshatra_leaves[chart],
+                    bhayat=GhatiPala(c.bhayat_ghati[chart], c.bhayat_pala[chart], c.bhayat_vipala[chart]),
+                    bhabhoga=GhatiPala(c.bhabhoga_ghati[chart], c.bhabhoga_pala[chart], c.bhabhoga_vipala[chart]),
                 ),
             )
             for chart in range(c.length)

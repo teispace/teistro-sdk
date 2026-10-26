@@ -4561,7 +4561,7 @@ export interface ChartsAvakahada {
  * The `moment` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+ * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads, and the Moon's stay in its nakshatra with the bhayat and bhabhoga a janma patrika prints (C756). Empty when the moment was not asked for.
  */
 export interface ChartsMoment {
   /**
@@ -4586,6 +4586,38 @@ export interface ChartsMoment {
    * The eclipse's greatest moment, a UT1 Julian day; NaN unless `eclipse` is `LUNAR` or `SOLAR`.
    */
   readonly greatest: Float64Array;
+  /**
+   * When the Moon entered the nakshatra it holds, a UTC Julian day; NaN on a tropical chart, where a nakshatra means nothing, and then the four counts below are 0.
+   */
+  readonly nakshatraEntered: Float64Array;
+  /**
+   * When it leaves it, a UTC Julian day; NaN likewise.
+   */
+  readonly nakshatraLeaves: Float64Array;
+  /**
+   * The bhayat, the stay passed at the instant, in ghatis of twenty-four minutes.
+   */
+  readonly bhayatGhati: Uint8Array;
+  /**
+   * Its palas, 0 to 59.
+   */
+  readonly bhayatPala: Uint8Array;
+  /**
+   * Its vipalas, 0 to 59.
+   */
+  readonly bhayatVipala: Uint8Array;
+  /**
+   * The bhabhoga, the whole stay, in ghatis of twenty-four minutes; past 60 when the stay is longer than a day.
+   */
+  readonly bhabhogaGhati: Uint8Array;
+  /**
+   * Its palas, 0 to 59.
+   */
+  readonly bhabhogaPala: Uint8Array;
+  /**
+   * Its vipalas, 0 to 59.
+   */
+  readonly bhabhogaVipala: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -5851,7 +5883,7 @@ export interface Charts {
    */
   readonly lalkitab: string;
   /**
-   * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+   * What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads, and the Moon's stay in its nakshatra with the bhayat and bhabhoga a janma patrika prints (C756). Empty when the moment was not asked for.
    */
   readonly moment: ChartsMoment;
   /**

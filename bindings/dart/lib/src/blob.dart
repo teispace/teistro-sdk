@@ -4745,7 +4745,7 @@ final class ChartsAvakahada {
 /// The `moment` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+/// What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads, and the Moon's stay in its nakshatra with the bhayat and bhabhoga a janma patrika prints (C756). Empty when the moment was not asked for.
 final class ChartsMoment {
   const ChartsMoment({
     required this.sign,
@@ -4753,6 +4753,14 @@ final class ChartsMoment {
     required this.sets,
     required this.eclipse,
     required this.greatest,
+    required this.nakshatraEntered,
+    required this.nakshatraLeaves,
+    required this.bhayatGhati,
+    required this.bhayatPala,
+    required this.bhayatVipala,
+    required this.bhabhogaGhati,
+    required this.bhabhogaPala,
+    required this.bhabhogaVipala,
     required this.length,
   });
 
@@ -4770,6 +4778,30 @@ final class ChartsMoment {
 
   /// The eclipse's greatest moment, a UT1 Julian day; NaN unless `eclipse` is `LUNAR` or `SOLAR`.
   final Float64List greatest;
+
+  /// When the Moon entered the nakshatra it holds, a UTC Julian day; NaN on a tropical chart, where a nakshatra means nothing, and then the four counts below are 0.
+  final Float64List nakshatraEntered;
+
+  /// When it leaves it, a UTC Julian day; NaN likewise.
+  final Float64List nakshatraLeaves;
+
+  /// The bhayat, the stay passed at the instant, in ghatis of twenty-four minutes.
+  final Uint8List bhayatGhati;
+
+  /// Its palas, 0 to 59.
+  final Uint8List bhayatPala;
+
+  /// Its vipalas, 0 to 59.
+  final Uint8List bhayatVipala;
+
+  /// The bhabhoga, the whole stay, in ghatis of twenty-four minutes; past 60 when the stay is longer than a day.
+  final Uint8List bhabhogaGhati;
+
+  /// Its palas, 0 to 59.
+  final Uint8List bhabhogaPala;
+
+  /// Its vipalas, 0 to 59.
+  final Uint8List bhabhogaVipala;
 
   /// The number of rows every column holds.
   final int length;
@@ -6039,7 +6071,7 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each `{reading, cycle, periods, year}` (`03-design/lalkitab.md`). `reading` is the teva's: `planets`, each `{graha, house, dignities, owners, awake, kayam, casts}` with `dignities` among `PAKKA`, `EXALTED`, `DEBILITATED` and `OWN`, `owners` each `{owner, regard}` (`FRIEND`, `EQUAL` or `ENEMY`) and `casts` each aspect `{to, strength, onto}` (`QUARTER`, `HALF` or `FULL`); `houses`, each `{house, occupants, lookedAtBy, awake, waker}` with `lookedAtBy` each `{from, strength}`; `masnui`, each pair in one house `{pair, house, countsAs}`; `rinas`, each debt `{rin, of, seated}` with `seated` each `{enemy, house}`; `pitri`, the ancestors' debt's first state `{ninth, mercury}`; and `flags` `{ratandha, nabalig, dharmi, sathi}`. `cycle` is the 35-year cycle's start `{planet, year}` and `periods` its periods `{planet, from, to}` over years 1 to 120 of life. `year` is `{year, ruler, thirds, annual}`, `annual` the annual teva's reading in the same shape when the record sent a `varshphal` list, otherwise null; `year` itself is null unless the record named one. Grahas are bare catalogue keys. Empty when `lalkitab_json` asked for none.
   final String lalkitab;
 
-  /// What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.
+  /// What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads, and the Moon's stay in its nakshatra with the bhayat and bhabhoga a janma patrika prints (C756). Empty when the moment was not asked for.
   final ChartsMoment moment;
 
   /// Every stretch of life a progressed planet stands within the orb of a radical point's distance from the equator, on either side of it (Leo, *The Progressed Horoscope*, p. 34), concatenated in the `cast` section's order and **ragged** by `progressions.parallel_count`, each chart's in the order of its closest instant. Empty when `progressions_json` asked for none.
@@ -7430,6 +7462,14 @@ Charts decodeCharts(Uint8List bytes) {
       sets: blob.column(atMoment, 2, 8, Float64List.sublistView),
       eclipse: blob.column(atMoment, 3, 1, Uint8List.sublistView),
       greatest: blob.column(atMoment, 4, 8, Float64List.sublistView),
+      nakshatraEntered: blob.column(atMoment, 5, 8, Float64List.sublistView),
+      nakshatraLeaves: blob.column(atMoment, 6, 8, Float64List.sublistView),
+      bhayatGhati: blob.column(atMoment, 7, 1, Uint8List.sublistView),
+      bhayatPala: blob.column(atMoment, 8, 1, Uint8List.sublistView),
+      bhayatVipala: blob.column(atMoment, 9, 1, Uint8List.sublistView),
+      bhabhogaGhati: blob.column(atMoment, 10, 1, Uint8List.sublistView),
+      bhabhogaPala: blob.column(atMoment, 11, 1, Uint8List.sublistView),
+      bhabhogaVipala: blob.column(atMoment, 12, 1, Uint8List.sublistView),
       length: atMoment.count,
     ),
     progressedParallels: ChartsProgressedParallels(

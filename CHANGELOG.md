@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Moon's stay in its nakshatra, with the bhayat and bhabhoga.**
+**Numbers:** a chart document that carries its `moment` gains
+`moment.nakshatra`, so its hash changes; every computed value is as
+before.
+- `Moment.nakshatra` (`MoonStay`): when the Moon entered the nakshatra it
+  holds and when it leaves it, searched in the chart's own frame and
+  zodiac, with the bhayat and bhabhoga in ghatis of 24 minutes (C756);
+  `None` on a tropical chart. The `moment` section gains the stay's
+  edges and the two counts, and every binding reads them.
+
 **The Kuja dosha's lifts, as clauses.**
 **Numbers:** none by default; nothing is lifted unless the rules name a
 lift, and the dosha itself reads as before.

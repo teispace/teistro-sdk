@@ -5638,6 +5638,23 @@ fn the_moment(report: &mut Report, index: usize, document: &teistro::Document) {
             number_or_dash(greatest)
         ),
     );
+    let count = |g: teistro::GhatiPala| format!("{}-{}-{}", g.ghati, g.pala, g.vipala);
+    put(
+        report,
+        &format!("chart-{index}-moon-stay"),
+        moment.nakshatra.map_or_else(
+            || "-".to_owned(),
+            |stay| {
+                format!(
+                    "{} {} {} {}",
+                    number(stay.entered.get()),
+                    number(stay.leaves.get()),
+                    count(stay.bhayat),
+                    count(stay.bhabhoga)
+                )
+            },
+        ),
+    );
 }
 
 /// Jaimini's significators as the other three print them: the karakamsha

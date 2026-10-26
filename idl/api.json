@@ -22639,7 +22639,7 @@
         {
           "id": 124,
           "name": "moment",
-          "doc": "What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, and the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads. Empty when the moment was not asked for.",
+          "doc": "What each chart's instant falls in, a row a chart in the `cast` section's order: the sign rising and its span, which BPHS ch. 92 v. 4's lagna gandanta reads, the eclipse seen where the chart is cast, which Brihat Jataka ch. 6 v. 9 reads, and the Moon's stay in its nakshatra with the bhayat and bhabhoga a janma patrika prints (C756). Empty when the moment was not asked for.",
           "kind": "columns",
           "fields": [
             {
@@ -22668,6 +22668,46 @@
               "name": "greatest",
               "scalar": "f64",
               "doc": "The eclipse's greatest moment, a UT1 Julian day; NaN unless `eclipse` is `LUNAR` or `SOLAR`."
+            },
+            {
+              "name": "nakshatra_entered",
+              "scalar": "f64",
+              "doc": "When the Moon entered the nakshatra it holds, a UTC Julian day; NaN on a tropical chart, where a nakshatra means nothing, and then the four counts below are 0."
+            },
+            {
+              "name": "nakshatra_leaves",
+              "scalar": "f64",
+              "doc": "When it leaves it, a UTC Julian day; NaN likewise."
+            },
+            {
+              "name": "bhayat_ghati",
+              "scalar": "u8",
+              "doc": "The bhayat, the stay passed at the instant, in ghatis of twenty-four minutes."
+            },
+            {
+              "name": "bhayat_pala",
+              "scalar": "u8",
+              "doc": "Its palas, 0 to 59."
+            },
+            {
+              "name": "bhayat_vipala",
+              "scalar": "u8",
+              "doc": "Its vipalas, 0 to 59."
+            },
+            {
+              "name": "bhabhoga_ghati",
+              "scalar": "u8",
+              "doc": "The bhabhoga, the whole stay, in ghatis of twenty-four minutes; past 60 when the stay is longer than a day."
+            },
+            {
+              "name": "bhabhoga_pala",
+              "scalar": "u8",
+              "doc": "Its palas, 0 to 59."
+            },
+            {
+              "name": "bhabhoga_vipala",
+              "scalar": "u8",
+              "doc": "Its vipalas, 0 to 59."
             }
           ]
         },

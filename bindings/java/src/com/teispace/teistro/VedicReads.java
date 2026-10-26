@@ -677,7 +677,14 @@ final class VedicReads {
         for (int chart = 0; chart < c.length(); chart += 1) {
             out.add(new Moment(
                     new RisingSign(Rashi.of(c.sign(chart)), Reads.numberOrNull(c.rose(chart)), Reads.numberOrNull(c.sets(chart))),
-                    new MomentEclipse(BirthEclipse.of(c.eclipse(chart)), Reads.numberOrNull(c.greatest(chart)))));
+                    new MomentEclipse(BirthEclipse.of(c.eclipse(chart)), Reads.numberOrNull(c.greatest(chart))),
+                    Double.isNaN(c.nakshatraEntered(chart))
+                            ? Optional.empty()
+                            : Optional.of(new MoonStay(
+                                    c.nakshatraEntered(chart),
+                                    c.nakshatraLeaves(chart),
+                                    new GhatiPala(c.bhayatGhati(chart), c.bhayatPala(chart), c.bhayatVipala(chart)),
+                                    new GhatiPala(c.bhabhogaGhati(chart), c.bhabhogaPala(chart), c.bhabhogaVipala(chart))))));
         }
         return List.copyOf(out);
     }
