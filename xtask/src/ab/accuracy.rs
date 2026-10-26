@@ -86,11 +86,11 @@ const CAUSES: [(&str, Cause, &str); 14] = [
     ),
     (
         "day",
-        Cause::Convention,
-        "the sunrise: `timed` takes the disc's centre unrefracted and the baseline the refracted \
-         upper limb; under `same` only the polar births differ, the conformance profile's nearest \
-         sunrise against the baseline's civil-day bounds. The committee's tithi ends are Surya \
-         Siddhanta's, hours from both",
+        Cause::Method,
+        "a day with no sunrise: both now take the refracted upper limb, so only the polar births \
+         differ, which the SDK reckons by its polar policy (civil midnight under `timed`, the \
+         conformance profile's nearest sunrise and sunset under `same`) and the baseline by its \
+         civil-day bounds. The committee's tithi ends are Surya Siddhanta's, hours from both",
     ),
     (
         "full",
@@ -114,9 +114,9 @@ const CAUSES: [(&str, Cause, &str); 14] = [
     (
         "strength",
         Cause::Convention,
-        "the readings: `timed` is the classical drik and luminaries' cheshta, the baseline its \
-         own; the SDK given Sripati's readings reproduces Raman's totals, and under `same` the \
-         largest gaps are c022's, a birth the baseline places in the wrong Hindu day (crux C35)",
+        "the readings: `timed` is the root's, Sripati's, which reproduces Raman's totals, and \
+         the baseline its own; under `same` the largest gaps are c022's, a birth the baseline \
+         places in the wrong Hindu day (crux C35)",
     ),
     (
         "dashas",
