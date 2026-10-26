@@ -146,6 +146,7 @@ import {
   VargaById,
   SDK_VERSION,
   TithiById,
+  TithiClassById,
   TimeScaleById,
   VaraById,
   YogaById,
@@ -6658,6 +6659,12 @@ function avakahadasOf(batch) {
           devanagari,
           iast,
           varga: NameVargaById.get(c.varga[chart]) ?? 'unknown',
+        }),
+        ghata: Object.freeze({
+          chandra: RashiById.get(c.ghataChandra[chart]) ?? 'unknown',
+          tithi: TithiClassById.get(c.ghataTithi[chart]) ?? 'unknown',
+          vara: VaraById.get(c.ghataVara[chart]) ?? 'unknown',
+          nakshatra: NakshatraById.get(c.ghataNakshatra[chart]) ?? 'unknown',
         }),
       });
     });

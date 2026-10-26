@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public sealed interface MuhurtaClauseKind {
     /** Every kind's tag, in the order the kinds are declared. */
-    List<String> CLAUSES = List.of("TITHI", "NAKSHATRA", "YOGA", "KARANA", "VARA", "MONTH", "SOLAR_MONTH", "LAGNA", "PADA", "KAALA", "CHOGHADIYA", "ABHIJIT", "MUHURTA_YOGA", "TARABALA", "CHANDRABALA", "KARTARI", "MOON_IN_DUSTHANA", "MOON_JOINED", "VENUS_IN_SIXTH", "MARS_IN_EIGHTH", "ASHTAMA_LAGNA", "KUNAVAMSA", "PANCHAKA_REMAINDER", "LAGNA_TYAJYA", "SEVENTH_OCCUPIED", "MALEFIC_IN_LAGNA", "BENEFIC_IN_LAGNA", "EXALTED_IN_LAGNA", "LUMINARY_IN_ELEVENTH", "KENDRA_BENEFICS", "UNWANTED_PLACEMENT", "VARJYAM");
+    List<String> CLAUSES = List.of("TITHI", "NAKSHATRA", "YOGA", "KARANA", "VARA", "MONTH", "SOLAR_MONTH", "LAGNA", "PADA", "KAALA", "CHOGHADIYA", "ABHIJIT", "MUHURTA_YOGA", "TARABALA", "CHANDRABALA", "KARTARI", "MOON_IN_DUSTHANA", "MOON_JOINED", "VENUS_IN_SIXTH", "MARS_IN_EIGHTH", "ASHTAMA_LAGNA", "KUNAVAMSA", "PANCHAKA_REMAINDER", "LAGNA_TYAJYA", "SEVENTH_OCCUPIED", "MALEFIC_IN_LAGNA", "BENEFIC_IN_LAGNA", "EXALTED_IN_LAGNA", "LUMINARY_IN_ELEVENTH", "KENDRA_BENEFICS", "UNWANTED_PLACEMENT", "VARJYAM", "GHATA");
 
     /**
      * The kind's tag, as the answer and a request spell it.
@@ -93,6 +93,7 @@ public sealed interface MuhurtaClauseKind {
             case "KENDRA_BENEFICS" -> new KendraBeneficsClause(grahas(o, "grahas"));
             case "UNWANTED_PLACEMENT" -> new UnwantedPlacementClause(Reads.integer(o, "house"), grahas(o, "by"));
             case "VARJYAM" -> new VarjyamClause(Reads.member(Nakshatra.byKey(Reads.string(o, "nakshatra")), "Nakshatra", o.get("nakshatra")));
+            case "GHATA" -> new GhataClause(Reads.string(o, "row"));
             default -> throw Reads.internal("the library drew a clause this build does not know: " + tag);
         };
     }
@@ -692,6 +693,25 @@ public sealed interface MuhurtaClauseKind {
         @Override
         public String clause() {
             return "VARJYAM";
+        }
+    }
+
+    /**
+     * A ghata of the native's: the day's Moon sign, tithi, weekday or
+     * nakshatra that strikes one born under the native's Moon sign
+     * (Muhurta Chintamani XI vv. 27–30, C758).
+     *
+     * @param row which row struck: {@code CHANDRA}, {@code TITHI}, {@code VARA} or {@code NAKSHATRA}
+     */
+    record GhataClause(String row) implements MuhurtaClauseKind {
+        /**
+         * The kind's tag.
+         *
+         * @return {@code "GHATA"}
+         */
+        @Override
+        public String clause() {
+            return "GHATA";
         }
     }
 }

@@ -4553,6 +4553,26 @@ export interface ChartsAvakahada {
    * The values are `NameVarga` ids.
    */
   readonly varga: Uint8Array;
+  /**
+   * The sign the Moon strikes the native from, the ghata chakra's first row (Muhurta Chintamani XI v. 27, C758).
+   * The values are `Rashi` ids.
+   */
+  readonly ghataChandra: Uint16Array;
+  /**
+   * The class of tithi that strikes the native (v. 28).
+   * The values are `TithiClass` ids.
+   */
+  readonly ghataTithi: Uint16Array;
+  /**
+   * The weekday that strikes the native (v. 29).
+   * The values are `Vara` ids.
+   */
+  readonly ghataVara: Uint16Array;
+  /**
+   * The nakshatra that strikes the native (v. 30).
+   * The values are `Nakshatra` ids.
+   */
+  readonly ghataNakshatra: Uint16Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }

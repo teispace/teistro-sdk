@@ -23,6 +23,7 @@
 mod ashta;
 mod avakahada;
 mod doshas;
+mod ghata;
 mod kuja;
 mod name;
 mod native;
@@ -37,6 +38,7 @@ pub use ashta::{
 };
 pub use avakahada::{Avakahada, avakahada};
 pub use doshas::{DoshaSystem, MarriageDosha, marriage_doshas};
+pub use ghata::Ghata;
 pub use kuja::{
     KUJA_REFERENCES, Kuja, KujaFrom, KujaHouses, KujaLifts, KujaNative, KujaReading, KujaReference,
     KujaRules, KujaSide, KujaSky, kuja, kuja_side,

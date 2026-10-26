@@ -27,7 +27,7 @@ built-in ephemeris does not reach: `c047-london-1800-01-02`,
 ## A chart whole
 
 Over 53 births the dossiers come to 2 678 785 bytes and the documents'
-canonical JSON to 6 888 070: 0.39 of it, a chart's own ratio between
+canonical JSON to 6 892 649: 0.39 of it, a chart's own ratio between
 0.25 and 0.41.
 
 ## Section by section
@@ -51,7 +51,7 @@ against the foundation and the state), summed over the births.
 | `JAIMINI` | 53 | 18 324 | 95 569 | 0.19 | 0 |
 | `POINTS` | 53 | 46 150 | 182 640 | 0.25 | 0 |
 | `ASPECTS` | 53 | 57 384 | 628 449 | 0.09 | 0 |
-| `AVAKAHADA` | 53 | 12 313 | 13 123 | 0.94 | 0 |
+| `AVAKAHADA` | 53 | 12 313 | 17 702 | 0.70 | 0 |
 
 Bytes are not tokens: a tokenizer splits a catalogue key
 (`PURVA_PHALGUNI`) and a number differently from a JSON key, so this

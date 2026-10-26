@@ -3271,6 +3271,9 @@ test('a name and a birth date read under numerology without a chart', () => {
  * to the Moon's own star and pada (C297): read as a name, the birth syllable
  * is the birth pada. `null` unless asked; a tropical chart refuses it.
  */
+const SIGNS = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'];
+const GHATA_COUNTS = [1, 5, 9, 2, 6, 10, 3, 7, 4, 8, 11, 12];
+
 test('a chart carries its avakahada, whose syllable names the birth pada', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
@@ -3304,6 +3307,10 @@ test('a chart carries its avakahada, whose syllable names the birth pada', () =>
       read.syllable.iast,
     );
     padas.add(`${read.nakshatra} ${read.pada}`);
+    // The ghata Moon is Muhurta Chintamani's count from the Moon's own sign (C758).
+    const at = SIGNS.indexOf(read.rashi.slice('rashi.'.length));
+    assert.equal(read.ghata.chandra, `rashi.${SIGNS[(at + GHATA_COUNTS[at] - 1) % 12]}`);
+    assert.ok(Object.isFrozen(read.ghata) && read.ghata.tithi.startsWith('tithi_class.'), read.ghata.tithi);
   }
   assert.ok(padas.size > 20, `${padas.size} padas`);
   const western = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });

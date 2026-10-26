@@ -425,7 +425,7 @@ shipped. A matcher of spellings is the application's.
   runners.
 - The avakahada is a chart field, asked by name:
   `avakahada(Native) -> Avakahada { nakshatra, pada, rashi,
-  nakshatra_lord, rashi_lord, varna, yoni, gana, nadi, syllable }` in
+  nakshatra_lord, rashi_lord, varna, yoni, gana, nadi, syllable, ghata }` in
   `crates/matching`, with `birth_syllable(nakshatra, pada) ->
   BirthSyllable { cell, devanagari, iast, varga }` reading the pada's
   own cell, and `name_check(name, rules, nakshatra, pada) -> NameCheck
@@ -439,6 +439,15 @@ shipped. A matcher of spellings is the application's.
   as canonical JSON `[devanagari, iast]` a row. Every binding reads
   `chart.avakahada`, and each binding's test reads the syllable back as
   a name, in both scripts, to the Moon's own star and pada.
+- The patrika's **ghata chakra** rides in the avakahada:
+  `Ghata::of(moon_sign) -> Ghata { chandra, tithi, vara, nakshatra }`,
+  Muhurta Chintamani's four rows (*Yatra-prakarana* XI vv. 27–30, C758),
+  the ghata Moon given as the sign its count reaches. The section
+  `avakahada` carries them as four more columns, and each binding's test
+  holds the ghata Moon to the verse's count from the Moon's own sign. A
+  muhurta search against a native reports the same four as `GHATA`
+  clauses (`muhurta.md` §4.2). The rows later compilations add are not
+  built (C758).
 - Naam milan reads no sky, so it is not a chart field: it is
   `sdk.matching().naam(bride, groom, NaamRules)`, an area of its own in
   every binding (`surface-areas.md`). At the boundary,

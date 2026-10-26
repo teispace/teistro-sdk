@@ -1865,6 +1865,9 @@ public final class ParityRunner {
         BirthSyllable syllable = birth.syllable();
         put(c + "-avakahada-syllable", syllable.cell() + " " + syllable.devanagari() + " " + syllable.iast() + " "
                 + syllable.varga().key());
+        Ghata ghata = birth.ghata();
+        put(c + "-avakahada-ghata", ghata.chandra().fullKey() + " " + ghata.tithi().fullKey() + " "
+                + ghata.vara().fullKey() + " " + ghata.nakshatra().fullKey());
         Moment fell = chart.moment().orElseThrow();
         put(c + "-moment", fell.rising().sign().fullKey() + " " + bound(fell.rising().rose()) + " "
                 + bound(fell.rising().sets()) + " " + fell.eclipse().kind().key() + " "

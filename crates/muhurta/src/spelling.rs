@@ -66,7 +66,8 @@ impl ClauseKey {
             | ClauseKey::MoonInDusthana
             | ClauseKey::VenusInSixth
             | ClauseKey::MarsInEighth
-            | ClauseKey::AshtamaLagna => &[],
+            | ClauseKey::AshtamaLagna
+            | ClauseKey::Ghata => &[],
         }
     }
 }
@@ -227,7 +228,7 @@ mod tests {
     use super::in_full;
     use crate::activity::{Bar, Pada, Unjudged};
     use crate::baseline::{Dimension, Factor, Score};
-    use crate::clause::{Clause, ClauseKey, ClauseKind};
+    use crate::clause::{Clause, ClauseKey, ClauseKind, GhataRow};
     use crate::grade::Grade;
     use crate::judge::{Judgement, Ranking};
     use crate::search::{Answer, ClosedDay};
@@ -329,6 +330,9 @@ mod tests {
             ClauseKey::Varjyam => ClauseKind::Varjyam {
                 nakshatra: Nakshatra::Mula,
             },
+            ClauseKey::Ghata => ClauseKind::Ghata {
+                row: GhataRow::Tithi,
+            },
         }
     }
 
@@ -421,9 +425,10 @@ mod tests {
     /// The string leaves that are **not** catalogue members, and why: a
     /// crate-local enum, or text. Refused both ways: a leaf here written
     /// in full, or one listed here the sample never reaches, fails.
-    const LOCAL: [(&str, &str); 10] = [
+    const LOCAL: [(&str, &str); 11] = [
         ("windows[].clauses[].clause", "the tag, a `ClauseKey`"),
         ("windows[].clauses[].grade", "a `Grade`"),
+        ("windows[].clauses[].row", "a `GhataRow`"),
         ("windows[].clauses[].reading.tara", "a `Tara`"),
         ("windows[].barredBy[]", "a bar by key, a `ClauseKey`"),
         ("windows[].barredBy[].clause", "a barring clause's tag"),

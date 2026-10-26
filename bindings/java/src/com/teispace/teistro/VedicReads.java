@@ -661,7 +661,9 @@ final class VedicReads {
                     Gana.of(c.gana(chart)),
                     Nadi.of(c.nadi(chart)),
                     new BirthSyllable(c.cell(chart), JsonRead.text(syllable.get(0)), JsonRead.text(syllable.get(1)),
-                            NameVarga.of(c.varga(chart)))));
+                            NameVarga.of(c.varga(chart))),
+                    new Ghata(Rashi.of(c.ghataChandra(chart)), TithiClass.of(c.ghataTithi(chart)),
+                            Vara.of(c.ghataVara(chart)), Nakshatra.of(c.ghataNakshatra(chart)))));
         }
         return List.copyOf(out);
     }

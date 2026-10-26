@@ -2841,6 +2841,7 @@ struct AvakahadaColumns {
     nadi: Vec<u16>,
     cell: Vec<u8>,
     varga: Vec<u8>,
+    ghata: [Vec<u16>; 4],
     /// Empty when no chart asked, so a caller that did not pays for no text.
     syllables: String,
 }
@@ -2866,6 +2867,15 @@ impl AvakahadaColumns {
             columns
                 .varga
                 .push(crate::naam::TsNameVarga::from(read.syllable.varga) as u8);
+            let ghata = read.ghata;
+            for (column, id) in columns.ghata.iter_mut().zip([
+                ghata.chandra.id(),
+                ghata.tithi.id(),
+                ghata.vara.id(),
+                ghata.nakshatra.id(),
+            ]) {
+                column.push(id);
+            }
         }
         if !readings.is_empty() {
             let texts: Vec<[&str; 2]> = readings
@@ -2898,6 +2908,10 @@ impl AvakahadaColumns {
                 ColumnData::U16(&self.nadi),
                 ColumnData::U8(&self.cell),
                 ColumnData::U8(&self.varga),
+                ColumnData::U16(&self.ghata[0]),
+                ColumnData::U16(&self.ghata[1]),
+                ColumnData::U16(&self.ghata[2]),
+                ColumnData::U16(&self.ghata[3]),
             ],
         )?;
         writer.bytes("avakahada_syllables", self.syllables.as_bytes())

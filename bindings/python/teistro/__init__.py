@@ -800,6 +800,8 @@ __all__ = [
     "KendraBeneficsClause",
     "UnwantedPlacementClause",
     "VarjyamClause",
+    "GhataClause",
+    "Ghata",
     "MuhurtaActivity",
     "KpChart",
     "KpCusp",
@@ -6502,6 +6504,24 @@ class NameSyllable:
 
 
 @dataclass(frozen=True)
+class Ghata:
+    """What strikes a native of one Moon sign: Muhurta Chintamani's four
+    rows of the ghata chakra (C758)."""
+
+    chandra: Rashi
+    """The sign the Moon strikes from (v. 27)."""
+
+    tithi: TithiClass
+    """The class of tithi that strikes (v. 28)."""
+
+    vara: Vara
+    """The weekday that strikes (v. 29)."""
+
+    nakshatra: Nakshatra
+    """The nakshatra that strikes (v. 30)."""
+
+
+@dataclass(frozen=True)
 class BirthSyllable:
     """The syllable a child is named by: the birth pada's own cell in the
     śatapada cakra (C297 to C299)."""
@@ -6559,6 +6579,9 @@ class Avakahada:
 
     syllable: BirthSyllable
     """The syllable the child is named by."""
+
+    ghata: Ghata
+    """The ghata chakra of the Moon's sign: what strikes the native (Muhurta Chintamani XI vv. 27–30, C758)."""
 
 
 @dataclass(frozen=True)
@@ -7446,6 +7469,16 @@ class VarjyamClause(MuhurtaClauseKind):
 
     CLAUSE: ClassVar[str] = "VARJYAM"
     nakshatra: Nakshatra
+
+
+@dataclass(frozen=True)
+class GhataClause(MuhurtaClauseKind):
+    """A ghata of the native's: the day's Moon sign, tithi, weekday or
+    nakshatra that strikes one born under the native's Moon sign (Muhurta
+    Chintamani XI vv. 27–30, C758)."""
+
+    CLAUSE: ClassVar[str] = "GHATA"
+    row: Literal["CHANDRA", "TITHI", "VARA", "NAKSHATRA"]
 
 
 MUHURTA_CLAUSES: Mapping[str, type] = MappingProxyType(
@@ -18012,6 +18045,12 @@ class ChartBatch:
                     devanagari=syllables[chart][0],
                     iast=syllables[chart][1],
                     varga=NameVarga(c.varga[chart]),
+                ),
+                ghata=Ghata(
+                    chandra=Rashi(c.ghata_chandra[chart]),
+                    tithi=TithiClass(c.ghata_tithi[chart]),
+                    vara=Vara(c.ghata_vara[chart]),
+                    nakshatra=Nakshatra(c.ghata_nakshatra[chart]),
                 ),
             )
             for chart in range(c.length)

@@ -15,6 +15,7 @@ package com.teispace.teistro;
  * @param gana The nakshatra's gana.
  * @param nadi The nakshatra's nadi.
  * @param syllable The syllable the child is named by.
+ * @param ghata The ghata chakra of the Moon's sign: what strikes the native (C758).
  */
 public record Avakahada(
         Nakshatra nakshatra,
@@ -26,5 +27,6 @@ public record Avakahada(
         Yoni yoni,
         Gana gana,
         Nadi nadi,
-        BirthSyllable syllable) {
+        BirthSyllable syllable,
+        Ghata ghata) {
 }

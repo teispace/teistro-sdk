@@ -2497,6 +2497,8 @@ function theMuhurta(almanac: Almanac): string {
           return `${clause.house} ${clause.by.join()}`;
         case 'VARJYAM':
           return clause.nakshatra;
+        case 'GHATA':
+          return clause.row;
         default:
           return clause.clause;
       }

@@ -1271,6 +1271,11 @@ public final class BindingTest {
                     check(chart.dashaPhala().isPresent(), "the dasha phala");
                     check(chart.jaimini().isPresent(), "the jaimini reading");
                     check(chart.avakahada().isPresent(), "the avakahada");
+                    Avakahada birth = chart.avakahada().orElseThrow();
+                    int[] counts = {1, 5, 9, 2, 6, 10, 3, 7, 4, 8, 11, 12};
+                    int at = birth.rashi().id();
+                    same(Rashi.of((at + counts[at] - 1) % 12), birth.ghata().chandra(),
+                            "the ghata Moon, Muhurta Chintamani's count from the Moon's sign (C758)");
                     check(chart.moment().isPresent(), "the moment");
                     check(chart.shadbala().isPresent(), "the shadbala");
                     check(chart.bhavaBala().isPresent(), "the bhava bala");

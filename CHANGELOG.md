@@ -12,6 +12,22 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The ghata chakra: what strikes a native, by the Moon sign.**
+**Numbers:** a muhurta search against a native gains `GHATA` clauses,
+so its windows' clauses and hash change; no shipped rite bars them, and
+nothing is ranked differently under `TEXTS` but by the clauses added.
+- `teistro_matching::Ghata::of(moon_sign)`: the Moon sign, tithi class,
+  weekday and nakshatra that strike a native, Muhurta Chintamani's four
+  rows (*Yatra-prakarana* XI vv. 27–30; C758).
+- A day read against a native reports each as a `GHATA` clause with its
+  `row`, against the time, over the span its member held. A rite that
+  will not have it bars `"GHATA"`; the text keeps it out of marriage.
+- Every binding reads the clause (`GhataClause`).
+- The avakahada carries the same four as `ghata`, so a janma patrika
+  prints its ghata chakra from the chart; the `avakahada` section gains
+  four columns and every binding reads `avakahada.ghata`. **Numbers:** a
+  chart document carrying its avakahada changes its hash.
+
 **The Kali year beside the Vikrama and Shaka.**
 **Numbers:** a lunar year, in `years` and in a sankalpa, gains `kali`,
 so the hash of an answer carrying one changes; every other value is as

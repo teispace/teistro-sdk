@@ -22598,6 +22598,30 @@
               "scalar": "u8",
               "doc": "The birth syllable's varga (C295).",
               "enum": "TsNameVarga"
+            },
+            {
+              "name": "ghata_chandra",
+              "scalar": "u16",
+              "doc": "The sign the Moon strikes the native from, the ghata chakra's first row (Muhurta Chintamani XI v. 27, C758).",
+              "enum": "Rashi"
+            },
+            {
+              "name": "ghata_tithi",
+              "scalar": "u16",
+              "doc": "The class of tithi that strikes the native (v. 28).",
+              "enum": "TithiClass"
+            },
+            {
+              "name": "ghata_vara",
+              "scalar": "u16",
+              "doc": "The weekday that strikes the native (v. 29).",
+              "enum": "Vara"
+            },
+            {
+              "name": "ghata_nakshatra",
+              "scalar": "u16",
+              "doc": "The nakshatra that strikes the native (v. 30).",
+              "enum": "Nakshatra"
             }
           ]
         },

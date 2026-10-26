@@ -2456,6 +2456,26 @@ fn chart_avakahada_sections(first: u32) -> [SectionSchema; 2] {
                 ),
                 ColumnDef::new("varga", Scalar::U8, "The birth syllable's varga (C295).")
                     .of_enum("TsNameVarga"),
+                read(
+                    "ghata_chandra",
+                    "The sign the Moon strikes the native from, the ghata chakra's first row (Muhurta Chintamani XI v. 27, C758).",
+                    "Rashi",
+                ),
+                read(
+                    "ghata_tithi",
+                    "The class of tithi that strikes the native (v. 28).",
+                    "TithiClass",
+                ),
+                read(
+                    "ghata_vara",
+                    "The weekday that strikes the native (v. 29).",
+                    "Vara",
+                ),
+                read(
+                    "ghata_nakshatra",
+                    "The nakshatra that strikes the native (v. 30).",
+                    "Nakshatra",
+                ),
             ],
         ),
         SectionSchema::bytes(
