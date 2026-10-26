@@ -13,6 +13,7 @@ import type {
   Modality,
   AvasthaBaladi,
   AgniVasa,
+  AshubhaYoga,
   AvasthaDeeptadi,
   AvasthaSayanadi,
   AvasthaCheshta,
@@ -6564,6 +6565,12 @@ export declare class AlmanacDay {
    * Chintamani, Nakshatra-prakarana v. 36, crux C748); `PRITHVI`, the earth, is the favourable one.
    */
   readonly agniVasa: readonly Span<AgniVasa>[];
+  /**
+   * The inauspicious yogas the day's tithis and nakshatras make with its vara (Muhurta Chintamani,
+   * Shubhashubha-prakarana vv. 8-9, crux C760): dagdha, visha and hutashana by the tithi, yamaghanta by the
+   * nakshatra, each span the limb's own.
+   */
+  readonly ashubhaYogas: readonly Span<AshubhaYoga>[];
   /**
    * Rahu's direction over the daylight, an eighth of sunrise to sunset each from the east (Jyotirnibandha p. 337,
    * crux C749); none after sunset, and none on a day with no daylight.

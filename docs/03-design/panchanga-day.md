@@ -930,3 +930,50 @@ muhurta crate's.
 binding's test holds the week of 15 to 21 June 2024 at Kathmandu, which
 holds Mithuna's entry, to one window inside one daylight, and each parity
 runner prints it.
+
+### 21.6 The inauspicious weekday yogas
+
+Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 name four yogas a
+weekday makes with a tithi or a nakshatra, to be shunned in auspicious
+work and always on a journey (C760). They were read off the 1954 print
+with the *Piyushadhara*, which turns each word of the verse into a number
+and quotes a witness for each row:
+
+| yoga | what it reads | Sunday to Saturday | the commentary's witness |
+|---|---|---|---|
+| dagdha | the tithi | 12, 11, 5, 3, 6, 8, 9 | Narada |
+| visha | the tithi | 4, 6, 7, 2, 8, 9, 7 | Brihaspati |
+| hutashana | the tithi | 12, 6, 7, 8, 9, 10, 11 | Guru's rule, the sixth onward from Monday |
+| yamaghanta | the nakshatra | Magha, Vishakha, Ardra, Mula, Krittika, Rohini, Hasta | Garga, in the *Daivajna-manohara* |
+
+The tithi is its number in the paksha, which the commentary's Guru says
+holds in both pakshas, so a Sunday's Dvadashi is dagdha and hutashana
+whether bright or dark. Vasishtha, quoted under v. 9, lifts the yogas at
+night; the SDK does not apply that, and the reader judges. Like §21.4's
+readings they come from what a day already carries, its tithi and
+nakshatra spans with its vara, so `Panchanga::ashubha_yogas` is a method
+over the stored day (`omen::ashubha_yogas`, `omen::tithi_yogas`,
+`omen::yamaghanta`): one span for each tithi or nakshatra that makes one,
+over that limb's own span, in the order they begin, a tithi's two keeping
+the verse's order. A day's hash does not change.
+
+They are a catalogue kind of their own, `ashubha_yoga`, rather than new
+members of `muhurta_yoga`: a day's `omens.yogas` are the auspicious
+combinations a consumer counts in favour, and the inauspicious four would
+be counted with them. A unit test holds the tables to each witness in its
+own order, and the doc examples work the commentary's first case.
+
+**In the chart.** BPHS ch. 85 v. 3 names a birth in Yamaghanta or a dagdha
+yoga among the inauspicious ones and defines neither (`rules-engine.md`).
+`BPHS_BIRTH_IN_DAGDHA_YOGA` and `BPHS_BIRTH_IN_YAMAGHANTA` read them by
+these tables from the chart's vara with its tithi and nakshatra, and the
+janma test finds each holding at an hour exactly where the day's own
+`ashubha_yogas` hold that hour.
+
+**What crosses.** The C boundary writes `ashubha_yogas` as span section
+36, always, counted after `homa_ahuti`. Every binding's day reads it
+(`ashubha_yogas`/`ashubhaYogas`) as the new catalogue kind, named in
+English and Nepali; each binding's test holds the week of 15 to 21 June
+2024 at Kathmandu to the four rows, and each parity runner prints the
+spans.
+

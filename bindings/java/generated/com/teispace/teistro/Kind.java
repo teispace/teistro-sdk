@@ -347,7 +347,12 @@ public enum Kind implements Member {
     /**
      * Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
      */
-    AGNI_VASA(73, "agni_vasa");
+    AGNI_VASA(73, "agni_vasa"),
+
+    /**
+     * The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).
+     */
+    ASHUBHA_YOGA(74, "ashubha_yoga");
 
     private static final Kind[] MEMBERS = values();
 

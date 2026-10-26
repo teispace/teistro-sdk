@@ -135,6 +135,7 @@ from ._records import Provenance, Step, decode_provenance, decode_step
 from .catalogue import (
     Catalogued,
     AgniVasa,
+    AshubhaYoga,
     AvasthaCheshta,
     Member,
     AvasthaSayanadi,
@@ -1209,6 +1210,7 @@ __all__ = [
     "Degeneracy",
     "Deity",
     "AgniVasa",
+    "AshubhaYoga",
     "Direction",
     "Gana",
     "Gender",
@@ -19711,6 +19713,19 @@ class AlmanacDay:
         return self._spans("agni_vasa", self.batch.decoded.agni_vasa, AgniVasa)
 
     @property
+    def ashubha_yogas(self) -> list[Span[AshubhaYoga]]:
+        """The inauspicious yogas the day's tithis and nakshatras make with
+        its vara (Muhurta Chintamani, Shubhashubha-prakarana vv. 8-9, crux
+        C760).
+
+        Dagdha, visha and hutashana come of the tithi, yamaghanta of the
+        nakshatra, each span the limb's own.
+        """
+        return self._spans(
+            "ashubha_yogas", self.batch.decoded.ashubha_yogas, AshubhaYoga
+        )
+
+    @property
     def rahu_vasa(self) -> list[Span[Direction]]:
         """Rahu's direction over the daylight, an eighth of sunrise to
         sunset each from the east (Jyotirnibandha p. 337, crux C749).
@@ -19894,6 +19909,7 @@ class Almanac:
             "rahu_vasa",
             "punya_kala",
             "homa_ahuti",
+            "ashubha_yogas",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

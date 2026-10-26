@@ -4371,5 +4371,27 @@
       "prose": "Patala",
       "iast": "Pātāla"
     }
+  },
+  "ashubha_yoga": {
+    "DAGDHA": {
+      "name": "Dagdha",
+      "prose": "Dagdha",
+      "iast": "Dagdha"
+    },
+    "VISHA": {
+      "name": "Visha",
+      "prose": "Visha",
+      "iast": "Viṣa"
+    },
+    "HUTASHANA": {
+      "name": "Hutashana",
+      "prose": "Hutashana",
+      "iast": "Hutāśana"
+    },
+    "YAMAGHANTA": {
+      "name": "Yamaghanta",
+      "prose": "Yamaghanta",
+      "iast": "Yamaghaṇṭa"
+    }
   }
 }

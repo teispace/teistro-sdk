@@ -27,8 +27,8 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    AgniVasa, Direction, Graha, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, TithiClass,
-    Vara,
+    AgniVasa, AshubhaYoga, Direction, Graha, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi,
+    Tithi, TithiClass, Vara,
 };
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
@@ -606,6 +606,127 @@ pub fn agni_vasas(tithis: &[Span<Tithi>], vara: Vara) -> Vec<Span<AgniVasa>> {
         .iter()
         .map(|span| span.map(|tithi| agni_vasa(tithi, vara)))
         .collect()
+}
+
+/// The tithis v. 8 of Muhurta Chintamani's Shubhashubha-prakarana makes
+/// inauspicious on a weekday, as their numbers in either paksha:
+/// *sūryeśa-pañcāgni-rasāṣṭa-nandā* the dagdha, *vedāṅga-saptāśvi-gajāṅka-
+/// śailāḥ* the visha and *sūryāṅga-saptoraga-go-digīśāḥ* the hutashana,
+/// Sunday to Saturday, as the commentary reads each word as a number
+/// (crux C760).
+const fn tithi_rows(vara: Vara) -> [(AshubhaYoga, u8); 3] {
+    let [dagdha, visha, hutashana] = match vara {
+        Vara::Ravivara => [12, 4, 12],
+        Vara::Somavara => [11, 6, 6],
+        Vara::Mangalavara => [5, 7, 7],
+        Vara::Budhavara => [3, 2, 8],
+        Vara::Guruvara => [6, 8, 9],
+        Vara::Shukravara => [8, 9, 10],
+        _ => [9, 7, 11],
+    };
+    [
+        (AshubhaYoga::Dagdha, dagdha),
+        (AshubhaYoga::Visha, visha),
+        (AshubhaYoga::Hutashana, hutashana),
+    ]
+}
+
+/// The inauspicious yogas a tithi makes on a weekday, by v. 8 (C760): a
+/// Sunday's Dvadashi is both dagdha and hutashana, and most pairs are
+/// neither. The tithi is read by its number in the paksha, which the
+/// commentary's Guru says holds in both.
+///
+/// ```
+/// use teistro_core::catalogue::{AshubhaYoga, Tithi, Vara};
+/// use teistro_panchanga::omen::tithi_yogas;
+///
+/// // The commentary's first case, a Sunday's Dvadashi, either paksha.
+/// assert_eq!(tithi_yogas(Tithi::KrishnaDwadashi, Vara::Ravivara), [AshubhaYoga::Dagdha, AshubhaYoga::Hutashana]);
+/// // A Wednesday's Dvitiya is visha, its Tritiya dagdha.
+/// assert_eq!(tithi_yogas(Tithi::ShuklaDvitiya, Vara::Budhavara), [AshubhaYoga::Visha]);
+/// assert_eq!(tithi_yogas(Tithi::ShuklaTritiya, Vara::Budhavara), [AshubhaYoga::Dagdha]);
+/// assert!(tithi_yogas(Tithi::ShuklaPratipada, Vara::Ravivara).is_empty());
+/// ```
+#[must_use]
+pub fn tithi_yogas(tithi: Tithi, vara: Vara) -> Vec<AshubhaYoga> {
+    let number = tithi.attributes().number;
+    tithi_rows(vara)
+        .into_iter()
+        .filter(|(_, n)| *n == number)
+        .map(|(yoga, _)| yoga)
+        .collect()
+}
+
+/// The nakshatra v. 9 makes Yamaghanta on a weekday, *maghā-viśākhā-
+/// śiva-mūla-vahni-brāhmaṁ karo 'rkādi*: Magha on a Sunday, Vishakha,
+/// Ardra, Mula, Krittika, Rohini, and Hasta on a Saturday (C760).
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Vara};
+/// use teistro_panchanga::omen::yamaghanta;
+///
+/// assert_eq!(yamaghanta(Vara::Ravivara), Nakshatra::Magha);
+/// assert_eq!(yamaghanta(Vara::Mangalavara), Nakshatra::Ardra);
+/// assert_eq!(yamaghanta(Vara::Shanivara), Nakshatra::Hasta);
+/// ```
+#[must_use]
+pub const fn yamaghanta(vara: Vara) -> Nakshatra {
+    match vara {
+        Vara::Ravivara => Nakshatra::Magha,
+        Vara::Somavara => Nakshatra::Vishakha,
+        Vara::Mangalavara => Nakshatra::Ardra,
+        Vara::Budhavara => Nakshatra::Mula,
+        Vara::Guruvara => Nakshatra::Krittika,
+        Vara::Shukravara => Nakshatra::Rohini,
+        _ => Nakshatra::Hasta,
+    }
+}
+
+/// A day's inauspicious yogas (vv. 8–9, C760): one span for each tithi
+/// the day held that makes one with its vara, and one for the nakshatra
+/// that makes Yamaghanta, each over that limb's own span and in the order
+/// they begin. The vara is the day's own, which turns at sunrise.
+/// Vasishtha, quoted under v. 9, lifts them at night; that exception is
+/// the reader's, and the spans run as the limbs do.
+///
+/// ```
+/// use teistro_core::catalogue::{AshubhaYoga, Nakshatra, Tithi, Vara};
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::omen::ashubha_yogas;
+/// use teistro_panchanga::span::Span;
+///
+/// // A Sunday that turns from Ekadashi to Dvadashi at 100.6, in Magha all day.
+/// let day = Interval::literal(100.25, 101.25);
+/// let span = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// let tithis: Vec<_> =
+///     [span(Tithi::ShuklaEkadashi, 99.6, 100.6), span(Tithi::ShuklaDwadashi, 100.6, 101.6)].into_iter().flatten().collect();
+/// let stars: Vec<_> = Span::new(Nakshatra::Magha, Interval::literal(99.9, 101.4), day).into_iter().collect();
+/// let found: Vec<_> = ashubha_yogas(&tithis, &stars, Vara::Ravivara).iter().map(|s| s.member).collect();
+/// assert_eq!(found, [AshubhaYoga::Yamaghanta, AshubhaYoga::Dagdha, AshubhaYoga::Hutashana]);
+/// ```
+#[must_use]
+pub fn ashubha_yogas(
+    tithis: &[Span<Tithi>],
+    nakshatras: &[Span<Nakshatra>],
+    vara: Vara,
+) -> Vec<Span<AshubhaYoga>> {
+    let mut found: Vec<Span<AshubhaYoga>> = tithis
+        .iter()
+        .flat_map(|span| {
+            tithi_yogas(span.member, vara)
+                .into_iter()
+                .map(move |yoga| span.map(|_| yoga))
+        })
+        .chain(
+            nakshatras
+                .iter()
+                .filter(|span| span.member == yamaghanta(vara))
+                .map(|span| span.map(|_| AshubhaYoga::Yamaghanta)),
+        )
+        .collect();
+    // Stable, so a tithi's two yogas keep the verse's order.
+    found.sort_by(|a, b| a.whole.from.get().total_cmp(&b.whole.from.get()));
+    found
 }
 
 /// Whose mouth a homa's oblation falls in, by the Moon's nakshatra counted
@@ -1591,5 +1712,99 @@ mod tests {
         let mut walked = RAHU_WALK.to_vec();
         walked.sort_by_key(|direction| direction.id());
         assert_eq!(walked, Direction::ALL.to_vec());
+    }
+
+    /// The tables against the commentary's other witnesses, each in its
+    /// own order (Shubhashubha-prakarana vv. 8–9, C760): Narada's dagdha
+    /// verse, Brihaspati's visha verse, Guru's hutashana rule (the sixth
+    /// tithi onward with Monday onward, Sunday's the twelfth) and Garga's
+    /// Yamaghanta.
+    #[test]
+    fn the_inauspicious_yogas_agree_with_the_commentarys_witnesses() {
+        use Vara::*;
+        use teistro_core::catalogue::{AshubhaYoga, Nakshatra, Tithi, Vara};
+        let held = |yoga, number: u8, vara| {
+            let tithi = Tithi::ALL
+                .into_iter()
+                .find(|t| t.attributes().number == number)
+                .unwrap();
+            super::tithi_yogas(tithi, vara).contains(&yoga)
+        };
+        // "ekādaśī cendu-vāre dvādaśī cārka-vāsare, ṣaṣṭhī bṛhaspater …"
+        let narada = [
+            (Somavara, 11),
+            (Ravivara, 12),
+            (Guruvara, 6),
+            (Budhavara, 3),
+            (Shukravara, 8),
+            (Shanivara, 9),
+            (Mangalavara, 5),
+        ];
+        // "ṣaṣṭhī śaśini navamī ca śukre budhe dvitīyā tapane caturthī, jīve 'ṣṭamī sauri-kuje 'hni saptamī"
+        let brihaspati = [
+            (Somavara, 6),
+            (Shukravara, 9),
+            (Budhavara, 2),
+            (Ravivara, 4),
+            (Guruvara, 8),
+            (Shanivara, 7),
+            (Mangalavara, 7),
+        ];
+        for (yoga, list) in [
+            (AshubhaYoga::Dagdha, narada),
+            (AshubhaYoga::Visha, brihaspati),
+        ] {
+            for (vara, number) in list {
+                assert!(held(yoga, number, vara), "{yoga:?} {vara:?} {number}");
+                // One tithi number a weekday for each yoga.
+                let others = (1..=15)
+                    .filter(|n| *n != number && held(yoga, *n, vara))
+                    .count();
+                assert_eq!(others, 0, "{yoga:?} {vara:?}");
+            }
+        }
+        // Guru: "ṣaṣṭhyādi-tithayaḥ sapta candravārādibhir yutāḥ".
+        let monday_on = [
+            Somavara,
+            Mangalavara,
+            Budhavara,
+            Guruvara,
+            Shukravara,
+            Shanivara,
+            Ravivara,
+        ];
+        for (number, vara) in (6..=12).zip(monday_on) {
+            assert!(
+                held(AshubhaYoga::Hutashana, number, vara),
+                "{vara:?} {number}"
+            );
+        }
+        // Garga: "maghā viśākhā cārdrā ca mūlarkṣaṁ ca kṛttikā, rohiṇī hasta-devaṁ yamaghaṇṭāḥ kramād raveḥ".
+        let garga = [
+            Nakshatra::Magha,
+            Nakshatra::Vishakha,
+            Nakshatra::Ardra,
+            Nakshatra::Mula,
+            Nakshatra::Krittika,
+            Nakshatra::Rohini,
+            Nakshatra::Hasta,
+        ];
+        let sunday_on = [
+            Ravivara,
+            Somavara,
+            Mangalavara,
+            Budhavara,
+            Guruvara,
+            Shukravara,
+            Shanivara,
+        ];
+        for (vara, star) in sunday_on.into_iter().zip(garga) {
+            assert_eq!(super::yamaghanta(vara), star, "{vara:?}");
+        }
+        // A tithi's number holds in both pakshas.
+        assert_eq!(
+            super::tithi_yogas(Tithi::ShuklaPanchami, Mangalavara),
+            super::tithi_yogas(Tithi::KrishnaPanchami, Mangalavara)
+        );
     }
 }

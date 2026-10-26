@@ -75,6 +75,33 @@ public final class Messages {
         }
     }
 
+    /** A `ashubha_yoga` as a message names it: the full catalogue key. */
+    public enum AshubhaYogaKey {
+        /** `ashubha_yoga.DAGDHA`. */
+        DAGDHA("ashubha_yoga.DAGDHA"),
+        /** `ashubha_yoga.VISHA`. */
+        VISHA("ashubha_yoga.VISHA"),
+        /** `ashubha_yoga.HUTASHANA`. */
+        HUTASHANA("ashubha_yoga.HUTASHANA"),
+        /** `ashubha_yoga.YAMAGHANTA`. */
+        YAMAGHANTA("ashubha_yoga.YAMAGHANTA");
+
+        private final String value;
+
+        AshubhaYogaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `avastha_baladi` as a message names it: the full catalogue key. */
     public enum AvasthaBaladiKey {
         /** `avastha_baladi.BALA`. */
@@ -3608,6 +3635,61 @@ public final class Messages {
                  */
                 public EntityForms svarga() {
                     return r.entity("agni_vasa.SVARGA");
+                }
+            }
+
+
+            /**
+             * The messages under `ashubha_yoga`.
+             *
+             * @return the group
+             */
+            public SdkEntityAshubhaYoga ashubhaYoga() {
+                return new SdkEntityAshubhaYoga(r);
+            }
+
+            /** The messages under `SdkEntityAshubhaYoga`, each rendered by its own key. */
+            public static final class SdkEntityAshubhaYoga {
+                private final Renderer r;
+
+                SdkEntityAshubhaYoga(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `ashubha_yoga.DAGDHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dagdha() {
+                    return r.entity("ashubha_yoga.DAGDHA");
+                }
+
+                /**
+                 * The forms of `ashubha_yoga.HUTASHANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hutashana() {
+                    return r.entity("ashubha_yoga.HUTASHANA");
+                }
+
+                /**
+                 * The forms of `ashubha_yoga.VISHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms visha() {
+                    return r.entity("ashubha_yoga.VISHA");
+                }
+
+                /**
+                 * The forms of `ashubha_yoga.YAMAGHANTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yamaghanta() {
+                    return r.entity("ashubha_yoga.YAMAGHANTA");
                 }
             }
 

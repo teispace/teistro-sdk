@@ -27,6 +27,15 @@ class AgniVasaKey(enum.StrEnum):
     PATALA = "agni_vasa.PATALA"
 
 
+class AshubhaYogaKey(enum.StrEnum):
+    """A `ashubha_yoga` as a message names it: the full catalogue key."""
+
+    DAGDHA = "ashubha_yoga.DAGDHA"
+    VISHA = "ashubha_yoga.VISHA"
+    HUTASHANA = "ashubha_yoga.HUTASHANA"
+    YAMAGHANTA = "ashubha_yoga.YAMAGHANTA"
+
+
 class AvasthaBaladiKey(enum.StrEnum):
     """A `avastha_baladi` as a message names it: the full catalogue key."""
 
@@ -1885,6 +1894,11 @@ class MessagesSdkEntity:
     def agni_vasa(self) -> MessagesSdkEntityAgniVasa:
         """The messages under `agni_vasa`."""
         return MessagesSdkEntityAgniVasa(self._r)
+
+    @property
+    def ashubha_yoga(self) -> MessagesSdkEntityAshubhaYoga:
+        """The messages under `ashubha_yoga`."""
+        return MessagesSdkEntityAshubhaYoga(self._r)
 
     @property
     def avastha_baladi(self) -> MessagesSdkEntityAvasthaBaladi:
@@ -6922,6 +6936,34 @@ class MessagesSdkEntityAvasthaBaladi:
     def yuva(self) -> EntityForms:
         """The forms of `avastha_baladi.YUVA` in the current locale."""
         return self._r.entity("avastha_baladi.YUVA")
+
+
+class MessagesSdkEntityAshubhaYoga:
+    """The messages under `MessagesSdkEntityAshubhaYoga`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def dagdha(self) -> EntityForms:
+        """The forms of `ashubha_yoga.DAGDHA` in the current locale."""
+        return self._r.entity("ashubha_yoga.DAGDHA")
+
+    @property
+    def hutashana(self) -> EntityForms:
+        """The forms of `ashubha_yoga.HUTASHANA` in the current locale."""
+        return self._r.entity("ashubha_yoga.HUTASHANA")
+
+    @property
+    def visha(self) -> EntityForms:
+        """The forms of `ashubha_yoga.VISHA` in the current locale."""
+        return self._r.entity("ashubha_yoga.VISHA")
+
+    @property
+    def yamaghanta(self) -> EntityForms:
+        """The forms of `ashubha_yoga.YAMAGHANTA` in the current locale."""
+        return self._r.entity("ashubha_yoga.YAMAGHANTA")
 
 
 class MessagesSdkEntityAgniVasa:

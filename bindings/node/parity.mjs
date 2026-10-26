@@ -1642,6 +1642,7 @@ for (const day of week) {
   put(`day-${i}-chandrashtama-count`, day.chandrashtama.length);
   put(`day-${i}-amrit-kalam-count`, day.amritKalam.length);
   put(`day-${i}-agni-vasa-count`, day.agniVasa.length);
+  put(`day-${i}-ashubha-yoga-count`, day.ashubhaYogas.length);
   put(`day-${i}-rahu-vasa-count`, day.rahuVasa.length);
   put(`day-${i}-punya-kala-count`, day.punyaKala.length);
   for (const [limb, spans] of [
@@ -1655,6 +1656,7 @@ for (const day of week) {
     ['chandrashtama', day.chandrashtama],
     ['amrit-kalam', day.amritKalam],
     ['agni-vasa', day.agniVasa],
+    ['ashubha-yoga', day.ashubhaYogas],
     ['rahu-vasa', day.rahuVasa],
     ['punya-kala', day.punyaKala],
   ]) {

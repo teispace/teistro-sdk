@@ -738,8 +738,9 @@ test('every catalogue enum has a complete id table', () => {
   // `TsTibetanAnimal`, twelve, with their two members of `TsKind`; 1404
   // since `TsDashaFamily` gained `GRAHA`, the Karaka dasha's kernel; 1405
   // since `TsCalendar` gained the Bangladeshi calendar; 1409 since the
-  // agni vasa's `TsAgniVasa`, three, with its member of `TsKind`.
-  assert.equal(entries, 1409, 'every member of every enum is in a table');
+  // agni vasa's `TsAgniVasa`, three, with its member of `TsKind`; 1414
+  // since the inauspicious yogas' `TsAshubhaYoga`, four, with its member.
+  assert.equal(entries, 1414, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4040,6 +4041,27 @@ test('fire follows each tithi with the vara, and Rahu walks the daylight from th
     assert.equal(day.rahuVasa[0].whole.from, day.day.sunrise);
     assert.ok(Math.abs(day.rahuVasa[7].whole.to - day.day.sunset) < 1e-9);
   }
+  // Muhurta Chintamani, Shubhashubha-prakarana vv. 8-9 (C760): the dagdha,
+  // visha and hutashana tithis by number in either paksha, Sunday first,
+  // and the Yamaghanta nakshatra; each yoga runs as its limb does.
+  const rows = [[12, 4, 12], [11, 6, 6], [5, 7, 7], [3, 2, 8], [6, 8, 9], [8, 9, 10], [9, 7, 11]];
+  const yogas = ['DAGDHA', 'VISHA', 'HUTASHANA'].map((y) => `ashubha_yoga.${y}`);
+  const stars = ['MAGHA', 'VISHAKHA', 'ARDRA', 'MULA', 'KRITTIKA', 'ROHINI', 'HASTA'].map((n) => `nakshatra.${n}`);
+  let shunned = 0;
+  for (let i = 0; i < week.length; i += 1) {
+    const day = week.at(i);
+    const vara = idOf(catalogue.VaraById, day.day.vara);
+    const expected = [
+      ...day.tithi.flatMap((tithi) => {
+        const number = (idOf(catalogue.TithiById, tithi.member) % 15) + 1;
+        return yogas.filter((_, k) => rows[vara][k] === number).map((yoga) => [yoga, tithi.whole.from]);
+      }),
+      ...day.nakshatra.filter((star) => star.member === stars[vara]).map((star) => ['ashubha_yoga.YAMAGHANTA', star.whole.from]),
+    ].sort((a, b) => a[1] - b[1]);
+    assert.deepEqual(day.ashubhaYogas.map((span) => [span.member, span.whole.from]), expected);
+    shunned += expected.length;
+  }
+  assert.ok(shunned > 0, 'a week holds an inauspicious yoga');
   // The Sun entered Mithuna on 15 June 2024: one day of the week holds its
   // punya kala, inside that day's daylight (Dharmasindhu p. 2, C752).
   const held = [];

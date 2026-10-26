@@ -2658,6 +2658,58 @@ void _engineTests() {
       expect(day.rahuVasa.first.whole.from, day.day.sunrise);
       expect(day.rahuVasa.last.whole.to, closeTo(day.day.sunset, 1e-9));
     }
+    // Muhurta Chintamani, Shubhashubha-prakarana vv. 8-9 (C760): the
+    // dagdha, visha and hutashana tithis by number in either paksha, Sunday
+    // first, and the Yamaghanta nakshatra; each yoga runs as its limb does.
+    const rows = [
+      [12, 4, 12],
+      [11, 6, 6],
+      [5, 7, 7],
+      [3, 2, 8],
+      [6, 8, 9],
+      [8, 9, 10],
+      [9, 7, 11],
+    ];
+    const yogas = [
+      AshubhaYoga.dagdha,
+      AshubhaYoga.visha,
+      AshubhaYoga.hutashana,
+    ];
+    const stars = [
+      Nakshatra.magha,
+      Nakshatra.vishakha,
+      Nakshatra.ardra,
+      Nakshatra.mula,
+      Nakshatra.krittika,
+      Nakshatra.rohini,
+      Nakshatra.hasta,
+    ];
+    var shunned = 0;
+    for (final day in week) {
+      final vara = day.day.vara.id;
+      final expected = [
+        for (final tithi in day.tithi)
+          for (var k = 0; k < 3; k += 1)
+            if (rows[vara][k] == tithi.member.id % 15 + 1)
+              (yogas[k], tithi.whole.from),
+        for (final star in day.nakshatra)
+          if (star.member == stars[vara])
+            (AshubhaYoga.yamaghanta, star.whole.from),
+      ];
+      // Dart's sort is not stable, so a tithi's two yogas keep the verse's
+      // order by their place in the list.
+      final order = [for (var k = 0; k < expected.length; k += 1) k]
+        ..sort((a, b) {
+          final by = expected[a].$2.compareTo(expected[b].$2);
+          return by != 0 ? by : a.compareTo(b);
+        });
+      expect(
+        [for (final span in day.ashubhaYogas) (span.member, span.whole.from)],
+        [for (final k in order) expected[k]],
+      );
+      shunned += expected.length;
+    }
+    expect(shunned, greaterThan(0));
     // The Sun entered Mithuna on 15 June 2024: one day of the week holds its
     // punya kala, inside that day's daylight (Dharmasindhu p. 2, C752).
     final held = [

@@ -282,6 +282,9 @@ class Kind(Member):
     agni_vasa = 73
     """Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748)."""
 
+    ashubha_yoga = 74
+    """The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760)."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3520,6 +3523,27 @@ class AgniVasa(Catalogued):
     """
 
 
+class AshubhaYoga(Catalogued):
+    """The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760). Members are the catalogue's ids; the full key id is `(TS_KIND_ASHUBHA_YOGA << 16) | member`."""
+
+    DAGDHA = 0
+    """Dagdha, burnt: the 12th, 11th, 5th, 3rd, 6th, 8th and 9th tithi of either paksha on Sunday to Saturday"""
+
+    VISHA = 1
+    """Visha, poison: the 4th, 6th, 7th, 2nd, 8th, 9th and 7th tithi of either paksha on Sunday to Saturday"""
+
+    HUTASHANA = 2
+    """Hutashana, fire: the 12th, 6th, 7th, 8th, 9th, 10th and 11th tithi of either paksha on Sunday to Saturday"""
+
+    YAMAGHANTA = 3
+    """Yamaghanta, Yama's bell: Magha, Vishakha, Ardra, Mula, Krittika, Rohini and Hasta on Sunday to Saturday"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -5696,6 +5720,7 @@ _KEYS: dict[str, dict[int, str]] = {
         71: "tibetan_element",
         72: "tibetan_animal",
         73: "agni_vasa",
+        74: "ashubha_yoga",
     },
     "Graha": {
         0: "SUN",
@@ -6776,6 +6801,13 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "PATALA",
         -1: "UNKNOWN",
     },
+    "AshubhaYoga": {
+        0: "DAGDHA",
+        1: "VISHA",
+        2: "HUTASHANA",
+        3: "YAMAGHANTA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -7509,4 +7541,5 @@ _KINDS: dict[str, str] = {
     "TibetanElement": "tibetan_element",
     "TibetanAnimal": "tibetan_animal",
     "AgniVasa": "agni_vasa",
+    "AshubhaYoga": "ashubha_yoga",
 }

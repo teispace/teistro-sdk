@@ -27,6 +27,17 @@ enum AgniVasaKey {
   final String key;
 }
 
+enum AshubhaYogaKey {
+  dagdha('ashubha_yoga.DAGDHA'),
+  visha('ashubha_yoga.VISHA'),
+  hutashana('ashubha_yoga.HUTASHANA'),
+  yamaghanta('ashubha_yoga.YAMAGHANTA');
+
+  const AshubhaYogaKey(this.key);
+
+  final String key;
+}
+
 enum AvasthaBaladiKey {
   bala('avastha_baladi.BALA'),
   kumara('avastha_baladi.KUMARA'),
@@ -1712,6 +1723,17 @@ final class MessagesSdkEntityAgniVasa {
   EntityForms get svarga => _r.entity('agni_vasa.SVARGA');
 }
 
+final class MessagesSdkEntityAshubhaYoga {
+  const MessagesSdkEntityAshubhaYoga(this._r);
+
+  final Renderer _r;
+
+  EntityForms get dagdha => _r.entity('ashubha_yoga.DAGDHA');
+  EntityForms get hutashana => _r.entity('ashubha_yoga.HUTASHANA');
+  EntityForms get visha => _r.entity('ashubha_yoga.VISHA');
+  EntityForms get yamaghanta => _r.entity('ashubha_yoga.YAMAGHANTA');
+}
+
 final class MessagesSdkEntityAvasthaBaladi {
   const MessagesSdkEntityAvasthaBaladi(this._r);
 
@@ -2919,6 +2941,7 @@ final class MessagesSdkEntity {
   final Renderer _r;
 
   MessagesSdkEntityAgniVasa get agniVasa => MessagesSdkEntityAgniVasa(_r);
+  MessagesSdkEntityAshubhaYoga get ashubhaYoga => MessagesSdkEntityAshubhaYoga(_r);
   MessagesSdkEntityAvasthaBaladi get avasthaBaladi => MessagesSdkEntityAvasthaBaladi(_r);
   MessagesSdkEntityAvasthaCheshta get avasthaCheshta => MessagesSdkEntityAvasthaCheshta(_r);
   MessagesSdkEntityAvasthaDeeptadi get avasthaDeeptadi => MessagesSdkEntityAvasthaDeeptadi(_r);

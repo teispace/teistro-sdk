@@ -1825,6 +1825,35 @@ public final class BindingTest {
                     check(Math.abs(day.rahuVasa().get(7).whole().toJd() - day.day().sunset()) < 1e-9,
                             "and is home at sunset");
                 }
+                // Muhurta Chintamani, Shubhashubha-prakarana vv. 8-9 (C760): the dagdha, visha and hutashana
+                // tithis by number in either paksha, Sunday first, and the Yamaghanta nakshatra; each yoga runs
+                // as its limb does.
+                int[][] rows = {{12, 4, 12}, {11, 6, 6}, {5, 7, 7}, {3, 2, 8}, {6, 8, 9}, {8, 9, 10}, {9, 7, 11}};
+                List<AshubhaYoga> yogas = List.of(AshubhaYoga.DAGDHA, AshubhaYoga.VISHA, AshubhaYoga.HUTASHANA);
+                List<Nakshatra> stars = List.of(Nakshatra.MAGHA, Nakshatra.VISHAKHA, Nakshatra.ARDRA, Nakshatra.MULA,
+                        Nakshatra.KRITTIKA, Nakshatra.ROHINI, Nakshatra.HASTA);
+                int shunned = 0;
+                for (AlmanacDay day : week) {
+                    int vara = day.day().vara().id();
+                    List<Map.Entry<AshubhaYoga, Double>> expected = new ArrayList<>();
+                    for (Span<Tithi> tithi : day.tithi()) {
+                        for (int k = 0; k < 3; k += 1) {
+                            if (rows[vara][k] == tithi.member().id() % 15 + 1) {
+                                expected.add(Map.entry(yogas.get(k), tithi.whole().fromJd()));
+                            }
+                        }
+                    }
+                    for (Span<Nakshatra> star : day.nakshatra()) {
+                        if (star.member() == stars.get(vara)) {
+                            expected.add(Map.entry(AshubhaYoga.YAMAGHANTA, star.whole().fromJd()));
+                        }
+                    }
+                    expected.sort(Map.Entry.comparingByValue());
+                    same(expected, day.ashubhaYogas().stream()
+                            .map(span -> Map.entry(span.member(), span.whole().fromJd())).toList(), "vv. 8-9's yogas");
+                    shunned += expected.size();
+                }
+                check(shunned > 0, "a week holds an inauspicious yoga");
                 // A sankranti's punya kala falls in one daylight (Dharmasindhu
                 // p. 2, C752): no more than one in a week, inside its day.
                 int kalas = 0;

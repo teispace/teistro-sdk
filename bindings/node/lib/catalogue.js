@@ -259,6 +259,7 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   TibetanElement: 'tibetan_element',
   TibetanAnimal: 'tibetan_animal',
   AgniVasa: 'agni_vasa',
+  AshubhaYoga: 'ashubha_yoga',
 });
 
 /**
@@ -334,6 +335,7 @@ export const KindById = /* @__PURE__ */ new Map([
   [71, 'tibetan_element'],
   [72, 'tibetan_animal'],
   [73, 'agni_vasa'],
+  [74, 'ashubha_yoga'],
 ]);
 
 /** Every Graha by name. */
@@ -2832,6 +2834,25 @@ export const AgniVasaById = /* @__PURE__ */ new Map([
   [0, 'agni_vasa.PRITHVI'],
   [1, 'agni_vasa.SVARGA'],
   [2, 'agni_vasa.PATALA'],
+]);
+
+/** Every AshubhaYoga by name. */
+export const AshubhaYoga = /* @__PURE__ */ Object.freeze({
+  Dagdha: 'ashubha_yoga.DAGDHA',
+  Visha: 'ashubha_yoga.VISHA',
+  Hutashana: 'ashubha_yoga.HUTASHANA',
+  Yamaghanta: 'ashubha_yoga.YAMAGHANTA',
+});
+
+/**
+ * Every AshubhaYoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AshubhaYogaById = /* @__PURE__ */ new Map([
+  [0, 'ashubha_yoga.DAGDHA'],
+  [1, 'ashubha_yoga.VISHA'],
+  [2, 'ashubha_yoga.HUTASHANA'],
+  [3, 'ashubha_yoga.YAMAGHANTA'],
 ]);
 
 /** Every Status by name. */

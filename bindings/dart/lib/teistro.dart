@@ -30869,6 +30869,7 @@ final class Almanac {
       'rahuVasa': counts.rahuVasa,
       'punyaKala': counts.punyaKala,
       'homaAhuti': counts.homaAhuti,
+      'ashubhaYogas': counts.ashubhaYogas,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -31156,6 +31157,24 @@ final class AlmanacDay {
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       AgniVasa.byId,
+    );
+  }
+
+  /// The inauspicious yogas the day's tithis and nakshatras make with its
+  /// vara (Muhurta Chintamani, Shubhashubha-prakarana vv. 8-9, crux C760):
+  /// dagdha, visha and hutashana by the tithi, yamaghanta by the
+  /// nakshatra, each span the limb's own.
+  List<Span<AshubhaYoga>> get ashubhaYogas {
+    final c = batch.decoded.ashubhaYogas;
+    return _spans(
+      'ashubhaYogas',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      AshubhaYoga.byId,
     );
   }
 

@@ -6036,51 +6036,19 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
     // The month, the ayana, the omens and the muhurtas that a day
     // may not have -- an absent value must be **absent** in all
     // four, not nought in one.
-    put(
-        report,
-        &format!("day-{index}-month"),
-        day.month.month.full_key().to_owned(),
-    );
-    put(
-        report,
-        &format!("day-{index}-amanta"),
-        day.month.amanta.full_key().to_owned(),
-    );
-    put(
-        report,
-        &format!("day-{index}-purnimanta"),
-        day.month.purnimanta.full_key().to_owned(),
-    );
-    put(
-        report,
-        &format!("day-{index}-paksha"),
-        day.month.paksha.full_key().to_owned(),
-    );
-    put(
-        report,
-        &format!("day-{index}-convention"),
-        wire_key(&day.month.convention),
-    );
-    put(
-        report,
-        &format!("day-{index}-month-kind"),
-        wire_key(&day.month.kind),
-    );
-    put(
-        report,
-        &format!("day-{index}-ayana"),
-        day.sun.ayana.full_key().to_owned(),
-    );
-    put(
-        report,
-        &format!("day-{index}-ritu"),
-        day.sun.ritu.full_key().to_owned(),
-    );
-    put(
-        report,
-        &format!("day-{index}-disha-shool"),
-        day.omens.disha_shool.full_key().to_owned(),
-    );
+    for (what, value) in [
+        ("month", day.month.month.full_key().to_owned()),
+        ("amanta", day.month.amanta.full_key().to_owned()),
+        ("purnimanta", day.month.purnimanta.full_key().to_owned()),
+        ("paksha", day.month.paksha.full_key().to_owned()),
+        ("convention", wire_key(&day.month.convention)),
+        ("month-kind", wire_key(&day.month.kind)),
+        ("ayana", day.sun.ayana.full_key().to_owned()),
+        ("ritu", day.sun.ritu.full_key().to_owned()),
+        ("disha-shool", day.omens.disha_shool.full_key().to_owned()),
+    ] {
+        put(report, &format!("day-{index}-{what}"), value);
+    }
     let absent_or = |value: Option<f64>| value.map_or_else(|| String::from("none"), number);
     put(
         report,
@@ -6129,6 +6097,7 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         ("chandrashtama", day.chandrashtama().len()),
         ("amrit-kalam", day.omens.amrit_kalam.len()),
         ("agni-vasa", day.agni_vasa().len()),
+        ("ashubha-yoga", day.ashubha_yogas().len()),
         ("rahu-vasa", day.rahu_vasa().len()),
         ("punya-kala", usize::from(day.punya_kala.is_some())),
     ] {
@@ -6297,7 +6266,7 @@ fn limb_spans<T: teistro::catalogue::Catalogued>(
 fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::almanac::Panchanga) {
     // And every span of every moving limb, member and bounds.
     let punya_kala: Vec<_> = day.punya_kala.iter().map(|kala| kala.span).collect();
-    let limbs: [(&str, Vec<LimbSpan>); 12] = [
+    let limbs: [(&str, Vec<LimbSpan>); 13] = [
         ("tithi", limb_spans(day, &day.limbs.tithi)),
         ("nakshatra", limb_spans(day, &day.limbs.nakshatra)),
         ("yoga", limb_spans(day, &day.limbs.yoga)),
@@ -6308,6 +6277,7 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         ("chandrashtama", limb_spans(day, &day.chandrashtama())),
         ("amrit-kalam", limb_spans(day, &day.omens.amrit_kalam)),
         ("agni-vasa", limb_spans(day, &day.agni_vasa())),
+        ("ashubha-yoga", limb_spans(day, &day.ashubha_yogas())),
         ("rahu-vasa", limb_spans(day, &day.rahu_vasa())),
         ("punya-kala", limb_spans(day, &punya_kala)),
     ];

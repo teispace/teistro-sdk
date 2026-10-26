@@ -239,6 +239,7 @@ import type {
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
 import type {
   AgniVasa,
+  AshubhaYoga,
   Ayanamsha,
   ChainEnd,
   Direction,
@@ -683,6 +684,7 @@ function almanac(): string {
   const dwells: string = day.chandraVasa[0]!.member;
   const natal: string = day.chandrashtama[0]!.member;
   const fire: AgniVasa = day.agniVasa[0]!.member;
+  const shunned: AshubhaYoga | undefined = day.ashubhaYogas[0]?.member;
   const rahu: Direction = day.rahuVasa[0]!.member;
   // An absent value is null, never a sentinel, and the checker knows it.
   const sankranti: number | null = day.sankranti;
