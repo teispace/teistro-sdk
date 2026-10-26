@@ -1514,20 +1514,72 @@ mod tests {
 
     use super::{
         LONGEST_SPAN_DAYS, Limb, SIGN_SEARCH_CAP_DAYS, SYNODIC_SEARCH_DAYS, Sidereal, Zodiac,
-        edges, karana_of, lunar_month_span, sign_edges, sign_reach_days,
+        amanta_month, edges, karana_of, lunar_month_span, sign_edges, sign_reach_days,
     };
     use teistro_astro::ayanamsha::Basis;
     use teistro_astro::completion::Completion;
     use teistro_astro::delta_t::DeltaTModel;
     use teistro_astro::events::Search;
     use teistro_astro::precession::PrecessionModel;
-    use teistro_core::catalogue::{Ayanamsha, Karana};
+    use teistro_core::catalogue::{Ayanamsha, Karana, Masa};
     use teistro_core::interval::Interval;
     use teistro_core::quantity::{JulianDay, Ut1};
     use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
     use teistro_port_ephemeris::{
         Body, Frame, Lattice, Quantity, TestProvider, Zodiac as FrameZodiac,
     };
+
+    /// Lahiri's mean sidereal zodiac, the fixtures' frame.
+    const fn lahiri() -> Zodiac {
+        Zodiac {
+            ayanamsha: Some(AyanamshaChoice::Catalogued {
+                id: Ayanamsha::Lahiri,
+            }),
+            basis: Basis::Mean,
+            precession: PrecessionModel::Iau2006,
+            delta_t: DeltaTModel::TableThenModel,
+        }
+    }
+
+    /// Month after month, a name either follows the last in order or
+    /// repeats it: the adhika month holds no sankranti and takes its
+    /// follower's name.
+    #[test]
+    fn a_month_is_named_by_the_sun_at_its_opening_new_moon() {
+        let provider = TestProvider::new();
+        let completion = Completion::new(
+            &provider,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
+        let longitudes = completion.longitudes(Frame {
+            zodiac: FrameZodiac::Tropical,
+            ..Frame::CANONICAL
+        });
+        let order = |masa: Masa| Masa::ALL.iter().position(|m| *m == masa).unwrap();
+        let mut from = 2_460_000.5;
+        let mut last: Option<usize> = None;
+        let mut repeats = 0;
+        for _ in 0..40 {
+            let window = Interval::literal(from, from + 1.0);
+            let named = order(amanta_month(&longitudes, window, lahiri()).unwrap());
+            if let Some(last) = last {
+                if named == last {
+                    repeats += 1;
+                } else {
+                    assert_eq!(named, (last + 1) % 12, "from {from}");
+                }
+            }
+            last = Some(named);
+            from = lunar_month_span(&longitudes, window, lahiri())
+                .unwrap()
+                .to
+                .get()
+                + 1.0;
+        }
+        // Forty lunations hold an adhika month at least once.
+        assert!(repeats >= 1);
+    }
 
     /// A lunar month found by its age is the one the wide searches find,
     /// to the bit: every window of two years, a day and a third apart so
@@ -1545,14 +1597,7 @@ mod tests {
             zodiac: FrameZodiac::Tropical,
             ..Frame::CANONICAL
         });
-        let zodiac = Zodiac {
-            ayanamsha: Some(AyanamshaChoice::Catalogued {
-                id: Ayanamsha::Lahiri,
-            }),
-            basis: Basis::Mean,
-            precession: PrecessionModel::Iau2006,
-            delta_t: DeltaTModel::TableThenModel,
-        };
+        let zodiac = lahiri();
         let source = Sidereal::over(&longitudes, zodiac);
         let search = Search::new(&source, Quantity::ELONGATION, Lattice::single(0.0));
         let at = JulianDay::<Ut1>::literal;
