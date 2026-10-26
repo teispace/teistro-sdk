@@ -78,9 +78,9 @@ matter is the rules' to say.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every window of the baseline's search reads the same sky a moment inside either end | **holds** | 0 of 2086 disagree |
-| every clause of the baseline's search's windows covers its window whole | **holds** | 0 of 10358 disagree |
+| every clause of the baseline's search's windows covers its window whole | **holds** | 0 of 10456 disagree |
 | every window of Raman's search reads the same sky a moment inside either end | **holds** | 0 of 13368 disagree |
-| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 121525 disagree |
+| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 123922 disagree |
 
 ## 4. Where the engine's sampling parts from the SDK
 
@@ -123,12 +123,12 @@ context's cache, over Raman's search:
 
 | asked | provider calls |
 |---|---:|
-| the search alone | 116 076 |
+| the search alone | 116 086 |
 | the almanac alone | 315 |
-| the two apart | 116 391 |
-| the two together | 110 751 |
+| the two apart | 116 401 |
+| the two together | 110 765 |
 
-Together they are spared 5640 calls, 4.8% of the two apart: the
+Together they are spared 5636 calls, 4.8% of the two apart: the
 almanac beside the search adds 0.0% to the search's own.
 
 | proposed rule | verdict | measured |

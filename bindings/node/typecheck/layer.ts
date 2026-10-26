@@ -2501,6 +2501,8 @@ function theMuhurta(almanac: Almanac): string {
           return clause.nakshatra;
         case 'GHATA':
           return clause.row;
+        case 'ASHUBHA_YOGA':
+          return clause.yoga;
         default:
           return clause.clause;
       }

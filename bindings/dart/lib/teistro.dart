@@ -14226,6 +14226,26 @@ final class GhataClause extends MuhurtaClauseKind {
   Map<String, Object?> get _json => {'clause': clause, 'row': row};
 }
 
+/// An inauspicious yoga of the day's vara with a tithi or nakshatra:
+/// dagdha, visha, hutashana or yamaghanta (Muhurta Chintamani,
+/// Shubhashubha-prakarana vv. 8-9, C760). Against the time; no shipped
+/// rite bars it.
+final class AshubhaYogaClause extends MuhurtaClauseKind {
+  const AshubhaYogaClause({required this.yoga});
+
+  /// Which.
+  final AshubhaYoga yoga;
+
+  @override
+  String get clause => 'ASHUBHA_YOGA';
+
+  @override
+  List<Object?> get _fields => [yoga];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause, 'yoga': yoga.fullKey};
+}
+
 /// A clause kind from its tagged JSON: a switch over every tag, so a tag
 /// this build does not know is refused by name rather than guessed.
 MuhurtaClauseKind _clauseKind(
@@ -14328,6 +14348,9 @@ MuhurtaClauseKind _clauseKind(
     nakshatra: _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
   ),
   'GHATA' => GhataClause(row: raw['row']! as String),
+  'ASHUBHA_YOGA' => AshubhaYogaClause(
+    yoga: _key(raw['yoga'], AshubhaYoga.byKey, AshubhaYoga.unknown),
+  ),
   final tag =>
     throw StateError(
       'the library drew a clause this build does not know: $tag',
