@@ -101,13 +101,7 @@ const REQUESTS: [(&str, &str); 14] = [
 /// take of the baseline's time and why (§8): a request past its bound
 /// fails, and so does one listed here that is no longer slower, so the
 /// list cannot outlive what it explains.
-const SLOWER: [(&str, f64, &str); 1] = [(
-    "yogas",
-    2.5,
-    "the shipped Nabhasa set bundles about 2 500 of the SDK's 3 130 classical rules and cannot \
-     be asked for in part, so the SDK evaluates about five times the baseline's 650 or so; its \
-     cost a rule is the lower of the two",
-)];
+const SLOWER: [(&str, f64, &str); 0] = [];
 
 /// The requests driven under load and for their tail: the runner's
 /// `LOAD_REQUESTS`.

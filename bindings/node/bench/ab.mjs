@@ -544,7 +544,7 @@ export function accuracy({ timed, same, baseline, reopen }, kept, all, requests 
       ...agreements.same.lines({ kind: 'agree', convention: 'same' }),
       ...unanswered,
       ...swissRung(whos, facts, byId),
-      ...pyjhoraRung(whos, facts),
+      ...pyjhoraRung(whos, facts, byId),
       ...committeeRung(whos),
       ...ramanRung(whos),
       ...charakRung(whos),

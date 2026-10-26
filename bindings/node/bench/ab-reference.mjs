@@ -179,13 +179,22 @@ const PYJHORA_YEAR = 'GREGORIAN_YEAR';
 const JULIAN_YEAR = 365.25;
 
 /**
+ * How PyJHora casts: the Swiss Ephemeris's sidereal longitude, the true
+ * ayanamsha taken from the nutated one, where the SDK's root takes the
+ * mean. The two Moons stand apart by the nutation in longitude, up to
+ * 17″, which moves a twenty-year mahadasha's end by up to three days.
+ */
+export const PYJHORA = { reading: { frame: { ayanamsha_basis: 'TRUE' } } };
+
+/**
  * Each side's Vimshottari against PyJHora's (rank 3), its Gregorian-year
  * periods rescaled about the birth to the 365.25-day year both sides
  * count: every mahadasha's lord, and every start after the birth's
  * mahadasha, whose antardashas the tool lists from before the birth and
- * the sides from it.
+ * the sides from it; and the SDK once more on its default profile told
+ * PyJHora's reading, so that what then differs is the sky.
  */
-export function pyjhoraRung(whos, kept) {
+export function pyjhoraRung(whos, kept, byId) {
   const dir = join(root, 'fixtures/pyjhora/vimshottari/charts');
   const recorded = new Map();
   for (const name of readdirSync(dir).filter((n) => n.endsWith('.json'))) {
@@ -212,6 +221,15 @@ export function pyjhoraRung(whos, kept) {
         if (recorded.has(id)) rows.push({ who, request, id, facts, reference: recorded.get(id) });
       }
     }
+  }
+  const timed = whos.find((who) => who.side === 'sdk' && who.convention === 'timed');
+  const source = { side: 'sdk', convention: 'source' };
+  const side = timed.reopened(PYJHORA.reading);
+  for (const [id, reference] of recorded) {
+    const input = byId.get(id);
+    if (input === undefined) continue;
+    const facts = side.facts('dashas', side.dashas(input), input).filter(([key]) => wanted('dashas', key));
+    rows.push({ who: source, request: 'dashas', id, facts: new Map(facts), reference });
   }
   return compare('pyjhora', rows);
 }
