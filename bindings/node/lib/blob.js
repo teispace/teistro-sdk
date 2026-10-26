@@ -1742,6 +1742,10 @@ export function decodeCharts(bytes) {
       groomVenusInHouses: column(blob, at, 12, 'u8', at.count),
       groomDosha: column(blob, at, 13, 'u8', at.count),
       both: column(blob, at, 14, 'u8', at.count),
+      brideHeld: column(blob, at, 15, 'u8', at.count),
+      brideLifted: column(blob, at, 16, 'u8', at.count),
+      groomHeld: column(blob, at, 17, 'u8', at.count),
+      groomLifted: column(blob, at, 18, 'u8', at.count),
       length: at.count,
     };
   }

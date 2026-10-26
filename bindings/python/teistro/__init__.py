@@ -646,6 +646,8 @@ __all__ = [
     "KujaRules",
     "KujaReading",
     "KujaSide",
+    "KujaLifts",
+    "KujaLiftRules",
     "Kuja",
     "MarriageDosha",
     "MidpointRow",
@@ -5971,13 +5973,29 @@ class PoruthamRules(TypedDict, total=False):
 # The readings the Kuja dosha is computed under, each the verse's own when
 # absent (`03-design/matching.md`): `houses`, *Manasagari*'s five,
 # `"MANASAGARI"`, or `"WITH_SECOND"` (C285); and `from`, `"LAGNA"` or
-# `"LAGNA_MOON_VENUS"` (C286). Declared by call since `from` is a keyword:
+# `"LAGNA_MOON_VENUS"` (C286); and `lifts`, the lifts that lift it, none
+# when absent (C288, C755). Declared by call since `from` is a keyword:
 # `everywhere: KujaRules = {"from": "LAGNA_MOON_VENUS"}`.
+class KujaLiftRules(TypedDict, total=False):
+    """The Kuja lifts a match counts, each false when absent: BPHS ch. 80
+    v. 47's `benefic` and vv. 48–49's `mutual` (rank 1), and the five the
+    almanacs printed in Nepal give (rank 4)."""
+
+    benefic: bool
+    mutual: bool
+    saturn: bool
+    moonVenusSecond: bool
+    jupiterAspect: bool
+    rahuKendra: bool
+    withRahu: bool
+
+
 KujaRules = TypedDict(
     "KujaRules",
     {
         "houses": Literal["MANASAGARI", "WITH_SECOND"],
         "from": Literal["LAGNA", "LAGNA_MOON_VENUS"],
+        "lifts": KujaLiftRules,
     },
     total=False,
 )
@@ -6327,6 +6345,37 @@ class KujaReading:
 
 
 @dataclass(frozen=True)
+class KujaLifts:
+    """The lifts of the Kuja dosha that hold on one side, each a clause
+    (C288, C755): BPHS ch. 80 v. 47's benefic aspect or conjunction and
+    vv. 48–49's dosha in both charts, then the five the almanacs printed
+    in Nepal give, from the lagna."""
+
+    benefic: bool
+    """A benefic aspects Mars or stands with it."""
+    mutual: bool
+    """The other chart carries the dosha too."""
+    saturn: bool
+    """Saturn in the 1st, 4th, 7th, 9th or 12th."""
+    moon_venus_second: bool
+    """The Moon and Venus both in the 2nd."""
+    jupiter_aspect: bool
+    """Jupiter aspects Mars."""
+    rahu_kendra: bool
+    """Rahu in a kendra."""
+    with_rahu: bool
+    """Mars with Rahu."""
+
+    @staticmethod
+    def of_bits(bits: int) -> Optional["KujaLifts"]:
+        """A side's lifts from the boundary's bit set, or `None` where bit
+        7 says none were read."""
+        if bits & 0x80 == 0:
+            return None
+        return KujaLifts(*(bits >> n & 1 == 1 for n in range(7)))
+
+
+@dataclass(frozen=True)
 class KujaSide:
     """One native's Kuja dosha."""
 
@@ -6338,11 +6387,18 @@ class KujaSide:
     """Whether Mars stands in one of the rules' houses from a reference the
     rules count."""
 
+    held: Optional[KujaLifts]
+    """Every lift that holds, whatever the rules count; `None` where the
+    chart gave no sky to read them in."""
+
+    lifted: bool
+    """Whether the side carries the dosha and a lift the rules count holds."""
+
 
 @dataclass(frozen=True)
 class Kuja:
     """The Kuja dosha of a bride and a groom (*Manasagari*, jāyābhāva
-    v. 4), as clauses: nothing is lifted (C288)."""
+    v. 4), as clauses, with each side's lifts (C288, C755)."""
 
     bride: KujaSide
     groom: KujaSide
@@ -18300,6 +18356,8 @@ class ChartBatch:
                     for reference in references
                 ),
                 dosha=getattr(k, f"{who}_dosha")[at] == 1,
+                held=KujaLifts.of_bits(getattr(k, f"{who}_held")[at]),
+                lifted=getattr(k, f"{who}_lifted")[at] == 1,
             )
 
         return [Kuja(side("bride", at), side("groom", at), k.both[at] == 1) for at in range(len(k.both))]

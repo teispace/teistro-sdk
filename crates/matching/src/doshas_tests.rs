@@ -20,6 +20,7 @@ fn mars_in(sign: Rashi) -> KujaNative {
         moon: Rashi::Aries,
         venus: Rashi::Aries,
         mars: sign,
+        sky: None,
     }
 }
 

@@ -80,6 +80,7 @@ import type {
   NameSyllable,
   KootaReading,
   Kuja,
+  KujaLifts,
   KujaReading,
   MarriageDosha,
   Porutham,
@@ -2016,7 +2017,7 @@ function theMatching(ctx: Context): string {
     partnerRole: 'BRIDE',
     rules: { nadiDosha: 'MIDDLE_ONLY' },
     porutham: { deerghaBeyond: 'SEVENTH' },
-    kuja: { houses: 'WITH_SECOND', from: 'LAGNA_MOON_VENUS' },
+    kuja: { houses: 'WITH_SECOND', from: 'LAGNA_MOON_VENUS', lifts: { benefic: true, mutual: true } },
   };
   const chart = ctx.chart.found({
     instant: 2451545.0,
@@ -2041,11 +2042,15 @@ function theMatching(ctx: Context): string {
   const misplaced: MatchingRequest = { ...asked, kuja: { from: 'SUN' } };
   const mars: Kuja | null = chart.kuja;
   const fromLagna: KujaReading | undefined = mars?.bride.readings[0];
+  // @ts-expect-error a lift is one the type names
+  const unlifted: MatchingRequest = { ...asked, kuja: { lifts: { jupiter: true } } };
+  const held: KujaLifts | null | undefined = mars?.bride.held;
   const first: MarriageDosha | undefined = chart.marriageDoshas?.[0];
   return [
     `${first?.system ?? ''} ${first?.koota ?? 'NONE'} ${first?.side ?? 'NONE'} ${first?.lifted ?? false}`,
     `${fromLagna?.from ?? ''} ${fromLagna?.house ?? 0} ${fromLagna?.inHouses ?? false}`,
     mars?.groom.dosha ?? false,
+    `${held?.jupiterAspect ?? 'unread'} ${mars?.bride.lifted ?? false} ${String(unlifted)}`,
     mars?.both ?? false,
     String(misplaced),
     ten?.agreeing ?? 0,

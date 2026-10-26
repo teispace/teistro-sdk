@@ -2291,7 +2291,11 @@ void main() {
         for (final r in side.readings)
           '${r.from.key} ${r.house} ${flag(r.inHouses)}',
       ];
-      put('chart-$i-kuja-$who', '${readings.join(' ')} ${flag(side.dosha)}');
+      final held = side.held?.clauses.map(flag).join() ?? 'none';
+      put(
+        'chart-$i-kuja-$who',
+        '${readings.join(' ')} ${flag(side.dosha)} $held ${flag(side.lifted)}',
+      );
     }
     put('chart-$i-kuja', '${flag(mars.both)}');
     final doshas = chart.marriageDoshas!;

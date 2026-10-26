@@ -3686,7 +3686,7 @@ class ChartsKujas:
     """The `kujas` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+    Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do; then each side's lifts that hold and whether one the rules count lifts it (BPHS ch. 80 vv. 47–49, C288, C755). Empty when `matching_json` asked for none.
     """
 
     bride_lagna_house: memoryview[int]
@@ -3732,7 +3732,19 @@ class ChartsKujas:
     """1 when the groom's Mars stands in one of the rules' houses from a reference the rules count (C286)."""
 
     both: memoryview[int]
-    """1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288)."""
+    """1 when both carry the dosha, the fact BPHS ch. 80 vv. 48–49's mutual lift reads (C288)."""
+
+    bride_held: memoryview[int]
+    """The lifts that hold on the bride's side, as a bit set in `KujaLifts`'s order: bit 0 benefic, 1 mutual, 2 saturn, 3 moonVenusSecond, 4 jupiterAspect, 5 rahuKendra, 6 withRahu; bit 7 set when the lifts were read, clear (and the byte 0) when the chart gave no sky to read them in."""
+
+    bride_lifted: memoryview[int]
+    """1 when the bride's side carries the dosha and a lift the rules count holds (C755)."""
+
+    groom_held: memoryview[int]
+    """The lifts that hold on the groom's side, as a bit set in `KujaLifts`'s order: bit 0 benefic, 1 mutual, 2 saturn, 3 moonVenusSecond, 4 jupiterAspect, 5 rahuKendra, 6 withRahu; bit 7 set when the lifts were read, clear (and the byte 0) when the chart gave no sky to read them in."""
+
+    groom_lifted: memoryview[int]
+    """1 when the groom's side carries the dosha and a lift the rules count holds (C755)."""
 
     length: int
     """The number of rows every column holds."""
@@ -4796,7 +4808,7 @@ class Charts:
     """Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none."""
 
     kujas: ChartsKujas
-    """Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none."""
+    """Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do; then each side's lifts that hold and whether one the rules count lifts it (BPHS ch. 80 vv. 47–49, C288, C755). Empty when `matching_json` asked for none."""
 
     marriage_doshas: ChartsMarriageDoshas
     """How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). Empty when `matching_json` asked for none."""
@@ -7567,6 +7579,14 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("B"),
             groom_dosha=blob.column(at_kujas, 13, 1, at_kujas.count).cast("B"),
             both=blob.column(at_kujas, 14, 1, at_kujas.count).cast("B"),
+            bride_held=blob.column(at_kujas, 15, 1, at_kujas.count).cast("B"),
+            bride_lifted=blob.column(
+                at_kujas, 16, 1, at_kujas.count
+            ).cast("B"),
+            groom_held=blob.column(at_kujas, 17, 1, at_kujas.count).cast("B"),
+            groom_lifted=blob.column(
+                at_kujas, 18, 1, at_kujas.count
+            ).cast("B"),
             length=at_kujas.count,
         ),
         marriage_doshas=ChartsMarriageDoshas(

@@ -6,8 +6,9 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 use teistro_matching::{
-    AshtaKoota, Avakahada, KootaRules, Kuja, KujaNative, KujaRules, MarriageDosha, MatchRole,
-    Native, Porutham, PoruthamRules, ashta_koota, avakahada, kuja, marriage_doshas, porutham,
+    AshtaKoota, Avakahada, KootaRules, Kuja, KujaNative, KujaRules, KujaSky, MarriageDosha,
+    MatchRole, Native, Porutham, PoruthamRules, ashta_koota, avakahada, kuja, marriage_doshas,
+    porutham,
 };
 use teistro_serial::Document;
 
@@ -314,15 +315,27 @@ fn native(chart: &Document, role: &str) -> Result<Native, Error> {
     Native::of_moon(moon).map_err(|error| error.with_field(role))
 }
 
-/// A chart's lagna, Moon, Venus and Mars as the Kuja dosha reads them.
+/// A chart's lagna, Moon, Venus and Mars as the Kuja dosha reads them,
+/// with the other grahas its lifts read.
 fn kuja_native(chart: &Document, role: &str) -> Result<KujaNative, Error> {
     let foundation = sidereal(chart, role)?;
+    let at = |graha| longitude(foundation, graha, role);
+    let moon = at(Graha::Moon)?;
+    let sky = KujaSky::of_longitudes(
+        at(Graha::Sun)?,
+        moon,
+        at(Graha::Mercury)?,
+        at(Graha::Jupiter)?,
+        at(Graha::Saturn)?,
+        at(Graha::Rahu)?,
+    );
     KujaNative::of_longitudes(
         foundation.lagna_deg,
-        longitude(foundation, Graha::Moon, role)?,
-        longitude(foundation, Graha::Venus, role)?,
-        longitude(foundation, Graha::Mars, role)?,
+        moon,
+        at(Graha::Venus)?,
+        at(Graha::Mars)?,
     )
+    .and_then(|native| sky.map(|sky| native.with_sky(sky)))
     .map_err(|error| error.with_field(role))
 }
 

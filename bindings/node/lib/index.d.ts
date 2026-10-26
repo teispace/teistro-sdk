@@ -1961,6 +1961,30 @@ export interface KujaRules {
   readonly houses?: 'MANASAGARI' | 'WITH_SECOND';
   /** From where they are counted: `'LAGNA'` (the default) or `'LAGNA_MOON_VENUS'` (C286). */
   readonly from?: 'LAGNA' | 'LAGNA_MOON_VENUS';
+  /** The lifts that lift it; none by default, as the verse has none (C288, C755). */
+  readonly lifts?: Partial<KujaLifts>;
+}
+
+/**
+ * The lifts of the Kuja dosha, each a clause: BPHS ch. 80 v. 47's benefic
+ * aspect or conjunction and vv. 48–49's dosha in both charts (rank 1), and
+ * the five the almanacs printed in Nepal give from the lagna (rank 4).
+ */
+export interface KujaLifts {
+  /** A benefic aspects Mars or stands with it. */
+  readonly benefic: boolean;
+  /** The other chart carries the dosha too. */
+  readonly mutual: boolean;
+  /** Saturn in the 1st, 4th, 7th, 9th or 12th. */
+  readonly saturn: boolean;
+  /** The Moon and Venus both in the 2nd. */
+  readonly moonVenusSecond: boolean;
+  /** Jupiter aspects Mars. */
+  readonly jupiterAspect: boolean;
+  /** Rahu in a kendra. */
+  readonly rahuKendra: boolean;
+  /** Mars with Rahu. */
+  readonly withRahu: boolean;
 }
 
 /** The readings the ten considerations are computed under; each default is the chapter's own. */
@@ -2320,9 +2344,13 @@ export interface KujaSide {
   readonly readings: readonly KujaReading[];
   /** Whether Mars stands in one of the rules' houses from a reference the rules count. */
   readonly dosha: boolean;
+  /** Every lift that holds, whatever the rules count; `null` where the chart gave no sky to read them in. */
+  readonly held: KujaLifts | null;
+  /** Whether the side carries the dosha and a lift the rules count holds. */
+  readonly lifted: boolean;
 }
 
-/** The Kuja dosha of a bride and a groom (*Manasagari*, jāyābhāva v. 4), as clauses: nothing is lifted (C288). */
+/** The Kuja dosha of a bride and a groom (*Manasagari*, jāyābhāva v. 4), as clauses, with each side's lifts (C288, C755). */
 export interface Kuja {
   readonly bride: KujaSide;
   readonly groom: KujaSide;

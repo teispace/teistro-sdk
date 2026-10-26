@@ -218,14 +218,36 @@ reported for both natives whatever the rules, as fact. The lagna alone
 makes the dosha by default, as the verse counts; all three is a knob
 (`KujaFrom`, C286).
 
-**No lift.** No verse read lifts the dosha. Each side reports whether
-it carries the dosha and the match whether both do, as clauses; the
-popular cancellation by both charts carrying it is the consumer's to
-apply to those facts (C288).
+**The lifts, as clauses** (C288, C755). *Manasagari* lifts nothing, so
+by default nothing is lifted. BPHS ch. 80 v. 47, read in the Sanskrit
+e-text, makes the dosha Mars "without a benefic's aspect or
+conjunction" (*śubha-dṛg-yoga-hīne*), and vv. 48–49 cancel it when both
+charts carry it: the two rank-1 lifts, `KujaLifts::PARASHARA`. The
+almanacs printed in Nepal add five from verses they do not attribute
+(*jāmitre ca yadā sauriḥ…*; *na maṅgalī candrabhṛgū dvitīye…*):
+Saturn in the 1st, 4th, 7th, 9th or 12th; the Moon and Venus in the
+2nd; Jupiter's aspect on Mars; Rahu in a kendra; Mars with Rahu, each
+from the lagna, `KujaLifts::PRINTED_IN_NEPAL` at rank 4. Each side
+reports every lift that holds whatever the rules count (`held`, `None`
+when the native was given without the other grahas), and `lifted` when
+it carries the dosha and a lift the rules count holds; the marriage
+dosha list's Kuja entries carry that `lifted`. A consumer that grades
+the dosha (full where nothing lifts it, partial where some clauses hold)
+reads the count of `held` against its own threshold, as no text grades
+it.
+
+**What a lift reads** (C755). A benefic is Jupiter, Venus, Mercury
+unless a malefic (the Sun, Mars, Saturn, Rahu or Ketu) stands in its
+sign, and the Moon while less than 180° ahead of the Sun (BPHS ch. 3).
+Aspects are the grahas' full aspects counted by sign: the 7th for each,
+Jupiter's 5th and 9th besides, and a benefic in Mars's own sign is the
+verse's *yoga*. A native carries the Sun's, Mercury's, Jupiter's,
+Saturn's and Rahu's signs beside the four the dosha reads
+(`KujaNative::with_sky`), which a founded chart always gives.
 
 **What it reads.** The lagna's, the Moon's, Venus's and Mars's signs
 of each founded chart, so a chart without the lagna is refused by the
-role it stands in.
+role it stands in, and the five signs the lifts read.
 
 ## The marriage doshas, decided
 

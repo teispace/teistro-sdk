@@ -1344,7 +1344,8 @@ for (const chart of charts) {
   const mars = chart.kuja;
   for (const [who, side] of [['bride', mars.bride], ['groom', mars.groom]]) {
     const readings = side.readings.map((r) => `${r.from} ${r.house} ${flag(r.inHouses)}`);
-    put(`chart-${i}-kuja-${who}`, `${readings.join(' ')} ${flag(side.dosha)}`);
+    const held = side.held === null ? 'none' : Object.values(side.held).map(flag).join('');
+    put(`chart-${i}-kuja-${who}`, `${readings.join(' ')} ${flag(side.dosha)} ${held} ${flag(side.lifted)}`);
   }
   put(`chart-${i}-kuja`, flag(mars.both));
   const doshas = chart.marriageDoshas;

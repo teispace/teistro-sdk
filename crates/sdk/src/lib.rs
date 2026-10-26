@@ -498,9 +498,9 @@ pub use partner::Partner;
 pub use teistro_matching as matching;
 #[cfg(feature = "chart")]
 pub use teistro_matching::{
-    AshtaKoota, Avakahada, BirthSyllable, KootaReading, KootaRow, KootaRules, Kuja, KujaRules,
-    MarriageDosha, MatchRole, NaamMilan, NaamRules, NameRules, NameSyllable, Native, Porutham,
-    PoruthamReading, PoruthamRow, PoruthamRules, avakahada, birth_syllable, naam_milan,
+    AshtaKoota, Avakahada, BirthSyllable, KootaReading, KootaRow, KootaRules, Kuja, KujaLifts,
+    KujaRules, MarriageDosha, MatchRole, NaamMilan, NaamRules, NameRules, NameSyllable, Native,
+    Porutham, PoruthamReading, PoruthamRow, PoruthamRules, avakahada, birth_syllable, naam_milan,
     name_syllable,
 };
 // Numerology: a name and a civil date under Balliett's cycle and Cheiro's

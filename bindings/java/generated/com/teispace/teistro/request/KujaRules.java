@@ -13,15 +13,16 @@ import java.util.Objects;
  *
  * @param from From where they are counted. Null leaves the SDK's default.
  * @param houses Which houses make the dosha. Null leaves the SDK's default.
+ * @param lifts The lifts that lift it; none by default, as the verse has none. Null leaves the SDK's default.
  */
-public record KujaRules(KujaFrom from, KujaHouses houses) implements RequestJson {
+public record KujaRules(KujaFrom from, KujaHouses houses, KujaLifts lifts) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
      */
     public KujaRules() {
-        this(null, null);
+        this(null, null, null);
     }
 
     /**
@@ -38,6 +39,7 @@ public record KujaRules(KujaFrom from, KujaHouses houses) implements RequestJson
     public static final class Builder {
         private KujaFrom from;
         private KujaHouses houses;
+        private KujaLifts lifts;
 
         private Builder() {}
 
@@ -64,13 +66,24 @@ public record KujaRules(KujaFrom from, KujaHouses houses) implements RequestJson
         }
 
         /**
+         * Sets {@code lifts}.
+         *
+         * @param lifts The lifts that lift it; none by default, as the verse has none. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder lifts(KujaLifts lifts) {
+            this.lifts = lifts;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public KujaRules build() {
-            return new KujaRules(from, houses);
+            return new KujaRules(from, houses, lifts);
         }
     }
 
@@ -85,7 +98,8 @@ public record KujaRules(KujaFrom from, KujaHouses houses) implements RequestJson
         Map<String, Object> json = Read.object(raw, "KujaRules");
         return new KujaRules(
             Read.orNull(json.get("from"), present -> Read.member(present, "KujaRules.from", KujaFrom::byKey)),
-            Read.orNull(json.get("houses"), present -> Read.member(present, "KujaRules.houses", KujaHouses::byKey)));
+            Read.orNull(json.get("houses"), present -> Read.member(present, "KujaRules.houses", KujaHouses::byKey)),
+            Read.orNull(json.get("lifts"), present -> KujaLifts.of(present)));
     }
 
     @Override
@@ -96,6 +110,9 @@ public record KujaRules(KujaFrom from, KujaHouses houses) implements RequestJson
         }
         if (houses != null) {
             json.put("houses", houses.toJson());
+        }
+        if (lifts != null) {
+            json.put("lifts", lifts.toJson());
         }
         return json;
     }

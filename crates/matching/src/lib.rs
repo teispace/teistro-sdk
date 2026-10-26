@@ -38,8 +38,8 @@ pub use ashta::{
 pub use avakahada::{Avakahada, avakahada};
 pub use doshas::{DoshaSystem, MarriageDosha, marriage_doshas};
 pub use kuja::{
-    KUJA_REFERENCES, Kuja, KujaFrom, KujaHouses, KujaNative, KujaReading, KujaReference, KujaRules,
-    KujaSide, kuja, kuja_side,
+    KUJA_REFERENCES, Kuja, KujaFrom, KujaHouses, KujaLifts, KujaNative, KujaReading, KujaReference,
+    KujaRules, KujaSide, KujaSky, kuja, kuja_side,
 };
 pub use name::{
     AbhijitPada, BirthSyllable, LatinName, NaamMilan, NaamRules, NameCheck, NameRules,

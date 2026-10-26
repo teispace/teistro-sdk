@@ -3952,6 +3952,8 @@ struct KujaSideColumns {
     house: [Vec<u8>; 3],
     in_houses: [Vec<u8>; 3],
     dosha: Vec<u8>,
+    held: Vec<u8>,
+    lifted: Vec<u8>,
 }
 
 impl KujaSideColumns {
@@ -3966,6 +3968,9 @@ impl KujaSideColumns {
             in_houses.push(u8::from(reading.in_houses));
         }
         self.dosha.push(u8::from(side.dosha));
+        self.held
+            .push(side.held.map_or(0, |held| 0x80 | held.bits()));
+        self.lifted.push(u8::from(side.lifted));
     }
 
     fn cells(&self) -> impl Iterator<Item = ColumnData<'_>> {
@@ -3998,11 +4003,18 @@ impl KujaColumns {
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let lifts = [
+            &self.bride.held,
+            &self.bride.lifted,
+            &self.groom.held,
+            &self.groom.lifted,
+        ];
         let cells: Vec<ColumnData<'_>> = self
             .bride
             .cells()
             .chain(self.groom.cells())
             .chain(std::iter::once(ColumnData::U8(&self.both)))
+            .chain(lifts.into_iter().map(|cells| ColumnData::U8(cells)))
             .collect();
         writer.columns("kujas", self.both.len(), &cells)
     }
