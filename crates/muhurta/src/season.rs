@@ -1099,6 +1099,35 @@ mod tests {
     }
 
     #[test]
+    fn a_solar_eclipse_or_a_moon_risen_eclipsed_counts_four_under_each_count() {
+        let risen = SeenEclipse {
+            rose_eclipsed: true,
+            ..eclipse(false, 0.76)
+        };
+        for rule in [EclipseVedha::Dharmasindhu, EclipseVedha::FullLunarFour] {
+            assert_eq!(vedha_praharas(&eclipse(true, 0.30), rule), 4);
+            assert_eq!(vedha_praharas(&risen, rule), 4);
+        }
+        // Fixed hours tell the Sun from the Moon and nothing else.
+        assert_eq!(vedha_praharas(&risen, EclipseVedha::FixedHours), 3);
+    }
+
+    #[test]
+    fn fixed_hours_count_back_from_the_first_moment_seen() {
+        let rule = EclipseVedha::FixedHours;
+        // Twelve hours before a solar eclipse, nine before a lunar one,
+        // whichever prahara holds it.
+        assert_eq!(opens(&eclipse(true, 0.30), rule), 0.30 - 0.5);
+        assert_eq!(opens(&eclipse(false, 0.80), rule), 0.80 - 0.375);
+        let set = SeenEclipse {
+            set_eclipsed: true,
+            ..eclipse(false, 0.80)
+        };
+        let held = eclipse_vedha(&set, &turns(), 1.8, rule).unwrap();
+        assert_eq!(held.at.to.get(), 1.8);
+    }
+
+    #[test]
     fn the_vedha_closes_as_seen_or_at_the_next_rising() {
         let seen = eclipse(false, 0.80);
         let closed = eclipse_vedha(&seen, &turns(), 9.0, EclipseVedha::Dharmasindhu).unwrap();
