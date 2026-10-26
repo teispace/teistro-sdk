@@ -392,17 +392,35 @@ unsafe fn slice_or_empty<'a, T>(ptr: *const T, len: usize) -> &'a [T] {
 ";
 
 /// The blob reader, in the backend's bytes.
+///
+/// napi copies the bytes into a buffer the JavaScript heap owns. A
+/// `Buffer` made from a `Vec` is *external*: its bytes are freed by a
+/// finaliser Node runs on a later turn of the event loop, so a caller
+/// asking for ten thousand charts in one synchronous loop held every
+/// chart's bytes until it yielded, 45 KB a chart, 600 MB at the end, with
+/// a heap of 67 MB. A copy the heap owns is collected with the object.
 fn render_blob_helper(out: &mut String, b: Backend) {
-    let _ = writeln!(
-        out,
-        "/// The bytes of a blob the library filled, copied into a {} and the\n/// blob freed, so nothing of the library's outlives the call.\nfn take_blob(blob: &mut ffi::blob::TsBlob) -> {} {{\n    // SAFETY: the library wrote `len` bytes at `data`, or left it null.\n    let bytes = unsafe {{ slice_or_empty(blob.data.cast_const(), blob.len) }}.to_vec();\n    // SAFETY: a descriptor this call passed to the library, freed once.\n    unsafe {{ ffi::blob::ts_blob_free(&raw mut *blob) }};\n    {}\n}}",
-        match b {
-            Backend::Napi => "Buffer",
-            Backend::WasmBindgen => "byte array",
-        },
-        b.bytes(),
-        b.bytes_from("bytes")
-    );
+    match b {
+        Backend::Napi => out.push_str(
+            "/// The bytes of a blob the library filled, copied into a Buffer the\n\
+             /// JavaScript heap owns and the blob freed, so nothing of the library's\n\
+             /// outlives the call and the garbage collector counts the bytes.\n\
+             fn take_blob(env: &Env, blob: &mut ffi::blob::TsBlob) -> Result<Buffer> {\n    \
+             // SAFETY: the library wrote `len` bytes at `data`, or left it null.\n    \
+             let copied = BufferSlice::copy_from(env, unsafe { slice_or_empty(blob.data.cast_const(), blob.len) });\n    \
+             // SAFETY: a descriptor this call passed to the library, freed once.\n    \
+             unsafe { ffi::blob::ts_blob_free(&raw mut *blob) };\n    \
+             copied?.into_buffer(env)\n}\n",
+        ),
+        Backend::WasmBindgen => {
+            let _ = writeln!(
+                out,
+                "/// The bytes of a blob the library filled, copied into a byte array and the\n/// blob freed, so nothing of the library's outlives the call.\nfn take_blob(blob: &mut ffi::blob::TsBlob) -> {} {{\n    // SAFETY: the library wrote `len` bytes at `data`, or left it null.\n    let bytes = unsafe {{ slice_or_empty(blob.data.cast_const(), blob.len) }}.to_vec();\n    // SAFETY: a descriptor this call passed to the library, freed once.\n    unsafe {{ ffi::blob::ts_blob_free(&raw mut *blob) }};\n    {}\n}}",
+                b.bytes(),
+                b.bytes_from("bytes")
+            );
+        }
+    }
 }
 
 const STRING_HELPER: &str = r"
@@ -633,7 +651,7 @@ impl Handed<'_> {
         }
     }
 
-    fn expression(&self, api: &Api) -> String {
+    fn expression(&self, api: &Api, b: Backend) -> String {
         match self {
             Handed::Returned(_) => String::from("value as _"),
             // SAFETY of the read is argued at the call site's block.
@@ -644,7 +662,10 @@ impl Handed<'_> {
                 ),
                 snake(&p.name)
             ),
-            Handed::Blob(p) => format!("take_blob(&mut {})", snake(&p.name)),
+            Handed::Blob(p) => match b {
+                Backend::Napi => format!("take_blob(&env, &mut {})?", snake(&p.name)),
+                Backend::WasmBindgen => format!("take_blob(&mut {})", snake(&p.name)),
+            },
             Handed::Owned(p) => format!("take_string(&mut {})", snake(&p.name)),
             // SAFETY of the read is argued at the call site's block.
             Handed::Lent(p) => format!(
@@ -1358,12 +1379,21 @@ fn call_outputs(api: &Api, f: &FunctionDef, b: Backend) -> (String, String) {
             String::from("()")
         }
         (false, Some(one @ Handed::Struct(_))) => {
-            let (returns, value) = b.returned_object(&one.js_type(api, b), &one.expression(api));
+            let (returns, value) = b.returned_object(&one.js_type(api, b), &one.expression(api, b));
             let _ = writeln!(finish, "        Ok({value})");
             returns
         }
         (false, Some(one)) => {
-            let _ = writeln!(finish, "        Ok({})", one.expression(api));
+            let value = one.expression(api, b);
+            // A value that is already a `Result` is the call's answer.
+            match value.strip_suffix('?') {
+                Some(result) => {
+                    let _ = writeln!(finish, "        {result}");
+                }
+                None => {
+                    let _ = writeln!(finish, "        Ok({value})");
+                }
+            }
             one.js_type(api, b)
         }
         (false, None) => {
@@ -1373,7 +1403,7 @@ fn call_outputs(api: &Api, f: &FunctionDef, b: Backend) -> (String, String) {
             );
             let mut built = format!("{object} {{\n");
             for r in &handed {
-                let _ = writeln!(built, "            {}: {},", r.name(), r.expression(api));
+                let _ = writeln!(built, "            {}: {},", r.name(), r.expression(api, b));
             }
             built.push_str("        }");
             let (returns, value) = b.returned_object(&object, "handed");
@@ -1790,6 +1820,28 @@ mod tests {
         assert_eq!(only_napi, ["newWithProvider"]);
         assert!(only_wasm.is_empty(), "{only_wasm:?}");
         assert!(napi.len() > 40, "{} members read", napi.len());
+    }
+
+    /// Every blob napi hands back is a copy the JavaScript heap owns. An
+    /// external `Buffer` is freed by a finaliser Node defers to the event
+    /// loop, so a synchronous loop of charts held each chart's bytes until
+    /// it yielded: 638 MB peak over 10,200 charts, 190 MB with the copy.
+    #[test]
+    fn a_blob_crosses_napi_as_a_copy_the_heap_owns() {
+        let napi = render(&api(), Backend::Napi);
+        let helper = napi
+            .split("fn take_blob(")
+            .nth(1)
+            .and_then(|rest| rest.split("\n}\n").next())
+            .unwrap();
+        assert!(helper.contains("BufferSlice::copy_from(env"), "{helper}");
+        assert!(!helper.contains("Buffer::from("), "{helper}");
+        let blobs = napi.matches("take_blob(&env, &mut ").count();
+        assert!(blobs >= 5, "{blobs} blob returns read");
+        assert!(
+            !napi.contains("take_blob(&mut "),
+            "a blob taken without the heap"
+        );
     }
 
     /// No native-only symbol reaches the wasm glue, and every one reaches

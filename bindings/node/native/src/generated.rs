@@ -57,14 +57,17 @@ unsafe fn slice_or_empty<'a, T>(ptr: *const T, len: usize) -> &'a [T] {
     }
 }
 
-/// The bytes of a blob the library filled, copied into a Buffer and the
-/// blob freed, so nothing of the library's outlives the call.
-fn take_blob(blob: &mut ffi::blob::TsBlob) -> Buffer {
+/// The bytes of a blob the library filled, copied into a Buffer the
+/// JavaScript heap owns and the blob freed, so nothing of the library's
+/// outlives the call and the garbage collector counts the bytes.
+fn take_blob(env: &Env, blob: &mut ffi::blob::TsBlob) -> Result<Buffer> {
     // SAFETY: the library wrote `len` bytes at `data`, or left it null.
-    let bytes = unsafe { slice_or_empty(blob.data.cast_const(), blob.len) }.to_vec();
+    let copied = BufferSlice::copy_from(env, unsafe {
+        slice_or_empty(blob.data.cast_const(), blob.len)
+    });
     // SAFETY: a descriptor this call passed to the library, freed once.
     unsafe { ffi::blob::ts_blob_free(&raw mut *blob) };
-    Buffer::from(bytes)
+    copied?.into_buffer(env)
 }
 
 /// The text of a string the library allocated, copied and the string freed.
@@ -4161,7 +4164,7 @@ impl Context {
         let status = unsafe { ffi::chart::ts_chart_found(self.handle, request, &raw mut out_blob) };
         self.leave()?;
         self.check(&env, status)?;
-        Ok(take_blob(&mut out_blob))
+        take_blob(&env, &mut out_blob)
     }
 
     /// Resolves a civil date-time in a zone to a UTC instant under the
@@ -4448,7 +4451,7 @@ impl Context {
         };
         self.leave()?;
         self.check(&env, status)?;
-        Ok(take_blob(&mut out_blob))
+        take_blob(&env, &mut out_blob)
     }
 
     /// Positions over a grid of instants and bodies in the requested frame:
@@ -4468,7 +4471,7 @@ impl Context {
             unsafe { ffi::positions::ts_positions(self.handle, request, &raw mut out_blob) };
         self.leave()?;
         self.check(&env, status)?;
-        Ok(take_blob(&mut out_blob))
+        take_blob(&env, &mut out_blob)
     }
 
     /// Founds the almanac of every day in a range at one place and answers
@@ -4500,7 +4503,7 @@ impl Context {
             unsafe { ffi::panchanga::ts_panchanga_days(self.handle, request, &raw mut out_blob) };
         self.leave()?;
         self.check(&env, status)?;
-        Ok(take_blob(&mut out_blob))
+        take_blob(&env, &mut out_blob)
     }
 
     /// Compares this context's reckoning of a range with another's at one
@@ -4804,7 +4807,7 @@ impl Context {
         };
         self.leave()?;
         self.check(&env, status)?;
-        Ok(take_blob(&mut out_blob))
+        take_blob(&env, &mut out_blob)
     }
 
     /// Reads a name and a birth date under numerology's two systems and
