@@ -9,7 +9,8 @@
 use teistro_core::catalogue::Rashi;
 
 use crate::{
-    KUJA_REFERENCES, KujaFrom, KujaHouses, KujaNative, KujaReference, KujaRules, kuja, kuja_side,
+    KUJA_REFERENCES, KujaFrom, KujaHouses, KujaLifts, KujaNative, KujaReference, KujaRules,
+    KujaSky, kuja, kuja_side,
 };
 
 /// A native with every sign given, Mars last.
@@ -19,6 +20,7 @@ fn native(lagna: Rashi, moon: Rashi, venus: Rashi, mars: Rashi) -> KujaNative {
         moon,
         venus,
         mars,
+        sky: None,
     }
 }
 
@@ -124,7 +126,8 @@ fn the_rules_and_the_answer_keep_their_wire_spelling() {
         rules,
         KujaRules {
             houses: KujaHouses::WithSecond,
-            from: KujaFrom::LagnaMoonVenus
+            from: KujaFrom::LagnaMoonVenus,
+            lifts: KujaLifts::NONE,
         }
     );
     assert!(serde_json::from_str::<KujaRules>(r#"{"house":"WITH_SECOND"}"#).is_err());
@@ -133,4 +136,269 @@ fn the_rules_and_the_answer_keep_their_wire_spelling() {
     assert_eq!(read["bride"]["readings"][0]["from"], "LAGNA");
     assert_eq!(read["bride"]["readings"][0]["inHouses"], true);
     assert_eq!(read["both"], true);
+}
+
+/// Signs as longitudes, at a sign's middle.
+fn at(sign: Rashi) -> f64 {
+    f64::from(sign.id()) * 30.0 + 15.0
+}
+
+/// A sky with the Sun in `sun`, a Moon `ahead` signs past it, Mercury,
+/// Jupiter, Saturn and Rahu where given.
+fn sky(
+    sun: Rashi,
+    ahead: u16,
+    mercury: Rashi,
+    jupiter: Rashi,
+    saturn: Rashi,
+    rahu: Rashi,
+) -> KujaSky {
+    let moon = at(sun) + f64::from(ahead) * 30.0;
+    KujaSky::of_longitudes(
+        at(sun),
+        moon,
+        at(mercury),
+        at(jupiter),
+        at(saturn),
+        at(rahu),
+    )
+    .unwrap()
+}
+
+/// Mars in the 7th from an Aries lagna, the Moon in Taurus and Venus in
+/// Gemini, under a sky that lifts nothing: the Sun and Mercury in Pisces,
+/// the Moon waning, Jupiter in Cancer, Saturn in Leo, Rahu in Taurus.
+fn bare() -> (KujaNative, KujaSky) {
+    let native = native(Rashi::Aries, Rashi::Taurus, Rashi::Gemini, Rashi::Libra);
+    (
+        native,
+        sky(
+            Rashi::Pisces,
+            8,
+            Rashi::Pisces,
+            Rashi::Cancer,
+            Rashi::Leo,
+            Rashi::Taurus,
+        ),
+    )
+}
+
+#[test]
+fn a_sky_that_lifts_nothing_holds_no_lift() {
+    let (native, sky) = bare();
+    let side = kuja_side(native.with_sky(sky), KujaRules::default());
+    assert!(side.dosha);
+    assert_eq!(side.held, Some(KujaLifts::NONE));
+    assert!(!side.lifted);
+    // Without a sky nothing is read, which is not the same answer.
+    assert_eq!(kuja_side(native, KujaRules::default()).held, None);
+}
+
+#[test]
+fn each_benefic_lifts_by_its_aspect_or_its_conjunction() {
+    let (native, bare_sky) = bare();
+    let held = |native: KujaNative, sky: KujaSky| {
+        kuja_side(native.with_sky(sky), KujaRules::default())
+            .held
+            .unwrap()
+    };
+    // Jupiter in Aquarius aspects Libra by its 9th: a benefic's aspect
+    // and Jupiter's own clause.
+    let jupiter = held(
+        native,
+        KujaSky {
+            jupiter: Rashi::Aquarius,
+            ..bare_sky
+        },
+    );
+    assert!(jupiter.benefic && jupiter.jupiter_aspect);
+    assert_eq!(jupiter.count(), 2);
+    // Venus with Mars is a benefic's conjunction, and no Jupiter clause.
+    let venus = held(
+        KujaNative {
+            venus: Rashi::Libra,
+            ..native
+        },
+        bare_sky,
+    );
+    assert_eq!(
+        venus,
+        KujaLifts {
+            benefic: true,
+            ..KujaLifts::NONE
+        }
+    );
+    // Mercury opposite Mars aspects it alone, not beside the Sun.
+    let mercury = KujaSky {
+        mercury: Rashi::Aries,
+        ..bare_sky
+    };
+    assert!(held(native, mercury).benefic);
+    assert!(
+        !held(
+            native,
+            KujaSky {
+                sun: Rashi::Aries,
+                ..mercury
+            }
+        )
+        .benefic
+    );
+    // The Moon opposite Mars lifts it only while it waxes.
+    let opposite = KujaNative {
+        moon: Rashi::Aries,
+        ..native
+    };
+    let waning = KujaSky {
+        moon_waxing: false,
+        ..bare_sky
+    };
+    assert!(
+        held(
+            opposite,
+            KujaSky {
+                moon_waxing: true,
+                ..bare_sky
+            }
+        )
+        .benefic
+    );
+    assert!(!held(opposite, waning).benefic);
+}
+
+#[test]
+fn the_almanacs_five_hold_where_their_clauses_read() {
+    let (native, bare_sky) = bare();
+    let held = |native: KujaNative, sky: KujaSky| {
+        kuja_side(native.with_sky(sky), KujaRules::default())
+            .held
+            .unwrap()
+    };
+    // The almanacs' five.
+    for (house, holds) in [
+        (1, true),
+        (4, true),
+        (7, true),
+        (9, true),
+        (12, true),
+        (10, false),
+    ] {
+        let saturn = Rashi::of_longitude(f64::from(house - 1) * 30.0 + 15.0);
+        assert_eq!(
+            held(native, KujaSky { saturn, ..bare_sky }).saturn,
+            holds,
+            "Saturn in {house}"
+        );
+    }
+    let second = KujaNative {
+        moon: Rashi::Taurus,
+        venus: Rashi::Taurus,
+        ..native
+    };
+    assert!(held(second, bare_sky).moon_venus_second);
+    assert!(
+        !held(
+            KujaNative {
+                venus: Rashi::Gemini,
+                ..second
+            },
+            bare_sky
+        )
+        .moon_venus_second
+    );
+    assert!(
+        held(
+            native,
+            KujaSky {
+                rahu: Rashi::Capricorn,
+                ..bare_sky
+            }
+        )
+        .rahu_kendra
+    );
+    let with_rahu = held(
+        native,
+        KujaSky {
+            rahu: Rashi::Libra,
+            ..bare_sky
+        },
+    );
+    assert!(with_rahu.with_rahu && with_rahu.rahu_kendra && !with_rahu.benefic);
+}
+
+#[test]
+fn a_lift_lifts_only_where_the_rules_count_it() {
+    let (native, sky) = bare();
+    let native = native.with_sky(KujaSky {
+        jupiter: Rashi::Aquarius,
+        ..sky
+    });
+    let under = |lifts| {
+        kuja_side(
+            native,
+            KujaRules {
+                lifts,
+                ..KujaRules::default()
+            },
+        )
+    };
+    assert!(!under(KujaLifts::NONE).lifted, "the verse lifts nothing");
+    assert!(under(KujaLifts::PARASHARA).lifted);
+    assert!(under(KujaLifts::PRINTED_IN_NEPAL).lifted);
+    // Mars in the 3rd carries no dosha, so nothing is lifted.
+    let free = KujaNative {
+        mars: Rashi::Gemini,
+        ..native
+    };
+    assert!(
+        !kuja_side(
+            free,
+            KujaRules {
+                lifts: KujaLifts::PARASHARA,
+                ..KujaRules::default()
+            }
+        )
+        .lifted
+    );
+}
+
+#[test]
+fn both_charts_carrying_it_lift_each_under_parashara() {
+    let (native, sky) = bare();
+    let native = native.with_sky(sky);
+    let rules = KujaRules {
+        lifts: KujaLifts::PARASHARA,
+        ..KujaRules::default()
+    };
+    let read = kuja(native, native, rules);
+    assert!(read.both && read.bride.lifted && read.groom.lifted);
+    assert!(read.bride.held.unwrap().mutual);
+    // One side alone: no mutual lift.
+    let free = KujaNative {
+        mars: Rashi::Gemini,
+        ..native
+    };
+    let one = kuja(native, free, rules);
+    assert!(!one.both && !one.bride.lifted && !one.bride.held.unwrap().mutual);
+    // Mutual needs no sky.
+    let bare_native = KujaNative {
+        sky: None,
+        ..native
+    };
+    assert!(kuja(bare_native, bare_native, rules).bride.lifted);
+}
+
+#[test]
+fn the_lifts_cross_as_bits_and_back() {
+    for bits in 0..0x80_u8 {
+        assert_eq!(KujaLifts::from_bits(bits).bits(), bits);
+    }
+    let json = serde_json::to_string(&KujaLifts::PARASHARA).unwrap();
+    assert_eq!(
+        json,
+        r#"{"benefic":true,"mutual":true,"saturn":false,"moonVenusSecond":false,"jupiterAspect":false,"rahuKendra":false,"withRahu":false}"#
+    );
+    let rules: KujaRules = serde_json::from_str(r#"{"lifts":{"jupiterAspect":true}}"#).unwrap();
+    assert!(rules.lifts.jupiter_aspect && rules.lifts.count() == 1);
+    assert!(serde_json::from_str::<KujaLifts>(r#"{"jupiter":true}"#).is_err());
 }

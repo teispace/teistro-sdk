@@ -4365,7 +4365,7 @@ export interface ChartsHarmonicRows {
  * The `kujas` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+ * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do; then each side's lifts that hold and whether one the rules count lifts it (BPHS ch. 80 vv. 47–49, C288, C755). Empty when `matching_json` asked for none.
  */
 export interface ChartsKujas {
   /**
@@ -4425,9 +4425,25 @@ export interface ChartsKujas {
    */
   readonly groomDosha: Uint8Array;
   /**
-   * 1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288).
+   * 1 when both carry the dosha, the fact BPHS ch. 80 vv. 48–49's mutual lift reads (C288).
    */
   readonly both: Uint8Array;
+  /**
+   * The lifts that hold on the bride's side, as a bit set in `KujaLifts`'s order: bit 0 benefic, 1 mutual, 2 saturn, 3 moonVenusSecond, 4 jupiterAspect, 5 rahuKendra, 6 withRahu; bit 7 set when the lifts were read, clear (and the byte 0) when the chart gave no sky to read them in.
+   */
+  readonly brideHeld: Uint8Array;
+  /**
+   * 1 when the bride's side carries the dosha and a lift the rules count holds (C755).
+   */
+  readonly brideLifted: Uint8Array;
+  /**
+   * The lifts that hold on the groom's side, as a bit set in `KujaLifts`'s order: bit 0 benefic, 1 mutual, 2 saturn, 3 moonVenusSecond, 4 jupiterAspect, 5 rahuKendra, 6 withRahu; bit 7 set when the lifts were read, clear (and the byte 0) when the chart gave no sky to read them in.
+   */
+  readonly groomHeld: Uint8Array;
+  /**
+   * 1 when the groom's side carries the dosha and a lift the rules count holds (C755).
+   */
+  readonly groomLifted: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -5799,7 +5815,7 @@ export interface Charts {
    */
   readonly poruthamRows: PoruthamRows;
   /**
-   * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+   * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do; then each side's lifts that hold and whether one the rules count lifts it (BPHS ch. 80 vv. 47–49, C288, C755). Empty when `matching_json` asked for none.
    */
   readonly kujas: ChartsKujas;
   /**

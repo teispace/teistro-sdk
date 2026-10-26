@@ -2221,7 +2221,8 @@ def main() -> None:
             assert mars is not None
             for who, side in (("bride", mars.bride), ("groom", mars.groom)):
                 readings = " ".join(f"{r.reference} {r.house} {int(r.in_houses)}" for r in side.readings)
-                put(f"chart-{i}-kuja-{who}", f"{readings} {int(side.dosha)}")
+                lifts = "none" if side.held is None else "".join(str(int(getattr(side.held, f.name))) for f in dataclass_fields(side.held))
+                put(f"chart-{i}-kuja-{who}", f"{readings} {int(side.dosha)} {lifts} {int(side.lifted)}")
             put(f"chart-{i}-kuja", str(int(mars.both)))
             doshas = chart.marriage_doshas
             assert doshas is not None

@@ -2216,7 +2216,7 @@ fn chart_matching_sections(first: u32) -> [SectionSchema; 5] {
             first + 4,
             "kujas",
             &format!(
-                "Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). {empty}"
+                "Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do; then each side's lifts that hold and whether one the rules count lifts it (BPHS ch. 80 vv. 47–49, C288, C755). {empty}"
             ),
             kuja_columns(),
         ),
@@ -2479,10 +2479,27 @@ fn kuja_columns() -> Vec<ColumnDef> {
     columns.push(ColumnDef::new(
         "both",
         Scalar::U8,
-        "1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288).",
+        "1 when both carry the dosha, the fact BPHS ch. 80 vv. 48–49's mutual lift reads (C288).",
     ));
+    for (who, whose) in [("bride", "the bride's"), ("groom", "the groom's")] {
+        columns.push(ColumnDef::new(
+            &format!("{who}_held"),
+            Scalar::U8,
+            &format!("The lifts that hold on {whose} side, {KUJA_LIFT_BITS}."),
+        ));
+        columns.push(ColumnDef::new(
+            &format!("{who}_lifted"),
+            Scalar::U8,
+            &format!(
+                "1 when {whose} side carries the dosha and a lift the rules count holds (C755)."
+            ),
+        ));
+    }
     columns
 }
+
+/// How a side's Kuja lifts cross, as `KujaLifts` names them.
+const KUJA_LIFT_BITS: &str = "as a bit set in `KujaLifts`'s order: bit 0 benefic, 1 mutual, 2 saturn, 3 moonVenusSecond, 4 jupiterAspect, 5 rahuKendra, 6 withRahu; bit 7 set when the lifts were read, clear (and the byte 0) when the chart gave no sky to read them in";
 
 /// The three sections the declinations and the parallels cross as, from
 /// `first`: a row a chart, each planet's declination, and the parallels,

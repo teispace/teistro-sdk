@@ -158,11 +158,11 @@ pub fn marriage_doshas(ashta: &AshtaKoota, ten: &Porutham, mars: &Kuja) -> Vec<M
     ]
     .into_iter()
     .filter(|(_, side)| side.dosha)
-    .map(|(role, _)| MarriageDosha {
+    .map(|(role, side)| MarriageDosha {
         system: DoshaSystem::Kuja,
         koota: None,
         side: Some(role),
-        lifted: false,
+        lifted: side.lifted,
     });
     eight.chain(considerations).chain(sides).collect()
 }

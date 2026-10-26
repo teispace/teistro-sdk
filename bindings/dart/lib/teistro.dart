@@ -6382,6 +6382,8 @@ List<Kuja> _decodeKujas(Charts batch) {
     List<Uint8List> house,
     List<Uint8List> inHouses,
     Uint8List dosha,
+    Uint8List held,
+    Uint8List lifted,
     int at,
   ) => KujaSide(
     readings: List.unmodifiable([
@@ -6393,6 +6395,8 @@ List<Kuja> _decodeKujas(Charts batch) {
         ),
     ]),
     dosha: dosha[at] == 1,
+    held: KujaLifts._ofBits(held[at]),
+    lifted: lifted[at] == 1,
   );
   return List.unmodifiable([
     for (var at = 0; at < k.both.length; at++)
@@ -6401,12 +6405,16 @@ List<Kuja> _decodeKujas(Charts batch) {
           [k.brideLagnaHouse, k.brideMoonHouse, k.brideVenusHouse],
           [k.brideLagnaInHouses, k.brideMoonInHouses, k.brideVenusInHouses],
           k.brideDosha,
+          k.brideHeld,
+          k.brideLifted,
           at,
         ),
         groom: side(
           [k.groomLagnaHouse, k.groomMoonHouse, k.groomVenusHouse],
           [k.groomLagnaInHouses, k.groomMoonInHouses, k.groomVenusInHouses],
           k.groomDosha,
+          k.groomHeld,
+          k.groomLifted,
           at,
         ),
         both: k.both[at] == 1,
@@ -9763,15 +9771,118 @@ final class KujaRules {
   const KujaRules({
     this.houses = KujaHouses.manasagari,
     this.from = KujaFrom.lagna,
+    this.lifts = KujaLifts.none,
   });
 
   final KujaHouses houses;
   final KujaFrom from;
 
+  /// The lifts that lift it; none by default, as the verse has none
+  /// (C288, C755).
+  final KujaLifts lifts;
+
   Map<String, Object?> get _record => <String, Object?>{
     'houses': houses.key,
     'from': from.key,
+    'lifts': lifts._record,
   };
+}
+
+/// The lifts of the Kuja dosha, each a clause (C288, C755): as a rule's
+/// choice, the lifts it counts; as a side's answer, the lifts that hold.
+/// BPHS ch. 80 v. 47's [benefic] aspect or conjunction and vv. 48–49's
+/// [mutual] dosha are rank 1 ([parashara]); the five the almanacs printed
+/// in Nepal give, from the lagna, rank 4 ([printedInNepal]).
+///
+/// ```dart
+/// const nepal = KujaRules(lifts: KujaLifts.printedInNepal);
+/// ```
+final class KujaLifts extends _Value {
+  const KujaLifts({
+    this.benefic = false,
+    this.mutual = false,
+    this.saturn = false,
+    this.moonVenusSecond = false,
+    this.jupiterAspect = false,
+    this.rahuKendra = false,
+    this.withRahu = false,
+  });
+
+  /// A side's lifts from the boundary's bit set, or null where bit 7 says
+  /// none were read.
+  static KujaLifts? _ofBits(int bits) {
+    if (bits & 0x80 == 0) return null;
+    bool set(int n) => (bits >> n) & 1 == 1;
+    return KujaLifts(
+      benefic: set(0),
+      mutual: set(1),
+      saturn: set(2),
+      moonVenusSecond: set(3),
+      jupiterAspect: set(4),
+      rahuKendra: set(5),
+      withRahu: set(6),
+    );
+  }
+
+  /// None: the verse's own reading, which nothing lifts.
+  static const none = KujaLifts();
+
+  /// BPHS ch. 80 vv. 47–49's two.
+  static const parashara = KujaLifts(benefic: true, mutual: true);
+
+  /// The five the almanacs printed in Nepal give.
+  static const printedInNepal = KujaLifts(
+    saturn: true,
+    moonVenusSecond: true,
+    jupiterAspect: true,
+    rahuKendra: true,
+    withRahu: true,
+  );
+
+  /// A benefic aspects Mars or stands with it.
+  final bool benefic;
+
+  /// The other chart carries the dosha too.
+  final bool mutual;
+
+  /// Saturn in the 1st, 4th, 7th, 9th or 12th.
+  final bool saturn;
+
+  /// The Moon and Venus both in the 2nd.
+  final bool moonVenusSecond;
+
+  /// Jupiter aspects Mars.
+  final bool jupiterAspect;
+
+  /// Rahu in a kendra.
+  final bool rahuKendra;
+
+  /// Mars with Rahu.
+  final bool withRahu;
+
+  /// The clauses in their order.
+  List<bool> get clauses => [
+    benefic,
+    mutual,
+    saturn,
+    moonVenusSecond,
+    jupiterAspect,
+    rahuKendra,
+    withRahu,
+  ];
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'benefic': benefic,
+    'mutual': mutual,
+    'saturn': saturn,
+    'moonVenusSecond': moonVenusSecond,
+    'jupiterAspect': jupiterAspect,
+    'rahuKendra': rahuKendra,
+    'withRahu': withRahu,
+  };
+
+  @override
+  List<Object?> get _fields => clauses;
 }
 
 /// A place Mars's house is counted from.
@@ -9815,7 +9926,12 @@ final class KujaReading extends _Value {
 
 /// One native's Kuja dosha.
 final class KujaSide extends _Value {
-  const KujaSide({required this.readings, required this.dosha});
+  const KujaSide({
+    required this.readings,
+    required this.dosha,
+    required this.held,
+    required this.lifted,
+  });
 
   /// Mars's house from the lagna, the Moon and Venus, whatever the rules
   /// count.
@@ -9825,8 +9941,15 @@ final class KujaSide extends _Value {
   /// rules count.
   final bool dosha;
 
+  /// Every lift that holds, whatever the rules count; null where the chart
+  /// gave no sky to read them in.
+  final KujaLifts? held;
+
+  /// Whether the side carries the dosha and a lift the rules count holds.
+  final bool lifted;
+
   @override
-  List<Object?> get _fields => [...readings, dosha];
+  List<Object?> get _fields => [...readings, dosha, held, lifted];
 }
 
 /// One marriage dosha a match carries (C289): its reading, its koota or
@@ -9851,7 +9974,7 @@ final class MarriageDosha extends _Value {
 }
 
 /// The Kuja dosha of a bride and a groom (*Manasagari*, jāyābhāva v. 4),
-/// as clauses: nothing is lifted (C288).
+/// as clauses, with each side's lifts (C288, C755).
 final class Kuja extends _Value {
   const Kuja({required this.bride, required this.groom, required this.both});
 

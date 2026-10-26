@@ -1512,7 +1512,7 @@ public final class Charts {
     }
 
     /**
-     * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+     * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do; then each side's lifts that hold and whether one the rules count lifts it (BPHS ch. 80 vv. 47–49, C288, C755). Empty when `matching_json` asked for none.
      *
      * @return the kujas
      */
@@ -14031,7 +14031,7 @@ public final class Charts {
     /**
      * The `kujas` section of this blob: a getter per column, reading a row from the blob's bytes.
      *
-     * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+     * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do; then each side's lifts that hold and whether one the rules count lifts it (BPHS ch. 80 vv. 47–49, C288, C755). Empty when `matching_json` asked for none.
      */
     public static final class Kujas {
         private final ByteBuffer bytes;
@@ -14051,6 +14051,10 @@ public final class Charts {
         private final int groomVenusInHousesAt;
         private final int groomDoshaAt;
         private final int bothAt;
+        private final int brideHeldAt;
+        private final int brideLiftedAt;
+        private final int groomHeldAt;
+        private final int groomLiftedAt;
 
         Kujas(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -14071,6 +14075,10 @@ public final class Charts {
             this.groomVenusInHousesAt = blob.column(at, 12, 1);
             this.groomDoshaAt = blob.column(at, 13, 1);
             this.bothAt = blob.column(at, 14, 1);
+            this.brideHeldAt = blob.column(at, 15, 1);
+            this.brideLiftedAt = blob.column(at, 16, 1);
+            this.groomHeldAt = blob.column(at, 17, 1);
+            this.groomLiftedAt = blob.column(at, 18, 1);
         }
 
         /**
@@ -14237,7 +14245,7 @@ public final class Charts {
         }
 
         /**
-         * 1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288).
+         * 1 when both carry the dosha, the fact BPHS ch. 80 vv. 48–49's mutual lift reads (C288).
          *
          * @param row the row, from 0
          * @return the value in that row
@@ -14245,6 +14253,50 @@ public final class Charts {
          */
         public int both(int row) {
             return Byte.toUnsignedInt(bytes.get(bothAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The lifts that hold on the bride's side, as a bit set in `KujaLifts`'s order: bit 0 benefic, 1 mutual, 2 saturn, 3 moonVenusSecond, 4 jupiterAspect, 5 rahuKendra, 6 withRahu; bit 7 set when the lifts were read, clear (and the byte 0) when the chart gave no sky to read them in.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int brideHeld(int row) {
+            return Byte.toUnsignedInt(bytes.get(brideHeldAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * 1 when the bride's side carries the dosha and a lift the rules count holds (C755).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int brideLifted(int row) {
+            return Byte.toUnsignedInt(bytes.get(brideLiftedAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The lifts that hold on the groom's side, as a bit set in `KujaLifts`'s order: bit 0 benefic, 1 mutual, 2 saturn, 3 moonVenusSecond, 4 jupiterAspect, 5 rahuKendra, 6 withRahu; bit 7 set when the lifts were read, clear (and the byte 0) when the chart gave no sky to read them in.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int groomHeld(int row) {
+            return Byte.toUnsignedInt(bytes.get(groomHeldAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * 1 when the groom's side carries the dosha and a lift the rules count holds (C755).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int groomLifted(int row) {
+            return Byte.toUnsignedInt(bytes.get(groomLiftedAt + Objects.checkIndex(row, length) * 1));
         }
     }
 

@@ -3794,7 +3794,16 @@ fn the_kuja(report: &mut Report, index: usize, mars: &teistro::Kuja) {
         put(
             report,
             &format!("chart-{index}-kuja-{who}"),
-            format!("{} {}", readings.join(" "), u8::from(side.dosha)),
+            format!(
+                "{} {} {} {}",
+                readings.join(" "),
+                u8::from(side.dosha),
+                side.held.map_or_else(
+                    || "none".to_owned(),
+                    |held| format!("{:07b}", held.bits().reverse_bits() >> 1)
+                ),
+                u8::from(side.lifted)
+            ),
         );
     }
     put(

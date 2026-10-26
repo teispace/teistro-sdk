@@ -233,6 +233,61 @@ fn the_kuja_dosha_reads_mars_from_each_founded_chart() {
 }
 
 #[test]
+fn every_founded_chart_reads_its_kuja_lifts() {
+    use teistro::KujaLifts;
+
+    let sdk = context(None);
+    let rules = KujaRules {
+        lifts: KujaLifts::PARASHARA,
+        ..KujaRules::default()
+    };
+    let (mut lifted, mut standing) = (0, 0);
+    for day in 0..60 {
+        let chart = founded(&sdk, 2_451_545.0 + 37.0 * f64::from(day));
+        let other = founded(&sdk, 2_447_892.5 + 23.0 * f64::from(day));
+        let read = sdk.chart().kuja(&chart, &other, rules).unwrap();
+        let side = read.bride;
+        let held = side.held.unwrap();
+        let sign = |graha| {
+            let at = chart.foundation.graha(graha).unwrap().longitude_deg;
+            teistro::catalogue::Rashi::of_longitude(at.rem_euclid(360.0)).id()
+        };
+        // Jupiter's clause, recounted from the chart: Mars 5th, 7th or 9th from it.
+        let from_jupiter = (sign(Graha::Mars) + 12 - sign(Graha::Jupiter)) % 12 + 1;
+        assert_eq!(
+            held.jupiter_aspect,
+            [5, 7, 9].contains(&from_jupiter),
+            "day {day}"
+        );
+        assert_eq!(held.mutual, read.both);
+        // Every lift is reported; only Parashara's two lift it.
+        assert_eq!(
+            side.lifted,
+            side.dosha && held.and(KujaLifts::PARASHARA).any()
+        );
+        if side.dosha {
+            if side.lifted {
+                lifted += 1;
+            } else {
+                standing += 1;
+            }
+        }
+    }
+    // Both answers occur, so neither is a constant.
+    assert!(
+        lifted > 0 && standing > 0,
+        "{lifted} lifted, {standing} standing"
+    );
+    // Under the verse's own rules, nothing is lifted.
+    let bride = founded(&sdk, 2_447_892.5);
+    let read = sdk
+        .chart()
+        .kuja(&bride, &bride, KujaRules::default())
+        .unwrap();
+    assert!(!read.bride.lifted && read.bride.held.is_some());
+}
+
+#[test]
 fn a_chart_carries_its_moons_avakahada_and_a_tropical_one_refuses_it() {
     // C301: the section is the kernel's reading of the chart's own
     // sidereal Moon; a tropical chart has no nakshatra and refuses it by

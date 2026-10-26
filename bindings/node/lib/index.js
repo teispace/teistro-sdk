@@ -4792,6 +4792,15 @@ const KUJA_REFERENCES = Object.freeze([
   ['VENUS', 'Venus'],
 ]);
 
+/** The Kuja lifts in the order the boundary's bit set carries them (C755). */
+const KUJA_LIFTS = ['benefic', 'mutual', 'saturn', 'moonVenusSecond', 'jupiterAspect', 'rahuKendra', 'withRahu'];
+
+/** A side's lifts from its bit set, or `null` where bit 7 says none were read. */
+function kujaLiftsOf(bits) {
+  if ((bits & 0x80) === 0) return null;
+  return Object.freeze(Object.fromEntries(KUJA_LIFTS.map((lift, n) => [lift, ((bits >> n) & 1) === 1])));
+}
+
 /**
  * Each chart's Kuja dosha, decoded once per batch from `kujas`.
  *
@@ -4814,6 +4823,8 @@ function kujasOf(batch) {
         ),
       ),
       dosha: k[`${who}Dosha`][at] === 1,
+      held: kujaLiftsOf(k[`${who}Held`][at]),
+      lifted: k[`${who}Lifted`][at] === 1,
     });
   decoded = rowAChartOf(batch, k.both.length, 'kujas', (at) =>
     Object.freeze({ bride: side('bride', at), groom: side('groom', at), both: k.both[at] === 1 }),

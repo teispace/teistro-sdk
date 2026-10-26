@@ -393,6 +393,7 @@ fn kuja_table() -> String {
                         moon,
                         venus,
                         mars,
+                        sky: None,
                     })
                 })
             })
@@ -423,7 +424,11 @@ fn kuja_table() -> String {
             KujaFrom::LagnaMoonVenus,
         ),
     ] {
-        let rules = KujaRules { houses, from };
+        let rules = KujaRules {
+            houses,
+            from,
+            ..KujaRules::default()
+        };
         let held = natives
             .iter()
             .filter(|&&native| kuja_side(native, rules).dosha)

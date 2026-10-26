@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Kuja dosha's lifts, as clauses.**
+**Numbers:** none by default; nothing is lifted unless the rules name a
+lift, and the dosha itself reads as before.
+- Each side of a match now reports every lift that holds (`held`) and
+  whether one the rules count lifts it (`lifted`): BPHS ch. 80 v. 47's
+  benefic aspect or conjunction and vv. 48–49's dosha in both charts
+  (`KujaLifts::PARASHARA`, rank 1), and the five lifts the almanacs
+  printed in Nepal give (`KujaLifts::PRINTED_IN_NEPAL`, rank 4).
+  `KujaRules.lifts` names the lifts; the marriage dosha list's Kuja
+  entries carry the side's `lifted` (C288, C755).
+- A founded chart gives the Sun's, Mercury's, Jupiter's, Saturn's and
+  Rahu's signs (`KujaNative::with_sky`). The `kujas` section gains each
+  side's `held` bit set and `lifted`, after its earlier columns.
 **Eight more of Raman's elections, and a rite held in part of the day.**
 **Numbers:** none; the shipped rites answer as they did, every one's
 `hours` being `ANY`.

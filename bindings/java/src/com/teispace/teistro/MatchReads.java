@@ -235,12 +235,16 @@ final class MatchReads {
                     new KujaReading("LAGNA", k.brideLagnaHouse(at), k.brideLagnaInHouses(at) == 1),
                     new KujaReading("MOON", k.brideMoonHouse(at), k.brideMoonInHouses(at) == 1),
                     new KujaReading("VENUS", k.brideVenusHouse(at), k.brideVenusInHouses(at) == 1)),
-                    k.brideDosha(at) == 1);
+                    k.brideDosha(at) == 1,
+                    KujaLifts.ofBits(k.brideHeld(at)),
+                    k.brideLifted(at) == 1);
             KujaSide groom = new KujaSide(List.of(
                     new KujaReading("LAGNA", k.groomLagnaHouse(at), k.groomLagnaInHouses(at) == 1),
                     new KujaReading("MOON", k.groomMoonHouse(at), k.groomMoonInHouses(at) == 1),
                     new KujaReading("VENUS", k.groomVenusHouse(at), k.groomVenusInHouses(at) == 1)),
-                    k.groomDosha(at) == 1);
+                    k.groomDosha(at) == 1,
+                    KujaLifts.ofBits(k.groomHeld(at)),
+                    k.groomLifted(at) == 1);
             out.add(new Kuja(bride, groom, k.both(at) == 1));
         }
         return List.copyOf(out);

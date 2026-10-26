@@ -198,13 +198,14 @@ const REUSED_ENUMS: [&str; 14] = [
 /// almuten's rules as asked, a natal point as named). Java keeps them
 /// apart by package; any other shared name is refused, so a request type
 /// never silently reads like an unrelated answer type.
-const SHARED_NAMES: [&str; 12] = [
+const SHARED_NAMES: [&str; 13] = [
     "AccidentalRules",
     "AccidentalScores",
     "AlmutenRules",
     "CivilTime",
     "ConsiderationRules",
     "Interval",
+    "KujaLifts",
     "NatalPoint",
     "Partile",
     "PerfectionRules",

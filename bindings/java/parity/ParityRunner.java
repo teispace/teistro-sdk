@@ -2228,7 +2228,11 @@ public final class ParityRunner {
         for (Map.Entry<String, KujaSide> side : sides.entrySet()) {
             String readings = join(" ", side.getValue().readings(),
                     r -> r.reference() + " " + r.house() + " " + flag(r.inHouses()));
-            put(c + "-kuja-" + side.getKey(), readings + " " + flag(side.getValue().dosha()));
+            String held = side.getValue().held()
+                    .map(lifts -> join("", lifts.clauses(), ParityRunner::flag))
+                    .orElse("none");
+            put(c + "-kuja-" + side.getKey(), readings + " " + flag(side.getValue().dosha())
+                    + " " + held + " " + flag(side.getValue().lifted()));
         }
         put(c + "-kuja", flag(mars.both()));
         List<MarriageDosha> doshas = chart.marriageDoshas().orElseThrow();

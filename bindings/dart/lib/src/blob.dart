@@ -4553,7 +4553,7 @@ final class ChartsHarmonicRows {
 /// The `kujas` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+/// Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do; then each side's lifts that hold and whether one the rules count lifts it (BPHS ch. 80 vv. 47–49, C288, C755). Empty when `matching_json` asked for none.
 final class ChartsKujas {
   const ChartsKujas({
     required this.brideLagnaHouse,
@@ -4571,6 +4571,10 @@ final class ChartsKujas {
     required this.groomVenusInHouses,
     required this.groomDosha,
     required this.both,
+    required this.brideHeld,
+    required this.brideLifted,
+    required this.groomHeld,
+    required this.groomLifted,
     required this.length,
   });
 
@@ -4616,8 +4620,20 @@ final class ChartsKujas {
   /// 1 when the groom's Mars stands in one of the rules' houses from a reference the rules count (C286).
   final Uint8List groomDosha;
 
-  /// 1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288).
+  /// 1 when both carry the dosha, the fact BPHS ch. 80 vv. 48–49's mutual lift reads (C288).
   final Uint8List both;
+
+  /// The lifts that hold on the bride's side, as a bit set in `KujaLifts`'s order: bit 0 benefic, 1 mutual, 2 saturn, 3 moonVenusSecond, 4 jupiterAspect, 5 rahuKendra, 6 withRahu; bit 7 set when the lifts were read, clear (and the byte 0) when the chart gave no sky to read them in.
+  final Uint8List brideHeld;
+
+  /// 1 when the bride's side carries the dosha and a lift the rules count holds (C755).
+  final Uint8List brideLifted;
+
+  /// The lifts that hold on the groom's side, as a bit set in `KujaLifts`'s order: bit 0 benefic, 1 mutual, 2 saturn, 3 moonVenusSecond, 4 jupiterAspect, 5 rahuKendra, 6 withRahu; bit 7 set when the lifts were read, clear (and the byte 0) when the chart gave no sky to read them in.
+  final Uint8List groomHeld;
+
+  /// 1 when the groom's side carries the dosha and a lift the rules count holds (C755).
+  final Uint8List groomLifted;
 
   /// The number of rows every column holds.
   final int length;
@@ -5996,7 +6012,7 @@ final class Charts {
   /// Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none.
   final PoruthamRows poruthamRows;
 
-  /// Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+  /// Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do; then each side's lifts that hold and whether one the rules count lifts it (BPHS ch. 80 vv. 47–49, C288, C755). Empty when `matching_json` asked for none.
   final ChartsKujas kujas;
 
   /// How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). Empty when `matching_json` asked for none.
@@ -7372,6 +7388,10 @@ Charts decodeCharts(Uint8List bytes) {
       groomVenusInHouses: blob.column(atKujas, 12, 1, Uint8List.sublistView),
       groomDosha: blob.column(atKujas, 13, 1, Uint8List.sublistView),
       both: blob.column(atKujas, 14, 1, Uint8List.sublistView),
+      brideHeld: blob.column(atKujas, 15, 1, Uint8List.sublistView),
+      brideLifted: blob.column(atKujas, 16, 1, Uint8List.sublistView),
+      groomHeld: blob.column(atKujas, 17, 1, Uint8List.sublistView),
+      groomLifted: blob.column(atKujas, 18, 1, Uint8List.sublistView),
       length: atKujas.count,
     ),
     marriageDoshas: ChartsMarriageDoshas(
