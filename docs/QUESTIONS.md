@@ -462,7 +462,7 @@ are conditions of the day rather than limbs of it. The section table on
 `03-design/interpret-measured.md` carries that as what is left, so the
 line is measured rather than remembered.
 
-## Q41. Which window an Ekadashi fast's parana keeps by default: `open`
+## Q41. Which window an Ekadashi fast's parana keeps by default: `decided`
 
 Raised 2026-10-22 by P1-7 ([`03-design/festival-rules.md`](03-design/festival-rules.md)
 §8.5). The brief asks that a tradition's choice ship as a parameter and
@@ -506,6 +506,23 @@ is the one to ship. 13 Delhi rows of the reference agree (§8.8).
 follows *Dharmasindhu*'s two readings in its order, and a published
 reference prints it. D is the strongest rank-1 rival. B, C and D are
 each one request field away.
+
+**Decided 2026-10-26: A, with no nakshatra bar, and the vratas'
+readings in *Dharmasindhu*'s order**, by the maintainer handing open
+questions over to be researched and settled. The window: B leaves a
+fast with no answer on the days the hari vasara outlasts the morning,
+which a calendar cannot print; D refuses the morning the many keep, and
+its own teachers grant that *pratah* may be read either way; C has no
+rank-1 text. A keeps both of *Dharmasindhu*'s readings in the order it
+gives them, so the many's morning stands wherever it can, and every one
+of the 93 printed reference rows agrees. The bar: the *Nirnayasindhu*
+calls the verse baseless and *Dharmasindhu* keeps it, so one text does
+not settle it, and the reference keeps none; a default that moved the
+meal on a disputed verse would part from every printed time, while a
+consumer keeping it gives `NakshatraBar::dharmasindhu()`. The vratas:
+each reading is listed and answered, so the order chooses nothing a
+consumer cannot see. Nothing moves: the shipped defaults were already
+these.
 
 ## Decisions log
 

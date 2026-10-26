@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The parana's default, decided (Q41).**
+**Numbers:** none; the shipped defaults were already these.
+- An Ekadashi fast's parana keeps *Dharmasindhu*'s two readings in its
+  order, pratah and then aparahna when the hari vasara outlasts the
+  morning, and no nakshatra bar (C699, C700). Every one of the 93 printed
+  reference rows at Delhi and Kathmandu agrees.
+
 **The inauspicious weekday yogas in a muhurta search.**
 **Numbers:** a muhurta answer's windows gain `ASHUBHA_YOGA` clauses
 against the time, so their clauses and hash change, and under `TEXTS`

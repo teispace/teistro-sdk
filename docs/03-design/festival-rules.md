@@ -617,8 +617,9 @@ and the some's afternoon when the morning is lost to the hari vasara.
 This is the reading the published reference prints (§8.6). A consumer
 keeping the many alone gives `[Part(PRATAH)]`; one following the Gaudiya
 calendar's third of the daylight gives `DayMuhurta {1, 5}`, which no
-rank-1 text in hand states. The default is the maintainer's to confirm
-(brief §4, QUESTIONS.md Q41).
+rank-1 text in hand states. The default is decided (QUESTIONS.md Q41,
+2026-10-26): it answers every day, keeps *Dharmasindhu*'s two readings in
+its order and agrees with every printed reference row.
 
 **The nakshatra bar (C700).** A *Bhavishya* verse bars the meal on
 the bright 12ths of Ashadha, Bhadrapada and Kartika while Anuradha,
@@ -668,8 +669,9 @@ nija month only.
 
 **The default keeps none**, as the published reference keeps none (at
 Kathmandu on 7 July 2025 its window opens at 05:14, with the Moon in
-Anuradha's first quarter). Whether a default keeps a bar, and on which
-reading, is the maintainer's (Q41); a consumer keeping *Dharmasindhu*'s
+Anuradha's first quarter). No default keeps a bar (decided, Q41): one
+text calls the verse baseless and the other keeps it, and the reference
+keeps none; a consumer keeping *Dharmasindhu*'s
 gives `bars: NakshatraBar::dharmasindhu()`.
 
 **What is measured** (`crates/sdk/tests/parana_bar.rs`). Over 2000 to
@@ -711,8 +713,7 @@ reference's (`{"day": {"sunrise": {"kind": "NAMED", "which":
 The reference's tithi ends stand 1.0 to 1.5 minutes before Swiss
 Ephemeris's, to which the SDK agrees within 0.1 minute (C698); an edge
 set by a tithi is held to between 0.5 and 2 minutes late. Neither
-moves a day, and the parana default is the maintainer's to confirm
-(QUESTIONS.md Q41).
+moves a day, and the parana default is decided (QUESTIONS.md Q41).
 
 ### 8.7 Other vratas' parana
 
