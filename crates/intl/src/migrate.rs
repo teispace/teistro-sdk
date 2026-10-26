@@ -953,6 +953,64 @@ mod tests {
         );
         let _ = std::fs::remove_dir_all(&root);
     }
+
+    /// The refusals a state key can meet, which only the doc examples took
+    /// before, and llvm counts no doc example.
+    #[test]
+    fn a_state_key_is_refused_by_name() {
+        let bhava = [GRAHA_BHAVA_KIND];
+        assert_eq!(
+            state_key("graha-bhava", &bhava, "SAT_IN_10").unwrap(),
+            "graha_bhava.SATURN_IN_10"
+        );
+        for (key, says) in [
+            ("SATURN10", "is not a graha and a house"),
+            ("PLUTO_IN_3", "no graha of the engine's nine"),
+            ("SUN_IN_X", "is not a house number"),
+            ("SUN_IN_13", "is not one of twelve"),
+            ("SUN_IN_0", "is not one of twelve"),
+        ] {
+            let refused = state_key("graha-bhava", &bhava, key).unwrap_err();
+            assert!(refused.contains(says), "{key}: {refused}");
+        }
+        // No candidate kind owns it, and the refusal names every kind tried.
+        let none = state_key("nakshatra-phala", &["nakshatra", "rashi"], "NOWHERE").unwrap_err();
+        assert!(none.contains("`nakshatra` or `rashi`"), "{none}");
+        // A graha in a house is the open kinds' grammar; outside it, nothing.
+        assert!(state_key("gochar", &["gochar_bhava"], "SATURN_IN_12").is_ok());
+        assert!(state_key("gochar", &["gochar_bhava"], "SATURN_IN_13").is_err());
+    }
+
+    #[test]
+    fn a_dump_that_is_not_the_exporters_is_refused_and_a_missing_skeleton_is_none() {
+        let root = std::env::temp_dir().join(format!("teistro-intl-dump-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let missing = root.join("absent.json");
+        assert!(read_dump(&missing).err().unwrap().contains("absent.json"));
+        assert!(read_skeleton(&missing).is_none());
+        let garbled = root.join("garbled.json");
+        std::fs::write(&garbled, "not json").unwrap();
+        assert!(read_dump(&garbled).err().unwrap().contains("garbled.json"));
+        assert!(read_skeleton(&garbled).is_none());
+        let other = root.join("other.json");
+        std::fs::write(
+            &other,
+            r#"{"schema": "something/else/1", "tool": "t", "languages": [], "types": {}}"#,
+        )
+        .unwrap();
+        match read_dump(&other) {
+            Err(refused) => assert!(refused.contains("is not the names exporter's"), "{refused}"),
+            Ok(_) => panic!("another schema was read"),
+        }
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn a_prefix_capitalises_the_form_it_carries() {
+        assert_eq!(prefixed_form("", "career"), "career");
+        assert_eq!(prefixed_form("transit", "career"), "transitCareer");
+        assert_eq!(prefixed_form("transit", ""), "transit");
+    }
 }
 
 // ─── The rule readings ────────────────────────────────────────────────

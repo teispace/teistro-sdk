@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-5475 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1688 in `READINGS`, 2917 in `NABHASAS`, 657 in `the corpus's own`. Their 26 868 conditions are written 9242 ways, which say 9217 things, and the renderer gives those 9237 sentences.
+5476 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 184 in `ARISHTAS`, 1688 in `READINGS`, 2918 in `NABHASAS`, 657 in `the corpus's own`. Their 26 869 conditions are written 9243 ways, which say 9218 things, and the renderer gives those 9238 sentences.
 
-The 4818 shipped rules are what a consumer evaluates; the corpus's own
+The 4819 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | falsified | 1 of 9217 disagree |
-| every condition of every rule renders | **holds** | 0 of 26868 disagree |
+| no two conditions that differ in meaning read alike | falsified | 1 of 9218 disagree |
+| every condition of every rule renders | **holds** | 0 of 26869 disagree |
 
 These renderings are shared, each by the conditions beneath it:
 
@@ -110,6 +110,7 @@ These renderings are shared, each by the conditions beneath it:
 | `at-limb-edge` | 26 | the birth falls within the last 2 ghatikas of the tithi |
 | `limb-part` | 64 | the birth falls in the 1st of 6 equal parts of the tithi |
 | `birth-by-day` | 30 | the birth fell by day |
+| `birth-in-kshaya-tithi` | 1 | the birth's tithi touched no sunrise, a kshaya tithi |
 | `same-sign` | 958 | MOON and SUN stand in one sign |
 | `same-body` | 809 | RAHU and SUN are one body |
 | `planet-is` | 373 | SUN is a malefic |
