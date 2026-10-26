@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Node gives a chart's bytes back when the chart is collected.**
+**Numbers:** none; the bytes are the ones the library wrote.
+- Every blob the Node addon hands back (`chart.found`, `positions`, the
+  panchanga days, `intl.render`, `naamMilan`) is a copy the JavaScript
+  heap owns. It was an external `Buffer`, freed by a finaliser Node runs
+  on a later turn of the event loop, so a synchronous loop held each
+  chart's bytes until it yielded: over 10,200 charts asking every varga
+  and the Vimshottari, 638 MB at its peak and climbing 45 KB a chart, with
+  a heap of 67 MB. It is now 190 MB at the peak and flat from the
+  2,000th chart; the Rust core over the same loop is 28 MB, and Python's
+  69 MB. The A/B's memory row (466 MB against the baseline's 297 MB) was
+  this, and is measured again on its next run.
+
 **A chart read by rule is three to four times as quick.**
 **Numbers:** none. The month's new moons are the wide searches' to the bit
 (a unit test against them on the test sky, and 9,489 days of 1800 to 2399
