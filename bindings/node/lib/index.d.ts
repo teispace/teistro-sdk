@@ -7525,6 +7525,8 @@ export interface MuhurtaRequest {
   readonly most?: number;
   /** How Venus's and Jupiter's combustion is seen: named, or spelt out; the Surya Siddhanta's by default (C164). */
   readonly asta?: AstaName | AstaCriterion;
+  /** Where a journey goes: on a day whose disha shool it is, the rules' `shool` holds a window to its release. */
+  readonly direction?: Direction;
 }
 
 /** A set of rules the SDK ships. */
@@ -7534,7 +7536,15 @@ export type MuhurtaActivity =
   | 'RAMAN_NAMAKARANA'
   | 'RAMAN_ANNAPRASANA'
   | 'RAMAN_UPANAYANA'
-  | 'RAMAN_GRIHA_PRAVESHA';
+  | 'RAMAN_GRIHA_PRAVESHA'
+  | 'RAMAN_KARNAVEDHA'
+  | 'RAMAN_CHUDAKARANA'
+  | 'RAMAN_VIDYARAMBHA'
+  | 'RAMAN_YATRA'
+  | 'RAMAN_TRADE_PURCHASE'
+  | 'RAMAN_SELLING'
+  | 'RAMAN_NEW_CLOTHES'
+  | 'RAMAN_VEHICLE';
 
 /** A visibility criterion the SDK names. */
 export type AstaName = 'SURYA_SIDDHANTA' | 'COMBUSTION_ORB' | 'PTOLEMY';
@@ -7595,6 +7605,10 @@ export interface ActivityRules {
     | { readonly reckoning: 'SOLAR'; readonly signs: Graded<Rashi> };
   /** The lagnas, graded. */
   readonly lagnas: Graded<Rashi>;
+  /** The part of the day the rite is held in, noon the daylight's middle; `'ANY'` when left out. */
+  readonly hours?: 'ANY' | 'DAYLIGHT' | 'FORENOON';
+  /** For a journey asked a direction, the ghati from sunrise each weekday's disha shool is lifted at; none judges no direction. */
+  readonly shool?: readonly { readonly vara: Vara; readonly afterGhatis: number }[];
   /** The nakshatra quarters to reject. */
   readonly padas: readonly { readonly nakshatra: Nakshatra; readonly pada: number }[];
   /** The seasons that close a day. */

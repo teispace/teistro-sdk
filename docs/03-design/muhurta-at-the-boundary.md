@@ -213,12 +213,13 @@ are camel-cased, like every request record:
 
 | Key | Type | Default |
 | --- | --- | --- |
-| `rules` | `"RAMAN_MARRIAGE"`, `"BASELINE_MARRIAGE"`, or an `ActivityRules` object in its own serde spelling (as `rules_json`'s own rules are) | required |
+| `rules` | a shipped set's name (`"RAMAN_MARRIAGE"`, `"BASELINE_MARRIAGE"`, and the twelve rites of `muhurta.md` §4.6), or an `ActivityRules` object in its own serde spelling (as `rules_json`'s own rules are) | required |
 | `native` | `{star, moonSign, lagna?}` | none |
 | `ranking` | `"TEXTS"` or `"BASELINE"` | `"TEXTS"` |
 | `daysWithWindows` | integer ≥ 1 | 7 |
 | `most` | integer ≥ 1 | 50 |
 | `asta` | `"SURYA_SIDDHANTA"`, `"COMBUSTION_ORB"`, `"PTOLEMY"`, or a `Criterion` | `"SURYA_SIDDHANTA"` |
+| `direction` | a `Direction`, where a journey goes, which the rules' `shool` reads (`muhurta.md` §4.6) | none |
 
 The place, the clock and the range come from the panchanga request
 itself. They are not repeated in the record, so the two cannot

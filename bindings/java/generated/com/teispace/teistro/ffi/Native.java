@@ -3724,7 +3724,10 @@ public final class Native {
          * The offset of `muhurta_json`. A muhurta search over the same days, as a JSON object: `rules`,
          * the activity's rules spelt out or a shipped set named
          * (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`, `RAMAN_NAMAKARANA`,
-         * `RAMAN_ANNAPRASANA`, `RAMAN_UPANAYANA`, `RAMAN_GRIHA_PRAVESHA`); and,
+         * `RAMAN_ANNAPRASANA`, `RAMAN_KARNAVEDHA`, `RAMAN_CHUDAKARANA`,
+         * `RAMAN_UPANAYANA`, `RAMAN_VIDYARAMBHA`, `RAMAN_GRIHA_PRAVESHA`,
+         * `RAMAN_YATRA`, `RAMAN_TRADE_PURCHASE`, `RAMAN_SELLING`,
+         * `RAMAN_NEW_CLOTHES`, `RAMAN_VEHICLE`); and,
          * each optional,
          * `native` (`{star, moonSign}`, whose tarabala and chandrabala are
          * read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),

@@ -12,6 +12,26 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Eight more of Raman's elections, and a rite held in part of the day.**
+**Numbers:** none; the shipped rites answer as they did, every one's
+`hours` being `ANY`.
+- `RAMAN_KARNAVEDHA`, `RAMAN_CHUDAKARANA`, `RAMAN_VIDYARAMBHA`,
+  `RAMAN_YATRA`, `RAMAN_TRADE_PURCHASE`, `RAMAN_SELLING`,
+  `RAMAN_NEW_CLOTHES` and `RAMAN_VEHICLE` (*Muhurtha*, chs. IV, VIII, X,
+  XI and XIV), each over the general shuddhi, each listing what its
+  chapter asks and the SDK does not judge: a journey's direction, the
+  child's age, a graha fortified.
+- `ActivityRules.hours`, `ANY`, `DAYLIGHT` or `FORENOON`: the part of a
+  day a rite is held in, which the search cuts alone. The ear boring is
+  never at night and the tonsure always in the forenoon. Left out of a
+  request's rules, it is `ANY`.
+- A muhurta request names where a journey goes (`direction`,
+  `MuhurtaRequest::towards`), and `ActivityRules.shool` the ghati each
+  weekday's disha shool is lifted at: `RAMAN_YATRA` towards the day's
+  shool opens past 22 ghatis on Thursday, 12 on Tuesday and Wednesday,
+  15 on Friday and Sunday and 8 on Saturday and Monday.
+- `teistro_muhurta::Request` has a `direction` field, which a struct
+  written out in full now names (`direction: None`).
 **The A/B re-measured: yogas faster than the baseline, a third less memory.**
 **Numbers:** none; a measurement, not a computation.
 - On a quiet machine the SDK takes 0.55× the baseline's time for `yogas`

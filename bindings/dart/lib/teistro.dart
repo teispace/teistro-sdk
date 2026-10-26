@@ -13107,7 +13107,31 @@ enum MuhurtaActivity {
   ramanUpanayana('RAMAN_UPANAYANA'),
 
   /// Entering a new house, Nepal's griha pravesh, by Raman.
-  ramanGrihaPravesha('RAMAN_GRIHA_PRAVESHA');
+  ramanGrihaPravesha('RAMAN_GRIHA_PRAVESHA'),
+
+  /// Ear boring, karnavedha, by Raman.
+  ramanKarnavedha('RAMAN_KARNAVEDHA'),
+
+  /// The tonsure, chudakarana, by Raman.
+  ramanChudakarana('RAMAN_CHUDAKARANA'),
+
+  /// Commencing education, vidyarambha, by Raman.
+  ramanVidyarambha('RAMAN_VIDYARAMBHA'),
+
+  /// A journey, yatra, by Raman.
+  ramanYatra('RAMAN_YATRA'),
+
+  /// Buying for business, by Raman.
+  ramanTradePurchase('RAMAN_TRADE_PURCHASE'),
+
+  /// Selling for profit, by Raman.
+  ramanSelling('RAMAN_SELLING'),
+
+  /// Wearing new clothes, by Raman.
+  ramanNewClothes('RAMAN_NEW_CLOTHES'),
+
+  /// Acquiring a vehicle, by Raman.
+  ramanVehicle('RAMAN_VEHICLE');
 
   const MuhurtaActivity(this.key);
 
@@ -13185,6 +13209,7 @@ final class MuhurtaRequest {
     this.daysWithWindows = 7,
     this.most = 50,
     this.asta,
+    this.direction,
   });
 
   /// A [MuhurtaActivity], or the rules spelt out.
@@ -13206,6 +13231,10 @@ final class MuhurtaRequest {
   /// when absent.
   final Object? asta;
 
+  /// Where a journey goes: on a day whose disha shool it is, the rules'
+  /// `shool` holds a window to its release.
+  final Direction? direction;
+
   String get _json => jsonEncode(<String, Object?>{
     'rules': _named(rules, 'rules', (MuhurtaActivity a) => a.key),
     if (native != null) 'native': native!._json,
@@ -13213,6 +13242,7 @@ final class MuhurtaRequest {
     'daysWithWindows': daysWithWindows,
     'most': most,
     if (asta != null) 'asta': _named(asta!, 'asta', (AstaCriterion a) => a.key),
+    if (direction != null) 'direction': direction!.fullKey,
   });
 
   /// A field that is a name or a record spelt out, written down; anything

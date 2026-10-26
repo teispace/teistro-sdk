@@ -41,7 +41,7 @@ pub mod spelling;
 pub mod tara;
 pub mod window;
 
-pub use activity::{ActivityRules, Bar, MonthRule, Unwanted};
+pub use activity::{ActivityRules, Bar, Hours, MonthRule, Shool, Unwanted};
 pub use baseline::{BaselineEvent, Score};
 pub use clause::{Clause, ClauseKey, ClauseKind};
 pub use day::{DayRules, Native, clauses};

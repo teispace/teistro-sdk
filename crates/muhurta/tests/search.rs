@@ -136,6 +136,7 @@ fn request(rules: ActivityRules, ranking: Ranking) -> Request {
         days_with_windows: 3,
         // Every window of the days cut, so the promises are held on all.
         most: usize::MAX,
+        direction: None,
     }
 }
 

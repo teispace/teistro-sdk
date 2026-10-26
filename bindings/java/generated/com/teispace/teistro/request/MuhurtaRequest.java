@@ -13,12 +13,13 @@ import java.util.Objects;
  *
  * @param asta How asta is seen: a criterion the SDK names, or one spelt out. Null leaves the SDK's default.
  * @param daysWithWindows The {@code daysWithWindows} field. Null leaves the SDK's default.
+ * @param direction The {@code direction} field. Null leaves the SDK's default.
  * @param most The {@code most} field. Null leaves the SDK's default.
  * @param nativeValue The native a day is read against. Null leaves the SDK's default.
  * @param ranking How windows are ordered (crux C162); the texts' order by default. Null leaves the SDK's default.
  * @param rules The {@code rules} field.
  */
-public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, Long most, MuhurtaNative nativeValue, Ranking ranking, Object rules) implements RequestJson {
+public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.teispace.teistro.Direction direction, Long most, MuhurtaNative nativeValue, Ranking ranking, Object rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -37,7 +38,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, Long
      * @param rules The {@code rules} field.
      */
     public MuhurtaRequest(Object rules) {
-        this(null, null, null, null, null, rules);
+        this(null, null, null, null, null, null, rules);
     }
 
     /**
@@ -54,6 +55,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, Long
     public static final class Builder {
         private MuhurtaRequestAsta asta;
         private Long daysWithWindows;
+        private com.teispace.teistro.Direction direction;
         private Long most;
         private MuhurtaNative nativeValue;
         private Ranking ranking;
@@ -80,6 +82,17 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, Long
          */
         public Builder daysWithWindows(long daysWithWindows) {
             this.daysWithWindows = daysWithWindows;
+            return this;
+        }
+
+        /**
+         * Sets {@code direction}.
+         *
+         * @param direction The {@code direction} field. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder direction(com.teispace.teistro.Direction direction) {
+            this.direction = direction;
             return this;
         }
 
@@ -134,7 +147,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, Long
          * @throws NullPointerException naming a required field left unset
          */
         public MuhurtaRequest build() {
-            return new MuhurtaRequest(asta, daysWithWindows, most, nativeValue, ranking, rules);
+            return new MuhurtaRequest(asta, daysWithWindows, direction, most, nativeValue, ranking, rules);
         }
     }
 
@@ -150,6 +163,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, Long
         return new MuhurtaRequest(
             Read.orNull(json.get("asta"), present -> MuhurtaRequestAsta.of(present)),
             Read.orNull(json.get("daysWithWindows"), present -> Read.integer(present, "MuhurtaRequest.daysWithWindows")),
+            Read.orNull(json.get("direction"), present -> Read.member(present, "MuhurtaRequest.direction", com.teispace.teistro.Direction::byKey)),
             Read.orNull(json.get("most"), present -> Read.integer(present, "MuhurtaRequest.most")),
             Read.orNull(json.get("native"), present -> MuhurtaNative.of(present)),
             Read.orNull(json.get("ranking"), present -> Read.member(present, "MuhurtaRequest.ranking", Ranking::byKey)),
@@ -164,6 +178,9 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, Long
         }
         if (daysWithWindows != null) {
             json.put("daysWithWindows", daysWithWindows);
+        }
+        if (direction != null) {
+            json.put("direction", direction.fullKey());
         }
         if (most != null) {
             json.put("most", most);
