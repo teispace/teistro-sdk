@@ -2578,6 +2578,40 @@ void _engineTests() {
     expect(plain.lagnas, isEmpty);
   });
 
+  test('a day asked for its homa ahuti gives a graha to each stretch of '
+      'its stars, and one not asked none', () {
+    // Muhurta Chintamani, Nakshatra-prakarana v. 35 (crux C751): the
+    // Moon's star counted from the Sun's, in threes, from the Sun to Ketu.
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final day = ctx.almanac.day(
+      date: gregorian(2024, 6, 15),
+      place: place,
+      utcOffsetSeconds: 20700,
+      homaAhuti: true,
+    );
+    final plain = ctx.almanac.day(
+      date: gregorian(2024, 6, 15),
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    ctx.dispose();
+    final shares = day.homaAhuti;
+    expect(shares.length, greaterThanOrEqualTo(day.nakshatra.length));
+    expect(shares.first.inside.from, day.window.from);
+    expect(shares.last.inside.to, day.window.to);
+    for (var j = 1; j < shares.length; j += 1) {
+      expect(shares[j - 1].whole.to, shares[j].whole.from);
+    }
+    expect(plain.homaAhuti, isEmpty);
+  });
+
   test('fire follows each tithi with the vara, and Rahu walks the daylight '
       'from the east', () {
     // Muhurta Chintamani, Nakshatra-prakarana v. 36: the tithi from Shukla

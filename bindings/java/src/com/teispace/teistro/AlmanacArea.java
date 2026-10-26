@@ -110,11 +110,39 @@ public final class AlmanacArea {
             com.teispace.teistro.request.MuhurtaRequest muhurta,
             com.teispace.teistro.request.FestivalRequest festivals,
             boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas) {
+        return of(fromDate, toDate, place, utcOffsetSeconds, muhurta, festivals, years, eclipses, nepalSambat, lagnas,
+                false);
+    }
+
+    /**
+     * As {@link #of(CalendarDate, CalendarDate, Observer, int, com.teispace.teistro.request.MuhurtaRequest,
+     * com.teispace.teistro.request.FestivalRequest, boolean, boolean, boolean, boolean)}, with each day's homa ahuti
+     * when {@code homaAhuti} asks, as {@link AlmanacDay#homaAhuti()}. The Sun's stars cost a search a day does not
+     * otherwise make, so only on asking.
+     *
+     * @param fromDate the first day; its calendar is the range's
+     * @param toDate the last day
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param muhurta the muhurta search to run; may be null for none
+     * @param festivals the festival rules to reckon; may be null for none
+     * @param years whether to answer the lunar years the days fall in
+     * @param eclipses whether to answer the eclipses of the days
+     * @param nepalSambat whether to answer each day's Nepal Sambat date
+     * @param lagnas whether to give each day its lagna table
+     * @param homaAhuti whether to give each day its homa ahuti
+     * @return the almanac
+     */
+    public Almanac of(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.MuhurtaRequest muhurta,
+            com.teispace.teistro.request.FestivalRequest festivals,
+            boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas, boolean homaAhuti) {
         return asked(fromDate, toDate, place, utcOffsetSeconds, muhurta, festivals,
                 (years ? Native.TS_PANCHANGA_YEARS : 0)
                         | (eclipses ? Native.TS_PANCHANGA_ECLIPSES : 0)
                         | (nepalSambat ? Native.TS_PANCHANGA_NEPAL_SAMBAT : 0)
-                        | (lagnas ? Native.TS_PANCHANGA_LAGNAS : 0));
+                        | (lagnas ? Native.TS_PANCHANGA_LAGNAS : 0)
+                        | (homaAhuti ? Native.TS_PANCHANGA_HOMA_AHUTI : 0));
     }
 
     /**
@@ -211,7 +239,23 @@ public final class AlmanacArea {
      * @return the day
      */
     public AlmanacDay day(CalendarDate date, Observer place, int utcOffsetSeconds, boolean lagnas) {
-        return of(date, date, place, utcOffsetSeconds, null, null, false, false, false, lagnas).at(0);
+        return day(date, place, utcOffsetSeconds, lagnas, false);
+    }
+
+    /**
+     * The almanac of one day, with its lagna table when {@code lagnas} asks and its homa ahuti when
+     * {@code homaAhuti} does, as {@link AlmanacDay#lagnas()} and {@link AlmanacDay#homaAhuti()}.
+     *
+     * @param date the day
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param lagnas whether to give the day its lagna table
+     * @param homaAhuti whether to give the day its homa ahuti
+     * @return the day
+     */
+    public AlmanacDay day(CalendarDate date, Observer place, int utcOffsetSeconds, boolean lagnas,
+            boolean homaAhuti) {
+        return of(date, date, place, utcOffsetSeconds, null, null, false, false, false, lagnas, homaAhuti).at(0);
     }
 
     /**

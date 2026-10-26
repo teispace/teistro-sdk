@@ -2123,20 +2123,25 @@ geo.dispose();
   sky.dispose();
 }
 
-// ── The lagna table ────────────────────────────────────────────────────
+// ── The lagna table and the homa ahuti ─────────────────────────────────
 // 15 June 2025 at Kathmandu over the built-in sky, each sign's span
-// (`03-design/amrit-kalam-and-lagnas.md` §2).
+// (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share
+// (crux C751).
 {
   const sky = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
-  const table = sky.almanac.day({ date: gregorian(2025, 6, 15), place, utcOffsetSeconds: 20700, lagnas: true }).lagnas;
+  const day = sky.almanac.day({ date: gregorian(2025, 6, 15), place, utcOffsetSeconds: 20700, lagnas: true, homaAhuti: true });
+  const tables = { lagnas: day.lagnas, 'homa-ahuti': day.homaAhuti };
   sky.dispose();
-  put('lagnas-count', table.length);
-  table.forEach((span, j) => {
-    put(
-      `lagnas-${j}`,
-      [span.member, number(span.whole.from), number(span.whole.to), number(span.inside.from), number(span.inside.to)].join(' '),
-    );
-  });
+  put('lagnas-count', tables.lagnas.length);
+  put('homa-ahuti-count', tables['homa-ahuti'].length);
+  for (const [name, table] of Object.entries(tables)) {
+    table.forEach((span, j) => {
+      put(
+        `${name}-${j}`,
+        [span.member, number(span.whole.from), number(span.whole.to), number(span.inside.from), number(span.inside.to)].join(' '),
+      );
+    });
+  }
 }
 
 // ── The eclipses ───────────────────────────────────────────────────────

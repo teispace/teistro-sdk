@@ -27,7 +27,8 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    AgniVasa, Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, TithiClass, Vara,
+    AgniVasa, Direction, Graha, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, TithiClass,
+    Vara,
 };
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
@@ -604,6 +605,82 @@ pub fn agni_vasas(tithis: &[Span<Tithi>], vara: Vara) -> Vec<Span<AgniVasa>> {
     tithis
         .iter()
         .map(|span| span.map(|tithi| agni_vasa(tithi, vara)))
+        .collect()
+}
+
+/// Whose mouth a homa's oblation falls in, by the Moon's nakshatra counted
+/// from the Sun's in threes: Muhurta Chintamani, Nakshatra-prakarana v. 35
+/// (crux C751). The Sun's own star and the two after it give the Sun,
+/// the next three Mercury, and so on to Ketu; the verse bars a malefic's
+/// share, which the reader judges.
+pub const HOMA_AHUTI: [Graha; 9] = [
+    Graha::Sun,
+    Graha::Mercury,
+    Graha::Venus,
+    Graha::Saturn,
+    Graha::Moon,
+    Graha::Mars,
+    Graha::Jupiter,
+    Graha::Rahu,
+    Graha::Ketu,
+];
+
+/// The graha whose mouth the oblation falls in with the Sun in one
+/// nakshatra and the Moon in another: the Moon's star counted from the
+/// Sun's, the Sun's own the first, in threes ([`HOMA_AHUTI`]).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra};
+/// use teistro_panchanga::omen::ahuti;
+///
+/// // The Moon in the Sun's own star: the first three, the Sun's.
+/// assert_eq!(ahuti(Nakshatra::Rohini, Nakshatra::Rohini), Graha::Sun);
+/// // The Moon four stars on, the fourth: Mercury's three.
+/// assert_eq!(ahuti(Nakshatra::Ashwini, Nakshatra::Rohini), Graha::Mercury);
+/// // The star before the Sun's is the 27th, the last three, Ketu's.
+/// assert_eq!(ahuti(Nakshatra::Bharani, Nakshatra::Ashwini), Graha::Ketu);
+/// ```
+#[must_use]
+pub fn ahuti(sun: Nakshatra, moon: Nakshatra) -> Graha {
+    let count = (moon.id() + 27 - sun.id()) % 27;
+    HOMA_AHUTI
+        .get(usize::from(count / 3))
+        .copied()
+        .unwrap_or(Graha::Ketu)
+}
+
+/// A day's homa ahuti: one span for each stretch the Moon's nakshatra and
+/// the Sun's both held, its `whole` where the two stays overlap and its
+/// `inside` the part in the day ([`ahuti`]).
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Nakshatra};
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::Span;
+/// use teistro_panchanga::omen::homa_ahuti;
+///
+/// let day = Interval::literal(100.25, 101.25);
+/// let star = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// // The Moon changes star in the afternoon, the Sun stays in Rohini.
+/// let moon: Vec<_> = [star(Nakshatra::Rohini, 99.9, 100.7), star(Nakshatra::Mrigashira, 100.7, 101.7)].into_iter().flatten().collect();
+/// let sun: Vec<_> = star(Nakshatra::Rohini, 95.0, 108.0).into_iter().collect();
+/// let shares = homa_ahuti(&moon, &sun, day);
+/// assert_eq!(shares.iter().map(|s| s.member).collect::<Vec<_>>(), [Graha::Sun, Graha::Sun]);
+/// assert_eq!(shares[1].whole, Interval::literal(100.7, 101.7));
+/// ```
+#[must_use]
+pub fn homa_ahuti(
+    moon: &[Span<Nakshatra>],
+    sun: &[Span<Nakshatra>],
+    window: Interval,
+) -> Vec<Span<Graha>> {
+    moon.iter()
+        .flat_map(|m| {
+            sun.iter().filter_map(move |s| {
+                let whole = m.whole.clipped_to(s.whole)?;
+                Span::new(ahuti(s.member, m.member), whole, window)
+            })
+        })
         .collect()
 }
 

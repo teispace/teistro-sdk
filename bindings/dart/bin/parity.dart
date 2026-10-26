@@ -3318,30 +3318,36 @@ void main() {
     profile: 'nepali-default',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
-  // ── The lagna table ──────────────────────────────────────────────────
+  // ── The lagna table and the homa ahuti ───────────────────────────────
   // 15 June 2025 at Kathmandu over the same sky, each sign's span
-  // (`03-design/amrit-kalam-and-lagnas.md` §2).
-  final lagnaTable =
-      builtin.almanac
-          .day(
-            date: Calendar.gregorian.date(2025, 6, 15),
-            place: place,
-            utcOffsetSeconds: 20700,
-            lagnas: true,
-          )
-          .lagnas;
-  put('lagnas-count', lagnaTable.length);
-  for (final (j, span) in lagnaTable.indexed) {
-    put(
-      'lagnas-$j',
-      [
-        span.member.fullKey,
-        number(span.whole.from),
-        number(span.whole.to),
-        number(span.inside.from),
-        number(span.inside.to),
-      ].join(' '),
-    );
+  // (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share
+  // (crux C751).
+  final lagnaDay = builtin.almanac.day(
+    date: Calendar.gregorian.date(2025, 6, 15),
+    place: place,
+    utcOffsetSeconds: 20700,
+    lagnas: true,
+    homaAhuti: true,
+  );
+  final spanTables = <String, List<(String, Span<Object>)>>{
+    'lagnas': [for (final s in lagnaDay.lagnas) (s.member.fullKey, s)],
+    'homa-ahuti': [for (final s in lagnaDay.homaAhuti) (s.member.fullKey, s)],
+  };
+  put('lagnas-count', spanTables['lagnas']!.length);
+  put('homa-ahuti-count', spanTables['homa-ahuti']!.length);
+  for (final MapEntry(key: name, value: table) in spanTables.entries) {
+    for (final (j, (member, span)) in table.indexed) {
+      put(
+        '$name-$j',
+        [
+          member,
+          number(span.whole.from),
+          number(span.whole.to),
+          number(span.inside.from),
+          number(span.inside.to),
+        ].join(' '),
+      );
+    }
   }
   final eclipses =
       builtin.almanac

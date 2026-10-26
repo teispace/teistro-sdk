@@ -21,7 +21,7 @@ use teistro_calendar::lunisolar::{MonthKind, SAMSARPA_REACH_MONTHS};
 use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
-use teistro_core::catalogue::{AgniVasa, Direction, Nakshatra, Rashi, Ritu, Tithi, Vara};
+use teistro_core::catalogue::{AgniVasa, Direction, Graha, Nakshatra, Rashi, Ritu, Tithi, Vara};
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
@@ -147,6 +147,15 @@ pub struct Panchanga {
     /// which is all but some twelve days a year.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub punya_kala: Option<PunyaKala>,
+    /// The day's homa ahuti: the graha whose mouth an oblation falls in,
+    /// by the Moon's nakshatra counted from the Sun's in threes, one span
+    /// for each stretch the two stars both held (Muhurta Chintamani,
+    /// Nakshatra-prakarana v. 35; crux C751). **Empty unless asked for**
+    /// (the façade's `AlmanacRequest::with_homa_ahuti`), since the Sun's
+    /// stars cost a search a day does not otherwise make; and left out of
+    /// the day's document when empty.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub homa_ahuti: Vec<Span<Graha>>,
 }
 
 impl Panchanga {
@@ -1560,6 +1569,65 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok(())
     }
 
+    /// Fills each day's homa ahuti ([`Panchanga::homa_ahuti`]): the Sun's
+    /// nakshatras over the day, searched in the sky and zodiac the day's
+    /// own limbs were read in, laid against the Moon's
+    /// ([`omen::homa_ahuti`], crux C751).
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// let mut days = almanac.between(&date(11, 25), &date(11, 26), &kathmandu)?.value;
+    /// assert!(days[0].homa_ahuti.is_empty(), "not asked for");
+    /// almanac.homa_ahuti(&mut days, &kathmandu)?;
+    /// // At least one share for each star the Moon held in the day.
+    /// assert!(days.iter().all(|day| day.homa_ahuti.len() >= day.limbs.nakshatra.len()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A reading the provider refuses.
+    pub fn homa_ahuti(&self, days: &mut [Panchanga], place: &Place) -> Result<(), Error> {
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        for day in days.iter_mut() {
+            let (frame, zodiac) = self.at_instant(&completion, day.window.from)?;
+            let mut longitudes = completion.longitudes(frame);
+            if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+                longitudes = longitudes.with_observer(*place);
+            }
+            let sun = limb::nakshatras_of(&longitudes, Body::Sun, day.window, zodiac)?;
+            day.homa_ahuti = omen::homa_ahuti(&day.limbs.nakshatra, &sun, day.window);
+        }
+        Ok(())
+    }
+
     /// The adhika lunations among `days` that are the *samsarpa*, the
     /// adhika month before a kshaya month (*Dharmasindhu* p. 3, C179), each
     /// as its span from new moon to new moon, for the anniversaries kept in
@@ -2631,6 +2699,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 ghati_reckoning: settings.day.ghati_reckoning,
                 lagnas: Vec::new(),
                 punya_kala,
+                homa_ahuti: Vec::new(),
             },
             frame,
         ))

@@ -319,6 +319,19 @@ public final class AlmanacDay {
     }
 
     /**
+     * The homa ahuti, when the request asked for it: the graha whose mouth an oblation falls in, by the Moon's
+     * nakshatra counted from the Sun's in threes (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751), one
+     * span for each stretch the two stars both held; empty when not asked for.
+     *
+     * @return the spans
+     */
+    public List<Span<Graha>> homaAhuti() {
+        Panchanga.HomaAhuti c = batch.decoded().homaAhuti();
+        return spans("homa_ahuti", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Graha::of);
+    }
+
+    /**
      * The signs the Moon stood in.
      *
      * @return the spans

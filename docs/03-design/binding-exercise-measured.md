@@ -22,10 +22,10 @@ is therefore one nothing touches.
 |---|---:|---:|---:|
 | Node | 51 | 50 | 1 |
 | Dart | 43 | 41 | 2 |
-| Rust | 162 | 157 | 5 |
-| Python | 189 | 187 | 2 |
+| Rust | 164 | 159 | 5 |
+| Python | 190 | 188 | 2 |
 
-**10 members nothing names**, of 445 members the four surfaces declare.
+**10 members nothing names**, of 448 members the four surfaces declare.
 They are listed rather than counted, because a member that stops being
 exercised has to change this page and one that starts has to as well.
 

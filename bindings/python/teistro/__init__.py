@@ -74,6 +74,7 @@ from ._ffi import (
     CHART_VIMSHOPAKA,
     CONTEXT_TEST_PROVIDER,
     PANCHANGA_ECLIPSES,
+    PANCHANGA_HOMA_AHUTI,
     PANCHANGA_LAGNAS,
     PANCHANGA_NEPAL_SAMBAT,
     PANCHANGA_WITHOUT_DAYS,
@@ -2507,6 +2508,7 @@ class AlmanacArea(_Area):
         eclipses: bool = False,
         nepal_sambat: bool = False,
         lagnas: bool = False,
+        homa_ahuti: bool = False,
         days: bool = True,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
@@ -2526,7 +2528,10 @@ class AlmanacArea(_Area):
         lagna table, as `AlmanacDay.lagnas`: every sign rising from sunrise
         to the next sunrise, from the ascendant `panchanga.lagna_table`
         names, some four hundred ascendants a day, so only on asking.
-        `days=False` leaves the days out
+        `homa_ahuti=True` gives each day its homa ahuti, as
+        `AlmanacDay.homa_ahuti`: the Sun's stars cost a search a day does
+        not otherwise make, so only on asking. `days=False` leaves the days
+        out
         and answers only what is asked beside them; festivals alone are
         then founded as only what their rules read, which is what
         `AlmanacArea.festivals` asks.
@@ -2549,6 +2554,7 @@ class AlmanacArea(_Area):
             | (PANCHANGA_ECLIPSES if eclipses else 0)
             | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
             | (PANCHANGA_LAGNAS if lagnas else 0)
+            | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
         )
         return Almanac(
@@ -2611,15 +2617,18 @@ class AlmanacArea(_Area):
         place: Observer,
         utc_offset_seconds: int,
         lagnas: bool = False,
+        homa_ahuti: bool = False,
     ) -> AlmanacDay:
         """The almanac of one day, which is the range of one unwrapped;
-        `lagnas=True` with its lagna table, as `Almanac.of` says."""
+        `lagnas=True` with its lagna table and `homa_ahuti=True` with its
+        homa ahuti, as `Almanac.of` says."""
         return self.of(
             from_date=date,
             to_date=date,
             place=place,
             utc_offset_seconds=utc_offset_seconds,
             lagnas=lagnas,
+            homa_ahuti=homa_ahuti,
         ).at(0)
 
     def pakshi(
@@ -19722,6 +19731,18 @@ class AlmanacDay:
         return self._spans("punya_kala", self.batch.decoded.punya_kala, Rashi)
 
     @property
+    def homa_ahuti(self) -> list[Span[Graha]]:
+        """The homa ahuti, when `homa_ahuti=True` asked for it: the graha
+        whose mouth an oblation falls in, by the Moon's nakshatra counted
+        from the Sun's in threes (Muhurta Chintamani, Nakshatra-prakarana
+        v. 35, crux C751).
+
+        One span for each stretch the two stars both held; empty when not
+        asked for.
+        """
+        return self._spans("homa_ahuti", self.batch.decoded.homa_ahuti, Graha)
+
+    @property
     def moon_signs(self) -> list[Span[Rashi]]:
         """The signs the Moon stood in."""
         return self._spans("moon_signs", self.batch.decoded.moon_signs, Rashi)
@@ -19872,6 +19893,7 @@ class Almanac:
             "agni_vasa",
             "rahu_vasa",
             "punya_kala",
+            "homa_ahuti",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

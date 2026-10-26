@@ -6575,6 +6575,12 @@ export declare class AlmanacDay {
    * meritorious, `inside` the window; empty on all but some twelve days a year.
    */
   readonly punyaKala: readonly Span<Rashi>[];
+  /**
+   * The homa ahuti, when the request asked with `homaAhuti: true`: the graha whose mouth an oblation falls in, by
+   * the Moon's nakshatra counted from the Sun's in threes (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux
+   * C751), one span for each stretch the two stars both held; empty when not asked for.
+   */
+  readonly homaAhuti: readonly Span<Graha>[];
   /** The signs the Moon stood in. */
   readonly moonSigns: readonly Span<Rashi>[];
   /** The signs the Sun stood in. */
@@ -6617,6 +6623,8 @@ export interface AlmanacRequest {
   readonly nepalSambat?: boolean;
   /** Whether to give each day its lagna table, as `AlmanacDay.lagnas`; `false` by default, which costs nothing. */
   readonly lagnas?: boolean;
+  /** Whether to give each day its homa ahuti, as `AlmanacDay.homaAhuti`; `false` by default, which costs nothing. */
+  readonly homaAhuti?: boolean;
   /** `false` to leave the days out and answer only what is asked beside them; festivals alone are then founded as only what their rules read, which is what `AlmanacArea.festivals` asks. `true` by default. */
   readonly days?: boolean;
 }
@@ -8675,7 +8683,7 @@ export declare class AlmanacArea {
    * its day can change.
    */
   festivals(
-    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'days'> & {
+    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'days'> & {
       readonly festivals: FestivalRequest;
     },
   ): FestivalAnswer;

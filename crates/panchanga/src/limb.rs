@@ -1133,6 +1133,90 @@ pub fn signs_known<S: Longitudes + ?Sized>(
     Ok(out)
 }
 
+/// The nakshatras a body stood in over a window, each the span its two
+/// crossings give: the signs' search ([`signs_within`]) on the
+/// twenty-seven. What a day's homa ahuti reads of the Sun
+/// ([`crate::omen::homa_ahuti`]), which a day does not otherwise carry.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{nakshatras_of, sun_nakshatra_at};
+///
+/// // The Sun holds a star some thirteen days: one in a day, or two.
+/// let stars = nakshatras_of(&longitudes, Body::Sun, window, zodiac)?;
+/// assert!((1..=2).contains(&stars.len()));
+/// assert_eq!(stars[0].member, sun_nakshatra_at(&longitudes, window.from, zodiac)?);
+/// assert!(stars[0].whole.days() < 15.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// The source's own refusal.
+pub fn nakshatras_of<S: Longitudes + ?Sized>(
+    tropical: &S,
+    body: Body,
+    window: Interval,
+    zodiac: Zodiac,
+) -> Result<Vec<Span<Nakshatra>>, Error> {
+    let source = Sidereal::over(tropical, zodiac);
+    let quantity = Quantity::Longitude(body);
+    let reach = teistro_astro::events::longest_dwell_days(quantity, &Lattice::NAKSHATRAS)
+        .map_or(SIGN_SEARCH_CAP_DAYS, |dwell| {
+            dwell.min(SIGN_SEARCH_CAP_DAYS)
+        });
+    let from = JulianDay::<Ut1>::literal(window.from.get() - reach);
+    let to = JulianDay::<Ut1>::literal(window.to.get() + reach);
+    let found: Vec<f64> = Search::new(&source, quantity, Lattice::NAKSHATRAS)
+        .between(from, to)?
+        .iter()
+        .map(|event| event.instant.get())
+        .collect();
+    let mut out = Vec::new();
+    for pair in sign_edges(&found, window, reach).windows(2) {
+        let (Some(start), Some(end)) = (pair.first(), pair.get(1)) else {
+            continue;
+        };
+        let whole = Interval::literal(*start, *end);
+        if !whole.overlaps(window) {
+            continue;
+        }
+        let degrees = teistro_astro::events::value_of(
+            quantity,
+            &source,
+            JulianDay::<Ut1>::literal(middle_of(*start, *end)),
+        )?;
+        let star = Nakshatra::of(
+            Nas::try_from_degrees(degrees)?.division_index(Limb::Nakshatra.divisions()),
+        );
+        if let Some(span) = Span::new(star, whole, window) {
+            out.push(span);
+        }
+    }
+    Ok(out)
+}
+
 /// The furthest either side of a window a sign search reaches by
 /// default, days.
 ///

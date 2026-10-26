@@ -2838,30 +2838,38 @@ def main() -> None:
         ).eclipses
     assert eclipses is not None
 
-    # ── The lagna table ───────────────────────────────────────────────
+    # ── The lagna table and the homa ahuti ────────────────────────────
     # 15 June 2025 at Kathmandu over the built-in sky, each sign's span
-    # (`03-design/amrit-kalam-and-lagnas.md` §2).
+    # (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share
+    # (crux C751).
     with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as builtin:
-        table = builtin.almanac.day(
+        lagna_day = builtin.almanac.day(
             date=date(Calendar.GREGORIAN, 2025, 6, 15),
             place=place,
             utc_offset_seconds=20700,
             lagnas=True,
-        ).lagnas
-    put("lagnas-count", len(table))
-    for j, lagna in enumerate(table):
-        put(
-            f"lagnas-{j}",
-            " ".join(
-                (
-                    lagna.member.full_key,
-                    number(lagna.whole.from_jd),
-                    number(lagna.whole.to_jd),
-                    number(lagna.inside.from_jd),
-                    number(lagna.inside.to_jd),
-                )
-            ),
+            homa_ahuti=True,
         )
+        rows: dict[str, list[tuple[str, Any]]] = {
+            "lagnas": [(s.member.full_key, s) for s in lagna_day.lagnas],
+            "homa-ahuti": [(s.member.full_key, s) for s in lagna_day.homa_ahuti],
+        }
+    put("lagnas-count", len(rows["lagnas"]))
+    put("homa-ahuti-count", len(rows["homa-ahuti"]))
+    for table_name, table in rows.items():
+        for j, (table_member, span) in enumerate(table):
+            put(
+                f"{table_name}-{j}",
+                " ".join(
+                    (
+                        table_member,
+                        number(span.whole.from_jd),
+                        number(span.whole.to_jd),
+                        number(span.inside.from_jd),
+                        number(span.inside.to_jd),
+                    )
+                ),
+            )
 
     def eclipse_moment(m: Optional[EclipseMoment]) -> str:
         return "-" if m is None else f"{number(m.at)}@{number(m.altitude_deg)}"

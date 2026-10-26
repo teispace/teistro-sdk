@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The homa ahuti: whose mouth a day's oblation falls in.**
+**Numbers:** none for a day not asked; a day asked for it carries
+`homa_ahuti` and hashes with it.
+- `omen::ahuti(sun, moon)` and `omen::HOMA_AHUTI`: the Moon's nakshatra
+  counted in threes from the Sun's gives Sun, Mercury, Venus, Saturn,
+  Moon, Mars, Jupiter, Rahu, Ketu (Muhurta Chintamani,
+  Nakshatra-prakarana v. 35; C751).
+- `AlmanacRequest::with_homa_ahuti()` gives each day `homa_ahuti`, one
+  span for each stretch the Moon's star and the Sun's both held. The C
+  boundary asks with `TS_PANCHANGA_HOMA_AHUTI` and writes the span
+  section `homa_ahuti`; every binding takes the option (`homaAhuti`,
+  `homa_ahuti`) and reads the day's shares.
+
 **The ghata chakra: what strikes a native, by the Moon sign.**
 **Numbers:** a muhurta search against a native gains `GHATA` clauses,
 so its windows' clauses and hash change; no shipped rite bars them, and

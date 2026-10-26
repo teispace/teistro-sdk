@@ -488,6 +488,11 @@ impl<'a> AlmanacArea<'a> {
         if request.lagnas && request.days == Days::Handed {
             self.with_lagnas(&mut days.value, place, offset)?;
         }
+        if request.homa_ahuti && request.days == Days::Handed {
+            self.with_almanac(from.calendar, offset, |almanac| {
+                almanac.homa_ahuti(&mut days.value, place)
+            })?;
+        }
         let festivals = request
             .festivals
             .as_ref()
@@ -924,6 +929,7 @@ pub struct AlmanacRequest {
     eclipses: bool,
     nepal_sambat: bool,
     lagnas: bool,
+    homa_ahuti: bool,
     days: Days,
 }
 
@@ -999,6 +1005,23 @@ impl AlmanacRequest {
         self
     }
 
+    /// With each day's homa ahuti ([`Panchanga::homa_ahuti`]): the graha
+    /// whose mouth an oblation falls in, by the Moon's nakshatra counted
+    /// from the Sun's in threes (Muhurta Chintamani, Nakshatra-prakarana
+    /// v. 35; crux C751). The Sun's stars cost a search a day does not
+    /// otherwise make, so only a request that asks pays for it.
+    ///
+    /// ```
+    /// use teistro::AlmanacRequest;
+    ///
+    /// assert!(AlmanacRequest::new().with_homa_ahuti().homa_ahuti());
+    /// ```
+    #[must_use]
+    pub fn with_homa_ahuti(mut self) -> AlmanacRequest {
+        self.homa_ahuti = true;
+        self
+    }
+
     /// **Without the days**: what is asked beside them, and the days
     /// themselves left out of the answer, which holds none. Festivals
     /// alone are then founded as only what their rules read
@@ -1052,6 +1075,12 @@ impl AlmanacRequest {
     #[must_use]
     pub fn lagnas(&self) -> bool {
         self.lagnas
+    }
+
+    /// Whether the days' homa ahuti was asked.
+    #[must_use]
+    pub fn homa_ahuti(&self) -> bool {
+        self.homa_ahuti
     }
 }
 

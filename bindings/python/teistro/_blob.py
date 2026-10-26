@@ -8044,6 +8044,9 @@ class PanchangaCounts:
     punya_kala: memoryview[int]
     """How many rows of `punya_kala` belong to this day."""
 
+    homa_ahuti: memoryview[int]
+    """How many rows of `homa_ahuti` belong to this day."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8820,6 +8823,45 @@ class PanchangaPunyaKala:
 
 
 @dataclass(frozen=True)
+class PanchangaHomaAhuti:
+    """The `homa_ahuti` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The homa ahuti, when `sections` asked for `TS_PANCHANGA_HOMA_AHUTI` (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751): the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, the Sun's own star and the two after it the Sun's, then Mercury, Venus, Saturn, the Moon, Mars, Jupiter, Rahu and Ketu; the verse bars a malefic's share, which the reader judges. One span for each stretch the Moon's star and the Sun's both held, `whole` where the two stays overlap. Empty when not asked for.
+    """
+
+    member: memoryview[int]
+    """The graha the oblation falls to."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Panchanga:
     """A decoded Panchanga blob.
 
@@ -8943,6 +8985,9 @@ class Panchanga:
     punya_kala: PanchangaPunyaKala
     """The punya kala of a sankranti, when the day's daylight holds one, under `panchanga.punya_kala` (Dharmasindhu pp. 2-3, Nirnayasindhu pp. 3-5, crux C752): the sign the Sun entered, `whole` the ghatis the table gives before or after the entry, or the half day an entry at night makes meritorious, and `inside` their part in the daylight, the window. The sankranti itself may lie in the night either side, so a window on the morning after a night's entry is the following day's. Empty on all but some twelve days a year."""
 
+    homa_ahuti: PanchangaHomaAhuti
+    """The homa ahuti, when `sections` asked for `TS_PANCHANGA_HOMA_AHUTI` (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751): the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, the Sun's own star and the two after it the Sun's, then Mercury, Venus, Saturn, the Moon, Mars, Jupiter, Rahu and Ketu; the verse bars a malefic's share, which the reader judges. One span for each stretch the Moon's star and the Sun's both held, `whole` where the two stays overlap. Empty when not asked for."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -8986,6 +9031,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_agni_vasa = blob.section(32, "agni_vasa")
     at_rahu_vasa = blob.section(33, "rahu_vasa")
     at_punya_kala = blob.section(34, "punya_kala")
+    at_homa_ahuti = blob.section(35, "homa_ahuti")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -9059,6 +9105,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             rahu_vasa=blob.column(at_counts, 20, 4, at_counts.count).cast("I"),
             punya_kala=blob.column(
                 at_counts, 21, 4, at_counts.count
+            ).cast("I"),
+            homa_ahuti=blob.column(
+                at_counts, 22, 4, at_counts.count
             ).cast("I"),
             length=at_counts.count,
         ),
@@ -9583,6 +9632,36 @@ def decode_panchanga(raw: bytes) -> Panchanga:
                 at_punya_kala, 8, 1, at_punya_kala.count
             ).cast("B"),
             length=at_punya_kala.count,
+        ),
+        homa_ahuti=PanchangaHomaAhuti(
+            member=blob.column(
+                at_homa_ahuti, 0, 2, at_homa_ahuti.count
+            ).cast("H"),
+            whole_from=blob.column(
+                at_homa_ahuti, 1, 8, at_homa_ahuti.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_homa_ahuti, 2, 8, at_homa_ahuti.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_homa_ahuti, 3, 8, at_homa_ahuti.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_homa_ahuti, 4, 8, at_homa_ahuti.count
+            ).cast("d"),
+            sunrises=blob.column(
+                at_homa_ahuti, 5, 1, at_homa_ahuti.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_homa_ahuti, 6, 1, at_homa_ahuti.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_homa_ahuti, 7, 1, at_homa_ahuti.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_homa_ahuti, 8, 1, at_homa_ahuti.count
+            ).cast("B"),
+            length=at_homa_ahuti.count,
         ),
     )
 

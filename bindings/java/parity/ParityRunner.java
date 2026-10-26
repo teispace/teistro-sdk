@@ -1387,18 +1387,25 @@ public final class ParityRunner {
                 }
             }
 
-            // ── The lagna table ───────────────────────────────────────────
+            // ── The lagna table and the homa ahuti ────────────────────────
             // 15 June 2025 at Kathmandu over the built-in sky, each sign's span
-            // (03-design/amrit-kalam-and-lagnas.md §2).
+            // (03-design/amrit-kalam-and-lagnas.md §2) and each graha's share
+            // (crux C751).
             try (Context builtin = teistro.context(ContextOptions.builder()
                     .profile("nepali-default").ephemeris(Ephemeris.BUILTIN).build())) {
-                var table = builtin.almanac().day(date(2025, 6, 15), place, 20700, true).lagnas();
-                put("lagnas-count", table.size());
-                for (int j = 0; j < table.size(); j += 1) {
-                    var span = table.get(j);
-                    put("lagnas-" + j, String.join(" ", span.member().fullKey(),
-                            number(span.whole().fromJd()), number(span.whole().toJd()),
-                            number(span.inside().fromJd()), number(span.inside().toJd())));
+                var lagnaDay = builtin.almanac().day(date(2025, 6, 15), place, 20700, true, true);
+                var tables = new LinkedHashMap<String, List<? extends Span<? extends Catalogued>>>();
+                tables.put("lagnas", lagnaDay.lagnas());
+                tables.put("homa-ahuti", lagnaDay.homaAhuti());
+                put("lagnas-count", lagnaDay.lagnas().size());
+                put("homa-ahuti-count", lagnaDay.homaAhuti().size());
+                for (var table : tables.entrySet()) {
+                    for (int j = 0; j < table.getValue().size(); j += 1) {
+                        var span = table.getValue().get(j);
+                        put(table.getKey() + "-" + j, String.join(" ", span.member().fullKey(),
+                                number(span.whole().fromJd()), number(span.whole().toJd()),
+                                number(span.inside().fromJd()), number(span.inside().toJd())));
+                    }
                 }
             }
 

@@ -145,6 +145,17 @@ export const PANCHANGA_WITHOUT_DAYS = 8;
  */
 export const PANCHANGA_LAGNAS = 16;
 
+/**
+ * `TS_PANCHANGA_HOMA_AHUTI`, the bit a caller sets in a panchanga
+ * request's `sections` for each day's homa ahuti, in the `homa_ahuti`
+ * span section: the graha whose mouth an oblation falls in, by the
+ * Moon's nakshatra counted from the Sun's in threes (Muhurta
+ * Chintamani, Nakshatra-prakarana v. 35; crux C751). The Sun's stars
+ * cost a search a day does not otherwise make, so a request that does
+ * not set it pays nothing.
+ */
+export const PANCHANGA_HOMA_AHUTI = 32;
+
 /** A longitude in deg, checked. */
 export function longitude(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
