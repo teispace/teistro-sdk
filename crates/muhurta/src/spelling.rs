@@ -139,6 +139,7 @@ const OUTSIDE_CLAUSES: [(&str, &str, Kind); 4] = [
 ///     ranking: Ranking::Texts,
 ///     days_with_windows: 1,
 ///     most: 5,
+///     direction: None,
 /// };
 /// let answer = search(&sources, &request)?;
 /// use teistro_muhurta::spelling::in_full;

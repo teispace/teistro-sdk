@@ -579,16 +579,56 @@ rank after the scored.
 ### 4.6 The rites beyond marriage (saait)
 
 Nepal elects a saait for more than a marriage, and its national
-panchanga committee prints the days for each. Four of Raman's chapters
-are shipped as `ActivityRules` values beside his marriage
+panchanga committee prints the days for each. Twelve of Raman's
+elections are shipped as `ActivityRules` values beside his marriage
 (`crates/muhurta/src/rites.rs`), each named by its key in every binding:
 
 | key | Raman, *Muhurtha* | Nepal |
 |---|---|---|
 | `RAMAN_NAMAKARANA` | naming, ch. VIII pp. 58–59 | nwaran |
 | `RAMAN_ANNAPRASANA` | first feeding, ch. VIII pp. 59–60 | pasni |
+| `RAMAN_KARNAVEDHA` | ear boring, ch. VIII p. 60 | karnavedh |
+| `RAMAN_CHUDAKARANA` | tonsure, ch. VIII pp. 60–61 | chudakarma |
 | `RAMAN_UPANAYANA` | thread ceremony, ch. VIII pp. 64–65 | bratabandha |
+| `RAMAN_VIDYARAMBHA` | commencing education, ch. XI pp. 114–117 | vidyarambha |
 | `RAMAN_GRIHA_PRAVESHA` | house entry, ch. XII pp. 134–136 | griha pravesh |
+| `RAMAN_YATRA` | journey, ch. XIV pp. 156–159 | yatra |
+| `RAMAN_TRADE_PURCHASE` | buying for business, ch. X p. 112 | |
+| `RAMAN_SELLING` | selling for profit, ch. X p. 112 | |
+| `RAMAN_NEW_CLOTHES` | wearing new clothes, ch. X p. 105 | |
+| `RAMAN_VEHICLE` | acquiring a vehicle, ch. IV p. 26 (the movable stars) | |
+
+The page images are the Internet Archive's scan of the 1948 edition
+(`in.ernet.dli.2015.128092`), rank 2 as the marriage is. Where a
+chapter grades only the day — buying, selling, clothes, a vehicle — the
+rest is the general shuddhi, with what it asks of the grahas (Mercury
+fortified, the Moon in good aspect to the Sun) listed in `unjudged`. A
+journey's janma rashi and lagna, and the purposes' houses (short, long,
+air, sea, business, pilgrimage), are listed there too: a lagna graded by
+the native's chart is not yet expressed.
+
+**The direction** (`Request.direction`, `ActivityRules.shool`). Raman
+bars a journey east on Saturday and Monday, south on Thursday, west on
+Sunday and Friday and north on Tuesday and Wednesday — the day's *disha
+shool*, which the panchanga already gives (`Panchanga::disha_shool`) —
+"provided the journey is timed to begin beyond 22 ghaties on Thursday,
+12 on Tuesday and Wednesday, 15 on Friday and Sunday, 8 on Saturday and
+Monday" (ch. XIV, p. 157). A request names where the rite goes; on a
+day whose shool it is, the search cuts the day from that ghati, counted
+from sunrise under the day's own reckoning. A request that names none,
+or rules whose `shool` is empty, judge no direction; a list that leaves
+a weekday out shuts that weekday's days to its direction.
+
+**The hours** (`ActivityRules.hours`). A rite held in part of the day
+says so: `DAYLIGHT`, sunrise to sunset, for the ear boring, "never
+during night"; `FORENOON`, sunrise to noon, the daylight's middle, for
+the tonsure, which "should always be done in the forenoon". The search
+cuts only that part of a day, so a window outside it is never offered.
+`ANY` is the default and what a request that leaves the field out
+reads. Hours bar, and a "should" weighs (C205): the thread ceremony's
+"should take place before noon" and the education's "forenoon and noon
+are the best" are listed in `unjudged`, for a caller who holds them to
+set the field.
 
 Each was read off the page images, and each is laid over Raman's
 general shuddhi as the marriage is: where a chapter names a member its

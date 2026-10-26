@@ -21,10 +21,12 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
+use teistro_core::catalogue::Direction;
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_panchanga::Panchanga;
+use teistro_time::{GhatiPala, instant_of};
 
 use crate::activity::{ActivityRules, Unjudged};
 use crate::baseline::{self, BaselineEvent, DayReading, Period, Score};
@@ -653,6 +655,7 @@ const LAGNA_MARGIN_DAYS: f64 = 0.125;
 ///     ranking: Ranking::Texts,
 ///     days_with_windows: 1,
 ///     most: 5,
+///     direction: None,
 /// };
 /// let answer = search(&sources, &request)?;
 /// assert!(answer.windows.len() <= request.most);
@@ -677,6 +680,10 @@ pub struct Request {
     pub days_with_windows: usize,
     /// How many windows the answer holds at most.
     pub most: usize,
+    /// Where the rite goes, for a journey: on a day whose disha shool
+    /// it is, the rules' `shool` holds the window to its release.
+    #[serde(default)]
+    pub direction: Option<Direction>,
 }
 
 /// A day the season closed.
@@ -739,6 +746,7 @@ pub struct Request {
 ///     ranking: Ranking::Baseline,
 ///     days_with_windows: 1,
 ///     most: 5,
+///     direction: None,
 /// };
 /// let answer = search(&sources, &request)?;
 /// assert_eq!(answer.closed.len(), 2);
@@ -882,6 +890,7 @@ pub struct Season {
 ///     ranking: Ranking::Texts,
 ///     days_with_windows: 1,
 ///     most: 5,
+///     direction: None,
 /// };
 /// let answer = search(&sources, &request)?;
 /// assert!(answer.days_cut <= answer.days_judged);
@@ -967,6 +976,7 @@ pub struct Answer {
 ///     ranking: Ranking::Texts,
 ///     days_with_windows: 1,
 ///     most: 5,
+///     direction: None,
 /// };
 /// let answer = search(&sources, &request)?;
 /// // The windows come in the ranking's order.
@@ -1096,7 +1106,22 @@ fn cut_day<S: Sources + ?Sized>(
     scoring: Option<(&BaselineEvent, &Score)>,
 ) -> Result<Cut, Error> {
     let rules = &request.rules;
-    let span = day.window;
+    let released = released(rules, day, request.direction)?;
+    let Some(span) = rules
+        .hours
+        .within(day.window, day.day.sunrise, day.day.sunset)
+        .and_then(|kept| match released {
+            // A release past the hours kept leaves none of them.
+            Some(at) => (at.get() < kept.to.get())
+                .then(|| Interval::literal(at.get().max(kept.from.get()), kept.to.get())),
+            None => Some(kept),
+        })
+    else {
+        return Ok(Cut {
+            judged: Vec::new(),
+            blacked_out: 0,
+        });
+    };
     let followed = Interval::new(
         span.from.plus_days(-LAGNA_MARGIN_DAYS)?,
         span.to.plus_days(LAGNA_MARGIN_DAYS)?,
@@ -1153,6 +1178,29 @@ fn cut_day<S: Sources + ?Sized>(
         judged,
         blacked_out,
     })
+}
+
+/// The instant a journey towards `direction` may begin on a day whose
+/// disha shool it is, or `None` where nothing holds it back: no direction
+/// asked, rules that do not judge one, or another day's shool. A weekday
+/// the rules give no release shuts the day, at its next sunrise.
+fn released(
+    rules: &ActivityRules,
+    day: &Panchanga,
+    direction: Option<Direction>,
+) -> Result<Option<JulianDay<Utc>>, Error> {
+    if rules.shool.is_empty() || direction != Some(day.disha_shool()) {
+        return Ok(None);
+    }
+    let Some(shool) = rules.shool.iter().find(|s| s.vara == day.vara()) else {
+        return Ok(Some(day.day.next_sunrise));
+    };
+    let count = GhatiPala {
+        ghati: shool.after_ghatis,
+        pala: 0,
+        vipala: 0,
+    };
+    instant_of(&day.day, count, day.ghati_reckoning.try_into()?).map(Some)
 }
 
 /// Whether the blackouts cover an interval whole, between them.

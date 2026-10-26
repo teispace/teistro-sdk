@@ -207,6 +207,7 @@ fn page() -> Result<String, String> {
         ranking,
         days_with_windows: DAYS,
         most: usize::MAX,
+        direction: None,
     };
     let baseline_rules = ActivityRules::baseline_marriage();
     let baseline = search(

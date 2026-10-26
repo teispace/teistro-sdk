@@ -7031,6 +7031,14 @@ MuhurtaActivity = Literal[
     "RAMAN_ANNAPRASANA",
     "RAMAN_UPANAYANA",
     "RAMAN_GRIHA_PRAVESHA",
+    "RAMAN_KARNAVEDHA",
+    "RAMAN_CHUDAKARANA",
+    "RAMAN_VIDYARAMBHA",
+    "RAMAN_YATRA",
+    "RAMAN_TRADE_PURCHASE",
+    "RAMAN_SELLING",
+    "RAMAN_NEW_CLOTHES",
+    "RAMAN_VEHICLE",
 ]
 """A set of rules the SDK ships, which a muhurta request names as `rules`."""
 
@@ -7040,10 +7048,11 @@ class MuhurtaRequest(TypedDict, total=False):
     (`03-design/muhurta-at-the-boundary.md`), only `rules` required:
     a set the SDK ships by name (`"RAMAN_MARRIAGE"`, `"BASELINE_MARRIAGE"`,
     `"RAMAN_NAMAKARANA"`, `"RAMAN_ANNAPRASANA"`, `"RAMAN_UPANAYANA"`,
-    `"RAMAN_GRIHA_PRAVESHA"`), or rules spelt out as a mapping; `native`; `ranking`, `"TEXTS"` (the default,
-    C162) or `"BASELINE"`; `daysWithWindows` (7) and `most` (50); and `asta`,
+    `"RAMAN_GRIHA_PRAVESHA"` and the others `MuhurtaActivity` lists), or rules spelt out as a mapping; `native`; `ranking`, `"TEXTS"` (the default,
+    C162) or `"BASELINE"`; `daysWithWindows` (7) and `most` (50); `asta`,
     `"SURYA_SIDDHANTA"` (the default), `"COMBUSTION_ORB"`, `"PTOLEMY"` or a
-    criterion spelt out. A catalogue member may be a member, a full key or a
+    criterion spelt out; and `direction`, where a journey goes, which the
+    rules' `shool` reads. A catalogue member may be a member, a full key or a
     bare one, and a clause an answer gave may be handed back as a bar.
 
     >>> asked: MuhurtaRequest = {"rules": "RAMAN_MARRIAGE", "daysWithWindows": 3}
@@ -7055,6 +7064,7 @@ class MuhurtaRequest(TypedDict, total=False):
     daysWithWindows: int
     most: int
     asta: Union[Literal["SURYA_SIDDHANTA", "COMBUSTION_ORB", "PTOLEMY"], Mapping[str, Any]]
+    direction: Union[Direction, str]
 
 
 @dataclass(frozen=True)

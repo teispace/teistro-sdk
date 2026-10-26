@@ -18,6 +18,7 @@ use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Graha, Kaala, Karana, Masa, Nakshatra, Rashi, Tithi, Vara, Yoga};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
+use teistro_core::quantity::{JulianDay, Utc};
 use teistro_panchanga::Panchanga;
 
 use crate::baseline::BaselineEvent;
@@ -171,6 +172,102 @@ impl From<ClauseKind> for Bar {
     }
 }
 
+/// The part of the day a rite is held in: Raman's "never during night"
+/// for the ear boring, "always in the forenoon" for the tonsure.
+///
+/// Noon is the middle of the daylight, halfway from sunrise to sunset. A
+/// polar day's daylight is its policy's, and a day with none holds no
+/// window under `DAYLIGHT` or `FORENOON`.
+///
+/// ```
+/// use teistro_core::interval::Interval;
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_muhurta::Hours;
+///
+/// // Sunrise a quarter into the day, sunset three quarters in.
+/// let (day, sunrise, sunset) = (Interval::literal(0.0, 1.0), JulianDay::literal(0.25), JulianDay::literal(0.75));
+/// assert_eq!(Hours::Any.within(day, sunrise, sunset), Some(day));
+/// assert_eq!(Hours::Daylight.within(day, sunrise, sunset), Some(Interval::literal(0.25, 0.75)));
+/// assert_eq!(Hours::Forenoon.within(day, sunrise, sunset), Some(Interval::literal(0.25, 0.5)));
+/// assert_eq!(serde_json::to_value(Hours::Forenoon)?, serde_json::json!("FORENOON"));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Hours {
+    /// Day and night alike.
+    #[default]
+    Any,
+    /// Sunrise to sunset.
+    Daylight,
+    /// Sunrise to noon.
+    Forenoon,
+}
+
+impl Hours {
+    /// The part of `window` these hours keep, given the day's sunrise
+    /// and sunset, or `None` where they keep nothing of it.
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    /// use teistro_muhurta::Hours;
+    ///
+    /// // A day from sunrise at 0.25 to the next at 1.25, the Sun setting at 0.75.
+    /// let day = Interval::literal(0.25, 1.25);
+    /// let (rise, set) = (JulianDay::<Utc>::literal(0.25), JulianDay::<Utc>::literal(0.75));
+    /// assert_eq!(Hours::Any.within(day, rise, set), Some(day));
+    /// assert_eq!(Hours::Daylight.within(day, rise, set), Some(Interval::literal(0.25, 0.75)));
+    /// assert_eq!(Hours::Forenoon.within(day, rise, set), Some(Interval::literal(0.25, 0.5)));
+    /// // A window wholly after noon keeps no forenoon.
+    /// assert_eq!(Hours::Forenoon.within(Interval::literal(0.6, 0.7), rise, set), None);
+    /// ```
+    #[must_use]
+    pub fn within(
+        self,
+        window: Interval,
+        sunrise: JulianDay<Utc>,
+        sunset: JulianDay<Utc>,
+    ) -> Option<Interval> {
+        let to = match self {
+            Hours::Any => return Some(window),
+            Hours::Daylight => sunset.get(),
+            Hours::Forenoon => f64::midpoint(sunrise.get(), sunset.get()),
+        };
+        (sunrise.get() < to)
+            .then(|| Interval::literal(sunrise.get(), to))
+            .and_then(|hours| hours.clipped_to(window))
+            .filter(|kept| !kept.is_empty())
+    }
+}
+
+/// The ghati of a weekday past which a journey towards its disha shool
+/// may begin: Raman's "provided the journey is timed to begin beyond 22
+/// ghaties on Thursday" (*Muhurtha*, ch. XIV, p. 157), counted from
+/// sunrise under the day's own ghati reckoning.
+///
+/// ```
+/// use teistro_core::catalogue::Vara;
+/// use teistro_muhurta::{ActivityRules, Shool};
+///
+/// let journey = ActivityRules::raman_yatra();
+/// assert!(journey.shool.contains(&Shool { vara: Vara::Guruvara, after_ghatis: 22 }));
+/// assert_eq!(serde_json::to_value(Shool { vara: Vara::Guruvara, after_ghatis: 22 })?,
+///     serde_json::json!({"vara": "GURUVARA", "afterGhatis": 22}));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct Shool {
+    /// The weekday.
+    pub vara: Vara,
+    /// The ghatis from sunrise, 0 to 59, before which the journey does not
+    /// begin.
+    pub after_ghatis: u8,
+}
+
 /// Grahas a rite wants out of houses: "the 8th house should be
 /// unoccupied" is every graha out of the 8th, "Mars and Saturn should be
 /// avoided in the 5th" is two grahas out of one house.
@@ -315,6 +412,14 @@ pub struct ActivityRules {
     pub months: MonthRule,
     /// The lagnas.
     pub lagnas: Graded<Rashi>,
+    /// The part of the day the rite is held in.
+    #[serde(default)]
+    pub hours: Hours,
+    /// For a journey asked a direction, the ghati each weekday's disha
+    /// shool is lifted at. Empty, the direction is not judged; a weekday
+    /// missing from a list that is not shuts its days to the direction.
+    #[serde(default)]
+    pub shool: Vec<Shool>,
     /// The quarters of a star rejected though the star is good.
     pub padas: Vec<Pada>,
     /// The season's blackouts the rite is not held in.
@@ -402,6 +507,8 @@ impl ActivityRules {
                 rejected: Vec::new(),
                 otherwise: Grade::Rejected,
             },
+            hours: Hours::Any,
+            shool: Vec::new(),
             padas: vec![
                 Pada { nakshatra: Nakshatra::Magha, pada: 1 },
                 Pada { nakshatra: Nakshatra::Mula, pada: 1 },
@@ -485,6 +592,8 @@ impl ActivityRules {
                 ]),
             },
             lagnas: Graded::none(),
+            hours: Hours::Any,
+            shool: Vec::new(),
             padas: Vec::new(),
             heeds: vec![
                 BlackoutKind::Chaturmas,
@@ -696,6 +805,15 @@ impl ActivityRules {
                     "house {house} does not exist; houses are counted 1 to 12 from the lagna"
                 ))
                 .with_field(format!("unwanted[{i}].houses")));
+            }
+        }
+        for (i, shool) in self.shool.iter().enumerate() {
+            if shool.after_ghatis >= 60 {
+                return Err(Error::invalid_arg(format!(
+                    "ghati {} does not exist; a day's ghatis are 0 to 59 from sunrise",
+                    shool.after_ghatis
+                ))
+                .with_field(format!("shool[{i}].afterGhatis")));
             }
         }
         for (i, pada) in self.padas.iter().enumerate() {

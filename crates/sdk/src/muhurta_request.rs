@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use teistro_astro::visibility::Criterion;
 use teistro_calendar::CalendarDate;
+use teistro_core::catalogue::Direction;
 use teistro_core::error::Error;
 use teistro_muhurta::{ActivityRules, Native, Ranking, Request};
 
@@ -38,17 +39,49 @@ pub enum Activity {
     /// Entering a new house, Nepal's griha pravesh, by Raman
     /// ([`ActivityRules::raman_griha_pravesha`]).
     RamanGrihaPravesha,
+    /// Ear boring, karnavedha, by Raman
+    /// ([`ActivityRules::raman_karnavedha`]).
+    RamanKarnavedha,
+    /// The tonsure, chudakarana, by Raman
+    /// ([`ActivityRules::raman_chudakarana`]).
+    RamanChudakarana,
+    /// Commencing education, vidyarambha, by Raman
+    /// ([`ActivityRules::raman_vidyarambha`]).
+    RamanVidyarambha,
+    /// A journey, yatra, by Raman
+    /// ([`ActivityRules::raman_yatra`]).
+    RamanYatra,
+    /// Buying for business, by Raman
+    /// ([`ActivityRules::raman_trade_purchase`]).
+    RamanTradePurchase,
+    /// Selling for profit, by Raman
+    /// ([`ActivityRules::raman_selling`]).
+    RamanSelling,
+    /// Wearing new clothes, by Raman
+    /// ([`ActivityRules::raman_new_clothes`]).
+    RamanNewClothes,
+    /// Acquiring a vehicle, by Raman
+    /// ([`ActivityRules::raman_vehicle`]).
+    RamanVehicle,
 }
 
 impl Activity {
     /// Every activity the SDK ships.
-    pub const ALL: [Activity; 6] = [
+    pub const ALL: [Activity; 14] = [
         Activity::RamanMarriage,
         Activity::BaselineMarriage,
         Activity::RamanNamakarana,
         Activity::RamanAnnaprasana,
         Activity::RamanUpanayana,
         Activity::RamanGrihaPravesha,
+        Activity::RamanKarnavedha,
+        Activity::RamanChudakarana,
+        Activity::RamanVidyarambha,
+        Activity::RamanYatra,
+        Activity::RamanTradePurchase,
+        Activity::RamanSelling,
+        Activity::RamanNewClothes,
+        Activity::RamanVehicle,
     ];
 
     /// Its key, as serde writes it and a request names it.
@@ -61,6 +94,14 @@ impl Activity {
             Activity::RamanAnnaprasana => "RAMAN_ANNAPRASANA",
             Activity::RamanUpanayana => "RAMAN_UPANAYANA",
             Activity::RamanGrihaPravesha => "RAMAN_GRIHA_PRAVESHA",
+            Activity::RamanKarnavedha => "RAMAN_KARNAVEDHA",
+            Activity::RamanChudakarana => "RAMAN_CHUDAKARANA",
+            Activity::RamanVidyarambha => "RAMAN_VIDYARAMBHA",
+            Activity::RamanYatra => "RAMAN_YATRA",
+            Activity::RamanTradePurchase => "RAMAN_TRADE_PURCHASE",
+            Activity::RamanSelling => "RAMAN_SELLING",
+            Activity::RamanNewClothes => "RAMAN_NEW_CLOTHES",
+            Activity::RamanVehicle => "RAMAN_VEHICLE",
         }
     }
 
@@ -74,6 +115,14 @@ impl Activity {
             Activity::RamanAnnaprasana => ActivityRules::raman_annaprasana(),
             Activity::RamanUpanayana => ActivityRules::raman_upanayana(),
             Activity::RamanGrihaPravesha => ActivityRules::raman_griha_pravesha(),
+            Activity::RamanKarnavedha => ActivityRules::raman_karnavedha(),
+            Activity::RamanChudakarana => ActivityRules::raman_chudakarana(),
+            Activity::RamanVidyarambha => ActivityRules::raman_vidyarambha(),
+            Activity::RamanYatra => ActivityRules::raman_yatra(),
+            Activity::RamanTradePurchase => ActivityRules::raman_trade_purchase(),
+            Activity::RamanSelling => ActivityRules::raman_selling(),
+            Activity::RamanNewClothes => ActivityRules::raman_new_clothes(),
+            Activity::RamanVehicle => ActivityRules::raman_vehicle(),
         }
     }
 }
@@ -113,6 +162,7 @@ pub struct MuhurtaRequest {
     days_with_windows: usize,
     most: usize,
     asta: Criterion,
+    direction: Option<Direction>,
 }
 
 impl MuhurtaRequest {
@@ -135,6 +185,7 @@ impl MuhurtaRequest {
             days_with_windows: Self::DAYS_WITH_WINDOWS,
             most: Self::MOST,
             asta: Criterion::SURYA_SIDDHANTA,
+            direction: None,
         }
     }
 
@@ -173,6 +224,33 @@ impl MuhurtaRequest {
     pub const fn with_asta(mut self, criterion: Criterion) -> MuhurtaRequest {
         self.asta = criterion;
         self
+    }
+
+    /// Going towards a direction: on a day whose disha shool it is, the
+    /// rules' `shool` holds a window to the ghati it is released at
+    /// ([`ActivityRules::raman_yatra`]).
+    ///
+    /// ```
+    /// use teistro::MuhurtaRequest;
+    /// use teistro::catalogue::Direction;
+    /// use teistro::muhurta::ActivityRules;
+    ///
+    /// let east = MuhurtaRequest::new(ActivityRules::raman_yatra()).towards(Direction::East);
+    /// assert_eq!(east.direction(), Some(Direction::East));
+    /// let written = MuhurtaRequest::from_json(r#"{"rules": "RAMAN_YATRA", "direction": "EAST"}"#)?;
+    /// assert_eq!(written, east);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn towards(mut self, direction: Direction) -> MuhurtaRequest {
+        self.direction = Some(direction);
+        self
+    }
+
+    /// Where the rite goes, if anywhere.
+    #[must_use]
+    pub const fn direction(&self) -> Option<Direction> {
+        self.direction
     }
 
     /// The activity's rules.
@@ -254,6 +332,7 @@ impl MuhurtaRequest {
             ranking: self.ranking,
             days_with_windows: self.days_with_windows,
             most: self.most,
+            direction: self.direction,
         }
     }
 
@@ -284,6 +363,9 @@ impl MuhurtaRequest {
             .at_most(asked.most);
         if let Some(native) = asked.native {
             request = request.with_native(native);
+        }
+        if let Some(direction) = asked.direction {
+            request = request.towards(direction);
         }
         if let Some(asta) = &asked.asta {
             request = request.with_asta(match asta {
@@ -336,6 +418,8 @@ pub(crate) struct Asked {
     #[serde(default)]
     #[cfg_attr(feature = "schema", schemars(schema_with = "asta_schema"))]
     asta: Option<Value>,
+    #[serde(default)]
+    direction: Option<Direction>,
 }
 
 /// How asta may be asked: by a criterion [`ASTA`] names, or spelt out, as

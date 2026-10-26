@@ -1,6 +1,8 @@
-//! The rites beyond marriage: Raman's naming, first feeding, thread
-//! ceremony and house entry (*Muhurtha*, chs. VIII, IX and XII), each a
-//! value of [`ActivityRules`] like the marriage.
+//! The rites beyond marriage: Raman's naming, first feeding, ear boring,
+//! tonsure, thread ceremony, commencing education, house entry and
+//! journey, and his elections for buying for business, selling, new
+//! clothes and a vehicle (*Muhurtha*, chs. IV, VIII, X, XI, XII and XIV),
+//! each a value of [`ActivityRules`] like the marriage.
 //!
 //! Each chapter is laid over Raman's general shuddhi ([`DayRules::raman`])
 //! as the marriage is: where a chapter names a member its grade wins,
@@ -20,7 +22,7 @@
 
 use teistro_core::catalogue::{Graha, Masa, Nakshatra, Rashi, Tithi, Vara};
 
-use crate::activity::{ActivityRules, Bar, MonthRule, Unjudged, Unwanted};
+use crate::activity::{ActivityRules, Bar, Hours, MonthRule, Pada, Shool, Unjudged, Unwanted};
 use crate::clause::ClauseKey;
 use crate::day::DayRules;
 use crate::grade::{Grade, Graded};
@@ -121,7 +123,7 @@ fn upanayana_unjudged() -> Vec<Unjudged> {
     vec![
         unjudged(
             "the ceremony before noon",
-            "a window is not yet judged by the hour of the day",
+            "the chapter says it should, and a should weighs (crux C205); `hours` bars, so a caller who holds the forenoon sets it to `FORENOON`",
         ),
         unjudged(
             "Wednesday rejected while Mercury is combust",
@@ -157,6 +159,19 @@ fn age(what: &str) -> Unjudged {
         "the child's age, which a muhurta request does not carry: a consumer keeps the days that fall in it",
     )
 }
+
+/// The ghatis past sunrise from which a journey towards the day's disha
+/// shool may begin, weekday by weekday (Raman, *Muhurtha*, ch. XIV,
+/// p. 157).
+const YATRA_SHOOL: [(Vara, u8); 7] = [
+    (Vara::Guruvara, 22),
+    (Vara::Mangalavara, 12),
+    (Vara::Budhavara, 12),
+    (Vara::Shukravara, 15),
+    (Vara::Ravivara, 15),
+    (Vara::Shanivara, 8),
+    (Vara::Somavara, 8),
+];
 
 impl ActivityRules {
     /// Raman's naming of the child, namakarana — Nepal's nwaran (*Muhurtha*,
@@ -227,6 +242,8 @@ impl ActivityRules {
                 rejected: Vec::new(),
                 otherwise: Grade::Middling,
             },
+            hours: Hours::Any,
+            shool: Vec::new(),
             padas: Vec::new(),
             heeds: Vec::new(),
             unwanted: vec![Unwanted::vacant(vec![8])],
@@ -309,6 +326,8 @@ impl ActivityRules {
             day,
             months: MonthRule::Any,
             lagnas: Graded::rejecting(vec![Rashi::Aries, Rashi::Scorpio, Rashi::Pisces]),
+            hours: Hours::Any,
+            shool: Vec::new(),
             padas: Vec::new(),
             heeds: Vec::new(),
             unwanted: vec![
@@ -420,6 +439,8 @@ impl ActivityRules {
                 ],
                 Grade::Rejected,
             ),
+            hours: Hours::Any,
+            shool: Vec::new(),
             padas: Vec::new(),
             heeds: Vec::new(),
             unwanted: vec![
@@ -504,6 +525,8 @@ impl ActivityRules {
                 rejected: MOVABLE.into(),
                 otherwise: Grade::Middling,
             },
+            hours: Hours::Any,
+            shool: Vec::new(),
             padas: Vec::new(),
             heeds: vec![BlackoutKind::GuruAsta, BlackoutKind::ShukraAsta],
             unwanted: vec![Unwanted::vacant(vec![8])],
@@ -525,16 +548,608 @@ impl ActivityRules {
             baseline: None,
         }
     }
+
+    /// Raman's ear boring, karnavedha (*Muhurtha*, ch. VIII, p. 60), over
+    /// his general shuddhi, in daylight: "in the forenoon or in the
+    /// afternoon but never during night".
+    ///
+    /// - **Tithis**: "the other lunar days usually declared as
+    ///   inauspicious", the general shuddhi's.
+    /// - **Varas**: Monday, Wednesday, Thursday and Friday good.
+    /// - **Lagnas**: Aquarius, Leo and Scorpio "should be rejected".
+    /// - **Against**: the 8th occupied, which "should be unoccupied".
+    ///
+    /// ```
+    /// use teistro_muhurta::{ActivityRules, Hours};
+    ///
+    /// let boring = ActivityRules::raman_karnavedha();
+    /// boring.check()?;
+    /// assert_eq!(boring.hours, Hours::Daylight);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    #[must_use]
+    pub fn raman_karnavedha() -> ActivityRules {
+        ActivityRules {
+            day: over_shuddhi(
+                Graded::none(),
+                Graded::none(),
+                good(benefic_varas(), Grade::Middling),
+            ),
+            months: MonthRule::Any,
+            lagnas: Graded::rejecting(vec![Rashi::Aquarius, Rashi::Leo, Rashi::Scorpio]),
+            hours: Hours::Daylight,
+            shool: Vec::new(),
+            padas: Vec::new(),
+            heeds: Vec::new(),
+            unwanted: vec![Unwanted::vacant(vec![8])],
+            bars: Vec::new(),
+            unjudged: vec![
+                age("the 12th or 16th day of the child, or its 6th, 7th or 8th month"),
+                unjudged(
+                    "a day ruled by two asterisms or two lunar days",
+                    "a day's count of stars or tithis is not graded; each window is judged by the star and tithi it holds",
+                ),
+            ],
+            baseline: None,
+        }
+    }
+
+    /// Raman's tonsure, chudakarana, his *chowlam* (*Muhurtha*, ch. VIII,
+    /// pp. 60–61), over his general shuddhi, in the forenoon, where it
+    /// "should always be done". The scan lacks pp. 62–63, where the
+    /// chapter's lagnas end.
+    ///
+    /// - **Tithis**: the bright 2nd, 3rd, 5th, 7th, 10th, 11th and 13th
+    ///   good, the dark half's same days ordinary, since "the dark
+    ///   fortnight is supposed to affect the health"; the 1st, 4th, 6th,
+    ///   8th, 9th and 14th, the Purnima and the Amavasya rejected.
+    /// - **Stars**: Punarvasu, Mrigashira, Dhanishtha, Shravana, Revati,
+    ///   Pushya, Chitra, Ashwini and Hasta favourable; Swati, Rohini,
+    ///   Shatabhisha and the three Uttaras ordinary. Naming an ordinary
+    ///   class below the favourable one, he leaves the rest below both:
+    ///   rejected.
+    /// - **Varas**: Monday, Wednesday, Thursday and Friday good.
+    /// - **Lagnas**: Cancer, Virgo, Gemini, Pisces, Libra, Taurus and
+    ///   Capricorn good; the rest "not beneficial" but usable with a
+    ///   benefic in the lagna, which is not judged, so middling.
+    /// - **Heeds**: Guru and Shukra asta, "when Jupiter and Venus are free
+    ///   from combustion".
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_muhurta::{ActivityRules, Grade, Hours};
+    ///
+    /// let tonsure = ActivityRules::raman_chudakarana();
+    /// tonsure.check()?;
+    /// assert_eq!(tonsure.hours, Hours::Forenoon);
+    /// assert_eq!(tonsure.day.nakshatras.grade(&Nakshatra::Swati), Grade::Middling);
+    /// assert_eq!(tonsure.day.nakshatras.grade(&Nakshatra::Bharani), Grade::Rejected);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    #[must_use]
+    pub fn raman_chudakarana() -> ActivityRules {
+        let good_days = [2, 3, 5, 7, 10, 11, 13];
+        let mut rejected = both(&[1, 4, 6, 8, 9, 14]);
+        rejected.extend(syzygies());
+        let day = over_shuddhi(
+            Graded {
+                best: good_days.into_iter().filter_map(bright).collect(),
+                middling: good_days.into_iter().filter_map(dark).collect(),
+                rejected,
+                otherwise: Grade::Middling,
+            },
+            Graded {
+                best: vec![
+                    Nakshatra::Punarvasu,
+                    Nakshatra::Mrigashira,
+                    Nakshatra::Dhanishtha,
+                    Nakshatra::Shravana,
+                    Nakshatra::Revati,
+                    Nakshatra::Pushya,
+                    Nakshatra::Chitra,
+                    Nakshatra::Ashwini,
+                    Nakshatra::Hasta,
+                ],
+                middling: vec![
+                    Nakshatra::Swati,
+                    Nakshatra::Rohini,
+                    Nakshatra::Shatabhisha,
+                    Nakshatra::UttaraPhalguni,
+                    Nakshatra::UttaraBhadrapada,
+                    Nakshatra::UttaraAshadha,
+                ],
+                rejected: Vec::new(),
+                otherwise: Grade::Rejected,
+            },
+            good(benefic_varas(), Grade::Middling),
+        );
+        ActivityRules {
+            day,
+            months: MonthRule::Any,
+            lagnas: good(
+                vec![
+                    Rashi::Cancer,
+                    Rashi::Virgo,
+                    Rashi::Gemini,
+                    Rashi::Pisces,
+                    Rashi::Libra,
+                    Rashi::Taurus,
+                    Rashi::Capricorn,
+                ],
+                Grade::Middling,
+            ),
+            hours: Hours::Forenoon,
+            shool: Vec::new(),
+            padas: Vec::new(),
+            heeds: vec![BlackoutKind::GuruAsta, BlackoutKind::ShukraAsta],
+            unwanted: Vec::new(),
+            bars: Vec::new(),
+            unjudged: vec![
+                age("the 3rd or 5th year of the child"),
+                unjudged(
+                    "not while the child's mother is pregnant",
+                    "the mother's state, which a muhurta request does not carry",
+                ),
+                unjudged(
+                    "the Sun in the Tropic of Cancer",
+                    "read as either the Sun's northern course or its solstice; neither is applied, and a caller who keeps one sets `months`",
+                ),
+                unjudged(
+                    "a sign other than the seven rising with a benefic in the lagna",
+                    "the lagna's occupant is not graded; the other signs are left middling",
+                ),
+                unjudged(
+                    "the rest of the chapter",
+                    "pp. 62–63 are missing from the Internet Archive's scan",
+                ),
+            ],
+            baseline: None,
+        }
+    }
+
+    /// Raman's commencing of education, vidyarambha (*Muhurtha*, ch. XI,
+    /// pp. 114–117), over his general shuddhi.
+    ///
+    /// - **Stars**: Mrigashira, Ardra, Punarvasu, Pushya, Hasta, Chitra,
+    ///   Swati, Shravana, Dhanishtha and Shatabhisha the most beneficial;
+    ///   Ashwini, "held by some writers to be one of the best", and
+    ///   Rohini, Uttara Phalguni, Uttara Ashadha and Revati neutral; "the
+    ///   remaining ones are to be rejected".
+    /// - **Tithis**: the dark 1st, and the 2nd, 3rd, 5th, 6th, 10th and
+    ///   11th, highly auspicious; the 4th, 8th, 9th and 14th, the Purnima
+    ///   and the Amavasya avoided.
+    /// - **Varas**: Tuesday, Saturday and Sunday "invariably avoided";
+    ///   Wednesday the best.
+    /// - **Lagnas**: common signs the best, movable ordinary, fixed not.
+    /// - **Against**: the 8th occupied, which "should be clean and
+    ///   unoccupied".
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Rashi, Vara};
+    /// use teistro_muhurta::{ActivityRules, Grade};
+    ///
+    /// let learning = ActivityRules::raman_vidyarambha();
+    /// learning.check()?;
+    /// assert_eq!(learning.day.varas.grade(&Vara::Budhavara), Grade::Best);
+    /// assert_eq!(learning.lagnas.grade(&Rashi::Leo), Grade::Rejected);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    #[must_use]
+    pub fn raman_vidyarambha() -> ActivityRules {
+        let mut best = both(&[2, 3, 5, 6, 10, 11]);
+        best.extend(dark(1));
+        let mut rejected = both(&[4, 8, 9, 14]);
+        rejected.extend(syzygies());
+        let day = over_shuddhi(
+            Graded {
+                best,
+                middling: Vec::new(),
+                rejected,
+                otherwise: Grade::Middling,
+            },
+            Graded {
+                best: vec![
+                    Nakshatra::Mrigashira,
+                    Nakshatra::Ardra,
+                    Nakshatra::Punarvasu,
+                    Nakshatra::Pushya,
+                    Nakshatra::Hasta,
+                    Nakshatra::Chitra,
+                    Nakshatra::Swati,
+                    Nakshatra::Shravana,
+                    Nakshatra::Dhanishtha,
+                    Nakshatra::Shatabhisha,
+                ],
+                middling: vec![
+                    Nakshatra::Ashwini,
+                    Nakshatra::Rohini,
+                    Nakshatra::UttaraPhalguni,
+                    Nakshatra::UttaraAshadha,
+                    Nakshatra::Revati,
+                ],
+                rejected: Vec::new(),
+                otherwise: Grade::Rejected,
+            },
+            Graded {
+                best: vec![Vara::Budhavara],
+                middling: Vec::new(),
+                rejected: vec![Vara::Mangalavara, Vara::Shanivara, Vara::Ravivara],
+                otherwise: Grade::Middling,
+            },
+        );
+        ActivityRules {
+            day,
+            months: MonthRule::Any,
+            lagnas: Graded {
+                best: COMMON.into(),
+                middling: MOVABLE.into(),
+                rejected: FIXED.into(),
+                otherwise: Grade::Middling,
+            },
+            hours: Hours::Any,
+            shool: Vec::new(),
+            padas: Vec::new(),
+            heeds: Vec::new(),
+            unwanted: vec![Unwanted::vacant(vec![8])],
+            bars: Vec::new(),
+            unjudged: vec![
+                unjudged(
+                    "the forenoon and the noon the best, and Wednesday morning",
+                    "the hours are a should, and a should weighs (crux C205); `hours` bars, so a caller who holds the forenoon sets it to `FORENOON`",
+                ),
+                unjudged(
+                    "malefics in the 3rd, 6th and 11th",
+                    "a house wanted occupied is not yet expressed",
+                ),
+                unjudged(
+                    "the Saraswati and Vidya yogas",
+                    "combinations that favour the time are not graded",
+                ),
+                unjudged(
+                    "the stars and grahas for each subject: the Vedas, astrology, grammar, medicine, music",
+                    "one rule set is the general commencement; a caller who elects for a subject grades its stars in `day.nakshatras`",
+                ),
+            ],
+            baseline: None,
+        }
+    }
+
+    /// Raman's journey, yatra (*Muhurtha*, ch. XIV, pp. 156–159), over his
+    /// general shuddhi: what he calls the most essential, a good lunar
+    /// day, a favourable star and a fortified lagna.
+    ///
+    /// - **Tithis**: the 2nd, 3rd, 5th, 7th, 10th, 11th and 13th the best;
+    ///   the 14th, the Purnima and the Amavasya "avoided at any cost".
+    /// - **Stars**: Mrigashira, Ashwini, Pushya, Punarvasu, Hasta,
+    ///   Anuradha, Shravana, Mula, Dhanishtha and Revati, after which the
+    ///   traveller returns early with the work done; no journey in
+    ///   Krittika, Bharani, Ashlesha, Vishakha, Purva Phalguni, Purva
+    ///   Bhadrapada or Ardra. The good stars' first quarter "may be
+    ///   avoided as far as possible".
+    /// - **Varas**: Tuesday, which "must be avoided" in his view.
+    /// - **Lagnas**: Aries, Taurus, Cancer, Leo, Libra and Sagittarius
+    ///   favourable.
+    /// - **Heeds**: the sankranti, since the days the Sun enters a sign,
+    ///   the equinoxes among them, are avoided.
+    /// - **Direction** (`shool`): asked one, a day whose disha shool it is
+    ///   opens past 22 ghatis on Thursday, 12 on Tuesday and Wednesday, 15
+    ///   on Friday and Sunday and 8 on Saturday and Monday.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_muhurta::{ActivityRules, Grade};
+    ///
+    /// let journey = ActivityRules::raman_yatra();
+    /// journey.check()?;
+    /// assert_eq!(journey.day.nakshatras.grade(&Nakshatra::Krittika), Grade::Rejected);
+    /// assert!(journey.padas.iter().all(|p| p.pada == 1));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    #[must_use]
+    pub fn raman_yatra() -> ActivityRules {
+        let mut rejected = both(&[14]);
+        rejected.extend(syzygies());
+        let returning = vec![
+            Nakshatra::Mrigashira,
+            Nakshatra::Ashwini,
+            Nakshatra::Pushya,
+            Nakshatra::Punarvasu,
+            Nakshatra::Hasta,
+            Nakshatra::Anuradha,
+            Nakshatra::Shravana,
+            Nakshatra::Mula,
+            Nakshatra::Dhanishtha,
+            Nakshatra::Revati,
+        ];
+        let padas = returning
+            .iter()
+            .map(|nakshatra| Pada {
+                nakshatra: *nakshatra,
+                pada: 1,
+            })
+            .collect();
+        let day = over_shuddhi(
+            Graded {
+                best: both(&[2, 3, 5, 7, 10, 11, 13]),
+                middling: Vec::new(),
+                rejected,
+                otherwise: Grade::Middling,
+            },
+            Graded {
+                best: returning,
+                middling: Vec::new(),
+                rejected: vec![
+                    Nakshatra::Krittika,
+                    Nakshatra::Bharani,
+                    Nakshatra::Ashlesha,
+                    Nakshatra::Vishakha,
+                    Nakshatra::PurvaPhalguni,
+                    Nakshatra::PurvaBhadrapada,
+                    Nakshatra::Ardra,
+                ],
+                otherwise: Grade::Middling,
+            },
+            Graded::rejecting(vec![Vara::Mangalavara]),
+        );
+        ActivityRules {
+            day,
+            months: MonthRule::Any,
+            lagnas: good(
+                vec![
+                    Rashi::Aries,
+                    Rashi::Taurus,
+                    Rashi::Cancer,
+                    Rashi::Leo,
+                    Rashi::Libra,
+                    Rashi::Sagittarius,
+                ],
+                Grade::Middling,
+            ),
+            hours: Hours::Any,
+            shool: YATRA_SHOOL
+                .map(|(vara, after_ghatis)| Shool { vara, after_ghatis })
+                .into(),
+            padas,
+            heeds: vec![BlackoutKind::Sankranti],
+            unwanted: Vec::new(),
+            bars: Vec::new(),
+            unjudged: vec![
+                unjudged(
+                    "the direction of travel",
+                    "judged only when the request names one (`direction`); unasked, every day is open to every direction",
+                ),
+                unjudged(
+                    "no journey south while the nakshatra panchaka runs (ch. IV, p. 26)",
+                    "the panchaka's own direction is not yet read against the request's",
+                ),
+                unjudged(
+                    "the forbidden stars past their ghatis when the journey cannot wait: Krittika 13, Bharani 7, Magha 14, the three Purvas 16, Swati, Ashlesha and Vishakha 14",
+                    "Raman takes it only in urgency and rejects Bharani and Krittika invariably; the stars stay rejected",
+                ),
+                unjudged(
+                    "the lagna the native's janma rashi, never the janma lagna, nor the 5th, 7th or 9th from it",
+                    "a lagna's grade that turns on the native's chart is not yet expressed",
+                ),
+                unjudged(
+                    "the whole day the Sun enters a sign",
+                    "the sankranti closes the sixteen ghatis either side of the ingress, not the civil day",
+                ),
+                unjudged(
+                    "Jupiter or Venus in the lagna, the Moon in the 3rd, 6th, 9th or 12th with Jupiter in a kendra, and the chapter's other combinations",
+                    "combinations that favour the time are not graded",
+                ),
+                unjudged(
+                    "the rules for short, long, air, sea, business journeys and pilgrimage",
+                    "one rule set is the general journey; a caller adds a purpose's houses to `unwanted`",
+                ),
+            ],
+            baseline: None,
+        }
+    }
+
+    /// Raman's buying for business (*Muhurtha*, ch. X, p. 112), over his
+    /// general shuddhi.
+    ///
+    /// - **Tithis**: the 10th the best.
+    /// - **Stars**: Pushya the best.
+    /// - **Varas**: Thursday the best; Tuesday "completely rejected";
+    ///   Saturday passable.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_muhurta::{ActivityRules, Grade};
+    ///
+    /// let buying = ActivityRules::raman_trade_purchase();
+    /// buying.check()?;
+    /// assert_eq!(buying.day.varas.grade(&Vara::Shanivara), Grade::Middling);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    #[must_use]
+    pub fn raman_trade_purchase() -> ActivityRules {
+        let day = over_shuddhi(
+            good(both(&[10]), Grade::Middling),
+            good(vec![Nakshatra::Pushya], Grade::Middling),
+            Graded {
+                best: vec![Vara::Guruvara],
+                middling: vec![Vara::Shanivara],
+                rejected: vec![Vara::Mangalavara],
+                otherwise: Grade::Middling,
+            },
+        );
+        ActivityRules {
+            unjudged: vec![unjudged(
+                "Mercury, the 2nd lord and the 2nd house fortified, Mercury free of Mars, and Mercury with Jupiter in the lagna or in mutual aspect",
+                "a graha's strength and aspects are not graded",
+            )],
+            ..ActivityRules::general(day)
+        }
+    }
+
+    /// Raman's selling for profit (*Muhurtha*, ch. X, p. 112), over his
+    /// general shuddhi.
+    ///
+    /// - **Varas**: Monday, Wednesday and Thursday the best; Saturday
+    ///   middling; Tuesday avoided and Friday unpropitious.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Vara;
+    /// use teistro_muhurta::{ActivityRules, Grade};
+    ///
+    /// let selling = ActivityRules::raman_selling();
+    /// selling.check()?;
+    /// assert_eq!(selling.day.varas.grade(&Vara::Shukravara), Grade::Rejected);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    #[must_use]
+    pub fn raman_selling() -> ActivityRules {
+        let day = over_shuddhi(
+            Graded::none(),
+            Graded::none(),
+            Graded {
+                best: vec![Vara::Somavara, Vara::Budhavara, Vara::Guruvara],
+                middling: vec![Vara::Shanivara],
+                rejected: vec![Vara::Mangalavara, Vara::Shukravara],
+                otherwise: Grade::Middling,
+            },
+        );
+        ActivityRules {
+            unjudged: vec![unjudged(
+                "the Moon and Mercury free of Mars, the Moon in Taurus, Cancer or Pisces, and Mercury in a kendra or aspected by Jupiter",
+                "a graha's sign and aspects are not graded",
+            )],
+            ..ActivityRules::general(day)
+        }
+    }
+
+    /// Raman's wearing of new clothes (*Muhurtha*, ch. X, p. 105), over his
+    /// general shuddhi.
+    ///
+    /// - **Stars**: Ashwini, Rohini, Punarvasu, Pushya, Uttara Phalguni,
+    ///   Hasta, Chitra, Swati, Vishakha, Dhanishtha and Revati the best.
+    /// - **Tithis**: the 4th, 9th and 14th and the Amavasya avoided.
+    /// - **Varas**: Monday, Wednesday, Thursday and Friday good; Sunday
+    ///   middling; Tuesday and Saturday inauspicious.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    /// use teistro_muhurta::{ActivityRules, Grade};
+    ///
+    /// let clothes = ActivityRules::raman_new_clothes();
+    /// clothes.check()?;
+    /// assert_eq!(clothes.day.tithis.grade(&Tithi::Amavasya), Grade::Rejected);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    #[must_use]
+    pub fn raman_new_clothes() -> ActivityRules {
+        let mut rejected = both(&[4, 9, 14]);
+        rejected.push(Tithi::Amavasya);
+        let day = over_shuddhi(
+            Graded {
+                best: Vec::new(),
+                middling: Vec::new(),
+                rejected,
+                otherwise: Grade::Middling,
+            },
+            good(
+                vec![
+                    Nakshatra::Ashwini,
+                    Nakshatra::Rohini,
+                    Nakshatra::Punarvasu,
+                    Nakshatra::Pushya,
+                    Nakshatra::UttaraPhalguni,
+                    Nakshatra::Hasta,
+                    Nakshatra::Chitra,
+                    Nakshatra::Swati,
+                    Nakshatra::Vishakha,
+                    Nakshatra::Dhanishtha,
+                    Nakshatra::Revati,
+                ],
+                Grade::Middling,
+            ),
+            Graded {
+                best: benefic_varas(),
+                middling: vec![Vara::Ravivara],
+                rejected: vec![Vara::Mangalavara, Vara::Shanivara],
+                otherwise: Grade::Middling,
+            },
+        );
+        ActivityRules {
+            unjudged: vec![unjudged(
+                "the Moon in good aspect to the Sun",
+                "aspects are not graded",
+            )],
+            ..ActivityRules::general(day)
+        }
+    }
+
+    /// Acquiring a vehicle in Raman's movable stars (*Muhurtha*, ch. IV,
+    /// p. 26, after the Brihat Samhita): Shravana, Dhanishtha,
+    /// Shatabhisha, Punarvasu and Swati, "auspicious for acquiring
+    /// vehicles", over his general shuddhi. He gives the stars alone.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_muhurta::{ActivityRules, Grade};
+    ///
+    /// let vehicle = ActivityRules::raman_vehicle();
+    /// vehicle.check()?;
+    /// assert_eq!(vehicle.day.nakshatras.grade(&Nakshatra::Swati), Grade::Best);
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    #[must_use]
+    pub fn raman_vehicle() -> ActivityRules {
+        let day = over_shuddhi(
+            Graded::none(),
+            good(
+                vec![
+                    Nakshatra::Shravana,
+                    Nakshatra::Dhanishtha,
+                    Nakshatra::Shatabhisha,
+                    Nakshatra::Punarvasu,
+                    Nakshatra::Swati,
+                ],
+                Grade::Middling,
+            ),
+            Graded::none(),
+        );
+        ActivityRules {
+            unjudged: vec![unjudged(
+                "the rest of a vehicle's election",
+                "Raman gives the stars alone; the rest is his general shuddhi",
+            )],
+            ..ActivityRules::general(day)
+        }
+    }
+
+    /// A day's rules alone, for an election whose source grades nothing
+    /// else: any month and lagna, any hour, nothing heeded, unwanted or
+    /// barred.
+    fn general(day: DayRules) -> ActivityRules {
+        ActivityRules {
+            day,
+            months: MonthRule::Any,
+            lagnas: Graded::none(),
+            hours: Hours::Any,
+            shool: Vec::new(),
+            padas: Vec::new(),
+            heeds: Vec::new(),
+            unwanted: Vec::new(),
+            bars: Vec::new(),
+            unjudged: Vec::new(),
+            baseline: None,
+        }
+    }
 }
 
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 #[allow(clippy::expect_used, reason = "tests fail by panicking")]
 mod tests {
-    use super::{ActivityRules, Unwanted};
+    use super::{ActivityRules, Hours, Unwanted};
     use crate::clause::ClauseKind;
     use crate::grade::Grade;
     use crate::instant::Sky;
+    use crate::season::BlackoutKind;
     use teistro_core::catalogue::{Graha, Masa, Nakshatra, Rashi, Tithi, Vara};
     use teistro_core::interval::Interval;
 
@@ -712,6 +1327,14 @@ mod tests {
             ActivityRules::raman_annaprasana(),
             ActivityRules::raman_upanayana(),
             ActivityRules::raman_griha_pravesha(),
+            ActivityRules::raman_karnavedha(),
+            ActivityRules::raman_chudakarana(),
+            ActivityRules::raman_vidyarambha(),
+            ActivityRules::raman_yatra(),
+            ActivityRules::raman_trade_purchase(),
+            ActivityRules::raman_selling(),
+            ActivityRules::raman_new_clothes(),
+            ActivityRules::raman_vehicle(),
         ] {
             rules.check().expect("the shipped rules check");
             let json = serde_json::to_string(&rules).expect("the rules serialise");
@@ -738,5 +1361,55 @@ mod tests {
         json.as_object_mut().expect("an object").remove("unwanted");
         let back: ActivityRules = serde_json::from_value(json).expect("reads");
         assert!(back.unwanted.is_empty(), "{:?}", back.unwanted);
+    }
+
+    #[test]
+    fn rules_spelt_out_without_hours_keep_any_hour() {
+        let mut json = serde_json::to_value(ActivityRules::raman_chudakarana()).expect("json");
+        json.as_object_mut().expect("an object").remove("hours");
+        let back: ActivityRules = serde_json::from_value(json).expect("reads");
+        assert_eq!(back.hours, Hours::Any);
+    }
+
+    #[test]
+    fn the_chapters_grade_what_they_name_over_the_shuddhi() {
+        // The tonsure's dark half is ordinary where its bright half is good.
+        let tonsure = ActivityRules::raman_chudakarana();
+        assert_eq!(tonsure.day.tithis.grade(&Tithi::ShuklaDvitiya), Grade::Best);
+        assert_eq!(
+            tonsure.day.tithis.grade(&Tithi::KrishnaDvitiya),
+            Grade::Middling
+        );
+        assert_eq!(
+            tonsure.day.tithis.grade(&Tithi::ShuklaPratipada),
+            Grade::Rejected
+        );
+        // A journey rejects its forbidden stars and Tuesday, and grades the
+        // returning stars' first quarter apart.
+        let journey = ActivityRules::raman_yatra();
+        assert_eq!(journey.day.varas.grade(&Vara::Mangalavara), Grade::Rejected);
+        assert_eq!(journey.day.nakshatras.grade(&Nakshatra::Mula), Grade::Best);
+        assert_eq!(journey.padas.len(), 10);
+        assert!(journey.heeds.contains(&BlackoutKind::Sankranti));
+        // Education keeps the fixed signs out and Wednesday first.
+        let learning = ActivityRules::raman_vidyarambha();
+        assert_eq!(learning.lagnas.grade(&Rashi::Aquarius), Grade::Rejected);
+        assert_eq!(learning.lagnas.grade(&Rashi::Pisces), Grade::Best);
+        assert_eq!(
+            learning.day.nakshatras.grade(&Nakshatra::Magha),
+            Grade::Rejected
+        );
+        // Selling reads Saturday middling over the shuddhi's rejection.
+        let selling = ActivityRules::raman_selling();
+        assert_eq!(selling.day.varas.grade(&Vara::Shanivara), Grade::Middling);
+        // Buying for business rejects Tuesday and keeps every lagna.
+        let buying = ActivityRules::raman_trade_purchase();
+        assert_eq!(buying.day.varas.grade(&Vara::Mangalavara), Grade::Rejected);
+        assert!(
+            Rashi::ALL
+                .iter()
+                .all(|r| buying.lagnas.grade(r) == Grade::Middling)
+        );
+        assert_eq!(buying.hours, Hours::Any);
     }
 }
