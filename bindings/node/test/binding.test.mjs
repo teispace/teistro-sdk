@@ -737,8 +737,9 @@ test('every catalogue enum has a complete id table', () => {
   // since the Tibetan year's `TsTibetanElement`, five, and
   // `TsTibetanAnimal`, twelve, with their two members of `TsKind`; 1404
   // since `TsDashaFamily` gained `GRAHA`, the Karaka dasha's kernel; 1405
-  // since `TsCalendar` gained the Bangladeshi calendar.
-  assert.equal(entries, 1405, 'every member of every enum is in a table');
+  // since `TsCalendar` gained the Bangladeshi calendar; 1409 since the
+  // agni vasa's `TsAgniVasa`, three, with its member of `TsKind`.
+  assert.equal(entries, 1409, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -3981,6 +3982,35 @@ test('a day asked for its lagnas carries the signs rising from sunrise to the ne
     assert.match(table[j].member, /^rashi\./);
   }
   assert.equal(plain.lagnas.length, 0);
+});
+
+test('fire follows each tithi with the vara, and Rahu walks the daylight from the east', () => {
+  // Muhurta Chintamani, Nakshatra-prakarana v. 36: the tithi from Shukla
+  // Pratipada as 1, one more, the vara from Sunday as 1, by four (C748);
+  // Jyotirnibandha p. 337's eight directions from the east (C749).
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const week = ctx.almanac.of({
+    from: date(Calendar.Gregorian, 2024, 6, 15),
+    to: date(Calendar.Gregorian, 2024, 6, 21),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  });
+  const idOf = (byId, key) => [...byId.entries()].find(([, k]) => k === key)[0];
+  const place = { 1: 'agni_vasa.SVARGA', 2: 'agni_vasa.PATALA' };
+  const walk = ['EAST', 'NORTHWEST', 'SOUTH', 'NORTHEAST', 'WEST', 'SOUTHEAST', 'NORTH', 'SOUTHWEST'].map((d) => `direction.${d}`);
+  for (let i = 0; i < week.length; i += 1) {
+    const day = week.at(i);
+    assert.deepEqual(day.agniVasa.map((v) => v.whole), day.tithi.map((t) => t.whole));
+    const vara = idOf(catalogue.VaraById, day.day.vara) + 1;
+    day.tithi.forEach((tithi, k) => {
+      const remainder = (idOf(catalogue.TithiById, tithi.member) + 1 + 1 + vara) % 4;
+      assert.equal(day.agniVasa[k].member, place[remainder] ?? 'agni_vasa.PRITHVI');
+    });
+    assert.deepEqual(day.rahuVasa.map((span) => span.member), walk);
+    assert.equal(day.rahuVasa[0].whole.from, day.day.sunrise);
+    assert.ok(Math.abs(day.rahuVasa[7].whole.to - day.day.sunset) < 1e-9);
+  }
+  ctx.dispose();
 });
 
 test('a day marks its durmuhurtas and carries the shool, the chandra vasa and the chandrashtama', () => {

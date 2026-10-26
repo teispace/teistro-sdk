@@ -30559,6 +30559,8 @@ final class Almanac {
       'chandrashtama': counts.chandrashtama,
       'amritKalam': counts.amritKalam,
       'lagnas': counts.lagnas,
+      'agniVasa': counts.agniVasa,
+      'rahuVasa': counts.rahuVasa,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -30828,6 +30830,41 @@ final class AlmanacDay {
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Rashi.byId,
+    );
+  }
+
+  /// Where fire dwells for a kamya homa, one span for each tithi the day
+  /// held, read with the day's vara (Muhurta Chintamani,
+  /// Nakshatra-prakarana v. 36, crux C748); [AgniVasa.prithvi], the earth,
+  /// is the favourable one.
+  List<Span<AgniVasa>> get agniVasa {
+    final c = batch.decoded.agniVasa;
+    return _spans(
+      'agniVasa',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      AgniVasa.byId,
+    );
+  }
+
+  /// Rahu's direction over the daylight, an eighth of sunrise to sunset
+  /// each from the east (Jyotirnibandha p. 337, crux C749); none after
+  /// sunset, and none on a day with no daylight.
+  List<Span<Direction>> get rahuVasa {
+    final c = batch.decoded.rahuVasa;
+    return _spans(
+      'rahuVasa',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Direction.byId,
     );
   }
 

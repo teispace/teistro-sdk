@@ -492,6 +492,8 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         day.chandrashtama().len(),
         day.omens.amrit_kalam.len(),
         day.lagnas.len(),
+        day.agni_vasa().len(),
+        day.rahu_vasa().len(),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -750,6 +752,8 @@ struct RaggedRows {
     chandrashtama: Vec<Vec<FixedValue>>,
     amrit_kalam: Vec<Vec<FixedValue>>,
     lagnas: Vec<Vec<FixedValue>>,
+    agni_vasa: Vec<Vec<FixedValue>>,
+    rahu_vasa: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -776,6 +780,8 @@ impl RaggedRows {
             chandrashtama: owned_span_rows(days, Panchanga::chandrashtama, |m| m.id())?,
             amrit_kalam: span_rows(days, |day| &day.omens.amrit_kalam, |m| m.id())?,
             lagnas: span_rows(days, |day| &day.lagnas, |m| m.id())?,
+            agni_vasa: owned_span_rows(days, Panchanga::agni_vasa, |m| m.id())?,
+            rahu_vasa: owned_span_rows(days, Panchanga::rahu_vasa, |m| m.id())?,
         })
     }
 }
@@ -904,6 +910,8 @@ pub fn encode(
         writer.rows("chandrashtama", &ragged.chandrashtama)?;
         writer.rows("amrit_kalam", &ragged.amrit_kalam)?;
         writer.rows("lagnas", &ragged.lagnas)?;
+        writer.rows("agni_vasa", &ragged.agni_vasa)?;
+        writer.rows("rahu_vasa", &ragged.rahu_vasa)?;
         writer.finish()
     };
     write().map_err(|error| {

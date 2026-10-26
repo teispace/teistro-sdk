@@ -4346,5 +4346,22 @@
       "name": "क्रिसमस",
       "prose": "क्रिसमस"
     }
+  },
+  "agni_vasa": {
+    "PRITHVI": {
+      "name": "पृथ्वी",
+      "prose": "पृथ्वी",
+      "iast": "Pṛthvī"
+    },
+    "SVARGA": {
+      "name": "स्वर्ग",
+      "prose": "स्वर्ग",
+      "iast": "Svarga"
+    },
+    "PATALA": {
+      "name": "पाताल",
+      "prose": "पाताल",
+      "iast": "Pātāla"
+    }
   }
 }

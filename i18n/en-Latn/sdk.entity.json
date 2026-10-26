@@ -4354,5 +4354,22 @@
       "name": "Christmas",
       "prose": "Christmas, 25 December"
     }
+  },
+  "agni_vasa": {
+    "PRITHVI": {
+      "name": "Prithvi",
+      "prose": "Prithvi",
+      "iast": "Pṛthvī"
+    },
+    "SVARGA": {
+      "name": "Svarga",
+      "prose": "Svarga",
+      "iast": "Svarga"
+    },
+    "PATALA": {
+      "name": "Patala",
+      "prose": "Patala",
+      "iast": "Pātāla"
+    }
   }
 }

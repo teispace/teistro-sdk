@@ -158,9 +158,12 @@ pub enum Kind {
     TibetanElement = 71,
     /// The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
     TibetanAnimal = 72,
+    /// Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
+    AgniVasa = 73,
 }
 
-const BY_NAME: [(&str, Kind); 71] = [
+const BY_NAME: [(&str, Kind); 72] = [
+    ("agni_vasa", Kind::AgniVasa),
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
     ("avastha_cheshta", Kind::AvasthaCheshta),
@@ -236,7 +239,7 @@ const BY_NAME: [(&str, Kind); 71] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 71] = [
+    pub const ALL: [Kind; 72] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -308,6 +311,7 @@ impl Kind {
         Kind::Festival,
         Kind::TibetanElement,
         Kind::TibetanAnimal,
+        Kind::AgniVasa,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -391,6 +395,7 @@ impl Kind {
             Kind::Festival => "festival",
             Kind::TibetanElement => "tibetan_element",
             Kind::TibetanAnimal => "tibetan_animal",
+            Kind::AgniVasa => "agni_vasa",
         }
     }
 
@@ -488,6 +493,7 @@ impl Kind {
             Kind::Festival => 0,
             Kind::TibetanElement => 5,
             Kind::TibetanAnimal => 12,
+            Kind::AgniVasa => 3,
         }
     }
 
@@ -586,6 +592,7 @@ impl Kind {
             70 => Some(Kind::Festival),
             71 => Some(Kind::TibetanElement),
             72 => Some(Kind::TibetanAnimal),
+            73 => Some(Kind::AgniVasa),
             _ => None,
         }
     }

@@ -2939,6 +2939,10 @@ pub mod sdk {
 
     /// The `entity` group.
     pub mod entity {
+        /// The `agni_vasa` group.
+        pub mod agni_vasa {
+        }
+
         /// The `avastha_baladi` group.
         pub mod avastha_baladi {
         }

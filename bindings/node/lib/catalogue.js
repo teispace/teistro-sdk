@@ -247,6 +247,7 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   SolarEclipseKind: 'solar_eclipse_kind',
   TibetanElement: 'tibetan_element',
   TibetanAnimal: 'tibetan_animal',
+  AgniVasa: 'agni_vasa',
 });
 
 /**
@@ -321,6 +322,7 @@ export const KindById = /* @__PURE__ */ new Map([
   [69, 'solar_eclipse_kind'],
   [71, 'tibetan_element'],
   [72, 'tibetan_animal'],
+  [73, 'agni_vasa'],
 ]);
 
 /** Every Graha by name. */
@@ -2802,6 +2804,23 @@ export const TibetanAnimalById = /* @__PURE__ */ new Map([
   [9, 'tibetan_animal.BIRD'],
   [10, 'tibetan_animal.DOG'],
   [11, 'tibetan_animal.PIG'],
+]);
+
+/** Every AgniVasa by name. */
+export const AgniVasa = /* @__PURE__ */ Object.freeze({
+  Prithvi: 'agni_vasa.PRITHVI',
+  Svarga: 'agni_vasa.SVARGA',
+  Patala: 'agni_vasa.PATALA',
+});
+
+/**
+ * Every AgniVasa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AgniVasaById = /* @__PURE__ */ new Map([
+  [0, 'agni_vasa.PRITHVI'],
+  [1, 'agni_vasa.SVARGA'],
+  [2, 'agni_vasa.PATALA'],
 ]);
 
 /** Every Status by name. */

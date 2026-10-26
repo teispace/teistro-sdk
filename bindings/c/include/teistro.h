@@ -437,6 +437,10 @@ typedef enum ts_kind {
      * The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
      */
     TS_KIND_TIBETAN_ANIMAL = 72,
+    /**
+     * Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
+     */
+    TS_KIND_AGNI_VASA = 73,
 } ts_kind;
 
 /**
@@ -4462,6 +4466,26 @@ typedef enum ts_tibetan_animal {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_TIBETAN_ANIMAL_UNKNOWN = -1,
 } ts_tibetan_animal;
+
+/**
+ * Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748). Members are the catalogue's ids; the full key id is `(TS_KIND_AGNI_VASA << 16) | member`.
+ */
+typedef enum ts_agni_vasa {
+    /**
+     * On the earth, the remainder three or nothing: a homa then brings ease
+     */
+    TS_AGNI_VASA_PRITHVI = 0,
+    /**
+     * In the sky, the remainder one: a homa then costs life
+     */
+    TS_AGNI_VASA_SVARGA = 1,
+    /**
+     * Below the earth, the remainder two: a homa then costs wealth
+     */
+    TS_AGNI_VASA_PATALA = 2,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_AGNI_VASA_UNKNOWN = -1,
+} ts_agni_vasa;
 
 /**
  * The status of a call, with the code it has at the C boundary.

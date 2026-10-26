@@ -59,6 +59,7 @@ import {
   ChartKindById,
   ChoghadiyaById,
   DirectionById,
+  AgniVasaById,
   GhatiReckoningById,
   GrahaById,
   HouseSystemById,
@@ -2139,6 +2140,25 @@ export class AlmanacDay {
   /** Whose chandrashtama the day holds: each member a natal Moon sign (crux C404). */
   get chandrashtama() {
     return this.#spans('chandrashtama', RashiById);
+  }
+
+  /**
+   * Where fire dwells for a kamya homa, one span for each tithi the day
+   * held, read with the day's vara (Muhurta Chintamani,
+   * Nakshatra-prakarana v. 36, crux C748); `PRITHVI`, the earth, is the
+   * favourable one.
+   */
+  get agniVasa() {
+    return this.#spans('agniVasa', AgniVasaById);
+  }
+
+  /**
+   * Rahu's direction over the daylight, an eighth of sunrise to sunset
+   * each from the east (Jyotirnibandha p. 337, crux C749); none after
+   * sunset, and none on a day with no daylight.
+   */
+  get rahuVasa() {
+    return this.#spans('rahuVasa', DirectionById);
   }
 
   /** The signs the Moon stood in. */

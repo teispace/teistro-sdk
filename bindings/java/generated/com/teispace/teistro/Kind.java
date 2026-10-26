@@ -342,7 +342,12 @@ public enum Kind implements Member {
     /**
      * The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
      */
-    TIBETAN_ANIMAL(72, "tibetan_animal");
+    TIBETAN_ANIMAL(72, "tibetan_animal"),
+
+    /**
+     * Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
+     */
+    AGNI_VASA(73, "agni_vasa");
 
     private static final Kind[] MEMBERS = values();
 

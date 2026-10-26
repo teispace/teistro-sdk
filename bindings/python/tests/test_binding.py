@@ -55,6 +55,7 @@ from teistro import (
     Plugin,
     Rashi,
     Samvatsara,
+    AgniVasa,
     Direction,
     Scale,
     Shodhana,
@@ -5928,6 +5929,30 @@ class ADaysOmens(AJuneWeek):
                 self.assertIsInstance(shool.member, Direction)
                 shools += 1
         self.assertIn(shools, range(1, 4))
+
+    def test_fire_follows_each_tithi_and_rahu_walks_the_daylight(self) -> None:
+        # Muhurta Chintamani, Nakshatra-prakarana v. 36: the tithi from
+        # Shukla Pratipada as 1, one more, the vara from Sunday as 1, by
+        # four (C748); Jyotirnibandha p. 337's eight from the east (C749).
+        place = {1: AgniVasa.SVARGA, 2: AgniVasa.PATALA}
+        walk = [
+            Direction.EAST,
+            Direction.NORTHWEST,
+            Direction.SOUTH,
+            Direction.NORTHEAST,
+            Direction.WEST,
+            Direction.SOUTHEAST,
+            Direction.NORTH,
+            Direction.SOUTHWEST,
+        ]
+        for day in self.days():
+            self.assertEqual([v.whole for v in day.agni_vasa], [t.whole for t in day.tithi])
+            for tithi, vasa in zip(day.tithi, day.agni_vasa):
+                remainder = (int(tithi.member) + 1 + 1 + int(day.day.vara) + 1) % 4
+                self.assertEqual(vasa.member, place.get(remainder, AgniVasa.PRITHVI))
+            self.assertEqual([span.member for span in day.rahu_vasa], walk)
+            self.assertEqual(day.rahu_vasa[0].whole.from_jd, day.day.sunrise)
+            self.assertAlmostEqual(day.rahu_vasa[-1].whole.to_jd, day.day.sunset, delta=1e-9)
 
 
 class AnAlmanacDay(WithLibrary):

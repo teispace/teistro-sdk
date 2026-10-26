@@ -6090,6 +6090,8 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         ("chandra-vasa", day.chandra_vasa().len()),
         ("chandrashtama", day.chandrashtama().len()),
         ("amrit-kalam", day.omens.amrit_kalam.len()),
+        ("agni-vasa", day.agni_vasa().len()),
+        ("rahu-vasa", day.rahu_vasa().len()),
     ] {
         put(
             report,
@@ -6241,79 +6243,32 @@ fn limb_span<T>(
     )
 }
 
+/// Every span of one limb as `LimbSpan`s, each member by its full key.
+fn limb_spans<T: teistro::catalogue::Catalogued>(
+    day: &teistro_panchanga::almanac::Panchanga,
+    spans: &[teistro::Span<T>],
+) -> Vec<LimbSpan> {
+    spans
+        .iter()
+        .map(|span| limb_span(day, span, &span.member.full_key()))
+        .collect()
+}
+
 /// One day's limb spans, which are the bulk of its rows.
 fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::almanac::Panchanga) {
     // And every span of every moving limb, member and bounds.
-    let limbs: [(&str, Vec<LimbSpan>); 9] = [
-        (
-            "tithi",
-            day.limbs
-                .tithi
-                .iter()
-                .map(|span| limb_span(day, span, span.member.full_key()))
-                .collect(),
-        ),
-        (
-            "nakshatra",
-            day.limbs
-                .nakshatra
-                .iter()
-                .map(|span| limb_span(day, span, span.member.full_key()))
-                .collect(),
-        ),
-        (
-            "yoga",
-            day.limbs
-                .yoga
-                .iter()
-                .map(|span| limb_span(day, span, span.member.full_key()))
-                .collect(),
-        ),
-        (
-            "karana",
-            day.limbs
-                .karana
-                .iter()
-                .map(|span| limb_span(day, span, span.member.full_key()))
-                .collect(),
-        ),
-        (
-            "varjyam",
-            day.omens
-                .varjyam
-                .iter()
-                .map(|span| limb_span(day, span, span.member.full_key()))
-                .collect(),
-        ),
-        (
-            "nakshatra-shool",
-            day.nakshatra_shool()
-                .iter()
-                .map(|span| limb_span(day, span, span.member.full_key()))
-                .collect(),
-        ),
-        (
-            "chandra-vasa",
-            day.chandra_vasa()
-                .iter()
-                .map(|span| limb_span(day, span, span.member.full_key()))
-                .collect(),
-        ),
-        (
-            "chandrashtama",
-            day.chandrashtama()
-                .iter()
-                .map(|span| limb_span(day, span, span.member.full_key()))
-                .collect(),
-        ),
-        (
-            "amrit-kalam",
-            day.omens
-                .amrit_kalam
-                .iter()
-                .map(|span| limb_span(day, span, span.member.full_key()))
-                .collect(),
-        ),
+    let limbs: [(&str, Vec<LimbSpan>); 11] = [
+        ("tithi", limb_spans(day, &day.limbs.tithi)),
+        ("nakshatra", limb_spans(day, &day.limbs.nakshatra)),
+        ("yoga", limb_spans(day, &day.limbs.yoga)),
+        ("karana", limb_spans(day, &day.limbs.karana)),
+        ("varjyam", limb_spans(day, &day.omens.varjyam)),
+        ("nakshatra-shool", limb_spans(day, &day.nakshatra_shool())),
+        ("chandra-vasa", limb_spans(day, &day.chandra_vasa())),
+        ("chandrashtama", limb_spans(day, &day.chandrashtama())),
+        ("amrit-kalam", limb_spans(day, &day.omens.amrit_kalam)),
+        ("agni-vasa", limb_spans(day, &day.agni_vasa())),
+        ("rahu-vasa", limb_spans(day, &day.rahu_vasa())),
     ];
     for (what, spans) in &limbs {
         for (at, (member, whole, inside, sunrises, ends)) in spans.iter().enumerate() {

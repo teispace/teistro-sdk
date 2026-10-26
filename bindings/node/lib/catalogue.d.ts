@@ -247,7 +247,8 @@ export type Kind =
   | 'lunar_eclipse_kind'
   | 'solar_eclipse_kind'
   | 'tibetan_element'
-  | 'tibetan_animal';
+  | 'tibetan_animal'
+  | 'agni_vasa';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -519,6 +520,10 @@ export declare const Kind: {
    * The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse.
    */
   readonly TibetanAnimal: 'tibetan_animal';
+  /**
+   * Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
+   */
+  readonly AgniVasa: 'agni_vasa';
 };
 
 /**
@@ -5829,6 +5834,33 @@ export declare const TibetanAnimal: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const TibetanAnimalById: ReadonlyMap<number, TibetanAnimal>;
+
+/**
+ * Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748). Members are the catalogue's ids; the full key id is `(TS_KIND_AGNI_VASA << 16) | member`.
+ */
+export type AgniVasa = 'agni_vasa.PRITHVI' | 'agni_vasa.SVARGA' | 'agni_vasa.PATALA' | 'unknown';
+
+/** Every AgniVasa by name; the values are the strings the union accepts. */
+export declare const AgniVasa: {
+  /**
+   * On the earth, the remainder three or nothing: a homa then brings ease
+   */
+  readonly Prithvi: 'agni_vasa.PRITHVI';
+  /**
+   * In the sky, the remainder one: a homa then costs life
+   */
+  readonly Svarga: 'agni_vasa.SVARGA';
+  /**
+   * Below the earth, the remainder two: a homa then costs wealth
+   */
+  readonly Patala: 'agni_vasa.PATALA';
+};
+
+/**
+ * Every AgniVasa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AgniVasaById: ReadonlyMap<number, AgniVasa>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

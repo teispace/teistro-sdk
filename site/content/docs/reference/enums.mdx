@@ -78,6 +78,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_SOLAR_ECLIPSE_KIND` | 69 | How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). |
 | `TS_KIND_TIBETAN_ELEMENT` | 71 | The five elements of the Tibetan year's ten-year cycle, each held for two years, male then female. |
 | `TS_KIND_TIBETAN_ANIMAL` | 72 | The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. |
+| `TS_KIND_AGNI_VASA` | 73 | Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748). |
 
 ## ts_graha
 
@@ -1419,6 +1420,16 @@ The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. Memb
 | `TS_TIBETAN_ANIMAL_BIRD` | 9 | Bird |
 | `TS_TIBETAN_ANIMAL_DOG` | 10 | Dog |
 | `TS_TIBETAN_ANIMAL_PIG` | 11 | Pig |
+
+## ts_agni_vasa
+
+Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748). Members are the catalogue's ids; the full key id is `(TS_KIND_AGNI_VASA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_AGNI_VASA_PRITHVI` | 0 | On the earth, the remainder three or nothing: a homa then brings ease |
+| `TS_AGNI_VASA_SVARGA` | 1 | In the sky, the remainder one: a homa then costs life |
+| `TS_AGNI_VASA_PATALA` | 2 | Below the earth, the remainder two: a homa then costs wealth |
 
 ## ts_status
 
