@@ -12,6 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A day says when its sankranti's punya kala falls.**
+**Numbers:** every settings hash moved with the new knob, and a day whose
+daylight holds a punya kala, some twelve a year, gains it in its
+document, so its content hash moves; no other day's does.
+- *The punya kala* (`03-design/panchanga-day.md` §21.5, C752 to C754):
+  the window around the Sun's entry into a sign for the bath and the
+  gifts, by the *Dharmasindhu*'s ghatis (sixteen before or after, thirty
+  before Karka, forty after Makara, fifteen either side of the
+  equinoxes), clipped to the daylight, a side that would be night turned
+  over, a night's entry giving the half day nearest it and the ayanas
+  their own days. `panchanga.punya_kala` chooses the table:
+  `DHARMASINDHU`, `HEMADRI` (the *Nirnayasindhu*'s) or `MADHAVA`. It is
+  `Panchanga::punya_kala`, on the day the window falls, the
+  `punya_kala` section, and `punya_kala`/`punyaKala` on every binding's
+  day; `teistro::punya` has the rule for an entry a consumer holds.
+- Not built: the maha punya kala, which no text in hand gives (C754).
+
 **A day says where fire and Rahu stand.**
 **Numbers:** none. No answer moves: the panchanga blob gains two
 sections and the catalogue a kind.

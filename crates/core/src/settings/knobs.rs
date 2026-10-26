@@ -339,6 +339,21 @@ knob!(
         Raman = "RAMAN" }
 );
 knob!(
+    /// How many ghatis around each sankranti are its punya kala, the
+    /// window for the bath and the gifts (`03-design/panchanga-day.md`
+    /// §21.5, crux C752).
+    ///
+    /// The *Dharmasindhu* (pp. 2–3) and the *Nirnayasindhu* (pp. 3–4)
+    /// give one table and differ only at the two equinoxes and Makara: the
+    /// sixteen ghatis before Vrisha, Simha, Vrischika and Kumbha, the
+    /// sixteen after Mithuna, Kanya, Dhanu and Mina, and the thirty before
+    /// Karka are common to both.
+    PunyaKalaTable { /// The *Dharmasindhu*'s: fifteen ghatis either side of Mesha and Tula, and the forty after Makara.
+        Dharmasindhu = "DHARMASINDHU", /// The *Nirnayasindhu*'s, which it gives as Hemadri's: ten ghatis either side of Mesha and Tula, and the forty after Makara.
+        Hemadri = "HEMADRI", /// Madhava's, as the *Nirnayasindhu* reports it: Hemadri's but for the twenty after Makara.
+        Madhava = "MADHAVA" }
+);
+knob!(
     /// Which season a day falls in (crux C178).
     ///
     /// The Surya Siddhanta (XIV.10) counts the six seasons from the Sun's

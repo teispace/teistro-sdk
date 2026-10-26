@@ -4010,6 +4010,18 @@ test('fire follows each tithi with the vara, and Rahu walks the daylight from th
     assert.equal(day.rahuVasa[0].whole.from, day.day.sunrise);
     assert.ok(Math.abs(day.rahuVasa[7].whole.to - day.day.sunset) < 1e-9);
   }
+  // The Sun entered Mithuna on 15 June 2024: one day of the week holds its
+  // punya kala, inside that day's daylight (Dharmasindhu p. 2, C752).
+  const held = [];
+  for (let i = 0; i < week.length; i += 1) {
+    const day = week.at(i);
+    for (const kala of day.punyaKala) held.push([day, kala]);
+  }
+  assert.equal(held.length, 1);
+  const [day, kala] = held[0];
+  assert.equal(kala.member, 'rashi.GEMINI');
+  assert.ok(kala.inside.from >= day.day.sunrise && kala.inside.to <= day.day.sunset);
+  assert.ok(kala.inside.from < kala.inside.to);
   ctx.dispose();
 });
 

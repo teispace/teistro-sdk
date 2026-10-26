@@ -465,7 +465,7 @@ fn bikram_sambat_month(date: FixedDay) -> Result<Rashi, Error> {
     })
 }
 
-fn next(sign: Rashi) -> Rashi {
+pub(crate) fn next(sign: Rashi) -> Rashi {
     Rashi::from_id((sign.id() + 1) % 12).unwrap_or(sign)
 }
 

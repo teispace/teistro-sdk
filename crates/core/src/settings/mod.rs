@@ -42,10 +42,10 @@ pub use knobs::{
     LunarMonth, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
     NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
     NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
-    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
-    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
-    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    PunyaKalaTable, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
+    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise,
+    SuryaSunrise, Tier, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -776,6 +776,9 @@ group!(
         /// Which muhurtas of each weekday are censured, the durmuhurtas
         /// (crux C398).
         durmuhurta: DurmuhurtaTable,
+        /// How many ghatis around each sankranti are its punya kala
+        /// (crux C752).
+        punya_kala: PunyaKalaTable,
         /// Which season a day falls in: the sidereal solar months', the
         /// lunar month's or the tropical Sun's (crux C178).
         ritu: RituReckoning,

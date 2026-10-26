@@ -306,6 +306,19 @@ public final class AlmanacDay {
     }
 
     /**
+     * The punya kala of a sankranti, when the day's daylight holds one (Dharmasindhu pp. 2-3, crux C752): the sign
+     * the Sun entered, {@code whole} the ghatis {@code panchanga.punya_kala} gives or the half day a night's entry
+     * makes meritorious, {@code inside} the window; empty on all but some twelve days a year.
+     *
+     * @return the spans
+     */
+    public List<Span<Rashi>> punyaKala() {
+        Panchanga.PunyaKala c = batch.decoded().punyaKala();
+        return spans("punya_kala", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Rashi::of);
+    }
+
+    /**
      * The signs the Moon stood in.
      *
      * @return the spans

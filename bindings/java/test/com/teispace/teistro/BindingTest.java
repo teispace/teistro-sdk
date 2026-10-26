@@ -1792,6 +1792,17 @@ public final class BindingTest {
                     check(Math.abs(day.rahuVasa().get(7).whole().toJd() - day.day().sunset()) < 1e-9,
                             "and is home at sunset");
                 }
+                // A sankranti's punya kala falls in one daylight (Dharmasindhu
+                // p. 2, C752): no more than one in a week, inside its day.
+                int kalas = 0;
+                for (AlmanacDay day : week) {
+                    for (Span<Rashi> kala : day.punyaKala()) {
+                        check(kala.inside().fromJd() >= day.day().sunrise()
+                                && kala.inside().toJd() <= day.day().sunset(), "a punya kala by day");
+                        kalas += 1;
+                    }
+                }
+                check(kalas <= 1, "a sankranti a month: " + kalas);
                 RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
                 check(read.period() != null, "a rashifal period");
                 check(sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700)

@@ -2161,6 +2161,17 @@ export class AlmanacDay {
     return this.#spans('rahuVasa', DirectionById);
   }
 
+  /**
+   * The punya kala of a sankranti, when the day's daylight holds one
+   * (Dharmasindhu pp. 2-3, crux C752): the sign the Sun entered, `whole`
+   * the ghatis `panchanga.punya_kala` gives or the half day a night's
+   * entry makes meritorious, `inside` the window; empty on all but some
+   * twelve days a year.
+   */
+  get punyaKala() {
+    return this.#spans('punyaKala', RashiById);
+  }
+
   /** The signs the Moon stood in. */
   get moonSigns() {
     return this.#spans('moonSigns', RashiById);

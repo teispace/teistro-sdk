@@ -19,10 +19,10 @@ use super::knobs::{
     LunarMonth, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
     NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
     NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
-    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
-    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
-    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    PunyaKalaTable, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
+    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise,
+    SuryaSunrise, Tier, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -200,6 +200,9 @@ fn root_panchanga() -> Panchanga {
         // Muhurta Chintamani's, the Sanskrit Raman's list departs from
         // (crux C398).
         durmuhurta: DurmuhurtaTable::MuhurtaChintamani,
+        // The Dharmasindhu's, the rank-1 nibandha the solar month's
+        // day is already placed by (crux C752).
+        punya_kala: PunyaKalaTable::Dharmasindhu,
         ritu: RituReckoning::Solar,
         solar_month_start: SolarMonthStart::Punyakala,
         eclipse_shadow: EclipseShadow::Danjon,

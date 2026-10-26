@@ -7620,6 +7620,7 @@ final class PanchangaCounts {
     required this.lagnas,
     required this.agniVasa,
     required this.rahuVasa,
+    required this.punyaKala,
     required this.length,
   });
 
@@ -7685,6 +7686,9 @@ final class PanchangaCounts {
 
   /// How many rows of `rahu_vasa` belong to this day.
   final Uint32List rahuVasa;
+
+  /// How many rows of `punya_kala` belong to this day.
+  final Uint32List punyaKala;
 
   /// The number of rows every column holds.
   final int length;
@@ -8603,6 +8607,55 @@ final class PanchangaRahuVasa {
   final int length;
 }
 
+/// The `punya_kala` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The punya kala of a sankranti, when the day's daylight holds one, under `panchanga.punya_kala` (Dharmasindhu pp. 2-3, Nirnayasindhu pp. 3-5, crux C752): the sign the Sun entered, `whole` the ghatis the table gives before or after the entry, or the half day an entry at night makes meritorious, and `inside` their part in the daylight, the window. The sankranti itself may lie in the night either side, so a window on the morning after a night's entry is the following day's. Empty on all but some twelve days a year.
+final class PanchangaPunyaKala {
+  const PanchangaPunyaKala({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// The sign the Sun entered.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -8646,6 +8699,7 @@ final class Panchanga {
     required this.lagnas,
     required this.agniVasa,
     required this.rahuVasa,
+    required this.punyaKala,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -8762,6 +8816,9 @@ final class Panchanga {
   /// Rahu's direction over the daylight (Jyotirnibandha p. 337, Rahu-bhumi v. 1, crux C749): eight spans, an eighth of sunrise to sunset each, east, northwest, south, northeast, west, southeast, north, southwest. The verse names no night, so none after sunset; empty on a day with no daylight.
   final PanchangaRahuVasa rahuVasa;
 
+  /// The punya kala of a sankranti, when the day's daylight holds one, under `panchanga.punya_kala` (Dharmasindhu pp. 2-3, Nirnayasindhu pp. 3-5, crux C752): the sign the Sun entered, `whole` the ghatis the table gives before or after the entry, or the half day an entry at night makes meritorious, and `inside` their part in the daylight, the window. The sankranti itself may lie in the night either side, so a window on the morning after a night's entry is the following day's. Empty on all but some twelve days a year.
+  final PanchangaPunyaKala punyaKala;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -8802,6 +8859,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atLagnas = blob.section(31, 'lagnas');
   final atAgniVasa = blob.section(32, 'agni_vasa');
   final atRahuVasa = blob.section(33, 'rahu_vasa');
+  final atPunyaKala = blob.section(34, 'punya_kala');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -8855,6 +8913,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       lagnas: blob.column(atCounts, 18, 4, Uint32List.sublistView),
       agniVasa: blob.column(atCounts, 19, 4, Uint32List.sublistView),
       rahuVasa: blob.column(atCounts, 20, 4, Uint32List.sublistView),
+      punyaKala: blob.column(atCounts, 21, 4, Uint32List.sublistView),
       length: atCounts.count,
     ),
     day: Day(
@@ -9110,6 +9169,18 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsPala: blob.column(atRahuVasa, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atRahuVasa, 8, 1, Uint8List.sublistView),
       length: atRahuVasa.count,
+    ),
+    punyaKala: PanchangaPunyaKala(
+      member: blob.column(atPunyaKala, 0, 2, Uint16List.sublistView),
+      wholeFrom: blob.column(atPunyaKala, 1, 8, Float64List.sublistView),
+      wholeTo: blob.column(atPunyaKala, 2, 8, Float64List.sublistView),
+      insideFrom: blob.column(atPunyaKala, 3, 8, Float64List.sublistView),
+      insideTo: blob.column(atPunyaKala, 4, 8, Float64List.sublistView),
+      sunrises: blob.column(atPunyaKala, 5, 1, Uint8List.sublistView),
+      endsGhati: blob.column(atPunyaKala, 6, 1, Uint8List.sublistView),
+      endsPala: blob.column(atPunyaKala, 7, 1, Uint8List.sublistView),
+      endsVipala: blob.column(atPunyaKala, 8, 1, Uint8List.sublistView),
+      length: atPunyaKala.count,
     ),
   );
 }
