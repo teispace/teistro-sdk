@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Gana, Graha, Nadi, Nakshatra, Rashi, Varna, Yoni};
 use teistro_core::error::Error;
 
-use crate::{BirthSyllable, Native, birth_syllable, sign_varna};
+use crate::{BirthSyllable, Ghata, Native, birth_syllable, sign_varna};
 
 /// What a janma-patrika prints of the Moon: its star and pada, the
 /// syllable the child is named by, and the readings a koota takes of one
@@ -49,6 +49,9 @@ pub struct Avakahada {
     pub nadi: Nadi,
     /// The syllable the child is named by, with its varga (C297 to C299).
     pub syllable: BirthSyllable,
+    /// The ghata chakra of the Moon's sign: what strikes the native
+    /// (C758).
+    pub ghata: Ghata,
 }
 
 /// The avakahada of a Moon (C301).
@@ -80,6 +83,7 @@ pub fn avakahada(moon: Native) -> Result<Avakahada, Error> {
         gana: star.gana,
         nadi: star.nadi,
         syllable: birth_syllable(moon.nakshatra, moon.pada)?,
+        ghata: Ghata::of(moon.rashi),
     })
 }
 
@@ -90,7 +94,7 @@ mod tests {
 
     use teistro_core::catalogue::Nakshatra;
 
-    use crate::{KootaReading, KootaRules, Native, ashta_koota, avakahada};
+    use crate::{Ghata, KootaReading, KootaRules, Native, ashta_koota, avakahada};
 
     #[test]
     fn every_pada_reads_as_the_ashta_koota_reads_its_moon() {
@@ -117,6 +121,7 @@ mod tests {
                     (read.nakshatra, read.pada, read.rashi),
                     (nakshatra, pada, moon.rashi)
                 );
+                assert_eq!(read.ghata, Ghata::of(moon.rashi));
             }
         }
     }

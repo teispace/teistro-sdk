@@ -7224,6 +7224,12 @@ List<Avakahada> _decodeAvakahadas(Charts batch) {
         iast: text[1]! as String,
         varga: NameVarga.byId(c.varga[chart]),
       ),
+      ghata: Ghata(
+        chandra: Rashi.byId(c.ghataChandra[chart]),
+        tithi: TithiClass.byId(c.ghataTithi[chart]),
+        vara: Vara.byId(c.ghataVara[chart]),
+        nakshatra: Nakshatra.byId(c.ghataNakshatra[chart]),
+      ),
     );
   }, growable: false);
 }
@@ -11096,6 +11102,7 @@ final class Avakahada extends _Value {
     required this.gana,
     required this.nadi,
     required this.syllable,
+    required this.ghata,
   });
 
   /// The Moon's nakshatra.
@@ -11128,6 +11135,10 @@ final class Avakahada extends _Value {
   /// The syllable the child is named by.
   final BirthSyllable syllable;
 
+  /// The ghata chakra of the Moon's sign: what strikes the native
+  /// (Muhurta Chintamani XI vv. 27–30, C758).
+  final Ghata ghata;
+
   @override
   List<Object?> get _fields => [
     nakshatra,
@@ -11140,7 +11151,34 @@ final class Avakahada extends _Value {
     gana,
     nadi,
     syllable,
+    ghata,
   ];
+}
+
+/// What strikes a native of one Moon sign: Muhurta Chintamani's four rows
+/// of the ghata chakra (C758).
+final class Ghata extends _Value {
+  const Ghata({
+    required this.chandra,
+    required this.tithi,
+    required this.vara,
+    required this.nakshatra,
+  });
+
+  /// The sign the Moon strikes from (v. 27).
+  final Rashi chandra;
+
+  /// The class of tithi that strikes (v. 28).
+  final TithiClass tithi;
+
+  /// The weekday that strikes (v. 29).
+  final Vara vara;
+
+  /// The nakshatra that strikes (v. 30).
+  final Nakshatra nakshatra;
+
+  @override
+  List<Object?> get _fields => [chandra, tithi, vara, nakshatra];
 }
 
 /// The sign rising at a chart's instant, and its span (C378).
@@ -14161,6 +14199,25 @@ final class VarjyamClause extends MuhurtaClauseKind {
   };
 }
 
+/// A ghata of the native's: the day's Moon sign, tithi, weekday or
+/// nakshatra that strikes one born under the native's Moon sign (Muhurta
+/// Chintamani XI vv. 27–30, C758).
+final class GhataClause extends MuhurtaClauseKind {
+  const GhataClause({required this.row});
+
+  /// Which row struck: `CHANDRA`, `TITHI`, `VARA` or `NAKSHATRA`.
+  final String row;
+
+  @override
+  String get clause => 'GHATA';
+
+  @override
+  List<Object?> get _fields => [row];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause, 'row': row};
+}
+
 /// A clause kind from its tagged JSON: a switch over every tag, so a tag
 /// this build does not know is refused by name rather than guessed.
 MuhurtaClauseKind _clauseKind(
@@ -14262,6 +14319,7 @@ MuhurtaClauseKind _clauseKind(
   'VARJYAM' => VarjyamClause(
     nakshatra: _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
   ),
+  'GHATA' => GhataClause(row: raw['row']! as String),
   final tag =>
     throw StateError(
       'the library drew a clause this build does not know: $tag',

@@ -5613,6 +5613,18 @@ fn the_avakahada(report: &mut Report, index: usize, document: &teistro::Document
             wire_key(&syllable.varga)
         ),
     );
+    let ghata = read.ghata;
+    put(
+        report,
+        &format!("chart-{index}-avakahada-ghata"),
+        format!(
+            "{} {} {} {}",
+            ghata.chandra.full_key(),
+            ghata.tithi.full_key(),
+            ghata.vara.full_key(),
+            ghata.nakshatra.full_key()
+        ),
+    );
 }
 
 /// The moment as the other three print it: the rising sign and its edges,

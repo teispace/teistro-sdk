@@ -5495,6 +5495,11 @@ void _engineTests() {
           reason: read.syllable.iast,
         );
         padas.add((read.nakshatra, read.pada));
+        // The ghata Moon is Muhurta Chintamani's count from the Moon's own
+        // sign (C758).
+        const counts = [1, 5, 9, 2, 6, 10, 3, 7, 4, 8, 11, 12];
+        final at = read.rashi.id;
+        expect(read.ghata.chandra, Rashi.byId((at + counts[at] - 1) % 12));
       }
       expect(padas.length, greaterThan(20));
       ctx.dispose();

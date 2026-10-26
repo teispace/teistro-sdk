@@ -8,9 +8,10 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Karana, Nakshatra, Rashi, Tithi, Vara, Yoga};
+use teistro_matching::Ghata;
 use teistro_panchanga::{Panchanga, Span};
 
-use crate::clause::{Clause, ClauseKind};
+use crate::clause::{Clause, ClauseKind, GhataRow};
 use crate::grade::{Grade, Graded};
 use crate::tara::{ChandraBala, chandra_house, tara};
 
@@ -306,8 +307,52 @@ pub fn clauses(day: &Panchanga, native: Option<&Native>, rules: &DayRules) -> Ve
                 at: span.inside,
             }
         }));
+        ghatas(&mut found, day, Ghata::of(native.moon_sign));
     }
     found
+}
+
+/// A clause for each part of the day a row of the native's ghata held
+/// over, in the rows' order: the Moon, the tithi, the weekday and the
+/// nakshatra.
+fn ghatas(found: &mut Vec<Clause>, day: &Panchanga, ghata: Ghata) {
+    let struck = |row| ClauseKind::Ghata { row };
+    found.extend(
+        day.moon
+            .signs
+            .iter()
+            .filter(|span| span.member == ghata.chandra)
+            .map(|span| Clause {
+                kind: struck(GhataRow::Chandra),
+                at: span.inside,
+            }),
+    );
+    found.extend(
+        day.limbs
+            .tithi
+            .iter()
+            .filter(|span| span.member.attributes().class == ghata.tithi)
+            .map(|span| Clause {
+                kind: struck(GhataRow::Tithi),
+                at: span.inside,
+            }),
+    );
+    if day.day.vara == ghata.vara {
+        found.push(Clause {
+            kind: struck(GhataRow::Vara),
+            at: day.window,
+        });
+    }
+    found.extend(
+        day.limbs
+            .nakshatra
+            .iter()
+            .filter(|span| span.member == ghata.nakshatra)
+            .map(|span| Clause {
+                kind: struck(GhataRow::Nakshatra),
+                at: span.inside,
+            }),
+    );
 }
 
 /// A clause for each span whose member the rules grade best or reject.

@@ -54,6 +54,7 @@ from teistro import (
     Observer,
     Plugin,
     Rashi,
+    TithiClass,
     Samvatsara,
     AgniVasa,
     Direction,
@@ -3697,6 +3698,11 @@ class AnEngine(WithLibrary):
                 latin = ctx.matching.naam(read.syllable.iast, read.syllable.iast, {"name": {"latin": "IAST"}})
                 self.assertEqual(latin.bride, named, read.syllable.iast)
                 padas.add((read.nakshatra, read.pada))
+                # The ghata Moon is Muhurta Chintamani's count from the
+                # Moon's own sign (C758).
+                counts = (1, 5, 9, 2, 6, 10, 3, 7, 4, 8, 11, 12)
+                self.assertEqual(read.ghata.chandra, Rashi((read.rashi + counts[read.rashi] - 1) % 12))
+                self.assertIsInstance(read.ghata.tithi, TithiClass)
             self.assertGreater(len(padas), 20)
         with self.teistro.context(ephemeris=Ephemeris.BUILTIN, profile="western-tropical-default") as western:
             with self.assertRaises(TeistroError) as caught:

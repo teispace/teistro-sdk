@@ -23,7 +23,8 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::settings::{OverridePolicy, Profile, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
-use teistro_muhurta::{Clause, ClauseKind, DayRules, Native, clauses};
+use teistro_matching::Ghata;
+use teistro_muhurta::{Clause, ClauseKind, DayRules, GhataRow, Native, clauses};
 use teistro_panchanga::{Almanac, Panchanga};
 use teistro_port_ephemeris::test_provider::TestProvider;
 
@@ -178,11 +179,77 @@ fn the_natives_balas_follow_the_spans_they_count() {
         .count();
     assert_eq!(tara, day.limbs.nakshatra.len());
     assert_eq!(chandra, day.moon.signs.len());
+    let ghata = with
+        .iter()
+        .filter(|c| matches!(c.kind, ClauseKind::Ghata { .. }))
+        .count();
     assert_eq!(
         with.len(),
-        without.len() + tara + chandra,
-        "the native adds only the two balas"
+        without.len() + tara + chandra + ghata,
+        "the native adds only the two balas and the ghatas"
     );
+}
+
+/// Every native's ghata over a fortnight: a clause for each span the
+/// row's member held, and none for any other (C758).
+#[test]
+fn each_ghata_row_strikes_exactly_the_spans_its_member_held() {
+    let rules = DayRules::raman();
+    let days: Vec<Panchanga> = (10..=24).map(|d| day(2024, 6, d)).collect();
+    let mut rows = [0_usize; 4];
+    for moon_sign in Rashi::ALL {
+        let native = Native {
+            moon_sign,
+            ..native()
+        };
+        let ghata = Ghata::of(moon_sign);
+        for day in &days {
+            let struck: Vec<(GhataRow, Interval)> = clauses(day, Some(&native), &rules)
+                .into_iter()
+                .filter_map(|c| match c.kind {
+                    ClauseKind::Ghata { row } => {
+                        assert!(!ClauseKind::Ghata { row }.favourable());
+                        Some((row, c.at))
+                    }
+                    _ => None,
+                })
+                .collect();
+            let mut expected: Vec<(GhataRow, Interval)> = Vec::new();
+            expected.extend(
+                day.moon
+                    .signs
+                    .iter()
+                    .filter(|s| s.member == ghata.chandra)
+                    .map(|s| (GhataRow::Chandra, s.inside)),
+            );
+            expected.extend(
+                day.limbs
+                    .tithi
+                    .iter()
+                    .filter(|s| s.member.attributes().class == ghata.tithi)
+                    .map(|s| (GhataRow::Tithi, s.inside)),
+            );
+            if day.day.vara == ghata.vara {
+                expected.push((GhataRow::Vara, day.window));
+            }
+            expected.extend(
+                day.limbs
+                    .nakshatra
+                    .iter()
+                    .filter(|s| s.member == ghata.nakshatra)
+                    .map(|s| (GhataRow::Nakshatra, s.inside)),
+            );
+            assert_eq!(struck, expected, "{moon_sign:?} {:?}", day.day.vara);
+            for (row, _) in &struck {
+                rows[*row as usize] += 1;
+            }
+        }
+    }
+    // Each row strikes some native. 10 to 24 June 2024 is two weeks
+    // from a Monday and a Monday more: each native's weekday twice, and
+    // Gemini's Monday once again.
+    assert!(rows.iter().all(|n| *n > 0), "{rows:?}");
+    assert_eq!(rows[2], 25);
 }
 
 #[test]

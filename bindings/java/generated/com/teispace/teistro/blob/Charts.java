@@ -14440,6 +14440,10 @@ public final class Charts {
         private final int nadiAt;
         private final int cellAt;
         private final int vargaAt;
+        private final int ghataChandraAt;
+        private final int ghataTithiAt;
+        private final int ghataVaraAt;
+        private final int ghataNakshatraAt;
 
         Avakahada(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -14456,6 +14460,10 @@ public final class Charts {
             this.nadiAt = blob.column(at, 8, 2);
             this.cellAt = blob.column(at, 9, 1);
             this.vargaAt = blob.column(at, 10, 1);
+            this.ghataChandraAt = blob.column(at, 11, 2);
+            this.ghataTithiAt = blob.column(at, 12, 2);
+            this.ghataVaraAt = blob.column(at, 13, 2);
+            this.ghataNakshatraAt = blob.column(at, 14, 2);
         }
 
         /**
@@ -14604,6 +14612,58 @@ public final class Charts {
          */
         public int varga(int row) {
             return Byte.toUnsignedInt(bytes.get(vargaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The sign the Moon strikes the native from, the ghata chakra's first row (Muhurta Chintamani XI v. 27, C758).
+         *
+         * The id of a {@code Rashi}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int ghataChandra(int row) {
+            return Short.toUnsignedInt(bytes.getShort(ghataChandraAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The class of tithi that strikes the native (v. 28).
+         *
+         * The id of a {@code TithiClass}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int ghataTithi(int row) {
+            return Short.toUnsignedInt(bytes.getShort(ghataTithiAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The weekday that strikes the native (v. 29).
+         *
+         * The id of a {@code Vara}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int ghataVara(int row) {
+            return Short.toUnsignedInt(bytes.getShort(ghataVaraAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The nakshatra that strikes the native (v. 30).
+         *
+         * The id of a {@code Nakshatra}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int ghataNakshatra(int row) {
+            return Short.toUnsignedInt(bytes.getShort(ghataNakshatraAt + Objects.checkIndex(row, length) * 2));
         }
     }
 

@@ -867,6 +867,8 @@ for (const chart of charts) {
   );
   const syllable = birth.syllable;
   put(`chart-${i}-avakahada-syllable`, `${syllable.cell} ${syllable.devanagari} ${syllable.iast} ${syllable.varga}`);
+  const ghata = birth.ghata;
+  put(`chart-${i}-avakahada-ghata`, `${ghata.chandra} ${ghata.tithi} ${ghata.vara} ${ghata.nakshatra}`);
   const { rising, eclipse } = chart.moment;
   put(
     `chart-${i}-moment`,

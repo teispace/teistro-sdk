@@ -1669,6 +1669,11 @@ def main() -> None:
                 f"chart-{i}-avakahada-syllable",
                 f"{syllable.cell} {syllable.devanagari} {syllable.iast} {syllable.varga.key}",
             )
+            ghata = birth.ghata
+            put(
+                f"chart-{i}-avakahada-ghata",
+                f"{ghata.chandra.full_key} {ghata.tithi.full_key} {ghata.vara.full_key} {ghata.nakshatra.full_key}",
+            )
             fell = chart.moment
             assert fell is not None
             put(

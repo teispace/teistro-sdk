@@ -4702,6 +4702,10 @@ final class ChartsAvakahada {
     required this.nadi,
     required this.cell,
     required this.varga,
+    required this.ghataChandra,
+    required this.ghataTithi,
+    required this.ghataVara,
+    required this.ghataNakshatra,
     required this.length,
   });
 
@@ -4737,6 +4741,18 @@ final class ChartsAvakahada {
 
   /// The birth syllable's varga (C295).
   final Uint8List varga;
+
+  /// The sign the Moon strikes the native from, the ghata chakra's first row (Muhurta Chintamani XI v. 27, C758).
+  final Uint16List ghataChandra;
+
+  /// The class of tithi that strikes the native (v. 28).
+  final Uint16List ghataTithi;
+
+  /// The weekday that strikes the native (v. 29).
+  final Uint16List ghataVara;
+
+  /// The nakshatra that strikes the native (v. 30).
+  final Uint16List ghataNakshatra;
 
   /// The number of rows every column holds.
   final int length;
@@ -7449,6 +7465,10 @@ Charts decodeCharts(Uint8List bytes) {
       nadi: blob.column(atAvakahada, 8, 2, Uint16List.sublistView),
       cell: blob.column(atAvakahada, 9, 1, Uint8List.sublistView),
       varga: blob.column(atAvakahada, 10, 1, Uint8List.sublistView),
+      ghataChandra: blob.column(atAvakahada, 11, 2, Uint16List.sublistView),
+      ghataTithi: blob.column(atAvakahada, 12, 2, Uint16List.sublistView),
+      ghataVara: blob.column(atAvakahada, 13, 2, Uint16List.sublistView),
+      ghataNakshatra: blob.column(atAvakahada, 14, 2, Uint16List.sublistView),
       length: atAvakahada.count,
     ),
     avakahadaSyllables: blob.text(atAvakahadaSyllables, 'avakahada_syllables'),

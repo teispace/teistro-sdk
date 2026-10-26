@@ -234,6 +234,10 @@
           "$ref": "#/$defs/Gana",
           "description": "The nakshatra's gana."
         },
+        "ghata": {
+          "$ref": "#/$defs/Ghata",
+          "description": "The ghata chakra of the Moon's sign: what strikes the native (C758)."
+        },
         "nadi": {
           "$ref": "#/$defs/Nadi",
           "description": "The nakshatra's nadi."
@@ -284,7 +288,8 @@
         "yoni",
         "gana",
         "nadi",
-        "syllable"
+        "syllable",
+        "ghata"
       ],
       "type": "object"
     },
@@ -3007,6 +3012,34 @@
         "latitude",
         "longitude",
         "altitude"
+      ],
+      "type": "object"
+    },
+    "Ghata": {
+      "description": "The four things that strike a native of one Moon sign (Muhurta Chintamani XI vv. 27–30; C758).",
+      "properties": {
+        "chandra": {
+          "$ref": "#/$defs/Rashi",
+          "description": "The sign the Moon strikes from (v. 27), counted from the native's sign as the verse counts it and given here as the sign itself."
+        },
+        "nakshatra": {
+          "$ref": "#/$defs/Nakshatra",
+          "description": "The nakshatra that strikes (v. 30)."
+        },
+        "tithi": {
+          "$ref": "#/$defs/TithiClass",
+          "description": "The class of tithi that strikes (v. 28)."
+        },
+        "vara": {
+          "$ref": "#/$defs/Vara",
+          "description": "The weekday that strikes (v. 29)."
+        }
+      },
+      "required": [
+        "chandra",
+        "tithi",
+        "vara",
+        "nakshatra"
       ],
       "type": "object"
     },
@@ -7432,6 +7465,35 @@
       ],
       "description": "A key of the `tithi` catalogue, bare or full.",
       "x-teistro-kind": "tithi"
+    },
+    "TithiClass": {
+      "anyOf": [
+        {
+          "description": "A key of the `tithi_class` catalogue, as a document writes it.",
+          "enum": [
+            "NANDA",
+            "BHADRA",
+            "JAYA",
+            "RIKTA",
+            "PURNA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `tithi_class` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "tithi_class.NANDA",
+            "tithi_class.BHADRA",
+            "tithi_class.JAYA",
+            "tithi_class.RIKTA",
+            "tithi_class.PURNA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `tithi_class` catalogue, bare or full.",
+      "x-teistro-kind": "tithi_class"
     },
     "TithiSpan": {
       "description": "One member of a limb, and when it ran.",

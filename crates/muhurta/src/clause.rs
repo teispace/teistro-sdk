@@ -120,6 +120,16 @@ pub enum ClauseKind {
         /// The count and its tara.
         reading: TaraReading,
     },
+    /// A ghata of the native's: the day's Moon sign, tithi, weekday or
+    /// nakshatra that strikes one born under the native's Moon sign
+    /// (Muhurta Chintamani, *Yatra-prakarana* XI vv. 27–30; C758).
+    /// Against the time. The text keeps it for journeys, service,
+    /// disputes and war, not marriage, so a rite that will not have it
+    /// names it among its bars.
+    Ghata {
+        /// Which row struck.
+        row: GhataRow,
+    },
     /// The day's Moon sign counted from the native's.
     Chandrabala {
         /// The house, 1 to 12.
@@ -305,6 +315,8 @@ pub enum ClauseKey {
     UnwantedPlacement,
     /// [`ClauseKind::Varjyam`].
     Varjyam,
+    /// [`ClauseKind::Ghata`].
+    Ghata,
 }
 
 impl ClauseKey {
@@ -317,7 +329,7 @@ impl ClauseKey {
     ///
     /// assert!(ClauseKey::ALL.iter().enumerate().all(|(place, key)| *key as usize == place));
     /// ```
-    pub const ALL: [ClauseKey; 32] = [
+    pub const ALL: [ClauseKey; 33] = [
         ClauseKey::Tithi,
         ClauseKey::Nakshatra,
         ClauseKey::Yoga,
@@ -350,6 +362,7 @@ impl ClauseKey {
         ClauseKey::KendraBenefics,
         ClauseKey::UnwantedPlacement,
         ClauseKey::Varjyam,
+        ClauseKey::Ghata,
     ];
 }
 
@@ -397,6 +410,7 @@ impl ClauseKind {
             ClauseKind::KendraBenefics { .. } => ClauseKey::KendraBenefics,
             ClauseKind::UnwantedPlacement { .. } => ClauseKey::UnwantedPlacement,
             ClauseKind::Varjyam { .. } => ClauseKey::Varjyam,
+            ClauseKind::Ghata { .. } => ClauseKey::Ghata,
         }
     }
 
@@ -440,6 +454,30 @@ impl ClauseKind {
             _ => false,
         }
     }
+}
+
+/// Which row of the ghata chakra struck (C758).
+///
+/// ```
+/// use teistro_muhurta::clause::GhataRow;
+/// use teistro_muhurta::ClauseKind;
+///
+/// let json = serde_json::to_value(ClauseKind::Ghata { row: GhataRow::Chandra })?;
+/// assert_eq!((json["clause"].as_str(), json["row"].as_str()), (Some("GHATA"), Some("CHANDRA")));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum GhataRow {
+    /// The Moon in the sign that strikes (v. 27).
+    Chandra,
+    /// A tithi of the class that strikes (v. 28).
+    Tithi,
+    /// The weekday that strikes (v. 29).
+    Vara,
+    /// The nakshatra that strikes (v. 30).
+    Nakshatra,
 }
 
 /// A clause and the interval it held over.

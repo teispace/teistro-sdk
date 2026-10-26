@@ -3830,6 +3830,18 @@ class ChartsAvakahada:
     varga: memoryview[int]
     """The birth syllable's varga (C295)."""
 
+    ghata_chandra: memoryview[int]
+    """The sign the Moon strikes the native from, the ghata chakra's first row (Muhurta Chintamani XI v. 27, C758)."""
+
+    ghata_tithi: memoryview[int]
+    """The class of tithi that strikes the native (v. 28)."""
+
+    ghata_vara: memoryview[int]
+    """The weekday that strikes the native (v. 29)."""
+
+    ghata_nakshatra: memoryview[int]
+    """The nakshatra that strikes the native (v. 30)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -7658,6 +7670,18 @@ def decode_charts(raw: bytes) -> Charts:
             varga=blob.column(
                 at_avakahada, 10, 1, at_avakahada.count
             ).cast("B"),
+            ghata_chandra=blob.column(
+                at_avakahada, 11, 2, at_avakahada.count
+            ).cast("H"),
+            ghata_tithi=blob.column(
+                at_avakahada, 12, 2, at_avakahada.count
+            ).cast("H"),
+            ghata_vara=blob.column(
+                at_avakahada, 13, 2, at_avakahada.count
+            ).cast("H"),
+            ghata_nakshatra=blob.column(
+                at_avakahada, 14, 2, at_avakahada.count
+            ).cast("H"),
             length=at_avakahada.count,
         ),
         avakahada_syllables=blob.text(at_avakahada_syllables, "avakahada_syllables"),

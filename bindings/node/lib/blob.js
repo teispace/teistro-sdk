@@ -1780,6 +1780,10 @@ export function decodeCharts(bytes) {
       nadi: column(blob, at, 8, 'u16', at.count),
       cell: column(blob, at, 9, 'u8', at.count),
       varga: column(blob, at, 10, 'u8', at.count),
+      ghataChandra: column(blob, at, 11, 'u16', at.count),
+      ghataTithi: column(blob, at, 12, 'u16', at.count),
+      ghataVara: column(blob, at, 13, 'u16', at.count),
+      ghataNakshatra: column(blob, at, 14, 'u16', at.count),
       length: at.count,
     };
   }

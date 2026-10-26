@@ -816,6 +816,20 @@ export interface Avakahada {
   readonly gana: Gana;
   readonly nadi: Nadi;
   readonly syllable: BirthSyllable;
+  /** The ghata chakra of the Moon's sign: what strikes the native (Muhurta Chintamani XI vv. 27–30, C758). */
+  readonly ghata: Ghata;
+}
+
+/** What strikes a native of one Moon sign: Muhurta Chintamani's four rows of the ghata chakra (C758). */
+export interface Ghata {
+  /** The sign the Moon strikes from (v. 27). */
+  readonly chandra: Rashi | 'unknown';
+  /** The class of tithi that strikes (v. 28). */
+  readonly tithi: TithiClass;
+  /** The weekday that strikes (v. 29). */
+  readonly vara: Vara | 'unknown';
+  /** The nakshatra that strikes (v. 30). */
+  readonly nakshatra: Nakshatra | 'unknown';
 }
 
 /** The sign rising at a chart's instant, and its span (C378). */
@@ -7753,7 +7767,8 @@ export type MuhurtaClauseKind =
   | { readonly clause: 'LUMINARY_IN_ELEVENTH'; readonly grahas: readonly Graha[] }
   | { readonly clause: 'KENDRA_BENEFICS'; readonly grahas: readonly Graha[] }
   | { readonly clause: 'UNWANTED_PLACEMENT'; readonly house: number; readonly by: readonly Graha[] }
-  | { readonly clause: 'VARJYAM'; readonly nakshatra: Nakshatra };
+  | { readonly clause: 'VARJYAM'; readonly nakshatra: Nakshatra }
+  | { readonly clause: 'GHATA'; readonly row: 'CHANDRA' | 'TITHI' | 'VARA' | 'NAKSHATRA' };
 
 /** A clause and the interval it held over. */
 export type MuhurtaClause = MuhurtaClauseKind & { readonly at: Interval };

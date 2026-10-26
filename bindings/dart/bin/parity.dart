@@ -1629,6 +1629,11 @@ void main() {
       'chart-$i-avakahada-syllable',
       '${syllable.cell} ${syllable.devanagari} ${syllable.iast} ${syllable.varga.key}',
     );
+    final ghata = birth.ghata;
+    put(
+      'chart-$i-avakahada-ghata',
+      '${ghata.chandra.fullKey} ${ghata.tithi.fullKey} ${ghata.vara.fullKey} ${ghata.nakshatra.fullKey}',
+    );
     final fell = chart.moment!;
     put(
       'chart-$i-moment',

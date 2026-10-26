@@ -43,7 +43,7 @@ pub mod window;
 
 pub use activity::{ActivityRules, Bar, Hours, MonthRule, Shool, Unwanted};
 pub use baseline::{BaselineEvent, Score};
-pub use clause::{Clause, ClauseKey, ClauseKind};
+pub use clause::{Clause, ClauseKey, ClauseKind, GhataRow};
 pub use day::{DayRules, Native, clauses};
 pub use grade::{Grade, Graded};
 pub use instant::Sky;

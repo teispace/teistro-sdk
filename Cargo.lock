@@ -2017,6 +2017,7 @@ dependencies = [
  "teistro-chart",
  "teistro-core",
  "teistro-ephemeris-builtin",
+ "teistro-matching",
  "teistro-panchanga",
  "teistro-port-ephemeris",
  "teistro-time",

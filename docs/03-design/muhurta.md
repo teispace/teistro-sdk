@@ -358,7 +358,15 @@ of what it reads, and says which layer it belongs to:
 
 - **of a day**: the limbs at sunrise (and their spans across the day),
   Tarabala and Chandrabala against a `Native { star, moon_sign,
-  lagna }`, the special yogas from `panchanga::omen`.
+  lagna }`, the special yogas from `panchanga::omen`, and the native's
+  **ghata**: the Moon sign, tithi class, weekday and nakshatra that
+  strike one of the native's Moon sign (Muhurta Chintamani,
+  *Yatra-prakarana* XI vv. 27–30; C758), each a `GHATA` clause against
+  the time over the span its member held. The text keeps the ghata for
+  journeys, service, disputes and war and not for marriage, so no
+  shipped rite bars it; a rite that will not have it names
+  `"GHATA"` among its bars. Its spans are a day's tithi, nakshatra and
+  Moon-sign spans and the day itself, which the window already cuts at.
 - **of an instant**: everything that reads the lagna or a placement.
 
 ### 4.3 The window
