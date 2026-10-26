@@ -90,6 +90,10 @@ pub struct LunarYear {
     pub vikrama: i32,
     /// The Shaka year, whose number the southern count reads.
     pub shaka: i32,
+    /// The Kali year, counted like the Shaka as years elapsed (the
+    /// *kali-gatābda*): the Shaka year plus 3179, since the Shaka era
+    /// began when 3179 years of the Kali age had passed (C757).
+    pub kali: i32,
     /// The new moon that opened the year's first Chaitra.
     pub opened: JulianDay<Utc>,
     /// The sunrise that opened Chaitra Shukla Pratipada, the year's first
@@ -106,6 +110,10 @@ pub struct LunarYear {
     /// year in order.
     pub lupta: Option<Samvatsara>,
 }
+
+/// The Kali years elapsed when the Shaka era began (Shaka 0), so that
+/// Shaka 1947, the Vikrama year 2082, is the Kali year 5126.
+const KALI_BEFORE_SHAKA: i32 = 3179;
 
 impl LunarYear {
     /// A year from its opening, its two sunrises, and the Jovian counts
@@ -149,6 +157,7 @@ impl LunarYear {
     /// let southern = LunarYear::of(SamvatsaraCount::Chandramana, found.opened, found.began, found.ended, (0, 0))?;
     /// assert_eq!(southern.samvatsara, teistro_calendar::samvatsara::chandramana(i64::from(southern.shaka)));
     /// assert_eq!((southern.vikrama, southern.lupta), (found.vikrama, None));
+    /// assert_eq!(southern.kali - southern.shaka, 3179);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///
@@ -193,6 +202,7 @@ impl LunarYear {
             count,
             vikrama: shaka + 135,
             shaka,
+            kali: shaka + KALI_BEFORE_SHAKA,
             opened,
             began,
             ended,

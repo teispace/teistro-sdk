@@ -828,6 +828,7 @@ class AnEngine(WithLibrary):
             self.assertEqual((value.date.year, value.date.month, value.date.day), (2026, 1, 15))
             self.assertEqual(value.vara, Vara.GURUVARA)
             self.assertEqual((value.year.samvatsara, value.year.vikrama), (Samvatsara.SIDDHARTHI, 2082))
+            self.assertEqual(value.year.kali, 5126)
             self.assertEqual((value.month.month, value.month.amanta), (Masa.MAGHA, Masa.PAUSHA))
             self.assertEqual(value.month.kind, MonthKind.NIJA)
             self.assertEqual((value.ritu, value.ayana, value.ayana_reckoning), (Ritu.SHISHIRA, Ayana.UTTARAYANA, "SIDEREAL"))

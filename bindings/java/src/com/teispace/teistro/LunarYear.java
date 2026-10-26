@@ -11,6 +11,7 @@ import java.util.List;
  *     {@code BARHASPATYA_RUNNING} or {@code CHANDRAMANA}
  * @param vikrama the Vikrama year
  * @param shaka the Shaka year, whose number the southern count reads
+ * @param kali the Kali year elapsed: the Shaka year plus 3179
  * @param opened the new moon that opened the year's first Chaitra, a UTC Julian day
  * @param began the sunrise of Chaitra Shukla Pratipada, where the name is
  *     read, a UTC Julian day
@@ -20,7 +21,7 @@ import java.util.List;
  *     names no year; may be null
  */
 public record LunarYear(
-        Samvatsara samvatsara, String count, int vikrama, int shaka, double opened, double began, double ended,
+        Samvatsara samvatsara, String count, int vikrama, int shaka, int kali, double opened, double began, double ended,
         List<JovianYear> jovian, Samvatsara lupta) {
     /** Keeps the list unmodifiable. */
     public LunarYear {

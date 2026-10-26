@@ -5058,6 +5058,7 @@ test('an almanac says the time a sankalpa recites', () => {
   assert.equal(value.vara, 'vara.GURUVARA');
   assert.equal(value.year.samvatsara, 'samvatsara.SIDDHARTHI');
   assert.equal(value.year.vikrama, 2082);
+  assert.equal(value.year.kali, 5126);
   assert.equal(value.month.month, 'masa.MAGHA');
   assert.equal(value.month.amanta, 'masa.PAUSHA');
   assert.equal(value.ritu, 'ritu.SHISHIRA');

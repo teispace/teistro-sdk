@@ -8389,6 +8389,9 @@ class LunarYear:
     shaka: int
     """The Shaka year, whose number the southern count reads."""
 
+    kali: int
+    """The Kali year elapsed: the Shaka year plus 3179."""
+
     opened: float
     """The new moon that opened the year's first Chaitra, a UTC Julian day."""
 
@@ -15881,6 +15884,7 @@ def _lunar_year(raw: Mapping[str, Any]) -> LunarYear:
         count=raw["count"],
         vikrama=raw["vikrama"],
         shaka=raw["shaka"],
+        kali=raw["kali"],
         opened=raw["opened"],
         began=raw["began"],
         ended=raw["ended"],

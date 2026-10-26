@@ -72,7 +72,7 @@ every binding, each answer typed in its own language.
   "date": {"calendar": "calendar.GREGORIAN", "year": 2026, "month": 1, "day": 15, "…": "…"},
   "vara": "vara.GURUVARA",
   "sunrise": 2461055.55198882, "nextSunrise": 2461056.551913582,
-  "year": {"samvatsara": "samvatsara.SIDDHARTHI", "vikrama": 2082, "shaka": 1947, "…": "…"},
+  "year": {"samvatsara": "samvatsara.SIDDHARTHI", "vikrama": 2082, "shaka": 1947, "kali": 5126, "…": "…"},
   "ayana": "ayana.UTTARAYANA", "ayanaReckoning": "SIDEREAL",
   "ritu": "ritu.SHISHIRA", "rituReckoning": "SOLAR",
   "month": {"month": "masa.MAGHA", "convention": "PURNIMANTA", "amanta": "masa.PAUSHA",

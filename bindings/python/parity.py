@@ -2772,6 +2772,7 @@ def main() -> None:
                         year.count,
                         str(year.vikrama),
                         str(year.shaka),
+                        str(year.kali),
                         number(year.opened),
                         number(year.began),
                         number(year.ended),

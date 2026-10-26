@@ -7479,6 +7479,8 @@ export interface LunarYear {
   readonly vikrama: number;
   /** The Shaka year, whose number the southern count reads. */
   readonly shaka: number;
+  /** The Kali year elapsed: the Shaka year plus 3179. */
+  readonly kali: number;
   /** The new moon that opened the year's first Chaitra, a UTC Julian day. */
   readonly opened: number;
   /** The sunrise of Chaitra Shukla Pratipada, where the name is read, a UTC Julian day. */
