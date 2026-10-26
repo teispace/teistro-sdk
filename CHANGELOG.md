@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Kali year beside the Vikrama and Shaka.**
+**Numbers:** a lunar year, in `years` and in a sankalpa, gains `kali`,
+so the hash of an answer carrying one changes; every other value is as
+before.
+- `LunarYear.kali`: the years elapsed of the Kali age (*kali-gatābda*),
+  the Shaka year plus 3179, as Sewell and Dikshit's tables count it
+  (C757): VS 2082 is Kali 5126. Every binding reads it.
+
 **The Moon's stay in its nakshatra, with the bhayat and bhabhoga.**
 **Numbers:** a chart document that carries its `moment` gains
 `moment.nakshatra`, so its hash changes; every computed value is as

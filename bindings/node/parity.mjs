@@ -1931,6 +1931,7 @@ for (const [name, rules, published] of [
         year.count,
         year.vikrama,
         year.shaka,
+        year.kali,
         number(year.opened),
         number(year.began),
         number(year.ended),

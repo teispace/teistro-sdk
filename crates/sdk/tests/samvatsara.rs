@@ -66,6 +66,11 @@ fn the_years_nepal_named_are_named() {
     ] {
         let year = year_of(&sdk, vikrama - 57, 8, 1);
         assert_eq!(year.vikrama, vikrama);
+        assert_eq!(
+            year.kali,
+            vikrama + 3044,
+            "the Kali year elapsed, VS {vikrama}"
+        );
         assert_eq!(year.samvatsara, name, "VS {vikrama}");
         assert_eq!(year.count, SamvatsaraCount::Barhaspatya);
     }

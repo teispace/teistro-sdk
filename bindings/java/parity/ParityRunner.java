@@ -2845,6 +2845,7 @@ public final class ParityRunner {
                     year.count(),
                     String.valueOf(year.vikrama()),
                     String.valueOf(year.shaka()),
+                    String.valueOf(year.kali()),
                     number(year.opened()),
                     number(year.began()),
                     number(year.ended()),

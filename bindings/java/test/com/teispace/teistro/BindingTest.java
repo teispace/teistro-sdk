@@ -2093,6 +2093,7 @@ public final class BindingTest {
                 same(Vara.GURUVARA, value.vara(), "a Thursday");
                 same(Samvatsara.SIDDHARTHI, value.year().samvatsara(), "the year's name");
                 same(2082, value.year().vikrama(), "the Vikrama year");
+                same(5126, value.year().kali(), "the Kali year");
                 same(Masa.MAGHA, value.month().month(), "the purnimanta month");
                 same(Masa.PAUSHA, value.month().amanta(), "the amanta month");
                 same(Ritu.SHISHIRA, value.ritu(), "the season");

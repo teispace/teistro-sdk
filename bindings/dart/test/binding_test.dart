@@ -884,6 +884,7 @@ void _engineTests() {
     expect(value.vara, Vara.guruvara);
     expect(value.year.samvatsara, Samvatsara.siddharthi);
     expect(value.year.vikrama, 2082);
+    expect(value.year.kali, 5126);
     expect(value.month.month, Masa.magha);
     expect(value.month.amanta, Masa.pausha);
     expect(value.month.kind, MonthKind.nija);

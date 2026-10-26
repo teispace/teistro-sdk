@@ -16403,6 +16403,7 @@ final class LunarYear extends _Value {
     required this.count,
     required this.vikrama,
     required this.shaka,
+    required this.kali,
     required this.opened,
     required this.began,
     required this.ended,
@@ -16422,6 +16423,9 @@ final class LunarYear extends _Value {
 
   /// The Shaka year, whose number the southern count reads.
   final int shaka;
+
+  /// The Kali year elapsed: the Shaka year plus 3179.
+  final int kali;
 
   /// The new moon that opened the year's first Chaitra, a UTC Julian day.
   final double opened;
@@ -16446,6 +16450,7 @@ final class LunarYear extends _Value {
     count,
     vikrama,
     shaka,
+    kali,
     opened,
     began,
     ended,
@@ -16586,6 +16591,7 @@ LunarYear _lunarYear(Map<String, Object?> raw) {
     count: raw['count']! as String,
     vikrama: raw['vikrama']! as int,
     shaka: raw['shaka']! as int,
+    kali: raw['kali']! as int,
     opened: jd(raw['opened']),
     began: jd(raw['began']),
     ended: jd(raw['ended']),

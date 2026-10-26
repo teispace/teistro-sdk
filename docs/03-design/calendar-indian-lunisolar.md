@@ -322,14 +322,21 @@ centuries. `BARHASPATYA_RUNNING` is the literal reading, and
 nothing.
 
 **What it costs, and where it is.** `sdk.almanac().years` answers the
-lunar years a range falls in, each with its name, its Vikrama and Shaka
-numbers, its bounds, the Jovian years that ran in it and the one it
+lunar years a range falls in, each with its name, its Vikrama, Shaka
+and Kali numbers, its bounds, the Jovian years that ran in it and the one it
 expunges; `AlmanacRequest::with_years` asks for them beside the days in
 one crossing. The roadmap asked for the samvatsara on every day. A list
 of years beside the days carries the same answer, since a day's year is
 the one holding its sunrise, and costs nothing when it is not asked. A
 field on every day would have cost every day a few new-moon searches,
 which the instruction-count gate refuses at three percent.
+
+**The Kali year.** A janma patrika and a patro printed in Nepal give the
+Kali year beside the Vikrama and Shaka, as the years elapsed of the Kali
+age (*kali-gatābda*). The Shaka era began when 3179 of them had passed,
+so `kali` is `shaka + 3179`: VS 2082 is Shaka 1947 and Kali 5126 (C757).
+The Kali count needs no new-moon search; it is a constant step from the
+Shaka year the year already reads.
 
 **At the boundary.** A panchanga request asks for the years with a bit,
 `TS_PANCHANGA_YEARS`, in its `sections`, the field that was reserved and

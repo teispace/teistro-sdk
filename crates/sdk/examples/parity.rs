@@ -6627,11 +6627,12 @@ fn lunar_years(report: &mut Report, geo: &Context, place: &Place, offset: UtcOff
             report,
             &format!("years-{k}"),
             format!(
-                "{} {} {} {} {} {} {} {}",
+                "{} {} {} {} {} {} {} {} {}",
                 year.samvatsara.full_key(),
                 tag(&year.count),
                 year.vikrama,
                 year.shaka,
+                year.kali,
                 number(year.opened.get()),
                 number(year.began.get()),
                 number(year.ended.get()),
