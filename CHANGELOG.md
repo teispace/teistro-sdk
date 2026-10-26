@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The A/B re-measured: yogas faster than the baseline, a third less memory.**
+**Numbers:** none; a measurement, not a computation.
+- On a quiet machine the SDK takes 0.55× the baseline's time for `yogas`
+  (4.8 ms against 8.7 ms), so nothing is listed as slower; peak resident
+  memory is 186 MB against 298 MB.
+- PyJHora's Vimshottari rung gains a `source` row: the SDK told the true
+  ayanamsha PyJHora casts with agrees on every start within a day (median
+  0.10 d, worst 0.32 d), so the 1.2-day gap under `timed` is the mean
+  ayanamsha the root takes, not the dasha.
+- The day's remaining difference is the polar births (a method); with the
+  refracted upper limb at the root, `timed` agrees on 99.2% of day facts.
+
 **Node gives a chart's bytes back when the chart is collected.**
 **Numbers:** none; the bytes are the ones the library wrote.
 - Every blob the Node addon hands back (`chart.found`, `positions`, the
