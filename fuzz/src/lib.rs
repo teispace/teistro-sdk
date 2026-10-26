@@ -263,10 +263,12 @@ pub fn json(data: &[u8]) {
         return;
     };
     let at = usize::from(*selector) % (CHART_SLOTS.len() + OTHER_SLOTS.len());
-    if beyond_bounds(CHART_SLOTS.get(at).copied(), rest) {
+    // Bounded as the library reads it, up to the first NUL: the whole
+    // input with bytes after a NUL is no JSON and would pass unbounded.
+    let text = c_text(rest);
+    if beyond_bounds(CHART_SLOTS.get(at).copied(), text.as_bytes()) {
         return;
     }
-    let text = c_text(rest);
     if let Some(name) = CHART_SLOTS.get(at) {
         let instant = 2_460_000.5;
         let mut request = chart_request(&instant);
@@ -707,6 +709,19 @@ mod tests {
         assert!(beyond_bounds(None, period(1837, 2037).as_bytes()));
         assert!(!beyond_bounds(None, period(2026, 2027).as_bytes()));
         assert!(!beyond_bounds(None, b"{\"periods\": ["));
+    }
+
+    /// The verify run's timeout on 2026-10-26: Saturn's spells over
+    /// 670,000 years in `sade_sati_json`, followed by a NUL and more
+    /// bytes. The whole input is no JSON, so bounding it skipped nothing,
+    /// while the library read the window up to the NUL; bounded as the
+    /// library reads it, it is skipped.
+    #[test]
+    fn a_window_before_a_nul_is_bounded_as_the_library_reads_it() {
+        let input = b"{\"from\":2460676.5,\"to\":246434429.0,\"reckoning\":\"SIGN\"}\0\0\0<";
+        let slot = Some("sade_sati_json");
+        assert!(!beyond_bounds(slot, input));
+        assert!(beyond_bounds(slot, c_text(input).as_bytes()));
     }
 
     /// The nightly minute's first timeout (2026-10-23): a transit window
