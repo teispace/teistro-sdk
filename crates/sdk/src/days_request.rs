@@ -73,11 +73,12 @@ impl DaysRequest {
         }
         let asked: Asked = strict::read_value(&Value::Object(fields), "")?;
         let calendar = asked.calendar.unwrap_or(Calendar::Gregorian);
-        let flags: [(bool, Asking); 4] = [
+        let flags: [(bool, Asking); 5] = [
             (asked.years, AlmanacRequest::with_years),
             (asked.eclipses, AlmanacRequest::with_eclipses),
             (asked.nepal_sambat, AlmanacRequest::with_nepal_sambat),
             (asked.lagnas, AlmanacRequest::with_lagnas),
+            (asked.homa_ahuti, AlmanacRequest::with_homa_ahuti),
         ];
         for (asked, add) in flags {
             if asked {
@@ -170,4 +171,6 @@ pub(crate) struct Asked {
     nepal_sambat: bool,
     #[serde(default)]
     lagnas: bool,
+    #[serde(default)]
+    homa_ahuti: bool,
 }

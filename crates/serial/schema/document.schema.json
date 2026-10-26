@@ -3416,6 +3416,29 @@
       ],
       "type": "object"
     },
+    "GrahaSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/Graha",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
+      ],
+      "type": "object"
+    },
     "GrahaState": {
       "description": "What one graha is, in one chart.",
       "properties": {
@@ -5470,6 +5493,13 @@
         "ghati_reckoning": {
           "$ref": "#/$defs/GhatiReckoning",
           "description": "How the day's ghatis are counted, `day.ghati_reckoning` as applied: what `Panchanga::ghati_pala` reads."
+        },
+        "homa_ahuti": {
+          "description": "The day's homa ahuti: the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, one span for each stretch the two stars both held (Muhurta Chintamani, Nakshatra-prakarana v. 35; crux C751). **Empty unless asked for** (the façade's `AlmanacRequest::with_homa_ahuti`), since the Sun's stars cost a search a day does not otherwise make; and left out of the day's document when empty.",
+          "items": {
+            "$ref": "#/$defs/GrahaSpan"
+          },
+          "type": "array"
         },
         "horas": {
           "description": "Twenty-four horas, from `time::hora`.",

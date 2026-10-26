@@ -6754,8 +6754,10 @@ fn the_lilith(report: &mut Report, place: &Place, offset: UtcOffset) {
     }
 }
 
-/// A day's lagna table, asked beside the day: 15 June 2025 at Kathmandu
-/// over the built-in sky, each sign's span (`03-design/amrit-kalam-and-lagnas.md` §2).
+/// A day's lagna table and homa ahuti, asked beside the day: 15 June 2025
+/// at Kathmandu over the built-in sky, each sign's span
+/// (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share
+/// (crux C751).
 fn lagnas(report: &mut Report, place: &Place, offset: UtcOffset) {
     let sky = Context::builder()
         .profile("nepali-default")
@@ -6770,29 +6772,46 @@ fn lagnas(report: &mut Report, place: &Place, offset: UtcOffset) {
             &date,
             place,
             offset,
-            &AlmanacRequest::new().with_lagnas(),
+            &AlmanacRequest::new().with_lagnas().with_homa_ahuti(),
         )
         .expect("the built-in sky's lagnas");
-    let table = &answer
+    let day = answer
         .days
         .value
         .first()
-        .expect("a range of one day answers one")
-        .lagnas;
-    put(report, "lagnas-count", table.len().to_string());
-    for (j, span) in table.iter().enumerate() {
-        put(
-            report,
-            &format!("lagnas-{j}"),
-            format!(
-                "{} {} {} {} {}",
-                span.member.full_key(),
-                number(span.whole.from.get()),
-                number(span.whole.to.get()),
-                number(span.inside.from.get()),
-                number(span.inside.to.get()),
-            ),
-        );
+        .expect("a range of one day answers one");
+    put(report, "lagnas-count", day.lagnas.len().to_string());
+    put(report, "homa-ahuti-count", day.homa_ahuti.len().to_string());
+    let tables = [
+        (
+            "lagnas",
+            day.lagnas
+                .iter()
+                .map(|span| (span.member.full_key(), span.whole, span.inside))
+                .collect::<Vec<_>>(),
+        ),
+        (
+            "homa-ahuti",
+            day.homa_ahuti
+                .iter()
+                .map(|span| (span.member.full_key(), span.whole, span.inside))
+                .collect(),
+        ),
+    ];
+    for (name, table) in tables {
+        for (j, (member, whole, inside)) in table.into_iter().enumerate() {
+            put(
+                report,
+                &format!("{name}-{j}"),
+                format!(
+                    "{member} {} {} {} {}",
+                    number(whole.from.get()),
+                    number(whole.to.get()),
+                    number(inside.from.get()),
+                    number(inside.to.get()),
+                ),
+            );
+        }
     }
 }
 

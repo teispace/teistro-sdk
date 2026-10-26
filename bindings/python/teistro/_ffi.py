@@ -284,6 +284,15 @@ PANCHANGA_WITHOUT_DAYS: Final = 8
 # ascendants a day, so a request that does not set it pays nothing.
 PANCHANGA_LAGNAS: Final = 16
 
+# `TS_PANCHANGA_HOMA_AHUTI`, the bit a caller sets in a panchanga
+# request's `sections` for each day's homa ahuti, in the `homa_ahuti`
+# span section: the graha whose mouth an oblation falls in, by the
+# Moon's nakshatra counted from the Sun's in threes (Muhurta
+# Chintamani, Nakshatra-prakarana v. 35; crux C751). The Sun's stars
+# cost a search a day does not otherwise make, so a request that does
+# not set it pays nothing.
+PANCHANGA_HOMA_AHUTI: Final = 32
+
 # The ABI and the SDK version these declarations were generated from. A
 # library that answers otherwise is refused when it is opened.
 GENERATED_ABI_VERSION: Final = 1
@@ -3694,7 +3703,9 @@ class PanchangaRequest:
     the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
     day, only what else is asked, festivals alone then founded as
     only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
-    lagna table, in the `lagnas` span section.
+    lagna table, in the `lagnas` span section;
+    `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
+    `homa_ahuti` span section.
     Zero for the days alone, which is what every
     caller compiled against an earlier header passes, since this was a
     reserved field it wrote zero to.

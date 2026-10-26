@@ -6173,6 +6173,10 @@ export interface PanchangaCounts {
    * How many rows of `punya_kala` belong to this day.
    */
   readonly punyaKala: Uint32Array;
+  /**
+   * How many rows of `homa_ahuti` belong to this day.
+   */
+  readonly homaAhuti: Uint32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7138,6 +7142,55 @@ export interface PanchangaPunyaKala {
 }
 
 /**
+ * The `homa_ahuti` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The homa ahuti, when `sections` asked for `TS_PANCHANGA_HOMA_AHUTI` (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751): the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, the Sun's own star and the two after it the Sun's, then Mercury, Venus, Saturn, the Moon, Mars, Jupiter, Rahu and Ketu; the verse bars a malefic's share, which the reader judges. One span for each stretch the Moon's star and the Sun's both held, `whole` where the two stays overlap. Empty when not asked for.
+ */
+export interface PanchangaHomaAhuti {
+  /**
+   * The graha the oblation falls to.
+   * The values are `Graha` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * A decoded Panchanga blob.
  *
  * A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -7301,6 +7354,10 @@ export interface Panchanga {
    * The punya kala of a sankranti, when the day's daylight holds one, under `panchanga.punya_kala` (Dharmasindhu pp. 2-3, Nirnayasindhu pp. 3-5, crux C752): the sign the Sun entered, `whole` the ghatis the table gives before or after the entry, or the half day an entry at night makes meritorious, and `inside` their part in the daylight, the window. The sankranti itself may lie in the night either side, so a window on the morning after a night's entry is the following day's. Empty on all but some twelve days a year.
    */
   readonly punyaKala: PanchangaPunyaKala;
+  /**
+   * The homa ahuti, when `sections` asked for `TS_PANCHANGA_HOMA_AHUTI` (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751): the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, the Sun's own star and the two after it the Sun's, then Mercury, Venus, Saturn, the Moon, Mars, Jupiter, Rahu and Ketu; the verse bars a malefic's share, which the reader judges. One span for each stretch the Moon's star and the Sun's both held, `whole` where the two stays overlap. Empty when not asked for.
+   */
+  readonly homaAhuti: PanchangaHomaAhuti;
 }
 
 /**

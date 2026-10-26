@@ -5766,7 +5766,10 @@ class AJuneWeek(WithLibrary):
     a test names: the week the day's span lists are held over."""
 
     def days(
-        self, settings: Optional[dict[str, object]] = None, lagnas: bool = False
+        self,
+        settings: Optional[dict[str, object]] = None,
+        lagnas: bool = False,
+        homa_ahuti: bool = False,
     ) -> list[Any]:
         with self.teistro.context(
             profile=PROFILE, ephemeris=Ephemeris.BUILTIN, settings=settings
@@ -5782,6 +5785,7 @@ class AJuneWeek(WithLibrary):
                     ),
                     utc_offset_seconds=20_700,
                     lagnas=lagnas,
+                    homa_ahuti=homa_ahuti,
                 )
             )
 
@@ -5843,6 +5847,26 @@ class ADaysAmritKalam(AJuneWeek):
     def test_none_leaves_the_day_without_one(self) -> None:
         days = self.days({"panchanga": {"amrit_kalam": "NONE"}})
         self.assertEqual([len(day.amrit_kalam) for day in days], [0] * len(days))
+
+
+class ADaysHomaAhuti(AJuneWeek):
+    """The graha whose mouth an oblation falls in, asked for by
+    `homa_ahuti=True`: the Moon's star counted from the Sun's in threes
+    (Muhurta Chintamani, Nakshatra-prakarana v. 35; C751)."""
+
+    def test_the_shares_tile_the_day(self) -> None:
+        for day in self.days(homa_ahuti=True):
+            shares = day.homa_ahuti
+            self.assertGreaterEqual(len(shares), len(day.nakshatra))
+            self.assertEqual(shares[0].inside.from_jd, day.window.from_jd)
+            self.assertEqual(shares[-1].inside.to_jd, day.window.to_jd)
+            for before, after in zip(shares, shares[1:]):
+                self.assertEqual(before.whole.to_jd, after.whole.from_jd)
+            for share in shares:
+                self.assertTrue(share.member.full_key.startswith("graha."))
+
+    def test_a_day_not_asked_carries_none(self) -> None:
+        self.assertEqual([len(day.homa_ahuti) for day in self.days()], [0] * 7)
 
 
 class ADaysLagnas(AJuneWeek):

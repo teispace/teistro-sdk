@@ -116,6 +116,15 @@ const int panchangaWithoutDays = 8;
 /// ascendants a day, so a request that does not set it pays nothing.
 const int panchangaLagnas = 16;
 
+/// `TS_PANCHANGA_HOMA_AHUTI`, the bit a caller sets in a panchanga
+/// request's `sections` for each day's homa ahuti, in the `homa_ahuti`
+/// span section: the graha whose mouth an oblation falls in, by the
+/// Moon's nakshatra counted from the Sun's in threes (Muhurta
+/// Chintamani, Nakshatra-prakarana v. 35; crux C751). The Sun's stars
+/// cost a search a day does not otherwise make, so a request that does
+/// not set it pays nothing.
+const int panchangaHomaAhuti = 32;
+
 /// A key of one kind: a member this build catalogues, or one a context
 /// registered at run time.
 abstract interface class KeyOf<K> {

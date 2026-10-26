@@ -290,7 +290,9 @@ pub struct TsPanchangaRequest {
     /// the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
     /// day, only what else is asked, festivals alone then founded as
     /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
-    /// lagna table, in the `lagnas` span section.
+    /// lagna table, in the `lagnas` span section;
+    /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
+    /// `homa_ahuti` span section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -441,6 +443,25 @@ pub const TS_PANCHANGA_WITHOUT_DAYS: u32 = 8;
 /// ```
 pub const TS_PANCHANGA_LAGNAS: u32 = 16;
 
+/// `TS_PANCHANGA_HOMA_AHUTI`, the bit a caller sets in a panchanga
+/// request's `sections` for each day's homa ahuti, in the `homa_ahuti`
+/// span section: the graha whose mouth an oblation falls in, by the
+/// Moon's nakshatra counted from the Sun's in threes (Muhurta
+/// Chintamani, Nakshatra-prakarana v. 35; crux C751). The Sun's stars
+/// cost a search a day does not otherwise make, so a request that does
+/// not set it pays nothing.
+///
+/// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_LAGNAS};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_HOMA_AHUTI, 1 << 5);
+/// assert_eq!((TS_PANCHANGA_HOMA_AHUTI | TS_PANCHANGA_LAGNAS) & TS_PANCHANGA_LAGNAS, TS_PANCHANGA_LAGNAS);
+/// ```
+pub const TS_PANCHANGA_HOMA_AHUTI: u32 = 32;
+
 /// A day's own values, in the order `days` declares them.
 #[must_use]
 fn day_row(day: &Panchanga) -> Vec<FixedValue> {
@@ -498,6 +519,7 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         day.agni_vasa().len(),
         day.rahu_vasa().len(),
         usize::from(day.punya_kala.is_some()),
+        day.homa_ahuti.len(),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -759,6 +781,7 @@ struct RaggedRows {
     agni_vasa: Vec<Vec<FixedValue>>,
     rahu_vasa: Vec<Vec<FixedValue>>,
     punya_kala: Vec<Vec<FixedValue>>,
+    homa_ahuti: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -792,6 +815,7 @@ impl RaggedRows {
                 |day| day.punya_kala.iter().map(|kala| kala.span).collect(),
                 |m| m.id(),
             )?,
+            homa_ahuti: span_rows(days, |day| &day.homa_ahuti, |m| m.id())?,
         })
     }
 }
@@ -923,6 +947,7 @@ pub fn encode(
         writer.rows("agni_vasa", &ragged.agni_vasa)?;
         writer.rows("rahu_vasa", &ragged.rahu_vasa)?;
         writer.rows("punya_kala", &ragged.punya_kala)?;
+        writer.rows("homa_ahuti", &ragged.homa_ahuti)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -1066,6 +1091,9 @@ pub unsafe extern "C" fn ts_panchanga_days(
         }
         if asked.sections & TS_PANCHANGA_LAGNAS == TS_PANCHANGA_LAGNAS {
             beside = beside.with_lagnas();
+        }
+        if asked.sections & TS_PANCHANGA_HOMA_AHUTI == TS_PANCHANGA_HOMA_AHUTI {
+            beside = beside.with_homa_ahuti();
         }
         if asked.sections & TS_PANCHANGA_WITHOUT_DAYS == TS_PANCHANGA_WITHOUT_DAYS {
             beside = beside.without_days();

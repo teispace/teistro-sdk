@@ -3486,7 +3486,9 @@ pub struct PanchangaRequest {
     /// the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no
     /// day, only what else is asked, festivals alone then founded as
     /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
-    /// lagna table, in the `lagnas` span section.
+    /// lagna table, in the `lagnas` span section;
+    /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
+    /// `homa_ahuti` span section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.

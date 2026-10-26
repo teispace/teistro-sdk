@@ -200,6 +200,13 @@
       "ty": "u32",
       "value": 16,
       "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TS_PANCHANGA_HOMA_AHUTI",
+      "doc": "`TS_PANCHANGA_HOMA_AHUTI`, the bit a caller sets in a panchanga\nrequest's `sections` for each day's homa ahuti, in the `homa_ahuti`\nspan section: the graha whose mouth an oblation falls in, by the\nMoon's nakshatra counted from the Sun's in threes (Muhurta\nChintamani, Nakshatra-prakarana v. 35; crux C751). The Sun's stars\ncost a search a day does not otherwise make, so a request that does\nnot set it pays nothing.",
+      "ty": "u32",
+      "value": 32,
+      "source": "crates/ffi/src/panchanga.rs"
     }
   ],
   "enums": [
@@ -13968,7 +13975,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's\nlagna table, in the `lagnas` span section.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
+          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's\nlagna table, in the `lagnas` span section;\n`TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the\n`homa_ahuti` span section.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -23380,6 +23387,11 @@
               "name": "punya_kala",
               "scalar": "u32",
               "doc": "How many rows of `punya_kala` belong to this day."
+            },
+            {
+              "name": "homa_ahuti",
+              "scalar": "u32",
+              "doc": "How many rows of `homa_ahuti` belong to this day."
             }
           ]
         },
@@ -24575,6 +24587,61 @@
               "scalar": "u16",
               "doc": "The sign the Sun entered.",
               "enum": "Rashi"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 35,
+          "name": "homa_ahuti",
+          "doc": "The homa ahuti, when `sections` asked for `TS_PANCHANGA_HOMA_AHUTI` (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751): the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, the Sun's own star and the two after it the Sun's, then Mercury, Venus, Saturn, the Moon, Mars, Jupiter, Rahu and Ketu; the verse bars a malefic's share, which the reader judges. One span for each stretch the Moon's star and the Sun's both held, `whole` where the two stays overlap. Empty when not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The graha the oblation falls to.",
+              "enum": "Graha"
             },
             {
               "name": "whole_from",

@@ -813,7 +813,7 @@ page:
 | agni vasa | each tithi and the day's vara | Muhurta Chintamani, Nakshatra-prakarana v. 36 (Kapileshvar Shastri's edition, Chowkhamba 1948, p. 73; the 1892 Piyushadhara edition, p. 46) | `Panchanga::agni_vasa`, `omen::agni_vasa`, catalogue kind `agni_vasa` (C748) |
 | Rahu's direction | the daylight's eighths | *Jyotirnibandha* (Anandashrama 85), Rahu-bhumi v. 1, p. 337 | `Panchanga::rahu_vasa`, `omen::rahu_vasas`, `omen::RAHU_WALK` (C749) |
 | Shiva vasa | the tithi | none in hand | not built (C750) |
-| homa ahuti | the Moon's nakshatra from the Sun's | Muhurta Chintamani, Nakshatra-prakarana v. 35 | not built yet (C751) |
+| homa ahuti | the Moon's nakshatra from the Sun's | Muhurta Chintamani, Nakshatra-prakarana v. 35 | `Panchanga::homa_ahuti` on asking (`AlmanacRequest::with_homa_ahuti`), `Almanac::homa_ahuti`, `omen::ahuti`, `omen::HOMA_AHUTI` (C751) |
 
 **The agni vasa.** "सैका तिथिर्वारयुता कृताप्ता शेषे गुणेऽभ्रे भुवि
 वह्निवासः । सौख्याय होमे शशियुग्मशेषे प्राणार्थनाशो दिवि भूतले च": the
@@ -846,10 +846,25 @@ the whole day, follow a table no text in hand gives, so it is not built.
 tithis read as kailasha, gauri, sabha, krida, vrishabha, bhojana and
 shmashana, is what almanacs print, and no text read gives it (C750): a
 consumer that wants it computes it from the tithi spans the day carries.
-The homa ahuti, verse 35's share of the oblation by the Moon's nakshatra
-counted in threes from the Sun's (Sun, Mercury, Venus, Saturn, Moon,
-Mars, Jupiter, Rahu, Ketu; a malefic's share barred), needs the Sun's
-nakshatra spans, which a day does not yet carry (C751).
+
+**The homa ahuti.** Verse 35 shares the oblation by the Moon's nakshatra
+counted in threes from the Sun's, the Sun's own star the first: Sun,
+Mercury, Venus, Saturn, Moon, Mars, Jupiter, Rahu, Ketu, a malefic's
+share barred, which the reader judges (C751). Unlike the two above it
+needs something a day does not carry, the Sun's nakshatras, and finding
+them is a search, so it is **asked for**, as the lagna table is
+(`AlmanacRequest::with_homa_ahuti`): `Almanac::homa_ahuti` searches the
+Sun's stars over each day in the same sky and zodiac its limbs were
+read in, and `omen::homa_ahuti` lays them against the Moon's. The day's
+`homa_ahuti` is one span for each stretch the two stars both held, its
+`whole` the overlap and its `inside` the part in the day, so the shares
+tile the day; usually one a Moon star, and one more on the day the Sun
+changes star. The Moon is the day's own nakshatra, the one a patro
+prints; a chart may read her from another centre, half a degree apart by
+parallax, which is the day to trust. A day not asked writes no
+`homa_ahuti` and hashes as before. The façade's test reads every share
+of a quarter year at Kathmandu back from the Sun's star in a chart at
+its middle.
 
 **What crosses.** The Rust surface has the two methods. The C boundary
 writes `agni_vasa` and `rahu_vasa` as span sections, ids 32 and 33,
@@ -859,6 +874,11 @@ the agni vasa as the new catalogue kind, named in English and Nepali.
 Each binding's test holds the week of 15 to 21 June 2024 at Kathmandu to
 the verse's remainder for every tithi span and to Jyotirnibandha's eight
 from sunrise to sunset, and each parity runner prints both span lists.
+The homa ahuti is asked with the request bit `TS_PANCHANGA_HOMA_AHUTI`
+(32) and written as the span section `homa_ahuti`, id 35; every binding
+takes the option (`homa_ahuti`/`homaAhuti`) and reads the day's shares
+with the same name, its test holding them to tile the day, and each
+parity runner prints them beside the lagna table.
 
 ### 21.5 The punya kala of a sankranti
 

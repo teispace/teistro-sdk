@@ -41,6 +41,7 @@ import {
   CHART_VIMSHOPAKA,
   CONTEXT_TEST_PROVIDER,
   PANCHANGA_ECLIPSES,
+  PANCHANGA_HOMA_AHUTI,
   PANCHANGA_LAGNAS,
   PANCHANGA_NEPAL_SAMBAT,
   PANCHANGA_WITHOUT_DAYS,
@@ -2171,6 +2172,17 @@ export class AlmanacDay {
    */
   get punyaKala() {
     return this.#spans('punyaKala', RashiById);
+  }
+
+  /**
+   * The homa ahuti, when the request asked with `homaAhuti: true`: the
+   * graha whose mouth an oblation falls in, by the Moon's nakshatra
+   * counted from the Sun's in threes (Muhurta Chintamani,
+   * Nakshatra-prakarana v. 35, crux C751), one span for each stretch the
+   * two stars both held; empty when not asked for.
+   */
+  get homaAhuti() {
+    return this.#spans('homaAhuti', GrahaById);
   }
 
   /** The signs the Moon stood in. */
@@ -7100,6 +7112,9 @@ export class AlmanacArea extends Area {
    * @param {boolean} [request.lagnas] whether to give each day its lagna
    *   table, as `AlmanacDay.lagnas`: some four hundred ascendants a day,
    *   so only on asking
+   * @param {boolean} [request.homaAhuti] whether to give each day its
+   *   homa ahuti, as `AlmanacDay.homaAhuti`: the Sun's stars cost a
+   *   search a day does not otherwise make, so only on asking
    * @param {boolean} [request.days] `false` to leave the days out and
    *   answer only what is asked beside them; festivals alone are then
    *   founded as only what their rules read, which is what `festivals`
@@ -7130,6 +7145,7 @@ export class AlmanacArea extends Area {
           (request.eclipses === true ? PANCHANGA_ECLIPSES : 0) |
           (request.nepalSambat === true ? PANCHANGA_NEPAL_SAMBAT : 0) |
           (request.lagnas === true ? PANCHANGA_LAGNAS : 0) |
+          (request.homaAhuti === true ? PANCHANGA_HOMA_AHUTI : 0) |
           (request.days === false ? PANCHANGA_WITHOUT_DAYS : 0),
       }),
     );
@@ -7152,7 +7168,7 @@ export class AlmanacArea extends Area {
     if (request?.festivals == null) {
       throw new TypeError("festivals: expected a festivals request record, e.g. { rules: 'NEPAL' }");
     }
-    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, days: false }).festivals;
+    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, days: false }).festivals;
   }
 
   /**

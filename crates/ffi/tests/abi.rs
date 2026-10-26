@@ -45,7 +45,7 @@ use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::panchanga::{
-    TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_LAGNAS, TS_PANCHANGA_NEPAL_SAMBAT,
+    TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_LAGNAS, TS_PANCHANGA_NEPAL_SAMBAT,
     TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
 };
 use teistro_ffi::positions::ts_positions;
@@ -6101,6 +6101,10 @@ fn a_panchanga_request_carries_lagnas_and_leaves_out_days_by_their_bits() {
     );
     assert!(lagnas.count("lagnas").unwrap() > 0);
     assert_eq!(plain.count("lagnas"), Some(0));
+    assert_eq!(plain.count("homa_ahuti"), Some(0));
+    let ahuti = asked(TS_PANCHANGA_HOMA_AHUTI);
+    let ahuti = Reader::parse(&ahuti, &schema).unwrap();
+    assert!(ahuti.count("homa_ahuti").unwrap() >= ahuti.count("nakshatra").unwrap());
     assert_eq!(plain.count("days"), Some(1));
     assert_eq!(without.count("days"), Some(0));
     assert_ne!(without.text("nepal_sambat").unwrap(), "");

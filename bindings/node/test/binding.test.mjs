@@ -3991,6 +3991,29 @@ test('a day asked for its lagnas carries the signs rising from sunrise to the ne
   assert.equal(plain.lagnas.length, 0);
 });
 
+test('a day asked for its homa ahuti gives a graha to each stretch of its stars, and one not asked none', () => {
+  // Muhurta Chintamani, Nakshatra-prakarana v. 35 (crux C751): the Moon's
+  // star counted from the Sun's, in threes, from the Sun to Ketu.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const request = {
+    date: date(Calendar.Gregorian, 2024, 6, 15),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const day = ctx.almanac.day({ ...request, homaAhuti: true });
+  const plain = ctx.almanac.day(request);
+  ctx.dispose();
+  const shares = day.homaAhuti;
+  assert.ok(shares.length >= day.nakshatra.length, `${shares.length}`);
+  assert.equal(shares[0].inside.from, day.window.from);
+  assert.equal(shares[shares.length - 1].inside.to, day.window.to);
+  for (let j = 1; j < shares.length; j += 1) {
+    assert.equal(shares[j - 1].whole.to, shares[j].whole.from);
+  }
+  for (const share of shares) assert.match(share.member, /^graha\./);
+  assert.equal(plain.homaAhuti.length, 0);
+});
+
 test('fire follows each tithi with the vara, and Rahu walks the daylight from the east', () => {
   // Muhurta Chintamani, Nakshatra-prakarana v. 36: the tithi from Shukla
   // Pratipada as 1, one more, the vara from Sunday as 1, by four (C748);

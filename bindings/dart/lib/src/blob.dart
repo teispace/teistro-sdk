@@ -7701,6 +7701,7 @@ final class PanchangaCounts {
     required this.agniVasa,
     required this.rahuVasa,
     required this.punyaKala,
+    required this.homaAhuti,
     required this.length,
   });
 
@@ -7769,6 +7770,9 @@ final class PanchangaCounts {
 
   /// How many rows of `punya_kala` belong to this day.
   final Uint32List punyaKala;
+
+  /// How many rows of `homa_ahuti` belong to this day.
+  final Uint32List homaAhuti;
 
   /// The number of rows every column holds.
   final int length;
@@ -8736,6 +8740,55 @@ final class PanchangaPunyaKala {
   final int length;
 }
 
+/// The `homa_ahuti` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The homa ahuti, when `sections` asked for `TS_PANCHANGA_HOMA_AHUTI` (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751): the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, the Sun's own star and the two after it the Sun's, then Mercury, Venus, Saturn, the Moon, Mars, Jupiter, Rahu and Ketu; the verse bars a malefic's share, which the reader judges. One span for each stretch the Moon's star and the Sun's both held, `whole` where the two stays overlap. Empty when not asked for.
+final class PanchangaHomaAhuti {
+  const PanchangaHomaAhuti({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// The graha the oblation falls to.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -8780,6 +8833,7 @@ final class Panchanga {
     required this.agniVasa,
     required this.rahuVasa,
     required this.punyaKala,
+    required this.homaAhuti,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -8899,6 +8953,9 @@ final class Panchanga {
   /// The punya kala of a sankranti, when the day's daylight holds one, under `panchanga.punya_kala` (Dharmasindhu pp. 2-3, Nirnayasindhu pp. 3-5, crux C752): the sign the Sun entered, `whole` the ghatis the table gives before or after the entry, or the half day an entry at night makes meritorious, and `inside` their part in the daylight, the window. The sankranti itself may lie in the night either side, so a window on the morning after a night's entry is the following day's. Empty on all but some twelve days a year.
   final PanchangaPunyaKala punyaKala;
 
+  /// The homa ahuti, when `sections` asked for `TS_PANCHANGA_HOMA_AHUTI` (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751): the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, the Sun's own star and the two after it the Sun's, then Mercury, Venus, Saturn, the Moon, Mars, Jupiter, Rahu and Ketu; the verse bars a malefic's share, which the reader judges. One span for each stretch the Moon's star and the Sun's both held, `whole` where the two stays overlap. Empty when not asked for.
+  final PanchangaHomaAhuti homaAhuti;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -8940,6 +8997,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atAgniVasa = blob.section(32, 'agni_vasa');
   final atRahuVasa = blob.section(33, 'rahu_vasa');
   final atPunyaKala = blob.section(34, 'punya_kala');
+  final atHomaAhuti = blob.section(35, 'homa_ahuti');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -8994,6 +9052,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       agniVasa: blob.column(atCounts, 19, 4, Uint32List.sublistView),
       rahuVasa: blob.column(atCounts, 20, 4, Uint32List.sublistView),
       punyaKala: blob.column(atCounts, 21, 4, Uint32List.sublistView),
+      homaAhuti: blob.column(atCounts, 22, 4, Uint32List.sublistView),
       length: atCounts.count,
     ),
     day: Day(
@@ -9261,6 +9320,18 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsPala: blob.column(atPunyaKala, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atPunyaKala, 8, 1, Uint8List.sublistView),
       length: atPunyaKala.count,
+    ),
+    homaAhuti: PanchangaHomaAhuti(
+      member: blob.column(atHomaAhuti, 0, 2, Uint16List.sublistView),
+      wholeFrom: blob.column(atHomaAhuti, 1, 8, Float64List.sublistView),
+      wholeTo: blob.column(atHomaAhuti, 2, 8, Float64List.sublistView),
+      insideFrom: blob.column(atHomaAhuti, 3, 8, Float64List.sublistView),
+      insideTo: blob.column(atHomaAhuti, 4, 8, Float64List.sublistView),
+      sunrises: blob.column(atHomaAhuti, 5, 1, Uint8List.sublistView),
+      endsGhati: blob.column(atHomaAhuti, 6, 1, Uint8List.sublistView),
+      endsPala: blob.column(atHomaAhuti, 7, 1, Uint8List.sublistView),
+      endsVipala: blob.column(atHomaAhuti, 8, 1, Uint8List.sublistView),
+      length: atHomaAhuti.count,
     ),
   );
 }

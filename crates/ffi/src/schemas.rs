@@ -539,6 +539,7 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("agni_vasa", "agni_vasa"),
             count("rahu_vasa", "rahu_vasa"),
             count("punya_kala", "punya_kala"),
+            count("homa_ahuti", "homa_ahuti"),
         ],
     )
 }
@@ -828,6 +829,7 @@ pub fn panchanga() -> BlobSchema {
             span_section(32, "agni_vasa", "The agni vasa: where fire dwells for a kamya homa, one span for each tithi the day held, read with the day's vara (Muhurta Chintamani, Nakshatra-prakarana v. 36, crux C748): the tithi from Shukla Pratipada as 1, one more and the vara from Sunday as 1, by four, three or nothing over the earth (`PRITHVI`, favourable), one the sky (`SVARGA`) and two below (`PATALA`).", "Where fire dwells.", "AgniVasa"),
             span_section(33, "rahu_vasa", "Rahu's direction over the daylight (Jyotirnibandha p. 337, Rahu-bhumi v. 1, crux C749): eight spans, an eighth of sunrise to sunset each, east, northwest, south, northeast, west, southeast, north, southwest. The verse names no night, so none after sunset; empty on a day with no daylight.", "The direction Rahu stands in.", "Direction"),
             span_section(34, "punya_kala", "The punya kala of a sankranti, when the day's daylight holds one, under `panchanga.punya_kala` (Dharmasindhu pp. 2-3, Nirnayasindhu pp. 3-5, crux C752): the sign the Sun entered, `whole` the ghatis the table gives before or after the entry, or the half day an entry at night makes meritorious, and `inside` their part in the daylight, the window. The sankranti itself may lie in the night either side, so a window on the morning after a night's entry is the following day's. Empty on all but some twelve days a year.", "The sign the Sun entered.", "Rashi"),
+            span_section(35, "homa_ahuti", "The homa ahuti, when `sections` asked for `TS_PANCHANGA_HOMA_AHUTI` (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751): the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, the Sun's own star and the two after it the Sun's, then Mercury, Venus, Saturn, the Moon, Mars, Jupiter, Rahu and Ketu; the verse bars a malefic's share, which the reader judges. One span for each stretch the Moon's star and the Sun's both held, `whole` where the two stays overlap. Empty when not asked for.", "The graha the oblation falls to.", "Graha"),
         ],
     }
 }

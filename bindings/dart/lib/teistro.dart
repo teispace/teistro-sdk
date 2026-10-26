@@ -1241,7 +1241,9 @@ final class AlmanacArea extends _Area {
   /// the place sees each, as [Almanac.eclipses], and [nepalSambat] each
   /// day's Nepal Sambat date, as [Almanac.nepalSambat]. [lagnas] gives each
   /// day its lagna table, as [AlmanacDay.lagnas]: some four hundred
-  /// ascendants a day, so only on asking. [days] `false`
+  /// ascendants a day, so only on asking. [homaAhuti] gives each day its
+  /// homa ahuti, as [AlmanacDay.homaAhuti]: the Sun's stars cost a search
+  /// a day does not otherwise make, so only on asking. [days] `false`
   /// leaves the days out and answers only what is asked beside them;
   /// festivals alone are then founded as only what their rules read, which
   /// is what [festivals] asks.
@@ -1256,6 +1258,7 @@ final class AlmanacArea extends _Area {
     bool eclipses = false,
     bool nepalSambat = false,
     bool lagnas = false,
+    bool homaAhuti = false,
     bool days = true,
   }) => Almanac(
     decodePanchanga(
@@ -1280,6 +1283,7 @@ final class AlmanacArea extends _Area {
                 (eclipses ? panchangaEclipses : 0) |
                 (nepalSambat ? panchangaNepalSambat : 0) |
                 (lagnas ? panchangaLagnas : 0) |
+                (homaAhuti ? panchangaHomaAhuti : 0) |
                 (days ? 0 : panchangaWithoutDays),
           ),
         ),
@@ -1391,18 +1395,22 @@ final class AlmanacArea extends _Area {
     );
   }
 
-  /// The almanac of one day, which is the range of one unwrapped.
+  /// The almanac of one day, which is the range of one unwrapped; [lagnas]
+  /// with its lagna table and [homaAhuti] with its homa ahuti, as [of]
+  /// says.
   AlmanacDay day({
     required CalendarDate date,
     required Observer place,
     required int utcOffsetSeconds,
     bool lagnas = false,
+    bool homaAhuti = false,
   }) => of(
     from: date,
     to: date,
     place: place,
     utcOffsetSeconds: utcOffsetSeconds,
     lagnas: lagnas,
+    homaAhuti: homaAhuti,
   ).at(0);
 
   /// A native's bird read over every day from [from] to [to] (the first
@@ -30860,6 +30868,7 @@ final class Almanac {
       'agniVasa': counts.agniVasa,
       'rahuVasa': counts.rahuVasa,
       'punyaKala': counts.punyaKala,
+      'homaAhuti': counts.homaAhuti,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -31183,6 +31192,25 @@ final class AlmanacDay {
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Rashi.byId,
+    );
+  }
+
+  /// The homa ahuti, when the request asked with `homaAhuti: true`: the
+  /// graha whose mouth an oblation falls in, by the Moon's nakshatra
+  /// counted from the Sun's in threes (Muhurta Chintamani,
+  /// Nakshatra-prakarana v. 35, crux C751), one span for each stretch the
+  /// two stars both held; empty when not asked for.
+  List<Span<Graha>> get homaAhuti {
+    final c = batch.decoded.homaAhuti;
+    return _spans(
+      'homaAhuti',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Graha.byId,
     );
   }
 

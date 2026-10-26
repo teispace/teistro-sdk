@@ -1768,6 +1768,18 @@ public final class BindingTest {
                     same(table.get(j - 1).whole().toJd(), table.get(j).whole().fromJd(), "no gap");
                 }
                 check(week.get(0).lagnas().isEmpty(), "a day not asked carries none");
+                // The homa ahuti, asked for: a graha for each stretch the
+                // Moon's star and the Sun's both held, tiling the day (Muhurta
+                // Chintamani, Nakshatra-prakarana v. 35; C751).
+                AlmanacDay homa = sky.almanac().day(first, kathmandu, 20_700, false, true);
+                List<Span<Graha>> shares = homa.homaAhuti();
+                check(shares.size() >= homa.nakshatra().size(), "a share for each star: " + shares.size());
+                same(homa.window().fromJd(), shares.get(0).inside().fromJd(), "the shares open the day");
+                same(homa.window().toJd(), shares.get(shares.size() - 1).inside().toJd(), "and close it");
+                for (int j = 1; j < shares.size(); j += 1) {
+                    same(shares.get(j - 1).whole().toJd(), shares.get(j).whole().fromJd(), "no gap");
+                }
+                check(week.get(0).homaAhuti().isEmpty(), "a day not asked carries none");
                 // Every vara censures one muhurta or two (crux C398); the Moon's
                 // signs carry where she dwells and whose chandrashtama it is, the
                 // eighth sign from the natal one (C403, C404); and a shool is a
