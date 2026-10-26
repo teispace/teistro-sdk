@@ -29,7 +29,9 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-use teistro_astro::events::{Longitudes, Search};
+use teistro_astro::events::{
+    Longitudes, Search, quantity_least_rate, quantity_rate_deg_per_day, value_of,
+};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Karana, Masa, Nakshatra, Rashi, Tithi, Yoga};
 use teistro_core::error::{Error, Status};
@@ -1300,10 +1302,66 @@ pub fn lunar_month_span<S: Longitudes + ?Sized>(
     zodiac: Zodiac,
 ) -> Result<Interval, Error> {
     let source = Sidereal::over(tropical, zodiac);
-    let lattice = Lattice::single(0.0);
-    let before = Search::new(&source, Quantity::ELONGATION, lattice).between(
-        JulianDay::<Ut1>::literal(window.from.get() - SYNODIC_SEARCH_DAYS),
-        JulianDay::<Ut1>::literal(window.from.get()),
+    let search = Search::new(&source, Quantity::ELONGATION, Lattice::single(0.0));
+    let from = window.from.get();
+    // The Moon's age at the window's start bounds where both new moons
+    // can be: the elongation over its greatest rate is the least time
+    // since the last, and over its least the most, which are the bounds
+    // the search's own step rests on. Each window is searched within its
+    // bounds and a day either side, inside the one a wider search would
+    // take, and the anchored scan refines a crossing to the same bits
+    // from any window holding it; so the span is the wide search's, at a
+    // third of its samples. A window the bounds leave empty is searched
+    // whole, which keeps a strange sky's answer and its refusal.
+    let elongation = value_of(
+        Quantity::ELONGATION,
+        &source,
+        JulianDay::<Ut1>::literal(from),
+    )?;
+    let fastest = quantity_rate_deg_per_day(Quantity::ELONGATION);
+    // Within a day's motion of the line, the reading and the refined
+    // crossing can fall either side of it, so the near bound is the wide
+    // window's own.
+    let wraps = LUNATION_PAD_DAYS * fastest;
+    // The window `arc` degrees of elongation from the start, behind it
+    // when `arc` is negative, clamped inside the wide one; `near` false
+    // keeps the wide window's near end.
+    let bounded = |arc: f64, near: bool, wide: (f64, f64)| {
+        let Some(slowest) = quantity_least_rate(Quantity::ELONGATION) else {
+            return wide;
+        };
+        let (soon, late) = (from + arc / fastest, from + arc / slowest);
+        if arc < 0.0 {
+            let hi = if near {
+                soon + LUNATION_PAD_DAYS
+            } else {
+                wide.1
+            };
+            ((late - LUNATION_PAD_DAYS).max(wide.0), hi.min(wide.1))
+        } else {
+            let lo = if near {
+                soon - LUNATION_PAD_DAYS
+            } else {
+                wide.0
+            };
+            (lo.max(wide.0), (late + LUNATION_PAD_DAYS).min(wide.1))
+        }
+    };
+    let between = |wide: (f64, f64), arc: f64, near: bool| -> Result<Vec<_>, Error> {
+        let at = JulianDay::<Ut1>::literal;
+        let (lo, hi) = bounded(arc, near, wide);
+        if lo < hi {
+            let narrow = search.between(at(lo), at(hi))?;
+            if !narrow.is_empty() || (lo, hi) == wide {
+                return Ok(narrow);
+            }
+        }
+        search.between(at(wide.0), at(wide.1))
+    };
+    let before = between(
+        (from - SYNODIC_SEARCH_DAYS, from),
+        -elongation,
+        elongation < 360.0 - wraps,
     )?;
     let opened = before.last().map(|event| event.instant).ok_or_else(|| {
         Error::new(
@@ -1314,10 +1372,10 @@ pub fn lunar_month_span<S: Longitudes + ?Sized>(
             ),
         )
     })?;
-    let after = Search::new(&source, Quantity::ELONGATION, lattice).between(
-        JulianDay::<Ut1>::literal(opened.get() + 1.0),
-        JulianDay::<Ut1>::literal(opened.get() + SYNODIC_SEARCH_DAYS),
-    )?;
+    let wide = (opened.get() + 1.0, opened.get() + SYNODIC_SEARCH_DAYS);
+    // The next new moon is the first after the start, the last before
+    // it being `opened`.
+    let after = between(wide, 360.0 - elongation, elongation > wraps)?;
     let closed = after.first().map(|event| event.instant).ok_or_else(|| {
         Error::new(
             Status::NotConverged,
@@ -1391,6 +1449,11 @@ pub fn masa_at<S: Longitudes + ?Sized>(
 /// so thirty-one always holds one.
 const SYNODIC_SEARCH_DAYS: f64 = 31.0;
 
+/// How far past the Moon's age bounds a new moon is looked for, days:
+/// room for the elongation read at an instant the rates were not
+/// measured at, far more than a crossing's bracket needs.
+const LUNATION_PAD_DAYS: f64 = 1.0;
+
 /// A limb's member, named by its index around the circle.
 ///
 /// ```
@@ -1450,12 +1513,77 @@ mod tests {
     )]
 
     use super::{
-        LONGEST_SPAN_DAYS, Limb, SIGN_SEARCH_CAP_DAYS, edges, karana_of, sign_edges,
-        sign_reach_days,
+        LONGEST_SPAN_DAYS, Limb, SIGN_SEARCH_CAP_DAYS, SYNODIC_SEARCH_DAYS, Sidereal, Zodiac,
+        edges, karana_of, lunar_month_span, sign_edges, sign_reach_days,
     };
-    use teistro_core::catalogue::Karana;
+    use teistro_astro::ayanamsha::Basis;
+    use teistro_astro::completion::Completion;
+    use teistro_astro::delta_t::DeltaTModel;
+    use teistro_astro::events::Search;
+    use teistro_astro::precession::PrecessionModel;
+    use teistro_core::catalogue::{Ayanamsha, Karana};
     use teistro_core::interval::Interval;
-    use teistro_port_ephemeris::Body;
+    use teistro_core::quantity::{JulianDay, Ut1};
+    use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+    use teistro_port_ephemeris::{
+        Body, Frame, Lattice, Quantity, TestProvider, Zodiac as FrameZodiac,
+    };
+
+    /// A lunar month found by its age is the one the wide searches find,
+    /// to the bit: every window of two years, a day and a third apart so
+    /// each lunation is entered at many ages, both just after and just
+    /// before its new moons.
+    #[test]
+    fn a_month_found_by_its_age_is_the_wide_searchs_to_the_bit() {
+        let provider = TestProvider::new();
+        let completion = Completion::new(
+            &provider,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
+        let longitudes = completion.longitudes(Frame {
+            zodiac: FrameZodiac::Tropical,
+            ..Frame::CANONICAL
+        });
+        let zodiac = Zodiac {
+            ayanamsha: Some(AyanamshaChoice::Catalogued {
+                id: Ayanamsha::Lahiri,
+            }),
+            basis: Basis::Mean,
+            precession: PrecessionModel::Iau2006,
+            delta_t: DeltaTModel::TableThenModel,
+        };
+        let source = Sidereal::over(&longitudes, zodiac);
+        let search = Search::new(&source, Quantity::ELONGATION, Lattice::single(0.0));
+        let at = JulianDay::<Ut1>::literal;
+        let mut starts: Vec<f64> = (0..540)
+            .map(|k| 2_460_000.5 + f64::from(k) * 1.37)
+            .collect();
+        // Either side of a new moon, where the age is nearly nothing or
+        // nearly a whole lunation.
+        for new_moon in search.between(at(2_460_000.5), at(2_460_740.5)).unwrap() {
+            let t = new_moon.instant.get();
+            starts.extend([t - 1e-3, t - 1e-6, t, t + 1e-6, t + 1e-3]);
+        }
+        for from in starts {
+            let wide = |lo: f64, hi: f64| search.between(at(lo), at(hi)).unwrap();
+            let opened = wide(from - SYNODIC_SEARCH_DAYS, from)
+                .last()
+                .unwrap()
+                .instant;
+            let closed = wide(opened.get() + 1.0, opened.get() + SYNODIC_SEARCH_DAYS)
+                .first()
+                .unwrap()
+                .instant;
+            let month =
+                lunar_month_span(&longitudes, Interval::literal(from, from + 1.0), zodiac).unwrap();
+            assert_eq!(
+                (month.from.get().to_bits(), month.to.get().to_bits()),
+                (opened.get().to_bits(), closed.get().to_bits()),
+                "from {from}"
+            );
+        }
+    }
 
     #[test]
     fn the_month_opens_with_kimstughna_and_closes_with_naga() {
