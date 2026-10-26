@@ -5440,6 +5440,17 @@
           "$ref": "#/$defs/Omens",
           "description": "What the day is said to be."
         },
+        "punya_kala": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PunyaKala"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The punya kala that falls in the day's daylight, of a sankranti in the day or in the night either side of it, under `panchanga.punya_kala` (`03-design/panchanga-day.md` §21.5, crux C752). Left out of the day's document when the day holds none, which is all but some twelve days a year."
+        },
         "sun": {
           "$ref": "#/$defs/SunDay",
           "description": "What the Sun did."
@@ -6123,6 +6134,24 @@
         "data_hashes",
         "frame",
         "flags_used"
+      ],
+      "type": "object"
+    },
+    "PunyaKala": {
+      "description": "A sankranti's punya kala, on the day it falls.",
+      "properties": {
+        "sankranti": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "When the Sun entered the sign, which may be in the night before or after the day."
+        },
+        "span": {
+          "$ref": "#/$defs/RashiSpan",
+          "description": "The sign entered; `whole` the ghatis the text gives, or the half day a night's entry makes meritorious; `inside` their part in the day's daylight, the window itself."
+        }
+      },
+      "required": [
+        "sankranti",
+        "span"
       ],
       "type": "object"
     },

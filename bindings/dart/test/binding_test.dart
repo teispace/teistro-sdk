@@ -2623,6 +2623,18 @@ void _engineTests() {
       expect(day.rahuVasa.first.whole.from, day.day.sunrise);
       expect(day.rahuVasa.last.whole.to, closeTo(day.day.sunset, 1e-9));
     }
+    // The Sun entered Mithuna on 15 June 2024: one day of the week holds its
+    // punya kala, inside that day's daylight (Dharmasindhu p. 2, C752).
+    final held = [
+      for (final day in week)
+        for (final kala in day.punyaKala) (day, kala),
+    ];
+    expect(held, hasLength(1));
+    final (day, kala) = held.single;
+    expect(kala.member, Rashi.gemini);
+    expect(kala.inside.from, greaterThanOrEqualTo(day.day.sunrise));
+    expect(kala.inside.to, lessThanOrEqualTo(day.day.sunset));
+    expect(kala.inside.from, lessThan(kala.inside.to));
   });
 
   test('a day marks its durmuhurtas and carries the shool, the chandra vasa '

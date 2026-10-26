@@ -6506,6 +6506,12 @@ export declare class AlmanacDay {
    * crux C749); none after sunset, and none on a day with no daylight.
    */
   readonly rahuVasa: readonly Span<Direction>[];
+  /**
+   * The punya kala of a sankranti, when the day's daylight holds one (Dharmasindhu pp. 2-3, crux C752): the sign
+   * the Sun entered, `whole` the ghatis `panchanga.punya_kala` gives or the half day a night's entry makes
+   * meritorious, `inside` the window; empty on all but some twelve days a year.
+   */
+  readonly punyaKala: readonly Span<Rashi>[];
   /** The signs the Moon stood in. */
   readonly moonSigns: readonly Span<Rashi>[];
   /** The signs the Sun stood in. */

@@ -19557,6 +19557,17 @@ class AlmanacDay:
         return self._spans("rahu_vasa", self.batch.decoded.rahu_vasa, Direction)
 
     @property
+    def punya_kala(self) -> list[Span[Rashi]]:
+        """The punya kala of a sankranti, when the day's daylight holds one
+        (Dharmasindhu pp. 2-3, crux C752): the sign the Sun entered,
+        ``whole`` the ghatis ``panchanga.punya_kala`` gives or the half day
+        a night's entry makes meritorious, ``inside`` the window itself.
+
+        Empty on all but some twelve days a year.
+        """
+        return self._spans("punya_kala", self.batch.decoded.punya_kala, Rashi)
+
+    @property
     def moon_signs(self) -> list[Span[Rashi]]:
         """The signs the Moon stood in."""
         return self._spans("moon_signs", self.batch.decoded.moon_signs, Rashi)
@@ -19706,6 +19717,7 @@ class Almanac:
             "lagnas",
             "agni_vasa",
             "rahu_vasa",
+            "punya_kala",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

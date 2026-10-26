@@ -6092,6 +6092,7 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         ("amrit-kalam", day.omens.amrit_kalam.len()),
         ("agni-vasa", day.agni_vasa().len()),
         ("rahu-vasa", day.rahu_vasa().len()),
+        ("punya-kala", usize::from(day.punya_kala.is_some())),
     ] {
         put(
             report,
@@ -6257,7 +6258,8 @@ fn limb_spans<T: teistro::catalogue::Catalogued>(
 /// One day's limb spans, which are the bulk of its rows.
 fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::almanac::Panchanga) {
     // And every span of every moving limb, member and bounds.
-    let limbs: [(&str, Vec<LimbSpan>); 11] = [
+    let punya_kala: Vec<_> = day.punya_kala.iter().map(|kala| kala.span).collect();
+    let limbs: [(&str, Vec<LimbSpan>); 12] = [
         ("tithi", limb_spans(day, &day.limbs.tithi)),
         ("nakshatra", limb_spans(day, &day.limbs.nakshatra)),
         ("yoga", limb_spans(day, &day.limbs.yoga)),
@@ -6269,6 +6271,7 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         ("amrit-kalam", limb_spans(day, &day.omens.amrit_kalam)),
         ("agni-vasa", limb_spans(day, &day.agni_vasa())),
         ("rahu-vasa", limb_spans(day, &day.rahu_vasa())),
+        ("punya-kala", limb_spans(day, &punya_kala)),
     ];
     for (what, spans) in &limbs {
         for (at, (member, whole, inside, sunrises, ends)) in spans.iter().enumerate() {

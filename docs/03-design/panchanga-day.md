@@ -859,3 +859,54 @@ the agni vasa as the new catalogue kind, named in English and Nepali.
 Each binding's test holds the week of 15 to 21 June 2024 at Kathmandu to
 the verse's remainder for every tithi span and to Jyotirnibandha's eight
 from sunrise to sunset, and each parity runner prints both span lists.
+
+### 21.5 The punya kala of a sankranti
+
+The day the Sun enters a sign is kept by a bath and gifts, and they bear
+fruit only inside the sankranti's punya kala. A patro prints it as a
+window on one civil day, and the window is not always on the day the
+entry falls: an entry in the night gives the day before or the day
+after. The day carries it as `punya_kala`, the window that falls in its
+own daylight, whichever night the entry was in.
+
+| step | the rule | source |
+|---|---|---|
+| the ghatis | sixteen before Vrisha, Simha, Vrischika and Kumbha; sixteen after Mithuna, Kanya, Dhanu and Mina; thirty before Karka; forty after Makara; fifteen either side of Mesha and Tula | *Dharmasindhu* pp. 2–3 (*Nirnayasindhu* pp. 3–4 gives the same, but ten at the equinoxes, as Hemadri's, and twenty after Makara as Madhava's) |
+| by day only | the window is the part of those ghatis in the daylight; an entry with less than two ghatis of daylight after it reads the side before, and one less than two ghatis after sunrise the side after | *Dharmasindhu* p. 2 (*ghaṭikādvayādyalpadinaśeṣe … pūrvā eva puṇyāḥ*); *Nirnayasindhu* p. 4, "night being forbidden" |
+| an entry at night | before midnight, the afternoon before; after it, the morning after; at midnight, both | *Dharmasindhu* p. 2; *Nirnayasindhu* p. 5, Vriddha Vasishtha's verses |
+| the ayanas at night | Makara gives the next day, but within three ghatis of sunset the day it set on; Karka the day before, but within three ghatis of sunrise the day that rises | *Dharmasindhu* p. 2, the twilights as *jyotiḥśāstra* holds them |
+
+`panchanga.punya_kala` names the table: `DHARMASINDHU` by default, the
+text the solar month's day is already placed by (C27 to C31), `HEMADRI`
+or `MADHAVA` (C752). The ghatis are counted under `day.ghati_reckoning`,
+so a proportional almanac's sixteen ghatis of daylight are sixteen
+thirtieths of it, and a walk that crosses into the night counts the
+night's. Midnight is the middle of the night, sunset to sunrise, and
+midday the middle of the daylight; the texts count both from the arcs
+and not the clock.
+
+The answer is a span of the sign entered: `whole` is the ghatis the
+table gives, or the half day a night's entry makes meritorious, and
+`inside` their part in the daylight, which is the window. The sankranti
+itself rides beside it in Rust (`PunyaKala::sankranti`); a binding reads
+it from the `sun_signs` of the day that held it. A day finds the entries
+from the Sun's sign spans it already has, each span's start and the
+last span's end, so it costs no search, and a midnight day boundary
+places every window on the same date as the sunrise one does, which the
+façade's test holds over 2026 at Kathmandu.
+
+**What is open.** The dawn clause reads *ghaṭikādyalpa*, "a ghati or
+less", in the OCR, where the dusk clause has *ghaṭikādvaya*, two; the
+SDK reads two on both sides (C753), since the *Nirnayasindhu*'s verse
+turns either side over for the same reason. Drik Panchang also prints a
+*mahā* punya kala inside the window, which no text in hand defines
+(C754), so it is not built. The *Dharmasindhu*'s ±16 ghatis barred for
+a marriage around every sankranti is a muhurta's concern, already the
+muhurta crate's.
+
+**What crosses.** The C boundary writes `punya_kala` as span section
+34, counted after `rahu_vasa`; every binding's day reads it as
+`punya_kala`/`punyaKala`, a list of none or one span of `Rashi`. Each
+binding's test holds the week of 15 to 21 June 2024 at Kathmandu, which
+holds Mithuna's entry, to one window inside one daylight, and each parity
+runner prints it.

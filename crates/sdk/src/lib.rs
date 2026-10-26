@@ -218,6 +218,10 @@ pub use teistro_panchanga::festival;
 // shool and the varjyam, with the tables that place them, so a consumer
 // can read the varjyam's start for a star without computing a day.
 pub use teistro_panchanga::omen;
+// A sankranti's punya kala, which a day carries and a consumer reads, and
+// the per-sign ghatis and rules that place it, so the window can be found
+// for an entry a consumer holds.
+pub use teistro_panchanga::punya;
 // Which of its day's two sunrises a limb's member held, which is how a
 // patro marks vriddhi and kshaya, and the ghati-pala a day's instants
 // read as: both answered by every almanac day.

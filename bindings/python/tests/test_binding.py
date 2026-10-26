@@ -5954,6 +5954,17 @@ class ADaysOmens(AJuneWeek):
             self.assertEqual(day.rahu_vasa[0].whole.from_jd, day.day.sunrise)
             self.assertAlmostEqual(day.rahu_vasa[-1].whole.to_jd, day.day.sunset, delta=1e-9)
 
+    def test_mithuna_s_punya_kala_falls_in_one_daylight(self) -> None:
+        # The Sun entered Mithuna on 15 June 2024: one day of the week holds
+        # its punya kala, inside that day's daylight (Dharmasindhu p. 2, C752).
+        held = [(day, kala) for day in self.days() for kala in day.punya_kala]
+        self.assertEqual(len(held), 1)
+        day, kala = held[0]
+        self.assertIs(kala.member, Rashi.GEMINI)
+        self.assertGreaterEqual(kala.inside.from_jd, day.day.sunrise)
+        self.assertLessEqual(kala.inside.to_jd, day.day.sunset)
+        self.assertLess(kala.inside.from_jd, kala.inside.to_jd)
+
 
 class AnAlmanacDay(WithLibrary):
     """The day's own columns, read through the accessors that decode them.

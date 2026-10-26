@@ -2722,6 +2722,7 @@ void main() {
     put('day-$i-amrit-kalam-count', day.amritKalam.length);
     put('day-$i-agni-vasa-count', day.agniVasa.length);
     put('day-$i-rahu-vasa-count', day.rahuVasa.length);
+    put('day-$i-punya-kala-count', day.punyaKala.length);
     void limb(String name, List<Span<dynamic>> spans) {
       for (var j = 0; j < spans.length; j += 1) {
         final span = spans[j];
@@ -2747,6 +2748,7 @@ void main() {
     limb('amrit-kalam', day.amritKalam);
     limb('agni-vasa', day.agniVasa);
     limb('rahu-vasa', day.rahuVasa);
+    limb('punya-kala', day.punyaKala);
     final kaalas = day.kaalas;
     for (var j = 0; j < kaalas.length; j += 1) {
       put('day-$i-kaala-$j', kaalas[j].kaala.fullKey);

@@ -30561,6 +30561,7 @@ final class Almanac {
       'lagnas': counts.lagnas,
       'agniVasa': counts.agniVasa,
       'rahuVasa': counts.rahuVasa,
+      'punyaKala': counts.punyaKala,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -30865,6 +30866,25 @@ final class AlmanacDay {
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Direction.byId,
+    );
+  }
+
+  /// The punya kala of a sankranti, when the day's daylight holds one
+  /// (Dharmasindhu pp. 2-3, crux C752): the sign the Sun entered, `whole`
+  /// the ghatis `panchanga.punya_kala` gives or the half day a night's
+  /// entry makes meritorious, `inside` the window; empty on all but some
+  /// twelve days a year.
+  List<Span<Rashi>> get punyaKala {
+    final c = batch.decoded.punyaKala;
+    return _spans(
+      'punyaKala',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Rashi.byId,
     );
   }
 

@@ -46,6 +46,7 @@ use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
 use crate::period::{self, Durmuhurta, Kaalas, Muhurtas, Part};
+use crate::punya::{self, Arcs, PunyaKala};
 use crate::sankalpa::{self, AyanaReckoning, Sankalpa};
 use crate::sky::{self, MoonDay, SunDay};
 use crate::span::{self, Span, Sunrises};
@@ -139,6 +140,13 @@ pub struct Panchanga {
     /// did before the table existed.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub lagnas: Vec<Span<Rashi>>,
+    /// The punya kala that falls in the day's daylight, of a sankranti
+    /// in the day or in the night either side of it, under
+    /// `panchanga.punya_kala` (`03-design/panchanga-day.md` §21.5, crux
+    /// C752). Left out of the day's document when the day holds none,
+    /// which is all but some twelve days a year.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub punya_kala: Option<PunyaKala>,
 }
 
 impl Panchanga {
@@ -2574,6 +2582,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             &month,
             (&longitudes, window, zodiac),
         )?;
+        let punya_kala = punya_kala_of(&sun_signs, (daylight, night), previous_night, settings)?;
         let sun = sky::sun_day(sun_signs, ritu);
         let omens = Omens {
             panchaka: omen::panchaka(
@@ -2621,6 +2630,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 day,
                 ghati_reckoning: settings.day.ghati_reckoning,
                 lagnas: Vec::new(),
+                punya_kala,
             },
             frame,
         ))
@@ -3207,4 +3217,42 @@ fn tt(
 ) -> Result<JulianDay<teistro_core::quantity::Tt>, Error> {
     let (tt, _) = teistro_astro::scale::tt_of(JulianDay::<Ut1>::literal(instant.get()), delta_t)?;
     Ok(tt)
+}
+
+/// The punya kala the day's daylight holds, from each sankranti the Sun's
+/// signs bound: each span's entry, and the next sign's at the last span's
+/// end, which may lie past a window that closes at midnight.
+///
+/// A day with no night before it (the calendar's first) places only the
+/// entries of its own daylight and night.
+fn punya_kala_of(
+    signs: &[Span<Rashi>],
+    (daylight, night): (Interval, Interval),
+    previous_night: Option<Interval>,
+    settings: &Settings,
+) -> Result<Option<PunyaKala>, Error> {
+    let arcs = Arcs {
+        before: previous_night.unwrap_or(Interval {
+            from: daylight.from,
+            ..daylight
+        }),
+        daylight,
+        after: night,
+    };
+    let table = settings.panchanga.punya_kala;
+    let reckoning = settings.day.ghati_reckoning.try_into()?;
+    let entries = signs
+        .iter()
+        .map(|span| (span.member, span.whole.from))
+        .chain(
+            signs
+                .last()
+                .map(|span| (sky::next(span.member), span.whole.to)),
+        );
+    for (sign, sankranti) in entries {
+        if let Some(kala) = punya::punya_kala(sign, sankranti, &arcs, table, reckoning)? {
+            return Ok(Some(kala));
+        }
+    }
+    Ok(None)
 }
