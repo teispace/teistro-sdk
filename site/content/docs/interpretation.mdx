@@ -124,3 +124,26 @@ and does not lose the ones it had, so packs load in either order
 ```text output="phala"
 packs/states    ne-Deva-NP     355 records,  220 merged,  373604 bytes
 ```
+
+## A dosha by the name an app shows
+
+An app's list of doshas names some that no single text calls a dosha.
+Where a text states the rule, the SDK ships it under that text's own key,
+in a set you ask for by name, and two texts that read it differently are
+two rules. To show one of these, ask for its set and read its keys:
+
+| name | set | keys | what the text says |
+|---|---|---|---|
+| Shakata | `NABHASAS` | `PHALADEEPIKA_SAKATA` `PARIJATA_SAKATA` | the Moon 6th, 8th or 12th from Jupiter, lifted by a Moon in a kendra (Phaladeepika 6.14, 17); Jupiter 6th or 8th from the Moon and not in a kendra (Jataka Parijata 7.108–109). Not the Nabhasa Shakata, all seven in the lagna and the 7th (`NABHASA_SAKATA`) |
+| Papa Kartari | `NABHASAS` | `PHALADEEPIKA_PAPA_KARTARI` `PARIJATA_PAPA_KARTARI` | malefics in the 12th and the 2nd from the lagna (Phaladeepika 6.8, 11; Jataka Parijata 7.125) |
+| Krishna Chaturdashi birth | `NABHASAS` | `BPHS_KRISHNA_CHATURDASHI_PART_1` to `_6` | the tithi in six equal parts, a birth in each with its own effect (BPHS 87.1–3) |
+| Avama birth | `NABHASAS` | `BPHS_BIRTH_IN_AVAMA` | a birth in a tithi that touches no sunrise (BPHS 85.3) |
+| Dagdha yoga | `NABHASAS` | `BPHS_BIRTH_IN_DAGDHA_YOGA` | a weekday's burnt tithi, by Muhurta Chintamani's table (BPHS 85.3) |
+| Yamaghanta | `NABHASAS` | `BPHS_BIRTH_IN_YAMAGHANTA` | a weekday's nakshatra, by Muhurta Chintamani's table (BPHS 85.3) |
+| Vishaghati birth | `ARISHTAS` | `PHALADEEPIKA_BIRTH_IN_VISHAGHATI` | a birth in the nakshatra's four ghatis of poison (Phaladeepika 13.8) |
+| Preta curse | `NABHASAS` | `BPHS_SPIRIT_CURSE_1` to `_10` | a departed spirit's curse, ten figures (BPHS 83.96 onward); the popular *pretabadha* has no verse |
+
+A day's own inauspicious yogas (dagdha, visha, hutashana, yamaghanta)
+are on the almanac's day as `ashubhaYogas`, and Sade Sati is a transit
+report a chart request asks for with `sadeSati`, not a rule.
+

@@ -55,6 +55,63 @@ fn founded() -> (teistro::ChartFoundation, Vec<teistro::GrahaState>) {
     (foundation, states)
 }
 
+/// The guide's table of doshas by the name an app shows names each rule
+/// by its key and the shipped set that holds it; a key the set does not
+/// hold, or a set no request takes, fails here rather than in an app.
+#[test]
+fn every_dosha_the_guide_names_is_in_the_set_it_names() {
+    let guide = std::fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../site/content/docs/interpretation.mdx"
+    ))
+    .unwrap();
+    let section = guide
+        .split("## A dosha by the name an app shows")
+        .nth(1)
+        .unwrap();
+    let mut rows = 0;
+    for line in section
+        .lines()
+        .filter(|line| line.starts_with("| "))
+        .skip(1)
+    {
+        let cells: Vec<&str> = line.split(" | ").collect();
+        let set = cells[1].trim_matches('`');
+        let found = teistro::ShippedRules::ALL
+            .into_iter()
+            .find(|shipped| shipped.key() == set);
+        assert!(found.is_some(), "no shipped set {set}");
+        let set = found.unwrap();
+        // `A_1` to `_6` names A_1 through A_6.
+        let mut keys: Vec<String> = Vec::new();
+        let words: Vec<&str> = cells[2].split(' ').map(|w| w.trim_matches('`')).collect();
+        let mut at = 0;
+        while at < words.len() {
+            if words[at] == "to" {
+                let first = keys.pop().unwrap();
+                let (stem, from) = first.rsplit_once('_').unwrap();
+                let to: u32 = words[at + 1].trim_start_matches('_').parse().unwrap();
+                for n in from.parse::<u32>().unwrap()..=to {
+                    keys.push(format!("{stem}_{n}"));
+                }
+                at += 2;
+            } else {
+                keys.push(words[at].to_owned());
+                at += 1;
+            }
+        }
+        for key in &keys {
+            assert!(
+                set.rules().iter().any(|rule| rule.key == *key),
+                "{} does not hold {key}",
+                set.key()
+            );
+        }
+        rows += 1;
+    }
+    assert_eq!(rows, 8);
+}
+
 #[test]
 fn a_chart_the_sdk_computed_reads_as_a_rule_chart() {
     let (foundation, states) = founded();
