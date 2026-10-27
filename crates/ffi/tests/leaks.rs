@@ -235,3 +235,219 @@ fn intl_gives_back_what_it_renders() {
         assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
     });
 }
+
+/// An entry point comparing a context's reckoning with another's.
+type PairedEntry = unsafe extern "C" fn(
+    *const TsContext,
+    *const TsContext,
+    *const c_char,
+    *mut TsString,
+) -> Status;
+
+fn paired(ctx: &Ctx, other: &Ctx, entry: PairedEntry, request: &str) -> Status {
+    let request = CString::new(request).unwrap();
+    let mut answer = TsString::empty();
+    // SAFETY: two live contexts, a NUL-terminated request and a valid slot.
+    let status = unsafe { entry(ctx.handle, other.handle, request.as_ptr(), &raw mut answer) };
+    // SAFETY: a descriptor the library wrote, or the empty one.
+    unsafe { ts_string_free(&raw mut answer) };
+    status
+}
+
+/// The almanac's rites, its festival calendar and its two comparisons:
+/// each answer and each refusal's record given back.
+#[test]
+fn the_rites_and_the_comparisons_give_back_their_answers() {
+    let ctx = builtin();
+    let place = r#""latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "utcOffsetSeconds": 20700"#;
+    let rites: [(&str, JsonEntry, String); 4] = [
+        (
+            "a sankalpa",
+            teistro_ffi::panchanga::ts_almanac_sankalpa,
+            format!(r#"{{"at": 2461055.59375, {place}, "ayana": "TROPICAL"}}"#),
+        ),
+        (
+            "an ashauch",
+            teistro_ffi::panchanga::ts_almanac_ashauch,
+            format!(
+                r#"{{{place}, "request": {{"key": "grandfather", "relation": "SAPINDA", "event": {{"event": "DEATH", "at": 2461051.677083}}}}}}"#
+            ),
+        ),
+        (
+            "a first year",
+            teistro_ffi::panchanga::ts_almanac_first_year,
+            format!(
+                r#"{{{place}, "request": {{"key": "grandfather", "at": 2461051.677083, "firstAbdika": "ELEVENTH_DAY", "firstYearAdhika": "NIJA"}}}}"#
+            ),
+        ),
+        (
+            "a festival calendar",
+            teistro_ffi::panchanga::ts_almanac_festival_calendar,
+            format!(
+                r#"{{"first": {{"year": 2025, "month": 10, "day": 1}}, "last": {{"year": 2025, "month": 10, "day": 2}}, {place}, "festivals": {{"rules": "NEPAL"}}, "stampUnixSeconds": 1767225600, "name": "Nepal", "refreshMinutes": 0}}"#
+            ),
+        ),
+    ];
+    for (family, entry, request) in &rites {
+        holds_nothing(family, || {
+            assert_eq!(json(&ctx, *entry, request), Status::Ok);
+        });
+        holds_nothing(&format!("{family} refused, and its record"), || {
+            assert_ne!(json(&ctx, *entry, "{\"unknown\": 1}"), Status::Ok);
+            drop(ctx.last_error());
+        });
+    }
+    let other = Ctx::with_ephemeris(0, TsEphemeris::SuryaSiddhanta, None, None, None).unwrap();
+    let days = format!(
+        r#"{{"first": {{"year": 2025, "month": 11, "day": 1}}, "last": {{"year": 2025, "month": 11, "day": 2}}, {place}, "festivals": {{"rules": "NEPAL"}}}}"#
+    );
+    let comparisons: [(&str, PairedEntry); 2] = [
+        (
+            "two reckonings compared",
+            teistro_ffi::panchanga::ts_almanac_disagreements,
+        ),
+        (
+            "a published day's reasons",
+            teistro_ffi::panchanga::ts_almanac_published_reasons,
+        ),
+    ];
+    for (family, entry) in comparisons {
+        holds_nothing(family, || {
+            assert_eq!(paired(&ctx, &other, entry, &days), Status::Ok);
+        });
+    }
+}
+
+/// A signed pack, two names matched, the engine's own calls (which the
+/// built-in refuses), a layout's row and a loaded pack: every answer and
+/// every refusal's record given back.
+#[test]
+fn the_remaining_families_give_back_their_answers() {
+    let ctx = builtin();
+    // The vector the Rust suite pins (`crates/sdk/tests/signed_pack.rs`).
+    let pack = br#"{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,"entries":[{"action":"SET","rule":"GHATASTHAPANA","day":{"calendar":"GREGORIAN","year":2026,"month":10,"day":11},"source":"p. 41"}]}"#;
+    let unhex = |text: &str| -> Vec<u8> {
+        (0..text.len())
+            .step_by(2)
+            .map(|at| u8::from_str_radix(text.get(at..at + 2).unwrap(), 16).unwrap())
+            .collect()
+    };
+    let signature = unhex(
+        "cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e21332fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e",
+    );
+    let key = unhex("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c");
+    let verify = |at_least: u32| {
+        let mut answer = TsString::empty();
+        // SAFETY: a live context, byte ranges valid for their lengths and
+        // a valid slot.
+        let status = unsafe {
+            teistro_ffi::published::ts_published_verify(
+                ctx.handle,
+                pack.as_ptr(),
+                pack.len(),
+                signature.as_ptr(),
+                signature.len(),
+                key.as_ptr(),
+                key.len(),
+                at_least,
+                &raw mut answer,
+            )
+        };
+        // SAFETY: a descriptor the library wrote, or the empty one.
+        unsafe { ts_string_free(&raw mut answer) };
+        status
+    };
+    holds_nothing("a signed pack", || assert_eq!(verify(3), Status::Ok));
+    holds_nothing("a replayed signed pack and its record", || {
+        assert_eq!(verify(4), Status::InvalidArg);
+        drop(ctx.last_error());
+    });
+    let names = CString::new(
+        r#"{"bride": "सीता", "groom": "जोशी", "rules": {"name": {"abhijit": "SHRAVANA"}}}"#,
+    )
+    .unwrap();
+    holds_nothing("two names matched", || {
+        let mut blob = TsBlob::empty();
+        // SAFETY: a live context, a NUL-terminated request and a valid slot.
+        let status =
+            unsafe { teistro_ffi::naam::ts_naam_milan(ctx.handle, names.as_ptr(), &raw mut blob) };
+        assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
+        // SAFETY: a descriptor the library wrote.
+        unsafe { ts_blob_free(&raw mut blob) };
+    });
+    let (function, arguments) = (
+        CString::new("tp_sum").unwrap(),
+        CString::new(r#"{"values": [1, 2.5]}"#).unwrap(),
+    );
+    holds_nothing("an engine's own calls refused, and their records", || {
+        let mut answer = TsString::empty();
+        // SAFETY: a live context, NUL-terminated strings and a valid slot.
+        let status = unsafe {
+            teistro_ffi::ephemeris::ts_ephemeris_call(
+                ctx.handle,
+                function.as_ptr(),
+                arguments.as_ptr(),
+                &raw mut answer,
+            )
+        };
+        assert_eq!(status, Status::Unsupported);
+        drop(ctx.last_error());
+        // SAFETY: the same.
+        let status =
+            unsafe { teistro_ffi::ephemeris::ts_ephemeris_manifest(ctx.handle, &raw mut answer) };
+        assert_eq!(status, Status::Unsupported);
+        drop(ctx.last_error());
+        // SAFETY: a descriptor the library wrote, or the empty one.
+        unsafe { ts_string_free(&raw mut answer) };
+    });
+    let layout = CString::new("chart_layout.SOUTH_INDIAN").unwrap();
+    holds_nothing("a layout's row", || {
+        let mut answer = TsString::empty();
+        // SAFETY: a live context, a NUL-terminated key and a valid slot.
+        let status = unsafe {
+            teistro_ffi::chart::ts_chart_layout_row(ctx.handle, layout.as_ptr(), &raw mut answer)
+        };
+        assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
+        // SAFETY: a descriptor the library wrote.
+        unsafe { ts_string_free(&raw mut answer) };
+    });
+    // A shipped pack, as the pack fuzzer's corpus keeps it.
+}
+
+#[test]
+fn a_loaded_pack_gives_back_its_bytes() {
+    let bytes = &common::aspect_pack();
+    let load = |bytes: &[u8]| {
+        let fresh = builtin();
+        let mut loaded = sized(
+            teistro_ffi::intl::TsIntlLoaded {
+                struct_size: 0,
+                entries: 0,
+                replaced: 0,
+                merged: 0,
+                locale: ptr::null(),
+                sha256: ptr::null(),
+            },
+            |r, s| r.struct_size = s,
+        );
+        // SAFETY: a live context, readable bytes and a sized record.
+        let status = unsafe {
+            teistro_ffi::intl::ts_intl_load_pack(
+                fresh.handle,
+                bytes.as_ptr(),
+                bytes.len(),
+                &raw mut loaded,
+            )
+        };
+        if status != Status::Ok {
+            drop(fresh.last_error());
+        }
+        status
+    };
+    holds_nothing("a context that loaded a pack", || {
+        assert_eq!(load(bytes), Status::Ok);
+    });
+    holds_nothing("a context that refused a pack, and its record", || {
+        assert_ne!(load(b"not a pack"), Status::Ok);
+    });
+}
