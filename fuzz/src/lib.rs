@@ -193,6 +193,221 @@ pub const OTHER_SLOTS: &[&str] = &[
     "dashas_json",
 ];
 
+/// Whether a seed of the `json` target is to be answered, or only not
+/// answered `INTERNAL`: a fuzzer's finding kept so it is never found again
+/// may well be refused.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Seed {
+    /// A well-formed section its slot answers.
+    Answered,
+    /// A finding kept as a regression: any answer but `INTERNAL`.
+    Regression,
+}
+
+/// The `json` target's seeds, each by the name of the slot it fills. The
+/// selector byte is counted from the name when the corpus is written, so
+/// a slot added anywhere moves no seed: they were kept by position once,
+/// and five chart sections added before the other entry points sent every
+/// seed after them to the wrong slot. `fuzz/corpus/json` is this table
+/// written out (`the_json_corpus_is_the_seed_table`).
+pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
+    ("theme_json", Seed::Answered, r#"{"extends":"DARK"}"#),
+    ("rules_json", Seed::Answered, r#"{"shipped":["NABHASAS"]}"#),
+    ("interpret_json", Seed::Answered, r#"{"placements":true}"#),
+    (
+        "varsha_json",
+        Seed::Answered,
+        r#"{"reading":"SIDEREAL","through":12}"#,
+    ),
+    (
+        "gochar_json",
+        Seed::Answered,
+        r#"{"instants":[2460676.5],"from":"MOON"}"#,
+    ),
+    (
+        "hits_json",
+        Seed::Answered,
+        r#"{"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}"#,
+    ),
+    (
+        "hits_json",
+        Seed::Regression,
+        r#"{"from":2460676.5,"to":6021641.5,"grahas":["SATURN"]}"#,
+    ),
+    (
+        "sade_sati_json",
+        Seed::Answered,
+        r#"{"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}"#,
+    ),
+    (
+        "sade_sati_json",
+        Seed::Regression,
+        r#"{"from":2460676.5,"to":246434429.0,"reckoning":"SIGN"}"#,
+    ),
+    (
+        "kp_json",
+        Seed::Answered,
+        r#"{"number":74,"anyAyanamsha":true}"#,
+    ),
+    (
+        "dignities_json",
+        Seed::Answered,
+        r#"{"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}"#,
+    ),
+    (
+        "fortitudes_json",
+        Seed::Answered,
+        r#"{"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}"#,
+    ),
+    (
+        "lots_json",
+        Seed::Answered,
+        r#"{"fortune":"REVERSED_WHILE_MOON_UP"}"#,
+    ),
+    (
+        "considerations_json",
+        Seed::Answered,
+        r#"{"moonLateFromDeg":25}"#,
+    ),
+    ("perfection_json", Seed::Answered, r#"{"house":7}"#),
+    ("progressions_json", Seed::Answered, r#"{"at":2460676.5}"#),
+    (
+        "progressions_json",
+        Seed::Regression,
+        r#"{"at":12444444444444444444444444444444301}"#,
+    ),
+    (
+        "western_aspects_json",
+        Seed::Answered,
+        r#"{"aspects":["TRINE","SQUARE"]}"#,
+    ),
+    (
+        "synastry_json",
+        Seed::Answered,
+        r#"{"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}"#,
+    ),
+    ("parallels_json", Seed::Answered, r#"{"orbDeg":1}"#),
+    (
+        "antiscia_json",
+        Seed::Answered,
+        r#"{"orbs":{"model":"LEO"}}"#,
+    ),
+    ("midpoints_json", Seed::Answered, r#"{"orbDeg":1}"#),
+    (
+        "western_houses_json",
+        Seed::Answered,
+        r#"{"system":"KOCH"}"#,
+    ),
+    ("harmonic_json", Seed::Answered, r#"{"number":9}"#),
+    (
+        "matching_json",
+        Seed::Answered,
+        r#"{"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}"#,
+    ),
+    (
+        "prashna_json",
+        Seed::Answered,
+        r#"{"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}"#,
+    ),
+    (
+        "remedies_json",
+        Seed::Answered,
+        r#"{"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}"#,
+    ),
+    (
+        "rectification_json",
+        Seed::Answered,
+        r#"{"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}"#,
+    ),
+    (
+        "lalkitab_json",
+        Seed::Answered,
+        r#"{"cycle":{"planet":"VENUS","year":17},"year":30}"#,
+    ),
+    (
+        "sarvatobhadra_json",
+        Seed::Answered,
+        r#"{"instants":[2460001.5]}"#,
+    ),
+    ("tithi_pravesha_json", Seed::Answered, r#"{"through":3}"#),
+    (
+        "dossier_json",
+        Seed::Answered,
+        r#"{"sections":["CHART","GRAHAS","SHADBALA"]}"#,
+    ),
+    ("masa_pravesha_json", Seed::Answered, r#"{"year":3}"#),
+    ("western_configurations_json", Seed::Answered, r#"{}"#),
+    (
+        "ts_research",
+        Seed::Answered,
+        r#"{"study": "COMPARE", "rules": {"shipped": ["YOGAS"]}, "births": [{"instant": 2447995.4895833335, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}, {"instant": 2447995.4895833335, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}, {"instant": 2447995.4895833335, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}, {"instant": 2447995.4895833335, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}], "design": {"groups": [0, 1, 0, 1]}, "test": {"seed": 5, "permutations": 99, "contrast": {"kind": "CASE_VS_REST", "case": 1}}}"#,
+    ),
+    (
+        "ts_pakshi",
+        Seed::Answered,
+        r#"{"first": {"year": 1984, "month": 10, "day": 31}, "latitudeDeg": 13, "longitudeDeg": 80, "utcOffsetSeconds": 19800, "native": {"nakshatra": "BHARANI", "paksha": "SHUKLA"}}"#,
+    ),
+    (
+        "ts_rashifal",
+        Seed::Answered,
+        r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4}, "last": {"year": 2026, "month": 10, "day": 10}, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700}], "baseline": "WEEKLY"}"#,
+    ),
+    (
+        "ts_rashifal",
+        Seed::Regression,
+        r#"{"periods": [{"first": {"year": 1837, "month": 10, "day": 4}, "last": {"year": 2037, "month": 10, "day": 10}, "latitudeDeg": 27.7152, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700}], "baseline": "WEEKLY"}"#,
+    ),
+    (
+        "ts_numerology_profile",
+        Seed::Answered,
+        r#"{"name": "Henry Elder", "date": {"year": 1872, "month": 1, "day": 17}}"#,
+    ),
+    (
+        "ts_naam_milan",
+        Seed::Answered,
+        r#"{"bride": "सीता", "groom": "राम"}"#,
+    ),
+    (
+        "muhurta_json",
+        Seed::Answered,
+        r#"{"rules":"RAMAN_MARRIAGE"}"#,
+    ),
+    (
+        "festivals_json",
+        Seed::Answered,
+        r#"{"rules":"DHARMASINDHU"}"#,
+    ),
+    (
+        "ts_intl_render params",
+        Seed::Answered,
+        r#"{"graha": "graha.SUN"}"#,
+    ),
+    (
+        "settings_json",
+        Seed::Answered,
+        r#"{"frame": {"zodiac": "SIDEREAL"}}"#,
+    ),
+    ("layouts_json", Seed::Answered, r#"[]"#),
+    (
+        "dashas_json",
+        Seed::Answered,
+        r#"[{"kernel":"UDU","key":"ACME_SAPTAKA","lords":[{"graha":"SUN","years":10},{"graha":"MOON","years":10},{"graha":"MARS","years":10},{"graha":"MERCURY","years":10},{"graha":"JUPITER","years":10},{"graha":"VENUS","years":10},{"graha":"SATURN","years":10}],"reference":"KRITTIKA"}]"#,
+    ),
+];
+
+/// The corpus file of one seed: its selector byte, counted from the slot's
+/// name, then its text; `None` for a name that is no slot.
+#[cfg(test)]
+fn seed_file(slot: &str, text: &str) -> Option<Vec<u8>> {
+    let at = CHART_SLOTS
+        .iter()
+        .chain(OTHER_SLOTS)
+        .position(|name| *name == slot)?;
+    let mut bytes = vec![u8::try_from(at).ok()?];
+    bytes.extend_from_slice(text.as_bytes());
+    Some(bytes)
+}
+
 /// A chart request for one instant at Kathmandu, every section absent.
 fn chart_request(instant: &f64) -> TsChartRequest {
     // SAFETY: every field is an integer, a float or a pointer, so all
@@ -212,14 +427,13 @@ fn chart_request(instant: &f64) -> TsChartRequest {
 fn string_call(
     call: unsafe extern "C" fn(*const TsContext, *const c_char, *mut TsString) -> Status,
     text: &CString,
-    at: &str,
-) {
+) -> Status {
     let mut out = TsString::empty();
     // SAFETY: a live context, a NUL-terminated string and a valid slot.
     let status = unsafe { call(shared(), text.as_ptr(), &raw mut out) };
-    answered(status, at);
     // SAFETY: a descriptor the library wrote, or the empty one.
     unsafe { ts_string_free(&raw mut out) };
+    status
 }
 
 /// Whether `text` is a record the shipped server refuses for its size,
@@ -269,52 +483,67 @@ pub fn json(data: &[u8]) {
     if beyond_bounds(CHART_SLOTS.get(at).copied(), text.as_bytes()) {
         return;
     }
-    if let Some(name) = CHART_SLOTS.get(at) {
+    answered(answer(at, &text), slot_name(at));
+}
+
+/// The name of the slot the selector counts to `at`.
+fn slot_name(at: usize) -> &'static str {
+    CHART_SLOTS
+        .iter()
+        .chain(OTHER_SLOTS)
+        .nth(at)
+        .copied()
+        .unwrap_or("a slot past the end")
+}
+
+/// What the entry point behind slot `at` answers `text`.
+fn answer(at: usize, text: &CString) -> Status {
+    if CHART_SLOTS.get(at).is_some() {
         let instant = 2_460_000.5;
         let mut request = chart_request(&instant);
         set_slot(&mut request, at, text.as_ptr());
         let mut blob = TsBlob::empty();
         // SAFETY: a live context, a valid request and a valid slot.
         let status = unsafe { ts_chart_found(shared(), &raw const request, &raw mut blob) };
-        answered(status, name);
         // SAFETY: a descriptor the library wrote, or the empty one.
         unsafe { ts_blob_free(&raw mut blob) };
-        return;
+        return status;
     }
     match at - CHART_SLOTS.len() {
-        0 => string_call(ts_research, &text, "ts_research"),
-        1 => string_call(ts_pakshi, &text, "ts_pakshi"),
-        2 => string_call(ts_rashifal, &text, "ts_rashifal"),
-        3 => string_call(ts_numerology_profile, &text, "ts_numerology_profile"),
+        0 => string_call(ts_research, text),
+        1 => string_call(ts_pakshi, text),
+        2 => string_call(ts_rashifal, text),
+        3 => string_call(ts_numerology_profile, text),
         4 => {
             let mut blob = TsBlob::empty();
             // SAFETY: a live context, a NUL-terminated string and a valid slot.
             let status = unsafe { ts_naam_milan(shared(), text.as_ptr(), &raw mut blob) };
-            answered(status, "ts_naam_milan");
             // SAFETY: as above.
             unsafe { ts_blob_free(&raw mut blob) };
+            status
         }
-        5 | 6 => panchanga(&text, at - CHART_SLOTS.len() == 6),
+        5 | 6 => panchanga(text, at - CHART_SLOTS.len() == 6),
         7 => {
             let key = c_text(b"sdk.graha.name");
             let mut blob = TsBlob::empty();
             // SAFETY: a live context, NUL-terminated strings and a valid slot.
             let status =
                 unsafe { ts_intl_render(shared(), key.as_ptr(), text.as_ptr(), &raw mut blob) };
-            answered(status, "ts_intl_render");
             // SAFETY: as above.
             unsafe { ts_blob_free(&raw mut blob) };
+            status
         }
         slot => {
-            if let Some(handle) = open(TsEphemeris::None, Some((slot - 8, &text))) {
+            open(TsEphemeris::None, Some((slot - 8, text))).map_or(Status::InvalidArg, |handle| {
                 close(handle);
-            }
+                Status::Ok
+            })
         }
     }
 }
 
 /// A panchanga request for two days at Kathmandu with one JSON section.
-fn panchanga(text: &CString, festivals: bool) {
+fn panchanga(text: &CString, festivals: bool) -> Status {
     let request = if festivals {
         panchanga_request(ptr::null(), text.as_ptr())
     } else {
@@ -323,16 +552,9 @@ fn panchanga(text: &CString, festivals: bool) {
     let mut blob = TsBlob::empty();
     // SAFETY: a live context, a valid request and a valid slot.
     let status = unsafe { ts_panchanga_days(shared(), &raw const request, &raw mut blob) };
-    answered(
-        status,
-        if festivals {
-            "festivals_json"
-        } else {
-            "muhurta_json"
-        },
-    );
     // SAFETY: a descriptor the library wrote, or the empty one.
     unsafe { ts_blob_free(&raw mut blob) };
+    status
 }
 
 /// Two days at Kathmandu with these sections, either of them null.
@@ -363,6 +585,7 @@ fn panchanga_request(
 /// The `pack` target: the bytes as a caller's pack, loaded into a context
 /// of its own, since a load changes what the context says.
 pub fn pack(data: &[u8]) {
+    let data = &checksummed(data);
     let Some(handle) = open(TsEphemeris::None, None) else {
         return;
     };
@@ -379,6 +602,42 @@ pub fn pack(data: &[u8]) {
     let status = unsafe { ts_intl_load_pack(handle, data.as_ptr(), data.len(), &raw mut loaded) };
     answered(status, "ts_intl_load_pack");
     close(handle);
+}
+
+/// `data` with its pack checksum made right, where it has a header to hold
+/// one. A mutation almost never keeps a CRC-32 whole, so without this the
+/// target would test the header and nothing behind it; a checksum is no
+/// authentication, and every reader behind it must hold against a pack a
+/// hostile writer checksummed. The layout is `Pack::parse`'s: magic and
+/// version (8 bytes), locale and namespace (each a `u16` length and its
+/// bytes), the entry count and arena length, the CRC of the table and
+/// arena, the SHA-256 (32 bytes), then the metadata (a `u32` length and its
+/// bytes).
+fn checksummed(data: &[u8]) -> Vec<u8> {
+    let mut bytes = data.to_vec();
+    let u16_at = |at: usize| -> Option<usize> {
+        Some(usize::from(u16::from_le_bytes(
+            data.get(at..at + 2)?.try_into().ok()?,
+        )))
+    };
+    let u32_at = |at: usize| -> Option<usize> {
+        usize::try_from(u32::from_le_bytes(data.get(at..at + 4)?.try_into().ok()?)).ok()
+    };
+    let crc_at = (|| {
+        let after_locale = 10 + u16_at(8)?;
+        let after_namespace = after_locale + 2 + u16_at(after_locale)?;
+        let crc = after_namespace + 8;
+        let meta_len = crc + 4 + 32;
+        let body = meta_len.checked_add(4)?.checked_add(u32_at(meta_len)?)?;
+        Some((crc, body))
+    })();
+    if let Some((crc, body)) = crc_at
+        && let Some(covered) = data.get(body..)
+        && let Some(slot) = bytes.get_mut(crc..crc + 4)
+    {
+        slot.copy_from_slice(&crc32fast::hash(covered).to_le_bytes());
+    }
+    bytes
 }
 
 /// The `key` target: the text as a key, an entity, a locale and a text to
@@ -579,6 +838,72 @@ mod tests {
             .filter(|name| name.ends_with("_json"))
             .collect();
         assert_eq!(fields, CHART_SLOTS);
+    }
+
+    /// Every seed is answered in the slot it names, or, for a kept
+    /// finding, at least not answered `INTERNAL`: a seed counted to the
+    /// wrong slot is refused there and starts the fuzzer nowhere.
+    #[test]
+    fn every_json_seed_is_answered_in_its_slot() {
+        let _turn = MESSAGES
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let mut wrong = Vec::new();
+        for &(slot, seed, text) in JSON_SEEDS {
+            let at = usize::from(seed_file(slot, text).unwrap()[0]);
+            // What the target passes over, as `json` does.
+            if beyond_bounds(CHART_SLOTS.get(at).copied(), text.as_bytes()) {
+                continue;
+            }
+            let status = answer(at, &c_text(text.as_bytes()));
+            let fine = match seed {
+                Seed::Answered => status == Status::Ok,
+                Seed::Regression => status != Status::Internal,
+            };
+            if !fine {
+                wrong.push(format!("{slot} answered {status:?} to {text}"));
+            }
+        }
+        assert!(wrong.is_empty(), "{wrong:#?}");
+    }
+
+    /// The committed corpus is the seed table written out. Set
+    /// `TEISTRO_FUZZ_WRITE_SEEDS=1` to write it after changing the table.
+    #[test]
+    fn the_json_corpus_is_the_seed_table() {
+        let dir = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/corpus/json"));
+        let wanted: std::collections::BTreeMap<String, Vec<u8>> = JSON_SEEDS
+            .iter()
+            .enumerate()
+            .map(|(n, &(slot, _, text))| {
+                (
+                    format!("{slot}-{n:02}").replace(' ', "-"),
+                    seed_file(slot, text).unwrap(),
+                )
+            })
+            .collect();
+        if std::env::var_os("TEISTRO_FUZZ_WRITE_SEEDS").is_some() {
+            for entry in std::fs::read_dir(dir).unwrap() {
+                std::fs::remove_file(entry.unwrap().path()).unwrap();
+            }
+            for (name, bytes) in &wanted {
+                std::fs::write(dir.join(name), bytes).unwrap();
+            }
+        }
+        let found: std::collections::BTreeMap<String, Vec<u8>> = std::fs::read_dir(dir)
+            .unwrap()
+            .map(|entry| {
+                let path = entry.unwrap().path();
+                (
+                    path.file_name().unwrap().to_string_lossy().into_owned(),
+                    std::fs::read(&path).unwrap(),
+                )
+            })
+            .collect();
+        assert!(
+            found == wanted,
+            "fuzz/corpus/json is not JSON_SEEDS written out; run this test with TEISTRO_FUZZ_WRITE_SEEDS=1"
+        );
     }
 
     /// Every slot answers a seed without a finding.

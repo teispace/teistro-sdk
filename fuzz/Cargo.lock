@@ -851,6 +851,7 @@ dependencies = [
 name = "teistro-fuzz"
 version = "0.0.0"
 dependencies = [
+ "crc32fast",
  "libfuzzer-sys",
  "serde_json",
  "teistro-core",

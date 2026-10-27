@@ -17,8 +17,8 @@ reaches as written, and miss the boundary's own copying and checks.
 
 | target | entry points | input |
 |---|---|---|
-| `json` | every entry point that reads a caller's JSON: the 26 sections of `ts_chart_request`, `ts_research`, `ts_pakshi`, `ts_rashifal`, `ts_numerology_profile`, `ts_naam_milan`, `ts_panchanga_days`'s muhurta and festivals, `ts_intl_render`'s parameters, and the context's settings, layouts and dashas | a selector byte names the slot; the rest is the text, cut at its first NUL as a C caller's string is |
-| `pack` | `ts_intl_load_pack` | the bytes, as a caller's buffer |
+| `json` | every entry point that reads a caller's JSON: the 31 sections of `ts_chart_request`, `ts_research`, `ts_pakshi`, `ts_rashifal`, `ts_numerology_profile`, `ts_naam_milan`, `ts_panchanga_days`'s muhurta and festivals, `ts_intl_render`'s parameters, and the context's settings, layouts and dashas | a selector byte names the slot; the rest is the text, cut at its first NUL as a C caller's string is. The seeds name their slot (`JSON_SEEDS`), and the byte is counted from the name |
+| `pack` | `ts_intl_load_pack` | the bytes, as a caller's buffer, with the pack's CRC-32 made right where the bytes have a header to hold one: a checksum is no authentication, so every reader behind it is fuzzed as a hostile writer would reach it |
 | `key` | `ts_key_parse`, `ts_intl_render`'s key, `ts_intl_entity` | the text |
 | `mf2` | the MF2 parser and formatter, through `ts_intl_render` | a selector byte picks the base locale or Nepali; the rest is a message's source, set as an override under a key no locale has and rendered with one parameter of every type the engine formats |
 | `blob` | the result-blob reader (`teistro_idl::blob::Reader`) | the bytes as a blob, read under the schema its header names: every section by its kind, every field of each |
@@ -81,7 +81,11 @@ counts as a finding on every record that server would accept.
 
 - The seed corpus is committed under `fuzz/corpus/<target>/`: each JSON
   slot seeded with the requests the ABI's own tests send, so the fuzzer
-  starts past the parser; the pack seeded with the shipped packs; `mf2`
+  starts past the parser. `fuzz/corpus/json` is `JSON_SEEDS` written out
+  (`TEISTRO_FUZZ_WRITE_SEEDS=1 cargo test the_json_corpus` in `fuzz/`),
+  and `every_json_seed_is_answered_in_its_slot` holds each well-formed
+  seed to an `OK` in the slot it names and each kept finding to anything
+  but `INTERNAL`; the pack seeded with the shipped packs; `mf2`
   with shipped English and Nepali messages using each function and
   shape, and messages naming every parameter; `blob` with one blob of
   each schema, written by `TEISTRO_FUZZ_SEEDS=corpus/blob cargo test
@@ -107,3 +111,4 @@ nightly and `libfuzzer-sys`, which the workspace builds without.
 | 2026-10-23, verify's minute of `json` on `8557e728` | `sade_sati_json` asking `{"from":2460676.5,"to":246434429.0,"reckoning":"SIGN"}` | the server bounded no window of Saturn's spells: the search runs on to the ephemeris's edge, so 670,000 years asked the built-in's whole six centuries (six seconds in release, past the timeout under the fuzzer), and an ephemeris reaching millennia would hold a worker for minutes | `Limits::years` (`--max-years`, 150 by default) bounds a `sadeSati` window in years, and the harness names a section as the chart record spells it; `a_window_of_saturns_spells_is_bounded_in_years` and `a_window_of_spells_past_the_servers_bounds_is_skipped` hold it |
 | 2026-10-23, the first seconds of `mf2` | `{$x :number maximumFractionDigits=87777777777}` | the formatter wrote that many fraction digits, and the allocation aborted | a digit count past ECMA-402's range (100 fraction digits, 21 integer) is ignored with a warning; `a_digit_count_past_the_range_is_ignored_with_a_warning` holds it, and five minutes more found nothing |
 | 2026-10-23, five minutes of `blob` | — | nothing in 327 000 runs | — |
+| 2026-10-27, the hardening audit | the corpus itself | the selector byte counted slots by position, and five chart sections added before the other entry points had moved every seed after them: a research study was fed to `sarvatobhadra_json`, and five slots had no seed at all; two seeds had drifted from their schema (`frame.zodiacs`, a Pakshi native without its paksha) and were refused in their own slots; and the `pack` target never passed the CRC-32, so it fuzzed a header | seeds name their slot, the corpus is the table written out and each seed is held to an answer in its slot; the harness makes a pack's checksum right before loading it, and two minutes then found nothing in 164 000 runs that reached 3,509 edges |
