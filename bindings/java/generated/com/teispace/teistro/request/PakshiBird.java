@@ -4,21 +4,33 @@
 package com.teispace.teistro.request;
 
 /**
- * Whose friends and enemies (crux P6).
+ * The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
  */
-public enum Relations implements RequestJson {
+public enum PakshiBird implements RequestJson {
     /**
-     * Agastya's directed lists (AG p51, p40 v. 13), the same in both halves; a bird neither lists is neutral.
+     * *Vallūṟu*: Ayyar's hawk, the modern books' vulture.
      */
-    AGASTYA("AGASTYA"),
+    VULTURE("VULTURE"),
     /**
-     * Pulippani's: each bird the friend of its two neighbours round a cycle and the enemy of the other two, the cycle V–O–C–K–P in the bright half (p. 48) and V–C–O–K–P in the dark (p. 121).
+     * *Āntai*, the owl.
      */
-    PULIPPANI("PULIPPANI");
+    OWL("OWL"),
+    /**
+     * *Kākam*, the crow.
+     */
+    CROW("CROW"),
+    /**
+     * *Kōḻi*, the cock.
+     */
+    COCK("COCK"),
+    /**
+     * *Mayil*, the peacock.
+     */
+    PEACOCK("PEACOCK");
 
     private final String key;
 
-    Relations(String key) {
+    PakshiBird(String key) {
         this.key = key;
     }
 
@@ -37,8 +49,8 @@ public enum Relations implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Relations> byKey(String key) {
-        for (Relations member : values()) {
+    public static java.util.Optional<PakshiBird> byKey(String key) {
+        for (PakshiBird member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -53,8 +65,8 @@ public enum Relations implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Relations of(Object raw) {
-        return Read.member(raw, "Relations", Relations::byKey);
+    public static PakshiBird of(Object raw) {
+        return Read.member(raw, "PakshiBird", PakshiBird::byKey);
     }
 
     @Override

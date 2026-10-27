@@ -18,7 +18,7 @@ import java.util.Objects;
  * @param sex The child's sex, for the tattva prior; none skips it. Null leaves the SDK's default.
  * @param uncertaintyMinutes The window's half-width, minutes, 1 to 720.
  */
-public record BaselineAsked(Accuracy accuracy, Double coverage, DashaAsked dasha, List<LifeEvent> events, com.teispace.teistro.Sex sex, double uncertaintyMinutes) implements RequestJson {
+public record BaselineAsked(BirthTimeAccuracy accuracy, Double coverage, DashaAsked dasha, List<LifeEvent> events, com.teispace.teistro.Sex sex, double uncertaintyMinutes) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -52,7 +52,7 @@ public record BaselineAsked(Accuracy accuracy, Double coverage, DashaAsked dasha
 
     /** Builds a {@link BaselineAsked} a field at a time. */
     public static final class Builder {
-        private Accuracy accuracy;
+        private BirthTimeAccuracy accuracy;
         private Double coverage;
         private DashaAsked dasha;
         private List<LifeEvent> events;
@@ -67,7 +67,7 @@ public record BaselineAsked(Accuracy accuracy, Double coverage, DashaAsked dasha
          * @param accuracy How far the reported time is trusted. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder accuracy(Accuracy accuracy) {
+        public Builder accuracy(BirthTimeAccuracy accuracy) {
             this.accuracy = accuracy;
             return this;
         }
@@ -148,7 +148,7 @@ public record BaselineAsked(Accuracy accuracy, Double coverage, DashaAsked dasha
     public static BaselineAsked of(Object raw) {
         Map<String, Object> json = Read.object(raw, "BaselineAsked");
         return new BaselineAsked(
-            Read.orNull(json.get("accuracy"), present -> Read.member(present, "BaselineAsked.accuracy", Accuracy::byKey)),
+            Read.orNull(json.get("accuracy"), present -> Read.member(present, "BaselineAsked.accuracy", BirthTimeAccuracy::byKey)),
             Read.orNull(json.get("coverage"), present -> Read.number(present, "BaselineAsked.coverage")),
             Read.orNull(json.get("dasha"), present -> DashaAsked.of(present)),
             Read.orNull(json.get("events"), present -> Read.list(present, "BaselineAsked.events", item0 -> LifeEvent.of(item0))),

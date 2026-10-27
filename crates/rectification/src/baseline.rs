@@ -46,6 +46,7 @@ use crate::purifier::{house, nth};
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "BirthTimeAccuracy"))]
 pub enum Accuracy {
     /// A time read off a clock at the birth.
     Exact,
@@ -109,6 +110,7 @@ pub enum Sex {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "LifeEventKind"))]
 pub enum EventKind {
     /// A marriage.
     Marriage,

@@ -200,7 +200,7 @@ and `check-dart` ran the layer's tests over the result.
   all of them do.
 - **`SubDegree` gains `none`**, which Node's generation found missing too.
 
-Forty-nine records stay the layer's own, each listed with its reason in
+Forty-three records stay the layer's own, each listed with its reason in
 `DART_FACADES` (`crates/idl/src/emit/requests/dart.rs`), which the
 generator leaves out and `check-lints` holds to the layer: named presets
 (`AlmutenRules.lilly`, `NumerologyRules.baseline`), positional records the
@@ -210,4 +210,28 @@ layer also decodes as answers (`HarmonicRequest(5)`, `BirthDate`,
 clearly than the Rust types do (`PakshiClock` where the schema has
 `Clock`). A copy cannot come back: a hand class named like a generated one
 is a duplicate declaration the analyser refuses.
+
+**A twin under another name escapes that.** The analyser refuses a hand
+class named like a generated one, not one that copies it under a clearer
+name, and the schema named several of Pakshi's, the Sarvatobhadra's and
+the rectification's key sets by a bare word (`Clock`, `Bird`, `Sight`,
+`Vowel`, `Accuracy`, `EventKind`, `Presentation`, …). The layers had each
+written the same keys again as `PakshiClock`, `PakshiBird`, `VedhaSight`,
+`ChakraVowel`, `BirthTimeAccuracy`, `LifeEventKind`, `BirthPresentation`:
+eleven in Dart, six in Python and three in Node, found by matching every
+hand enum's keys against every generated one's (2026-10-27). The schema
+now carries the clearer name (`schemars(rename)`, beside the Rust type,
+which keeps its own), the twins are gone, and Java's generated enums take
+the same names. Two Dart names the schema already spelled otherwise follow
+it (`SaturnEighthEnd` is `GulikaAt`, `PurifierNative` is
+`RectificationSpecies`, in Python too). With the names one, six façades
+kept only for their names are generated (`PakshiRules`, `NameSounds`,
+`SarvatobhadraRules`, `NishekaRules`, `ConceptionRules`,
+`ConceptionMoonRules`), and the last four gain value equality. Of the
+other thirteen listed for their names, ten take a part in the layer's own
+shape (a place as an `Observer`, a window an answer gives back as
+`FestivalWindow`, a rule as a map) and three a boundary enum the layer
+names otherwise (`AyusDivisor` for `Divisor`), and they stay. `YearLength` is the settings
+knob's own name, read by the context's settings as well as by requests,
+and is left to be named with the settings.
 

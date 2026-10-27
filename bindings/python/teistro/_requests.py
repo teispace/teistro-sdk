@@ -126,11 +126,11 @@ __all__ = [
     "WindowNightMuhurta",
     "WindowDayMuhurta",
     "WindowMoonrise",
-    "Bird",
-    "BirthBird",
-    "Clock",
-    "Relations",
-    "SubLengths",
+    "PakshiBird",
+    "PakshiBirthRule",
+    "PakshiClock",
+    "PakshiRelations",
+    "PakshiSubLengths",
     "OrbModel",
     "OrbModelLeo",
     "OrbModelMoieties",
@@ -265,7 +265,7 @@ __all__ = [
     "TimingRule",
     "WeaknessRules",
     "RateSpan",
-    "Accuracy",
+    "BirthTimeAccuracy",
     "DashaAsked",
     "LifeEvent",
     "Facts",
@@ -376,10 +376,10 @@ __all__ = [
     "YearsRectification",
     "SaturnAmongThem",
     "VedhaMotion",
-    "Vowel",
+    "ChakraVowel",
     "CornerVedha",
     "FrontVedha",
-    "Sight",
+    "VedhaSight",
     "MuddaBalance",
     "BirthPeriod",
     "YearClock",
@@ -417,18 +417,18 @@ __all__ = [
     "SeedOverflow",
     "YearLength",
     "Confidence",
-    "EventKind",
+    "LifeEventKind",
     "DatePrecision",
     "Attendants",
     "LampLevel",
-    "Presentation",
+    "BirthPresentation",
     "BetweenBy",
     "MoonSees",
     "OutsideHalf",
     "PresentationBy",
     "SunFallen",
     "ConceptionCount",
-    "PiscesIs",
+    "ConceptionPisces",
     "ConceptionRising",
     "InvisibleHalf",
     "NishekaMandi",
@@ -998,25 +998,25 @@ class FirstYearRequest(TypedDict, total=False):
 class NativeAsked(TypedDict, total=False):
     """Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`."""
 
-    bird: Optional[Bird]
+    bird: Optional[PakshiBird]
 
     nakshatra: Optional[Union[_catalogue.Nakshatra, str]]
 
     paksha: Optional[Union[_catalogue.Paksha, str]]
 
-    rule: Optional[BirthBird]
+    rule: Optional[PakshiBirthRule]
 
 
 class PakshiRules(TypedDict, total=False):
     """What a day is read under."""
 
-    clock: Clock
+    clock: PakshiClock
     """How the halves are cut into yamas."""
 
-    relations: Relations
+    relations: PakshiRelations
     """Whose friends and enemies the sub-periods' owners are judged by."""
 
-    subs: SubLengths
+    subs: PakshiSubLengths
     """How long the sub-periods run."""
 
 
@@ -2112,7 +2112,7 @@ class WindowMoonrise(TypedDict, total=False):
     window: Required[Literal['MOONRISE']]
 
 
-Bird: TypeAlias = Literal['VULTURE', 'OWL', 'CROW', 'COCK', 'PEACOCK']
+PakshiBird: TypeAlias = Literal['VULTURE', 'OWL', 'CROW', 'COCK', 'PEACOCK']
 """The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
 
 `VULTURE`: *Vallūṟu*: Ayyar's hawk, the modern books' vulture.
@@ -2123,7 +2123,7 @@ Bird: TypeAlias = Literal['VULTURE', 'OWL', 'CROW', 'COCK', 'PEACOCK']
 """
 
 
-BirthBird: TypeAlias = Literal['BY_PAKSHA', 'SINGLE']
+PakshiBirthRule: TypeAlias = Literal['BY_PAKSHA', 'SINGLE']
 """How the native's bird is found from the birth star (crux P1).
 
 `BY_PAKSHA`: The bright half's groups for a bright-half birth and the birds reversed over the same groups for a dark-half one (PUL p. vi), as modern practice reads it.
@@ -2131,7 +2131,7 @@ BirthBird: TypeAlias = Literal['BY_PAKSHA', 'SINGLE']
 """
 
 
-Clock: TypeAlias = Literal['STRETCHED', 'NAZHIGAI']
+PakshiClock: TypeAlias = Literal['STRETCHED', 'NAZHIGAI']
 """How a half is cut into yamas (crux P3).
 
 `STRETCHED`: A fifth of the real day and a fifth of the real night, however long each is (AG's "a fifth of the day"; AY's watches).
@@ -2139,7 +2139,7 @@ Clock: TypeAlias = Literal['STRETCHED', 'NAZHIGAI']
 """
 
 
-Relations: TypeAlias = Literal['AGASTYA', 'PULIPPANI']
+PakshiRelations: TypeAlias = Literal['AGASTYA', 'PULIPPANI']
 """Whose friends and enemies (crux P6).
 
 `AGASTYA`: Agastya's directed lists (AG p51, p40 v. 13), the same in both halves; a bird neither lists is neutral.
@@ -2147,7 +2147,7 @@ Relations: TypeAlias = Literal['AGASTYA', 'PULIPPANI']
 """
 
 
-SubLengths: TypeAlias = Literal['AGASTYA', 'PULIPPANI']
+PakshiSubLengths: TypeAlias = Literal['AGASTYA', 'PULIPPANI']
 """How long each sub-period of a yama runs (crux P4).
 
 `AGASTYA`: Agastya's nazhigai, one length an activity "for the waxing and the waning" alike (AG p5 vv. 7–9, p17).
@@ -2596,7 +2596,7 @@ YearMeasure: TypeAlias = Literal['TROPICAL', 'JULIAN', 'NOON_SIDEREAL_TIME']
 class BaselineAsked(TypedDict, total=False):
     """The baseline engine's cascade around the chart's instant: everything `BaselineRequest` takes but the reported time, which is the chart's."""
 
-    accuracy: Accuracy
+    accuracy: BirthTimeAccuracy
     """How far the reported time is trusted."""
 
     coverage: float
@@ -2808,7 +2808,7 @@ class NameSounds(TypedDict, total=False):
     letter: Required[str]
     """The first letter in Devanagari: a conjunct's first consonant, or the vowel a name begins with."""
 
-    vowel: Required[Vowel]
+    vowel: Required[ChakraVowel]
     """The vowel of its first syllable."""
 
 
@@ -2821,7 +2821,7 @@ class SarvatobhadraRules(TypedDict, total=False):
     front: FrontVedha
     """What the front strikes (C429)."""
 
-    sight: Sight
+    sight: VedhaSight
     """Which lines a graha looks along (C430)."""
 
 
@@ -3654,7 +3654,7 @@ class _RateSpanDays(TypedDict, total=False):
     """Any number of days, finite and above zero."""
 
 
-Accuracy: TypeAlias = Literal['EXACT', 'APPROXIMATE', 'RECTIFIED', 'UNKNOWN']
+BirthTimeAccuracy: TypeAlias = Literal['EXACT', 'APPROXIMATE', 'RECTIFIED', 'UNKNOWN']
 """How far the reported time is trusted, which weighs its prior.
 
 `EXACT`: A time read off a clock at the birth.
@@ -3698,7 +3698,7 @@ class LifeEvent(TypedDict, total=False):
     id: Optional[str]
     """The caller's name for it, which its notes carry back."""
 
-    kind: Required[EventKind]
+    kind: Required[LifeEventKind]
     """What happened."""
 
     on: Required[float]
@@ -3723,7 +3723,7 @@ class Facts(TypedDict, total=False):
     oil: Optional[LampLevel]
     """How full the lamp's oil was (V.18)."""
 
-    presentation: Optional[Presentation]
+    presentation: Optional[BirthPresentation]
     """What came first (V.17)."""
 
     wick: Optional[LampLevel]
@@ -3755,7 +3755,7 @@ class ConceptionMoonRules(TypedDict, total=False):
     count: ConceptionCount
     """The count to the birth Moon's sign."""
 
-    pisces: PiscesIs
+    pisces: ConceptionPisces
     """Pisces's class."""
 
     rising: ConceptionRising
@@ -4933,7 +4933,7 @@ VedhaMotion: TypeAlias = Literal['FAST', 'MEAN', 'RETROGRADE']
 """
 
 
-Vowel: TypeAlias = Literal['A', 'AA', 'I', 'II', 'U', 'UU', 'RI', 'RII', 'LI', 'LII', 'E', 'AI', 'O', 'AU', 'AM', 'AH']
+ChakraVowel: TypeAlias = Literal['A', 'AA', 'I', 'II', 'U', 'UU', 'RI', 'RII', 'LI', 'LII', 'E', 'AI', 'O', 'AU', 'AM', 'AH']
 """The sixteen vowels in the order v. 3 lays them, a to the visarga.
 
 `A`: अ
@@ -4971,7 +4971,7 @@ FrontVedha: TypeAlias = Literal['STAR_ONLY', 'EVERY_CELL']
 """
 
 
-Sight: TypeAlias = Literal['TEXT', 'ALL_THREE', 'ONE_EACH']
+VedhaSight: TypeAlias = Literal['TEXT', 'ALL_THREE', 'ONE_EACH']
 """Which of the three lines a graha looks along (C430).
 
 `TEXT`: vv. 15 and 19: the five from Mars along one line, by their motion; the Sun, the Moon and the nodes along all three.
@@ -5299,7 +5299,7 @@ Confidence: TypeAlias = Literal['CERTAIN', 'PROBABLE', 'UNCERTAIN']
 """
 
 
-EventKind: TypeAlias = Literal['MARRIAGE', 'ENGAGEMENT', 'CHILD_BIRTH', 'MISCARRIAGE', 'FIRST_JOB', 'JOB_CHANGE', 'JOB_LOSS', 'PROMOTION', 'BUSINESS_START', 'EDUCATION', 'RELOCATION', 'FOREIGN_TRAVEL', 'PROPERTY', 'VEHICLE', 'SURGERY', 'ACCIDENT', 'ILLNESS', 'DEATH_IN_FAMILY', 'LITIGATION', 'SPIRITUAL_INITIATION', 'OTHER']
+LifeEventKind: TypeAlias = Literal['MARRIAGE', 'ENGAGEMENT', 'CHILD_BIRTH', 'MISCARRIAGE', 'FIRST_JOB', 'JOB_CHANGE', 'JOB_LOSS', 'PROMOTION', 'BUSINESS_START', 'EDUCATION', 'RELOCATION', 'FOREIGN_TRAVEL', 'PROPERTY', 'VEHICLE', 'SURGERY', 'ACCIDENT', 'ILLNESS', 'DEATH_IN_FAMILY', 'LITIGATION', 'SPIRITUAL_INITIATION', 'OTHER']
 """What happened, which decides the houses and karakas a period's lord is scored against.
 
 `MARRIAGE`: A marriage.
@@ -5357,7 +5357,7 @@ LampLevel: TypeAlias = Literal['FULL', 'HALF', 'SPENT']
 """
 
 
-Presentation: TypeAlias = Literal['HEAD', 'FEET', 'HANDS']
+BirthPresentation: TypeAlias = Literal['HEAD', 'FEET', 'HANDS']
 """What came first at the birth.
 
 `HEAD`: The head: a sign that rises head first.
@@ -5415,7 +5415,7 @@ ConceptionCount: TypeAlias = Literal['NEXT_AFTER_DVADASHAMSHA', 'FROM_MOON_SIGN'
 """
 
 
-PiscesIs: TypeAlias = Literal['EITHER', 'DAY']
+ConceptionPisces: TypeAlias = Literal['EITHER', 'DAY']
 """What Pisces is, which the prints class two ways.
 
 `EITHER`: Strong by day or by night, so a birth may be either (1912).

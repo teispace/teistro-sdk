@@ -27,7 +27,7 @@ const PRESET: &str = "names presets the layer gives (`AlmutenRules.lilly`)";
 const POSITIONAL: &str = "is built positionally, and the layer decodes it as an answer too";
 /// Why a façade is kept: it is built by factories that check what they are given.
 const METHODS: &str = "is built by factories that check what they are given";
-/// Why a façade is kept: it a union the layer builds through its own constructors.
+/// Why a façade is kept: it is a union the layer builds through its own constructors.
 const UNION: &str = "a union the layer builds through its own constructors";
 /// Why a façade is kept: it names its parts by the layer's own types, clearer than the schema's (`PakshiClock` for `Clock`).
 const NAMES: &str = "names its parts by the layer's own types, clearer than the schema's (`PakshiClock` for `Clock`)";
@@ -51,8 +51,6 @@ pub const DART_FACADES: &[(&str, &str)] = &[
     ("AshtakavargaAyusRules", NAMES),
     ("AyurdayaRules", PRESET),
     ("BirthDate", POSITIONAL),
-    ("ConceptionMoonRules", NAMES),
-    ("ConceptionRules", NAMES),
     ("ConsiderationRules", PRESET),
     ("DignityRequest", SHAPE),
     ("FestivalRequest", METHODS),
@@ -66,12 +64,9 @@ pub const DART_FACADES: &[(&str, &str)] = &[
     ("LotRequest", PRESET),
     ("MasaPraveshaRequest", NAMES),
     ("MuhurtaRequest", METHODS),
-    ("NameSounds", NAMES),
     ("NatalPoint", UNION),
-    ("NishekaRules", NAMES),
     ("NumerologyRules", PRESET),
     ("OrbModel", UNION),
-    ("PakshiRules", NAMES),
     ("Partner", NAMES),
     ("PerfectionRequest", PRESET),
     ("PerfectionRules", PRESET),
@@ -84,7 +79,6 @@ pub const DART_FACADES: &[(&str, &str)] = &[
     ("RectificationRequest", NAMES),
     ("RuleRequest", NAMES),
     ("SarvatobhadraMotion", UNION),
-    ("SarvatobhadraRules", NAMES),
     ("ThreePairsRules", NAMES),
     ("VarshaRequest", NAMES),
     ("VarsheshaRules", SHAPE),

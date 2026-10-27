@@ -36,6 +36,7 @@ use crate::tables::{
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PakshiClock"))]
 pub enum Clock {
     /// A fifth of the real day and a fifth of the real night, however
     /// long each is (AG's "a fifth of the day"; AY's watches).

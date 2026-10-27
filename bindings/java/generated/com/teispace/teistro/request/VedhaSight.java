@@ -6,7 +6,7 @@ package com.teispace.teistro.request;
 /**
  * Which of the three lines a graha looks along (C430).
  */
-public enum Sight implements RequestJson {
+public enum VedhaSight implements RequestJson {
     /**
      * vv. 15 and 19: the five from Mars along one line, by their motion; the Sun, the Moon and the nodes along all three.
      */
@@ -22,7 +22,7 @@ public enum Sight implements RequestJson {
 
     private final String key;
 
-    Sight(String key) {
+    VedhaSight(String key) {
         this.key = key;
     }
 
@@ -41,8 +41,8 @@ public enum Sight implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Sight> byKey(String key) {
-        for (Sight member : values()) {
+    public static java.util.Optional<VedhaSight> byKey(String key) {
+        for (VedhaSight member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -57,8 +57,8 @@ public enum Sight implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Sight of(Object raw) {
-        return Read.member(raw, "Sight", Sight::byKey);
+    public static VedhaSight of(Object raw) {
+        return Read.member(raw, "VedhaSight", VedhaSight::byKey);
     }
 
     @Override

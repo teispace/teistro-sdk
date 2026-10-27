@@ -15,7 +15,7 @@ import java.util.Objects;
  * @param pisces Pisces's class. Null leaves the SDK's default.
  * @param rising What of the rising point is classed. Null leaves the SDK's default.
  */
-public record ConceptionMoonRules(ConceptionCount count, PiscesIs pisces, ConceptionRising rising) implements RequestJson {
+public record ConceptionMoonRules(ConceptionCount count, ConceptionPisces pisces, ConceptionRising rising) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -38,7 +38,7 @@ public record ConceptionMoonRules(ConceptionCount count, PiscesIs pisces, Concep
     /** Builds a {@link ConceptionMoonRules} a field at a time. */
     public static final class Builder {
         private ConceptionCount count;
-        private PiscesIs pisces;
+        private ConceptionPisces pisces;
         private ConceptionRising rising;
 
         private Builder() {}
@@ -60,7 +60,7 @@ public record ConceptionMoonRules(ConceptionCount count, PiscesIs pisces, Concep
          * @param pisces Pisces's class. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder pisces(PiscesIs pisces) {
+        public Builder pisces(ConceptionPisces pisces) {
             this.pisces = pisces;
             return this;
         }
@@ -98,7 +98,7 @@ public record ConceptionMoonRules(ConceptionCount count, PiscesIs pisces, Concep
         Map<String, Object> json = Read.object(raw, "ConceptionMoonRules");
         return new ConceptionMoonRules(
             Read.orNull(json.get("count"), present -> Read.member(present, "ConceptionMoonRules.count", ConceptionCount::byKey)),
-            Read.orNull(json.get("pisces"), present -> Read.member(present, "ConceptionMoonRules.pisces", PiscesIs::byKey)),
+            Read.orNull(json.get("pisces"), present -> Read.member(present, "ConceptionMoonRules.pisces", ConceptionPisces::byKey)),
             Read.orNull(json.get("rising"), present -> Read.member(present, "ConceptionMoonRules.rising", ConceptionRising::byKey)));
     }
 

@@ -286,7 +286,7 @@ public final class AlmanacArea {
      * As {@link #pakshi(CalendarDate, CalendarDate, Observer, int, PakshiNative)}, under {@code rules}:
      * {@code clock} ({@code STRETCHED} or {@code NAZHIGAI}), {@code subs} and {@code relations}
      * ({@code AGASTYA} or {@code PULIPPANI}), each optional, as
-     * {@code PakshiRules.builder().subs(SubLengths.PULIPPANI).build()}, or
+     * {@code PakshiRules.builder().subs(PakshiSubLengths.PULIPPANI).build()}, or
      * {@code PakshiRules.of(map)} from a map, which refuses a member it does
      * not read by its field, as {@code PakshiRules.clock}.
      *

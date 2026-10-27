@@ -4,21 +4,21 @@
 package com.teispace.teistro.request;
 
 /**
- * How a half is cut into yamas (crux P3).
+ * How long each sub-period of a yama runs (crux P4).
  */
-public enum Clock implements RequestJson {
+public enum PakshiSubLengths implements RequestJson {
     /**
-     * A fifth of the real day and a fifth of the real night, however long each is (AG's "a fifth of the day"; AY's watches).
+     * Agastya's nazhigai, one length an activity "for the waxing and the waning" alike (AG p5 vv. 7–9, p17).
      */
-    STRETCHED("STRETCHED"),
+    AGASTYA("AGASTYA"),
     /**
-     * Six nazhigai (2 h 24 min) each from sunrise, the day half the first thirty nazhigai and the night the next thirty, the 60-nazhigai day AG p5 v. 9 counts in, whatever the real sunset.
+     * Pulippani's figures, which differ by half (PUL p. 46).
      */
-    NAZHIGAI("NAZHIGAI");
+    PULIPPANI("PULIPPANI");
 
     private final String key;
 
-    Clock(String key) {
+    PakshiSubLengths(String key) {
         this.key = key;
     }
 
@@ -37,8 +37,8 @@ public enum Clock implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Clock> byKey(String key) {
-        for (Clock member : values()) {
+    public static java.util.Optional<PakshiSubLengths> byKey(String key) {
+        for (PakshiSubLengths member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -53,8 +53,8 @@ public enum Clock implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Clock of(Object raw) {
-        return Read.member(raw, "Clock", Clock::byKey);
+    public static PakshiSubLengths of(Object raw) {
+        return Read.member(raw, "PakshiSubLengths", PakshiSubLengths::byKey);
     }
 
     @Override

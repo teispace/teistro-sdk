@@ -4,33 +4,21 @@
 package com.teispace.teistro.request;
 
 /**
- * The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
+ * How a half is cut into yamas (crux P3).
  */
-public enum Bird implements RequestJson {
+public enum PakshiClock implements RequestJson {
     /**
-     * *Vallūṟu*: Ayyar's hawk, the modern books' vulture.
+     * A fifth of the real day and a fifth of the real night, however long each is (AG's "a fifth of the day"; AY's watches).
      */
-    VULTURE("VULTURE"),
+    STRETCHED("STRETCHED"),
     /**
-     * *Āntai*, the owl.
+     * Six nazhigai (2 h 24 min) each from sunrise, the day half the first thirty nazhigai and the night the next thirty, the 60-nazhigai day AG p5 v. 9 counts in, whatever the real sunset.
      */
-    OWL("OWL"),
-    /**
-     * *Kākam*, the crow.
-     */
-    CROW("CROW"),
-    /**
-     * *Kōḻi*, the cock.
-     */
-    COCK("COCK"),
-    /**
-     * *Mayil*, the peacock.
-     */
-    PEACOCK("PEACOCK");
+    NAZHIGAI("NAZHIGAI");
 
     private final String key;
 
-    Bird(String key) {
+    PakshiClock(String key) {
         this.key = key;
     }
 
@@ -49,8 +37,8 @@ public enum Bird implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Bird> byKey(String key) {
-        for (Bird member : values()) {
+    public static java.util.Optional<PakshiClock> byKey(String key) {
+        for (PakshiClock member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -65,8 +53,8 @@ public enum Bird implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Bird of(Object raw) {
-        return Read.member(raw, "Bird", Bird::byKey);
+    public static PakshiClock of(Object raw) {
+        return Read.member(raw, "PakshiClock", PakshiClock::byKey);
     }
 
     @Override

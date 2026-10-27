@@ -1561,6 +1561,7 @@ pub enum ConceptionRising {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "ConceptionPisces"))]
 pub enum PiscesIs {
     /// Strong by day or by night, so a birth may be either (1912).
     #[default]

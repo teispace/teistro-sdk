@@ -526,10 +526,10 @@ export interface FirstYearRequest {
  * Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`.
  */
 export interface NativeAsked {
-  readonly bird?: Bird | null;
+  readonly bird?: PakshiBird | null;
   readonly nakshatra?: Member<catalogue.Nakshatra> | null;
   readonly paksha?: Member<catalogue.Paksha> | null;
-  readonly rule?: BirthBird | null;
+  readonly rule?: PakshiBirthRule | null;
 }
 
 /**
@@ -539,15 +539,15 @@ export interface PakshiRules {
   /**
    * How the halves are cut into yamas.
    */
-  readonly clock?: Clock;
+  readonly clock?: PakshiClock;
   /**
    * Whose friends and enemies the sub-periods' owners are judged by.
    */
-  readonly relations?: Relations;
+  readonly relations?: PakshiRelations;
   /**
    * How long the sub-periods run.
    */
-  readonly subs?: SubLengths;
+  readonly subs?: PakshiSubLengths;
 }
 
 /**
@@ -1852,7 +1852,7 @@ export interface WindowMoonrise {
  * `COCK`: *Kōḻi*, the cock.
  * `PEACOCK`: *Mayil*, the peacock.
  */
-export type Bird = 'VULTURE' | 'OWL' | 'CROW' | 'COCK' | 'PEACOCK';
+export type PakshiBird = 'VULTURE' | 'OWL' | 'CROW' | 'COCK' | 'PEACOCK';
 
 /**
  * How the native's bird is found from the birth star (crux P1).
@@ -1860,7 +1860,7 @@ export type Bird = 'VULTURE' | 'OWL' | 'CROW' | 'COCK' | 'PEACOCK';
  * `BY_PAKSHA`: The bright half's groups for a bright-half birth and the birds reversed over the same groups for a dark-half one (PUL p. vi), as modern practice reads it.
  * `SINGLE`: One table whatever the paksha (AY pp. 104–105; AG07 p. 60 vv. 22, 24): the only assignment the public-domain texts give.
  */
-export type BirthBird = 'BY_PAKSHA' | 'SINGLE';
+export type PakshiBirthRule = 'BY_PAKSHA' | 'SINGLE';
 
 /**
  * How a half is cut into yamas (crux P3).
@@ -1868,7 +1868,7 @@ export type BirthBird = 'BY_PAKSHA' | 'SINGLE';
  * `STRETCHED`: A fifth of the real day and a fifth of the real night, however long each is (AG's "a fifth of the day"; AY's watches).
  * `NAZHIGAI`: Six nazhigai (2 h 24 min) each from sunrise, the day half the first thirty nazhigai and the night the next thirty, the 60-nazhigai day AG p5 v. 9 counts in, whatever the real sunset.
  */
-export type Clock = 'STRETCHED' | 'NAZHIGAI';
+export type PakshiClock = 'STRETCHED' | 'NAZHIGAI';
 
 /**
  * Whose friends and enemies (crux P6).
@@ -1876,7 +1876,7 @@ export type Clock = 'STRETCHED' | 'NAZHIGAI';
  * `AGASTYA`: Agastya's directed lists (AG p51, p40 v. 13), the same in both halves; a bird neither lists is neutral.
  * `PULIPPANI`: Pulippani's: each bird the friend of its two neighbours round a cycle and the enemy of the other two, the cycle V–O–C–K–P in the bright half (p. 48) and V–C–O–K–P in the dark (p. 121).
  */
-export type Relations = 'AGASTYA' | 'PULIPPANI';
+export type PakshiRelations = 'AGASTYA' | 'PULIPPANI';
 
 /**
  * How long each sub-period of a yama runs (crux P4).
@@ -1884,7 +1884,7 @@ export type Relations = 'AGASTYA' | 'PULIPPANI';
  * `AGASTYA`: Agastya's nazhigai, one length an activity "for the waxing and the waning" alike (AG p5 vv. 7–9, p17).
  * `PULIPPANI`: Pulippani's figures, which differ by half (PUL p. 46).
  */
-export type SubLengths = 'AGASTYA' | 'PULIPPANI';
+export type PakshiSubLengths = 'AGASTYA' | 'PULIPPANI';
 
 /**
  * How wide an aspect may be before it no longer holds (C240).
@@ -2417,7 +2417,7 @@ export interface BaselineAsked {
   /**
    * How far the reported time is trusted.
    */
-  readonly accuracy?: Accuracy;
+  readonly accuracy?: BirthTimeAccuracy;
   /**
    * The share of the posterior the intervals hold, 0.5 to 0.99.
    */
@@ -2671,7 +2671,7 @@ export interface NameSounds {
   /**
    * The vowel of its first syllable.
    */
-  readonly vowel: Vowel;
+  readonly vowel: ChakraVowel;
 }
 
 /**
@@ -2689,7 +2689,7 @@ export interface SarvatobhadraRules {
   /**
    * Which lines a graha looks along (C430).
    */
-  readonly sight?: Sight;
+  readonly sight?: VedhaSight;
 }
 
 /**
@@ -3656,7 +3656,7 @@ export type RateSpan =
  * `RECTIFIED`: A time already rectified once.
  * `UNKNOWN`: No time worth weighing: the prior on it is flat.
  */
-export type Accuracy = 'EXACT' | 'APPROXIMATE' | 'RECTIFIED' | 'UNKNOWN';
+export type BirthTimeAccuracy = 'EXACT' | 'APPROXIMATE' | 'RECTIFIED' | 'UNKNOWN';
 
 /**
  * The dasha the baseline's event fit reads: each member the baseline engine's own ([`baseline_dasha_rules`]) where left out, so a request names only what it changes.
@@ -3707,7 +3707,7 @@ export interface LifeEvent {
   /**
    * What happened.
    */
-  readonly kind: EventKind;
+  readonly kind: LifeEventKind;
   /**
    * When it began, as an instant (UTC).
    */
@@ -3741,7 +3741,7 @@ export interface Facts {
   /**
    * What came first (V.17).
    */
-  readonly presentation?: Presentation | null;
+  readonly presentation?: BirthPresentation | null;
   /**
    * How much of the lamp's wick was left (V.18).
    */
@@ -3785,7 +3785,7 @@ export interface ConceptionMoonRules {
   /**
    * Pisces's class.
    */
-  readonly pisces?: PiscesIs;
+  readonly pisces?: ConceptionPisces;
   /**
    * What of the rising point is classed.
    */
@@ -5229,7 +5229,7 @@ export type VedhaMotion = 'FAST' | 'MEAN' | 'RETROGRADE';
  * `AM`: अं, the anusvara.
  * `AH`: अः, the visarga.
  */
-export type Vowel = 'A' | 'AA' | 'I' | 'II' | 'U' | 'UU' | 'RI' | 'RII' | 'LI' | 'LII' | 'E' | 'AI' | 'O' | 'AU' | 'AM' | 'AH';
+export type ChakraVowel = 'A' | 'AA' | 'I' | 'II' | 'U' | 'UU' | 'RI' | 'RII' | 'LI' | 'LII' | 'E' | 'AI' | 'O' | 'AU' | 'AM' | 'AH';
 
 /**
  * Which vowels a graha at a corner's juncture strikes (v. 26, C431).
@@ -5254,7 +5254,7 @@ export type FrontVedha = 'STAR_ONLY' | 'EVERY_CELL';
  * `ALL_THREE`: Every graha along all three, v. 13 read alone.
  * `ONE_EACH`: The five by their motion, the Sun and the Moon (always fast) to the left, the nodes (always retrograde) to the right: the "some" the tika reports on v. 19.
  */
-export type Sight = 'TEXT' | 'ALL_THREE' | 'ONE_EACH';
+export type VedhaSight = 'TEXT' | 'ALL_THREE' | 'ONE_EACH';
 
 /**
  * Where the balance a nakshatra year opens with comes from (crux C123).
@@ -5622,7 +5622,7 @@ export type Confidence = 'CERTAIN' | 'PROBABLE' | 'UNCERTAIN';
  * `SPIRITUAL_INITIATION`: A spiritual initiation.
  * `OTHER`: Anything else.
  */
-export type EventKind = 'MARRIAGE' | 'ENGAGEMENT' | 'CHILD_BIRTH' | 'MISCARRIAGE' | 'FIRST_JOB' | 'JOB_CHANGE' | 'JOB_LOSS' | 'PROMOTION' | 'BUSINESS_START' | 'EDUCATION' | 'RELOCATION' | 'FOREIGN_TRAVEL' | 'PROPERTY' | 'VEHICLE' | 'SURGERY' | 'ACCIDENT' | 'ILLNESS' | 'DEATH_IN_FAMILY' | 'LITIGATION' | 'SPIRITUAL_INITIATION' | 'OTHER';
+export type LifeEventKind = 'MARRIAGE' | 'ENGAGEMENT' | 'CHILD_BIRTH' | 'MISCARRIAGE' | 'FIRST_JOB' | 'JOB_CHANGE' | 'JOB_LOSS' | 'PROMOTION' | 'BUSINESS_START' | 'EDUCATION' | 'RELOCATION' | 'FOREIGN_TRAVEL' | 'PROPERTY' | 'VEHICLE' | 'SURGERY' | 'ACCIDENT' | 'ILLNESS' | 'DEATH_IN_FAMILY' | 'LITIGATION' | 'SPIRITUAL_INITIATION' | 'OTHER';
 
 /**
  * How finely an event's date is known, which sets the window it is fitted over.
@@ -5667,7 +5667,7 @@ export type LampLevel = 'FULL' | 'HALF' | 'SPENT';
  * `FEET`: The feet: a sign that rises back first.
  * `HANDS`: The hands: Pisces, which rises both ways (the commentator's reading of V.17).
  */
-export type Presentation = 'HEAD' | 'FEET' | 'HANDS';
+export type BirthPresentation = 'HEAD' | 'FEET' | 'HANDS';
 
 /**
  * How "the grahas between the lagna and the Moon" are counted (X19).
@@ -5724,7 +5724,7 @@ export type ConceptionCount = 'NEXT_AFTER_DVADASHAMSHA' | 'FROM_MOON_SIGN' | 'FR
  * `EITHER`: Strong by day or by night, so a birth may be either (1912).
  * `DAY`: A day sign (Iyer's BJ I.10 note).
  */
-export type PiscesIs = 'EITHER' | 'DAY';
+export type ConceptionPisces = 'EITHER' | 'DAY';
 
 /**
  * What of the conception's rising point BJ IV.21 classes as a day or a night sign.

@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param letter The first letter in Devanagari: a conjunct's first consonant, or the vowel a name begins with.
  * @param vowel The vowel of its first syllable.
  */
-public record NameSounds(String letter, Vowel vowel) implements RequestJson {
+public record NameSounds(String letter, ChakraVowel vowel) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -38,7 +38,7 @@ public record NameSounds(String letter, Vowel vowel) implements RequestJson {
         Map<String, Object> json = Read.object(raw, "NameSounds");
         return new NameSounds(
             Read.text(Read.required(json.get("letter"), "NameSounds.letter"), "NameSounds.letter"),
-            Read.member(Read.required(json.get("vowel"), "NameSounds.vowel"), "NameSounds.vowel", Vowel::byKey));
+            Read.member(Read.required(json.get("vowel"), "NameSounds.vowel"), "NameSounds.vowel", ChakraVowel::byKey));
     }
 
     @Override

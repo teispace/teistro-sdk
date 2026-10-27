@@ -17,7 +17,7 @@ import java.util.Objects;
  * @param presentation What came first (V.17). Null leaves the SDK's default.
  * @param wick How much of the lamp's wick was left (V.18). Null leaves the SDK's default.
  */
-public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil, Presentation presentation, LampLevel wick) implements RequestJson {
+public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil, BirthPresentation presentation, LampLevel wick) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -42,7 +42,7 @@ public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil,
         private Attendants attendants;
         private Boolean fatherPresent;
         private LampLevel oil;
-        private Presentation presentation;
+        private BirthPresentation presentation;
         private LampLevel wick;
 
         private Builder() {}
@@ -86,7 +86,7 @@ public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil,
          * @param presentation What came first (V.17). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder presentation(Presentation presentation) {
+        public Builder presentation(BirthPresentation presentation) {
             this.presentation = presentation;
             return this;
         }
@@ -126,7 +126,7 @@ public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil,
             Read.orNull(json.get("attendants"), present -> Attendants.of(present)),
             Read.orNull(json.get("fatherPresent"), present -> Read.bool(present, "Facts.fatherPresent")),
             Read.orNull(json.get("oil"), present -> Read.member(present, "Facts.oil", LampLevel::byKey)),
-            Read.orNull(json.get("presentation"), present -> Read.member(present, "Facts.presentation", Presentation::byKey)),
+            Read.orNull(json.get("presentation"), present -> Read.member(present, "Facts.presentation", BirthPresentation::byKey)),
             Read.orNull(json.get("wick"), present -> Read.member(present, "Facts.wick", LampLevel::byKey)));
     }
 

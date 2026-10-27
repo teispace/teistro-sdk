@@ -18,6 +18,7 @@ use teistro_core::catalogue::{Nakshatra, Paksha, Vara};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PakshiBird"))]
 pub enum Bird {
     /// *Vallūṟu*: Ayyar's hawk, the modern books' vulture.
     Vulture,
@@ -323,6 +324,7 @@ pub fn death_bird(paksha: Paksha, vara: Vara) -> Bird {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PakshiBirthRule"))]
 pub enum BirthBird {
     /// The bright half's groups for a bright-half birth and the birds
     /// reversed over the same groups for a dark-half one (PUL p. vi), as
@@ -374,6 +376,7 @@ pub fn birth_bird(nakshatra: Nakshatra, paksha: Paksha, rule: BirthBird) -> Bird
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PakshiSubLengths"))]
 pub enum SubLengths {
     /// Agastya's nazhigai, one length an activity "for the waxing and the
     /// waning" alike (AG p5 vv. 7–9, p17).
@@ -529,6 +532,7 @@ pub enum Relation {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "PakshiRelations"))]
 pub enum Relations {
     /// Agastya's directed lists (AG p51, p40 v. 13), the same in both
     /// halves; a bird neither lists is neutral.

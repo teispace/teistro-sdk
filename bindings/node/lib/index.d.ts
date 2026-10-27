@@ -175,6 +175,7 @@ import type {
   AshauchTable,
   AshauchTradition,
   BirthDate,
+  ChakraVowel,
   DignityRequest,
   FirstYearRequest,
   FortitudeRequest,
@@ -187,6 +188,7 @@ import type {
   KujaLifts,
   KujaRules,
   LalKitabRequest,
+  LifeEventKind,
   LotRequest,
   MasaDashaRules,
   MasaPhalaRules,
@@ -200,6 +202,7 @@ import type {
   NightRule,
   NumerologyRules,
   OfficeRules,
+  PakshiBird,
   ParallelRequest,
   PerfectionRequest,
   PlanRequest,
@@ -2814,10 +2817,6 @@ export interface PrashnaScore {
   readonly applyingTo: Graha | null;
 }
 
-/** The sixteen vowels in the order the chakra lays them, a to the visarga. */
-export type ChakraVowel =
-  | 'A' | 'AA' | 'I' | 'II' | 'U' | 'UU' | 'RI' | 'RII' | 'LI' | 'LII' | 'E' | 'AI' | 'O' | 'AU' | 'AM' | 'AH';
-
 /** One of a graha's three lines of sight. */
 export type VedhaLine = 'LEFT' | 'FRONT' | 'RIGHT';
 
@@ -3439,30 +3438,6 @@ export interface BirthFacts {
   /** The women who attended (V.22). */
   readonly attendants?: { readonly total?: number; readonly inside?: number; readonly outside?: number };
 }
-
-/** What happened in a life, which the baseline's event fit reads. */
-export type LifeEventKind =
-  | 'MARRIAGE'
-  | 'ENGAGEMENT'
-  | 'CHILD_BIRTH'
-  | 'MISCARRIAGE'
-  | 'FIRST_JOB'
-  | 'JOB_CHANGE'
-  | 'JOB_LOSS'
-  | 'PROMOTION'
-  | 'BUSINESS_START'
-  | 'EDUCATION'
-  | 'RELOCATION'
-  | 'FOREIGN_TRAVEL'
-  | 'PROPERTY'
-  | 'VEHICLE'
-  | 'SURGERY'
-  | 'ACCIDENT'
-  | 'ILLNESS'
-  | 'DEATH_IN_FAMILY'
-  | 'LITIGATION'
-  | 'SPIRITUAL_INITIATION'
-  | 'OTHER';
 
 /** The baseline engine's cascade around the chart's instant (X20–X26). */
 export interface BaselineRectificationRequest {
@@ -6822,9 +6797,6 @@ export interface MuhurtaAnswer {
 }
 
 /** What `Context.almanacDay` needs: one day at one place. */
-/** The five birds of Pancha Pakshi, in their order. */
-export type PakshiBird = 'VULTURE' | 'OWL' | 'CROW' | 'COCK' | 'PEACOCK';
-
 /** What a bird does in a yama or a sub-period. */
 export type PakshiActivity = 'EATING' | 'WALKING' | 'RULING' | 'SLEEPING' | 'DYING';
 

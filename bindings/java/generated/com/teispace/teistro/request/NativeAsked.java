@@ -16,7 +16,7 @@ import java.util.Objects;
  * @param paksha The {@code paksha} field. Null leaves the SDK's default.
  * @param rule How the native's bird is found from the birth star (crux P1). Null leaves the SDK's default.
  */
-public record NativeAsked(Bird bird, com.teispace.teistro.Nakshatra nakshatra, com.teispace.teistro.Paksha paksha, BirthBird rule) implements RequestJson {
+public record NativeAsked(PakshiBird bird, com.teispace.teistro.Nakshatra nakshatra, com.teispace.teistro.Paksha paksha, PakshiBirthRule rule) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -38,10 +38,10 @@ public record NativeAsked(Bird bird, com.teispace.teistro.Nakshatra nakshatra, c
 
     /** Builds a {@link NativeAsked} a field at a time. */
     public static final class Builder {
-        private Bird bird;
+        private PakshiBird bird;
         private com.teispace.teistro.Nakshatra nakshatra;
         private com.teispace.teistro.Paksha paksha;
-        private BirthBird rule;
+        private PakshiBirthRule rule;
 
         private Builder() {}
 
@@ -51,7 +51,7 @@ public record NativeAsked(Bird bird, com.teispace.teistro.Nakshatra nakshatra, c
          * @param bird The five birds, in the tradition's order (AY p. 102; AG p4 v. 5). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder bird(Bird bird) {
+        public Builder bird(PakshiBird bird) {
             this.bird = bird;
             return this;
         }
@@ -84,7 +84,7 @@ public record NativeAsked(Bird bird, com.teispace.teistro.Nakshatra nakshatra, c
          * @param rule How the native's bird is found from the birth star (crux P1). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder rule(BirthBird rule) {
+        public Builder rule(PakshiBirthRule rule) {
             this.rule = rule;
             return this;
         }
@@ -110,10 +110,10 @@ public record NativeAsked(Bird bird, com.teispace.teistro.Nakshatra nakshatra, c
     public static NativeAsked of(Object raw) {
         Map<String, Object> json = Read.object(raw, "NativeAsked");
         return new NativeAsked(
-            Read.orNull(json.get("bird"), present -> Read.member(present, "NativeAsked.bird", Bird::byKey)),
+            Read.orNull(json.get("bird"), present -> Read.member(present, "NativeAsked.bird", PakshiBird::byKey)),
             Read.orNull(json.get("nakshatra"), present -> Read.member(present, "NativeAsked.nakshatra", com.teispace.teistro.Nakshatra::byKey)),
             Read.orNull(json.get("paksha"), present -> Read.member(present, "NativeAsked.paksha", com.teispace.teistro.Paksha::byKey)),
-            Read.orNull(json.get("rule"), present -> Read.member(present, "NativeAsked.rule", BirthBird::byKey)));
+            Read.orNull(json.get("rule"), present -> Read.member(present, "NativeAsked.rule", PakshiBirthRule::byKey)));
     }
 
     @Override

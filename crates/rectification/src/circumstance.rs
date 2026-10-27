@@ -95,6 +95,7 @@ pub struct Facts {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "BirthPresentation"))]
 pub enum Presentation {
     /// The head: a sign that rises head first.
     Head,

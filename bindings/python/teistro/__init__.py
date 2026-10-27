@@ -137,7 +137,7 @@ from ._records import Provenance, Step, decode_provenance, decode_step
 from ._requests import (
     GocharRequest as GocharRequest,
     AbhijitPada as AbhijitPada,
-    Accuracy as Accuracy,
+    BirthTimeAccuracy as BirthTimeAccuracy,
     AddSign as AddSign,
     AfterCycle as AfterCycle,
     AlmanacDaysRequest as AlmanacDaysRequest,
@@ -189,9 +189,9 @@ from ._requests import (
     BatchAsked as BatchAsked,
     BetweenBy as BetweenBy,
     BhakootLift as BhakootLift,
-    Bird as Bird,
+    PakshiBird as PakshiBird,
     BirthAsked as BirthAsked,
-    BirthBird as BirthBird,
+    PakshiBirthRule as PakshiBirthRule,
     BirthDate as BirthDate,
     BirthPeriod as BirthPeriod,
     BirthReduction as BirthReduction,
@@ -205,7 +205,7 @@ from ._requests import (
     CircumstanceAsked as CircumstanceAsked,
     CircumstanceRules as CircumstanceRules,
     CivilAsked as CivilAsked,
-    Clock as Clock,
+    PakshiClock as PakshiClock,
     Combine as Combine,
     ConceptionCount as ConceptionCount,
     ConceptionMoonRules as ConceptionMoonRules,
@@ -312,7 +312,7 @@ from ._requests import (
     Enmity as Enmity,
     EqualVarna as EqualVarna,
     EraNumber as EraNumber,
-    EventKind as EventKind,
+    LifeEventKind as LifeEventKind,
     EventShuffle as EventShuffle,
     Facts as Facts,
     FestivalCalendarRequest as FestivalCalendarRequest,
@@ -414,7 +414,7 @@ from ._requests import (
     PerfectionRequest as PerfectionRequest,
     Period as Period,
     PeriodAsked as PeriodAsked,
-    PiscesIs as PiscesIs,
+    ConceptionPisces as ConceptionPisces,
     PiscesRising as PiscesRising,
     PlanRequest as PlanRequest,
     PointAsked as PointAsked,
@@ -424,7 +424,7 @@ from ._requests import (
     PrashnaRequest as PrashnaRequest,
     PrashnaRules as PrashnaRules,
     PrashnaTense as PrashnaTense,
-    Presentation as Presentation,
+    BirthPresentation as BirthPresentation,
     PresentationBy as PresentationBy,
     ProgressionRate as ProgressionRate,
     ProgressionsRequest as ProgressionsRequest,
@@ -447,7 +447,7 @@ from ._requests import (
     RectificationSpecies as RectificationSpecies,
     Referents as Referents,
     Relation as Relation,
-    Relations as Relations,
+    PakshiRelations as PakshiRelations,
     RemedyRequest as RemedyRequest,
     RemedyRules as RemedyRules,
     ResearchRequest as ResearchRequest,
@@ -492,14 +492,14 @@ from ._requests import (
     ShantiRules as ShantiRules,
     ShippedRules as ShippedRules,
     SiegeWithin as SiegeWithin,
-    Sight as Sight,
+    VedhaSight as VedhaSight,
     SignMeasures as SignMeasures,
     Snapshot as Snapshot,
     SnapshotClock as SnapshotClock,
     SnapshotSunrise as SnapshotSunrise,
     StudyKind as StudyKind,
     SubDegree as SubDegree,
-    SubLengths as SubLengths,
+    PakshiSubLengths as PakshiSubLengths,
     SubjectAsked as SubjectAsked,
     SunFallen as SunFallen,
     SunWithKetu as SunWithKetu,
@@ -529,7 +529,7 @@ from ._requests import (
     VashyaPoints as VashyaPoints,
     VedhaMotion as VedhaMotion,
     VenusPlace as VenusPlace,
-    Vowel as Vowel,
+    ChakraVowel as ChakraVowel,
     WeaknessRules as WeaknessRules,
     Window as Window,
     WindowDayMuhurta as WindowDayMuhurta,
@@ -1404,7 +1404,7 @@ __all__ = [
     "RectificationRequest",
     "PurifyRequest",
     "PurifierRules",
-    "PurifierNative",
+    "RectificationSpecies",
     "GulikaExtension",
     "PurifyAs",
     "PranapadaRule",
@@ -11003,9 +11003,6 @@ class Remedies:
     ishta_devata: IshtaDevatas
 
 
-PakshiBird = Literal["VULTURE", "OWL", "CROW", "COCK", "PEACOCK"]
-"""The five birds of Pancha Pakshi, in their order (`03-design/pakshi.md`)."""
-
 PakshiActivity = Literal["EATING", "WALKING", "RULING", "SLEEPING", "DYING"]
 """What a bird does in a yama or a sub-period."""
 
@@ -11660,10 +11657,6 @@ class TithiPravesha:
         return self.rule != self.picked
 
 
-ChakraVowel = Literal["A", "AA", "I", "II", "U", "UU", "RI", "RII", "LI", "LII", "E", "AI", "O", "AU", "AM", "AH"]
-"""The sixteen vowels in the order the Sarvatobhadra chakra lays them, a to
-the visarga."""
-
 VedhaLine = Literal["LEFT", "FRONT", "RIGHT"]
 """One of a graha's three lines of sight."""
 
@@ -11781,11 +11774,6 @@ class Sarvatobhadra:
     malefic strikes."""
 
 
-PurifierNative = Literal["HUMAN", "BEAST", "BIRD", "CREEPER"]
-"""What the native is, which decides the houses that purify, a
-`PurifierRules` `native`."""
-
-
 class PurifierRules(TypedDict, total=False):
     """The purifier's knobs, one per crux (BPHS ch. 2 vv. 67–78), the texts'
     own by default: `native` (`HUMAN`, `BEAST`, `BIRD` or `CREEPER`, which
@@ -11795,7 +11783,7 @@ class PurifierRules(TypedDict, total=False):
     `PRINTED_EXAMPLE` or `SDK_POINT`), `gulikaAt` (`END` or `START`) and
     `seedMinutes`, the step every change is found between."""
 
-    native: PurifierNative
+    native: RectificationSpecies
     pranapada: bool
     gulika: bool
     moon: bool
@@ -11814,11 +11802,6 @@ class PurifyRequest(TypedDict, total=False):
     rules: PurifierRules
 
 
-ConceptionPisces = Literal["EITHER", "DAY"]
-"""What Pisces is: strong by day or by night, so either, or a day sign, a
-`ConceptionMoonRules` `pisces`."""
-
-
 class AttendantFacts(TypedDict, total=False):
     """The women who attended, as many as the family can say: `total`,
     `inside` the room and `outside` it."""
@@ -11826,10 +11809,6 @@ class AttendantFacts(TypedDict, total=False):
     total: int
     inside: int
     outside: int
-
-
-BirthPresentation = Literal["HEAD", "FEET", "HANDS"]
-"""What came first at the birth, a `BirthFacts` `presentation`."""
 
 
 class BirthFacts(TypedDict, total=False):
@@ -11852,31 +11831,6 @@ class CircumstanceRequest(TypedDict, total=False):
     facts: BirthFacts
     rules: CircumstanceRules
 
-
-LifeEventKind = Literal[
-    "MARRIAGE",
-    "ENGAGEMENT",
-    "CHILD_BIRTH",
-    "MISCARRIAGE",
-    "FIRST_JOB",
-    "JOB_CHANGE",
-    "JOB_LOSS",
-    "PROMOTION",
-    "BUSINESS_START",
-    "EDUCATION",
-    "RELOCATION",
-    "FOREIGN_TRAVEL",
-    "PROPERTY",
-    "VEHICLE",
-    "SURGERY",
-    "ACCIDENT",
-    "ILLNESS",
-    "DEATH_IN_FAMILY",
-    "LITIGATION",
-    "SPIRITUAL_INITIATION",
-    "OTHER",
-]
-"""What happened, a `LifeEventRequest` `kind`."""
 
 EventConfidence = Literal["CERTAIN", "PROBABLE", "UNCERTAIN"]
 """How sure the family is of a life event, a `LifeEventRequest`
@@ -11921,10 +11875,6 @@ class BaselineDashaRules(TypedDict, total=False):
     seedOverflow: SeedOverflow
     ashtottariGrouping: AshtottariGrouping
 
-
-BirthTimeAccuracy = Literal["EXACT", "APPROXIMATE", "RECTIFIED", "UNKNOWN"]
-"""How far a birth time on record is trusted, a
-`BaselineRectificationRequest` `accuracy`."""
 
 NativeSex = Literal["MALE", "FEMALE"]
 """The child's sex, which the baseline's tattva prior reads, a
