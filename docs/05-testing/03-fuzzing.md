@@ -1,9 +1,10 @@
 # Fuzzing
 
-Status: `built`, 2026-10-12; the `mf2` and `blob` targets 2026-10-23.
+Status: `built`, 2026-10-12; the `mf2` and `blob` targets 2026-10-23;
+the `mcp` target 2026-10-27.
 The quality bar's fuzzing row ([`01-quality-bar.md`](01-quality-bar.md)):
-pack parsers, the MF2 engine, the blob decoders and every C ABI entry
-point survive arbitrary bytes, with a committed corpus, a nightly smoke
+pack parsers, the MF2 engine, the blob decoders, every C ABI entry
+point and the MCP server's message handler survive arbitrary bytes, with a committed corpus, a nightly smoke
 run and a weekly long run.
 
 ## 1. What is fuzzed, and why there
@@ -22,6 +23,7 @@ reaches as written, and miss the boundary's own copying and checks.
 | `key` | `ts_key_parse`, `ts_intl_render`'s key, `ts_intl_entity` | the text |
 | `mf2` | the MF2 parser and formatter, through `ts_intl_render` | a selector byte picks the base locale or Nepali; the rest is a message's source, set as an override under a key no locale has and rendered with one parameter of every type the engine formats |
 | `blob` | the result-blob reader (`teistro_idl::blob::Reader`) | the bytes as a blob, read under the schema its header names: every section by its kind, every field of each |
+| `mcp` | `teistro_mcp::Server::handle_bytes`, the one entry both transports read a message through | the bytes as one message, to a fresh server over the built-in ephemeris that runs no task in the background |
 
 The MF2 engine and the blob reader have targets of their own because
 the ABI targets reach them only through text the library already
@@ -32,6 +34,14 @@ reader must survive bytes cut short or altered between the two. The
 reader is the reference every generated binding decoder is held to, and
 `every_blob_the_library_writes_reads_whole` holds it to one blob of
 each schema the library writes.
+
+The MCP server is a second door to the same computations, with its own
+readers in front: JSON-RPC, the two revisions' envelopes, tool arguments
+read against their schemas, resource URIs and prompt arguments, and the
+request bounds. A host exposes it to a model, whose messages nobody
+checked. The HTTP transport's framing in front of it is held by
+`crates/mcp/tests/http.rs` status by status, since a socket is no
+libFuzzer input.
 
 The generated decoders in Node, Python, Dart and Java are out of
 libFuzzer's reach, so each binding's blob test corrupts what the library
@@ -68,7 +78,9 @@ survive. Under the fuzzer the panic hook aborts first, so **any panic is
 a finding**, caught or not; and so is any answer outside the status
 codes, a hang past libFuzzer's timeout, and an allocation past its RSS
 limit. A refusal is the expected answer to most inputs and is not a
-finding.
+finding. For `mcp` a reply must also be one JSON-RPC response, a result
+or an error, and neither may say the server failed: no `-32603`, and no
+tool refusal whose status is `INTERNAL`.
 
 Work in proportion to what was asked is not a hang. The SDK computes
 whatever it is asked, and bounding a caller is the host's job, as the
@@ -89,7 +101,15 @@ counts as a finding on every record that server would accept.
   with shipped English and Nepali messages using each function and
   shape, and messages naming every parameter; `blob` with one blob of
   each schema, written by `TEISTRO_FUZZ_SEEDS=corpus/blob cargo test
-  every_blob` in `fuzz/` and the positions blob of `blob_fixtures`.
+  every_blob` in `fuzz/` and the positions blob of `blob_fixtures`;
+  `mcp` with the protocol's own messages (`MCP_SEEDS`) and one
+  `tools/call` for each example request the SDK's tests send
+  (`crates/sdk/tests/requests.json`), so a tool gains a seed with its
+  example. `every_mcp_seed_is_answered_as_listed` holds each to its
+  answer, and `the_mcp_corpus_is_the_seed_table` to the committed files.
+- The nightly smoke runs every target `cargo fuzz list` names, and
+  `the_long_run_fuzzes_every_target` holds the weekly matrix to the
+  manifest, so a target added is run by both.
 - **Nightly smoke** (`verify.yml`): each target for 60 seconds from the
   committed corpus. A crash fails verify and uploads its input.
 - **Weekly long run** (`fuzz.yml`): each target for an hour; new coverage
@@ -112,3 +132,4 @@ nightly and `libfuzzer-sys`, which the workspace builds without.
 | 2026-10-23, the first seconds of `mf2` | `{$x :number maximumFractionDigits=87777777777}` | the formatter wrote that many fraction digits, and the allocation aborted | a digit count past ECMA-402's range (100 fraction digits, 21 integer) is ignored with a warning; `a_digit_count_past_the_range_is_ignored_with_a_warning` holds it, and five minutes more found nothing |
 | 2026-10-23, five minutes of `blob` | — | nothing in 327 000 runs | — |
 | 2026-10-27, the hardening audit | the corpus itself | the selector byte counted slots by position, and five chart sections added before the other entry points had moved every seed after them: a research study was fed to `sarvatobhadra_json`, and five slots had no seed at all; two seeds had drifted from their schema (`frame.zodiacs`, a Pakshi native without its paksha) and were refused in their own slots; and the `pack` target never passed the CRC-32, so it fuzzed a header | seeds name their slot, the corpus is the table written out and each seed is held to an answer in its slot; the harness makes a pack's checksum right before loading it, and two minutes then found nothing in 164 000 runs that reached 3,509 edges |
+| 2026-10-27, three minutes of the new `mcp` target | — | nothing in 154 000 runs that reached 108,653 edges; the two `engine.*` tools' seeds are refused `UNSUPPORTED` by the built-in ephemeris, as an adapter's operations are | — |

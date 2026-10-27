@@ -20,7 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [json, pack, key, mf2, blob]
+        # Held to fuzz/Cargo.toml's targets by `the_long_run_fuzzes_every_target`.
+        target: [json, pack, key, mf2, mcp, blob]
     steps:
       - uses: actions/checkout@v5
         with:

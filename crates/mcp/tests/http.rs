@@ -296,6 +296,90 @@ fn a_foreign_origin_another_method_or_path_is_refused() {
     assert!(long.body.contains("--max-message-bytes"), "{}", long.body);
 }
 
+/// Writes `head` and `body` as they stand, ends the request side, and
+/// reads the reply: a framing no well-behaved client sends.
+fn raw(served: &Served, head: &str, body: &str) -> Response {
+    let mut stream = served.connect();
+    stream.write_all(head.as_bytes()).unwrap();
+    stream.write_all(body.as_bytes()).unwrap();
+    stream.shutdown(std::net::Shutdown::Write).unwrap();
+    read(stream)
+}
+
+/// **A message is framed one way** (P8): its length is one
+/// `Content-Length`, the body is as long as that says, the reply is one
+/// the client accepts and the protocol is HTTP/1.1. Each other framing
+/// is refused by its own status, with a sentence saying why, before the
+/// server reads the message.
+#[test]
+fn a_message_framed_another_way_is_refused_by_its_status() {
+    let served = Served::plain();
+    let body = numerology(8).to_string();
+    let json = "Content-Type: application/json\r\nAccept: application/json\r\n";
+    let length = body.len();
+    for (head, sent, status, why) in [
+        (
+            format!("POST /mcp HTTP/1.1\r\n{json}\r\n"),
+            body.as_str(),
+            411,
+            "Content-Length",
+        ),
+        (
+            format!("POST /mcp HTTP/1.1\r\n{json}Transfer-Encoding: chunked\r\n\r\n"),
+            "0\r\n\r\n",
+            501,
+            "Content-Length",
+        ),
+        (
+            format!(
+                "POST /mcp HTTP/1.1\r\n{json}Content-Length: {length}\r\nContent-Length: {length}\r\n\r\n"
+            ),
+            body.as_str(),
+            400,
+            "one count",
+        ),
+        (
+            format!("POST /mcp HTTP/1.1\r\n{json}Content-Length: -1\r\n\r\n"),
+            "",
+            400,
+            "one count",
+        ),
+        (
+            format!(
+                "POST /mcp HTTP/1.1\r\n{json}Content-Length: {}\r\n\r\n",
+                length + 10
+            ),
+            body.as_str(),
+            400,
+            "shorter",
+        ),
+        (
+            format!(
+                "POST /mcp HTTP/1.1\r\nContent-Type: application/json\r\nAccept: text/html\r\nContent-Length: {length}\r\n\r\n"
+            ),
+            body.as_str(),
+            406,
+            "event stream",
+        ),
+        (
+            format!("POST /mcp HTTP/2\r\n{json}Content-Length: {length}\r\n\r\n"),
+            body.as_str(),
+            505,
+            "HTTP/1.1",
+        ),
+        (
+            format!("POST /mcp HTTP/1.1\r\n{json}Content-Length: {length}\r\n"),
+            "",
+            400,
+            "inside its headers",
+        ),
+    ] {
+        let refused = raw(&served, &head, sent);
+        assert_eq!(refused.status, status, "{head:?}: {}", refused.body);
+        assert!(refused.body.contains(why), "{head:?}: {}", refused.body);
+    }
+}
+
 /// **Progress is an event stream** (P8): a call carrying a token is
 /// answered as events, increasing progress first and its answer last,
 /// unbuffered by a proxy.

@@ -1,0 +1,1 @@
+{"method":"completion/complete","params":{"ref":{"type":"ref/prompt","name":"day-panchanga"},"argument":{"name":"festivals","value":""},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":10}
