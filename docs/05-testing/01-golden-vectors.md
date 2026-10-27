@@ -277,7 +277,12 @@ explained rather than a failure or a silent adoption.
     `conformance-baseline` sets it. Under the SDK's window a day may
     hold none, one or two of each, because a rise and the next are about
     24 h 50 m apart. Found 2026-09-07 by `cargo xtask panchanga`
-    (`03-design/panchanga-day-conventions.md`, §9).
+    (`03-design/panchanga-day-conventions.md`, §9). The first at or after
+    midnight is the next civil day's when the Moon does not rise or set
+    in this one, as four of the 108 do, so the knob searches two days
+    from the midnight and keeps the first of each (found 2026-10-27 by
+    `crates/sdk/tests/baseline_panchanga_day.rs`, which holds all 104
+    outside the range-edge days).
 
 19. The tithi's number. The engine numbers a tithi one to thirty through
     the lunar month; the SDK's catalogue numbers it one to fifteen
