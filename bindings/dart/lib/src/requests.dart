@@ -489,7 +489,7 @@ final class ChartFoundRequest extends _Request {
 
   final DignityRequest? dignities;
 
-  final DossierOptions? dossier;
+  final DossierRequest? dossier;
 
   final List<DrawingAsked> drawings;
 
@@ -525,7 +525,7 @@ final class ChartFoundRequest extends _Request {
 
   final MasaPraveshaRequest? masaPravesha;
 
-  final PartnerMatching? matching;
+  final MatchingRequest? matching;
 
   final MidpointRequest? midpoints;
 
@@ -573,7 +573,7 @@ final class ChartFoundRequest extends _Request {
 
   final bool? vimshopaka;
 
-  final AspectRequest? westernAspects;
+  final WesternAspectRequest? westernAspects;
 
   final ConfigurationRequest? westernConfigurations;
 
@@ -746,11 +746,11 @@ final class ResearchRequest extends _Request {
 
   final int? depth;
 
-  final Design? design;
+  final ResearchDesign? design;
 
   final ResearchHolds holds;
 
-  final Referents? referents;
+  final ResearchReferents? referents;
 
   final Object? rules;
 
@@ -760,7 +760,7 @@ final class ResearchRequest extends _Request {
 
   final StudyKind study;
 
-  final List<SubjectAsked>? subjects;
+  final List<ResearchSubject>? subjects;
 
   final Object? test;
 
@@ -1096,44 +1096,6 @@ enum AyanaReckoning implements _Keyed {
   final String key;
 }
 
-/// What a dossier writes and how.
-final class DossierOptions extends _Request {
-  const DossierOptions({
-    this.at,
-    this.dashaDepth,
-    this.preset = DossierPreset.full,
-    this.sections,
-    this.utcOffsetSeconds,
-  });
-
-  /// The "now" a dated dossier is read at, a UTC Julian day: the running dasha periods are marked and their branch expanded. Date-free when left out.
-  final double? at;
-
-  /// How many levels a dasha timeline is written to, one up; every level computed when left out.
-  final int? dashaDepth;
-
-  /// The sections when `sections` is left out.
-  final DossierPreset preset;
-
-  /// The sections to write, by key, in the dossier's own order; the preset's when left out. Every one named must be carried.
-  final List<String>? sections;
-
-  /// The clock instants are written in, seconds east of UTC; UTC when left out, and a chart request's own clock for its `dossier` record.
-  final int? utcOffsetSeconds;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    if (at case final atValue?) 'at': atValue,
-    if (dashaDepth case final dashaDepthValue?) 'dashaDepth': dashaDepthValue,
-    'preset': preset.key,
-    if (sections case final sectionsValue?) 'sections': sectionsValue,
-    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
-  };
-
-  @override
-  List<Object?> get _fields => [at, dashaDepth, preset, sections, utcOffsetSeconds];
-}
-
 /// A drawing: a layout of a divisional chart.
 final class DrawingAsked extends _Request {
   const DrawingAsked({
@@ -1335,44 +1297,6 @@ final class KpRequest extends _Request {
 
   @override
   List<Object?> get _fields => [anyAyanamsha, clock, number];
-}
-
-/// A match against a partner's birth, as a binding asks it: the partner, the side the partner stands on, every chart of the batch on the other, and the rules of each system.
-final class PartnerMatching extends _Request {
-  const PartnerMatching({
-    this.kuja,
-    required this.partner,
-    required this.partnerRole,
-    this.porutham = const PoruthamRules(twoSignStar: TwoSignStar.groomEarlier, deerghaBeyond: DeerghaBeyond.thirteenth, lordsFriendship: LordsFriendship.mutual),
-    this.rules = const KootaRules(equalVarna: EqualVarna.whole, devaBride: DevaBride.four, bhakootLift: BhakootLift.anyOne, nadiDosha: NadiDosha.any, gana: GanaPoints.daivajnaManohara, vashya: VashyaPoints.verse),
-  });
-
-  /// The readings the Kuja dosha is computed under; the verse's own when left out.
-  final KujaRules? kuja;
-
-  /// Whose birth every chart is matched with.
-  final Partner partner;
-
-  /// The side the partner stands on; every chart stands on the other.
-  final MatchRole partnerRole;
-
-  /// The readings the ten considerations are computed under; the chapter's own when left out.
-  final PoruthamRules porutham;
-
-  /// The readings the kootas are computed under; the sources' own when left out.
-  final KootaRules rules;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    if (kuja case final kujaValue?) 'kuja': kujaValue._wire,
-    'partner': partner._wire,
-    'partnerRole': partnerRole.key,
-    'porutham': porutham._wire,
-    'rules': rules._wire,
-  };
-
-  @override
-  List<Object?> get _fields => [kuja, partner, partnerRole, porutham, rules];
 }
 
 /// What the equal distances are asked: how far from the axis a planet may stand.
@@ -1599,29 +1523,6 @@ final class TithiPraveshaRequest extends _Request {
   List<Object?> get _fields => [rule, through];
 }
 
-/// What an aspect table is asked: which aspects, under which orbs.
-final class AspectRequest extends _Request {
-  const AspectRequest({
-    this.aspects = const [WesternAspect.conjunction, WesternAspect.semiSextile, WesternAspect.semiSquare, WesternAspect.sextile, WesternAspect.square, WesternAspect.trine, WesternAspect.sesquiquadrate, WesternAspect.quincunx, WesternAspect.opposition],
-    this.orbs,
-  });
-
-  /// The aspects looked for; Leo's nine unless a caller names fewer.
-  final List<WesternAspect> aspects;
-
-  /// How wide each may be.
-  final OrbModel? orbs;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'aspects': [for (final e0 in aspects) e0.key],
-    if (orbs case final orbsValue?) 'orbs': orbsValue._wire,
-  };
-
-  @override
-  List<Object?> get _fields => [aspects, orbs];
-}
-
 /// What a chart's configurations are asked, as a binding sends them: the [`AspectRequest`] the shapes are read over and the [`ConfigurationRules`], side by side in one record, each defaulted.
 final class ConfigurationRequest extends _Request {
   const ConfigurationRequest({
@@ -1804,29 +1705,6 @@ final class BirthAsked extends _Request {
   List<Object?> get _fields => [altitudeM, instant, latitudeDeg, longitudeDeg, uncertaintyMinutes, utcOffsetSeconds];
 }
 
-/// Who is in which group, and inside which strata the labels may move.
-final class Design extends _Request {
-  const Design({
-    required this.groups,
-    this.strata,
-  });
-
-  /// Each chart's group, `0..groups`, in the matrix's order.
-  final List<int> groups;
-
-  /// Each chart's stratum, when the study's exchangeability holds only inside strata (a birth decade, a region, a sex). The labels are shuffled within each stratum, strata in ascending key order.
-  final List<int>? strata;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'groups': groups,
-    if (strata case final strataValue?) 'strata': strataValue,
-  };
-
-  @override
-  List<Object?> get _fields => [groups, strata];
-}
-
 /// When a rule counts as holding on a chart.
 enum ResearchHolds implements _Keyed {
   /// It is formed and its cancellations do not undo it: present, and not fully cancelled. A rule is its conditions *and* its cancellations, so this is the default.
@@ -1839,29 +1717,6 @@ enum ResearchHolds implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
-}
-
-/// Where a self-matched study reads each person besides their event (`research.md` §1.4, C367): time-stratified referents (Janes, Sheppard and Lumley, *Epidemiology* 16, 2005). The life is cut into windows of `window_days` from birth; the event's window is read at the event and every `step_days` either side of it inside the window. The windows are fixed before the event is known, which is what keeps the referents from biasing the estimate, and none starts before birth.
-final class Referents extends _Request {
-  const Referents({
-    required this.stepDays,
-    required this.windowDays,
-  });
-
-  /// The days between a person's instants.
-  final double stepDays;
-
-  /// Each window's length in days; a person's instants are those of their event's window.
-  final double windowDays;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'stepDays': stepDays,
-    'windowDays': windowDays,
-  };
-
-  @override
-  List<Object?> get _fields => [stepDays, windowDays];
 }
 
 /// What the shuffled-event null keeps (`research.md` §1.4).
@@ -1892,27 +1747,6 @@ enum StudyKind implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
-}
-
-/// A subject as a binding writes it.
-final class SubjectAsked extends _Request {
-  const SubjectAsked({
-    required this.birth,
-    required this.event,
-  });
-
-  final BirthAsked birth;
-
-  final double event;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'birth': birth._wire,
-    'event': event,
-  };
-
-  @override
-  List<Object?> get _fields => [birth, event];
 }
 
 /// A period already running, as the overlap rules read it: the parts of an earlier [`Ashauch`] they need.
@@ -2700,59 +2534,6 @@ final class DignityRules extends _Request {
   List<Object?> get _fields => [terms, triplicities];
 }
 
-/// What each dignity and debility is worth.
-final class Scores extends _Request {
-  const Scores({
-    this.detriment = -5,
-    this.exaltation = 4,
-    this.face = 1,
-    this.fall = -4,
-    this.house = 5,
-    this.peregrine = -5,
-    this.term = 2,
-    this.triplicity = 3,
-  });
-
-  /// In its detriment.
-  final int detriment;
-
-  /// In its exaltation.
-  final int exaltation;
-
-  /// In its own face.
-  final int face;
-
-  /// In its fall.
-  final int fall;
-
-  /// In its own house.
-  final int house;
-
-  /// Peregrine: in none of its five dignities.
-  final int peregrine;
-
-  /// In its own term.
-  final int term;
-
-  /// In its triplicity.
-  final int triplicity;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'detriment': detriment,
-    'exaltation': exaltation,
-    'face': face,
-    'fall': fall,
-    'house': house,
-    'peregrine': peregrine,
-    'term': term,
-    'triplicity': triplicity,
-  };
-
-  @override
-  List<Object?> get _fields => [detriment, exaltation, face, fall, house, peregrine, term, triplicity];
-}
-
 /// A named list of sections; presets choose sections and never thin them.
 enum DossierPreset implements _Keyed {
   /// Every section the document carries.
@@ -2820,29 +2601,6 @@ final class PointAskedValue extends PointAsked {
 
   @override
   List<Object?> get _fields => [value];
-}
-
-/// Where a life's cycle starts: a planet, and the year of life its first period begins.
-final class CycleStart extends _Request {
-  const CycleStart({
-    required this.planet,
-    required this.year,
-  });
-
-  /// The planet whose period begins then.
-  final Graha planet;
-
-  /// The year of life it begins, from 1.
-  final int year;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'planet': planet.key,
-    'year': year,
-  };
-
-  @override
-  List<Object?> get _fields => [planet, year];
 }
 
 /// A varshphal list as a reader writes it: row `y − 1` is year of life `y`, and its entry `h − 1` the house natal house `h` reaches that year (`03-design/lalkitab.md` §3.6). The SDK does not ship the book's list.
@@ -3063,8 +2821,8 @@ final class KootaRules extends _Request {
 }
 
 /// What was asked.
-final class Question extends _Request {
-  const Question({
+final class PrashnaQuestion extends _Request {
+  const PrashnaQuestion({
     this.house,
     this.number,
     this.tense = PrashnaTense.unspecified,
@@ -3108,47 +2866,6 @@ enum AngleMethod implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
-}
-
-/// The contacts as a request spells them.
-final class ContactsAsked extends _Request {
-  const ContactsAsked({
-    this.aspects,
-    required this.from,
-    this.grahas,
-    this.mutual,
-    this.parallels,
-    this.points,
-    required this.to,
-  });
-
-  final List<int>? aspects;
-
-  final double from;
-
-  final List<Graha>? grahas;
-
-  final bool? mutual;
-
-  final ParallelRequest? parallels;
-
-  final List<PointAsked>? points;
-
-  final double to;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    if (aspects case final aspectsValue?) 'aspects': aspectsValue,
-    'from': from,
-    if (grahas case final grahasValue?) 'grahas': [for (final e0 in grahasValue) e0.key],
-    if (mutual case final mutualValue?) 'mutual': mutualValue,
-    if (parallels case final parallelsValue?) 'parallels': parallelsValue._wire,
-    if (points case final pointsValue?) 'points': [for (final e0 in pointsValue) e0._wire],
-    'to': to,
-  };
-
-  @override
-  List<Object?> get _fields => [aspects, from, grahas, mutual, parallels, points, to];
 }
 
 /// The direction's arc as a request spells it.
@@ -3219,79 +2936,13 @@ enum YearMeasure implements _Keyed {
   final String key;
 }
 
-/// The baseline engine's cascade around the chart's instant: everything [`BaselineRequest`] takes but the reported time, which is the chart's.
-final class BaselineAsked extends _Request {
-  const BaselineAsked({
-    this.accuracy = BirthTimeAccuracy.approximate,
-    this.coverage = 0.8,
-    this.dasha = const DashaAsked(),
-    this.events = const [],
-    this.sex,
-    required this.uncertaintyMinutes,
-  });
-
-  /// How far the reported time is trusted.
-  final BirthTimeAccuracy accuracy;
-
-  /// The share of the posterior the intervals hold, 0.5 to 0.99.
-  final double coverage;
-
-  /// The dasha the event fit reads, the baseline engine's where left out.
-  final DashaAsked dasha;
-
-  /// The dated events.
-  final List<LifeEvent> events;
-
-  /// The child's sex, for the tattva prior; none skips it.
-  final Sex? sex;
-
-  /// The window's half-width, minutes, 1 to 720.
-  final double uncertaintyMinutes;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'accuracy': accuracy.key,
-    'coverage': coverage,
-    'dasha': dasha._wire,
-    'events': [for (final e0 in events) e0._wire],
-    if (sex case final sexValue?) 'sex': sexValue.key,
-    'uncertaintyMinutes': uncertaintyMinutes,
-  };
-
-  @override
-  List<Object?> get _fields => [accuracy, coverage, dasha, events, sex, uncertaintyMinutes];
-}
-
-/// What the family remembers of the birth, and the readings it is weighed under.
-final class CircumstanceAsked extends _Request {
-  const CircumstanceAsked({
-    this.facts = const Facts(),
-    this.rules = const CircumstanceRules(moonSees: MoonSees.anyAspect, sunFallen: SunFallen.ninthOrEighth, presentationBy: PresentationBy.risingSign, betweenBy: BetweenBy.degree, outside: OutsideHalf.visible),
-  });
-
-  /// The facts given; one left out is read and not weighed.
-  final Facts facts;
-
-  /// The readings; the texts' own when left out.
-  final CircumstanceRules rules;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'facts': facts._wire,
-    'rules': rules._wire,
-  };
-
-  @override
-  List<Object?> get _fields => [facts, rules];
-}
-
 /// What [`conception`] reads under: the purifier's rules, which judge the conception's lagna, and each report's own.
 final class ConceptionRules extends _Request {
   const ConceptionRules({
     this.moon = const ConceptionMoonRules(count: ConceptionCount.nextAfterDvadashamsha, rising: ConceptionRising.sign, pisces: ConceptionPisces.either),
     this.nisheka = const NishekaRules(month: NishekaMonth.thirtyDays, mandiAt: NishekaMandi.start, ninth: NinthBhava.sripati, saturn: SaturnTerm.longitude, invisibleHalf: InvisibleHalf.byLongitude),
     this.pranapadaHouse = const PranapadaHouseRules(pranapada: PranapadaRule.verse, count: HouseCount.sign, firstAuspicious: false),
-    this.purifier = const RectificationRules(native: RectificationSpecies.human, pranapada: true, gulika: true, moon: true, gulikaExtension: GulikaExtension.whenTwoFail, purifyAs: PurifyAs.bar, pranapadaRule: PranapadaRule.verse, gulikaAt: GulikaAt.end, seedMinutes: 1.0),
+    this.purifier,
   });
 
   /// `CONCEPTION_MOON`'s.
@@ -3304,41 +2955,18 @@ final class ConceptionRules extends _Request {
   final PranapadaHouseRules pranapadaHouse;
 
   /// The purifier's rules (v. 29: the conception's lagna is purified "as before").
-  final RectificationRules purifier;
+  final PurifierRules? purifier;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     'moon': moon._wire,
     'nisheka': nisheka._wire,
     'pranapadaHouse': pranapadaHouse._wire,
-    'purifier': purifier._wire,
+    if (purifier case final purifierValue?) 'purifier': purifierValue._wire,
   };
 
   @override
   List<Object?> get _fields => [moon, nisheka, pranapadaHouse, purifier];
-}
-
-/// The purifier over the minutes either side of the chart's instant.
-final class Purify extends _Request {
-  const Purify({
-    required this.minutes,
-    this.rules = const RectificationRules(native: RectificationSpecies.human, pranapada: true, gulika: true, moon: true, gulikaExtension: GulikaExtension.whenTwoFail, purifyAs: PurifyAs.bar, pranapadaRule: PranapadaRule.verse, gulikaAt: GulikaAt.end, seedMinutes: 1.0),
-  });
-
-  /// How far either side of the chart's instant the window runs, minutes: more than none, and at most half of [`teistro_rectification::LONGEST_HOURS`].
-  final double minutes;
-
-  /// The purifier's readings; the texts' own when left out.
-  final RectificationRules rules;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'minutes': minutes,
-    'rules': rules._wire,
-  };
-
-  @override
-  List<Object?> get _fields => [minutes, rules];
 }
 
 /// The Shiva Svarodaya's nadis and tattvas over the minutes either side of the chart's instant.
@@ -4942,87 +4570,6 @@ enum BirthTimeAccuracy implements _Keyed {
   final String key;
 }
 
-/// The dasha the baseline's event fit reads: each member the baseline engine's own ([`baseline_dasha_rules`]) where left out, so a request names only what it changes.
-final class DashaAsked extends _Request {
-  const DashaAsked({
-    this.afterCycle,
-    this.ashtottariGrouping,
-    this.balance,
-    this.birthPeriod,
-    this.seedOverflow,
-    this.yearLength,
-  });
-
-  /// What is answered past the end of the cycle.
-  final AfterCycle? afterCycle;
-
-  /// How Ashtottari's lords share the nakshatras.
-  final AshtottariGrouping? ashtottariGrouping;
-
-  /// How the balance is measured.
-  final Balance? balance;
-
-  /// How the birth period is divided among its sub-periods.
-  final BirthPeriod? birthPeriod;
-
-  /// What a seed outside a conditional cycle does.
-  final SeedOverflow? seedOverflow;
-
-  /// The length of a year.
-  final YearLength? yearLength;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    if (afterCycle case final afterCycleValue?) 'afterCycle': afterCycleValue.key,
-    if (ashtottariGrouping case final ashtottariGroupingValue?) 'ashtottariGrouping': ashtottariGroupingValue.key,
-    if (balance case final balanceValue?) 'balance': balanceValue.key,
-    if (birthPeriod case final birthPeriodValue?) 'birthPeriod': birthPeriodValue.key,
-    if (seedOverflow case final seedOverflowValue?) 'seedOverflow': seedOverflowValue.key,
-    if (yearLength case final yearLengthValue?) 'yearLength': yearLengthValue.key,
-  };
-
-  @override
-  List<Object?> get _fields => [afterCycle, ashtottariGrouping, balance, birthPeriod, seedOverflow, yearLength];
-}
-
-/// What the family remembers of the birth. Every fact is optional, and a clause whose fact is absent is reported and not weighed.
-final class Facts extends _Request {
-  const Facts({
-    this.attendants,
-    this.fatherPresent,
-    this.oil,
-    this.presentation,
-    this.wick,
-  });
-
-  /// The women who attended (V.22).
-  final Attendants? attendants;
-
-  /// Whether the father was there at the birth (V.1–2).
-  final bool? fatherPresent;
-
-  /// How full the lamp's oil was (V.18).
-  final LampLevel? oil;
-
-  /// What came first (V.17).
-  final BirthPresentation? presentation;
-
-  /// How much of the lamp's wick was left (V.18).
-  final LampLevel? wick;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    if (attendants case final attendantsValue?) 'attendants': attendantsValue._wire,
-    if (fatherPresent case final fatherPresentValue?) 'fatherPresent': fatherPresentValue,
-    if (oil case final oilValue?) 'oil': oilValue.key,
-    if (presentation case final presentationValue?) 'presentation': presentationValue.key,
-    if (wick case final wickValue?) 'wick': wickValue.key,
-  };
-
-  @override
-  List<Object?> get _fields => [attendants, fatherPresent, oil, presentation, wick];
-}
-
 /// The knobs `CIRCUMSTANCE` takes, one per crux.
 final class CircumstanceRules extends _Request {
   const CircumstanceRules({
@@ -5153,64 +4700,6 @@ final class PranapadaHouseRules extends _Request {
 
   @override
   List<Object?> get _fields => [count, firstAuspicious, pranapada];
-}
-
-/// What a rectification is asked to apply: the purifier's knobs, one per crux, and the step that seeds the edge search.
-final class RectificationRules extends _Request {
-  const RectificationRules({
-    this.gulika = true,
-    this.gulikaAt = GulikaAt.end,
-    this.gulikaExtension = GulikaExtension.whenTwoFail,
-    this.moon = true,
-    this.native = RectificationSpecies.human,
-    this.pranapada = true,
-    this.pranapadaRule = PranapadaRule.verse,
-    this.purifyAs = PurifyAs.bar,
-    this.seedMinutes = 1.0,
-  });
-
-  /// Whether Gulika may purify (v. 75).
-  final bool gulika;
-
-  /// Which end of Saturn's eighth is Gulika (X5).
-  final GulikaAt gulikaAt;
-
-  /// When Gulika's 7th, its navamsha and that navamsha's 7th also purify, as v. 76 attaches them to Gulika alone (X6, X7).
-  final GulikaExtension gulikaExtension;
-
-  /// Whether the Moon may purify (v. 75).
-  final bool moon;
-
-  /// The species v. 77 and v. 78 name, which decides the houses that purify: a human's are the sign and its trines.
-  final RectificationSpecies native;
-
-  /// Whether the pranapada may purify (v. 74).
-  final bool pranapada;
-
-  /// How the pranapada is reckoned (X2, X3).
-  final PranapadaRule pranapadaRule;
-
-  /// Whether a lagna no purifier holds is removed or only weighed (X8).
-  final PurifyAs purifyAs;
-
-  /// The seed step, in minutes: the window is sampled this often and every change between two samples is found exactly (X15). It must be shorter than the briefest run a clause holds, which the verse's pranapada sets at six minutes a sign.
-  final double seedMinutes;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'gulika': gulika,
-    'gulikaAt': gulikaAt.key,
-    'gulikaExtension': gulikaExtension.key,
-    'moon': moon,
-    'native': native.key,
-    'pranapada': pranapada,
-    'pranapadaRule': pranapadaRule.key,
-    'purifyAs': purifyAs.key,
-    'seedMinutes': seedMinutes,
-  };
-
-  @override
-  List<Object?> get _fields => [gulika, gulikaAt, gulikaExtension, moon, native, pranapada, pranapadaRule, purifyAs, seedMinutes];
 }
 
 /// The readings the ishṭa-devatā is given under.
@@ -8080,34 +7569,6 @@ enum DatePrecision implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
-}
-
-/// The women who attended, as many as the family can say.
-final class Attendants extends _Request {
-  const Attendants({
-    this.inside,
-    this.outside,
-    this.total,
-  });
-
-  /// How many inside the room.
-  final int? inside;
-
-  /// How many outside it.
-  final int? outside;
-
-  /// How many in all.
-  final int? total;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    if (inside case final insideValue?) 'inside': insideValue,
-    if (outside case final outsideValue?) 'outside': outsideValue,
-    if (total case final totalValue?) 'total': totalValue,
-  };
-
-  @override
-  List<Object?> get _fields => [inside, outside, total];
 }
 
 /// How much of the lamp's oil or wick was left, at the three points V.18's gloss names: a sign's start, its middle and its end.

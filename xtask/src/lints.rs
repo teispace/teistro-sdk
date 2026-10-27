@@ -1023,6 +1023,10 @@ const NODE_FACADES: &[(&str, &str)] = &[
         "the layer takes a `place` and calendar dates and writes the wire's coordinates and day numbers",
     ),
     (
+        "ResearchSubject",
+        "a birth as the layer's `ResearchBirth`, a `place` of `{ latitude, longitude, altitude }`, which it writes as the wire's `BirthAsked` (`latitudeDeg`, `longitudeDeg`, `altitudeM`)",
+    ),
+    (
         "SankalpaRequest",
         "the layer takes a `place` and writes the wire's `latitudeDeg` and `longitudeDeg`",
     ),
@@ -1052,6 +1056,10 @@ const PYTHON_FACADES: &[(&str, &str)] = &[
     (
         "MasaPraveshaRequest",
         "the layer takes a `place` in the parts `found` takes and writes the residence",
+    ),
+    (
+        "MatchingRequest",
+        "its partner is the layer's `SynastryPartner`, an `Observer` and a snake-case offset, which it writes as the wire's `Partner`",
     ),
     (
         "MuhurtaRequest",

@@ -1890,13 +1890,7 @@ final class ResearchArea extends _Area {
     ResearchHolds holds = ResearchHolds.standing,
   }) => _researchTested(
     _run('TIMED', rules, holds, <String, Object?>{
-      'subjects': [
-        for (final subject in subjects)
-          <String, Object?>{
-            'birth': subject.birth._record,
-            'event': subject.event,
-          },
-      ],
+      'subjects': [for (final subject in subjects) subject._wire],
       'dasha': dasha.fullKey,
       'depth': depth,
       'shuffle': shuffle.key,
@@ -9179,6 +9173,9 @@ final class WesternAspectRequest {
   };
 
   String get _json => jsonEncode(_record);
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// The aspect configurations to find in every chart
@@ -9558,6 +9555,9 @@ final class MatchingRequest {
   };
 
   String get _json => jsonEncode(_record);
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// The five exceptions of VI.32–33 that lift a bad Bhakoot, each a clause
@@ -18817,13 +18817,16 @@ final class DossierRequest {
   /// request's own when left out.
   final int? utcOffsetSeconds;
 
-  String get _json => jsonEncode(<String, Object?>{
+  String get _json => jsonEncode(_wire);
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     if (sections != null) 'sections': [for (final s in sections!) s.key],
     if (preset != null) 'preset': preset!.key,
     if (at != null) 'at': at,
     if (dashaDepth != null) 'dashaDepth': dashaDepth,
     if (utcOffsetSeconds != null) 'utcOffsetSeconds': utcOffsetSeconds,
-  });
+  };
 }
 
 /// Each batch's dossiers, parsed once however many charts read them.
@@ -23348,6 +23351,12 @@ final class ResearchSubject extends _Value {
 
   @override
   List<Object?> get _fields => [birth, event];
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
+    'birth': birth._record,
+    'event': event,
+  };
 }
 
 /// Where a self-matched study reads each person besides their event: the
@@ -23366,6 +23375,9 @@ final class ResearchReferents extends _Value {
 
   @override
   List<Object?> get _fields => [windowDays, stepDays];
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// Who is in which group, one label per birth, and the strata the labels
@@ -23383,6 +23395,9 @@ final class ResearchDesign extends _Value {
 
   @override
   List<Object?> get _fields => [groups, strata];
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// What a design's groups are compared by.
@@ -24202,6 +24217,9 @@ final class PurifierRules {
     if (gulikaAt case final gulikaAt?) 'gulikaAt': gulikaAt.key,
     if (seedMinutes case final minutes?) 'seedMinutes': minutes,
   };
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// The purifier over the [minutes] either side of the chart's instant.
@@ -24343,9 +24361,6 @@ final class LifeEvent {
     if (confidence case final confidence?) 'confidence': confidence.key,
     'heldOut': heldOut,
   };
-
-  /// Its JSON, as the SDK reads it.
-  Object? get _wire => _record;
 }
 
 /// The Vimshottari the baseline's event fit reads. A reading left null is

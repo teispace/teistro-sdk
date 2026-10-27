@@ -14,13 +14,13 @@ import java.util.Objects;
  * @param facts The facts given; one left out is read and not weighed. Null leaves the SDK's default.
  * @param rules The readings; the texts' own when left out. Null leaves the SDK's default.
  */
-public record CircumstanceAsked(Facts facts, CircumstanceRules rules) implements RequestJson {
+public record CircumstanceRequest(BirthFacts facts, CircumstanceRules rules) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
      */
-    public CircumstanceAsked() {
+    public CircumstanceRequest() {
         this(null, null);
     }
 
@@ -34,9 +34,9 @@ public record CircumstanceAsked(Facts facts, CircumstanceRules rules) implements
         return new Builder();
     }
 
-    /** Builds a {@link CircumstanceAsked} a field at a time. */
+    /** Builds a {@link CircumstanceRequest} a field at a time. */
     public static final class Builder {
-        private Facts facts;
+        private BirthFacts facts;
         private CircumstanceRules rules;
 
         private Builder() {}
@@ -47,7 +47,7 @@ public record CircumstanceAsked(Facts facts, CircumstanceRules rules) implements
          * @param facts The facts given; one left out is read and not weighed. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder facts(Facts facts) {
+        public Builder facts(BirthFacts facts) {
             this.facts = facts;
             return this;
         }
@@ -69,22 +69,22 @@ public record CircumstanceAsked(Facts facts, CircumstanceRules rules) implements
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public CircumstanceAsked build() {
-            return new CircumstanceAsked(facts, rules);
+        public CircumstanceRequest build() {
+            return new CircumstanceRequest(facts, rules);
         }
     }
 
     /**
-     * A {@code CircumstanceAsked} from its JSON, as {@code Json.read} answers it.
+     * A {@code CircumstanceRequest} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static CircumstanceAsked of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "CircumstanceAsked");
-        return new CircumstanceAsked(
-            Read.orNull(json.get("facts"), present -> Facts.of(present)),
+    public static CircumstanceRequest of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "CircumstanceRequest");
+        return new CircumstanceRequest(
+            Read.orNull(json.get("facts"), present -> BirthFacts.of(present)),
             Read.orNull(json.get("rules"), present -> CircumstanceRules.of(present)));
     }
 

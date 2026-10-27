@@ -18,13 +18,13 @@ import java.util.Objects;
  * @param seedOverflow What a seed outside a conditional cycle does. Null leaves the SDK's default.
  * @param yearLength The length of a year. Null leaves the SDK's default.
  */
-public record DashaAsked(AfterCycle afterCycle, AshtottariGrouping ashtottariGrouping, com.teispace.teistro.Balance balance, BirthPeriod birthPeriod, SeedOverflow seedOverflow, YearLength yearLength) implements RequestJson {
+public record BaselineDashaRules(AfterCycle afterCycle, AshtottariGrouping ashtottariGrouping, com.teispace.teistro.Balance balance, BirthPeriod birthPeriod, SeedOverflow seedOverflow, YearLength yearLength) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
      */
-    public DashaAsked() {
+    public BaselineDashaRules() {
         this(null, null, null, null, null, null);
     }
 
@@ -38,7 +38,7 @@ public record DashaAsked(AfterCycle afterCycle, AshtottariGrouping ashtottariGro
         return new Builder();
     }
 
-    /** Builds a {@link DashaAsked} a field at a time. */
+    /** Builds a {@link BaselineDashaRules} a field at a time. */
     public static final class Builder {
         private AfterCycle afterCycle;
         private AshtottariGrouping ashtottariGrouping;
@@ -121,27 +121,27 @@ public record DashaAsked(AfterCycle afterCycle, AshtottariGrouping ashtottariGro
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public DashaAsked build() {
-            return new DashaAsked(afterCycle, ashtottariGrouping, balance, birthPeriod, seedOverflow, yearLength);
+        public BaselineDashaRules build() {
+            return new BaselineDashaRules(afterCycle, ashtottariGrouping, balance, birthPeriod, seedOverflow, yearLength);
         }
     }
 
     /**
-     * A {@code DashaAsked} from its JSON, as {@code Json.read} answers it.
+     * A {@code BaselineDashaRules} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static DashaAsked of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "DashaAsked");
-        return new DashaAsked(
-            Read.orNull(json.get("afterCycle"), present -> Read.member(present, "DashaAsked.afterCycle", AfterCycle::byKey)),
-            Read.orNull(json.get("ashtottariGrouping"), present -> Read.member(present, "DashaAsked.ashtottariGrouping", AshtottariGrouping::byKey)),
-            Read.orNull(json.get("balance"), present -> Read.member(present, "DashaAsked.balance", com.teispace.teistro.Balance::byKey)),
-            Read.orNull(json.get("birthPeriod"), present -> Read.member(present, "DashaAsked.birthPeriod", BirthPeriod::byKey)),
-            Read.orNull(json.get("seedOverflow"), present -> Read.member(present, "DashaAsked.seedOverflow", SeedOverflow::byKey)),
-            Read.orNull(json.get("yearLength"), present -> Read.member(present, "DashaAsked.yearLength", YearLength::byKey)));
+    public static BaselineDashaRules of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "BaselineDashaRules");
+        return new BaselineDashaRules(
+            Read.orNull(json.get("afterCycle"), present -> Read.member(present, "BaselineDashaRules.afterCycle", AfterCycle::byKey)),
+            Read.orNull(json.get("ashtottariGrouping"), present -> Read.member(present, "BaselineDashaRules.ashtottariGrouping", AshtottariGrouping::byKey)),
+            Read.orNull(json.get("balance"), present -> Read.member(present, "BaselineDashaRules.balance", com.teispace.teistro.Balance::byKey)),
+            Read.orNull(json.get("birthPeriod"), present -> Read.member(present, "BaselineDashaRules.birthPeriod", BirthPeriod::byKey)),
+            Read.orNull(json.get("seedOverflow"), present -> Read.member(present, "BaselineDashaRules.seedOverflow", SeedOverflow::byKey)),
+            Read.orNull(json.get("yearLength"), present -> Read.member(present, "BaselineDashaRules.yearLength", YearLength::byKey)));
     }
 
     @Override

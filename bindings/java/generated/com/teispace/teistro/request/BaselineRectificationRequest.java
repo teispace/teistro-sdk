@@ -18,7 +18,7 @@ import java.util.Objects;
  * @param sex The child's sex, for the tattva prior; none skips it. Null leaves the SDK's default.
  * @param uncertaintyMinutes The window's half-width, minutes, 1 to 720.
  */
-public record BaselineAsked(BirthTimeAccuracy accuracy, Double coverage, DashaAsked dasha, List<LifeEvent> events, com.teispace.teistro.Sex sex, double uncertaintyMinutes) implements RequestJson {
+public record BaselineRectificationRequest(BirthTimeAccuracy accuracy, Double coverage, BaselineDashaRules dasha, List<LifeEvent> events, com.teispace.teistro.Sex sex, double uncertaintyMinutes) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -26,7 +26,7 @@ public record BaselineAsked(BirthTimeAccuracy accuracy, Double coverage, DashaAs
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public BaselineAsked {
+    public BaselineRectificationRequest {
         events = events == null ? null : List.copyOf(events);
     }
 
@@ -36,7 +36,7 @@ public record BaselineAsked(BirthTimeAccuracy accuracy, Double coverage, DashaAs
      *
      * @param uncertaintyMinutes The window's half-width, minutes, 1 to 720.
      */
-    public BaselineAsked(double uncertaintyMinutes) {
+    public BaselineRectificationRequest(double uncertaintyMinutes) {
         this(null, null, null, null, null, uncertaintyMinutes);
     }
 
@@ -50,11 +50,11 @@ public record BaselineAsked(BirthTimeAccuracy accuracy, Double coverage, DashaAs
         return new Builder();
     }
 
-    /** Builds a {@link BaselineAsked} a field at a time. */
+    /** Builds a {@link BaselineRectificationRequest} a field at a time. */
     public static final class Builder {
         private BirthTimeAccuracy accuracy;
         private Double coverage;
-        private DashaAsked dasha;
+        private BaselineDashaRules dasha;
         private List<LifeEvent> events;
         private com.teispace.teistro.Sex sex;
         private Double uncertaintyMinutes;
@@ -89,7 +89,7 @@ public record BaselineAsked(BirthTimeAccuracy accuracy, Double coverage, DashaAs
          * @param dasha The dasha the event fit reads, the baseline engine's where left out. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder dasha(DashaAsked dasha) {
+        public Builder dasha(BaselineDashaRules dasha) {
             this.dasha = dasha;
             return this;
         }
@@ -133,27 +133,27 @@ public record BaselineAsked(BirthTimeAccuracy accuracy, Double coverage, DashaAs
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public BaselineAsked build() {
-            return new BaselineAsked(accuracy, coverage, dasha, events, sex, Objects.requireNonNull(uncertaintyMinutes, "`BaselineAsked.uncertaintyMinutes` is required"));
+        public BaselineRectificationRequest build() {
+            return new BaselineRectificationRequest(accuracy, coverage, dasha, events, sex, Objects.requireNonNull(uncertaintyMinutes, "`BaselineRectificationRequest.uncertaintyMinutes` is required"));
         }
     }
 
     /**
-     * A {@code BaselineAsked} from its JSON, as {@code Json.read} answers it.
+     * A {@code BaselineRectificationRequest} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static BaselineAsked of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "BaselineAsked");
-        return new BaselineAsked(
-            Read.orNull(json.get("accuracy"), present -> Read.member(present, "BaselineAsked.accuracy", BirthTimeAccuracy::byKey)),
-            Read.orNull(json.get("coverage"), present -> Read.number(present, "BaselineAsked.coverage")),
-            Read.orNull(json.get("dasha"), present -> DashaAsked.of(present)),
-            Read.orNull(json.get("events"), present -> Read.list(present, "BaselineAsked.events", item0 -> LifeEvent.of(item0))),
-            Read.orNull(json.get("sex"), present -> Read.member(present, "BaselineAsked.sex", com.teispace.teistro.Sex::byKey)),
-            Read.number(Read.required(json.get("uncertaintyMinutes"), "BaselineAsked.uncertaintyMinutes"), "BaselineAsked.uncertaintyMinutes"));
+    public static BaselineRectificationRequest of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "BaselineRectificationRequest");
+        return new BaselineRectificationRequest(
+            Read.orNull(json.get("accuracy"), present -> Read.member(present, "BaselineRectificationRequest.accuracy", BirthTimeAccuracy::byKey)),
+            Read.orNull(json.get("coverage"), present -> Read.number(present, "BaselineRectificationRequest.coverage")),
+            Read.orNull(json.get("dasha"), present -> BaselineDashaRules.of(present)),
+            Read.orNull(json.get("events"), present -> Read.list(present, "BaselineRectificationRequest.events", item0 -> LifeEvent.of(item0))),
+            Read.orNull(json.get("sex"), present -> Read.member(present, "BaselineRectificationRequest.sex", com.teispace.teistro.Sex::byKey)),
+            Read.number(Read.required(json.get("uncertaintyMinutes"), "BaselineRectificationRequest.uncertaintyMinutes"), "BaselineRectificationRequest.uncertaintyMinutes"));
     }
 
     @Override

@@ -16,7 +16,7 @@ import java.util.Objects;
  * @param pranapadaHouse `PRANAPADA_HOUSE`'s. Null leaves the SDK's default.
  * @param purifier The purifier's rules (v. 29: the conception's lagna is purified "as before"). Null leaves the SDK's default.
  */
-public record ConceptionRules(ConceptionMoonRules moon, NishekaRules nisheka, PranapadaHouseRules pranapadaHouse, RectificationRules purifier) implements RequestJson {
+public record ConceptionRules(ConceptionMoonRules moon, NishekaRules nisheka, PranapadaHouseRules pranapadaHouse, PurifierRules purifier) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -41,7 +41,7 @@ public record ConceptionRules(ConceptionMoonRules moon, NishekaRules nisheka, Pr
         private ConceptionMoonRules moon;
         private NishekaRules nisheka;
         private PranapadaHouseRules pranapadaHouse;
-        private RectificationRules purifier;
+        private PurifierRules purifier;
 
         private Builder() {}
 
@@ -84,7 +84,7 @@ public record ConceptionRules(ConceptionMoonRules moon, NishekaRules nisheka, Pr
          * @param purifier The purifier's rules (v. 29: the conception's lagna is purified "as before"). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder purifier(RectificationRules purifier) {
+        public Builder purifier(PurifierRules purifier) {
             this.purifier = purifier;
             return this;
         }
@@ -113,7 +113,7 @@ public record ConceptionRules(ConceptionMoonRules moon, NishekaRules nisheka, Pr
             Read.orNull(json.get("moon"), present -> ConceptionMoonRules.of(present)),
             Read.orNull(json.get("nisheka"), present -> NishekaRules.of(present)),
             Read.orNull(json.get("pranapadaHouse"), present -> PranapadaHouseRules.of(present)),
-            Read.orNull(json.get("purifier"), present -> RectificationRules.of(present)));
+            Read.orNull(json.get("purifier"), present -> PurifierRules.of(present)));
     }
 
     @Override

@@ -197,6 +197,7 @@ enum DirectionAsked {
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "schema", schemars(rename = "ProgressionContacts"))]
 struct ContactsAsked {
     from: f64,
     to: f64,

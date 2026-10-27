@@ -175,10 +175,14 @@ import type {
   AshauchTable,
   AshauchTradition,
   BaselinePeriod,
+  BaselineRectificationRequest,
   BirthDate,
+  BirthFacts,
   ChakraVowel,
   DayFifth,
   DignityRequest,
+  DignityScores,
+  DossierRequest,
   FirstYearRequest,
   FortitudeRequest,
   HarmonicRequest,
@@ -195,6 +199,7 @@ import type {
   MasaDashaRules,
   MasaPhalaRules,
   MaseshaRules,
+  MatchingRequest,
   MidpointRequest,
   MuhurtaNative,
   MuhurtaRanking,
@@ -214,9 +219,12 @@ import type {
   PrashnaRules,
   ProgressionsRequest,
   PublishedSet,
+  PurifierRules,
   RectificationRequest,
   RemedyRequest,
   RemedyRules,
+  ResearchDesign,
+  ResearchReferents,
   ReturnLongitude,
   RuleRequest,
   SadeSatiRequest,
@@ -228,6 +236,7 @@ import type {
   TithiRule,
   VarsheshaRules,
   VedhaMotion,
+  WesternAspectRequest,
   YogaRules,
 } from './requests.js';
 
@@ -242,6 +251,13 @@ export type * from './requests.js';
 export { Partile, Siege, Terms } from './catalogue.js';
 export type { Confidence } from './records.js';
 export type { CivilTime, ZoneSpec } from './types.js';
+/** One subject of an event study: a birth and the event of its life. */
+export interface ResearchSubject {
+  readonly birth: ResearchBirth;
+  /** When the event happened, a Julian day in UTC. */
+  readonly event: number;
+}
+
 /**
  * A date in a calendar, without naming the fields a call fills in: the era
  * and the era year are what the call resolves them to, and the resolution
@@ -1272,18 +1288,6 @@ export interface Term {
   readonly end: number;
 }
 
-/** What each dignity and debility is worth; Lilly's (p. 115) for any left out. */
-export interface DignityScores {
-  readonly house: number;
-  readonly exaltation: number;
-  readonly triplicity: number;
-  readonly term: number;
-  readonly face: number;
-  readonly detriment: number;
-  readonly fall: number;
-  readonly peregrine: number;
-}
-
 /** The dignities and debilities a planet holds where it stands. */
 export interface EssentialDignity {
   readonly house: boolean;
@@ -1633,25 +1637,6 @@ export interface Considerations {
 export type ProgressionSpan = 'DAY' | 'SYNODIC_MONTH' | 'SIDEREAL_MONTH' | 'YEAR' | { readonly DAYS: number };
 
 /**
- * Which Western aspects to look for, and under which orbs
- * (`03-design/western-aspects.md`). Leo's nine under his orbs (*How to
- * Judge a Nativity*, pp. 43–47) when every field is absent (C240).
- *
- * @example
- * const leo: WesternAspectRequest = {};
- * const lilly: WesternAspectRequest = {
- *   aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'OPPOSITION'],
- *   orbs: { model: 'MOIETIES', orbs: [{ graha: 'SUN', orbDeg: 17 }, { graha: 'MOON', orbDeg: 12.5 }] },
- * };
- */
-export interface WesternAspectRequest {
-  /** The aspects looked for, each once; Leo's nine by default. */
-  readonly aspects?: readonly WesternAspect[];
-  /** The orb model; Leo's by default. */
-  readonly orbs?: WesternOrbModel;
-}
-
-/**
  * The aspect configurations to find in every chart
  * (`03-design/western-configurations.md`): the aspect table the shapes
  * are made of, as a {@link WesternAspectRequest}, and how many bodies in
@@ -1772,36 +1757,6 @@ export interface HarmonicChart {
   readonly points: readonly HarmonicPlaced[];
   /** The pairs meeting within the orb, closest first. */
   readonly rows: readonly HarmonicRow[];
-}
-
-/**
- * A match with a partner's birth (`03-design/matching.md`): the partner,
- * founded once for the whole batch under the context's sidereal profile;
- * the side the partner stands on, every chart standing on the other; and
- * the rules, each the source's own when absent.
- *
- * @example
- * const chart = ctx.chart.found({
- *   instant, place, utcOffsetSeconds,
- *   matching: { partner: { instant: 2447892.5, place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 } }, partnerRole: 'BRIDE' },
- * });
- * for (const row of chart.matching?.kootas ?? []) console.log(row.reading.koota, row.points, row.maxPoints);
- */
-export interface MatchingRequest {
-  /** The partner's birth. */
-  readonly partner: {
-    readonly instant: number;
-    readonly place: ChartPlace;
-    /** The partner's clock, seconds east of UTC; 0 when absent. */
-    readonly utcOffsetSeconds?: number;
-  };
-  /** The side the partner stands on: Varna and Gana read differently when the two swap. */
-  readonly partnerRole: 'BRIDE' | 'GROOM';
-  readonly rules?: KootaRules;
-  /** The readings the ten considerations are computed under. */
-  readonly porutham?: PoruthamRules;
-  /** The readings the Kuja dosha is computed under. */
-  readonly kuja?: KujaRules;
 }
 
 /** The five exceptions of VI.32–33 that lift a bad Bhakoot, each a clause that holds or not. */
@@ -2907,28 +2862,6 @@ export type DossierSection =
   /** Each graha's transit at each of the request's `gochar` instants. */
   | 'GOCHAR';
 
-/**
- * How every chart is written as a dossier for a language model
- * (`03-design/dossier.md`). Every member is optional: `{}` writes every
- * section the chart carries, date-free, on the request's clock.
- *
- * @example
- * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, dashas: ['VIMSHOTTARI'], dossier: { sections: ['GRAHAS', 'DASHAS', 'SHADBALA'], at: today } });
- * const prompt = `${question}\n\n${chart.dossier}`;
- */
-export interface DossierRequest {
-  /** The sections, written in the dossier's own order; one a flag computes widens the request with it. */
-  readonly sections?: readonly DossierSection[];
-  /** `FULL`, every section the chart carries (the default), or `FAMILY`: chart, grahas, dashas and panchanga. */
-  readonly preset?: 'FULL' | 'FAMILY';
-  /** The "now", a UTC Julian day: the running dasha periods marked and their branch expanded. */
-  readonly at?: number;
-  /** How many levels a dasha timeline is written to, 1 up. */
-  readonly dashaDepth?: number;
-  /** The clock instants are written in, seconds east of UTC; the request's own when left out. */
-  readonly utcOffsetSeconds?: number;
-}
-
 /** One year's tithi pravesha: the instant, the solar return it was chosen around and which rule chose it. */
 export interface TithiPravesha {
   /** The year, `1` the first return, a year after birth, as `Pravesha.year` counts it. */
@@ -3402,79 +3335,6 @@ export interface SvarodayaRun extends Interval {
   readonly tattva: 'PRITHVI' | 'JALA' | 'AGNI' | 'VAYU' | 'AKASHA';
   /** The sex v. 60 gives the nadi. */
   readonly sex: 'MALE' | 'FEMALE';
-}
-
-/** The purifier's readings, one knob per crux (`03-design/rectification.md`). */
-export interface PurifierRules {
-  /** The species vv. 77–78 name, which decides the houses that purify: a human's are the sign and its trines. */
-  readonly native?: 'HUMAN' | 'BEAST' | 'BIRD' | 'CREEPER';
-  /** Whether the pranapada may purify (v. 74). */
-  readonly pranapada?: boolean;
-  /** Whether Gulika may purify (v. 75). */
-  readonly gulika?: boolean;
-  /** Whether the Moon may purify (v. 75). */
-  readonly moon?: boolean;
-  /** When Gulika's 7th, its navamsha and that navamsha's 7th also purify (X6, X7). */
-  readonly gulikaExtension?: 'WHEN_TWO_FAIL' | 'ALWAYS' | 'NEVER';
-  /** Whether a lagna no purifier holds is removed or only weighed (X8). */
-  readonly purifyAs?: 'BAR' | 'WEIGHT';
-  /** How the pranapada is reckoned (X2, X3). */
-  readonly pranapadaRule?: 'VERSE' | 'PRINTED_EXAMPLE' | 'SDK_POINT';
-  /** Which end of Saturn's eighth is Gulika (X5). */
-  readonly gulikaAt?: 'END' | 'START';
-  /** The seed step, minutes, shorter than the briefest run a clause holds (X15). */
-  readonly seedMinutes?: number;
-}
-
-/** What the family remembers of the birth (*Brihat Jataka* ch. V). */
-export interface BirthFacts {
-  /** Whether the father was there at the birth (V.1–2). */
-  readonly fatherPresent?: boolean;
-  /** What came first (V.17). */
-  readonly presentation?: 'HEAD' | 'FEET' | 'HANDS';
-  /** How full the lamp's oil was (V.18). */
-  readonly oil?: 'FULL' | 'HALF' | 'SPENT';
-  /** How much of the lamp's wick was left (V.18). */
-  readonly wick?: 'FULL' | 'HALF' | 'SPENT';
-  /** The women who attended (V.22). */
-  readonly attendants?: { readonly total?: number; readonly inside?: number; readonly outside?: number };
-}
-
-/** The baseline engine's cascade around the chart's instant (X20–X26). */
-export interface BaselineRectificationRequest {
-  /** The window's half-width, minutes, 1 to 720. */
-  readonly uncertaintyMinutes: number;
-  /** How far the reported time is trusted; `'APPROXIMATE'` when left out. */
-  readonly accuracy?: 'EXACT' | 'APPROXIMATE' | 'RECTIFIED' | 'UNKNOWN';
-  /** The dated events. */
-  readonly events?: readonly {
-    /** The caller's name for it, which its notes carry back. */
-    readonly id?: string;
-    readonly kind: LifeEventKind;
-    /** When it began, a Julian day (UTC). */
-    readonly on: number;
-    /** When it ended, where it ran over days. */
-    readonly until?: number;
-    /** How finely `on` is known, where `until` is not given. */
-    readonly precision?: 'DAY' | 'MONTH' | 'YEAR';
-    /** How sure the family is. */
-    readonly confidence?: 'CERTAIN' | 'PROBABLE' | 'UNCERTAIN';
-    /** Kept out of the fit and tested against it afterwards instead. */
-    readonly heldOut?: boolean;
-  }[];
-  /** The child's sex, for the tattva prior; none skips it. */
-  readonly sex?: 'MALE' | 'FEMALE';
-  /** The share of the posterior the intervals hold, 0.5 to 0.99; 0.8 when left out. */
-  readonly coverage?: number;
-  /** The dasha the event fit reads, each member the baseline engine's own where left out. */
-  readonly dasha?: {
-    readonly balance?: Balance;
-    readonly yearLength?: 'JULIAN_365_25' | 'SAVANA_360' | 'SIDEREAL' | 'TROPICAL' | 'LUNAR' | 'NAKSHATRA_324';
-    readonly birthPeriod?: 'COMPRESSED' | 'ELAPSED';
-    readonly afterCycle?: 'END' | 'REPEAT';
-    readonly seedOverflow?: 'WRAP_TO_START' | 'REJECT';
-    readonly ashtottariGrouping?: 'THREE_EACH' | 'FOUR_AND_THREE';
-  };
 }
 
 /** One test of the lagna against one point of one purifier. */
@@ -8199,12 +8059,6 @@ export interface ResearchBirths {
   readonly uncertaintyStepMinutes?: number;
 }
 
-/** Who is in which group, one label per birth, and the strata labels move within. */
-export interface ResearchDesign {
-  readonly groups: readonly number[];
-  readonly strata?: readonly number[];
-}
-
 /** A permutation test of a design's groups. */
 export interface ResearchGroupTest {
   readonly seed: ResearchSeed;
@@ -8233,23 +8087,6 @@ export interface ResearchEventTest {
   readonly parallelism?: ResearchParallelism;
   /** The most instants a transit rule may have the sky read at; a study above it is refused. The SDK's default when absent. */
   readonly maxPairs?: number;
-}
-
-/** One subject of an event study: a birth and the event of its life. */
-export interface ResearchSubject {
-  readonly birth: ResearchBirth;
-  /** When the event happened, a Julian day in UTC. */
-  readonly event: number;
-}
-
-/**
- * Where a self-matched study reads each person besides their event: the
- * life cut into windows of `windowDays` from birth, the event's window
- * read every `stepDays` (time-stratified referents).
- */
-export interface ResearchReferents {
-  readonly windowDays: number;
-  readonly stepDays: number;
 }
 
 /** A predicate's charts in one group. */

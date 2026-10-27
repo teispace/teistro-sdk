@@ -252,6 +252,7 @@ pub enum Parallelism {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ResearchDesign"))]
 pub struct Design {
     /// Each chart's group, `0..groups`, in the matrix's order.
     pub groups: Vec<u16>,

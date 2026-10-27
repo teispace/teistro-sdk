@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param planet The planet whose period begins then.
  * @param year The year of life it begins, from 1.
  */
-public record CycleStart(com.teispace.teistro.Graha planet, int year) implements RequestJson {
+public record LalKitabCycle(com.teispace.teistro.Graha planet, int year) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -22,23 +22,23 @@ public record CycleStart(com.teispace.teistro.Graha planet, int year) implements
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public CycleStart {
-        Objects.requireNonNull(planet, "`CycleStart.planet` is required");
-        Read.range(year, "CycleStart.year", 0L, 65535L);
+    public LalKitabCycle {
+        Objects.requireNonNull(planet, "`LalKitabCycle.planet` is required");
+        Read.range(year, "LalKitabCycle.year", 0L, 65535L);
     }
 
     /**
-     * A {@code CycleStart} from its JSON, as {@code Json.read} answers it.
+     * A {@code LalKitabCycle} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static CycleStart of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "CycleStart");
-        return new CycleStart(
-            Read.member(Read.required(json.get("planet"), "CycleStart.planet"), "CycleStart.planet", com.teispace.teistro.Graha::byKey),
-            Read.int32(Read.required(json.get("year"), "CycleStart.year"), "CycleStart.year"));
+    public static LalKitabCycle of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "LalKitabCycle");
+        return new LalKitabCycle(
+            Read.member(Read.required(json.get("planet"), "LalKitabCycle.planet"), "LalKitabCycle.planet", com.teispace.teistro.Graha::byKey),
+            Read.int32(Read.required(json.get("year"), "LalKitabCycle.year"), "LalKitabCycle.year"));
     }
 
     @Override

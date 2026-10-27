@@ -26,7 +26,7 @@ import java.util.Objects;
  * @param test The {@code test} field. Null leaves the SDK's default.
  * @param uncertaintyStepMinutes The {@code uncertaintyStepMinutes} field. Null leaves the SDK's default.
  */
-public record ResearchRequest(List<BirthAsked> births, Object control, String dasha, Integer depth, Design design, ResearchHolds holds, Referents referents, Object rules, ResearchEventShuffle shuffle, List<Long> strata, StudyKind study, List<SubjectAsked> subjects, Object test, Double uncertaintyStepMinutes) implements RequestJson {
+public record ResearchRequest(List<BirthAsked> births, Object control, String dasha, Integer depth, ResearchDesign design, ResearchHolds holds, ResearchReferents referents, Object rules, ResearchEventShuffle shuffle, List<Long> strata, StudyKind study, List<ResearchSubject> subjects, Object test, Double uncertaintyStepMinutes) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -72,14 +72,14 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
         private Object control;
         private String dasha;
         private Integer depth;
-        private Design design;
+        private ResearchDesign design;
         private ResearchHolds holds;
-        private Referents referents;
+        private ResearchReferents referents;
         private Object rules;
         private ResearchEventShuffle shuffle;
         private List<Long> strata;
         private StudyKind study;
-        private List<SubjectAsked> subjects;
+        private List<ResearchSubject> subjects;
         private Object test;
         private Double uncertaintyStepMinutes;
 
@@ -135,7 +135,7 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
          * @param design Who is in which group, and inside which strata the labels may move. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder design(Design design) {
+        public Builder design(ResearchDesign design) {
             this.design = design;
             return this;
         }
@@ -157,7 +157,7 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
          * @param referents Where a self-matched study reads each person besides their event (`research.md` §1.4, C367): time-stratified referents (Janes, Sheppard and Lumley, *Epidemiology* 16, 2005). The life is cut into windows of `window_days` from birth; the event's window is read at the event and every `step_days` either side of it inside the window. The windows are fixed before the event is known, which is what keeps the referents from biasing the estimate, and none starts before birth. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder referents(Referents referents) {
+        public Builder referents(ResearchReferents referents) {
             this.referents = referents;
             return this;
         }
@@ -212,7 +212,7 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
          * @param subjects A subject as a binding writes it. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder subjects(List<SubjectAsked> subjects) {
+        public Builder subjects(List<ResearchSubject> subjects) {
             this.subjects = subjects;
             return this;
         }
@@ -264,14 +264,14 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
             Read.orNull(json.get("control"), present -> present),
             Read.orNull(json.get("dasha"), present -> Read.text(present, "ResearchRequest.dasha")),
             Read.orNull(json.get("depth"), present -> Read.int32(present, "ResearchRequest.depth")),
-            Read.orNull(json.get("design"), present -> Design.of(present)),
+            Read.orNull(json.get("design"), present -> ResearchDesign.of(present)),
             Read.orNull(json.get("holds"), present -> Read.member(present, "ResearchRequest.holds", ResearchHolds::byKey)),
-            Read.orNull(json.get("referents"), present -> Referents.of(present)),
+            Read.orNull(json.get("referents"), present -> ResearchReferents.of(present)),
             Read.required(json.get("rules"), "ResearchRequest.rules"),
             Read.orNull(json.get("shuffle"), present -> Read.member(present, "ResearchRequest.shuffle", ResearchEventShuffle::byKey)),
             Read.orNull(json.get("strata"), present -> Read.list(present, "ResearchRequest.strata", item0 -> Read.integer(item0, "ResearchRequest.strata"))),
             Read.member(Read.required(json.get("study"), "ResearchRequest.study"), "ResearchRequest.study", StudyKind::byKey),
-            Read.orNull(json.get("subjects"), present -> Read.list(present, "ResearchRequest.subjects", item0 -> SubjectAsked.of(item0))),
+            Read.orNull(json.get("subjects"), present -> Read.list(present, "ResearchRequest.subjects", item0 -> ResearchSubject.of(item0))),
             Read.orNull(json.get("test"), present -> present),
             Read.orNull(json.get("uncertaintyStepMinutes"), present -> Read.number(present, "ResearchRequest.uncertaintyStepMinutes")));
     }

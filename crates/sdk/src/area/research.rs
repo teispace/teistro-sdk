@@ -641,6 +641,7 @@ pub enum EventShuffle {
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "schema", schemars(rename = "ResearchReferents"))]
 pub struct Referents {
     /// Each window's length in days; a person's instants are those of
     /// their event's window.

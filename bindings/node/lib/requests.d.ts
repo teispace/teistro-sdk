@@ -208,7 +208,7 @@ export interface ChartFoundRequest {
   readonly dashaPhala?: boolean;
   readonly dashas?: readonly (Member<catalogue.DashaSystem> | (string & {}))[];
   readonly dignities?: DignityRequest;
-  readonly dossier?: DossierOptions;
+  readonly dossier?: DossierRequest;
   readonly drawings?: readonly DrawingAsked[];
   readonly fortitudes?: FortitudeRequest;
   readonly gochar?: GocharRequest;
@@ -226,7 +226,7 @@ export interface ChartFoundRequest {
   readonly longitudeDeg: number;
   readonly lots?: LotRequest;
   readonly masaPravesha?: MasaPraveshaRequest;
-  readonly matching?: PartnerMatching;
+  readonly matching?: MatchingRequest;
   readonly midpoints?: MidpointRequest;
   readonly moment?: boolean;
   readonly outerPlanets?: boolean;
@@ -250,7 +250,7 @@ export interface ChartFoundRequest {
   readonly vargas?: readonly Member<catalogue.Varga>[];
   readonly varsha?: VarshaRequest;
   readonly vimshopaka?: boolean;
-  readonly westernAspects?: AspectRequest;
+  readonly westernAspects?: WesternAspectRequest;
   readonly westernConfigurations?: ConfigurationRequest;
   readonly westernHouses?: HouseRequest;
 }
@@ -307,14 +307,14 @@ export interface ResearchRequest {
   readonly control?: unknown;
   readonly dasha?: string | null;
   readonly depth?: number | null;
-  readonly design?: Design | null;
+  readonly design?: ResearchDesign | null;
   readonly holds?: ResearchHolds;
-  readonly referents?: Referents | null;
+  readonly referents?: ResearchReferents | null;
   readonly rules: unknown;
   readonly shuffle?: ResearchEventShuffle | null;
   readonly strata?: readonly number[] | null;
   readonly study: StudyKind;
-  readonly subjects?: readonly SubjectAsked[] | null;
+  readonly subjects?: readonly ResearchSubject[] | null;
   readonly test?: unknown;
   readonly uncertaintyStepMinutes?: number | null;
 }
@@ -602,14 +602,14 @@ export interface ConsiderationRules {
  */
 export interface DignityRequest {
   readonly rules?: DignityRules;
-  readonly scores?: Scores;
+  readonly scores?: DignityScores;
   readonly sectRule?: catalogue.SectRule;
 }
 
 /**
  * What a dossier writes and how.
  */
-export interface DossierOptions {
+export interface DossierRequest {
   /**
    * The "now" a dated dossier is read at, a UTC Julian day: the running dasha periods are marked and their branch expanded. Date-free when left out.
    */
@@ -782,7 +782,7 @@ export interface LalKitabRequest {
   /**
    * Where the cycle starts; the book's general table (Saturn from the first year) when left out.
    */
-  readonly cycle?: CycleStart;
+  readonly cycle?: LalKitabCycle;
   /**
    * The list the year's annual teva is read from; none reads none.
    */
@@ -838,7 +838,7 @@ export interface MasaPraveshaRequest {
 /**
  * A match against a partner's birth, as a binding asks it: the partner, the side the partner stands on, every chart of the batch on the other, and the rules of each system.
  */
-export interface PartnerMatching {
+export interface MatchingRequest {
   /**
    * The readings the Kuja dosha is computed under; the verse's own when left out.
    */
@@ -910,7 +910,7 @@ export interface PrashnaRequest {
   /**
    * What was asked: the house the matter belongs to and the querent's number, each when given.
    */
-  readonly question?: Question;
+  readonly question?: PrashnaQuestion;
   /**
    * The readings; the texts' own when left out.
    */
@@ -923,7 +923,7 @@ export interface PrashnaRequest {
 export interface ProgressionsRequest {
   readonly angles?: AngleMethod;
   readonly at?: number | null;
-  readonly contacts?: ContactsAsked | null;
+  readonly contacts?: ProgressionContacts | null;
   readonly direction?: DirectionAsked;
   readonly rate?: ProgressionRate;
   readonly year?: YearMeasure;
@@ -936,11 +936,11 @@ export interface RectificationRequest {
   /**
    * The baseline engine's cascade around the chart's instant ([`ChartArea::rectify_baseline`]).
    */
-  readonly baseline?: BaselineAsked | null;
+  readonly baseline?: BaselineRectificationRequest | null;
   /**
    * *Brihat Jataka* ch. V's circumstances at the chart's instant ([`ChartArea::circumstance`]).
    */
-  readonly circumstance?: CircumstanceAsked | null;
+  readonly circumstance?: CircumstanceRequest | null;
   /**
    * The pranapada's house, the nisheka and the conception Moon at the chart's instant ([`ChartArea::conception`]).
    */
@@ -948,7 +948,7 @@ export interface RectificationRequest {
   /**
    * The purifier of BPHS ch. 2 vv. 67–78 over a window around the chart's instant ([`ChartArea::rectify`]).
    */
-  readonly purify?: Purify | null;
+  readonly purify?: PurifyRequest | null;
   /**
    * The Shiva Svarodaya's nadis and tattvas around the chart's instant ([`ChartArea::svarodaya`], [`ChartArea::svarodaya_runs`]): a report the text does not make at a birth.
    */
@@ -1142,7 +1142,7 @@ export interface VarshaRequest {
 /**
  * What an aspect table is asked: which aspects, under which orbs.
  */
-export interface AspectRequest {
+export interface WesternAspectRequest {
   /**
    * The aspects looked for; Leo's nine unless a caller names fewer.
    */
@@ -1275,7 +1275,7 @@ export interface BirthAsked {
 /**
  * Who is in which group, and inside which strata the labels may move.
  */
-export interface Design {
+export interface ResearchDesign {
   /**
    * Each chart's group, `0..groups`, in the matrix's order.
    */
@@ -1297,7 +1297,7 @@ export type ResearchHolds = 'STANDING' | 'FORMED';
 /**
  * Where a self-matched study reads each person besides their event (`research.md` §1.4, C367): time-stratified referents (Janes, Sheppard and Lumley, *Epidemiology* 16, 2005). The life is cut into windows of `window_days` from birth; the event's window is read at the event and every `step_days` either side of it inside the window. The windows are fixed before the event is known, which is what keeps the referents from biasing the estimate, and none starts before birth.
  */
-export interface Referents {
+export interface ResearchReferents {
   /**
    * The days between a person's instants.
    */
@@ -1330,7 +1330,7 @@ export type StudyKind = 'COUNTS' | 'COMPARE' | 'EXPECTED' | 'TIMED';
 /**
  * A subject as a binding writes it.
  */
-export interface SubjectAsked {
+export interface ResearchSubject {
   readonly birth: BirthAsked;
   readonly event: number;
 }
@@ -1937,7 +1937,7 @@ export interface DignityRules {
 /**
  * What each dignity and debility is worth.
  */
-export interface Scores {
+export interface DignityScores {
   /**
    * In its detriment.
    */
@@ -2094,7 +2094,7 @@ export type PointAsked = 'LAGNA' | 'MIDHEAVEN' | Member<catalogue.Graha> | Natal
 /**
  * Where a life's cycle starts: a planet, and the year of life its first period begins.
  */
-export interface CycleStart {
+export interface LalKitabCycle {
   /**
    * The planet whose period begins then.
    */
@@ -2288,7 +2288,7 @@ export interface PerfectionRules {
 /**
  * What was asked.
  */
-export interface Question {
+export interface PrashnaQuestion {
   /**
    * The house the matter belongs to, 1 to 12, when the question names one (the kārya bhāva).
    */
@@ -2363,7 +2363,7 @@ export type AngleMethod = 'NAIBOD_RIGHT_ASCENSION' | 'NAIBOD_LONGITUDE' | 'SOLAR
 /**
  * The contacts as a request spells them.
  */
-export interface ContactsAsked {
+export interface ProgressionContacts {
   readonly aspects?: readonly number[] | null;
   readonly from: number;
   readonly grahas?: readonly Member<catalogue.Graha>[] | null;
@@ -2413,7 +2413,7 @@ export type YearMeasure = 'TROPICAL' | 'JULIAN' | 'NOON_SIDEREAL_TIME';
 /**
  * The baseline engine's cascade around the chart's instant: everything [`BaselineRequest`] takes but the reported time, which is the chart's.
  */
-export interface BaselineAsked {
+export interface BaselineRectificationRequest {
   /**
    * How far the reported time is trusted.
    */
@@ -2425,7 +2425,7 @@ export interface BaselineAsked {
   /**
    * The dasha the event fit reads, the baseline engine's where left out.
    */
-  readonly dasha?: DashaAsked;
+  readonly dasha?: BaselineDashaRules;
   /**
    * The dated events.
    */
@@ -2443,11 +2443,11 @@ export interface BaselineAsked {
 /**
  * What the family remembers of the birth, and the readings it is weighed under.
  */
-export interface CircumstanceAsked {
+export interface CircumstanceRequest {
   /**
    * The facts given; one left out is read and not weighed.
    */
-  readonly facts?: Facts;
+  readonly facts?: BirthFacts;
   /**
    * The readings; the texts' own when left out.
    */
@@ -2473,13 +2473,13 @@ export interface ConceptionRules {
   /**
    * The purifier's rules (v. 29: the conception's lagna is purified "as before").
    */
-  readonly purifier?: RectificationRules;
+  readonly purifier?: PurifierRules;
 }
 
 /**
  * The purifier over the minutes either side of the chart's instant.
  */
-export interface Purify {
+export interface PurifyRequest {
   /**
    * How far either side of the chart's instant the window runs, minutes: more than none, and at most half of [`teistro_rectification::LONGEST_HOURS`].
    */
@@ -2487,7 +2487,7 @@ export interface Purify {
   /**
    * The purifier's readings; the texts' own when left out.
    */
-  readonly rules?: RectificationRules;
+  readonly rules?: PurifierRules;
 }
 
 /**
@@ -3661,7 +3661,7 @@ export type BirthTimeAccuracy = 'EXACT' | 'APPROXIMATE' | 'RECTIFIED' | 'UNKNOWN
 /**
  * The dasha the baseline's event fit reads: each member the baseline engine's own ([`baseline_dasha_rules`]) where left out, so a request names only what it changes.
  */
-export interface DashaAsked {
+export interface BaselineDashaRules {
   /**
    * What is answered past the end of the cycle.
    */
@@ -3725,11 +3725,11 @@ export interface LifeEvent {
 /**
  * What the family remembers of the birth. Every fact is optional, and a clause whose fact is absent is reported and not weighed.
  */
-export interface Facts {
+export interface BirthFacts {
   /**
    * The women who attended (V.22).
    */
-  readonly attendants?: Attendants | null;
+  readonly attendants?: AttendantFacts | null;
   /**
    * Whether the father was there at the birth (V.1–2).
    */
@@ -3839,7 +3839,7 @@ export interface PranapadaHouseRules {
 /**
  * What a rectification is asked to apply: the purifier's knobs, one per crux, and the step that seeds the edge search.
  */
-export interface RectificationRules {
+export interface PurifierRules {
   /**
    * Whether Gulika may purify (v. 75).
    */
@@ -5636,7 +5636,7 @@ export type DatePrecision = 'DAY' | 'MONTH' | 'YEAR';
 /**
  * The women who attended, as many as the family can say.
  */
-export interface Attendants {
+export interface AttendantFacts {
   /**
    * How many inside the room.
    */

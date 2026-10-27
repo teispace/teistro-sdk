@@ -1,6 +1,6 @@
 package com.teispace.teistro;
 
-import com.teispace.teistro.request.Design;
+import com.teispace.teistro.request.ResearchDesign;
 import com.teispace.teistro.request.ResearchEventShuffle;
 import com.teispace.teistro.request.RuleRequest;
 import java.util.LinkedHashMap;
@@ -56,7 +56,7 @@ public final class ResearchArea {
      * @return the counts
      * @throws TeistroException naming the field, as {@code research.design}
      */
-    public ResearchCounts counts(List<ResearchBirth> births, RuleRequest rules, Design design,
+    public ResearchCounts counts(List<ResearchBirth> births, RuleRequest rules, ResearchDesign design,
             ResearchOptions options) {
         return ResearchReads.counts(ResearchReads.run(context, "COUNTS", rules,
                 fields("births", ResearchReads.births(births), "design", design), options));
@@ -74,7 +74,7 @@ public final class ResearchArea {
      * @return the rows
      * @throws TeistroException naming the field, as {@code research.test.seed}
      */
-    public ResearchTested compare(List<ResearchBirth> births, RuleRequest rules, Design design,
+    public ResearchTested compare(List<ResearchBirth> births, RuleRequest rules, ResearchDesign design,
             ResearchGroupTest test, ResearchOptions options) {
         return ResearchReads.tested(ResearchReads.run(context, "COMPARE", rules,
                 fields("births", ResearchReads.births(births), "design", design, "test", ResearchReads.test(test)),

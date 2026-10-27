@@ -15,7 +15,7 @@ import java.util.Objects;
  * @param outside How many outside it. Null leaves the SDK's default.
  * @param total How many in all. Null leaves the SDK's default.
  */
-public record Attendants(Integer inside, Integer outside, Integer total) implements RequestJson {
+public record AttendantFacts(Integer inside, Integer outside, Integer total) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -23,15 +23,15 @@ public record Attendants(Integer inside, Integer outside, Integer total) impleme
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public Attendants {
+    public AttendantFacts {
         if (inside != null) {
-            Read.range(inside, "Attendants.inside", 0L, 255L);
+            Read.range(inside, "AttendantFacts.inside", 0L, 255L);
         }
         if (outside != null) {
-            Read.range(outside, "Attendants.outside", 0L, 255L);
+            Read.range(outside, "AttendantFacts.outside", 0L, 255L);
         }
         if (total != null) {
-            Read.range(total, "Attendants.total", 0L, 255L);
+            Read.range(total, "AttendantFacts.total", 0L, 255L);
         }
     }
 
@@ -40,7 +40,7 @@ public record Attendants(Integer inside, Integer outside, Integer total) impleme
      * default stands.
      *
      */
-    public Attendants() {
+    public AttendantFacts() {
         this(null, null, null);
     }
 
@@ -54,7 +54,7 @@ public record Attendants(Integer inside, Integer outside, Integer total) impleme
         return new Builder();
     }
 
-    /** Builds a {@link Attendants} a field at a time. */
+    /** Builds a {@link AttendantFacts} a field at a time. */
     public static final class Builder {
         private Integer inside;
         private Integer outside;
@@ -101,24 +101,24 @@ public record Attendants(Integer inside, Integer outside, Integer total) impleme
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public Attendants build() {
-            return new Attendants(inside, outside, total);
+        public AttendantFacts build() {
+            return new AttendantFacts(inside, outside, total);
         }
     }
 
     /**
-     * A {@code Attendants} from its JSON, as {@code Json.read} answers it.
+     * A {@code AttendantFacts} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static Attendants of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "Attendants");
-        return new Attendants(
-            Read.orNull(json.get("inside"), present -> Read.int32(present, "Attendants.inside")),
-            Read.orNull(json.get("outside"), present -> Read.int32(present, "Attendants.outside")),
-            Read.orNull(json.get("total"), present -> Read.int32(present, "Attendants.total")));
+    public static AttendantFacts of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "AttendantFacts");
+        return new AttendantFacts(
+            Read.orNull(json.get("inside"), present -> Read.int32(present, "AttendantFacts.inside")),
+            Read.orNull(json.get("outside"), present -> Read.int32(present, "AttendantFacts.outside")),
+            Read.orNull(json.get("total"), present -> Read.int32(present, "AttendantFacts.total")));
     }
 
     @Override

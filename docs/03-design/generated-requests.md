@@ -230,7 +230,27 @@ spelled a name otherwise, the layers follow it (`SaturnEighthEnd` is
 is `ReturnLongitude`, Node's `FestivalDayPart` is `DayFifth`).
 `check-lints` holds it: a hand key set with a generated one's keys in
 order under another name fails `layer-does-not-twin-a-request`, unless
-`KEY_SET_TWINS` lists it with its reason. With the names one, six façades
+`KEY_SET_TWINS` lists it with its reason.
+
+**Records had the same twins.** Matching field sets found hand records
+copying generated ones under another name: 22 typed dictionaries in
+Python, a dozen interfaces in Node, and most of Dart's façades kept "for
+their names". Seventeen request records now carry the name the layers
+agreed on (`Facts` is `BirthFacts`, `Design` `ResearchDesign`,
+`Referents` `ResearchReferents`, `Purify` `PurifyRequest`,
+`CircumstanceAsked` `CircumstanceRequest`, `BaselineAsked`
+`BaselineRectificationRequest`, `DossierOptions` `DossierRequest`,
+`PartnerMatching` `MatchingRequest`, `AspectRequest`
+`WesternAspectRequest`, `RectificationRules` `PurifierRules`, and seven
+more). Python's thirteen and Node's nine exact copies are gone. Where a
+layer's copy takes a shape of its own it stays as a façade under the one
+name: Dart's sixteen, Node's `ResearchSubject` (a birth as the layer's
+`ResearchBirth`) and Python's `MatchingRequest` (a `SynastryPartner`).
+Java's main package keeps `DignityScores`, `ResearchReferents` and
+`ResearchSubject` (`SHARED_NAMES`): its `ResearchReferents` takes its two
+doubles in the other order, so a swap would transpose them silently.
+Node's hand `DossierRequest` had refused a section not built in, which
+the SDK reads (an app registers its own); the generated one takes any. With the names one, six façades
 kept only for their names are generated (`PakshiRules`, `NameSounds`,
 `SarvatobhadraRules`, `NishekaRules`, `ConceptionRules`,
 `ConceptionMoonRules`), and the last four gain value equality. Of the

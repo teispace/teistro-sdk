@@ -14,14 +14,14 @@ import java.util.Objects;
  * @param minutes How far either side of the chart's instant the window runs, minutes: more than none, and at most half of `teistro_rectification::LONGEST_HOURS`.
  * @param rules The purifier's readings; the texts' own when left out. Null leaves the SDK's default.
  */
-public record Purify(double minutes, RectificationRules rules) implements RequestJson {
+public record PurifyRequest(double minutes, PurifierRules rules) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
      * @param minutes How far either side of the chart's instant the window runs, minutes: more than none, and at most half of `teistro_rectification::LONGEST_HOURS`.
      */
-    public Purify(double minutes) {
+    public PurifyRequest(double minutes) {
         this(minutes, null);
     }
 
@@ -35,10 +35,10 @@ public record Purify(double minutes, RectificationRules rules) implements Reques
         return new Builder();
     }
 
-    /** Builds a {@link Purify} a field at a time. */
+    /** Builds a {@link PurifyRequest} a field at a time. */
     public static final class Builder {
         private Double minutes;
-        private RectificationRules rules;
+        private PurifierRules rules;
 
         private Builder() {}
 
@@ -59,7 +59,7 @@ public record Purify(double minutes, RectificationRules rules) implements Reques
          * @param rules The purifier's readings; the texts' own when left out. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder rules(RectificationRules rules) {
+        public Builder rules(PurifierRules rules) {
             this.rules = rules;
             return this;
         }
@@ -70,23 +70,23 @@ public record Purify(double minutes, RectificationRules rules) implements Reques
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public Purify build() {
-            return new Purify(Objects.requireNonNull(minutes, "`Purify.minutes` is required"), rules);
+        public PurifyRequest build() {
+            return new PurifyRequest(Objects.requireNonNull(minutes, "`PurifyRequest.minutes` is required"), rules);
         }
     }
 
     /**
-     * A {@code Purify} from its JSON, as {@code Json.read} answers it.
+     * A {@code PurifyRequest} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static Purify of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "Purify");
-        return new Purify(
-            Read.number(Read.required(json.get("minutes"), "Purify.minutes"), "Purify.minutes"),
-            Read.orNull(json.get("rules"), present -> RectificationRules.of(present)));
+    public static PurifyRequest of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "PurifyRequest");
+        return new PurifyRequest(
+            Read.number(Read.required(json.get("minutes"), "PurifyRequest.minutes"), "PurifyRequest.minutes"),
+            Read.orNull(json.get("rules"), present -> PurifierRules.of(present)));
     }
 
     @Override

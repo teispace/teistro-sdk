@@ -18,7 +18,7 @@ import java.util.Objects;
  * @param rate A rate: one `sky` span of the ephemeris measures one `life` span of the native's life, spelled `{"sky": "DAY", "life": "YEAR"}` in a request. Null leaves the SDK's default.
  * @param year How long a year of life is, against the calendar (C236). Null leaves the SDK's default.
  */
-public record ProgressionsRequest(AngleMethod angles, Double at, ContactsAsked contacts, DirectionAsked direction, ProgressionRate rate, YearMeasure year) implements RequestJson {
+public record ProgressionsRequest(AngleMethod angles, Double at, ProgressionContacts contacts, DirectionAsked direction, ProgressionRate rate, YearMeasure year) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -42,7 +42,7 @@ public record ProgressionsRequest(AngleMethod angles, Double at, ContactsAsked c
     public static final class Builder {
         private AngleMethod angles;
         private Double at;
-        private ContactsAsked contacts;
+        private ProgressionContacts contacts;
         private DirectionAsked direction;
         private ProgressionRate rate;
         private YearMeasure year;
@@ -77,7 +77,7 @@ public record ProgressionsRequest(AngleMethod angles, Double at, ContactsAsked c
          * @param contacts The contacts as a request spells them. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder contacts(ContactsAsked contacts) {
+        public Builder contacts(ProgressionContacts contacts) {
             this.contacts = contacts;
             return this;
         }
@@ -138,7 +138,7 @@ public record ProgressionsRequest(AngleMethod angles, Double at, ContactsAsked c
         return new ProgressionsRequest(
             Read.orNull(json.get("angles"), present -> Read.member(present, "ProgressionsRequest.angles", AngleMethod::byKey)),
             Read.orNull(json.get("at"), present -> Read.number(present, "ProgressionsRequest.at")),
-            Read.orNull(json.get("contacts"), present -> ContactsAsked.of(present)),
+            Read.orNull(json.get("contacts"), present -> ProgressionContacts.of(present)),
             Read.orNull(json.get("direction"), present -> DirectionAsked.of(present)),
             Read.orNull(json.get("rate"), present -> ProgressionRate.of(present)),
             Read.orNull(json.get("year"), present -> Read.member(present, "ProgressionsRequest.year", YearMeasure::byKey)));

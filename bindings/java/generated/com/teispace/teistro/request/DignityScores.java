@@ -20,7 +20,7 @@ import java.util.Objects;
  * @param term In its own term. Null leaves the SDK's default.
  * @param triplicity In its triplicity. Null leaves the SDK's default.
  */
-public record Scores(Integer detriment, Integer exaltation, Integer face, Integer fall, Integer house, Integer peregrine, Integer term, Integer triplicity) implements RequestJson {
+public record DignityScores(Integer detriment, Integer exaltation, Integer face, Integer fall, Integer house, Integer peregrine, Integer term, Integer triplicity) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -28,30 +28,30 @@ public record Scores(Integer detriment, Integer exaltation, Integer face, Intege
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public Scores {
+    public DignityScores {
         if (detriment != null) {
-            Read.range(detriment, "Scores.detriment", -128L, 127L);
+            Read.range(detriment, "DignityScores.detriment", -128L, 127L);
         }
         if (exaltation != null) {
-            Read.range(exaltation, "Scores.exaltation", -128L, 127L);
+            Read.range(exaltation, "DignityScores.exaltation", -128L, 127L);
         }
         if (face != null) {
-            Read.range(face, "Scores.face", -128L, 127L);
+            Read.range(face, "DignityScores.face", -128L, 127L);
         }
         if (fall != null) {
-            Read.range(fall, "Scores.fall", -128L, 127L);
+            Read.range(fall, "DignityScores.fall", -128L, 127L);
         }
         if (house != null) {
-            Read.range(house, "Scores.house", -128L, 127L);
+            Read.range(house, "DignityScores.house", -128L, 127L);
         }
         if (peregrine != null) {
-            Read.range(peregrine, "Scores.peregrine", -128L, 127L);
+            Read.range(peregrine, "DignityScores.peregrine", -128L, 127L);
         }
         if (term != null) {
-            Read.range(term, "Scores.term", -128L, 127L);
+            Read.range(term, "DignityScores.term", -128L, 127L);
         }
         if (triplicity != null) {
-            Read.range(triplicity, "Scores.triplicity", -128L, 127L);
+            Read.range(triplicity, "DignityScores.triplicity", -128L, 127L);
         }
     }
 
@@ -60,7 +60,7 @@ public record Scores(Integer detriment, Integer exaltation, Integer face, Intege
      * default stands.
      *
      */
-    public Scores() {
+    public DignityScores() {
         this(null, null, null, null, null, null, null, null);
     }
 
@@ -74,7 +74,7 @@ public record Scores(Integer detriment, Integer exaltation, Integer face, Intege
         return new Builder();
     }
 
-    /** Builds a {@link Scores} a field at a time. */
+    /** Builds a {@link DignityScores} a field at a time. */
     public static final class Builder {
         private Integer detriment;
         private Integer exaltation;
@@ -181,29 +181,29 @@ public record Scores(Integer detriment, Integer exaltation, Integer face, Intege
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public Scores build() {
-            return new Scores(detriment, exaltation, face, fall, house, peregrine, term, triplicity);
+        public DignityScores build() {
+            return new DignityScores(detriment, exaltation, face, fall, house, peregrine, term, triplicity);
         }
     }
 
     /**
-     * A {@code Scores} from its JSON, as {@code Json.read} answers it.
+     * A {@code DignityScores} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static Scores of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "Scores");
-        return new Scores(
-            Read.orNull(json.get("detriment"), present -> Read.int32(present, "Scores.detriment")),
-            Read.orNull(json.get("exaltation"), present -> Read.int32(present, "Scores.exaltation")),
-            Read.orNull(json.get("face"), present -> Read.int32(present, "Scores.face")),
-            Read.orNull(json.get("fall"), present -> Read.int32(present, "Scores.fall")),
-            Read.orNull(json.get("house"), present -> Read.int32(present, "Scores.house")),
-            Read.orNull(json.get("peregrine"), present -> Read.int32(present, "Scores.peregrine")),
-            Read.orNull(json.get("term"), present -> Read.int32(present, "Scores.term")),
-            Read.orNull(json.get("triplicity"), present -> Read.int32(present, "Scores.triplicity")));
+    public static DignityScores of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "DignityScores");
+        return new DignityScores(
+            Read.orNull(json.get("detriment"), present -> Read.int32(present, "DignityScores.detriment")),
+            Read.orNull(json.get("exaltation"), present -> Read.int32(present, "DignityScores.exaltation")),
+            Read.orNull(json.get("face"), present -> Read.int32(present, "DignityScores.face")),
+            Read.orNull(json.get("fall"), present -> Read.int32(present, "DignityScores.fall")),
+            Read.orNull(json.get("house"), present -> Read.int32(present, "DignityScores.house")),
+            Read.orNull(json.get("peregrine"), present -> Read.int32(present, "DignityScores.peregrine")),
+            Read.orNull(json.get("term"), present -> Read.int32(present, "DignityScores.term")),
+            Read.orNull(json.get("triplicity"), present -> Read.int32(present, "DignityScores.triplicity")));
     }
 
     @Override

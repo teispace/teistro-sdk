@@ -67,7 +67,7 @@ import java.util.Objects;
  * @param westernConfigurations What a chart's configurations are asked, as a binding sends them: the `AspectRequest` the shapes are read over and the `ConfigurationRules`, side by side in one record, each defaulted. Null leaves the SDK's default.
  * @param westernHouses What a chart's Western houses are asked with. Null leaves the SDK's default.
  */
-public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, DossierOptions dossier, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, MasaPraveshaRequest masaPravesha, PartnerMatching matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, SarvatobhadraRequest sarvatobhadra, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, TithiPraveshaRequest tithiPravesha, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, AspectRequest westernAspects, ConfigurationRequest westernConfigurations, HouseRequest westernHouses) implements RequestJson {
+public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, DossierRequest dossier, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, MasaPraveshaRequest masaPravesha, MatchingRequest matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, SarvatobhadraRequest sarvatobhadra, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, TithiPraveshaRequest tithiPravesha, int utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, WesternAspectRequest westernAspects, ConfigurationRequest westernConfigurations, HouseRequest westernHouses) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -116,7 +116,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         private Boolean dashaPhala;
         private List<Keyed<com.teispace.teistro.DashaSystem>> dashas;
         private DignityRequest dignities;
-        private DossierOptions dossier;
+        private DossierRequest dossier;
         private List<DrawingAsked> drawings;
         private FortitudeRequest fortitudes;
         private GocharRequest gochar;
@@ -134,7 +134,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         private Double longitudeDeg;
         private LotRequest lots;
         private MasaPraveshaRequest masaPravesha;
-        private PartnerMatching matching;
+        private MatchingRequest matching;
         private MidpointRequest midpoints;
         private Boolean moment;
         private Boolean outerPlanets;
@@ -158,7 +158,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         private List<com.teispace.teistro.Varga> vargas;
         private VarshaRequest varsha;
         private Boolean vimshopaka;
-        private AspectRequest westernAspects;
+        private WesternAspectRequest westernAspects;
         private ConfigurationRequest westernConfigurations;
         private HouseRequest westernHouses;
 
@@ -280,7 +280,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
          * @param dossier What a dossier writes and how. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder dossier(DossierOptions dossier) {
+        public Builder dossier(DossierRequest dossier) {
             this.dossier = dossier;
             return this;
         }
@@ -478,7 +478,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
          * @param matching A match against a partner's birth, as a binding asks it: the partner, the side the partner stands on, every chart of the batch on the other, and the rules of each system. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder matching(PartnerMatching matching) {
+        public Builder matching(MatchingRequest matching) {
             this.matching = matching;
             return this;
         }
@@ -742,7 +742,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
          * @param westernAspects What an aspect table is asked: which aspects, under which orbs. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder westernAspects(AspectRequest westernAspects) {
+        public Builder westernAspects(WesternAspectRequest westernAspects) {
             this.westernAspects = westernAspects;
             return this;
         }
@@ -800,7 +800,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
             Read.orNull(json.get("dashaPhala"), present -> Read.bool(present, "ChartFoundRequest.dashaPhala")),
             Read.orNull(json.get("dashas"), present -> Read.list(present, "ChartFoundRequest.dashas", item0 -> Keyed.of(item0, "ChartFoundRequest.dashas", com.teispace.teistro.DashaSystem::byKey))),
             Read.orNull(json.get("dignities"), present -> DignityRequest.of(present)),
-            Read.orNull(json.get("dossier"), present -> DossierOptions.of(present)),
+            Read.orNull(json.get("dossier"), present -> DossierRequest.of(present)),
             Read.orNull(json.get("drawings"), present -> Read.list(present, "ChartFoundRequest.drawings", item0 -> DrawingAsked.of(item0))),
             Read.orNull(json.get("fortitudes"), present -> FortitudeRequest.of(present)),
             Read.orNull(json.get("gochar"), present -> GocharRequest.of(present)),
@@ -818,7 +818,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
             Read.number(Read.required(json.get("longitudeDeg"), "ChartFoundRequest.longitudeDeg"), "ChartFoundRequest.longitudeDeg"),
             Read.orNull(json.get("lots"), present -> LotRequest.of(present)),
             Read.orNull(json.get("masaPravesha"), present -> MasaPraveshaRequest.of(present)),
-            Read.orNull(json.get("matching"), present -> PartnerMatching.of(present)),
+            Read.orNull(json.get("matching"), present -> MatchingRequest.of(present)),
             Read.orNull(json.get("midpoints"), present -> MidpointRequest.of(present)),
             Read.orNull(json.get("moment"), present -> Read.bool(present, "ChartFoundRequest.moment")),
             Read.orNull(json.get("outerPlanets"), present -> Read.bool(present, "ChartFoundRequest.outerPlanets")),
@@ -842,7 +842,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
             Read.orNull(json.get("vargas"), present -> Read.list(present, "ChartFoundRequest.vargas", item0 -> Read.member(item0, "ChartFoundRequest.vargas", com.teispace.teistro.Varga::byKey))),
             Read.orNull(json.get("varsha"), present -> VarshaRequest.of(present)),
             Read.orNull(json.get("vimshopaka"), present -> Read.bool(present, "ChartFoundRequest.vimshopaka")),
-            Read.orNull(json.get("westernAspects"), present -> AspectRequest.of(present)),
+            Read.orNull(json.get("westernAspects"), present -> WesternAspectRequest.of(present)),
             Read.orNull(json.get("westernConfigurations"), present -> ConfigurationRequest.of(present)),
             Read.orNull(json.get("westernHouses"), present -> HouseRequest.of(present)));
     }

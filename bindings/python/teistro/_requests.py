@@ -48,7 +48,7 @@ __all__ = [
     "AntisciaRequest",
     "ConsiderationRules",
     "DignityRequest",
-    "DossierOptions",
+    "DossierRequest",
     "DrawingAsked",
     "FortitudeRequest",
     "GocharRequest",
@@ -59,7 +59,7 @@ __all__ = [
     "LalKitabRequest",
     "LotRequest",
     "MasaPraveshaRequest",
-    "PartnerMatching",
+    "MatchingRequest",
     "MidpointRequest",
     "ParallelRequest",
     "PerfectionRequest",
@@ -74,7 +74,7 @@ __all__ = [
     "ThemePatch",
     "TithiPraveshaRequest",
     "VarshaRequest",
-    "AspectRequest",
+    "WesternAspectRequest",
     "ConfigurationRequest",
     "HouseRequest",
     "BaselinePeriod",
@@ -83,12 +83,12 @@ __all__ = [
     "BirthDate",
     "NumerologyRules",
     "BirthAsked",
-    "Design",
+    "ResearchDesign",
     "ResearchHolds",
-    "Referents",
+    "ResearchReferents",
     "ResearchEventShuffle",
     "StudyKind",
-    "SubjectAsked",
+    "ResearchSubject",
     "ZoneSpec",
     "ZoneSpecIana",
     "ZoneSpecLocalMean",
@@ -136,13 +136,13 @@ __all__ = [
     "OrbModelMoieties",
     "OrbModelByAspect",
     "DignityRules",
-    "Scores",
+    "DignityScores",
     "DossierPreset",
     "AlmutenRules",
     "AccidentalRules",
     "AccidentalScores",
     "PointAsked",
-    "CycleStart",
+    "LalKitabCycle",
     "VarshphalRows",
     "MasaDashaRules",
     "MaseshaRules",
@@ -154,17 +154,17 @@ __all__ = [
     "PoruthamRules",
     "KootaRules",
     "PerfectionRules",
-    "Question",
+    "PrashnaQuestion",
     "PrashnaRules",
     "AngleMethod",
-    "ContactsAsked",
+    "ProgressionContacts",
     "DirectionAsked",
     "ProgressionRate",
     "YearMeasure",
-    "BaselineAsked",
-    "CircumstanceAsked",
+    "BaselineRectificationRequest",
+    "CircumstanceRequest",
     "ConceptionRules",
-    "Purify",
+    "PurifyRequest",
     "SvarodayaAsked",
     "RemedyRules",
     "AshtakavargaAyusRules",
@@ -266,14 +266,14 @@ __all__ = [
     "WeaknessRules",
     "RateSpan",
     "BirthTimeAccuracy",
-    "DashaAsked",
+    "BaselineDashaRules",
     "LifeEvent",
-    "Facts",
+    "BirthFacts",
     "CircumstanceRules",
     "ConceptionMoonRules",
     "NishekaRules",
     "PranapadaHouseRules",
-    "RectificationRules",
+    "PurifierRules",
     "DevataRules",
     "FunctionalRules",
     "ShantiRules",
@@ -419,7 +419,7 @@ __all__ = [
     "EventConfidence",
     "LifeEventKind",
     "DatePrecision",
-    "Attendants",
+    "AttendantFacts",
     "LampLevel",
     "BirthPresentation",
     "BetweenBy",
@@ -665,7 +665,7 @@ class ChartFoundRequest(TypedDict, total=False):
 
     dignities: DignityRequest
 
-    dossier: DossierOptions
+    dossier: DossierRequest
 
     drawings: Sequence[DrawingAsked]
 
@@ -701,7 +701,7 @@ class ChartFoundRequest(TypedDict, total=False):
 
     masaPravesha: MasaPraveshaRequest
 
-    matching: PartnerMatching
+    matching: MatchingRequest
 
     midpoints: MidpointRequest
 
@@ -749,7 +749,7 @@ class ChartFoundRequest(TypedDict, total=False):
 
     vimshopaka: bool
 
-    westernAspects: AspectRequest
+    westernAspects: WesternAspectRequest
 
     westernConfigurations: ConfigurationRequest
 
@@ -801,11 +801,11 @@ class ResearchRequest(TypedDict, total=False):
 
     depth: Optional[int]
 
-    design: Optional[Design]
+    design: Optional[ResearchDesign]
 
     holds: ResearchHolds
 
-    referents: Optional[Referents]
+    referents: Optional[ResearchReferents]
 
     rules: Required[Any]
 
@@ -815,7 +815,7 @@ class ResearchRequest(TypedDict, total=False):
 
     study: Required[StudyKind]
 
-    subjects: Optional[Sequence[SubjectAsked]]
+    subjects: Optional[Sequence[ResearchSubject]]
 
     test: Any
 
@@ -1067,12 +1067,12 @@ class DignityRequest(TypedDict, total=False):
 
     rules: DignityRules
 
-    scores: Scores
+    scores: DignityScores
 
     sectRule: Union[_catalogue.SectRule, Literal['HORIZON', 'DAYLIGHT', 'DAY', 'NIGHT']]
 
 
-class DossierOptions(TypedDict, total=False):
+class DossierRequest(TypedDict, total=False):
     """What a dossier writes and how."""
 
     at: Optional[float]
@@ -1222,7 +1222,7 @@ class KpRequest(TypedDict, total=False):
 class LalKitabRequest(TypedDict, total=False):
     """What a chart's Lal Kitab is read under: where the 35-year cycle starts, a year of life to read, and the varshphal list its annual teva comes from."""
 
-    cycle: CycleStart
+    cycle: LalKitabCycle
     """Where the cycle starts; the book's general table (Saturn from the first year) when left out."""
 
     varshphal: Optional[VarshphalRows]
@@ -1265,7 +1265,7 @@ class MasaPraveshaRequest(TypedDict, total=False):
     """The year divided, one to two hundred, counted as `Pravesha::year` counts it."""
 
 
-class PartnerMatching(TypedDict, total=False):
+class MatchingRequest(TypedDict, total=False):
     """A match against a partner's birth, as a binding asks it: the partner, the side the partner stands on, every chart of the batch on the other, and the rules of each system."""
 
     kuja: KujaRules
@@ -1317,7 +1317,7 @@ class PerfectionRequest(TypedDict, total=False):
 class PrashnaRequest(TypedDict, total=False):
     """A question put to the chart of its moment, and the readings it is answered under."""
 
-    question: Question
+    question: PrashnaQuestion
     """What was asked: the house the matter belongs to and the querent's number, each when given."""
 
     rules: PrashnaRules
@@ -1331,7 +1331,7 @@ class ProgressionsRequest(TypedDict, total=False):
 
     at: Optional[float]
 
-    contacts: Optional[ContactsAsked]
+    contacts: Optional[ProgressionContacts]
 
     direction: DirectionAsked
 
@@ -1343,16 +1343,16 @@ class ProgressionsRequest(TypedDict, total=False):
 class RectificationRequest(TypedDict, total=False):
     """A chart read as a birth time to rectify."""
 
-    baseline: Optional[BaselineAsked]
+    baseline: Optional[BaselineRectificationRequest]
     """The baseline engine's cascade around the chart's instant (`ChartArea::rectify_baseline`)."""
 
-    circumstance: Optional[CircumstanceAsked]
+    circumstance: Optional[CircumstanceRequest]
     """*Brihat Jataka* ch. V's circumstances at the chart's instant (`ChartArea::circumstance`)."""
 
     conception: Optional[ConceptionRules]
     """The pranapada's house, the nisheka and the conception Moon at the chart's instant (`ChartArea::conception`)."""
 
-    purify: Optional[Purify]
+    purify: Optional[PurifyRequest]
     """The purifier of BPHS ch. 2 vv. 67–78 over a window around the chart's instant (`ChartArea::rectify`)."""
 
     svarodaya: Optional[SvarodayaAsked]
@@ -1517,7 +1517,7 @@ class VarshaRequest(TypedDict, total=False):
     """The readings the sixteen part on, where the source leaves a choice; its own by default."""
 
 
-class AspectRequest(TypedDict, total=False):
+class WesternAspectRequest(TypedDict, total=False):
     """What an aspect table is asked: which aspects, under which orbs."""
 
     aspects: Sequence[Union[_catalogue.WesternAspect, Literal['CONJUNCTION', 'SEMI_SEXTILE', 'SEMI_SQUARE', 'SEXTILE', 'SQUARE', 'TRINE', 'SESQUIQUADRATE', 'QUINCUNX', 'OPPOSITION']]]
@@ -1639,7 +1639,7 @@ class BirthAsked(TypedDict, total=False):
     utcOffsetSeconds: Required[int]
 
 
-class Design(TypedDict, total=False):
+class ResearchDesign(TypedDict, total=False):
     """Who is in which group, and inside which strata the labels may move."""
 
     groups: Required[Sequence[int]]
@@ -1657,7 +1657,7 @@ ResearchHolds: TypeAlias = Literal['STANDING', 'FORMED']
 """
 
 
-class Referents(TypedDict, total=False):
+class ResearchReferents(TypedDict, total=False):
     """Where a self-matched study reads each person besides their event (`research.md` §1.4, C367): time-stratified referents (Janes, Sheppard and Lumley, *Epidemiology* 16, 2005). The life is cut into windows of `window_days` from birth; the event's window is read at the event and every `step_days` either side of it inside the window. The windows are fixed before the event is known, which is what keeps the referents from biasing the estimate, and none starts before birth."""
 
     stepDays: Required[float]
@@ -1686,7 +1686,7 @@ StudyKind: TypeAlias = Literal['COUNTS', 'COMPARE', 'EXPECTED', 'TIMED']
 """
 
 
-class SubjectAsked(TypedDict, total=False):
+class ResearchSubject(TypedDict, total=False):
     """A subject as a binding writes it."""
 
     birth: Required[BirthAsked]
@@ -2193,7 +2193,7 @@ class DignityRules(TypedDict, total=False):
     """Who rules each triplicity."""
 
 
-class Scores(TypedDict, total=False):
+class DignityScores(TypedDict, total=False):
     """What each dignity and debility is worth."""
 
     detriment: int
@@ -2340,7 +2340,7 @@ PointAsked: TypeAlias = "Union[Literal['LAGNA', 'MIDHEAVEN'], Union[_catalogue.G
 """A natal point: `"LAGNA"`, `"MIDHEAVEN"`, a graha's key, or the point as an answer's `to` spells it."""
 
 
-class CycleStart(TypedDict, total=False):
+class LalKitabCycle(TypedDict, total=False):
     """Where a life's cycle starts: a planet, and the year of life its first period begins."""
 
     planet: Required[Union[_catalogue.Graha, str]]
@@ -2485,7 +2485,7 @@ class PerfectionRules(TypedDict, total=False):
     """Whether a contact with a third planet counts only when the planet applying perfects it before leaving its sign, as Lilly's void of course bounds an application (p. 112) and his p. 387 figure reads a void Moon's six contacts as no prohibition (crux C234); `false` counts every contact inside the horizon. It bounds the impediments, a translator's next contact and a collector's."""
 
 
-class Question(TypedDict, total=False):
+class PrashnaQuestion(TypedDict, total=False):
     """What was asked."""
 
     house: Optional[int]
@@ -2544,8 +2544,8 @@ AngleMethod: TypeAlias = Literal['NAIBOD_RIGHT_ASCENSION', 'NAIBOD_LONGITUDE', '
 
 
 # The contacts as a request spells them.
-ContactsAsked = TypedDict(
-    "ContactsAsked",
+ProgressionContacts = TypedDict(
+    "ProgressionContacts",
     {
         "aspects": "Optional[Sequence[int]]",
         "from": "Required[float]",
@@ -2593,7 +2593,7 @@ YearMeasure: TypeAlias = Literal['TROPICAL', 'JULIAN', 'NOON_SIDEREAL_TIME']
 """
 
 
-class BaselineAsked(TypedDict, total=False):
+class BaselineRectificationRequest(TypedDict, total=False):
     """The baseline engine's cascade around the chart's instant: everything `BaselineRequest` takes but the reported time, which is the chart's."""
 
     accuracy: BirthTimeAccuracy
@@ -2602,7 +2602,7 @@ class BaselineAsked(TypedDict, total=False):
     coverage: float
     """The share of the posterior the intervals hold, 0.5 to 0.99."""
 
-    dasha: DashaAsked
+    dasha: BaselineDashaRules
     """The dasha the event fit reads, the baseline engine's where left out."""
 
     events: Sequence[LifeEvent]
@@ -2615,10 +2615,10 @@ class BaselineAsked(TypedDict, total=False):
     """The window's half-width, minutes, 1 to 720."""
 
 
-class CircumstanceAsked(TypedDict, total=False):
+class CircumstanceRequest(TypedDict, total=False):
     """What the family remembers of the birth, and the readings it is weighed under."""
 
-    facts: Facts
+    facts: BirthFacts
     """The facts given; one left out is read and not weighed."""
 
     rules: CircumstanceRules
@@ -2637,17 +2637,17 @@ class ConceptionRules(TypedDict, total=False):
     pranapadaHouse: PranapadaHouseRules
     """`PRANAPADA_HOUSE`'s."""
 
-    purifier: RectificationRules
+    purifier: PurifierRules
     """The purifier's rules (v. 29: the conception's lagna is purified "as before")."""
 
 
-class Purify(TypedDict, total=False):
+class PurifyRequest(TypedDict, total=False):
     """The purifier over the minutes either side of the chart's instant."""
 
     minutes: Required[float]
     """How far either side of the chart's instant the window runs, minutes: more than none, and at most half of `teistro_rectification::LONGEST_HOURS`."""
 
-    rules: RectificationRules
+    rules: PurifierRules
     """The purifier's readings; the texts' own when left out."""
 
 
@@ -3664,7 +3664,7 @@ BirthTimeAccuracy: TypeAlias = Literal['EXACT', 'APPROXIMATE', 'RECTIFIED', 'UNK
 """
 
 
-class DashaAsked(TypedDict, total=False):
+class BaselineDashaRules(TypedDict, total=False):
     """The dasha the baseline's event fit reads: each member the baseline engine's own (`baseline_dasha_rules`) where left out, so a request names only what it changes."""
 
     afterCycle: Optional[AfterCycle]
@@ -3711,10 +3711,10 @@ class LifeEvent(TypedDict, total=False):
     """When it ended, where it ran over days."""
 
 
-class Facts(TypedDict, total=False):
+class BirthFacts(TypedDict, total=False):
     """What the family remembers of the birth. Every fact is optional, and a clause whose fact is absent is reported and not weighed."""
 
-    attendants: Optional[Attendants]
+    attendants: Optional[AttendantFacts]
     """The women who attended (V.22)."""
 
     fatherPresent: Optional[bool]
@@ -3794,7 +3794,7 @@ class PranapadaHouseRules(TypedDict, total=False):
     """How the pranapada is reckoned. Jha's v. 72 is the verse's: the Sun's full longitude, the movable sign of its triplicity, a sign every fifteen palas."""
 
 
-class RectificationRules(TypedDict, total=False):
+class PurifierRules(TypedDict, total=False):
     """What a rectification is asked to apply: the purifier's knobs, one per crux, and the step that seeds the edge search."""
 
     gulika: bool
@@ -5335,7 +5335,7 @@ DatePrecision: TypeAlias = Literal['DAY', 'MONTH', 'YEAR']
 """
 
 
-class Attendants(TypedDict, total=False):
+class AttendantFacts(TypedDict, total=False):
     """The women who attended, as many as the family can say."""
 
     inside: Optional[int]

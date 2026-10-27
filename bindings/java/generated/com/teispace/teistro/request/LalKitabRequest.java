@@ -15,7 +15,7 @@ import java.util.Objects;
  * @param varshphal The list the year's annual teva is read from; none reads none. Null leaves the SDK's default.
  * @param year The year of life to read, from 1 (birth to the first birthday); none reads no year. Null leaves the SDK's default.
  */
-public record LalKitabRequest(CycleStart cycle, VarshphalRows varshphal, Integer year) implements RequestJson {
+public record LalKitabRequest(LalKitabCycle cycle, VarshphalRows varshphal, Integer year) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -50,7 +50,7 @@ public record LalKitabRequest(CycleStart cycle, VarshphalRows varshphal, Integer
 
     /** Builds a {@link LalKitabRequest} a field at a time. */
     public static final class Builder {
-        private CycleStart cycle;
+        private LalKitabCycle cycle;
         private VarshphalRows varshphal;
         private Integer year;
 
@@ -62,7 +62,7 @@ public record LalKitabRequest(CycleStart cycle, VarshphalRows varshphal, Integer
          * @param cycle Where the cycle starts; the book's general table (Saturn from the first year) when left out. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder cycle(CycleStart cycle) {
+        public Builder cycle(LalKitabCycle cycle) {
             this.cycle = cycle;
             return this;
         }
@@ -110,7 +110,7 @@ public record LalKitabRequest(CycleStart cycle, VarshphalRows varshphal, Integer
     public static LalKitabRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "LalKitabRequest");
         return new LalKitabRequest(
-            Read.orNull(json.get("cycle"), present -> CycleStart.of(present)),
+            Read.orNull(json.get("cycle"), present -> LalKitabCycle.of(present)),
             Read.orNull(json.get("varshphal"), present -> VarshphalRows.of(present)),
             Read.orNull(json.get("year"), present -> Read.int32(present, "LalKitabRequest.year")));
     }

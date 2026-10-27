@@ -21,13 +21,13 @@ import java.util.Objects;
  * @param purifyAs Whether a lagna no purifier holds is removed or only weighed (X8). Null leaves the SDK's default.
  * @param seedMinutes The seed step, in minutes: the window is sampled this often and every change between two samples is found exactly (X15). It must be shorter than the briefest run a clause holds, which the verse's pranapada sets at six minutes a sign. Null leaves the SDK's default.
  */
-public record RectificationRules(Boolean gulika, GulikaAt gulikaAt, GulikaExtension gulikaExtension, Boolean moon, RectificationSpecies nativeValue, Boolean pranapada, PranapadaRule pranapadaRule, PurifyAs purifyAs, Double seedMinutes) implements RequestJson {
+public record PurifierRules(Boolean gulika, GulikaAt gulikaAt, GulikaExtension gulikaExtension, Boolean moon, RectificationSpecies nativeValue, Boolean pranapada, PranapadaRule pranapadaRule, PurifyAs purifyAs, Double seedMinutes) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
      */
-    public RectificationRules() {
+    public PurifierRules() {
         this(null, null, null, null, null, null, null, null, null);
     }
 
@@ -41,7 +41,7 @@ public record RectificationRules(Boolean gulika, GulikaAt gulikaAt, GulikaExtens
         return new Builder();
     }
 
-    /** Builds a {@link RectificationRules} a field at a time. */
+    /** Builds a {@link PurifierRules} a field at a time. */
     public static final class Builder {
         private Boolean gulika;
         private GulikaAt gulikaAt;
@@ -160,30 +160,30 @@ public record RectificationRules(Boolean gulika, GulikaAt gulikaAt, GulikaExtens
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public RectificationRules build() {
-            return new RectificationRules(gulika, gulikaAt, gulikaExtension, moon, nativeValue, pranapada, pranapadaRule, purifyAs, seedMinutes);
+        public PurifierRules build() {
+            return new PurifierRules(gulika, gulikaAt, gulikaExtension, moon, nativeValue, pranapada, pranapadaRule, purifyAs, seedMinutes);
         }
     }
 
     /**
-     * A {@code RectificationRules} from its JSON, as {@code Json.read} answers it.
+     * A {@code PurifierRules} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static RectificationRules of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "RectificationRules");
-        return new RectificationRules(
-            Read.orNull(json.get("gulika"), present -> Read.bool(present, "RectificationRules.gulika")),
-            Read.orNull(json.get("gulikaAt"), present -> Read.member(present, "RectificationRules.gulikaAt", GulikaAt::byKey)),
-            Read.orNull(json.get("gulikaExtension"), present -> Read.member(present, "RectificationRules.gulikaExtension", GulikaExtension::byKey)),
-            Read.orNull(json.get("moon"), present -> Read.bool(present, "RectificationRules.moon")),
-            Read.orNull(json.get("native"), present -> Read.member(present, "RectificationRules.native", RectificationSpecies::byKey)),
-            Read.orNull(json.get("pranapada"), present -> Read.bool(present, "RectificationRules.pranapada")),
-            Read.orNull(json.get("pranapadaRule"), present -> Read.member(present, "RectificationRules.pranapadaRule", PranapadaRule::byKey)),
-            Read.orNull(json.get("purifyAs"), present -> Read.member(present, "RectificationRules.purifyAs", PurifyAs::byKey)),
-            Read.orNull(json.get("seedMinutes"), present -> Read.number(present, "RectificationRules.seedMinutes")));
+    public static PurifierRules of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "PurifierRules");
+        return new PurifierRules(
+            Read.orNull(json.get("gulika"), present -> Read.bool(present, "PurifierRules.gulika")),
+            Read.orNull(json.get("gulikaAt"), present -> Read.member(present, "PurifierRules.gulikaAt", GulikaAt::byKey)),
+            Read.orNull(json.get("gulikaExtension"), present -> Read.member(present, "PurifierRules.gulikaExtension", GulikaExtension::byKey)),
+            Read.orNull(json.get("moon"), present -> Read.bool(present, "PurifierRules.moon")),
+            Read.orNull(json.get("native"), present -> Read.member(present, "PurifierRules.native", RectificationSpecies::byKey)),
+            Read.orNull(json.get("pranapada"), present -> Read.bool(present, "PurifierRules.pranapada")),
+            Read.orNull(json.get("pranapadaRule"), present -> Read.member(present, "PurifierRules.pranapadaRule", PranapadaRule::byKey)),
+            Read.orNull(json.get("purifyAs"), present -> Read.member(present, "PurifierRules.purifyAs", PurifyAs::byKey)),
+            Read.orNull(json.get("seedMinutes"), present -> Read.number(present, "PurifierRules.seedMinutes")));
     }
 
     @Override

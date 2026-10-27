@@ -60,6 +60,7 @@ use crate::purifier::house;
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
+#[cfg_attr(feature = "schema", schemars(rename = "BirthFacts"))]
 pub struct Facts {
     /// Whether the father was there at the birth (V.1–2).
     pub father_present: Option<bool>,
@@ -187,6 +188,7 @@ impl Level {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
+#[cfg_attr(feature = "schema", schemars(rename = "AttendantFacts"))]
 pub struct Attendants {
     /// How many in all.
     pub total: Option<u8>,

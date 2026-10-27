@@ -12,6 +12,25 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Request records carry one name in every binding.**
+**Numbers:** none.
+- Seventeen request records are named as the layers named them:
+  `BirthFacts`, `AttendantFacts`, `CircumstanceRequest`, `PurifyRequest`,
+  `PurifierRules`, `BaselineRectificationRequest`, `BaselineDashaRules`,
+  `DossierRequest`, `LalKitabCycle`, `MatchingRequest`,
+  `WesternAspectRequest`, `ResearchDesign`, `ResearchReferents`,
+  `ResearchSubject`, `DignityScores`, `ProgressionContacts` and
+  `PrashnaQuestion`. Java's generated `Facts`, `Attendants`,
+  `CircumstanceAsked`, `Purify`, `RectificationRules`, `BaselineAsked`,
+  `DashaAsked`, `DossierOptions`, `CycleStart`, `PartnerMatching`,
+  `AspectRequest`, `Design`, `Referents`, `SubjectAsked`, `Scores`,
+  `ContactsAsked` and `Question` take these names, as do its layer's
+  `ChartOptions` and `ResearchArea` signatures.
+- Python's thirteen hand copies and Node's nine are gone, and Python's
+  `ProgressionContacts` alias is the generated type itself.
+- Node's `DossierRequest` takes any section key, as the SDK does: an app
+  registers its own sections, which the hand copy refused.
+
 **Request key sets carry one name in every binding.**
 **Numbers:** none.
 - Eleven key sets the schema named by a bare word are named as the layers

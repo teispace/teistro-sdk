@@ -365,6 +365,7 @@ impl DignityRules {
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default)]
 #[non_exhaustive]
+#[cfg_attr(feature = "schema", schemars(rename = "DignityScores"))]
 pub struct Scores {
     /// In its own house.
     pub house: i8,
