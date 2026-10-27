@@ -22,9 +22,9 @@ the previous release, not by nobody having looked.
 - A non-finite number anywhere in a request is refused with an
   `ArgumentError` naming its path (`remedies.at`), where only one section
   checked before and the rest failed inside `jsonEncode`.
-- `SubDegree` gains `none`, which the SDK has always read.
-- Typing: records the layer builds now take the schema's names for their
-  generated parts and named arguments throughout.
+- `SubDegree` gains `none`, which the SDK has always read. Every other
+  swapped record kept its name, fields and constructor, so a caller's code
+  does not change.
 
 **Python's request types are generated, and every request crosses
 through one writer.**
