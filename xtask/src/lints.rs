@@ -1241,9 +1241,9 @@ fn dart_facades_are_declared(root: &Path, outcome: &mut Outcome) {
     }
 }
 
-/// A closed key set the layers keep by hand with the keys, in order, of a
-/// generated one, each with why it stays.
-const KEY_SET_TWINS: &[(&str, &str)] = &[
+/// A shape the layers keep by hand with the members of a generated one,
+/// each with why it stays.
+const KEPT_TWINS: &[(&str, &str)] = &[
     (
         "NativeSex",
         "the generated request spells the baseline's sex inline (`BaselineAsked.sex`), so there is no name to share; its two keys are the ashauch's by coincidence",
@@ -1252,110 +1252,201 @@ const KEY_SET_TWINS: &[(&str, &str)] = &[
         "DashaYearLength",
         "the settings knob `YearLength` names it, read by the context's settings as well as by requests; it is named with the settings",
     ),
+    (
+        "Plans",
+        "the answer's plans, each a list of plan items, where `PlanRequest` asks for each with a flag: the same keys, other values",
+    ),
+    (
+        "ThemeRecord",
+        "types a theme's `style` and `content`, which the generated `ThemePatch` leaves as raw JSON",
+    ),
+    (
+        "SadeSatiVisit",
+        "an answer's span of instants, documented as Sade Sati's; it shares `from` and `to` with the request's `Interval` and nothing else",
+    ),
+    (
+        "EclipseSeen",
+        "an answer's span of instants, documented as an eclipse's; it shares `from` and `to` with the request's `Interval` and nothing else",
+    ),
+    (
+        "PakshiSpan",
+        "an answer's span of instants, documented as a pakshi activity's; it shares `from` and `to` with the request's `Interval` and nothing else",
+    ),
 ];
 
-/// Where each binding declares a closed key set: the file, and a pattern
-/// whose `name` group is its name and whose `keys` group holds its keys,
-/// each quoted.
-const KEY_SETS: [(&str, &str, &str); 3] = [
-    (
-        "bindings/dart/lib/teistro.dart",
-        "bindings/dart/lib/src/requests.dart",
-        r"(?ms)^enum (?<name>\w+)(?: implements _Keyed)? \{(?<keys>.*?)^\}",
-    ),
-    (
-        "bindings/node/lib/index.d.ts",
-        "bindings/node/lib/requests.d.ts",
-        r"(?ms)^export type (?<name>\w+) =(?<keys>(?:\s*\|?\s*'[A-Z0-9_]+')+);",
-    ),
-    (
-        "bindings/python/teistro/__init__.py",
-        "bindings/python/teistro/_requests.py",
-        r"(?ms)^(?<name>\w+)(?:: TypeAlias)? = Literal\[(?<keys>[^\]]*)\]",
-    ),
+/// How a binding declares one kind of shape a request also has.
+struct Shape {
+    /// The hand-written layer.
+    layer: &'static str,
+    /// The generated requests.
+    generated: &'static str,
+    /// A declaration: its `name` group is the name and its `keys` group
+    /// holds the members.
+    pattern: &'static str,
+    /// A member, matched on each line of the body; its first group is the
+    /// member.
+    member: &'static str,
+    /// What the members are, for a finding.
+    members: &'static str,
+    /// Whether two shapes are twins only with their members in the same
+    /// order (a key set), rather than as sets (a record's fields).
+    ordered: bool,
+    /// The fewest members a shape is compared with: one field shared is a
+    /// coincidence, one key is a key set.
+    least: usize,
+}
+
+/// A key set's member: a quoted key.
+const KEY: &str = r#"['"]([A-Z0-9_]+)['"]"#;
+
+/// Where each binding declares a closed key set or a request-like record.
+const SHAPES: [Shape; 5] = [
+    Shape {
+        layer: "bindings/dart/lib/teistro.dart",
+        generated: "bindings/dart/lib/src/requests.dart",
+        pattern: r"(?ms)^enum (?<name>\w+)(?: implements _Keyed)? \{(?<keys>.*?)^\}",
+        member: KEY,
+        members: "keys",
+        ordered: true,
+        least: 1,
+    },
+    Shape {
+        layer: "bindings/node/lib/index.d.ts",
+        generated: "bindings/node/lib/requests.d.ts",
+        pattern: r"(?ms)^export type (?<name>\w+) =(?<keys>(?:\s*\|?\s*'[A-Z0-9_]+')+);",
+        member: KEY,
+        members: "keys",
+        ordered: true,
+        least: 1,
+    },
+    Shape {
+        layer: "bindings/python/teistro/__init__.py",
+        generated: "bindings/python/teistro/_requests.py",
+        pattern: r"(?ms)^(?<name>\w+)(?:: TypeAlias)? = Literal\[(?<keys>[^\]]*)\]",
+        member: KEY,
+        members: "keys",
+        ordered: true,
+        least: 1,
+    },
+    Shape {
+        layer: "bindings/node/lib/index.d.ts",
+        generated: "bindings/node/lib/requests.d.ts",
+        pattern: r"(?ms)^export interface (?<name>\w+)(?:<[^>]*>)? \{(?<keys>.*?)^\}",
+        member: r#"^  (?:readonly )?['"]?(\w+)['"]?\??:"#,
+        members: "fields",
+        ordered: false,
+        least: 2,
+    },
+    Shape {
+        layer: "bindings/python/teistro/__init__.py",
+        generated: "bindings/python/teistro/_requests.py",
+        pattern: r"(?m)^class (?<name>\w+)\(TypedDict[^)]*\):\n(?<keys>(?:[ \t].*\n|\n)*)",
+        member: r"^    (\w+):",
+        members: "fields",
+        ordered: false,
+        least: 2,
+    },
 ];
 
-/// Each closed key set `pattern` finds in `text`: its name, the line it
-/// starts on and its keys in order.
-fn key_sets<'a>(text: &'a str, pattern: &regex::Regex) -> Vec<(&'a str, usize, Vec<&'a str>)> {
-    let Ok(key) = regex::Regex::new(r#"['"]([A-Z0-9_]+)['"]"#) else {
-        return Vec::new();
-    };
+/// Each shape `pattern` finds in `text`: its name, the line it starts on
+/// and its members, in order where `ordered` and sorted otherwise. A
+/// comment line holds no member.
+fn shapes<'a>(
+    text: &'a str,
+    pattern: &regex::Regex,
+    member: &regex::Regex,
+    ordered: bool,
+    least: usize,
+) -> Vec<(&'a str, usize, Vec<&'a str>)> {
     pattern
         .captures_iter(text)
         .filter_map(|found| {
             let name = found.name("name")?;
-            // An enum whose members carry no key is not a key set.
-            let keys = found.name("keys")?.as_str();
-            let keys: Vec<&str> = keys
+            let mut members: Vec<&str> = found
+                .name("keys")?
+                .as_str()
                 .lines()
                 .filter(|line| !line.trim_start().starts_with(['/', '*', '#']))
-                .flat_map(|line| key.captures_iter(line))
-                .filter_map(|k| Some(k.get(1)?.as_str()))
+                .flat_map(|line| member.captures_iter(line))
+                .filter_map(|m| Some(m.get(1)?.as_str()))
                 .collect();
+            if !ordered {
+                members.sort_unstable();
+                members.dedup();
+            }
             let line = text.get(..name.start())?.matches('\n').count() + 1;
-            (!keys.is_empty()).then_some((name.as_str(), line, keys))
+            // An enum whose members carry no key is not a key set.
+            (members.len() >= least).then_some((name.as_str(), line, members))
         })
         .collect()
 }
 
-/// That no hand-written layer keeps a generated request key set's keys
-/// under a name of its own.
+/// That no hand-written layer keeps a generated request's key set or
+/// record under a name of its own.
 ///
 /// A twin named like the record it copies is caught above, or by Dart's
 /// analyser. One named otherwise is not: the schema called eleven key sets
 /// by a bare word (`Clock`, `Bird`, `Sight`) and the layers had each
 /// written the same keys again as `PakshiClock`, `PakshiBird`,
 /// `VedhaSight`, twenty copies in all, which matching the keys found
-/// (2026-10-27). The schema now carries the clearer name; this keeps it
-/// one.
+/// (2026-10-27); the records' fields, matched as sets, found eleven more in
+/// Node and Python (`ChartPlace` for `GeoPlace`, `PublishedSetAsked` for
+/// `PublishedSet`).
+/// The schema now carries the clearer name; this keeps it one.
 fn layers_do_not_rekey_a_request(root: &Path, outcome: &mut Outcome) {
     const RULE: &str = "layer-does-not-twin-a-request";
     let mut allowed_seen = Vec::new();
-    for (layer, generated, pattern) in KEY_SETS {
-        let Ok(pattern) = regex::Regex::new(pattern) else {
+    for shape in &SHAPES {
+        let (Ok(pattern), Ok(member)) = (
+            regex::Regex::new(shape.pattern),
+            regex::Regex::new(shape.member),
+        ) else {
             continue;
         };
         let (Ok(text), Ok(requests)) = (
-            std::fs::read_to_string(root.join(layer)),
-            std::fs::read_to_string(root.join(generated)),
+            std::fs::read_to_string(root.join(shape.layer)),
+            std::fs::read_to_string(root.join(shape.generated)),
         ) else {
             outcome.failures.push(Finding {
-                file: layer.to_owned(),
+                file: shape.layer.to_owned(),
                 line: 1,
                 text: String::from("could not be read, nor its generated requests"),
                 rule: RULE,
             });
             continue;
         };
-        let made = key_sets(&requests, &pattern);
-        let kept = key_sets(&text, &pattern);
+        let read = |text| shapes(text, &pattern, &member, shape.ordered, shape.least);
+        let (made, kept) = (read(&requests), read(&text));
         if made.is_empty() || kept.is_empty() {
             outcome.failures.push(Finding {
-                file: layer.to_owned(),
+                file: shape.layer.to_owned(),
                 line: 1,
-                text: String::from("no closed key set was read here or in its generated requests; the pattern no longer matches"),
+                text: format!(
+                    "no shape with {} was read here or in its generated requests; the pattern no longer matches",
+                    shape.members
+                ),
                 rule: RULE,
             });
             continue;
         }
-        for (name, line, keys) in kept {
+        for (name, line, members) in kept {
             let Some((twin, ..)) = made
                 .iter()
-                .find(|(other, _, its)| *its == keys && *other != name)
+                .find(|(other, _, its)| *its == members && *other != name)
             else {
                 continue;
             };
             let finding = Finding {
-                file: layer.to_owned(),
+                file: shape.layer.to_owned(),
                 line,
                 text: format!(
-                    "declares `{name}` with the keys of the generated `{twin}`; name the schema's type \
-                     `{name}` (`schemars(rename)`) and use the generated one"
+                    "declares `{name}` with the {} of the generated `{twin}`; name the schema's type \
+                     `{name}` (`schemars(rename)`) and use the generated one",
+                    shape.members
                 ),
                 rule: RULE,
             };
-            if let Some((listed, _)) = KEY_SET_TWINS.iter().find(|(listed, _)| *listed == name) {
+            if let Some((listed, _)) = KEPT_TWINS.iter().find(|(listed, _)| *listed == name) {
                 allowed_seen.push(*listed);
                 outcome.allowed.push(finding);
             } else {
@@ -1363,12 +1454,14 @@ fn layers_do_not_rekey_a_request(root: &Path, outcome: &mut Outcome) {
             }
         }
     }
-    for (name, _) in KEY_SET_TWINS {
+    for (name, _) in KEPT_TWINS {
         if !allowed_seen.contains(name) {
             outcome.failures.push(Finding {
                 file: String::from("xtask/src/lints.rs"),
                 line: 1,
-                text: format!("`{name}` is listed as a kept key set and no layer keeps it; drop it from the list"),
+                text: format!(
+                    "`{name}` is listed as a kept twin and no layer keeps it; drop it from the list"
+                ),
                 rule: RULE,
             });
         }
@@ -3591,32 +3684,52 @@ pub(crate) fn check(root: &Path) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::{
-        KEY_SETS, NEXT, Outcome, REGISTER, RESUME, declaration_of, gate_declared_by, gate_run_by,
-        key_sets, names_question, open_questions_are_named, section_of,
+        NEXT, Outcome, REGISTER, RESUME, SHAPES, declaration_of, gate_declared_by, gate_run_by,
+        names_question, open_questions_are_named, section_of, shapes,
     };
 
     #[test]
     #[allow(clippy::unwrap_used, reason = "a test fails by panicking")]
-    fn each_bindings_key_set_is_read_with_its_keys_in_order_and_a_comment_is_not_one() {
+    fn each_bindings_shape_is_read_with_its_members_and_a_comment_holds_none() {
         let samples = [
             "/// How it holds, as 'NOT_A_KEY' says.\nenum PakshiClock implements _Keyed {\n  /// A 'DOC'.\n  stretched('STRETCHED'),\n  nazhigai('NAZHIGAI');\n\n  const PakshiClock(this.key);\n}\n",
             "/** A clock. */\nexport type PakshiClock =\n  | 'STRETCHED'\n  | 'NAZHIGAI';\n",
             "PakshiClock = Literal[\n    \"STRETCHED\",\n    \"NAZHIGAI\",\n]\n\"\"\"A clock.\"\"\"\n",
+            "/** A place. */\nexport interface GeoPlace {\n  /** Its height: altitude: in metres. */\n  readonly longitude: number;\n  readonly latitude: number;\n  readonly where?: {\n    readonly nested: number;\n  };\n}\n",
+            "class GeoPlace(TypedDict, total=False):\n    \"\"\"A place.\"\"\"\n\n    longitude: Required[float]\n    \"\"\"East.\"\"\"\n\n    latitude: Required[float]\n    where: Mapping[str, float]\n\n\nclass Next(TypedDict):\n    only: int\n",
         ];
-        for ((layer, _, pattern), (sample, line)) in
-            KEY_SETS.iter().zip(samples.into_iter().zip([2, 2, 1]))
+        let expected = [
+            vec!["STRETCHED", "NAZHIGAI"],
+            vec!["STRETCHED", "NAZHIGAI"],
+            vec!["STRETCHED", "NAZHIGAI"],
+            // As a set, and a nested record's field is not the record's.
+            vec!["latitude", "longitude", "where"],
+            vec!["latitude", "longitude", "where"],
+        ];
+        for ((shape, sample), (members, line)) in SHAPES
+            .iter()
+            .zip(samples)
+            .zip(expected.into_iter().zip([2, 2, 1, 2, 1]))
         {
-            let pattern = regex::Regex::new(pattern).unwrap();
+            let pattern = regex::Regex::new(shape.pattern).unwrap();
+            let member = regex::Regex::new(shape.member).unwrap();
+            let name = if shape.ordered {
+                "PakshiClock"
+            } else {
+                "GeoPlace"
+            };
             assert_eq!(
-                key_sets(sample, &pattern),
-                vec![("PakshiClock", line, vec!["STRETCHED", "NAZHIGAI"])],
-                "{layer}"
+                shapes(sample, &pattern, &member, shape.ordered, shape.least),
+                vec![(name, line, members)],
+                "{}",
+                shape.layer
             );
         }
         // An enum whose members carry no key is not a key set.
-        let dart = regex::Regex::new(KEY_SETS[0].2).unwrap();
+        let dart = regex::Regex::new(SHAPES[0].pattern).unwrap();
+        let key = regex::Regex::new(SHAPES[0].member).unwrap();
         assert_eq!(
-            key_sets("enum Divisor {\n  one,\n  two;\n}\n", &dart),
+            shapes("enum Divisor {\n  one,\n  two;\n}\n", &dart, &key, true, 1),
             vec![]
         );
     }

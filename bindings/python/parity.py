@@ -69,8 +69,8 @@ from teistro import (
     FestivalAnswer,
     FestivalRequest,
     FirstYearRequest,
-    PublishedDayAsked,
-    PublishedSetAsked,
+    PublishedDay,
+    PublishedSet,
     MuhurtaAnswer,
     MuhurtaNative,
     MuhurtaRequest,
@@ -121,14 +121,14 @@ report: dict[str, str] = {}
 
 
 
-def gregorian_day(month: int, day: int) -> PublishedDayAsked:
+def gregorian_day(month: int, day: int) -> PublishedDay:
     """A day of 2024 as a published entry spells it."""
     return {"calendar": "GREGORIAN", "year": 2024, "month": month, "day": day}
 
 
 # One published set with each action, as every runner asks it: a SET
 # moving Lakshmi puja, a WITHDRAW, an ADD and a SET no occurrence takes.
-PUBLISHED_SET: PublishedSetAsked = {
+PUBLISHED_SET: PublishedSet = {
     "format": "teistro.published/1",
     "publisher": "a patro printed in Nepal",
     "id": "np-2081",
@@ -1004,7 +1004,7 @@ def put_rites(geo: Context) -> None:
 
     # One SET of Navaratra's start, asked at Pokhara with Kathmandu as the
     # place the publisher may have reckoned at; no second sky.
-    navaratra: PublishedSetAsked = {
+    navaratra: PublishedSet = {
         "format": "teistro.published/1",
         "publisher": "a patro printed in Nepal",
         "id": "np-2083",

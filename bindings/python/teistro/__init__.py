@@ -135,6 +135,10 @@ from ._records import Provenance, Step, decode_provenance, decode_step
 # The request records, generated from the façade's own schemas of them
 # (`03-design/generated-requests.md`).
 from ._requests import (
+    # Wire forms whose generated names the layer's answer classes hold.
+    ConsiderationRules as ConsiderationRequest,
+    KujaLifts as KujaLiftRules,
+    PerfectionRules as PerfectionRuleRequest,
     GocharRequest as GocharRequest,
     AbhijitPada as AbhijitPada,
     BirthTimeAccuracy as BirthTimeAccuracy,
@@ -370,6 +374,7 @@ from ._requests import (
     MoonScope as MoonScope,
     MoonSees as MoonSees,
     MotherRites as MotherRites,
+    MotionThresholds as MotionThresholds,
     MuddaBalance as MuddaBalance,
     MuhurtaNative as MuhurtaNative,
     MuhurtaRequestAsta as MuhurtaRequestAsta,
@@ -1100,9 +1105,6 @@ __all__ = [
     "PublishedReason",
     "PublishedReasons",
     "ReckonedPlace",
-    "PublishedDayAsked",
-    "PublishedEntryAsked",
-    "PublishedSetAsked",
     "PublishedUnplaced",
     "DayDisagreement",
     "DayDisagreements",
@@ -3029,7 +3031,7 @@ class AlmanacArea(_Area):
 
     def published_from_signed(
         self, pack: bytes, signature: bytes, key: bytes, at_least: int = 0
-    ) -> PublishedSetAsked:
+    ) -> PublishedSet:
         """A published set read from a signed pack
         (`03-design/published-overrides.md` §5), ready for a
         :class:`FestivalRequest`'s `published`: `pack` the set's exact
@@ -3041,7 +3043,7 @@ class AlmanacArea(_Area):
 
         Raises :class:`TeistroError` `INVALID_ARG` on `key`, `signature`,
         `version` or the set's own field, naming what is wrong."""
-        verified: PublishedSetAsked = json.loads(
+        verified: PublishedSet = json.loads(
             self._context.inner.published_verify(pack, signature, key, at_least)
         )
         return verified
@@ -5445,21 +5447,6 @@ class Lots:
     """All fourteen, in the catalogue's order."""
 
 
-class ConsiderationRequest(TypedDict, total=False):
-    """How to read every chart's considerations before judgement
-    (`03-design/hellenistic-considerations.md`), every field optional and
-    Lilly's when absent: `moonLateFromDeg`, 27 by default (C229), and
-    `orbsDeg`, the seven whole orbs in the Chaldean order whose halves make
-    an application, his p. 107 by default (C230). An answer's `rules`, a
-    `ConsiderationRules`, may be handed back as it stands.
-
-    >>> asked: ConsiderationRequest = {"moonLateFromDeg": 25}
-    """
-
-    moonLateFromDeg: float
-    orbsDeg: Sequence[float]
-
-
 @dataclass(frozen=True)
 class ConsiderationRules:
     """The rules a chart's considerations were read under, every field
@@ -5587,20 +5574,6 @@ class Considerations:
     saturn_retrograde: bool
     ascendant_lord_combust: bool
     rules: ConsiderationRules
-
-
-class PerfectionRuleRequest(TypedDict, total=False):
-    """Lilly's rules a perfection is read under, every field optional:
-    `orbsDeg`, the seven whole orbs in the Chaldean order, his p. 107 by
-    default; `horizonDays`, how far ahead to look, by default until the
-    swifter significator leaves its sign (C232); and `withinSign`, whether a
-    third planet's contact counts only before the planet applying leaves its
-    sign, true by default (C234). An answer's `rules`, a `PerfectionRules`,
-    may be handed back as it stands."""
-
-    orbsDeg: Sequence[float]
-    horizonDays: float
-    withinSign: bool
 
 
 @dataclass(frozen=True)
@@ -6280,20 +6253,6 @@ class HarmonicChart:
 # `"LAGNA_MOON_VENUS"` (C286); and `lifts`, the lifts that lift it, none
 # when absent (C288, C755). Declared by call since `from` is a keyword:
 # `everywhere: KujaRules = {"from": "LAGNA_MOON_VENUS"}`.
-class KujaLiftRules(TypedDict, total=False):
-    """The Kuja lifts a match counts, each false when absent: BPHS ch. 80
-    v. 47's `benefic` and vv. 48–49's `mutual` (rank 1), and the five the
-    almanacs printed in Nepal give (rank 4)."""
-
-    benefic: bool
-    mutual: bool
-    saturn: bool
-    moonVenusSecond: bool
-    jupiterAspect: bool
-    rahuKendra: bool
-    withRahu: bool
-
-
 @dataclass(frozen=True)
 class BhakootExceptions:
     """The five exceptions of VI.32–33 that lift a bad Bhakoot, each a
@@ -7780,53 +7739,6 @@ the panchanga prints, each rule fitted to the committee's editions and
 citing its page (§10)."""
 
 
-class PublishedDayAsked(TypedDict, total=False):
-    """A published day in any calendar the SDK ships, converted to the
-    range's: `calendar` (a member, or its key such as `"GREGORIAN"`),
-    `year` (astronomical), `month` and `day` required;
-    `era` (`{"era": "VIKRAMA", "year": 2082}`) for presentation and `leap`
-    (`"MONTH"`, `"DAY"` or `"MONTH_AND_DAY"`) as the calendar needs it."""
-
-    calendar: Required[Union[Calendar, str]]
-    year: Required[int]
-    month: Required[int]
-    day: Required[int]
-    era: Mapping[str, Any]
-    leap: Literal["MONTH", "DAY", "MONTH_AND_DAY"]
-
-
-class PublishedEntryAsked(TypedDict, total=False):
-    """One entry of a published set, by its `action`: `SET` moves a rule's
-    occurrence nearest `day` (within seven days) to it, `ADD` keeps a day
-    no rule computes under its own `key` and `names`, and `WITHDRAW` marks
-    an occurrence the publisher does not keep. `month` and `adhika` tell
-    apart two occurrences that near; `window` is a published time."""
-
-    action: Required[Literal["SET", "ADD", "WITHDRAW"]]
-    rule: str
-    key: str
-    day: Required[PublishedDayAsked]
-    month: Masa
-    adhika: bool
-    names: Mapping[str, str]
-    window: Mapping[str, float]
-    source: Required[str]
-
-
-class PublishedSetAsked(TypedDict):
-    """A set of days an authority decides (`03-design/published-overrides.md`),
-    laid over the rules' answer in the order given.
-
-    >>> published: PublishedSetAsked = {"format": "teistro.published/1", "publisher": "a patro printed in Nepal", "id": "np-2084", "version": 1, "entries": []}
-    """
-
-    format: Literal["teistro.published/1"]
-    publisher: str
-    id: str
-    version: int
-    entries: Sequence[PublishedEntryAsked]
-
-
 class FestivalRequest(TypedDict, total=False):
     """Festival rules to reckon over an almanac's days
     (`03-design/festival-rules.md` §7): `rules`, a :data:`FestivalPack` the
@@ -7854,7 +7766,7 @@ class FestivalRequest(TypedDict, total=False):
     """
 
     rules: Required[Union[FestivalPack, Sequence[Union[FestivalPack, Mapping[str, Any]]]]]
-    published: Sequence[PublishedSetAsked]
+    published: Sequence[PublishedSet]
     """Published sets laid over the answer, a later one's entry replacing an
     earlier one's for the same occurrence."""
 
