@@ -323,7 +323,7 @@ void main() {
     _holds(
       'chart.found',
       path: [],
-      dropping: [['antiscia'], ['considerations'], ['dignities'], ['fortitudes', 'almuten'], ['fortitudes', 'dignities'], ['fortitudes', 'rules'], ['fortitudes', 'scores'], ['harmonic'], ['hits'], ['lalkitab'], ['lots'], ['masaPravesha'], ['matching'], ['perfection'], ['prashna'], ['progressions'], ['rectification'], ['rules'], ['sarvatobhadra', 'motion'], ['sarvatobhadra', 'name'], ['sarvatobhadra', 'rules'], ['synastry', 'antiscia'], ['synastry', 'orbs'], ['synastry', 'partner'], ['theme', 'content'], ['theme', 'style'], ['varsha'], ['westernAspects', 'orbs'], ['westernConfigurations', 'orbs']],
+      dropping: [['antiscia'], ['considerations'], ['dignities'], ['fortitudes', 'almuten'], ['fortitudes', 'dignities'], ['fortitudes', 'rules'], ['fortitudes', 'scores'], ['harmonic'], ['hits'], ['lalkitab'], ['lots'], ['masaPravesha'], ['matching'], ['perfection'], ['prashna'], ['progressions'], ['rectification'], ['rules'], ['sarvatobhadra', 'motion'], ['sarvatobhadra', 'name'], ['sarvatobhadra', 'rules'], ['synastry', 'antiscia'], ['synastry', 'orbs'], ['synastry', 'partner'], ['varsha'], ['westernAspects', 'orbs'], ['westernConfigurations', 'orbs']],
       members: 6,
       written: ChartFoundRequest(
         altitudeM: 1.5,
@@ -1147,7 +1147,7 @@ void main() {
     _holds(
       'research.study',
       path: [],
-      dropping: [['control'], ['test']],
+      dropping: [],
       members: 0,
       written: ResearchRequest(
         births: [

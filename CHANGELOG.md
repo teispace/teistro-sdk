@@ -23,6 +23,10 @@ the previous release, not by nobody having looked.
   its enum's member, and holds what each writes to the example: 158 of
   the 167 members, every one but those on a request the layer keeps by
   hand. Writing a member as its index fails 21 of its 76 cases.
+- Building them found a generated class writing an optional raw part it
+  was not given as `null`: a theme patch with no `style` was refused
+  (`theme.style`: invalid type: null). Such a part is now left off the
+  wire, so serde gives its default.
 
 **A pack's checksum covers its whole file; a frame's bits read back as written.**
 **Numbers:** none.
