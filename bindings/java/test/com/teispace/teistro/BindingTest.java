@@ -210,6 +210,68 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a muhurta search, a match and a sade sati are refused naming their field", () -> {
+            // The parity runner holds their answers to the other bindings';
+            // these hold their refusals, each named under its section.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = context(teistro)) {
+                CalendarDate first = Civil.date(Calendar.GREGORIAN, 2024, 11, 25);
+                CalendarDate last = Civil.date(Calendar.GREGORIAN, 2024, 11, 27);
+                TeistroException muhurta = refusal(() -> sky.almanac().of(first, last, kathmandu, 20_700,
+                        MuhurtaRequest.of(Map.of("rules", "NO_SUCH_RULES")), null, false, false, false));
+                check(muhurta.field() != null && muhurta.field().startsWith("muhurta"), "muhurta: " + muhurta.field());
+                // A key the SDK does not read is refused by the request type
+                // itself, before anything crosses, naming the field.
+                try {
+                    PartnerMatching.of(Map.of("partnerRole", "AUNT",
+                            "partner", Map.of("instant", 2_451_545.25, "utcOffsetSeconds", 36_000,
+                                    "place", Map.of("latitude", -33.87, "longitude", 151.21, "altitude", 0.0))));
+                    throw new AssertionError("an unknown partner role was not refused");
+                } catch (IllegalArgumentException e) {
+                    check(e.getMessage().contains("PartnerMatching.partnerRole"), "matching: " + e.getMessage());
+                }
+                TeistroException sadeSati = refusal(() -> sky.chart().found(2_451_545.0, kathmandu, 20_700,
+                        ChartOptions.builder().sadeSati(SadeSatiRequest.of(Map.of("from", 2_460_676.5, "to", 2_464_329.0,
+                                "spells", List.of(13)))).build()));
+                check(sadeSati.field() != null && sadeSati.field().startsWith("sadeSati"), "sade sati: " + sadeSati.field());
+            }
+        });
+
+        tests.put("a name is transliterated, and a script the library lacks is refused", () -> {
+            try (Context sky = context(teistro)) {
+                same("sūrya", sky.intl().transliterate("सूर्य", "deva", "iast"), "Devanagari into IAST");
+                TeistroException unknown = refusal(() -> sky.intl().transliterate("सूर्य", "deva", "klingon"));
+                check(unknown.status() != Status.OK && unknown.field() != null, "named: " + unknown.field());
+            }
+        });
+
+        tests.put("a pack lays its record over the one standing, and a damaged one is refused whole", () -> {
+            String dir = System.getenv("TEISTRO_FIXTURES");
+            check(dir != null, "TEISTRO_FIXTURES names the files `cargo xtask check-java` writes");
+            byte[] pack;
+            try {
+                pack = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(dir, "overlay.tpack"));
+            } catch (java.io.IOException e) {
+                throw new AssertionError("the overlay pack", e);
+            }
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").locale("en-Latn")
+                    .testProvider(true).build())) {
+                String name = sky.intl().entity("graha.SUN").name();
+                byte[] damaged = pack.clone();
+                damaged[damaged.length / 2] ^= 1;
+                TeistroException refused = refusal(() -> sky.intl().loadPack(damaged));
+                same(Status.PACK, refused.status(), "a damaged pack's status");
+                same("bytes", refused.field(), "a damaged pack's field");
+                IntlLoaded loaded = sky.intl().loadPack(pack);
+                same(1L, loaded.entries(), "one record");
+                same(0L, loaded.replaced(), "nothing thrown away");
+                same(1L, loaded.merged(), "the record kept what the pack lacked");
+                same("en-Latn", loaded.locale(), "the pack's locale");
+                same(64, loaded.sha256().length(), "a SHA-256 in hex");
+                same(name, sky.intl().entity("graha.SUN").name(), "the name the pack did not carry stands");
+            }
+        });
+
         tests.put("a closed context refuses, and closing twice does nothing", () -> {
             Context sky = context(teistro);
             sky.close();
