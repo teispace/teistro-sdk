@@ -104,6 +104,7 @@ pub struct MonthWithSun {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "NakshatraPada"))]
 pub struct Pada {
     /// The star.
     pub nakshatra: Nakshatra,

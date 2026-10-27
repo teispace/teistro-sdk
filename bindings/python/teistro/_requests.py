@@ -424,7 +424,7 @@ __all__ = [
     "MonthRuleAny",
     "MonthRuleLunar",
     "MonthRuleSolar",
-    "Pada",
+    "NakshatraPada",
     "Shool",
     "MuhurtaUnjudged",
     "MuhurtaUnwanted",
@@ -3437,7 +3437,7 @@ class ActivityRules(TypedDict, total=False):
     months: Required[MonthRule]
     """The months."""
 
-    padas: Required[Sequence[Pada]]
+    padas: Required[Sequence[NakshatraPada]]
     """The quarters of a star rejected though the star is good."""
 
     shool: Sequence[Shool]
@@ -5673,7 +5673,7 @@ class MonthRuleSolar(TypedDict, total=False):
     """The signs."""
 
 
-class Pada(TypedDict, total=False):
+class NakshatraPada(TypedDict, total=False):
     """A nakshatra's quarter."""
 
     nakshatra: Required[Union[_catalogue.Nakshatra, str]]
@@ -6583,7 +6583,7 @@ class MuhurtaClauseKindPada(TypedDict, total=False):
 
     clause: Required[Literal['PADA']]
 
-    pada: Required[Pada]
+    pada: Required[NakshatraPada]
     """Which."""
 
 

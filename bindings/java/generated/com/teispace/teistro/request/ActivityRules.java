@@ -23,7 +23,7 @@ import java.util.Objects;
  * @param unjudged What the source asks that is not judged, said rather than dropped.
  * @param unwanted The grahas the rite wants out of houses. Empty where the rules spelt out leave it out. Null leaves the SDK's default.
  */
-public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRules day, List<com.teispace.teistro.BlackoutKind> heeds, Hours hours, GradedRashi lagnas, MonthRule months, List<Pada> padas, List<Shool> shool, List<MuhurtaUnjudged> unjudged, List<MuhurtaUnwanted> unwanted) implements RequestJson {
+public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRules day, List<com.teispace.teistro.BlackoutKind> heeds, Hours hours, GradedRashi lagnas, MonthRule months, List<NakshatraPada> padas, List<Shool> shool, List<MuhurtaUnjudged> unjudged, List<MuhurtaUnwanted> unwanted) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -59,7 +59,7 @@ public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRu
      * @param padas The quarters of a star rejected though the star is good.
      * @param unjudged What the source asks that is not judged, said rather than dropped.
      */
-    public ActivityRules(List<Bar> bars, DayRules day, List<com.teispace.teistro.BlackoutKind> heeds, GradedRashi lagnas, MonthRule months, List<Pada> padas, List<MuhurtaUnjudged> unjudged) {
+    public ActivityRules(List<Bar> bars, DayRules day, List<com.teispace.teistro.BlackoutKind> heeds, GradedRashi lagnas, MonthRule months, List<NakshatraPada> padas, List<MuhurtaUnjudged> unjudged) {
         this(bars, null, day, heeds, null, lagnas, months, padas, null, unjudged, null);
     }
 
@@ -82,7 +82,7 @@ public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRu
         private Hours hours;
         private GradedRashi lagnas;
         private MonthRule months;
-        private List<Pada> padas;
+        private List<NakshatraPada> padas;
         private List<Shool> shool;
         private List<MuhurtaUnjudged> unjudged;
         private List<MuhurtaUnwanted> unwanted;
@@ -172,7 +172,7 @@ public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRu
          * @param padas The quarters of a star rejected though the star is good.
          * @return this builder
          */
-        public Builder padas(List<Pada> padas) {
+        public Builder padas(List<NakshatraPada> padas) {
             this.padas = padas;
             return this;
         }
@@ -238,7 +238,7 @@ public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRu
             Read.orNull(json.get("hours"), present -> Read.member(present, "ActivityRules.hours", Hours::byKey)),
             GradedRashi.of(Read.required(json.get("lagnas"), "ActivityRules.lagnas")),
             MonthRule.of(Read.required(json.get("months"), "ActivityRules.months")),
-            Read.list(Read.required(json.get("padas"), "ActivityRules.padas"), "ActivityRules.padas", item0 -> Pada.of(item0)),
+            Read.list(Read.required(json.get("padas"), "ActivityRules.padas"), "ActivityRules.padas", item0 -> NakshatraPada.of(item0)),
             Read.orNull(json.get("shool"), present -> Read.list(present, "ActivityRules.shool", item0 -> Shool.of(item0))),
             Read.list(Read.required(json.get("unjudged"), "ActivityRules.unjudged"), "ActivityRules.unjudged", item0 -> MuhurtaUnjudged.of(item0)),
             Read.orNull(json.get("unwanted"), present -> Read.list(present, "ActivityRules.unwanted", item0 -> MuhurtaUnwanted.of(item0))));

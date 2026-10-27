@@ -4378,7 +4378,7 @@ final class ActivityRules extends _Request {
   final MonthRule months;
 
   /// The quarters of a star rejected though the star is good.
-  final List<Pada> padas;
+  final List<NakshatraPada> padas;
 
   /// For a journey asked a direction, the ghati each weekday's disha shool is lifted at. Empty, the direction is not judged; a weekday missing from a list that is not shuts its days to the direction.
   final List<Shool> shool;
@@ -8691,8 +8691,8 @@ final class MonthRuleSolar extends MonthRule {
 }
 
 /// A nakshatra's quarter.
-final class Pada extends _Request {
-  const Pada({
+final class NakshatraPada extends _Request {
+  const NakshatraPada({
     required this.nakshatra,
     required this.pada,
   });

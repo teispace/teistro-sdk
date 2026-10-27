@@ -354,7 +354,7 @@ void main() {
           ),
           withSun: [MonthWithSun(masa: Masa.vaishakha, sun: Rashi.taurus)],
         ),
-        padas: [Pada(nakshatra: Nakshatra.bharani, pada: 1)],
+        padas: [NakshatraPada(nakshatra: Nakshatra.bharani, pada: 1)],
         shool: [Shool(afterGhatis: 1, vara: Vara.somavara)],
         unjudged: [<String, Object?>{'what': 'x', 'why': 'x'}],
         unwanted: [MuhurtaUnwanted(bars: true, grahas: [Graha.moon], houses: [1])],
