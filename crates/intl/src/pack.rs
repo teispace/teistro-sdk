@@ -64,7 +64,37 @@ pub const BUNDLE_MAGIC: [u8; 4] = *b"TPB1";
 /// assert!(Pack::parse(&bytes).is_err());
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-pub const FORMAT_VERSION: u16 = 2;
+pub const FORMAT_VERSION: u16 = 3;
+
+/// Where a file's CRC32 sits, by magic: a pack's after its magic,
+/// version, flags, locale, namespace, entry count and arena length; a
+/// bundle's after its magic, version, flags, locale and namespace count.
+/// The CRC covers every other byte of the file (version 3; version 2's
+/// covered the body only, so a damaged locale tag or metadata loaded).
+fn checksum(bytes: &[u8], at: usize) -> u32 {
+    let mut crc = crc32fast::Hasher::new();
+    crc.update(bytes.get(..at).unwrap_or_default());
+    crc.update(bytes.get(at + 4..).unwrap_or_default());
+    crc.finalize()
+}
+
+/// Writes `bytes`' CRC32 at `at`, where the writer left four bytes.
+fn seal(bytes: &mut [u8], at: usize) {
+    let crc = checksum(bytes, at).to_le_bytes();
+    if let Some(slot) = bytes.get_mut(at..at + 4) {
+        slot.copy_from_slice(&crc);
+    }
+}
+
+/// Reads a file's flags, which no version yet sets.
+fn no_flags(cursor: &mut Cursor<'_>) -> Result<(), PackError> {
+    match cursor.u16()? {
+        0 => Ok(()),
+        flags => Err(PackError(format!(
+            "flags {flags:#x}, which this reader does not know"
+        ))),
+    }
+}
 
 /// The fewest bytes a bundle's index entry takes: a `u16` name length
 /// and a `u32` pack length.
@@ -134,7 +164,7 @@ pub fn build(locale: &LocaleSource, namespace: &str) -> Result<Vec<u8>, PackErro
 
 /// One locale as a bundle: the metadata once, then every namespace as a
 /// pack without metadata, each verified on its own; the container's CRC
-/// and SHA-256 cover the whole payload.
+/// covers the whole file and its SHA-256 the payload.
 ///
 /// ```
 /// # use teistro_intl::sdk_root;
@@ -171,7 +201,6 @@ pub fn build_bundle(locale: &LocaleSource) -> Result<Vec<u8>, PackError> {
     for body in bodies {
         payload.extend_from_slice(&body);
     }
-    let crc = crc32fast::hash(&payload);
     let sha: [u8; 32] = Sha256::digest(&payload).into();
     let mut out = Vec::with_capacity(64 + payload.len());
     out.extend_from_slice(&BUNDLE_MAGIC);
@@ -179,9 +208,11 @@ pub fn build_bundle(locale: &LocaleSource) -> Result<Vec<u8>, PackError> {
     out.extend_from_slice(&0u16.to_le_bytes());
     push_str(&mut out, &locale.tag)?;
     out.extend_from_slice(&offset(locale.namespaces.len())?.to_le_bytes());
-    out.extend_from_slice(&crc.to_le_bytes());
+    let crc_at = out.len();
+    out.extend_from_slice(&[0; 4]);
     out.extend_from_slice(&sha);
     out.extend_from_slice(&payload);
+    seal(&mut out, crc_at);
     Ok(out)
 }
 
@@ -228,7 +259,6 @@ fn build_with(
     }
     let mut body = table;
     body.extend_from_slice(&arena);
-    let crc = crc32fast::hash(&body);
     let sha: [u8; 32] = Sha256::digest(&body).into();
     let mut out = Vec::with_capacity(64 + meta.len() + body.len());
     out.extend_from_slice(&MAGIC);
@@ -238,11 +268,13 @@ fn build_with(
     push_str(&mut out, namespace)?;
     out.extend_from_slice(&offset(ns.entries.len())?.to_le_bytes());
     out.extend_from_slice(&offset(arena.len())?.to_le_bytes());
-    out.extend_from_slice(&crc.to_le_bytes());
+    let crc_at = out.len();
+    out.extend_from_slice(&[0; 4]);
     out.extend_from_slice(&sha);
     out.extend_from_slice(&offset(meta.len())?.to_le_bytes());
     out.extend_from_slice(&meta);
     out.extend_from_slice(&body);
+    seal(&mut out, crc_at);
     Ok(out)
 }
 
@@ -431,27 +463,27 @@ impl<'a> Pack<'a> {
                 "format version {version}; this reader knows {FORMAT_VERSION}"
             )));
         }
-        let _flags = cursor.u16()?;
+        no_flags(&mut cursor)?;
         let locale = cursor.u16_str()?;
         let namespace = cursor.u16_str()?;
         let entries = cursor.u32()? as usize;
         let arena_len = cursor.u32()? as usize;
+        let crc_at = cursor.pos;
         let crc = cursor.u32()?;
+        // Checked before anything the file says is believed further.
+        if checksum(bytes, crc_at) != crc {
+            return Err(PackError(String::from("checksum mismatch")));
+        }
         let sha256 = cursor.take(32)?;
         let meta_len = cursor.u32()? as usize;
         let meta = cursor.take(meta_len)?;
         let table_len = entries
             .checked_mul(TABLE_ENTRY)
             .ok_or_else(|| PackError(String::from("entry count overflows")))?;
-        let body_start = cursor.pos;
         let table = cursor.take(table_len)?;
         let arena = cursor.take(arena_len)?;
         if cursor.pos != bytes.len() {
             return Err(PackError(String::from("trailing bytes after the arena")));
-        }
-        let body = bytes.get(body_start..).unwrap_or_default();
-        if crc32fast::hash(body) != crc {
-            return Err(PackError(String::from("checksum mismatch")));
         }
         let pack = Pack {
             locale,
@@ -861,15 +893,15 @@ impl<'a> Bundle<'a> {
                 "format version {version}; this reader knows {FORMAT_VERSION}"
             )));
         }
-        let _flags = cursor.u16()?;
+        no_flags(&mut cursor)?;
         let locale = cursor.u16_str()?;
         let count = cursor.u32()? as usize;
+        let crc_at = cursor.pos;
         let crc = cursor.u32()?;
-        let sha256 = cursor.take(32)?;
-        let payload = bytes.get(cursor.pos..).unwrap_or_default();
-        if crc32fast::hash(payload) != crc {
+        if checksum(bytes, crc_at) != crc {
             return Err(PackError(String::from("bundle checksum mismatch")));
         }
+        let sha256 = cursor.take(32)?;
         let meta_len = cursor.u32()? as usize;
         let meta = cursor.take(meta_len)?;
         // The count is the file's word, and the reader allocates by it:
@@ -1224,17 +1256,40 @@ mod tests {
         let mut wrong_magic = bytes.clone();
         wrong_magic[0] = b'X';
         assert!(Pack::parse(&wrong_magic).is_err_and(|e| e.0.contains("magic")));
+        // A byte past the end breaks the checksum, which covers the
+        // whole file; sealed again, it is refused as trailing.
         let mut extended = bytes.clone();
         extended.push(0);
+        assert!(Pack::parse(&extended).is_err_and(|e| e.0.contains("checksum")));
+        seal(&mut extended, crc_at(&bytes));
         assert!(Pack::parse(&extended).is_err_and(|e| e.0.contains("trailing")));
+        // The header is covered too: a changed locale tag, and flags
+        // this reader does not know even when sealed.
+        let mut renamed = bytes.clone();
+        renamed[10] ^= 1;
+        assert!(Pack::parse(&renamed).is_err_and(|e| e.0.contains("checksum")));
+        let mut flagged = bytes.clone();
+        flagged[6] = 1;
+        seal(&mut flagged, crc_at(&bytes));
+        assert!(Pack::parse(&flagged).is_err_and(|e| e.0.contains("flags")));
+    }
+
+    /// Where a pack's CRC sits: after its magic, version, flags, locale,
+    /// namespace, entry count and arena length.
+    fn crc_at(pack: &[u8]) -> usize {
+        let len = |at: usize| usize::from(u16::from_le_bytes([pack[at], pack[at + 1]]));
+        let locale = len(8);
+        let namespace = len(10 + locale);
+        12 + locale + namespace + 8
     }
 
     #[test]
     fn a_bundle_whose_count_outruns_its_bytes_is_refused_unallocated() {
         // The fuzz smoke's input (verify, 2026-10-23): a valid checksum
         // over a count of 0x4E490000 packs, which the reader once
-        // reserved 29 GB for before reading the first.
-        let bytes: &[u8] = b"TPB1\x02\x00\x00\x00\x00\x00\x00\x00IN\xbf\x12\xaa~\xe2\xcdgV$\xff\xff\xff_r|ici\
+        // reserved 29 GB for before reading the first; re-sealed as
+        // version 3, whose checksum covers the header too.
+        let bytes: &[u8] = b"TPB1\x03\x00\x00\x00\x00\x00\x00\x00INT\xf1\xb6]\xe2\xcdgV$\xff\xff\xff_r|ici\
             \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
             @2paka\x02\x18\x11\x10\xde#\xa3q8\xcdy\x01\x00\x00{\"loc\x00";
         assert_eq!(bytes.len(), 83);
