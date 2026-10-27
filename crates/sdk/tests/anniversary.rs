@@ -17,7 +17,7 @@ use teistro::festival::{
     MonthClause, Origin,
 };
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
-use teistro::{CalendarDate, Context, FestivalPack, FestivalRequest, UtcOffset};
+use teistro::{CalendarDate, CalendarDay, Context, FestivalPack, FestivalRequest, UtcOffset};
 
 fn kathmandu() -> Place {
     Place::new(
@@ -218,7 +218,7 @@ fn an_origin_is_the_tithi_of_its_moment() {
     assert_eq!(night.count, Some(1));
 
     let dated = found(Origin::Date {
-        date: date(2022, 9, 25),
+        date: CalendarDay::from(&date(2022, 9, 25)),
     });
     assert_eq!(dated.origin.tithi, Tithi::Amavasya);
     assert!(dated.origin.assumed_sunrise);
@@ -344,6 +344,21 @@ fn an_anniversary_is_read_from_a_bindings_request() {
     )
     .unwrap_err();
     assert_eq!(wrong.field(), Some("festivals.rules[0].window"));
+    // A dated origin is a day as a request writes it: how a date was
+    // resolved is an answer's to say, and one that says it is refused.
+    let dated = FestivalRequest::from_json(
+        r#"{"rules": [{"key": "DEATH", "origin": {"by": "DATE", "date": {"calendar": "calendar.BIKRAM_SAMBAT", "year": 2079, "month": 6, "day": 9}}}]}"#,
+    )
+    .unwrap();
+    assert!(matches!(
+        &dated.anniversaries()[0].origin,
+        Origin::Date { date } if date.date() == CalendarDate::defined(Calendar::BikramSambat, 2079, 6, 9)
+    ));
+    let resolved = FestivalRequest::from_json(
+        r#"{"rules": [{"key": "DEATH", "origin": {"by": "DATE", "date": {"calendar": "GREGORIAN", "year": 2022, "month": 9, "day": 25, "resolution": {"kind": "DEFINED"}}}}]}"#,
+    )
+    .unwrap_err();
+    assert_eq!(resolved.field(), Some("festivals.rules[0].origin"));
 }
 
 /// The `PITRI_PAKSHA` pack (`shraddha.md` §3.2) keeps each mahalaya where

@@ -72,7 +72,7 @@ from teistro import (
     FestivalAnswer,
     FestivalRequest,
     FirstYearRequest,
-    PublishedDay,
+    CalendarDay,
     PublishedSet,
     MuhurtaAnswer,
     MuhurtaNative,
@@ -124,7 +124,7 @@ report: dict[str, str] = {}
 
 
 
-def gregorian_day(month: int, day: int) -> PublishedDay:
+def gregorian_day(month: int, day: int) -> CalendarDay:
     """A day of 2024 as a published entry spells it."""
     return {"calendar": "GREGORIAN", "year": 2024, "month": month, "day": day}
 

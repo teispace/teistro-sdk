@@ -107,7 +107,6 @@ pub const DART_FACADES: &[(&str, &str)] = &[
 /// declaration here would shadow: a caller reaches the request's own
 /// through the field that takes it, typed as the JSON it is.
 pub const DART_SHADOWED: &[&str] = &[
-    "CalendarDate",
     "CalendarResolution",
     "CalendarResolutionComputed",
     "CalendarResolutionDefined",

@@ -130,7 +130,7 @@ pub(crate) fn beside<T: schemars::JsonSchema>(
 /// reference to it: a schema written by hand ([`beside`]) for a field of a
 /// request is otherwise inlined, and a binding has to name its type after
 /// the field it sits in.
-#[cfg(feature = "schema")]
+#[cfg(all(feature = "schema", feature = "western"))]
 pub(crate) fn defined(
     generator: &mut schemars::SchemaGenerator,
     name: &str,

@@ -17,7 +17,7 @@ import java.util.Objects;
  * @param rule The rule's key.
  * @param source Where the publisher says it.
  */
-public record PublishedEntryWithdraw(Boolean adhika, PublishedDay day, com.teispace.teistro.Masa month, String rule, String source) implements RequestJson, PublishedEntry {
+public record PublishedEntryWithdraw(Boolean adhika, CalendarDay day, com.teispace.teistro.Masa month, String rule, String source) implements RequestJson, PublishedEntry {
     /** The `action` this variant is written under. */
     public static final String ACTION = "WITHDRAW";
 
@@ -42,7 +42,7 @@ public record PublishedEntryWithdraw(Boolean adhika, PublishedDay day, com.teisp
      * @param rule The rule's key.
      * @param source Where the publisher says it.
      */
-    public PublishedEntryWithdraw(PublishedDay day, String rule, String source) {
+    public PublishedEntryWithdraw(CalendarDay day, String rule, String source) {
         this(null, day, null, rule, source);
     }
 
@@ -59,7 +59,7 @@ public record PublishedEntryWithdraw(Boolean adhika, PublishedDay day, com.teisp
     /** Builds a {@link PublishedEntryWithdraw} a field at a time. */
     public static final class Builder {
         private Boolean adhika;
-        private PublishedDay day;
+        private CalendarDay day;
         private com.teispace.teistro.Masa month;
         private String rule;
         private String source;
@@ -83,7 +83,7 @@ public record PublishedEntryWithdraw(Boolean adhika, PublishedDay day, com.teisp
          * @param day The occurrence's day, as the publisher reckons it.
          * @return this builder
          */
-        public Builder day(PublishedDay day) {
+        public Builder day(CalendarDay day) {
             this.day = day;
             return this;
         }
@@ -143,7 +143,7 @@ public record PublishedEntryWithdraw(Boolean adhika, PublishedDay day, com.teisp
         Map<String, Object> json = Read.object(raw, "PublishedEntryWithdraw");
         return new PublishedEntryWithdraw(
             Read.orNull(json.get("adhika"), present -> Read.bool(present, "PublishedEntryWithdraw.adhika")),
-            PublishedDay.of(Read.required(json.get("day"), "PublishedEntryWithdraw.day")),
+            CalendarDay.of(Read.required(json.get("day"), "PublishedEntryWithdraw.day")),
             Read.orNull(json.get("month"), present -> Read.member(present, "PublishedEntryWithdraw.month", com.teispace.teistro.Masa::byKey)),
             Read.text(Read.required(json.get("rule"), "PublishedEntryWithdraw.rule"), "PublishedEntryWithdraw.rule"),
             Read.text(Read.required(json.get("source"), "PublishedEntryWithdraw.source"), "PublishedEntryWithdraw.source"));

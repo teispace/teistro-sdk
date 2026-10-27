@@ -403,7 +403,7 @@ __all__ = [
     "AbhijitPada",
     "LatinName",
     "Upanayana",
-    "PublishedDay",
+    "CalendarDay",
     "Interval",
     "SaitRule",
     "EkadashiRule",
@@ -571,7 +571,6 @@ __all__ = [
     "VyanjuliPast",
     "NakshatraBar",
     "EkadashiKinds",
-    "CalendarDate",
     "TithiHalf",
     "SkippedDay",
     "Computus",
@@ -587,15 +586,9 @@ __all__ = [
     "GhataRow",
     "Portion",
     "FestivalWhich",
-    "CalendarResolution",
-    "CalendarResolutionDefined",
-    "CalendarResolutionTabular",
-    "CalendarResolutionComputed",
-    "CalendarResolutionDivergent",
     "FestivalCase",
     "DayEdge",
     "Tara",
-    "MonthDay",
 ]
 
 
@@ -3320,7 +3313,7 @@ class PublishedEntrySet(TypedDict, total=False):
     adhika: Optional[bool]
     """And whether that month is adhika."""
 
-    day: Required[PublishedDay]
+    day: Required[CalendarDay]
     """The published day."""
 
     month: Optional[Union[_catalogue.Masa, str]]
@@ -3341,7 +3334,7 @@ class PublishedEntryAdd(TypedDict, total=False):
 
     action: Required[Literal['ADD']]
 
-    day: Required[PublishedDay]
+    day: Required[CalendarDay]
     """The day."""
 
     key: Required[str]
@@ -3365,7 +3358,7 @@ class PublishedEntryWithdraw(TypedDict, total=False):
     adhika: Optional[bool]
     """As `SET`'s."""
 
-    day: Required[PublishedDay]
+    day: Required[CalendarDay]
     """The occurrence's day, as the publisher reckons it."""
 
     month: Optional[Union[_catalogue.Masa, str]]
@@ -5335,8 +5328,8 @@ Upanayana: TypeAlias = Literal['DONE', 'NOT_DONE', 'NOT_PERFORMED']
 """
 
 
-class PublishedDay(TypedDict, total=False):
-    """A day as a publisher prints it, in any calendar the SDK ships: the answer gives it in the range's."""
+class CalendarDay(TypedDict, total=False):
+    """A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say."""
 
     calendar: Required[Union[_catalogue.Calendar, str]]
     """Its calendar."""
@@ -5354,7 +5347,7 @@ class PublishedDay(TypedDict, total=False):
     """The month, 1-based."""
 
     year: Required[int]
-    """The year."""
+    """The astronomical year."""
 
 
 # A half-open interval of time, `[from, to)`.
@@ -6309,8 +6302,8 @@ class OriginDate(TypedDict, total=False):
 
     by: Required[Literal['DATE']]
 
-    date: Required[CalendarDate]
-    """The date."""
+    date: Required[CalendarDay]
+    """The date, as a request writes it."""
 
 
 class OriginLunar(TypedDict, total=False):
@@ -7120,31 +7113,6 @@ class EkadashiKinds(TypedDict, total=False):
     """The 12th alone in excess."""
 
 
-class CalendarDate(TypedDict, total=False):
-    """A date in a calendar. Years are astronomical (1 BCE is 0); an era is attached for presentation only."""
-
-    calendar: Required[Union[_catalogue.Calendar, str]]
-    """The calendar."""
-
-    day: Required[int]
-    """The day, 1-based; for the ISO week date, the weekday 1 to 7."""
-
-    era: Optional[EraNumber]
-    """The era view, when the calendar has one."""
-
-    leap: Optional[Union[_catalogue.Leap, Literal['MONTH', 'DAY', 'MONTH_AND_DAY']]]
-    """Whether the month or the day is the first of two bearing the same number, in a calendar that repeats them (the Tibetan); left out of the wire when absent, and refused by every calendar that repeats neither."""
-
-    month: Required[int]
-    """The month, 1-based; for the ISO week date, the week."""
-
-    resolution: Required[CalendarResolution]
-    """How the date was resolved."""
-
-    year: Required[int]
-    """The astronomical year."""
-
-
 TithiHalf: TypeAlias = Literal['FIRST', 'SECOND']
 """Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
 
@@ -7314,52 +7282,6 @@ FestivalWhich: TypeAlias = Literal['EARLIER', 'LATER']
 """
 
 
-CalendarResolution: TypeAlias = "Union[CalendarResolutionDefined, CalendarResolutionTabular, CalendarResolutionComputed, CalendarResolutionDivergent]"
-"""How a calendar date was resolved (`docs/03-design/calendar-bikram-sambat.md`)."""
-
-
-class CalendarResolutionDefined(TypedDict, total=False):
-    """A mathematical definition; exact by construction."""
-
-    kind: Required[Literal['DEFINED']]
-
-
-class CalendarResolutionTabular(TypedDict, total=False):
-    """From the authority's published table."""
-
-    kind: Required[Literal['TABULAR']]
-
-    authority: Required[str]
-    """The authority."""
-
-    edition: Required[str]
-    """The table's edition."""
-
-
-class CalendarResolutionComputed(TypedDict, total=False):
-    """Computed outside the table's range."""
-
-    kind: Required[Literal['COMPUTED']]
-
-    model: Required[str]
-    """The rule or model."""
-
-
-class CalendarResolutionDivergent(TypedDict, total=False):
-    """Inside the range and the two disagree; the table was followed."""
-
-    kind: Required[Literal['DIVERGENT']]
-
-    computed: Required[MonthDay]
-    """The computed month and day."""
-
-    model: Required[str]
-    """The rule or model that computed the other answer."""
-
-    tabular: Required[MonthDay]
-    """The table's month and day."""
-
-
 FestivalCase: TypeAlias = Literal['EARLIER_ONLY', 'LATER_ONLY', 'BOTH', 'NEITHER', 'EQUAL_PARTS', 'UNEQUAL_PARTS']
 """How the tithi held the rite's time on the two days (pp. 6–7).
 
@@ -7393,13 +7315,3 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 `MITRA`: 8, good.
 `PARAMA_MITRA`: 9, very favourable.
 """
-
-
-class MonthDay(TypedDict, total=False):
-    """A month and a day inside a year, for a divergence report."""
-
-    day: Required[int]
-    """The day, 1-based."""
-
-    month: Required[int]
-    """The month, 1-based."""

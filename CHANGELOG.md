@@ -44,6 +44,17 @@ the previous release, not by nobody having looked.
 - Dart: a field named for one of ten reserved words the emitter's list
   missed (`case`, `while` ...) is renamed as the others are (`caseValue`).
 
+**A request's date carries no resolution.**
+**Numbers:** none.
+- An anniversary's `DATE` origin took a `CalendarDate`, so every binding
+  had to write `resolution`, which says how an *answer's* date was
+  resolved and which the reader ignored. It takes `CalendarDay` now: the
+  calendar, year, month, day and an optional era and leap mark, as
+  `calendar.convert` and a published set already read a day.
+  `PublishedDay` is that type under its general name, `CalendarDay`, in
+  `teistro_calendar`; its JSON is unchanged. An answer's `CalendarDate`
+  keeps `resolution` required, so no answer's type loosens.
+
 **Muhurta rules are typed in every binding.**
 **Numbers:** none.
 - `MuhurtaRequest.rules` was raw JSON too. It is now `MuhurtaRequestRules`,
