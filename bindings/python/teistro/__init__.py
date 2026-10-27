@@ -632,7 +632,7 @@ from ._requests import (
     MonthRuleAny as MonthRuleAny,
     MonthRuleLunar as MonthRuleLunar,
     MonthRuleSolar as MonthRuleSolar,
-    Pada as Pada,
+    NakshatraPada as NakshatraPada,
     Shool as Shool,
     MuhurtaUnwanted as MuhurtaUnwanted,
     MuhurtaClauseKindTithi as MuhurtaClauseKindTithi,

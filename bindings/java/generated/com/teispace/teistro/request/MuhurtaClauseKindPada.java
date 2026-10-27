@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * @param pada Which.
  */
-public record MuhurtaClauseKindPada(Pada pada) implements RequestJson, MuhurtaClauseKind {
+public record MuhurtaClauseKindPada(NakshatraPada pada) implements RequestJson, MuhurtaClauseKind {
     /** The `clause` this variant is written under. */
     public static final String CLAUSE = "PADA";
 
@@ -38,7 +38,7 @@ public record MuhurtaClauseKindPada(Pada pada) implements RequestJson, MuhurtaCl
     public static MuhurtaClauseKindPada of(Object raw) {
         Map<String, Object> json = Read.object(raw, "MuhurtaClauseKindPada");
         return new MuhurtaClauseKindPada(
-            Pada.of(Read.required(json.get("pada"), "MuhurtaClauseKindPada.pada")));
+            NakshatraPada.of(Read.required(json.get("pada"), "MuhurtaClauseKindPada.pada")));
     }
 
     @Override

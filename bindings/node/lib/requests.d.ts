@@ -3281,7 +3281,7 @@ export interface ActivityRules {
   /**
    * The quarters of a star rejected though the star is good.
    */
-  readonly padas: readonly Pada[];
+  readonly padas: readonly NakshatraPada[];
   /**
    * For a journey asked a direction, the ghati each weekday's disha shool is lifted at. Empty, the direction is not judged; a weekday missing from a list that is not shuts its days to the direction.
    */
@@ -5939,7 +5939,7 @@ export interface MonthRuleSolar {
 /**
  * A nakshatra's quarter.
  */
-export interface Pada {
+export interface NakshatraPada {
   /**
    * The star.
    */
@@ -6990,7 +6990,7 @@ export interface MuhurtaClauseKindPada {
   /**
    * Which.
    */
-  readonly pada: Pada;
+  readonly pada: NakshatraPada;
 }
 
 /**

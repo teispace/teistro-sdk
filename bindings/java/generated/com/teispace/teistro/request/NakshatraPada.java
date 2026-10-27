@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param nakshatra The star.
  * @param pada The quarter, 1 to 4.
  */
-public record Pada(com.teispace.teistro.Nakshatra nakshatra, int pada) implements RequestJson {
+public record NakshatraPada(com.teispace.teistro.Nakshatra nakshatra, int pada) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -22,23 +22,23 @@ public record Pada(com.teispace.teistro.Nakshatra nakshatra, int pada) implement
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public Pada {
-        Objects.requireNonNull(nakshatra, "`Pada.nakshatra` is required");
-        Read.range(pada, "Pada.pada", 0L, 255L);
+    public NakshatraPada {
+        Objects.requireNonNull(nakshatra, "`NakshatraPada.nakshatra` is required");
+        Read.range(pada, "NakshatraPada.pada", 0L, 255L);
     }
 
     /**
-     * A {@code Pada} from its JSON, as {@code Json.read} answers it.
+     * A {@code NakshatraPada} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static Pada of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "Pada");
-        return new Pada(
-            Read.member(Read.required(json.get("nakshatra"), "Pada.nakshatra"), "Pada.nakshatra", com.teispace.teistro.Nakshatra::byKey),
-            Read.int32(Read.required(json.get("pada"), "Pada.pada"), "Pada.pada"));
+    public static NakshatraPada of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "NakshatraPada");
+        return new NakshatraPada(
+            Read.member(Read.required(json.get("nakshatra"), "NakshatraPada.nakshatra"), "NakshatraPada.nakshatra", com.teispace.teistro.Nakshatra::byKey),
+            Read.int32(Read.required(json.get("pada"), "NakshatraPada.pada"), "NakshatraPada.pada"));
     }
 
     @Override
