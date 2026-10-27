@@ -1,6 +1,6 @@
 # The state readings: a reading for what a chart *is*, not only for what it triggers
 
-Status: `design`, 2026-09-22. The measurements in §2 were taken from the
+Status: `built`, 2026-09-22; every step of §7 built. The measurements in §2 were taken from the
 baseline engine's built corpus, this repository's catalogue and its shipped
 rule packs on that date; §6 says which of them become a generated page so
 they cannot go stale here.

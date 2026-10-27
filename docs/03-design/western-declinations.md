@@ -148,8 +148,8 @@ not need to ask its ephemeris for anything new.
   rank 1 text read yet. The declinations are reported, so a reader can
   compare them with the obliquity.
 - **Leo's equal distances** (p. 48). Two planets equally distant from a
-  third act "much the same as a parallel". That is a midpoint, and it
-  waits on a page of its own.
+  third act "much the same as a parallel". That is a midpoint, read in
+  [`western-midpoints.md`](western-midpoints.md).
 - **Antiscia.** Lilly's reflections about the solstices are a different
   equality (of declination by construction, along the ecliptic), read
   on their own page when his text is.

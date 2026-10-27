@@ -1,6 +1,6 @@
 # The chart foundation and the panchanga day at the boundary
 
-Status: `designed`, written 2026-09-08 from the shape
+Status: `built`, written 2026-09-08 from the shape
 [`schema-measured.md`](schema-measured.md) measured. Derives from
 [`ffi-abi-and-api-description.md`](ffi-abi-and-api-description.md) (the
 result blob and how a section is described),

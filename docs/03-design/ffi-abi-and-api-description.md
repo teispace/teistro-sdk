@@ -33,9 +33,11 @@ the header, the description and the library equal.
 What crosses today: the context and its options, the last error, keys and
 ids, dates in every shipped calendar, civil times to instants with the
 zone metadata and the scale conversions, the locale engine, and positions
-over the ephemeris port completed into the requested frame. The chart,
-dasha, panchanga and rule modules add their entry points to the same crate
-as they are built (`09-guidelines/03-adding-a-module.md`, step 5).
+over the ephemeris port completed into the requested frame, and the
+chart, dasha, panchanga and rule modules' entry points
+(`crates/ffi/src/chart.rs`, `panchanga.rs` and their neighbours); a new
+module adds its own to the same crate (`09-guidelines/03-adding-a-module.md`,
+step 5).
 
 ## 2. Inputs, settings and ports
 
@@ -82,7 +84,9 @@ and its hash (`ts_context_settings_hash`).
 
 ### 3.3 The boundary types
 
-Twenty-four `#[repr(C)]` structs cross today: the port's ten (the
+The `#[repr(C)]` structs that cross are the header's sized ones
+(`teistro.h` asserts each size; 27 on 2026-10-27). The first twenty-four
+were the port's ten (the
 observer, the position request and columns, the obliquity, the horizon
 and crossing requests, the crossing event, the data hash, the capabilities
 and the vtable, all from `crates/port-ephemeris/src/vtable.rs`) and the
@@ -496,7 +500,8 @@ returns are a described enum (`ProviderCode`), so a binding that
 implements a provider never writes a number; the one exception is
 `NativeCallable`'s `exceptionalReturn`, which the language requires to be
 a compile-time constant and the adapter checks against the catalogue when
-it binds. Python's adapter will be over `Py<PyAny>` with the GIL.
+it binds. Python's adapter is a `ctypes.CFUNCTYPE` trampoline the interpreter
+calls with the GIL held (`bindings/python/teistro/_host.py`).
 
 The toolchain: `cargo xtask gen ffi` writes `idl/api.json`,
 `bindings/c/include/teistro.h`, the six Node files and the three Dart
@@ -590,8 +595,8 @@ time, a depth-3 tree built eagerly in 6 µs. Budget for the entry points
 above: under 1 µs over the Rust call they wrap, allocation only for the
 result they hand out; `ts_positions` encodes in time linear in the cells.
 The bindings' benchmarks measure and publish these when they exist
-(`05-testing/01-quality-bar.md`, "FFI cost"); nothing here is measured
-yet.
+(`05-testing/01-quality-bar.md`, "FFI cost");
+`05-testing/ffi-cost-measured.md` measures them.
 
 ## 8. Tests
 
@@ -711,7 +716,7 @@ the engine's English sentences, as the engine defines them.
   that register isolate-local callbacks keep one context per isolate.
 - 32-bit targets: the layout computes for them and the tests hold the
   host's width, but the header asserts sizes for 64-bit targets only;
-  the wasm binding adds the ILP32 assertions when it lands.
+  the wasm binding has not added ILP32 assertions.
 - The provenance's `provider.flags_used` carries the completion steps
-  today; when the chart layer exists, the envelope grows the calendar and
-  time stamps the design names.
+  today; the envelope's calendar and time stamps the design names are
+  not added, though the chart layer is built.

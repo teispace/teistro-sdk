@@ -1,9 +1,8 @@
 # The Java binding
 
 Status: `building`, §13 steps 0 to 7, 9 and 10 built, step 8 (Central)
-open, and three checks this page designs not built: the wrong-usage
-compile (§11 step 5), the create-use-drop leak check (§11) and a test run
-on JDK 22 (§11, CI); written 2026-10-08, before any code, as every binding page is. It derives from
+open. Of the checks this page designs, only a test run on JDK 22 (§11,
+CI) is not built: every CI row installs JDK 25; written 2026-10-08, before any code, as every binding page is. It derives from
 [`ffi-abi-and-api-description.md`](ffi-abi-and-api-description.md) (the
 ABI, the description, the result blob, the error record),
 [`python-binding.md`](python-binding.md) (the binding nearest in shape:
@@ -16,7 +15,7 @@ the contract for Java through FFM), ADR-0014 (everything we author is
 Rust except a binding's own layer), ADR-0023 (type safety in every
 binding), ADR-0029 and ADR-0030 (plugins and the engine façade). The
 roadmap item is `07-roadmap/00-roadmap.md`, Completion plan, Track A,
-items 6 (the binding) and 3 (Maven Central). It will be built as
+items 6 (the binding) and 3 (Maven Central). It is built as
 `bindings/java`.
 
 Every claim about this repository names the file it was read from. Every
@@ -130,7 +129,7 @@ module of the same name.
 | `test/` | the surface, the decoders against `target/tsrb`, the layouts against the library, the loader's refusals, the provider | by hand |
 | `example/*.java` | the shared examples (§11) | by hand |
 | `parity/ParityRunner.java` | this binding's report for `check-parity` (not `Parity`, which the catalogue spells as an enum) | by hand |
-| `typecheck/Wrong.java` | the usages that must not compile, each with the error it must raise: designed, not built | by hand |
+| `typecheck/Wrong.java` | the usages that must not compile, each with the error it must raise | by hand |
 
 The raw layer is **exported**, as Dart exposes `TeistroLibrary`
 (`bindings/dart/lib/teistro.dart`): a consumer may call an entry point the
@@ -574,8 +573,8 @@ trips and `UNKNOWN`; the loader's refusals (a missing explicit path, a
 wrong build, a missing platform); a provider answering a real grid and one
 that throws; and the quality bar's leak check, 10,000 create-use-drop
 cycles with a flat RSS curve, which `05-testing/01-quality-bar.md` already
-names for Java. The leak check is designed, not built: the nearest test
-binds and releases two hundred providers (§13 step 5).
+names for Java. The leak check is built: `BytesInUse` measures the
+allocator's bytes in use around closed and dropped contexts and charts.
 
 **Parity.** `bindings/java/parity/ParityRunner.java` walks the scenario of
 `bindings/python/parity.py` and prints the same `key<TAB>value` lines;
@@ -699,7 +698,7 @@ un-publish, `03-release-process.md`, "Withdrawing").
    `Teistro`, `Context` with `calendar().convert`, `time().resolve`,
    `intl().render` and `positions`, enough to print the C smoke test's four
    facts; one refusal raised with its field and hint, and one after
-   another; `check-java` steps 1 to 3 and 5 (step 5 not built). This proves the generated
+   another; `check-java` steps 1 to 3 and 5. This proves the generated
    layer, the struct handshake, an owned string, a blob, the error record
    and the build refusal in one program, and is the smallest thing that
    does.
@@ -744,7 +743,7 @@ un-publish, `03-release-process.md`, "Withdrawing").
    does. The module's sources reach `javac` through an argument file:
    passed one by one they outgrew a Windows command line.
 5. **The provider, plugins and the engine**, with the throwing-provider
-   test and the leak check (the leak check not built).
+   test and the leak check.
    **Begun 2026-10-08:** `EphemerisProvider`, Python's contract with
    its defaults, bound by `HostProvider`: two upcall stubs and the
    capabilities described once, in a shared arena the context closes

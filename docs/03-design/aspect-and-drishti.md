@@ -1,6 +1,6 @@
 # The drishti: which bodies reach which
 
-Status: `designed`, written 2026-09-07 from the falsification pass in
+Status: `built`, written 2026-09-07 from the falsification pass in
 [`aspect-drishti-measured.md`](aspect-drishti-measured.md), which
 measured every rule below before this page existed. Derives from
 [`chart-foundation.md`](chart-foundation.md) (the positions and the
@@ -282,9 +282,9 @@ allocate to find out.
 
 ## 13. Open questions
 
-- **The sphuta drishti's construction** (C45), above. Drik Bala waits on
-  it, and the specification in §8 is what a source will be checked
-  against.
+- **The sphuta drishti's construction** (C45), above: built as Sripati's
+  construction (Raman, *Graha and Bhava Balas*, Arts. 110–115,
+  `crates/aspect/src/sphuta.rs`), and Drik Bala reads it.
 - **What a node aspects.** `aspect.node_aspects` offers three readings,
   the corpus prefers none, and the root's `NONE` stays the default
   because it claims least. The two that give a node more each add two

@@ -174,9 +174,8 @@ saham by key. A refusal names where it was written: a misspelt saham is
 `varsha.sahams[0]`, a rule word `varsha.sahamRules.houses`.
 
 **Not across**: a caller's own `SahamFormula`, which Rust has at
-`saham_point`, and the birth chart's sahams, which the source reads beside
-the year's. Both wait on a consumer asking; the second will cross with
-saham strength, which needs it.
+`saham_point`. The birth chart's sahams, which the source reads beside the
+year's, cross with their strength ([`tajika-saham-strength.md`](tajika-saham-strength.md)).
 
 ## What is decided and what is not
 
@@ -186,7 +185,7 @@ saham strength, which needs it.
 | **decided by measurement** | that the rival "between" is a whole-sign rule (600 of 600 probes) and what it moves (§14); that the default must not read the chart's chalit, which is Vehlow's under two shipped profiles |
 | **a reading, not a decision** | Roga's two formulas, both the source's |
 | **built** | `Saham` with `ALL` and `formula`; `SahamFormula`, `SahamTriple`, `SahamTerm`; `sahams` and `saham_point`, memoised per chart; `SahamRules` with `AddSign`, `HousePoints` and `RogaReading`; `sripati_mid_points`; `teistro_chart::foundation::angles_of`; the façade's `sahams`, `sahams_with_rules` and `saham_point`, which need no ephemeris |
-| **not built** | a saham's **strength**, which the source judges by its lord's dignity, its associations and aspects, the Panchavargiya floor of five units, and the **Harsha bala** (built 2026-09-24, `tajika-harsha.md`); a caller's own formula and the birth chart's sahams across the boundary |
+| **built since** | a saham's **strength**, which the source judges by its lord's dignity, its associations and aspects, the Panchavargiya floor of five units, and the **Harsha bala** ([`tajika-saham-strength.md`](tajika-saham-strength.md)), and the birth chart's sahams across the boundary. **Not built**: a caller's own formula across the boundary |
 
 ## The order of work
 

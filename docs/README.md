@@ -22,10 +22,10 @@ Three files are living documents and are updated in every working session:
 |---|---|---|
 | [`00-vision/`](00-vision/) | what Teistro SDK is, the principles it holds to, and the scope of the first version | drafted |
 | [`01-research/`](01-research/README.md) | the astrology feature universe across traditions, the competitive landscape, the baseline engine, the platform research (language, bindings, ephemeris abstraction, localization, calendars, modularity, performance, security, testing, docs, CI/CD, licensing), and the verification-cruxes register | drafted; the register is living |
-| [`02-architecture/`](02-architecture/00-overview.md) | the shape: layers, modules, ports, data model, API conventions, bindings, extensibility, performance and security architecture | draft, pending decisions |
+| [`02-architecture/`](02-architecture/00-overview.md) | the shape: layers, modules, ports, data model, API conventions, bindings, extensibility, performance and security architecture | draft; every decision taken (`QUESTIONS.md`) |
 | [`03-design/`](03-design/README.md) | per-module detailed designs, one page per module written before its code, and the generated pages that measure them | living; each page states its own status, and [`03-design/README.md`](03-design/README.md) indexes them |
-| [`04-implementation/`](04-implementation/README.md) | repository layout, coding standards, build system | planned |
-| [`05-testing/`](05-testing/README.md) | the quality bar (accepted, binding), the golden-vector corpus and the test and conformance plans | quality bar accepted; golden vectors drafted (the baseline fixtures in `fixtures/`); other plans planned |
+| [`04-implementation/`](04-implementation/README.md) | repository layout, coding standards, build system | built |
+| [`05-testing/`](05-testing/README.md) | the quality bar (accepted, binding), the golden-vector corpus and the test and conformance plans | quality bar accepted; golden vectors drafted (the baseline fixtures in `fixtures/`); the generated pages built (`ACCURACY.md`, `CONFORMANCE.md`, `SIZES.md`, speed, coverage, mutants) |
 | [`06-cicd/`](06-cicd/README.md) | pipelines, release engineering, packaging per binding | built |
 | [`07-roadmap/`](07-roadmap/00-roadmap.md) | phases, milestones, deliverables and exit criteria | drafted |
 | [`08-decisions/`](08-decisions/README.md) | ADRs | accepted; the index lists each |
@@ -39,7 +39,8 @@ Three files are living documents and are updated in every working session:
 - British spelling, as in Teimeris (`behaviour`, `optimise`, `licence` the
   noun). See `09-guidelines/01-docs-style.md`.
 - A page is either derived from a source of truth or checked against one.
-  Until the code exists, the source of truth for feature claims is the
-  research pages, which cite what they were read from.
+  The source of truth for a feature claim is its generated page or the
+  code; for what is not built, the research pages, which cite what they
+  were read from.
 - Open questions are never buried in prose. They go to `QUESTIONS.md` with a
   recommendation, and the page that raised them links to the question.

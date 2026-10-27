@@ -200,7 +200,7 @@ between the engines' nutation model and IAU 2000B.
 
 The port is one `#[repr(C)]` vtable: `struct_size`, `abi_version`, and
 function pointers for `capabilities`, `positions`, `obliquity`,
-`delta_t`, `ayanamsha`, `dut1`, `horizon_event` and `crossings`, the last six nullable (ABI version 2). Requests, columns and
+`delta_t`, `ayanamsha`, `dut1`, `horizon_event`, `crossings`, `native_manifest` and `native_call`, the last eight nullable (ABI version 4). Requests, columns and
 capabilities cross as `#[repr(C)]` structs with their own `struct_size`
 so either side can be older. Columns are caller-allocated: the SDK owns
 the vectors and hands pointers with a capacity; a provider writes into

@@ -1,6 +1,7 @@
 # The Indian lunisolar calendar
 
-Status: `design`. Written from
+Status: `built` for the mark, the year's name and Nepal Sambat; the full
+calendar (§6) is not built. Written from
 [`calendar-indian-lunisolar-measured.md`](calendar-indian-lunisolar-measured.md),
 which measured every rule this page states over 12 368 lunar months of a
 millennium and against all fifty-five recorded days. Phase 2 named this

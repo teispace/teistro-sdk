@@ -1,8 +1,8 @@
 # The Muntha, the office-bearers, and what the lord of the year waits on
 
 Status: `built`, 2026-09-22, for the Muntha and **all five
-office-bearers**; **designed, not built**, for the year lord chosen among
-them. Measured in
+office-bearers**; and built since for the year lord chosen among them
+([`varshesha.md`](varshesha.md)). Measured in
 [`muntha-measured.md`](muntha-measured.md) (`check-muntha`), and built on
 the annual chart's instant ([`annual-chart.md`](annual-chart.md)).
 

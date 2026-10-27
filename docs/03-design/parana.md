@@ -1,9 +1,10 @@
 # Parana: when a fast may be broken
 
-Status: `draft`, 2026-10-20. Research and design for the parana window,
-written from the texts before any code. Nothing here is built. The
-defaults marked **maintainer** in §3 are proposals until the maintainer
-confirms them.
+Status: `built`, 2026-10-22. Research and design for the parana window,
+written from the texts on 2026-10-20 before any code. The window's default
+was decided on 2026-10-26 (Q41): pratah, then aparahna, with no nakshatra
+bar. The built rule is `ParanaRule` (`festival-rules.md` §8.5); the
+defaults marked **maintainer** in §3 were proposals, kept as decided.
 
 Derives from `festival-rules.md` §8 (Ekadashi: which day is fasted). That
 page answers *which day*; this one answers *when, on the day after, the
@@ -196,7 +197,7 @@ yamas" is past the start of the daylight's last quarter (C659).
 | # | fork | proposed default | the other reading |
 |---|---|---|---|
 | C650 | what hari vasara is | **the first quarter of the 12th's own span** (HBV 13.258 quoting the *Viṣṇudharmottara*; DS p. 19; NS) | HBV 13.259's *kvacit*: the 11th's last quarter with the 12th's first, which bars parana while an 11th in excess still stands at sunrise |
-| C651 | the window when hari vasara allows the pratah, and when it does not | **maintainer**: proposed pratah, else aparahna, never madhyahna, as Appendix A does in all 146 | `PRATAH_ONLY` (DS p. 19's *bahavaḥ*: within the pratah or not at all; the window is then empty and the answer says so); `APARAHNA_ONLY` (DS's *kecit*, NS's teachers) |
+| C651 | the window when hari vasara allows the pratah, and when it does not | **decided** (Q41, 2026-10-26): pratah, else aparahna, never madhyahna, as Appendix A does in all 146 | `PRATAH_ONLY` (DS p. 19's *bahavaḥ*: within the pratah or not at all; the window is then empty and the answer says so); `APARAHNA_ONLY` (DS's *kecit*, NS's teachers) |
 | C652 | the 12th over before the parana day's sunrise | **maintainer**: proposed per observer, `EKADASHI_SMARTA` and `_RENUNCIANT` the 13th's pratah (DS p. 19, Appendix A's two cases), `EKADASHI_VAISHNAVA` inside the 12th before sunrise (HBV 13.241–253), the window from the later of the night's middle and the 12th's quarter to the 12th's end | the 13th for every observer; inside the 12th for every observer |
 | C653 | a 12th that ends inside the pratah | **the window from the later of sunrise and hari vasara's end to the 12th's end** (Appendix A, Amalaki 2025 at Delhi: the 12th ends at 08:13 and so does the window); a quarter always ends before its tithi, so the window is never empty | — ; stated so that a window is never invented past *T* |
 | C654 | water parana | **not a window**: reported as a note on every Ekadashi parana (DS p. 19, HBV 13.251–256), never chosen by the SDK | a separate "in distress" window, which no text times |
@@ -245,6 +246,11 @@ itself is.
 
 ### 4.2 The rule
 
+As built, the rule is `ParanaRule { at, hari_vasara, bars }`
+(`crates/panchanga/src/festival/ekadashi.rs`): the windows in order of
+preference, whether hari vasara is passed over, and the nakshatra bars
+(C700, none by default). The design it was built from:
+
 ```rust
 pub struct ParanaRule {
     pub after: ParanaAfter,       // Ekadashi | TithiEnd | Janmashtami | Dismissal
@@ -271,9 +277,10 @@ two days after a range already founds (`festival-rules.md` §4.3).
 
 Navaratri's parana is a day choice before it is a window, and it reads a
 dismissal the SDK does not model (the 10th joined with Shravana, and the
-custom of the 9th or the 10th). It is designed as a `FollowingRule` with
-a window once a Navaratri rule exists in a pack; until then it is listed
-here and not built.
+custom of the 9th or the 10th). It is built: the fast is broken after the
+visarjana (*Dharmasindhu* pp. 70–71) or at the 10th's first daylight
+(*Nirnayasindhu* p. 139), `ParanaAfter` in
+`crates/panchanga/src/festival/vrata.rs` (`festival-rules.md` §8.7).
 
 ## 5. What is measured
 
@@ -292,6 +299,8 @@ here and not built.
    says how often C651 and C652 change a window.
 
 ## 6. Order of work
+
+All three steps built 2026-10-22.
 
 1. The types and the evaluator in `teistro_panchanga::festival::parana`,
    the synthetic tests, proved red by breaking clause 2.

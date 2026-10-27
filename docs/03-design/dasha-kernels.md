@@ -212,13 +212,13 @@ the encoder refuses a batch whose charts disagree rather than writing a
 stride that lies.
 
 Node (`chart.dashas`), Python (`Chart.dashas`) and Dart (`Chart.dashas`)
-decode the sections once per batch, and `check-parity` holds all four
-surfaces, Rust included, to the same seeds, balances, 819 periods per
-chart and chains.
+decode the sections once per batch, and `check-parity` holds every
+binding's runner (Node, Python, Dart, Java and wasm) and Rust's to the
+same seeds, balances, periods and chains.
 
-Every row reaches the boundary the same way: a request names any of the
-seventeen, and a system the catalogue names with no row, Kalachakra for one,
-is refused by its place with the built systems as the hint. A sign-based
+Every row reaches the boundary the same way: a request names any built system
+(`dasha-coverage-measured.md`), and a system the catalogue names with no
+row, `TITHI_ASHTOTTARI` for one, is refused by its place with the built systems as the hint. A sign-based
 dasha has no seed and no balance, so the `dashas` row says which of its
 columns hold: `seeded` for the seed, overflow and balance, and `signed` for
 the periods' `sign` column — two flags and not one family, because Tribhagi
@@ -836,11 +836,10 @@ period levels as an ordinal message with the profile's level names.
   lord appears twice. All three run on one year kernel, `YearDasha`, and
   none of them is a scaled row.
 - **Panchaswara** has no attested shape here; stays S.
-- **Karaka dasha** orders lords by chara-karaka strength; that would be a
-  third chart-query field in K-udu. It is not added until Ashtakavarga,
-  Tara and Karaka are implemented together, at which point either one
-  chart-query mechanism serves all three or the kernel is redesigned as
-  an interpreter (ADR-0017's kill criterion).
+- **Karaka dasha** is built, with the Tara and Ashtakavarga dashas, as a
+  graha dasha (K-graha, `teistro_dasha::karaka_years`): the chart gives
+  the lords and years, so no third chart-query field was added to K-udu
+  and ADR-0017's kill criterion was not reached.
 - **Year length per system** is not settled by any reference read so far;
   savana 360 against 365.25 compounds to about 21 months over a 120-year
   cycle. Resolved before any dasha conformance run (cruxes page).

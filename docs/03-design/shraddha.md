@@ -1,11 +1,11 @@
 # Shraddha, barkhi and janma tithi: personal lunar anniversaries
 
-Status: `building`, 2026-10-22. Steps 1–3 of §6 are built: the windows
-and the choice, the origin, and anniversaries through every binding
-(§3.1), and the `PITRI_PAKSHA` pack (§3.2). The first-year schedule (C673)
-is not yet. The **maintainer** forks in §4 ship as parameters with the
+Status: `built`, 2026-10-22. Steps 1–5 of §6 are built: the windows
+and the choice, the origin, anniversaries through every binding
+(§3.1), the `PITRI_PAKSHA` pack (§3.2) and the first-year schedule
+(§3.3, C673). The **maintainer** forks in §4 ship as parameters with the
 researched default, as the maintainer delegated (C662 muhurtas 8–9, C666
-the adhika month with `NIJA` for Nepal); C673 waits.
+the adhika month with `NIJA` for Nepal).
 
 A family keeps a death anniversary (barkhi, *pratyābdika* or
 *sāṃvatsarika śrāddha*) and a birthday (janma tithi, *vardhāpana*) by the

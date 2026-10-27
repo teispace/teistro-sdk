@@ -140,7 +140,7 @@ about a third chart-query field for **periods**, and this is not one.
 
 1. **The karakamsha** (`dasha::jaimini::karakamsha`): **done**, both
    readings of its houses, through `sdk.chart().jaimini`. At the
-   boundary it waits on step 6.
+   boundary through step 6.
 2. **The Brahma graha** under both rules: **done**, measured over the
    corpus's births in `jaimini-measured.md`, which counts the charts the
    verses find none on.

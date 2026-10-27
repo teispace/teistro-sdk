@@ -3,7 +3,7 @@
 Status: `built` — steps 1 to 6 built 2026-09-14 (the renderer in [`render-svg.md`](render-svg.md)); §7f, a consumer's layout from a binding, built 2026-09-15. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
-SVG renderer, is §8's later step. The research this page rests on was
+SVG renderer, is built ([`render-svg.md`](render-svg.md)). The research this page rests on was
 done before it was written, and it corrects the ADR in two places (§2).
 
 ## 1. Purpose and scope
@@ -316,9 +316,8 @@ where that is won or lost.
   Indian D1, South Indian D9, the wheel's D1) over two instants and print
   every cell's sign, house, lagna flag, ring, bodies, label, anchor and
   outline, and every mark. The runners agree on every value.
-- **Not yet across the boundary**: a consumer's own layout. The C ABI has
-  no registration call, so a binding draws the six shipped layouts. The
-  Rust façade registers any layout.
+- **Across the boundary**: a consumer's own layout, registered from any
+  binding (§7f), as the Rust façade registers any layout.
 
 ## 7f. A consumer's own layout, from any binding
 

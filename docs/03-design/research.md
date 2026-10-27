@@ -393,8 +393,8 @@ validates it as it does for a reading. An event study (`EventStudy`,
 `crates/sdk/src/area/research.rs`) reads its rule set through its delivery
 in the running periods of the dasha the study names, a catalogued system
 or one the context registered (`DashaName`; a key no registration has is
-refused at `dasha` when the study runs); a gochar condition at the event's
-instant is designed, not built.
+refused at `dasha` when the study runs); a rule that reads transits is read
+under the sky at the event's instant (C382), within `max_pairs`.
 
 ### 2.5 The knobs
 

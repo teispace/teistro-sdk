@@ -1,13 +1,13 @@
 # The Flutter package
 
-Status: `designed`, 2026-10-11, before any code. The roadmap item is
+Status: `built`, designed 2026-10-11 before any code. The roadmap item is
 `07-roadmap/00-roadmap.md`'s "the Flutter build-hook package, which carries
 the library into an Android or iOS build" (`STATUS.md`, How to resume). It
 derives from the Dart binding's loader and installer
 (`bindings/dart/lib/teistro.dart`, `lib/src/install.dart`), the binding
 architecture ([`../02-architecture/07-binding-architecture.md`](../02-architecture/07-binding-architecture.md)), and `QUESTIONS.md` Q16 (the name
 `teistro_flutter`), ADR-0014 (a gate skips with a note where its toolchain
-is missing) and ADR-0022 (the same bits on every platform). It will be
+is missing) and ADR-0022 (the same bits on every platform). It is
 built as `bindings/flutter`.
 
 Every claim about this repository names the file it was read from; every

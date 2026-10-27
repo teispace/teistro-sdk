@@ -38,7 +38,7 @@ and the documentation in `docs/` is organised as a map. Start at
 | | |
 |---|---|
 | stage | before the first release: version `0.0.0`, every package marked unpublishable until a release is cut |
-| built | the astronomy layer and the built-in ephemeris; charts, vargas, houses, balas and dashas; the panchanga, the Bikram Sambat calendar, festivals and muhurta; rules for yogas and doshas; matching; Tajika annual charts and prashna; KP; the Hellenistic and Western techniques; rectification; interpretation in English and Nepali through Teistro Intl |
+| built | the astronomy layer and the built-in ephemeris; charts, vargas, houses, balas and dashas; the panchanga, the Bikram Sambat calendar, festivals and muhurta; rules for yogas and doshas; matching; Tajika annual charts and prashna; KP; the Hellenistic and Western techniques; rectification; numerology, rashifal, remedies and research over chart batches; gochar and Sade Sati; Jaimini; the Indian national, Bangladeshi, tabular Hijri and Tibetan calendars; the sankalpa's parts and the ashauch; an iCalendar feed and signed override packs; an MCP server; interpretation through Teistro Intl, composed text in English and Nepali and the classical readings in English, Nepali, Hindi and Sanskrit |
 | held by | generated pages a gate keeps true: [`ACCURACY.md`](docs/05-testing/ACCURACY.md), [`CONFORMANCE.md`](docs/05-testing/CONFORMANCE.md), [`SIZES.md`](docs/05-testing/SIZES.md), and one scenario compared value by value across every binding |
 | next | the dated plan to the release candidate in [`docs/07-roadmap/`](docs/07-roadmap/00-roadmap.md), then review by the maintainer, astrologers and researchers |
 

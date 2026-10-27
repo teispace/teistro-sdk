@@ -9,11 +9,11 @@ the boundary into every binding.
 
 A chart places nine grahas: the seven planets and the two nodes. The
 catalogue names three more, Uranus, Neptune and Pluto, and the built-in
-ephemeris computes all three. No chart carries them, so every Western
-reading that needs them stops short. Leo's lunar year (p. 41) lists the
+ephemeris computes all three. Before this page no chart carried them, so every Western
+reading that needed them stopped short. Leo's lunar year (p. 41) lists the
 progressed Moon quincunx Uranus in April 1907, and step 4 of
 [`western-progressions.md`](western-progressions.md) had to leave those
-contacts out. A Western aspect table, synastry and the wheel all wait on
+contacts out. A Western aspect table, synastry and the wheel all waited on
 the same thing. The feature register lists the three as P0, "partial
 (positions only)".
 

@@ -1,6 +1,7 @@
 # Implementation plan: the batch, the threads and the engine passthrough
 
-Status: `plan`, written 2026-09-09. Two bodies of work the maintainer
+Status: `built`, but for B3 (`libffi` dispatch, not begun); written
+2026-09-09. Two bodies of work the maintainer
 asked for in one sitting, kept in one document because they answer the
 same brief — **an SDK a consumer never has to work around**. The first is
 measured (`03-design/batch-and-parallelism-measured.md`); the second is
@@ -23,7 +24,8 @@ must open a second handle to the same engine and manage it themselves.
 threads from the start rather than as a later optimisation. The
 measurement says the SDK is at the opposite end today: `positions` is a
 true batch (one call whatever its size) and **everything built on it is a
-loop** — 69 ephemeris calls per chart, 1 213 per almanac day, at a mean
+loop** — 69 ephemeris calls per chart, 1 213 per almanac day (on 2026-09-09; now
+73 and 202, `03-design/batch-and-parallelism-measured.md`), at a mean
 width of 1.1 cells through a port designed for grids.
 
 Both are the same defect in different clothes: the SDK decides for the
@@ -443,6 +445,13 @@ their values identically.
 ### A3. Parallelism — closed by measurement, and not built
 
 *Two measurements, taken before any of it was written, closed it.*
+
+**Re-measured on 2026-10-20** with Teimeris's data built in: a context
+opens in about 0.02 ms, so a context per thread is now cheap, and
+`05-testing/app-speed-measured.md` gates contexts on threads (0.93
+efficiency on 4). A3 stays unbuilt inside the SDK, because the consumer's
+own pool is the shape; the 43.8 ms below is opening from files, which
+`tests/context_cost.rs` still times.
 
 **First: how much of a batch a thread could overlap.** A
 `teimeris::Context` is `Send` and deliberately **not** `Sync`, and the
