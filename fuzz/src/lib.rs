@@ -18,11 +18,12 @@ use std::sync::OnceLock;
 use teistro_core::Status;
 use teistro_core::catalogue::Calendar;
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
-use teistro_ffi::chart::{TsChartRequest, ts_chart_found};
+use teistro_ffi::chart::{TsChartRequest, ts_chart_found, ts_chart_layout_row};
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_new,
     ts_error_free,
 };
+use teistro_ffi::ephemeris::ts_ephemeris_call;
 use teistro_ffi::intl::{
     TsIntlLoaded, ts_intl_entity, ts_intl_has, ts_intl_load_pack, ts_intl_render,
     ts_intl_set_locale, ts_intl_transliterate,
@@ -31,7 +32,10 @@ use teistro_ffi::key::ts_key_parse;
 use teistro_ffi::naam::ts_naam_milan;
 use teistro_ffi::numerology::ts_numerology_profile;
 use teistro_ffi::pakshi::ts_pakshi;
-use teistro_ffi::panchanga::{TsPanchangaRequest, ts_panchanga_days};
+use teistro_ffi::panchanga::{
+    TsPanchangaRequest, ts_almanac_ashauch, ts_almanac_disagreements, ts_almanac_festival_calendar,
+    ts_almanac_first_year, ts_almanac_published_reasons, ts_almanac_sankalpa, ts_panchanga_days,
+};
 use teistro_ffi::rashifal::ts_rashifal;
 use teistro_ffi::research::ts_research;
 use teistro_ffi::string::{TsStr, TsString, ts_string_free};
@@ -117,6 +121,17 @@ fn shared() -> *const TsContext {
     address as *const TsContext
 }
 
+/// The second reckoning a comparison is asked against: the Surya
+/// Siddhanta's own astronomy, built once and never freed, as `shared` is.
+fn other() -> *const TsContext {
+    static CONTEXT: OnceLock<usize> = OnceLock::new();
+    let address = *CONTEXT.get_or_init(|| {
+        open(TsEphemeris::SuryaSiddhanta, None).map_or(0, |handle| handle as usize)
+    });
+    assert_ne!(address, 0, "the Surya Siddhanta context opens");
+    address as *const TsContext
+}
+
 /// Frees a context this crate opened.
 fn close(handle: *mut TsContext) {
     // SAFETY: the handle came from `ts_context_new` and is freed once.
@@ -191,6 +206,14 @@ pub const OTHER_SLOTS: &[&str] = &[
     "settings_json",
     "layouts_json",
     "dashas_json",
+    "ts_almanac_sankalpa",
+    "ts_almanac_ashauch",
+    "ts_almanac_first_year",
+    "ts_almanac_festival_calendar",
+    "ts_almanac_disagreements",
+    "ts_almanac_published_reasons",
+    "ts_chart_layout_row key",
+    "ts_ephemeris_call",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -202,6 +225,9 @@ pub enum Seed {
     Answered,
     /// A finding kept as a regression: any answer but `INTERNAL`.
     Regression,
+    /// A well-formed request its slot refuses by design, to reach the
+    /// reader before the refusal: any answer but `OK` or `INTERNAL`.
+    Refused,
 }
 
 /// The `json` target's seeds, each by the name of the slot it fills. The
@@ -393,6 +419,49 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         Seed::Answered,
         r#"[{"kernel":"UDU","key":"ACME_SAPTAKA","lords":[{"graha":"SUN","years":10},{"graha":"MOON","years":10},{"graha":"MARS","years":10},{"graha":"MERCURY","years":10},{"graha":"JUPITER","years":10},{"graha":"VENUS","years":10},{"graha":"SATURN","years":10}],"reference":"KRITTIKA"}]"#,
     ),
+    (
+        "ts_almanac_sankalpa",
+        Seed::Answered,
+        r#"{"at":2461055.59375,"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"ayana":"TROPICAL"}"#,
+    ),
+    (
+        "ts_almanac_ashauch",
+        Seed::Answered,
+        r#"{"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1337,"utcOffsetSeconds":20700,"request":{"key":"grandfather","relation":"SAPINDA","event":{"event":"DEATH","at":2461051.677083}}}"#,
+    ),
+    (
+        "ts_almanac_first_year",
+        Seed::Answered,
+        r#"{"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1337,"utcOffsetSeconds":20700,"request":{"key":"grandfather","at":2461051.677083,"firstAbdika":"ELEVENTH_DAY","firstYearAdhika":"NIJA"}}"#,
+    ),
+    (
+        "ts_almanac_festival_calendar",
+        Seed::Answered,
+        r#"{"first":{"year":2025,"month":10,"day":1},"last":{"year":2025,"month":10,"day":3},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"festivals":{"rules":"NEPAL"},"stampUnixSeconds":1767225600,"name":"Nepal","refreshMinutes":0}"#,
+    ),
+    (
+        "ts_almanac_disagreements",
+        Seed::Answered,
+        r#"{"first":{"year":2025,"month":11,"day":1},"last":{"year":2025,"month":11,"day":2},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"festivals":{"rules":"NEPAL"}}"#,
+    ),
+    (
+        "ts_almanac_published_reasons",
+        Seed::Answered,
+        r#"{"first":{"year":2026,"month":10,"day":10},"last":{"year":2026,"month":10,"day":12},"latitudeDeg":28.2096,"longitudeDeg":83.9856,"altitudeM":827,"utcOffsetSeconds":20700,"festivals":{"rules":"NEPAL","published":[{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,"entries":[{"action":"SET","rule":"NAVARATRA_ARAMBHA","day":{"calendar":"GREGORIAN","year":2026,"month":10,"day":11},"source":"p. 41"}]}]},"places":[{"name":"Kathmandu","latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700}]}"#,
+    ),
+    (
+        "ts_chart_layout_row key",
+        Seed::Answered,
+        "chart_layout.SOUTH_INDIAN",
+    ),
+    ("ts_chart_layout_row key", Seed::Answered, "NORTH_INDIAN"),
+    // An engine's own operations are an adapter's, so the built-in
+    // ephemeris refuses them once it has read the call.
+    (
+        "ts_ephemeris_call",
+        Seed::Refused,
+        "tp_sum\n{\"values\":[1,2.5]}",
+    ),
 ];
 
 /// The corpus file of one seed: its selector byte, counted from the slot's
@@ -509,12 +578,12 @@ fn answer(at: usize, text: &CString) -> Status {
         unsafe { ts_blob_free(&raw mut blob) };
         return status;
     }
-    match at - CHART_SLOTS.len() {
-        0 => string_call(ts_research, text),
-        1 => string_call(ts_pakshi, text),
-        2 => string_call(ts_rashifal, text),
-        3 => string_call(ts_numerology_profile, text),
-        4 => {
+    match slot_name(at) {
+        "ts_research" => string_call(ts_research, text),
+        "ts_pakshi" => string_call(ts_pakshi, text),
+        "ts_rashifal" => string_call(ts_rashifal, text),
+        "ts_numerology_profile" => string_call(ts_numerology_profile, text),
+        "ts_naam_milan" => {
             let mut blob = TsBlob::empty();
             // SAFETY: a live context, a NUL-terminated string and a valid slot.
             let status = unsafe { ts_naam_milan(shared(), text.as_ptr(), &raw mut blob) };
@@ -522,8 +591,9 @@ fn answer(at: usize, text: &CString) -> Status {
             unsafe { ts_blob_free(&raw mut blob) };
             status
         }
-        5 | 6 => panchanga(text, at - CHART_SLOTS.len() == 6),
-        7 => {
+        "muhurta_json" => panchanga(text, false),
+        "festivals_json" => panchanga(text, true),
+        "ts_intl_render params" => {
             let key = c_text(b"sdk.graha.name");
             let mut blob = TsBlob::empty();
             // SAFETY: a live context, NUL-terminated strings and a valid slot.
@@ -533,13 +603,66 @@ fn answer(at: usize, text: &CString) -> Status {
             unsafe { ts_blob_free(&raw mut blob) };
             status
         }
-        slot => {
-            open(TsEphemeris::None, Some((slot - 8, text))).map_or(Status::InvalidArg, |handle| {
-                close(handle);
-                Status::Ok
-            })
-        }
+        "settings_json" => option(0, text),
+        "layouts_json" => option(1, text),
+        "dashas_json" => option(2, text),
+        "ts_almanac_sankalpa" => string_call(ts_almanac_sankalpa, text),
+        "ts_almanac_ashauch" => string_call(ts_almanac_ashauch, text),
+        "ts_almanac_first_year" => string_call(ts_almanac_first_year, text),
+        "ts_almanac_festival_calendar" => string_call(ts_almanac_festival_calendar, text),
+        "ts_almanac_disagreements" => paired_call(ts_almanac_disagreements, text),
+        "ts_almanac_published_reasons" => paired_call(ts_almanac_published_reasons, text),
+        "ts_chart_layout_row key" => string_call(ts_chart_layout_row, text),
+        "ts_ephemeris_call" => ephemeris_call(text),
+        _ => Status::Ok,
     }
+}
+
+/// A context built with one JSON option, `Ok` when it opens.
+fn option(slot: usize, text: &CString) -> Status {
+    open(TsEphemeris::None, Some((slot, text))).map_or(Status::InvalidArg, |handle| {
+        close(handle);
+        Status::Ok
+    })
+}
+
+/// An entry point comparing the shared context with `other`'s reckoning.
+fn paired_call(
+    call: unsafe extern "C" fn(
+        *const TsContext,
+        *const TsContext,
+        *const c_char,
+        *mut TsString,
+    ) -> Status,
+    text: &CString,
+) -> Status {
+    let mut out = TsString::empty();
+    // SAFETY: two live contexts, a NUL-terminated string and a valid slot.
+    let status = unsafe { call(shared(), other(), text.as_ptr(), &raw mut out) };
+    // SAFETY: a descriptor the library wrote, or the empty one.
+    unsafe { ts_string_free(&raw mut out) };
+    status
+}
+
+/// An engine's own function: the text's first line names it and the rest
+/// are its arguments, as a caller passes the two.
+fn ephemeris_call(text: &CString) -> Status {
+    let mut lines = text.as_bytes().splitn(2, |byte| *byte == b'\n');
+    let function = c_text(lines.next().unwrap_or_default());
+    let arguments = c_text(lines.next().unwrap_or_default());
+    let mut out = TsString::empty();
+    // SAFETY: a live context, NUL-terminated strings and a valid slot.
+    let status = unsafe {
+        ts_ephemeris_call(
+            shared(),
+            function.as_ptr(),
+            arguments.as_ptr(),
+            &raw mut out,
+        )
+    };
+    // SAFETY: a descriptor the library wrote, or the empty one.
+    unsafe { ts_string_free(&raw mut out) };
+    status
 }
 
 /// A panchanga request for two days at Kathmandu with one JSON section.
@@ -889,6 +1012,7 @@ mod tests {
             let fine = match seed {
                 Seed::Answered => status == Status::Ok,
                 Seed::Regression => status != Status::Internal,
+                Seed::Refused => !matches!(status, Status::Ok | Status::Internal),
             };
             if !fine {
                 wrong.push(format!("{slot} answered {status:?} to {text}"));
