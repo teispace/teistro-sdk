@@ -551,11 +551,12 @@ checks neither (`ffi-abi-and-api-description.md`, the table there).
 5. `typecheck/Wrong.java` compiled alone: every `// expect:` line must be
    reported and no error unexpected (`xtask/src/dart_binding.rs`,
    `wrong_usages`), the Java half of "a swapped latitude and longitude
-   does not compile". **Designed, not built:** `check-java` has no
-   wrong-usage step and `bindings/java` has no `typecheck/`;
-6. `javadoc -Xdoclint:all -Werror` over the exported packages. Built in
-   packaging rather than here: it runs in `xtask/src/java_package.rs`,
-   reached from `check-package`, not from `check-java`.
+   does not compile";
+6. `javadoc --release 22 -Xdoclint:all -Werror` over the module's
+   sources, right after they compile: the same command builder
+   (`java_binding::javadoc`) the Maven package's javadoc jar is built
+   with (`xtask/src/java_package.rs`), so a `{@link}` to a name a rename
+   removed fails here, not first in verify's packaging step.
 
 Java is run through **one command builder** that sets
 `-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8` and

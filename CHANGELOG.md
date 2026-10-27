@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`check-java` builds the javadoc.**
+**Numbers:** none.
+- `cargo xtask check-java` now runs `javadoc -Xdoclint:all -Werror`
+  over the module right after compiling it, with the command the Maven
+  package's javadoc jar is built with. A `{@link}` left naming a renamed
+  record (`Design`, now `ResearchDesign`) compiled and passed every
+  local check, then failed every bindings row of verify.
+
 **Request records carry one name in every binding.**
 **Numbers:** none.
 - Seventeen request records are named as the layers named them:

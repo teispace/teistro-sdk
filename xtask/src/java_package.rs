@@ -25,7 +25,7 @@ use sha2::{Digest, Sha256, Sha512};
 
 use crate::binding::{LIBRARY_STEM, present};
 use crate::hashes::hex;
-use crate::java_binding::{FLOOR, PACKAGE, SOURCES, argfile, java_files, javac};
+use crate::java_binding::{FLOOR, PACKAGE, SOURCES, argfile, java_files, javac, javadoc};
 use crate::package::verified_library;
 use crate::platform::Platform;
 use crate::rel;
@@ -75,7 +75,7 @@ pub(crate) fn stage(
     }
     let sources = build.join("sources");
     let classes = build.join("classes");
-    let javadoc = build.join("javadoc");
+    let docs = build.join("javadoc");
     stage_sources(root, &sources, merged)?;
     let mut files = Vec::new();
     java_files(&sources, &mut files);
@@ -88,12 +88,9 @@ pub(crate) fn stage(
         "javac",
     )?;
     run(
-        Command::new("javadoc")
-            .args(["--release", FLOOR, "-encoding", "UTF-8", "-Xdoclint:all"])
-            .args(["-Werror", "-quiet", "--date"])
+        javadoc(&docs)
+            .arg("--date")
             .arg(commit_time(root)?)
-            .arg("-d")
-            .arg(&javadoc)
             .arg(&args),
         "javadoc",
     )?;
@@ -140,7 +137,7 @@ pub(crate) fn stage(
     )?;
     put(
         format!("{base}-javadoc.jar"),
-        jar(version, &legal(root, tree(&javadoc)?)?, Vec::new())?,
+        jar(version, &legal(root, tree(&docs)?)?, Vec::new())?,
     )?;
     let maven = json!({
         "coordinate": format!("{GROUP}:{ARTIFACT}:{version}"),

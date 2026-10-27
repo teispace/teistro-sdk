@@ -87,8 +87,21 @@ pub(crate) fn javac(out: &Path) -> Command {
     command
 }
 
+/// `javadoc` at the floor's release with every doclint an error: what the
+/// Maven package's javadoc jar is built with, so a link to a name that is
+/// gone fails here as it fails there.
+pub(crate) fn javadoc(out: &Path) -> Command {
+    let mut command = Command::new("javadoc");
+    command
+        .args(["--release", FLOOR, "-encoding", "UTF-8", "-Xdoclint:all"])
+        .args(["-Werror", "-quiet", "-d"])
+        .arg(out);
+    command
+}
+
 /// Compiles the module into `classes/main` at the floor's release with
-/// every lint an error, and answers where.
+/// every lint an error, documents it with every doclint an error, and
+/// answers where.
 fn compile_module(root: &Path, classes: &Path) -> Result<PathBuf, ()> {
     let package = root.join(PACKAGE);
     let main = classes.join("main");
@@ -103,9 +116,16 @@ fn compile_module(root: &Path, classes: &Path) -> Result<PathBuf, ()> {
     }
     let sources = argfile(classes, "main", &sources)?;
     step(
-        javac(&main).arg(sources).current_dir(root),
+        javac(&main).arg(&sources).current_dir(root),
         &format!("{PACKAGE} compiles at release {FLOOR} with every lint an error"),
         &format!("{PACKAGE} does not compile clean at release {FLOOR}"),
+    )?;
+    step(
+        javadoc(&classes.join("javadoc"))
+            .arg(sources)
+            .current_dir(root),
+        &format!("{PACKAGE}'s javadoc builds with every doclint an error"),
+        &format!("{PACKAGE}'s javadoc does not build clean"),
     )?;
     Ok(main)
 }
