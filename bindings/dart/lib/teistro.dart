@@ -9666,11 +9666,45 @@ enum NadiDosha {
   final String key;
 }
 
+/// Which text's gana points (C761).
+enum GanaPoints {
+  /// *Daivajna-manohara*, as the commentary on *Muhurta Chintamani*
+  /// cites it; the default.
+  daivajnaManohara('DAIVAJNA_MANOHARA'),
+
+  /// *Muhurta Martanda*, vivaha v. 11.
+  muhurtaMartanda('MUHURTA_MARTANDA');
+
+  const GanaPoints(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// Which vashya scheme scores the signs (C762).
+enum VashyaPoints {
+  /// The verse's relations; the default.
+  verse('VERSE'),
+
+  /// The classes a guna grid printed in Nepal scores.
+  printedInNepal('PRINTED_IN_NEPAL');
+
+  const VashyaPoints(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
 /// The readings an Ashta Koota is computed under; each default is the
 /// source's own (`03-design/matching.md`).
 ///
 /// ```dart
 /// const middle = KootaRules(nadiDosha: NadiDosha.middleOnly);
+/// // As a guna grid printed in Nepal scores (C763).
+/// const nepal = KootaRules(
+///   gana: GanaPoints.muhurtaMartanda,
+///   vashya: VashyaPoints.printedInNepal,
+/// );
 /// ```
 final class KootaRules {
   const KootaRules({
@@ -9678,18 +9712,24 @@ final class KootaRules {
     this.devaBride = DevaBride.four,
     this.bhakootLift = BhakootLift.anyOne,
     this.nadiDosha = NadiDosha.any,
+    this.gana = GanaPoints.daivajnaManohara,
+    this.vashya = VashyaPoints.verse,
   });
 
   final EqualVarna equalVarna;
   final DevaBride devaBride;
   final BhakootLift bhakootLift;
   final NadiDosha nadiDosha;
+  final GanaPoints gana;
+  final VashyaPoints vashya;
 
   Map<String, Object?> get _record => <String, Object?>{
     'equalVarna': equalVarna.key,
     'devaBride': devaBride.key,
     'bhakootLift': bhakootLift.key,
     'nadiDosha': nadiDosha.key,
+    'gana': gana.key,
+    'vashya': vashya.key,
   };
 }
 

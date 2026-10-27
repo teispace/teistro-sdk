@@ -2043,6 +2043,10 @@ export interface KootaRules {
   readonly bhakootLift?: 'ANY_ONE' | 'GARGA';
   /** Which shared nadi is a dosha: `'ANY'` (the default) or `'MIDDLE_ONLY'` (C264). */
   readonly nadiDosha?: 'ANY' | 'MIDDLE_ONLY';
+  /** Which text's gana points: `'DAIVAJNA_MANOHARA'` (the default) or `'MUHURTA_MARTANDA'` (C761). */
+  readonly gana?: 'DAIVAJNA_MANOHARA' | 'MUHURTA_MARTANDA';
+  /** Which vashya scheme: the `'VERSE'`'s (the default) or the one `'PRINTED_IN_NEPAL'` (C762). */
+  readonly vashya?: 'VERSE' | 'PRINTED_IN_NEPAL';
 }
 
 /** The five exceptions of VI.32–33 that lift a bad Bhakoot, each a clause that holds or not. */

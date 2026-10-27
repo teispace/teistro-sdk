@@ -156,6 +156,67 @@ pub enum NadiDosha {
     MiddleOnly,
 }
 
+/// Which text's gana points (C262, C761).
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{GanaPoints, KootaRules, Native, ashta_koota};
+///
+/// // A Deva bride in Ashvini and a Manushya groom in Rohini.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(45.0)?);
+/// let gana = |rules| ashta_koota(bride, groom, rules).row(Koota::Gana).map(|row| row.points);
+/// assert_eq!(gana(KootaRules::default()), Some(4.0));
+/// let martanda = KootaRules { gana: GanaPoints::MuhurtaMartanda, ..KootaRules::default() };
+/// assert_eq!(gana(martanda), Some(5.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum GanaPoints {
+    /// *Daivajna-manohara*, as the commentary on VI.30 cites it: the same
+    /// gana 6, groom Deva with bride Manushya 5, the reverse "four or
+    /// three" (`deva_bride`), groom Rakshasa with bride Deva 2 and with
+    /// bride Manushya 1, otherwise 0.
+    #[default]
+    DaivajnaManohara,
+    /// *Muhurta Martanda*, vivaha v. 11: the same gana 6, groom Deva with
+    /// bride Manushya 6, the reverse 5, groom Rakshasa with bride Deva 1,
+    /// otherwise 0. `deva_bride` is not read.
+    MuhurtaMartanda,
+}
+
+/// Which vashya scheme scores the signs (C260, C762).
+///
+/// ```
+/// use teistro_core::catalogue::Koota;
+/// use teistro_matching::{KootaRules, Native, VashyaPoints, ashta_koota};
+///
+/// // A bride in Aries and a groom in Taurus: neither is vashya to the
+/// // other in the table, and neither is human in the print.
+/// let (bride, groom) = (Native::of_moon(5.0)?, Native::of_moon(45.0)?);
+/// let vashya = |rules| ashta_koota(bride, groom, rules).row(Koota::Vashya).map(|row| row.points);
+/// assert_eq!(vashya(KootaRules::default()), Some(0.0));
+/// let printed = KootaRules { vashya: VashyaPoints::PrintedInNepal, ..KootaRules::default() };
+/// assert_eq!(vashya(printed), Some(2.0));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum VashyaPoints {
+    /// The verse's relations where it decides and Kalaprakasika's table
+    /// for the rest, scored as [`VashyaRelation`] gives.
+    #[default]
+    Verse,
+    /// The grades of *Muhurta Martanda* (vivaha v. 10) over the classes
+    /// a guna grid printed in Nepal scores: a human sign (Gemini, Virgo,
+    /// Libra, Sagittarius, Aquarius) with any other but Scorpio ½, with
+    /// Scorpio 1, and every other pair 2. Whole signs: the print's
+    /// half-nakshatra split of Sagittarius and Capricorn is not read.
+    PrintedInNepal,
+}
+
 /// The readings an Ashta Koota is computed under; each default is the
 /// source's own.
 ///
@@ -178,6 +239,33 @@ pub struct KootaRules {
     pub bhakoot_lift: BhakootLift,
     /// Which shared nadi is a dosha.
     pub nadi_dosha: NadiDosha,
+    /// Which text's gana points.
+    pub gana: GanaPoints,
+    /// Which vashya scheme scores the signs.
+    pub vashya: VashyaPoints,
+}
+
+impl KootaRules {
+    /// The readings a guna grid printed in Nepal follows where a text or
+    /// the print decides them: [`GanaPoints::MuhurtaMartanda`] and
+    /// [`VashyaPoints::PrintedInNepal`], every other knob the verse's own
+    /// (C763). Its yoni grades are the print's and not built (C261).
+    ///
+    /// ```
+    /// use teistro_matching::{GanaPoints, KootaRules, VashyaPoints};
+    ///
+    /// let nepal = KootaRules::PRINTED_IN_NEPAL;
+    /// assert_eq!((nepal.gana, nepal.vashya), (GanaPoints::MuhurtaMartanda, VashyaPoints::PrintedInNepal));
+    /// assert_eq!(KootaRules { gana: GanaPoints::default(), vashya: VashyaPoints::default(), ..nepal }, KootaRules::default());
+    /// ```
+    pub const PRINTED_IN_NEPAL: KootaRules = KootaRules {
+        equal_varna: EqualVarna::Whole,
+        deva_bride: DevaBride::Four,
+        bhakoot_lift: BhakootLift::AnyOne,
+        nadi_dosha: NadiDosha::Any,
+        gana: GanaPoints::MuhurtaMartanda,
+        vashya: VashyaPoints::PrintedInNepal,
+    };
 }
 
 /// How one sign stands to another in Vashya (C260).
@@ -551,11 +639,14 @@ pub fn ashta_koota(bride: Native, groom: Native, rules: KootaRules) -> AshtaKoot
     let kootas = vec![
         varna(bride, groom, rules),
         KootaRow {
-            points: match vashya {
-                VashyaRelation::Mutual => 2.0,
-                VashyaRelation::OneWay => 1.0,
-                VashyaRelation::Food => 0.5,
-                VashyaRelation::Neither => 0.0,
+            points: match rules.vashya {
+                VashyaPoints::Verse => match vashya {
+                    VashyaRelation::Mutual => 2.0,
+                    VashyaRelation::OneWay => 1.0,
+                    VashyaRelation::Food => 0.5,
+                    VashyaRelation::Neither => 0.0,
+                },
+                VashyaPoints::PrintedInNepal => printed_vashya(bride.rashi, groom.rashi),
             },
             max_points: 2.0,
             reading: KootaReading::Vashya { relation: vashya },
@@ -610,6 +701,25 @@ fn varna(bride: Native, groom: Native, rules: KootaRules) -> KootaRow {
         points,
         max_points: 1.0,
         reading: KootaReading::Varna { bride: b, groom: g },
+    }
+}
+
+/// The human signs a guna grid printed in Nepal scores (C762).
+const fn printed_human(sign: Rashi) -> bool {
+    matches!(
+        sign,
+        Rashi::Gemini | Rashi::Virgo | Rashi::Libra | Rashi::Sagittarius | Rashi::Aquarius
+    )
+}
+
+/// The print's vashya points: *Muhurta Martanda*'s ½ for a human sign
+/// with an animal, 1 for Scorpio, its enemy, and 2 for every other pair
+/// (C762).
+fn printed_vashya(bride: Rashi, groom: Rashi) -> f64 {
+    match (printed_human(bride), printed_human(groom)) {
+        (true, true) | (false, false) => 2.0,
+        _ if bride == Rashi::Scorpio || groom == Rashi::Scorpio => 1.0,
+        _ => 0.5,
     }
 }
 
@@ -861,16 +971,27 @@ fn gana(bride: Native, groom: Native, rules: KootaRules) -> KootaRow {
         bride.nakshatra.attributes().gana,
         groom.nakshatra.attributes().gana,
     );
-    let points = match (b, g) {
-        _ if b == g => 6.0,
-        (Gana::Manushya, Gana::Deva) => 5.0,
-        (Gana::Deva, Gana::Manushya) => match rules.deva_bride {
-            DevaBride::Four => 4.0,
-            DevaBride::Three => 3.0,
-        },
-        (Gana::Deva, Gana::Rakshasa) => 2.0,
-        (Gana::Manushya, Gana::Rakshasa) => 1.0,
-        _ => 0.0,
+    let points = if b == g {
+        6.0
+    } else {
+        match rules.gana {
+            GanaPoints::DaivajnaManohara => match (b, g) {
+                (Gana::Manushya, Gana::Deva) => 5.0,
+                (Gana::Deva, Gana::Manushya) => match rules.deva_bride {
+                    DevaBride::Four => 4.0,
+                    DevaBride::Three => 3.0,
+                },
+                (Gana::Deva, Gana::Rakshasa) => 2.0,
+                (Gana::Manushya, Gana::Rakshasa) => 1.0,
+                _ => 0.0,
+            },
+            GanaPoints::MuhurtaMartanda => match (b, g) {
+                (Gana::Manushya, Gana::Deva) => 6.0,
+                (Gana::Deva, Gana::Manushya) => 5.0,
+                (Gana::Deva, Gana::Rakshasa) => 1.0,
+                _ => 0.0,
+            },
+        }
     };
     // The commentary's bad ganas: a Rakshasa beside either other.
     let dosha = b != g && (b == Gana::Rakshasa || g == Gana::Rakshasa);

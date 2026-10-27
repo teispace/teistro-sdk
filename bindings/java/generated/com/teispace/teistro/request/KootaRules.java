@@ -14,16 +14,18 @@ import java.util.Objects;
  * @param bhakootLift How a bad Bhakoot is lifted. Null leaves the SDK's default.
  * @param devaBride The points of a Deva bride and a Manushya groom. Null leaves the SDK's default.
  * @param equalVarna The point of an equal varna. Null leaves the SDK's default.
+ * @param gana Which text's gana points. Null leaves the SDK's default.
  * @param nadiDosha Which shared nadi is a dosha. Null leaves the SDK's default.
+ * @param vashya Which vashya scheme scores the signs. Null leaves the SDK's default.
  */
-public record KootaRules(BhakootLift bhakootLift, DevaBride devaBride, EqualVarna equalVarna, NadiDosha nadiDosha) implements RequestJson {
+public record KootaRules(BhakootLift bhakootLift, DevaBride devaBride, EqualVarna equalVarna, GanaPoints gana, NadiDosha nadiDosha, VashyaPoints vashya) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
      */
     public KootaRules() {
-        this(null, null, null, null);
+        this(null, null, null, null, null, null);
     }
 
     /**
@@ -41,7 +43,9 @@ public record KootaRules(BhakootLift bhakootLift, DevaBride devaBride, EqualVarn
         private BhakootLift bhakootLift;
         private DevaBride devaBride;
         private EqualVarna equalVarna;
+        private GanaPoints gana;
         private NadiDosha nadiDosha;
+        private VashyaPoints vashya;
 
         private Builder() {}
 
@@ -79,6 +83,17 @@ public record KootaRules(BhakootLift bhakootLift, DevaBride devaBride, EqualVarn
         }
 
         /**
+         * Sets {@code gana}.
+         *
+         * @param gana Which text's gana points. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder gana(GanaPoints gana) {
+            this.gana = gana;
+            return this;
+        }
+
+        /**
          * Sets {@code nadiDosha}.
          *
          * @param nadiDosha Which shared nadi is a dosha. Null leaves the SDK's default.
@@ -90,13 +105,24 @@ public record KootaRules(BhakootLift bhakootLift, DevaBride devaBride, EqualVarn
         }
 
         /**
+         * Sets {@code vashya}.
+         *
+         * @param vashya Which vashya scheme scores the signs. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder vashya(VashyaPoints vashya) {
+            this.vashya = vashya;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public KootaRules build() {
-            return new KootaRules(bhakootLift, devaBride, equalVarna, nadiDosha);
+            return new KootaRules(bhakootLift, devaBride, equalVarna, gana, nadiDosha, vashya);
         }
     }
 
@@ -113,7 +139,9 @@ public record KootaRules(BhakootLift bhakootLift, DevaBride devaBride, EqualVarn
             Read.orNull(json.get("bhakootLift"), present -> Read.member(present, "KootaRules.bhakootLift", BhakootLift::byKey)),
             Read.orNull(json.get("devaBride"), present -> Read.member(present, "KootaRules.devaBride", DevaBride::byKey)),
             Read.orNull(json.get("equalVarna"), present -> Read.member(present, "KootaRules.equalVarna", EqualVarna::byKey)),
-            Read.orNull(json.get("nadiDosha"), present -> Read.member(present, "KootaRules.nadiDosha", NadiDosha::byKey)));
+            Read.orNull(json.get("gana"), present -> Read.member(present, "KootaRules.gana", GanaPoints::byKey)),
+            Read.orNull(json.get("nadiDosha"), present -> Read.member(present, "KootaRules.nadiDosha", NadiDosha::byKey)),
+            Read.orNull(json.get("vashya"), present -> Read.member(present, "KootaRules.vashya", VashyaPoints::byKey)));
     }
 
     @Override
@@ -128,8 +156,14 @@ public record KootaRules(BhakootLift bhakootLift, DevaBride devaBride, EqualVarn
         if (equalVarna != null) {
             json.put("equalVarna", equalVarna.toJson());
         }
+        if (gana != null) {
+            json.put("gana", gana.toJson());
+        }
         if (nadiDosha != null) {
             json.put("nadiDosha", nadiDosha.toJson());
+        }
+        if (vashya != null) {
+            json.put("vashya", vashya.toJson());
         }
         return json;
     }

@@ -10,9 +10,9 @@
 use teistro_core::catalogue::{Gana, Graha, Koota, Nadi, Nakshatra, Rashi, Yoni};
 
 use crate::{
-    ASHTA_KOOTA, ASHTA_KOOTA_POINTS, BhakootDosha, BhakootLift, DevaBride, EqualVarna,
-    KootaReading, KootaRules, MaitriRelation, NadiDosha, Native, VashyaRelation, YoniRelation,
-    ashta_koota, maitri_relation, vashya_relation, yoni_relation,
+    ASHTA_KOOTA, ASHTA_KOOTA_POINTS, BhakootDosha, BhakootLift, DevaBride, EqualVarna, GanaPoints,
+    KootaReading, KootaRules, MaitriRelation, NadiDosha, Native, VashyaPoints, VashyaRelation,
+    YoniRelation, ashta_koota, maitri_relation, vashya_relation, yoni_relation,
 };
 
 use Nakshatra as N;
@@ -484,4 +484,109 @@ fn a_good_bhakoot_lifts_the_lords_enmity_by_vi33() {
             assert_eq!(lifted, enmity && good);
         }
     }
+}
+
+#[test]
+fn muhurta_martandas_gana_is_its_verse_in_every_cell() {
+    // Vivaha v. 11, bride first: Ashvini Deva, Rohini Manushya, Magha
+    // Rakshasa.
+    let stars = [N::Ashwini, N::Rohini, N::Magha];
+    let martanda = KootaRules {
+        gana: GanaPoints::MuhurtaMartanda,
+        ..KootaRules::default()
+    };
+    let table = [[6.0, 5.0, 1.0], [6.0, 6.0, 0.0], [0.0, 0.0, 6.0]];
+    for (b, row) in stars.iter().zip(table) {
+        for (g, want) in stars.iter().zip(row) {
+            assert_eq!(
+                reading(*b, *g, Koota::Gana, martanda).0,
+                want,
+                "{b:?} {g:?}"
+            );
+            // The verse has no "four or three".
+            let three = KootaRules {
+                deva_bride: DevaBride::Three,
+                ..martanda
+            };
+            assert_eq!(reading(*b, *g, Koota::Gana, three).0, want, "{b:?} {g:?}");
+        }
+    }
+    // The dosha and its lifts read the ganas, not the points.
+    assert_eq!(
+        reading(N::Ashwini, N::Magha, Koota::Gana, martanda).1,
+        reading(N::Ashwini, N::Magha, Koota::Gana, KootaRules::default()).1
+    );
+}
+
+#[test]
+fn the_printed_vashya_scores_its_classes_over_every_pair_of_signs() {
+    let printed = KootaRules {
+        vashya: VashyaPoints::PrintedInNepal,
+        ..KootaRules::default()
+    };
+    let human = [
+        Rashi::Gemini,
+        Rashi::Virgo,
+        Rashi::Libra,
+        Rashi::Sagittarius,
+        Rashi::Aquarius,
+    ];
+    for b in 0..12_u8 {
+        for g in 0..12_u8 {
+            let at = |sign: u8| Native::of_moon(f64::from(sign) * 30.0 + 2.0).unwrap();
+            let (bride, groom) = (at(b), at(g));
+            let (bh, gh) = (human.contains(&bride.rashi), human.contains(&groom.rashi));
+            let scorpio = bride.rashi == Rashi::Scorpio || groom.rashi == Rashi::Scorpio;
+            let want = if bh == gh {
+                2.0
+            } else if scorpio {
+                1.0
+            } else {
+                0.5
+            };
+            let read = ashta_koota(bride, groom, printed);
+            assert_eq!(read.row(Koota::Vashya).unwrap().points, want, "{b} {g}");
+            // The relation is the verse's, whichever scheme scores it.
+            assert_eq!(
+                read.row(Koota::Vashya).unwrap().reading,
+                ashta_koota(bride, groom, KootaRules::default())
+                    .row(Koota::Vashya)
+                    .unwrap()
+                    .reading
+            );
+        }
+    }
+}
+
+#[test]
+fn the_nepal_preset_changes_only_gana_and_vashya() {
+    let nepal = KootaRules::PRINTED_IN_NEPAL;
+    assert_eq!(
+        KootaRules {
+            gana: GanaPoints::default(),
+            vashya: VashyaPoints::default(),
+            ..nepal
+        },
+        KootaRules::default()
+    );
+    // Rohini with Mrigashira in Taurus: everything agrees, the gana gives
+    // a Manushya bride and a Deva groom the full 6.
+    let (bride, groom) = (
+        Native::of_moon(45.0).unwrap(),
+        Native::of_moon(55.0).unwrap(),
+    );
+    assert_eq!(ashta_koota(bride, groom, KootaRules::default()).total, 35.0);
+    assert_eq!(ashta_koota(bride, groom, nepal).total, 36.0);
+    // Serde names both knobs and keeps the old defaults.
+    let json = serde_json::to_string(&nepal).unwrap();
+    assert!(
+        json.contains(r#""gana":"MUHURTA_MARTANDA""#)
+            && json.contains(r#""vashya":"PRINTED_IN_NEPAL""#),
+        "{json}"
+    );
+    let old: KootaRules = serde_json::from_str(r#"{"equalVarna":"HALF"}"#).unwrap();
+    assert_eq!(
+        (old.gana, old.vashya),
+        (GanaPoints::DaivajnaManohara, VashyaPoints::Verse)
+    );
 }

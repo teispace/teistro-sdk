@@ -132,6 +132,44 @@ for the lists.
   reported, so a consumer with another table sees which cells it
   differs on.
 
+## A guna grid printed in Nepal
+
+Panchangas printed in Nepal print the Ashta Koota as a bride-by-groom grid
+of totals. Himal Panchanga VS 2082 (pp. 10–11) prints 38 rows by 38
+columns: each sign's stars, with Sagittarius and Capricorn in four groups
+each, split by half a nakshatra at 15°. The grid was transcribed twice,
+blind, from the page images and the four cells where the copies or the
+fit disagreed were read again on the page (each a १ read as २). The
+transcription stays outside the repository: only what was fitted, and
+how well, is kept here.
+
+- **It is a sum of the eight, exactly**: every one of the 1,444 cells.
+  Varna, tara, graha maitri, Bhakoot (7 or none by how far apart, no
+  points on a lift) and nadi (8 or none, no points on a lift) are the
+  verse's, as built.
+- **Gana is *Muhurta Martanda*'s** (vivaha v. 11, C761): the same gana
+  6, groom Deva with bride Manushya 6, the reverse 5, groom Rakshasa with
+  bride Deva 1, otherwise 0. Every cell agrees.
+- **Vashya is two classes and Scorpio** (C762): a human sign (Gemini,
+  Virgo, Libra, Sagittarius, Aquarius) with any other ½, with Scorpio 1,
+  and every other pair 2. The grades are *Muhurta Martanda*'s (v. 10);
+  the classes are the print's. The print moves Purva Ashadha beyond 15°
+  of Sagittarius out of the human class and Shravana beyond 15° of
+  Capricorn into it.
+- **Yoni is graded 0 to 4** with the grades of *Muhurta Martanda* v. 10
+  and *Daivajna-manohara*, but which pair is friendly, neutral or hostile
+  is the print's own: it gives horse with buffalo 1 where VI.26 makes it a
+  great enmity, and grades ten pairs one point apart by direction. No text
+  read grades every pair, and the 1904 *Martandavallabha* grades the few
+  it names differently, so it is not built (C261).
+
+`KootaRules::PRINTED_IN_NEPAL` takes C761's gana and C762's vashya, by
+whole signs, and keeps every other knob the verse's (C763). Against the
+settled grid it agrees exactly on 786 cells of 1,444 and within two
+points on 1,430; the verse's own rules agree on 257. The rest is the
+yoni grading and the half-nakshatra split, which a `Native` cannot read
+as it holds the pada, not the degree.
+
 ## The ten considerations, decided
 
 Each consideration is a catalogue `koota` member (C282), in
