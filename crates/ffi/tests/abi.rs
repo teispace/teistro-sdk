@@ -340,6 +340,35 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     );
 }
 
+/// A load refused at the boundary leaves no handle and an owned record
+/// naming what was wrong: no path, and the adapter's own refusal of its
+/// configuration passed through.
+#[test]
+fn a_refused_load_leaves_no_handle_and_names_the_field() {
+    let path = teistro_test_adapter::library().unwrap();
+    let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
+    let load = |path: *const c_char, config: &CStr| {
+        let mut provider: *mut TsProvider = ptr::null_mut();
+        let mut error = blank_error();
+        // SAFETY: a null or live path, a live configuration and writable slots.
+        let status =
+            unsafe { ts_provider_load(path, config.as_ptr(), &raw mut provider, &raw mut error) };
+        assert!(provider.is_null(), "a refused load handed back a provider");
+        let record = read_record(&error);
+        // SAFETY: the record the call wrote, freed once.
+        unsafe { ts_error_free(&raw mut error) };
+        (status, record.2)
+    };
+    assert_eq!(
+        load(ptr::null(), c"{}"),
+        (Status::InvalidArg, Some(String::from("path")))
+    );
+    assert_eq!(
+        load(path.as_ptr(), c"{\"data\": \"/nowhere\"}"),
+        (Status::InvalidArg, Some(String::from("path")))
+    );
+}
+
 /// The same seam over the in-repo test adapter, so it runs on every push
 /// and not only where an engine was built: a real shared library opened
 /// by path, a context over it, and its own operation called by name.
