@@ -5,7 +5,6 @@
 //! threads, each first to ask for the tables built once (the festival
 //! rules, the transliteration tables, the built-in ephemeris's
 //! segments), answer as one founded alone.
-#![cfg(feature = "full")]
 #![allow(
     unsafe_code,
     clippy::unwrap_used,

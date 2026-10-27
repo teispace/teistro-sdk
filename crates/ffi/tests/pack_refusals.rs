@@ -51,7 +51,7 @@ fn refused(ctx: &Ctx, bytes: &[u8], what: &str) {
 #[test]
 fn every_prefix_and_every_flipped_bit_is_refused_and_leaves_nothing() {
     let pack = aspect_pack();
-    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::None, None, None, None).unwrap();
     for len in 0..pack.len() {
         refused(&ctx, &pack[..len], &format!("the first {len} bytes"));
     }
@@ -65,7 +65,7 @@ fn every_prefix_and_every_flipped_bit_is_refused_and_leaves_nothing() {
     }
     // Loaded after them all, the file counts what it counts in a context
     // that never saw them.
-    let fresh = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let fresh = Ctx::with_ephemeris(0, TsEphemeris::None, None, None, None).unwrap();
     let (status, clean) = load(&fresh, &pack);
     assert_eq!(status, Status::Ok);
     let (status, loaded) = load(&ctx, &pack);
@@ -79,7 +79,7 @@ fn every_prefix_and_every_flipped_bit_is_refused_and_leaves_nothing() {
 
 #[test]
 fn a_pack_with_bytes_after_its_end_is_refused() {
-    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::None, None, None, None).unwrap();
     let mut longer = aspect_pack();
     longer.push(0);
     refused(&ctx, &longer, "a byte past the end");
