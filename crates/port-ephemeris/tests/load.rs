@@ -51,3 +51,30 @@ fn a_refusal_is_the_adapters_own_and_names_the_path() {
     let missing = unsafe { Adapter::load("/nowhere/libnothing.so", None) }.unwrap_err();
     assert_eq!(missing.status, Status::Unsupported, "{missing}");
 }
+
+/// A shared library every host has, which is not an adapter.
+const NOT_AN_ADAPTER: &str = if cfg!(target_os = "macos") {
+    "/usr/lib/libSystem.B.dylib"
+} else if cfg!(windows) {
+    "kernel32.dll"
+} else {
+    "libc.so.6"
+};
+
+#[test]
+fn a_library_that_is_not_an_adapter_and_a_config_with_a_nul_are_refused_by_name() {
+    // SAFETY: the host's own C library, whose initialisers have already run.
+    let foreign = unsafe { Adapter::load(NOT_AN_ADAPTER, None) }.unwrap_err();
+    assert_eq!(foreign.status, Status::Unsupported, "{foreign}");
+    assert_eq!(foreign.field(), Some("path"));
+    assert!(
+        foreign
+            .to_string()
+            .contains("not a Teistro ephemeris adapter"),
+        "{foreign}"
+    );
+
+    let nul = adapter(Some("{}\0{}")).unwrap_err();
+    assert_eq!(nul.status, Status::InvalidArg, "{nul}");
+    assert_eq!(nul.field(), Some("config_json"));
+}
