@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { REQUESTS, SAME_SKY_DEG, agreeing, inputs, interleaved, openSdk } from '../bench/ab.mjs';
+import { Empty, REQUESTS, SAME_SKY_DEG, agreeing, inputs, interleaved, openSdk } from '../bench/ab.mjs';
 import { counts, drive, measured, threadAgent, trials } from '../bench/ab-load.mjs';
 import { Agreement, figures, joinYogas } from '../bench/ab-agree.mjs';
 import { Kept, charakRung, kalaprakasikaRung, ramanRung, whoKey } from '../bench/ab-reference.mjs';
@@ -90,6 +90,25 @@ test('a request a side refuses keeps that input out of that request alone', () =
       lines.map((l) => `${l.request} ${l.inputs}`),
       ['chart 3', 'chart 3', 'day 2', 'day 2'],
     );
+  });
+});
+
+test('an empty answer keeps that input out of that request, reported apart from the refusals', () => {
+  withSdk((sdk) => {
+    const few = inputs().slice(0, 3);
+    const edge = few[2].id;
+    const emptying = {
+      ...sdk,
+      day: (input) => (input.id === edge ? new Empty('answered nothing') : sdk.day(input)),
+    };
+    const { kept, refused, empty } = agreeing(emptying, sdk, few, FEW);
+    assert.deepEqual(refused, []);
+    assert.deepEqual(empty, [{ id: edge, side: 0, request: 'day', reason: 'answered nothing' }]);
+    assert.deepEqual(
+      kept.day.map((input) => input.id),
+      [few[0].id, few[1].id],
+    );
+    assert.equal(kept.chart.length, 3);
   });
 });
 
