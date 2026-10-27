@@ -348,13 +348,17 @@ pub fn typescript_declarations(api: &Api) -> String {
                     arms.join("\n  | ")
                 );
             }
-            RecordShape::OrNamed { names, of, member } => {
+            RecordShape::OrNamed {
+                names,
+                values,
+                member,
+            } => {
                 out.push_str(&block_comment(&record.doc, ""));
                 let mut arms: Vec<String> = names.iter().map(|name| format!("'{name}'")).collect();
                 if let Some(kind) = member {
                     arms.push(format!("Member<{}>", types.kind(kind)));
                 }
-                arms.push(types.ty(of));
+                arms.extend(values.iter().map(|value| types.ty(&value.ty)));
                 let _ = writeln!(out, "export type {} = {};", record.name, arms.join(" | "));
             }
         }
@@ -649,13 +653,17 @@ pub fn python_declarations(api: &Api) -> String {
                 exported.push(name.clone());
                 types.py_external(&mut body, name, &record.doc, variants);
             }
-            RecordShape::OrNamed { names, of, member } => {
+            RecordShape::OrNamed {
+                names,
+                values,
+                member,
+            } => {
                 exported.push(name.clone());
                 let mut arms = vec![Types::py_literal(names)];
                 if let Some(kind) = member {
                     arms.push(types.py_member(kind));
                 }
-                arms.push(types.py(of));
+                arms.extend(values.iter().map(|value| types.py(&value.ty)));
                 let _ = writeln!(
                     body,
                     "{name}: TypeAlias = {}",

@@ -16,7 +16,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::{Map, Value, json};
 
 use crate::model::Api;
-use crate::records::{RecordDef, RecordField, RecordShape, RecordType};
+use crate::records::{NamedValue, RecordDef, RecordField, RecordShape, RecordType};
 
 /// Each record's example request, `[{"record": …, "request": …}]`, in the
 /// order of the roots; `hand` is the hand-written examples, the same shape,
@@ -79,6 +79,17 @@ impl<'a> Writer<'a> {
             .map(|key| Value::String(key.clone()))
     }
 
+    /// The values of `ty` when it names a union of several records.
+    fn several(&self, ty: &RecordType) -> Option<&'a [NamedValue]> {
+        let RecordType::Record { name } = ty else {
+            return None;
+        };
+        match &self.records.get(name.as_str())?.shape {
+            RecordShape::OrNamed { values, .. } if values.len() > 1 => Some(values),
+            _ => None,
+        }
+    }
+
     /// The record `name`, beside `hand`, the hand example's value at the
     /// same place; `None` where it cannot be written whole, as where it is
     /// already being written further up (a recursive record).
@@ -112,7 +123,9 @@ impl<'a> Writer<'a> {
                 });
                 with.or_else(|| variants.first().map(|v| Value::String(v.key.clone())))
             }
-            RecordShape::OrNamed { of, .. } => self.value(of, path, hand),
+            RecordShape::OrNamed { values, .. } => values
+                .first()
+                .and_then(|value| self.value(&value.ty, path, hand)),
         };
         path.pop();
         value
@@ -169,9 +182,17 @@ impl<'a> Writer<'a> {
             RecordType::List { of, len: Some(len) } => {
                 Value::Array(vec![self.value(of, path, first)?; *len as usize])
             }
-            RecordType::List { of, len: None } => {
-                Value::Array(self.value(of, path, first).into_iter().collect())
-            }
+            // A list of a union of several records holds one of each, so
+            // every record of it is written and read back.
+            RecordType::List { of, len: None } => match self.several(of) {
+                Some(values) => Value::Array(
+                    values
+                        .iter()
+                        .filter_map(|value| self.value(&value.ty, path, None))
+                        .collect(),
+                ),
+                None => Value::Array(self.value(of, path, first).into_iter().collect()),
+            },
             RecordType::Pair {
                 first: a,
                 second: b,

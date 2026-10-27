@@ -142,15 +142,95 @@ pub enum RecordShape {
     /// place; a criterion's name or the criterion spelt out), or a member
     /// of one catalogue kind beside them (a natal point: `"LAGNA"`, a
     /// graha's key, or the point spelt out).
+    ///
+    /// The value may be one of several records, untagged, each with the
+    /// keys that pick it (a festival rule spelt out: `windows` a sait,
+    /// `vedha` an Ekadashi), the last picked when no other is.
     OrNamed {
         /// The strings, as the wire writes them.
         names: Vec<String>,
-        /// The value's type.
-        of: RecordType,
+        /// The values it may be, in the order a reader tries them; one,
+        /// with no keys, for a name or a value.
+        values: Vec<NamedValue>,
         /// The catalogue kind whose member it may also be, by its key.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         member: Option<String>,
     },
+}
+
+/// The value of `values` a JSON object is read as: the first whose keys
+/// it carries one of, or the last, as the SDK's reader picks it.
+///
+/// ```
+/// use teistro_idl::records::{NamedValue, RecordType, picked};
+///
+/// let value = |name: &str, when: &[&str]| NamedValue {
+///     ty: RecordType::Record { name: name.into() },
+///     when: when.iter().map(|k| (*k).to_owned()).collect(),
+/// };
+/// let values = [value("Sait", &["windows"]), value("Rule", &[])];
+/// let sait = serde_json::json!({"key": "X", "windows": []});
+/// assert_eq!(picked(&values, &sait).map(|v| &v.ty), Some(&values[0].ty));
+/// assert_eq!(picked(&values, &serde_json::json!({"key": "X"})).map(|v| &v.ty), Some(&values[1].ty));
+/// ```
+#[must_use]
+pub fn picked<'v>(values: &'v [NamedValue], object: &Value) -> Option<&'v NamedValue> {
+    values
+        .iter()
+        .find(|value| value.when.iter().any(|key| object.get(key).is_some()))
+        .or_else(|| values.last())
+}
+
+impl NamedValue {
+    /// What a binding's class for this value adds to its union's name:
+    /// `Value` for the only value, its record's name for one of several
+    /// (`FestivalRuleItemSaitRule`).
+    ///
+    /// ```
+    /// use teistro_idl::records::{NamedValue, RecordType};
+    ///
+    /// let sait = NamedValue { ty: RecordType::Record { name: "SaitRule".into() }, when: vec!["windows".into()] };
+    /// assert_eq!((sait.class_suffix(true), sait.class_suffix(false)), ("SaitRule", "Value"));
+    /// ```
+    #[must_use]
+    pub fn class_suffix(&self, several: bool) -> &str {
+        match &self.ty {
+            RecordType::Record { name } if several => name,
+            _ => "Value",
+        }
+    }
+}
+
+/// One value a [`RecordShape::OrNamed`] may be, and the keys of which any
+/// one present picks it; none for the last, or the only, value.
+///
+/// ```
+/// use teistro_idl::records::{RecordShape, from_schema};
+///
+/// // A pack's name, or a rule spelt out: a sait has `windows`, and
+/// // anything else is a rule.
+/// let schema = serde_json::json!({"$defs": {
+///     "Item": {"anyOf": [
+///         {"type": "string", "enum": ["NEPAL"]},
+///         {"$ref": "#/$defs/Sait", "x-teistro-when": ["windows"]},
+///         {"$ref": "#/$defs/Rule"}
+///     ]},
+///     "Sait": {"type": "object", "properties": {"windows": {"type": "integer"}}, "required": ["windows"]},
+///     "Rule": {"type": "object", "properties": {"key": {"type": "string"}}, "required": ["key"]}
+/// }});
+/// let records = from_schema(&schema, &["Item"])?;
+/// let item = records.iter().find(|r| r.name == "Item").ok_or("read")?;
+/// let RecordShape::OrNamed { values, .. } = &item.shape else { return Err("or-named".into()) };
+/// assert_eq!(values.iter().map(|v| v.when.clone()).collect::<Vec<_>>(), [vec!["windows".to_owned()], vec![]]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct NamedValue {
+    /// The value's type.
+    pub ty: RecordType,
+    /// The keys of which any one present picks it.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub when: Vec<String>,
 }
 
 /// One variant of a [`RecordShape::External`] record.
@@ -721,25 +801,60 @@ impl<'s> Reader<'s> {
             [kind] => Some(kind.clone()),
             _ => return Err(format!("{at}: an anyOf of two catalogue kinds")),
         };
-        match others.as_slice() {
-            [other] if !names.is_empty() => {
-                let of = self
-                    .type_of(&format!("{at}.value"), other, &format!("{at}Value"))?
-                    .0;
-                // A member is read from a string, so the value beside it
-                // must not be one, or a key could read as either.
-                if member.is_some() && !matches!(of, RecordType::Record { .. }) {
-                    return Err(format!(
-                        "{at}: a catalogue member beside a value that is not a record"
-                    ));
-                }
-                Ok(RecordShape::OrNamed { names, of, member })
-            }
-            _ => Err(format!(
+        if names.is_empty() || others.is_empty() {
+            return Err(format!(
                 "{at}: an anyOf that is neither one type or null nor fixed strings or one \
                  type; list it as raw if it is a JSON value"
-            )),
+            ));
         }
+        let several = others.len() > 1;
+        let last = others.len() - 1;
+        let values = others
+            .iter()
+            .enumerate()
+            .map(|(index, option)| {
+                let when = names_of(option.get("x-teistro-when"))
+                    .into_iter()
+                    .collect::<Vec<_>>();
+                let inline = if several {
+                    format!("{at}Value{index}")
+                } else {
+                    format!("{at}Value")
+                };
+                let ty = self.type_of(&format!("{at}.value"), option, &inline)?.0;
+                // Several values are told apart by their keys, so each is
+                // a record, and each but the last names the keys that pick
+                // it; the last is what is left.
+                if several && !matches!(ty, RecordType::Record { .. }) {
+                    return Err(format!("{at}: one of several values is not a record"));
+                }
+                match (several && index != last, when.is_empty()) {
+                    (true, true) => Err(format!(
+                        "{at}: value {index} of several says no keys that pick it (`x-teistro-when`)"
+                    )),
+                    (false, false) => Err(format!(
+                        "{at}: the last or only value names keys, but it is what is left"
+                    )),
+                    _ => Ok(NamedValue { ty, when }),
+                }
+            })
+            .collect::<Result<Vec<_>, String>>()?;
+        // A member is read from a string, so the value beside it must not
+        // be one, or a key could read as either.
+        if member.is_some()
+            && values
+                .iter()
+                .any(|value| !matches!(value.ty, RecordType::Record { .. }))
+        {
+            return Err(format!(
+                "{at}: a catalogue member beside a value that is not a record"
+            ));
+        }
+        Ok(RecordShape::OrNamed {
+            names,
+            values,
+            member,
+        })
     }
 
     /// The catalogue kind a `$ref` names, if it names one.
@@ -765,6 +880,16 @@ impl<'s> Reader<'s> {
         tag: Option<&str>,
     ) -> Result<Vec<RecordField>, String> {
         read_whole(at, object)?;
+        // serde's flattened enum: the variants beside the fields, which a
+        // record of fields would read as less than it is.
+        if let Some(keyword) = ["oneOf", "anyOf"]
+            .into_iter()
+            .find(|k| object.get(*k).is_some())
+        {
+            return Err(format!(
+                "{at}: fields with a `{keyword}` beside them (a flattened enum), which the reader does not model"
+            ));
+        }
         let mut properties = object
             .get("properties")
             .and_then(Value::as_object)
@@ -1330,6 +1455,36 @@ mod tests {
     }
 
     #[test]
+    fn several_values_are_told_apart_by_their_keys_or_refused() {
+        let union = |sait: Value, rule: Value| {
+            json!({"$defs": {
+                "Item": {"anyOf": [{"type": "string", "enum": ["NEPAL"]}, sait, rule]},
+                "Sait": {"type": "object", "properties": {"windows": {"type": "integer"}}},
+                "Rule": {"type": "object", "properties": {"key": {"type": "string"}}}
+            }})
+        };
+        let sait = json!({"$ref": "#/$defs/Sait", "x-teistro-when": ["windows"]});
+        let rule = json!({"$ref": "#/$defs/Rule"});
+        let records = from_schema(&union(sait.clone(), rule.clone()), &["Item"]).unwrap();
+        let item = records.iter().find(|r| r.name == "Item").unwrap();
+        let RecordShape::OrNamed { values, .. } = &item.shape else {
+            panic!("a name or a value")
+        };
+        let windows = json!({"windows": 1});
+        assert_eq!(picked(values, &windows), values.first());
+        assert_eq!(picked(values, &json!({"key": "X"})), values.last());
+        let refused = |sait: &Value, rule: &Value| {
+            from_schema(&union(sait.clone(), rule.clone()), &["Item"]).unwrap_err()
+        };
+        assert!(refused(&rule, &rule).contains("value 0 of several says no keys"));
+        assert!(refused(&sait, &sait).contains("the last or only value names keys"));
+        assert!(
+            refused(&sait, &json!({"type": "string"}))
+                .contains("one of several values is not a record")
+        );
+    }
+
+    #[test]
     fn every_request_construct_is_read() {
         let records = read(
             &requests(),
@@ -1420,16 +1575,18 @@ mod tests {
             }
         );
         assert!(field("matters").nullable);
-        let RecordShape::OrNamed { names, of, .. } = &named("AskMatters").shape else {
+        let RecordShape::OrNamed { names, values, .. } = &named("AskMatters").shape else {
             panic!("a name or a value")
         };
         assert_eq!(names, &["all"]);
-        assert!(matches!(of, RecordType::List { .. }));
-        let RecordShape::OrNamed { names, of, .. } = &named("Place").shape else {
+        assert!(
+            matches!(values.as_slice(), [NamedValue { ty: RecordType::List { .. }, when }] if when.is_empty())
+        );
+        let RecordShape::OrNamed { names, values, .. } = &named("Place").shape else {
             panic!("a name or a value")
         };
         assert_eq!(
-            (names.as_slice(), of),
+            (names.as_slice(), &values[0].ty),
             (
                 &["birth".to_owned()][..],
                 &RecordType::Record {

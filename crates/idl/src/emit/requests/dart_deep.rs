@@ -21,7 +21,7 @@ use super::dart::{DART_SHADOWED, is_facade, member, quoted};
 use super::{Types, key_part, variant_name};
 use crate::emit::dart::{doc, identifier, preamble};
 use crate::model::Api;
-use crate::records::{RecordField, RecordShape, RecordType};
+use crate::records::{RecordField, RecordShape, RecordType, picked};
 
 /// What the test says it is, after the header.
 const ABOUT: &str = "Each deep example (`crates/sdk/tests/deep-requests.json`) built with
@@ -340,13 +340,17 @@ impl<'a> Builder<'a> {
                 }
                 _ => None,
             },
-            RecordShape::OrNamed { names, of, .. } => match value.as_str() {
+            RecordShape::OrNamed { names, values, .. } => match value.as_str() {
                 Some(key) if names.iter().any(|named| named == key) => {
                     Some(format!("{name}{}()", key_part(key)))
                 }
                 _ => {
-                    let built = self.build(of, value, path, left, depth)?;
-                    Some(format!("{name}Value({built})"))
+                    let one = picked(values, value)?;
+                    let built = self.build(&one.ty, value, path, left, depth)?;
+                    Some(format!(
+                        "{name}{}({built})",
+                        one.class_suffix(values.len() > 1)
+                    ))
                 }
             },
         }
@@ -478,8 +482,10 @@ impl<'a> Builder<'a> {
                         }
                     }
                 }
-                Some(RecordShape::OrNamed { of, .. }) if !value.is_string() => {
-                    self.cases(record, of, value, path, whole, out);
+                Some(RecordShape::OrNamed { values, .. }) if !value.is_string() => {
+                    if let Some(one) = picked(values, value) {
+                        self.cases(record, &one.ty, value, path, whole, out);
+                    }
                 }
                 _ => {}
             },

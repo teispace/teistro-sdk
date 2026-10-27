@@ -339,7 +339,11 @@ fn check_request_catalogues(api: &teistro_idl::model::Api) {
                 .iter()
                 .filter_map(|v| v.payload.as_ref())
                 .for_each(|ty| named(ty, &mut found)),
-            RecordShape::OrNamed { of, .. } => named(of, &mut found),
+            RecordShape::OrNamed { values, .. } => {
+                for value in values {
+                    named(&value.ty, &mut found);
+                }
+            }
             RecordShape::Keys { .. } => {}
         }
     }
