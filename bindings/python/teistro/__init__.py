@@ -1439,7 +1439,6 @@ __all__ = [
     "AfterCycle",
     "SeedOverflow",
     "AshtottariGrouping",
-    "LifeEventRequest",
     "LifeEventKind",
     "DatePrecision",
     "EventConfidence",
@@ -11684,23 +11683,6 @@ class Sarvatobhadra:
     malefic_points: int
     """How many of v. 28's five (star, letter, vowel, tithi, sign) a
     malefic strikes."""
-
-
-class LifeEventRequest(TypedDict, total=False):
-    """A dated life event: what happened (`kind`, `MARRIAGE`, `ACCIDENT`, …)
-    and when it began (`on`, a Julian day UTC); optionally the caller's
-    `id`, which its notes carry back, when it ended (`until`), how finely
-    `on` is known (`precision`, `DAY`, `MONTH` or `YEAR`), how sure the
-    family is (`confidence`, `CERTAIN`, `PROBABLE` or `UNCERTAIN`), and
-    `heldOut`, kept out of the fit and tested against it afterwards."""
-
-    id: str
-    kind: Required[LifeEventKind]
-    on: Required[float]
-    until: float
-    precision: DatePrecision
-    confidence: EventConfidence
-    heldOut: bool
 
 
 DashaYearLength = Literal["JULIAN_365_25", "SAVANA_360", "SIDEREAL", "TROPICAL", "LUNAR", "NAKSHATRA_324"]

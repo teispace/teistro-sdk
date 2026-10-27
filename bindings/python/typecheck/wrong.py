@@ -12,7 +12,7 @@ and longitude does not compile.
 from teistro import (
     Body,
     Calendar,
-    LifeEventRequest,
+    LifeEvent,
     Observer,
     Teistro,
     date,
@@ -59,4 +59,4 @@ with teistro.context() as misspelt:
 # A request knob names its members, so a misspelt one is an error here
 # rather than a refusal from the boundary at run time.
 # expect: Incompatible types (expression has type "Literal['MARIAGE']", TypedDict item "kind" has type
-marriage: LifeEventRequest = {"kind": "MARIAGE", "on": 2469000.5}
+marriage: LifeEvent = {"kind": "MARIAGE", "on": 2469000.5}
