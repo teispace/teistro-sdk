@@ -69,6 +69,11 @@ tighter ceiling would fail on a busy runner rather than on a regression.
 | full parity chart (all P0 slices, dashas to depth 3, 624 rules) | 10 ms |
 | panchanga day | 2 ms with native crossings, 10 ms with the fallback |
 | month grid (42 days) | 60 ms |
+| year of almanac days (366) | 500 ms (the month grid's rate per day) |
+| year of the Nepal pack's festivals | 160 ms (twice the consumer's 80 ms target) |
+| birth chart, Vimshottari to depth 3 | 2 ms (the foundation and its dasha) |
+| widest chart (the parity chart with every dasha a chart gives) | 25 ms |
+| Ashta Koota between two cast charts | 1 ms |
 | muhurta search (90 days) | 200 ms |
 | rectification (full-day window) | 1 s |
 | N-API full chart round trip including blob decode | within 1.5x of the C path |

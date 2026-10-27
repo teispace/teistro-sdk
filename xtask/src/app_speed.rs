@@ -126,13 +126,13 @@ const REQUESTS: [Request; 11] = [
     Request {
         key: "year",
         asks: "a year of almanac days",
-        budget: None,
+        budget: Some(500.0),
         target: None,
     },
     Request {
         key: "festivals",
         asks: "a year of the Nepal pack's festivals",
-        budget: None,
+        budget: Some(160.0),
         target: Some(80.0),
     },
     Request {
@@ -144,7 +144,7 @@ const REQUESTS: [Request; 11] = [
     Request {
         key: "chart",
         asks: "a birth chart with its Vimshottari to depth 3",
-        budget: None,
+        budget: Some(2.0),
         target: None,
     },
     Request {
@@ -156,13 +156,13 @@ const REQUESTS: [Request; 11] = [
     Request {
         key: "widest-chart",
         asks: "the parity chart with every dasha a chart gives",
-        budget: None,
+        budget: Some(25.0),
         target: None,
     },
     Request {
         key: "matching",
         asks: "Ashta Koota between two cast charts",
-        budget: None,
+        budget: Some(1.0),
         target: None,
     },
     Request {

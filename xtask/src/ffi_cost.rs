@@ -3,10 +3,11 @@
 //! `cargo xtask measure-ffi-cost` writes, one file per machine in
 //! `docs/05-testing/ffi-cost/`, and the gate on them.
 //!
-//! No budget binds these figures yet: they are published so that one can
-//! be set from them. The gate holds every figure to the results schema
-//! (`measured.rs`), and every record to carry each key for every binding
-//! [`BINDINGS`] names.
+//! The performance page's budget binds a binding's round trip: its
+//! [`BUDGETED`] figures within [`CEILING`]× Rust's, which is the C path.
+//! The gate also holds every figure to the results schema (`measured.rs`),
+//! and every record to carry each key for every binding [`BINDINGS`]
+//! names.
 
 use std::fmt::Write as _;
 use std::path::Path;
@@ -48,6 +49,16 @@ const KEYS: [(&str, &str); 5] = [
     ("grid-hosted", "366 × 10, hosted provider"),
     ("decode", "the 366 × 10 blob, decoded alone"),
 ];
+
+/// The keys a binding's median is held to [`CEILING`]× Rust's on: a call
+/// over the library's own provider, request, answer and decode, which is
+/// the performance page's round trip. A hosted provider's figures time the
+/// binding's own callback code and are published, not bound.
+const BUDGETED: [&str; 2] = ["call-native", "grid-native"];
+
+/// How far past Rust's median a binding's may run on a [`BUDGETED`] key:
+/// the performance page's "within 1.5x of the C path".
+const CEILING: f64 = 1.5;
 
 /// The cells of the grid, which the hosted provider's grid cost is shared
 /// over.
@@ -113,6 +124,18 @@ fn faults(records: &[(String, Record)]) -> Vec<String> {
             }
         }
         for (binding, _) in BINDINGS {
+            for key in BUDGETED {
+                if let (Some(b), Some(r)) =
+                    (record.figure(binding, key), record.figure("rust", key))
+                    && b.median_us > CEILING * r.median_us
+                {
+                    found.push(format!(
+                        "{name}: `{key}` in {binding} took {} µs, past {CEILING}× Rust's {} µs",
+                        us(b.median_us),
+                        us(r.median_us)
+                    ));
+                }
+            }
             for (key, _) in KEYS {
                 if record.figure(binding, key).is_none() {
                     found.push(format!(
@@ -230,8 +253,9 @@ fn page(records: &[(String, Record)]) -> String {
          request and its decoding add, and **callback** its `call-hosted` over Rust's, what \
          hosting a provider in it adds; the grid's is shared over its 3,660 cells. A difference \
          is printed only where the two figures' fastest-to-slowest ranges are apart, and \
-         `within spread` where they meet. No budget binds these figures yet. A figure from \
-         fewer than three runs, or whose median lies outside its own range, fails the gate, and \
+         `within spread` where they meet. A binding's `call-native` and `grid-native` past \
+         {CEILING}× Rust's (the performance page's round trip within 1.5x of the C path) fail \
+         the gate, as does a figure from fewer than three runs, or whose median lies outside its own range, fails the gate, and \
          so does a record missing a key for a binding below or measured from a tree with \
          changes.\n"
     );
@@ -457,6 +481,32 @@ mod tests {
             found
                 .iter()
                 .any(|line| line.contains("a tree with changes"))
+        );
+    }
+
+    #[test]
+    fn a_round_trip_past_its_ceiling_over_rust_fails_and_a_hosted_one_does_not() {
+        let mut record = whole();
+        for t in &mut record.figures {
+            if t.binding == "python" && t.key == "call-native" {
+                *t = timed("python", "call-native", 3.2, 3.1, 3.3);
+            }
+            if t.binding == "java" && t.key == "call-hosted" {
+                *t = timed("java", "call-hosted", 9.0, 8.0, 10.0);
+            }
+            if t.binding == "node" && t.key == "call-native" {
+                *t = timed("node", "call-native", 3.0, 2.9, 3.1);
+            }
+            if t.binding == "dart" && t.key == "grid-native" {
+                *t = timed("dart", "grid-native", 2.9, 2.8, 3.0);
+            }
+        }
+        let found = faults(&[(String::from("x"), record)]);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert!(
+            found
+                .iter()
+                .all(|line| line.contains("`call-native` in python"))
         );
     }
 
