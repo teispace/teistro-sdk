@@ -121,6 +121,10 @@ name = "leaks"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "threads"
+required-features = ["full", "builtin-ephemeris"]
+
+[[test]]
 name = "keys"
 required-features = ["full"]
 
