@@ -550,7 +550,7 @@ pub fn dart_declarations(api: &Api) -> String {
             }
             RecordShape::OrNamed {
                 names,
-                of,
+                values,
                 member: kind,
             } => {
                 sealed(&mut out, name, &record.doc);
@@ -573,14 +573,30 @@ pub fn dart_declarations(api: &Api) -> String {
                         "value.key",
                     );
                 }
-                dart_one(
-                    &mut out,
-                    &format!("{name}Value"),
-                    "The value itself.",
-                    name,
-                    &types.dart(of),
-                    &types.wire(of, "value", 0),
-                );
+                let several = values.len() > 1;
+                for value in values {
+                    let doc = match value.when.as_slice() {
+                        [] if several => {
+                            String::from("The value, when it carries none of the others' keys.")
+                        }
+                        [] => String::from("The value itself."),
+                        keys => format!(
+                            "The value, picked by {}.",
+                            keys.iter()
+                                .map(|k| format!("`{k}`"))
+                                .collect::<Vec<_>>()
+                                .join(" or ")
+                        ),
+                    };
+                    dart_one(
+                        &mut out,
+                        &format!("{name}{}", value.class_suffix(several)),
+                        &doc,
+                        name,
+                        &types.dart(&value.ty),
+                        &types.wire(&value.ty, "value", 0),
+                    );
+                }
             }
         }
     }

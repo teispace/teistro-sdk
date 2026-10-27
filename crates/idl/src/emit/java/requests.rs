@@ -20,7 +20,7 @@ use super::records::READ;
 use super::{File, identifier, javadoc, literal, preamble};
 use crate::model::Api;
 use crate::names::{binding_type_name, pascal};
-use crate::records::{ExternalVariant, RecordField, RecordShape, RecordType, Width};
+use crate::records::{ExternalVariant, NamedValue, RecordField, RecordShape, RecordType, Width};
 
 /// The requests' package.
 pub(super) const REQUEST_PACKAGE: &str = "com.teispace.teistro.request";
@@ -102,9 +102,13 @@ pub(super) fn files(api: &Api) -> Vec<File> {
                     file(&name, text);
                 }
             }
-            RecordShape::OrNamed { names, of, member } => {
+            RecordShape::OrNamed {
+                names,
+                values,
+                member,
+            } => {
                 for (name, text) in
-                    types.or_named(&record.name, &record.doc, names, of, member.as_deref())
+                    types.or_named(&record.name, &record.doc, names, values, member.as_deref())
                 {
                     file(&name, text);
                 }
@@ -188,11 +192,18 @@ impl<'a> Types<'a> {
                         }
                     }
                 }
-                RecordShape::OrNamed {
-                    of: RecordType::Record { name },
-                    ..
-                } if *name == format!("{}Value", record.name) => {
-                    variants.insert(name.as_str(), (record.name.as_str(), None));
+                RecordShape::OrNamed { values, .. } => {
+                    if let [
+                        NamedValue {
+                            ty: RecordType::Record { name },
+                            ..
+                        },
+                    ] = values.as_slice()
+                    {
+                        if *name == format!("{}Value", record.name) {
+                            variants.insert(name.as_str(), (record.name.as_str(), None));
+                        }
+                    }
                 }
                 _ => {}
             }
@@ -915,23 +926,32 @@ impl<'a> Types<'a> {
         name: &str,
         doc: &str,
         names: &[String],
-        of: &RecordType,
+        values: &[NamedValue],
         member: Option<&str>,
     ) -> Vec<(String, String)> {
         let mut files = Vec::new();
-        let value = match of {
-            RecordType::Record { name: data } if self.variants.contains_key(data.as_str()) => {
-                data.clone()
+        let several = values.len() > 1;
+        // Each value's class, and the type its `value` takes where the
+        // class wraps one: the only value's own inline record implements
+        // the union itself.
+        let mut classes: Vec<(String, Option<String>, &[String])> = Vec::new();
+        for value in values {
+            match &value.ty {
+                RecordType::Record { name: data }
+                    if !several && self.variants.contains_key(data.as_str()) =>
+                {
+                    classes.push((data.clone(), None, &value.when));
+                }
+                ty => {
+                    let wrapper = format!("{name}{}", value.class_suffix(several));
+                    files.push((wrapper.clone(), self.one_of(name, &wrapper, doc, ty)));
+                    classes.push((wrapper, Some(self.java_type(ty, false)), &value.when));
+                }
             }
-            _ => {
-                let wrapper = format!("{name}Value");
-                files.push((wrapper.clone(), self.one_of(name, &wrapper, doc, of)));
-                wrapper
-            }
-        };
+        }
         // The member reads from a string the names have not taken, before
         // the value, which the reader holds is a record.
-        let (permits, member_make, member_read) = match member {
+        let (member_permit, member_make, member_read) = match member {
             None => (String::new(), String::new(), String::new()),
             Some(kind) => {
                 let wrapper = format!("{name}Member");
@@ -964,22 +984,42 @@ impl<'a> Types<'a> {
                 "    /** {{@code {key}}}. */\n    {name} {constant} = Key.{constant};\n"
             );
         }
-        let value_type =
-            if value == format!("{name}Value") && !self.variants.contains_key(value.as_str()) {
-                self.java_type(of, false)
-            } else {
-                value.clone()
-            };
-        let make = if value_type == value {
-            String::new()
-        } else {
-            format!(
-                "    /**\n     * The value, as a {{@code {name}}}.\n     *\n     * @param value the value\n     * @return the union\n     */\n    static {name} value({value_type} value) {{\n        return new {value}(value);\n    }}\n\n"
-            )
-        };
+        let mut make = String::new();
+        for (class, wrapped, _) in &classes {
+            if let Some(value_type) = wrapped {
+                let _ = write!(
+                    make,
+                    "    /**\n     * The value, as a {{@code {name}}}.\n     *\n     * @param value the value\n     * @return the union\n     */\n    static {name} value({value_type} value) {{\n        return new {class}(value);\n    }}\n\n"
+                );
+            }
+        }
+        // Several values are picked as the SDK's reader picks them: the
+        // first whose keys the object carries one of, else the last.
+        let mut value_read = String::new();
+        let (last, picks) = classes.split_last().unwrap_or_else(|| {
+            unreachable!("the reader refuses an or-named union with no value ({name})")
+        });
+        if !picks.is_empty() {
+            value_read.push_str("        if (raw instanceof Map<?, ?> object) {\n");
+            for (class, _, when) in picks {
+                let test: Vec<String> = when
+                    .iter()
+                    .map(|key| format!("object.containsKey({})", literal(key)))
+                    .collect();
+                let _ = writeln!(
+                    value_read,
+                    "            if ({}) {{\n                return {class}.of(raw);\n            }}",
+                    test.join(" || ")
+                );
+            }
+            value_read.push_str("        }\n");
+        }
+        let _ = writeln!(value_read, "        return {}.of(raw);", last.0);
+        let permits: Vec<&str> = classes.iter().map(|(class, ..)| class.as_str()).collect();
         let _ = writeln!(
             out,
-            "public sealed interface {name} extends RequestJson permits {name}.Key, {value}{permits} {{\n{constants}{make}{member_make}    /**\n     * A {{@code {name}}} from its JSON: one of the names, or the value.\n     *\n     * @param raw the JSON value\n     * @return the union\n     * @throws IllegalArgumentException for JSON that is neither\n     */\n    static {name} of(Object raw) {{\n        if (raw instanceof {name} same) {{\n            return same;\n        }}\n        for (Key key : Key.values()) {{\n            if (key.key().equals(raw)) {{\n                return key;\n            }}\n        }}\n{member_read}        return {value}.of(raw);\n    }}\n\n    /** The names. */\n    enum Key implements {name} {{\n{};\n\n{}\n    }}\n}}",
+            "public sealed interface {name} extends RequestJson permits {name}.Key, {}{member_permit} {{\n{constants}{make}{member_make}    /**\n     * A {{@code {name}}} from its JSON: one of the names, or the value.\n     *\n     * @param raw the JSON value\n     * @return the union\n     * @throws IllegalArgumentException for JSON that is neither\n     */\n    static {name} of(Object raw) {{\n        if (raw instanceof {name} same) {{\n            return same;\n        }}\n        for (Key key : Key.values()) {{\n            if (key.key().equals(raw)) {{\n                return key;\n            }}\n        }}\n{member_read}{value_read}    }}\n\n    /** The names. */\n    enum Key implements {name} {{\n{};\n\n{}\n    }}\n}}",
+            permits.join(", "),
             indent(&Self::constants(&keys), "    "),
             indent(&key_methods("Key", &format!("{name}.Key")), "    ")
         );
