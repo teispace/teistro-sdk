@@ -4580,7 +4580,7 @@ class AnEngine(WithLibrary):
         and keeps the rule's day, a `WITHDRAW` marks one, an `ADD` keeps a
         day no rule computes, an entry no occurrence takes is reported,
         and the answer names the set it applied."""
-        from teistro import Published, PublishedAdded, PublishedDayAsked, PublishedSetAsked, date
+        from teistro import Published, PublishedAdded, PublishedDay, PublishedSet, date
         from teistro.catalogue import Calendar
 
         observer = Observer(
@@ -4599,11 +4599,11 @@ class AnEngine(WithLibrary):
             navami = next(o for o in plain.observances if o.rule == "MAHA_NAVAMI")
             visarjana = next(o for o in plain.observances if o.rule == "DEVI_VISARJAN")
 
-            def day(of: Any, by: int = 0) -> PublishedDayAsked:
+            def day(of: Any, by: int = 0) -> PublishedDay:
                 moved = ctx.calendar.convert(of, Calendar.GREGORIAN)
                 return {"calendar": "GREGORIAN", "year": moved.year, "month": moved.month, "day": moved.day + by}
 
-            published: PublishedSetAsked = {
+            published: PublishedSet = {
                 "format": "teistro.published/1",
                 "publisher": "a patro printed in Nepal",
                 "id": "np-2082",
@@ -4637,7 +4637,10 @@ class AnEngine(WithLibrary):
 
             # A SET naming a rule the request does not carry is refused by
             # where it stands.
-            stray: PublishedSetAsked = {**published, "entries": [{**published["entries"][0], "rule": "NO_SUCH_RULE"}]}
+            stray: PublishedSet = {
+                **published,
+                "entries": [{"action": "SET", "rule": "NO_SUCH_RULE", "day": day(navami.day, 1), "source": "p. 1"}],
+            }
             with self.assertRaises(TeistroError) as refused:
                 ctx.almanac.festivals(**days, festivals={"rules": "DHARMASINDHU", "published": [stray]})
             self.assertEqual(refused.exception.field, "festivals.published[0].entries[0].rule")
@@ -4730,7 +4733,10 @@ class AnEngine(WithLibrary):
         with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
             published = ctx.almanac.published_from_signed(pack, signature, key, at_least=3)
             self.assertEqual((published["id"], published["version"]), ("np-2083", 3))
-            self.assertEqual(published["entries"][0]["rule"], "GHATASTHAPANA")
+            entry = published["entries"][0]
+            if entry["action"] != "SET":
+                self.fail(f"the pack's entry is a SET, not {entry['action']}")
+            self.assertEqual(entry["rule"], "GHATASTHAPANA")
             for bad, field in [
                 ((pack.replace(b'"day":11', b'"day":12'), signature, key, 0), "signature"),
                 ((pack, signature, key, 4), "version"),

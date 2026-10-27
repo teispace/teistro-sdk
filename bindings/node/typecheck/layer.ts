@@ -47,7 +47,7 @@ import type {
   Composite,
   CompositePlanet,
   CuspAntiscion,
-  DavisonBirth,
+  Partner,
   Declinations,
   MidpointRequest,
   MidpointRow,
@@ -143,7 +143,7 @@ import type {
   Fortitudes,
   LotPlace,
   LotRequest,
-  ConsiderationRequest,
+  ConsiderationRules,
   Considerations,
   Perfection,
   PerfectionRequest,
@@ -217,7 +217,7 @@ import type {
   BaselineNote,
   PlanetDignity,
   Reception,
-  Term,
+  TermEntry,
   LayoutHolds,
   LayoutKey,
   LayoutRow,
@@ -1600,7 +1600,7 @@ void theRemedies;
 // The essential dignities read all the way down, and a request in every
 // field, a table's lords in either spelling.
 function theDignities(ctx: Context): string {
-  const term = (lord: GrahaName, end: number): Term => ({ lord, end });
+  const term = (lord: GrahaName, end: number): TermEntry => ({ lord, end });
   const sign = [term('JUPITER', 6), term('graha.VENUS', 12), term('MERCURY', 20), term('MARS', 25), term('SATURN', 30)];
   const asked: DignityRequest = {
     sectRule: 'DAYLIGHT',
@@ -1716,7 +1716,7 @@ void theLots;
 // The considerations read all the way down, and the answer's rules fed
 // back as a request.
 function theConsiderations(ctx: Context): string {
-  const asked: ConsiderationRequest = { moonLateFromDeg: 25 };
+  const asked: ConsiderationRules = { moonLateFromDeg: 25 };
   const read: Considerations | null = ctx.chart.found({
     instant: 2451545,
     place: { latitude: 51.5, longitude: -0.12, altitude: 0 },
@@ -1724,9 +1724,9 @@ function theConsiderations(ctx: Context): string {
     considerations: asked,
   }).considerations;
   if (read === null) return 'none';
-  const fedBack: ConsiderationRequest = read.rules;
+  const fedBack: ConsiderationRules = read.rules;
   // @ts-expect-error the orbs are seven, one a planet in the Chaldean order
-  const misread: ConsiderationRequest = { orbsDeg: [10, 12] };
+  const misread: ConsiderationRules = { orbsDeg: [10, 12] };
   const next: Perfection | null = read.moon.course.next;
   const lord: Graha = read.seventh.lord;
   return [
@@ -1877,7 +1877,7 @@ function theWesternAspects(ctx: Context): string {
   const equal: SynastryMidpointRow | undefined = chart.synastryMidpoints?.[0];
   const composite: Composite | null = chart.synastryComposite;
   const middle: CompositePlanet | undefined = composite?.planets[0];
-  const davison: DavisonBirth | null = chart.synastryDavison;
+  const davison: Required<Partner> | null = chart.synastryDavison;
   const between: Chart | null = davison === null ? null : ctx.chart.found({ ...davison });
   return [
     own?.first ?? 'none',

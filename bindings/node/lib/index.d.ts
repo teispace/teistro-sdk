@@ -179,12 +179,15 @@ import type {
   BirthDate,
   BirthFacts,
   ChakraVowel,
+  ConsiderationRules,
+  Criterion,
   DayFifth,
   DignityRequest,
   DignityScores,
   DossierRequest,
   FirstYearRequest,
   FortitudeRequest,
+  GeoPlace,
   HarmonicRequest,
   HarshaRules,
   HitRequest,
@@ -212,6 +215,7 @@ import type {
   OfficeRules,
   PakshiBird,
   ParallelRequest,
+  Partner,
   PerfectionRequest,
   PlanRequest,
   PoruthamRules,
@@ -1282,12 +1286,6 @@ export interface SadeSatiReport {
   readonly spells: readonly SadeSatiSpell[];
 }
 
-/** One term: its lord, and the degree within the sign it ends at, exclusive. */
-export interface Term {
-  readonly lord: GrahaName;
-  readonly end: number;
-}
-
 /** The dignities and debilities a planet holds where it stands. */
 export interface EssentialDignity {
   readonly house: boolean;
@@ -1535,25 +1533,6 @@ export interface Lots {
   readonly lots: readonly PlacedLot[];
 }
 
-/**
- * How to read every chart's considerations before judgement
- * (`03-design/hellenistic-considerations.md`); every field is optional,
- * and an absent one is Lilly's.
- *
- * @example
- * const asked: ConsiderationRequest = { moonLateFromDeg: 25 };
- */
-export interface ConsiderationRequest {
-  /** From what degree of her sign the Moon is late; 27 by default, his late Ascendant (C229). */
-  readonly moonLateFromDeg?: number;
-  /**
-   * The seven whole orbs in the Chaldean order (Saturn, Jupiter, Mars, the
-   * Sun, Venus, Mercury, the Moon), half of each counting toward an
-   * application; Lilly's p. 107 by default (C230).
-   */
-  readonly orbsDeg?: readonly [number, number, number, number, number, number, number];
-}
-
 /** An aspect the Moon perfects with a planet. */
 export interface Perfection {
   readonly planet: Graha;
@@ -1630,7 +1609,7 @@ export interface Considerations {
   readonly saturnRetrograde: boolean;
   readonly ascendantLordCombust: boolean;
   /** The request as it stood, every field filled. */
-  readonly rules: Required<ConsiderationRequest>;
+  readonly rules: Required<ConsiderationRules>;
 }
 
 /** A span of time a progression's rate is stated in. */
@@ -2197,7 +2176,7 @@ export interface SynastryRequest extends WesternAspectRequest {
   /** The partner's birth, founded once for the whole batch. */
   readonly partner: {
     readonly instant: number;
-    readonly place: ChartPlace;
+    readonly place: GeoPlace;
     /** The partner's clock, seconds east of UTC; 0 when absent. */
     readonly utcOffsetSeconds?: number;
   };
@@ -2274,23 +2253,6 @@ export interface Composite {
    * `western` module's division at either birthplace.
    */
   readonly cuspsDeg: readonly number[] | null;
-}
-
-/**
- * The Davison birth of a chart and a synastry's partner (C248), in the
- * shape a chart request takes, so it founds a chart as a birth does.
- *
- * @example
- * const davison = chart.synastryDavison;
- * if (davison !== null) ctx.chart.found({ ...davison });
- */
-export interface DavisonBirth {
-  /** The mean instant, a Julian day on the UTC scale. */
-  readonly instant: number;
-  /** The mean place, the longitude taken the shorter way round. */
-  readonly place: ChartPlace;
-  /** The mean of the two clocks, seconds east of UTC: it names only the civil day. */
-  readonly utcOffsetSeconds: number;
 }
 
 /** A chart's distances from the equator, degrees north. */
@@ -4752,16 +4714,6 @@ export interface Sayanadi {
   readonly cheshtas: readonly (AvasthaCheshta | 'unknown')[];
 }
 
-/** The place a chart was founded at. */
-export interface ChartPlace {
-  /** Degrees north. */
-  readonly latitude: number;
-  /** Degrees east. */
-  readonly longitude: number;
-  /** Metres above the ellipsoid. */
-  readonly altitude: number;
-}
-
 /**
  * A batch of founded charts at one place, decoded on first use and only
  * once. The charts in it are views over those bytes rather than copies.
@@ -4779,7 +4731,7 @@ export declare class Charts extends Decoded<DecodedCharts> {
   /** What kind of chart these are. */
   readonly kind: ChartKind | 'unknown';
   /** The place they were all founded at. */
-  readonly place: ChartPlace;
+  readonly place: GeoPlace;
   /** How many divisional charts each chart of the batch holds. */
   readonly vargaCount: number;
   /** The drishti table every aspect was read under; empty when none were asked for. */
@@ -4813,7 +4765,7 @@ export declare class Chart {
   /** What kind of chart this is. */
   readonly kind: ChartKind | 'unknown';
   /** The place it was founded at. */
-  readonly place: ChartPlace;
+  readonly place: GeoPlace;
   /** The lagna at the instant, in the chart's zodiac, degrees. */
   readonly lagnaDeg: number;
   /** The lagna at the sunrise that opened the day, degrees. */
@@ -5049,7 +5001,7 @@ export declare class Chart {
    * The Davison birth of this chart and the partner; `null` unless
    * `synastry` asked for `davison` (`03-design/western-composites.md`).
    */
-  readonly synastryDavison: DavisonBirth | null;
+  readonly synastryDavison: Required<Partner> | null;
   /**
    * The chart's distances from the equator; `null` unless `parallels`
    * asked (`03-design/western-declinations.md`).
@@ -5334,7 +5286,7 @@ export declare class Almanac extends Decoded<DecodedAlmanac> {
   /** How many days the batch holds. */
   readonly length: number;
   /** The place they were all founded at. */
-  readonly place: ChartPlace;
+  readonly place: GeoPlace;
   /** The civil calendar the days' dates are read in. */
   readonly calendar: Calendar | 'unknown';
   /** The solar model that reckoned the days, as it describes itself. */
@@ -6402,7 +6354,7 @@ export interface MuhurtaRequest {
   /** How many windows are answered at most; 50 by default. */
   readonly most?: number;
   /** How Venus's and Jupiter's combustion is seen: named, or spelt out; the Surya Siddhanta's by default (C164). */
-  readonly asta?: AstaName | AstaCriterion;
+  readonly asta?: AstaName | Criterion;
   /** Where a journey goes: on a day whose disha shool it is, the rules' `shool` holds a window to its release. */
   readonly direction?: Direction;
 }
@@ -6426,19 +6378,6 @@ export type MuhurtaActivity =
 
 /** A visibility criterion the SDK names. */
 export type AstaName = 'SURYA_SIDDHANTA' | 'COMBUSTION_ORB' | 'PTOLEMY';
-
-/** A visibility criterion spelt out: what it measures, against which thresholds. */
-export interface AstaCriterion {
-  readonly kind: 'TIME_DEGREES' | 'LONGITUDE' | 'ARCUS_VISIONIS';
-  readonly thresholds:
-    | { readonly kind: 'SURYA_SIDDHANTA' | 'PTOLEMY' }
-    | ({ readonly kind: 'CUSTOM' } & {
-        readonly [body in 'moon' | 'mercury' | 'venus' | 'mars' | 'jupiter' | 'saturn' | 'uranus' | 'neptune' | 'pluto']?: {
-          readonly direct: number;
-          readonly retrograde: number;
-        } | null;
-      });
-}
 
 /** How a member is graded. */
 export type MuhurtaGrade = 'BEST' | 'MIDDLING' | 'REJECTED';
@@ -6887,7 +6826,7 @@ export interface ChartRequest {
    * asks for or Lilly's (`03-design/hellenistic-considerations.md`). None
    * by default; `{}` is Lilly's.
    */
-  readonly considerations?: ConsiderationRequest;
+  readonly considerations?: ConsiderationRules;
   /**
    * The horary matter to weigh in every chart, read back as each chart's
    * `perfection`, on the fortitudes `fortitudes` asks for or Lilly's

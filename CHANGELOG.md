@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A custom visibility table is typed in every binding.**
+**Numbers:** none.
+- A tagged variant that wraps a record (serde's internally tagged
+  newtype, `Thresholds::Custom(Table)`) is described by schemars as a
+  reference beside its tag, and the IDL reader read only the tag: every
+  binding's `ThresholdsCustom` had no fields, so a caller's own asta
+  table (`{"kind": "CUSTOM", "venus": {"direct": 10, "retrograde": 8}}`)
+  could not be typed anywhere but Node's hand copy. The reader now merges
+  the wrapped record's fields beside the tag, and refuses a wrapped type
+  with none. Each planet's pair is `MotionThresholds` (Rust's `Pair`).
+- Eleven more hand copies of generated request records are gone. Node:
+  `ChartPlace` (`GeoPlace`), `DavisonBirth` (`Partner`; the answer's is
+  `Required<Partner>`), `ConsiderationRequest` (`ConsiderationRules`),
+  `Term` (`TermEntry`) and `AstaCriterion` (`Criterion`). Python:
+  `PublishedDayAsked`, `PublishedEntryAsked` and `PublishedSetAsked`
+  (`PublishedDay`, the tagged `PublishedEntry`, `PublishedSet`), and the
+  wire forms `ConsiderationRequest`, `PerfectionRuleRequest` and
+  `KujaLiftRules`, now the generated records under those names.
+- `layer-does-not-twin-a-request` matches records by their fields as
+  well as key sets by their keys, so a copy under another name fails
+  `check-lints`.
+
 **`check-java` builds the javadoc.**
 **Numbers:** none.
 - `cargo xtask check-java` now runs `javadoc -Xdoclint:all -Werror`
