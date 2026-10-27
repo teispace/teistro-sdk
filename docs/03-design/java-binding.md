@@ -1,8 +1,8 @@
 # The Java binding
 
 Status: `building`, §13 steps 0 to 7, 9 and 10 built, step 8 (Central)
-open. Of the checks this page designs, only a test run on JDK 22 (§11,
-CI) is not built: every CI row installs JDK 25; written 2026-10-08, before any code, as every binding page is. It derives from
+open. Every check this page designs is built, the JDK 22 run (§11) as
+verify's linux-x64 row running `check-java` a second time on Temurin 22; written 2026-10-08, before any code, as every binding page is. It derives from
 [`ffi-abi-and-api-description.md`](ffi-abi-and-api-description.md) (the
 ABI, the description, the result blob, the error record),
 [`python-binding.md`](python-binding.md) (the binding nearest in shape:

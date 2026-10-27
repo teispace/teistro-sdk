@@ -970,7 +970,7 @@ The order below puts what blocks a release first.
    others, with a Java 22 floor and tests on Java 25. Android, which has
    no FFM, stays v1.x. Designed in `03-design/java-binding.md`.
    **Built** (2026-10-27), but for step 8 (Maven Central, which waits on
-   the maintainer's namespace record) and a test run on JDK 22.
+   the maintainer's namespace record).
 7. **Generated pages**: `SIZES.md` and `CONFORMANCE.md`; Horizons and
    CSPICE rows in `ACCURACY.md` from a dated run recorded in the corpus;
    the docs site's guides with executed examples; a check after publishing
@@ -1094,7 +1094,7 @@ hands is about two to three weeks of one chain of builds:
 - the baseline's golden vectors for aspects, Jaimini, KP and milan, and an
   oracle for the Western and Hellenistic fixtures;
 - the quality bar's unenforced rows (the coverage floors, the binding
-  layers' coverage) and a JDK 22 run in CI;
+  layers' coverage);
 - the release candidate: version, changelog and a tag on a rehearsal run.
 
 **v1.0 release candidate: mid to late November 2026**, then the

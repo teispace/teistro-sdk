@@ -109,6 +109,17 @@ jobs:
         run: cargo xtask check-python
       - name: The Java binding at its floor's release, against the real library
         run: cargo xtask check-java
+      # The floor itself: the binding is compiled for 22, so one row runs it
+      # on a JDK 22 too (`03-design/java-binding.md` §11); FFM's API has not
+      # changed since 22, and this is what would show it if it did.
+      - if: matrix.platform == 'linux-x64'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "22"
+      - name: The Java binding on the JDK 22 floor
+        if: matrix.platform == 'linux-x64'
+        run: cargo xtask check-java
       - name: The Rust facade's examples and its own tests
         run: cargo xtask check-rust
       - name: The bindings against each other, value by value (and the wasm package, where built)

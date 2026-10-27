@@ -3801,7 +3801,7 @@ kept here: the session log records them.
    (C34) is built (`03-design/horizon-atmosphere.md`); the dip of a
    raised horizon waits for a consumer who asks.
 2. **The bindings.** What remains is the maintainer's publishes: Flutter's,
-   and Java's on Central; and a JDK 22 run in CI.
+   and Java's on Central.
 3. **The dasha systems still unbuilt.** The periods a chart supplies run
    on K-graha (2026-10-23), so the 8 left are blocked on text: the
    tithi, yoga and karana seeds' reference, Panchaswara's shape, the
