@@ -20,7 +20,9 @@
 //!   and the hash every result carries;
 //! - [`time`]: clock offsets and the local-clock abstraction the calendars
 //!   and the time layer share;
-//! - [`registry`]: what a context registers.
+//! - [`registry`]: what a context registers;
+//! - [`preset`]: a rule set a request may name (`"BASELINE"`) instead
+//!   of spelling it out.
 //!
 //! ```
 //! use teistro_core::angle::Nas;
@@ -67,6 +69,7 @@ pub mod house;
 pub mod interval;
 pub mod key;
 pub mod math;
+pub mod preset;
 pub mod quantity;
 pub mod ratio;
 pub mod registry;

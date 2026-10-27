@@ -25203,6 +25203,14 @@
         "kind": "OBJECT",
         "fields": [
           {
+            "name": "answer_key",
+            "doc": "The key a stored answer is reused under: `Provenance::answer_key`, the SHA-256 of the canonical JSON of the SDK, calculation and catalogue versions, the settings and input hashes, the provider's name, version, data version, data hashes and tier, and the packs. Written on every provenance, and ignored where one is read.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
             "name": "applied_conventions",
             "doc": "The conventions applied.",
             "ty": {

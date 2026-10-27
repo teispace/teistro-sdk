@@ -54,9 +54,10 @@ public final class Chart {
         Provenance p = batch.provenance();
         String hashes = decoded().contentHashes();
         String own = hashes.substring(64 * index, 64 * index + 64);
-        return new Provenance(p.appliedConventions(), p.calculationVersion(), p.calendar(), p.catalogueVersion(),
-                p.confidence(), own, p.deviation(), p.fallbacksUsed(), p.inputHash(), p.moduleVersions(),
-                p.packs(), p.profile(), p.provider(), p.sdkVersion(), p.settingsHash(), p.time(), p.warnings());
+        return new Provenance(p.answerKey(), p.appliedConventions(), p.calculationVersion(), p.calendar(),
+                p.catalogueVersion(), p.confidence(), own, p.deviation(), p.fallbacksUsed(), p.inputHash(),
+                p.moduleVersions(), p.packs(), p.profile(), p.provider(), p.sdkVersion(), p.settingsHash(), p.time(),
+                p.warnings());
     }
 
     /**

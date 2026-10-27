@@ -1753,16 +1753,20 @@ final class NumerologyArea extends _Area {
   /// The name is read in the 26 Latin letters; anything else is refused,
   /// named `numerology.name`, unless [NumerologyRules.nonLatin] is
   /// [NonLatin.skip]. A date the Gregorian calendar does not have is
-  /// refused as `numerology.date`.
+  /// refused as `numerology.date`. [rules] are [NumerologyRules] spelt
+  /// out, or a preset by name: [NumerologyRequestRulesBaseline] is the
+  /// baseline engine's, as the SDK holds it.
   ///
   /// ```dart
   /// final read = sdk.numerology.profile('Henry Elder', const BirthDate(1872, 1, 17));
   /// print('${read.pythagoreanName.reduction.number} ${read.chaldeanBirth.birth.number}');
+  /// final baseline = sdk.numerology.profile('Henry Elder', const BirthDate(1872, 1, 17),
+  ///     const NumerologyRequestRulesBaseline());
   /// ```
   NumerologyProfile profile(
     String name,
     BirthDate date, [
-    NumerologyRules rules = const NumerologyRules(),
+    NumerologyRequestRules rules = const NumerologyRules(),
   ]) => NumerologyProfile._of(
     jsonDecode(
           _context._inner.numerologyProfile(
@@ -1773,7 +1777,7 @@ final class NumerologyArea extends _Area {
                 'month': date.month,
                 'day': date.day,
               },
-              'rules': rules._record,
+              'rules': rules._wire,
             }),
           ),
         )
@@ -10085,8 +10089,10 @@ enum NumerologySystem {
 ///
 /// ```dart
 /// const plain = NumerologyRules(masters: Masters.none);
+/// // The baseline engine's every reading, by the name the SDK gives them.
+/// const named = NumerologyRequestRulesBaseline();
 /// ```
-final class NumerologyRules {
+final class NumerologyRules extends NumerologyRequestRules {
   const NumerologyRules({
     this.masters = Masters.elevenTwentyTwo,
     this.nameReduction = NameReduction.byWord,
@@ -10119,7 +10125,17 @@ final class NumerologyRules {
   };
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _record;
+
+  @override
+  List<Object?> get _fields => [
+    masters,
+    nameReduction,
+    chaldeanCompound,
+    birthReduction,
+    nonLatin,
+  ];
 }
 
 /// A Gregorian birth date: a civil date, never an instant, so no zone can
@@ -20938,8 +20954,10 @@ final class PrashnaGraded extends _Value {
 }
 
 /// The readings a prashna is given under, one a crux, the texts' own by
-/// default (`03-design/prashna.md`).
-final class PrashnaRules extends _Value {
+/// default (`03-design/prashna.md`). A request takes them spelt out, or
+/// the baseline engine's every reading by name,
+/// [PrashnaRequestRulesBaseline].
+final class PrashnaRules extends PrashnaRequestRules {
   const PrashnaRules({
     this.pisces = PiscesRising.bothWays,
     this.risingVarga = RisingVarga.navamsha,
@@ -20988,6 +21006,9 @@ final class PrashnaRules extends _Value {
   };
 
   @override
+  Object? get _wire => _record;
+
+  @override
   List<Object?> get _fields => [
     pisces,
     risingVarga,
@@ -21011,6 +21032,8 @@ final class PrashnaRules extends _Value {
 ///     prashna: const PrashnaRequest(house: 7,
 ///         rules: PrashnaRules(mook: MookRule.moonHouse)));
 /// final outcome = chart.prashna?.verdict.outcome;
+/// // Every reading the baseline engine takes, by name.
+/// const baseline = PrashnaRequest(house: 7, rules: PrashnaRequestRulesBaseline());
 /// ```
 final class PrashnaRequest {
   const PrashnaRequest({
@@ -21031,8 +21054,9 @@ final class PrashnaRequest {
   /// When the matter falls (C370).
   final PrashnaTense tense;
 
-  /// The readings.
-  final PrashnaRules rules;
+  /// The readings: [PrashnaRules] spelt out, or a preset by name
+  /// ([PrashnaRequestRulesBaseline]).
+  final PrashnaRequestRules rules;
 
   /// Its JSON, as the SDK reads it.
   Object? get _wire => <String, Object?>{
@@ -21041,7 +21065,7 @@ final class PrashnaRequest {
       if (number != null) 'number': number,
       'tense': tense.key,
     },
-    'rules': rules._record,
+    'rules': rules._wire,
   };
 
   String get _json => jsonEncode(_wire);

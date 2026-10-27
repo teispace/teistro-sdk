@@ -11,6 +11,10 @@
  */
 export interface Provenance {
   /**
+   * The key a stored answer is reused under: `Provenance::answer_key`, the SHA-256 of the canonical JSON of the SDK, calculation and catalogue versions, the settings and input hashes, the provider's name, version, data version, data hashes and tier, and the packs. Written on every provenance, and ignored where one is read.
+   */
+  readonly answerKey: string;
+  /**
    * The conventions applied.
    */
   readonly appliedConventions: readonly Convention[];

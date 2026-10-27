@@ -294,9 +294,9 @@ export interface NumerologyRequest {
    */
   readonly name: string;
   /**
-   * The readings; the sources' own when left out.
+   * The readings; the sources' own when left out, and `"BASELINE"` names [`NumerologyRules::baseline`], every reading the baseline engine takes.
    */
-  readonly rules?: NumerologyRules;
+  readonly rules?: NumerologyRequestRules;
 }
 
 /**
@@ -918,9 +918,9 @@ export interface PrashnaRequest {
    */
   readonly question?: PrashnaQuestion;
   /**
-   * The readings; the texts' own when left out.
+   * The readings; the texts' own when left out, and `"BASELINE"` names [`PrashnaRules::baseline`], every reading the baseline engine takes.
    */
-  readonly rules?: PrashnaRules;
+  readonly rules?: PrashnaRequestRules;
 }
 
 /**
@@ -1241,30 +1241,9 @@ export interface BirthDate {
 }
 
 /**
- * The readings numerology is taken under. Each default is what the text that defines the system prints; [`NumerologyRules::baseline`] is the baseline engine's, value for value.
+ * The readings; the sources' own when left out, and `"BASELINE"` names [`NumerologyRules::baseline`], every reading the baseline engine takes.
  */
-export interface NumerologyRules {
-  /**
-   * How the Pythagorean birth number is reached.
-   */
-  readonly birthReduction?: BirthReduction;
-  /**
-   * A Chaldean name's compound.
-   */
-  readonly chaldeanCompound?: ChaldeanCompound;
-  /**
-   * The Pythagorean stopping numbers; the Chaldean has none.
-   */
-  readonly masters?: Masters;
-  /**
-   * Where a name is reduced.
-   */
-  readonly nameReduction?: NameReduction;
-  /**
-   * A character outside A to Z.
-   */
-  readonly nonLatin?: NonLatin;
-}
+export type NumerologyRequestRules = 'BASELINE' | NumerologyRules;
 
 /**
  * A birth as a binding writes it.
@@ -2320,50 +2299,9 @@ export interface PrashnaQuestion {
 }
 
 /**
- * The readings a prashna is given under.
+ * The readings; the texts' own when left out, and `"BASELINE"` names [`PrashnaRules::baseline`], every reading the baseline engine takes.
  */
-export interface PrashnaRules {
-  /**
-   * Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (C373, open: off by default).
-   */
-  readonly graded?: GradedRule;
-  /**
-   * Which rule reads an unspoken question.
-   */
-  readonly mook?: MookRule;
-  /**
-   * How the Moon's weaknesses are read (Tajika Nilakanthi, Samjna Tantra vv. 73–74).
-   */
-  readonly moon?: MoonRules;
-  /**
-   * Which questions v. 96's Moon governs.
-   */
-  readonly moonScope?: MoonScope;
-  /**
-   * How a Kamboola's offices are read (Samjna Tantra vv. 36–46).
-   */
-  readonly offices?: OfficeRules;
-  /**
-   * How Pisces rises.
-   */
-  readonly pisces?: PiscesRising;
-  /**
-   * Whose the rising varga is.
-   */
-  readonly risingVarga?: RisingVarga;
-  /**
-   * Whether the baseline engine's points come beside the clauses.
-   */
-  readonly score?: ScoreRule;
-  /**
-   * Which rule times the matter.
-   */
-  readonly timing?: TimingRule;
-  /**
-   * How v. 72's weaknesses are read.
-   */
-  readonly weakness?: WeaknessRules;
-}
+export type PrashnaRequestRules = 'BASELINE' | PrashnaRules;
 
 /**
  * How the progressed midheaven moves (C237), spelled as its member in a request: `"NAIBOD_RIGHT_ASCENSION"`, `"SOLAR_ARC_LONGITUDE"`.
@@ -2913,45 +2851,30 @@ export interface NameRules {
 }
 
 /**
- * How a birth date becomes the Pythagorean birth number (C-new-19).
- *
- * `BY_PART`: The month, the day and the year reduced apart and then added (Balliett p. 19); a part that is a master stands apart from the sum, as her 11 July 1838 is "9, 11" (p. 90).
- * `DIGIT_SUM`: The digits of the day, the month and the year added and the total reduced: the baseline engine's.
+ * The readings numerology is taken under. Each default is what the text that defines the system prints; [`NumerologyRules::baseline`] is the baseline engine's, value for value.
  */
-export type BirthReduction = 'BY_PART' | 'DIGIT_SUM';
-
-/**
- * What a Chaldean name's compound number is (C-new-18).
- *
- * `SUM_OF_SINGLES`: The sum of the words' single numbers, as Cheiro adds Lloyd's 9 and George's 7 to 16 (pp. 71-72); a one-word name's is its letters'.
- * `LETTER_TOTAL`: Every letter added: the baseline engine's.
- */
-export type ChaldeanCompound = 'SUM_OF_SINGLES' | 'LETTER_TOTAL';
-
-/**
- * The numbers that stop a reduction (C-new-8).
- *
- * `NONE`: Every number reduces to one digit, as Cheiro and Sepharial reduce.
- * `ELEVEN_TWENTY_TWO`: 11 and 22 stand, 33 does not: Balliett's Orange is 33, so 6 (p. 30).
- * `ELEVEN_TWENTY_TWO_THIRTY_THREE`: 11, 22 and 33 stand: the baseline engine's reading, which no public-domain text in hand prints.
- */
-export type Masters = 'NONE' | 'ELEVEN_TWENTY_TWO' | 'ELEVEN_TWENTY_TWO_THIRTY_THREE';
-
-/**
- * Where a name of several words is reduced (C-new-17).
- *
- * `BY_WORD`: Each word reduced, then the words added and reduced: Balliett pp. 18-19 and Cheiro p. 72 both print it so.
- * `WHOLE`: Every letter added, then reduced once: the baseline engine's.
- */
-export type NameReduction = 'BY_WORD' | 'WHOLE';
-
-/**
- * What is done with a character that is not one of the 26 Latin letters (C-new-23).
- *
- * `REFUSE`: Refused, naming the character and its place: both tables are of Latin letters, and a guess at another script's would be invented.
- * `SKIP`: Left out of every sum: the baseline engine's.
- */
-export type NonLatin = 'REFUSE' | 'SKIP';
+export interface NumerologyRules {
+  /**
+   * How the Pythagorean birth number is reached.
+   */
+  readonly birthReduction?: BirthReduction;
+  /**
+   * A Chaldean name's compound.
+   */
+  readonly chaldeanCompound?: ChaldeanCompound;
+  /**
+   * The Pythagorean stopping numbers; the Chaldean has none.
+   */
+  readonly masters?: Masters;
+  /**
+   * Where a name is reduced.
+   */
+  readonly nameReduction?: NameReduction;
+  /**
+   * A character outside A to Z.
+   */
+  readonly nonLatin?: NonLatin;
+}
 
 /**
  * Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
@@ -3602,105 +3525,49 @@ export type VashyaPoints = 'VERSE' | 'PRINTED_IN_NEPAL';
 export type PrashnaTense = 'UNSPECIFIED' | 'FUTURE' | 'PAST';
 
 /**
- * Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (crux C373, open: off by default).
- *
- * `OFF`: Not read.
- * `PARASHARI`: A graha sees a sign it aspects fully, by Parashara's aspects: the seventh, and Mars's, Jupiter's and Saturn's special ones; a graha does not see the sign it stands in.
- * `TAJIKA`: A graha sees a sign by Tajika's sign aspects, the conjunction included.
+ * The readings a prashna is given under.
  */
-export type GradedRule = 'OFF' | 'PARASHARI' | 'TAJIKA';
-
-/**
- * Which rule reads an unspoken question.
- *
- * `SHATPANCHASHIKA`: *Shatpanchashika* VII.7–8: the person, from the strongest graha's house; houses 2, 8, 11 and 12 are not listed (C339).
- * `MOON_HOUSE`: *Jnanaprakasha*, quoted in *Tajika Nilakanthi*: the house the Moon stands in, or the lagna lord's when he is the stronger.
- * `BASELINE`: `BASELINE`: the baseline engine's strongest graha, 2 points for a kendra and 1 for a trikona, the first in its order taking a tie; its house is the topic. Unsourced (C339).
- */
-export type MookRule = 'SHATPANCHASHIKA' | 'MOON_HOUSE' | 'BASELINE';
-
-/**
- * The choices the verses leave to a reader.
- */
-export interface MoonRules {
+export interface PrashnaRules {
   /**
-   * Which span of the waning Moon is *kṣīṇa*.
+   * Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (C373, open: off by default).
    */
-  readonly kshina?: KshinaRule;
-}
-
-/**
- * Which questions v. 96's "all yogas are fruitless without the Moon" governs (crux C376).
- *
- * `EVERY`: Every question, as the design page and the maxim's wording read it.
- * `GAIN`: Questions of gain, the 11th house, where the verse stands (vv. 94–96, the Bhuvanadīpaka's gain section).
- */
-export type MoonScope = 'EVERY' | 'GAIN';
-
-/**
- * How the offices are read where the gloss leaves a choice.
- */
-export interface OfficeRules {
+  readonly graded?: GradedRule;
   /**
-   * Which drekkāṇa is a graha's own.
+   * Which rule reads an unspoken question.
    */
-  readonly drekkana?: DrekkanaReading;
+  readonly mook?: MookRule;
   /**
-   * Whether an enemy's sign is read.
+   * How the Moon's weaknesses are read (Tajika Nilakanthi, Samjna Tantra vv. 73–74).
    */
-  readonly enemy?: EnemySign;
+  readonly moon?: MoonRules;
   /**
-   * Which printing of the hudda table. The gloss's example to v. 43 calls Venus at Aquarius 10° officeless, which Charak's Aquarius gives and the gloss's own table (n205) does not (crux C109).
+   * Which questions v. 96's Moon governs.
    */
-  readonly hudda?: HuddaTable;
+  readonly moonScope?: MoonScope;
   /**
-   * Which office counts when a graha holds several.
+   * How a Kamboola's offices are read (Samjna Tantra vv. 36–46).
    */
-  readonly order?: OfficeOrder;
-}
-
-/**
- * How Pisces rises (C336).
- *
- * `BOTH_WAYS`: Both ways, as the verse the 1941 gloss quotes says ("ubhayato mīnaḥ"): a clause on both sides.
- * `SHIRSHODAYA`: By the head, as *Brihat Jataka* I.10 leaves it.
- */
-export type PiscesRising = 'BOTH_WAYS' | 'SHIRSHODAYA';
-
-/**
- * Whose the rising varga is (C336).
- *
- * `NAVAMSHA`: The rising navāṁśa's lord, as the verse's *aṁśa* reads alone.
- * `SHADVARGA`: The [`SHADVARGA`]: the gloss names six vargas and not how many must be a benefic's, so a clause for when four or more of the six lords are benefics, against when four or more are malefics, and both ways otherwise.
- */
-export type RisingVarga = 'NAVAMSHA' | 'SHADVARGA';
-
-/**
- * Whether a prashna carries the baseline's points.
- *
- * `OFF`: No points: the verdict's clauses are the answer (C337).
- * `BASELINE`: `BASELINE`: the baseline engine's points beside the clauses, never replacing them. Unsourced.
- */
-export type ScoreRule = 'OFF' | 'BASELINE';
-
-/**
- * Which rule times the matter.
- *
- * `STRONGEST_GRAHA`: *Shatpanchashika* II.14–15: the strongest graha's house from the lagna, in months, doubled in a fixed navāṁśa and trebled in a dual one.
- * `FIRST_OCCUPIED`: V.5: the first sign from the lagna a graha stands in, its count times twelve days, or the count in days if that graha is retrograde.
- * `MOON_DAYS`: II.17: the Moon's sign from the lagna, in days, and no time at all when a graha stands between them.
- * `BASELINE`: The baseline engine's, which no text read gives (C335): the lagna lord's house from the lagna, in days under a movable lagna, months under a fixed one and years under a dual one.
- */
-export type TimingRule = 'STRONGEST_GRAHA' | 'FIRST_OCCUPIED' | 'MOON_DAYS' | 'BASELINE';
-
-/**
- * The readings v. 72 leaves to a reader.
- */
-export interface WeaknessRules {
+  readonly offices?: OfficeRules;
   /**
-   * What the Sun's setting part is.
+   * How Pisces rises.
    */
-  readonly setting?: SettingPart;
+  readonly pisces?: PiscesRising;
+  /**
+   * Whose the rising varga is.
+   */
+  readonly risingVarga?: RisingVarga;
+  /**
+   * Whether the baseline engine's points come beside the clauses.
+   */
+  readonly score?: ScoreRule;
+  /**
+   * Which rule times the matter.
+   */
+  readonly timing?: TimingRule;
+  /**
+   * How v. 72's weaknesses are read.
+   */
+  readonly weakness?: WeaknessRules;
 }
 
 /**
@@ -5484,6 +5351,47 @@ export type AbhijitPada = 'REFUSE' | 'UTTARA_ASHADHA' | 'SHRAVANA';
 export type LatinName = 'REFUSE' | 'IAST';
 
 /**
+ * How a birth date becomes the Pythagorean birth number (C-new-19).
+ *
+ * `BY_PART`: The month, the day and the year reduced apart and then added (Balliett p. 19); a part that is a master stands apart from the sum, as her 11 July 1838 is "9, 11" (p. 90).
+ * `DIGIT_SUM`: The digits of the day, the month and the year added and the total reduced: the baseline engine's.
+ */
+export type BirthReduction = 'BY_PART' | 'DIGIT_SUM';
+
+/**
+ * What a Chaldean name's compound number is (C-new-18).
+ *
+ * `SUM_OF_SINGLES`: The sum of the words' single numbers, as Cheiro adds Lloyd's 9 and George's 7 to 16 (pp. 71-72); a one-word name's is its letters'.
+ * `LETTER_TOTAL`: Every letter added: the baseline engine's.
+ */
+export type ChaldeanCompound = 'SUM_OF_SINGLES' | 'LETTER_TOTAL';
+
+/**
+ * The numbers that stop a reduction (C-new-8).
+ *
+ * `NONE`: Every number reduces to one digit, as Cheiro and Sepharial reduce.
+ * `ELEVEN_TWENTY_TWO`: 11 and 22 stand, 33 does not: Balliett's Orange is 33, so 6 (p. 30).
+ * `ELEVEN_TWENTY_TWO_THIRTY_THREE`: 11, 22 and 33 stand: the baseline engine's reading, which no public-domain text in hand prints.
+ */
+export type Masters = 'NONE' | 'ELEVEN_TWENTY_TWO' | 'ELEVEN_TWENTY_TWO_THIRTY_THREE';
+
+/**
+ * Where a name of several words is reduced (C-new-17).
+ *
+ * `BY_WORD`: Each word reduced, then the words added and reduced: Balliett pp. 18-19 and Cheiro p. 72 both print it so.
+ * `WHOLE`: Every letter added, then reduced once: the baseline engine's.
+ */
+export type NameReduction = 'BY_WORD' | 'WHOLE';
+
+/**
+ * What is done with a character that is not one of the 26 Latin letters (C-new-23).
+ *
+ * `REFUSE`: Refused, naming the character and its place: both tables are of Latin letters, and a guess at another script's would be invented.
+ * `SKIP`: Left out of every sum: the baseline engine's.
+ */
+export type NonLatin = 'REFUSE' | 'SKIP';
+
+/**
  * Whether the deceased had the upanayana.
  *
  * `DONE`: Done.
@@ -6025,37 +5933,106 @@ export interface SiegeWithin {
 }
 
 /**
- * Which drekkāṇa a graha's own is read in.
+ * Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (crux C373, open: off by default).
  *
- * `TAJIKA`: The Tajika one, the weekday cycle from Mars ([`drekkana_lord`]), which the 1893 print's Prashna Tantra gloss defines (n205).
- * `PARASHARI`: The Parashari one: the sign, its fifth, its ninth. The Samjna Tantra gloss's "the Moon in Cancer, in the first drekkāṇa" reads it; its other examples do not need it.
+ * `OFF`: Not read.
+ * `PARASHARI`: A graha sees a sign it aspects fully, by Parashara's aspects: the seventh, and Mars's, Jupiter's and Saturn's special ones; a graha does not see the sign it stands in.
+ * `TAJIKA`: A graha sees a sign by Tajika's sign aspects, the conjunction included.
  */
-export type DrekkanaReading = 'TAJIKA' | 'PARASHARI';
+export type GradedRule = 'OFF' | 'PARASHARI' | 'TAJIKA';
 
 /**
- * Whether an enemy's sign makes a graha adhama.
+ * Which rule reads an unspoken question.
  *
- * `TAJIKA`: As the definition states it, the enemy read as Tajika reads one: the sign's lord in the 1st, 4th, 7th or 10th from the graha ([`Relation::between`]), as the Panchavargiya bala and the empty road (vv. 55–56) read it. The gloss's example to v. 41 calls Mercury in Libra sama with Venus in the 4th from it.
- * `IGNORED`: Not read: no worked example needs it.
+ * `SHATPANCHASHIKA`: *Shatpanchashika* VII.7–8: the person, from the strongest graha's house; houses 2, 8, 11 and 12 are not listed (C339).
+ * `MOON_HOUSE`: *Jnanaprakasha*, quoted in *Tajika Nilakanthi*: the house the Moon stands in, or the lagna lord's when he is the stronger.
+ * `BASELINE`: `BASELINE`: the baseline engine's strongest graha, 2 points for a kendra and 1 for a trikona, the first in its order taking a tie; its house is the topic. Unsourced (C339).
  */
-export type EnemySign = 'TAJIKA' | 'IGNORED';
+export type MookRule = 'SHATPANCHASHIKA' | 'MOON_HOUSE' | 'BASELINE';
 
 /**
- * Which office counts when a graha holds more than one (crux C371).
- *
- * `GLOSS`: The order the gloss's worked examples follow: debilitation, then a division it rules, then its own sign or exaltation, then an enemy's sign. A debilitated graha in its own navāṁśa is adhama (the examples to vv. 39 and 45), the Moon in Cancer in her own navāṁśa madhyama (vv. 40, 41), Venus in her own hudda in her enemy the Moon's sign madhyama (v. 38).
- * `HIGHEST`: The best office it holds.
- * `LOWEST`: The worst office it holds.
+ * The choices the verses leave to a reader.
  */
-export type OfficeOrder = 'GLOSS' | 'HIGHEST' | 'LOWEST';
+export interface MoonRules {
+  /**
+   * Which span of the waning Moon is *kṣīṇa*.
+   */
+  readonly kshina?: KshinaRule;
+}
 
 /**
- * What the Sun's setting part is (crux C377).
+ * Which questions v. 96's "all yogas are fruitless without the Moon" governs (crux C376).
  *
- * `NAVAMSHA_SIGN`: Any navāṁśa whose sign is the seventh from the sign of the Sun's navāṁśa: the gloss counts from "the navāṁśa of the sign the Sun is in", and the seventh from a sign is where it sets.
- * `NAVAMSHA_ARC`: The one navāṁśa-arc seven on from the Sun's own, 20° to 23°20′ past the start of the Sun's.
+ * `EVERY`: Every question, as the design page and the maxim's wording read it.
+ * `GAIN`: Questions of gain, the 11th house, where the verse stands (vv. 94–96, the Bhuvanadīpaka's gain section).
  */
-export type SettingPart = 'NAVAMSHA_SIGN' | 'NAVAMSHA_ARC';
+export type MoonScope = 'EVERY' | 'GAIN';
+
+/**
+ * How the offices are read where the gloss leaves a choice.
+ */
+export interface OfficeRules {
+  /**
+   * Which drekkāṇa is a graha's own.
+   */
+  readonly drekkana?: DrekkanaReading;
+  /**
+   * Whether an enemy's sign is read.
+   */
+  readonly enemy?: EnemySign;
+  /**
+   * Which printing of the hudda table. The gloss's example to v. 43 calls Venus at Aquarius 10° officeless, which Charak's Aquarius gives and the gloss's own table (n205) does not (crux C109).
+   */
+  readonly hudda?: HuddaTable;
+  /**
+   * Which office counts when a graha holds several.
+   */
+  readonly order?: OfficeOrder;
+}
+
+/**
+ * How Pisces rises (C336).
+ *
+ * `BOTH_WAYS`: Both ways, as the verse the 1941 gloss quotes says ("ubhayato mīnaḥ"): a clause on both sides.
+ * `SHIRSHODAYA`: By the head, as *Brihat Jataka* I.10 leaves it.
+ */
+export type PiscesRising = 'BOTH_WAYS' | 'SHIRSHODAYA';
+
+/**
+ * Whose the rising varga is (C336).
+ *
+ * `NAVAMSHA`: The rising navāṁśa's lord, as the verse's *aṁśa* reads alone.
+ * `SHADVARGA`: The [`SHADVARGA`]: the gloss names six vargas and not how many must be a benefic's, so a clause for when four or more of the six lords are benefics, against when four or more are malefics, and both ways otherwise.
+ */
+export type RisingVarga = 'NAVAMSHA' | 'SHADVARGA';
+
+/**
+ * Whether a prashna carries the baseline's points.
+ *
+ * `OFF`: No points: the verdict's clauses are the answer (C337).
+ * `BASELINE`: `BASELINE`: the baseline engine's points beside the clauses, never replacing them. Unsourced.
+ */
+export type ScoreRule = 'OFF' | 'BASELINE';
+
+/**
+ * Which rule times the matter.
+ *
+ * `STRONGEST_GRAHA`: *Shatpanchashika* II.14–15: the strongest graha's house from the lagna, in months, doubled in a fixed navāṁśa and trebled in a dual one.
+ * `FIRST_OCCUPIED`: V.5: the first sign from the lagna a graha stands in, its count times twelve days, or the count in days if that graha is retrograde.
+ * `MOON_DAYS`: II.17: the Moon's sign from the lagna, in days, and no time at all when a graha stands between them.
+ * `BASELINE`: The baseline engine's, which no text read gives (C335): the lagna lord's house from the lagna, in days under a movable lagna, months under a fixed one and years under a dual one.
+ */
+export type TimingRule = 'STRONGEST_GRAHA' | 'FIRST_OCCUPIED' | 'MOON_DAYS' | 'BASELINE';
+
+/**
+ * The readings v. 72 leaves to a reader.
+ */
+export interface WeaknessRules {
+  /**
+   * What the Sun's setting part is.
+   */
+  readonly setting?: SettingPart;
+}
 
 /**
  * What a dasha answers past the end of its cycle.
@@ -7432,6 +7409,39 @@ export interface MonthWithSun {
    */
   readonly sun: Member<catalogue.Rashi>;
 }
+
+/**
+ * Which drekkāṇa a graha's own is read in.
+ *
+ * `TAJIKA`: The Tajika one, the weekday cycle from Mars ([`drekkana_lord`]), which the 1893 print's Prashna Tantra gloss defines (n205).
+ * `PARASHARI`: The Parashari one: the sign, its fifth, its ninth. The Samjna Tantra gloss's "the Moon in Cancer, in the first drekkāṇa" reads it; its other examples do not need it.
+ */
+export type DrekkanaReading = 'TAJIKA' | 'PARASHARI';
+
+/**
+ * Whether an enemy's sign makes a graha adhama.
+ *
+ * `TAJIKA`: As the definition states it, the enemy read as Tajika reads one: the sign's lord in the 1st, 4th, 7th or 10th from the graha ([`Relation::between`]), as the Panchavargiya bala and the empty road (vv. 55–56) read it. The gloss's example to v. 41 calls Mercury in Libra sama with Venus in the 4th from it.
+ * `IGNORED`: Not read: no worked example needs it.
+ */
+export type EnemySign = 'TAJIKA' | 'IGNORED';
+
+/**
+ * Which office counts when a graha holds more than one (crux C371).
+ *
+ * `GLOSS`: The order the gloss's worked examples follow: debilitation, then a division it rules, then its own sign or exaltation, then an enemy's sign. A debilitated graha in its own navāṁśa is adhama (the examples to vv. 39 and 45), the Moon in Cancer in her own navāṁśa madhyama (vv. 40, 41), Venus in her own hudda in her enemy the Moon's sign madhyama (v. 38).
+ * `HIGHEST`: The best office it holds.
+ * `LOWEST`: The worst office it holds.
+ */
+export type OfficeOrder = 'GLOSS' | 'HIGHEST' | 'LOWEST';
+
+/**
+ * What the Sun's setting part is (crux C377).
+ *
+ * `NAVAMSHA_SIGN`: Any navāṁśa whose sign is the seventh from the sign of the Sun's navāṁśa: the gloss counts from "the navāṁśa of the sign the Sun is in", and the seventh from a sign is where it sets.
+ * `NAVAMSHA_ARC`: The one navāṁśa-arc seven on from the Sun's own, 20° to 23°20′ past the start of the Sun's.
+ */
+export type SettingPart = 'NAVAMSHA_SIGN' | 'NAVAMSHA_ARC';
 
 /**
  * Which rising sign a [`SaitRising`] reads.

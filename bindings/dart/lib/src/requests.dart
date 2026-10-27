@@ -705,8 +705,8 @@ final class NumerologyRequest extends _Request {
   /// The name, in the 26 Latin letters.
   final String name;
 
-  /// The readings; the sources' own when left out.
-  final NumerologyRules? rules;
+  /// The readings; the sources' own when left out, and `"BASELINE"` names [`NumerologyRules::baseline`], every reading the baseline engine takes.
+  final NumerologyRequestRules? rules;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -1666,6 +1666,36 @@ final class NaamRules extends _Request {
 
   @override
   List<Object?> get _fields => [koota, name, porutham];
+}
+
+/// The readings; the sources' own when left out, and `"BASELINE"` names [`NumerologyRules::baseline`], every reading the baseline engine takes.
+sealed class NumerologyRequestRules extends _Request {
+  const NumerologyRequestRules();
+}
+
+/// `BASELINE`.
+final class NumerologyRequestRulesBaseline extends NumerologyRequestRules {
+  const NumerologyRequestRulesBaseline();
+
+  @override
+  Object? get _wire => 'BASELINE';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// The value itself.
+final class NumerologyRequestRulesValue extends NumerologyRequestRules {
+  const NumerologyRequestRulesValue(this.value);
+
+  /// The value.
+  final NumerologyRules value;
+
+  @override
+  Object? get _wire => value._wire;
+
+  @override
+  List<Object?> get _fields => [value];
 }
 
 /// A birth as a binding writes it.
@@ -3095,6 +3125,36 @@ final class PrashnaQuestion extends _Request {
   List<Object?> get _fields => [house, number, tense];
 }
 
+/// The readings; the texts' own when left out, and `"BASELINE"` names [`PrashnaRules::baseline`], every reading the baseline engine takes.
+sealed class PrashnaRequestRules extends _Request {
+  const PrashnaRequestRules();
+}
+
+/// `BASELINE`.
+final class PrashnaRequestRulesBaseline extends PrashnaRequestRules {
+  const PrashnaRequestRulesBaseline();
+
+  @override
+  Object? get _wire => 'BASELINE';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// The value itself.
+final class PrashnaRequestRulesValue extends PrashnaRequestRules {
+  const PrashnaRequestRulesValue(this.value);
+
+  /// The value.
+  final PrashnaRules value;
+
+  @override
+  Object? get _wire => value._wire;
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
 /// How the progressed midheaven moves (C237), spelled as its member in a request: `"NAIBOD_RIGHT_ASCENSION"`, `"SOLAR_ARC_LONGITUDE"`.
 enum AngleMethod implements _Keyed {
   /// The mean Sun's motion in right ascension: the chart cast for the birth's clock time on the progressed day, Leo's own map (p. 35), whose sidereal time is the birth's plus 3m 56.555s a day.
@@ -3743,78 +3803,6 @@ final class NameRules extends _Request {
 
   @override
   List<Object?> get _fields => [abhijit, latin];
-}
-
-/// How a birth date becomes the Pythagorean birth number (C-new-19).
-enum BirthReduction implements _Keyed {
-  /// The month, the day and the year reduced apart and then added (Balliett p. 19); a part that is a master stands apart from the sum, as her 11 July 1838 is "9, 11" (p. 90).
-  byPart('BY_PART'),
-  /// The digits of the day, the month and the year added and the total reduced: the baseline engine's.
-  digitSum('DIGIT_SUM');
-
-  const BirthReduction(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// What a Chaldean name's compound number is (C-new-18).
-enum ChaldeanCompound implements _Keyed {
-  /// The sum of the words' single numbers, as Cheiro adds Lloyd's 9 and George's 7 to 16 (pp. 71-72); a one-word name's is its letters'.
-  sumOfSingles('SUM_OF_SINGLES'),
-  /// Every letter added: the baseline engine's.
-  letterTotal('LETTER_TOTAL');
-
-  const ChaldeanCompound(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// The numbers that stop a reduction (C-new-8).
-enum Masters implements _Keyed {
-  /// Every number reduces to one digit, as Cheiro and Sepharial reduce.
-  none('NONE'),
-  /// 11 and 22 stand, 33 does not: Balliett's Orange is 33, so 6 (p. 30).
-  elevenTwentyTwo('ELEVEN_TWENTY_TWO'),
-  /// 11, 22 and 33 stand: the baseline engine's reading, which no public-domain text in hand prints.
-  elevenTwentyTwoThirtyThree('ELEVEN_TWENTY_TWO_THIRTY_THREE');
-
-  const Masters(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// Where a name of several words is reduced (C-new-17).
-enum NameReduction implements _Keyed {
-  /// Each word reduced, then the words added and reduced: Balliett pp. 18-19 and Cheiro p. 72 both print it so.
-  byWord('BY_WORD'),
-  /// Every letter added, then reduced once: the baseline engine's.
-  whole('WHOLE');
-
-  const NameReduction(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// What is done with a character that is not one of the 26 Latin letters (C-new-23).
-enum NonLatin implements _Keyed {
-  /// Refused, naming the character and its place: both tables are of Latin letters, and a guess at another script's would be invented.
-  refuse('REFUSE'),
-  /// Left out of every sum: the baseline engine's.
-  skip('SKIP');
-
-  const NonLatin(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
 }
 
 /// Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
@@ -4771,181 +4759,6 @@ enum PrashnaTense implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
-}
-
-/// Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (crux C373, open: off by default).
-enum GradedRule implements _Keyed {
-  /// Not read.
-  off('OFF'),
-  /// A graha sees a sign it aspects fully, by Parashara's aspects: the seventh, and Mars's, Jupiter's and Saturn's special ones; a graha does not see the sign it stands in.
-  parashari('PARASHARI'),
-  /// A graha sees a sign by Tajika's sign aspects, the conjunction included.
-  tajika('TAJIKA');
-
-  const GradedRule(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// Which rule reads an unspoken question.
-enum MookRule implements _Keyed {
-  /// *Shatpanchashika* VII.7–8: the person, from the strongest graha's house; houses 2, 8, 11 and 12 are not listed (C339).
-  shatpanchashika('SHATPANCHASHIKA'),
-  /// *Jnanaprakasha*, quoted in *Tajika Nilakanthi*: the house the Moon stands in, or the lagna lord's when he is the stronger.
-  moonHouse('MOON_HOUSE'),
-  /// `BASELINE`: the baseline engine's strongest graha, 2 points for a kendra and 1 for a trikona, the first in its order taking a tie; its house is the topic. Unsourced (C339).
-  baseline('BASELINE');
-
-  const MookRule(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// The choices the verses leave to a reader.
-final class MoonRules extends _Request {
-  const MoonRules({
-    this.kshina = KshinaRule.darkEighthToBrightEighth,
-  });
-
-  /// Which span of the waning Moon is *kṣīṇa*.
-  final KshinaRule kshina;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'kshina': kshina.key,
-  };
-
-  @override
-  List<Object?> get _fields => [kshina];
-}
-
-/// Which questions v. 96's "all yogas are fruitless without the Moon" governs (crux C376).
-enum MoonScope implements _Keyed {
-  /// Every question, as the design page and the maxim's wording read it.
-  every('EVERY'),
-  /// Questions of gain, the 11th house, where the verse stands (vv. 94–96, the Bhuvanadīpaka's gain section).
-  gain('GAIN');
-
-  const MoonScope(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// How the offices are read where the gloss leaves a choice.
-final class OfficeRules extends _Request {
-  const OfficeRules({
-    this.drekkana = DrekkanaReading.tajika,
-    this.enemy = EnemySign.tajika,
-    this.hudda = HuddaTable.nilakanthi,
-    this.order = OfficeOrder.gloss,
-  });
-
-  /// Which drekkāṇa is a graha's own.
-  final DrekkanaReading drekkana;
-
-  /// Whether an enemy's sign is read.
-  final EnemySign enemy;
-
-  /// Which printing of the hudda table. The gloss's example to v. 43 calls Venus at Aquarius 10° officeless, which Charak's Aquarius gives and the gloss's own table (n205) does not (crux C109).
-  final HuddaTable hudda;
-
-  /// Which office counts when a graha holds several.
-  final OfficeOrder order;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'drekkana': drekkana.key,
-    'enemy': enemy.key,
-    'hudda': hudda.key,
-    'order': order.key,
-  };
-
-  @override
-  List<Object?> get _fields => [drekkana, enemy, hudda, order];
-}
-
-/// How Pisces rises (C336).
-enum PiscesRising implements _Keyed {
-  /// Both ways, as the verse the 1941 gloss quotes says ("ubhayato mīnaḥ"): a clause on both sides.
-  bothWays('BOTH_WAYS'),
-  /// By the head, as *Brihat Jataka* I.10 leaves it.
-  shirshodaya('SHIRSHODAYA');
-
-  const PiscesRising(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// Whose the rising varga is (C336).
-enum RisingVarga implements _Keyed {
-  /// The rising navāṁśa's lord, as the verse's *aṁśa* reads alone.
-  navamsha('NAVAMSHA'),
-  /// The [`SHADVARGA`]: the gloss names six vargas and not how many must be a benefic's, so a clause for when four or more of the six lords are benefics, against when four or more are malefics, and both ways otherwise.
-  shadvarga('SHADVARGA');
-
-  const RisingVarga(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// Whether a prashna carries the baseline's points.
-enum ScoreRule implements _Keyed {
-  /// No points: the verdict's clauses are the answer (C337).
-  off('OFF'),
-  /// `BASELINE`: the baseline engine's points beside the clauses, never replacing them. Unsourced.
-  baseline('BASELINE');
-
-  const ScoreRule(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// Which rule times the matter.
-enum TimingRule implements _Keyed {
-  /// *Shatpanchashika* II.14–15: the strongest graha's house from the lagna, in months, doubled in a fixed navāṁśa and trebled in a dual one.
-  strongestGraha('STRONGEST_GRAHA'),
-  /// V.5: the first sign from the lagna a graha stands in, its count times twelve days, or the count in days if that graha is retrograde.
-  firstOccupied('FIRST_OCCUPIED'),
-  /// II.17: the Moon's sign from the lagna, in days, and no time at all when a graha stands between them.
-  moonDays('MOON_DAYS'),
-  /// The baseline engine's, which no text read gives (C335): the lagna lord's house from the lagna, in days under a movable lagna, months under a fixed one and years under a dual one.
-  baseline('BASELINE');
-
-  const TimingRule(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// The readings v. 72 leaves to a reader.
-final class WeaknessRules extends _Request {
-  const WeaknessRules({
-    this.setting = SettingPart.navamshaSign,
-  });
-
-  /// What the Sun's setting part is.
-  final SettingPart setting;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'setting': setting.key,
-  };
-
-  @override
-  List<Object?> get _fields => [setting];
 }
 
 /// One span of time a rate is stated in, spelled `"DAY"`, `"YEAR"` or `{"DAYS": 2.5}` in a request.
@@ -7664,6 +7477,78 @@ enum LatinName implements _Keyed {
   final String key;
 }
 
+/// How a birth date becomes the Pythagorean birth number (C-new-19).
+enum BirthReduction implements _Keyed {
+  /// The month, the day and the year reduced apart and then added (Balliett p. 19); a part that is a master stands apart from the sum, as her 11 July 1838 is "9, 11" (p. 90).
+  byPart('BY_PART'),
+  /// The digits of the day, the month and the year added and the total reduced: the baseline engine's.
+  digitSum('DIGIT_SUM');
+
+  const BirthReduction(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// What a Chaldean name's compound number is (C-new-18).
+enum ChaldeanCompound implements _Keyed {
+  /// The sum of the words' single numbers, as Cheiro adds Lloyd's 9 and George's 7 to 16 (pp. 71-72); a one-word name's is its letters'.
+  sumOfSingles('SUM_OF_SINGLES'),
+  /// Every letter added: the baseline engine's.
+  letterTotal('LETTER_TOTAL');
+
+  const ChaldeanCompound(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The numbers that stop a reduction (C-new-8).
+enum Masters implements _Keyed {
+  /// Every number reduces to one digit, as Cheiro and Sepharial reduce.
+  none('NONE'),
+  /// 11 and 22 stand, 33 does not: Balliett's Orange is 33, so 6 (p. 30).
+  elevenTwentyTwo('ELEVEN_TWENTY_TWO'),
+  /// 11, 22 and 33 stand: the baseline engine's reading, which no public-domain text in hand prints.
+  elevenTwentyTwoThirtyThree('ELEVEN_TWENTY_TWO_THIRTY_THREE');
+
+  const Masters(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Where a name of several words is reduced (C-new-17).
+enum NameReduction implements _Keyed {
+  /// Each word reduced, then the words added and reduced: Balliett pp. 18-19 and Cheiro p. 72 both print it so.
+  byWord('BY_WORD'),
+  /// Every letter added, then reduced once: the baseline engine's.
+  whole('WHOLE');
+
+  const NameReduction(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// What is done with a character that is not one of the 26 Latin letters (C-new-23).
+enum NonLatin implements _Keyed {
+  /// Refused, naming the character and its place: both tables are of Latin letters, and a guess at another script's would be invented.
+  refuse('REFUSE'),
+  /// Left out of every sum: the baseline engine's.
+  skip('SKIP');
+
+  const NonLatin(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// Whether the deceased had the upanayana.
 enum Upanayana implements _Keyed {
   /// Done.
@@ -8821,62 +8706,179 @@ final class SiegeWithin extends _Request {
   List<Object?> get _fields => [spanDeg];
 }
 
-/// Which drekkāṇa a graha's own is read in.
-enum DrekkanaReading implements _Keyed {
-  /// The Tajika one, the weekday cycle from Mars ([`drekkana_lord`]), which the 1893 print's Prashna Tantra gloss defines (n205).
-  tajika('TAJIKA'),
-  /// The Parashari one: the sign, its fifth, its ninth. The Samjna Tantra gloss's "the Moon in Cancer, in the first drekkāṇa" reads it; its other examples do not need it.
-  parashari('PARASHARI');
+/// Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (crux C373, open: off by default).
+enum GradedRule implements _Keyed {
+  /// Not read.
+  off('OFF'),
+  /// A graha sees a sign it aspects fully, by Parashara's aspects: the seventh, and Mars's, Jupiter's and Saturn's special ones; a graha does not see the sign it stands in.
+  parashari('PARASHARI'),
+  /// A graha sees a sign by Tajika's sign aspects, the conjunction included.
+  tajika('TAJIKA');
 
-  const DrekkanaReading(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// Whether an enemy's sign makes a graha adhama.
-enum EnemySign implements _Keyed {
-  /// As the definition states it, the enemy read as Tajika reads one: the sign's lord in the 1st, 4th, 7th or 10th from the graha ([`Relation::between`]), as the Panchavargiya bala and the empty road (vv. 55–56) read it. The gloss's example to v. 41 calls Mercury in Libra sama with Venus in the 4th from it.
-  tajika('TAJIKA'),
-  /// Not read: no worked example needs it.
-  ignored('IGNORED');
-
-  const EnemySign(this.key);
+  const GradedRule(this.key);
 
   /// The key the wire spells it with.
   @override
   final String key;
 }
 
-/// Which office counts when a graha holds more than one (crux C371).
-enum OfficeOrder implements _Keyed {
-  /// The order the gloss's worked examples follow: debilitation, then a division it rules, then its own sign or exaltation, then an enemy's sign. A debilitated graha in its own navāṁśa is adhama (the examples to vv. 39 and 45), the Moon in Cancer in her own navāṁśa madhyama (vv. 40, 41), Venus in her own hudda in her enemy the Moon's sign madhyama (v. 38).
-  gloss('GLOSS'),
-  /// The best office it holds.
-  highest('HIGHEST'),
-  /// The worst office it holds.
-  lowest('LOWEST');
+/// Which rule reads an unspoken question.
+enum MookRule implements _Keyed {
+  /// *Shatpanchashika* VII.7–8: the person, from the strongest graha's house; houses 2, 8, 11 and 12 are not listed (C339).
+  shatpanchashika('SHATPANCHASHIKA'),
+  /// *Jnanaprakasha*, quoted in *Tajika Nilakanthi*: the house the Moon stands in, or the lagna lord's when he is the stronger.
+  moonHouse('MOON_HOUSE'),
+  /// `BASELINE`: the baseline engine's strongest graha, 2 points for a kendra and 1 for a trikona, the first in its order taking a tie; its house is the topic. Unsourced (C339).
+  baseline('BASELINE');
 
-  const OfficeOrder(this.key);
+  const MookRule(this.key);
 
   /// The key the wire spells it with.
   @override
   final String key;
 }
 
-/// What the Sun's setting part is (crux C377).
-enum SettingPart implements _Keyed {
-  /// Any navāṁśa whose sign is the seventh from the sign of the Sun's navāṁśa: the gloss counts from "the navāṁśa of the sign the Sun is in", and the seventh from a sign is where it sets.
-  navamshaSign('NAVAMSHA_SIGN'),
-  /// The one navāṁśa-arc seven on from the Sun's own, 20° to 23°20′ past the start of the Sun's.
-  navamshaArc('NAVAMSHA_ARC');
+/// The choices the verses leave to a reader.
+final class MoonRules extends _Request {
+  const MoonRules({
+    this.kshina = KshinaRule.darkEighthToBrightEighth,
+  });
 
-  const SettingPart(this.key);
+  /// Which span of the waning Moon is *kṣīṇa*.
+  final KshinaRule kshina;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kshina': kshina.key,
+  };
+
+  @override
+  List<Object?> get _fields => [kshina];
+}
+
+/// Which questions v. 96's "all yogas are fruitless without the Moon" governs (crux C376).
+enum MoonScope implements _Keyed {
+  /// Every question, as the design page and the maxim's wording read it.
+  every('EVERY'),
+  /// Questions of gain, the 11th house, where the verse stands (vv. 94–96, the Bhuvanadīpaka's gain section).
+  gain('GAIN');
+
+  const MoonScope(this.key);
 
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// How the offices are read where the gloss leaves a choice.
+final class OfficeRules extends _Request {
+  const OfficeRules({
+    this.drekkana = DrekkanaReading.tajika,
+    this.enemy = EnemySign.tajika,
+    this.hudda = HuddaTable.nilakanthi,
+    this.order = OfficeOrder.gloss,
+  });
+
+  /// Which drekkāṇa is a graha's own.
+  final DrekkanaReading drekkana;
+
+  /// Whether an enemy's sign is read.
+  final EnemySign enemy;
+
+  /// Which printing of the hudda table. The gloss's example to v. 43 calls Venus at Aquarius 10° officeless, which Charak's Aquarius gives and the gloss's own table (n205) does not (crux C109).
+  final HuddaTable hudda;
+
+  /// Which office counts when a graha holds several.
+  final OfficeOrder order;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'drekkana': drekkana.key,
+    'enemy': enemy.key,
+    'hudda': hudda.key,
+    'order': order.key,
+  };
+
+  @override
+  List<Object?> get _fields => [drekkana, enemy, hudda, order];
+}
+
+/// How Pisces rises (C336).
+enum PiscesRising implements _Keyed {
+  /// Both ways, as the verse the 1941 gloss quotes says ("ubhayato mīnaḥ"): a clause on both sides.
+  bothWays('BOTH_WAYS'),
+  /// By the head, as *Brihat Jataka* I.10 leaves it.
+  shirshodaya('SHIRSHODAYA');
+
+  const PiscesRising(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Whose the rising varga is (C336).
+enum RisingVarga implements _Keyed {
+  /// The rising navāṁśa's lord, as the verse's *aṁśa* reads alone.
+  navamsha('NAVAMSHA'),
+  /// The [`SHADVARGA`]: the gloss names six vargas and not how many must be a benefic's, so a clause for when four or more of the six lords are benefics, against when four or more are malefics, and both ways otherwise.
+  shadvarga('SHADVARGA');
+
+  const RisingVarga(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Whether a prashna carries the baseline's points.
+enum ScoreRule implements _Keyed {
+  /// No points: the verdict's clauses are the answer (C337).
+  off('OFF'),
+  /// `BASELINE`: the baseline engine's points beside the clauses, never replacing them. Unsourced.
+  baseline('BASELINE');
+
+  const ScoreRule(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Which rule times the matter.
+enum TimingRule implements _Keyed {
+  /// *Shatpanchashika* II.14–15: the strongest graha's house from the lagna, in months, doubled in a fixed navāṁśa and trebled in a dual one.
+  strongestGraha('STRONGEST_GRAHA'),
+  /// V.5: the first sign from the lagna a graha stands in, its count times twelve days, or the count in days if that graha is retrograde.
+  firstOccupied('FIRST_OCCUPIED'),
+  /// II.17: the Moon's sign from the lagna, in days, and no time at all when a graha stands between them.
+  moonDays('MOON_DAYS'),
+  /// The baseline engine's, which no text read gives (C335): the lagna lord's house from the lagna, in days under a movable lagna, months under a fixed one and years under a dual one.
+  baseline('BASELINE');
+
+  const TimingRule(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The readings v. 72 leaves to a reader.
+final class WeaknessRules extends _Request {
+  const WeaknessRules({
+    this.setting = SettingPart.navamshaSign,
+  });
+
+  /// What the Sun's setting part is.
+  final SettingPart setting;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'setting': setting.key,
+  };
+
+  @override
+  List<Object?> get _fields => [setting];
 }
 
 /// What a dasha answers past the end of its cycle.
@@ -10504,6 +10506,64 @@ final class MonthWithSun extends _Request {
 
   @override
   List<Object?> get _fields => [masa, sun];
+}
+
+/// Which drekkāṇa a graha's own is read in.
+enum DrekkanaReading implements _Keyed {
+  /// The Tajika one, the weekday cycle from Mars ([`drekkana_lord`]), which the 1893 print's Prashna Tantra gloss defines (n205).
+  tajika('TAJIKA'),
+  /// The Parashari one: the sign, its fifth, its ninth. The Samjna Tantra gloss's "the Moon in Cancer, in the first drekkāṇa" reads it; its other examples do not need it.
+  parashari('PARASHARI');
+
+  const DrekkanaReading(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Whether an enemy's sign makes a graha adhama.
+enum EnemySign implements _Keyed {
+  /// As the definition states it, the enemy read as Tajika reads one: the sign's lord in the 1st, 4th, 7th or 10th from the graha ([`Relation::between`]), as the Panchavargiya bala and the empty road (vv. 55–56) read it. The gloss's example to v. 41 calls Mercury in Libra sama with Venus in the 4th from it.
+  tajika('TAJIKA'),
+  /// Not read: no worked example needs it.
+  ignored('IGNORED');
+
+  const EnemySign(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Which office counts when a graha holds more than one (crux C371).
+enum OfficeOrder implements _Keyed {
+  /// The order the gloss's worked examples follow: debilitation, then a division it rules, then its own sign or exaltation, then an enemy's sign. A debilitated graha in its own navāṁśa is adhama (the examples to vv. 39 and 45), the Moon in Cancer in her own navāṁśa madhyama (vv. 40, 41), Venus in her own hudda in her enemy the Moon's sign madhyama (v. 38).
+  gloss('GLOSS'),
+  /// The best office it holds.
+  highest('HIGHEST'),
+  /// The worst office it holds.
+  lowest('LOWEST');
+
+  const OfficeOrder(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// What the Sun's setting part is (crux C377).
+enum SettingPart implements _Keyed {
+  /// Any navāṁśa whose sign is the seventh from the sign of the Sun's navāṁśa: the gloss counts from "the navāṁśa of the sign the Sun is in", and the seventh from a sign is where it sets.
+  navamshaSign('NAVAMSHA_SIGN'),
+  /// The one navāṁśa-arc seven on from the Sun's own, 20° to 23°20′ past the start of the Sun's.
+  navamshaArc('NAVAMSHA_ARC');
+
+  const SettingPart(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// Which rising sign a [`SaitRising`] reads.

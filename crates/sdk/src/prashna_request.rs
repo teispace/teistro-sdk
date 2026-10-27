@@ -56,7 +56,13 @@ pub struct PrashnaRequest {
     /// What was asked: the house the matter belongs to and the querent's
     /// number, each when given.
     pub question: Question,
-    /// The readings; the texts' own when left out.
+    /// The readings; the texts' own when left out, and `"BASELINE"` names
+    /// [`PrashnaRules::baseline`], every reading the baseline engine takes.
+    #[serde(deserialize_with = "teistro_core::preset::read")]
+    #[cfg_attr(
+        feature = "schema",
+        schemars(schema_with = "teistro_core::preset::schema::<PrashnaRules>")
+    )]
     pub rules: PrashnaRules,
 }
 
@@ -68,13 +74,18 @@ impl PrashnaRequest {
     }
 
     /// The record a binding sends, as JSON: `question` (`house`,
-    /// `number`) and `rules`, every member optional.
+    /// `number`) and `rules`, every member optional, or `"BASELINE"` for
+    /// [`PrashnaRules::baseline`].
     ///
     /// ```
     /// use teistro::PrashnaRequest;
+    /// use teistro::prashna::PrashnaRules;
     ///
+    /// let baseline = PrashnaRequest::from_json(r#"{"question": {"house": 7}, "rules": "BASELINE"}"#)?;
+    /// assert_eq!(baseline.rules, PrashnaRules::baseline());
     /// let typo = PrashnaRequest::from_json(r#"{"rules": {"timeing": "BASELINE"}}"#).unwrap_err();
     /// assert_eq!(typo.field(), Some("prashna.rules.timeing"));
+    /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
     /// # Errors
@@ -166,4 +177,37 @@ fn lagna_vargas(lagna_deg: f64) -> Result<[Rashi; 6], Error> {
         *slot = varga_sign(varga, lagna_deg)?;
     }
     Ok(signs)
+}
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use super::*;
+
+    #[test]
+    fn baseline_named_reads_as_the_rules_spelt_out() {
+        let named = PrashnaRequest::from_json(r#"{"question": {"house": 7}, "rules": "BASELINE"}"#)
+            .unwrap();
+        let spelt = serde_json::to_string(&PrashnaRules::baseline()).unwrap();
+        let written = PrashnaRequest::from_json(&format!(
+            r#"{{"question": {{"house": 7}}, "rules": {spelt}}}"#
+        ))
+        .unwrap();
+        assert_eq!(named, written);
+        assert_eq!(
+            named,
+            PrashnaRequest::new(Question::about(7), PrashnaRules::baseline())
+        );
+    }
+
+    #[test]
+    fn a_name_that_is_no_preset_is_refused_by_the_field() {
+        let wrong = PrashnaRequest::from_json(r#"{"rules": "baseline"}"#).unwrap_err();
+        assert_eq!(wrong.field(), Some("prashna.rules"));
+        assert!(wrong.message.contains("BASELINE"), "{}", wrong.message);
+        let typo = PrashnaRequest::from_json(r#"{"rules": {"timeing": "BASELINE"}}"#).unwrap_err();
+        assert_eq!(typo.field(), Some("prashna.rules.timeing"));
+    }
 }

@@ -20,10 +20,11 @@ library;
 /// Everything that reproduces a result.
 final class Provenance {
   /// A Provenance with every field named.
-  const Provenance({required this.appliedConventions, required this.calculationVersion, required this.calendar, required this.catalogueVersion, required this.confidence, required this.contentHash, required this.deviation, required this.fallbacksUsed, required this.inputHash, required this.moduleVersions, required this.packs, required this.profile, required this.provider, required this.sdkVersion, required this.settingsHash, required this.time, required this.warnings});
+  const Provenance({required this.answerKey, required this.appliedConventions, required this.calculationVersion, required this.calendar, required this.catalogueVersion, required this.confidence, required this.contentHash, required this.deviation, required this.fallbacksUsed, required this.inputHash, required this.moduleVersions, required this.packs, required this.profile, required this.provider, required this.sdkVersion, required this.settingsHash, required this.time, required this.warnings});
 
   /// A Provenance from its JSON.
   factory Provenance.fromJson(Map<String, Object?> json) => Provenance(
+        answerKey: json['answer_key']! as String,
         appliedConventions: [for (final item in json['applied_conventions']! as List<Object?>) Convention.fromJson(item! as Map<String, Object?>)],
         calculationVersion: (json['calculation_version']! as num).toInt(),
         calendar: json['calendar'] == null ? null : CalendarResolution.fromJson(json['calendar']! as Map<String, Object?>),
@@ -42,6 +43,9 @@ final class Provenance {
         time: TimeStamp.fromJson(json['time']! as Map<String, Object?>),
         warnings: [for (final item in json['warnings']! as List<Object?>) ProvenanceWarning.fromJson(item! as Map<String, Object?>)],
       );
+
+  /// The key a stored answer is reused under: `Provenance::answer_key`, the SHA-256 of the canonical JSON of the SDK, calculation and catalogue versions, the settings and input hashes, the provider's name, version, data version, data hashes and tier, and the packs. Written on every provenance, and ignored where one is read.
+  final String answerKey;
 
   /// The conventions applied.
   final List<Convention> appliedConventions;

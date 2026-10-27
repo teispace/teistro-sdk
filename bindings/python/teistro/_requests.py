@@ -81,7 +81,7 @@ __all__ = [
     "PeriodAsked",
     "NaamRules",
     "BirthDate",
-    "NumerologyRules",
+    "NumerologyRequestRules",
     "BirthAsked",
     "ResearchDesign",
     "ResearchHolds",
@@ -157,7 +157,7 @@ __all__ = [
     "KootaRules",
     "PerfectionRules",
     "PrashnaQuestion",
-    "PrashnaRules",
+    "PrashnaRequestRules",
     "AngleMethod",
     "ProgressionContacts",
     "DirectionAsked",
@@ -196,11 +196,7 @@ __all__ = [
     "SnapshotSunrise",
     "SnapshotClock",
     "NameRules",
-    "BirthReduction",
-    "ChaldeanCompound",
-    "Masters",
-    "NameReduction",
-    "NonLatin",
+    "NumerologyRules",
     "AshauchKind",
     "AshauchLength",
     "AshauchLengthBath",
@@ -258,16 +254,7 @@ __all__ = [
     "NadiDosha",
     "VashyaPoints",
     "PrashnaTense",
-    "GradedRule",
-    "MookRule",
-    "MoonRules",
-    "MoonScope",
-    "OfficeRules",
-    "PiscesRising",
-    "RisingVarga",
-    "ScoreRule",
-    "TimingRule",
-    "WeaknessRules",
+    "PrashnaRules",
     "RateSpan",
     "BirthTimeAccuracy",
     "BaselineDashaRules",
@@ -402,6 +389,11 @@ __all__ = [
     "TambiraMover",
     "AbhijitPada",
     "LatinName",
+    "BirthReduction",
+    "ChaldeanCompound",
+    "Masters",
+    "NameReduction",
+    "NonLatin",
     "Upanayana",
     "CalendarDay",
     "Interval",
@@ -431,10 +423,16 @@ __all__ = [
     "TermEntry",
     "PartileWithin",
     "SiegeWithin",
-    "DrekkanaReading",
-    "EnemySign",
-    "OfficeOrder",
-    "SettingPart",
+    "GradedRule",
+    "MookRule",
+    "MoonRules",
+    "MoonScope",
+    "OfficeRules",
+    "PiscesRising",
+    "RisingVarga",
+    "ScoreRule",
+    "TimingRule",
+    "WeaknessRules",
     "AfterCycle",
     "AshtottariGrouping",
     "SeedOverflow",
@@ -552,6 +550,10 @@ __all__ = [
     "MuhurtaGrade",
     "GradedMasa",
     "MonthWithSun",
+    "DrekkanaReading",
+    "EnemySign",
+    "OfficeOrder",
+    "SettingPart",
     "RisingOf",
     "SaitAvoid",
     "SaitAvoidTithiStart",
@@ -919,8 +921,8 @@ class NumerologyRequest(TypedDict, total=False):
     name: Required[str]
     """The name, in the 26 Latin letters."""
 
-    rules: NumerologyRules
-    """The readings; the sources' own when left out."""
+    rules: NumerologyRequestRules
+    """The readings; the sources' own when left out, and `"BASELINE"` names `NumerologyRules::baseline`, every reading the baseline engine takes."""
 
 
 class ResearchRequest(TypedDict, total=False):
@@ -1455,8 +1457,8 @@ class PrashnaRequest(TypedDict, total=False):
     question: PrashnaQuestion
     """What was asked: the house the matter belongs to and the querent's number, each when given."""
 
-    rules: PrashnaRules
-    """The readings; the texts' own when left out."""
+    rules: PrashnaRequestRules
+    """The readings; the texts' own when left out, and `"BASELINE"` names `PrashnaRules::baseline`, every reading the baseline engine takes."""
 
 
 class ProgressionsRequest(TypedDict, total=False):
@@ -1739,23 +1741,8 @@ class BirthDate(TypedDict, total=False):
     year: Required[int]
 
 
-class NumerologyRules(TypedDict, total=False):
-    """The readings numerology is taken under. Each default is what the text that defines the system prints; `NumerologyRules::baseline` is the baseline engine's, value for value."""
-
-    birthReduction: BirthReduction
-    """How the Pythagorean birth number is reached."""
-
-    chaldeanCompound: ChaldeanCompound
-    """A Chaldean name's compound."""
-
-    masters: Masters
-    """The Pythagorean stopping numbers; the Chaldean has none."""
-
-    nameReduction: NameReduction
-    """Where a name is reduced."""
-
-    nonLatin: NonLatin
-    """A character outside A to Z."""
+NumerologyRequestRules: TypeAlias = "Union[Literal['BASELINE'], NumerologyRules]"
+"""The readings; the sources' own when left out, and `"BASELINE"` names `NumerologyRules::baseline`, every reading the baseline engine takes."""
 
 
 class BirthAsked(TypedDict, total=False):
@@ -2641,38 +2628,8 @@ class PrashnaQuestion(TypedDict, total=False):
     """When the matter falls, which decides what a separation means (C370)."""
 
 
-class PrashnaRules(TypedDict, total=False):
-    """The readings a prashna is given under."""
-
-    graded: GradedRule
-    """Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (C373, open: off by default)."""
-
-    mook: MookRule
-    """Which rule reads an unspoken question."""
-
-    moon: MoonRules
-    """How the Moon's weaknesses are read (Tajika Nilakanthi, Samjna Tantra vv. 73–74)."""
-
-    moonScope: MoonScope
-    """Which questions v. 96's Moon governs."""
-
-    offices: OfficeRules
-    """How a Kamboola's offices are read (Samjna Tantra vv. 36–46)."""
-
-    pisces: PiscesRising
-    """How Pisces rises."""
-
-    risingVarga: RisingVarga
-    """Whose the rising varga is."""
-
-    score: ScoreRule
-    """Whether the baseline engine's points come beside the clauses."""
-
-    timing: TimingRule
-    """Which rule times the matter."""
-
-    weakness: WeaknessRules
-    """How v. 72's weaknesses are read."""
+PrashnaRequestRules: TypeAlias = "Union[Literal['BASELINE'], PrashnaRules]"
+"""The readings; the texts' own when left out, and `"BASELINE"` names `PrashnaRules::baseline`, every reading the baseline engine takes."""
 
 
 AngleMethod: TypeAlias = Literal['NAIBOD_RIGHT_ASCENSION', 'NAIBOD_LONGITUDE', 'SOLAR_ARC_LONGITUDE', 'SOLAR_ARC_RIGHT_ASCENSION', 'QUOTIDIAN']
@@ -3127,45 +3084,23 @@ class NameRules(TypedDict, total=False):
     """How a Latin spelling is read."""
 
 
-BirthReduction: TypeAlias = Literal['BY_PART', 'DIGIT_SUM']
-"""How a birth date becomes the Pythagorean birth number (C-new-19).
+class NumerologyRules(TypedDict, total=False):
+    """The readings numerology is taken under. Each default is what the text that defines the system prints; `NumerologyRules::baseline` is the baseline engine's, value for value."""
 
-`BY_PART`: The month, the day and the year reduced apart and then added (Balliett p. 19); a part that is a master stands apart from the sum, as her 11 July 1838 is "9, 11" (p. 90).
-`DIGIT_SUM`: The digits of the day, the month and the year added and the total reduced: the baseline engine's.
-"""
+    birthReduction: BirthReduction
+    """How the Pythagorean birth number is reached."""
 
+    chaldeanCompound: ChaldeanCompound
+    """A Chaldean name's compound."""
 
-ChaldeanCompound: TypeAlias = Literal['SUM_OF_SINGLES', 'LETTER_TOTAL']
-"""What a Chaldean name's compound number is (C-new-18).
+    masters: Masters
+    """The Pythagorean stopping numbers; the Chaldean has none."""
 
-`SUM_OF_SINGLES`: The sum of the words' single numbers, as Cheiro adds Lloyd's 9 and George's 7 to 16 (pp. 71-72); a one-word name's is its letters'.
-`LETTER_TOTAL`: Every letter added: the baseline engine's.
-"""
+    nameReduction: NameReduction
+    """Where a name is reduced."""
 
-
-Masters: TypeAlias = Literal['NONE', 'ELEVEN_TWENTY_TWO', 'ELEVEN_TWENTY_TWO_THIRTY_THREE']
-"""The numbers that stop a reduction (C-new-8).
-
-`NONE`: Every number reduces to one digit, as Cheiro and Sepharial reduce.
-`ELEVEN_TWENTY_TWO`: 11 and 22 stand, 33 does not: Balliett's Orange is 33, so 6 (p. 30).
-`ELEVEN_TWENTY_TWO_THIRTY_THREE`: 11, 22 and 33 stand: the baseline engine's reading, which no public-domain text in hand prints.
-"""
-
-
-NameReduction: TypeAlias = Literal['BY_WORD', 'WHOLE']
-"""Where a name of several words is reduced (C-new-17).
-
-`BY_WORD`: Each word reduced, then the words added and reduced: Balliett pp. 18-19 and Cheiro p. 72 both print it so.
-`WHOLE`: Every letter added, then reduced once: the baseline engine's.
-"""
-
-
-NonLatin: TypeAlias = Literal['REFUSE', 'SKIP']
-"""What is done with a character that is not one of the 26 Latin letters (C-new-23).
-
-`REFUSE`: Refused, naming the character and its place: both tables are of Latin letters, and a guess at another script's would be invented.
-`SKIP`: Left out of every sum: the baseline engine's.
-"""
+    nonLatin: NonLatin
+    """A character outside A to Z."""
 
 
 AshauchKind: TypeAlias = Literal['BIRTH', 'DEATH']
@@ -3732,94 +3667,38 @@ PrashnaTense: TypeAlias = Literal['UNSPECIFIED', 'FUTURE', 'PAST']
 """
 
 
-GradedRule: TypeAlias = Literal['OFF', 'PARASHARI', 'TAJIKA']
-"""Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (crux C373, open: off by default).
+class PrashnaRules(TypedDict, total=False):
+    """The readings a prashna is given under."""
 
-`OFF`: Not read.
-`PARASHARI`: A graha sees a sign it aspects fully, by Parashara's aspects: the seventh, and Mars's, Jupiter's and Saturn's special ones; a graha does not see the sign it stands in.
-`TAJIKA`: A graha sees a sign by Tajika's sign aspects, the conjunction included.
-"""
+    graded: GradedRule
+    """Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (C373, open: off by default)."""
 
+    mook: MookRule
+    """Which rule reads an unspoken question."""
 
-MookRule: TypeAlias = Literal['SHATPANCHASHIKA', 'MOON_HOUSE', 'BASELINE']
-"""Which rule reads an unspoken question.
+    moon: MoonRules
+    """How the Moon's weaknesses are read (Tajika Nilakanthi, Samjna Tantra vv. 73–74)."""
 
-`SHATPANCHASHIKA`: *Shatpanchashika* VII.7–8: the person, from the strongest graha's house; houses 2, 8, 11 and 12 are not listed (C339).
-`MOON_HOUSE`: *Jnanaprakasha*, quoted in *Tajika Nilakanthi*: the house the Moon stands in, or the lagna lord's when he is the stronger.
-`BASELINE`: `BASELINE`: the baseline engine's strongest graha, 2 points for a kendra and 1 for a trikona, the first in its order taking a tie; its house is the topic. Unsourced (C339).
-"""
+    moonScope: MoonScope
+    """Which questions v. 96's Moon governs."""
 
+    offices: OfficeRules
+    """How a Kamboola's offices are read (Samjna Tantra vv. 36–46)."""
 
-class MoonRules(TypedDict, total=False):
-    """The choices the verses leave to a reader."""
+    pisces: PiscesRising
+    """How Pisces rises."""
 
-    kshina: KshinaRule
-    """Which span of the waning Moon is *kṣīṇa*."""
+    risingVarga: RisingVarga
+    """Whose the rising varga is."""
 
+    score: ScoreRule
+    """Whether the baseline engine's points come beside the clauses."""
 
-MoonScope: TypeAlias = Literal['EVERY', 'GAIN']
-"""Which questions v. 96's "all yogas are fruitless without the Moon" governs (crux C376).
+    timing: TimingRule
+    """Which rule times the matter."""
 
-`EVERY`: Every question, as the design page and the maxim's wording read it.
-`GAIN`: Questions of gain, the 11th house, where the verse stands (vv. 94–96, the Bhuvanadīpaka's gain section).
-"""
-
-
-class OfficeRules(TypedDict, total=False):
-    """How the offices are read where the gloss leaves a choice."""
-
-    drekkana: DrekkanaReading
-    """Which drekkāṇa is a graha's own."""
-
-    enemy: EnemySign
-    """Whether an enemy's sign is read."""
-
-    hudda: HuddaTable
-    """Which printing of the hudda table. The gloss's example to v. 43 calls Venus at Aquarius 10° officeless, which Charak's Aquarius gives and the gloss's own table (n205) does not (crux C109)."""
-
-    order: OfficeOrder
-    """Which office counts when a graha holds several."""
-
-
-PiscesRising: TypeAlias = Literal['BOTH_WAYS', 'SHIRSHODAYA']
-"""How Pisces rises (C336).
-
-`BOTH_WAYS`: Both ways, as the verse the 1941 gloss quotes says ("ubhayato mīnaḥ"): a clause on both sides.
-`SHIRSHODAYA`: By the head, as *Brihat Jataka* I.10 leaves it.
-"""
-
-
-RisingVarga: TypeAlias = Literal['NAVAMSHA', 'SHADVARGA']
-"""Whose the rising varga is (C336).
-
-`NAVAMSHA`: The rising navāṁśa's lord, as the verse's *aṁśa* reads alone.
-`SHADVARGA`: The `SHADVARGA`: the gloss names six vargas and not how many must be a benefic's, so a clause for when four or more of the six lords are benefics, against when four or more are malefics, and both ways otherwise.
-"""
-
-
-ScoreRule: TypeAlias = Literal['OFF', 'BASELINE']
-"""Whether a prashna carries the baseline's points.
-
-`OFF`: No points: the verdict's clauses are the answer (C337).
-`BASELINE`: `BASELINE`: the baseline engine's points beside the clauses, never replacing them. Unsourced.
-"""
-
-
-TimingRule: TypeAlias = Literal['STRONGEST_GRAHA', 'FIRST_OCCUPIED', 'MOON_DAYS', 'BASELINE']
-"""Which rule times the matter.
-
-`STRONGEST_GRAHA`: *Shatpanchashika* II.14–15: the strongest graha's house from the lagna, in months, doubled in a fixed navāṁśa and trebled in a dual one.
-`FIRST_OCCUPIED`: V.5: the first sign from the lagna a graha stands in, its count times twelve days, or the count in days if that graha is retrograde.
-`MOON_DAYS`: II.17: the Moon's sign from the lagna, in days, and no time at all when a graha stands between them.
-`BASELINE`: The baseline engine's, which no text read gives (C335): the lagna lord's house from the lagna, in days under a movable lagna, months under a fixed one and years under a dual one.
-"""
-
-
-class WeaknessRules(TypedDict, total=False):
-    """The readings v. 72 leaves to a reader."""
-
-    setting: SettingPart
-    """What the Sun's setting part is."""
+    weakness: WeaknessRules
+    """How v. 72's weaknesses are read."""
 
 
 RateSpan: TypeAlias = "Union[Literal['DAY', 'SYNODIC_MONTH', 'SIDEREAL_MONTH', 'YEAR'], _RateSpanDays]"
@@ -5319,6 +5198,47 @@ LatinName: TypeAlias = Literal['REFUSE', 'IAST']
 """
 
 
+BirthReduction: TypeAlias = Literal['BY_PART', 'DIGIT_SUM']
+"""How a birth date becomes the Pythagorean birth number (C-new-19).
+
+`BY_PART`: The month, the day and the year reduced apart and then added (Balliett p. 19); a part that is a master stands apart from the sum, as her 11 July 1838 is "9, 11" (p. 90).
+`DIGIT_SUM`: The digits of the day, the month and the year added and the total reduced: the baseline engine's.
+"""
+
+
+ChaldeanCompound: TypeAlias = Literal['SUM_OF_SINGLES', 'LETTER_TOTAL']
+"""What a Chaldean name's compound number is (C-new-18).
+
+`SUM_OF_SINGLES`: The sum of the words' single numbers, as Cheiro adds Lloyd's 9 and George's 7 to 16 (pp. 71-72); a one-word name's is its letters'.
+`LETTER_TOTAL`: Every letter added: the baseline engine's.
+"""
+
+
+Masters: TypeAlias = Literal['NONE', 'ELEVEN_TWENTY_TWO', 'ELEVEN_TWENTY_TWO_THIRTY_THREE']
+"""The numbers that stop a reduction (C-new-8).
+
+`NONE`: Every number reduces to one digit, as Cheiro and Sepharial reduce.
+`ELEVEN_TWENTY_TWO`: 11 and 22 stand, 33 does not: Balliett's Orange is 33, so 6 (p. 30).
+`ELEVEN_TWENTY_TWO_THIRTY_THREE`: 11, 22 and 33 stand: the baseline engine's reading, which no public-domain text in hand prints.
+"""
+
+
+NameReduction: TypeAlias = Literal['BY_WORD', 'WHOLE']
+"""Where a name of several words is reduced (C-new-17).
+
+`BY_WORD`: Each word reduced, then the words added and reduced: Balliett pp. 18-19 and Cheiro p. 72 both print it so.
+`WHOLE`: Every letter added, then reduced once: the baseline engine's.
+"""
+
+
+NonLatin: TypeAlias = Literal['REFUSE', 'SKIP']
+"""What is done with a character that is not one of the 26 Latin letters (C-new-23).
+
+`REFUSE`: Refused, naming the character and its place: both tables are of Latin letters, and a guess at another script's would be invented.
+`SKIP`: Left out of every sum: the baseline engine's.
+"""
+
+
 Upanayana: TypeAlias = Literal['DONE', 'NOT_DONE', 'NOT_PERFORMED']
 """Whether the deceased had the upanayana.
 
@@ -5729,37 +5649,94 @@ class SiegeWithin(TypedDict, total=False):
     """The widest arc between Saturn and Mars that still besieges."""
 
 
-DrekkanaReading: TypeAlias = Literal['TAJIKA', 'PARASHARI']
-"""Which drekkāṇa a graha's own is read in.
+GradedRule: TypeAlias = Literal['OFF', 'PARASHARI', 'TAJIKA']
+"""Whether the Bhuvanapradīpa's graded yogas are read, and by which aspect (crux C373, open: off by default).
 
-`TAJIKA`: The Tajika one, the weekday cycle from Mars (`drekkana_lord`), which the 1893 print's Prashna Tantra gloss defines (n205).
-`PARASHARI`: The Parashari one: the sign, its fifth, its ninth. The Samjna Tantra gloss's "the Moon in Cancer, in the first drekkāṇa" reads it; its other examples do not need it.
+`OFF`: Not read.
+`PARASHARI`: A graha sees a sign it aspects fully, by Parashara's aspects: the seventh, and Mars's, Jupiter's and Saturn's special ones; a graha does not see the sign it stands in.
+`TAJIKA`: A graha sees a sign by Tajika's sign aspects, the conjunction included.
 """
 
 
-EnemySign: TypeAlias = Literal['TAJIKA', 'IGNORED']
-"""Whether an enemy's sign makes a graha adhama.
+MookRule: TypeAlias = Literal['SHATPANCHASHIKA', 'MOON_HOUSE', 'BASELINE']
+"""Which rule reads an unspoken question.
 
-`TAJIKA`: As the definition states it, the enemy read as Tajika reads one: the sign's lord in the 1st, 4th, 7th or 10th from the graha (`Relation::between`), as the Panchavargiya bala and the empty road (vv. 55–56) read it. The gloss's example to v. 41 calls Mercury in Libra sama with Venus in the 4th from it.
-`IGNORED`: Not read: no worked example needs it.
+`SHATPANCHASHIKA`: *Shatpanchashika* VII.7–8: the person, from the strongest graha's house; houses 2, 8, 11 and 12 are not listed (C339).
+`MOON_HOUSE`: *Jnanaprakasha*, quoted in *Tajika Nilakanthi*: the house the Moon stands in, or the lagna lord's when he is the stronger.
+`BASELINE`: `BASELINE`: the baseline engine's strongest graha, 2 points for a kendra and 1 for a trikona, the first in its order taking a tie; its house is the topic. Unsourced (C339).
 """
 
 
-OfficeOrder: TypeAlias = Literal['GLOSS', 'HIGHEST', 'LOWEST']
-"""Which office counts when a graha holds more than one (crux C371).
+class MoonRules(TypedDict, total=False):
+    """The choices the verses leave to a reader."""
 
-`GLOSS`: The order the gloss's worked examples follow: debilitation, then a division it rules, then its own sign or exaltation, then an enemy's sign. A debilitated graha in its own navāṁśa is adhama (the examples to vv. 39 and 45), the Moon in Cancer in her own navāṁśa madhyama (vv. 40, 41), Venus in her own hudda in her enemy the Moon's sign madhyama (v. 38).
-`HIGHEST`: The best office it holds.
-`LOWEST`: The worst office it holds.
+    kshina: KshinaRule
+    """Which span of the waning Moon is *kṣīṇa*."""
+
+
+MoonScope: TypeAlias = Literal['EVERY', 'GAIN']
+"""Which questions v. 96's "all yogas are fruitless without the Moon" governs (crux C376).
+
+`EVERY`: Every question, as the design page and the maxim's wording read it.
+`GAIN`: Questions of gain, the 11th house, where the verse stands (vv. 94–96, the Bhuvanadīpaka's gain section).
 """
 
 
-SettingPart: TypeAlias = Literal['NAVAMSHA_SIGN', 'NAVAMSHA_ARC']
-"""What the Sun's setting part is (crux C377).
+class OfficeRules(TypedDict, total=False):
+    """How the offices are read where the gloss leaves a choice."""
 
-`NAVAMSHA_SIGN`: Any navāṁśa whose sign is the seventh from the sign of the Sun's navāṁśa: the gloss counts from "the navāṁśa of the sign the Sun is in", and the seventh from a sign is where it sets.
-`NAVAMSHA_ARC`: The one navāṁśa-arc seven on from the Sun's own, 20° to 23°20′ past the start of the Sun's.
+    drekkana: DrekkanaReading
+    """Which drekkāṇa is a graha's own."""
+
+    enemy: EnemySign
+    """Whether an enemy's sign is read."""
+
+    hudda: HuddaTable
+    """Which printing of the hudda table. The gloss's example to v. 43 calls Venus at Aquarius 10° officeless, which Charak's Aquarius gives and the gloss's own table (n205) does not (crux C109)."""
+
+    order: OfficeOrder
+    """Which office counts when a graha holds several."""
+
+
+PiscesRising: TypeAlias = Literal['BOTH_WAYS', 'SHIRSHODAYA']
+"""How Pisces rises (C336).
+
+`BOTH_WAYS`: Both ways, as the verse the 1941 gloss quotes says ("ubhayato mīnaḥ"): a clause on both sides.
+`SHIRSHODAYA`: By the head, as *Brihat Jataka* I.10 leaves it.
 """
+
+
+RisingVarga: TypeAlias = Literal['NAVAMSHA', 'SHADVARGA']
+"""Whose the rising varga is (C336).
+
+`NAVAMSHA`: The rising navāṁśa's lord, as the verse's *aṁśa* reads alone.
+`SHADVARGA`: The `SHADVARGA`: the gloss names six vargas and not how many must be a benefic's, so a clause for when four or more of the six lords are benefics, against when four or more are malefics, and both ways otherwise.
+"""
+
+
+ScoreRule: TypeAlias = Literal['OFF', 'BASELINE']
+"""Whether a prashna carries the baseline's points.
+
+`OFF`: No points: the verdict's clauses are the answer (C337).
+`BASELINE`: `BASELINE`: the baseline engine's points beside the clauses, never replacing them. Unsourced.
+"""
+
+
+TimingRule: TypeAlias = Literal['STRONGEST_GRAHA', 'FIRST_OCCUPIED', 'MOON_DAYS', 'BASELINE']
+"""Which rule times the matter.
+
+`STRONGEST_GRAHA`: *Shatpanchashika* II.14–15: the strongest graha's house from the lagna, in months, doubled in a fixed navāṁśa and trebled in a dual one.
+`FIRST_OCCUPIED`: V.5: the first sign from the lagna a graha stands in, its count times twelve days, or the count in days if that graha is retrograde.
+`MOON_DAYS`: II.17: the Moon's sign from the lagna, in days, and no time at all when a graha stands between them.
+`BASELINE`: The baseline engine's, which no text read gives (C335): the lagna lord's house from the lagna, in days under a movable lagna, months under a fixed one and years under a dual one.
+"""
+
+
+class WeaknessRules(TypedDict, total=False):
+    """The readings v. 72 leaves to a reader."""
+
+    setting: SettingPart
+    """What the Sun's setting part is."""
 
 
 AfterCycle: TypeAlias = Literal['END', 'REPEAT']
@@ -6928,6 +6905,39 @@ class MonthWithSun(TypedDict, total=False):
 
     sun: Required[Union[_catalogue.Rashi, str]]
     """The Sun's sign."""
+
+
+DrekkanaReading: TypeAlias = Literal['TAJIKA', 'PARASHARI']
+"""Which drekkāṇa a graha's own is read in.
+
+`TAJIKA`: The Tajika one, the weekday cycle from Mars (`drekkana_lord`), which the 1893 print's Prashna Tantra gloss defines (n205).
+`PARASHARI`: The Parashari one: the sign, its fifth, its ninth. The Samjna Tantra gloss's "the Moon in Cancer, in the first drekkāṇa" reads it; its other examples do not need it.
+"""
+
+
+EnemySign: TypeAlias = Literal['TAJIKA', 'IGNORED']
+"""Whether an enemy's sign makes a graha adhama.
+
+`TAJIKA`: As the definition states it, the enemy read as Tajika reads one: the sign's lord in the 1st, 4th, 7th or 10th from the graha (`Relation::between`), as the Panchavargiya bala and the empty road (vv. 55–56) read it. The gloss's example to v. 41 calls Mercury in Libra sama with Venus in the 4th from it.
+`IGNORED`: Not read: no worked example needs it.
+"""
+
+
+OfficeOrder: TypeAlias = Literal['GLOSS', 'HIGHEST', 'LOWEST']
+"""Which office counts when a graha holds more than one (crux C371).
+
+`GLOSS`: The order the gloss's worked examples follow: debilitation, then a division it rules, then its own sign or exaltation, then an enemy's sign. A debilitated graha in its own navāṁśa is adhama (the examples to vv. 39 and 45), the Moon in Cancer in her own navāṁśa madhyama (vv. 40, 41), Venus in her own hudda in her enemy the Moon's sign madhyama (v. 38).
+`HIGHEST`: The best office it holds.
+`LOWEST`: The worst office it holds.
+"""
+
+
+SettingPart: TypeAlias = Literal['NAVAMSHA_SIGN', 'NAVAMSHA_ARC']
+"""What the Sun's setting part is (crux C377).
+
+`NAVAMSHA_SIGN`: Any navāṁśa whose sign is the seventh from the sign of the Sun's navāṁśa: the gloss counts from "the navāṁśa of the sign the Sun is in", and the seventh from a sign is where it sets.
+`NAVAMSHA_ARC`: The one navāṁśa-arc seven on from the Sun's own, 20° to 23°20′ past the start of the Sun's.
+"""
 
 
 RisingOf: TypeAlias = Literal['NAVAMSA', 'LAGNA', 'NAVAMSA_OR_LAGNA']
