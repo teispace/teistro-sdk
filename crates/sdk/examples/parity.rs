@@ -782,6 +782,12 @@ fn the_surface(report: &mut Report) {
         ("almanac.festivals", "present"),
         ("almanac.of", "present"),
         ("almanac.pakshi", "present"),
+        ("almanac.sankalpa", "present"),
+        ("almanac.ashauch", "present"),
+        ("almanac.first_year", "present"),
+        ("almanac.published_reasons", "present"),
+        ("almanac.published_from_signed", "present"),
+        ("calendar.tibetan_year", "present"),
         ("calendar.convert", "present"),
         ("calendar.date_of", "present"),
         ("calendar.fixed_of", "present"),
@@ -6641,6 +6647,183 @@ fn lunar_years(report: &mut Report, geo: &Context, place: &Place, offset: UtcOff
 ///
 /// 2024-10-30..11-03 at the test provider holds Kartika's new moon, where
 /// the year turns.
+/// The requests every runner sends for the almanac's rites, as a binding
+/// writes them: a sankalpa, a period of impurity and the first year after
+/// a death at Kathmandu, and the reasons a published day differs at
+/// Pokhara with Kathmandu beside it.
+const SANKALPA_ASKED: &str = r#"{"at":2461055.59375,"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"ayana":"TROPICAL"}"#;
+const ASHAUCH_ASKED: &str = r#"{"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1337,"utcOffsetSeconds":20700,"request":{"key":"grandfather","relation":"SAPINDA","event":{"event":"DEATH","at":2461051.677083}}}"#;
+const FIRST_YEAR_ASKED: &str = r#"{"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1337,"utcOffsetSeconds":20700,"request":{"key":"grandfather","at":2461051.677083,"firstAbdika":"ELEVENTH_DAY","firstYearAdhika":"NIJA"}}"#;
+const REASONS_ASKED: &str = r#"{"first":{"year":2026,"month":10,"day":10},"last":{"year":2026,"month":10,"day":12},"latitudeDeg":28.2096,"longitudeDeg":83.9856,"altitudeM":827,"utcOffsetSeconds":20700,"festivals":{"rules":"NEPAL","published":[{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,"entries":[{"action":"SET","rule":"NAVARATRA_ARAMBHA","day":{"calendar":"GREGORIAN","year":2026,"month":10,"day":11},"source":"p. 41"}]}]},"places":[{"name":"Kathmandu","latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700}]}"#;
+/// The signed pack the bindings' own tests pin
+/// (`crates/sdk/tests/signed_pack.rs`): its bytes, signature and key.
+const SIGNED_PACK: &str = r#"{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,"entries":[{"action":"SET","rule":"GHATASTHAPANA","day":{"calendar":"GREGORIAN","year":2026,"month":10,"day":11},"source":"p. 41"}]}"#;
+const SIGNED_SIGNATURE: &str = "cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e21332fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e";
+const SIGNED_KEY: &str = "ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c";
+
+/// Hex as bytes, for the pinned vector.
+fn unhex(text: &str) -> Vec<u8> {
+    (0..text.len())
+        .step_by(2)
+        .map(|at| {
+            text.get(at..at + 2)
+                .and_then(|pair| u8::from_str_radix(pair, 16).ok())
+                .expect("hex")
+        })
+        .collect()
+}
+
+/// A field of a written record, `null` when it has none.
+fn field<'a>(record: &'a serde_json::Value, name: &str) -> &'a serde_json::Value {
+    record.get(name).unwrap_or(&serde_json::Value::Null)
+}
+
+/// A day as the rites print it, from its written record.
+fn written_day(day: &serde_json::Value) -> String {
+    format!(
+        "{}-{}-{}",
+        field(day, "year"),
+        field(day, "month"),
+        field(day, "day")
+    )
+}
+
+/// A written record's members, by name, as their full keys.
+fn written_keys(record: &serde_json::Value, names: &[&str]) -> String {
+    names
+        .iter()
+        .map(|name| field(record, name).as_str().unwrap_or("-"))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// The count of a written record's list.
+fn written_len(record: &serde_json::Value, name: &str) -> usize {
+    field(record, name).as_array().map_or(0, Vec::len)
+}
+
+/// The almanac's rites: each answer's content hash, which proves the same
+/// request reached the same answer, and a line of its fields, which proves
+/// each binding read it.
+fn the_rites(report: &mut Report, geo: &Context) {
+    let almanac = geo.almanac();
+    let sankalpa = almanac
+        .sankalpa_request(&teistro::SankalpaRequest::from_json(SANKALPA_ASKED).expect("a request"))
+        .expect("a sankalpa");
+    put(
+        report,
+        "rites-sankalpa-hash",
+        sankalpa.provenance.content_hash.to_string(),
+    );
+    put(
+        report,
+        "rites-sankalpa",
+        format!(
+            "{} {}",
+            written_day(field(&sankalpa.value, "date")),
+            written_keys(&sankalpa.value, &["vara", "paksha", "tithi", "nakshatra"])
+        ),
+    );
+    let ashauch = almanac
+        .ashauch_query(&teistro::AshauchQuery::from_json(ASHAUCH_ASKED).expect("a query"))
+        .expect("an ashauch");
+    put(
+        report,
+        "rites-ashauch-hash",
+        ashauch.provenance.content_hash.to_string(),
+    );
+    let instant = |name: &str| number(field(&ashauch.value, name).as_f64().unwrap_or(f64::NAN));
+    put(
+        report,
+        "rites-ashauch",
+        format!(
+            "{} {} {}",
+            instant("start"),
+            instant("end"),
+            field(&ashauch.value, "days")
+                .as_u64()
+                .map_or_else(|| "none".to_owned(), |days| days.to_string())
+        ),
+    );
+    let year = almanac
+        .first_year_query(&teistro::FirstYearQuery::from_json(FIRST_YEAR_ASKED).expect("a query"))
+        .expect("a first year");
+    put(
+        report,
+        "rites-first-year-hash",
+        year.provenance.content_hash.to_string(),
+    );
+    put(
+        report,
+        "rites-first-year",
+        format!(
+            "{} {} {} {}",
+            written_day(field(&year.value, "dayOne")),
+            written_day(field(&year.value, "eleventhDay")),
+            written_day(field(&year.value, "sapindana")),
+            written_len(&year.value, "rites")
+        ),
+    );
+}
+
+/// A publisher's corrections, as the reasons a published day differs
+/// and as a set read from a signed pack, and the Tibetan year, which
+/// every binding names in full.
+fn the_published_and_tibetan(report: &mut Report, geo: &Context) {
+    let reasons = geo
+        .almanac()
+        .published_reasons_request(
+            &[],
+            &teistro::PublishedReasonsRequest::from_json(REASONS_ASKED).expect("a request"),
+        )
+        .expect("the reasons");
+    put(
+        report,
+        "rites-published-reasons-hash",
+        reasons.provenance.content_hash.to_string(),
+    );
+    put(
+        report,
+        "rites-published-reasons",
+        written_len(&reasons.value, "reasons").to_string(),
+    );
+    let set = geo
+        .almanac()
+        .published_from_signed(
+            SIGNED_PACK.as_bytes(),
+            &unhex(SIGNED_SIGNATURE),
+            &unhex(SIGNED_KEY),
+            3,
+        )
+        .expect("the pinned vector verifies");
+    put(
+        report,
+        "rites-published-signed",
+        format!(
+            "{} {} {} {}",
+            set.id,
+            set.version,
+            set.entries.len(),
+            set.publisher
+        ),
+    );
+    let tibetan = geo.calendar().tibetan_year(2026).expect("a Tibetan year");
+    put(
+        report,
+        "calendar-tibetan-year",
+        format!(
+            "{} {} {} {} {} {} {}",
+            tibetan.year,
+            tibetan.rabjung,
+            tibetan.year_in_rabjung,
+            tibetan.samvatsara.full_key(),
+            tibetan.element.full_key(),
+            tibetan.gender.full_key(),
+            tibetan.animal.full_key()
+        ),
+    );
+}
+
 fn nepal_sambat(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
     let from = CalendarDate::defined(Calendar::Gregorian, 2024, 10, 30);
     let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3);
@@ -7511,6 +7694,8 @@ fn main() {
     festivals(&mut report, &geo, &place, offset);
     lunar_years(&mut report, &geo, &place, offset);
     nepal_sambat(&mut report, &geo, &place, offset);
+    the_rites(&mut report, &geo);
+    the_published_and_tibetan(&mut report, &geo);
     eclipses(&mut report, &place, offset);
     lagnas(&mut report, &place, offset);
     the_lilith(&mut report, &place, offset);

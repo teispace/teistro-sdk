@@ -1368,6 +1368,7 @@ public final class ParityRunner {
                 put("geo-settings-hash", geo.settingsHash());
                 charts(ctx, geo, place);
                 almanac(geo, place);
+                rites(geo);
                 putRashifal(geo, place);
                 putPakshi(geo);
                 putResearch(geo);
@@ -1492,6 +1493,14 @@ public final class ParityRunner {
             surface("almanac.festival_calendar", () -> ctx.almanac().festivalCalendar(day, day, place, 0, null));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
+            surface("almanac.sankalpa", () -> ctx.almanac().sankalpa(0, place, 0, null));
+            surface("almanac.ashauch", () -> ctx.almanac().ashauch(null, place, 0));
+            surface("almanac.first_year", () -> ctx.almanac().firstYear(null, place, 0));
+            surface("almanac.published_reasons", () -> ctx.almanac().publishedReasons(day, day, place, 0, null,
+                    List.of(), null));
+            surface("almanac.published_from_signed", () -> ctx.almanac().publishedFromSigned(new byte[0],
+                    new byte[0], new byte[0], 0));
+            surface("calendar.tibetan_year", () -> ctx.calendar().tibetanYear(2026));
             surface("research.counts", () -> ctx.research().counts(List.of(), null, new Design(List.of(), null), null));
             surface("research.compare", () -> ctx.research().compare(List.of(), null, new Design(List.of(), null),
                     ResearchGroupTest.builder(0, 1, ResearchContrast.ANY_DIFFERENCE).build(), null));
@@ -2873,6 +2882,71 @@ public final class ParityRunner {
         put("nepal-sambat-hash", nepalSambat.provenance().contentHash());
         put("nepal-sambat", orNone(join(" ", nepalSambat.value(),
                 one -> one.year() + ":" + one.month() + ":" + one.kind().key() + ":" + one.paksha().fullKey())));
+    }
+
+    /**
+     * The almanac's rites and the Tibetan year, from the requests every runner sends: a sankalpa, a
+     * period of impurity and the first year after a death at Kathmandu, the reasons a published day
+     * differs at Pokhara with Kathmandu beside it, and the pack the bindings' own tests pin
+     * ({@code crates/sdk/tests/signed_pack.rs}). Each answer's content hash proves the same request
+     * reached the same answer, and a line of its fields proves this binding read it.
+     */
+    private static void rites(Context geo) {
+        Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+        Observer mourners = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1337));
+        SankalpaAnswer sankalpa = geo.almanac().sankalpa(2_461_055.593_75, kathmandu, 20_700, AyanaReckoning.TROPICAL);
+        put("rites-sankalpa-hash", sankalpa.provenance().contentHash());
+        Sankalpa recited = sankalpa.value();
+        put("rites-sankalpa", String.join(" ", ymd(recited.date()), recited.vara().fullKey(),
+                recited.paksha().fullKey(), recited.tithi().fullKey(), recited.nakshatra().fullKey()));
+
+        AshauchAnswer ashauch = geo.almanac().ashauch(AshauchRequest.builder()
+                .key("grandfather").relation(AshauchRelation.SAPINDA)
+                .event(AshauchEventDeath.builder().at(2_461_051.677_083).build())
+                .build(), mourners, 20_700);
+        put("rites-ashauch-hash", ashauch.provenance().contentHash());
+        Ashauch period = ashauch.value();
+        put("rites-ashauch", number(period.start()) + " " + number(period.end()) + " "
+                + (period.days() == null ? "none" : period.days().toString()));
+
+        FirstYearAnswer year = geo.almanac().firstYear(FirstYearRequest.builder()
+                .key("grandfather").at(2_461_051.677_083)
+                .firstAbdika(FirstAbdika.ELEVENTH_DAY).firstYearAdhika(FirstYearAdhika.NIJA)
+                .build(), mourners, 20_700);
+        put("rites-first-year-hash", year.provenance().contentHash());
+        put("rites-first-year", String.join(" ", ymd(year.value().dayOne()), ymd(year.value().eleventhDay()),
+                ymd(year.value().sapindana()), String.valueOf(year.value().rites().size())));
+
+        // One published set, its day a rule's, explained at Pokhara with
+        // Kathmandu as the place the publisher may have reckoned at; no
+        // second sky.
+        FestivalRequest published = FestivalRequest.of(Json.read("{\"rules\":\"NEPAL\",\"published\":[{"
+                + "\"format\":\"teistro.published/1\",\"publisher\":\"a patro printed in Nepal\","
+                + "\"id\":\"np-2083\",\"version\":3,\"entries\":[{\"action\":\"SET\",\"rule\":\"NAVARATRA_ARAMBHA\","
+                + "\"day\":{\"calendar\":\"GREGORIAN\",\"year\":2026,\"month\":10,\"day\":11},"
+                + "\"source\":\"p. 41\"}]}]}"));
+        Observer pokhara = new Observer(new Longitude(83.9856), new Latitude(28.2096), new Altitude(827));
+        PublishedReasons reasons = geo.almanac().publishedReasons(date(2026, 10, 10), date(2026, 10, 12), pokhara,
+                20_700, published, List.of(new PublishedReasons.Place("Kathmandu", kathmandu, 20_700)), null);
+        put("rites-published-reasons-hash", reasons.provenance().contentHash());
+        put("rites-published-reasons", reasons.reasons().size());
+
+        byte[] pack = ("{\"format\":\"teistro.published/1\",\"publisher\":\"a patro printed in Nepal\","
+                + "\"id\":\"np-2083\",\"version\":3,\"entries\":[{\"action\":\"SET\",\"rule\":\"GHATASTHAPANA\","
+                + "\"day\":{\"calendar\":\"GREGORIAN\",\"year\":2026,\"month\":10,\"day\":11},"
+                + "\"source\":\"p. 41\"}]}").getBytes(StandardCharsets.UTF_8);
+        java.util.HexFormat hex = java.util.HexFormat.of();
+        PublishedSet set = geo.almanac().publishedFromSigned(pack,
+                hex.parseHex("cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e213"
+                        + "32fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e"),
+                hex.parseHex("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c"), 3);
+        put("rites-published-signed", set.id() + " " + set.version() + " " + set.entries().size() + " "
+                + set.publisher());
+
+        TibetanYear tibetan = geo.calendar().tibetanYear(2026);
+        put("calendar-tibetan-year", tibetan.year() + " " + tibetan.rabjung() + " " + tibetan.yearInRabjung() + " "
+                + tibetan.samvatsara().fullKey() + " " + tibetan.element().fullKey() + " "
+                + tibetan.gender().fullKey() + " " + tibetan.animal().fullKey());
     }
 
     /** A day's spans of one limb, each under {@code <name>-<j>}. */

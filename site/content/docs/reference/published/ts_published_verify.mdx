@@ -7,7 +7,42 @@ Verifies a signed pack and answers with its published set as canonical JSON. `pa
 
 A key that is no curve point is `INVALID_ARG` on `key`; a signature that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`; bytes that are not a set, `INVALID_ARG` on the field that is wrong; an older version, `INVALID_ARG` on `version`. A build without `signed-packs` answers `CAPABILITY`.
 
-<Tabs items={['C']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.publishedFromSigned
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.published_from_signed
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.publishedFromSigned
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().publishedFromSigned
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().published_from_signed
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
