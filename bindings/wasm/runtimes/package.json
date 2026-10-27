@@ -1,0 +1,14 @@
+{
+  "name": "teistro-wasm-runtimes-check",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The runtimes the wasm package's Deno and Bun checks run it in, each running the installed package as a consumer's program does. Pinned here so every machine and every runner checks with the same two.",
+  "devDependencies": {
+    "bun": "1.4.4",
+    "deno": "2.9.6"
+  },
+  "allowScripts": {
+    "bun": true
+  }
+}

@@ -172,7 +172,8 @@ Rejected:
 - `check-wasm` (verify): builds the profile binaries, runs the Node test
   suite's portable half against the wasm package in Node, and loads the
   package in a headless browser bundle with no Node built-ins resolved
-  and, bundled by Wrangler, in Cloudflare's workerd (step 8).
+  and, bundled by Wrangler, in Cloudflare's workerd (step 8); then in
+  Deno, in Bun and in Next.js's edge runtime (step 9).
 - `check-parity` gains a fifth runner, so the wasm surface is held value
   for value against Rust, Node, Python and Dart.
 - The hash matrix gains its wasm column (ADR-0022): the scenario's
@@ -367,6 +368,85 @@ Rejected:
    Node 22 before CI is asked; a green run on a newer Node proved nothing
    about the floor.
 
+9. **Edge runtimes: Deno, Bun and Next.js's edge routes, built**
+   (2026-10-27). Each host took a loader of the others and failed in
+   its own way, found before a loader was written by a stand-in package
+   (the real loaders over a 39-byte module and a glue with
+   wasm-bindgen's `init` and `initSync`), installed as a consumer installs
+   it:
+
+   | Host | Loader taken before | How it failed |
+   | --- | --- | --- |
+   | Deno 2.9.6 | `node` (Deno sets it) | `NotCapable: Requires read access` to the module: `node:fs` needs `--allow-read` |
+   | Bun 1.4.4, `bun build --compile` | `node` | `ENOENT … /$bunfs/wasm/teistro_wasm_bg.wasm`: a URL built at run time is no import, so the executable never carried the module |
+   | Next.js 16.4.3, Turbopack | `default` (the web loader) | `fetch failed` while `next build` collects the route's configuration |
+   | Next.js 16.4.3, webpack | `default` | nothing locally: the route compiled the module from bytes, which `next start`'s sandbox allows and the deployed Edge runtime refuses |
+
+   - **`deno`**: `lib/native.deno.js` imports the module in its source
+     phase, `import source module from '…wasm'`, stable in Deno and part
+     of the module graph, so Deno compiles it as it loads the program,
+     asks no permission, and carries it into what it compiles or
+     deploys. `initSync` then instantiates it.
+   - **`bun`**: `lib/native.bun.js` imports the module `with { type:
+     'file' }`, which Bun's bundler follows: the path it gives is the
+     installed file unbundled, a copy beside a `bun build` bundle (a
+     relative path, read against the bundle and not the working
+     directory) and an embedded file in an executable.
+   - **`edge-light`**: `lib/native.edge-light.js` imports the module as
+     `?module`, which Turbopack and webpack both turn into a
+     `WebAssembly.Module` Next.js compiles outside the route. In
+     `next build` and `next start` the route runs in a `vm` realm of its
+     own, so the glue's `instanceof WebAssembly.Module` was false and
+     `initSync` took the module for bytes (`Argument 0 must be a buffer
+     source`). `init` takes a module from any realm, but needs a
+     top-level `await`, and webpack then warns in every edge build that
+     the target may not support `async`; so the loader gives the module
+     this realm's prototype, which `WebAssembly.Instance` does not
+     consult, and stays synchronous with no warning.
+
+   `LOADERS` is `workerd`, `edge-light`, `bun`, `deno`, `node`,
+   `default`: each host's own before `node`, which Bun and Deno set too.
+
+   **Checked as a consumer runs each**, from the installed package, each
+   answer held to Node's to the bit. Deno and Bun are pinned in
+   `bindings/wasm/runtimes` and run a program that imports the package
+   by name: Deno with no permission granted, Bun as the program stands,
+   bundled by `bun build` and compiled by `bun build --compile`, the
+   last two run from their own directory so a module they left behind is
+   not found by chance. npm 12 runs no dependency's install script unless
+   the manifest allows it, and Bun's binary is put in place by one, so the
+   manifest allows Bun's; Deno's bin is a Node script and needs none.
+
+   Next.js is pinned in `bindings/wasm/next`, and the runner writes an app
+   of one edge route, installs the pinned Next.js into it with `npm ci`,
+   copies the installed package in, and builds it with Turbopack and with
+   webpack, each served by `next start` and asked once. **The local
+   sandbox is made strict**: Next.js documents `WebAssembly.compile`, and
+   `instantiate` given bytes, as unsupported in the Edge runtime, but
+   `next start` creates the route's context with code generation as
+   `vm` defaults it, so the web loader passed webpack's build and answered.
+   `strict.cjs`, loaded with `--require`, turns WebAssembly code
+   generation off in every context `vm` creates; with it, the same build
+   fails with `Wasm code generation disallowed by embedder`, and the
+   `edge-light` loader passes both bundlers. Two things Next.js 16.4.3
+   needed that are not the package's: the app's manifest is not
+   `"type": "module"`, with which webpack's edge build fails for a route
+   that imports nothing (`route_client-reference-manifest.js` is never
+   written), and its Turbopack root is named by its real path, which
+   macOS's `/var` link otherwise puts outside the output's.
+
+   **Measured on the stand-in only.** No module had been built when this
+   step was written, so the stand-in proved each loader, each condition
+   and each check, red without its condition and green with it; the
+   gate's first run on the real module is what holds the real answers
+   to Node's.
+
+   **Not claimed**: Deno Deploy and Netlify's edge functions run Deno and
+   take the `deno` loader, but only the Deno CLI is run; Vercel's
+   deployed Edge runtime, and its Edge functions outside Next.js, which
+   resolve `edge-light` too, are stood in for by Next.js's own sandbox
+   made strict.
+
 ## 7. What is left
 
 - **ADR-0005's module profiles**: built since, on
@@ -390,11 +470,17 @@ Rejected:
   shown to pay for a pinned tool and 7–18 s a build. Measure again if
   the module's code comes to outweigh its compressibility, and by the
   gzipped size.
-- **The other edge runtimes.** Vercel's Edge runtime and Next.js's edge
-  routes set `edge-light` and import a compiled module as
-  `import m from './x.wasm?module'`, a spelling Wrangler accepts too; so
-  the Workers loader could serve both, but no check runs a Next.js build,
-  and an unchecked host is not claimed. Deno Deploy and Netlify's edge
-  functions take the `node` or `default` loader and are unchecked for the
-  same reason. Each is a condition in `LOADERS` and a step in
-  `check-wasm` when a consumer needs it.
+- **The edge runtimes no check runs**: Deno Deploy, Netlify's edge
+  functions and Vercel's deployed Edge runtime (step 9). Each takes a
+  loader the gate does check; running the host itself needs an account
+  and a deploy, which the gate does not make.
+- **The module twice in a Next.js edge function.** Both bundlers ship
+  the module once for the `?module` import and again as the asset the
+  glue's own fallback names (`new URL('teistro_wasm_bg.wasm',
+  import.meta.url)`, never taken by a loader, since each passes its
+  module): Turbopack lists two files under one binding, webpack a
+  binding and an asset. Vercel caps an edge function's size by plan, so
+  the duplicate can decide whether the full module fits. Dropping the
+  fallback from the glue when the package is staged would remove it for
+  every bundler; measure the bundles before and after, by the gzipped
+  size.
