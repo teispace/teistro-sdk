@@ -12,12 +12,14 @@
 //! The **month**, **panchaka**, the **ayana** and the **disha shool** are
 //! tables and are compared as tables.
 //!
-//! What is not here is the limb *instants*: the boundary of a tithi is a
-//! position over time, and no provider inside this workspace has real
-//! positions (`crates/port-ephemeris`'s test provider is a plausible sky
-//! and not the sky). Those land with the conformance harness over an
-//! adapter, which Phase 1 deferred; `kernel.rs` beside this file holds
-//! the kernel to its own properties in the meantime.
+//! What is not here is what needs a sky: the limb *instants* (the boundary
+//! of a tithi is a position over time), the Moon's rise and set, and the
+//! muhurta yogas read off the limbs a sky gives. No provider this crate
+//! depends on has real positions (`crates/port-ephemeris`'s test provider
+//! is a plausible sky and not the sky), so those are held through the
+//! façade over the built-in ephemeris, in
+//! `crates/sdk/tests/baseline_panchanga_day.rs`; `kernel.rs` beside this
+//! file holds the kernel to its own properties.
 
 #![allow(
     clippy::panic,

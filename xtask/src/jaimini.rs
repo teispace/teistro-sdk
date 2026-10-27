@@ -19,7 +19,7 @@ use std::path::Path;
 
 use teistro::catalogue::Graha;
 use teistro::dasha::jaimini::{JaiminiReading, NoBrahma};
-use teistro::{Context, Ephemeris};
+use teistro::{Context, Ephemeris, RuleInputs};
 
 use crate::births::{Birth, CHARTS, births};
 use crate::generated::{Output, check, write};
@@ -103,6 +103,49 @@ fn recorded_atmakaraka(root: &Path, birth: &Birth, scheme: &str) -> Result<Graha
         .into_iter()
         .find(|graha| graha.key() == key)
         .ok_or_else(|| format!("{}: a recorded Atmakaraka `{key}` is no graha", birth.name))
+}
+
+/// The recording's karaka names from the most advanced graha down, under
+/// seven karakas and under eight (the Pitrikaraka last, crux C101), with
+/// whether Rahu is ranked.
+const ORDERS: [(&str, bool, &[&str]); 2] = [
+    (
+        "system7",
+        false,
+        &["AK", "AmK", "BK", "MK", "PK", "GK", "DK"],
+    ),
+    (
+        "system8",
+        true,
+        &["AK", "AmK", "BK", "MK", "PK", "GK", "DK", "PiK"],
+    ),
+];
+
+/// The recorded ranking of a scheme: the graha at each rank.
+fn recorded_order(
+    root: &Path,
+    birth: &Birth,
+    scheme: &str,
+    names: &[&str],
+) -> Result<Vec<Graha>, String> {
+    let file = read_json(&root.join(CHARTS).join(format!("{}.json", birth.name)))?;
+    let karakas = file["houses"]["chara_karakas"][scheme]
+        .as_object()
+        .ok_or_else(|| format!("{}: no recorded {scheme} karakas", birth.name))?;
+    names
+        .iter()
+        .map(|name| {
+            let key = karakas
+                .iter()
+                .find(|(_, karaka)| karaka.as_str() == Some(name))
+                .map(|(graha, _)| graha.clone())
+                .ok_or_else(|| format!("{}: no recorded {name} under {scheme}", birth.name))?;
+            GRAHAS
+                .into_iter()
+                .find(|graha| graha.key() == key)
+                .ok_or_else(|| format!("{}: a recorded karaka `{key}` is no graha", birth.name))
+        })
+        .collect()
 }
 
 /// Arc-seconds from a longitude to the nearest sign boundary.
@@ -221,6 +264,34 @@ fn page(root: &Path) -> Result<String, String> {
         }
     }
 
+    // The whole order, rank by rank, against the recording under both
+    // schemes: the ranking is what the sky decides, and the naming of the
+    // eighth rank is a table held elsewhere (crux C101).
+    let mut order_agree = [0usize; 2];
+    let mut order_differ: Vec<String> = Vec::new();
+    for birth in &born {
+        let document = founding
+            .chart()
+            .reading(
+                birth.document.foundation.instant,
+                &birth.request().with_state(),
+            )
+            .map_err(|why| format!("{}: {why}", birth.name))?
+            .value;
+        let ruled = RuleInputs::of(&document)
+            .map_err(|why| format!("{}: {why}", birth.name))?
+            .chart;
+        for (at, (scheme, eight, names)) in ORDERS.into_iter().enumerate() {
+            if ruled.chara_karaka_ranking(eight) == recorded_order(root, birth, scheme, names)? {
+                if let Some(count) = order_agree.get_mut(at) {
+                    *count += 1;
+                }
+            } else {
+                order_differ.push(format!("`{}` ({scheme})", birth.name));
+            }
+        }
+    }
+
     // The karakamsha's houses in the two charts (C130), under the
     // profile's own scheme.
     let mut houses = 0usize;
@@ -301,6 +372,21 @@ fn page(root: &Path) -> Result<String, String> {
     );
     let _ = writeln!(
         out,
+        "The whole order below it, rank by rank, from the Atmakaraka to the\n\
+         last karaka: {} of {n} agree under seven and {} of {n} under\n\
+         eight{}. `crates/sdk/tests/baseline_chara_karakas.rs` holds each\n\
+         one that parts to its reason: a graha on a sign's edge, set aside,\n\
+         leaves the rest in the recording's order.\n",
+        order_agree[0],
+        order_agree[1],
+        if order_differ.is_empty() {
+            String::new()
+        } else {
+            format!("; the ones that part are {}", order_differ.join(" and "))
+        },
+    );
+    let _ = writeln!(
+        out,
         "## 2. The karakamsha's houses, in two charts (C130)\n\n\
          A graha's house counted from the karakamsha in the rasi chart and\n\
          in the navamsha: {houses_differ} of {houses} differ, and on\n\
@@ -359,6 +445,16 @@ fn page(root: &Path) -> Result<String, String> {
         Claim::counted(
             "the SDK ranks the recording's Atmakaraka under eight karakas",
             n - atmakaraka_agree[1],
+            n,
+        ),
+        Claim::counted(
+            "the SDK ranks the recording's whole order under seven karakas",
+            n - order_agree[0],
+            n,
+        ),
+        Claim::counted(
+            "the SDK ranks the recording's whole order under eight karakas",
+            n - order_agree[1],
             n,
         ),
         Claim::counted(

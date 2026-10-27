@@ -86,14 +86,14 @@ rows:
     area: rise, set, transit
     target: "1 s against Teimeris"
     page: 03-design/astro-events-and-crossings.md
-    evidence: "the solver's own tests (a fixed star's quarter days, the polar cases, the conventions in order)"
+    evidence: "the solver's own tests (a fixed star's quarter days, the polar cases, the conventions in order); `crates/sdk/tests/baseline_panchanga_day.rs`: the baseline corpus's daily moonrises and moonsets, which scatter by tens of seconds either way with no mean, the cause not yet named"
     by_hand: "the kit's rise and set checks: 0.13 s under the geometric convention and 7.3 s under the almanac's at Reykjavík (C34); the baseline's 52 non-polar charts within 2.5 s below 60° and 9.8 s at Fairbanks (C35) (2026-09-05)"
   - id: crossings
     area: crossings and stations
     target: "1 s against Teimeris"
     page: 03-design/astro-events-and-crossings.md
-    evidence: "the kernel over the test provider and a synthetic looping planet; the solver's smooth-curve and step-function costs"
-    by_hand: "the Sun's twelve ingresses within 0.001 s, Mercury's fourteen within 0.004 s, a lunation's tithis within 0.004 s, Mercury's and Mars's stations within 0.3 s of Teimeris's own searches; the kit's two crossings checks (Mercury's signs over 120 days, the tithis over 30) hold the engine's native search to the kernel within 0.0039 s; the baseline's 280 geocentric panchanga transitions within 7.8 s, median 3.3 s, its own search (2026-09-05)"
+    evidence: "the kernel over the test provider and a synthetic looping planet; the solver's smooth-curve and step-function costs; `crates/sdk/tests/baseline_panchanga_day.rs`: every tithi, nakshatra, yoga and karana change the baseline corpus's daily panchanga records, found by the SDK's own search over the built-in ephemeris under `conformance-baseline` (geocentric) and compared in TT, the ΔT models' difference held apart (minutes at 2350); the two range-edge days are refused, their nine changes past the data"
+    by_hand: "the Sun's twelve ingresses within 0.001 s, Mercury's fourteen within 0.004 s, a lunation's tithis within 0.004 s, Mercury's and Mars's stations within 0.3 s of Teimeris's own searches; the kit's two crossings checks (Mercury's signs over 120 days, the tithis over 30) hold the engine's native search to the kernel within 0.0039 s (2026-09-05)"
   - id: phenomena
     area: planetary phenomena
     target: exact to rounding over the same geometry
