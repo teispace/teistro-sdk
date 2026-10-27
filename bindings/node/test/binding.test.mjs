@@ -3276,7 +3276,12 @@ test('a name and a birth date read under numerology without a chart', () => {
     assert.throws(run, (error) => error instanceof TeistroError && error.field === field, field);
   }
   assert.throws(() => ctx.numerology.profile('Rama', '1990-01-01'), TypeError);
-  assert.throws(() => ctx.numerology.profile('Rama', { year: 1990, month: 1, day: 1 }, 'NONE'), TypeError);
+  // A string is a preset's name, and the SDK names one it does not have.
+  assert.throws(
+    () => ctx.numerology.profile('Rama', { year: 1990, month: 1, day: 1 }, 'NONE'),
+    (error) => error instanceof TeistroError && error.field === 'numerology.rules',
+  );
+  assert.throws(() => ctx.numerology.profile('Rama', { year: 1990, month: 1, day: 1 }, 7), TypeError);
   ctx.dispose();
 });
 
@@ -5900,5 +5905,70 @@ test('a chart carries its rectification', () => {
     () => ctx.chart.found({ instant, ...at, rectification: { purify: { minutes: 0 } } }),
     (error) => error.field === 'rectification.purify.minutes',
   );
+  ctx.dispose();
+});
+
+test('a rule set the SDK ships whole is asked by its name, and answers as spelt out', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const date = { year: 1872, month: 1, day: 17 };
+  const named = ctx.numerology.profile('Henry Elder', date, 'BASELINE');
+  const spelt = ctx.numerology.profile('Henry Elder', date, {
+    masters: 'ELEVEN_TWENTY_TWO_THIRTY_THREE',
+    nameReduction: 'WHOLE',
+    chaldeanCompound: 'LETTER_TOTAL',
+    birthReduction: 'DIGIT_SUM',
+    nonLatin: 'SKIP',
+  });
+  assert.deepEqual(named, spelt);
+  assert.notEqual(named.baseline, null, 'the baseline engine\'s own numbers come with its rules');
+
+  // The prashna's answer echoes its rules, so the name is held against
+  // the record it stands for, asked back spelt out.
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2447995.4895833335;
+  const byName = ctx.chart.found({ instant, ...at, prashna: { question: { house: 7 }, rules: 'BASELINE' } }).prashna;
+  assert.equal(byName.rules.timing, 'BASELINE');
+  assert.notEqual(byName.score, null, 'the baseline engine\'s points');
+  const spelled = ctx.chart.found({ instant, ...at, prashna: { question: { house: 7 }, rules: byName.rules } }).prashna;
+  // Compared as written: an answer's accessors are functions of their own.
+  assert.equal(JSON.stringify(spelled), JSON.stringify(byName));
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, prashna: { rules: 'BASE' } }),
+    (error) => error instanceof TeistroError && error.field === 'prashna.rules',
+  );
+  ctx.dispose();
+});
+
+test('a provenance carries its answer key, the hash its documented fields give', async () => {
+  const { createHash } = await import('node:crypto');
+  const ctx = context();
+  const at = { instants: [2451545.0, 2451546.0], place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const chart = ctx.chart.foundMany(at);
+  const key = chart.provenance.answerKey;
+  assert.match(key, /^[0-9a-f]{64}$/);
+  assert.equal(ctx.chart.foundMany(at).provenance.answerKey, key, 'the same answer, the same key');
+  // A chart handed out alone keeps the batch's key: only its content hash is its own.
+  assert.equal(chart.at(1).provenance.answerKey, key);
+  // Recomputed as `serial-and-the-envelope.md` §3 states it: the SHA-256
+  // of the canonical JSON (sorted keys, no whitespace) of the fields named.
+  const canonical = (value) =>
+    Array.isArray(value)
+      ? `[${value.map(canonical).join(',')}]`
+      : value !== null && typeof value === 'object'
+        ? `{${Object.keys(value).sort().map((k) => `${JSON.stringify(k)}:${canonical(value[k])}`).join(',')}}`
+        : JSON.stringify(value);
+  const raw = JSON.parse(chart.provenanceJson);
+  const { name, version, data_version, data_hashes, tier } = raw.provider;
+  const fields = {
+    sdk_version: raw.sdk_version,
+    calculation_version: raw.calculation_version,
+    catalogue_version: raw.catalogue_version,
+    settings_hash: raw.settings_hash,
+    input_hash: raw.input_hash,
+    provider: { name, version, data_version, data_hashes, tier },
+    packs: raw.packs,
+  };
+  assert.equal(createHash('sha256').update(canonical(fields)).digest('hex'), key);
+  assert.equal(raw.answer_key, key);
   ctx.dispose();
 });

@@ -50,9 +50,10 @@ public final class AlmanacDay {
     public Provenance provenance() {
         Provenance p = batch.provenance();
         String own = batch.decoded().contentHashes().substring(64 * index, 64 * index + 64);
-        return new Provenance(p.appliedConventions(), p.calculationVersion(), p.calendar(), p.catalogueVersion(),
-                p.confidence(), own, p.deviation(), p.fallbacksUsed(), p.inputHash(), p.moduleVersions(),
-                p.packs(), p.profile(), p.provider(), p.sdkVersion(), p.settingsHash(), p.time(), p.warnings());
+        return new Provenance(p.answerKey(), p.appliedConventions(), p.calculationVersion(), p.calendar(),
+                p.catalogueVersion(), p.confidence(), own, p.deviation(), p.fallbacksUsed(), p.inputHash(),
+                p.moduleVersions(), p.packs(), p.profile(), p.provider(), p.sdkVersion(), p.settingsHash(), p.time(),
+                p.warnings());
     }
 
     /**

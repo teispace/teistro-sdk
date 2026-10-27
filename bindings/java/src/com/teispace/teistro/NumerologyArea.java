@@ -35,7 +35,7 @@ public final class NumerologyArea {
      * @see #profile(String, LocalDate, com.teispace.teistro.request.NumerologyRules)
      */
     public NumerologyProfile profile(String name, LocalDate date) {
-        return profile(name, date, null);
+        return profile(name, date, (com.teispace.teistro.request.NumerologyRequestRules) null);
     }
 
     /**
@@ -55,8 +55,32 @@ public final class NumerologyArea {
      *     {@code NumerologyRules.of(map)} from a map; may be null for the sources' own
      * @return the profile
      * @throws TeistroException naming {@code date} when it is null
+     * @see #profile(String, LocalDate, com.teispace.teistro.request.NumerologyRequestRules)
      */
     public NumerologyProfile profile(String name, LocalDate date, com.teispace.teistro.request.NumerologyRules rules) {
+        return profile(name, date, rules == null ? null : com.teispace.teistro.request.NumerologyRequestRules.value(rules));
+    }
+
+    /**
+     * Everything numerology says of a name and a birth date under rules a
+     * preset names or spelt out: {@code NumerologyRequestRules.BASELINE} is
+     * every reading the baseline engine takes, under which the answer also
+     * carries the baseline's own numbers.
+     *
+     * <pre>{@code
+     * NumerologyProfile baseline = sky.numerology()
+     *         .profile("Henry Elder", LocalDate.of(1872, 1, 17), NumerologyRequestRules.BASELINE);
+     * }</pre>
+     *
+     * @param name the name
+     * @param date the birth date
+     * @param rules a preset, or {@code NumerologyRequestRules.value(rules)};
+     *     may be null for the sources' own
+     * @return the profile
+     * @throws TeistroException naming {@code date} when it is null
+     */
+    public NumerologyProfile profile(
+            String name, LocalDate date, com.teispace.teistro.request.NumerologyRequestRules rules) {
         if (date == null) {
             throw Reads.invalid("date is a LocalDate, such as LocalDate.of(1872, 1, 17)", "date");
         }

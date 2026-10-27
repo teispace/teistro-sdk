@@ -13,9 +13,9 @@ import java.util.Objects;
  *
  * @param date The Gregorian birth date, `{"year", "month", "day"}`.
  * @param name The name, in the 26 Latin letters.
- * @param rules The readings; the sources' own when left out. Null leaves the SDK's default.
+ * @param rules The readings; the sources' own when left out, and `"BASELINE"` names `NumerologyRules::baseline`, every reading the baseline engine takes. Null leaves the SDK's default.
  */
-public record NumerologyRequest(BirthDate date, String name, NumerologyRules rules) implements RequestJson {
+public record NumerologyRequest(BirthDate date, String name, NumerologyRequestRules rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -53,7 +53,7 @@ public record NumerologyRequest(BirthDate date, String name, NumerologyRules rul
     public static final class Builder {
         private BirthDate date;
         private String name;
-        private NumerologyRules rules;
+        private NumerologyRequestRules rules;
 
         private Builder() {}
 
@@ -82,10 +82,10 @@ public record NumerologyRequest(BirthDate date, String name, NumerologyRules rul
         /**
          * Sets {@code rules}.
          *
-         * @param rules The readings; the sources' own when left out. Null leaves the SDK's default.
+         * @param rules The readings; the sources' own when left out, and `"BASELINE"` names `NumerologyRules::baseline`, every reading the baseline engine takes. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder rules(NumerologyRules rules) {
+        public Builder rules(NumerologyRequestRules rules) {
             this.rules = rules;
             return this;
         }
@@ -113,7 +113,7 @@ public record NumerologyRequest(BirthDate date, String name, NumerologyRules rul
         return new NumerologyRequest(
             BirthDate.of(Read.required(json.get("date"), "NumerologyRequest.date")),
             Read.text(Read.required(json.get("name"), "NumerologyRequest.name"), "NumerologyRequest.name"),
-            Read.orNull(json.get("rules"), present -> NumerologyRules.of(present)));
+            Read.orNull(json.get("rules"), present -> NumerologyRequestRules.of(present)));
     }
 
     @Override

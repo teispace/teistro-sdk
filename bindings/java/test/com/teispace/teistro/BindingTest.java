@@ -1524,7 +1524,29 @@ public final class BindingTest {
                 check(sky.matching().naam("सीता", "राम") != null, "a naam milan");
                 // The typed rules reach the SDK: each turns a refusal into an answer.
                 same("numerology.name", refusal(() -> sky.numerology().profile("Ram राम",
-                        java.time.LocalDate.of(1990, 4, 14), null)).field(), "a non-Latin letter is refused");
+                        java.time.LocalDate.of(1990, 4, 14), (NumerologyRules) null)).field(),
+                        "a non-Latin letter is refused");
+                // A rule set the SDK ships whole, by its name, answers as spelt out.
+                java.time.LocalDate elder = java.time.LocalDate.of(1872, 1, 17);
+                NumerologyProfile named = sky.numerology().profile("Henry Elder", elder, NumerologyRequestRules.BASELINE);
+                same(sky.numerology().profile("Henry Elder", elder, NumerologyRules.builder()
+                        .masters(Masters.ELEVEN_TWENTY_TWO_THIRTY_THREE).nameReduction(NameReduction.WHOLE)
+                        .chaldeanCompound(ChaldeanCompound.LETTER_TOTAL).birthReduction(BirthReduction.DIGIT_SUM)
+                        .nonLatin(NonLatin.SKIP).build()), named, "BASELINE is the baseline's rules spelt out");
+                check(named.baseline() != null, "and carries the baseline engine's own numbers");
+                Prashna byName = sky.chart().found(2_447_995.489_583_333_5, kathmandu, 20_700, ChartOptions.builder()
+                        .prashna(new PrashnaRequest(new PrashnaQuestion(7, null, null), PrashnaRequestRules.BASELINE))
+                        .build()).prashna().orElseThrow();
+                same("BASELINE", byName.rules().get("timing"), "the baseline engine's timing");
+                Prashna spelled = sky.chart().found(2_447_995.489_583_333_5, kathmandu, 20_700, ChartOptions.builder()
+                        .prashna(PrashnaRequest.of(Map.of("question", Map.of("house", 7), "rules", byName.rules())))
+                        .build()).prashna().orElseThrow();
+                same(spelled, byName, "the prashna's BASELINE answers as the rules it echoes, asked back");
+                // The key a stored answer is reused under crosses on the provenance.
+                Chart keyed = sky.chart().found(2_451_545.0, kathmandu, 20_700, ChartOptions.builder().build());
+                check(keyed.provenance().answerKey().matches("[0-9a-f]{64}"), "an answer key");
+                same(keyed.provenance().answerKey(), sky.chart().found(2_451_545.0, kathmandu, 20_700,
+                        ChartOptions.builder().build()).provenance().answerKey(), "the same answer, the same key");
                 check(sky.numerology().profile("Ram राम", java.time.LocalDate.of(1990, 4, 14),
                         NumerologyRules.builder().nonLatin(NonLatin.SKIP).build()) != null,
                         "NumerologyRules.nonLatin reaches the SDK");

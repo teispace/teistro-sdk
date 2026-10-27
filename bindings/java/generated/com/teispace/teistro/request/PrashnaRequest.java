@@ -12,9 +12,9 @@ import java.util.Objects;
  * A question put to the chart of its moment, and the readings it is answered under.
  *
  * @param question What was asked: the house the matter belongs to and the querent's number, each when given. Null leaves the SDK's default.
- * @param rules The readings; the texts' own when left out. Null leaves the SDK's default.
+ * @param rules The readings; the texts' own when left out, and `"BASELINE"` names `PrashnaRules::baseline`, every reading the baseline engine takes. Null leaves the SDK's default.
  */
-public record PrashnaRequest(PrashnaQuestion question, PrashnaRules rules) implements RequestJson {
+public record PrashnaRequest(PrashnaQuestion question, PrashnaRequestRules rules) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -37,7 +37,7 @@ public record PrashnaRequest(PrashnaQuestion question, PrashnaRules rules) imple
     /** Builds a {@link PrashnaRequest} a field at a time. */
     public static final class Builder {
         private PrashnaQuestion question;
-        private PrashnaRules rules;
+        private PrashnaRequestRules rules;
 
         private Builder() {}
 
@@ -55,10 +55,10 @@ public record PrashnaRequest(PrashnaQuestion question, PrashnaRules rules) imple
         /**
          * Sets {@code rules}.
          *
-         * @param rules The readings; the texts' own when left out. Null leaves the SDK's default.
+         * @param rules The readings; the texts' own when left out, and `"BASELINE"` names `PrashnaRules::baseline`, every reading the baseline engine takes. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder rules(PrashnaRules rules) {
+        public Builder rules(PrashnaRequestRules rules) {
             this.rules = rules;
             return this;
         }
@@ -85,7 +85,7 @@ public record PrashnaRequest(PrashnaQuestion question, PrashnaRules rules) imple
         Map<String, Object> json = Read.object(raw, "PrashnaRequest");
         return new PrashnaRequest(
             Read.orNull(json.get("question"), present -> PrashnaQuestion.of(present)),
-            Read.orNull(json.get("rules"), present -> PrashnaRules.of(present)));
+            Read.orNull(json.get("rules"), present -> PrashnaRequestRules.of(present)));
     }
 
     @Override

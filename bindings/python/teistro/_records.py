@@ -53,6 +53,9 @@ __all__ = [
 class Provenance:
     """Everything that reproduces a result."""
 
+    answer_key: str
+    """The key a stored answer is reused under: `Provenance::answer_key`, the SHA-256 of the canonical JSON of the SDK, calculation and catalogue versions, the settings and input hashes, the provider's name, version, data version, data hashes and tier, and the packs. Written on every provenance, and ignored where one is read."""
+
     applied_conventions: tuple[Convention, ...]
     """The conventions applied."""
 
@@ -108,6 +111,7 @@ class Provenance:
 def decode_provenance(raw: Mapping[str, Any]) -> Provenance:
     """A `Provenance` from its JSON."""
     return Provenance(
+        answer_key=raw["answer_key"],
         applied_conventions=tuple(decode_convention(item) for item in raw["applied_conventions"]),
         calculation_version=raw["calculation_version"],
         calendar=None if raw.get("calendar") is None else decode_calendar_resolution(raw["calendar"]),

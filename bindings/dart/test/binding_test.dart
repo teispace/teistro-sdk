@@ -170,6 +170,19 @@ void main() {
     expect(first.settingsHash, batch.provenance.settingsHash);
     expect(first.sdkVersion.major, batch.provenance.sdkVersion.major);
     expect(() => Confidence.fromJson('MAYBE'), throwsA(isA<FormatException>()));
+    // The key a stored answer is reused under crosses on the provenance.
+    expect(first.answerKey, matches(RegExp(r'^[0-9a-f]{64}$')));
+    final again = ctx.chart.foundMany(
+      instants: [2451545.0, 2451546.0],
+      place: Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      ),
+      utcOffsetSeconds: 20700,
+    );
+    expect(again.at(0).provenance.answerKey, first.answerKey);
+    expect(again.provenance.answerKey, batch.provenance.answerKey);
     ctx.dispose();
   });
 
@@ -5519,6 +5532,29 @@ void _engineTests() {
           .baseline,
       isNotNull,
     );
+    // The SDK's own baseline, by name, is the layer's spelt out.
+    expect(
+      ctx.numerology.profile(
+        'Henry Elder',
+        const BirthDate(1872, 1, 17),
+        const NumerologyRequestRulesBaseline(),
+      ),
+      ctx.numerology.profile(
+        'Henry Elder',
+        const BirthDate(1872, 1, 17),
+        const NumerologyRules.baseline(),
+      ),
+    );
+    expect(
+      () => ctx.numerology.profile(
+        'Henry Elder',
+        const BirthDate(1872, 1, 17),
+        const NumerologyRequestRulesValue(
+          NumerologyRules(masters: Masters.none),
+        ),
+      ),
+      returnsNormally,
+    );
 
     // Balliett p. 90: born 11 July 1838 is "9, 11", the day apart.
     final wanamaker =
@@ -6228,6 +6264,20 @@ void _engineTests() {
     expect(plain.score, isNull, reason: 'no points unless asked');
     expect(plain.rules, const PrashnaRules(), reason: 'the texts\' own');
     expect(plain.mook.person, isNotNull);
+
+    // Every reading the baseline engine takes, by name, answers as the
+    // rules it echoes asked back spelt out.
+    final byName =
+        found(
+          const PrashnaRequest(house: 7, rules: PrashnaRequestRulesBaseline()),
+        )!;
+    expect(byName.rules.timing, TimingRule.baseline);
+    final spelled = found(PrashnaRequest(house: 7, rules: byName.rules))!;
+    expect(spelled.rules, byName.rules);
+    expect(spelled.verdict.outcome, byName.verdict.outcome);
+    expect(spelled.timing.graha, byName.timing.graha);
+    expect(spelled.score?.points, isNotNull);
+    expect(spelled.score?.points, byName.score?.points);
 
     final read =
         found(

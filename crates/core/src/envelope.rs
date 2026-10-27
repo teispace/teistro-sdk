@@ -759,6 +759,12 @@ pub struct Warning {
 
 /// Everything that reproduces a result.
 ///
+/// It is written with one field more than it has: `answer_key`, the
+/// [`Provenance::answer_key`] of the rest, so every binding reads the key a
+/// stored answer is reused under from the JSON it decodes, and none
+/// computes it again. The key is ignored where a provenance is read back,
+/// and taken afresh where it is written.
+///
 /// ```
 /// # use teistro_core::envelope::{Hash, Provenance, Version};
 /// # let provenance = Provenance::new(
@@ -768,9 +774,14 @@ pub struct Warning {
 /// assert_eq!(provenance.profile, "nepali-default");
 /// let json = serde_json::to_value(&provenance).unwrap();
 /// assert_eq!(json["confidence"], "VERIFIED");
+/// assert_eq!(json["answer_key"], provenance.answer_key().to_string());
+/// // Read back, the key is taken from the rest again.
+/// let read: Provenance = serde_json::from_value(json).unwrap();
+/// assert_eq!(read, provenance);
 /// ```
-#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, PartialEq, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(transform = written_with_its_answer_key))]
 pub struct Provenance {
     /// The SDK's version.
     pub sdk_version: Version,
@@ -806,6 +817,91 @@ pub struct Provenance {
     pub warnings: Vec<Warning>,
     /// The hash of the canonical serialisation of the value.
     pub content_hash: Hash,
+}
+
+/// Every field as derived serde writes it, in declaration order, and the
+/// answer key after them. The destructuring names every field, so a field
+/// added to [`Provenance`] fails to compile here until it is written.
+// lint: serialised-type-describes-itself (described by its derive, with the one field written beyond its own added by `written_with_its_answer_key`)
+impl serde::Serialize for Provenance {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct as _;
+        let Provenance {
+            sdk_version,
+            module_versions,
+            calculation_version,
+            catalogue_version,
+            profile,
+            settings_hash,
+            input_hash,
+            provider,
+            packs,
+            time,
+            calendar,
+            deviation,
+            applied_conventions,
+            confidence,
+            fallbacks_used,
+            warnings,
+            content_hash,
+        } = self;
+        let mut out = serializer.serialize_struct("Provenance", 18)?;
+        out.serialize_field("sdk_version", sdk_version)?;
+        out.serialize_field("module_versions", module_versions)?;
+        out.serialize_field("calculation_version", calculation_version)?;
+        out.serialize_field("catalogue_version", catalogue_version)?;
+        out.serialize_field("profile", profile)?;
+        out.serialize_field("settings_hash", settings_hash)?;
+        out.serialize_field("input_hash", input_hash)?;
+        out.serialize_field("provider", provider)?;
+        out.serialize_field("packs", packs)?;
+        out.serialize_field("time", time)?;
+        out.serialize_field("calendar", calendar)?;
+        out.serialize_field("deviation", deviation)?;
+        out.serialize_field("applied_conventions", applied_conventions)?;
+        out.serialize_field("confidence", confidence)?;
+        out.serialize_field("fallbacks_used", fallbacks_used)?;
+        out.serialize_field("warnings", warnings)?;
+        out.serialize_field("content_hash", content_hash)?;
+        out.serialize_field("answer_key", &self.answer_key())?;
+        out.end()
+    }
+}
+
+/// The schema's `answer_key`, the field [`Provenance`] is written with
+/// beyond its own: a hash, as `content_hash` is, and required, since every
+/// provenance the SDK writes carries it.
+#[cfg(feature = "schema")]
+fn written_with_its_answer_key(schema: &mut schemars::Schema) {
+    let Some(object) = schema.as_object_mut() else {
+        return;
+    };
+    let hash = object
+        .get("properties")
+        .and_then(|properties| properties.get("content_hash"))
+        .and_then(serde_json::Value::as_object)
+        .map(|content| {
+            let mut key = content.clone();
+            key.insert(
+                "description".to_owned(),
+                serde_json::Value::from(
+                    "The key a stored answer is reused under: `Provenance::answer_key`, the \
+                     SHA-256 of the canonical JSON of the SDK, calculation and catalogue \
+                     versions, the settings and input hashes, the provider's name, version, \
+                     data version, data hashes and tier, and the packs. Written on every \
+                     provenance, and ignored where one is read.",
+                ),
+            );
+            serde_json::Value::Object(key)
+        });
+    if let (Some(hash), Some(serde_json::Value::Object(properties))) =
+        (hash, object.get_mut("properties"))
+    {
+        properties.insert("answer_key".to_owned(), hash);
+    }
+    if let Some(serde_json::Value::Array(required)) = object.get_mut("required") {
+        required.push(serde_json::Value::from("answer_key"));
+    }
 }
 
 impl Provenance {

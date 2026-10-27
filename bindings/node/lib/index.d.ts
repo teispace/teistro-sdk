@@ -226,7 +226,7 @@ import type {
   NameSounds,
   NatalPoint,
   NightRule,
-  NumerologyRules,
+  NumerologyRequestRules,
   OfficeRules,
   PakshiBird,
   ParallelRequest,
@@ -7613,13 +7613,17 @@ export declare class NumerologyArea {
    * Everything numerology says of a name and a birth date. A character
    * outside A to Z is refused as `numerology.name` unless
    * `rules.nonLatin` is `'SKIP'`; a date the calendar does not have, as
-   * `numerology.date`.
+   * `numerology.date`. `rules` is the record, or `'BASELINE'` for every
+   * reading the baseline engine takes, under which the answer also
+   * carries the baseline's own numbers.
    *
    * @example
    * const read = ctx.numerology.profile('Henry Elder', { year: 1872, month: 1, day: 17 });
    * console.log(read.pythagoreanName.reduction.number, read.chaldeanBirth.birth.number);
+   * const baseline = ctx.numerology.profile('Henry Elder', { year: 1872, month: 1, day: 17 }, 'BASELINE');
+   * console.log(baseline.baseline);
    */
-  profile(name: string, date: BirthDate, rules?: NumerologyRules): NumerologyProfile;
+  profile(name: string, date: BirthDate, rules?: NumerologyRequestRules): NumerologyProfile;
 }
 
 /** A birth of a study (`03-design/research.md`). */
