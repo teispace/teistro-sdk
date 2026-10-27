@@ -81,8 +81,13 @@ to. `app_speed.rs` moves onto it in the same change:
   ranges do not overlap, and `within spread` otherwise;
 - a record names its machine, operating system, architecture and commit.
 
-No budget binds these figures yet. They are published so that a budget
-can later be set from them rather than guessed. The page says so.
+One budget binds them (2026-10-27), the performance page's "N-API full
+chart round trip including blob decode: within 1.5x of the C path", for
+every binding: its `call-native` and `grid-native` medians within 1.5×
+Rust's, which calls the C ABI directly. On the first record the widest is
+Python's `call-native`, 1.45× Rust's. A hosted provider's figures time the
+binding's own callback code, which a consumer writes, and stay published
+rather than bound.
 
 ## 4. Order of work
 

@@ -23,13 +23,13 @@ Android emulator, `sdk_gphone64_arm64` (Android 15, API 35, aarch64), commit `cf
 | open (a context opened, the engine with it) | — | 3.00 ms | 0.020 | 0.024 | 0.014 | 0.7× |
 | day (one almanac day) | 2.00 ms | 0.500 ms | 1.11 | 0.567 | 2.09 | 1.9× |
 | month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 17.1 | 10.9 | 32.3 | 1.9× |
-| year (a year of almanac days) | — | — | 159 | 106 | 314 | 2.0× |
-| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 58.0 | 24.4 | 119 | 2.1× |
+| year (a year of almanac days) | 500 ms | — | 159 | 106 | 314 | 2.0× |
+| festivals (a year of the Nepal pack's festivals) | 160 ms | 80.0 ms | 58.0 | 24.4 | 119 | 2.1× |
 | muhurta (a 90-day marriage muhurta search) | 200 ms | — | 138 | 110 | 474 | 3.4× |
-| chart (a birth chart with its Vimshottari to depth 3) | — | — | 0.571 | 0.564 | 0.957 | 1.7× |
+| chart (a birth chart with its Vimshottari to depth 3) | 2.00 ms | — | 0.571 | 0.564 | 0.957 | 1.7× |
 | parity-chart (the full parity chart: every section and varga, the baseline's parity-tier dashas to depth 3, every shipped rule) | 10.0 ms | — | 11.3 | 11.0 | 12.8 | 1.1× |
-| widest-chart (the parity chart with every dasha a chart gives) | — | — | 21.7 | 20.8 | 23.1 | within spread |
-| matching (Ashta Koota between two cast charts) | — | — | 0.024 | 0.024 | 0.024 | within spread |
+| widest-chart (the parity chart with every dasha a chart gives) | 25.0 ms | — | 21.7 | 20.8 | 23.1 | within spread |
+| matching (Ashta Koota between two cast charts) | 1.00 ms | — | 0.024 | 0.024 | 0.024 | within spread |
 | rectify (a day-long window rectified at the default one-minute seed) | 1000 ms | — | 34.2 | 23.0 | 46.3 | 1.4× |
 
 Medians in milliseconds. The spread of every row:
@@ -93,13 +93,13 @@ Apple M2 Pro (Darwin 27.0.0, aarch64), commit `cfa50116`, Teimeris 0.1.0, its da
 | open (a context opened, the engine with it) | — | 3.00 ms | 0.020 | 0.021 | 0.013 | 0.6× |
 | day (one almanac day) | 2.00 ms | 0.500 ms | 1.08 | 0.540 | 2.27 | 2.1× |
 | month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 17.2 | 11.1 | 36.5 | 2.1× |
-| year (a year of almanac days) | — | — | 152 | 101 | 328 | 2.2× |
-| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 55.1 | 22.3 | 126 | 2.3× |
+| year (a year of almanac days) | 500 ms | — | 152 | 101 | 328 | 2.2× |
+| festivals (a year of the Nepal pack's festivals) | 160 ms | 80.0 ms | 55.1 | 22.3 | 126 | 2.3× |
 | muhurta (a 90-day marriage muhurta search) | 200 ms | — | 138 | 106 | 500 | 3.6× |
-| chart (a birth chart with its Vimshottari to depth 3) | — | — | 0.512 | 0.508 | 0.990 | 1.9× |
+| chart (a birth chart with its Vimshottari to depth 3) | 2.00 ms | — | 0.512 | 0.508 | 0.990 | 1.9× |
 | parity-chart (the full parity chart: every section and varga, the baseline's parity-tier dashas to depth 3, every shipped rule) | 10.0 ms | — | 9.71 | 9.09 | 11.3 | 1.2× |
-| widest-chart (the parity chart with every dasha a chart gives) | — | — | 18.1 | 17.5 | 19.7 | 1.1× |
-| matching (Ashta Koota between two cast charts) | — | — | 0.012 | 0.012 | 0.012 | within spread |
+| widest-chart (the parity chart with every dasha a chart gives) | 25.0 ms | — | 18.1 | 17.5 | 19.7 | 1.1× |
+| matching (Ashta Koota between two cast charts) | 1.00 ms | — | 0.012 | 0.012 | 0.012 | within spread |
 | rectify (a day-long window rectified at the default one-minute seed) | 1000 ms | — | 31.2 | 21.2 | 46.7 | 1.5× |
 
 Medians in milliseconds. The spread of every row:
@@ -169,13 +169,13 @@ iOS simulator, iPhone 18 Pro (iOS 27.0, aarch64), commit `cfa50116`, Teimeris 0.
 | open (a context opened, the engine with it) | — | 3.00 ms | 0.025 | 0.025 | 0.013 | 0.5× |
 | day (one almanac day) | 2.00 ms | 0.500 ms | 1.10 | 0.572 | 2.12 | 1.9× |
 | month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 17.0 | 10.8 | 32.2 | 1.9× |
-| year (a year of almanac days) | — | — | 152 | 101 | 307 | 2.0× |
-| festivals (a year of the Nepal pack's festivals) | — | 80.0 ms | 56.3 | 23.4 | 118 | 2.1× |
+| year (a year of almanac days) | 500 ms | — | 152 | 101 | 307 | 2.0× |
+| festivals (a year of the Nepal pack's festivals) | 160 ms | 80.0 ms | 56.3 | 23.4 | 118 | 2.1× |
 | muhurta (a 90-day marriage muhurta search) | 200 ms | — | 134 | 108 | 476 | 3.6× |
-| chart (a birth chart with its Vimshottari to depth 3) | — | — | 0.570 | 0.551 | 0.930 | 1.6× |
+| chart (a birth chart with its Vimshottari to depth 3) | 2.00 ms | — | 0.570 | 0.551 | 0.930 | 1.6× |
 | parity-chart (the full parity chart: every section and varga, the baseline's parity-tier dashas to depth 3, every shipped rule) | 10.0 ms | — | 10.7 | 9.83 | 11.7 | within spread |
-| widest-chart (the parity chart with every dasha a chart gives) | — | — | 19.2 | 18.5 | 20.4 | 1.1× |
-| matching (Ashta Koota between two cast charts) | — | — | 0.013 | 0.014 | 0.014 | within spread |
+| widest-chart (the parity chart with every dasha a chart gives) | 25.0 ms | — | 19.2 | 18.5 | 20.4 | 1.1× |
+| matching (Ashta Koota between two cast charts) | 1.00 ms | — | 0.013 | 0.014 | 0.014 | within spread |
 | rectify (a day-long window rectified at the default one-minute seed) | 1000 ms | — | 30.7 | 21.8 | 43.6 | 1.4× |
 
 Medians in milliseconds. The spread of every row:

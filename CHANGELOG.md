@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Speed budgets for every request an app makes, and for crossing.**
+**Numbers:** none.
+- `check-app-speed` now gates a year of almanac days (500 ms), a year of
+  the Nepal pack's festivals (160 ms), a birth chart with its dasha to
+  depth 3 (2 ms), the widest chart (25 ms) and a match (1 ms), each
+  failing past twice its budget, so every request it times has one. The
+  budgets are derived from the ones the performance page already set; the
+  slowest recorded machine (an Android emulator) is inside each.
+- `check-ffi-cost` holds every binding's call and grid over the library's
+  own provider within 1.5× Rust's, the performance page's round trip
+  within 1.5x of the C path. Python's call is the widest, 1.45×.
+
 **Dart: a generated request gives its JSON as `toJson()`.**
 **Numbers:** none.
 - Every generated request class gives the JSON it crosses as through
