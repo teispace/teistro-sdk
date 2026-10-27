@@ -132,6 +132,422 @@ from ._prebuilt import PREBUILT_VERSION
 from . import _records
 from ._records import *  # noqa: F403 - the records' own __all__ names them
 from ._records import Provenance, Step, decode_provenance, decode_step
+# The request records, generated from the façade's own schemas of them
+# (`03-design/generated-requests.md`).
+from ._requests import (
+    GocharRequest as GocharRequest,
+    AbhijitPada as AbhijitPada,
+    Accuracy as Accuracy,
+    AddSign as AddSign,
+    AfterCycle as AfterCycle,
+    AlmanacDaysRequest as AlmanacDaysRequest,
+    AngleMethod as AngleMethod,
+    AnnualPlace as AnnualPlace,
+    AntisciaRequest as AntisciaRequest,
+    ArgalaPlace as ArgalaPlace,
+    AshauchBand as AshauchBand,
+    AshauchEvent as AshauchEvent,
+    AshauchEventBirth as AshauchEventBirth,
+    AshauchEventDeath as AshauchEventDeath,
+    AshauchEventLoss as AshauchEventLoss,
+    AshauchKind as AshauchKind,
+    AshauchLateRow as AshauchLateRow,
+    AshauchLength as AshauchLength,
+    AshauchLengthBath as AshauchLengthBath,
+    AshauchLengthDays as AshauchLengthDays,
+    AshauchLengthFull as AshauchLengthFull,
+    AshauchLengthPakshini as AshauchLengthPakshini,
+    AshauchLengthSajyotih as AshauchLengthSajyotih,
+    AshauchLossRow as AshauchLossRow,
+    AshauchMark as AshauchMark,
+    AshauchMarkBetrothal as AshauchMarkBetrothal,
+    AshauchMarkChudakarana as AshauchMarkChudakarana,
+    AshauchMarkDay as AshauchMarkDay,
+    AshauchMarkMarriage as AshauchMarkMarriage,
+    AshauchMarkMonth as AshauchMarkMonth,
+    AshauchMarkUpanayana as AshauchMarkUpanayana,
+    AshauchMarkYear as AshauchMarkYear,
+    AshauchOverlap as AshauchOverlap,
+    AshauchQuery as AshauchQuery,
+    AshauchRelation as AshauchRelation,
+    AshauchRelationRow as AshauchRelationRow,
+    AshauchRequest as AshauchRequest,
+    AshauchRunning as AshauchRunning,
+    AshauchSex as AshauchSex,
+    AshauchTable as AshauchTable,
+    AshauchTradition as AshauchTradition,
+    AshtakaReductions as AshtakaReductions,
+    AshtakavargaAyusRules as AshtakavargaAyusRules,
+    AshtottariGrouping as AshtottariGrouping,
+    AspectOrb as AspectOrb,
+    AspectRequest as AspectRequest,
+    Attendants as Attendants,
+    AyanaReckoning as AyanaReckoning,
+    AyurdayaRules as AyurdayaRules,
+    BaselineAsked as BaselineAsked,
+    Basis as Basis,
+    BatchAsked as BatchAsked,
+    BetweenBy as BetweenBy,
+    BhakootLift as BhakootLift,
+    Bird as Bird,
+    BirthAsked as BirthAsked,
+    BirthBird as BirthBird,
+    BirthDate as BirthDate,
+    BirthPeriod as BirthPeriod,
+    BirthReduction as BirthReduction,
+    BodyOrb as BodyOrb,
+    CalendarAsked as CalendarAsked,
+    Cancellation as Cancellation,
+    ChakraPortion as ChakraPortion,
+    ChakrayusRules as ChakrayusRules,
+    ChaldeanCompound as ChaldeanCompound,
+    ChartFoundRequest as ChartFoundRequest,
+    CircumstanceAsked as CircumstanceAsked,
+    CircumstanceRules as CircumstanceRules,
+    CivilAsked as CivilAsked,
+    Clock as Clock,
+    Combine as Combine,
+    ConceptionCount as ConceptionCount,
+    ConceptionMoonRules as ConceptionMoonRules,
+    ConceptionRising as ConceptionRising,
+    ConceptionRules as ConceptionRules,
+    Condition as Condition,
+    ConditionAllClassicalGrahasInHouses as ConditionAllClassicalGrahasInHouses,
+    ConditionAllPlanetsBetweenNodes as ConditionAllPlanetsBetweenNodes,
+    ConditionAnd as ConditionAnd,
+    ConditionArgala as ConditionArgala,
+    ConditionAtLimbEdge as ConditionAtLimbEdge,
+    ConditionBirthByDay as ConditionBirthByDay,
+    ConditionBirthDuringEclipse as ConditionBirthDuringEclipse,
+    ConditionBirthInKshayaTithi as ConditionBirthInKshayaTithi,
+    ConditionBirthOnSankranti as ConditionBirthOnSankranti,
+    ConditionCharaKarakaInHouse as ConditionCharaKarakaInHouse,
+    ConditionCountAspecting as ConditionCountAspecting,
+    ConditionCountInHouses as ConditionCountInHouses,
+    ConditionCountOf as ConditionCountOf,
+    ConditionForAny as ConditionForAny,
+    ConditionInVarga as ConditionInVarga,
+    ConditionLagnaInSign as ConditionLagnaInSign,
+    ConditionLimbPart as ConditionLimbPart,
+    ConditionLordConjunctLord as ConditionLordConjunctLord,
+    ConditionLordOfHouseCombust as ConditionLordOfHouseCombust,
+    ConditionLordOfHouseConjunctPlanet as ConditionLordOfHouseConjunctPlanet,
+    ConditionLordOfHouseDebilitated as ConditionLordOfHouseDebilitated,
+    ConditionLordOfHouseInHouse as ConditionLordOfHouseInHouse,
+    ConditionLordOfHouseInKendra as ConditionLordOfHouseInKendra,
+    ConditionLordOfHouseIs as ConditionLordOfHouseIs,
+    ConditionLordOfHouseStrong as ConditionLordOfHouseStrong,
+    ConditionMutualExchange as ConditionMutualExchange,
+    ConditionNGrahasConjunctWith as ConditionNGrahasConjunctWith,
+    ConditionNOf as ConditionNOf,
+    ConditionNaturalRelation as ConditionNaturalRelation,
+    ConditionNoPlanetInHousesFrom as ConditionNoPlanetInHousesFrom,
+    ConditionNot as ConditionNot,
+    ConditionOccupiedSignCount as ConditionOccupiedSignCount,
+    ConditionOr as ConditionOr,
+    ConditionPanchangaKarana as ConditionPanchangaKarana,
+    ConditionPanchangaNakshatra as ConditionPanchangaNakshatra,
+    ConditionPanchangaPaksha as ConditionPanchangaPaksha,
+    ConditionPanchangaTithi as ConditionPanchangaTithi,
+    ConditionPanchangaVara as ConditionPanchangaVara,
+    ConditionPanchangaYoga as ConditionPanchangaYoga,
+    ConditionPlanetAspectsHouse as ConditionPlanetAspectsHouse,
+    ConditionPlanetAspectsPlanet as ConditionPlanetAspectsPlanet,
+    ConditionPlanetAtGandanta as ConditionPlanetAtGandanta,
+    ConditionPlanetAtTableDegree as ConditionPlanetAtTableDegree,
+    ConditionPlanetCombust as ConditionPlanetCombust,
+    ConditionPlanetConjunct as ConditionPlanetConjunct,
+    ConditionPlanetDignity as ConditionPlanetDignity,
+    ConditionPlanetInDegrees as ConditionPlanetInDegrees,
+    ConditionPlanetInHouse as ConditionPlanetInHouse,
+    ConditionPlanetInHouseAndSign as ConditionPlanetInHouseAndSign,
+    ConditionPlanetInHouseFrom as ConditionPlanetInHouseFrom,
+    ConditionPlanetInKendra as ConditionPlanetInKendra,
+    ConditionPlanetInKendraFrom as ConditionPlanetInKendraFrom,
+    ConditionPlanetInNakshatra as ConditionPlanetInNakshatra,
+    ConditionPlanetInSign as ConditionPlanetInSign,
+    ConditionPlanetInTableSign as ConditionPlanetInTableSign,
+    ConditionPlanetInTrikona as ConditionPlanetInTrikona,
+    ConditionPlanetIs as ConditionPlanetIs,
+    ConditionPlanetRetrograde as ConditionPlanetRetrograde,
+    ConditionPlanetStrong as ConditionPlanetStrong,
+    ConditionPlanetStrongerThan as ConditionPlanetStrongerThan,
+    ConditionPlanetWeak as ConditionPlanetWeak,
+    ConditionRashiAspects as ConditionRashiAspects,
+    ConditionRule as ConditionRule,
+    ConditionSameBody as ConditionSameBody,
+    ConditionSameNakshatra as ConditionSameNakshatra,
+    ConditionSameSign as ConditionSameSign,
+    ConditionTransitInHouse as ConditionTransitInHouse,
+    ConditionVipareetaArgala as ConditionVipareetaArgala,
+    ConfigurationRequest as ConfigurationRequest,
+    ContactsAsked as ContactsAsked,
+    CornerVedha as CornerVedha,
+    Criterion as Criterion,
+    CriterionArcusVisionis as CriterionArcusVisionis,
+    CriterionLongitude as CriterionLongitude,
+    CriterionTimeDegrees as CriterionTimeDegrees,
+    CycleStart as CycleStart,
+    DashaAsked as DashaAsked,
+    DatePrecision as DatePrecision,
+    DayAsked as DayAsked,
+    DayFifth as DayFifth,
+    Deceased as Deceased,
+    DeerghaBeyond as DeerghaBeyond,
+    Design as Design,
+    DevaBride as DevaBride,
+    DevataRules as DevataRules,
+    DignityRequest as DignityRequest,
+    DignityRules as DignityRules,
+    DirectionAsked as DirectionAsked,
+    Divisor as Divisor,
+    DossierOptions as DossierOptions,
+    DossierPreset as DossierPreset,
+    DrawingAsked as DrawingAsked,
+    DrekkanaReading as DrekkanaReading,
+    EclipseKind as EclipseKind,
+    Edge as Edge,
+    EnemyExempt as EnemyExempt,
+    EnemySign as EnemySign,
+    Enmity as Enmity,
+    EqualVarna as EqualVarna,
+    EraNumber as EraNumber,
+    EventKind as EventKind,
+    EventShuffle as EventShuffle,
+    Facts as Facts,
+    FestivalCalendarRequest as FestivalCalendarRequest,
+    FirstAbdika as FirstAbdika,
+    FirstYearAdhika as FirstYearAdhika,
+    FirstYearQuery as FirstYearQuery,
+    FirstYearRequest as FirstYearRequest,
+    FortitudeRequest as FortitudeRequest,
+    FrontVedha as FrontVedha,
+    FunctionalRules as FunctionalRules,
+    FunctionalScheme as FunctionalScheme,
+    GanaPoints as GanaPoints,
+    GeoPlace as GeoPlace,
+    GradedRule as GradedRule,
+    GrahaClass as GrahaClass,
+    GulikaAt as GulikaAt,
+    GulikaExtension as GulikaExtension,
+    HarmonicRequest as HarmonicRequest,
+    HarshaRules as HarshaRules,
+    HitRequest as HitRequest,
+    Holds as Holds,
+    HouseCount as HouseCount,
+    HousePoints as HousePoints,
+    HouseRequest as HouseRequest,
+    HuddaTable as HuddaTable,
+    InvisibleHalf as InvisibleHalf,
+    Karaka as Karaka,
+    KootaRules as KootaRules,
+    KpRequest as KpRequest,
+    KshinaRule as KshinaRule,
+    KujaFrom as KujaFrom,
+    KujaHouses as KujaHouses,
+    KujaRules as KujaRules,
+    LalKitabRequest as LalKitabRequest,
+    LampLevel as LampLevel,
+    LatinName as LatinName,
+    LifeClass as LifeClass,
+    LifeEvent as LifeEvent,
+    Limb as Limb,
+    LordsFriendship as LordsFriendship,
+    LotRequest as LotRequest,
+    MasaDashaRules as MasaDashaRules,
+    MasaDashaSign as MasaDashaSign,
+    MaseshaReading as MaseshaReading,
+    MaseshaRules as MaseshaRules,
+    Masters as Masters,
+    MidpointRequest as MidpointRequest,
+    MonthClock as MonthClock,
+    MookRule as MookRule,
+    MoonBenefic as MoonBenefic,
+    MoonMayRule as MoonMayRule,
+    MoonPartner as MoonPartner,
+    MoonRules as MoonRules,
+    MoonScope as MoonScope,
+    MoonSees as MoonSees,
+    MotherRites as MotherRites,
+    MuddaBalance as MuddaBalance,
+    MuhurtaNative as MuhurtaNative,
+    MuhurtaRequestAsta as MuhurtaRequestAsta,
+    MunthaDegree as MunthaDegree,
+    NaamRequest as NaamRequest,
+    NaamRules as NaamRules,
+    NadiDosha as NadiDosha,
+    NameReduction as NameReduction,
+    NameRules as NameRules,
+    NameSounds as NameSounds,
+    NatalPointGraha as NatalPointGraha,
+    NatalPointLagna as NatalPointLagna,
+    NatalPointMidheaven as NatalPointMidheaven,
+    NativeAsked as NativeAsked,
+    Nearness as Nearness,
+    NightRule as NightRule,
+    NinthBhava as NinthBhava,
+    Nisarga as Nisarga,
+    NishekaMandi as NishekaMandi,
+    NishekaMonth as NishekaMonth,
+    NishekaRules as NishekaRules,
+    NodeSide as NodeSide,
+    NonLatin as NonLatin,
+    NoneAspects as NoneAspects,
+    NumerologyRequest as NumerologyRequest,
+    NumerologyRules as NumerologyRules,
+    OccupiedBindus as OccupiedBindus,
+    OfficeOrder as OfficeOrder,
+    OfficeRules as OfficeRules,
+    OrbModel as OrbModel,
+    OrbModelByAspect as OrbModelByAspect,
+    OrbModelLeo as OrbModelLeo,
+    OrbModelMoieties as OrbModelMoieties,
+    OutsideHalf as OutsideHalf,
+    PakshiRequest as PakshiRequest,
+    PakshiRules as PakshiRules,
+    PakshiniNight as PakshiniNight,
+    ParallelRequest as ParallelRequest,
+    PartileWithin as PartileWithin,
+    Partner as Partner,
+    PartnerMatching as PartnerMatching,
+    PartnerSynastry as PartnerSynastry,
+    PerfectionRequest as PerfectionRequest,
+    Period as Period,
+    PeriodAsked as PeriodAsked,
+    PiscesIs as PiscesIs,
+    PiscesRising as PiscesRising,
+    PlanRequest as PlanRequest,
+    PointAsked as PointAsked,
+    PoruthamRules as PoruthamRules,
+    PranapadaHouseRules as PranapadaHouseRules,
+    PranapadaRule as PranapadaRule,
+    PrashnaRequest as PrashnaRequest,
+    PrashnaRules as PrashnaRules,
+    PrashnaTense as PrashnaTense,
+    Presentation as Presentation,
+    PresentationBy as PresentationBy,
+    ProgressionRate as ProgressionRate,
+    ProgressionsRequest as ProgressionsRequest,
+    PublishedDay as PublishedDay,
+    PublishedEntry as PublishedEntry,
+    PublishedEntryAdd as PublishedEntryAdd,
+    PublishedEntrySet as PublishedEntrySet,
+    PublishedEntryWithdraw as PublishedEntryWithdraw,
+    PublishedReasonsRequest as PublishedReasonsRequest,
+    PublishedSet as PublishedSet,
+    Purify as Purify,
+    PurifyAs as PurifyAs,
+    Question as Question,
+    Ranking as Ranking,
+    RasmiRules as RasmiRules,
+    RateSpan as RateSpan,
+    RayPlace as RayPlace,
+    RectificationRequest as RectificationRequest,
+    RectificationRules as RectificationRules,
+    RectificationSpecies as RectificationSpecies,
+    Referents as Referents,
+    Relation as Relation,
+    Relations as Relations,
+    RemedyRequest as RemedyRequest,
+    RemedyRules as RemedyRules,
+    ResearchRequest as ResearchRequest,
+    Residence as Residence,
+    ResolveAsked as ResolveAsked,
+    ReturnLongitude as ReturnLongitude,
+    RikSource as RikSource,
+    RisingTakes as RisingTakes,
+    RisingVarga as RisingVarga,
+    RogaReading as RogaReading,
+    RuleDefinition as RuleDefinition,
+    RuleGroup as RuleGroup,
+    RuleOutcome as RuleOutcome,
+    RuleOutcomeEffect as RuleOutcomeEffect,
+    RuleOutcomeLifeClass as RuleOutcomeLifeClass,
+    RuleOutcomeLifeSpan as RuleOutcomeLifeSpan,
+    RuleReadings as RuleReadings,
+    RuleRequest as RuleRequest,
+    RuleSource as RuleSource,
+    SadeSatiRequest as SadeSatiRequest,
+    SahamFriendship as SahamFriendship,
+    SahamNatures as SahamNatures,
+    SankalpaRequest as SankalpaRequest,
+    SapindanaAt as SapindanaAt,
+    SarvatobhadraMotion as SarvatobhadraMotion,
+    SarvatobhadraRequest as SarvatobhadraRequest,
+    SarvatobhadraRules as SarvatobhadraRules,
+    SaturnAmongThem as SaturnAmongThem,
+    SaturnTerm as SaturnTerm,
+    ScaleRequest as ScaleRequest,
+    Scope as Scope,
+    ScoreRule as ScoreRule,
+    Scores as Scores,
+    SeedOverflow as SeedOverflow,
+    SettingPart as SettingPart,
+    Severity as Severity,
+    SeverityCountBased as SeverityCountBased,
+    SeverityFixed as SeverityFixed,
+    SeverityHouseWeighted as SeverityHouseWeighted,
+    SeverityKootShortfall as SeverityKootShortfall,
+    SeverityPlanetStrengthInverse as SeverityPlanetStrengthInverse,
+    ShantiRules as ShantiRules,
+    ShippedRules as ShippedRules,
+    SiegeWithin as SiegeWithin,
+    Sight as Sight,
+    SignMeasures as SignMeasures,
+    Snapshot as Snapshot,
+    SnapshotClock as SnapshotClock,
+    SnapshotSunrise as SnapshotSunrise,
+    StudyKind as StudyKind,
+    SubDegree as SubDegree,
+    SubLengths as SubLengths,
+    SubjectAsked as SubjectAsked,
+    SunFallen as SunFallen,
+    SunWithKetu as SunWithKetu,
+    SvarodayaAsked as SvarodayaAsked,
+    SynastryZodiac as SynastryZodiac,
+    TambiraMover as TambiraMover,
+    TermEntry as TermEntry,
+    ThemePatch as ThemePatch,
+    ThreePairsRules as ThreePairsRules,
+    Thresholds as Thresholds,
+    ThresholdsCustom as ThresholdsCustom,
+    ThresholdsPtolemy as ThresholdsPtolemy,
+    ThresholdsSuryaSiddhanta as ThresholdsSuryaSiddhanta,
+    Tied as Tied,
+    Timing as Timing,
+    TimingRule as TimingRule,
+    TithiPraveshaRequest as TithiPraveshaRequest,
+    TithiRule as TithiRule,
+    TwoSignStar as TwoSignStar,
+    UnaDay as UnaDay,
+    Unit as Unit,
+    Upanayana as Upanayana,
+    VarshaRequestDashas as VarshaRequestDashas,
+    VarshaRequestMatters as VarshaRequestMatters,
+    VarshaRequestSahams as VarshaRequestSahams,
+    VarshphalRows as VarshphalRows,
+    VashyaPoints as VashyaPoints,
+    VedhaMotion as VedhaMotion,
+    VenusPlace as VenusPlace,
+    Vowel as Vowel,
+    WeaknessRules as WeaknessRules,
+    Window as Window,
+    WindowDayMuhurta as WindowDayMuhurta,
+    WindowMoonrise as WindowMoonrise,
+    WindowNightMuhurta as WindowNightMuhurta,
+    WindowNishitha as WindowNishitha,
+    WindowPart as WindowPart,
+    WindowPradosha as WindowPradosha,
+    WindowSunrise as WindowSunrise,
+    WindowSunset as WindowSunset,
+    YearClock as YearClock,
+    YearLength as YearLength,
+    YearMeasure as YearMeasure,
+    YearsRectification as YearsRectification,
+    ZoneSpecFixed as ZoneSpecFixed,
+    ZoneSpecIana as ZoneSpecIana,
+    ZoneSpecLocalMean as ZoneSpecLocalMean,
+)
 from .catalogue import (
     Catalogued,
     AgniVasa,
@@ -4098,41 +4514,6 @@ class GrahaDashaPhala:
     """Whether its placement makes its dasha unfavourable; both can hold."""
 
 
-HitRequest = TypedDict(
-    "HitRequest",
-    {
-        "from": Required[float],
-        "to": Required[float],
-        "grahas": Sequence[Union[Graha, str]],
-        "kinds": Sequence[Union[HitKind, str]],
-        "points": Sequence[Union["NatalPoint", Graha, str]],
-        "aspects": Sequence[int],
-        "orbDeg": float,
-        "vargas": Sequence[Union[Varga, str]],
-        "eclipseOrbDeg": float,
-    },
-    total=False,
-)
-HitRequest.__doc__ = """The transit hit list to search against every chart of a
-request (`03-design/transit-hit-list.md`): the window `from` and `to`, UTC
-Julian days, and optionally `grahas` (the nine by default; members or keys,
-bare or full), `kinds` (the four ingress, station and aspect kinds by
-default), `points` (the natal points aspected or eclipsed: a graha,
-`"LAGNA"`, `"MIDHEAVEN"` or a `NatalPoint`; the nine and the lagna by
-default), `aspects` (whole degrees to 180; 0 and 180 by default, C145),
-`orbDeg` (more than 0, under 15 and under half the step between the aspects'
-lines; exact only by default, C146), `vargas` (the divisional charts a
-`VARGA_INGRESS` is searched in; D9 by default, never D1, C418) and
-`eclipseOrbDeg` (how near a natal point an eclipsed luminary falls, more
-than 0 and at most 15; 3 by default, C422). A
-functional `TypedDict` because `from` is a keyword, and the record is spelt as
-every binding spells it.
-
->>> asked: HitRequest = {"from": 2460676.5, "to": 2461041.5, "grahas": ["SATURN"], "orbDeg": 2}
-"""
-
-
-
 def returns_request(
     start: float, end: float, *, grahas: Sequence[Union[Graha, str]] = (Graha.MOON,)
 ) -> HitRequest:
@@ -4295,32 +4676,6 @@ class Hit:
     event: HitEvent
 
 
-SadeSatiRequest = TypedDict(
-    "SadeSatiRequest",
-    {
-        "from": Required[float],
-        "to": float,
-        "countedFrom": Union[GocharFrom, Literal["MOON", "LAGNA"]],
-        "reckoning": Union[Reckoning, Literal["SIGN", "DEGREE"]],
-        "spells": Sequence[int],
-    },
-    total=False,
-)
-SadeSatiRequest.__doc__ = """Sade Sati and Saturn's smaller spells to find for
-every chart of a request (`03-design/sade-sati.md`): the window's start `from`
-and optionally its end `to` (`from` by default, one instant), UTC Julian days;
-`countedFrom`, the natal point the houses are counted from (the Moon by
-default, or the lagna; C139); `reckoning`, whole signs by default or 30°
-houses centred on the point's degree (C147); and `spells`, the smaller spells,
-houses 3 to 11 (the 4th and the 8th by default; C149). Members are written as
-their keys, so a report's `reference.from_` and `reckoning` can be handed
-back. A functional `TypedDict` because `from` is a keyword, and the record is
-spelt as every binding spells it.
-
->>> asked: SadeSatiRequest = {"from": 2460676.5, "to": 2464329.0, "reckoning": "DEGREE"}
-"""
-
-
 @dataclass(frozen=True)
 class SadeSatiVisit:
     """One stay of Saturn's in a house, half-open."""
@@ -4370,23 +4725,6 @@ class SadeSatiReport:
 
     spells: Tuple[SadeSatiSpell, ...]
     """The smaller spells asked for, in time order."""
-
-
-class KpRequest(TypedDict, total=False):
-    """A KP reading to make of every chart of a request (`03-design/kp.md`),
-    every field optional: `number`, the querent's horary number 1 to 249,
-    which casts the cusps from it while the ruling planets stay the
-    moment's (C156); `clock`, seconds east of UT that the civil day lord
-    is the weekday on, the request's own `utc_offset_seconds` by default
-    (C151); and `anyAyanamsha`, true to read a chart whose zodiac is not
-    Krishnamurti's, which is refused by default (C157).
-
-    >>> asked: KpRequest = {"number": 74}
-    """
-
-    number: int
-    clock: int
-    anyAyanamsha: bool
 
 
 @dataclass(frozen=True)
@@ -4574,33 +4912,6 @@ class KpReading:
     chart: KpChart
     significators: KpSignificators
     ruling: KpRuling
-
-
-class DignityRules(TypedDict, total=False):
-    """The terms and triplicities a reading of the dignities uses
-    (`03-design/essential-dignities.md`, C208): `terms` a `Terms` member,
-    Lilly's printing of Ptolemy's by default, or `{"TABLE": [...]}`, twelve
-    signs of five `{"lord", "end"}` from Aries, a lord a `Graha` or its key;
-    `triplicities` a `Triplicities` member, Lilly's by default."""
-
-    terms: Union[Terms, str, Mapping[str, Any]]
-    triplicities: Union[Triplicities, str]
-
-
-class DignityRequest(TypedDict, total=False):
-    """How to read every chart's essential dignities
-    (`03-design/essential-dignities.md`), every field optional: `sectRule`,
-    the Sun's centre above the true horizon by default (Valens's hemisphere,
-    C209); `rules`; and `scores`, any of `house`, `exaltation`,
-    `triplicity`, `term`, `face`, `detriment`, `fall` and `peregrine`, the
-    rest Lilly's (p. 115).
-
-    >>> asked: DignityRequest = {"sectRule": SectRule.DAYLIGHT, "rules": {"terms": Terms.EGYPTIAN}}
-    """
-
-    sectRule: Union[SectRule, str]
-    rules: DignityRules
-    scores: Mapping[str, int]
 
 
 @dataclass(frozen=True)
@@ -4921,28 +5232,6 @@ class AccidentalScores:
         }
 
 
-class FortitudeRequest(TypedDict, total=False):
-    """How to read every chart's fortitudes, both halves of Lilly's table
-    (`03-design/essential-dignities.md` §Accidental fortitudes), every
-    field optional and Lilly's when absent: `dignities`, the essential
-    half's own request; `rules`, any of `combustionDeg`,
-    `combustionInSign`, `beamsDeg`, `cazimiDeg`, `cuspOrbDeg`,
-    `starOrbDeg`, `partile` (`"SAME_DEGREE"` or `{"WITHIN": {"orbDeg":
-    …}}`), `siege` (`"SAME_SIGN"` or `{"WITHIN": {"spanDeg": …}}`) and
-    `meanMotionDeg`; `scores`, `houses` and any line by its camel-cased
-    name; and `almuten`, an `AlmutenRules` or its `place` and `fortune`.
-    An answer's `rules`, `scores` and almuten rules may be handed back as
-    they stand.
-
-    >>> asked: FortitudeRequest = {"rules": {"partile": {"WITHIN": {"orbDeg": 1}}}, "scores": {"regulus": 5}}
-    """
-
-    dignities: DignityRequest
-    rules: Union[Mapping[str, Any], AccidentalRules]
-    scores: Union[Mapping[str, Any], AccidentalScores]
-    almuten: Union[Mapping[str, Any], "AlmutenRules"]
-
-
 @dataclass(frozen=True)
 class AlmutenRules:
     """How a chart's almutens are read, Lilly's by default
@@ -5103,20 +5392,6 @@ class Fortitudes:
     """The seven in the Chaldean order, Saturn first."""
 
     almutens: Almutens
-
-
-class LotRequest(TypedDict, total=False):
-    """How to read every chart's lots (`03-design/hellenistic-lots.md`),
-    every field optional and Valens's when absent: `sectRule`, the Sun's
-    centre above the true horizon by default (C209), and `fortune`, how
-    Fortune is taken by night, reversed by default (II.22, C221). An
-    answer's `request`, a `LotRules`, may be handed back as it stands.
-
-    >>> asked: LotRequest = {"fortune": FortuneRule.REVERSED_WHILE_MOON_UP}
-    """
-
-    sectRule: Union[SectRule, str]
-    fortune: Union[FortuneRule, str]
 
 
 @dataclass(frozen=True)
@@ -5344,23 +5619,6 @@ class PerfectionRules:
     applying left its sign (C234)."""
 
 
-class PerfectionRequest(TypedDict, total=False):
-    """Whether a horary matter is brought to pass
-    (`03-design/hellenistic-perfection.md`): name the quesited's
-    significator as `quesited`, or the house of the matter, 1 to 12, as
-    `house`, whose cusp's lord signifies it; the querent's is the
-    Ascendant's lord unless named.
-
-    >>> marriage: PerfectionRequest = {"house": 7}
-    >>> named: PerfectionRequest = {"querent": "VENUS", "quesited": "MARS", "rules": {"horizonDays": 30}}
-    """
-
-    querent: Union[Graha, str]
-    quesited: Union[Graha, str]
-    house: int
-    rules: Union[PerfectionRuleRequest, PerfectionRules]
-
-
 @dataclass(frozen=True)
 class Application:
     """The significators coming to an aspect (p. 107)."""
@@ -5507,54 +5765,172 @@ class Matter:
     rules: PerfectionRules
 
 
-ProgressionContacts = TypedDict(
-    "ProgressionContacts",
-    {
-        "from": Required[float],
-        "to": Required[float],
-        "grahas": Sequence[Union[Graha, str]],
-        "points": Sequence[Union["NatalPoint", Graha, str]],
-        "aspects": Sequence[int],
-        "parallels": "ParallelRequest",
-        "mutual": bool,
-    },
-    total=False,
-)
-ProgressionContacts.__doc__ = """A window of life to find a birth's
-progressed contacts in: `from` and `to`, UTC Julian days, and optionally the
-progressed `grahas` (the seven by default), the radical `points` (the seven,
-the lagna and the midheaven) and the `aspects` (whole degrees to 180; Leo's table, p. 48),
-spelled as a `HitRequest` spells them; `parallels`, an orb (`{}` for
-Leo's 1°) asking the parallels of declination over the same window; and
-`mutual`, `True` to ask the progressed planets' contacts among themselves
-(Leo's "P. to P."). A functional `TypedDict` because `from` is a keyword.
-"""
+class AnnualDashaRules(TypedDict, total=False):
+    """Where the sources differ on an annual dasha, each a named reading
+    (`03-design/annual-dashas.md`).
 
-
-class ProgressionsRequest(TypedDict, total=False):
-    """What to read every chart's birth through
-    (`03-design/western-progressions.md`): the progressed chart and the
-    direction at an instant of life `at`, the `contacts` over a window, or
-    both. `rate` is `{"sky": span, "life": span}`, a span `"DAY"`,
-    `"SYNODIC_MONTH"`, `"SIDEREAL_MONTH"`, `"YEAR"` or `{"DAYS": n}`; every
-    absent field is Leo's default.
-
-    >>> leo: ProgressionsRequest = {"at": 2460676.5, "year": "NOON_SIDEREAL_TIME"}
-    >>> moon: ProgressionsRequest = {"contacts": {"from": 2460676.5, "to": 2461041.5, "grahas": ["MOON"]}}
+    >>> rules: AnnualDashaRules = {"clock": {"DAYS": 360}, "depth": 1}
     """
 
-    at: float
-    rate: Mapping[str, Any]
-    year: Literal["TROPICAL", "JULIAN", "NOON_SIDEREAL_TIME"]
-    angles: Literal[
-        "NAIBOD_RIGHT_ASCENSION",
-        "NAIBOD_LONGITUDE",
-        "SOLAR_ARC_LONGITUDE",
-        "SOLAR_ARC_RIGHT_ASCENSION",
-        "QUOTIDIAN",
-    ]
-    direction: Union[Literal["SOLAR", "NAIBOD", "PTOLEMY"], Mapping[str, float]]
-    contacts: ProgressionContacts
+    clock: Union[Literal["SUN_DEGREES", "EVEN"], "YearOfDays"]
+    """What a unit of the year is (crux C122): `"SUN_DEGREES"`, the Sun's
+    motion through one degree and the source's own, so the year closes on
+    the next return; an `"EVEN"` share of the time between the returns; or
+    `{"DAYS": n}`, the whole year as so many civil days from the return,
+    the printed durations (360, and 365 for the Patyayini)."""
+
+    balance: Literal["NATAL_MOON", "ENTRY_MOON", "WHOLE"]
+    """Where a nakshatra year's balance comes from (crux C123): what
+    remained of the birth Moon's nakshatra, the source's own; the Moon's at
+    the return; or none."""
+
+    measure: BalanceMeasure
+    """How the balance is measured, by arc or by time; absent, each
+    balance's source's own: by arc for the birth Moon, by time for the Moon
+    at the return."""
+
+    birth_period: BirthPeriod
+    """How the first lord's two pieces are divided among sub-lords, as the
+    natal birth period's; `"COMPRESSED"` by default."""
+
+    depth: int
+    """How many levels the periods go down: 2, mahadashas and antardashas,
+    by default."""
+
+
+class DrishtiRules(TypedDict, total=False):
+    """How the Tajika aspects read a pair less than a degree past."""
+
+    sub_degree: Literal["POORNA", "ISHRAFA"]
+    """Poorna, the default, or Ishrafa (crux C112)."""
+
+
+class MasaPhalaRules(TypedDict, total=False):
+    """The floors the month's and the day's results judge strong and weak
+    by, and when the Moon wanes (`03-design/varshesha.md`, "The month's
+    results").
+
+    >>> floors: MasaPhalaRules = {"strong_from": 9 * 3600}
+    """
+
+    weak_below: int
+    """The strength below which a planet with no dignity is weak, in
+    **sub-sub units**, 3600 to a unit: `5 * 3600` by default."""
+    strong_from: int
+    """The strength from which a planet is strong, sub-sub units;
+    `10 * 3600` by default, never below `weak_below`."""
+    kshina: KshinaRule
+    """When the Moon wanes and so counts a malefic: the gloss's
+    `DARK_EIGHTH_TO_BRIGHT_EIGHTH` by default."""
+
+
+class SahamRules(TypedDict, total=False):
+    """Where the sources differ on a saham, each a named reading
+    (`03-design/tajika-sahams.md`).
+
+    >>> rules: SahamRules = {"add_sign": "SIGNS", "houses": "EQUAL"}
+    """
+
+    add_sign: Literal["DEGREES", "SIGNS", "NEVER"]
+    """When a saham is carried a sign further: when c does not fall between
+    b and a by degrees, the source's own; by whole signs, as a widely used
+    program reads it; or never."""
+
+    houses: Literal["SRIPATI", "CHALIT", "EQUAL"]
+    """Where a house's point stands: Sripati's mid-point built from the
+    angles, the source's own; the chart's chalit under its profile; or
+    equal houses from the lagna's degree."""
+
+    roga: Literal["LAGNA", "SATURN"]
+    """Roga's formula: lagna − Moon + lagna, or the other authority's
+    Saturn − Moon + lagna."""
+
+
+class SahamStrengthReadings(TypedDict, total=False):
+    """Where the sources differ on a saham's strength
+    (`03-design/tajika-saham-strength.md`).
+
+    >>> readings: SahamStrengthReadings = {"natures": "PARASHARI"}
+    """
+
+    natures: Literal["CHAPTER", "PARASHARI"]
+    """Which planets are benefic and malefic: the chapter's own, the Sun a
+    malefic among them, or the catalogue's Parashari natures."""
+
+    friendship: Literal["POSITIONAL", "NATURAL"]
+    """Tajika's positional friendship, the source's, or the catalogue's
+    natural one."""
+
+    weak_below: int
+    """The Vishwa bala below which a saham's lord is weak, in **sub-sub
+    units**, 3600 to a unit: `5 * 3600` by default."""
+
+
+class VarsheshaRules(TypedDict, total=False):
+    """Where the sources differ on the lord of the year, each a named
+    reading (`03-design/varshesha.md`).
+
+    >>> rules: VarsheshaRules = {"moon": "LIKE_ANY_OTHER"}
+    """
+
+    none_aspects: Literal["MUNTHA_LORD", "ANNUAL_LAGNA_LORD", "STRONGEST"]
+    """Who takes the year when nobody aspects the lagna: the Muntha's lord
+    by default, the annual lagna's lord, or the Nilakanthi's strongest of
+    the five."""
+
+    tied: Literal["MUNTHA_LORD", "DINA_RATRI_PATI"]
+    """Who takes it on an outright tie."""
+
+    moon: Literal["PASSED_OVER", "ITHASALA", "LIKE_ANY_OTHER"]
+    """Whether the Moon may hold it: passed over by default, stepping down
+    to the next claimant and else to its Ithasala successor; the
+    Nilakanthi's successor at once; or like any other."""
+
+    moon_partner: Literal["ANY_PLANET", "OFFICE_BEARER"]
+    """Who may succeed the Moon: any planet by default, or only an
+    office-bearer."""
+
+    drishti: "DrishtiRules"
+    """How the Ithasala the Moon's successor needs is read."""
+
+
+class YogaRules(TypedDict, total=False):
+    """Where the source leaves the sixteen Tajika yogas a choice, each a
+    named reading (`03-design/tajika-yogas.md`).
+
+    >>> rules: YogaRules = {"tambira": "EITHER_LORD", "strong_from": 12 * 3600}
+    """
+
+    drishti: "DrishtiRules"
+    """How a pair less than a degree past reads (crux C112)."""
+
+    weak_below: int
+    """The strength below which a planet with no dignity is weak, in
+    **sub-sub units**, 3600 to a unit: `5 * 3600` by default (crux C116)."""
+
+    strong_from: int
+    """The strength from which a planet is strong, sub-sub units; `10 * 3600`
+    by default."""
+
+    tambira: Literal["KARYESHA", "EITHER_LORD"]
+    """Which lord a Tambira lets reach the next sign: the definition's
+    karyesha by default, or either, the source's "some authorities"."""
+
+    moon_benefic: Literal["ALWAYS", "WAXING"]
+    """When the Moon counts among Kuttha's benefics: always by default,
+    Charak's list, or waxing, the commentary's "full Moon" (crux C117)."""
+
+
+# A window of life to find a birth's progressed contacts in: `from` and
+# `to`, UTC Julian days, and optionally the progressed `grahas` (the seven
+# by default), the radical `points` (the seven, the lagna and the
+# midheaven) and the `aspects` (whole degrees to 180; Leo's table, p. 48),
+# spelled as a `HitRequest` spells them; `parallels`, an orb (`{}` for
+# Leo's 1°) asking the parallels of declination over the same window; and
+# `mutual`, `True` to ask the progressed planets' contacts among themselves
+# (Leo's "P. to P."). The generated `ContactsAsked`, by the name the layer
+# has always given it.
+ProgressionContacts = ContactsAsked
 
 
 @dataclass(frozen=True)
@@ -5794,22 +6170,6 @@ class WesternHouseRequest(TypedDict, total=False):
     system: Union[HouseSystem, str]
 
 
-class AntisciaRequest(TypedDict, total=False):
-    """What the antiscia are asked (`03-design/western-antiscia.md`):
-    `orbs`, an orb model as `WesternAspectRequest` spells it, read at the
-    conjunction; Lilly's moieties when absent (C244), which give the outer
-    three none. `cusps`, the houses whose cusps a reflection is read upon
-    at its very degree (C251), Lilly's Regiomontanus when `{}`.
-
-    >>> lilly: AntisciaRequest = {}
-    >>> leo: AntisciaRequest = {"orbs": {"model": "LEO"}}
-    >>> on_cusps: AntisciaRequest = {"cusps": {}}
-    """
-
-    orbs: Mapping[str, Any]
-    cusps: WesternHouseRequest
-
-
 @dataclass(frozen=True)
 class Antiscion:
     """A planet's two reflections, tropical degrees
@@ -5885,20 +6245,6 @@ class WesternHousePlacement:
     sidereal hour before; its house is never moved for it."""
 
 
-class HarmonicRequest(TypedDict, total=False):
-    """What a chart's harmonic is asked (`03-design/western-harmonics.md`):
-    `number`, a whole number from 1 to 360 every longitude is multiplied
-    by (Addey), and `orbDeg`, how close two points meet in the harmonic
-    chart, 12° when absent (C252), at most 30°.
-
-    >>> ninth: HarmonicRequest = {"number": 9}
-    >>> tight: HarmonicRequest = {"number": 5, "orbDeg": 3}
-    """
-
-    number: int
-    orbDeg: float
-
-
 @dataclass(frozen=True)
 class HarmonicPoint:
     """A point of a harmonic chart: a planet, the ascendant or the
@@ -5954,42 +6300,6 @@ class HarmonicChart:
     """The pairs meeting within the orb, closest first."""
 
 
-class KootaRules(TypedDict, total=False):
-    """The readings an Ashta Koota is computed under, each the source's own
-    when absent (`03-design/matching.md`): `equalVarna`, `"WHOLE"` or
-    `"HALF"` (C259); `devaBride`, `"FOUR"` or `"THREE"` (C262);
-    `bhakootLift`, `"ANY_ONE"` or `"GARGA"` (C263); `nadiDosha`,
-    `"ANY"` or `"MIDDLE_ONLY"` (C264); `gana`, `"DAIVAJNA_MANOHARA"` or
-    `"MUHURTA_MARTANDA"` (C761); and `vashya`, `"VERSE"` or
-    `"PRINTED_IN_NEPAL"` (C762).
-
-    >>> middle: KootaRules = {"nadiDosha": "MIDDLE_ONLY"}
-    >>> nepal: KootaRules = {"gana": "MUHURTA_MARTANDA", "vashya": "PRINTED_IN_NEPAL"}
-    """
-
-    equalVarna: Literal["WHOLE", "HALF"]
-    devaBride: Literal["FOUR", "THREE"]
-    bhakootLift: Literal["ANY_ONE", "GARGA"]
-    nadiDosha: Literal["ANY", "MIDDLE_ONLY"]
-    gana: Literal["DAIVAJNA_MANOHARA", "MUHURTA_MARTANDA"]
-    vashya: Literal["VERSE", "PRINTED_IN_NEPAL"]
-
-
-class PoruthamRules(TypedDict, total=False):
-    """The readings the ten considerations are computed under, each the
-    chapter's own when absent (`03-design/matching.md`): `twoSignStar`,
-    `"GROOM_EARLIER"` or `"BRIDE_FIRST_SIGN"` (C270); `deerghaBeyond`,
-    `"THIRTEENTH"` or `"SEVENTH"` (C272); and `lordsFriendship`,
-    `"MUTUAL"` or `"ONE_WAY"` (C273).
-
-    >>> seventh: PoruthamRules = {"deerghaBeyond": "SEVENTH"}
-    """
-
-    twoSignStar: Literal["GROOM_EARLIER", "BRIDE_FIRST_SIGN"]
-    deerghaBeyond: Literal["THIRTEENTH", "SEVENTH"]
-    lordsFriendship: Literal["MUTUAL", "ONE_WAY"]
-
-
 # The readings the Kuja dosha is computed under, each the verse's own when
 # absent (`03-design/matching.md`): `houses`, *Manasagari*'s five,
 # `"MANASAGARI"`, or `"WITH_SECOND"` (C285); and `from`, `"LAGNA"` or
@@ -6008,17 +6318,6 @@ class KujaLiftRules(TypedDict, total=False):
     jupiterAspect: bool
     rahuKendra: bool
     withRahu: bool
-
-
-KujaRules = TypedDict(
-    "KujaRules",
-    {
-        "houses": Literal["MANASAGARI", "WITH_SECOND"],
-        "from": Literal["LAGNA", "LAGNA_MOON_VENUS"],
-        "lifts": KujaLiftRules,
-    },
-    total=False,
-)
 
 
 class MatchingRequest(TypedDict, total=False):
@@ -6473,34 +6772,6 @@ class Porutham:
     exception: PoruthamException
 
 
-class NameRules(TypedDict, total=False):
-    """How a name is read for naam milan, each the source's own when absent
-    (`03-design/matching.md`): `latin`, a name in Latin letters
-    `"REFUSE"`d or read as `"IAST"` (C293), never guessed since English
-    "ch" is IAST "c"; and `abhijit`, where a syllable in Abhijit's row is
-    placed: `"REFUSE"`, `"UTTARA_ASHADHA"` (its 4th quarter) or
-    `"SHRAVANA"` (its 1st) (C294).
-
-    >>> iast: NameRules = {"latin": "IAST"}
-    """
-
-    latin: Literal["REFUSE", "IAST"]
-    abhijit: Literal["REFUSE", "UTTARA_ASHADHA", "SHRAVANA"]
-
-
-class NaamRules(TypedDict, total=False):
-    """The readings naam milan is computed under, each the source's own
-    when absent: how the `name`s are read, and the `koota` and `porutham`
-    rules the two name stars are matched under.
-
-    >>> placed: NaamRules = {"name": {"abhijit": "SHRAVANA"}, "koota": {"nadiDosha": "MIDDLE_ONLY"}}
-    """
-
-    name: NameRules
-    koota: KootaRules
-    porutham: PoruthamRules
-
-
 @dataclass(frozen=True)
 class NameSyllable:
     """A name's first syllable in the śatapada cakra (*Svarodaya* vv. 3–8)."""
@@ -6702,28 +6973,6 @@ class NaamMilan:
     `porutham` reads two Moons."""
 
 
-class NumerologyRules(TypedDict, total=False):
-    """The readings numerology is computed under, each the source's own when
-    absent (`03-design/numerology.md`, C320 to C328): `masters`, which
-    totals stop a Pythagorean reduction (`"ELEVEN_TWENTY_TWO"`, Balliett's;
-    `"NONE"`; `"ELEVEN_TWENTY_TWO_THIRTY_THREE"`, the baseline's);
-    `nameReduction`, each word reduced then added (`"BY_WORD"`) or every
-    letter at once (`"WHOLE"`); `chaldeanCompound`, the words' singles
-    added (`"SUM_OF_SINGLES"`, Cheiro p. 72) or the letters' total
-    (`"LETTER_TOTAL"`); `birthReduction`, month, day and year each reduced
-    (`"BY_PART"`, Balliett p. 19) or every digit (`"DIGIT_SUM"`); and
-    `nonLatin`, a character outside A to Z `"REFUSE"`d or `"SKIP"`ped.
-
-    >>> plain: NumerologyRules = {"masters": "NONE"}
-    """
-
-    masters: Literal["NONE", "ELEVEN_TWENTY_TWO", "ELEVEN_TWENTY_TWO_THIRTY_THREE"]
-    nameReduction: Literal["BY_WORD", "WHOLE"]
-    chaldeanCompound: Literal["SUM_OF_SINGLES", "LETTER_TOTAL"]
-    birthReduction: Literal["BY_PART", "DIGIT_SUM"]
-    nonLatin: Literal["REFUSE", "SKIP"]
-
-
 @dataclass(frozen=True)
 class Reduction:
     """A number reduced: every sum, so "33, so 6" and "38, so 11" read
@@ -6896,30 +7145,6 @@ class WesternHouses:
     """The degree that rose one sidereal hour before the birth (C250)."""
 
     planets: Tuple[WesternHousePlacement, ...]
-
-
-class ParallelRequest(TypedDict, total=False):
-    """How close two distances from the equator must stand to be a parallel
-    (`03-design/western-declinations.md`): `orbDeg`, Leo's 1° (*How to
-    Judge a Nativity*, p. 47) when absent, at most 10°.
-
-    >>> leo: ParallelRequest = {}
-    >>> wider: ParallelRequest = {"orbDeg": 1.5}
-    """
-
-    orbDeg: float
-
-
-class MidpointRequest(TypedDict, total=False):
-    """How far from the axis through two planets' midpoint a third may
-    stand to be equally distant from them (`03-design/western-midpoints.md`):
-    `orbDeg`, 0.5° when absent (C245), at most 10°.
-
-    >>> default: MidpointRequest = {}
-    >>> wider: MidpointRequest = {"orbDeg": 1.5}
-    """
-
-    orbDeg: float
 
 
 @dataclass(frozen=True)
@@ -7132,18 +7357,6 @@ class SynastryParallelRow:
 
     orb_deg: float
     """The orb the request allowed, degrees."""
-
-
-class MuhurtaNative(TypedDict, total=False):
-    """Whose day a muhurta search reads: the birth star and Moon sign, and
-    the birth lagna when the time is known, whose eighth the search avoids.
-
-    >>> native: MuhurtaNative = {"star": Nakshatra.ROHINI, "moonSign": Rashi.TAURUS}
-    """
-
-    star: Required[Union[Nakshatra, str]]
-    moonSign: Required[Union[Rashi, str]]
-    lagna: Optional[Union[Rashi, str]]
 
 
 MuhurtaActivity = Literal[
@@ -8590,221 +8803,6 @@ class SankalpaAnswer:
     """What computed it, and the hash of `value`."""
 
 
-AshauchTradition = Literal["DHARMASINDHU", "MITAKSHARA"]
-"""A table the SDK ships, by its name: the *Dharmasindhu*'s (the default)
-or the *Mitakshara*'s."""
-
-AshauchSex = Literal["MALE", "FEMALE"]
-"""A son or a daughter, which an ashauch's age bands and the mother's
-further bar read."""
-
-AshauchKind = Literal["BIRTH", "DEATH"]
-"""A birth's impurity (*sūtaka*, a loss's too) or a death's."""
-
-AshauchRelation = Literal[
-    "MOTHER",
-    "FATHER",
-    "CHILD",
-    "SPOUSE",
-    "CO_WIFE",
-    "STEP_CHILD",
-    "SAPINDA",
-    "SAMANODAKA",
-    "SAGOTRA",
-    "MARRIED_DAUGHTER",
-    "MARRIED_SIBLING",
-    "MATERNAL_GRANDFATHER",
-    "MATERNAL_GRANDMOTHER",
-    "MATERNAL_UNCLE",
-    "SON_IN_LAW",
-    "PARENT_IN_LAW",
-    "PUPIL",
-    "ACHARYAS_FAMILY",
-    "ADOPTION",
-    "BANDHU",
-    "SUBJECT",
-    "OF_ASCETIC",
-]
-"""Who the observer is to the one born or deceased, as the app resolves
-it."""
-
-Nearness = Literal["OBSERVERS_HOUSE", "SAME_VILLAGE", "OTHER_VILLAGE"]
-"""Where a death was, to the observer."""
-
-NightRule = Literal["THIRDS", "HALF_NIGHT", "CIVIL_MIDNIGHT", "SUNRISE"]
-"""Which day an event at night belongs to (the Mitākṣarā on Yājñavalkya
-III.20)."""
-
-
-class AshauchLength(TypedDict, total=False):
-    """A span the texts name, by its `length`: `"BATH"` (pure at once),
-    `"SAJYOTIH"` (to nightfall, or at night to daybreak), `"PAKSHINI"`
-    (that day, its night and the next day), `"DAYS"` with its `days`, 1
-    to 60, or `"FULL"`, the request's full period.
-
-    >>> three: AshauchLength = {"length": "DAYS", "days": 3}
-    """
-
-    length: Required[Literal["BATH", "SAJYOTIH", "PAKSHINI", "DAYS", "FULL"]]
-    days: int
-
-
-class Deceased(TypedDict, total=False):
-    """The deceased, by the facts the age bands read. Left out with no
-    `born`, an adult who had every rite; with a `born` (a UTC Julian day),
-    a fact a band needs is asked for by a refusal rather than guessed.
-
-    >>> infant: Deceased = {"born": 2461040.5, "sex": "MALE"}
-    """
-
-    born: float
-    sex: AshauchSex
-    chudakarana: bool
-    upanayana: Literal["DONE", "NOT_DONE", "NOT_PERFORMED"]
-    betrothed: bool
-    married: bool
-    buried: bool
-
-
-class AshauchEvent(TypedDict, total=False):
-    """What happened, by its `event`, every instant a UTC Julian day:
-    `"BIRTH"` from the 7th month on, with the `child`'s sex optional;
-    `"LOSS"` before it, with the `month` of the pregnancy, 1 to 6; or
-    `"DEATH"`, with `crematedAt`, `ahitagni` (the count starts at the
-    cremation) and the `deceased` optional.
-
-    >>> died: AshauchEvent = {"event": "DEATH", "at": 2461051.677083}
-    """
-
-    event: Required[Literal["BIRTH", "LOSS", "DEATH"]]
-    at: Required[float]
-    child: AshauchSex
-    month: int
-    crematedAt: float
-    ahitagni: bool
-    deceased: Deceased
-
-
-class AshauchRunning(TypedDict, total=False):
-    """A period already running, as the overlap rules read it: an earlier
-    answer's `value.running()`."""
-
-    key: Required[str]
-    kind: Required[AshauchKind]
-    relation: Required[AshauchRelation]
-    sex: AshauchSex
-    start: Required[float]
-    end: Required[float]
-    length: Required[AshauchLength]
-    days: int
-
-
-class AshauchRequest(TypedDict, total=False):
-    """One ashauch request: one event, one observer (`03-design/ashauch.md`).
-    `key` is the consumer's own, which the answer repeats; `heardAt` when
-    the news reached the observer, the event's instant when left out;
-    `abroad` a fact the family gives; `nearness` `"SAME_VILLAGE"` when
-    left out; `fullDays` the family's full period, 10 when left out; and
-    `during` the periods already running.
-
-    >>> asked: AshauchRequest = {"key": "grandfather", "relation": "SAPINDA",
-    ...     "event": {"event": "DEATH", "at": 2461051.677083}}
-    """
-
-    key: Required[str]
-    event: Required[AshauchEvent]
-    relation: Required[AshauchRelation]
-    heardAt: float
-    abroad: bool
-    nearness: Nearness
-    fullDays: int
-    during: Sequence[AshauchRunning]
-
-
-class AshauchRelationRow(TypedDict, total=False):
-    """One relation's length under its conditions: `nearness` and
-    `marriedDaughter` narrow it when given, and `heardLate` is what news
-    past the period takes."""
-
-    relation: Required[AshauchRelation]
-    kind: Required[AshauchKind]
-    nearness: Nearness
-    marriedDaughter: bool
-    length: Required[AshauchLength]
-    heardLate: AshauchLength
-    clause: Required[str]
-
-
-class AshauchMark(TypedDict, total=False):
-    """A mark of the deceased's age a band ends before, by its `mark`:
-    `"DAY"`, `"MONTH"` or `"YEAR"` with its count, or `"CHUDAKARANA"`,
-    `"UPANAYANA"`, `"BETROTHAL"` or `"MARRIAGE"`."""
-
-    mark: Required[Literal["DAY", "MONTH", "YEAR", "CHUDAKARANA", "UPANAYANA", "BETROTHAL", "MARRIAGE"]]
-    day: int
-    month: int
-    year: int
-
-
-class AshauchBand(TypedDict, total=False):
-    """What a death before a mark takes, the parents' and the sapindas'
-    lengths and the samanodakas' when the band names one."""
-
-    sex: Required[AshauchSex]
-    before: Required[AshauchMark]
-    buried: bool
-    chudakarana: bool
-    parents: Required[AshauchLength]
-    sapindas: Required[AshauchLength]
-    samanodakas: AshauchLength
-    clause: Required[str]
-
-
-class AshauchLossRow(TypedDict):
-    """A loss before the 7th month, to `toMonth` of the pregnancy."""
-
-    toMonth: int
-    mother: AshauchLength
-    others: AshauchLength
-    clause: str
-
-
-class AshauchLateRow(TypedDict):
-    """Late news, heard within `withinDays` of the event, and the length
-    from the hearing."""
-
-    withinDays: int
-    length: AshauchLength
-
-
-class AshauchOverlap(TypedDict):
-    """What a period known during another does: `lastNight` the days one
-    known in an equal period's last night adds, and in its last quarter;
-    `deathAbsorbsLongerBirth` whether a birth known during a shorter death
-    ends with it."""
-
-    lastNight: Sequence[int]
-    deathAbsorbsLongerBirth: bool
-
-
-class AshauchTable(TypedDict, total=False):
-    """A tradition, as data: every row with its clause and source, the
-    first row that matches answering. `motherRites` (`{"son", "daughter"}`,
-    days) is the mother's further bar after a birth, none reported when
-    left out."""
-
-    name: Required[str]
-    night: Required[NightRule]
-    pakshiniAtNight: Required[Literal["SECOND_SUNRISE", "NEXT_NIGHTFALL"]]
-    relations: Required[Sequence[AshauchRelationRow]]
-    bands: Required[Sequence[AshauchBand]]
-    losses: Required[Sequence[AshauchLossRow]]
-    late: Required[Sequence[AshauchLateRow]]
-    lateAbroad: Required[Sequence[AshauchLateRow]]
-    overlap: Required[AshauchOverlap]
-    motherRites: Mapping[str, int]
-
-
 class AshauchDayOneBy(TypedDict, total=False):
     """Why the first day is the day it is, by its `by`: `"DAYLIGHT"`, or
     `"NIGHT"` with the `rule` that gave the day."""
@@ -8939,49 +8937,6 @@ class AshauchAnswer:
     value: Ashauch
     provenance: Provenance
     """What computed it, and the hash of `value`."""
-
-
-FirstAbdika = Literal["SECOND_YEAR", "ELEVENTH_DAY"]
-"""When the first abdika is kept (*Dharmasindhu* p. 330, two views): at
-the second year's start, the death's first anniversary, or on the
-eleventh day with the first monthly, the view Dhakal records for Nepal."""
-
-FirstYearAdhika = Literal["ADHIKA", "NIJA"]
-"""Which month the first anniversary takes when its month is doubled
-(C666): the adhika, the thirteenth month, or the ordinary one, Nepal's
-barkhi."""
-
-SapindanaAt = Literal["ELEVENTH_DAY", "TWELFTH_DAY", "TRAIPAKSHIKA", "YEAR_END"]
-"""The day the sapindana is kept on (*Dharmasindhu* p. 331)."""
-
-UnaDay = Literal["DAY_BEFORE", "ONE_TITHI", "TWO_TITHIS", "THREE_TITHIS"]
-"""How far short an *ūna* rite is kept (*Dharmasindhu* p. 330): the day
-before the day it is short of (Madhava's), or the tithi one, two or three
-short, its last occurrence before."""
-
-
-class FirstYearRequest(TypedDict, total=False):
-    """A death's first year, as a request asks it (`03-design/shraddha.md`
-    §3.3). `key` is the consumer's own, which the answer repeats; `at` the
-    death, a UTC Julian day; and every reading the *Dharmasindhu*'s when
-    left out: `night` `"THIRDS"`, `firstAbdika` `"SECOND_YEAR"`,
-    `firstYearAdhika` `"ADHIKA"`, `sapindana` `"TWELFTH_DAY"` and `una`
-    `"DAY_BEFORE"`. `window` is a rite's time in place of both forms'
-    (kutapa to rauhina for the ekoddishta, aparahna for the parvana), as a
-    festival rule spells it: `{"window": "DAY_MUHURTA", "from": 8, "to": 9}`.
-
-    >>> asked: FirstYearRequest = {"key": "GRANDFATHER", "at": 2461051.677083,
-    ...     "firstAbdika": "ELEVENTH_DAY", "firstYearAdhika": "NIJA"}  # Dhakal's readings for Nepal
-    """
-
-    key: Required[str]
-    at: Required[float]
-    night: NightRule
-    firstAbdika: FirstAbdika
-    firstYearAdhika: FirstYearAdhika
-    sapindana: SapindanaAt
-    una: UnaDay
-    window: Mapping[str, Any]
 
 
 Rite = Literal[
@@ -9299,22 +9254,6 @@ class Eclipses:
     provenance: Provenance
     """What computed them, the window searched among its conventions, and
     the hash of `value`."""
-
-
-GocharRequest = TypedDict(
-    "GocharRequest",
-    {"instants": Required[Sequence[float]], "from": Literal["MOON", "LAGNA"], "ashtakavarga": bool},
-    total=False,
-)
-GocharRequest.__doc__ = """The transits to read against every chart of a request
-(`03-design/gochar.md`): `instants`, UTC Julian days, at least one, and
-`from`, what to count the houses from — `"MOON"` (Phaladeepika ch. 26 v. 1's,
-the default) or `"LAGNA"` — and `ashtakavarga`, true to judge the seven by the
-natal bindus too (`03-design/gochar-ashtakavarga.md`). A functional `TypedDict` because `from` is a
-keyword, and the record is spelt as every binding spells it.
-
->>> asked: GocharRequest = {"instants": [2460676.5], "from": "LAGNA"}
-"""
 
 
 @dataclass(frozen=True)
@@ -10403,163 +10342,12 @@ BalanceMeasure = Literal["SPATIAL", "TEMPORAL"]
 """How a dasha's balance is measured: by the elapsed arc of the seed span,
 or by the elapsed time."""
 
-BirthPeriod = Literal["COMPRESSED", "ELAPSED"]
-"""How a dasha's birth period is divided among its sub-periods: each its
-share of the balance the birth period runs for, or of the whole period,
-which began before birth."""
-
-
-class AnnualDashaRules(TypedDict, total=False):
-    """Where the sources differ on an annual dasha, each a named reading
-    (`03-design/annual-dashas.md`).
-
-    >>> rules: AnnualDashaRules = {"clock": {"DAYS": 360}, "depth": 1}
-    """
-
-    clock: Union[Literal["SUN_DEGREES", "EVEN"], "YearOfDays"]
-    """What a unit of the year is (crux C122): `"SUN_DEGREES"`, the Sun's
-    motion through one degree and the source's own, so the year closes on
-    the next return; an `"EVEN"` share of the time between the returns; or
-    `{"DAYS": n}`, the whole year as so many civil days from the return,
-    the printed durations (360, and 365 for the Patyayini)."""
-
-    balance: Literal["NATAL_MOON", "ENTRY_MOON", "WHOLE"]
-    """Where a nakshatra year's balance comes from (crux C123): what
-    remained of the birth Moon's nakshatra, the source's own; the Moon's at
-    the return; or none."""
-
-    measure: BalanceMeasure
-    """How the balance is measured, by arc or by time; absent, each
-    balance's source's own: by arc for the birth Moon, by time for the Moon
-    at the return."""
-
-    birth_period: BirthPeriod
-    """How the first lord's two pieces are divided among sub-lords, as the
-    natal birth period's; `"COMPRESSED"` by default."""
-
-    depth: int
-    """How many levels the periods go down: 2, mahadashas and antardashas,
-    by default."""
-
 
 class YearOfDays(TypedDict):
     """A year of so many civil days from the return, keyed as every
     variant is: `{"DAYS": 360}`."""
 
     DAYS: float
-
-
-class SahamStrengthReadings(TypedDict, total=False):
-    """Where the sources differ on a saham's strength
-    (`03-design/tajika-saham-strength.md`).
-
-    >>> readings: SahamStrengthReadings = {"natures": "PARASHARI"}
-    """
-
-    natures: Literal["CHAPTER", "PARASHARI"]
-    """Which planets are benefic and malefic: the chapter's own, the Sun a
-    malefic among them, or the catalogue's Parashari natures."""
-
-    friendship: Literal["POSITIONAL", "NATURAL"]
-    """Tajika's positional friendship, the source's, or the catalogue's
-    natural one."""
-
-    weak_below: int
-    """The Vishwa bala below which a saham's lord is weak, in **sub-sub
-    units**, 3600 to a unit: `5 * 3600` by default."""
-
-
-class HarshaRules(TypedDict, total=False):
-    """Where the sources differ on the Harsha bala
-    (`03-design/tajika-harsha.md`)."""
-
-    venus: Literal["FIFTH", "TWELFTH"]
-    """Venus's house of joy: the verse's fifth, or the twelfth a widely
-    used program reads."""
-
-
-class SahamRules(TypedDict, total=False):
-    """Where the sources differ on a saham, each a named reading
-    (`03-design/tajika-sahams.md`).
-
-    >>> rules: SahamRules = {"add_sign": "SIGNS", "houses": "EQUAL"}
-    """
-
-    add_sign: Literal["DEGREES", "SIGNS", "NEVER"]
-    """When a saham is carried a sign further: when c does not fall between
-    b and a by degrees, the source's own; by whole signs, as a widely used
-    program reads it; or never."""
-
-    houses: Literal["SRIPATI", "CHALIT", "EQUAL"]
-    """Where a house's point stands: Sripati's mid-point built from the
-    angles, the source's own; the chart's chalit under its profile; or
-    equal houses from the lagna's degree."""
-
-    roga: Literal["LAGNA", "SATURN"]
-    """Roga's formula: lagna − Moon + lagna, or the other authority's
-    Saturn − Moon + lagna."""
-
-
-class YogaRules(TypedDict, total=False):
-    """Where the source leaves the sixteen Tajika yogas a choice, each a
-    named reading (`03-design/tajika-yogas.md`).
-
-    >>> rules: YogaRules = {"tambira": "EITHER_LORD", "strong_from": 12 * 3600}
-    """
-
-    drishti: "DrishtiRules"
-    """How a pair less than a degree past reads (crux C112)."""
-
-    weak_below: int
-    """The strength below which a planet with no dignity is weak, in
-    **sub-sub units**, 3600 to a unit: `5 * 3600` by default (crux C116)."""
-
-    strong_from: int
-    """The strength from which a planet is strong, sub-sub units; `10 * 3600`
-    by default."""
-
-    tambira: Literal["KARYESHA", "EITHER_LORD"]
-    """Which lord a Tambira lets reach the next sign: the definition's
-    karyesha by default, or either, the source's "some authorities"."""
-
-    moon_benefic: Literal["ALWAYS", "WAXING"]
-    """When the Moon counts among Kuttha's benefics: always by default,
-    Charak's list, or waxing, the commentary's "full Moon" (crux C117)."""
-
-
-class DrishtiRules(TypedDict, total=False):
-    """How the Tajika aspects read a pair less than a degree past."""
-
-    sub_degree: Literal["POORNA", "ISHRAFA"]
-    """Poorna, the default, or Ishrafa (crux C112)."""
-
-
-class VarsheshaRules(TypedDict, total=False):
-    """Where the sources differ on the lord of the year, each a named
-    reading (`03-design/varshesha.md`).
-
-    >>> rules: VarsheshaRules = {"moon": "LIKE_ANY_OTHER"}
-    """
-
-    none_aspects: Literal["MUNTHA_LORD", "ANNUAL_LAGNA_LORD", "STRONGEST"]
-    """Who takes the year when nobody aspects the lagna: the Muntha's lord
-    by default, the annual lagna's lord, or the Nilakanthi's strongest of
-    the five."""
-
-    tied: Literal["MUNTHA_LORD", "DINA_RATRI_PATI"]
-    """Who takes it on an outright tie."""
-
-    moon: Literal["PASSED_OVER", "ITHASALA", "LIKE_ANY_OTHER"]
-    """Whether the Moon may hold it: passed over by default, stepping down
-    to the next claimant and else to its Ithasala successor; the
-    Nilakanthi's successor at once; or like any other."""
-
-    moon_partner: Literal["ANY_PLANET", "OFFICE_BEARER"]
-    """Who may succeed the Moon: any planet by default, or only an
-    office-bearer."""
-
-    drishti: "DrishtiRules"
-    """How the Ithasala the Moon's successor needs is read."""
 
 
 class VarshaPlace(TypedDict):
@@ -10786,11 +10574,6 @@ class TajikaMatter:
         return any(one.yoga == yoga for one in self.held)
 
 
-PrashnaTense = Literal["UNSPECIFIED", "FUTURE", "PAST"]
-"""When the matter falls, a `PrashnaQuestion` `tense`: it decides whether a
-separation fails the matter or finds it past (C370)."""
-
-
 class PrashnaQuestion(TypedDict, total=False):
     """What a prashna asks: `house`, the matter's house 1 to 12, which the
     verdict's I.3 clauses and the Tajika links read; `number`, the
@@ -10802,116 +10585,12 @@ class PrashnaQuestion(TypedDict, total=False):
     tense: PrashnaTense
 
 
-KshinaRule = Literal["DARK_EIGHTH_TO_BRIGHT_EIGHTH", "DARK_ELEVENTH_TO_NEW_MOON"]
-"""When the Moon is kshina, a `PrashnaMoonRules` `kshina`."""
-
-
 class PrashnaMoonRules(TypedDict, total=False):
     """How the Moon's weaknesses are read (Samjna Tantra vv. 73–74, C352):
     `kshina`, `DARK_EIGHTH_TO_BRIGHT_EIGHTH` (the gloss's, the default) or
     `DARK_ELEVENTH_TO_NEW_MOON` (its "some say")."""
 
     kshina: KshinaRule
-
-
-OfficeOrder = Literal["GLOSS", "HIGHEST", "LOWEST"]
-"""Which office counts when a graha holds several, an `OfficeRules` `order`
-(C371)."""
-
-DrekkanaReading = Literal["TAJIKA", "PARASHARI"]
-"""Which drekkana is a graha's own, an `OfficeRules` `drekkana`."""
-
-EnemySign = Literal["TAJIKA", "IGNORED"]
-"""Whether an enemy's sign makes a graha adhama, an `OfficeRules` `enemy`."""
-
-HuddaTable = Literal["NILAKANTHI", "CHARAK"]
-"""Which printing of the Hudda table, an `OfficeRules` `hudda` (C109)."""
-
-
-class OfficeRules(TypedDict, total=False):
-    """How a Kamboola's offices are read (Samjna Tantra vv. 36–46), the
-    gloss's own by default: `order` (`GLOSS`, `HIGHEST` or `LOWEST`),
-    `drekkana` (`TAJIKA` or `PARASHARI`), `enemy` (`TAJIKA` or `IGNORED`)
-    and `hudda` (`NILAKANTHI` or `CHARAK`)."""
-
-    order: OfficeOrder
-    drekkana: DrekkanaReading
-    enemy: EnemySign
-    hudda: HuddaTable
-
-
-PiscesRising = Literal["BOTH_WAYS", "SHIRSHODAYA"]
-"""How Pisces rises, a `PrashnaRules` `pisces`."""
-
-RisingVarga = Literal["NAVAMSHA", "SHADVARGA"]
-"""Whose the rising varga is (C336), a `PrashnaRules` `risingVarga`: the
-rising navamsha's lord, or the majority of the lagna's six vargas."""
-
-TimingRule = Literal["STRONGEST_GRAHA", "FIRST_OCCUPIED", "MOON_DAYS", "BASELINE"]
-"""Which rule times the matter, a `PrashnaRules` `timing`."""
-
-MookRule = Literal["SHATPANCHASHIKA", "MOON_HOUSE", "BASELINE"]
-"""Which rule reads an unspoken question, a `PrashnaRules` `mook`."""
-
-ScoreRule = Literal["OFF", "BASELINE"]
-"""Whether the baseline engine's points come beside the clauses, a
-`PrashnaRules` `score`."""
-
-
-SettingPart = Literal["NAVAMSHA_SIGN", "NAVAMSHA_ARC"]
-"""What the Sun's setting part is (Samjna Tantra v. 72, C377), a
-`WeaknessRules` `setting`."""
-
-
-class WeaknessRules(TypedDict, total=False):
-    """How v. 72's weaknesses are read: `setting`, `NAVAMSHA_SIGN` (the
-    default) or `NAVAMSHA_ARC`."""
-
-    setting: SettingPart
-
-
-MoonScope = Literal["EVERY", "GAIN"]
-"""Which questions v. 96's "all yogas are fruitless without the Moon"
-governs (C376), a `PrashnaRules` `moon_scope`."""
-
-
-GradedRule = Literal["OFF", "PARASHARI", "TAJIKA"]
-"""Whether the Bhuvanapradipa's graded yogas are read, and by which aspect
-(C373, open: `OFF` by default), a `PrashnaRules` `graded`."""
-
-
-class PrashnaRules(TypedDict, total=False):
-    """The readings a prashna is given under, one knob per crux, the texts'
-    own by default: `pisces` (`BOTH_WAYS` or `SHIRSHODAYA`), `risingVarga`
-    (`NAVAMSHA` or `SHADVARGA`), `timing`
-    (`STRONGEST_GRAHA`, `FIRST_OCCUPIED`, `MOON_DAYS` or the unsourced
-    `BASELINE`), `mook` (`SHATPANCHASHIKA`, `MOON_HOUSE` or `BASELINE`),
-    `moon`, `offices`, `weakness`, `moonScope` (`EVERY` or `GAIN`),
-    `graded` (`OFF`, `PARASHARI` or `TAJIKA`) and `score` (`OFF` or
-    `BASELINE`)."""
-
-    pisces: PiscesRising
-    risingVarga: RisingVarga
-    timing: TimingRule
-    mook: MookRule
-    moon: PrashnaMoonRules
-    offices: OfficeRules
-    weakness: WeaknessRules
-    moonScope: MoonScope
-    graded: GradedRule
-    score: ScoreRule
-
-
-class PrashnaRequest(TypedDict, total=False):
-    """A question to read every chart of a request as the chart of its
-    moment (`03-design/prashna.md`), every field optional. A prashna weighs
-    the seven by their Shadbala, so it asks for that too.
-
-    >>> asked: PrashnaRequest = {"question": {"house": 7}, "rules": {"mook": "MOON_HOUSE"}}
-    """
-
-    question: PrashnaQuestion
-    rules: PrashnaRules
 
 
 @dataclass(frozen=True)
@@ -11143,63 +10822,6 @@ class Prashna:
     """The sign of the querent's number; `None` unless one was given."""
 
 
-FunctionalScheme = Literal["LAGHU_PARASHARI", "BASELINE"]
-"""Which scheme judges the grahas' functional natures, a `FunctionalRules`
-`scheme`."""
-
-
-class FunctionalRules(TypedDict, total=False):
-    """Which scheme judges the grahas' functional natures: `scheme`,
-    `LAGHU_PARASHARI` (the default) or the baseline engine's unsourced
-    `BASELINE` (C331)."""
-
-    scheme: FunctionalScheme
-
-
-RikSource = Literal["BPHS", "YAJNAVALKYA"]
-"""Which text's ṛk Rahu's śānti gives, a `ShantiRules` `rik`."""
-
-
-class ShantiRules(TypedDict, total=False):
-    """Which text's ṛk Rahu's śānti gives: `rik`, `BPHS` (the default) or
-    `YAJNAVALKYA`."""
-
-    rik: RikSource
-
-
-SunWithKetu = Literal["SHIVA", "SURYA"]
-"""Whom the Sun with Ketu is devoted to, a `DevataRules` `sunWithKetu`."""
-
-
-class DevataRules(TypedDict, total=False):
-    """Whom the Sun with Ketu is devoted to: `sunWithKetu`, `SHIVA` (the
-    default) or `SURYA` (C354)."""
-
-    sunWithKetu: SunWithKetu
-
-
-class RemedyRules(TypedDict, total=False):
-    """The readings remedies are given under, one knob per crux, the texts'
-    own by default."""
-
-    functional: FunctionalRules
-    shanti: ShantiRules
-    devata: DevataRules
-
-
-class RemedyRequest(TypedDict, total=False):
-    """The remedies to read in every chart of a request
-    (`03-design/remedies.md`), every field optional. An `at`, a Julian day
-    in UT, reads the Vimśottarī periods running then, so it asks for that
-    daśā too.
-
-    >>> asked: RemedyRequest = {"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}}
-    """
-
-    at: float
-    rules: RemedyRules
-
-
 @dataclass(frozen=True)
 class FunctionalClause:
     """A Laghu Parashari clause that made a graha's nature, by `kind`
@@ -11407,15 +11029,6 @@ class PakshiStarNative(TypedDict, total=False):
     rule: Literal["BY_PAKSHA", "SINGLE"]
 
 
-class PakshiRules(TypedDict, total=False):
-    """What the days are read under, each the texts' default when left
-    out: `clock` (P3), `subs` (P4) and `relations` (P6)."""
-
-    clock: Literal["STRETCHED", "NAZHIGAI"]
-    subs: Literal["AGASTYA", "PULIPPANI"]
-    relations: Literal["AGASTYA", "PULIPPANI"]
-
-
 @dataclass(frozen=True)
 class PakshiSpan:
     """A span of time, Julian days (UTC)."""
@@ -11505,30 +11118,6 @@ class LalKitabCycle(TypedDict):
 
     planet: Union[Graha, str]
     year: int
-
-
-class VarshphalRows(TypedDict):
-    """A varshphal list as a reader writes it: 120 rows, row `y − 1` for year
-    of life `y`, its entry `h − 1` the house natal house `h` reaches that
-    year. The SDK does not ship the book's list (`03-design/lalkitab.md`
-    §3.6) and refuses one that is not a permutation a row and a Latin
-    square every twelve years."""
-
-    rows: Sequence[Sequence[int]]
-
-
-class LalKitabRequest(TypedDict, total=False):
-    """Lal Kitab to read in every chart of a request
-    (`03-design/lalkitab.md`), every field optional: the cycle's start (the
-    book's general table, Saturn from the first year, when left out), a
-    year of life to read, and the list its annual teva is read from.
-
-    >>> asked: LalKitabRequest = {"cycle": {"planet": "graha.VENUS", "year": 17}, "year": 43}
-    """
-
-    cycle: LalKitabCycle
-    year: int
-    varshphal: VarshphalRows
 
 
 @dataclass(frozen=True)
@@ -11687,26 +11276,6 @@ class LalKitab:
     """The year asked for; `None` unless the request named one."""
 
 
-TithiRule = Literal["NATAL_SIGN", "NEAREST_RETURN"]
-"""Which phase return of a year is its tithi pravesha
-(`03-design/tithi-pravesha.md`): `NATAL_SIGN`, the practice's own, the
-return while the Sun is in its natal sign (C444 to C446), or
-`NEAREST_RETURN`, the return nearest the solar return whatever the sign."""
-
-
-class TithiPraveshaRequest(TypedDict, total=False):
-    """The tithi praveshas to find for every chart's years
-    (`03-design/tithi-pravesha.md`).
-
-    >>> asked: TithiPraveshaRequest = {"through": 40, "rule": "NEAREST_RETURN"}
-    """
-
-    through: Required[int]
-    """The last year, 1 to 200, counted as `Pravesha.year` counts it."""
-    rule: TithiRule
-    """Which phase return of each year is taken; `NATAL_SIGN` when left out."""
-
-
 class MasaPraveshaRequest(TypedDict, total=False):
     """One year's month charts, or one month's day charts, to find for
     every chart (`03-design/annual-chart.md`, "The month's and the day's
@@ -11737,60 +11306,6 @@ class MasaPraveshaRequest(TypedDict, total=False):
     dasha: "MasaDashaRules"
     """The readings each month's dasha is computed under; the verse's own
     by default."""
-
-
-class MasaDashaRules(TypedDict, total=False):
-    """The readings a month's dasha is computed under
-    (`03-design/varshesha.md`, "The month's dasha", C477).
-
-    >>> civil: MasaDashaRules = {"clock": "DAYS", "sign": "OWNED"}
-    """
-
-    sign: Literal["OCCUPIED", "OWNED"]
-    """`OCCUPIED`, the sign the stronger lord stands in (the default), or
-    `OWNED`, the sign it rules here: the Muntha's or the month lagna."""
-    clock: Literal["SUN_DEGREES", "EVEN", "DAYS"]
-    """What a Hudda's degree is in time: `SUN_DEGREES`, the Sun's motion
-    through it (the default); `EVEN`, an equal share of the month; or
-    `DAYS`, a civil day."""
-    table: HuddaTable
-    """Which printing of the Hudda table (C109): `NILAKANTHI` by
-    default."""
-
-
-class MasaPhalaRules(TypedDict, total=False):
-    """The floors the month's and the day's results judge strong and weak
-    by, and when the Moon wanes (`03-design/varshesha.md`, "The month's
-    results").
-
-    >>> floors: MasaPhalaRules = {"strong_from": 9 * 3600}
-    """
-
-    weak_below: int
-    """The strength below which a planet with no dignity is weak, in
-    **sub-sub units**, 3600 to a unit: `5 * 3600` by default."""
-    strong_from: int
-    """The strength from which a planet is strong, sub-sub units;
-    `10 * 3600` by default, never below `weak_below`."""
-    kshina: KshinaRule
-    """When the Moon wanes and so counts a malefic: the gloss's
-    `DARK_EIGHTH_TO_BRIGHT_EIGHTH` by default."""
-
-
-class MaseshaRules(TypedDict, total=False):
-    """The readings the month's lord parts on (`03-design/varshesha.md`,
-    "The month's lord").
-
-    >>> others: MaseshaRules = {"reading": "LAGNA_LORD"}
-    """
-
-    reading: Literal["CHAIN", "LAGNA_LORD"]
-    """`CHAIN`, the year lord's chain over the six (the verse's own), or
-    `LAGNA_LORD`, the month lagna's lord (v. 5's "others")."""
-    muntha: Literal["SIGN_START", "NATAL_DEGREE"]
-    """Where the Muntha stands inside its sign; the year's own default."""
-    chain: "VarsheshaRules"
-    """The year lord's readings, which the chain takes "as for the year"."""
 
 
 @dataclass(frozen=True)
@@ -12149,61 +11664,11 @@ ChakraVowel = Literal["A", "AA", "I", "II", "U", "UU", "RI", "RII", "LI", "LII",
 """The sixteen vowels in the order the Sarvatobhadra chakra lays them, a to
 the visarga."""
 
-VedhaMotion = Literal["FAST", "MEAN", "RETROGRADE"]
-"""A graha's motion as v. 15 sorts it: fast looks left, mean ahead,
-retrograde right."""
-
 VedhaLine = Literal["LEFT", "FRONT", "RIGHT"]
 """One of a graha's three lines of sight."""
 
 VedhaPoint = Literal["NAKSHATRA", "LETTER", "VOWEL", "TITHI", "RASHI", "VARA"]
 """A native's point a vedha can strike."""
-
-
-class NameSounds(TypedDict):
-    """A name's sounds as the chakra reads them: the first letter in
-    Devanagari (a conjunct's first consonant, or the vowel a name begins
-    with) and the vowel of its first syllable.
-
-    >>> rama: NameSounds = {"letter": "र", "vowel": "A"}
-    """
-
-    letter: str
-    vowel: ChakraVowel
-
-
-class SarvatobhadraRules(TypedDict, total=False):
-    """The readings the texts leave open (C429 to C431), each defaulting to
-    `03-design/gochar.md` §8's."""
-
-    front: Literal["STAR_ONLY", "EVERY_CELL"]
-    """What the front strikes: the star at its far end alone, or every cell."""
-    sight: Literal["TEXT", "ALL_THREE", "ONE_EACH"]
-    """Which lines a graha looks along."""
-    corner: Literal["FOUR_VOWELS", "OUTER_VOWEL"]
-    """What a graha at a corner's juncture strikes."""
-
-
-SarvatobhadraRequest = TypedDict(
-    "SarvatobhadraRequest",
-    {
-        "instants": Required[Sequence[float]],
-        "name": NameSounds,
-        "motion": Union[Literal["SKY", "SUN"], Mapping[Literal["GIVEN"], Sequence[VedhaMotion]]],
-        "rules": SarvatobhadraRules,
-    },
-    total=False,
-)
-SarvatobhadraRequest.__doc__ = """The Sarvatobhadra chakra to read in every chart
-(`03-design/gochar.md` §8): `instants`, UTC Julian days, at least one;
-`name`, whose first letter and vowel are points too; `motion`, where the five
-from Mars take theirs — `"SKY"` (the default, each speed against its mean
-motion), `"SUN"` (vv. 16–18's rule, the sky's where the verses are silent) or
-`{"GIVEN": [...]}` for Mars, Mercury, Jupiter, Venus and Saturn (C430); and
-`rules`.
-
->>> asked: SarvatobhadraRequest = {"instants": [2460676.5], "motion": "SUN"}
-"""
 
 
 @dataclass(frozen=True)
@@ -12320,22 +11785,6 @@ PurifierNative = Literal["HUMAN", "BEAST", "BIRD", "CREEPER"]
 """What the native is, which decides the houses that purify, a
 `PurifierRules` `native`."""
 
-GulikaExtension = Literal["WHEN_TWO_FAIL", "ALWAYS", "NEVER"]
-"""When Gulika's extension (v. 76) is counted: when neither the pranapada
-nor the Moon holds, at every instant, or never, a `PurifierRules`
-`gulikaExtension`."""
-
-PurifyAs = Literal["BAR", "WEIGHT"]
-"""Whether a lagna no purifier holds is removed or only weighed, a
-`PurifierRules` `purifyAs`."""
-
-PranapadaRule = Literal["VERSE", "PRINTED_EXAMPLE", "SDK_POINT"]
-"""How the pranapada is reckoned, a `PurifierRules` `pranapadaRule` and a
-`PranapadaHouseRules` `pranapada`."""
-
-GulikaAt = Literal["END", "START"]
-"""Which end of Saturn's eighth is Gulika, a `PurifierRules` `gulikaAt`."""
-
 
 class PurifierRules(TypedDict, total=False):
     """The purifier's knobs, one per crux (BPHS ch. 2 vv. 67–78), the texts'
@@ -12365,85 +11814,9 @@ class PurifyRequest(TypedDict, total=False):
     rules: PurifierRules
 
 
-HouseCount = Literal["SIGN", "SRIPATI_BHAVA"]
-"""How the pranapada's house is counted from the lagna, by sign or by
-Sripati's bhava, a `PranapadaHouseRules` `count`."""
-
-
-class PranapadaHouseRules(TypedDict, total=False):
-    """How the pranapada's house is judged (Jha's print ch. 3 vv. 71–74):
-    `pranapada` (a `PurifierRules` `pranapadaRule`), `count` (`SIGN` or
-    `SRIPATI_BHAVA`) and `firstAuspicious`, whether the 1st is."""
-
-    pranapada: PranapadaRule
-    count: HouseCount
-    firstAuspicious: bool
-
-
-NishekaMonth = Literal["THIRTY_DAYS", "SOLAR", "SYNODIC"]
-"""The month a sign is read as, a `NishekaRules` `month`."""
-
-NishekaMandi = Literal["START", "END"]
-"""Which end of Saturn's eighth Mandi is, for the conception, a
-`NishekaRules` `mandiAt`."""
-
-NinthBhava = Literal["SRIPATI", "WHOLE_SIGN", "EQUAL"]
-"""Which point the nisheka measures to as the 9th bhava, a `NishekaRules`
-`ninth`."""
-
-SaturnTerm = Literal["LONGITUDE", "BHAVA_MADHYA"]
-"""Which point of Saturn the nisheka measures from: his longitude, or the
-mid-point of his bhava, a `NishekaRules` `saturn`."""
-
-InvisibleHalf = Literal["BY_LONGITUDE", "BY_SIGN"]
-"""How the invisible half is read: the half-circle ahead of the lagna's
-degree, or the 1st to the 6th signs, a `NishekaRules` `invisibleHalf`."""
-
-
-class NishekaRules(TypedDict, total=False):
-    """How the nisheka counts back (BPHS ch. 3 vv. 25–29): `month`
-    (`THIRTY_DAYS`, `SOLAR` or `SYNODIC`), `mandiAt` (`START` or `END`),
-    `ninth` (`SRIPATI`, `WHOLE_SIGN` or `EQUAL`), `saturn` (`LONGITUDE` or
-    `BHAVA_MADHYA`) and `invisibleHalf` (`BY_LONGITUDE` or `BY_SIGN`)."""
-
-    month: NishekaMonth
-    mandiAt: NishekaMandi
-    ninth: NinthBhava
-    saturn: SaturnTerm
-    invisibleHalf: InvisibleHalf
-
-
-ConceptionCount = Literal["NEXT_AFTER_DVADASHAMSHA", "FROM_MOON_SIGN", "FROM_ARIES"]
-"""The count to the birth Moon's sign, a `ConceptionMoonRules` `count`."""
-
-ConceptionRising = Literal["SIGN", "NAVAMSHA"]
-"""What of the conception's rising point is classed as a day or a night
-sign, a `ConceptionMoonRules` `rising`."""
-
 ConceptionPisces = Literal["EITHER", "DAY"]
 """What Pisces is: strong by day or by night, so either, or a day sign, a
 `ConceptionMoonRules` `pisces`."""
-
-
-class ConceptionMoonRules(TypedDict, total=False):
-    """How *Brihat Jataka* IV.21 is read: `count` (`NEXT_AFTER_DVADASHAMSHA`,
-    `FROM_MOON_SIGN` or `FROM_ARIES`), `rising` (`SIGN` or `NAVAMSHA`) and
-    `pisces` (`EITHER` or `DAY`)."""
-
-    count: ConceptionCount
-    rising: ConceptionRising
-    pisces: ConceptionPisces
-
-
-class ConceptionRules(TypedDict, total=False):
-    """What the conception reports read under: the `purifier`'s rules, which
-    judge the conception's lagna (v. 29: "as before"), and each report's
-    own, `pranapadaHouse`, `nisheka` and `moon`."""
-
-    purifier: PurifierRules
-    pranapadaHouse: PranapadaHouseRules
-    nisheka: NishekaRules
-    moon: ConceptionMoonRules
 
 
 class AttendantFacts(TypedDict, total=False):
@@ -12458,10 +11831,6 @@ class AttendantFacts(TypedDict, total=False):
 BirthPresentation = Literal["HEAD", "FEET", "HANDS"]
 """What came first at the birth, a `BirthFacts` `presentation`."""
 
-LampLevel = Literal["FULL", "HALF", "SPENT"]
-"""How much of the lamp's oil or wick was left, a `BirthFacts` `oil` and
-`wick`."""
-
 
 class BirthFacts(TypedDict, total=False):
     """What the family remembers of the birth, every fact optional; a clause
@@ -12474,41 +11843,6 @@ class BirthFacts(TypedDict, total=False):
     oil: LampLevel
     wick: LampLevel
     attendants: AttendantFacts
-
-
-MoonSees = Literal["ANY_ASPECT", "FULL"]
-"""What the Moon's seeing the lagna asks of her aspect: any aspect, or only
-the full one, a `CircumstanceRules` `moonSees`."""
-
-SunFallen = Literal["NINTH_OR_EIGHTH", "EITHER_SIDE"]
-"""Which houses are fallen from the 10th for the Sun: the 9th or the 8th,
-or either side, a `CircumstanceRules` `sunFallen`."""
-
-PresentationBy = Literal["RISING_SIGN", "LAGNA_LORD_MOTION"]
-"""Which reading of the presentation is asked: as the rising sign rises, or
-by the lagna lord's motion, a `CircumstanceRules` `presentationBy`."""
-
-BetweenBy = Literal["DEGREE", "SIGN"]
-"""How the grahas between the lagna and the Moon are counted, by degree or
-by sign, a `CircumstanceRules` `betweenBy`."""
-
-OutsideHalf = Literal["VISIBLE", "INVISIBLE"]
-"""Which half of the attendants is outside the room, a `CircumstanceRules`
-`outside`."""
-
-
-class CircumstanceRules(TypedDict, total=False):
-    """The knobs *Brihat Jataka* ch. V's circumstances take, one per crux:
-    `moonSees` (`ANY_ASPECT` or `FULL`), `sunFallen` (`NINTH_OR_EIGHTH` or
-    `EITHER_SIDE`), `presentationBy` (`RISING_SIGN` or
-    `LAGNA_LORD_MOTION`), `betweenBy` (`DEGREE` or `SIGN`) and `outside`
-    (`VISIBLE` or `INVISIBLE`)."""
-
-    moonSees: MoonSees
-    sunFallen: SunFallen
-    presentationBy: PresentationBy
-    betweenBy: BetweenBy
-    outside: OutsideHalf
 
 
 class CircumstanceRequest(TypedDict, total=False):
@@ -12544,10 +11878,6 @@ LifeEventKind = Literal[
 ]
 """What happened, a `LifeEventRequest` `kind`."""
 
-DatePrecision = Literal["DAY", "MONTH", "YEAR"]
-"""How finely a life event's date is known, a `LifeEventRequest`
-`precision`."""
-
 EventConfidence = Literal["CERTAIN", "PROBABLE", "UNCERTAIN"]
 """How sure the family is of a life event, a `LifeEventRequest`
 `confidence`."""
@@ -12573,17 +11903,6 @@ class LifeEventRequest(TypedDict, total=False):
 DashaYearLength = Literal["JULIAN_365_25", "SAVANA_360", "SIDEREAL", "TROPICAL", "LUNAR", "NAKSHATRA_324"]
 """The length of a dasha year: 365.25 days, 360, the sidereal or tropical
 year, twelve lunar months, or 324 days."""
-
-AfterCycle = Literal["END", "REPEAT"]
-"""What a dasha answers past the end of its cycle: no period, or the cycle
-again from its first lord."""
-
-SeedOverflow = Literal["WRAP_TO_START", "REJECT"]
-"""What a seed outside a conditional dasha's cycle does: wrap to the start,
-flagged, or refuse."""
-
-AshtottariGrouping = Literal["THREE_EACH", "FOUR_AND_THREE"]
-"""How Ashtottari's eight lords share the nakshatras (crux C5)."""
 
 
 class BaselineDashaRules(TypedDict, total=False):
@@ -12633,21 +11952,6 @@ class SvarodayaRequest(TypedDict, total=False):
     instant: more than none and at most 1080."""
 
     minutes: Required[float]
-
-
-class RectificationRequest(TypedDict, total=False):
-    """A chart read as a birth time to rectify, the chart's instant the time
-    on record (`03-design/rectification.md`), every member optional and
-    each answering only when asked.
-
-    >>> asked: RectificationRequest = {"purify": {"minutes": 30}, "circumstance": {"facts": {"fatherPresent": False}}}
-    """
-
-    purify: PurifyRequest
-    conception: ConceptionRules
-    circumstance: CircumstanceRequest
-    baseline: BaselineRectificationRequest
-    svarodaya: SvarodayaRequest
 
 
 @dataclass(frozen=True)
@@ -13547,89 +12851,6 @@ def _theme_json(theme: Optional[Theme]) -> Optional[str]:
     )
 
 
-ShippedRules = Literal["DOSHAS", "YOGAS", "GANDANTAS", "ARISHTAS", "READINGS", "NABHASAS"]
-"""A set of rules the SDK ships."""
-
-
-class AyurdayaRules(TypedDict, total=False):
-    """How Pindayu, Nisargayu and Amsayu are read (cruxes C104, C302 to
-    C304); every field optional, BPHS's readings by default.
-
-    >>> parijata: AyurdayaRules = {"enemy_exempt": "mars", "enmity": "compound", "rising": "every"}
-    """
-
-    combine: Literal["largest", "each"]
-    nisarga: Literal["like-pindayu", "listed"]
-    amsayu_multiplied: bool
-    enemy_exempt: Literal["retrograde", "mars"]
-    enmity: Literal["natural", "compound"]
-    rising: Literal["malefic", "every"]
-
-
-class ThreePairsRules(TypedDict, total=False):
-    """How the three pairs are read (crux C103); every field optional,
-    the verses' by default."""
-
-    rectification: Literal["remaining", "elapsed"]
-    basis: Literal["class-years", "per-pair"]
-    saturn: Literal["lowers", "raises"]
-
-
-class RasmiRules(TypedDict, total=False):
-    """How the seven grahas' rays and Rasmija years are read (*Jataka Parijata* ch. 5 vv. 22
-    to 25, cruxes C305 to C307); every field optional, the translator's
-    note's readings by default.
-
-    >>> verse: RasmiRules = {"place": "sign"}
-    """
-
-    place: Literal["dwadasamsa", "sign"]
-
-
-class ChakrayusRules(TypedDict, total=False):
-    """How the wheel of time's span, Chakrayus, is read (*Jataka Parijata*
-    ch. 5 v. 26, crux C310); every field optional, the note's figure's by
-    default.
-
-    >>> by_pada: ChakrayusRules = {"portion": "pada"}
-    """
-
-    portion: Literal["star", "pada"]
-
-
-class AshtakavargaAyusRules(TypedDict, total=False):
-    """How the two ashtakavarga spans, Bhinnashtakavargaja and Samudaya,
-    are read (*Jataka Parijata* ch. 10 vv. 44 to 48, 70 and 71, cruxes C311
-    to C314); every field optional, *Jataka Parijata*'s by default.
-
-    >>> balabhadra: AshtakavargaAyusRules = {"measures": "bphs", "divisor": "seven-over-twenty-seven"}
-    """
-
-    measures: Literal["parijata", "bphs"]
-    divisor: Literal["thirty", "seven-over-twenty-seven"]
-    reductions: Literal["verse", "balabhadra"]
-    occupied: Literal["reduced", "raw"]
-
-
-class RuleRequest(TypedDict, total=False):
-    """The rules a request asks a chart to answer
-    (`03-design/rules-at-the-boundary.md`): shipped sets by name and a
-    consumer's own rules in the SDK's rule format. `ayurdaya`,
-    `threePairs`, `rasmi`, `chakrayus` and `ashtakavarga` choose how the
-    longevity readings are read, and are refused without `longevity`."""
-
-    shipped: List[ShippedRules]
-    rules: List[Mapping[str, Any]]
-    readings: Literal["TEXTS", "RECORDING_ENGINE"]
-    houses: bool
-    longevity: bool
-    ayurdaya: AyurdayaRules
-    threePairs: ThreePairsRules
-    rasmi: RasmiRules
-    chakrayus: ChakrayusRules
-    ashtakavarga: AshtakavargaAyusRules
-
-
 class RulesReading(TypedDict, total=False):
     """What a chart answers by rule, as the SDK writes it: `present`, each
     `{rule, result}` with the rule by key, and `houses` and `longevity` when
@@ -13639,35 +12860,6 @@ class RulesReading(TypedDict, total=False):
     houses: List[Dict[str, Any]]
     longevity: Dict[str, Any]
     unreadable: List[str]
-
-
-class PlanRequest(TypedDict, total=False):
-    """The narrative plans a request asks a chart for
-    (`03-design/plans-at-the-boundary.md`). Each composer is off by default.
-    `readings` needs `rules` beside it, since it says what the rules a chart
-    held answered, `sadeSati` needs `sade_sati` beside it, since it says
-    the periods that window found, and `gochar` needs `gochar` beside it,
-    since it says the transits at the instants that request names, one plan
-    an instant."""
-
-    placements: bool
-    readings: bool
-    strength: bool
-    houses: bool
-    positions: bool
-    aspects: bool
-    conditions: bool
-    karakas: bool
-    chalit: bool
-    phala: bool
-    bhavaBala: bool
-    vimshopaka: bool
-    panchanga: bool
-    states: bool
-    dashaPhala: bool
-    ashtakavarga: bool
-    sadeSati: bool
-    gochar: bool
 
 
 class PlanItem(TypedDict):
@@ -13976,20 +13168,14 @@ def _western_aspects_json(asked: Optional[WesternAspectRequest]) -> Optional[str
     """The Western aspects as the JSON the boundary reads, or nothing for
     none; members are written as their keys, and the SDK refuses the rest,
     naming the field from `westernAspects`."""
-    example = "{'aspects': ['TRINE', 'SQUARE']}"
-    if not isinstance(asked, Mapping):
-        return _record_json(asked, "westernAspects", example)
-    return _record_json(_aspect_table(asked), "westernAspects", example)
+    return _record_json(asked, "westernAspects", "{'aspects': ['TRINE', 'SQUARE']}")
 
 
 def _western_configurations_json(asked: Optional[WesternConfigurationRequest]) -> Optional[str]:
     """The aspect configurations as the JSON the boundary reads, or
     nothing for none; members are written as their keys, and the SDK
     refuses the rest, naming the field from `westernConfigurations`."""
-    example = "{'stelliumLeast': 4}"
-    if not isinstance(asked, Mapping):
-        return _record_json(asked, "westernConfigurations", example)
-    return _record_json(_aspect_table(asked), "westernConfigurations", example)
+    return _record_json(asked, "westernConfigurations", "{'stelliumLeast': 4}")
 
 
 def _midpoint_cells(
@@ -14038,13 +13224,7 @@ def _antiscia_json(asked: Optional[AntisciaRequest]) -> Optional[str]:
     """The antiscia as the JSON the boundary reads, or nothing for none; an
     orb model's members are written as their keys, as the aspect table's
     are, and the SDK refuses the rest, naming the field from `antiscia`."""
-    example = "{'orbs': {'model': 'LEO'}}"
-    if not isinstance(asked, Mapping):
-        return _record_json(asked, "antiscia", example)
-    written = _aspect_table(asked)
-    if "cusps" in written:
-        written["cusps"] = _written(written["cusps"])
-    return _record_json(written, "antiscia", example)
+    return _record_json(asked, "antiscia", "{'orbs': {'model': 'LEO'}}")
 
 
 def _synastry_json(asked: Optional[SynastryRequest]) -> Optional[str]:
@@ -14055,10 +13235,7 @@ def _synastry_json(asked: Optional[SynastryRequest]) -> Optional[str]:
     example = "{'partner': {'instant': 2460676.5, 'observer': Observer(...)}}"
     if not isinstance(asked, Mapping):
         return _record_json(asked, "synastry", example)
-    written = _aspect_table(asked)
-    antiscia = asked.get("antiscia")
-    if isinstance(antiscia, Mapping):
-        written["antiscia"] = _aspect_table(antiscia)
+    written: Dict[str, Any] = dict(asked)
     partner = asked.get("partner")
     if isinstance(partner, Mapping):
         written["partner"] = _partner_wire(partner, "synastry")
@@ -14095,22 +13272,6 @@ def _matching_json(asked: Optional[MatchingRequest]) -> Optional[str]:
     if isinstance(partner, Mapping):
         written["partner"] = _partner_wire(partner, "matching")
     return _record_json(written, "matching", example)
-
-
-def _aspect_table(asked: Mapping[str, Any]) -> Dict[str, Any]:
-    """An aspect table's record with its members written as their keys,
-    an orb row's included, and every other field as it is."""
-    written: Dict[str, Any] = _keyed(asked)
-    orbs = written.get("orbs")
-    if isinstance(orbs, Mapping):
-        written["orbs"] = dict(orbs)
-        rows = orbs.get("orbs")
-        if isinstance(rows, Sequence) and not isinstance(rows, (str, bytes)):
-            written["orbs"]["orbs"] = [
-                {name: _member_key(value) for name, value in row.items()} if isinstance(row, Mapping) else row
-                for row in rows
-            ]
-    return written
 
 
 def _perfection_json(perfection: Optional[PerfectionRequest]) -> Optional[str]:
@@ -15443,7 +14604,10 @@ def _camel(name: str) -> str:
 
 def _written(value: Any) -> Any:
     """A request value as JSON writes it: a member as its full key, a clause
-    as its tag and fields, a record's fields camel-cased."""
+    as its tag and fields, a natal point as an answer's `to` spells it, a
+    record's fields camel-cased."""
+    if isinstance(value, NatalPoint):
+        return {"point": value.point} if value.graha is None else {"point": value.point, "graha": value.graha.full_key}
     if isinstance(value, Catalogued):
         return value.full_key
     if isinstance(value, Member):
@@ -16161,47 +15325,14 @@ def _hits_json(hits: Optional[HitRequest]) -> Optional[str]:
     Catalogue members are written as their keys and a `NatalPoint` as the
     answer's `to`, so a caller can hand back what it was given; the rest is
     refused by the SDK, naming the field from `hits`, as in every binding."""
-    example = "{'from': 2460676.5, 'to': 2461041.5, 'grahas': ['SATURN']}"
-    if not isinstance(hits, Mapping):
-        return _record_json(hits, "hits", example)
-    return _record_json(_keyed(hits), "hits", example)
-
-
-def _keyed(record: Mapping[str, Any]) -> Dict[str, Any]:
-    """A hit list's record with every list's members written as their keys
-    and a `NatalPoint` as the answer's `to`, so a caller can hand back what
-    it was given."""
-
-    def key(value: Any) -> Any:
-        if isinstance(value, NatalPoint):
-            return {"point": value.point} if value.graha is None else {"point": value.point, "graha": value.graha.full_key}
-        if isinstance(value, Catalogued):
-            return value.full_key
-        if isinstance(value, Member):
-            return value.key
-        return value
-
-    written: Dict[str, Any] = {}
-    for name, value in record.items():
-        if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
-            written[name] = [key(one) for one in value]
-        else:
-            written[name] = value
-    return written
+    return _record_json(hits, "hits", "{'from': 2460676.5, 'to': 2461041.5, 'grahas': ['SATURN']}")
 
 
 def _progressions_json(progressions: Optional[ProgressionsRequest]) -> Optional[str]:
     """The progressions as the JSON the boundary reads, or nothing for none;
     the contacts' members are written as the hit list writes them, and the
     SDK refuses the rest, naming the field from `progressions`."""
-    example = "{'at': 2460676.5, 'year': 'NOON_SIDEREAL_TIME'}"
-    if not isinstance(progressions, Mapping):
-        return _record_json(progressions, "progressions", example)
-    written: Dict[str, Any] = dict(progressions)
-    contacts = written.get("contacts")
-    if isinstance(contacts, Mapping):
-        written["contacts"] = _keyed(contacts)
-    return _record_json(written, "progressions", example)
+    return _record_json(progressions, "progressions", "{'at': 2460676.5, 'year': 'NOON_SIDEREAL_TIME'}")
 
 
 def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
@@ -16572,7 +15703,10 @@ def _record_json(value: Optional[Mapping[str, Any]], field: str, example: str) -
     if value is None:
         return None
     if isinstance(value, Mapping):
-        return json.dumps(value)
+        # Every request crosses through one writer, so a member anywhere in
+        # it, however deep, is written as its key: an `IntEnum` left to
+        # `json.dumps` would cross as its id.
+        return json.dumps(_written(value))
     raise TeistroError(
         Status.INVALID_ARG,
         f"{field} is a request record, such as {example}",

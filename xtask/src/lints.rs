@@ -671,8 +671,9 @@ fn gate_runners(root: &Path, outcome: &mut Outcome) {
 /// schemas each language spells the record itself. That is copies of one
 /// list, which is the shape this repository keeps finding, and nothing
 /// held them together until a composer was added twice and each binding
-/// had to be remembered. Node's `PlanRequest` is generated
-/// (`03-design/generated-requests.md`), so only its answer is held here.
+/// had to be remembered. Node's and Python's `PlanRequest` are generated
+/// (`03-design/generated-requests.md`), so only their answers are held
+/// here.
 const PLAN_SURFACES: [(&str, &[&str]); 3] = [
     ("bindings/node/lib/index.d.ts", &["interface Plans {"]),
     (
@@ -681,7 +682,7 @@ const PLAN_SURFACES: [(&str, &[&str]); 3] = [
     ),
     (
         "bindings/python/teistro/__init__.py",
-        &["class PlanRequest(TypedDict", "class Plans(TypedDict"],
+        &["class Plans(TypedDict"],
     ),
 ];
 
@@ -979,12 +980,12 @@ fn layers_do_not_shadow_a_kind(root: &Path, outcome: &mut Outcome) {
     }
 }
 
-/// The request records a hand-written layer still declares, each with the
-/// reason: the layer takes the request in a shape of its own and writes the
-/// wire's, so the generated record (the wire's) is not what a caller hands
-/// it. Every other request record is the generated one
+/// The request records Node's layer still declares, each with the reason:
+/// the layer takes the request in a shape of its own and writes the wire's,
+/// so the generated record (the wire's) is not what a caller hands it.
+/// Every other request record is the generated one
 /// (`03-design/generated-requests.md`).
-const REQUEST_FACADES: [(&str, &str); 11] = [
+const NODE_FACADES: &[(&str, &str)] = &[
     (
         "AnnualPlace",
         "the layer takes `{ latitude, longitude, altitude, utcOffsetSeconds }` and writes the residence's `latitudeDeg` and `longitudeDeg`",
@@ -1028,17 +1029,89 @@ const REQUEST_FACADES: [(&str, &str); 11] = [
     ("VarshaRequest", "its place is the layer's `AnnualPlace`"),
 ];
 
-/// Each binding whose request records are generated: its hand-written
-/// layer, the generated file, and the pattern a top-level declaration in
-/// either takes, the name in its first group.
-const REQUEST_LAYERS: [(&str, &str, &str); 1] = [(
-    "bindings/node/lib/index.d.ts",
-    "bindings/node/lib/requests.d.ts",
-    r"^export (?:declare )?(?:interface|type|class|const|function|enum) (\w+)",
-)];
+/// Python's, by the same rule. The annual chart's rule records are written
+/// in Python's own snake case and the layer camel-cases them all the way
+/// down (`_camel_keys`), as it does the request that holds them.
+const PYTHON_FACADES: &[(&str, &str)] = &[
+    (
+        "AnnualDashaRules",
+        "written in snake case; the layer camel-cases it (`_camel_keys`)",
+    ),
+    (
+        "DrishtiRules",
+        "written in snake case; the layer camel-cases it (`_camel_keys`)",
+    ),
+    (
+        "FestivalRequest",
+        "its `rules` are a raw part the schema leaves untyped; the layer types the packs",
+    ),
+    (
+        "MasaPhalaRules",
+        "written in snake case; the layer camel-cases it (`_camel_keys`)",
+    ),
+    (
+        "MasaPraveshaRequest",
+        "the layer takes a `place` in the parts `found` takes and writes the residence",
+    ),
+    (
+        "MuhurtaRequest",
+        "its `rules` are a raw part the schema leaves untyped; the layer types the activities",
+    ),
+    (
+        "SahamRules",
+        "written in snake case; the layer camel-cases it (`_camel_keys`)",
+    ),
+    (
+        "SahamStrengthReadings",
+        "written in snake case; the layer camel-cases it (`_camel_keys`)",
+    ),
+    (
+        "VarshaRequest",
+        "written in snake case with a `place` in the parts `found` takes; the layer writes the wire's",
+    ),
+    (
+        "VarsheshaRules",
+        "written in snake case; the layer camel-cases it (`_camel_keys`)",
+    ),
+    (
+        "YogaRules",
+        "written in snake case; the layer camel-cases it (`_camel_keys`)",
+    ),
+];
+
+/// A binding whose request records are generated.
+struct RequestLayer {
+    /// Its hand-written layer.
+    layer: &'static str,
+    /// The generated file.
+    generated: &'static str,
+    /// The pattern a request's declaration takes in either, the name in
+    /// its first matching group.
+    pattern: &'static str,
+    /// The façades the layer keeps, each with its reason.
+    facades: &'static [(&'static str, &'static str)],
+}
+
+/// Each binding whose request records are generated. Python's pattern is a
+/// typed dictionary or a type alias, because its layer's answer classes
+/// share some request names.
+const REQUEST_LAYERS: [RequestLayer; 2] = [
+    RequestLayer {
+        layer: "bindings/node/lib/index.d.ts",
+        generated: "bindings/node/lib/requests.d.ts",
+        pattern: r"^export (?:declare )?(?:interface|type|class|const|function|enum) (\w+)",
+        facades: NODE_FACADES,
+    },
+    RequestLayer {
+        layer: "bindings/python/teistro/__init__.py",
+        generated: "bindings/python/teistro/_requests.py",
+        pattern: r"^(?:class (\w+)\([^)]*(?:TypedDict|Required)\b|(\w+) = TypedDict\(|(\w+)(?:: TypeAlias)? = (?:Literal|Union|Optional|\x22))",
+        facades: PYTHON_FACADES,
+    },
+];
 
 /// That no hand-written layer keeps a copy of a generated request record,
-/// except the façades [`REQUEST_FACADES`] lists, and that every listed
+/// except the façades [`REQUEST_LAYERS`] lists, and that every listed
 /// façade is still one.
 ///
 /// A twin type-checks and lags. Generating Node's found drift both ways:
@@ -1047,8 +1120,14 @@ const REQUEST_LAYERS: [(&str, &str, &str); 1] = [(
 /// takes, which the hand copy had right.
 fn layers_do_not_twin_a_request(root: &Path, outcome: &mut Outcome) {
     const RULE: &str = "layer-does-not-twin-a-request";
-    let expected: Vec<&str> = REQUEST_FACADES.iter().map(|(name, _)| *name).collect();
-    for (layer, generated, pattern) in REQUEST_LAYERS {
+    for RequestLayer {
+        layer,
+        generated,
+        pattern,
+        facades,
+    } in REQUEST_LAYERS
+    {
+        let expected: Vec<&str> = facades.iter().map(|(name, _)| *name).collect();
         let Ok(declaration) = regex::Regex::new(pattern) else {
             continue;
         };
@@ -1069,13 +1148,16 @@ fn layers_do_not_twin_a_request(root: &Path, outcome: &mut Outcome) {
         };
         let names: std::collections::BTreeSet<&str> = requests
             .lines()
-            .filter_map(|line| Some(declaration.captures(line)?.get(1)?.as_str()))
+            .filter_map(|line| {
+                let found = declaration.captures(line)?;
+                Some(found.iter().skip(1).flatten().next()?.as_str())
+            })
             .collect();
         let mut twinned: Vec<&str> = Vec::new();
         for (index, line) in text.lines().enumerate() {
             let Some(name) = declaration
                 .captures(line)
-                .and_then(|found| found.get(1))
+                .and_then(|found| found.iter().skip(1).flatten().next())
                 .map(|name| name.as_str())
             else {
                 continue;
@@ -1101,7 +1183,7 @@ fn layers_do_not_twin_a_request(root: &Path, outcome: &mut Outcome) {
                 file: layer.to_owned(),
                 line: 1,
                 text: format!(
-                    "does not declare `{name}`, which REQUEST_FACADES lists as a façade; \
+                    "does not declare `{name}`, which the layer's façades list; \
                      drop it from the list"
                 ),
                 rule: RULE,

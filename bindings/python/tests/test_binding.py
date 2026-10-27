@@ -16,6 +16,8 @@ from typing import Any, Dict, Optional, Union
 
 from teistro import (
     refuse_build,
+    RuleDefinition,
+    TermEntry,
     Air,
     Context,
     nepal_official,
@@ -1364,14 +1366,14 @@ class AnEngine(WithLibrary):
             found({"rasmi": verse_rules})
         self.assertEqual(unread.exception.field, "rules.rasmi")
 
-        mine = {"key": "MINE", "category": "raja", "source": {"text": "BPHS"},
+        mine: RuleDefinition = {"key": "MINE", "category": "raja", "source": {"text": "BPHS"},
                 "conditions": [{"type": "rule", "key": present[0]["rule"]}]}
         with_mine = found({"shipped": ["NABHASAS"], "rules": [mine]})
         assert with_mine is not None
         self.assertTrue(any(held["rule"] == "MINE" for held in with_mine["present"]))
 
         with self.assertRaises(TeistroError) as wrong:
-            found({"rules": [{"key": "X", "category": "raja"}]})
+            found({"rules": [{"key": "X", "category": "raja"}]})  # type: ignore[arg-type]
         self.assertEqual(wrong.exception.field, "rules.rules[0]")
 
     def test_plans_compose_in_the_same_crossing_and_render_with_nothing_in_between(self) -> None:
@@ -2026,7 +2028,7 @@ class AnEngine(WithLibrary):
             # A transit rule is read at each pairing's instant, the sky's
             # cost chosen with maxPairs: six lives under the age shuffle
             # need the sky at up to 36 instants.
-            saturn_return = {
+            saturn_return: RuleDefinition = {
                 "key": "SATURN_RETURN",
                 "category": "transit",
                 "source": {"text": "a test"},
@@ -2670,7 +2672,7 @@ class AnEngine(WithLibrary):
                 (Graha.MARS, 25),
                 (Graha.SATURN, 30),
             ]
-            table = [[{"lord": lord, "end": end} for lord, end in row] for _ in range(12)]
+            table: list[list[TermEntry]] = [[{"lord": lord, "end": end} for lord, end in row] for _ in range(12)]
             own = ctx.chart.found(instant=instants[0], dignities={"rules": {"terms": {"TABLE": table}}}, **kathmandu)
             assert own.dignities is not None
             self.assertIs(own.dignities.rules.terms, Terms.TABLE)

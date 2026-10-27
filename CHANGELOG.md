@@ -12,6 +12,24 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Python's request types are generated, and every request crosses
+through one writer.**
+**Numbers:** none.
+- `bindings/python/teistro/_requests.py` is rendered by `cargo xtask gen
+  ffi`, and `teistro` exports every record it names; 120 hand-written
+  twins are gone, the lint holding Python as it holds Node. Eleven stay
+  the layer's own, each listed with its reason: the annual chart's rules,
+  written in snake case, and the requests the layer reshapes.
+- A catalogue member anywhere in a request is written as its key. The
+  shared request writer handed its mapping to `json.dumps` as it was (54
+  call sites), so an enum member a section's own writer did not look for
+  crossed as its id and was refused; every request now crosses through one
+  writer, which also
+  writes a `NatalPoint` as an answer spells it.
+- Typing: a request record names the layer's answer class where the layer
+  takes one back (`AlmutenRules`, `PerfectionRules`, `NatalPoint`, …);
+  a catalogue member is `Union[TheEnum, str]` throughout.
+
 **Node's request types are generated from the SDK's own schemas.**
 **Numbers:** none; declarations and one schema only.
 - `bindings/node/lib/requests.d.ts` is rendered by `cargo xtask gen ffi`

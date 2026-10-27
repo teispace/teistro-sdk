@@ -34,6 +34,7 @@ const PYTHON_FFI: &str = "bindings/python/teistro/_ffi.py";
 const PYTHON_BLOB: &str = "bindings/python/teistro/_blob.py";
 const TS_RECORDS: &str = "bindings/node/lib/records.d.ts";
 const TS_REQUESTS: &str = "bindings/node/lib/requests.d.ts";
+const PYTHON_REQUESTS: &str = "bindings/python/teistro/_requests.py";
 const JS_RECORDS: &str = "bindings/node/lib/records.js";
 const PYTHON_RECORDS: &str = "bindings/python/teistro/_records.py";
 const DART_RECORDS: &str = "bindings/dart/lib/src/records.dart";
@@ -523,6 +524,7 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output::new(PYTHON_BLOB, python::decoders(&api)),
         Output::new(TS_RECORDS, records::typescript_declarations(&api)),
         Output::new(TS_REQUESTS, requests::typescript_declarations(&api)),
+        Output::new(PYTHON_REQUESTS, requests::python_declarations(&api)),
         Output::new(JS_RECORDS, records::javascript_decoders(&api)),
         Output::new(PYTHON_RECORDS, records::python_records(&api)),
         Output::new(DART_RECORDS, records::dart_records(&api)),
@@ -607,6 +609,19 @@ mod tests {
                 "{} names {}, which was not read",
                 root.record,
                 root.name
+            );
+        }
+    }
+
+    /// **Every answer class Python takes back is a request record**, so the
+    /// generated `_requests.py` names it where a request takes it.
+    #[test]
+    fn every_record_python_takes_back_is_a_request() {
+        let requests = requests();
+        for taken in teistro_idl::emit::requests::PY_TAKEN_BACK {
+            assert!(
+                requests.records.iter().any(|record| record.name == taken),
+                "{taken} is listed as taken back and is no request record"
             );
         }
     }

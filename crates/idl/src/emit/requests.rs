@@ -34,22 +34,42 @@
 use std::collections::BTreeMap;
 use std::fmt::Write;
 
-use crate::emit::{block_comment, ts};
+use crate::emit::{block_comment, python, reserved, ts};
 use crate::model::Api;
 use crate::names::{binding_type_name, pascal};
-use crate::records::{RecordField, RecordShape, RecordType, RecordVariant};
+use crate::records::{ExternalVariant, RecordField, RecordShape, RecordType, RecordVariant};
 
 /// What the TypeScript requests file says it is, after the header.
 const TS_ABOUT: &str = "The JSON requests the layers hand through to the SDK, typed. Rendered from the façade's own schema of each request, which schemars reads from serde's description of the Rust types, so a request is typed as serde reads it: a field keeps its wire name and is optional where serde defaults it.";
+
+/// What the Python requests file says it is, after the header.
+const PY_ABOUT: &str = "The JSON requests the layer hands through to the SDK, typed as dictionaries. Rendered from the façade's own schema of each request, which schemars reads from serde's description of the Rust types, so a request is typed as serde reads it: a key keeps its wire name, and a key serde defaults may be left out. A catalogue member may be the enum member or its key; the layer writes it as its key.";
+
+/// The Python layer's answer classes a request takes back where it takes
+/// the record of the same name, so a caller hands back what it was given;
+/// the layer writes each as its JSON (`_written`). Each must be a request
+/// record (`cargo xtask gen ffi`'s tests hold it), and `check-python`'s
+/// strict mypy reads each as the layer's.
+pub const PY_TAKEN_BACK: [&str; 6] = [
+    "AccidentalRules",
+    "AccidentalScores",
+    "AlmutenRules",
+    "ConsiderationRules",
+    "NatalPoint",
+    "PerfectionRules",
+];
 
 /// The name a variant of a union tagged by a field is given: the union's,
 /// then the variant's key in the language's case, as an answer record's
 /// (`planet-in-house` is `ConditionPlanetInHouse`).
 fn variant_name(union: &str, variant: &RecordVariant) -> String {
-    format!(
-        "{union}{}",
-        pascal(&variant.key.to_ascii_lowercase().replace('-', "_"))
-    )
+    format!("{union}{}", key_part(&variant.key))
+}
+
+/// A wire key as part of a type's name (`planet-in-house` is
+/// `PlanetInHouse`).
+fn key_part(key: &str) -> String {
+    pascal(&key.to_ascii_lowercase().replace('-', "_"))
 }
 
 /// Whether a wire name can stand bare as a TypeScript property.
@@ -75,8 +95,8 @@ fn ts_property(name: &str) -> String {
 /// tuple with: the seven planets' orbs.
 const TUPLE_MOST: u32 = 7;
 
-/// What the TypeScript emitter knows besides a record.
-struct TsTypes<'a> {
+/// What the emitters know besides a record.
+struct Types<'a> {
     api: &'a Api,
     /// Each catalogue kind's type (`graha` is `Graha`).
     catalogue: BTreeMap<&'a str, String>,
@@ -85,8 +105,8 @@ struct TsTypes<'a> {
     kinded: BTreeMap<&'a str, String>,
 }
 
-impl<'a> TsTypes<'a> {
-    fn of(api: &'a Api) -> TsTypes<'a> {
+impl<'a> Types<'a> {
+    fn of(api: &'a Api) -> Types<'a> {
         let catalogue = api
             .enums
             .iter()
@@ -98,7 +118,7 @@ impl<'a> TsTypes<'a> {
             .filter(|e| e.kind.is_some())
             .map(|e| (e.name.as_str(), binding_type_name(&e.name)))
             .collect();
-        TsTypes {
+        Types {
             api,
             catalogue,
             kinded,
@@ -238,7 +258,7 @@ impl<'a> TsTypes<'a> {
 /// ```
 #[must_use]
 pub fn typescript_declarations(api: &Api) -> String {
-    let types = TsTypes::of(api);
+    let types = Types::of(api);
     let mut out = ts::preamble(api, "//");
     out.push_str(&block_comment(TS_ABOUT, ""));
     out.push_str("\nimport type * as catalogue from './catalogue.js';\n\n");
@@ -335,6 +355,317 @@ pub fn typescript_declarations(api: &Api) -> String {
     out
 }
 
+/// Python: a key that a class body can declare, which is neither a keyword
+/// nor anything but an identifier.
+fn py_declarable(name: &str) -> bool {
+    is_identifier(name) && !name.contains('$') && !reserved::is_reserved(name, reserved::PYTHON)
+}
+
+/// A string literal Python reads back as `text`.
+fn py_quoted(text: &str) -> String {
+    format!("\"{}\"", text.replace('\\', "\\\\").replace('"', "\\\""))
+}
+
+impl Types<'_> {
+    /// A key of a closed set, as a `Literal`.
+    fn py_literal(keys: &[String]) -> String {
+        let quoted: Vec<String> = keys.iter().map(|key| format!("'{key}'")).collect();
+        format!("Literal[{}]", quoted.join(", "))
+    }
+
+    /// A named request record, or the boundary enum it reuses: the enum's
+    /// member or its key, or the keys alone where the enum is a catalogue
+    /// kind, whose member the layer writes as its full key.
+    fn py_record(&self, name: &str) -> String {
+        let Some(boundary) = self.api.requests.enums.get(name) else {
+            return if PY_TAKEN_BACK.contains(&name) {
+                format!("Union[{name}, _layer.{name}]")
+            } else {
+                name.to_owned()
+            };
+        };
+        let keys: Vec<String> = self
+            .api
+            .requests
+            .records
+            .iter()
+            .find(|record| record.name == name)
+            .and_then(|record| match &record.shape {
+                RecordShape::Keys { values } => {
+                    Some(values.iter().map(|value| value.key.clone()).collect())
+                }
+                _ => None,
+            })
+            .unwrap_or_default();
+        if self.kinded.contains_key(boundary.as_str()) {
+            Self::py_literal(&keys)
+        } else {
+            format!(
+                "Union[_catalogue.{}, {}]",
+                binding_type_name(boundary),
+                Self::py_literal(&keys)
+            )
+        }
+    }
+
+    /// A catalogue member: the enum's member or its key.
+    fn py_member(&self, catalogue: &str) -> String {
+        format!(
+            "Union[_catalogue.{}, str]",
+            &self.kind(catalogue)["catalogue.".len()..]
+        )
+    }
+
+    fn py(&self, ty: &RecordType) -> String {
+        match ty {
+            RecordType::Bool => "bool".into(),
+            RecordType::Integer { .. } => "int".into(),
+            RecordType::Number => "float".into(),
+            RecordType::Text => "str".into(),
+            RecordType::Json => "Any".into(),
+            RecordType::Record { name } => self.py_record(name),
+            RecordType::Member { catalogue } | RecordType::Keyed { catalogue } => {
+                self.py_member(catalogue)
+            }
+            RecordType::List { of, .. } => format!("Sequence[{}]", self.py(of)),
+            RecordType::Pair { first, second } => {
+                format!("Tuple[{}, {}]", self.py(first), self.py(second))
+            }
+            RecordType::Map { of } => format!("Mapping[str, {}]", self.py(of)),
+        }
+    }
+
+    /// A field's type as a `TypedDict` declares it: `Required` where serde
+    /// reads it always, `Optional` where it takes null.
+    fn py_field(&self, field: &RecordField) -> String {
+        let ty = self.py(&field.ty);
+        let ty = if field.null {
+            format!("Optional[{ty}]")
+        } else {
+            ty
+        };
+        if field.nullable {
+            ty
+        } else {
+            format!("Required[{ty}]")
+        }
+    }
+
+    /// A union tagged by its key: the bare keys' `Literal` and a one-key
+    /// dictionary per variant with data, named for the union and the key
+    /// and private, since a caller writes the dictionary.
+    fn py_external(&self, out: &mut String, name: &str, doc: &str, variants: &[ExternalVariant]) {
+        let mut arms = Vec::new();
+        let bare: Vec<String> = variants
+            .iter()
+            .filter(|variant| variant.payload.is_none())
+            .map(|variant| variant.key.clone())
+            .collect();
+        if !bare.is_empty() {
+            arms.push(Types::py_literal(&bare));
+        }
+        let mut wrappers = String::new();
+        for variant in variants {
+            let Some(payload) = &variant.payload else {
+                continue;
+            };
+            // A one-key object per variant with data, named for the
+            // union and the key; a caller writes the dictionary.
+            let wrapper = format!("_{name}{}", key_part(&variant.key));
+            arms.push(wrapper.clone());
+            wrappers.push_str("\n\n");
+            let field = RecordField {
+                name: variant.key.clone(),
+                doc: variant.doc.clone(),
+                ty: payload.clone(),
+                nullable: false,
+                null: false,
+            };
+            self.py_typed_dict(
+                &mut wrappers,
+                &wrapper,
+                "",
+                None,
+                std::slice::from_ref(&field),
+            );
+        }
+        let _ = writeln!(
+            out,
+            "{name}: TypeAlias = {}",
+            py_quoted(&format!("Union[{}]", arms.join(", ")))
+        );
+        let listed: Vec<String> = variants
+            .iter()
+            .map(|variant| format!("`{}`: {}", variant.key, variant.doc))
+            .collect();
+        out.push_str(&python::docstring(
+            &format!("{}\n\n{}", doc, listed.join("\n")),
+            "",
+        ));
+        out.push_str(&wrappers);
+    }
+
+    /// A `TypedDict` of these fields, after a tag where a union is tagged
+    /// by one: a class where every key can be declared, and the call form
+    /// where one cannot (`from`), with its doc as a comment.
+    fn py_typed_dict(
+        &self,
+        out: &mut String,
+        name: &str,
+        doc: &str,
+        tag: Option<(&str, &str)>,
+        fields: &[RecordField],
+    ) {
+        let mut entries: Vec<(String, String, String)> = Vec::new();
+        if let Some((tag, key)) = tag {
+            entries.push((
+                tag.to_owned(),
+                format!("Required[Literal['{key}']]"),
+                String::new(),
+            ));
+        }
+        for field in fields {
+            entries.push((
+                field.name.clone(),
+                self.py_field(field),
+                self.with_lengths(&field.doc, &field.ty),
+            ));
+        }
+        if entries.iter().all(|(key, _, _)| py_declarable(key)) {
+            let _ = writeln!(out, "class {name}(TypedDict, total=False):");
+            let docstring = python::docstring(doc, "    ");
+            out.push_str(&docstring);
+            if entries.is_empty() {
+                if docstring.is_empty() {
+                    out.push_str("    pass\n");
+                }
+                return;
+            }
+            for (at, (key, ty, field_doc)) in entries.iter().enumerate() {
+                if !docstring.is_empty() || at > 0 {
+                    out.push('\n');
+                }
+                let _ = writeln!(out, "    {key}: {ty}");
+                out.push_str(&python::docstring(field_doc, "    "));
+            }
+        } else {
+            out.push_str(&crate::emit::line_comment(
+                &crate::names::clean_doc(doc),
+                "",
+                "# ",
+            ));
+            let _ = writeln!(out, "{name} = TypedDict(\n    \"{name}\",\n    {{");
+            for (key, ty, field_doc) in &entries {
+                out.push_str(&crate::emit::line_comment(
+                    &crate::names::clean_doc(field_doc),
+                    "        ",
+                    "# ",
+                ));
+                let _ = writeln!(out, "        {}: {},", py_quoted(key), py_quoted(ty));
+            }
+            out.push_str("    },\n    total=False,\n)\n");
+        }
+    }
+}
+
+/// `_requests.py`: every request record as a `TypedDict`, a `Literal` or
+/// a union of them.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// use teistro_idl::emit::requests;
+///
+/// // The description on disk carries no requests, so the file is its
+/// // header and its imports.
+/// # let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(root.join("idl/api.json"))?)?;
+/// assert!(requests::python_declarations(&api).contains("from . import catalogue as _catalogue"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[must_use]
+pub fn python_declarations(api: &Api) -> String {
+    let types = Types::of(api);
+    let mut out = python::preamble(api, PY_ABOUT);
+    out.push_str("from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Required, Sequence, Tuple, TypeAlias, TypedDict, Union\n\nfrom . import catalogue as _catalogue\n\nif TYPE_CHECKING:\n    import teistro as _layer\n");
+    let mut exported: Vec<String> = Vec::new();
+    let mut body = String::new();
+    for record in &api.requests.records {
+        if api.requests.enums.contains_key(&record.name) {
+            continue;
+        }
+        let name = &record.name;
+        body.push_str("\n\n");
+        match &record.shape {
+            RecordShape::Object { fields } => {
+                exported.push(name.clone());
+                types.py_typed_dict(&mut body, name, &record.doc, None, fields);
+            }
+            RecordShape::Keys { values } => {
+                exported.push(name.clone());
+                let keys: Vec<String> = values.iter().map(|value| value.key.clone()).collect();
+                let _ = writeln!(body, "{name}: TypeAlias = {}", Types::py_literal(&keys));
+                let listed: Vec<String> = values
+                    .iter()
+                    .map(|value| format!("`{}`: {}", value.key, value.doc))
+                    .collect();
+                body.push_str(&python::docstring(
+                    &format!("{}\n\n{}", record.doc, listed.join("\n")),
+                    "",
+                ));
+            }
+            RecordShape::Tagged { tag, variants } => {
+                let names: Vec<String> = variants
+                    .iter()
+                    .map(|variant| variant_name(name, variant))
+                    .collect();
+                exported.push(name.clone());
+                let _ = writeln!(
+                    body,
+                    "{name}: TypeAlias = {}",
+                    py_quoted(&format!("Union[{}]", names.join(", ")))
+                );
+                body.push_str(&python::docstring(&record.doc, ""));
+                for (variant, variant_class) in variants.iter().zip(&names) {
+                    exported.push(variant_class.clone());
+                    body.push_str("\n\n");
+                    types.py_typed_dict(
+                        &mut body,
+                        variant_class,
+                        &variant.doc,
+                        Some((tag, &variant.key)),
+                        &variant.fields,
+                    );
+                }
+            }
+            RecordShape::External { variants } => {
+                exported.push(name.clone());
+                types.py_external(&mut body, name, &record.doc, variants);
+            }
+            RecordShape::OrNamed { names, of, member } => {
+                exported.push(name.clone());
+                let mut arms = vec![Types::py_literal(names)];
+                if let Some(kind) = member {
+                    arms.push(types.py_member(kind));
+                }
+                arms.push(types.py(of));
+                let _ = writeln!(
+                    body,
+                    "{name}: TypeAlias = {}",
+                    py_quoted(&format!("Union[{}]", arms.join(", ")))
+                );
+                body.push_str(&python::docstring(&record.doc, ""));
+            }
+        }
+    }
+    let listed: Vec<String> = exported
+        .iter()
+        .map(|name| format!("    \"{name}\",\n"))
+        .collect();
+    let _ = write!(out, "\n__all__ = [\n{}]\n", listed.concat());
+    out.push_str(&body);
+    out
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
@@ -351,7 +682,7 @@ mod tests {
     }
 
     /// Every shape a request takes, read from a schema as the façade's are.
-    fn rendered() -> String {
+    fn fixture() -> Api {
         let schema = json!({"$defs": {
             "Ask": {"type": "object", "properties": {
                 "orbs": {"type": "array", "items": {"type": "number"}, "minItems": 7, "maxItems": 7},
@@ -403,7 +734,7 @@ mod tests {
         requests
             .enums
             .insert("Ephemeris".into(), "TsEphemeris".into());
-        let api = Api {
+        Api {
             schema: SCHEMA.into(),
             abi_version: 1,
             sdk_version: "0".into(),
@@ -422,8 +753,11 @@ mod tests {
             blobs: vec![],
             records: vec![],
             requests,
-        };
-        typescript_declarations(&api)
+        }
+    }
+
+    fn rendered() -> String {
+        typescript_declarations(&fixture())
     }
 
     #[test]
@@ -489,9 +823,79 @@ mod tests {
         api.requests
             .enums
             .insert("Ephemeris".into(), "TsEphemeris".into());
-        let types = TsTypes::of(&api);
+        let types = Types::of(&api);
         assert_eq!(types.record("Ephemeris"), "catalogue.Ephemeris");
         assert_eq!(types.record("Rules"), "Rules");
         assert!(is_identifier("_a$1") && !is_identifier("1a") && !is_identifier("a-b"));
+    }
+
+    #[test]
+    fn python_types_each_field_as_serde_reads_it() {
+        let out = python_declarations(&fixture());
+        // A key no class body can declare (`with-dash`) puts the record in
+        // the call form, each type a string.
+        assert!(out.contains("        \"orbs\": \"Required[Sequence[float]]\",\n"));
+        assert!(
+            out.contains("        \"lord\": \"Optional[Union[_catalogue.Graha, str]]\",\n"),
+            "an Option takes null"
+        );
+        assert!(out.contains("        \"pairs\": \"Sequence[Tuple[str, int]]\",\n"));
+        assert!(out.contains("        \"by\": \"Mapping[str, bool]\",\n"));
+        assert!(
+            out.contains("        \"sex\": \"Literal['MALE']\",\n"),
+            "a kind's enum is its bare keys"
+        );
+        assert!(out.contains("Exactly 12 items."));
+        assert!(
+            !out.contains("\nSex: TypeAlias"),
+            "a reused enum is not declared again"
+        );
+        assert!(out.contains("Ask = TypedDict(\n    \"Ask\",\n    {\n"));
+        assert!(out.contains("class Entry(TypedDict, total=False):\n    end: Required[float]\n"));
+        assert!(out.contains("        \"with-dash\": \"Required[str]\",\n"));
+    }
+
+    #[test]
+    fn python_types_each_union_as_serde_reads_it() {
+        let out = python_declarations(&fixture());
+        assert!(out.contains("How: TypeAlias = \"Union[HowPlanetInHouse, HowAt]\""));
+        assert!(out.contains("class HowAt(TypedDict, total=False):\n"));
+        assert!(out.contains("    kind: Required[Literal['AT']]\n"));
+        assert!(out.contains("Tag: TypeAlias = \"Union[Literal['SAME'], _TagWithin]\""));
+        assert!(
+            out.contains(
+                "class _TagWithin(TypedDict, total=False):\n    WITHIN: Required[float]\n"
+            )
+        );
+        assert!(out.contains(
+            "Point: TypeAlias = \"Union[Literal['LAGNA'], Union[_catalogue.Graha, str], Entry]\""
+        ));
+        assert!(out.contains("Move: TypeAlias = Literal['MEAN', 'FAST']"));
+        assert!(out.contains("    \"How\",\n"), "every record is exported");
+        assert!(
+            !out.contains("    \"_TagWithin\",\n"),
+            "a wrapper is private"
+        );
+    }
+
+    #[test]
+    fn python_takes_back_the_layers_answer_where_it_takes_the_record() {
+        let mut api = fixture();
+        api.requests.records.push(RecordDef {
+            name: "NatalPoint".into(),
+            doc: String::new(),
+            shape: RecordShape::Object { fields: vec![] },
+        });
+        let types = Types::of(&api);
+        assert_eq!(
+            types.py_record("NatalPoint"),
+            "Union[NatalPoint, _layer.NatalPoint]"
+        );
+        assert_eq!(
+            types.py_record("Ephemeris"),
+            "Union[_catalogue.Ephemeris, Literal['NONE']]"
+        );
+        assert!(py_declarable("orbs") && !py_declarable("from") && !py_declarable("a-b"));
+        assert_eq!(py_quoted("a\"b"), "\"a\\\"b\"");
     }
 }
