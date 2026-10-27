@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"engine.call","arguments":{"request":{"name":"tp_sum","arguments":{"values":[1,2.5]}}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":107}

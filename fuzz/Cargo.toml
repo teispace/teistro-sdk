@@ -49,6 +49,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "mcp"
+path = "fuzz_targets/mcp.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "blob"
 path = "fuzz_targets/blob.rs"
 test = false

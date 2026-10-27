@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"time.resolve","arguments":{"request":{"date":{"year":1990,"month":4,"day":5},"time":{"hour":4,"minute":30,"second":0},"zone":{"kind":"IANA","zone":"Asia/Kathmandu"}}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":103}
