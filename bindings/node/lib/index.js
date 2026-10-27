@@ -6940,7 +6940,7 @@ export class NumerologyArea extends Area {
    *
    * @param {string} name the name, in Latin letters
    * @param {{ year: number, month: number, day: number }} date the Gregorian birth date
-   * @param {object} [rules] `{ masters, nameReduction, chaldeanCompound, birthReduction, nonLatin }`, each optional
+   * @param {object|string} [rules] `{ masters, nameReduction, chaldeanCompound, birthReduction, nonLatin }`, each optional, or `'BASELINE'` for every baseline reading
    * @returns {object}
    */
   profile(name, date, rules) {
@@ -6949,8 +6949,9 @@ export class NumerologyArea extends Area {
     }
     const request = { name, date: { year: date.year, month: date.month, day: date.day } };
     if (rules !== undefined && rules !== null) {
-      if (typeof rules !== 'object' || Array.isArray(rules)) {
-        throw new TypeError("rules: expected a numerology rules record, e.g. { masters: 'NONE' }");
+      // A preset's name crosses as it is, and the SDK names a wrong one.
+      if (typeof rules !== 'string' && (typeof rules !== 'object' || Array.isArray(rules))) {
+        throw new TypeError("rules: expected a numerology rules record, e.g. { masters: 'NONE' }, or 'BASELINE'");
       }
       request.rules = rules;
     }

@@ -72,6 +72,38 @@ the previous release, not by nobody having looked.
 - Java: an or-named union whose values cannot be a string reads any string
   as one of its names, so a misspelt name is refused as a name rather
   than as a malformed record.
+**A rule set the SDK ships whole is named in every binding, and a provenance carries its answer key.**
+**Numbers:** none.
+- `PrashnaRequest.rules` and `NumerologyRequest.rules` take `"BASELINE"`
+  beside the record, for `PrashnaRules::baseline()` and
+  `NumerologyRules::baseline()`. The reader is one generic one,
+  `teistro_core::preset` (a rule set's `Presets` and the field's
+  `deserialize_with`/`schema_with`), and the schema says it as an
+  or-named union, so the generated requests offer it with no hand code:
+  `'BASELINE' | PrashnaRules` in Node, `Union[Literal['BASELINE'],
+  PrashnaRules]` in Python, `PrashnaRequestRules.BASELINE` in Java and
+  `PrashnaRequestRulesBaseline()` in Dart (likewise
+  `NumerologyRequestRules`). A name that is no preset is refused as
+  `prashna.rules` or `numerology.rules`, naming the presets. Rust's types
+  are unchanged.
+- The layers' numerology call takes the name too: Node's and Python's
+  `profile(name, date, 'BASELINE')`, Java's new
+  `profile(String, LocalDate, NumerologyRequestRules)` overload (the
+  `NumerologyRules` one stays; a bare `null` third argument now needs a
+  cast), and Dart's `profile` takes a `NumerologyRequestRules`, of which
+  the layer's `NumerologyRules` and `PrashnaRules` are now members, so a
+  record spelt out is passed as before. A string third argument in Node
+  or Python crosses to the SDK, which refuses a wrong one by field,
+  rather than being refused as a type.
+- Every provenance is written with `answer_key`, the
+  `Provenance::answer_key()` of the rest, so every binding's decoded
+  provenance has `answerKey` (`answer_key` in Python) and none hashes
+  the fields itself. It is ignored where a provenance is read back. No
+  hash takes a provenance in: a content hash is the value's, an input
+  hash the request's.
+- `FunctionalRules::baseline()` is left without a name: it is one field,
+  `{"scheme": "BASELINE"}` already, and a union there would make the
+  remedies answer's echoed rules a union in the generated bindings.
 
 **A custom visibility table is typed in every binding.**
 **Numbers:** none.

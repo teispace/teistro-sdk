@@ -9,6 +9,7 @@
 /** A `Provenance` from its JSON. */
 export function decodeProvenance(json) {
   return {
+    answerKey: json.answer_key,
     appliedConventions: json.applied_conventions.map((item) => decodeConvention(item)),
     calculationVersion: json.calculation_version,
     calendar: json.calendar == null ? null : decodeCalendarResolution(json.calendar),

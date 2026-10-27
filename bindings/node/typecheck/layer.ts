@@ -2108,6 +2108,10 @@ function theNumerology(ctx: Context): string {
   // @ts-expect-error a masters reading takes only its own members
   const misread: NumerologyRules = { masters: 'ELEVEN' };
   const read: NumerologyProfile = ctx.numerology.profile('Henry Elder', { year: 1872, month: 1, day: 17 }, rules);
+  // A rule set the SDK ships whole, by its name; a name it lacks does not type.
+  const baseline = ctx.numerology.profile('Henry Elder', { year: 1872, month: 1, day: 17 }, 'BASELINE');
+  // @ts-expect-error the presets are named, and this is not one
+  ctx.numerology.profile('Henry Elder', { year: 1872, month: 1, day: 17 }, 'BASELIN');
   const first = read.pythagoreanName.words[0]?.letters[0];
   return [
     `${first?.letter ?? ''}${first?.value ?? 0}`,
@@ -2117,6 +2121,7 @@ function theNumerology(ctx: Context): string {
     read.pythagoreanBirth.apart.join(','),
     read.chaldeanBirth.year.number,
     read.baseline?.chaldeanDestiny.number ?? 'NONE',
+    baseline.baseline?.soul.number ?? 'NONE',
     String(misread),
   ].join();
 }

@@ -3682,13 +3682,80 @@ class AnEngine(WithLibrary):
             refusals: list[tuple[tuple[str, Any, Any], str]] = [
                 (("Kṛṣṇa", date(1990, 1, 1), None), "numerology.name"),
                 (("Rama", date(1990, 1, 1), {"master": "NONE"}), "numerology.rules.master"),
-                (("Rama", date(1990, 1, 1), "NONE"), "rules"),
+                # A string is a preset's name, and the SDK names one it does not have.
+                (("Rama", date(1990, 1, 1), "NONE"), "numerology.rules"),
+                (("Rama", date(1990, 1, 1), 7), "rules"),
                 (("Rama", "1990-01-01", None), "date"),
             ]
             for (asked, born, rules), field in refusals:
                 with self.assertRaises(TeistroError) as caught:
                     ctx.numerology.profile(asked, born, rules)
                 self.assertEqual(caught.exception.field, field)
+
+    def test_a_rule_set_the_sdk_ships_whole_is_asked_by_its_name(self) -> None:
+        """`"BASELINE"` names every reading the baseline engine takes, and
+        answers as the record it stands for spelt out: numerology's by its
+        values, the prashna's by the rules its answer echoes, asked back."""
+        from datetime import date
+
+        from teistro import NumerologyRules, PrashnaRequest, TeistroError
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            spelt: NumerologyRules = {
+                "masters": "ELEVEN_TWENTY_TWO_THIRTY_THREE",
+                "nameReduction": "WHOLE",
+                "chaldeanCompound": "LETTER_TOTAL",
+                "birthReduction": "DIGIT_SUM",
+                "nonLatin": "SKIP",
+            }
+            named = ctx.numerology.profile("Henry Elder", date(1872, 1, 17), "BASELINE")
+            self.assertEqual(named, ctx.numerology.profile("Henry Elder", date(1872, 1, 17), spelt))
+            self.assertIsNotNone(named.baseline)
+
+            asked: PrashnaRequest = {"question": {"house": 7}, "rules": "BASELINE"}
+            by_name = ctx.chart.found(instant=instant, prashna=asked, **at).prashna
+            assert by_name is not None
+            self.assertEqual(by_name.rules["timing"], "BASELINE")
+            self.assertIsNotNone(by_name.score)
+            spelled = ctx.chart.found(
+                instant=instant, prashna={"question": {"house": 7}, "rules": by_name.rules}, **at
+            ).prashna
+            self.assertEqual(by_name, spelled)
+            wrong: Any = {"rules": "BASE"}
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.found(instant=instant, prashna=wrong, **at)
+            self.assertEqual(caught.exception.field, "prashna.rules")
+
+    def test_a_provenance_carries_its_answer_key(self) -> None:
+        """The key a stored answer is reused under crosses on the
+        provenance, and is the SHA-256 of the canonical JSON of the fields
+        `serial-and-the-envelope.md` §3 names."""
+        import hashlib
+
+        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        chart = self.ctx.chart.found_many(instants=[2451545.0, 2451546.0], place=place, utc_offset_seconds=20700)
+        key = chart.provenance.answer_key
+        self.assertRegex(key, r"^[0-9a-f]{64}$")
+        again = self.ctx.chart.found_many(instants=[2451545.0, 2451546.0], place=place, utc_offset_seconds=20700)
+        self.assertEqual(again.provenance.answer_key, key)
+        self.assertEqual(chart.at(1).provenance.answer_key, key, "a member keeps the batch's key")
+        raw = json.loads(chart.provenance_json)
+        provider = raw["provider"]
+        fields = {
+            "sdk_version": raw["sdk_version"],
+            "calculation_version": raw["calculation_version"],
+            "catalogue_version": raw["catalogue_version"],
+            "settings_hash": raw["settings_hash"],
+            "input_hash": raw["input_hash"],
+            "provider": {k: provider[k] for k in ("name", "version", "data_version", "data_hashes", "tier")},
+            "packs": raw["packs"],
+        }
+        canonical = json.dumps(fields, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        self.assertEqual(hashlib.sha256(canonical.encode()).hexdigest(), key)
+        self.assertEqual(raw["answer_key"], key)
 
     def test_a_chart_carries_its_avakahada_whose_syllable_names_the_birth_pada(self) -> None:
         """The avakahada crosses whole, and its syllable names the child

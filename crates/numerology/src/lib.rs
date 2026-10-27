@@ -286,6 +286,19 @@ impl NumerologyRules {
     }
 }
 
+/// `BASELINE`, the name a request gives [`NumerologyRules::baseline`] by.
+///
+/// ```
+/// use teistro_core::preset::Presets;
+/// use teistro_numerology::NumerologyRules;
+///
+/// assert_eq!(NumerologyRules::named("BASELINE"), Some(NumerologyRules::baseline()));
+/// ```
+impl teistro_core::preset::Presets for NumerologyRules {
+    const PRESETS: &'static [(&'static str, NumerologyRules)] =
+        &[("BASELINE", NumerologyRules::baseline())];
+}
+
 /// A number reduced: every sum from the first to the last, so that
 /// "33, so 6" and "38, so 11" can both be read back.
 ///

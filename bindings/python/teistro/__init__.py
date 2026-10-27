@@ -402,6 +402,7 @@ from ._requests import (
     NonLatin as NonLatin,
     NoneAspects as NoneAspects,
     NumerologyRequest as NumerologyRequest,
+    NumerologyRequestRules as NumerologyRequestRules,
     NumerologyRules as NumerologyRules,
     OccupiedBindus as OccupiedBindus,
     OfficeOrder as OfficeOrder,
@@ -429,6 +430,7 @@ from ._requests import (
     PranapadaHouseRules as PranapadaHouseRules,
     PranapadaRule as PranapadaRule,
     PrashnaRequest as PrashnaRequest,
+    PrashnaRequestRules as PrashnaRequestRules,
     PrashnaRules as PrashnaRules,
     PrashnaTense as PrashnaTense,
     BirthPresentation as BirthPresentation,
@@ -1187,6 +1189,7 @@ __all__ = [
     "VargaKoota",
     "NaamMilan",
     "NumerologyRules",
+    "NumerologyRequestRules",
     "Reduction",
     "NumerologyLetter",
     "WordNumber",
@@ -1370,6 +1373,7 @@ __all__ = [
     "PrashnaRequest",
     "PrashnaQuestion",
     "PrashnaRules",
+    "PrashnaRequestRules",
     "PrashnaTense",
     "PrashnaLink",
     "TriKala",
@@ -3566,7 +3570,7 @@ class NumerologyArea(_Area):
     cycle and Cheiro's Chaldean table (`03-design/numerology.md`, C320 to
     C328). It reads no sky."""
 
-    def profile(self, name: str, date: _date, rules: Optional[NumerologyRules] = None) -> NumerologyProfile:
+    def profile(self, name: str, date: _date, rules: Optional[NumerologyRequestRules] = None) -> NumerologyProfile:
         """Everything numerology says of a name and a birth date: the name
         under both systems, word by word with every reduction step,
         Balliett's birth number, Cheiro's day and year, and the baseline
@@ -3574,8 +3578,11 @@ class NumerologyArea(_Area):
 
         The name is read in the 26 Latin letters; anything else is refused,
         named `numerology.name`, unless `rules["nonLatin"]` is `"SKIP"`.
+        `rules` is the record, or `"BASELINE"` for every reading the
+        baseline engine takes.
 
         >>> read = sdk.numerology.profile("Henry Elder", datetime.date(1872, 1, 17))  # doctest: +SKIP
+        >>> baseline = sdk.numerology.profile("Henry Elder", datetime.date(1872, 1, 17), "BASELINE")  # doctest: +SKIP
         """
         if not isinstance(date, _date):
             raise TeistroError(
@@ -3587,9 +3594,13 @@ class NumerologyArea(_Area):
             "name": name,
             "date": {"year": date.year, "month": date.month, "day": date.day},
         }
-        written = _record_json(rules, "rules", "{'masters': 'NONE'}")
-        if written is not None:
-            request["rules"] = json.loads(written)
+        if isinstance(rules, str):
+            # A preset's name crosses as it is, and the SDK names a wrong one.
+            request["rules"] = rules
+        else:
+            written = _record_json(rules, "rules", "{'masters': 'NONE'} or 'BASELINE'")
+            if written is not None:
+                request["rules"] = json.loads(written)
         return NumerologyProfile._of(json.loads(self._context.inner.numerology_profile(json.dumps(request))))
 
 @dataclass(frozen=True)

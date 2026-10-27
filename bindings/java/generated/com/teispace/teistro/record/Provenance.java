@@ -9,6 +9,7 @@ import java.util.Map;
 /**
  * Everything that reproduces a result.
  *
+ * @param answerKey The key a stored answer is reused under: `Provenance::answer_key`, the SHA-256 of the canonical JSON of the SDK, calculation and catalogue versions, the settings and input hashes, the provider's name, version, data version, data hashes and tier, and the packs. Written on every provenance, and ignored where one is read.
  * @param appliedConventions The conventions applied.
  * @param calculationVersion The calculation version (ADR-0020).
  * @param calendar The calendar resolution, when a calendar took part. May be null.
@@ -28,7 +29,7 @@ import java.util.Map;
  * @param warnings The warnings.
  */
 @SuppressWarnings("unused")
-public record Provenance(List<Convention> appliedConventions, long calculationVersion, CalendarResolution calendar, long catalogueVersion, Confidence confidence, String contentHash, Deviation deviation, List<Fallback> fallbacksUsed, String inputHash, List<Pair<String, Version>> moduleVersions, List<PackStamp> packs, String profile, ProviderStamp provider, Version sdkVersion, String settingsHash, TimeStamp time, List<ProvenanceWarning> warnings) {
+public record Provenance(String answerKey, List<Convention> appliedConventions, long calculationVersion, CalendarResolution calendar, long catalogueVersion, Confidence confidence, String contentHash, Deviation deviation, List<Fallback> fallbacksUsed, String inputHash, List<Pair<String, Version>> moduleVersions, List<PackStamp> packs, String profile, ProviderStamp provider, Version sdkVersion, String settingsHash, TimeStamp time, List<ProvenanceWarning> warnings) {
     /**
      * A `Provenance` from its JSON, as {@code Json.read} answers it.
      *
@@ -39,6 +40,7 @@ public record Provenance(List<Convention> appliedConventions, long calculationVe
     public static Provenance of(Object raw) {
         Map<String, Object> json = Read.object(raw, "Provenance");
         return new Provenance(
+            Read.text(Read.required(json.get("answer_key"), "Provenance.answer_key"), "Provenance.answer_key"),
             Read.list(Read.required(json.get("applied_conventions"), "Provenance.applied_conventions"), "Provenance.applied_conventions", item -> Convention.of(item)),
             Read.integer(Read.required(json.get("calculation_version"), "Provenance.calculation_version"), "Provenance.calculation_version"),
             Read.orNull(json.get("calendar"), value -> CalendarResolution.of(value)),

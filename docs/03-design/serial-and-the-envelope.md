@@ -113,9 +113,15 @@ was handed:
 > input_hash, provider: {name, version, data_version, data_hashes, tier},
 > packs}`, each value exactly as the provenance writes it.
 
-Rust has the method. A binding's client takes those fields from the
-envelope's `provenance` and hashes them with its canonical JSON, which
-for these fields (strings, whole numbers, lists and `null`) is the
+Rust has the method, and every provenance is written with its result
+as one more field, `answer_key`, so a binding's decoded provenance has
+it (`answerKey`, Python's `answer_key`) and no client hashes the fields
+itself. It is taken afresh wherever a provenance is written and ignored
+where one is read back, so a stored provenance cannot carry a stale
+one. It moves no hash: a content hash is the value's and an input hash
+the request's, and neither takes a provenance in. The bindings' tests
+recompute it as stated here, from the fields with their canonical JSON,
+which for these fields (strings, whole numbers, lists and `null`) is the
 sorted-key, no-whitespace form. The frame, the flags, the conventions,
 the warnings and the content hash are left out: the first two follow
 from the settings and the provider, and the rest are what the answer

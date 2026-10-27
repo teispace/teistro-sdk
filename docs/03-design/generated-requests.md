@@ -34,6 +34,19 @@ combination (`KootaRules::PRINTED_IN_NEPAL` stays a Rust constant and a
 documented spelling), and `RAW_REQUEST_PARTS`, which stay JSON values in
 every binding as in Java.
 
+A rule set the SDK ships whole crosses by name instead
+(2026-10-27): a request field whose type has `teistro_core::preset::Presets`
+reads `"BASELINE"` or the record (`preset::read`) and states both as an
+or-named union (`preset::schema`), so every binding's generated request
+offers the name with no hand code and no copy of its values.
+`PrashnaRequest.rules` and `NumerologyRequest.rules` do. A field whose
+record an answer also echoes is left as it is (`RemedyRules.functional`):
+the union would reach the answer's types, and `FunctionalRules` is one
+field, `{"scheme": "BASELINE"}`, already. Dart's hand `PrashnaRules` and
+`NumerologyRules` are members of the generated union (a `sealed` class
+admits a subclass in its library), so a record spelt out is passed where
+the union is taken.
+
 ## How it lands without breaking a consumer
 
 Each binding moves on its own branch, Node first (declarations only, the

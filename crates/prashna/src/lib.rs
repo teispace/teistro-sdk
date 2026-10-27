@@ -635,6 +635,19 @@ impl PrashnaRules {
     }
 }
 
+/// `BASELINE`, the name a request gives [`PrashnaRules::baseline`] by.
+///
+/// ```
+/// use teistro_core::preset::Presets;
+/// use teistro_prashna::PrashnaRules;
+///
+/// assert_eq!(PrashnaRules::named("BASELINE"), Some(PrashnaRules::baseline()));
+/// ```
+impl teistro_core::preset::Presets for PrashnaRules {
+    const PRESETS: &'static [(&'static str, PrashnaRules)] =
+        &[("BASELINE", PrashnaRules::baseline())];
+}
+
 /// What was asked.
 ///
 /// ```
