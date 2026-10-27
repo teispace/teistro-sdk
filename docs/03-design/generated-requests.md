@@ -66,6 +66,29 @@ the CHANGELOG.
 - A lint (`xtask/src/lints.rs`) refuses a hand-written declaration whose
   name is a generated request record, so a twin cannot come back.
 
+## Deep examples
+
+A typed request is only as right as its writer, and the bug this class
+had (a member below the top level crossing as its id) sits where no
+hand-written example reaches. `cargo xtask gen ffi` also writes
+`crates/sdk/tests/deep-requests.json`: one example of every typed
+record's request, every field written, the widest variant of a union,
+and a catalogue member wherever one stands (the catalogue's second, so
+an id cannot pass as the first member's default). A raw part, which
+every binding hands through as JSON, is taken from the record's
+hand-written example in `requests.json` at the same place. On
+2026-10-27 that is 16 requests with 167 members, eight levels deep at
+most, and `chart.found` asks every section.
+
+The values need not make sense together, so the examples are held to the
+schema rather than answered: `crates/mcp/tests/facade.rs` validates each
+against its tool's input schema. Java reads each into its generated
+record and writes it back, and the JSON must be the example's; Python
+hands each with every member as its enum and the layer's writer must
+give the example back. Writing one member bare fails the Java test, as
+it should. Dart has no reader of a request to start from, so its
+records are not yet held to the file.
+
 ## What generating Node found
 
 The hundred request records `index.d.ts` typed by hand were held against
