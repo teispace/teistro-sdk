@@ -3332,13 +3332,13 @@ async fn events_with<'a>(
     Ok(found)
 }
 
-/// An instant so many days on.
 /// The first of a day's events, under a reading that names one.
 fn first_only(mut events: Vec<JulianDay<Utc>>) -> Vec<JulianDay<Utc>> {
     events.truncate(1);
     events
 }
 
+/// An instant so many days on.
 fn next_by(instant: JulianDay<Utc>, days: f64) -> JulianDay<Utc> {
     JulianDay::literal(instant.get() + days)
 }
