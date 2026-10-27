@@ -86,8 +86,27 @@ against its tool's input schema. Java reads each into its generated
 record and writes it back, and the JSON must be the example's; Python
 hands each with every member as its enum and the layer's writer must
 give the example back. Writing one member bare fails the Java test, as
-it should. Dart has no reader of a request to start from, so its
-records are not yet held to the file.
+it should.
+
+Dart has no reader of a request to start from, so `cargo xtask gen ffi`
+writes the Dart that builds each example instead
+(`bindings/dart/test/deep_requests_test.dart`, `check-ffi` holding it to
+the generator): every generated class by its constructor, a member as
+its enum's member, a union as its variant's class, and each must write
+the example back through its public `toJson()`. A member may come back
+bare, as Dart writes it and serde reads it; an id, or an integer as
+`1.0`, fails. The classes the layer keeps by hand (`DART_FACADES`) have
+constructors of their own, so where one is optional it is left out and
+its place dropped from both sides, and where one is required the
+generated records below it are held instead. On 2026-10-27 that is 76
+cases holding 158 of the 167 members; the nine left are fields of hand
+classes themselves (`HitRequest`, `PerfectionRequest`, the festival,
+muhurta and progression requests). Writing a member as its index fails
+21 of the cases. Building them found that a generated class writes a raw
+part it was not given as `null` rather than leaving it out
+(`ResearchRequest.control`, `ThemePatch.style`); the test drops such a
+place, and whether each reader takes the `null` as the part left out is
+not yet held anywhere.
 
 ## What generating Node found
 

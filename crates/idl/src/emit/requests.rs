@@ -40,8 +40,10 @@ use crate::names::{binding_type_name, pascal};
 use crate::records::{ExternalVariant, RecordField, RecordShape, RecordType, RecordVariant};
 
 mod dart;
+mod dart_deep;
 mod examples;
 pub use dart::{DART_FACADES, DART_SHADOWED, dart_declarations};
+pub use dart_deep::dart_deep_test;
 pub use examples::deep_examples;
 
 /// What the TypeScript requests file says it is, after the header.
@@ -971,5 +973,43 @@ mod tests {
         );
         assert!(py_declarable("orbs") && !py_declarable("from") && !py_declarable("a-b"));
         assert_eq!(py_quoted("a\"b"), "\"a\\\"b\"");
+    }
+
+    #[test]
+    fn dart_builds_each_deep_example_with_the_generated_classes() {
+        let mut api = fixture();
+        api.requests.roots.push(crate::records::RequestRoot {
+            record: "ask".into(),
+            name: "Ask".into(),
+        });
+        let deep = deep_examples(&api, &json!([]));
+        let out = dart_deep_test(&api, &deep);
+        assert!(out.contains("  test('ask: Ask', () {\n"), "{out}");
+        assert!(out.contains("      written: Ask(\n"), "the root is built");
+        assert!(
+            out.contains("lord: Graha.one,"),
+            "a member is its enum's member"
+        );
+        assert!(out.contains("how: HowAt(deg: 1.5),"), "the widest variant");
+        assert!(
+            out.contains("after: TagWithin(1.5),"),
+            "a variant with a value"
+        );
+        assert!(
+            out.contains("point: PointValue(Entry(end: 1.5)),"),
+            "a value beside names"
+        );
+        assert!(
+            out.contains("sex: Sex.one,"),
+            "a reused enum is the boundary's"
+        );
+        assert!(
+            out.contains("pairs: [('x', 1)],"),
+            "a pair is a Dart record"
+        );
+        assert!(out.contains("by: {'x': true},"));
+        assert!(out.contains("      ).toJson(),\n"));
+        assert!(out.contains("dropping: [],") && out.contains("members: 2,"));
+        assert!(out.contains("The cases compare 2 of the examples' 2 members."));
     }
 }

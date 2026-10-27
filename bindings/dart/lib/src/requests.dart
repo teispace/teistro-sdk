@@ -17,6 +17,11 @@ abstract base class _Request extends _Value {
 
   /// Its JSON, as the SDK reads it.
   Object? get _wire;
+
+  /// Its JSON as the SDK reads it: maps, lists, strings, numbers and
+  /// booleans, a catalogue member as its key. `jsonEncode` calls it, so a
+  /// request can be stored or logged as the text that crosses.
+  Object? toJson() => _wire;
 }
 
 /// The query as a binding writes it.
