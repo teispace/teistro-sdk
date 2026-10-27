@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Python: threads sharing a context no longer abort the process.**
+**Numbers:** none.
+- A native context serves one thread at a time, and ctypes releases the
+  GIL for every call, so two threads calling one context entered it at
+  once; the context's per-call state panicked and the process aborted.
+  Every call on a context now holds that context's lock for as long as
+  its answer is read, as Java's binding already did. Threads share a
+  context safely and take turns; a context per thread still runs them
+  together.
+
 **Dart's request records are generated.**
 **Numbers:** none.
 - `bindings/dart/lib/src/requests.dart`, a part of `teistro.dart`, is

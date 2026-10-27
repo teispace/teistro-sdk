@@ -321,6 +321,8 @@ both.
   without copying. An optional `teistro[numpy]` that returned arrays
   directly would save the caller one call and add a dependency; worth
   measuring against a real workload before it is decided.
-- **Async.** The core is synchronous and single-threaded per context.
+- **Async.** The core is synchronous and single-threaded per context;
+  threads may share one, each call holding its lock (`tests/test_threads.py`),
+  but they take turns rather than running together.
   An `asyncio` wrapper that ran a context on a thread would be a
   convenience over a `ContextPool`, which no binding has yet.
