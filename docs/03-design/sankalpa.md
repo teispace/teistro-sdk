@@ -118,11 +118,12 @@ are not written yet (`locale-coverage-measured.md`: `sa-Deva` names 332
 members and translates no message). They wait on a vetted source or a
 reviewer who reads Sanskrit, never on a machine stub. When they come, the
 template is a message whose arguments are these parts, so nothing here
-changes. The tradition default for the template is the maintainer's to
-choose (brief §4).
+changes. Which tradition's template is the default is decided with the
+template, because the source that vets the words is the one that gives a
+tradition's form; nothing is chosen ahead of it.
 
-Ashauch, the other half of P2-3, waits on its rule table's tradition
-default, which is the maintainer's choice too.
+Ashauch, the other half of P2-3, has its default: `DHARMASINDHU`, decided
+2026-10-27 under the maintainer's delegation (`ashauch.md`, C713).
 
 [drik]: https://www.drikpanchang.com/panchang/sankalpa/sankalpa.html
 [bodh]: https://panchangbodh.com/sankalp-mantra
