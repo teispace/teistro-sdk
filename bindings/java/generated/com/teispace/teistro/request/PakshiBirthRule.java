@@ -6,7 +6,7 @@ package com.teispace.teistro.request;
 /**
  * How the native's bird is found from the birth star (crux P1).
  */
-public enum BirthBird implements RequestJson {
+public enum PakshiBirthRule implements RequestJson {
     /**
      * The bright half's groups for a bright-half birth and the birds reversed over the same groups for a dark-half one (PUL p. vi), as modern practice reads it.
      */
@@ -18,7 +18,7 @@ public enum BirthBird implements RequestJson {
 
     private final String key;
 
-    BirthBird(String key) {
+    PakshiBirthRule(String key) {
         this.key = key;
     }
 
@@ -37,8 +37,8 @@ public enum BirthBird implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<BirthBird> byKey(String key) {
-        for (BirthBird member : values()) {
+    public static java.util.Optional<PakshiBirthRule> byKey(String key) {
+        for (PakshiBirthRule member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -53,8 +53,8 @@ public enum BirthBird implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static BirthBird of(Object raw) {
-        return Read.member(raw, "BirthBird", BirthBird::byKey);
+    public static PakshiBirthRule of(Object raw) {
+        return Read.member(raw, "PakshiBirthRule", PakshiBirthRule::byKey);
     }
 
     @Override

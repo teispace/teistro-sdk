@@ -15,7 +15,7 @@ import java.util.Objects;
  * @param front What the front strikes (C429). Null leaves the SDK's default.
  * @param sight Which lines a graha looks along (C430). Null leaves the SDK's default.
  */
-public record SarvatobhadraRules(CornerVedha corner, FrontVedha front, Sight sight) implements RequestJson {
+public record SarvatobhadraRules(CornerVedha corner, FrontVedha front, VedhaSight sight) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -39,7 +39,7 @@ public record SarvatobhadraRules(CornerVedha corner, FrontVedha front, Sight sig
     public static final class Builder {
         private CornerVedha corner;
         private FrontVedha front;
-        private Sight sight;
+        private VedhaSight sight;
 
         private Builder() {}
 
@@ -71,7 +71,7 @@ public record SarvatobhadraRules(CornerVedha corner, FrontVedha front, Sight sig
          * @param sight Which lines a graha looks along (C430). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder sight(Sight sight) {
+        public Builder sight(VedhaSight sight) {
             this.sight = sight;
             return this;
         }
@@ -99,7 +99,7 @@ public record SarvatobhadraRules(CornerVedha corner, FrontVedha front, Sight sig
         return new SarvatobhadraRules(
             Read.orNull(json.get("corner"), present -> Read.member(present, "SarvatobhadraRules.corner", CornerVedha::byKey)),
             Read.orNull(json.get("front"), present -> Read.member(present, "SarvatobhadraRules.front", FrontVedha::byKey)),
-            Read.orNull(json.get("sight"), present -> Read.member(present, "SarvatobhadraRules.sight", Sight::byKey)));
+            Read.orNull(json.get("sight"), present -> Read.member(present, "SarvatobhadraRules.sight", VedhaSight::byKey)));
     }
 
     @Override

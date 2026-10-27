@@ -1451,7 +1451,7 @@ final class AlmanacArea extends _Area {
                     'altitudeM': place.altitudeM,
                     'utcOffsetSeconds': utcOffsetSeconds,
                     'native': native._record,
-                    'rules': rules._record,
+                    'rules': rules._wire,
                   }),
                 ),
               ),
@@ -17490,32 +17490,6 @@ PrashnaGraded _prashnaGraded(Map<String, Object?> raw) {
   );
 }
 
-/// The sixteen vowels in the order the Sarvatobhadra chakra lays them, a
-/// to the visarga (`03-design/gochar.md` §8).
-enum ChakraVowel implements _Keyed {
-  a('A'),
-  aa('AA'),
-  i('I'),
-  ii('II'),
-  u('U'),
-  uu('UU'),
-  ri('RI'),
-  rii('RII'),
-  li('LI'),
-  lii('LII'),
-  e('E'),
-  ai('AI'),
-  o('O'),
-  au('AU'),
-  am('AM'),
-  ah('AH');
-
-  const ChakraVowel(this.key);
-
-  @override
-  final String key;
-}
-
 /// One of a graha's three lines of sight, as it sees them facing the
 /// chakra's centre.
 enum VedhaLine implements _Keyed {
@@ -17553,70 +17527,6 @@ enum VedhaNature implements _Keyed {
 
   @override
   final String key;
-}
-
-/// Which lines a graha looks along (C430).
-enum VedhaSight implements _Keyed {
-  /// The five by their motion, the Sun, the Moon and the nodes along all
-  /// three (vv. 15, 19); the default.
-  text('TEXT'),
-
-  /// Every graha along all three.
-  allThree('ALL_THREE'),
-
-  /// The five by their motion, the luminaries left and the nodes right.
-  oneEach('ONE_EACH');
-
-  const VedhaSight(this.key);
-
-  @override
-  final String key;
-}
-
-/// A name's sounds as the chakra reads them.
-final class NameSounds extends _Value {
-  const NameSounds({required this.letter, required this.vowel});
-
-  /// The first letter in Devanagari: a conjunct's first consonant, or the
-  /// vowel a name begins with.
-  final String letter;
-
-  /// The vowel of its first syllable.
-  final ChakraVowel vowel;
-
-  @override
-  List<Object?> get _fields => [letter, vowel];
-
-  Map<String, Object?> get _record => {'letter': letter, 'vowel': vowel.key};
-
-  /// Its JSON, as the SDK reads it.
-  Object? get _wire => _record;
-}
-
-/// The readings the texts leave open (C429 to C431), each defaulting to
-/// `03-design/gochar.md` §8's.
-final class SarvatobhadraRules extends _Value {
-  const SarvatobhadraRules({
-    this.front = FrontVedha.starOnly,
-    this.sight = VedhaSight.text,
-    this.corner = CornerVedha.fourVowels,
-  });
-
-  final FrontVedha front;
-  final VedhaSight sight;
-  final CornerVedha corner;
-
-  @override
-  List<Object?> get _fields => [front, sight, corner];
-
-  Map<String, Object?> get _record => {
-    'front': front.key,
-    'sight': sight.key,
-    'corner': corner.key,
-  };
-
-  /// Its JSON, as the SDK reads it.
-  Object? get _wire => _record;
 }
 
 /// Where the five from Mars take the motion their sight follows (C430).
@@ -23229,21 +23139,6 @@ final class LalKitab extends _Value {
   List<Object?> get _fields => [reading, cycle, periods, year];
 }
 
-/// The five birds of Pancha Pakshi, in their order (`03-design/pakshi.md`).
-enum PakshiBird implements _Keyed {
-  /// The vulture (*vallūṟu*, Ayyar's hawk).
-  vulture('VULTURE'),
-  owl('OWL'),
-  crow('CROW'),
-  cock('COCK'),
-  peacock('PEACOCK');
-
-  const PakshiBird(this.key);
-
-  @override
-  final String key;
-}
-
 /// What a bird does in a yama or a sub-period.
 enum PakshiActivity implements _Keyed {
   eating('EATING'),
@@ -23297,62 +23192,6 @@ enum PakshiRelation implements _Keyed {
   final String key;
 }
 
-/// How the dark half assigns the birth birds (P1).
-enum PakshiBirthRule implements _Keyed {
-  /// The dark half reverses the birds over the same groups; the default.
-  byPaksha('BY_PAKSHA'),
-
-  /// One table whatever the paksha, as the public-domain texts give it.
-  single('SINGLE');
-
-  const PakshiBirthRule(this.key);
-
-  @override
-  final String key;
-}
-
-/// How a half is cut into yamas (P3).
-enum PakshiClock implements _Keyed {
-  /// A fifth of the real day and a fifth of the real night; the default.
-  stretched('STRETCHED'),
-
-  /// Six nazhigai each from sunrise, whatever the real sunset.
-  nazhigai('NAZHIGAI');
-
-  const PakshiClock(this.key);
-
-  @override
-  final String key;
-}
-
-/// How long the sub-periods run (P4).
-enum PakshiSubLengths implements _Keyed {
-  /// Agastya's, one length per activity; the default.
-  agastya('AGASTYA'),
-
-  /// Pulippani's, per half.
-  pulippani('PULIPPANI');
-
-  const PakshiSubLengths(this.key);
-
-  @override
-  final String key;
-}
-
-/// Whose friends and enemies (P6).
-enum PakshiRelations implements _Keyed {
-  /// Agastya's directed lists; the default.
-  agastya('AGASTYA'),
-
-  /// Pulippani's neighbour cycles.
-  pulippani('PULIPPANI');
-
-  const PakshiRelations(this.key);
-
-  @override
-  final String key;
-}
-
 /// Whose bird a reading follows: the bird itself, or the one a birth star
 /// and paksha give under a [PakshiBirthRule].
 sealed class PakshiNative {
@@ -23397,31 +23236,6 @@ final class PakshiStarNative implements PakshiNative {
     'paksha': paksha.fullKey,
     'rule': rule.key,
   };
-}
-
-/// What the days are read under, the texts' defaults by default.
-final class PakshiRules extends _Value {
-  const PakshiRules({
-    this.clock = PakshiClock.stretched,
-    this.subs = PakshiSubLengths.agastya,
-    this.relations = PakshiRelations.agastya,
-  });
-
-  final PakshiClock clock;
-  final PakshiSubLengths subs;
-  final PakshiRelations relations;
-
-  Map<String, Object?> get _record => {
-    'clock': clock.key,
-    'subs': subs.key,
-    'relations': relations.key,
-  };
-
-  @override
-  List<Object?> get _fields => [clock, subs, relations];
-
-  /// Its JSON, as the SDK reads it.
-  Object? get _wire => _record;
 }
 
 /// A span of time, Julian days (UTC).
@@ -24288,57 +24102,6 @@ final class Remedies {
   final IshtaDevatas ishtaDevata;
 }
 
-/// The species BPHS ch. 2 vv. 77–78 assign the twelve houses to, which
-/// decides the houses that purify.
-enum PurifierNative implements _Keyed {
-  /// A human: the sign and its trines, houses 1, 5 and 9 (v. 77); the
-  /// default.
-  human('HUMAN'),
-
-  /// A beast: houses 2, 6 and 10 (v. 77).
-  beast('BEAST'),
-
-  /// A bird: houses 3, 7 and 11 (v. 78).
-  bird('BIRD'),
-
-  /// A creeping or water creature: houses 4, 8 and 12 (v. 78).
-  creeper('CREEPER');
-
-  const PurifierNative(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which end of Saturn's eighth of the day or night is Gulika for the
-/// purifier (X5), or Mandi for the nisheka.
-enum SaturnEighthEnd implements _Keyed {
-  /// Its end, where the Subodhini's gloss puts Gulika.
-  end('END'),
-
-  /// Its start, as Jha's gloss to v. 70 takes Mandi.
-  start('START');
-
-  const SaturnEighthEnd(this.key);
-
-  @override
-  final String key;
-}
-
-/// What Pisces is, which the prints class two ways.
-enum ConceptionPisces implements _Keyed {
-  /// Strong by day or by night, so a birth may be either (1912).
-  either('EITHER'),
-
-  /// A day sign (Iyer's BJ I.10 note).
-  day('DAY');
-
-  const ConceptionPisces(this.key);
-
-  @override
-  final String key;
-}
-
 /// A day or a night birth, or either.
 enum DayOrNight implements _Keyed {
   /// By day.
@@ -24351,23 +24114,6 @@ enum DayOrNight implements _Keyed {
   either('EITHER');
 
   const DayOrNight(this.key);
-
-  @override
-  final String key;
-}
-
-/// What came first at the birth (*Brihat Jataka* V.17).
-enum BirthPresentation implements _Keyed {
-  /// The head: a sign that rises head first.
-  head('HEAD'),
-
-  /// The feet: a sign that rises back first.
-  feet('FEET'),
-
-  /// The hands: Pisces, which rises both ways.
-  hands('HANDS');
-
-  const BirthPresentation(this.key);
 
   @override
   final String key;
@@ -24458,98 +24204,6 @@ enum PurifierReference implements _Keyed {
   final String key;
 }
 
-/// How far the reported time is trusted, which weighs its prior.
-enum BirthTimeAccuracy implements _Keyed {
-  /// A time read off a clock at the birth.
-  exact('EXACT'),
-
-  /// A time remembered to the hour or so; the default.
-  approximate('APPROXIMATE'),
-
-  /// A time already rectified once.
-  rectified('RECTIFIED'),
-
-  /// No time worth weighing: the prior on it is flat.
-  unknown('UNKNOWN');
-
-  const BirthTimeAccuracy(this.key);
-
-  @override
-  final String key;
-}
-
-/// What happened, which decides the houses and karakas a period's lord
-/// is scored against.
-enum LifeEventKind implements _Keyed {
-  /// A marriage.
-  marriage('MARRIAGE'),
-
-  /// An engagement.
-  engagement('ENGAGEMENT'),
-
-  /// A child born.
-  childBirth('CHILD_BIRTH'),
-
-  /// A miscarriage.
-  miscarriage('MISCARRIAGE'),
-
-  /// A first job.
-  firstJob('FIRST_JOB'),
-
-  /// A change of job.
-  jobChange('JOB_CHANGE'),
-
-  /// A job lost.
-  jobLoss('JOB_LOSS'),
-
-  /// A promotion.
-  promotion('PROMOTION'),
-
-  /// A business started.
-  businessStart('BUSINESS_START'),
-
-  /// An education begun or finished.
-  education('EDUCATION'),
-
-  /// A move of home.
-  relocation('RELOCATION'),
-
-  /// Travel abroad.
-  foreignTravel('FOREIGN_TRAVEL'),
-
-  /// Property bought.
-  property('PROPERTY'),
-
-  /// A vehicle bought.
-  vehicle('VEHICLE'),
-
-  /// Surgery.
-  surgery('SURGERY'),
-
-  /// An accident.
-  accident('ACCIDENT'),
-
-  /// An illness.
-  illness('ILLNESS'),
-
-  /// A death in the family.
-  deathInFamily('DEATH_IN_FAMILY'),
-
-  /// A lawsuit.
-  litigation('LITIGATION'),
-
-  /// A spiritual initiation.
-  spiritualInitiation('SPIRITUAL_INITIATION'),
-
-  /// Anything else.
-  other('OTHER');
-
-  const LifeEventKind(this.key);
-
-  @override
-  final String key;
-}
-
 /// How sure the family is of an event, which weighs it.
 enum EventConfidence implements _Keyed {
   /// Certain; the default.
@@ -24623,7 +24277,7 @@ final class PurifierRules {
   });
 
   /// The species, which decides the houses that purify.
-  final PurifierNative? native;
+  final RectificationSpecies? native;
 
   /// Whether the pranapada may purify (v. 74).
   final bool? pranapada;
@@ -24643,9 +24297,9 @@ final class PurifierRules {
   /// How the pranapada is reckoned.
   final PranapadaRule? pranapadaRule;
 
-  /// Which end of Saturn's eighth is Gulika; [SaturnEighthEnd.end] by
+  /// Which end of Saturn's eighth is Gulika; [GulikaAt.end] by
   /// default.
-  final SaturnEighthEnd? gulikaAt;
+  final GulikaAt? gulikaAt;
 
   /// The seed step, in minutes: the window is sampled this often and every
   /// change between two samples is found exactly. A minute by default.
@@ -24682,87 +24336,6 @@ final class PurifyRequest {
   Map<String, Object?> get _record => {
     'minutes': minutes,
     'rules': rules._record,
-  };
-}
-
-/// How the nisheka counts back (BPHS ch. 3 vv. 25–29). A reading left
-/// null is the texts' own.
-final class NishekaRules {
-  const NishekaRules({
-    this.month,
-    this.mandiAt,
-    this.ninth,
-    this.saturn,
-    this.invisibleHalf,
-  });
-
-  /// The month a sign is read as.
-  final NishekaMonth? month;
-
-  /// Which end of Saturn's eighth Mandi is; [SaturnEighthEnd.start] by
-  /// default, as Jha.
-  final SaturnEighthEnd? mandiAt;
-
-  /// The 9th bhava's point.
-  final NinthBhava? ninth;
-
-  /// Saturn's point.
-  final SaturnTerm? saturn;
-
-  /// The invisible half.
-  final InvisibleHalf? invisibleHalf;
-
-  Map<String, Object?> get _record => {
-    if (month case final month?) 'month': month.key,
-    if (mandiAt case final mandiAt?) 'mandiAt': mandiAt.key,
-    if (ninth case final ninth?) 'ninth': ninth.key,
-    if (saturn case final saturn?) 'saturn': saturn.key,
-    if (invisibleHalf case final half?) 'invisibleHalf': half.key,
-  };
-}
-
-/// How *Brihat Jataka* IV.21 is read. A reading left null is the texts'
-/// own.
-final class ConceptionMoonRules {
-  const ConceptionMoonRules({this.count, this.rising, this.pisces});
-
-  /// The count to the birth Moon's sign.
-  final ConceptionCount? count;
-
-  /// What of the rising point is classed.
-  final ConceptionRising? rising;
-
-  /// Pisces's class.
-  final ConceptionPisces? pisces;
-
-  Map<String, Object?> get _record => {
-    if (count case final count?) 'count': count.key,
-    if (rising case final rising?) 'rising': rising.key,
-    if (pisces case final pisces?) 'pisces': pisces.key,
-  };
-}
-
-/// What the conception reports read under: the purifier's rules, which
-/// judge the conception's lagna (v. 29: "as before"), and each report's
-/// own.
-final class ConceptionRules {
-  const ConceptionRules({
-    this.purifier = const PurifierRules(),
-    this.pranapadaHouse = const PranapadaHouseRules(),
-    this.nisheka = const NishekaRules(),
-    this.moon = const ConceptionMoonRules(),
-  });
-
-  final PurifierRules purifier;
-  final PranapadaHouseRules pranapadaHouse;
-  final NishekaRules nisheka;
-  final ConceptionMoonRules moon;
-
-  Map<String, Object?> get _record => {
-    'purifier': purifier._record,
-    'pranapadaHouse': pranapadaHouse._wire,
-    'nisheka': nisheka._record,
-    'moon': moon._record,
   };
 }
 
@@ -25065,7 +24638,7 @@ final class RectificationRequest {
   /// Its JSON, as the SDK reads it.
   Object? get _wire => <String, Object?>{
     if (purify case final purify?) 'purify': purify._record,
-    if (conception case final conception?) 'conception': conception._record,
+    if (conception case final conception?) 'conception': conception._wire,
     if (circumstance case final circumstance?)
       'circumstance': circumstance._record,
     if (baseline case final baseline?) 'baseline': baseline._record,

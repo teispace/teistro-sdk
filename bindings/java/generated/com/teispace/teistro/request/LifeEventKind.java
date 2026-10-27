@@ -6,7 +6,7 @@ package com.teispace.teistro.request;
 /**
  * What happened, which decides the houses and karakas a period's lord is scored against.
  */
-public enum EventKind implements RequestJson {
+public enum LifeEventKind implements RequestJson {
     /**
      * A marriage.
      */
@@ -94,7 +94,7 @@ public enum EventKind implements RequestJson {
 
     private final String key;
 
-    EventKind(String key) {
+    LifeEventKind(String key) {
         this.key = key;
     }
 
@@ -113,8 +113,8 @@ public enum EventKind implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<EventKind> byKey(String key) {
-        for (EventKind member : values()) {
+    public static java.util.Optional<LifeEventKind> byKey(String key) {
+        for (LifeEventKind member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -129,8 +129,8 @@ public enum EventKind implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static EventKind of(Object raw) {
-        return Read.member(raw, "EventKind", EventKind::byKey);
+    public static LifeEventKind of(Object raw) {
+        return Read.member(raw, "LifeEventKind", LifeEventKind::byKey);
     }
 
     @Override

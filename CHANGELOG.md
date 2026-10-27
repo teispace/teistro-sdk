@@ -12,6 +12,25 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Request key sets carry one name in every binding.**
+**Numbers:** none.
+- Eleven key sets the schema named by a bare word are named as the layers
+  already named them: `PakshiBird`, `PakshiBirthRule`, `PakshiClock`,
+  `PakshiRelations`, `PakshiSubLengths`, `VedhaSight`, `ChakraVowel`,
+  `BirthTimeAccuracy`, `LifeEventKind`, `BirthPresentation`,
+  `ConceptionPisces`. Java's generated enums `Bird`, `BirthBird`, `Clock`,
+  `Relations`, `SubLengths`, `Sight`, `Vowel`, `Accuracy`, `EventKind`,
+  `Presentation` and `PiscesIs` take these names, and so do Node's and
+  Python's generated types. The Rust types keep theirs.
+- The hand copies of the same keys are gone: eleven enums in Dart, six
+  literal types in Python, three in Node. Dart's `SaturnEighthEnd` is
+  `GulikaAt` and Dart's and Python's `PurifierNative` is
+  `RectificationSpecies`, the names the schema already gave them.
+- Dart's `PakshiRules`, `NameSounds`, `SarvatobhadraRules`,
+  `NishekaRules`, `ConceptionRules` and `ConceptionMoonRules` are
+  generated; the last four now compare by value, and a reading left out
+  is written as its default rather than omitted.
+
 **Speed budgets for every request an app makes, and for crossing.**
 **Numbers:** none.
 - `check-app-speed` now gates a year of almanac days (500 ms), a year of

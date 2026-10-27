@@ -4,25 +4,29 @@
 package com.teispace.teistro.request;
 
 /**
- * What came first at the birth.
+ * How far the reported time is trusted, which weighs its prior.
  */
-public enum Presentation implements RequestJson {
+public enum BirthTimeAccuracy implements RequestJson {
     /**
-     * The head: a sign that rises head first.
+     * A time read off a clock at the birth.
      */
-    HEAD("HEAD"),
+    EXACT("EXACT"),
     /**
-     * The feet: a sign that rises back first.
+     * A time remembered to the hour or so.
      */
-    FEET("FEET"),
+    APPROXIMATE("APPROXIMATE"),
     /**
-     * The hands: Pisces, which rises both ways (the commentator's reading of V.17).
+     * A time already rectified once.
      */
-    HANDS("HANDS");
+    RECTIFIED("RECTIFIED"),
+    /**
+     * No time worth weighing: the prior on it is flat.
+     */
+    UNKNOWN("UNKNOWN");
 
     private final String key;
 
-    Presentation(String key) {
+    BirthTimeAccuracy(String key) {
         this.key = key;
     }
 
@@ -41,8 +45,8 @@ public enum Presentation implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Presentation> byKey(String key) {
-        for (Presentation member : values()) {
+    public static java.util.Optional<BirthTimeAccuracy> byKey(String key) {
+        for (BirthTimeAccuracy member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -57,8 +61,8 @@ public enum Presentation implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Presentation of(Object raw) {
-        return Read.member(raw, "Presentation", Presentation::byKey);
+    public static BirthTimeAccuracy of(Object raw) {
+        return Read.member(raw, "BirthTimeAccuracy", BirthTimeAccuracy::byKey);
     }
 
     @Override

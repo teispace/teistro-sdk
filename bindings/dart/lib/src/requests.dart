@@ -252,7 +252,7 @@ final class PakshiRequest extends _Request {
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.native,
-    this.rules,
+    this.rules = const PakshiRules(clock: PakshiClock.stretched, subs: PakshiSubLengths.agastya, relations: PakshiRelations.agastya),
     required this.utcOffsetSeconds,
   });
 
@@ -270,7 +270,7 @@ final class PakshiRequest extends _Request {
 
   final NativeAsked native;
 
-  final PakshiRules? rules;
+  final PakshiRules rules;
 
   final int utcOffsetSeconds;
 
@@ -283,7 +283,7 @@ final class PakshiRequest extends _Request {
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     'native': native._wire,
-    if (rules case final rulesValue?) 'rules': rulesValue._wire,
+    'rules': rules._wire,
     'utcOffsetSeconds': utcOffsetSeconds,
   };
 
@@ -1034,13 +1034,13 @@ final class NativeAsked extends _Request {
     this.rule,
   });
 
-  final Bird? bird;
+  final PakshiBird? bird;
 
   final Nakshatra? nakshatra;
 
   final Paksha? paksha;
 
-  final BirthBird? rule;
+  final PakshiBirthRule? rule;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -1052,6 +1052,34 @@ final class NativeAsked extends _Request {
 
   @override
   List<Object?> get _fields => [bird, nakshatra, paksha, rule];
+}
+
+/// What a day is read under.
+final class PakshiRules extends _Request {
+  const PakshiRules({
+    this.clock = PakshiClock.stretched,
+    this.relations = PakshiRelations.agastya,
+    this.subs = PakshiSubLengths.agastya,
+  });
+
+  /// How the halves are cut into yamas.
+  final PakshiClock clock;
+
+  /// Whose friends and enemies the sub-periods' owners are judged by.
+  final PakshiRelations relations;
+
+  /// How long the sub-periods run.
+  final PakshiSubLengths subs;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'clock': clock.key,
+    'relations': relations.key,
+    'subs': subs.key,
+  };
+
+  @override
+  List<Object?> get _fields => [clock, relations, subs];
 }
 
 /// How the half of the year is reckoned.
@@ -1445,7 +1473,7 @@ final class SarvatobhadraRequest extends _Request {
     required this.instants,
     this.motion,
     this.name,
-    this.rules,
+    this.rules = const SarvatobhadraRules(front: FrontVedha.starOnly, sight: VedhaSight.text, corner: CornerVedha.fourVowels),
   });
 
   final List<double> instants;
@@ -1454,14 +1482,14 @@ final class SarvatobhadraRequest extends _Request {
 
   final NameSounds? name;
 
-  final SarvatobhadraRules? rules;
+  final SarvatobhadraRules rules;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     'instants': instants,
     if (motion case final motionValue?) 'motion': motionValue._wire,
     if (name case final nameValue?) 'name': nameValue._wire,
-    if (rules case final rulesValue?) 'rules': rulesValue._wire,
+    'rules': rules._wire,
   };
 
   @override
@@ -2574,7 +2602,7 @@ final class WindowMoonrise extends Window {
 }
 
 /// The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
-enum Bird implements _Keyed {
+enum PakshiBird implements _Keyed {
   /// *Vallūṟu*: Ayyar's hawk, the modern books' vulture.
   vulture('VULTURE'),
   /// *Āntai*, the owl.
@@ -2586,7 +2614,7 @@ enum Bird implements _Keyed {
   /// *Mayil*, the peacock.
   peacock('PEACOCK');
 
-  const Bird(this.key);
+  const PakshiBird(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -2594,13 +2622,13 @@ enum Bird implements _Keyed {
 }
 
 /// How the native's bird is found from the birth star (crux P1).
-enum BirthBird implements _Keyed {
+enum PakshiBirthRule implements _Keyed {
   /// The bright half's groups for a bright-half birth and the birds reversed over the same groups for a dark-half one (PUL p. vi), as modern practice reads it.
   byPaksha('BY_PAKSHA'),
   /// One table whatever the paksha (AY pp. 104–105; AG07 p. 60 vv. 22, 24): the only assignment the public-domain texts give.
   single('SINGLE');
 
-  const BirthBird(this.key);
+  const PakshiBirthRule(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -2608,13 +2636,13 @@ enum BirthBird implements _Keyed {
 }
 
 /// How a half is cut into yamas (crux P3).
-enum Clock implements _Keyed {
+enum PakshiClock implements _Keyed {
   /// A fifth of the real day and a fifth of the real night, however long each is (AG's "a fifth of the day"; AY's watches).
   stretched('STRETCHED'),
   /// Six nazhigai (2 h 24 min) each from sunrise, the day half the first thirty nazhigai and the night the next thirty, the 60-nazhigai day AG p5 v. 9 counts in, whatever the real sunset.
   nazhigai('NAZHIGAI');
 
-  const Clock(this.key);
+  const PakshiClock(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -2622,13 +2650,13 @@ enum Clock implements _Keyed {
 }
 
 /// Whose friends and enemies (crux P6).
-enum Relations implements _Keyed {
+enum PakshiRelations implements _Keyed {
   /// Agastya's directed lists (AG p51, p40 v. 13), the same in both halves; a bird neither lists is neutral.
   agastya('AGASTYA'),
   /// Pulippani's: each bird the friend of its two neighbours round a cycle and the enemy of the other two, the cycle V–O–C–K–P in the bright half (p. 48) and V–C–O–K–P in the dark (p. 121).
   pulippani('PULIPPANI');
 
-  const Relations(this.key);
+  const PakshiRelations(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -2636,13 +2664,13 @@ enum Relations implements _Keyed {
 }
 
 /// How long each sub-period of a yama runs (crux P4).
-enum SubLengths implements _Keyed {
+enum PakshiSubLengths implements _Keyed {
   /// Agastya's nazhigai, one length an activity "for the waxing and the waning" alike (AG p5 vv. 7–9, p17).
   agastya('AGASTYA'),
   /// Pulippani's figures, which differ by half (PUL p. 46).
   pulippani('PULIPPANI');
 
-  const SubLengths(this.key);
+  const PakshiSubLengths(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -3194,7 +3222,7 @@ enum YearMeasure implements _Keyed {
 /// The baseline engine's cascade around the chart's instant: everything [`BaselineRequest`] takes but the reported time, which is the chart's.
 final class BaselineAsked extends _Request {
   const BaselineAsked({
-    this.accuracy = Accuracy.approximate,
+    this.accuracy = BirthTimeAccuracy.approximate,
     this.coverage = 0.8,
     this.dasha = const DashaAsked(),
     this.events = const [],
@@ -3203,7 +3231,7 @@ final class BaselineAsked extends _Request {
   });
 
   /// How far the reported time is trusted.
-  final Accuracy accuracy;
+  final BirthTimeAccuracy accuracy;
 
   /// The share of the posterior the intervals hold, 0.5 to 0.99.
   final double coverage;
@@ -3255,6 +3283,39 @@ final class CircumstanceAsked extends _Request {
 
   @override
   List<Object?> get _fields => [facts, rules];
+}
+
+/// What [`conception`] reads under: the purifier's rules, which judge the conception's lagna, and each report's own.
+final class ConceptionRules extends _Request {
+  const ConceptionRules({
+    this.moon = const ConceptionMoonRules(count: ConceptionCount.nextAfterDvadashamsha, rising: ConceptionRising.sign, pisces: ConceptionPisces.either),
+    this.nisheka = const NishekaRules(month: NishekaMonth.thirtyDays, mandiAt: NishekaMandi.start, ninth: NinthBhava.sripati, saturn: SaturnTerm.longitude, invisibleHalf: InvisibleHalf.byLongitude),
+    this.pranapadaHouse = const PranapadaHouseRules(pranapada: PranapadaRule.verse, count: HouseCount.sign, firstAuspicious: false),
+    this.purifier = const RectificationRules(native: RectificationSpecies.human, pranapada: true, gulika: true, moon: true, gulikaExtension: GulikaExtension.whenTwoFail, purifyAs: PurifyAs.bar, pranapadaRule: PranapadaRule.verse, gulikaAt: GulikaAt.end, seedMinutes: 1.0),
+  });
+
+  /// `CONCEPTION_MOON`'s.
+  final ConceptionMoonRules moon;
+
+  /// `NISHEKA`'s.
+  final NishekaRules nisheka;
+
+  /// `PRANAPADA_HOUSE`'s.
+  final PranapadaHouseRules pranapadaHouse;
+
+  /// The purifier's rules (v. 29: the conception's lagna is purified "as before").
+  final RectificationRules purifier;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'moon': moon._wire,
+    'nisheka': nisheka._wire,
+    'pranapadaHouse': pranapadaHouse._wire,
+    'purifier': purifier._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [moon, nisheka, pranapadaHouse, purifier];
 }
 
 /// The purifier over the minutes either side of the chart's instant.
@@ -3447,6 +3508,57 @@ enum ShippedRules implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// A name's sounds as the chakra reads them.
+final class NameSounds extends _Request {
+  const NameSounds({
+    required this.letter,
+    required this.vowel,
+  });
+
+  /// The first letter in Devanagari: a conjunct's first consonant, or the vowel a name begins with.
+  final String letter;
+
+  /// The vowel of its first syllable.
+  final ChakraVowel vowel;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'letter': letter,
+    'vowel': vowel.key,
+  };
+
+  @override
+  List<Object?> get _fields => [letter, vowel];
+}
+
+/// The readings the texts leave open, each defaulting to the one `03-design/gochar.md` §8 decides.
+final class SarvatobhadraRules extends _Request {
+  const SarvatobhadraRules({
+    this.corner = CornerVedha.fourVowels,
+    this.front = FrontVedha.starOnly,
+    this.sight = VedhaSight.text,
+  });
+
+  /// What a graha at a corner's juncture strikes (C431).
+  final CornerVedha corner;
+
+  /// What the front strikes (C429).
+  final FrontVedha front;
+
+  /// Which lines a graha looks along (C430).
+  final VedhaSight sight;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'corner': corner.key,
+    'front': front.key,
+    'sight': sight.key,
+  };
+
+  @override
+  List<Object?> get _fields => [corner, front, sight];
 }
 
 /// Which zodiac two charts are compared in (C241).
@@ -4813,7 +4925,7 @@ final class RateSpanDays extends RateSpan {
 }
 
 /// How far the reported time is trusted, which weighs its prior.
-enum Accuracy implements _Keyed {
+enum BirthTimeAccuracy implements _Keyed {
   /// A time read off a clock at the birth.
   exact('EXACT'),
   /// A time remembered to the hour or so.
@@ -4823,7 +4935,7 @@ enum Accuracy implements _Keyed {
   /// No time worth weighing: the prior on it is flat.
   unknown('UNKNOWN');
 
-  const Accuracy(this.key);
+  const BirthTimeAccuracy(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -4893,7 +5005,7 @@ final class Facts extends _Request {
   final LampLevel? oil;
 
   /// What came first (V.17).
-  final Presentation? presentation;
+  final BirthPresentation? presentation;
 
   /// How much of the lamp's wick was left (V.18).
   final LampLevel? wick;
@@ -4947,6 +5059,72 @@ final class CircumstanceRules extends _Request {
 
   @override
   List<Object?> get _fields => [betweenBy, moonSees, outside, presentationBy, sunFallen];
+}
+
+/// How [`conception_moon`] reads BJ IV.21.
+final class ConceptionMoonRules extends _Request {
+  const ConceptionMoonRules({
+    this.count = ConceptionCount.nextAfterDvadashamsha,
+    this.pisces = ConceptionPisces.either,
+    this.rising = ConceptionRising.sign,
+  });
+
+  /// The count to the birth Moon's sign.
+  final ConceptionCount count;
+
+  /// Pisces's class.
+  final ConceptionPisces pisces;
+
+  /// What of the rising point is classed.
+  final ConceptionRising rising;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'count': count.key,
+    'pisces': pisces.key,
+    'rising': rising.key,
+  };
+
+  @override
+  List<Object?> get _fields => [count, pisces, rising];
+}
+
+/// How [`nisheka_span`] counts back (BPHS ch. 3 vv. 25–29).
+final class NishekaRules extends _Request {
+  const NishekaRules({
+    this.invisibleHalf = InvisibleHalf.byLongitude,
+    this.mandiAt = NishekaMandi.start,
+    this.month = NishekaMonth.thirtyDays,
+    this.ninth = NinthBhava.sripati,
+    this.saturn = SaturnTerm.longitude,
+  });
+
+  /// The invisible half.
+  final InvisibleHalf invisibleHalf;
+
+  /// Which end of Saturn's eighth Mandi is. Its own setting, not the purifier's: Jha's gloss to v. 70 takes the start and rejects the end, and his worked nisheka closes only with it.
+  final NishekaMandi mandiAt;
+
+  /// The month a sign is read as.
+  final NishekaMonth month;
+
+  /// The 9th bhava's point.
+  final NinthBhava ninth;
+
+  /// Saturn's point.
+  final SaturnTerm saturn;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'invisibleHalf': invisibleHalf.key,
+    'mandiAt': mandiAt.key,
+    'month': month.key,
+    'ninth': ninth.key,
+    'saturn': saturn.key,
+  };
+
+  @override
+  List<Object?> get _fields => [invisibleHalf, mandiAt, month, ninth, saturn];
 }
 
 /// How [`pranapada_house`] judges (Jha's print ch. 3 vv. 71–74).
@@ -7199,7 +7377,7 @@ enum VedhaMotion implements _Keyed {
 }
 
 /// The sixteen vowels in the order v. 3 lays them, a to the visarga.
-enum Vowel implements _Keyed {
+enum ChakraVowel implements _Keyed {
   /// अ
   a('A'),
   /// आ
@@ -7233,7 +7411,7 @@ enum Vowel implements _Keyed {
   /// अः, the visarga.
   ah('AH');
 
-  const Vowel(this.key);
+  const ChakraVowel(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -7269,7 +7447,7 @@ enum FrontVedha implements _Keyed {
 }
 
 /// Which of the three lines a graha looks along (C430).
-enum Sight implements _Keyed {
+enum VedhaSight implements _Keyed {
   /// vv. 15 and 19: the five from Mars along one line, by their motion; the Sun, the Moon and the nodes along all three.
   text('TEXT'),
   /// Every graha along all three, v. 13 read alone.
@@ -7277,7 +7455,7 @@ enum Sight implements _Keyed {
   /// The five by their motion, the Sun and the Moon (always fast) to the left, the nodes (always retrograde) to the right: the "some" the tika reports on v. 19.
   oneEach('ONE_EACH');
 
-  const Sight(this.key);
+  const VedhaSight(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -7821,7 +7999,7 @@ enum YearLength implements _Keyed {
 }
 
 /// What happened, which decides the houses and karakas a period's lord is scored against.
-enum EventKind implements _Keyed {
+enum LifeEventKind implements _Keyed {
   /// A marriage.
   marriage('MARRIAGE'),
   /// An engagement.
@@ -7865,7 +8043,7 @@ enum EventKind implements _Keyed {
   /// Anything else.
   other('OTHER');
 
-  const EventKind(this.key);
+  const LifeEventKind(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -7933,7 +8111,7 @@ enum LampLevel implements _Keyed {
 }
 
 /// What came first at the birth.
-enum Presentation implements _Keyed {
+enum BirthPresentation implements _Keyed {
   /// The head: a sign that rises head first.
   head('HEAD'),
   /// The feet: a sign that rises back first.
@@ -7941,7 +8119,7 @@ enum Presentation implements _Keyed {
   /// The hands: Pisces, which rises both ways (the commentator's reading of V.17).
   hands('HANDS');
 
-  const Presentation(this.key);
+  const BirthPresentation(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -8035,13 +8213,13 @@ enum ConceptionCount implements _Keyed {
 }
 
 /// What Pisces is, which the prints class two ways.
-enum PiscesIs implements _Keyed {
+enum ConceptionPisces implements _Keyed {
   /// Strong by day or by night, so a birth may be either (1912).
   either('EITHER'),
   /// A day sign (Iyer's BJ I.10 note).
   day('DAY');
 
-  const PiscesIs(this.key);
+  const ConceptionPisces(this.key);
 
   /// The key the wire spells it with.
   @override

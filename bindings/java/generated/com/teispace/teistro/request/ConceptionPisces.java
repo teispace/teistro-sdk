@@ -4,21 +4,21 @@
 package com.teispace.teistro.request;
 
 /**
- * How long each sub-period of a yama runs (crux P4).
+ * What Pisces is, which the prints class two ways.
  */
-public enum SubLengths implements RequestJson {
+public enum ConceptionPisces implements RequestJson {
     /**
-     * Agastya's nazhigai, one length an activity "for the waxing and the waning" alike (AG p5 vv. 7–9, p17).
+     * Strong by day or by night, so a birth may be either (1912).
      */
-    AGASTYA("AGASTYA"),
+    EITHER("EITHER"),
     /**
-     * Pulippani's figures, which differ by half (PUL p. 46).
+     * A day sign (Iyer's BJ I.10 note).
      */
-    PULIPPANI("PULIPPANI");
+    DAY("DAY");
 
     private final String key;
 
-    SubLengths(String key) {
+    ConceptionPisces(String key) {
         this.key = key;
     }
 
@@ -37,8 +37,8 @@ public enum SubLengths implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<SubLengths> byKey(String key) {
-        for (SubLengths member : values()) {
+    public static java.util.Optional<ConceptionPisces> byKey(String key) {
+        for (ConceptionPisces member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -53,8 +53,8 @@ public enum SubLengths implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static SubLengths of(Object raw) {
-        return Read.member(raw, "SubLengths", SubLengths::byKey);
+    public static ConceptionPisces of(Object raw) {
+        return Read.member(raw, "ConceptionPisces", ConceptionPisces::byKey);
     }
 
     @Override

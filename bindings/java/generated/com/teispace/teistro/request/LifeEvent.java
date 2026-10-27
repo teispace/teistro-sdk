@@ -19,7 +19,7 @@ import java.util.Objects;
  * @param precision How finely `on` is known, where `until` is not given. Null leaves the SDK's default.
  * @param until When it ended, where it ran over days. Null leaves the SDK's default.
  */
-public record LifeEvent(Confidence confidence, Boolean heldOut, String id, EventKind kind, double on, DatePrecision precision, Double until) implements RequestJson {
+public record LifeEvent(Confidence confidence, Boolean heldOut, String id, LifeEventKind kind, double on, DatePrecision precision, Double until) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -38,7 +38,7 @@ public record LifeEvent(Confidence confidence, Boolean heldOut, String id, Event
      * @param kind What happened.
      * @param on When it began, as an instant (UTC).
      */
-    public LifeEvent(EventKind kind, double on) {
+    public LifeEvent(LifeEventKind kind, double on) {
         this(null, null, null, kind, on, null, null);
     }
 
@@ -57,7 +57,7 @@ public record LifeEvent(Confidence confidence, Boolean heldOut, String id, Event
         private Confidence confidence;
         private Boolean heldOut;
         private String id;
-        private EventKind kind;
+        private LifeEventKind kind;
         private Double on;
         private DatePrecision precision;
         private Double until;
@@ -103,7 +103,7 @@ public record LifeEvent(Confidence confidence, Boolean heldOut, String id, Event
          * @param kind What happened.
          * @return this builder
          */
-        public Builder kind(EventKind kind) {
+        public Builder kind(LifeEventKind kind) {
             this.kind = kind;
             return this;
         }
@@ -165,7 +165,7 @@ public record LifeEvent(Confidence confidence, Boolean heldOut, String id, Event
             Read.orNull(json.get("confidence"), present -> Read.member(present, "LifeEvent.confidence", Confidence::byKey)),
             Read.orNull(json.get("heldOut"), present -> Read.bool(present, "LifeEvent.heldOut")),
             Read.orNull(json.get("id"), present -> Read.text(present, "LifeEvent.id")),
-            Read.member(Read.required(json.get("kind"), "LifeEvent.kind"), "LifeEvent.kind", EventKind::byKey),
+            Read.member(Read.required(json.get("kind"), "LifeEvent.kind"), "LifeEvent.kind", LifeEventKind::byKey),
             Read.number(Read.required(json.get("on"), "LifeEvent.on"), "LifeEvent.on"),
             Read.orNull(json.get("precision"), present -> Read.member(present, "LifeEvent.precision", DatePrecision::byKey)),
             Read.orNull(json.get("until"), present -> Read.number(present, "LifeEvent.until")));

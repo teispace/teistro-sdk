@@ -764,11 +764,11 @@ public final class BindingTest {
                     check(e.getMessage().contains("PakshiRules.clock"), e.getMessage());
                 }
                 // A map built in Java may hold the member itself, as a builder's would.
-                same(SubLengths.PULIPPANI, PakshiRules.of(Map.of("subs", SubLengths.PULIPPANI)).subs(),
+                same(PakshiSubLengths.PULIPPANI, PakshiRules.of(Map.of("subs", PakshiSubLengths.PULIPPANI)).subs(),
                         "a request member reads as itself");
-                same(SubLengths.AGASTYA, SubLengths.of(SubLengths.AGASTYA), "and on its own");
+                same(PakshiSubLengths.AGASTYA, PakshiSubLengths.of(PakshiSubLengths.AGASTYA), "and on its own");
                 check(sky.almanac().pakshi(wednesday, null, madras, 19_800, PakshiNative.bird("OWL"),
-                        PakshiRules.builder().subs(SubLengths.PULIPPANI).build()) != null,
+                        PakshiRules.builder().subs(PakshiSubLengths.PULIPPANI).build()) != null,
                         "a typed rule reaches the SDK");
             }
             try (Context polar = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN)

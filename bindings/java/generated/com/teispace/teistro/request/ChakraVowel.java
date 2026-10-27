@@ -6,7 +6,7 @@ package com.teispace.teistro.request;
 /**
  * The sixteen vowels in the order v. 3 lays them, a to the visarga.
  */
-public enum Vowel implements RequestJson {
+public enum ChakraVowel implements RequestJson {
     /**
      * अ
      */
@@ -74,7 +74,7 @@ public enum Vowel implements RequestJson {
 
     private final String key;
 
-    Vowel(String key) {
+    ChakraVowel(String key) {
         this.key = key;
     }
 
@@ -93,8 +93,8 @@ public enum Vowel implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Vowel> byKey(String key) {
-        for (Vowel member : values()) {
+    public static java.util.Optional<ChakraVowel> byKey(String key) {
+        for (ChakraVowel member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -109,8 +109,8 @@ public enum Vowel implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Vowel of(Object raw) {
-        return Read.member(raw, "Vowel", Vowel::byKey);
+    public static ChakraVowel of(Object raw) {
+        return Read.member(raw, "ChakraVowel", ChakraVowel::byKey);
     }
 
     @Override

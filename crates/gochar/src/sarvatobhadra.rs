@@ -145,6 +145,7 @@ const STARS: [Star; 28] = [
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "ChakraVowel"))]
 pub enum Vowel {
     /// अ
     A,
@@ -527,6 +528,7 @@ pub enum FrontVedha {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "VedhaSight"))]
 pub enum Sight {
     /// vv. 15 and 19: the five from Mars along one line, by their motion;
     /// the Sun, the Moon and the nodes along all three.

@@ -50,8 +50,8 @@ final class Wrong {
         // expect: conforms to ResearchGroupTest
         sky.research().compare(List.of(), null, null, Map.of("seed", 7, "permutations", 999), null);
         // A member of one kind does not stand in for another's.
-        // expect: SubLengths cannot be converted to Clock
-        com.teispace.teistro.request.PakshiRules.builder().clock(com.teispace.teistro.request.SubLengths.AGASTYA);
+        // expect: PakshiSubLengths cannot be converted to PakshiClock
+        com.teispace.teistro.request.PakshiRules.builder().clock(com.teispace.teistro.request.PakshiSubLengths.AGASTYA);
         System.out.println(List.of(milan, week));
     }
 }

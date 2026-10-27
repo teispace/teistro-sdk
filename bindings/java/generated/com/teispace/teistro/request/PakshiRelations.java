@@ -4,21 +4,21 @@
 package com.teispace.teistro.request;
 
 /**
- * What Pisces is, which the prints class two ways.
+ * Whose friends and enemies (crux P6).
  */
-public enum PiscesIs implements RequestJson {
+public enum PakshiRelations implements RequestJson {
     /**
-     * Strong by day or by night, so a birth may be either (1912).
+     * Agastya's directed lists (AG p51, p40 v. 13), the same in both halves; a bird neither lists is neutral.
      */
-    EITHER("EITHER"),
+    AGASTYA("AGASTYA"),
     /**
-     * A day sign (Iyer's BJ I.10 note).
+     * Pulippani's: each bird the friend of its two neighbours round a cycle and the enemy of the other two, the cycle V–O–C–K–P in the bright half (p. 48) and V–C–O–K–P in the dark (p. 121).
      */
-    DAY("DAY");
+    PULIPPANI("PULIPPANI");
 
     private final String key;
 
-    PiscesIs(String key) {
+    PakshiRelations(String key) {
         this.key = key;
     }
 
@@ -37,8 +37,8 @@ public enum PiscesIs implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<PiscesIs> byKey(String key) {
-        for (PiscesIs member : values()) {
+    public static java.util.Optional<PakshiRelations> byKey(String key) {
+        for (PakshiRelations member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -53,8 +53,8 @@ public enum PiscesIs implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static PiscesIs of(Object raw) {
-        return Read.member(raw, "PiscesIs", PiscesIs::byKey);
+    public static PakshiRelations of(Object raw) {
+        return Read.member(raw, "PakshiRelations", PakshiRelations::byKey);
     }
 
     @Override

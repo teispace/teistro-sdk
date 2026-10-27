@@ -217,7 +217,7 @@ void main() {
     _holds(
       'almanac.pakshi',
       path: [],
-      dropping: [['rules']],
+      dropping: [],
       members: 3,
       written: PakshiRequest(
         altitudeM: 1.5,
@@ -227,10 +227,15 @@ void main() {
         latitudeDeg: 1.5,
         longitudeDeg: 1.5,
         native: NativeAsked(
-          bird: Bird.owl,
+          bird: PakshiBird.owl,
           nakshatra: Nakshatra.bharani,
           paksha: Paksha.krishna,
-          rule: BirthBird.single,
+          rule: PakshiBirthRule.single,
+        ),
+        rules: PakshiRules(
+          clock: PakshiClock.nazhigai,
+          relations: PakshiRelations.pulippani,
+          subs: PakshiSubLengths.pulippani,
         ),
         utcOffsetSeconds: 1,
       ).toJson(),
@@ -323,7 +328,7 @@ void main() {
     _holds(
       'chart.found',
       path: [],
-      dropping: [['antiscia'], ['considerations'], ['dignities'], ['fortitudes', 'almuten'], ['fortitudes', 'dignities'], ['fortitudes', 'rules'], ['fortitudes', 'scores'], ['harmonic'], ['hits'], ['lalkitab'], ['lots'], ['masaPravesha'], ['matching'], ['perfection'], ['prashna'], ['progressions'], ['rectification'], ['rules'], ['sarvatobhadra', 'motion'], ['sarvatobhadra', 'name'], ['sarvatobhadra', 'rules'], ['synastry', 'antiscia'], ['synastry', 'orbs'], ['synastry', 'partner'], ['varsha'], ['westernAspects', 'orbs'], ['westernConfigurations', 'orbs']],
+      dropping: [['antiscia'], ['considerations'], ['dignities'], ['fortitudes', 'almuten'], ['fortitudes', 'dignities'], ['fortitudes', 'rules'], ['fortitudes', 'scores'], ['harmonic'], ['hits'], ['lalkitab'], ['lots'], ['masaPravesha'], ['matching'], ['perfection'], ['prashna'], ['progressions'], ['rectification'], ['rules'], ['sarvatobhadra', 'motion'], ['synastry', 'antiscia'], ['synastry', 'orbs'], ['synastry', 'partner'], ['varsha'], ['westernAspects', 'orbs'], ['westernConfigurations', 'orbs']],
       members: 6,
       written: ChartFoundRequest(
         altitudeM: 1.5,
@@ -391,7 +396,15 @@ void main() {
           spells: [1],
           to: 1.5,
         ),
-        sarvatobhadra: SarvatobhadraRequest(instants: [1.5]),
+        sarvatobhadra: SarvatobhadraRequest(
+          instants: [1.5],
+          name: NameSounds(letter: 'x', vowel: ChakraVowel.aa),
+          rules: SarvatobhadraRules(
+            corner: CornerVedha.outerVowel,
+            front: FrontVedha.everyCell,
+            sight: VedhaSight.allThree,
+          ),
+        ),
         shadbala: true,
         state: true,
         synastry: PartnerSynastry(
@@ -756,7 +769,7 @@ void main() {
       dropping: [['events']],
       members: 0,
       written: BaselineAsked(
-        accuracy: Accuracy.approximate,
+        accuracy: BirthTimeAccuracy.approximate,
         coverage: 1.5,
         dasha: DashaAsked(
           afterCycle: AfterCycle.repeat,
@@ -783,7 +796,7 @@ void main() {
           attendants: Attendants(inside: 1, outside: 1, total: 1),
           fatherPresent: true,
           oil: LampLevel.half,
-          presentation: Presentation.feet,
+          presentation: BirthPresentation.feet,
           wick: LampLevel.half,
         ),
         rules: CircumstanceRules(
@@ -797,36 +810,41 @@ void main() {
     );
   });
 
-  test('chart.found at rectification.conception.pranapadaHouse: PranapadaHouseRules', () {
+  test('chart.found at rectification.conception: ConceptionRules', () {
     _holds(
       'chart.found',
-      path: ['rectification', 'conception', 'pranapadaHouse'],
+      path: ['rectification', 'conception'],
       dropping: [],
       members: 0,
-      written: PranapadaHouseRules(
-        count: HouseCount.sripatiBhava,
-        firstAuspicious: true,
-        pranapada: PranapadaRule.printedExample,
-      ).toJson(),
-    );
-  });
-
-  test('chart.found at rectification.conception.purifier: RectificationRules', () {
-    _holds(
-      'chart.found',
-      path: ['rectification', 'conception', 'purifier'],
-      dropping: [],
-      members: 0,
-      written: RectificationRules(
-        gulika: true,
-        gulikaAt: GulikaAt.start,
-        gulikaExtension: GulikaExtension.always,
-        moon: true,
-        native: RectificationSpecies.beast,
-        pranapada: true,
-        pranapadaRule: PranapadaRule.printedExample,
-        purifyAs: PurifyAs.weight,
-        seedMinutes: 1.5,
+      written: ConceptionRules(
+        moon: ConceptionMoonRules(
+          count: ConceptionCount.fromMoonSign,
+          pisces: ConceptionPisces.day,
+          rising: ConceptionRising.navamsha,
+        ),
+        nisheka: NishekaRules(
+          invisibleHalf: InvisibleHalf.bySign,
+          mandiAt: NishekaMandi.end,
+          month: NishekaMonth.solar,
+          ninth: NinthBhava.wholeSign,
+          saturn: SaturnTerm.bhavaMadhya,
+        ),
+        pranapadaHouse: PranapadaHouseRules(
+          count: HouseCount.sripatiBhava,
+          firstAuspicious: true,
+          pranapada: PranapadaRule.printedExample,
+        ),
+        purifier: RectificationRules(
+          gulika: true,
+          gulikaAt: GulikaAt.start,
+          gulikaExtension: GulikaExtension.always,
+          moon: true,
+          native: RectificationSpecies.beast,
+          pranapada: true,
+          pranapadaRule: PranapadaRule.printedExample,
+          purifyAs: PurifyAs.weight,
+          seedMinutes: 1.5,
+        ),
       ).toJson(),
     );
   });

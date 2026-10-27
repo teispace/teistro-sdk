@@ -15,7 +15,7 @@ import java.util.Objects;
  * @param relations Whose friends and enemies the sub-periods' owners are judged by. Null leaves the SDK's default.
  * @param subs How long the sub-periods run. Null leaves the SDK's default.
  */
-public record PakshiRules(Clock clock, Relations relations, SubLengths subs) implements RequestJson {
+public record PakshiRules(PakshiClock clock, PakshiRelations relations, PakshiSubLengths subs) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -37,9 +37,9 @@ public record PakshiRules(Clock clock, Relations relations, SubLengths subs) imp
 
     /** Builds a {@link PakshiRules} a field at a time. */
     public static final class Builder {
-        private Clock clock;
-        private Relations relations;
-        private SubLengths subs;
+        private PakshiClock clock;
+        private PakshiRelations relations;
+        private PakshiSubLengths subs;
 
         private Builder() {}
 
@@ -49,7 +49,7 @@ public record PakshiRules(Clock clock, Relations relations, SubLengths subs) imp
          * @param clock How the halves are cut into yamas. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder clock(Clock clock) {
+        public Builder clock(PakshiClock clock) {
             this.clock = clock;
             return this;
         }
@@ -60,7 +60,7 @@ public record PakshiRules(Clock clock, Relations relations, SubLengths subs) imp
          * @param relations Whose friends and enemies the sub-periods' owners are judged by. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder relations(Relations relations) {
+        public Builder relations(PakshiRelations relations) {
             this.relations = relations;
             return this;
         }
@@ -71,7 +71,7 @@ public record PakshiRules(Clock clock, Relations relations, SubLengths subs) imp
          * @param subs How long the sub-periods run. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder subs(SubLengths subs) {
+        public Builder subs(PakshiSubLengths subs) {
             this.subs = subs;
             return this;
         }
@@ -97,9 +97,9 @@ public record PakshiRules(Clock clock, Relations relations, SubLengths subs) imp
     public static PakshiRules of(Object raw) {
         Map<String, Object> json = Read.object(raw, "PakshiRules");
         return new PakshiRules(
-            Read.orNull(json.get("clock"), present -> Read.member(present, "PakshiRules.clock", Clock::byKey)),
-            Read.orNull(json.get("relations"), present -> Read.member(present, "PakshiRules.relations", Relations::byKey)),
-            Read.orNull(json.get("subs"), present -> Read.member(present, "PakshiRules.subs", SubLengths::byKey)));
+            Read.orNull(json.get("clock"), present -> Read.member(present, "PakshiRules.clock", PakshiClock::byKey)),
+            Read.orNull(json.get("relations"), present -> Read.member(present, "PakshiRules.relations", PakshiRelations::byKey)),
+            Read.orNull(json.get("subs"), present -> Read.member(present, "PakshiRules.subs", PakshiSubLengths::byKey)));
     }
 
     @Override
