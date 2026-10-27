@@ -36,6 +36,7 @@ use teistro_ffi::panchanga::{
     TsPanchangaRequest, ts_almanac_ashauch, ts_almanac_disagreements, ts_almanac_festival_calendar,
     ts_almanac_first_year, ts_almanac_published_reasons, ts_almanac_sankalpa, ts_panchanga_days,
 };
+use teistro_ffi::published::ts_published_verify;
 use teistro_ffi::rashifal::ts_rashifal;
 use teistro_ffi::research::ts_research;
 use teistro_ffi::string::{TsStr, TsString, ts_string_free};
@@ -763,6 +764,47 @@ fn checksummed(data: &[u8]) -> Vec<u8> {
     bytes
 }
 
+/// The `published` target: the first byte is the newest version the
+/// caller has applied, and the rest a publisher's pack, signed here so
+/// the fuzzer reaches the reader behind the signature. The key is made
+/// from a fixed seed, as the SDK's own tests make theirs; a signature
+/// is the publisher's proof, not the reader's defence, so a hostile
+/// publisher's bytes are what this fuzzes.
+pub fn published(data: &[u8]) {
+    if let Some(status) = signed_and_verified(data) {
+        answered(status, "ts_published_verify");
+    }
+}
+
+/// What `ts_published_verify` answers the `published` target's input,
+/// `None` for no input.
+fn signed_and_verified(data: &[u8]) -> Option<Status> {
+    use ed25519_dalek::Signer as _;
+    let (at_least, pack) = data.split_first()?;
+    let publisher = ed25519_dalek::SigningKey::from_bytes(&[7; 32]);
+    let signature = publisher.sign(pack).to_bytes();
+    let key = publisher.verifying_key().to_bytes();
+    let mut out = TsString::empty();
+    // SAFETY: a live context, byte ranges valid for their lengths and a
+    // valid slot.
+    let status = unsafe {
+        ts_published_verify(
+            shared(),
+            pack.as_ptr(),
+            pack.len(),
+            signature.as_ptr(),
+            signature.len(),
+            key.as_ptr(),
+            key.len(),
+            u32::from(*at_least),
+            &raw mut out,
+        )
+    };
+    // SAFETY: a descriptor the library wrote, or the empty one.
+    unsafe { ts_string_free(&raw mut out) };
+    Some(status)
+}
+
 /// The `key` target: the text as a key, an entity, a locale and a text to
 /// transliterate.
 pub fn key(data: &[u8]) {
@@ -1066,6 +1108,59 @@ mod tests {
             })
             .collect();
         corpus_is("json", &wanted);
+    }
+
+    /// The `published` target's seeds: the newest version applied, then a
+    /// publisher's pack, each answered as listed.
+    const PUBLISHED_SEEDS: &[(&str, u8, bool, &str)] = &[
+        (
+            "one-entry",
+            0,
+            true,
+            r#"{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,"entries":[{"action":"SET","rule":"NAVARATRA_ARAMBHA","day":{"calendar":"GREGORIAN","year":2026,"month":10,"day":11},"source":"p. 41"}]}"#,
+        ),
+        (
+            "no-entries",
+            0,
+            true,
+            r#"{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":1,"entries":[]}"#,
+        ),
+        (
+            "rolled-back",
+            4,
+            false,
+            r#"{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,"entries":[]}"#,
+        ),
+    ];
+
+    fn published_seeds() -> BTreeMap<String, Vec<u8>> {
+        PUBLISHED_SEEDS
+            .iter()
+            .map(|&(name, at_least, _, pack)| {
+                let mut bytes = vec![at_least];
+                bytes.extend_from_slice(pack.as_bytes());
+                (name.to_owned(), bytes)
+            })
+            .collect()
+    }
+
+    /// Each seed reads as listed: a set, or a refusal by its field.
+    #[test]
+    fn every_published_seed_is_answered_as_listed() {
+        let _turn = MESSAGES
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        for (&(name, _, answered, _), (_, data)) in PUBLISHED_SEEDS.iter().zip(published_seeds()) {
+            let status = signed_and_verified(&data).unwrap();
+            assert_ne!(status, Status::Internal, "{name}");
+            assert_eq!(status == Status::Ok, answered, "{name}: {status:?}");
+        }
+    }
+
+    /// The committed published corpus is the seed table written out.
+    #[test]
+    fn the_published_corpus_is_the_seed_table() {
+        corpus_is("published", &published_seeds());
     }
 
     /// The weekly long run's matrix names every target the manifest

@@ -19,6 +19,8 @@ teistro-ffi = { path = "../crates/ffi" }
 teistro-idl = { path = "../crates/idl", default-features = false }
 teistro-mcp = { path = "../crates/mcp" }
 serde_json = "1"
+# Signs each `published` input with a key made from a fixed seed.
+ed25519-dalek = { version = "3", default-features = false }
 
 [[bin]]
 name = "json"
@@ -51,6 +53,13 @@ bench = false
 [[bin]]
 name = "mcp"
 path = "fuzz_targets/mcp.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "published"
+path = "fuzz_targets/published.rs"
 test = false
 doc = false
 bench = false
