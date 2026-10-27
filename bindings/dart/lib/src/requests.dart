@@ -7297,15 +7297,61 @@ final class ThresholdsPtolemy extends Thresholds {
 
 /// A caller's own table.
 final class ThresholdsCustom extends Thresholds {
-  const ThresholdsCustom();
+  const ThresholdsCustom({
+    this.jupiter,
+    this.mars,
+    this.mercury,
+    this.moon,
+    this.neptune,
+    this.pluto,
+    this.saturn,
+    this.uranus,
+    this.venus,
+  });
+
+  /// Jupiter's.
+  final MotionThresholds? jupiter;
+
+  /// Mars's.
+  final MotionThresholds? mars;
+
+  /// Mercury's.
+  final MotionThresholds? mercury;
+
+  /// The Moon's.
+  final MotionThresholds? moon;
+
+  /// Neptune's.
+  final MotionThresholds? neptune;
+
+  /// Pluto's.
+  final MotionThresholds? pluto;
+
+  /// Saturn's.
+  final MotionThresholds? saturn;
+
+  /// Uranus's.
+  final MotionThresholds? uranus;
+
+  /// Venus's.
+  final MotionThresholds? venus;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     'kind': 'CUSTOM',
+    if (jupiter case final jupiterValue?) 'jupiter': jupiterValue._wire,
+    if (mars case final marsValue?) 'mars': marsValue._wire,
+    if (mercury case final mercuryValue?) 'mercury': mercuryValue._wire,
+    if (moon case final moonValue?) 'moon': moonValue._wire,
+    if (neptune case final neptuneValue?) 'neptune': neptuneValue._wire,
+    if (pluto case final plutoValue?) 'pluto': plutoValue._wire,
+    if (saturn case final saturnValue?) 'saturn': saturnValue._wire,
+    if (uranus case final uranusValue?) 'uranus': uranusValue._wire,
+    if (venus case final venusValue?) 'venus': venusValue._wire,
   };
 
   @override
-  List<Object?> get _fields => [];
+  List<Object?> get _fields => [jupiter, mars, mercury, moon, neptune, pluto, saturn, uranus, venus];
 }
 
 /// One term: its lord, and the degree within the sign it ends at.
@@ -8132,4 +8178,27 @@ final class EraNumber extends _Request {
 
   @override
   List<Object?> get _fields => [era, year];
+}
+
+/// A threshold for each motion of one body, degrees.
+final class MotionThresholds extends _Request {
+  const MotionThresholds({
+    required this.direct,
+    required this.retrograde,
+  });
+
+  /// The threshold while the body advances.
+  final double direct;
+
+  /// The threshold while it retrogrades.
+  final double retrograde;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'direct': direct,
+    'retrograde': retrograde,
+  };
+
+  @override
+  List<Object?> get _fields => [direct, retrograde];
 }

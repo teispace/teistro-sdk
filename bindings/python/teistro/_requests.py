@@ -456,6 +456,7 @@ __all__ = [
     "LifeClass",
     "SubDegree",
     "EraNumber",
+    "MotionThresholds",
 ]
 
 
@@ -5200,6 +5201,33 @@ class ThresholdsCustom(TypedDict, total=False):
 
     kind: Required[Literal['CUSTOM']]
 
+    jupiter: Optional[MotionThresholds]
+    """Jupiter's."""
+
+    mars: Optional[MotionThresholds]
+    """Mars's."""
+
+    mercury: Optional[MotionThresholds]
+    """Mercury's."""
+
+    moon: Optional[MotionThresholds]
+    """The Moon's."""
+
+    neptune: Optional[MotionThresholds]
+    """Neptune's."""
+
+    pluto: Optional[MotionThresholds]
+    """Pluto's."""
+
+    saturn: Optional[MotionThresholds]
+    """Saturn's."""
+
+    uranus: Optional[MotionThresholds]
+    """Uranus's."""
+
+    venus: Optional[MotionThresholds]
+    """Venus's."""
+
 
 class TermEntry(TypedDict, total=False):
     """One term: its lord, and the degree within the sign it ends at."""
@@ -5665,3 +5693,13 @@ class EraNumber(TypedDict, total=False):
 
     year: Required[int]
     """The year in it, 1-based."""
+
+
+class MotionThresholds(TypedDict, total=False):
+    """A threshold for each motion of one body, degrees."""
+
+    direct: Required[float]
+    """The threshold while the body advances."""
+
+    retrograde: Required[float]
+    """The threshold while it retrogrades."""

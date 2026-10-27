@@ -10,10 +10,163 @@ import java.util.Objects;
 
 /**
  * A caller's own table.
+ *
+ * @param jupiter Jupiter's. Null leaves the SDK's default.
+ * @param mars Mars's. Null leaves the SDK's default.
+ * @param mercury Mercury's. Null leaves the SDK's default.
+ * @param moon The Moon's. Null leaves the SDK's default.
+ * @param neptune Neptune's. Null leaves the SDK's default.
+ * @param pluto Pluto's. Null leaves the SDK's default.
+ * @param saturn Saturn's. Null leaves the SDK's default.
+ * @param uranus Uranus's. Null leaves the SDK's default.
+ * @param venus Venus's. Null leaves the SDK's default.
  */
-public record ThresholdsCustom() implements RequestJson, Thresholds {
+public record ThresholdsCustom(MotionThresholds jupiter, MotionThresholds mars, MotionThresholds mercury, MotionThresholds moon, MotionThresholds neptune, MotionThresholds pluto, MotionThresholds saturn, MotionThresholds uranus, MotionThresholds venus) implements RequestJson, Thresholds {
     /** The `kind` this variant is written under. */
     public static final String KIND = "CUSTOM";
+
+    /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     */
+    public ThresholdsCustom() {
+        this(null, null, null, null, null, null, null, null, null);
+    }
+
+    /**
+     * A builder, every field unset: an unset optional field is left out, and the
+     * SDK's default stands.
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /** Builds a {@link ThresholdsCustom} a field at a time. */
+    public static final class Builder {
+        private MotionThresholds jupiter;
+        private MotionThresholds mars;
+        private MotionThresholds mercury;
+        private MotionThresholds moon;
+        private MotionThresholds neptune;
+        private MotionThresholds pluto;
+        private MotionThresholds saturn;
+        private MotionThresholds uranus;
+        private MotionThresholds venus;
+
+        private Builder() {}
+
+        /**
+         * Sets {@code jupiter}.
+         *
+         * @param jupiter Jupiter's. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder jupiter(MotionThresholds jupiter) {
+            this.jupiter = jupiter;
+            return this;
+        }
+
+        /**
+         * Sets {@code mars}.
+         *
+         * @param mars Mars's. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder mars(MotionThresholds mars) {
+            this.mars = mars;
+            return this;
+        }
+
+        /**
+         * Sets {@code mercury}.
+         *
+         * @param mercury Mercury's. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder mercury(MotionThresholds mercury) {
+            this.mercury = mercury;
+            return this;
+        }
+
+        /**
+         * Sets {@code moon}.
+         *
+         * @param moon The Moon's. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder moon(MotionThresholds moon) {
+            this.moon = moon;
+            return this;
+        }
+
+        /**
+         * Sets {@code neptune}.
+         *
+         * @param neptune Neptune's. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder neptune(MotionThresholds neptune) {
+            this.neptune = neptune;
+            return this;
+        }
+
+        /**
+         * Sets {@code pluto}.
+         *
+         * @param pluto Pluto's. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder pluto(MotionThresholds pluto) {
+            this.pluto = pluto;
+            return this;
+        }
+
+        /**
+         * Sets {@code saturn}.
+         *
+         * @param saturn Saturn's. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder saturn(MotionThresholds saturn) {
+            this.saturn = saturn;
+            return this;
+        }
+
+        /**
+         * Sets {@code uranus}.
+         *
+         * @param uranus Uranus's. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder uranus(MotionThresholds uranus) {
+            this.uranus = uranus;
+            return this;
+        }
+
+        /**
+         * Sets {@code venus}.
+         *
+         * @param venus Venus's. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder venus(MotionThresholds venus) {
+            this.venus = venus;
+            return this;
+        }
+
+        /**
+         * The record.
+         *
+         * @return the record
+         * @throws NullPointerException naming a required field left unset
+         */
+        public ThresholdsCustom build() {
+            return new ThresholdsCustom(jupiter, mars, mercury, moon, neptune, pluto, saturn, uranus, venus);
+        }
+    }
 
     /**
      * A {@code ThresholdsCustom} from its JSON, with its `kind`, as {@code Json.read} answers it.
@@ -24,13 +177,49 @@ public record ThresholdsCustom() implements RequestJson, Thresholds {
      */
     public static ThresholdsCustom of(Object raw) {
         Map<String, Object> json = Read.object(raw, "ThresholdsCustom");
-        return new ThresholdsCustom();
+        return new ThresholdsCustom(
+            Read.orNull(json.get("jupiter"), present -> MotionThresholds.of(present)),
+            Read.orNull(json.get("mars"), present -> MotionThresholds.of(present)),
+            Read.orNull(json.get("mercury"), present -> MotionThresholds.of(present)),
+            Read.orNull(json.get("moon"), present -> MotionThresholds.of(present)),
+            Read.orNull(json.get("neptune"), present -> MotionThresholds.of(present)),
+            Read.orNull(json.get("pluto"), present -> MotionThresholds.of(present)),
+            Read.orNull(json.get("saturn"), present -> MotionThresholds.of(present)),
+            Read.orNull(json.get("uranus"), present -> MotionThresholds.of(present)),
+            Read.orNull(json.get("venus"), present -> MotionThresholds.of(present)));
     }
 
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("kind", KIND);
+        if (jupiter != null) {
+            json.put("jupiter", jupiter.toJson());
+        }
+        if (mars != null) {
+            json.put("mars", mars.toJson());
+        }
+        if (mercury != null) {
+            json.put("mercury", mercury.toJson());
+        }
+        if (moon != null) {
+            json.put("moon", moon.toJson());
+        }
+        if (neptune != null) {
+            json.put("neptune", neptune.toJson());
+        }
+        if (pluto != null) {
+            json.put("pluto", pluto.toJson());
+        }
+        if (saturn != null) {
+            json.put("saturn", saturn.toJson());
+        }
+        if (uranus != null) {
+            json.put("uranus", uranus.toJson());
+        }
+        if (venus != null) {
+            json.put("venus", venus.toJson());
+        }
         return json;
     }
 }

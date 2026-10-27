@@ -5489,6 +5489,42 @@ export interface ThresholdsPtolemy {
  */
 export interface ThresholdsCustom {
   readonly kind: 'CUSTOM';
+  /**
+   * Jupiter's.
+   */
+  readonly jupiter?: MotionThresholds | null;
+  /**
+   * Mars's.
+   */
+  readonly mars?: MotionThresholds | null;
+  /**
+   * Mercury's.
+   */
+  readonly mercury?: MotionThresholds | null;
+  /**
+   * The Moon's.
+   */
+  readonly moon?: MotionThresholds | null;
+  /**
+   * Neptune's.
+   */
+  readonly neptune?: MotionThresholds | null;
+  /**
+   * Pluto's.
+   */
+  readonly pluto?: MotionThresholds | null;
+  /**
+   * Saturn's.
+   */
+  readonly saturn?: MotionThresholds | null;
+  /**
+   * Uranus's.
+   */
+  readonly uranus?: MotionThresholds | null;
+  /**
+   * Venus's.
+   */
+  readonly venus?: MotionThresholds | null;
 }
 
 /**
@@ -5972,4 +6008,18 @@ export interface EraNumber {
    * The year in it, 1-based.
    */
   readonly year: number;
+}
+
+/**
+ * A threshold for each motion of one body, degrees.
+ */
+export interface MotionThresholds {
+  /**
+   * The threshold while the body advances.
+   */
+  readonly direct: number;
+  /**
+   * The threshold while it retrogrades.
+   */
+  readonly retrograde: number;
 }

@@ -602,7 +602,7 @@ struct Reader<'s> {
     reached: Vec<String>,
 }
 
-impl Reader<'_> {
+impl<'s> Reader<'s> {
     /// Whether `part` is listed raw, noting that it was reached.
     fn is_raw(&mut self, part: &str) -> bool {
         let listed = self.raw.contains(&part);
@@ -764,15 +764,29 @@ impl Reader<'_> {
         object: &Value,
         tag: Option<&str>,
     ) -> Result<Vec<RecordField>, String> {
-        let properties = object
+        let mut properties = object
             .get("properties")
             .and_then(Value::as_object)
-            .ok_or_else(|| format!("{at}: an object with no properties"))?;
-        let required: BTreeSet<&str> = object
-            .get("required")
-            .and_then(Value::as_array)
-            .map(|names| names.iter().filter_map(Value::as_str).collect())
-            .unwrap_or_default();
+            .ok_or_else(|| format!("{at}: an object with no properties"))?
+            .clone();
+        let mut required: BTreeSet<String> = names_of(object.get("required"));
+        // A variant that wraps a record (serde's internally tagged newtype,
+        // `Custom(Table)`) refers to it beside its tag, and serde writes
+        // that record's fields beside the tag: they are the variant's.
+        if let Some(reference) = object.get("$ref").and_then(Value::as_str) {
+            let wrapped = self.wrapped(at, reference)?;
+            for (name, schema) in wrapped
+                .get("properties")
+                .and_then(Value::as_object)
+                .into_iter()
+                .flatten()
+            {
+                properties
+                    .entry(name.clone())
+                    .or_insert_with(|| schema.clone());
+            }
+            required.extend(names_of(wrapped.get("required")));
+        }
         let record = at.split('.').next().unwrap_or(at);
         let mut named: Vec<(&String, &Value)> = properties.iter().collect();
         named.sort_by(|a, b| a.0.cmp(b.0));
@@ -787,7 +801,7 @@ impl Reader<'_> {
                     name: name.clone(),
                     doc: doc_of(schema),
                     ty,
-                    nullable: nullable || !required.contains(name.as_str()),
+                    nullable: nullable || !required.contains(name),
                     null: nullable,
                     default: schema
                         .get("default")
@@ -947,6 +961,28 @@ impl Reader<'_> {
 
     /// The type a `$ref` names: a record, a catalogue member, a map, a
     /// raw part, or the scalar a constrained scalar definition is.
+    /// The record a reference beside an object's own fields names,
+    /// through any alias; refused unless it is a record with fields, since
+    /// a variant would otherwise lose what serde writes.
+    fn wrapped(&self, at: &str, reference: &str) -> Result<&'s Value, String> {
+        let name = reference
+            .strip_prefix("#/$defs/")
+            .ok_or_else(|| format!("{at}: a reference outside $defs: {reference}"))?;
+        let def = self
+            .defs
+            .get(name)
+            .ok_or_else(|| format!("{at}: a reference to {name}, which is not defined"))?;
+        if let Some(alias) = def.get("$ref").and_then(Value::as_str) {
+            return self.wrapped(at, alias);
+        }
+        if def.get("properties").and_then(Value::as_object).is_none() {
+            return Err(format!(
+                "{at}: wraps {name}, which has no fields to stand beside the tag"
+            ));
+        }
+        Ok(def)
+    }
+
     fn referred(&mut self, at: &str, reference: &str) -> Result<RecordType, String> {
         let name = reference
             .strip_prefix("#/$defs/")
@@ -1067,6 +1103,20 @@ fn tag_of(at: &str, options: &[Value]) -> Result<String, String> {
         })
         .cloned()
         .ok_or_else(|| format!("{at}: a union with no field that tags every option"))
+}
+
+/// The names a schema's `required` lists.
+fn names_of(required: Option<&Value>) -> BTreeSet<String> {
+    required
+        .and_then(Value::as_array)
+        .map(|names| {
+            names
+                .iter()
+                .filter_map(Value::as_str)
+                .map(str::to_owned)
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 /// A schema's description, first paragraph only, as one line.
@@ -1195,6 +1245,49 @@ mod tests {
             "Graha": {"anyOf": [{"type": "string", "enum": ["SUN"]}], "x-teistro-kind": "graha"},
             "Point": {"$ref": "#/$defs/Residence"}
         }})
+    }
+
+    /// serde's internally tagged newtype variant, as schemars describes
+    /// it: the wrapped record by reference, the tag beside it.
+    fn wrapping(table: &serde_json::Value) -> serde_json::Value {
+        json!({"$defs": {
+            "Thresholds": {"oneOf": [
+                {"type": "object", "properties": {"kind": {"type": "string", "const": "PTOLEMY"}},
+                 "required": ["kind"]},
+                {"$ref": "#/$defs/Table", "type": "object",
+                 "properties": {"kind": {"type": "string", "const": "CUSTOM"}}, "required": ["kind"]}
+            ]},
+            "Table": table,
+            "Pair": {"type": "object", "properties": {"direct": {"type": "number"}}, "required": ["direct"]}
+        }})
+    }
+
+    #[test]
+    fn a_variant_wrapping_a_record_has_its_fields_beside_the_tag() {
+        let table = json!({"type": "object", "properties": {
+            "venus": {"anyOf": [{"$ref": "#/$defs/Pair"}, {"type": "null"}]},
+            "mars": {"$ref": "#/$defs/Pair"}
+        }, "required": ["mars"]});
+        let records = read(&wrapping(&table), &["Thresholds"], Reading { raw: &[] }).unwrap();
+        let tagged = records.iter().find(|r| r.name == "Thresholds").unwrap();
+        let RecordShape::Tagged { tag, variants } = &tagged.shape else {
+            return assert_eq!(tagged.shape, RecordShape::Keys { values: vec![] });
+        };
+        assert_eq!(tag, "kind");
+        let custom = variants.iter().find(|v| v.key == "CUSTOM").unwrap();
+        let fields: Vec<(&str, bool)> = custom
+            .fields
+            .iter()
+            .map(|f| (f.name.as_str(), f.nullable))
+            .collect();
+        assert_eq!(fields, vec![("mars", false), ("venus", true)]);
+        // A wrapped type with no fields would lose what serde writes.
+        let refused = read(
+            &wrapping(&json!({"type": "string"})),
+            &["Thresholds"],
+            Reading { raw: &[] },
+        );
+        assert!(refused.is_err_and(|e| e.contains("no fields to stand beside the tag")));
     }
 
     #[test]

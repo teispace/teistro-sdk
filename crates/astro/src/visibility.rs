@@ -240,6 +240,7 @@ impl Side {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MotionThresholds"))]
 pub struct Pair {
     /// The threshold while the body advances.
     pub direct: f64,
