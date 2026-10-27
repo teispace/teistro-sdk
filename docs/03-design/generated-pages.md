@@ -1,10 +1,12 @@
 # Generated pages: `SIZES.md`, `CONFORMANCE.md`, and ACCURACY's JPL rows
 
-Status: `draft`, 2026-10-08. Track A item 7 of the completion plan
+Status: `building`, 2026-10-08; steps 1 to 5 built, the release's exact
+attached page not built. Track A item 7 of the completion plan
 (`07-roadmap/00-roadmap.md`). `05-testing/README.md` already lists
 `SIZES.md` and `CONFORMANCE.md` as generated, and
 `05-testing/01-golden-vectors.md` step 5 says `CONFORMANCE.md` summarises
-the per-class reports. Neither page exists yet.
+the per-class reports. Both pages are generated now, `CONFORMANCE.md`
+held by `check-conformance` and `SIZES.md` by `check-sizes`.
 
 ## 0. What already exists, and the one problem both pages share
 
@@ -17,7 +19,8 @@ the per-class reports. Neither page exists yet.
   with its reason).
 - **The lint `generated-page-is-gated`** (`xtask/src/lints.rs`) reads
   only `docs/03-design/*-measured.md`. `ACCURACY.md` in `docs/05-testing`
-  is outside it today, and the two new pages would be too. **First fix:**
+  was outside it, and the two new pages would have been too (step 1
+widened it). **First fix:**
   make `MEASURED` a list. Add `docs/05-testing` with an explicit list of
   its generated pages (`ACCURACY.md`, `CONFORMANCE.md`, `SIZES.md`), held
   both ways: a listed page that is missing fails, and an upper-case page
@@ -364,7 +367,8 @@ re-checks.
    recorded:** the npm packages' `.tgz`, which staging never packs (the
    addon is recorded raw and gzipped instead), and the Dart and Node
    root archives; the release's exact attached page is still to build.
-5. **The JPL recording** in the corpus repo (licence check, recorder
+5. **Built** through CSPICE's DE440 states (corpus 0.12.0, `ACCURACY.md`);
+   the Horizons (DE441) recording waits on JPL's permission. **The JPL recording** in the corpus repo (licence check, recorder
    script, a corpus release and tag), then the submodule bump, the astro
    tests and the ACCURACY rows. This is the largest piece and the only one
    that waits on another repository, so it can start in parallel with 2.

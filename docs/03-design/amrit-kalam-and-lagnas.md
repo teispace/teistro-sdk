@@ -1,6 +1,6 @@
 # Amrita kalam, the day's lagna table, and the day page's names
 
-Status: `design`, 2026-10-21. §1, the amrita kalam, is **built** with its
+Status: `built`, 2026-10-21. §1, the amrita kalam, is **built** with its
 default decided on a published panchanga (§1.5); §2, the lagna table, is
 **built** with the committee's own table as its fixture (§2.2); §3's
 gate is **built** (C682) and its names wait for review.
@@ -219,9 +219,9 @@ question (C697).
 
 The brief said masa and direction have no names. **That is stale**: both
 are named in all five packs since `a0d890ad` (2026-09-14), and
-`crates/intl/src/validate.rs` asserts 12 of 12 and 8 of 8. Only the
-comment in `crates/sdk/examples/almanac.rs` (lines 48–54) still says they
-are unnamed, and should be corrected when the example is next touched.
+`crates/intl/src/validate.rs` asserts 12 of 12 and 8 of 8. The example's
+comment that said they were unnamed (`crates/sdk/examples/almanac.rs`) has
+since been corrected.
 
 An audit of the five packs against `catalogue/catalogue.json` (65 kinds)
 counts 314 members with no en-Latn name. 72 of them are listed in

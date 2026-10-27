@@ -1,6 +1,6 @@
 # The canonical form, the seal, and the chart document
 
-Status: `designed`, written 2026-09-07 from the falsification pass in
+Status: `built`, written 2026-09-07 from the falsification pass in
 [`serial-measured.md`](serial-measured.md). Derives from
 [`core-types-and-catalogue.md`](core-types-and-catalogue.md) (the
 envelope and `canonical_json`), ADR-0020 (what a stamp carries),

@@ -252,8 +252,8 @@ reports that it did.
    reaches is listed with its reason, as the muhurta ABI test does for
    clause kinds.
 3. **Against the published calendars.** The observed dates the
-   Government of India publishes as holidays are facts. Nepal's list is
-   not yet read. The
+   Government of India publishes as holidays are facts. Nepal's committee's
+   printed days are read too (`festival-measured.md` §4). The
    pass compares each shipped rule's day with them. Every disagreement
    is named with its cause: another school, another window, a published
    day decided by administration. It is never absorbed as a tolerance.
@@ -306,7 +306,8 @@ Derived from how the muhurta search crossed
   after. The middle run is exactly `of_each`'s, and nothing is founded
   twice. This also removes the chunking loop, because the caller's range
   is already held to the almanac's limit.
-- **A pack cannot yet be amended, though §4.3 promises it.** In Rust a
+- **A pack could not be amended, though §4.3 promised it; it can now**
+  (`crates/sdk/src/festival_request.rs`). In Rust a
   consumer edits the `Vec`. A binding sends a record, and spelling out
   four rules to change one is a dead end. The record takes a list whose
   items are either a pack's name or a rule. A later rule replaces an

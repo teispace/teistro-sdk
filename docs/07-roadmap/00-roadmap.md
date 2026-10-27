@@ -533,8 +533,9 @@ layer owns is now met; the golden vectors reproduced and the per-row
 invariants stood already. **Rashi bala followed from BPHS ch. 46**
 (`strength-schemes.md`): the verses' sign comparison, read by the rashi
 dashas' dual lord and stronger starts, the text's reading the default and the
-engine's `conformance-baseline`'s (C51, C53). Next: the yogas the
-interpretation layer reads, which Phase 6's rules engine carries.
+engine's `conformance-baseline`'s (C51, C53). Every clause of Phase 5's exit
+is met. What stays open is crux C6, the year each dasha counts, and 8 of
+the 45 dasha systems, blocked on text (`03-design/dasha-coverage-measured.md`).
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18
@@ -968,10 +969,14 @@ The order below puts what blocks a release first.
 6. **The Java binding**: Panama FFM, emitted from `idl/api.json` like the
    others, with a Java 22 floor and tests on Java 25. Android, which has
    no FFM, stays v1.x. Designed in `03-design/java-binding.md`.
+   **Built** (2026-10-27), but for step 8 (Maven Central, which waits on
+   the maintainer's namespace record) and a test run on JDK 22.
 7. **Generated pages**: `SIZES.md` and `CONFORMANCE.md`; Horizons and
    CSPICE rows in `ACCURACY.md` from a dated run recorded in the corpus;
    the docs site's guides with executed examples; a check after publishing
-   that installs every binding from its registry.
+   that installs every binding from its registry. **Built**
+   (`check-guides`, `check-published`, the CSPICE rows over DE440), but for
+   `ACCURACY.md`'s Horizons recording, which waits on JPL's permission.
 
 ### The order to finish (2026-10-08)
 
@@ -986,6 +991,12 @@ read:
    each researched from its sources first. Pakshi and Lal Kitab get their
    pipeline and gates, and their content goes to a reader who can vet it.
 3. **Track C as a stream, and the MCP server last.**
+
+**State on 2026-10-27.** Items 1 and 2 are done but for Maven Central
+(step 8), prashna step 2's akṣara-lagna (C353), and the pakshi and Lal
+Kitab content, which waits on readers of Tamil and Urdu. A release run end
+to end with nothing published passed (run 38140578186). The MCP server is
+built (`03-design/mcp-server.md`).
 
 Research, source-reading and drafts run as two or three parallel agents;
 every build and test runs one at a time.
@@ -1011,12 +1022,18 @@ Central namespace's DNS record, the release PGP key and its fingerprint in
 Teimeris adapter (step 8 above). The release candidate ships without any of
 them that are missing, and says so in its notes.
 
-8. **A real plugin in CI.** No workflow loads an adapter, so every
-   binding's plugin test skips there and passes only where a contributor
-   names one with `TEISTRO_TEIMERIS_ADAPTER`. Teimeris is a private
-   repository, so one verify row needs a read-only token in a secret to
-   check it out beside the SDK, build the adapter and name it. The token
-   is the maintainer's to create.
+**State on 2026-10-27.** Every row's engineering is done but for
+`ACCURACY.md`'s Horizons rows (JPL's permission) and the hardening pass,
+which began on 23 October (PRs #359 to #366, #395, #402) and is in
+progress: what remains is the quality bar's unenforced rows, the parity
+checklist, and each design page read against what shipped (the first
+sweep of the design pages was done on 2026-10-27).
+
+8. **A real plugin in CI.** Built (2026-10-24): verify's `teimeris` job
+   clones Teimeris and runs `check-teimeris-adapter`. Teimeris is a
+   private repository, so the job needs a read-only token in the
+   `TEIMERIS_READ_TOKEN` secret, which is the maintainer's to create;
+   until it exists the job says in a notice that it checked nothing.
 
 ### Track B: applications (Phase 8)
 
@@ -1039,6 +1056,11 @@ each difference counted on a generated page (the C89 and C289 precedent).
 | 8 | pakshi | M | Agastya Tamil prints 1863–1880, which need a reader of Tamil |
 | 9 | lalkitab | M–L | facts only, cited by edition: the books are likely in copyright to 2042 |
 
+**State on 2026-10-27.** Built: numerology, namakarana, rashifal and
+research; remedies steps 1 to 4; rectification steps 3 to 8. Partly:
+prashna steps 1, 3 and 4, with step 2's akṣara-lagna open (C353); pakshi
+and Lal Kitab steps 1 to 3, step 4 waiting on readers of Tamil and Urdu.
+
 ### Track C: Phase 6 and 7 remainders, interleaved
 
 - **The arishta corpus.** Built through Phaladeepika chs. 13 and 14
@@ -1046,7 +1068,7 @@ each difference counted on a generated page (the C89 and C289 precedent).
   C386.
 - **Saravali's readings**, chs. 22 to 31 and 49 to 51: built, as the
   readings table (2026-09-16 to 2026-10-12).
-- **Ibn Ezra's weights.**
+- **Ibn Ezra's weights** wait on a rank 1 reading.
 - **Rudra, Maheshwara and the Sudasa** wait on a legible Jaimini.
 
 ### Track D: the MCP server (Q35), last
@@ -1058,12 +1080,26 @@ is open is that page's order of work.
 
 ### Estimate
 
-- **Track A**: about three weeks.
-- **Track B**: four to five weeks, run alongside A, since the research
-  runs in parallel and the builds are serial.
-- **Track C**: a running stream.
-- **v1.0 release candidate**: early to mid November 2026, the
-  maintainer's review of the finished SDK, then the astrologers'.
+The estimate of 2026-10-07 (Track A about three weeks, Track B four to
+five, the release candidate early to mid November) held for the build:
+Tracks A, B and D are built but for what waits on the maintainer or a
+source. **Re-estimated on 2026-10-27**, what is left in the engineer's
+hands is about two to three weeks of one chain of builds:
+
+- the request unions (#405) and a request date without its resolution;
+- the regional solar calendars against the Rashtriya Panchang's tables;
+- the parity checklist (`01-research/baseline-engine/02-parity-requirements.md`);
+- Phase 9's baseline migration guide and compatibility shim, and
+  `serial`'s gochar sidecar and binary blob;
+- the baseline's golden vectors for aspects, Jaimini, KP and milan, and an
+  oracle for the Western and Hellenistic fixtures;
+- the quality bar's unenforced rows (the coverage floors, the binding
+  layers' coverage) and a JDK 22 run in CI;
+- the release candidate: version, changelog and a tag on a rehearsal run.
+
+**v1.0 release candidate: mid to late November 2026**, then the
+maintainer's review, then the astrologers'. What waits on a source, a
+reviewer or the maintainer is listed in `STATUS.md`, "Now".
 
 ## v1.0 release and baseline migration
 
@@ -1072,11 +1108,11 @@ no answer moved except the documented fixes; `packages/` is deleted.
 
 ## v1.x
 
-Eclipses and the full star catalogue in `astro`, `ephemeris-de` (the JPL
-DE file reader with range-request streaming) and the `reference` tier if
-it did not land in Phase 3 (ADR-0021), additional calendars (Nepal
-Sambat, Saka, regional solar, Hijri, Hebrew, Persian), the remaining
-dasha rows as their citations close, festival rule packs, Uranian points
+The full star catalogue in `astro`, `ephemeris-de` (the JPL DE file
+reader with range-request streaming) and the `reference` tier
+(ADR-0021), additional calendars (the regional solar calendars, the
+sighted Hijri months, Hebrew, Persian), the remaining dasha rows as their
+citations close, Uranian points
 and dials, platform-native drawing above the geometry contract, Swift and
 Kotlin bindings if needed.
 

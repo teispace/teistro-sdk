@@ -12,8 +12,8 @@ stays open (§10). It derives from:
   shadow geometry, and one second of contact times;
 - `07-roadmap/00-roadmap.md`, Phase 7, Nepal step 3: eclipses as
   blackouts;
-- `muhurta.md` §4.1: the `ECLIPSE_STAR` blackout, which waits on this
-  page.
+- `muhurta.md` §4.1: the `ECLIPSE_STAR` blackout, built on this
+  page's eclipses.
 
 The reference is rank 1. Fred Espenak and Jean Meeus's catalogues of
 solar and lunar eclipses (NASA TP-2006-214141 and TP-2009-214172, NASA

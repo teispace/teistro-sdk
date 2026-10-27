@@ -655,8 +655,8 @@ evidence in the project that is not another implementation.
 - **The thirty muhurta names**, which the catalogue wants. Muhurta
   Chintamani's *Vivaha Prakarana* vv. 50–51 now state them in order
   (§21.1); what is left is naming them in every shipped locale.
-- **Amrita kalam, Vijaya muhurta and Godhuli's span** (C399, C400,
-  C401), each waiting on a text (§21).
+- **Vijaya muhurta and Godhuli's span** (C400, C401), each waiting on a
+  text (§21); the amrita kalam is built (C399, C677).
 - **Whether `panchanga.centre` should default to the profile's frame in
   a profile that says nothing.** The default here is `GEOCENTRIC`
   unconditionally, which is what almanacs do; the alternative — follow
@@ -693,13 +693,13 @@ Venkateshwar Press edition with its Hindi (the Internet Archive's
 leaves n104, n105, n118, n127, n136), Raman's *Muhurtha* (1948, rank 2,
 cited and paraphrased only) and Kalaprakasika (Iyer 1917, public domain).
 Varjyam was already built (C165, `omen::varjyam`); of the other seven,
-four are built here and three wait on a source (C399, C400, C401).
+five are built here and two wait on a source (C400, C401).
 
 | period | what it reads | source | built as |
 |---|---|---|---|
 | durmuhurta | the vara and the thirty muhurtas | MC *Vivaha* v. 52 over vv. 50–51; Raman ch. V p. 32 | `Panchanga::durmuhurtas`, `Panchanga::is_durmuhurta`, `period::durmuhurtas`, `panchanga.durmuhurta` (C398) |
 | varjyam | each nakshatra's own span | MC *Vivaha* vishaghati verse and table; Raman ch. II p. 15 | `omens.varjyam`, `panchanga.varjyam`, already shipped (C165) |
-| amrita kalam | each nakshatra's own span | none in hand | not built (C399) |
+| amrita kalam | each nakshatra's own span | Raman's table (C677) | `omens.amrit_kalam`, `panchanga.amrit_kalam` (C399, C677; [`amrit-kalam-and-lagnas.md`](amrit-kalam-and-lagnas.md)) |
 | Vijaya muhurta | a muhurta of the daylight | none in hand | not built (C400) |
 | Godhuli | the Sun's phase at setting, by season | MC *Vivaha* vv. 97–98 (phases, no span) | not built (C401) |
 | nakshatra shool | the nakshatra | MC *Yatra* v. 10 | `Panchanga::nakshatra_shool`, `omen::nakshatra_shool` (C402) |

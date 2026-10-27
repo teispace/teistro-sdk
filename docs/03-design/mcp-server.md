@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
-Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6,
-P7 to P10 built, §6 step 5 (packaging) built. Closes Q35 (`QUESTIONS.md`), which the
+Status: `built`, decided 2026-10-10; every step of §6 built, §7's P1 to
+P10 with it. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -113,6 +113,10 @@ the protocol's own failures.
 | `calendar.convert` | `CalendarRequest`: a date and the calendar wanted | step 3, built |
 | `engine.manifest`, `engine.call` | `ManifestRequest`, `EngineCall`: the engine passthrough (ADR-0030) | step 3, built |
 | `engine.<name>` | one per operation a `--plugin` engine's manifest lists | step 3, built |
+| `almanac.ashauch` | `AshauchAsked`: a death or a birth, the family's relation and the place | built since (`ashauch.md`) |
+| `almanac.firstYear` | the first year's shraddhas after a death | built since (`shraddha.md` §3.3) |
+| `almanac.publishedReasons` | why a published day is the day it is | built since (`published-overrides.md`) |
+| `almanac.sankalpa` | the time a sankalpa recites at an instant and a place | built since (`sankalpa.md`) |
 
 Step 2 needed the chart's composition in the façade. Until it was built,
 `ts_chart_found` composed a chart's families inside the boundary crate

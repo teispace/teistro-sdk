@@ -1,7 +1,9 @@
 # Testing
 
-Status: `planned`, 2026-09-04; the quality bar is accepted and the
-golden-vectors page is drafted. The strategy is in
+Status: `building`, 2026-09-04; the quality bar is accepted, the
+golden-vectors page is drafted, and the generated reports are built
+(`ACCURACY.md`, `CONFORMANCE.md`, `SIZES.md` and the `*-measured.md`
+pages). The strategy is in
 `01-research/platform/09-testing-quality.md`; this directory will hold the
 detailed plans and the generated reports. The corpus itself is in
 `fixtures/`, a pinned submodule of

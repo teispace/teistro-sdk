@@ -1,6 +1,6 @@
 # Plans at the boundary: a chart's narrative, said in every binding
 
-Status: `building`, designed 2026-09-21; §8's four steps built the same
+Status: `built`, designed 2026-09-21; §8's four steps built the same
 day. It settles what
 [`interpret-composers.md`](interpret-composers.md) §1 put out of scope —
 *crossing the C boundary, which rides on a chart reading the way rules do

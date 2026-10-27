@@ -1,6 +1,6 @@
 # Derived points: the upagrahas and the special lagnas
 
-Status: `designed`, written 2026-09-07 from the falsification pass in
+Status: `built`, written 2026-09-07 from the falsification pass in
 [`points-measured.md`](points-measured.md), which measured every rule
 below against the corpus's own recorded answers before this page
 existed. Derives from [`chart-foundation.md`](chart-foundation.md) (the

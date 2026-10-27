@@ -149,7 +149,7 @@ outside the rule, which covers strict locales.
 **Every kind since 2026-10-21 (C682).** A document is not the only
 reader of a key: a day page shows a tithi's class and a muhurta's
 nature, a match its kootas, a star list its stars. So the rule now
-holds every catalogue kind (`Kind::ALL`, 71), not the schema's. The
+holds every catalogue kind (`Kind::ALL`), not the schema's. The
 widening found 259 members of 26 kinds unnamed and unlisted, and each
 kind went on the list with its reason, so the list holds 335:
 

@@ -1,6 +1,6 @@
 # The houses service: which house, under which reading
 
-Status: `designed`, written 2026-09-07 from the falsification pass in
+Status: `built`, written 2026-09-07 from the falsification pass in
 [`houses-measured.md`](houses-measured.md). Derives from
 [`chart-foundation.md`](chart-foundation.md) (the bhavas and the
 placements), [`astro-house-systems.md`](astro-house-systems.md) (the

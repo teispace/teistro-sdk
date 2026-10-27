@@ -1,6 +1,6 @@
 # The interpretation records: a reading for a rule, in four languages
 
-Status: `design`, 2026-09-21. The measurements in §2 were taken from the
+Status: `built`, 2026-09-21. The measurements in §2 were taken from the
 baseline engine's built corpus and this repository's shipped rule packs on
 that date; §6 says which of them become a generated page so they cannot go
 stale here.

@@ -13,10 +13,10 @@ different question. Two bodies stand at an angle, the angle is one of a
 listed set, and the gap from exact is inside an orb. Lilly's
 perfection reads the Ptolemaic five with his moieties
 (`hellenistic-perfection.md`), and a progression's contacts read exact
-angles with no orb at all (`western-progressions.md`). Nothing yet
-answers the plain question a Western reader asks first: *which aspects
+angles with no orb at all (`western-progressions.md`). Before this page nothing
+answered the plain question a Western reader asks first: *which aspects
 does this chart hold?* Synastry and the composite charts ask the same
-question of two charts, so they wait on this one.
+question of two charts, so they waited on this one.
 
 ## What the sources decide
 

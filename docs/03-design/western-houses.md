@@ -14,7 +14,7 @@ houses are its profile's bhava chalit, which is a Vedic division under
 the shipped profiles, so a Western reading had no houses of its own.
 The composite's cusps ([`western-composites.md`](western-composites.md))
 and an antiscion on a cusp ([`western-antiscia.md`](western-antiscia.md))
-both wait on them. This page decides which division the `western`
+both waited on them. This page decides which division the `western`
 module reads, how a planet is counted in a house, and what the composite
 does with its cusps.
 

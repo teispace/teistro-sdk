@@ -188,7 +188,7 @@ given to the Moon**, against the source. The Nilakanthi's reading changes
 | **not decided** | the "special circumstances" in which the source says the aspect is not required, which it never names; whether a Moon is "extraordinarily strong", which it leaves to the reader; the *Nilakanthi*'s tie broken by the greater aspect; and a benefic's Ishrafa with the Moon (crux C106) |
 | **across the boundary** | `varsha.varshesha` names the three readings; each year's chart answers its lord in the `annual_charts` section — `year_lord`, `year_lord_chosen` (a `TsVarsheshaChosen`), `year_lord_vishwa` and `moon_passed_over` — and its claimants in the **ragged** `year_claims` section, counted by `claim_count`. Node, Dart and Python read it as `pravesha.annual.yearLord`, each binding's test holds the ranking and the lord's membership of its own claims (unless it succeeds the Moon), and all four parity runners print the lord, its step, its strength and every claim: **4 bindings agree on 8 018 values** |
 | **built** | `teistro_tajika::varshesha`; `sdk.chart().varshesha`, which composes the office-bearers and the strengths and needs **no ephemeris** |
-| **not built** | the sixteen yogas, which need the Tajika aspects with their deeptamsha orbs — a different thing from the aspect this rule uses |
+| **built since** | the sixteen yogas, over the Tajika aspects with their deeptamsha orbs — a different thing from the aspect this rule uses ([`tajika-yogas.md`](tajika-yogas.md)) |
 
 ## The month's lord
 

@@ -95,12 +95,12 @@ which is the figure the year lord is actually chosen by — is Jupiter at
 | **decided** | the five parts and their maxima; positional friendship read off the annual chart; the Tajika decanate as a rule; the Hudda as printed; exact integer arithmetic in sub-sub units; the Uchcha truncation, because the source states it |
 | **decided since** | the Hudda's transpositions (crux C109): Gemini's and Sagittarius's are the Tajika Nilakanthi's own, Charak's Aquarius a slip, so the table is the Nilakanthi's and Charak's a named lookup |
 | **built** | `teistro_tajika::panchavargiya` over an `AnnualSky` of seven named longitudes — named, because every one of them is a longitude and an array would let a caller swap two and still get an answer; `sdk.chart().panchavargiya`, which needs **no ephemeris** |
-| **not built** | the **Harsha** bala and the **Dwadasha-vargiya** bala, the source's two other strengths, which nothing yet asks for. The table itself does not cross: the boundary carries the **year lord and its claimants**, which is what the strength was computed for ([`varshesha.md`](varshesha.md)), and a Rust caller who wants the whole table has `sdk.chart().panchavargiya` |
+| **not built** | the **Dwadasha-vargiya** bala, which nothing yet asks for; the **Harsha** bala is built ([`tajika-harsha.md`](tajika-harsha.md)). The table itself does not cross: the boundary carries the **year lord and its claimants**, which is what the strength was computed for ([`varshesha.md`](varshesha.md)), and a Rust caller who wants the whole table has `sdk.chart().panchavargiya` |
 
 ## What it unblocks, and what it still waits on
 
 The year lord (crux C106) is the strongest of the five office-bearers
-**that also aspects the annual lagna**. The strength half is now here; the
-aspect half is the **Tajika aspects**, with their own orbs, which are the
-next thing to build. Until then the selection cannot be made honestly, and
-nothing here pretends otherwise.
+**that also aspects the annual lagna**. The strength half is here; the
+aspect half is the **Tajika aspects** ([`tajika-aspects.md`](tajika-aspects.md)),
+with their own orbs, and with both halves the year lord is chosen in
+[`varshesha.md`](varshesha.md).

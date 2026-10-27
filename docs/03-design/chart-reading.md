@@ -1,6 +1,6 @@
 # The chart reading: the whole document, and where it is assembled
 
-Status: `designed`, written 2026-09-13. Derives from
+Status: `built`, written 2026-09-13. Derives from
 [`chart-at-the-boundary.md`](chart-at-the-boundary.md) §7, which deferred
 exactly this and said why; from
 [`serial-and-the-envelope.md`](serial-and-the-envelope.md) (the document
