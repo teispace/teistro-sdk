@@ -732,11 +732,10 @@ pub fn pack(data: &[u8]) {
 /// one. A mutation almost never keeps a CRC-32 whole, so without this the
 /// target would test the header and nothing behind it; a checksum is no
 /// authentication, and every reader behind it must hold against a pack a
-/// hostile writer checksummed. The layout is `Pack::parse`'s: magic and
-/// version (8 bytes), locale and namespace (each a `u16` length and its
-/// bytes), the entry count and arena length, the CRC of the table and
-/// arena, the SHA-256 (32 bytes), then the metadata (a `u32` length and its
-/// bytes).
+/// hostile writer checksummed. The layout is `Pack::parse`'s (format 3):
+/// magic, version and flags (8 bytes), locale and namespace (each a `u16`
+/// length and its bytes), the entry count and arena length, then the CRC
+/// of every other byte of the file.
 fn checksummed(data: &[u8]) -> Vec<u8> {
     let mut bytes = data.to_vec();
     let u16_at = |at: usize| -> Option<usize> {
@@ -744,22 +743,19 @@ fn checksummed(data: &[u8]) -> Vec<u8> {
             data.get(at..at + 2)?.try_into().ok()?,
         )))
     };
-    let u32_at = |at: usize| -> Option<usize> {
-        usize::try_from(u32::from_le_bytes(data.get(at..at + 4)?.try_into().ok()?)).ok()
-    };
     let crc_at = (|| {
         let after_locale = 10 + u16_at(8)?;
         let after_namespace = after_locale + 2 + u16_at(after_locale)?;
-        let crc = after_namespace + 8;
-        let meta_len = crc + 4 + 32;
-        let body = meta_len.checked_add(4)?.checked_add(u32_at(meta_len)?)?;
-        Some((crc, body))
+        Some(after_namespace + 8)
     })();
-    if let Some((crc, body)) = crc_at
-        && let Some(covered) = data.get(body..)
-        && let Some(slot) = bytes.get_mut(crc..crc + 4)
+    if let Some(at) = crc_at
+        && let (Some(before), Some(after)) = (data.get(..at), data.get(at + 4..))
+        && let Some(slot) = bytes.get_mut(at..at + 4)
     {
-        slot.copy_from_slice(&crc32fast::hash(covered).to_le_bytes());
+        let mut crc = crc32fast::Hasher::new();
+        crc.update(before);
+        crc.update(after);
+        slot.copy_from_slice(&crc.finalize().to_le_bytes());
     }
     bytes
 }
@@ -1161,6 +1157,25 @@ mod tests {
     #[test]
     fn the_published_corpus_is_the_seed_table() {
         corpus_is("published", &published_seeds());
+    }
+
+    /// The harness seals a pack where the library's writer does: every
+    /// committed pack seed, a real file, is its own checksummed form, so a
+    /// format that moves its checksum fails here rather than leaving the
+    /// target to test the header alone.
+    #[test]
+    fn a_pack_the_library_wrote_is_its_own_checksummed_form() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("corpus/pack");
+        let mut packs = 0;
+        for entry in std::fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            let bytes = std::fs::read(&path).unwrap();
+            if bytes.starts_with(b"TPK1") {
+                packs += 1;
+                assert!(checksummed(&bytes) == bytes, "{}", path.display());
+            }
+        }
+        assert!(packs > 0, "no pack seed");
     }
 
     /// The weekly long run's matrix names every target the manifest
