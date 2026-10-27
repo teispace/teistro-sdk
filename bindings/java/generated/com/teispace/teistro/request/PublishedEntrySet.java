@@ -18,7 +18,7 @@ import java.util.Objects;
  * @param source Where the publisher says it.
  * @param window A published time (a parana, a sait). Null leaves the SDK's default.
  */
-public record PublishedEntrySet(Boolean adhika, PublishedDay day, com.teispace.teistro.Masa month, String rule, String source, Interval window) implements RequestJson, PublishedEntry {
+public record PublishedEntrySet(Boolean adhika, CalendarDay day, com.teispace.teistro.Masa month, String rule, String source, Interval window) implements RequestJson, PublishedEntry {
     /** The `action` this variant is written under. */
     public static final String ACTION = "SET";
 
@@ -43,7 +43,7 @@ public record PublishedEntrySet(Boolean adhika, PublishedDay day, com.teispace.t
      * @param rule The rule's key.
      * @param source Where the publisher says it.
      */
-    public PublishedEntrySet(PublishedDay day, String rule, String source) {
+    public PublishedEntrySet(CalendarDay day, String rule, String source) {
         this(null, day, null, rule, source, null);
     }
 
@@ -60,7 +60,7 @@ public record PublishedEntrySet(Boolean adhika, PublishedDay day, com.teispace.t
     /** Builds a {@link PublishedEntrySet} a field at a time. */
     public static final class Builder {
         private Boolean adhika;
-        private PublishedDay day;
+        private CalendarDay day;
         private com.teispace.teistro.Masa month;
         private String rule;
         private String source;
@@ -85,7 +85,7 @@ public record PublishedEntrySet(Boolean adhika, PublishedDay day, com.teispace.t
          * @param day The published day.
          * @return this builder
          */
-        public Builder day(PublishedDay day) {
+        public Builder day(CalendarDay day) {
             this.day = day;
             return this;
         }
@@ -156,7 +156,7 @@ public record PublishedEntrySet(Boolean adhika, PublishedDay day, com.teispace.t
         Map<String, Object> json = Read.object(raw, "PublishedEntrySet");
         return new PublishedEntrySet(
             Read.orNull(json.get("adhika"), present -> Read.bool(present, "PublishedEntrySet.adhika")),
-            PublishedDay.of(Read.required(json.get("day"), "PublishedEntrySet.day")),
+            CalendarDay.of(Read.required(json.get("day"), "PublishedEntrySet.day")),
             Read.orNull(json.get("month"), present -> Read.member(present, "PublishedEntrySet.month", com.teispace.teistro.Masa::byKey)),
             Read.text(Read.required(json.get("rule"), "PublishedEntrySet.rule"), "PublishedEntrySet.rule"),
             Read.text(Read.required(json.get("source"), "PublishedEntrySet.source"), "PublishedEntrySet.source"),

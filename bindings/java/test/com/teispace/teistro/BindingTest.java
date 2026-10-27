@@ -1617,8 +1617,8 @@ public final class BindingTest {
                             .filter(o -> o.rule().equals("MAHA_NAVAMI")).findFirst().orElseThrow();
                     FestivalObservance visarjana = plain.observances().stream()
                             .filter(o -> o.rule().equals("DEVI_VISARJAN")).findFirst().orElseThrow();
-                    java.util.function.BiFunction<CalendarDate, Integer, com.teispace.teistro.request.PublishedDay> on =
-                            (of, by) -> new com.teispace.teistro.request.PublishedDay(
+                    java.util.function.BiFunction<CalendarDate, Integer, com.teispace.teistro.request.CalendarDay> on =
+                            (of, by) -> new com.teispace.teistro.request.CalendarDay(
                                     Calendar.GREGORIAN, of.day() + by, of.month(), of.year());
                     var entries = List.<com.teispace.teistro.request.PublishedEntry>of(
                             new com.teispace.teistro.request.PublishedEntrySet(on.apply(navami.day(), 1), "MAHA_NAVAMI", "p. 1"),
@@ -1679,7 +1679,7 @@ public final class BindingTest {
                             d -> new com.teispace.teistro.request.FestivalRequest(List.of(
                                     new com.teispace.teistro.request.PublishedSet(List.of(
                                             new com.teispace.teistro.request.PublishedEntrySet(
-                                                    new com.teispace.teistro.request.PublishedDay(Calendar.GREGORIAN,
+                                                    new com.teispace.teistro.request.CalendarDay(Calendar.GREGORIAN,
                                                             d.day(), d.month(), d.year()),
                                                     parted[0].rule(), "p. 1")),
                                             "teistro.published/1", "np", "a patro printed in Nepal", 1)),

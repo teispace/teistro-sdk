@@ -183,7 +183,7 @@ pub use scale::{Conversion, Scale};
 // exactly those four.
 pub use teistro_astro::DeltaTModel;
 pub use teistro_astro::delta_t::DeltaT;
-pub use teistro_calendar::{CalendarDate, FixedDay, Weekday};
+pub use teistro_calendar::{CalendarDate, CalendarDay, FixedDay, Weekday};
 pub use teistro_chart::day::ChartDay;
 pub use teistro_chart::foundation::{
     Apogee, ChartAngles, ChartFoundation, GrahaPosition, LilithPosition,

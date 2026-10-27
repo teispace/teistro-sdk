@@ -68,6 +68,79 @@ pub struct CalendarDate {
     pub leap: Option<Leap>,
 }
 
+/// A day in any calendar as a request writes it: the date without how
+/// it was resolved, which only an answer can say.
+///
+/// ```
+/// use teistro_calendar::{CalendarDate, CalendarDay};
+/// use teistro_core::catalogue::Calendar;
+///
+/// let day: CalendarDay = serde_json::from_str(
+///     r#"{"calendar": "calendar.BIKRAM_SAMBAT", "year": 2081, "month": 1, "day": 1}"#,
+/// )?;
+/// assert_eq!(day.date(), CalendarDate::defined(Calendar::BikramSambat, 2081, 1, 1));
+/// assert_eq!(CalendarDay::from(&day.date()), day);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CalendarDay {
+    /// Its calendar.
+    pub calendar: Calendar,
+    /// The astronomical year.
+    pub year: i32,
+    /// The month, 1-based.
+    pub month: u8,
+    /// The day, 1-based.
+    pub day: u8,
+    /// The era, for a calendar that counts several.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub era: Option<EraNumber>,
+    /// A leap month or day, for a calendar that marks one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub leap: Option<Leap>,
+}
+
+impl CalendarDay {
+    /// The day as the calendar defines it, resolved by definition.
+    ///
+    /// ```
+    /// use teistro_calendar::{CalendarDay, Leap};
+    /// use teistro_core::catalogue::Calendar;
+    ///
+    /// let day = CalendarDay {
+    ///     calendar: Calendar::TibetanPhugpa,
+    ///     year: 2024,
+    ///     month: 6,
+    ///     day: 1,
+    ///     era: None,
+    ///     leap: Some(Leap::Month),
+    /// };
+    /// assert_eq!(day.date().leap, Some(Leap::Month));
+    /// ```
+    #[must_use]
+    pub fn date(&self) -> CalendarDate {
+        let mut date = CalendarDate::defined(self.calendar, self.year, self.month, self.day);
+        date.era = self.era;
+        date.leap = self.leap;
+        date
+    }
+}
+
+impl From<&CalendarDate> for CalendarDay {
+    fn from(date: &CalendarDate) -> CalendarDay {
+        CalendarDay {
+            calendar: date.calendar,
+            year: date.year,
+            month: date.month,
+            day: date.day,
+            era: date.era,
+            leap: date.leap,
+        }
+    }
+}
+
 /// Which part of a date is the first of a repeated pair: the leap month
 /// comes before the month whose number it takes, and the leap day before
 /// the day whose number it repeats.

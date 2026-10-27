@@ -435,7 +435,7 @@ from ._requests import (
     PresentationBy as PresentationBy,
     ProgressionRate as ProgressionRate,
     ProgressionsRequest as ProgressionsRequest,
-    PublishedDay as PublishedDay,
+    CalendarDay as CalendarDay,
     PublishedEntry as PublishedEntry,
     PublishedEntryAdd as PublishedEntryAdd,
     PublishedEntrySet as PublishedEntrySet,

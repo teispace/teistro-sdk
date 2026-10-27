@@ -107,7 +107,7 @@ void main() {
         entries: [
           PublishedEntrySet(
             adhika: true,
-            day: PublishedDay(
+            day: CalendarDay(
               calendar: Calendar.julian,
               day: 1,
               era: EraNumber(era: Era.shaka, year: 1),
@@ -372,7 +372,7 @@ void main() {
         entries: [
           PublishedEntrySet(
             adhika: true,
-            day: PublishedDay(
+            day: CalendarDay(
               calendar: Calendar.julian,
               day: 1,
               era: EraNumber(era: Era.shaka, year: 1),
@@ -583,7 +583,7 @@ void main() {
         entries: [
           PublishedEntrySet(
             adhika: true,
-            day: PublishedDay(
+            day: CalendarDay(
               calendar: Calendar.julian,
               day: 1,
               era: EraNumber(era: Era.shaka, year: 1),

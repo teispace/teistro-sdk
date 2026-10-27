@@ -82,7 +82,9 @@ impl<T: Serialize> Sealed<T> {
     pub fn provenance(&self) -> &Provenance;
     pub fn content_hash(&self) -> Hash;
     pub fn cache_key(&self) -> (Hash, Hash, u32);
-    pub fn to_canonical(&self) -> String;
+    pub fn to_hash_form(&self) -> String;   // the bytes the hash is of
+    pub fn is_intact(&self) -> bool;
+    pub fn into_parts(self) -> (T, Provenance);
 }
 ```
 
@@ -93,7 +95,7 @@ field that cannot be filled by a caller is filled by the constructor.
 
 `Envelope<T>` stays where it is and keeps its meaning — a value with a
 stamp, which a module builds as it goes. `Sealed<T>` is what a value
-becomes when it leaves: `Sealed::from_envelope` takes one and seals it.
+becomes when it leaves: `Sealed::of` takes one and seals it.
 So a producer does not change, and nothing can be *published* unsealed.
 
 ### The answer key

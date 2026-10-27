@@ -2001,6 +2001,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 self.found_at(&day, *at, place, false, Vec::new())
             }
             Origin::Date { date } => {
+                let date = &date.date();
                 let (day, _) = self.value(date, place, &mut Memo::default())?;
                 let fixed = self.calendar.fixed_of(date)?;
                 let civil = Interval::new(

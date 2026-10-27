@@ -11,7 +11,7 @@
 //! single rule can state.
 
 use serde::{Deserialize, Serialize};
-use teistro_calendar::CalendarDate;
+use teistro_calendar::CalendarDay;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Masa, Nakshatra, Paksha, Tithi};
 use teistro_core::error::Error;
@@ -70,8 +70,8 @@ pub enum Origin {
     /// Only the civil date: its sunrise tithi, marked as assumed, with
     /// every tithi the date held beside it (C661).
     Date {
-        /// The date.
-        date: CalendarDate,
+        /// The date, as a request writes it.
+        date: CalendarDay,
     },
     /// The lunar date itself, as a family keeps it.
     Lunar {

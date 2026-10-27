@@ -15,13 +15,13 @@ use std::collections::BTreeMap;
 
 use teistro::catalogue::Calendar;
 use teistro::festival::{
-    Observances, PublishedDay, PublishedEntry, PublishedSet, PublishedStatus, apply_published,
+    Observances, PublishedEntry, PublishedSet, PublishedStatus, apply_published,
 };
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
     CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, FixedDay, UtcOffset,
 };
-use teistro_calendar::{CalendarSystem as _, Gregorian};
+use teistro_calendar::{CalendarDay, CalendarSystem as _, Gregorian};
 
 fn kathmandu() -> Place {
     Place::new(
@@ -80,7 +80,7 @@ fn set(id: &str, version: u32, entries: Vec<PublishedEntry>) -> PublishedSet {
 fn set_entry(rule: &str, day: &CalendarDate) -> PublishedEntry {
     PublishedEntry::Set {
         rule: rule.to_owned(),
-        day: PublishedDay::from(day),
+        day: CalendarDay::from(day),
         month: None,
         adhika: None,
         window: None,
@@ -204,14 +204,14 @@ fn withdraw_keeps_the_day_and_add_gives_one() {
     let entries = vec![
         PublishedEntry::Withdraw {
             rule: rule.clone(),
-            day: PublishedDay::from(&day),
+            day: CalendarDay::from(&day),
             month: None,
             adhika: None,
             source: String::from("correction 2"),
         },
         PublishedEntry::Add {
             key: String::from("A_NATIONAL_DAY"),
-            day: PublishedDay::from(&date(2027, 5, 29)),
+            day: CalendarDay::from(&date(2027, 5, 29)),
             names: [(String::from("en-Latn"), String::from("A national day"))].into(),
             window: None,
             source: String::from("notice 1"),
@@ -219,7 +219,7 @@ fn withdraw_keeps_the_day_and_add_gives_one() {
         // Outside the range: passed over.
         PublishedEntry::Add {
             key: String::from("NEXT_YEAR"),
-            day: PublishedDay::from(&date(2028, 5, 29)),
+            day: CalendarDay::from(&date(2028, 5, 29)),
             names: BTreeMap::default(),
             window: None,
             source: String::from("notice 2"),
@@ -324,7 +324,7 @@ fn a_moved_fast_keeps_only_the_published_window() {
     let window = fast.parana.as_ref().unwrap().kept.unwrap().span;
     let entries = vec![PublishedEntry::Set {
         rule: fast.rule.clone(),
-        day: PublishedDay::from(&shifted(&fast.day, 1)),
+        day: CalendarDay::from(&shifted(&fast.day, 1)),
         month: Some(fast.month),
         adhika: Some(fast.adhika),
         window: Some(window),
@@ -366,7 +366,7 @@ fn two_occurrences_that_near_are_refused_without_a_month() {
     let month = found.observances[at].month;
     let named = PublishedEntry::Set {
         rule: rule.clone(),
-        day: PublishedDay::from(&shifted(&day, 1)),
+        day: CalendarDay::from(&shifted(&day, 1)),
         month: Some(month),
         adhika: Some(!found.observances[at].adhika),
         window: None,
@@ -396,7 +396,7 @@ fn a_set_is_refused_by_name() {
         1,
         vec![PublishedEntry::Add {
             key: rule.clone(),
-            day: PublishedDay::from(&day),
+            day: CalendarDay::from(&day),
             names: BTreeMap::default(),
             window: None,
             source: String::from("p. 1"),
@@ -445,7 +445,7 @@ fn a_set_is_refused_by_name() {
             1,
             vec![PublishedEntry::Add {
                 key: String::from(key),
-                day: PublishedDay::from(&day),
+                day: CalendarDay::from(&day),
                 names: BTreeMap::default(),
                 window: None,
                 source: String::from("p. 1"),
@@ -466,7 +466,7 @@ fn a_binding_s_json_reads_the_sets() {
     let text = format!(
         r#"{{"rules": "DHARMASINDHU", "published": [{{"format": "teistro.published/1", "publisher": "p", "id": "np", "version": 1,
             "entries": [{{"action": "SET", "rule": "{rule}", "day": {}, "source": "p. 1"}}]}}]}}"#,
-        serde_json::to_string(&PublishedDay::from(day)).unwrap()
+        serde_json::to_string(&CalendarDay::from(day)).unwrap()
     );
     let read = FestivalRequest::from_json(&text).unwrap();
     let mut expected = set("np", 1, vec![set_entry(rule, day)]);
@@ -767,14 +767,14 @@ fn a_feed_says_who_published_a_day_and_drops_a_withdrawn_one() {
         set_entry(&moved.rule, &shifted(&moved.day, 1)),
         PublishedEntry::Withdraw {
             rule: gone.rule.clone(),
-            day: PublishedDay::from(&gone.day),
+            day: CalendarDay::from(&gone.day),
             month: None,
             adhika: None,
             source: String::from("p. 2"),
         },
         PublishedEntry::Add {
             key: String::from("A_NATIONAL_DAY"),
-            day: PublishedDay::from(&date(2027, 5, 29)),
+            day: CalendarDay::from(&date(2027, 5, 29)),
             names: [(String::from("en-Latn"), String::from("A national day"))].into(),
             window: None,
             source: String::from("p. 3"),
