@@ -246,9 +246,11 @@ fn the_moon_events_knob_moves_the_window_they_are_found_in() {
     let day = day();
     assert_ne!(civil.moon.window, day.moon.window);
     assert!(
-        (civil.moon.window.days() - 1.0).abs() < 1e-9,
-        "the civil day is a day"
+        (civil.moon.window.days() - 2.0).abs() < 1e-9,
+        "from the civil midnight, two days: the first rise and set can be the next day's"
     );
+    // And the reading names the first of each.
+    assert!(civil.moon.rises.len() <= 1 && civil.moon.sets.len() <= 1);
     // Everything else is untouched: the knob is about two fields.
     assert_eq!(civil.limbs, day.limbs);
     assert_eq!(civil.choghadiya, day.choghadiya);

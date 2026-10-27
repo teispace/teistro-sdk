@@ -2959,6 +2959,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 )
             }
         };
+        let (rises, sets) = match self.settings().panchanga.moon_events {
+            MoonEvents::CivilDay => (first_only(rises), first_only(sets)),
+            _ => (rises, sets),
+        };
         let longitudes = completion.longitudes(frame);
         Ok(MoonDay {
             rises,
@@ -2972,10 +2976,15 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     fn moon_search(&self, day: &LocalDay, window: Interval) -> Result<Interval, Error> {
         Ok(match self.settings().panchanga.moon_events {
             // The engine's reading: the first rise and set at or after
-            // the local civil midnight (entry 18).
+            // the local civil midnight (entry 18), which is the next
+            // civil day's when the Moon, a lunar day of some 24.8 hours
+            // behind, does not rise or set in this one: four of the
+            // corpus's 108 do so. Two days hold the first of each
+            // wherever the Moon rises and sets at all, and
+            // [`first_only`] keeps that first.
             MoonEvents::CivilDay => {
                 let midnight = local_midnight(self.clock, self.calendar.fixed_of(&day.date)?)?;
-                Interval::new(midnight, next_by(midnight, 1.0))?
+                Interval::new(midnight, next_by(midnight, 2.0))?
             }
             _ => window,
         })
@@ -3324,6 +3333,12 @@ async fn events_with<'a>(
 }
 
 /// An instant so many days on.
+/// The first of a day's events, under a reading that names one.
+fn first_only(mut events: Vec<JulianDay<Utc>>) -> Vec<JulianDay<Utc>> {
+    events.truncate(1);
+    events
+}
+
 fn next_by(instant: JulianDay<Utc>, days: f64) -> JulianDay<Utc> {
     JulianDay::literal(instant.get() + days)
 }
