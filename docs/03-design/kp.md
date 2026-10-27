@@ -213,9 +213,11 @@ Jupiter's, the only subs a sign's end falls inside.
    retrogression is delay, not rejection. The acceptance is the Reader's
    worked horary (Sunday, Moon in Venus's star in Sagittarius, Libra
    rising): Sun, Jupiter, Venus, Rahu and Ketu, reproduced. The
-   `conformance-baseline` profile does not take the baseline engine's
-   readings: the corpus records no KP to hold them to, and a profile
-   version is spent on a measured change.
+   `conformance-baseline` profile takes the baseline engine's two
+   readings of C150 and C151 (`WITH_SUBS`, `CIVIL`) since version 12,
+   the profile being the engine's defaults exactly; the corpus records
+   no KP to hold them to, so they rest on the engine's code as read for
+   the cruxes, not on a measurement.
 5. **Built**: horary from a number. `sdk.chart().kp_horary(&moment,
    KpNumber, &KpRequest)` keeps the moment's planets and gives the
    chart the number's start as its lagna exactly, with the other cusps

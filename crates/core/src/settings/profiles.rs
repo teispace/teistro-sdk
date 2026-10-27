@@ -771,6 +771,13 @@ fn conformance_baseline() -> Profile {
     // The engine's rashi dashas (cruxes C51, C53).
     patch.dasha.dual_lord = Some(DualLord::Kendra);
     patch.dasha.rashi_start = Some(RashiStart::Lagna);
+    // The engine ranks eight chara karakas: every profile of the corpus's
+    // manifest records `chara_karaka: 8`.
+    patch.jaimini.chara_karakas = Some(CharaKarakas::Eight);
+    // The engine's KP ruling planets: seven, the sub lords too, and the
+    // civil weekday's lord (cruxes C150, C151).
+    patch.kp.ruling_count = Some(RulingCount::WithSubs);
+    patch.kp.day_lord_day = Some(DayLordDay::Civil);
     Profile {
         id: ProfileId::new("conformance-baseline"),
         // 2: the ayanamsha basis became `TRUE`, which is what the engine
@@ -785,62 +792,88 @@ fn conformance_baseline() -> Profile {
         // 9: the Ishta and Kashta phalas became the engine's (crux C76).
         // 10: the rashi dashas' dual lord and start became the engine's
         // (cruxes C51, C53).
-        version: 11,
+        // 12: the chara karakas became the engine's eight, and the KP ruling
+        // planets its seven by the civil weekday (cruxes C150, C151).
+        version: 12,
         base: None,
         patch,
-        sources: vec![
-            Citation::new(
-                "*",
-                Source::new(
-                    "baseline-engine",
-                    "docs/05-testing/01-golden-vectors.md, the baseline conventions",
-                ),
-            ),
-            Citation::new(
-                "frame.ayanamsha_basis",
-                Source::new(
-                    "baseline-engine",
-                    "measured: the recorded ayanamsha carries the nutation, 18.46\" against 0.0086\"",
-                ),
-            ),
-            Citation::new(
-                "strength.shodhana",
-                Source::new(
-                    "baseline-engine",
-                    "measured: the recorded pindas are the reduced sum's and the raw bindus', 77 of 77",
-                ),
-            ),
-            Citation::new(
-                "strength.saptavargaja",
-                Source::new(
-                    "baseline-engine",
-                    "measured: every recorded Shadbala component reproduces under the engine's reading, 497 of 497 cells each (docs/03-design/shadbala-measured.md)",
-                ),
-            ),
-            Citation::new(
-                "strength.vimshopaka",
-                Source::new(
-                    "baseline-engine",
-                    "measured: the recorded scores are the Saptavargaja virupas over 45 by natural friendship, 93 of 93",
-                ),
-            ),
-            Citation::new(
-                "strength.ekadhipatya",
-                Source::new(
-                    "baseline-engine",
-                    "measured: the recorded reductions zero an empty co-ruled sign, 77 of 77",
-                ),
-            ),
-            Citation::new(
-                "panchanga.moon_events",
-                Source::new(
-                    "baseline-engine",
-                    "measured: 24 of the 108 recorded moon events fall outside the day's own window, and none before local midnight",
-                ),
-            ),
-        ],
+        sources: conformance_sources(),
         mark: Mark::Verified,
     }
+}
+
+/// What `conformance-baseline`'s readings rest on: the baseline engine's
+/// conventions, and each one measured or recorded against its corpus.
+fn conformance_sources() -> Vec<Citation> {
+    vec![
+        Citation::new(
+            "*",
+            Source::new(
+                "baseline-engine",
+                "docs/05-testing/01-golden-vectors.md, the baseline conventions",
+            ),
+        ),
+        Citation::new(
+            "frame.ayanamsha_basis",
+            Source::new(
+                "baseline-engine",
+                "measured: the recorded ayanamsha carries the nutation, 18.46\" against 0.0086\"",
+            ),
+        ),
+        Citation::new(
+            "strength.shodhana",
+            Source::new(
+                "baseline-engine",
+                "measured: the recorded pindas are the reduced sum's and the raw bindus', 77 of 77",
+            ),
+        ),
+        Citation::new(
+            "strength.saptavargaja",
+            Source::new(
+                "baseline-engine",
+                "measured: every recorded Shadbala component reproduces under the engine's reading, 497 of 497 cells each (docs/03-design/shadbala-measured.md)",
+            ),
+        ),
+        Citation::new(
+            "strength.vimshopaka",
+            Source::new(
+                "baseline-engine",
+                "measured: the recorded scores are the Saptavargaja virupas over 45 by natural friendship, 93 of 93",
+            ),
+        ),
+        Citation::new(
+            "strength.ekadhipatya",
+            Source::new(
+                "baseline-engine",
+                "measured: the recorded reductions zero an empty co-ruled sign, 77 of 77",
+            ),
+        ),
+        Citation::new(
+            "panchanga.moon_events",
+            Source::new(
+                "baseline-engine",
+                "measured: 24 of the 108 recorded moon events fall outside the day's own window, and none before local midnight",
+            ),
+        ),
+        Citation::new(
+            "jaimini.chara_karakas",
+            Source::new(
+                "baseline-engine",
+                "recorded: the corpus's manifest names eight chara karakas under all thirteen of its profiles",
+            ),
+        ),
+        Citation::new(
+            "kp.ruling_count",
+            Source::new(
+                "baseline-engine",
+                "crux C150: the lagna's and the Moon's sub lords too, seven",
+            ),
+        ),
+        Citation::new(
+            "kp.day_lord_day",
+            Source::new("baseline-engine", "crux C151: the civil weekday's lord"),
+        ),
+    ]
 }
 
 impl Profile {

@@ -104,6 +104,33 @@ the previous release, not by nobody having looked.
 - `FunctionalRules::baseline()` is left without a name: it is one field,
   `{"scheme": "BASELINE"}` already, and a union there would make the
   remedies answer's echoed rules a union in the generated bindings.
+**`conformance-baseline` takes the baseline engine's chara karakas, KP readings and moon events.**
+**Numbers:** under `conformance-baseline` only (version 12, so its settings
+hash moves): the Atmakaraka and every Jaimini reading built on it (the
+karakamsha, the Brahma graha's chart, the Karaka dasha) rank eight karakas,
+Rahu among them, where they ranked seven; and KP's ruling planets are
+seven, the lagna's and the Moon's sub lords too, with the day lord the
+civil weekday's (cruxes C150, C151), where they were Reader VI's five by
+the sunrise day. Under `panchanga.moon_events = CIVIL_DAY` (which only
+`conformance-baseline` ships) a day's moonrise and moonset are the first
+of each at or after the civil midnight even when that is the next civil
+day's, where a day the Moon did not rise or set in had none: four of the
+corpus's 108 recorded events are such. Every other profile is unchanged.
+- The corpus's manifest records `chara_karaka: 8` under all thirteen of
+  its profiles; the profile left the root's seven.
+- `crates/sdk/tests/baseline_chara_karakas.rs` holds the whole chara
+  karaka order of every recorded birth, under seven and under eight,
+  rank by rank: 54 of 55 agree under each, and c051, searched to the
+  second after the Sun's Aries ingress, parts because its Sun stands
+  0.02″ either side of the edge in the two skies; set aside, the rest
+  keep the recording's order. `jaimini-measured.md` §1 reports it.
+- `crates/sdk/tests/baseline_panchanga_day.rs` holds the SDK's own day
+  to the corpus's `panchanga_day`: every limb change, the Moon's rise and
+  set, and the five muhurta yogas. The limb changes are measured on
+  `ACCURACY.md` (crossings) rather than by hand.
+- The A/B runner records an answer with nothing in it (a varsha with no
+  pravesha) as `empty`, apart from a refusal, where it crashed on reading
+  the missing year and recorded the crash as the SDK's refusal.
 
 **A custom visibility table is typed in every binding.**
 **Numbers:** none.
