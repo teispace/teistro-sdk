@@ -5026,6 +5026,22 @@ class AnEngine(WithLibrary):
             with self.assertRaises(ValueError):
                 sayanadi.cheshta(6)
 
+    def test_a_graha_s_state_carries_its_pushkara_and_marana_karaka_sthana_answers(self) -> None:
+        """The three states the verses define cross as booleans, and as None
+        where the verses give the body no answer: Ketu and the outer planets
+        have no marana karaka sthana, the outer planets no pushkara."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        states = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, state=True).states
+        named = {"SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN", "RAHU"}
+        for state in states:
+            classical = state.graha.name in named or state.graha.name == "KETU"
+            self.assertEqual(state.pushkara_navamsha is None, not classical, state.graha)
+            self.assertEqual(state.pushkara_bhaga is None, not classical, state.graha)
+            self.assertEqual(state.marana_karaka_sthana is None, state.graha.name not in named, state.graha)
+        self.assertEqual(sum(s.marana_karaka_sthana is not None for s in states), 8)
+
     def test_a_chart_carries_its_vaiseshikamsa_each_scheme_s_count_and_name(self) -> None:
         """A chart's Vaiseshikamsa crosses whole: each scheme's count within its
         vargas, a name for every count from two; None unless asked."""

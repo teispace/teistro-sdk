@@ -39,13 +39,14 @@ pub use knobs::{
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
     GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
-    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
-    NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    PunyaKalaTable, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
-    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise,
-    SuryaSunrise, Tier, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha,
+    Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
+    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaStart,
+    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable, PushkaraBhaga,
+    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
+    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
+    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
+    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -937,6 +938,12 @@ group!(
         sayanadi_ghatis: SayanadiGhatis,
         /// The numbers Rahu and Ketu multiply by in the Sayanadi avasthas (crux C78).
         sayanadi_nodes: SayanadiNodes,
+        /// Which degrees of a sign are pushkara bhagas (crux C767).
+        pushkara_bhaga: PushkaraBhaga,
+        /// Where Saturn's marana karaka sthana is (crux C768).
+        marana_saturn: MaranaSaturn,
+        /// Where Venus's marana karaka sthana is (crux C768).
+        marana_venus: MaranaVenus,
     }
 );
 

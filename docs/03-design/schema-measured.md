@@ -16,7 +16,7 @@ and reads the source for what the values cannot say about themselves.
 
 The sample is built rather than recorded, by `cargo run -p
 teistro-serial --example documents`: 3 documents over the analytic test
-provider, 308 distinct paths between them. A recorded sample would go
+provider, 311 distinct paths between them. A recorded sample would go
 stale the first time a section gained a field and the pass would not
 notice.
 
@@ -28,12 +28,12 @@ Sections 3 and 4 decide it.
 
 | sample | what it holds | sections | paths |
 |---|---|---|---|
-| `whole` | every section the layer can produce | 9 | 308 |
+| `whole` | every section the layer can produce | 9 | 311 |
 | `day` | a foundation and the almanac of its day | 2 | 167 |
 | `bare` | a foundation alone, the smallest document there is | 1 | 72 |
 
 Across all three, by the type a schema would give the value:
-12 boolean, 56 integer, 6 null, 124 number, 123 string.
+15 boolean, 56 integer, 6 null, 124 number, 123 string.
 
 ## 3. A whole double is written as an integer
 
@@ -98,7 +98,7 @@ samples:
 
 | paths in every sample | paths in some | top-level sections |
 |---|---|---|
-| 72 | 236 | 9 |
+| 72 | 239 | 9 |
 
 The top-level sections of the widest document are `aspects`, `dashas`,
 `drawings`, `foundation`, `houses`, `panchanga`, `points`, `state`,

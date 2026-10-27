@@ -274,6 +274,36 @@ knob!(
         SharedWithRahu = "SHARED_WITH_RAHU" }
 );
 knob!(
+    /// Which degrees of a sign are pushkara bhagas (crux C767).
+    ///
+    /// *Vidyamadhaviyam* ch. 1 v. 18 gives one degree per triplicity, for
+    /// whatever stands in the sign; *Jataka Parijata* ch. 1 v. 58 gives the
+    /// Moon a row of her own that agrees with it in four signs of twelve.
+    PushkaraBhaga { /// *Vidyamadhaviyam* ch. 1 v. 18: the 21st degree of the fiery signs,
+        /// the 14th of the earthy, the 24th of the airy and the 7th of the
+        /// watery, for every graha.
+        Vidyamadhaviya = "VIDYAMADHAVIYA", /// *Jataka Parijata* ch. 1 v. 58: the Moon's row, 21, 14, 18, 8, 19, 9,
+        /// 24, 11, 23, 14, 19 and 9 from Aries, and no row for any other graha.
+        JatakaParijata = "JATAKA_PARIJATA" }
+);
+knob!(
+    /// Where Saturn's marana karaka sthana is: *Jataka Parijata* ch. 17
+    /// v. 34's *janmagata*, which the verse's list of houses makes the
+    /// lagna and its translator renders "the natal star" (crux C768).
+    MaranaSaturn { /// The first house: Saturn in the lagna's sign.
+        First = "FIRST", /// The natal star: Saturn in the Moon's nakshatra.
+        BirthStar = "BIRTH_STAR" }
+);
+knob!(
+    /// Where Venus's marana karaka sthana is: *Jataka Parijata* ch. 17
+    /// v. 35's *śatrurāśiga*, the sixth sign by the verse's own *navamarāśiga*
+    /// beside it, or an enemy's sign as its translator renders it (crux C768).
+    MaranaVenus { /// The sixth house from the lagna, as Phaladeepika ch. 26 v. 34 also
+        /// puts Venus.
+        Sixth = "SIXTH", /// A sign whose lord is Venus's natural enemy.
+        EnemySign = "ENEMY_SIGN" }
+);
+knob!(
     /// Which window a daily panchanga finds the Moon's rise and set in.
     ///
     /// Every other field of an almanac day is bounded by sunrise; the

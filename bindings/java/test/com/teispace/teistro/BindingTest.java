@@ -1321,6 +1321,13 @@ public final class BindingTest {
                     same(12, chart.houses().size(), "twelve bhavas");
                     same(12, chart.chalit().size(), "twelve chalit bhavas");
                     same(9, chart.states().size(), "a state per graha");
+                    for (GrahaState state : chart.states()) {
+                        // The nine have pushkara answers; Ketu alone of them no marana karaka sthana.
+                        check(state.pushkaraNavamsha() != null && state.pushkaraBhaga() != null,
+                                state.graha() + "'s pushkara answers");
+                        same(state.graha() == Graha.KETU, state.maranaKarakaSthana() == null,
+                                state.graha() + "'s marana karaka sthana");
+                    }
                     check(!chart.points().isEmpty(), "the derived points");
                     check(!chart.aspects().isEmpty(), "the drishti");
                     check(!chart.bhavas().isEmpty(), "the served houses");

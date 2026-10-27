@@ -1704,6 +1704,9 @@ export class Chart {
               ),
             }
           : null,
+        pushkaraNavamsha: s.hasPushkaraNavamsha[i] ? s.pushkaraNavamsha[i] !== 0 : null,
+        pushkaraBhaga: s.hasPushkaraBhaga[i] ? s.pushkaraBhaga[i] !== 0 : null,
+        maranaKarakaSthana: s.hasMaranaKarakaSthana[i] ? s.maranaKarakaSthana[i] !== 0 : null,
         boundaries: {
           signDeg: s.signDeg[i],
           nakshatraDeg: s.nakshatraDeg[i],

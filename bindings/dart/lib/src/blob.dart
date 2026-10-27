@@ -816,6 +816,12 @@ final class ChartsStates {
     required this.cheshta3,
     required this.cheshta4,
     required this.cheshta5,
+    required this.hasPushkaraNavamsha,
+    required this.pushkaraNavamsha,
+    required this.hasPushkaraBhaga,
+    required this.pushkaraBhaga,
+    required this.hasMaranaKarakaSthana,
+    required this.maranaKarakaSthana,
     required this.length,
   });
 
@@ -929,6 +935,24 @@ final class ChartsStates {
 
   /// The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`.
   final Uint16List cheshta5;
+
+  /// 1 for the nine grahas, which Vidyamadhaviyam ch. 1 v. 18 reads; 0 for the outer planets.
+  final Uint8List hasPushkaraNavamsha;
+
+  /// 1 when it stands in one of its sign's two pushkara navamshas; read only when `has_pushkara_navamsha`.
+  final Uint8List pushkaraNavamsha;
+
+  /// 1 when the table `state.pushkara_bhaga` names gives this body a row: every graha under Vidyamadhaviyam's, the Moon alone under Jataka Parijata's; 0 for the outer planets.
+  final Uint8List hasPushkaraBhaga;
+
+  /// 1 when it stands on its sign's pushkara bhaga; read only when `has_pushkara_bhaga`.
+  final Uint8List pushkaraBhaga;
+
+  /// 1 for the eight grahas Jataka Parijata ch. 17 vv. 34 and 35 name; 0 for Ketu, the outer planets, and Saturn read by the natal star in a chart with no Moon.
+  final Uint8List hasMaranaKarakaSthana;
+
+  /// 1 when it stands in its marana karaka sthana; read only when `has_marana_karaka_sthana`.
+  final Uint8List maranaKarakaSthana;
 
   /// The number of rows every column holds.
   final int length;
@@ -6459,6 +6483,12 @@ Charts decodeCharts(Uint8List bytes) {
       cheshta3: blob.column(atStates, 34, 2, Uint16List.sublistView),
       cheshta4: blob.column(atStates, 35, 2, Uint16List.sublistView),
       cheshta5: blob.column(atStates, 36, 2, Uint16List.sublistView),
+      hasPushkaraNavamsha: blob.column(atStates, 37, 1, Uint8List.sublistView),
+      pushkaraNavamsha: blob.column(atStates, 38, 1, Uint8List.sublistView),
+      hasPushkaraBhaga: blob.column(atStates, 39, 1, Uint8List.sublistView),
+      pushkaraBhaga: blob.column(atStates, 40, 1, Uint8List.sublistView),
+      hasMaranaKarakaSthana: blob.column(atStates, 41, 1, Uint8List.sublistView),
+      maranaKarakaSthana: blob.column(atStates, 42, 1, Uint8List.sublistView),
       length: atStates.count,
     ),
     combustionOrbs: blob.text(atCombustionOrbs, 'combustion_orbs'),

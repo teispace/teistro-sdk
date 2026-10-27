@@ -4964,6 +4964,38 @@ fn chart_states_section(id: u32) -> SectionSchema {
             )
             .of_enum("AvasthaCheshta")
         }))
+        .chain([
+            ColumnDef::new(
+                "has_pushkara_navamsha",
+                Scalar::U8,
+                "1 for the nine grahas, which Vidyamadhaviyam ch. 1 v. 18 reads; 0 for the outer planets.",
+            ),
+            ColumnDef::new(
+                "pushkara_navamsha",
+                Scalar::U8,
+                "1 when it stands in one of its sign's two pushkara navamshas; read only when `has_pushkara_navamsha`.",
+            ),
+            ColumnDef::new(
+                "has_pushkara_bhaga",
+                Scalar::U8,
+                "1 when the table `state.pushkara_bhaga` names gives this body a row: every graha under Vidyamadhaviyam's, the Moon alone under Jataka Parijata's; 0 for the outer planets.",
+            ),
+            ColumnDef::new(
+                "pushkara_bhaga",
+                Scalar::U8,
+                "1 when it stands on its sign's pushkara bhaga; read only when `has_pushkara_bhaga`.",
+            ),
+            ColumnDef::new(
+                "has_marana_karaka_sthana",
+                Scalar::U8,
+                "1 for the eight grahas Jataka Parijata ch. 17 vv. 34 and 35 name; 0 for Ketu, the outer planets, and Saturn read by the natal star in a chart with no Moon.",
+            ),
+            ColumnDef::new(
+                "marana_karaka_sthana",
+                Scalar::U8,
+                "1 when it stands in its marana karaka sthana; read only when `has_marana_karaka_sthana`.",
+            ),
+        ])
         .collect(),
     )
 }

@@ -98,6 +98,9 @@ every shipped profile. The v1 inventory:
 | state | `combustion_orbs` | key | the cited orb tables (`BPHS`, `SURYA_SIDDHANTA`) |
 | state | `sayanadi_ghatis` | enum | `ELAPSED` (the default), `RUNNING` (crux C78) |
 | state | `sayanadi_nodes` | enum | `NINE_GRAHA_ORDER` (the default, Rahu 8 and Ketu 9), `SHARED_WITH_RAHU` (crux C78) |
+| state | `pushkara_bhaga` | enum | `VIDYAMADHAVIYA` (the default, *Vidyamadhaviyam* ch. 1 v. 18, one degree a triplicity, every graha), `JATAKA_PARIJATA` (ch. 1 v. 58, the Moon's row and no other's; crux C767) |
+| state | `marana_saturn` | enum | `FIRST` (the default, Saturn in the lagna's sign), `BIRTH_STAR` (in the Moon's nakshatra, as Jataka Parijata's translator renders *janmagata*; crux C768) |
+| state | `marana_venus` | enum | `SIXTH` (the default, the 6th sign from the lagna's), `ENEMY_SIGN` (a natural enemy's sign, as the translator renders *śatrurāśi*; crux C768) |
 | strength | `bala_scheme` | `BalaSchemeKey` | `PARASHARA`, `PARASHARA_EXTENDED` |
 | strength | `ekadhipatya` | enum | `BPHS` (the default, ch. 68), `EMPTY_TO_ZERO` (the corpus's engine; crux C60) |
 | strength | `shodhana` | enum | `EACH_GRAHA` (the default, chs. 67 to 69), `SARVA` (the corpus's engine; crux C59) |

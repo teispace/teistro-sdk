@@ -1291,6 +1291,28 @@ fn sayanadi(sayanadi: Option<teistro::Sayanadi>) -> String {
     )
 }
 
+/// A graha's three verse-defined states, each `none` where the chart has
+/// no answer for the body.
+fn verse_states(report: &mut Report, key: &str, state: &teistro::GrahaState) {
+    let answer =
+        |held: Option<bool>| held.map_or_else(|| String::from("none"), |held| held.to_string());
+    put(
+        report,
+        &format!("{key}-pushkara-navamsha"),
+        answer(state.pushkara_navamsha),
+    );
+    put(
+        report,
+        &format!("{key}-pushkara-bhaga"),
+        answer(state.pushkara_bhaga),
+    );
+    put(
+        report,
+        &format!("{key}-marana-karaka-sthana"),
+        answer(state.marana_karaka_sthana),
+    );
+}
+
 /// One chart's planetary states, as the report prints them.
 fn the_states(report: &mut Report, index: usize, document: &teistro::Document) {
     let Some(states) = document.state.as_ref() else {
@@ -1378,6 +1400,7 @@ fn the_states(report: &mut Report, index: usize, document: &teistro::Document) {
             ),
         );
         put(report, &key("-sayanadi"), sayanadi(state.sayanadi));
+        verse_states(report, &key(""), state);
         put(
             report,
             &key("-sign-edge"),

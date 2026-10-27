@@ -4722,6 +4722,23 @@ export interface GrahaState {
    * `null` for a body the verses give no number.
    */
   readonly sayanadi: Sayanadi | null;
+  /**
+   * Whether it stands in one of its sign's two pushkara navamshas
+   * (Vidyamadhaviyam ch. 1 v. 18), or `null` for an outer planet.
+   */
+  readonly pushkaraNavamsha: boolean | null;
+  /**
+   * Whether it stands on its sign's pushkara bhaga in the table
+   * `state.pushkara_bhaga` names, or `null` for a body that table gives no
+   * row: Jataka Parijata's gives the Moon's alone.
+   */
+  readonly pushkaraBhaga: boolean | null;
+  /**
+   * Whether it stands in its marana karaka sthana (Jataka Parijata ch. 17
+   * vv. 34 and 35), or `null` for Ketu and the outer planets, which the
+   * verses do not name.
+   */
+  readonly maranaKarakaSthana: boolean | null;
   /** How near it stands to a boundary. */
   readonly boundaries: Boundaries;
 }

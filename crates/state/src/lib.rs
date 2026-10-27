@@ -13,7 +13,7 @@
 //! all arithmetic over a founded chart, which is why the whole crate is
 //! testable against the corpus.
 //!
-//! Four things worth knowing:
+//! Six things worth knowing:
 //!
 //! - **Moolatrikona is checked before exaltation.** Three grahas have a
 //!   moolatrikona span inside their exaltation sign.
@@ -33,6 +33,11 @@
 //!   [`Holds::Undecided`] only where it holds: 1301 of 1953 questions
 //!   the module used to leave open are now answered
 //!   (`03-design/aspect-drishti-measured.md` §7).
+//! - **Three states stand on their verses alone**, because the corpus
+//!   records none of them: the pushkara navamshas and bhagas
+//!   ([`pushkara`], *Vidyamadhaviyam* ch. 1 v. 18) and the marana karaka
+//!   sthana ([`marana`], *Jataka Parijata* ch. 17 vv. 34 and 35). Where
+//!   a verse is read two ways a knob chooses (cruxes C767 and C768).
 //!
 //! ```
 //! use teistro_core::catalogue::{Dignity, Graha, Rashi, Relationship};
@@ -59,6 +64,8 @@ pub mod boundary;
 pub mod burn;
 pub mod chart;
 pub mod dignity;
+pub mod marana;
+pub mod pushkara;
 pub mod sayanadi;
 
 pub use avastha::{AtWar, Holds, Lajjitadi, Placement, War};

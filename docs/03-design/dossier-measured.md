@@ -27,7 +27,7 @@ built-in ephemeris does not reach: `c047-london-1800-01-02`,
 ## A chart whole
 
 Over 53 births the dossiers come to 2 678 792 bytes and the documents'
-canonical JSON to 6 892 705: 0.39 of it, a chart's own ratio between
+canonical JSON to 6 928 217: 0.39 of it, a chart's own ratio between
 0.25 and 0.41.
 
 ## Section by section
@@ -39,7 +39,7 @@ against the foundation and the state), summed over the births.
 
 | sections | charts carrying them | dossier bytes | JSON bytes | dossier / JSON | charts where the dossier is not smaller |
 |---|---|---|---|---|---|
-| `CHART`, `GRAHAS` | 53 | 102 520 | 658 675 | 0.16 | 0 |
+| `CHART`, `GRAHAS` | 53 | 102 520 | 694 187 | 0.15 | 0 |
 | `HOUSES` | 53 | 32 648 | 90 456 | 0.36 | 0 |
 | `VARGAS` | 53 | 27 943 | 114 819 | 0.24 | 0 |
 | `DASHAS` | 53 | 2 187 257 | 4 086 672 | 0.54 | 0 |

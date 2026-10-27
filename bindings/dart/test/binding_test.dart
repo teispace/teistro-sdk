@@ -7646,6 +7646,54 @@ void _engineTests() {
     },
   );
 
+  /// The three states the verses define cross as booleans, and as null
+  /// where the verses give the body no answer: Ketu and the outer planets
+  /// have no marana karaka sthana, the outer planets no pushkara.
+  test(
+    'a graha\'s state carries its pushkara and marana karaka sthana answers',
+    () {
+      final ctx = context();
+      final place = Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      );
+      final states =
+          ctx.chart
+              .found(
+                instant: 2451545.0,
+                place: place,
+                utcOffsetSeconds: 20700,
+                state: true,
+              )
+              .states;
+      const named = {
+        Graha.sun,
+        Graha.moon,
+        Graha.mars,
+        Graha.mercury,
+        Graha.jupiter,
+        Graha.venus,
+        Graha.saturn,
+        Graha.rahu,
+      };
+      for (final state in states) {
+        final classical =
+            named.contains(state.graha) || state.graha == Graha.ketu;
+        final reason = state.graha.fullKey;
+        expect(state.pushkaraNavamsha == null, !classical, reason: reason);
+        expect(state.pushkaraBhaga == null, !classical, reason: reason);
+        expect(
+          state.maranaKarakaSthana == null,
+          !named.contains(state.graha),
+          reason: reason,
+        );
+      }
+      expect(states.where((s) => s.maranaKarakaSthana != null), hasLength(8));
+      ctx.dispose();
+    },
+  );
+
   /// A chart's Vaiseshikamsa crosses whole: each scheme's count within its
   /// vargas, a name for every count from two; null unless asked.
   test('a chart carries its Vaiseshikamsa, each scheme\'s count and name', () {

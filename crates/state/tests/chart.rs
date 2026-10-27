@@ -197,3 +197,96 @@ fn two_runs_of_the_same_chart_are_the_same_value() {
     let twice = state(&foundation, &settings).expect("a founded chart");
     assert_eq!(once, twice, "the determinism contract");
 }
+
+/// The house a body is in counted by sign from the lagna's sign, worked
+/// here from the raw longitudes rather than the crate's own angle type.
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "a whole count of signs, 0 to 11"
+)]
+fn whole_sign_house(foundation: &ChartFoundation, longitude_deg: f64) -> u8 {
+    let sign = |deg: f64| (deg.rem_euclid(360.0) / 30.0).floor();
+    let count = (sign(longitude_deg) - sign(foundation.lagna_deg)).rem_euclid(12.0);
+    count as u8 + 1
+}
+
+/// The nakshatra a raw longitude falls in.
+fn star(longitude_deg: f64) -> teistro_core::catalogue::Nakshatra {
+    teistro_core::angle::Nas::try_from_degrees(longitude_deg.rem_euclid(360.0))
+        .expect("a finite longitude")
+        .nakshatra()
+}
+
+#[test]
+fn the_three_verse_states_read_the_foundations_positions() {
+    use teistro_state::{marana, pushkara};
+    let (foundation, settings) = founded();
+    let states = state(&foundation, &settings).expect("a founded chart");
+    let mut answered = 0;
+    for (found, position) in states.iter().zip(&foundation.grahas) {
+        let classical = !matches!(found.graha, Graha::Uranus | Graha::Neptune | Graha::Pluto);
+        let at =
+            teistro_core::angle::Nas::try_from_degrees(position.longitude_deg.rem_euclid(360.0))
+                .expect("a finite longitude");
+        assert_eq!(
+            found.pushkara_navamsha,
+            classical.then(|| pushkara::in_navamsha(at))
+        );
+        assert_eq!(
+            found.pushkara_bhaga.is_some(),
+            classical,
+            "{:?}",
+            found.graha
+        );
+        // Under the defaults the place is the verse's house, whole-sign.
+        let expected = marana::house(found.graha)
+            .map(|house| house == whole_sign_house(&foundation, position.longitude_deg));
+        assert_eq!(found.marana_karaka_sthana, expected, "{:?}", found.graha);
+        answered += usize::from(found.marana_karaka_sthana.is_some());
+    }
+    // The eight the verses name, and never Ketu.
+    assert_eq!(answered, 8);
+    let ketu = states
+        .iter()
+        .find(|found| found.graha == Graha::Ketu)
+        .expect("Ketu");
+    assert_eq!(ketu.marana_karaka_sthana, None);
+}
+
+#[test]
+fn each_knob_moves_only_the_body_it_names() {
+    use teistro_core::settings::knobs::{MaranaSaturn, MaranaVenus, PushkaraBhaga};
+    let (foundation, settings) = founded();
+    let base = state(&foundation, &settings).expect("a founded chart");
+    let mut other = settings.clone();
+    other.state.pushkara_bhaga = PushkaraBhaga::JatakaParijata;
+    other.state.marana_saturn = MaranaSaturn::BirthStar;
+    other.state.marana_venus = MaranaVenus::EnemySign;
+    let moved = state(&foundation, &other).expect("a founded chart");
+    let moon_star = foundation
+        .grahas
+        .iter()
+        .find(|position| position.graha == Graha::Moon)
+        .map(|moon| star(moon.longitude_deg))
+        .expect("the Moon");
+    for ((before, after), position) in base.iter().zip(&moved).zip(&foundation.grahas) {
+        // Jataka Parijata's row is the Moon's: every other body is unanswered.
+        if after.graha != Graha::Moon {
+            assert_eq!(after.pushkara_bhaga, None, "{:?}", after.graha);
+        }
+        assert_eq!(before.pushkara_navamsha, after.pushkara_navamsha);
+        match after.graha {
+            Graha::Saturn => {
+                let saturn = star(position.longitude_deg);
+                assert_eq!(after.marana_karaka_sthana, Some(saturn == moon_star));
+            }
+            Graha::Venus => {
+                let enemy =
+                    after.friendship.natural == teistro_core::catalogue::Relationship::Enemy;
+                assert_eq!(after.marana_karaka_sthana, Some(enemy));
+            }
+            _ => assert_eq!(before.marana_karaka_sthana, after.marana_karaka_sthana),
+        }
+    }
+}
