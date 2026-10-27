@@ -1,0 +1,1945 @@
+[
+  {
+    "record": "almanac.ashauch",
+    "request": {
+      "altitudeM": 1.5,
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "request": {
+        "abroad": true,
+        "during": [
+          {
+            "days": 1,
+            "end": 1.5,
+            "key": "x",
+            "kind": "DEATH",
+            "length": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "relation": "FATHER",
+            "sex": "FEMALE",
+            "start": 1.5
+          }
+        ],
+        "event": {
+          "event": "DEATH",
+          "ahitagni": true,
+          "at": 1.5,
+          "crematedAt": 1.5,
+          "deceased": {
+            "betrothed": true,
+            "born": 1.5,
+            "buried": true,
+            "chudakarana": true,
+            "married": true,
+            "sex": "FEMALE",
+            "upanayana": "NOT_DONE"
+          }
+        },
+        "fullDays": 1,
+        "heardAt": 1.5,
+        "key": "x",
+        "nearness": "SAME_VILLAGE",
+        "relation": "FATHER"
+      },
+      "table": {
+        "bands": [
+          {
+            "before": {
+              "mark": "DAY",
+              "day": 1
+            },
+            "buried": true,
+            "chudakarana": true,
+            "clause": "x",
+            "parents": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "samanodakas": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "sapindas": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "sex": "FEMALE"
+          }
+        ],
+        "late": [
+          {
+            "length": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "withinDays": 1
+          }
+        ],
+        "lateAbroad": [
+          {
+            "length": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "withinDays": 1
+          }
+        ],
+        "losses": [
+          {
+            "clause": "x",
+            "mother": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "others": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "toMonth": 1
+          }
+        ],
+        "motherRites": {
+          "daughter": 1,
+          "son": 1
+        },
+        "name": "x",
+        "night": "HALF_NIGHT",
+        "overlap": {
+          "deathAbsorbsLongerBirth": true,
+          "lastNight": [
+            1,
+            1
+          ]
+        },
+        "pakshiniAtNight": "NEXT_NIGHTFALL",
+        "relations": [
+          {
+            "clause": "x",
+            "heardLate": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "kind": "DEATH",
+            "length": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "marriedDaughter": true,
+            "nearness": "SAME_VILLAGE",
+            "relation": "FATHER"
+          }
+        ]
+      },
+      "tradition": "MITAKSHARA",
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "almanac.days",
+    "request": {
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "eclipses": true,
+      "festivals": {
+        "published": [
+          {
+            "entries": [
+              {
+                "action": "SET",
+                "adhika": true,
+                "day": {
+                  "calendar": "calendar.JULIAN",
+                  "day": 1,
+                  "era": {
+                    "era": "era.SHAKA",
+                    "year": 1
+                  },
+                  "leap": "DAY",
+                  "month": 1,
+                  "year": 1
+                },
+                "month": "masa.VAISHAKHA",
+                "rule": "x",
+                "source": "x",
+                "window": {
+                  "from": 1.5,
+                  "to": 1.5
+                }
+              }
+            ],
+            "format": "x",
+            "id": "x",
+            "publisher": "x",
+            "version": 1
+          }
+        ],
+        "rules": "DHARMASINDHU"
+      },
+      "first": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "homaAhuti": true,
+      "lagnas": true,
+      "last": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "muhurta": {
+        "asta": {
+          "kind": "TIME_DEGREES",
+          "thresholds": {
+            "kind": "SURYA_SIDDHANTA"
+          }
+        },
+        "daysWithWindows": 1,
+        "direction": "direction.WEST",
+        "most": 1,
+        "native": {
+          "lagna": "rashi.TAURUS",
+          "moonSign": "rashi.TAURUS",
+          "star": "nakshatra.BHARANI"
+        },
+        "ranking": "BASELINE",
+        "rules": "RAMAN_MARRIAGE"
+      },
+      "nepalSambat": true,
+      "utcOffsetSeconds": 1,
+      "years": true
+    }
+  },
+  {
+    "record": "almanac.festival_calendar",
+    "request": {
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "festivals": {
+        "published": [
+          {
+            "entries": [
+              {
+                "action": "SET",
+                "adhika": true,
+                "day": {
+                  "calendar": "calendar.JULIAN",
+                  "day": 1,
+                  "era": {
+                    "era": "era.SHAKA",
+                    "year": 1
+                  },
+                  "leap": "DAY",
+                  "month": 1,
+                  "year": 1
+                },
+                "month": "masa.VAISHAKHA",
+                "rule": "x",
+                "source": "x",
+                "window": {
+                  "from": 1.5,
+                  "to": 1.5
+                }
+              }
+            ],
+            "format": "x",
+            "id": "x",
+            "publisher": "x",
+            "version": 1
+          }
+        ],
+        "rules": "NEPAL"
+      },
+      "first": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "last": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "name": "x",
+      "product": "x",
+      "refreshMinutes": 1,
+      "stampUnixSeconds": 1,
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "almanac.firstYear",
+    "request": {
+      "altitudeM": 1.5,
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "request": {
+        "at": 1.5,
+        "firstAbdika": "ELEVENTH_DAY",
+        "firstYearAdhika": "NIJA",
+        "key": "x",
+        "night": "HALF_NIGHT",
+        "sapindana": "TWELFTH_DAY",
+        "una": "ONE_TITHI",
+        "window": {
+          "window": "DAY_MUHURTA",
+          "from": 1,
+          "to": 1
+        }
+      },
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "almanac.pakshi",
+    "request": {
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "first": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "last": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "native": {
+        "bird": "OWL",
+        "nakshatra": "nakshatra.BHARANI",
+        "paksha": "paksha.KRISHNA",
+        "rule": "SINGLE"
+      },
+      "rules": {
+        "clock": "NAZHIGAI",
+        "relations": "PULIPPANI",
+        "subs": "PULIPPANI"
+      },
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "almanac.publishedReasons",
+    "request": {
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "festivals": {
+        "published": [
+          {
+            "entries": [
+              {
+                "action": "SET",
+                "adhika": true,
+                "day": {
+                  "calendar": "calendar.JULIAN",
+                  "day": 1,
+                  "era": {
+                    "era": "era.SHAKA",
+                    "year": 1
+                  },
+                  "leap": "DAY",
+                  "month": 1,
+                  "year": 1
+                },
+                "month": "masa.VAISHAKHA",
+                "rule": "x",
+                "source": "x",
+                "window": {
+                  "from": 1.5,
+                  "to": 1.5
+                }
+              }
+            ],
+            "format": "x",
+            "id": "x",
+            "publisher": "x",
+            "version": 1
+          }
+        ],
+        "rules": "NEPAL"
+      },
+      "first": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "last": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "places": [
+        {
+          "altitudeM": 1.5,
+          "latitudeDeg": 1.5,
+          "longitudeDeg": 1.5,
+          "name": "x",
+          "utcOffsetSeconds": 1
+        }
+      ],
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "almanac.sankalpa",
+    "request": {
+      "altitudeM": 1.5,
+      "at": 1.5,
+      "ayana": "TROPICAL",
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "calendar.convert",
+    "request": {
+      "calendar": "calendar.JULIAN",
+      "date": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "into": "calendar.JULIAN"
+    }
+  },
+  {
+    "record": "chart.found",
+    "request": {
+      "altitudeM": 1.5,
+      "antiscia": {
+        "cusps": {
+          "system": "house_system.PLACIDUS"
+        },
+        "orbs": {
+          "model": "MOIETIES",
+          "orbs": [
+            {
+              "graha": "graha.MOON",
+              "orbDeg": 1.5
+            }
+          ]
+        }
+      },
+      "ashtakavarga": true,
+      "aspects": true,
+      "avakahada": true,
+      "bhavaBala": true,
+      "considerations": {
+        "moonLateFromDeg": 1.5,
+        "orbsDeg": [
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5
+        ]
+      },
+      "dashaPhala": true,
+      "dashas": [
+        "dasha_system.ASHTOTTARI"
+      ],
+      "dignities": {
+        "rules": {
+          "terms": {
+            "TABLE": [
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ],
+              [
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                },
+                {
+                  "end": 1,
+                  "lord": "graha.MOON"
+                }
+              ]
+            ]
+          },
+          "triplicities": "LILLY"
+        },
+        "scores": {
+          "detriment": 1,
+          "exaltation": 1,
+          "face": 1,
+          "fall": 1,
+          "house": 1,
+          "peregrine": 1,
+          "term": 1,
+          "triplicity": 1
+        },
+        "sectRule": "DAYLIGHT"
+      },
+      "dossier": {
+        "at": 1.5,
+        "dashaDepth": 1,
+        "preset": "FAMILY",
+        "sections": [
+          "x"
+        ],
+        "utcOffsetSeconds": 1
+      },
+      "drawings": [
+        {
+          "layout": "chart_layout.SOUTH_INDIAN",
+          "varga": "varga.D2"
+        }
+      ],
+      "fortitudes": {
+        "almuten": {
+          "fortune": "REVERSED_BY_NIGHT",
+          "place": "SIGN"
+        },
+        "dignities": {
+          "rules": {
+            "terms": {
+              "TABLE": [
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ],
+                [
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  },
+                  {
+                    "end": 1,
+                    "lord": "graha.MOON"
+                  }
+                ]
+              ]
+            },
+            "triplicities": "LILLY"
+          },
+          "scores": {
+            "detriment": 1,
+            "exaltation": 1,
+            "face": 1,
+            "fall": 1,
+            "house": 1,
+            "peregrine": 1,
+            "term": 1,
+            "triplicity": 1
+          },
+          "sectRule": "DAYLIGHT"
+        },
+        "rules": {
+          "beamsDeg": 1.5,
+          "cazimiDeg": 1.5,
+          "combustionDeg": 1.5,
+          "combustionInSign": true,
+          "cuspOrbDeg": 1.5,
+          "meanMotionDeg": [
+            1.5,
+            1.5,
+            1.5,
+            1.5,
+            1.5,
+            1.5,
+            1.5
+          ],
+          "partile": {
+            "WITHIN": {
+              "orbDeg": 1.5
+            }
+          },
+          "siege": {
+            "WITHIN": {
+              "spanDeg": 1.5
+            }
+          },
+          "starOrbDeg": 1.5
+        },
+        "scores": {
+          "algol": 1,
+          "besieged": 1,
+          "cazimi": 1,
+          "combust": 1,
+          "conjunctBenefic": 1,
+          "conjunctMalefic": 1,
+          "conjunctNorthNode": 1,
+          "conjunctSouthNode": 1,
+          "decreasing": 1,
+          "direct": 1,
+          "freeFromCombustion": 1,
+          "houses": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "increasing": 1,
+          "inferiorOccidental": 1,
+          "inferiorOriental": 1,
+          "opposedMalefic": 1,
+          "regulus": 1,
+          "retrograde": 1,
+          "sextileBenefic": 1,
+          "slow": 1,
+          "spica": 1,
+          "squareMalefic": 1,
+          "superiorOccidental": 1,
+          "superiorOriental": 1,
+          "swift": 1,
+          "trineBenefic": 1,
+          "underBeams": 1
+        }
+      },
+      "gochar": {
+        "ashtakavarga": true,
+        "from": "LAGNA",
+        "instants": [
+          1.5
+        ]
+      },
+      "harmonic": {
+        "number": 1,
+        "orbDeg": 1.5
+      },
+      "hits": {
+        "aspects": [
+          1
+        ],
+        "eclipseOrbDeg": 1.5,
+        "from": 1.5,
+        "grahas": [
+          "graha.MOON"
+        ],
+        "kinds": [
+          "NAKSHATRA_INGRESS"
+        ],
+        "orbDeg": 1.5,
+        "points": [
+          {
+            "point": "GRAHA",
+            "graha": "graha.MOON"
+          }
+        ],
+        "to": 1.5,
+        "vargas": [
+          "varga.D2"
+        ]
+      },
+      "houses": true,
+      "instant": 1.5,
+      "instants": [
+        1.5
+      ],
+      "interpret": {
+        "ashtakavarga": true,
+        "aspects": true,
+        "bhavaBala": true,
+        "chalit": true,
+        "conditions": true,
+        "dashaPhala": true,
+        "gochar": true,
+        "houses": true,
+        "karakas": true,
+        "panchanga": true,
+        "phala": true,
+        "placements": true,
+        "positions": true,
+        "readings": true,
+        "sadeSati": true,
+        "states": true,
+        "strength": true,
+        "vimshopaka": true
+      },
+      "jaimini": true,
+      "kind": "chart_kind.TRANSIT",
+      "kp": {
+        "anyAyanamsha": true,
+        "clock": 1,
+        "number": 1
+      },
+      "lalkitab": {
+        "cycle": {
+          "planet": "graha.MOON",
+          "year": 1
+        },
+        "varshphal": {
+          "rows": [
+            [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          ]
+        },
+        "year": 1
+      },
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "lots": {
+        "fortune": "REVERSED_BY_NIGHT",
+        "sectRule": "DAYLIGHT"
+      },
+      "masaPravesha": {
+        "dasha": {
+          "clock": "EVEN",
+          "sign": "OWNED",
+          "table": "CHARAK"
+        },
+        "masesha": {
+          "chain": {
+            "drishti": {
+              "subDegree": "ISHRAFA"
+            },
+            "moon": "ITHASALA",
+            "moonPartner": "OFFICE_BEARER",
+            "noneAspects": "ANNUAL_LAGNA_LORD",
+            "tied": "DINA_RATRI_PATI"
+          },
+          "muntha": "NATAL_DEGREE",
+          "reading": "LAGNA_LORD"
+        },
+        "month": 1,
+        "place": {
+          "altitudeM": 1.5,
+          "latitudeDeg": 1.5,
+          "longitudeDeg": 1.5,
+          "utcOffsetSeconds": 1
+        },
+        "reading": "TROPICAL",
+        "results": {
+          "kshina": "DARK_ELEVENTH_TO_NEW_MOON",
+          "strongFrom": 1,
+          "weakBelow": 1
+        },
+        "year": 1
+      },
+      "matching": {
+        "kuja": {
+          "from": "LAGNA_MOON_VENUS",
+          "houses": "WITH_SECOND",
+          "lifts": {
+            "benefic": true,
+            "jupiterAspect": true,
+            "moonVenusSecond": true,
+            "mutual": true,
+            "rahuKendra": true,
+            "saturn": true,
+            "withRahu": true
+          }
+        },
+        "partner": {
+          "instant": 1.5,
+          "place": {
+            "altitude": 1.5,
+            "latitude": 1.5,
+            "longitude": 1.5
+          },
+          "utcOffsetSeconds": 1
+        },
+        "partnerRole": "GROOM",
+        "porutham": {
+          "deerghaBeyond": "SEVENTH",
+          "lordsFriendship": "ONE_WAY",
+          "twoSignStar": "BRIDE_FIRST_SIGN"
+        },
+        "rules": {
+          "bhakootLift": "GARGA",
+          "devaBride": "THREE",
+          "equalVarna": "HALF",
+          "gana": "MUHURTA_MARTANDA",
+          "nadiDosha": "MIDDLE_ONLY",
+          "vashya": "PRINTED_IN_NEPAL"
+        }
+      },
+      "midpoints": {
+        "orbDeg": 1.5
+      },
+      "moment": true,
+      "outerPlanets": true,
+      "parallels": {
+        "orbDeg": 1.5
+      },
+      "perfection": {
+        "house": 1,
+        "querent": "graha.MOON",
+        "quesited": "graha.MOON",
+        "rules": {
+          "horizonDays": 1.5,
+          "orbsDeg": [
+            1.5,
+            1.5,
+            1.5,
+            1.5,
+            1.5,
+            1.5,
+            1.5
+          ],
+          "withinSign": true
+        }
+      },
+      "points": true,
+      "prashna": {
+        "question": {
+          "house": 1,
+          "number": 1,
+          "tense": "FUTURE"
+        },
+        "rules": {
+          "graded": "PARASHARI",
+          "mook": "MOON_HOUSE",
+          "moon": {
+            "kshina": "DARK_ELEVENTH_TO_NEW_MOON"
+          },
+          "moonScope": "GAIN",
+          "offices": {
+            "drekkana": "PARASHARI",
+            "enemy": "IGNORED",
+            "hudda": "CHARAK",
+            "order": "HIGHEST"
+          },
+          "pisces": "SHIRSHODAYA",
+          "risingVarga": "SHADVARGA",
+          "score": "BASELINE",
+          "timing": "FIRST_OCCUPIED",
+          "weakness": {
+            "setting": "NAVAMSHA_ARC"
+          }
+        }
+      },
+      "progressions": {
+        "angles": "NAIBOD_LONGITUDE",
+        "at": 1.5,
+        "contacts": {
+          "aspects": [
+            1
+          ],
+          "from": 1.5,
+          "grahas": [
+            "graha.MOON"
+          ],
+          "mutual": true,
+          "parallels": {
+            "orbDeg": 1.5
+          },
+          "points": [
+            {
+              "point": "GRAHA",
+              "graha": "graha.MOON"
+            }
+          ],
+          "to": 1.5
+        },
+        "direction": {
+          "PER_YEAR": 1.5
+        },
+        "rate": {
+          "life": {
+            "DAYS": 1.5
+          },
+          "sky": {
+            "DAYS": 1.5
+          }
+        },
+        "year": "JULIAN"
+      },
+      "rectification": {
+        "baseline": {
+          "accuracy": "APPROXIMATE",
+          "coverage": 1.5,
+          "dasha": {
+            "afterCycle": "REPEAT",
+            "ashtottariGrouping": "FOUR_AND_THREE",
+            "balance": "TEMPORAL",
+            "birthPeriod": "ELAPSED",
+            "seedOverflow": "REJECT",
+            "yearLength": "SAVANA_360"
+          },
+          "events": [
+            {
+              "confidence": "PROBABLE",
+              "heldOut": true,
+              "id": "x",
+              "kind": "ENGAGEMENT",
+              "on": 1.5,
+              "precision": "MONTH",
+              "until": 1.5
+            }
+          ],
+          "sex": "FEMALE",
+          "uncertaintyMinutes": 1.5
+        },
+        "circumstance": {
+          "facts": {
+            "attendants": {
+              "inside": 1,
+              "outside": 1,
+              "total": 1
+            },
+            "fatherPresent": true,
+            "oil": "HALF",
+            "presentation": "FEET",
+            "wick": "HALF"
+          },
+          "rules": {
+            "betweenBy": "SIGN",
+            "moonSees": "FULL",
+            "outside": "INVISIBLE",
+            "presentationBy": "LAGNA_LORD_MOTION",
+            "sunFallen": "EITHER_SIDE"
+          }
+        },
+        "conception": {
+          "moon": {
+            "count": "FROM_MOON_SIGN",
+            "pisces": "DAY",
+            "rising": "NAVAMSHA"
+          },
+          "nisheka": {
+            "invisibleHalf": "BY_SIGN",
+            "mandiAt": "END",
+            "month": "SOLAR",
+            "ninth": "WHOLE_SIGN",
+            "saturn": "BHAVA_MADHYA"
+          },
+          "pranapadaHouse": {
+            "count": "SRIPATI_BHAVA",
+            "firstAuspicious": true,
+            "pranapada": "PRINTED_EXAMPLE"
+          },
+          "purifier": {
+            "gulika": true,
+            "gulikaAt": "START",
+            "gulikaExtension": "ALWAYS",
+            "moon": true,
+            "native": "BEAST",
+            "pranapada": true,
+            "pranapadaRule": "PRINTED_EXAMPLE",
+            "purifyAs": "WEIGHT",
+            "seedMinutes": 1.5
+          }
+        },
+        "purify": {
+          "minutes": 1.5,
+          "rules": {
+            "gulika": true,
+            "gulikaAt": "START",
+            "gulikaExtension": "ALWAYS",
+            "moon": true,
+            "native": "BEAST",
+            "pranapada": true,
+            "pranapadaRule": "PRINTED_EXAMPLE",
+            "purifyAs": "WEIGHT",
+            "seedMinutes": 1.5
+          }
+        },
+        "svarodaya": {
+          "minutes": 1.5
+        }
+      },
+      "remedies": {
+        "at": 1.5,
+        "rules": {
+          "devata": {
+            "sunWithKetu": "SURYA"
+          },
+          "functional": {
+            "scheme": "BASELINE"
+          },
+          "shanti": {
+            "rik": "YAJNAVALKYA"
+          }
+        }
+      },
+      "rules": {
+        "ashtakavarga": {
+          "divisor": "seven-over-twenty-seven",
+          "measures": "bphs",
+          "occupied": "raw",
+          "reductions": "balabhadra"
+        },
+        "ayurdaya": {
+          "amsayu_multiplied": true,
+          "combine": "each",
+          "enemy_exempt": "mars",
+          "enmity": "compound",
+          "nisarga": "listed",
+          "rising": "every"
+        },
+        "chakrayus": {
+          "portion": "pada"
+        },
+        "houses": true,
+        "longevity": true,
+        "rasmi": {
+          "place": "sign"
+        },
+        "readings": "RECORDING_ENGINE",
+        "rules": [
+          {
+            "applicableTo": "milan",
+            "cancellations": [
+              {
+                "label": "x"
+              }
+            ],
+            "category": "x",
+            "conditions": [
+              {
+                "type": "chara-karaka-in-house",
+                "houses": [
+                  1
+                ],
+                "karaka": "AmK",
+                "karakaScheme": 1
+              }
+            ],
+            "customResultKey": "x",
+            "customSeverityKey": "x",
+            "fullCancellationThreshold": 1,
+            "key": "x",
+            "outcomes": [
+              {
+                "type": "life-span",
+                "count": 1.5,
+                "unit": "months"
+              }
+            ],
+            "referenceConditions": [
+              {
+                "conditions": [
+                  {
+                    "type": "chara-karaka-in-house",
+                    "houses": [
+                      1
+                    ],
+                    "karaka": "AmK",
+                    "karakaScheme": 1
+                  }
+                ],
+                "label": "x",
+                "reference": "x",
+                "weight": 1
+              }
+            ],
+            "remedyKeys": [
+              "x"
+            ],
+            "severityRule": {
+              "type": "house-weighted",
+              "default": 1,
+              "planet": "x",
+              "weights": {
+                "x": 1
+              }
+            },
+            "source": {
+              "chapter": "x",
+              "note": "x",
+              "rank": 1,
+              "text": "x",
+              "verse": "x"
+            },
+            "timing": "throughout"
+          }
+        ],
+        "shipped": [
+          "YOGAS"
+        ],
+        "threePairs": {
+          "basis": "per-pair",
+          "rectification": "elapsed",
+          "saturn": "raises"
+        }
+      },
+      "sadeSati": {
+        "countedFrom": "LAGNA",
+        "from": 1.5,
+        "reckoning": "DEGREE",
+        "spells": [
+          1
+        ],
+        "to": 1.5
+      },
+      "sarvatobhadra": {
+        "instants": [
+          1.5
+        ],
+        "motion": {
+          "GIVEN": [
+            "MEAN",
+            "MEAN",
+            "MEAN",
+            "MEAN",
+            "MEAN"
+          ]
+        },
+        "name": {
+          "letter": "x",
+          "vowel": "AA"
+        },
+        "rules": {
+          "corner": "OUTER_VOWEL",
+          "front": "EVERY_CELL",
+          "sight": "ALL_THREE"
+        }
+      },
+      "shadbala": true,
+      "state": true,
+      "synastry": {
+        "antiscia": {
+          "cusps": {
+            "system": "house_system.PLACIDUS"
+          },
+          "orbs": {
+            "model": "MOIETIES",
+            "orbs": [
+              {
+                "graha": "graha.MOON",
+                "orbDeg": 1.5
+              }
+            ]
+          }
+        },
+        "aspects": [
+          "SEMI_SEXTILE"
+        ],
+        "composite": true,
+        "davison": true,
+        "lagna": true,
+        "midpoints": {
+          "orbDeg": 1.5
+        },
+        "orbs": {
+          "model": "MOIETIES",
+          "orbs": [
+            {
+              "graha": "graha.MOON",
+              "orbDeg": 1.5
+            }
+          ]
+        },
+        "parallels": {
+          "orbDeg": 1.5
+        },
+        "partner": {
+          "instant": 1.5,
+          "place": {
+            "altitude": 1.5,
+            "latitude": 1.5,
+            "longitude": 1.5
+          },
+          "utcOffsetSeconds": 1
+        },
+        "zodiac": "CHARTS"
+      },
+      "theme": {
+        "extends": "x"
+      },
+      "tithiPravesha": {
+        "rule": "NEAREST_RETURN",
+        "through": 1
+      },
+      "utcOffsetSeconds": 1,
+      "vaiseshikamsa": true,
+      "vargas": [
+        "varga.D2"
+      ],
+      "varsha": {
+        "dashaRules": {
+          "balance": "ENTRY_MOON",
+          "birthPeriod": "ELAPSED",
+          "clock": {
+            "DAYS": 1.5
+          },
+          "depth": 1,
+          "measure": "TEMPORAL"
+        },
+        "dashas": [
+          "dasha_system.ASHTOTTARI"
+        ],
+        "harshaRules": {
+          "venus": "TWELFTH"
+        },
+        "matters": [
+          1
+        ],
+        "muntha": "NATAL_DEGREE",
+        "place": {
+          "altitudeM": 1.5,
+          "latitudeDeg": 1.5,
+          "longitudeDeg": 1.5,
+          "utcOffsetSeconds": 1
+        },
+        "reading": "TROPICAL",
+        "sahamRules": {
+          "addSign": "SIGNS",
+          "houses": "CHALIT",
+          "roga": "SATURN"
+        },
+        "sahamStrength": {
+          "friendship": "NATURAL",
+          "natures": "PARASHARI",
+          "weakBelow": 1
+        },
+        "sahams": [
+          "GURU"
+        ],
+        "through": 1,
+        "varshesha": {
+          "drishti": {
+            "subDegree": "ISHRAFA"
+          },
+          "moon": "ITHASALA",
+          "moonPartner": "OFFICE_BEARER",
+          "noneAspects": "ANNUAL_LAGNA_LORD",
+          "tied": "DINA_RATRI_PATI"
+        },
+        "yogas": {
+          "drishti": {
+            "subDegree": "ISHRAFA"
+          },
+          "moonBenefic": "WAXING",
+          "strongFrom": 1,
+          "tambira": "EITHER_LORD",
+          "weakBelow": 1
+        }
+      },
+      "vimshopaka": true,
+      "westernAspects": {
+        "aspects": [
+          "SEMI_SEXTILE"
+        ],
+        "orbs": {
+          "model": "MOIETIES",
+          "orbs": [
+            {
+              "graha": "graha.MOON",
+              "orbDeg": 1.5
+            }
+          ]
+        }
+      },
+      "westernConfigurations": {
+        "aspects": [
+          "SEMI_SEXTILE"
+        ],
+        "orbs": {
+          "model": "MOIETIES",
+          "orbs": [
+            {
+              "graha": "graha.MOON",
+              "orbDeg": 1.5
+            }
+          ]
+        },
+        "stelliumLeast": 1
+      },
+      "westernHouses": {
+        "system": "house_system.PLACIDUS"
+      }
+    }
+  },
+  {
+    "record": "chart.rashifal",
+    "request": {
+      "baseline": "WEEKLY",
+      "periods": [
+        {
+          "altitudeM": 1.5,
+          "calendar": "calendar.JULIAN",
+          "events": [
+            "graha.MOON"
+          ],
+          "first": {
+            "day": 1,
+            "month": 1,
+            "year": 1
+          },
+          "last": {
+            "day": 1,
+            "month": 1,
+            "year": 1
+          },
+          "latitudeDeg": 1.5,
+          "longitudeDeg": 1.5,
+          "snapshot": {
+            "at": "CLOCK",
+            "hour": 1,
+            "minute": 1
+          },
+          "spells": [
+            1
+          ],
+          "utcOffsetSeconds": 1
+        }
+      ]
+    }
+  },
+  {
+    "record": "matching.naam",
+    "request": {
+      "bride": "x",
+      "groom": "x",
+      "rules": {
+        "koota": {
+          "bhakootLift": "GARGA",
+          "devaBride": "THREE",
+          "equalVarna": "HALF",
+          "gana": "MUHURTA_MARTANDA",
+          "nadiDosha": "MIDDLE_ONLY",
+          "vashya": "PRINTED_IN_NEPAL"
+        },
+        "name": {
+          "abhijit": "UTTARA_ASHADHA",
+          "latin": "IAST"
+        },
+        "porutham": {
+          "deerghaBeyond": "SEVENTH",
+          "lordsFriendship": "ONE_WAY",
+          "twoSignStar": "BRIDE_FIRST_SIGN"
+        }
+      }
+    }
+  },
+  {
+    "record": "numerology.profile",
+    "request": {
+      "date": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "name": "x",
+      "rules": {
+        "birthReduction": "DIGIT_SUM",
+        "chaldeanCompound": "LETTER_TOTAL",
+        "masters": "ELEVEN_TWENTY_TWO",
+        "nameReduction": "WHOLE",
+        "nonLatin": "SKIP"
+      }
+    }
+  },
+  {
+    "record": "research.study",
+    "request": {
+      "births": [
+        {
+          "altitudeM": 1.5,
+          "instant": 1.5,
+          "latitudeDeg": 1.5,
+          "longitudeDeg": 1.5,
+          "uncertaintyMinutes": 1.5,
+          "utcOffsetSeconds": 1
+        }
+      ],
+      "dasha": "x",
+      "depth": 1,
+      "design": {
+        "groups": [
+          1
+        ],
+        "strata": [
+          1
+        ]
+      },
+      "holds": "FORMED",
+      "referents": {
+        "stepDays": 1.5,
+        "windowDays": 1.5
+      },
+      "rules": {
+        "shipped": [
+          "YOGAS"
+        ]
+      },
+      "shuffle": "AGES_AT_EVENT",
+      "strata": [
+        1
+      ],
+      "study": "COMPARE",
+      "subjects": [
+        {
+          "birth": {
+            "altitudeM": 1.5,
+            "instant": 1.5,
+            "latitudeDeg": 1.5,
+            "longitudeDeg": 1.5,
+            "uncertaintyMinutes": 1.5,
+            "utcOffsetSeconds": 1
+          },
+          "event": 1.5
+        }
+      ],
+      "uncertaintyStepMinutes": 1.5
+    }
+  },
+  {
+    "record": "time.civil",
+    "request": {
+      "calendar": "calendar.JULIAN",
+      "instant": 1.5,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
+    }
+  },
+  {
+    "record": "time.convert",
+    "request": {
+      "from": "TT",
+      "jd": 1.5,
+      "to": "TT"
+    }
+  },
+  {
+    "record": "time.resolve",
+    "request": {
+      "calendar": "calendar.JULIAN",
+      "date": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "time": {
+        "hour": 1,
+        "minute": 1,
+        "nanos": 1,
+        "second": 1
+      },
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
+    }
+  }
+]

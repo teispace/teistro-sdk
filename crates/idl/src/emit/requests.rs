@@ -40,7 +40,9 @@ use crate::names::{binding_type_name, pascal};
 use crate::records::{ExternalVariant, RecordField, RecordShape, RecordType, RecordVariant};
 
 mod dart;
+mod examples;
 pub use dart::{DART_FACADES, DART_SHADOWED, dart_declarations};
+pub use examples::deep_examples;
 
 /// What the TypeScript requests file says it is, after the header.
 const TS_ABOUT: &str = "The JSON requests the layers hand through to the SDK, typed. Rendered from the façade's own schema of each request, which schemars reads from serde's description of the Rust types, so a request is typed as serde reads it: a field keeps its wire name and is optional where serde defaults it.";
