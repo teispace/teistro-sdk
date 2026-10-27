@@ -131,6 +131,38 @@ corpus's 108 recorded events are such. Every other profile is unchanged.
 - The A/B runner records an answer with nothing in it (a varsha with no
   pravesha) as `empty`, apart from a refusal, where it crashed on reading
   the missing year and recorded the crash as the SDK's refusal.
+**Pushkara navamsha, pushkara bhaga and marana karaka sthana in every
+graha's state.**
+**Numbers:** no existing value changes. Every chart document whose
+`state` section was asked for gains up to three keys per graha, so its
+content hash moves. The resolved settings gain three knobs, so every
+profile's settings hash moves too.
+- `GrahaState` gains `pushkara_navamsha`, `pushkara_bhaga` and
+  `marana_karaka_sthana`. Each is `Option<bool>`, and each is absent
+  where the verses give the body no answer. The navamshas and the bhagas
+  come from *Vidyamadhaviyam* ch. 1 v. 18, read in the Sanskrit with
+  its commentary: two navamshas and one degree for each triplicity, for
+  the nine grahas. The marana karaka sthana comes from *Jataka Parijata*
+  ch. 17 vv. 34–35, counted by sign from the lagna's sign: Jupiter 3rd,
+  Mars 7th, Saturn 1st, Rahu 9th, the Moon 8th, the Sun 12th, Mercury 7th
+  and Venus 6th. The verse does not name Ketu, so Ketu has no answer.
+  The corpus records none of the three, so they rest on their verses and
+  on hand-counted tests.
+- Three knobs carry what the texts leave open. `state.pushkara_bhaga`
+  (`VIDYAMADHAVIYA`, or `JATAKA_PARIJATA`, the Moon's own row in ch. 1
+  v. 58, which agrees in four signs) is crux C767.
+  `state.marana_saturn` (`FIRST` or `BIRTH_STAR`) and
+  `state.marana_venus` (`SIXTH` or `ENEMY_SIGN`) are crux C768: the
+  translator's reading against the verse's own list of houses.
+- The boundary's `states` section gains six columns, a `has_…` flag and
+  an answer for each state. Node, Python, Dart and Java read them as
+  `null`/`None` or a boolean, and the parity runners compare all five
+  surfaces. A loaded corpus's reading of `state.PUSHKARA_NAVAMSA`,
+  `state.PUSHKARA_BHAGA` or `state.MARANA_KARAKA_STHANA` is said where
+  the state holds.
+- Bhrigu bindu is still not computed. No text that defines it has been
+  read, and the two midpoints in circulation are 180° apart for half of
+  all charts (C769).
 
 **A custom visibility table is typed in every binding.**
 **Numbers:** none.

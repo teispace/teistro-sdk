@@ -773,6 +773,24 @@ class ChartsStates:
     cheshta_5: memoryview[int]
     """The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`."""
 
+    has_pushkara_navamsha: memoryview[int]
+    """1 for the nine grahas, which Vidyamadhaviyam ch. 1 v. 18 reads; 0 for the outer planets."""
+
+    pushkara_navamsha: memoryview[int]
+    """1 when it stands in one of its sign's two pushkara navamshas; read only when `has_pushkara_navamsha`."""
+
+    has_pushkara_bhaga: memoryview[int]
+    """1 when the table `state.pushkara_bhaga` names gives this body a row: every graha under Vidyamadhaviyam's, the Moon alone under Jataka Parijata's; 0 for the outer planets."""
+
+    pushkara_bhaga: memoryview[int]
+    """1 when it stands on its sign's pushkara bhaga; read only when `has_pushkara_bhaga`."""
+
+    has_marana_karaka_sthana: memoryview[int]
+    """1 for the eight grahas Jataka Parijata ch. 17 vv. 34 and 35 name; 0 for Ketu, the outer planets, and Saturn read by the natal star in a chart with no Moon."""
+
+    marana_karaka_sthana: memoryview[int]
+    """1 when it stands in its marana karaka sthana; read only when `has_marana_karaka_sthana`."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -5344,6 +5362,24 @@ def decode_charts(raw: bytes) -> Charts:
             cheshta_3=blob.column(at_states, 34, 2, at_states.count).cast("H"),
             cheshta_4=blob.column(at_states, 35, 2, at_states.count).cast("H"),
             cheshta_5=blob.column(at_states, 36, 2, at_states.count).cast("H"),
+            has_pushkara_navamsha=blob.column(
+                at_states, 37, 1, at_states.count
+            ).cast("B"),
+            pushkara_navamsha=blob.column(
+                at_states, 38, 1, at_states.count
+            ).cast("B"),
+            has_pushkara_bhaga=blob.column(
+                at_states, 39, 1, at_states.count
+            ).cast("B"),
+            pushkara_bhaga=blob.column(
+                at_states, 40, 1, at_states.count
+            ).cast("B"),
+            has_marana_karaka_sthana=blob.column(
+                at_states, 41, 1, at_states.count
+            ).cast("B"),
+            marana_karaka_sthana=blob.column(
+                at_states, 42, 1, at_states.count
+            ).cast("B"),
             length=at_states.count,
         ),
         combustion_orbs=blob.text(at_combustion_orbs, "combustion_orbs"),

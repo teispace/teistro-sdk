@@ -2929,6 +2929,12 @@ public final class Charts {
         private final int cheshta3At;
         private final int cheshta4At;
         private final int cheshta5At;
+        private final int hasPushkaraNavamshaAt;
+        private final int pushkaraNavamshaAt;
+        private final int hasPushkaraBhagaAt;
+        private final int pushkaraBhagaAt;
+        private final int hasMaranaKarakaSthanaAt;
+        private final int maranaKarakaSthanaAt;
 
         States(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -2971,6 +2977,12 @@ public final class Charts {
             this.cheshta3At = blob.column(at, 34, 2);
             this.cheshta4At = blob.column(at, 35, 2);
             this.cheshta5At = blob.column(at, 36, 2);
+            this.hasPushkaraNavamshaAt = blob.column(at, 37, 1);
+            this.pushkaraNavamshaAt = blob.column(at, 38, 1);
+            this.hasPushkaraBhagaAt = blob.column(at, 39, 1);
+            this.pushkaraBhagaAt = blob.column(at, 40, 1);
+            this.hasMaranaKarakaSthanaAt = blob.column(at, 41, 1);
+            this.maranaKarakaSthanaAt = blob.column(at, 42, 1);
         }
 
         /**
@@ -3423,6 +3435,72 @@ public final class Charts {
          */
         public int cheshta5(int row) {
             return Short.toUnsignedInt(bytes.getShort(cheshta5At + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * 1 for the nine grahas, which Vidyamadhaviyam ch. 1 v. 18 reads; 0 for the outer planets.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int hasPushkaraNavamsha(int row) {
+            return Byte.toUnsignedInt(bytes.get(hasPushkaraNavamshaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * 1 when it stands in one of its sign's two pushkara navamshas; read only when `has_pushkara_navamsha`.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int pushkaraNavamsha(int row) {
+            return Byte.toUnsignedInt(bytes.get(pushkaraNavamshaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * 1 when the table `state.pushkara_bhaga` names gives this body a row: every graha under Vidyamadhaviyam's, the Moon alone under Jataka Parijata's; 0 for the outer planets.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int hasPushkaraBhaga(int row) {
+            return Byte.toUnsignedInt(bytes.get(hasPushkaraBhagaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * 1 when it stands on its sign's pushkara bhaga; read only when `has_pushkara_bhaga`.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int pushkaraBhaga(int row) {
+            return Byte.toUnsignedInt(bytes.get(pushkaraBhagaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * 1 for the eight grahas Jataka Parijata ch. 17 vv. 34 and 35 name; 0 for Ketu, the outer planets, and Saturn read by the natal star in a chart with no Moon.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int hasMaranaKarakaSthana(int row) {
+            return Byte.toUnsignedInt(bytes.get(hasMaranaKarakaSthanaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * 1 when it stands in its marana karaka sthana; read only when `has_marana_karaka_sthana`.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int maranaKarakaSthana(int row) {
+            return Byte.toUnsignedInt(bytes.get(maranaKarakaSthanaAt + Objects.checkIndex(row, length) * 1));
         }
     }
 

@@ -2628,6 +2628,9 @@ final class GrahaState {
     required this.lajjitadi,
     required this.war,
     required this.sayanadi,
+    required this.pushkaraNavamsha,
+    required this.pushkaraBhaga,
+    required this.maranaKarakaSthana,
     required this.boundaries,
   });
 
@@ -2667,6 +2670,20 @@ final class GrahaState {
   /// The Sayanadi state and its sub-states, or `null` for a body the verses
   /// give no number.
   final Sayanadi? sayanadi;
+
+  /// Whether it stands in one of its sign's two pushkara navamshas
+  /// (Vidyamadhaviyam ch. 1 v. 18), or `null` for an outer planet.
+  final bool? pushkaraNavamsha;
+
+  /// Whether it stands on its sign's pushkara bhaga in the table
+  /// `state.pushkara_bhaga` names, or `null` for a body that table gives no
+  /// row: Jataka Parijata's gives the Moon's alone.
+  final bool? pushkaraBhaga;
+
+  /// Whether it stands in its marana karaka sthana (Jataka Parijata ch. 17
+  /// vv. 34 and 35), or `null` for Ketu and the outer planets, which the
+  /// verses do not name.
+  final bool? maranaKarakaSthana;
 
   /// How near it stands to a classification boundary.
   final EdgeDistance boundaries;
@@ -26397,6 +26414,14 @@ final class Chart {
                       AvasthaCheshta.byId(column[i]),
                   ]),
                 )
+                : null,
+        pushkaraNavamsha:
+            st.hasPushkaraNavamsha[i] != 0 ? st.pushkaraNavamsha[i] != 0 : null,
+        pushkaraBhaga:
+            st.hasPushkaraBhaga[i] != 0 ? st.pushkaraBhaga[i] != 0 : null,
+        maranaKarakaSthana:
+            st.hasMaranaKarakaSthana[i] != 0
+                ? st.maranaKarakaSthana[i] != 0
                 : null,
         boundaries: EdgeDistance(
           signDeg: st.signDeg[i],

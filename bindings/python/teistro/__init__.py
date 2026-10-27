@@ -4372,6 +4372,20 @@ class GrahaState:
     """The Sayanadi state and its sub-states, or `None` for a body the
     verses give no number."""
 
+    pushkara_navamsha: bool | None
+    """Whether it stands in one of its sign's two pushkara navamshas
+    (Vidyamadhaviyam ch. 1 v. 18), or `None` for an outer planet."""
+
+    pushkara_bhaga: bool | None
+    """Whether it stands on its sign's pushkara bhaga in the table
+    `state.pushkara_bhaga` names, or `None` for a body that table gives no
+    row: Jataka Parijata's gives the Moon's alone."""
+
+    marana_karaka_sthana: bool | None
+    """Whether it stands in its marana karaka sthana (Jataka Parijata
+    ch. 17 vv. 34 and 35), or `None` for Ketu and the outer planets, which
+    the verses do not name."""
+
     boundaries: EdgeDistance
     """How near it stands to a classification boundary."""
 
@@ -15966,6 +15980,15 @@ class Chart:
                     ),
                 )
                 if columns.has_sayanadi[i]
+                else None,
+                pushkara_navamsha=bool(columns.pushkara_navamsha[i])
+                if columns.has_pushkara_navamsha[i]
+                else None,
+                pushkara_bhaga=bool(columns.pushkara_bhaga[i])
+                if columns.has_pushkara_bhaga[i]
+                else None,
+                marana_karaka_sthana=bool(columns.marana_karaka_sthana[i])
+                if columns.has_marana_karaka_sthana[i]
                 else None,
                 boundaries=EdgeDistance(
                     sign_deg=columns.sign_deg[i],

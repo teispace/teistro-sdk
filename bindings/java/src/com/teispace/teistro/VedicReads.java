@@ -190,6 +190,9 @@ final class VedicReads {
                                     AvasthaCheshta.of(c.cheshta4(i)),
                                     AvasthaCheshta.of(c.cheshta5(i))))
                             : null,
+                    c.hasPushkaraNavamsha(i) != 0 ? Boolean.valueOf(c.pushkaraNavamsha(i) != 0) : null,
+                    c.hasPushkaraBhaga(i) != 0 ? Boolean.valueOf(c.pushkaraBhaga(i) != 0) : null,
+                    c.hasMaranaKarakaSthana(i) != 0 ? Boolean.valueOf(c.maranaKarakaSthana(i) != 0) : null,
                     new EdgeDistance(c.signDeg(i), c.nakshatraDeg(i), c.padaDeg(i))));
         }
         return List.copyOf(states);

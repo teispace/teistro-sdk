@@ -294,6 +294,11 @@ public final class ParityRunner {
         return text.isEmpty() ? "none" : text;
     }
 
+    /** A state the chart may not answer: {@code none}, or the answer. */
+    private static String answer(Boolean held) {
+        return held == null ? "none" : lower(held);
+    }
+
     /** Graha full keys joined by commas, or {@code -} for none. */
     private static String grahaKeys(List<Graha> grahas) {
         return orDash(join(",", grahas, Graha::fullKey));
@@ -1734,6 +1739,9 @@ public final class ParityRunner {
             put(key + "-war", state.war() != null
                     ? state.war().opponent().fullKey() + ":" + lower(state.war().isWinner())
                     : "none");
+            put(key + "-pushkara-navamsha", answer(state.pushkaraNavamsha()));
+            put(key + "-pushkara-bhaga", answer(state.pushkaraBhaga()));
+            put(key + "-marana-karaka-sthana", answer(state.maranaKarakaSthana()));
             put(key + "-sign-edge", state.boundaries().signDeg());
         }
         for (ServiceBhava read : chart.bhavas()) {

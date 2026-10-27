@@ -3488,9 +3488,30 @@
           "$ref": "#/$defs/Lajjitadi",
           "description": "The lajjitadi that hold, and the ones nothing can decide yet."
         },
+        "marana_karaka_sthana": {
+          "description": "Whether it stands in its marana karaka sthana (*Jataka Parijata* ch. 17 vv. 34 and 35); absent for Ketu and the outer planets, which the verses do not name, and for Saturn read by the natal star in a chart with no Moon.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "motion": {
           "$ref": "#/$defs/Motion",
           "description": "Which way it is going."
+        },
+        "pushkara_bhaga": {
+          "description": "Whether it stands on its sign's pushkara bhaga in the table `state.pushkara_bhaga` names; absent for a body that table gives no row, which under Jataka Parijata's is every body but the Moon.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "pushkara_navamsha": {
+          "description": "Whether it stands in one of its sign's two pushkara navamshas (*Vidyamadhaviyam* ch. 1 v. 18); absent for the outer planets, which the verse's grahas are not.",
+          "type": [
+            "boolean",
+            "null"
+          ]
         },
         "sayanadi": {
           "anyOf": [

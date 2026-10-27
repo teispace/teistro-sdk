@@ -16,13 +16,14 @@ use super::knobs::{
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
     GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
-    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
-    NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    PunyaKalaTable, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
-    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise,
-    SuryaSunrise, Tier, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha,
+    Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
+    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaStart,
+    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable, PushkaraBhaga,
+    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
+    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
+    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
+    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -329,6 +330,12 @@ pub fn root() -> Settings {
             // of the nine grahas for the two v. 30 does not number.
             sayanadi_ghatis: SayanadiGhatis::Elapsed,
             sayanadi_nodes: SayanadiNodes::NineGrahaOrder,
+            // Vidyamadhaviyam ch. 1 v. 18, which defines the bhaga and the
+            // navamsha together for every graha, and Jataka Parijata ch. 17
+            // vv. 34 and 35 read by their own list of houses (C768).
+            pushkara_bhaga: PushkaraBhaga::Vidyamadhaviya,
+            marana_saturn: MaranaSaturn::First,
+            marana_venus: MaranaVenus::Sixth,
         },
         strength: strength(),
         vargas: Vargas {
