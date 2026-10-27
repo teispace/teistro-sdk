@@ -43,7 +43,7 @@ final class Wrong {
                 false, false, false);
         // expect: conforms to NumerologyRules
         sky.numerology().profile("Ram", java.time.LocalDate.of(1990, 4, 14), Map.of("masters", "NONE"));
-        // expect: conforms to Design
+        // expect: conforms to ResearchDesign
         sky.research().counts(List.of(), null, Map.of("groups", List.of(0, 1)), null);
         // expect: conforms to RuleRequest
         sky.research().counts(List.of(), Map.of("shipped", List.of("YOGAS")), null, null);

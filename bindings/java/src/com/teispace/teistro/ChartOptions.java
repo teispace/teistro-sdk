@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.teispace.teistro.request.AntisciaRequest;
-import com.teispace.teistro.request.AspectRequest;
+import com.teispace.teistro.request.WesternAspectRequest;
 import com.teispace.teistro.request.ConfigurationRequest;
 import com.teispace.teistro.request.DignityRequest;
 import com.teispace.teistro.request.FortitudeRequest;
@@ -18,13 +18,13 @@ import com.teispace.teistro.request.HouseRequest;
 import com.teispace.teistro.request.KpRequest;
 import com.teispace.teistro.request.LalKitabRequest;
 import com.teispace.teistro.request.SarvatobhadraRequest;
-import com.teispace.teistro.request.DossierOptions;
+import com.teispace.teistro.request.DossierRequest;
 import com.teispace.teistro.request.MasaPraveshaRequest;
 import com.teispace.teistro.request.TithiPraveshaRequest;
 import com.teispace.teistro.request.LotRequest;
 import com.teispace.teistro.request.MidpointRequest;
 import com.teispace.teistro.request.ParallelRequest;
-import com.teispace.teistro.request.PartnerMatching;
+import com.teispace.teistro.request.MatchingRequest;
 import com.teispace.teistro.request.PartnerSynastry;
 import com.teispace.teistro.request.PerfectionRequest;
 import com.teispace.teistro.request.PlanRequest;
@@ -501,7 +501,7 @@ public record ChartOptions(
          * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder westernAspects(AspectRequest request) {
+        public Builder westernAspects(WesternAspectRequest request) {
             return json("western_aspects_json", request);
         }
 
@@ -584,7 +584,7 @@ public record ChartOptions(
          * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder matching(PartnerMatching request) {
+        public Builder matching(MatchingRequest request) {
             return json("matching_json", request);
         }
 
@@ -665,7 +665,7 @@ public record ChartOptions(
          * @param request the request; null takes it away
          * @return this builder
          */
-        public Builder dossier(DossierOptions request) {
+        public Builder dossier(DossierRequest request) {
             return json("dossier_json", request);
         }
 

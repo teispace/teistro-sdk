@@ -16,7 +16,7 @@ import com.teispace.teistro.ResearchCounts;
 import com.teispace.teistro.ResearchGroupTest;
 import com.teispace.teistro.ResearchTested;
 import com.teispace.teistro.Teistro;
-import com.teispace.teistro.request.Design;
+import com.teispace.teistro.request.ResearchDesign;
 import com.teispace.teistro.request.RuleRequest;
 import com.teispace.teistro.request.ShippedRules;
 
@@ -52,7 +52,7 @@ public final class Research {
                 groups.add(i < 16 ? 1 : 0);
             }
             RuleRequest rules = RuleRequest.builder().shipped(List.of(ShippedRules.YOGAS)).build();
-            Design design = new Design(groups, null);
+            ResearchDesign design = new ResearchDesign(groups, null);
 
             ResearchCounts table = ctx.research().counts(births, rules, design, null);
             System.out.println(table.rows().size() + " rules over " + births.size() + " births");

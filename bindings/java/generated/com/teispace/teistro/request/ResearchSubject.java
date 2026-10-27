@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param birth A birth as a binding writes it.
  * @param event The {@code event} field.
  */
-public record SubjectAsked(BirthAsked birth, double event) implements RequestJson {
+public record ResearchSubject(BirthAsked birth, double event) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -22,22 +22,22 @@ public record SubjectAsked(BirthAsked birth, double event) implements RequestJso
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public SubjectAsked {
-        Objects.requireNonNull(birth, "`SubjectAsked.birth` is required");
+    public ResearchSubject {
+        Objects.requireNonNull(birth, "`ResearchSubject.birth` is required");
     }
 
     /**
-     * A {@code SubjectAsked} from its JSON, as {@code Json.read} answers it.
+     * A {@code ResearchSubject} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static SubjectAsked of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "SubjectAsked");
-        return new SubjectAsked(
-            BirthAsked.of(Read.required(json.get("birth"), "SubjectAsked.birth")),
-            Read.number(Read.required(json.get("event"), "SubjectAsked.event"), "SubjectAsked.event"));
+    public static ResearchSubject of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "ResearchSubject");
+        return new ResearchSubject(
+            BirthAsked.of(Read.required(json.get("birth"), "ResearchSubject.birth")),
+            Read.number(Read.required(json.get("event"), "ResearchSubject.event"), "ResearchSubject.event"));
     }
 
     @Override

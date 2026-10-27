@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param groups Each chart's group, `0..groups`, in the matrix's order.
  * @param strata Each chart's stratum, when the study's exchangeability holds only inside strata (a birth decade, a region, a sex). The labels are shuffled within each stratum, strata in ascending key order. Null leaves the SDK's default.
  */
-public record Design(List<Integer> groups, List<Long> strata) implements RequestJson {
+public record ResearchDesign(List<Integer> groups, List<Long> strata) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -22,8 +22,8 @@ public record Design(List<Integer> groups, List<Long> strata) implements Request
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public Design {
-        Objects.requireNonNull(groups, "`Design.groups` is required");
+    public ResearchDesign {
+        Objects.requireNonNull(groups, "`ResearchDesign.groups` is required");
         groups = List.copyOf(groups);
         strata = strata == null ? null : List.copyOf(strata);
     }
@@ -34,7 +34,7 @@ public record Design(List<Integer> groups, List<Long> strata) implements Request
      *
      * @param groups Each chart's group, `0..groups`, in the matrix's order.
      */
-    public Design(List<Integer> groups) {
+    public ResearchDesign(List<Integer> groups) {
         this(groups, null);
     }
 
@@ -48,7 +48,7 @@ public record Design(List<Integer> groups, List<Long> strata) implements Request
         return new Builder();
     }
 
-    /** Builds a {@link Design} a field at a time. */
+    /** Builds a {@link ResearchDesign} a field at a time. */
     public static final class Builder {
         private List<Integer> groups;
         private List<Long> strata;
@@ -83,23 +83,23 @@ public record Design(List<Integer> groups, List<Long> strata) implements Request
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public Design build() {
-            return new Design(groups, strata);
+        public ResearchDesign build() {
+            return new ResearchDesign(groups, strata);
         }
     }
 
     /**
-     * A {@code Design} from its JSON, as {@code Json.read} answers it.
+     * A {@code ResearchDesign} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static Design of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "Design");
-        return new Design(
-            Read.list(Read.required(json.get("groups"), "Design.groups"), "Design.groups", item0 -> Read.int32(item0, "Design.groups")),
-            Read.orNull(json.get("strata"), present -> Read.list(present, "Design.strata", item0 -> Read.integer(item0, "Design.strata"))));
+    public static ResearchDesign of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "ResearchDesign");
+        return new ResearchDesign(
+            Read.list(Read.required(json.get("groups"), "ResearchDesign.groups"), "ResearchDesign.groups", item0 -> Read.int32(item0, "ResearchDesign.groups")),
+            Read.orNull(json.get("strata"), present -> Read.list(present, "ResearchDesign.strata", item0 -> Read.integer(item0, "ResearchDesign.strata"))));
     }
 
     @Override

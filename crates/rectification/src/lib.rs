@@ -468,7 +468,7 @@ impl Window {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[cfg_attr(feature = "schema", schemars(rename = "RectificationRules"))]
+#[cfg_attr(feature = "schema", schemars(rename = "PurifierRules"))]
 #[serde(rename_all = "camelCase", default)]
 pub struct Rules {
     /// The species v. 77 and v. 78 name, which decides the houses that

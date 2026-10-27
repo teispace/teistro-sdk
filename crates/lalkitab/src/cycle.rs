@@ -43,6 +43,7 @@ pub const CYCLE: u16 = 35;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "LalKitabCycle"))]
 pub struct CycleStart {
     /// The planet whose period begins then.
     pub planet: Graha,

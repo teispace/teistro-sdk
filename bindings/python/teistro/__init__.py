@@ -180,11 +180,11 @@ from ._requests import (
     AshtakavargaAyusRules as AshtakavargaAyusRules,
     AshtottariGrouping as AshtottariGrouping,
     AspectOrb as AspectOrb,
-    AspectRequest as AspectRequest,
-    Attendants as Attendants,
+    WesternAspectRequest as WesternAspectRequest,
+    AttendantFacts as AttendantFacts,
     AyanaReckoning as AyanaReckoning,
     AyurdayaRules as AyurdayaRules,
-    BaselineAsked as BaselineAsked,
+    BaselineRectificationRequest as BaselineRectificationRequest,
     Basis as Basis,
     BatchAsked as BatchAsked,
     BetweenBy as BetweenBy,
@@ -202,7 +202,7 @@ from ._requests import (
     ChakrayusRules as ChakrayusRules,
     ChaldeanCompound as ChaldeanCompound,
     ChartFoundRequest as ChartFoundRequest,
-    CircumstanceAsked as CircumstanceAsked,
+    CircumstanceRequest as CircumstanceRequest,
     CircumstanceRules as CircumstanceRules,
     CivilAsked as CivilAsked,
     PakshiClock as PakshiClock,
@@ -281,27 +281,27 @@ from ._requests import (
     ConditionTransitInHouse as ConditionTransitInHouse,
     ConditionVipareetaArgala as ConditionVipareetaArgala,
     ConfigurationRequest as ConfigurationRequest,
-    ContactsAsked as ContactsAsked,
+    ProgressionContacts as ProgressionContacts,
     CornerVedha as CornerVedha,
     Criterion as Criterion,
     CriterionArcusVisionis as CriterionArcusVisionis,
     CriterionLongitude as CriterionLongitude,
     CriterionTimeDegrees as CriterionTimeDegrees,
-    CycleStart as CycleStart,
-    DashaAsked as DashaAsked,
+    LalKitabCycle as LalKitabCycle,
+    BaselineDashaRules as BaselineDashaRules,
     DatePrecision as DatePrecision,
     DayAsked as DayAsked,
     DayFifth as DayFifth,
     Deceased as Deceased,
     DeerghaBeyond as DeerghaBeyond,
-    Design as Design,
+    ResearchDesign as ResearchDesign,
     DevaBride as DevaBride,
     DevataRules as DevataRules,
     DignityRequest as DignityRequest,
     DignityRules as DignityRules,
     DirectionAsked as DirectionAsked,
     Divisor as Divisor,
-    DossierOptions as DossierOptions,
+    DossierRequest as DossierRequest,
     DossierPreset as DossierPreset,
     DrawingAsked as DrawingAsked,
     DrekkanaReading as DrekkanaReading,
@@ -315,7 +315,7 @@ from ._requests import (
     LifeEventKind as LifeEventKind,
     ResearchEventShuffle as ResearchEventShuffle,
     EventConfidence as EventConfidence,
-    Facts as Facts,
+    BirthFacts as BirthFacts,
     FestivalCalendarRequest as FestivalCalendarRequest,
     FirstAbdika as FirstAbdika,
     FirstYearAdhika as FirstYearAdhika,
@@ -410,7 +410,6 @@ from ._requests import (
     ParallelRequest as ParallelRequest,
     PartileWithin as PartileWithin,
     Partner as Partner,
-    PartnerMatching as PartnerMatching,
     PartnerSynastry as PartnerSynastry,
     PerfectionRequest as PerfectionRequest,
     BaselinePeriod as BaselinePeriod,
@@ -436,17 +435,17 @@ from ._requests import (
     PublishedEntryWithdraw as PublishedEntryWithdraw,
     PublishedReasonsRequest as PublishedReasonsRequest,
     PublishedSet as PublishedSet,
-    Purify as Purify,
+    PurifyRequest as PurifyRequest,
     PurifyAs as PurifyAs,
-    Question as Question,
+    PrashnaQuestion as PrashnaQuestion,
     MuhurtaRanking as MuhurtaRanking,
     RasmiRules as RasmiRules,
     RateSpan as RateSpan,
     RayPlace as RayPlace,
     RectificationRequest as RectificationRequest,
-    RectificationRules as RectificationRules,
+    PurifierRules as PurifierRules,
     RectificationSpecies as RectificationSpecies,
-    Referents as Referents,
+    ResearchReferents as ResearchReferents,
     Relation as Relation,
     PakshiRelations as PakshiRelations,
     RemedyRequest as RemedyRequest,
@@ -481,7 +480,6 @@ from ._requests import (
     ScaleRequest as ScaleRequest,
     Scope as Scope,
     ScoreRule as ScoreRule,
-    Scores as Scores,
     SeedOverflow as SeedOverflow,
     SettingPart as SettingPart,
     Severity as Severity,
@@ -501,7 +499,6 @@ from ._requests import (
     StudyKind as StudyKind,
     SubDegree as SubDegree,
     PakshiSubLengths as PakshiSubLengths,
-    SubjectAsked as SubjectAsked,
     SunFallen as SunFallen,
     SunWithKetu as SunWithKetu,
     SvarodayaAsked as SvarodayaAsked,
@@ -1682,6 +1679,26 @@ PATH_VARIABLE = "TEISTRO_LIBRARY"
 
 #: The member a span carries, which differs per limb.
 T = TypeVar("T")
+
+
+class MatchingRequest(TypedDict, total=False):
+    """A match with a partner's birth (`03-design/matching.md`): the
+    partner, founded once for the whole batch under the context's sidereal
+    profile; `partnerRole`, the side the partner stands on, every chart
+    standing on the other, since Varna and Gana read differently when the
+    two swap; the Ashta Koota's `rules`; the ten considerations'
+    `porutham` rules; and the Kuja dosha's `kuja` rules.
+
+    >>> asked: MatchingRequest = {"partner": {"instant": 2447892.5, "observer": Observer(
+    ...     latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))},
+    ...     "partnerRole": "BRIDE"}
+    """
+
+    partner: Required[SynastryPartner]
+    partnerRole: Required[Literal["BRIDE", "GROOM"]]
+    rules: KootaRules
+    porutham: PoruthamRules
+    kuja: KujaRules
 
 
 @dataclass(frozen=True)
@@ -3467,14 +3484,6 @@ class ResearchSubject:
     event: float
 
 
-class ResearchDesign(TypedDict, total=False):
-    """Who is in which group, one label per birth, and the strata the labels
-    move within."""
-
-    groups: Sequence[int]
-    strata: Sequence[int]
-
-
 class ResearchGroupTest(TypedDict, total=False):
     """A permutation test of a design's groups: `seed`, `permutations` (1 to
     10 000 000) and `contrast` (`{"kind": "CASE_VS_REST", "case": 1}` or
@@ -3504,15 +3513,6 @@ class ResearchEventTest(TypedDict, total=False):
     alpha: float
     parallelism: Union[Literal["ONE"], Mapping[str, int]]
     maxPairs: int
-
-
-class ResearchReferents(TypedDict):
-    """Where a self-matched study reads each person besides their event:
-    the life cut into windows of `windowDays` from birth, the event's
-    window read every `stepDays` (time-stratified referents)."""
-
-    windowDays: float
-    stepDays: float
 
 
 class ResearchControl(TypedDict, total=False):
@@ -5922,16 +5922,6 @@ class YogaRules(TypedDict, total=False):
     Charak's list, or waxing, the commentary's "full Moon" (crux C117)."""
 
 
-# A window of life to find a birth's progressed contacts in: `from` and
-# `to`, UTC Julian days, and optionally the progressed `grahas` (the seven
-# by default), the radical `points` (the seven, the lagna and the
-# midheaven) and the `aspects` (whole degrees to 180; Leo's table, p. 48),
-# spelled as a `HitRequest` spells them; `parallels`, an orb (`{}` for
-# Leo's 1°) asking the parallels of declination over the same window; and
-# `mutual`, `True` to ask the progressed planets' contacts among themselves
-# (Leo's "P. to P."). The generated `ContactsAsked`, by the name the layer
-# has always given it.
-ProgressionContacts = ContactsAsked
 
 
 @dataclass(frozen=True)
@@ -6069,22 +6059,6 @@ class Progressions:
     contacts: Optional[Tuple[ProgressedContact, ...]]
     parallels: Optional[Tuple[ProgressedParallel, ...]] = None
     mutual: Optional[Tuple[MutualContact, ...]] = None
-
-
-class WesternAspectRequest(TypedDict, total=False):
-    """Which Western aspects to look for in every chart, and under which
-    orbs (`03-design/western-aspects.md`): `aspects`, Leo's nine by
-    default, and `orbs`, the model: `{"model": "LEO"}` by default (C240),
-    `{"model": "MOIETIES", "orbs": [{"graha": Graha.SUN, "orbDeg": 17}, …]}`
-    or `{"model": "BY_ASPECT", "orbs": [{"aspect": WesternAspect.TRINE,
-    "orbDeg": 6}, …]}`. Members may be written as members or as keys.
-
-    >>> leo: WesternAspectRequest = {}
-    >>> five: WesternAspectRequest = {"aspects": [WesternAspect.TRINE, "SQUARE"]}
-    """
-
-    aspects: Sequence[Union[WesternAspect, str]]
-    orbs: Mapping[str, Any]
 
 
 @dataclass(frozen=True)
@@ -6319,26 +6293,6 @@ class KujaLiftRules(TypedDict, total=False):
     jupiterAspect: bool
     rahuKendra: bool
     withRahu: bool
-
-
-class MatchingRequest(TypedDict, total=False):
-    """A match with a partner's birth (`03-design/matching.md`): the
-    partner, founded once for the whole batch under the context's sidereal
-    profile; `partnerRole`, the side the partner stands on, every chart
-    standing on the other, since Varna and Gana read differently when the
-    two swap; the Ashta Koota's `rules`; the ten considerations'
-    `porutham` rules; and the Kuja dosha's `kuja` rules.
-
-    >>> asked: MatchingRequest = {"partner": {"instant": 2447892.5, "observer": Observer(
-    ...     latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))},
-    ...     "partnerRole": "BRIDE"}
-    """
-
-    partner: Required[SynastryPartner]
-    partnerRole: Required[Literal["BRIDE", "GROOM"]]
-    rules: KootaRules
-    porutham: PoruthamRules
-    kuja: KujaRules
 
 
 @dataclass(frozen=True)
@@ -10575,17 +10529,6 @@ class TajikaMatter:
         return any(one.yoga == yoga for one in self.held)
 
 
-class PrashnaQuestion(TypedDict, total=False):
-    """What a prashna asks: `house`, the matter's house 1 to 12, which the
-    verdict's I.3 clauses and the Tajika links read; `number`, the
-    querent's 1 to 108, read only by the baseline engine's unsourced rule
-    (C340); and `tense`, `UNSPECIFIED` (the default), `FUTURE` or `PAST`."""
-
-    house: int
-    number: int
-    tense: PrashnaTense
-
-
 class PrashnaMoonRules(TypedDict, total=False):
     """How the Moon's weaknesses are read (Samjna Tantra vv. 73–74, C352):
     `kshina`, `DARK_EIGHTH_TO_BRIGHT_EIGHTH` (the gloss's, the default) or
@@ -11110,14 +11053,6 @@ class PakshiDay:
     reading: Optional[PakshiReading]
 
 
-class LalKitabCycle(TypedDict):
-    """Where the 35-year cycle starts: a graha (a `Graha` or its key, such
-    as `"graha.VENUS"`) and the year of life, from 1, its period begins."""
-
-    planet: Union[Graha, str]
-    year: int
-
-
 @dataclass(frozen=True)
 class LalKitabOwner:
     """An owner of a planet's house and how the planet regards it (1952
@@ -11601,30 +11536,6 @@ DossierSection = Literal[
 (`03-design/dossier.md`)."""
 
 
-class DossierRequest(TypedDict, total=False):
-    """How every chart is written as a dossier for a language model
-    (`03-design/dossier.md`). Every member is optional: `{}` writes every
-    section the chart carries, date-free, on the request's clock.
-
-    >>> asked: DossierRequest = {"sections": ["GRAHAS", "DASHAS", "SHADBALA"], "at": 2460676.5}
-    """
-
-    sections: Sequence[DossierSection]
-    """The sections, written in the dossier's own order; one a flag computes
-    widens the request with it."""
-    preset: Literal["FULL", "FAMILY"]
-    """`FULL`, every section the chart carries (the default), or `FAMILY`:
-    chart, grahas, dashas and panchanga."""
-    at: float
-    """The "now", a UTC Julian day: the running dasha periods marked and
-    their branch expanded."""
-    dashaDepth: int
-    """How many levels a dasha timeline is written to, 1 up."""
-    utcOffsetSeconds: int
-    """The clock instants are written in, seconds east of UTC; the request's
-    own when left out."""
-
-
 @dataclass(frozen=True)
 class TithiPravesha:
     """One year's tithi pravesha: the instant the Moon's elongation from the
@@ -11775,64 +11686,6 @@ class Sarvatobhadra:
     malefic strikes."""
 
 
-class PurifierRules(TypedDict, total=False):
-    """The purifier's knobs, one per crux (BPHS ch. 2 vv. 67–78), the texts'
-    own by default: `native` (`HUMAN`, `BEAST`, `BIRD` or `CREEPER`, which
-    decides the houses that purify), whether the `pranapada`, `gulika` and
-    `moon` may purify, `gulikaExtension` (`WHEN_TWO_FAIL`, `ALWAYS` or
-    `NEVER`), `purifyAs` (`BAR` or `WEIGHT`), `pranapadaRule` (`VERSE`,
-    `PRINTED_EXAMPLE` or `SDK_POINT`), `gulikaAt` (`END` or `START`) and
-    `seedMinutes`, the step every change is found between."""
-
-    native: RectificationSpecies
-    pranapada: bool
-    gulika: bool
-    moon: bool
-    gulikaExtension: GulikaExtension
-    purifyAs: PurifyAs
-    pranapadaRule: PranapadaRule
-    gulikaAt: GulikaAt
-    seedMinutes: float
-
-
-class PurifyRequest(TypedDict, total=False):
-    """The purifier over the minutes either side of the chart's instant:
-    `minutes`, more than none and at most 1080, and its `rules`."""
-
-    minutes: Required[float]
-    rules: PurifierRules
-
-
-class AttendantFacts(TypedDict, total=False):
-    """The women who attended, as many as the family can say: `total`,
-    `inside` the room and `outside` it."""
-
-    total: int
-    inside: int
-    outside: int
-
-
-class BirthFacts(TypedDict, total=False):
-    """What the family remembers of the birth, every fact optional; a clause
-    whose fact is absent is reported and not weighed: `fatherPresent`
-    (V.1–2), `presentation` (`HEAD`, `FEET` or `HANDS`, V.17), `oil` and
-    `wick` (`FULL`, `HALF` or `SPENT`, V.18) and `attendants` (V.22)."""
-
-    fatherPresent: bool
-    presentation: BirthPresentation
-    oil: LampLevel
-    wick: LampLevel
-    attendants: AttendantFacts
-
-
-class CircumstanceRequest(TypedDict, total=False):
-    """What the family remembers of the birth, and the readings it is
-    weighed under, the texts' own when left out."""
-
-    facts: BirthFacts
-    rules: CircumstanceRules
-
-
 class LifeEventRequest(TypedDict, total=False):
     """A dated life event: what happened (`kind`, `MARRIAGE`, `ACCIDENT`, …)
     and when it began (`on`, a Julian day UTC); optionally the caller's
@@ -11855,42 +11708,9 @@ DashaYearLength = Literal["JULIAN_365_25", "SAVANA_360", "SIDEREAL", "TROPICAL",
 year, twelve lunar months, or 324 days."""
 
 
-class BaselineDashaRules(TypedDict, total=False):
-    """The Vimshottari the baseline's event fit reads, every member the
-    baseline engine's own when left out: `balance` (`SPATIAL` or
-    `TEMPORAL`), `yearLength` (`JULIAN_365_25`, `SAVANA_360`, `SIDEREAL`,
-    `TROPICAL`, `LUNAR` or `NAKSHATRA_324`), `birthPeriod` (`COMPRESSED` or
-    `ELAPSED`), `afterCycle` (`END` or `REPEAT`), `seedOverflow`
-    (`WRAP_TO_START` or `REJECT`) and `ashtottariGrouping` (`THREE_EACH` or
-    `FOUR_AND_THREE`)."""
-
-    balance: BalanceMeasure
-    yearLength: DashaYearLength
-    birthPeriod: BirthPeriod
-    afterCycle: AfterCycle
-    seedOverflow: SeedOverflow
-    ashtottariGrouping: AshtottariGrouping
-
-
 NativeSex = Literal["MALE", "FEMALE"]
 """The child's sex, which the baseline's tattva prior reads, a
 `BaselineRectificationRequest` `sex`."""
-
-
-class BaselineRectificationRequest(TypedDict, total=False):
-    """The baseline engine's unsourced cascade around the chart's instant,
-    the time on record: `uncertaintyMinutes` either side, 1 to 720; how far
-    the time is trusted (`accuracy`, `EXACT`, `APPROXIMATE`, `RECTIFIED` or
-    `UNKNOWN`); the dated `events`; the child's `sex` (`MALE` or
-    `FEMALE`) for the tattva prior; the `coverage` of the posterior its
-    intervals hold, 0.5 to 0.99; and the `dasha` the event fit reads."""
-
-    uncertaintyMinutes: Required[float]
-    accuracy: BirthTimeAccuracy
-    events: Sequence[LifeEventRequest]
-    sex: NativeSex
-    coverage: float
-    dasha: BaselineDashaRules
 
 
 class SvarodayaRequest(TypedDict, total=False):

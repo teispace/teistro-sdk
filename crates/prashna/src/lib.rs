@@ -663,6 +663,7 @@ impl PrashnaRules {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
+#[cfg_attr(feature = "schema", schemars(rename = "PrashnaQuestion"))]
 pub struct Question {
     /// The house the matter belongs to, 1 to 12, when the question names
     /// one (the kārya bhāva).

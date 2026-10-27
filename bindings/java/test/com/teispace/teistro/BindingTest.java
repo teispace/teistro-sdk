@@ -223,12 +223,12 @@ public final class BindingTest {
                 // A key the SDK does not read is refused by the request type
                 // itself, before anything crosses, naming the field.
                 try {
-                    PartnerMatching.of(Map.of("partnerRole", "AUNT",
+                    MatchingRequest.of(Map.of("partnerRole", "AUNT",
                             "partner", Map.of("instant", 2_451_545.25, "utcOffsetSeconds", 36_000,
                                     "place", Map.of("latitude", -33.87, "longitude", 151.21, "altitude", 0.0))));
                     throw new AssertionError("an unknown partner role was not refused");
                 } catch (IllegalArgumentException e) {
-                    check(e.getMessage().contains("PartnerMatching.partnerRole"), "matching: " + e.getMessage());
+                    check(e.getMessage().contains("MatchingRequest.partnerRole"), "matching: " + e.getMessage());
                 }
                 TeistroException sadeSati = refusal(() -> sky.chart().found(2_451_545.0, kathmandu, 20_700,
                         ChartOptions.builder().sadeSati(SadeSatiRequest.of(Map.of("from", 2_460_676.5, "to", 2_464_329.0,
@@ -790,7 +790,7 @@ public final class BindingTest {
                 }
                 com.teispace.teistro.request.RuleRequest yogas = com.teispace.teistro.request.RuleRequest.builder()
                         .shipped(List.of(com.teispace.teistro.request.ShippedRules.YOGAS)).build();
-                com.teispace.teistro.request.Design design = com.teispace.teistro.request.Design.of(
+                com.teispace.teistro.request.ResearchDesign design = com.teispace.teistro.request.ResearchDesign.of(
                         Map.of("groups", List.of(0, 1, 0, 1, 0, 1)));
                 ResearchCounts table = sky.research().counts(births, yogas, design, null);
                 check(!table.rows().isEmpty(), "a row per rule");
@@ -1166,7 +1166,7 @@ public final class BindingTest {
                 check(sky.chart().found(birth, palace, 0, ChartOptions.builder().build()).westernConfigurations()
                         .isEmpty(), "none unless asked");
                 Chart chart = sky.chart().found(birth, palace, 0, ChartOptions.builder().outerPlanets(true)
-                        .westernAspects(AspectRequest.of(Map.of()))
+                        .westernAspects(WesternAspectRequest.of(Map.of()))
                         .westernConfigurations(ConfigurationRequest.builder().build()).build());
                 List<WesternConfiguration> shapes = chart.westernConfigurations().orElseThrow();
                 // Edward VII's two T-squares, as the SDK's own test pins them.
@@ -1198,7 +1198,7 @@ public final class BindingTest {
                 double instant = 2_447_995.489_583_333_5;
                 check(sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder().build()).dossier()
                         .isEmpty(), "none unless asked");
-                DossierOptions asked = DossierOptions.builder().sections(List.of("CHART", "GRAHAS", "SHADBALA"))
+                DossierRequest asked = DossierRequest.builder().sections(List.of("CHART", "GRAHAS", "SHADBALA"))
                         .build();
                 String text = sky.chart().found(instant, kathmandu, 20_700,
                         ChartOptions.builder().dossier(asked).build()).dossier().orElseThrow();
@@ -1210,7 +1210,7 @@ public final class BindingTest {
                 same(text, sky.chart().found(instant, kathmandu, 20_700,
                         ChartOptions.builder().dossier(asked).build()).dossier().orElseThrow(), "the same bytes");
                 TeistroException refused = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
-                        ChartOptions.builder().dossier(DossierOptions.builder().sections(List.of("DASHAS")).build())
+                        ChartOptions.builder().dossier(DossierRequest.builder().sections(List.of("DASHAS")).build())
                                 .build()));
                 same("dossier.sections[0]", refused.field(), "a refusal names its index");
             }
@@ -1311,7 +1311,7 @@ public final class BindingTest {
                         .ashtakavarga(true).vimshopaka(true).vaiseshikamsa(true).dashaPhala(true).jaimini(true)
                         .avakahada(true).moment(true).outerPlanets(true).shadbala(true).bhavaBala(true)
                         .vargas(Varga.D9).dashas(DashaSystem.VIMSHOTTARI).remedies(RemedyRequest.of(Map.of()))
-                        .fortitudes(FortitudeRequest.of(Map.of())).lots(LotRequest.of(Map.of())).westernAspects(AspectRequest.of(Map.of()))
+                        .fortitudes(FortitudeRequest.of(Map.of())).lots(LotRequest.of(Map.of())).westernAspects(WesternAspectRequest.of(Map.of()))
                         .westernHouses(HouseRequest.of(Map.of())).antiscia(AntisciaRequest.of(Map.of())).midpoints(MidpointRequest.of(Map.of())).parallels(ParallelRequest.of(Map.of()))
                         .build();
                 ChartBatch batch = sky.chart().foundMany(new double[] {2_447_995.489_583_333_5, 2_451_545.0},

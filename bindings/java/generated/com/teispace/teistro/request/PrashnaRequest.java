@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param question What was asked: the house the matter belongs to and the querent's number, each when given. Null leaves the SDK's default.
  * @param rules The readings; the texts' own when left out. Null leaves the SDK's default.
  */
-public record PrashnaRequest(Question question, PrashnaRules rules) implements RequestJson {
+public record PrashnaRequest(PrashnaQuestion question, PrashnaRules rules) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -36,7 +36,7 @@ public record PrashnaRequest(Question question, PrashnaRules rules) implements R
 
     /** Builds a {@link PrashnaRequest} a field at a time. */
     public static final class Builder {
-        private Question question;
+        private PrashnaQuestion question;
         private PrashnaRules rules;
 
         private Builder() {}
@@ -47,7 +47,7 @@ public record PrashnaRequest(Question question, PrashnaRules rules) implements R
          * @param question What was asked: the house the matter belongs to and the querent's number, each when given. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder question(Question question) {
+        public Builder question(PrashnaQuestion question) {
             this.question = question;
             return this;
         }
@@ -84,7 +84,7 @@ public record PrashnaRequest(Question question, PrashnaRules rules) implements R
     public static PrashnaRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "PrashnaRequest");
         return new PrashnaRequest(
-            Read.orNull(json.get("question"), present -> Question.of(present)),
+            Read.orNull(json.get("question"), present -> PrashnaQuestion.of(present)),
             Read.orNull(json.get("rules"), present -> PrashnaRules.of(present)));
     }
 

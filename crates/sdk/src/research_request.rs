@@ -147,6 +147,7 @@ struct BirthAsked {
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "schema", schemars(rename = "ResearchSubject"))]
 struct SubjectAsked {
     birth: BirthAsked,
     event: f64,

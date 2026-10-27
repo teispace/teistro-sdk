@@ -834,7 +834,7 @@ public final class ParityRunner {
             groups.add(i % 2);
         }
         RuleRequest yogas = RuleRequest.builder().shipped(List.of(ShippedRules.YOGAS)).build();
-        Design design = Design.of(map("groups", groups));
+        ResearchDesign design = ResearchDesign.of(map("groups", groups));
         ResearchCounts table = geo.research().counts(births, yogas, design,
                 ResearchOptions.builder().holds(ResearchHolds.FORMED).build());
         put("research-counts-hash", table.provenance().inputHash());
@@ -858,7 +858,7 @@ public final class ParityRunner {
         for (int i = 0; i < births.size(); i += 1) {
             strata.add((long) (i / 4));
         }
-        putTested("strata", geo.research().compare(births, yogas, new Design(groups, strata),
+        putTested("strata", geo.research().compare(births, yogas, new ResearchDesign(groups, strata),
                 ResearchGroupTest.builder(6, 199, ResearchContrast.caseVsRest(1)).build(), null));
     }
 
@@ -1501,8 +1501,8 @@ public final class ParityRunner {
             surface("almanac.published_from_signed", () -> ctx.almanac().publishedFromSigned(new byte[0],
                     new byte[0], new byte[0], 0));
             surface("calendar.tibetan_year", () -> ctx.calendar().tibetanYear(2026));
-            surface("research.counts", () -> ctx.research().counts(List.of(), null, new Design(List.of(), null), null));
-            surface("research.compare", () -> ctx.research().compare(List.of(), null, new Design(List.of(), null),
+            surface("research.counts", () -> ctx.research().counts(List.of(), null, new ResearchDesign(List.of(), null), null));
+            surface("research.compare", () -> ctx.research().compare(List.of(), null, new ResearchDesign(List.of(), null),
                     ResearchGroupTest.builder(0, 1, ResearchContrast.ANY_DIFFERENCE).build(), null));
             surface("research.expected", () -> ctx.research().expected(List.of(), null, new ResearchControl(0, 1), null, null));
             surface("research.timed", () -> ctx.research().timed(List.of(), null, DashaSystem.VIMSHOTTARI,
@@ -1586,7 +1586,7 @@ public final class ParityRunner {
                 .tithiPravesha(TithiPraveshaRequest.builder().through(3).build())
                 // The second year's third month, a row a day.
                 .masaPravesha(MasaPraveshaRequest.builder().year(2).place(AnnualPlace.BIRTH).build())
-                .dossier(DossierOptions.builder().sections(List.of("CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS", "RULES", "GOCHAR"))
+                .dossier(DossierRequest.builder().sections(List.of("CHART", "NOW", "GRAHAS", "VARGAS", "DASHAS", "RULES", "GOCHAR"))
                         .at(2460676.5).dashaDepth(2).utcOffsetSeconds(20_700).build())
                 // A varshphal list with the book's structure and none of its numbers:
                 // year y sends natal house h to h + y - 1, round the twelve.
@@ -1598,7 +1598,7 @@ public final class ParityRunner {
                                 map("kind", "MARRIAGE", "on", 2469000.5),
                                 map("kind", "ACCIDENT", "on", 2471000.5, "heldOut", true))),
                         "svarodaya", map("minutes", 20))))
-                .westernAspects(AspectRequest.of(map(
+                .westernAspects(WesternAspectRequest.of(map(
                         "aspects", List.of("CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"),
                         "orbs", map("model", "MOIETIES", "orbs", orbs))))
                 // Leo's nine under his orbs, a stellium of three.
@@ -1608,7 +1608,7 @@ public final class ParityRunner {
                 .midpoints(MidpointRequest.of(map("orbDeg", 1.5)))
                 .westernHouses(HouseRequest.of(map()))
                 .harmonic(HarmonicRequest.of(map("number", 5)))
-                .matching(PartnerMatching.of(map("partner", partner(), "partnerRole", "BRIDE", "rules", map("bhakootLift", "GARGA"),
+                .matching(MatchingRequest.of(map("partner", partner(), "partnerRole", "BRIDE", "rules", map("bhakootLift", "GARGA"),
                         "porutham", map("lordsFriendship", "ONE_WAY"),
                         "kuja", map("houses", "WITH_SECOND", "from", "LAGNA_MOON_VENUS"))))
                 .synastry(PartnerSynastry.of(map("partner", partner(), "aspects", List.of("CONJUNCTION", "SQUARE", "TRINE", "OPPOSITION"),

@@ -19,7 +19,7 @@ import java.util.Objects;
  * @param points A natal point: `"LAGNA"`, `"MIDHEAVEN"`, a graha's key, or the point as an answer's `to` spells it. Null leaves the SDK's default.
  * @param to The {@code to} field.
  */
-public record ContactsAsked(List<Integer> aspects, double from, List<com.teispace.teistro.Graha> grahas, Boolean mutual, ParallelRequest parallels, List<PointAsked> points, double to) implements RequestJson {
+public record ProgressionContacts(List<Integer> aspects, double from, List<com.teispace.teistro.Graha> grahas, Boolean mutual, ParallelRequest parallels, List<PointAsked> points, double to) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -27,7 +27,7 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public ContactsAsked {
+    public ProgressionContacts {
         aspects = aspects == null ? null : List.copyOf(aspects);
         grahas = grahas == null ? null : List.copyOf(grahas);
         points = points == null ? null : List.copyOf(points);
@@ -40,7 +40,7 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
      * @param from The {@code from} field.
      * @param to The {@code to} field.
      */
-    public ContactsAsked(double from, double to) {
+    public ProgressionContacts(double from, double to) {
         this(null, from, null, null, null, null, to);
     }
 
@@ -54,7 +54,7 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
         return new Builder();
     }
 
-    /** Builds a {@link ContactsAsked} a field at a time. */
+    /** Builds a {@link ProgressionContacts} a field at a time. */
     public static final class Builder {
         private List<Integer> aspects;
         private Double from;
@@ -149,28 +149,28 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public ContactsAsked build() {
-            return new ContactsAsked(aspects, Objects.requireNonNull(from, "`ContactsAsked.from` is required"), grahas, mutual, parallels, points, Objects.requireNonNull(to, "`ContactsAsked.to` is required"));
+        public ProgressionContacts build() {
+            return new ProgressionContacts(aspects, Objects.requireNonNull(from, "`ProgressionContacts.from` is required"), grahas, mutual, parallels, points, Objects.requireNonNull(to, "`ProgressionContacts.to` is required"));
         }
     }
 
     /**
-     * A {@code ContactsAsked} from its JSON, as {@code Json.read} answers it.
+     * A {@code ProgressionContacts} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static ContactsAsked of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "ContactsAsked");
-        return new ContactsAsked(
-            Read.orNull(json.get("aspects"), present -> Read.list(present, "ContactsAsked.aspects", item0 -> Read.int32(item0, "ContactsAsked.aspects"))),
-            Read.number(Read.required(json.get("from"), "ContactsAsked.from"), "ContactsAsked.from"),
-            Read.orNull(json.get("grahas"), present -> Read.list(present, "ContactsAsked.grahas", item0 -> Read.member(item0, "ContactsAsked.grahas", com.teispace.teistro.Graha::byKey))),
-            Read.orNull(json.get("mutual"), present -> Read.bool(present, "ContactsAsked.mutual")),
+    public static ProgressionContacts of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "ProgressionContacts");
+        return new ProgressionContacts(
+            Read.orNull(json.get("aspects"), present -> Read.list(present, "ProgressionContacts.aspects", item0 -> Read.int32(item0, "ProgressionContacts.aspects"))),
+            Read.number(Read.required(json.get("from"), "ProgressionContacts.from"), "ProgressionContacts.from"),
+            Read.orNull(json.get("grahas"), present -> Read.list(present, "ProgressionContacts.grahas", item0 -> Read.member(item0, "ProgressionContacts.grahas", com.teispace.teistro.Graha::byKey))),
+            Read.orNull(json.get("mutual"), present -> Read.bool(present, "ProgressionContacts.mutual")),
             Read.orNull(json.get("parallels"), present -> ParallelRequest.of(present)),
-            Read.orNull(json.get("points"), present -> Read.list(present, "ContactsAsked.points", item0 -> PointAsked.of(item0))),
-            Read.number(Read.required(json.get("to"), "ContactsAsked.to"), "ContactsAsked.to"));
+            Read.orNull(json.get("points"), present -> Read.list(present, "ProgressionContacts.points", item0 -> PointAsked.of(item0))),
+            Read.number(Read.required(json.get("to"), "ProgressionContacts.to"), "ProgressionContacts.to"));
     }
 
     @Override

@@ -15,7 +15,7 @@ import java.util.Objects;
  * @param number The number the querent chose, 1 to 108, read only by the unsourced `number_sign` (C340). Null leaves the SDK's default.
  * @param tense When the matter falls, which decides what a separation means (C370). Null leaves the SDK's default.
  */
-public record Question(Integer house, Integer number, PrashnaTense tense) implements RequestJson {
+public record PrashnaQuestion(Integer house, Integer number, PrashnaTense tense) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -23,12 +23,12 @@ public record Question(Integer house, Integer number, PrashnaTense tense) implem
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public Question {
+    public PrashnaQuestion {
         if (house != null) {
-            Read.range(house, "Question.house", 0L, 255L);
+            Read.range(house, "PrashnaQuestion.house", 0L, 255L);
         }
         if (number != null) {
-            Read.range(number, "Question.number", 0L, 255L);
+            Read.range(number, "PrashnaQuestion.number", 0L, 255L);
         }
     }
 
@@ -37,7 +37,7 @@ public record Question(Integer house, Integer number, PrashnaTense tense) implem
      * default stands.
      *
      */
-    public Question() {
+    public PrashnaQuestion() {
         this(null, null, null);
     }
 
@@ -51,7 +51,7 @@ public record Question(Integer house, Integer number, PrashnaTense tense) implem
         return new Builder();
     }
 
-    /** Builds a {@link Question} a field at a time. */
+    /** Builds a {@link PrashnaQuestion} a field at a time. */
     public static final class Builder {
         private Integer house;
         private Integer number;
@@ -98,24 +98,24 @@ public record Question(Integer house, Integer number, PrashnaTense tense) implem
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public Question build() {
-            return new Question(house, number, tense);
+        public PrashnaQuestion build() {
+            return new PrashnaQuestion(house, number, tense);
         }
     }
 
     /**
-     * A {@code Question} from its JSON, as {@code Json.read} answers it.
+     * A {@code PrashnaQuestion} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static Question of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "Question");
-        return new Question(
-            Read.orNull(json.get("house"), present -> Read.int32(present, "Question.house")),
-            Read.orNull(json.get("number"), present -> Read.int32(present, "Question.number")),
-            Read.orNull(json.get("tense"), present -> Read.member(present, "Question.tense", PrashnaTense::byKey)));
+    public static PrashnaQuestion of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "PrashnaQuestion");
+        return new PrashnaQuestion(
+            Read.orNull(json.get("house"), present -> Read.int32(present, "PrashnaQuestion.house")),
+            Read.orNull(json.get("number"), present -> Read.int32(present, "PrashnaQuestion.number")),
+            Read.orNull(json.get("tense"), present -> Read.member(present, "PrashnaQuestion.tense", PrashnaTense::byKey)));
     }
 
     @Override

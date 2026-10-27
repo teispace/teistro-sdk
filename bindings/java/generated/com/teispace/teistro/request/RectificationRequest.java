@@ -17,7 +17,7 @@ import java.util.Objects;
  * @param purify The purifier of BPHS ch. 2 vv. 67–78 over a window around the chart's instant (`ChartArea::rectify`). Null leaves the SDK's default.
  * @param svarodaya The Shiva Svarodaya's nadis and tattvas around the chart's instant (`ChartArea::svarodaya`, `ChartArea::svarodaya_runs`): a report the text does not make at a birth. Null leaves the SDK's default.
  */
-public record RectificationRequest(BaselineAsked baseline, CircumstanceAsked circumstance, ConceptionRules conception, Purify purify, SvarodayaAsked svarodaya) implements RequestJson {
+public record RectificationRequest(BaselineRectificationRequest baseline, CircumstanceRequest circumstance, ConceptionRules conception, PurifyRequest purify, SvarodayaAsked svarodaya) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -39,10 +39,10 @@ public record RectificationRequest(BaselineAsked baseline, CircumstanceAsked cir
 
     /** Builds a {@link RectificationRequest} a field at a time. */
     public static final class Builder {
-        private BaselineAsked baseline;
-        private CircumstanceAsked circumstance;
+        private BaselineRectificationRequest baseline;
+        private CircumstanceRequest circumstance;
         private ConceptionRules conception;
-        private Purify purify;
+        private PurifyRequest purify;
         private SvarodayaAsked svarodaya;
 
         private Builder() {}
@@ -53,7 +53,7 @@ public record RectificationRequest(BaselineAsked baseline, CircumstanceAsked cir
          * @param baseline The baseline engine's cascade around the chart's instant (`ChartArea::rectify_baseline`). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder baseline(BaselineAsked baseline) {
+        public Builder baseline(BaselineRectificationRequest baseline) {
             this.baseline = baseline;
             return this;
         }
@@ -64,7 +64,7 @@ public record RectificationRequest(BaselineAsked baseline, CircumstanceAsked cir
          * @param circumstance *Brihat Jataka* ch. V's circumstances at the chart's instant (`ChartArea::circumstance`). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder circumstance(CircumstanceAsked circumstance) {
+        public Builder circumstance(CircumstanceRequest circumstance) {
             this.circumstance = circumstance;
             return this;
         }
@@ -86,7 +86,7 @@ public record RectificationRequest(BaselineAsked baseline, CircumstanceAsked cir
          * @param purify The purifier of BPHS ch. 2 vv. 67–78 over a window around the chart's instant (`ChartArea::rectify`). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder purify(Purify purify) {
+        public Builder purify(PurifyRequest purify) {
             this.purify = purify;
             return this;
         }
@@ -123,10 +123,10 @@ public record RectificationRequest(BaselineAsked baseline, CircumstanceAsked cir
     public static RectificationRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "RectificationRequest");
         return new RectificationRequest(
-            Read.orNull(json.get("baseline"), present -> BaselineAsked.of(present)),
-            Read.orNull(json.get("circumstance"), present -> CircumstanceAsked.of(present)),
+            Read.orNull(json.get("baseline"), present -> BaselineRectificationRequest.of(present)),
+            Read.orNull(json.get("circumstance"), present -> CircumstanceRequest.of(present)),
             Read.orNull(json.get("conception"), present -> ConceptionRules.of(present)),
-            Read.orNull(json.get("purify"), present -> Purify.of(present)),
+            Read.orNull(json.get("purify"), present -> PurifyRequest.of(present)),
             Read.orNull(json.get("svarodaya"), present -> SvarodayaAsked.of(present)));
     }
 

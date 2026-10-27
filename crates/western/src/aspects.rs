@@ -454,6 +454,7 @@ const ROOT: &str = "westernAspects";
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
+#[cfg_attr(feature = "schema", schemars(rename = "WesternAspectRequest"))]
 pub struct AspectRequest {
     /// The aspects looked for; Leo's nine unless a caller names fewer.
     pub aspects: Vec<WesternAspect>,

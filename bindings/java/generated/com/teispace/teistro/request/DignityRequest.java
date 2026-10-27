@@ -15,7 +15,7 @@ import java.util.Objects;
  * @param scores What each dignity and debility is worth. Null leaves the SDK's default.
  * @param sectRule How a chart's sect is read (crux C209, `essential-dignities.md` §Sect). Null leaves the SDK's default.
  */
-public record DignityRequest(DignityRules rules, Scores scores, com.teispace.teistro.SectRule sectRule) implements RequestJson {
+public record DignityRequest(DignityRules rules, DignityScores scores, com.teispace.teistro.SectRule sectRule) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -38,7 +38,7 @@ public record DignityRequest(DignityRules rules, Scores scores, com.teispace.tei
     /** Builds a {@link DignityRequest} a field at a time. */
     public static final class Builder {
         private DignityRules rules;
-        private Scores scores;
+        private DignityScores scores;
         private com.teispace.teistro.SectRule sectRule;
 
         private Builder() {}
@@ -60,7 +60,7 @@ public record DignityRequest(DignityRules rules, Scores scores, com.teispace.tei
          * @param scores What each dignity and debility is worth. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder scores(Scores scores) {
+        public Builder scores(DignityScores scores) {
             this.scores = scores;
             return this;
         }
@@ -98,7 +98,7 @@ public record DignityRequest(DignityRules rules, Scores scores, com.teispace.tei
         Map<String, Object> json = Read.object(raw, "DignityRequest");
         return new DignityRequest(
             Read.orNull(json.get("rules"), present -> DignityRules.of(present)),
-            Read.orNull(json.get("scores"), present -> Scores.of(present)),
+            Read.orNull(json.get("scores"), present -> DignityScores.of(present)),
             Read.orNull(json.get("sectRule"), present -> Read.member(present, "DignityRequest.sectRule", com.teispace.teistro.SectRule::byKey)));
     }
 

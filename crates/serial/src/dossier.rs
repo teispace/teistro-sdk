@@ -246,6 +246,7 @@ impl DossierPreset {
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "schema", schemars(rename = "DossierRequest"))]
 pub struct DossierOptions {
     /// The sections to write, by key, in the dossier's own order; the
     /// preset's when left out. Every one named must be carried.

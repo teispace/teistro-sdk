@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 158 of the examples' 167 members.
+/// The cases compare 156 of the examples' 167 members.
 library;
 
 import 'dart:convert';
@@ -328,7 +328,7 @@ void main() {
     _holds(
       'chart.found',
       path: [],
-      dropping: [['antiscia'], ['considerations'], ['dignities'], ['fortitudes', 'almuten'], ['fortitudes', 'dignities'], ['fortitudes', 'rules'], ['fortitudes', 'scores'], ['harmonic'], ['hits'], ['lalkitab'], ['lots'], ['masaPravesha'], ['matching'], ['perfection'], ['prashna'], ['progressions'], ['rectification'], ['rules'], ['sarvatobhadra', 'motion'], ['synastry', 'antiscia'], ['synastry', 'orbs'], ['synastry', 'partner'], ['varsha'], ['westernAspects', 'orbs'], ['westernConfigurations', 'orbs']],
+      dropping: [['antiscia'], ['considerations'], ['dignities'], ['dossier'], ['fortitudes', 'almuten'], ['fortitudes', 'dignities'], ['fortitudes', 'rules'], ['fortitudes', 'scores'], ['harmonic'], ['hits'], ['lalkitab'], ['lots'], ['masaPravesha'], ['matching'], ['perfection'], ['prashna'], ['progressions'], ['rectification'], ['rules'], ['sarvatobhadra', 'motion'], ['synastry', 'antiscia'], ['synastry', 'orbs'], ['synastry', 'partner'], ['varsha'], ['westernAspects'], ['westernConfigurations', 'orbs']],
       members: 6,
       written: ChartFoundRequest(
         altitudeM: 1.5,
@@ -338,13 +338,6 @@ void main() {
         bhavaBala: true,
         dashaPhala: true,
         dashas: [DashaSystem.ashtottari],
-        dossier: DossierOptions(
-          at: 1.5,
-          dashaDepth: 1,
-          preset: DossierPreset.family,
-          sections: ['x'],
-          utcOffsetSeconds: 1,
-        ),
         drawings: [DrawingAsked(layout: ChartLayout.southIndian, varga: Varga.d2)],
         fortitudes: FortitudeRequest(),
         gochar: GocharRequest(ashtakavarga: true, from: GocharFrom.lagna, instants: [1.5]),
@@ -422,7 +415,6 @@ void main() {
         vaiseshikamsa: true,
         vargas: [Varga.d2],
         vimshopaka: true,
-        westernAspects: AspectRequest(aspects: [WesternAspect.semiSextile]),
         westernConfigurations: ConfigurationRequest(aspects: [WesternAspect.semiSextile], stelliumLeast: 1),
         westernHouses: HouseRequest(system: HouseSystem.placidus),
       ).toJson(),
@@ -462,25 +454,6 @@ void main() {
     );
   });
 
-  test('chart.found at dignities.scores: Scores', () {
-    _holds(
-      'chart.found',
-      path: ['dignities', 'scores'],
-      dropping: [],
-      members: 0,
-      written: Scores(
-        detriment: 1,
-        exaltation: 1,
-        face: 1,
-        fall: 1,
-        house: 1,
-        peregrine: 1,
-        term: 1,
-        triplicity: 1,
-      ).toJson(),
-    );
-  });
-
   test('chart.found at fortitudes.dignities.rules: DignityRules', () {
     _holds(
       'chart.found',
@@ -490,25 +463,6 @@ void main() {
       written: DignityRules(
         terms: <String, Object?>{'TABLE': <Object?>[<Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}], <Object?>[<String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}, <String, Object?>{'end': 1, 'lord': 'graha.MOON'}]]},
         triplicities: Triplicities.lilly,
-      ).toJson(),
-    );
-  });
-
-  test('chart.found at fortitudes.dignities.scores: Scores', () {
-    _holds(
-      'chart.found',
-      path: ['fortitudes', 'dignities', 'scores'],
-      dropping: [],
-      members: 0,
-      written: Scores(
-        detriment: 1,
-        exaltation: 1,
-        face: 1,
-        fall: 1,
-        house: 1,
-        peregrine: 1,
-        term: 1,
-        triplicity: 1,
       ).toJson(),
     );
   });
@@ -530,16 +484,6 @@ void main() {
       dropping: [],
       members: 0,
       written: SiegeWithin(spanDeg: 1.5).toJson(),
-    );
-  });
-
-  test('chart.found at lalkitab.cycle: CycleStart', () {
-    _holds(
-      'chart.found',
-      path: ['lalkitab', 'cycle'],
-      dropping: [],
-      members: 1,
-      written: CycleStart(planet: Graha.moon, year: 1).toJson(),
     );
   });
 
@@ -670,13 +614,13 @@ void main() {
     );
   });
 
-  test('chart.found at prashna.question: Question', () {
+  test('chart.found at prashna.question: PrashnaQuestion', () {
     _holds(
       'chart.found',
       path: ['prashna', 'question'],
       dropping: [],
       members: 0,
-      written: Question(house: 1, number: 1, tense: PrashnaTense.future).toJson(),
+      written: PrashnaQuestion(house: 1, number: 1, tense: PrashnaTense.future).toJson(),
     );
   });
 
@@ -715,20 +659,13 @@ void main() {
     );
   });
 
-  test('chart.found at progressions.contacts: ContactsAsked', () {
+  test('chart.found at progressions.contacts.parallels: ParallelRequest', () {
     _holds(
       'chart.found',
-      path: ['progressions', 'contacts'],
-      dropping: [['points']],
-      members: 1,
-      written: ContactsAsked(
-        aspects: [1],
-        from: 1.5,
-        grahas: [Graha.moon],
-        mutual: true,
-        parallels: ParallelRequest(orbDeg: 1.5),
-        to: 1.5,
-      ).toJson(),
+      path: ['progressions', 'contacts', 'parallels'],
+      dropping: [],
+      members: 0,
+      written: ParallelRequest(orbDeg: 1.5).toJson(),
     );
   });
 
@@ -762,50 +699,18 @@ void main() {
     );
   });
 
-  test('chart.found at rectification.baseline: BaselineAsked', () {
+  test('chart.found at rectification.circumstance.rules: CircumstanceRules', () {
     _holds(
       'chart.found',
-      path: ['rectification', 'baseline'],
-      dropping: [['events']],
-      members: 0,
-      written: BaselineAsked(
-        accuracy: BirthTimeAccuracy.approximate,
-        coverage: 1.5,
-        dasha: DashaAsked(
-          afterCycle: AfterCycle.repeat,
-          ashtottariGrouping: AshtottariGrouping.fourAndThree,
-          balance: Balance.temporal,
-          birthPeriod: BirthPeriod.elapsed,
-          seedOverflow: SeedOverflow.reject,
-          yearLength: YearLength.savana360,
-        ),
-        sex: Sex.female,
-        uncertaintyMinutes: 1.5,
-      ).toJson(),
-    );
-  });
-
-  test('chart.found at rectification.circumstance: CircumstanceAsked', () {
-    _holds(
-      'chart.found',
-      path: ['rectification', 'circumstance'],
+      path: ['rectification', 'circumstance', 'rules'],
       dropping: [],
       members: 0,
-      written: CircumstanceAsked(
-        facts: Facts(
-          attendants: Attendants(inside: 1, outside: 1, total: 1),
-          fatherPresent: true,
-          oil: LampLevel.half,
-          presentation: BirthPresentation.feet,
-          wick: LampLevel.half,
-        ),
-        rules: CircumstanceRules(
-          betweenBy: BetweenBy.sign,
-          moonSees: MoonSees.full,
-          outside: OutsideHalf.invisible,
-          presentationBy: PresentationBy.lagnaLordMotion,
-          sunFallen: SunFallen.eitherSide,
-        ),
+      written: CircumstanceRules(
+        betweenBy: BetweenBy.sign,
+        moonSees: MoonSees.full,
+        outside: OutsideHalf.invisible,
+        presentationBy: PresentationBy.lagnaLordMotion,
+        sunFallen: SunFallen.eitherSide,
       ).toJson(),
     );
   });
@@ -814,7 +719,7 @@ void main() {
     _holds(
       'chart.found',
       path: ['rectification', 'conception'],
-      dropping: [],
+      dropping: [['purifier']],
       members: 0,
       written: ConceptionRules(
         moon: ConceptionMoonRules(
@@ -833,40 +738,6 @@ void main() {
           count: HouseCount.sripatiBhava,
           firstAuspicious: true,
           pranapada: PranapadaRule.printedExample,
-        ),
-        purifier: RectificationRules(
-          gulika: true,
-          gulikaAt: GulikaAt.start,
-          gulikaExtension: GulikaExtension.always,
-          moon: true,
-          native: RectificationSpecies.beast,
-          pranapada: true,
-          pranapadaRule: PranapadaRule.printedExample,
-          purifyAs: PurifyAs.weight,
-          seedMinutes: 1.5,
-        ),
-      ).toJson(),
-    );
-  });
-
-  test('chart.found at rectification.purify: Purify', () {
-    _holds(
-      'chart.found',
-      path: ['rectification', 'purify'],
-      dropping: [],
-      members: 0,
-      written: Purify(
-        minutes: 1.5,
-        rules: RectificationRules(
-          gulika: true,
-          gulikaAt: GulikaAt.start,
-          gulikaExtension: GulikaExtension.always,
-          moon: true,
-          native: RectificationSpecies.beast,
-          pranapada: true,
-          pranapadaRule: PranapadaRule.printedExample,
-          purifyAs: PurifyAs.weight,
-          seedMinutes: 1.5,
         ),
       ).toJson(),
     );
@@ -1165,7 +1036,7 @@ void main() {
     _holds(
       'research.study',
       path: [],
-      dropping: [],
+      dropping: [['design'], ['referents'], ['subjects']],
       members: 0,
       written: ResearchRequest(
         births: [
@@ -1180,27 +1051,29 @@ void main() {
         ],
         dasha: 'x',
         depth: 1,
-        design: Design(groups: [1], strata: [1]),
         holds: ResearchHolds.formed,
-        referents: Referents(stepDays: 1.5, windowDays: 1.5),
         rules: <String, Object?>{'shipped': <Object?>['YOGAS']},
         shuffle: ResearchEventShuffle.agesAtEvent,
         strata: [1],
         study: StudyKind.compare,
-        subjects: [
-          SubjectAsked(
-            birth: BirthAsked(
-              altitudeM: 1.5,
-              instant: 1.5,
-              latitudeDeg: 1.5,
-              longitudeDeg: 1.5,
-              uncertaintyMinutes: 1.5,
-              utcOffsetSeconds: 1,
-            ),
-            event: 1.5,
-          ),
-        ],
         uncertaintyStepMinutes: 1.5,
+      ).toJson(),
+    );
+  });
+
+  test('research.study at subjects[0].birth: BirthAsked', () {
+    _holds(
+      'research.study',
+      path: ['subjects', 0, 'birth'],
+      dropping: [],
+      members: 0,
+      written: BirthAsked(
+        altitudeM: 1.5,
+        instant: 1.5,
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        uncertaintyMinutes: 1.5,
+        utcOffsetSeconds: 1,
       ).toJson(),
     );
   });

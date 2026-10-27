@@ -17,13 +17,13 @@ import java.util.Objects;
  * @param presentation What came first (V.17). Null leaves the SDK's default.
  * @param wick How much of the lamp's wick was left (V.18). Null leaves the SDK's default.
  */
-public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil, BirthPresentation presentation, LampLevel wick) implements RequestJson {
+public record BirthFacts(AttendantFacts attendants, Boolean fatherPresent, LampLevel oil, BirthPresentation presentation, LampLevel wick) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
      */
-    public Facts() {
+    public BirthFacts() {
         this(null, null, null, null, null);
     }
 
@@ -37,9 +37,9 @@ public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil,
         return new Builder();
     }
 
-    /** Builds a {@link Facts} a field at a time. */
+    /** Builds a {@link BirthFacts} a field at a time. */
     public static final class Builder {
-        private Attendants attendants;
+        private AttendantFacts attendants;
         private Boolean fatherPresent;
         private LampLevel oil;
         private BirthPresentation presentation;
@@ -53,7 +53,7 @@ public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil,
          * @param attendants The women who attended (V.22). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder attendants(Attendants attendants) {
+        public Builder attendants(AttendantFacts attendants) {
             this.attendants = attendants;
             return this;
         }
@@ -108,26 +108,26 @@ public record Facts(Attendants attendants, Boolean fatherPresent, LampLevel oil,
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public Facts build() {
-            return new Facts(attendants, fatherPresent, oil, presentation, wick);
+        public BirthFacts build() {
+            return new BirthFacts(attendants, fatherPresent, oil, presentation, wick);
         }
     }
 
     /**
-     * A {@code Facts} from its JSON, as {@code Json.read} answers it.
+     * A {@code BirthFacts} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static Facts of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "Facts");
-        return new Facts(
-            Read.orNull(json.get("attendants"), present -> Attendants.of(present)),
-            Read.orNull(json.get("fatherPresent"), present -> Read.bool(present, "Facts.fatherPresent")),
-            Read.orNull(json.get("oil"), present -> Read.member(present, "Facts.oil", LampLevel::byKey)),
-            Read.orNull(json.get("presentation"), present -> Read.member(present, "Facts.presentation", BirthPresentation::byKey)),
-            Read.orNull(json.get("wick"), present -> Read.member(present, "Facts.wick", LampLevel::byKey)));
+    public static BirthFacts of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "BirthFacts");
+        return new BirthFacts(
+            Read.orNull(json.get("attendants"), present -> AttendantFacts.of(present)),
+            Read.orNull(json.get("fatherPresent"), present -> Read.bool(present, "BirthFacts.fatherPresent")),
+            Read.orNull(json.get("oil"), present -> Read.member(present, "BirthFacts.oil", LampLevel::byKey)),
+            Read.orNull(json.get("presentation"), present -> Read.member(present, "BirthFacts.presentation", BirthPresentation::byKey)),
+            Read.orNull(json.get("wick"), present -> Read.member(present, "BirthFacts.wick", LampLevel::byKey)));
     }
 
     @Override

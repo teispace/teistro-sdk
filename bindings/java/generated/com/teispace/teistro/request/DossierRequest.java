@@ -17,7 +17,7 @@ import java.util.Objects;
  * @param sections The sections to write, by key, in the dossier's own order; the preset's when left out. Every one named must be carried. Null leaves the SDK's default.
  * @param utcOffsetSeconds The clock instants are written in, seconds east of UTC; UTC when left out, and a chart request's own clock for its `dossier` record. Null leaves the SDK's default.
  */
-public record DossierOptions(Double at, Integer dashaDepth, DossierPreset preset, List<String> sections, Integer utcOffsetSeconds) implements RequestJson {
+public record DossierRequest(Double at, Integer dashaDepth, DossierPreset preset, List<String> sections, Integer utcOffsetSeconds) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -25,9 +25,9 @@ public record DossierOptions(Double at, Integer dashaDepth, DossierPreset preset
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public DossierOptions {
+    public DossierRequest {
         if (dashaDepth != null) {
-            Read.range(dashaDepth, "DossierOptions.dashaDepth", 0L, 255L);
+            Read.range(dashaDepth, "DossierRequest.dashaDepth", 0L, 255L);
         }
         sections = sections == null ? null : List.copyOf(sections);
     }
@@ -37,7 +37,7 @@ public record DossierOptions(Double at, Integer dashaDepth, DossierPreset preset
      * default stands.
      *
      */
-    public DossierOptions() {
+    public DossierRequest() {
         this(null, null, null, null, null);
     }
 
@@ -51,7 +51,7 @@ public record DossierOptions(Double at, Integer dashaDepth, DossierPreset preset
         return new Builder();
     }
 
-    /** Builds a {@link DossierOptions} a field at a time. */
+    /** Builds a {@link DossierRequest} a field at a time. */
     public static final class Builder {
         private Double at;
         private Integer dashaDepth;
@@ -122,26 +122,26 @@ public record DossierOptions(Double at, Integer dashaDepth, DossierPreset preset
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public DossierOptions build() {
-            return new DossierOptions(at, dashaDepth, preset, sections, utcOffsetSeconds);
+        public DossierRequest build() {
+            return new DossierRequest(at, dashaDepth, preset, sections, utcOffsetSeconds);
         }
     }
 
     /**
-     * A {@code DossierOptions} from its JSON, as {@code Json.read} answers it.
+     * A {@code DossierRequest} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static DossierOptions of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "DossierOptions");
-        return new DossierOptions(
-            Read.orNull(json.get("at"), present -> Read.number(present, "DossierOptions.at")),
-            Read.orNull(json.get("dashaDepth"), present -> Read.int32(present, "DossierOptions.dashaDepth")),
-            Read.orNull(json.get("preset"), present -> Read.member(present, "DossierOptions.preset", DossierPreset::byKey)),
-            Read.orNull(json.get("sections"), present -> Read.list(present, "DossierOptions.sections", item0 -> Read.text(item0, "DossierOptions.sections"))),
-            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "DossierOptions.utcOffsetSeconds")));
+    public static DossierRequest of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "DossierRequest");
+        return new DossierRequest(
+            Read.orNull(json.get("at"), present -> Read.number(present, "DossierRequest.at")),
+            Read.orNull(json.get("dashaDepth"), present -> Read.int32(present, "DossierRequest.dashaDepth")),
+            Read.orNull(json.get("preset"), present -> Read.member(present, "DossierRequest.preset", DossierPreset::byKey)),
+            Read.orNull(json.get("sections"), present -> Read.list(present, "DossierRequest.sections", item0 -> Read.text(item0, "DossierRequest.sections"))),
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "DossierRequest.utcOffsetSeconds")));
     }
 
     @Override

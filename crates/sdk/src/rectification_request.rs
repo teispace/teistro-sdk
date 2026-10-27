@@ -33,6 +33,7 @@ const RECTIFICATION: &str = "rectification";
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "schema", schemars(rename = "PurifyRequest"))]
 pub struct Purify {
     /// How far either side of the chart's instant the window runs,
     /// minutes: more than none, and at most half of
@@ -48,6 +49,7 @@ pub struct Purify {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
+#[cfg_attr(feature = "schema", schemars(rename = "CircumstanceRequest"))]
 pub struct CircumstanceAsked {
     /// The facts given; one left out is read and not weighed.
     pub facts: Facts,
@@ -60,6 +62,7 @@ pub struct CircumstanceAsked {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "schema", schemars(rename = "BaselineRectificationRequest"))]
 pub struct BaselineAsked {
     /// The window's half-width, minutes, 1 to 720.
     pub uncertainty_minutes: f64,
@@ -98,6 +101,7 @@ pub struct BaselineAsked {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
+#[cfg_attr(feature = "schema", schemars(rename = "BaselineDashaRules"))]
 pub struct DashaAsked {
     /// How the balance is measured.
     #[serde(skip_serializing_if = "Option::is_none")]

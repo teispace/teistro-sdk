@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param aspects The aspects looked for; Leo's nine unless a caller names fewer. Null leaves the SDK's default.
  * @param orbs How wide each may be. Null leaves the SDK's default.
  */
-public record AspectRequest(List<com.teispace.teistro.WesternAspect> aspects, OrbModel orbs) implements RequestJson {
+public record WesternAspectRequest(List<com.teispace.teistro.WesternAspect> aspects, OrbModel orbs) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -22,7 +22,7 @@ public record AspectRequest(List<com.teispace.teistro.WesternAspect> aspects, Or
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public AspectRequest {
+    public WesternAspectRequest {
         aspects = aspects == null ? null : List.copyOf(aspects);
     }
 
@@ -31,7 +31,7 @@ public record AspectRequest(List<com.teispace.teistro.WesternAspect> aspects, Or
      * default stands.
      *
      */
-    public AspectRequest() {
+    public WesternAspectRequest() {
         this(null, null);
     }
 
@@ -45,7 +45,7 @@ public record AspectRequest(List<com.teispace.teistro.WesternAspect> aspects, Or
         return new Builder();
     }
 
-    /** Builds a {@link AspectRequest} a field at a time. */
+    /** Builds a {@link WesternAspectRequest} a field at a time. */
     public static final class Builder {
         private List<com.teispace.teistro.WesternAspect> aspects;
         private OrbModel orbs;
@@ -80,22 +80,22 @@ public record AspectRequest(List<com.teispace.teistro.WesternAspect> aspects, Or
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public AspectRequest build() {
-            return new AspectRequest(aspects, orbs);
+        public WesternAspectRequest build() {
+            return new WesternAspectRequest(aspects, orbs);
         }
     }
 
     /**
-     * A {@code AspectRequest} from its JSON, as {@code Json.read} answers it.
+     * A {@code WesternAspectRequest} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static AspectRequest of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "AspectRequest");
-        return new AspectRequest(
-            Read.orNull(json.get("aspects"), present -> Read.list(present, "AspectRequest.aspects", item0 -> Read.member(item0, "AspectRequest.aspects", com.teispace.teistro.WesternAspect::byKey))),
+    public static WesternAspectRequest of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "WesternAspectRequest");
+        return new WesternAspectRequest(
+            Read.orNull(json.get("aspects"), present -> Read.list(present, "WesternAspectRequest.aspects", item0 -> Read.member(item0, "WesternAspectRequest.aspects", com.teispace.teistro.WesternAspect::byKey))),
             Read.orNull(json.get("orbs"), present -> OrbModel.of(present)));
     }
 

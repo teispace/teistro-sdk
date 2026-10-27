@@ -14,19 +14,19 @@ import java.util.Objects;
  * @param stepDays The days between a person's instants.
  * @param windowDays Each window's length in days; a person's instants are those of their event's window.
  */
-public record Referents(double stepDays, double windowDays) implements RequestJson {
+public record ResearchReferents(double stepDays, double windowDays) implements RequestJson {
     /**
-     * A {@code Referents} from its JSON, as {@code Json.read} answers it.
+     * A {@code ResearchReferents} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static Referents of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "Referents");
-        return new Referents(
-            Read.number(Read.required(json.get("stepDays"), "Referents.stepDays"), "Referents.stepDays"),
-            Read.number(Read.required(json.get("windowDays"), "Referents.windowDays"), "Referents.windowDays"));
+    public static ResearchReferents of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "ResearchReferents");
+        return new ResearchReferents(
+            Read.number(Read.required(json.get("stepDays"), "ResearchReferents.stepDays"), "ResearchReferents.stepDays"),
+            Read.number(Read.required(json.get("windowDays"), "ResearchReferents.windowDays"), "ResearchReferents.windowDays"));
     }
 
     @Override

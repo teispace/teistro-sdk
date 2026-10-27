@@ -659,7 +659,7 @@ function dossierText(): string {
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
   const asked: DossierRequest = { sections: ['GRAHAS', 'SHADBALA'], dashaDepth: 2 };
   const text: string | null = ctx.chart.found({ instant: 2451545.0, place, utcOffsetSeconds: 20700, dossier: asked }).dossier;
-  // @ts-expect-error a section is one of the dossier's own
+  // A section is named by its key, an app's own as well as the SDK's.
   const planets: DossierRequest = { sections: ['PLANETS'] };
   return `${text} ${planets}`;
 }

@@ -17,7 +17,7 @@ import java.util.Objects;
  * @param porutham The readings the ten considerations are computed under; the chapter's own when left out. Null leaves the SDK's default.
  * @param rules The readings the kootas are computed under; the sources' own when left out. Null leaves the SDK's default.
  */
-public record PartnerMatching(KujaRules kuja, Partner partner, com.teispace.teistro.MatchRole partnerRole, PoruthamRules porutham, KootaRules rules) implements RequestJson {
+public record MatchingRequest(KujaRules kuja, Partner partner, com.teispace.teistro.MatchRole partnerRole, PoruthamRules porutham, KootaRules rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -25,9 +25,9 @@ public record PartnerMatching(KujaRules kuja, Partner partner, com.teispace.teis
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public PartnerMatching {
-        Objects.requireNonNull(partner, "`PartnerMatching.partner` is required");
-        Objects.requireNonNull(partnerRole, "`PartnerMatching.partnerRole` is required");
+    public MatchingRequest {
+        Objects.requireNonNull(partner, "`MatchingRequest.partner` is required");
+        Objects.requireNonNull(partnerRole, "`MatchingRequest.partnerRole` is required");
     }
 
     /**
@@ -37,7 +37,7 @@ public record PartnerMatching(KujaRules kuja, Partner partner, com.teispace.teis
      * @param partner Whose birth every chart is matched with.
      * @param partnerRole The side the partner stands on; every chart stands on the other.
      */
-    public PartnerMatching(Partner partner, com.teispace.teistro.MatchRole partnerRole) {
+    public MatchingRequest(Partner partner, com.teispace.teistro.MatchRole partnerRole) {
         this(null, partner, partnerRole, null, null);
     }
 
@@ -51,7 +51,7 @@ public record PartnerMatching(KujaRules kuja, Partner partner, com.teispace.teis
         return new Builder();
     }
 
-    /** Builds a {@link PartnerMatching} a field at a time. */
+    /** Builds a {@link MatchingRequest} a field at a time. */
     public static final class Builder {
         private KujaRules kuja;
         private Partner partner;
@@ -122,24 +122,24 @@ public record PartnerMatching(KujaRules kuja, Partner partner, com.teispace.teis
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public PartnerMatching build() {
-            return new PartnerMatching(kuja, partner, partnerRole, porutham, rules);
+        public MatchingRequest build() {
+            return new MatchingRequest(kuja, partner, partnerRole, porutham, rules);
         }
     }
 
     /**
-     * A {@code PartnerMatching} from its JSON, as {@code Json.read} answers it.
+     * A {@code MatchingRequest} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static PartnerMatching of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "PartnerMatching");
-        return new PartnerMatching(
+    public static MatchingRequest of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "MatchingRequest");
+        return new MatchingRequest(
             Read.orNull(json.get("kuja"), present -> KujaRules.of(present)),
-            Partner.of(Read.required(json.get("partner"), "PartnerMatching.partner")),
-            Read.member(Read.required(json.get("partnerRole"), "PartnerMatching.partnerRole"), "PartnerMatching.partnerRole", com.teispace.teistro.MatchRole::byKey),
+            Partner.of(Read.required(json.get("partner"), "MatchingRequest.partner")),
+            Read.member(Read.required(json.get("partnerRole"), "MatchingRequest.partnerRole"), "MatchingRequest.partnerRole", com.teispace.teistro.MatchRole::byKey),
             Read.orNull(json.get("porutham"), present -> PoruthamRules.of(present)),
             Read.orNull(json.get("rules"), present -> KootaRules.of(present)));
     }
