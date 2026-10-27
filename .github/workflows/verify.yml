@@ -403,7 +403,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: fuzz
-      - name: The harness names every JSON section of a chart request, and every slot answers its seed
+      - name: The harness names every JSON section of a chart request, every slot answers its seed, and the corpora are the seed tables
         run: cargo +nightly test --manifest-path fuzz/Cargo.toml --lib
       - name: Each target for a minute from the committed corpus
         working-directory: fuzz
@@ -411,7 +411,7 @@ jobs:
         # where a sanitizer cannot link, so the host's triple is named.
         run: |
           host=$(rustc +nightly -vV | sed -n 's/^host: //p')
-          for target in json pack key mf2 blob; do
+          for target in $(cargo +nightly fuzz list); do
             mkdir -p "found/$target"
             cargo +nightly fuzz run --target "$host" "$target" "found/$target" "corpus/$target" -- \
               -max_total_time=60 -rss_limit_mb=4096 -timeout=30

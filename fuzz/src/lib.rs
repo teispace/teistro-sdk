@@ -37,7 +37,7 @@ use teistro_ffi::research::ts_research;
 use teistro_ffi::string::{TsStr, TsString, ts_string_free};
 use teistro_idl::blob::Reader;
 use teistro_idl::model::{Api, BlobSchema, SectionKind};
-use teistro_mcp::Limits;
+use teistro_mcp::{Engine, Limits, Server};
 
 /// A size as a C caller writes it into `struct_size`.
 fn size<T>() -> u32 {
@@ -810,8 +810,38 @@ pub fn blob(data: &[u8]) {
     }
 }
 
+/// The `mcp` target: the bytes as one message a transport read, handed to
+/// a fresh server over the built-in ephemeris, so no message leans on
+/// what an earlier input left (an `initialize`, a cancellation). It runs
+/// no task in the background, so a call computes while the fuzzer
+/// watches. The server bounds a request itself (`Limits`), so nothing is
+/// skipped.
+pub fn mcp(data: &[u8]) {
+    let mut server = Server::new(Engine::Builtin).with_task_patience(None);
+    if let Some(reply) = server.handle_bytes(data) {
+        held(&reply);
+    }
+}
+
+/// The finding rule for a reply: it is one JSON-RPC response, a result
+/// or an error, and neither says the server failed (`-32603`, or a tool
+/// refusal whose status is `INTERNAL`).
+fn held(reply: &str) {
+    let reply: serde_json::Value = serde_json::from_str(reply)
+        .unwrap_or_else(|error| panic!("a reply that is no JSON ({error}): {reply}"));
+    assert_eq!(reply["jsonrpc"], "2.0", "{reply}");
+    let (result, error) = (reply.get("result"), reply.get("error"));
+    assert!(result.is_some() != error.is_some(), "{reply}");
+    assert_ne!(reply["error"]["code"], -32_603, "{reply}");
+    assert_ne!(
+        reply["result"]["structuredContent"]["status"], "INTERNAL",
+        "{reply}"
+    );
+}
+
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
     use std::sync::Mutex;
 
     use super::*;
@@ -867,30 +897,22 @@ mod tests {
         assert!(wrong.is_empty(), "{wrong:#?}");
     }
 
-    /// The committed corpus is the seed table written out. Set
-    /// `TEISTRO_FUZZ_WRITE_SEEDS=1` to write it after changing the table.
-    #[test]
-    fn the_json_corpus_is_the_seed_table() {
-        let dir = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/corpus/json"));
-        let wanted: std::collections::BTreeMap<String, Vec<u8>> = JSON_SEEDS
-            .iter()
-            .enumerate()
-            .map(|(n, &(slot, _, text))| {
-                (
-                    format!("{slot}-{n:02}").replace(' ', "-"),
-                    seed_file(slot, text).unwrap(),
-                )
-            })
-            .collect();
+    /// `fuzz/corpus/<target>` is `wanted` written out: set
+    /// `TEISTRO_FUZZ_WRITE_SEEDS=1` to write it after changing a table.
+    fn corpus_is(target: &str, wanted: &BTreeMap<String, Vec<u8>>) {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("corpus")
+            .join(target);
         if std::env::var_os("TEISTRO_FUZZ_WRITE_SEEDS").is_some() {
-            for entry in std::fs::read_dir(dir).unwrap() {
+            std::fs::create_dir_all(&dir).unwrap();
+            for entry in std::fs::read_dir(&dir).unwrap() {
                 std::fs::remove_file(entry.unwrap().path()).unwrap();
             }
-            for (name, bytes) in &wanted {
+            for (name, bytes) in wanted {
                 std::fs::write(dir.join(name), bytes).unwrap();
             }
         }
-        let found: std::collections::BTreeMap<String, Vec<u8>> = std::fs::read_dir(dir)
+        let found: BTreeMap<String, Vec<u8>> = std::fs::read_dir(&dir)
             .unwrap()
             .map(|entry| {
                 let path = entry.unwrap().path();
@@ -901,9 +923,197 @@ mod tests {
             })
             .collect();
         assert!(
-            found == wanted,
-            "fuzz/corpus/json is not JSON_SEEDS written out; run this test with TEISTRO_FUZZ_WRITE_SEEDS=1"
+            &found == wanted,
+            "fuzz/corpus/{target} is not its seed table written out; run the test with TEISTRO_FUZZ_WRITE_SEEDS=1"
         );
+    }
+
+    /// The committed json corpus is `JSON_SEEDS` written out.
+    #[test]
+    fn the_json_corpus_is_the_seed_table() {
+        let wanted = JSON_SEEDS
+            .iter()
+            .enumerate()
+            .map(|(n, &(slot, _, text))| {
+                (
+                    format!("{slot}-{n:02}").replace(' ', "-"),
+                    seed_file(slot, text).unwrap(),
+                )
+            })
+            .collect();
+        corpus_is("json", &wanted);
+    }
+
+    /// The weekly long run's matrix names every target the manifest
+    /// builds, so a target added is run for an hour too.
+    #[test]
+    fn the_long_run_fuzzes_every_target() {
+        let manifest = include_str!("../Cargo.toml");
+        let mut built: Vec<&str> = manifest
+            .split("[[bin]]")
+            .skip(1)
+            .filter_map(|bin| bin.lines().find_map(|line| line.strip_prefix("name = ")))
+            .map(|name| name.trim_matches('"'))
+            .collect();
+        let workflow = include_str!("../../.github/workflows/fuzz.yml");
+        let mut run: Vec<&str> = workflow
+            .lines()
+            .find_map(|line| line.trim().strip_prefix("target: ["))
+            .and_then(|list| list.strip_suffix(']'))
+            .unwrap()
+            .split(", ")
+            .collect();
+        built.sort_unstable();
+        run.sort_unstable();
+        assert_eq!(run, built);
+    }
+
+    /// The protocol's own messages the `mcp` target starts from, each
+    /// under the stateless revision unless it opens the legacy one, and
+    /// whether it is answered with a result (`true`) or refused.
+    const MCP_SEEDS: &[(&str, bool, &str)] = &[
+        ("ping", true, r#"{"method":"ping","params":{}}"#),
+        (
+            "discover",
+            true,
+            r#"{"method":"server/discover","params":{}}"#,
+        ),
+        ("tools-list", true, r#"{"method":"tools/list","params":{}}"#),
+        (
+            "tools-list-cursor",
+            false,
+            r#"{"method":"tools/list","params":{"cursor":"2"}}"#,
+        ),
+        (
+            "resources-list",
+            true,
+            r#"{"method":"resources/list","params":{}}"#,
+        ),
+        (
+            "resource-templates",
+            true,
+            r#"{"method":"resources/templates/list","params":{}}"#,
+        ),
+        (
+            "resource-read",
+            true,
+            r#"{"method":"resources/read","params":{"uri":"teistro://catalogue/graha"}}"#,
+        ),
+        (
+            "resource-unknown",
+            false,
+            r#"{"method":"resources/read","params":{"uri":"teistro://nothing"}}"#,
+        ),
+        (
+            "prompts-list",
+            true,
+            r#"{"method":"prompts/list","params":{}}"#,
+        ),
+        (
+            "prompt-get",
+            true,
+            r#"{"method":"prompts/get","params":{"name":"day-panchanga","arguments":{"date":"2026-01-01","last":"2026-01-03","zone":"+05:45","latitude":"27.7","longitude":"85.3"}}}"#,
+        ),
+        (
+            "complete-prompt",
+            true,
+            r#"{"method":"completion/complete","params":{"ref":{"type":"ref/prompt","name":"day-panchanga"},"argument":{"name":"festivals","value":""}}}"#,
+        ),
+        (
+            "complete-resource",
+            true,
+            r#"{"method":"completion/complete","params":{"ref":{"type":"ref/resource","uri":"teistro://catalogue/{kind}"},"argument":{"name":"kind","value":"gr"}}}"#,
+        ),
+        (
+            "task-unknown",
+            false,
+            r#"{"method":"tasks/get","params":{"taskId":"none"}}"#,
+        ),
+        (
+            "method-unknown",
+            false,
+            r#"{"method":"teistro/nothing","params":{}}"#,
+        ),
+        (
+            "legacy-initialize",
+            true,
+            r#"{"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"fuzz","version":"0"}}}"#,
+        ),
+    ];
+
+    /// The stateless revision's `_meta`.
+    fn meta() -> serde_json::Value {
+        serde_json::json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                            "io.modelcontextprotocol/clientCapabilities": {} })
+    }
+
+    /// Every `mcp` seed by its file name, whether it is answered, and its
+    /// bytes: the protocol's messages, then one `tools/call` for each
+    /// example request the SDK's own tests send (`crates/sdk/tests/requests.json`),
+    /// so a tool gains a seed with its example and none is written by hand.
+    fn mcp_seeds() -> Vec<(String, bool, Vec<u8>)> {
+        let message = |id: usize, mut message: serde_json::Value| {
+            message["jsonrpc"] = "2.0".into();
+            message["id"] = id.into();
+            if message["method"] != "initialize" {
+                message["params"]["_meta"] = meta();
+            }
+            message.to_string().into_bytes()
+        };
+        let protocol = MCP_SEEDS
+            .iter()
+            .enumerate()
+            .map(|(id, &(name, answered, text))| {
+                (
+                    name.to_owned(),
+                    answered,
+                    message(id, serde_json::from_str(text).unwrap()),
+                )
+            });
+        let examples: Vec<serde_json::Value> =
+            serde_json::from_str(include_str!("../../crates/sdk/tests/requests.json")).unwrap();
+        let tools = examples.into_iter().enumerate().map(|(id, example)| {
+            let tool = example["record"].as_str().unwrap().to_owned();
+            let call = serde_json::json!({ "method": "tools/call", "params": {
+                "name": tool, "arguments": { "request": example["request"] } } });
+            // An engine's own operations are an adapter's, so the
+            // built-in ephemeris refuses them.
+            let answered = !tool.starts_with("engine.");
+            (format!("tool-{tool}"), answered, message(100 + id, call))
+        });
+        protocol.chain(tools).collect()
+    }
+
+    /// Every seed is held to the finding rule and answered as the table
+    /// says: a protocol message with a result or an error, a tool call
+    /// with a result that is not a refusal.
+    #[test]
+    fn every_mcp_seed_is_answered_as_listed() {
+        let mut wrong = Vec::new();
+        for (name, answered, bytes) in mcp_seeds() {
+            let mut server = Server::new(Engine::Builtin).with_task_patience(None);
+            let Some(reply) = server.handle_bytes(&bytes) else {
+                wrong.push(format!("{name} had no reply"));
+                continue;
+            };
+            held(&reply);
+            let reply: serde_json::Value = serde_json::from_str(&reply).unwrap();
+            let result = reply.get("result").is_some() && reply["result"]["isError"] != true;
+            if result != answered {
+                wrong.push(format!("{name}: {reply}"));
+            }
+        }
+        assert!(wrong.is_empty(), "{wrong:#?}");
+    }
+
+    /// The committed mcp corpus is the seed table written out.
+    #[test]
+    fn the_mcp_corpus_is_the_seed_table() {
+        let wanted = mcp_seeds()
+            .into_iter()
+            .map(|(name, _, bytes)| (name, bytes))
+            .collect();
+        corpus_is("mcp", &wanted);
     }
 
     /// Every slot answers a seed without a finding.

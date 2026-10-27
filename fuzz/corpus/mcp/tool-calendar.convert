@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"calendar.convert","arguments":{"request":{"date":{"year":2026,"month":10,"day":10},"into":"calendar.BIKRAM_SAMBAT"}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":106}
