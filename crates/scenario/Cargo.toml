@@ -26,6 +26,10 @@ teistro-render-svg = { path = "../render-svg" }
 teistro-panchanga = { path = "../panchanga" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-siddhanta = { path = "../siddhanta" }
+# The façade, for the searches only it composes (transit hits, Sade Sati),
+# asked through its own record as a consumer asks them.
+teistro = { path = "../sdk" }
+serde_json = "1"
 
 [lints]
 workspace = true
