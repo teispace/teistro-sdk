@@ -12,6 +12,20 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Dart's request records are generated.**
+**Numbers:** none.
+- `bindings/dart/lib/src/requests.dart`, a part of `teistro.dart`, is
+  rendered by `cargo xtask gen ffi`: every request record as a class with
+  a `const` constructor taking the schema's defaults, every key set as an
+  enum, every union as a sealed class. 137 hand-written twins are gone;
+  49 stay the layer's own, each listed with its reason.
+- A non-finite number anywhere in a request is refused with an
+  `ArgumentError` naming its path (`remedies.at`), where only one section
+  checked before and the rest failed inside `jsonEncode`.
+- `SubDegree` gains `none`, which the SDK has always read.
+- Typing: records the layer builds now take the schema's names for their
+  generated parts and named arguments throughout.
+
 **Python's request types are generated, and every request crosses
 through one writer.**
 **Numbers:** none.

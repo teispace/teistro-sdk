@@ -1,6 +1,6 @@
 # Generated request types for Node, Python and Dart
 
-Status: Node and Python built 2026-10-27; Dart to follow. Java already generates every request record
+Status: Node, Python and Dart built 2026-10-27. Java already generates every request record
 (`java-binding.md` §4.1, `crates/idl/src/emit/java/requests.rs`). Node,
 Python and Dart still type their requests by hand: of the request records
 the façade's schemas describe, `index.d.ts` hand-types about 100,
@@ -23,7 +23,7 @@ of each request, so a request is typed as serde reads it) and checked by
 |---|---|---|
 | Node | `bindings/node/lib/requests.d.ts` | an object is an `interface` of `readonly` fields, optional where serde defaults it and `\| null` where it is an `Option`; a closed key set a literal union, or the boundary enum's type where `REUSED_ENUMS` says it is that enum (its bare keys, `Bare<catalogue.Sex>`, where the enum is a catalogue kind); a tagged union a union of interfaces with the tag's literal; external tagging the bare keys' literals or a one-key object per data variant; a catalogue member `Member<catalogue.Graha>`, its full or bare key; a registered key that or any string; a Rust array of at most seven scalars a tuple of its length, a longer one or one of records an array whose doc gives the length |
 | Python | `bindings/python/teistro/_requests.py` | an object a `TypedDict(total=False)` with `Required[...]` for a required field and `Optional[...]` where it takes null, in the call form where a key is a keyword (`from`); a key set a `Literal[...]`, or `Union[TheEnum, Literal[...]]` for a boundary enum (the keys alone for a catalogue kind's); a tagged union a `Union` of `TypedDict`s; external tagging the bare keys' `Literal` and a private one-key `TypedDict` per variant with data; a catalogue member `Union[TheEnum, str]`; a record the layer also answers with (`PY_TAKEN_BACK`: `NatalPoint`, `AlmutenRules`, …) that record or the layer's answer class |
-| Dart | `bindings/dart/lib/src/requests.dart` | an object a `final class` with a `const` constructor, defaults where the schema states them, and the `_record` it writes; a key set an `enum` with its `key`; a tagged union a `sealed class` of records; a catalogue member the catalogue's enum |
+| Dart | `bindings/dart/lib/src/requests.dart`, a `part` of `teistro.dart` | an object a `final class` with a `const` constructor: `required` where serde requires the field, the schema's default where Dart can write it as a constant (an enum member, a number, a list, a record built of those), and nullable and left off the wire otherwise, so serde gives its own; a key set an `enum` with its `key`, implementing the layer's `_Keyed` so its decoders read it; a tagged, external or or-named union a `sealed class` of one `final class` per variant; a catalogue member the catalogue's enum, written as its key, and a registered key `KeyOf<T>`, written in full. Every record writes its JSON as `_wire` and compares field by field (`_Value`) |
 
 Docs come from the schema's descriptions, which are the Rust doc comments
 (`a-doc-comment-has-generated-readers`), so a request documents itself
@@ -136,4 +136,36 @@ replaced. It found the Python layer's own shape:
   generated.
 - `ProgressionContacts` was a copy of the generated `ContactsAsked` under
   its own name; it is now that type by the name the layer gave it.
+
+## What generating Dart found
+
+Dart's layer is a runtime encoder, so its records are classes a caller
+builds and the layer writes, and the generated ones are a `part` of
+`teistro.dart` to share its value equality. Of the 186 request names it
+declared by hand, 137 are generated now: the 102 key sets and 35 records
+whose every field had the schema's own type. The analyser held each swap,
+and `check-dart` ran the layer's tests over the result.
+
+- **The hand records spoke three encodings.** A section wrote itself as a
+  JSON string (`_json`), a nested part as a map (`_record` or a map-typed
+  `_json`), and some as both. Every request record, generated or kept,
+  now has one JSON value, `_wire`; a section crosses as `_encoded(section,
+  name)`.
+- **Only one record refused a number JSON cannot hold.** `RemedyRequest`
+  threw `ArgumentError` naming `remedies.at` for NaN; every other double
+  went to `jsonEncode`, which fails without naming the field. `_encoded`
+  now walks every section and refuses a non-finite number by its path, so
+  all of them do.
+- **`SubDegree` gains `none`**, which Node's generation found missing too.
+
+Forty-nine records stay the layer's own, each listed with its reason in
+`DART_FACADES` (`crates/idl/src/emit/requests/dart.rs`), which the
+generator leaves out and `check-lints` holds to the layer: named presets
+(`AlmutenRules.lilly`, `NumerologyRules.baseline`), positional records the
+layer also decodes as answers (`HarmonicRequest(5)`, `BirthDate`,
+`Interval`), unions the layer builds through its own constructors
+(`NatalPoint`, `OrbModel`), and records whose parts the layer names more
+clearly than the Rust types do (`PakshiClock` where the schema has
+`Clock`). A copy cannot come back: a hand class named like a generated one
+is a duplicate declaration the analyser refuses.
 

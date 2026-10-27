@@ -295,6 +295,11 @@ pub struct RecordField {
     /// defaults does not.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub null: bool,
+    /// The value serde gives it when it is left out, as the schema states
+    /// it, where that is not null: what a binding with constant defaults
+    /// (Dart) writes in the constructor.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub default: Option<Value>,
 }
 
 /// The type of a record's field.
@@ -784,6 +789,10 @@ impl Reader<'_> {
                     ty,
                     nullable: nullable || !required.contains(name.as_str()),
                     null: nullable,
+                    default: schema
+                        .get("default")
+                        .filter(|value| !value.is_null())
+                        .cloned(),
                 })
             })
             .collect()

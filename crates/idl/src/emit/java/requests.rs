@@ -832,6 +832,7 @@ impl<'a> Types<'a> {
             ty: payload.clone(),
             nullable: false,
             null: false,
+            default: None,
         };
         let mut out = preamble(self.api, REQUEST_PACKAGE);
         out.push_str(
@@ -882,6 +883,7 @@ impl<'a> Types<'a> {
             ty: of.clone(),
             nullable: false,
             null: false,
+            default: None,
         };
         out.push_str(
             &javadoc(
