@@ -15,10 +15,10 @@
 //! milliseconds of work in release; the four over a range on the
 //! built-in ephemeris below are about a second and a half more (the
 //! transit hits and Sade Sati, through the façade, about half a second of
-//! it), which is still a nightly digest's rounding error and a minute or
-//! two under callgrind, so
-//! both gates can afford all of it and neither has to measure a subset of
-//! what the other checked.
+//! it), and a chart's judgements through the façade fifty milliseconds,
+//! which is still a nightly digest's rounding error and a minute or two
+//! under callgrind, so both gates can afford all of it and neither has to
+//! measure a subset of what the other checked.
 //!
 //! The **panchanga** section is the newest and was added for a gap
 //! rather than for coverage's sake. The digest had sections for the
@@ -179,7 +179,7 @@ pub fn write_values(sections: &[Section], out: &mut impl std::io::Write) -> std:
 /// // Every name listed is a section.
 /// assert!(SECTIONS.iter().all(|name| section(name).is_some()));
 /// ```
-pub const SECTIONS: [&str; 13] = [
+pub const SECTIONS: [&str; 14] = [
     "calendar",
     "astro",
     "houses",
@@ -193,6 +193,7 @@ pub const SECTIONS: [&str; 13] = [
     "muhurta",
     "panchanga-year",
     "hits",
+    "judgement",
 ];
 
 /// One section by name, or `None` when nothing is called that.
@@ -219,8 +220,7 @@ pub fn section(name: &str) -> Option<Section> {
         "festivals" => Some(festivals()),
         "muhurta" => Some(muhurta()),
         "panchanga-year" => Some(panchanga_year()),
-        "hits" => Some(hits()),
-        _ => None,
+        _ => ASKED.iter().find(|a| a.name == name).map(asked),
     }
 }
 
@@ -934,14 +934,71 @@ fn panchanga_year() -> Section {
     section
 }
 
-/// **hits**: a chart at Kathmandu asked, through the façade's own record,
-/// for a year of transit hits (the Sun, Mercury and Saturn ingressing and
-/// aspecting its points) and ten years of Sade Sati, on the built-in
-/// ephemeris: the two searches over time a chart request can ask for,
-/// which the fuzzer's timeouts found the most expensive. Every number the
-/// answer carries is pushed, in the order serde writes them.
-fn hits() -> Section {
-    let mut section = Section::new("hits");
+/// A section asked of the façade's own `chart.found` record, as a
+/// consumer asks it, on the built-in ephemeris: every number the answer
+/// carries in `parts` is pushed, in the order serde writes them.
+#[derive(Clone, Copy, Debug)]
+pub struct Asked {
+    /// The section's name.
+    pub name: &'static str,
+    /// The request, as JSON.
+    pub request: &'static str,
+    /// The answer's parts read, in order.
+    pub parts: &'static [&'static str],
+}
+
+/// The chart at Kathmandu both façade sections ask about.
+macro_rules! natal {
+    ($($rest:tt)*) => {
+        concat!(
+            r#"{"instant": 2451545.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+            "altitudeM": 1400, "utcOffsetSeconds": 20700, "#,
+            $($rest)*,
+            "}"
+        )
+    };
+}
+
+/// The façade's sections.
+///
+/// **hits** is a year of transit hits (the Sun, Mercury and Saturn
+/// ingressing and aspecting the chart's points) and ten years of Sade Sati:
+/// the two searches over time a chart request can ask for, which the
+/// fuzzer's timeouts found the most expensive.
+///
+/// **judgement** is what a chart is read for: the Shadbala and Bhava Bala,
+/// the Ashtakavarga and the Vimshopaka (all in `charts`), a year of
+/// transits read by gochar, an Ashta Koota match and three Tajika annual
+/// charts. None of them is over a range a scan walks, so their cost is the
+/// rules', which nothing else here counts.
+pub const ASKED: [Asked; 2] = [
+    Asked {
+        name: "hits",
+        request: natal!(
+            r#""hits": {"from": 2460676.5, "to": 2461041.5, "grahas": ["SUN", "MERCURY", "SATURN"],
+                "aspects": [0, 90, 180], "orbDeg": 2},
+            "sadeSati": {"from": 2460676.5, "to": 2464329.0, "reckoning": "DEGREE", "spells": [4, 7, 8]}"#
+        ),
+        parts: &["hits", "sade_sati"],
+    },
+    Asked {
+        name: "judgement",
+        request: natal!(
+            r#""shadbala": true, "bhavaBala": true, "ashtakavarga": true, "vimshopaka": true,
+            "gochar": {"instants": [2460676.5, 2460767.5, 2460859.5, 2460951.5]},
+            "matching": {"partner": {"instant": 2451910.75,
+                "place": {"latitude": 28.2096, "longitude": 83.9856, "altitude": 820},
+                "utcOffsetSeconds": 20700}, "partnerRole": "BRIDE"},
+            "varsha": {"through": 3}"#
+        ),
+        parts: &["charts", "gochar", "matchings", "varsha"],
+    },
+];
+
+/// One of [`ASKED`], answered. A refusal leaves the section empty, which
+/// `tests/asked.rs` holds against: every part each reads is answered.
+fn asked(asked: &Asked) -> Section {
+    let mut section = Section::new(asked.name);
     let Some(record) = teistro::records::record("chart.found") else {
         return section;
     };
@@ -951,14 +1008,9 @@ fn hits() -> Section {
     else {
         return section;
     };
-    let request = r#"{"instant": 2451545.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
-        "altitudeM": 1400, "utcOffsetSeconds": 20700,
-        "hits": {"from": 2460676.5, "to": 2461041.5, "grahas": ["SUN", "MERCURY", "SATURN"],
-            "aspects": [0, 90, 180], "orbDeg": 2},
-        "sadeSati": {"from": 2460676.5, "to": 2464329.0, "reckoning": "DEGREE", "spells": [4, 7, 8]}}"#;
-    if let Ok(answered) = record.answer(&sdk, request) {
-        for part in ["hits", "sadeSati"] {
-            push_numbers(&mut section, answered.value.get(part));
+    if let Ok(answered) = record.answer(&sdk, asked.request) {
+        for part in asked.parts {
+            push_numbers(&mut section, answered.value.get(*part));
         }
     }
     section

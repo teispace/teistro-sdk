@@ -23,6 +23,12 @@ the previous release, not by nobody having looked.
 - `check-ffi-cost` holds every binding's call and grid over the library's
   own provider within 1.5× Rust's, the performance page's round trip
   within 1.5x of the C path. Python's call is the widest, 1.45×.
+- The instruction-count gate and the cross-architecture hash count a
+  chart's judgements through the façade (the strengths, gochar, an Ashta
+  Koota match and three Tajika annual charts), which no section counted.
+  The transit-hits section read Sade Sati by its request's name, which the
+  answer does not use, and so counted none of it; a test now holds every
+  part a façade section reads to be answered.
 
 **Dart: a generated request gives its JSON as `toJson()`.**
 **Numbers:** none.
