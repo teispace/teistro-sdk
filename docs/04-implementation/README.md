@@ -43,8 +43,8 @@ teistro-sdk/
     c/                         the generated header include/teistro.h and the smoke test (`check-c`)
     node/                      the napi addon (native/), the generated and hand-written layer (lib/), tests, a
                                strict consumer (typecheck/), examples and parity.mjs (`check-node`)
-    wasm/                      the wasm-bindgen module (native/), its loaders, the browser, bundler and workerd
-                               checks (`check-wasm`)
+    wasm/                      the wasm-bindgen module (native/), its loaders, the browser, bundler, workerd,
+                               Deno and Bun (runtimes/) and Next.js edge checks (`check-wasm`)
     dart/                      dart:ffi declarations and layer (lib/), tests, wrong usages (typecheck/),
                                examples and bin/parity.dart (`check-dart`)
     python/                    the ctypes package (teistro/), tests, wrong usages (typecheck/), examples and

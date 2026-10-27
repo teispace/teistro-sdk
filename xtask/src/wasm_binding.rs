@@ -37,7 +37,18 @@
 //!    that imports it by name, bundled by the pinned Wrangler as a
 //!    deploy bundles it (which resolves `#native` through the `workerd`
 //!    condition) and run by `workerd test`. Its answer too must equal
-//!    Node's to the bit.
+//!    Node's to the bit, as must each of the next three hosts':
+//!    - **Deno**, pinned in `bindings/wasm/runtimes`, running a program
+//!      that imports the installed package by name, with no permission
+//!      granted, through the `deno` condition;
+//!    - **Bun**, pinned beside it, through the `bun` condition, three
+//!      ways: as the program stands, bundled by `bun build`, and compiled
+//!      into one executable by `bun build --compile`;
+//!    - **Next.js's edge runtime**, pinned in `bindings/wasm/next`: an
+//!      app with one edge route importing the installed package, built
+//!      by Turbopack and by webpack (each resolving the `edge-light`
+//!      condition) and served by `next start` with a module compiled from
+//!      bytes refused, as the deployed Edge runtime refuses one.
 //! 6. **Shaken by the bundlers**, from the installed package: esbuild,
 //!    Vite and webpack, pinned in `bindings/wasm/bundlers`, each bundle
 //!    one member of `/catalogue` and must ship no module and at most
@@ -60,8 +71,8 @@
 //!
 //! Run by hand (`cargo xtask check-wasm`) and in the nightly matrix. The
 //! browser step needs Chrome (`CHROME`, or where it installs) and prints
-//! `skip` without it; the Workers step installs its own tools and skips
-//! only without npm.
+//! `skip` without it; the Workers, Deno, Bun and Next.js steps install
+//! their own tools and skip only without npm.
 
 use std::fs;
 use std::io;
@@ -87,6 +98,9 @@ pub(crate) const STAGED: &str = "target/wasm/package";
 const CONSUMER: &str = "target/wasm/consumer";
 /// The Workers check: its Worker, its runner, and the pinned tools.
 const WORKERD: &str = "bindings/wasm/workerd";
+/// The Deno and Bun checks: their program, their runner, and the pinned
+/// runtimes.
+const RUNTIMES: &str = "bindings/wasm/runtimes";
 /// The tree-shaking check: its runner and the pinned bundlers.
 const BUNDLERS: &str = "bindings/wasm/bundlers";
 /// The most a bundle importing one member of `/catalogue` may weigh. The
@@ -108,11 +122,15 @@ const WASM: &str = "bindings/wasm";
 const TOOLS: &str = "target/tools";
 /// The package's loaders by the import condition that picks each, **in
 /// the order a resolver tries them**: the first condition a host sets
-/// wins, so the Workers one comes before `node` (a Worker bundled with
-/// Node compatibility sets both) and `default` is last, since it matches
-/// everything.
-const LOADERS: [(&str, &str); 3] = [
+/// wins, so each host's own comes before `node` (a Worker bundled with
+/// Node compatibility sets both, and Bun and Deno set `node` beside their
+/// own) and `default` is last, since it matches everything. `edge-light`
+/// is Vercel's Edge runtime and Next.js's edge routes.
+const LOADERS: [(&str, &str); 6] = [
     ("workerd", "native.workerd.js"),
+    ("edge-light", "native.edge-light.js"),
+    ("bun", "native.bun.js"),
+    ("deno", "native.deno.js"),
     ("node", "native.node.js"),
     ("default", "native.web.js"),
 ];
@@ -551,6 +569,72 @@ fn workerd(root: &Path, node: &Value) -> Result<(), ()> {
     )
 }
 
+/// The probe in Deno and in Bun, from the **installed** package, each run
+/// by the pinned runtime as a consumer's program runs it.
+///
+/// The runtimes are pinned in `bindings/wasm/runtimes/package.json` and
+/// installed from its lock file; each step skips only where the install
+/// cannot happen, and says so.
+fn runtimes(root: &Path, node: &Value) -> Result<(), ()> {
+    let dir = root.join(RUNTIMES);
+    let hosts = [
+        (
+            "deno",
+            "Deno",
+            "the installed package runs in Deno with no permission granted through its `deno` loader",
+        ),
+        (
+            "bun",
+            "Bun",
+            "the installed package runs in Bun as it stands, bundled and compiled, through its `bun` loader",
+        ),
+    ];
+    let mut failed = false;
+    for (runtime, host, proof) in hosts {
+        if pinned_npm_tool(&dir, runtime).is_none() {
+            crate::skip::skip(format!(
+                "the {host} check: the pinned {host} is not installed and could not be (needs `npm`)"
+            ));
+            continue;
+        }
+        failed |= held_to_node(
+            host,
+            proof,
+            probe_by(
+                root,
+                "runtimes/run.mjs",
+                &[
+                    root.join(CONSUMER).as_os_str(),
+                    std::ffi::OsStr::new(runtime),
+                ],
+            ),
+            node,
+        )
+        .is_err();
+    }
+    if failed { Err(()) } else { Ok(()) }
+}
+
+/// The probe in Next.js's edge runtime, from the **installed** package:
+/// an app with one edge route, built by both of Next.js's bundlers as a
+/// consumer's build builds it and served by `next start`.
+///
+/// Next.js is pinned in `bindings/wasm/next/package.json` and its lock
+/// file, and installed by the runner into the app it writes, so this
+/// skips only without npm.
+fn edge_light(root: &Path, node: &Value) -> Result<(), ()> {
+    if tool("npm", "--version").is_none() {
+        crate::skip::skip("the Next.js edge check: no `npm` on this machine to install Next.js");
+        return Ok(());
+    }
+    held_to_node(
+        "Next.js's edge runtime",
+        "the installed package builds with Turbopack and webpack and runs in Next.js's edge runtime through its `edge-light` loader",
+        probe_by(root, "next/run.mjs", &[root.join(CONSUMER).as_os_str()]),
+        node,
+    )
+}
+
 /// The installed package bundled by each pinned bundler: one member of
 /// `/catalogue` ships no module and stays under [`SHAKEN_MOST`]; the
 /// entry ships the full module, and each profile's subpath its own module
@@ -796,6 +880,8 @@ pub(crate) fn check(root: &Path) -> i32 {
             browser(root, &staged, &node)
                 .and_then(|()| consumer(root, &staged))
                 .and_then(|()| workerd(root, &node))
+                .and_then(|()| runtimes(root, &node))
+                .and_then(|()| edge_light(root, &node))
                 .and_then(|()| shaken(root, &staged, &mut bundles))
         });
     // The suite was copied in to run from inside the package; it is not
@@ -1008,7 +1094,7 @@ mod tests {
             .collect();
         assert_eq!(
             order,
-            ["workerd", "node", "default"],
+            ["workerd", "edge-light", "bun", "deno", "node", "default"],
             "the order a resolver tries them"
         );
         assert_eq!(wasm["imports"]["#native"]["default"], "./lib/native.web.js");

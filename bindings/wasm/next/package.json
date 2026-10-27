@@ -1,0 +1,11 @@
+{
+  "name": "teistro-wasm-next-check",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Next.js app the wasm package's edge check builds: one edge route that imports the installed package, built by both of Next.js's bundlers as a consumer's build does and served by Next.js's own edge runtime. Pinned here so every machine and every runner checks with the same Next.js and React.",
+  "devDependencies": {
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}
