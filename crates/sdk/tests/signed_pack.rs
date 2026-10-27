@@ -47,6 +47,25 @@ fn a_valid_signature_answers_the_set_it_covers() {
     assert_eq!((set.id.as_str(), set.version), ("np-2083", 3));
 }
 
+/// The almanac's own door reads the same set, and refuses as it refuses.
+#[test]
+fn the_almanac_reads_a_signed_pack_as_the_set_does() {
+    let sdk = teistro::Context::builder().build().unwrap();
+    let key = publisher(7);
+    let signature = signed(SET.as_bytes(), &key);
+    let public = key.verifying_key().to_bytes();
+    let read = sdk
+        .almanac()
+        .published_from_signed(SET.as_bytes(), &signature, &public, 3)
+        .unwrap();
+    assert_eq!(read, PublishedSet::from_json(SET).unwrap());
+    let replayed = sdk
+        .almanac()
+        .published_from_signed(SET.as_bytes(), &signature, &public, 4)
+        .unwrap_err();
+    assert_eq!(replayed.field(), Some("version"));
+}
+
 #[test]
 fn a_tampered_byte_or_another_key_is_refused_on_the_signature() {
     let key = publisher(7);

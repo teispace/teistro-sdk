@@ -27,6 +27,8 @@ use teistro_muhurta::Answer;
 use teistro_muhurta::season::{SeenEclipse, SeenKind, VEDHA_DAYS_AROUND, vedha_over_days};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::ashauch::{Ashauch, AshauchRequest, AshauchTable};
+#[cfg(feature = "signed-packs")]
+use teistro_panchanga::festival::PublishedSet;
 use teistro_panchanga::festival::{
     DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, InSamsarpa, Observances, Origin,
     anniversaries, apply_published, dated, ekadashis, following, observances,
@@ -877,6 +879,39 @@ impl<'a> AlmanacArea<'a> {
             almanac.first_year(request, place)
         })?;
         Ok(Envelope::sealing(found.value, found.provenance))
+    }
+
+    /// A publisher's set read from a signed pack, as
+    /// [`PublishedSet::from_signed`] reads it: under the almanac, where
+    /// every binding finds it, beside the festivals the set corrects
+    /// (`03-design/published-overrides.md` §5). The caller fixes the
+    /// publisher's key at its own build; the SDK embeds none.
+    ///
+    /// ```
+    /// use teistro::Context;
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// // A key whose y-coordinate, 2, has no curve point is refused before
+    /// // any signature is checked.
+    /// let mut key = [0_u8; 32];
+    /// key[0] = 2;
+    /// let refused = sdk.almanac().published_from_signed(b"{}", &[0; 64], &key, 0).unwrap_err();
+    /// assert_eq!(refused.field(), Some("key"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`PublishedSet::from_signed`].
+    #[cfg(feature = "signed-packs")]
+    pub fn published_from_signed(
+        self,
+        pack: &[u8],
+        signature: &[u8],
+        key: &[u8],
+        at_least: u32,
+    ) -> Result<PublishedSet, Error> {
+        PublishedSet::from_signed(pack, signature, key, at_least)
     }
 
     /// One day: the run of one, unwrapped.

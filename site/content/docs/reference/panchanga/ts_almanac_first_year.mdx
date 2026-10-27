@@ -9,7 +9,42 @@ A death's first year at a place (`03-design/shraddha.md` §3.3), answered with `
 
 `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "request"}`: `request` `{key, at, night, firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death as a UTC Julian day and every reading the *Dharmasindhu*'s when left out. A key it does not read or an empty `key` is `INVALID_ARG` named under `firstYear`; a context without an ephemeris is `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
 
-<Tabs items={['C']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.firstYear
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.first_year
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.firstYear
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().firstYear
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().first_year
+```
+
+</Tab>
 <Tab value="C">
 
 ```c

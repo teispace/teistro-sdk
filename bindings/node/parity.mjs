@@ -1963,6 +1963,108 @@ for (const [name, rules, published] of [
   put('nepal-sambat', listed(nepalSambat.value.map((d) => `${d.year}:${d.month}:${d.kind}:${d.paksha}`)));
 }
 
+// ── The rites and the Tibetan year ─────────────────────────────────────
+// The requests every runner sends: a sankalpa, a period of impurity and
+// the first year after a death at Kathmandu, and the reasons a published
+// day differs at Pokhara with Kathmandu beside it. Each answer's content
+// hash proves the same request reached the same answer, and a line of its
+// fields proves this binding read it.
+{
+  const ymd = (date) => `${date.year}-${date.month}-${date.day}`;
+  const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1337 };
+  const sankalpa = geo.almanac.sankalpa({
+    at: 2461055.59375,
+    place: { ...kathmandu, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    ayana: 'TROPICAL',
+  });
+  put('rites-sankalpa-hash', sankalpa.provenance.contentHash);
+  {
+    const { date: day, vara, paksha, tithi, nakshatra } = sankalpa.value;
+    put('rites-sankalpa', `${ymd(day)} ${vara} ${paksha} ${tithi} ${nakshatra}`);
+  }
+  const ashauch = geo.almanac.ashauch({
+    place: kathmandu,
+    utcOffsetSeconds: 20700,
+    request: { key: 'grandfather', relation: 'SAPINDA', event: { event: 'DEATH', at: 2461051.677083 } },
+  });
+  put('rites-ashauch-hash', ashauch.provenance.contentHash);
+  {
+    const { start, end, days } = ashauch.value;
+    put('rites-ashauch', `${number(start)} ${number(end)} ${days ?? 'none'}`);
+  }
+  const year = geo.almanac.firstYear({
+    place: kathmandu,
+    utcOffsetSeconds: 20700,
+    request: { key: 'grandfather', at: 2461051.677083, firstAbdika: 'ELEVENTH_DAY', firstYearAdhika: 'NIJA' },
+  });
+  put('rites-first-year-hash', year.provenance.contentHash);
+  {
+    const { dayOne, eleventhDay, sapindana, rites } = year.value;
+    put('rites-first-year', `${ymd(dayOne)} ${ymd(eleventhDay)} ${ymd(sapindana)} ${rites.length}`);
+  }
+  // No second sky: this context stands as the other, which tries none.
+  // The days carry no calendar, as every runner writes them.
+  const reasons = geo.almanac.publishedReasons({
+    from: { year: 2026, month: 10, day: 10 },
+    to: { year: 2026, month: 10, day: 12 },
+    place: { latitude: 28.2096, longitude: 83.9856, altitude: 827 },
+    utcOffsetSeconds: 20700,
+    festivals: {
+      rules: 'NEPAL',
+      published: [
+        {
+          format: 'teistro.published/1',
+          publisher: 'a patro printed in Nepal',
+          id: 'np-2083',
+          version: 3,
+          entries: [
+            {
+              action: 'SET',
+              rule: 'NAVARATRA_ARAMBHA',
+              day: { calendar: 'GREGORIAN', year: 2026, month: 10, day: 11 },
+              source: 'p. 41',
+            },
+          ],
+        },
+      ],
+    },
+    places: [{ name: 'Kathmandu', place: { ...kathmandu, altitude: 1400 }, utcOffsetSeconds: 20700 }],
+  });
+  put('rites-published-reasons-hash', reasons.provenance.contentHash);
+  put('rites-published-reasons', reasons.reasons.length);
+  // The signed pack the bindings' own tests pin
+  // (`crates/sdk/tests/signed_pack.rs`): its bytes, signature and key.
+  const hex = (text) => Uint8Array.from(text.match(/../gu).map((pair) => Number.parseInt(pair, 16)));
+  const set = geo.almanac.publishedFromSigned(
+    new TextEncoder().encode(
+      '{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,' +
+        '"entries":[{"action":"SET","rule":"GHATASTHAPANA","day":{"calendar":"GREGORIAN","year":2026,' +
+        '"month":10,"day":11},"source":"p. 41"}]}',
+    ),
+    hex(
+      'cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e213' +
+        '32fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e',
+    ),
+    hex('ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c'),
+    3,
+  );
+  put('rites-published-signed', `${set.id} ${set.version} ${set.entries.length} ${set.publisher}`);
+  const tibetan = geo.calendar.tibetanYear(2026);
+  put(
+    'calendar-tibetan-year',
+    [
+      tibetan.year,
+      tibetan.rabjung,
+      tibetan.yearInRabjung,
+      tibetan.samvatsara,
+      tibetan.element,
+      tibetan.gender,
+      tibetan.animal,
+    ].join(' '),
+  );
+}
+
 // The rashifal batch every runner sends: a week read at sunrise with the
 // baseline's weekly scores, and a day read at 06:00 reporting only Mars's
 // and Saturn's events.
@@ -2215,6 +2317,7 @@ for (const [path, member] of [
   ['calendar.weekday_of', shape.calendar.weekdayOf],
   ['calendar.month_length', shape.calendar.monthLength],
   ['calendar.is_leap', shape.calendar.isLeap],
+  ['calendar.tibetan_year', shape.calendar.tibetanYear],
   ['time.resolve', shape.time.resolve],
   ['time.civil_of', shape.time.civilOf],
   ['time.convert', shape.time.convert],
@@ -2244,6 +2347,11 @@ for (const [path, member] of [
   ['almanac.festival_calendar', shape.almanac.festivalCalendar],
   ['almanac.day', shape.almanac.day],
   ['almanac.pakshi', shape.almanac.pakshi],
+  ['almanac.sankalpa', shape.almanac.sankalpa],
+  ['almanac.ashauch', shape.almanac.ashauch],
+  ['almanac.first_year', shape.almanac.firstYear],
+  ['almanac.published_reasons', shape.almanac.publishedReasons],
+  ['almanac.published_from_signed', shape.almanac.publishedFromSigned],
   ['research.counts', shape.research.counts],
   ['research.compare', shape.research.compare],
   ['research.expected', shape.research.expected],

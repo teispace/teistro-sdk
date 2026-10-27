@@ -9,7 +9,42 @@ The time a sankalpa recites at an instant and a place (`03-design/sankalpa.md`),
 
 `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0 and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when left out, or `TROPICAL` (at the solstices). A key it does not read or an instant, place or offset out of range is `INVALID_ARG`, named under `sankalpa`; a context without an ephemeris is `CAPABILITY`, and an instant in no day's window (a polar day the policy leaves undefined) `OUT_OF_RANGE`.
 
-<Tabs items={['C']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.sankalpa
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.sankalpa
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.sankalpa
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().sankalpa
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().sankalpa
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
