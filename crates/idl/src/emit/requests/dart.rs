@@ -380,7 +380,12 @@ impl Types<'_> {
                     format!("{ty}?")
                 }
             };
-            let nullable = declared_ty.ends_with('?') && !matches!(field.ty, RecordType::Json);
+            // A raw part's `Object?` cannot tell JSON's null from a part not
+            // given, so an optional one is left off the wire when null: serde
+            // then gives its default, where a null it may not take (a theme
+            // patch's `style`) would be refused. A required one is written.
+            let nullable = declared_ty.ends_with('?')
+                && (field.nullable || !matches!(field.ty, RecordType::Json));
             let _ = writeln!(
                 declared,
                 "\n{}  final {declared_ty} {field_name};",

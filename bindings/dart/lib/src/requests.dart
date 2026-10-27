@@ -769,7 +769,7 @@ final class ResearchRequest extends _Request {
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     if (births case final birthsValue?) 'births': [for (final e0 in birthsValue) e0._wire],
-    'control': control,
+    if (control case final controlValue?) 'control': controlValue,
     if (dasha case final dashaValue?) 'dasha': dashaValue,
     if (depth case final depthValue?) 'depth': depthValue,
     if (design case final designValue?) 'design': designValue._wire,
@@ -780,7 +780,7 @@ final class ResearchRequest extends _Request {
     if (strata case final strataValue?) 'strata': strataValue,
     'study': study.key,
     if (subjects case final subjectsValue?) 'subjects': [for (final e0 in subjectsValue) e0._wire],
-    'test': test,
+    if (test case final testValue?) 'test': testValue,
     if (uncertaintyStepMinutes case final uncertaintyStepMinutesValue?) 'uncertaintyStepMinutes': uncertaintyStepMinutesValue,
   };
 
@@ -1539,9 +1539,9 @@ final class ThemePatch extends _Request {
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
-    'content': content,
+    if (content case final contentValue?) 'content': contentValue,
     if (extendsValue case final extendsValueValue?) 'extends': extendsValueValue,
-    'style': style,
+    if (style case final styleValue?) 'style': styleValue,
   };
 
   @override
@@ -6434,7 +6434,7 @@ final class ConditionCountInHouses extends Condition {
     'type': 'count-in-houses',
     'atLeast': atLeast,
     if (except case final exceptValue?) 'except': exceptValue,
-    'from': from,
+    if (from case final fromValue?) 'from': fromValue,
     'houses': houses,
     'planets': planets,
   };

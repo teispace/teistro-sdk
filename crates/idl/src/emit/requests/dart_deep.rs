@@ -385,14 +385,13 @@ impl<'a> Builder<'a> {
                 }
                 _ if field.nullable => {
                     // The example leaves the field to serde, where Dart
-                    // writes a default the schema states, or a raw part
-                    // as null, which serde reads as its default.
-                    if matches!(field.ty, RecordType::Json)
-                        || field
-                            .default
-                            .as_ref()
-                            .and_then(|default| self.types.constant(&field.ty, default))
-                            .is_some()
+                    // writes a default the schema states. A raw part not
+                    // given is left off, as the example leaves it.
+                    if field
+                        .default
+                        .as_ref()
+                        .and_then(|default| self.types.constant(&field.ty, default))
+                        .is_some()
                     {
                         left.dropped.push(path.clone());
                     }
