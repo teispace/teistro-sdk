@@ -17,7 +17,11 @@ teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
 teistro-dasha = { path = "../dasha" }
+# The built-in ephemeris at its default tier, for the sections whose cost
+# is the built-in's own caching over a range (festivals, muhurta, a year).
+teistro-ephemeris-builtin = { path = "../ephemeris-builtin" }
 teistro-geometry = { path = "../geometry" }
+teistro-muhurta = { path = "../muhurta" }
 teistro-render-svg = { path = "../render-svg" }
 teistro-panchanga = { path = "../panchanga" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }

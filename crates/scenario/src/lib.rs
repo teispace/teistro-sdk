@@ -11,10 +11,11 @@
 //!
 //! Everything is deterministic and takes no input: the same fixed days,
 //! the same instants, the same latitudes and meridians, in the same
-//! order, and no knob to turn. The whole scenario is about forty
-//! milliseconds of work in release, which is a nightly digest's rounding
-//! error and a comfortable second under a machine simulator, so both
-//! gates can afford all of it and neither has to measure a subset of
+//! order, and no knob to turn. The first nine sections are about forty
+//! milliseconds of work in release; the three over a range on the
+//! built-in ephemeris below are about eight hundred more, which is still a
+//! nightly digest's rounding error and a minute or so under callgrind, so
+//! both gates can afford all of it and neither has to measure a subset of
 //! what the other checked.
 //!
 //! The **panchanga** section is the newest and was added for a gap
@@ -43,19 +44,34 @@
 //! a row added to a section reads as that section's code getting slower:
 //! adding the two to `dashas` read as 46% more instructions for a kernel
 //! whose cost per dasha had not moved. A new section is reported as new.
+//!
+//! The last three sections stand on the built-in ephemeris rather than
+//! the test provider, because what they watch is the cost of a range: the
+//! built-in fits the Moon and the Earth in segments and caches them, and
+//! a range is answered in rounds that each visit every day of it.
+//! **festivals** is the Nepal pack, the days counted after its festivals
+//! and the Ekadashis over eight weeks of autumn; **muhurta** a three-day
+//! marriage search with every window judged; **panchanga-year** a year of
+//! days in one call, where a cache sized for a month once made a year cost
+//! twice what it had. Each is the work the app-speed rows of the same
+//! names time by the clock, counted instead, so a pull request that makes
+//! one slower fails here before anyone runs the clock.
 
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
+use teistro_astro::Completion;
 use teistro_astro::ayanamsha::{self, Basis};
 use teistro_astro::delta_t::{DeltaTModel, delta_t};
 use teistro_astro::houses::{self, Input};
 use teistro_astro::iau;
 use teistro_astro::precession::PrecessionModel;
+use teistro_astro::visibility::{Criterion, Heliacal};
 use teistro_calendar::fixed::FixedDay;
 use teistro_calendar::shipped;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarDate, CalendarSystem, Gregorian};
 use teistro_chart::bhava::{Bhavas, Chalit};
+use teistro_chart::foundation::Founder;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Ayanamsha, Calendar, Dignity, Graha, HouseSystem, Rashi};
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
@@ -70,8 +86,15 @@ use teistro_dasha::{
     ASHTOTTARI_BPHS, Birth, Chain, Dasha, KalachakraDasha, KalachakraRules, RASHI_ROWS, ROWS,
     RashiChart, RashiDasha, Rules as DashaRules, Timeline, UduRow, Wheel,
 };
+use teistro_ephemeris_builtin::provider::Builtin;
 use teistro_geometry::{Body, Placements, Point, place, rows};
+use teistro_muhurta::sources::Over;
+use teistro_muhurta::{ActivityRules, ProviderSources, Ranking, Request as MuhurtaRequest};
 use teistro_panchanga::Almanac;
+use teistro_panchanga::festival::{
+    EkadashiRule, FestivalRule, FollowingRule, Observances, ekadashis, following, observances,
+};
+use teistro_port_ephemeris::Horizon;
 use teistro_port_ephemeris::TestProvider;
 use teistro_render_svg::{Labels, Style, render as render_svg};
 use teistro_siddhanta::SuryaSiddhanta;
@@ -154,7 +177,7 @@ pub fn write_values(sections: &[Section], out: &mut impl std::io::Write) -> std:
 /// // Every name listed is a section.
 /// assert!(SECTIONS.iter().all(|name| section(name).is_some()));
 /// ```
-pub const SECTIONS: [&str; 9] = [
+pub const SECTIONS: [&str; 12] = [
     "calendar",
     "astro",
     "houses",
@@ -164,6 +187,9 @@ pub const SECTIONS: [&str; 9] = [
     "render",
     "dashas",
     "dashas-28",
+    "festivals",
+    "muhurta",
+    "panchanga-year",
 ];
 
 /// One section by name, or `None` when nothing is called that.
@@ -187,6 +213,9 @@ pub fn section(name: &str) -> Option<Section> {
         "render" => Some(render()),
         "dashas" => Some(dashas()),
         "dashas-28" => Some(dashas_28()),
+        "festivals" => Some(festivals()),
+        "muhurta" => Some(muhurta()),
+        "panchanga-year" => Some(panchanga_year()),
         _ => None,
     }
 }
@@ -696,6 +725,206 @@ fn dashas_28() -> Section {
             if let Ok(dasha) = Dasha::new(row, &birth, DASHA_RULES) {
                 push_chains(&mut section, |at, depth| dasha.at(at, depth));
             }
+        }
+    }
+    section
+}
+
+/// The profile the built-in sections read: the shipped default.
+fn default_settings() -> Option<teistro_core::settings::Resolved> {
+    Profile::shipped(DEFAULT_PROFILE)
+        .and_then(|profile| profile.resolve(&SettingsPatch::default()).ok())
+}
+
+/// Kathmandu, where every built-in section stands.
+fn kathmandu() -> Place {
+    Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.3240),
+        Altitude::literal(1400.0),
+    )
+}
+
+/// A Gregorian day.
+fn gregorian(year: i32, month: u8, day: u8) -> CalendarDate {
+    CalendarDate::defined(Calendar::Gregorian, year, month, day)
+}
+
+/// Every observance's day and the tithi that decided it.
+fn push_observances(section: &mut Section, found: &Observances) {
+    for observance in &found.observances {
+        section.push_int(Gregorian.fixed_of(&observance.day).map_or(0, FixedDay::get));
+        section.push(observance.tithi.from.get());
+        section.push(observance.tithi.to.get());
+    }
+}
+
+/// **festivals**: the Nepal pack's festivals, the days counted after them
+/// and the Ekadashis over Dashain and Tihar 2024 at Kathmandu, on the
+/// built-in ephemeris: the rule evaluation a festival calendar costs, over
+/// the days it reads.
+fn festivals() -> Section {
+    let mut section = Section::new("festivals");
+    let Some(resolved) = default_settings() else {
+        return section;
+    };
+    let provider = Builtin::new();
+    let delta_t = DeltaTModel::TableThenModel;
+    let model = DrikSun::new(
+        &provider,
+        Ayanamsha::Lahiri,
+        Sunrise::CentreNoRefraction.into(),
+        OverridePolicy::SdkOnly,
+        delta_t,
+    );
+    let clock = UtcOffset::literal(5, 45, 0);
+    let almanac = Almanac::new(
+        &provider,
+        &resolved,
+        &model,
+        &Gregorian,
+        &clock,
+        PrecessionModel::Iau2006,
+        delta_t,
+    );
+    let Ok(days) = almanac.festival_days(
+        &gregorian(2024, 9, 25),
+        &gregorian(2024, 11, 20),
+        &kathmandu(),
+    ) else {
+        return section;
+    };
+    let days = days.value;
+    let Ok(karmakala) = observances(&FestivalRule::nepal(), &days) else {
+        return section;
+    };
+    push_observances(&mut section, &karmakala);
+    if let Ok(counted) = following(&FollowingRule::nepal(), &karmakala.observances, &days) {
+        push_observances(&mut section, &counted);
+    }
+    if let Ok(fasts) = ekadashis(&EkadashiRule::dharmasindhu(), &days) {
+        push_observances(&mut section, &fasts);
+    }
+    section
+}
+
+/// **muhurta**: three days' marriage search by Raman's rules at Kathmandu on
+/// the built-in ephemeris, every window judged: the search a muhurta
+/// request costs.
+fn muhurta() -> Section {
+    let mut section = Section::new("muhurta");
+    let Some(resolved) = default_settings() else {
+        return section;
+    };
+    let provider = Builtin::new();
+    let place = kathmandu();
+    let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    let model = DrikSun::new(
+        &provider,
+        Ayanamsha::Lahiri,
+        Sunrise::CentreNoRefraction.into(),
+        OverridePolicy::PreferNative,
+        delta_t,
+    );
+    let clock = UtcOffset::literal(5, 45, 0);
+    let almanac = Almanac::new(
+        &provider, &resolved, &model, &Gregorian, &clock, precession, delta_t,
+    );
+    let founder = Founder::new(
+        &provider, &resolved, &model, &Gregorian, &clock, precession, delta_t,
+    );
+    let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+    let heliacal = Heliacal::new(
+        &completion,
+        place,
+        Criterion::SURYA_SIDDHANTA,
+        Horizon::CENTRE_NO_REFRACTION,
+        delta_t,
+    );
+    let over = Over {
+        almanac: &almanac,
+        founder: &founder,
+        completion: &completion,
+        heliacal: &heliacal,
+        calendar: &Gregorian,
+        clock: &clock,
+        settings: &resolved.settings,
+        precession,
+        delta_t,
+    };
+    // The chart zodiac taken at 2026-11-01 00:00 UTC.
+    let Ok(sources) = ProviderSources::new(&over, place, JulianDay::literal(2_461_345.5)) else {
+        return section;
+    };
+    let request = MuhurtaRequest {
+        rules: ActivityRules::raman_marriage(),
+        from: gregorian(2026, 11, 25),
+        to: gregorian(2026, 11, 27),
+        native: None,
+        ranking: Ranking::Texts,
+        days_with_windows: 3,
+        most: 12,
+        direction: None,
+    };
+    let Ok(answer) = teistro_muhurta::search(&sources, &request) else {
+        return section;
+    };
+    section.push_int(i64::try_from(answer.days_judged).unwrap_or(-1));
+    section.push_int(i64::try_from(answer.closed.len()).unwrap_or(-1));
+    for window in &answer.windows {
+        section.push(window.at.from.get());
+        section.push(window.at.to.get());
+        section.push_int(i64::try_from(window.clauses.len()).unwrap_or(-1));
+        section.push_int(i64::try_from(window.barred_by.len()).unwrap_or(-1));
+    }
+    section
+}
+
+/// **panchanga-year**: a year of almanac days at Kathmandu on the built-in
+/// ephemeris, the range a year view asks for in one call. A range is
+/// answered in rounds that each visit every day of it, so this is where a
+/// cache sized for a month thrashes (a year once cost twice what it did
+/// before a segment cache meant for a month).
+fn panchanga_year() -> Section {
+    let mut section = Section::new("panchanga-year");
+    let Some(resolved) = default_settings() else {
+        return section;
+    };
+    let provider = Builtin::new();
+    let delta_t = DeltaTModel::TableThenModel;
+    let model = DrikSun::new(
+        &provider,
+        Ayanamsha::Lahiri,
+        Sunrise::CentreNoRefraction.into(),
+        OverridePolicy::SdkOnly,
+        delta_t,
+    );
+    let clock = UtcOffset::literal(5, 45, 0);
+    let almanac = Almanac::new(
+        &provider,
+        &resolved,
+        &model,
+        &Gregorian,
+        &clock,
+        PrecessionModel::Iau2006,
+        delta_t,
+    );
+    let Ok(days) = almanac.between(
+        &gregorian(2024, 1, 1),
+        &gregorian(2024, 12, 31),
+        &kathmandu(),
+    ) else {
+        return section;
+    };
+    for day in &days.value {
+        section.push(day.day.sunrise.get());
+        for span in &day.limbs.tithi {
+            section.push_int(i64::from(span.member as u16));
+            section.push(span.whole.to.get());
+        }
+        for span in &day.limbs.nakshatra {
+            section.push_int(i64::from(span.member as u16));
+            section.push(span.whole.to.get());
         }
     }
     section
