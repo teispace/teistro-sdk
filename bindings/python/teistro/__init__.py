@@ -5958,16 +5958,21 @@ class KootaRules(TypedDict, total=False):
     """The readings an Ashta Koota is computed under, each the source's own
     when absent (`03-design/matching.md`): `equalVarna`, `"WHOLE"` or
     `"HALF"` (C259); `devaBride`, `"FOUR"` or `"THREE"` (C262);
-    `bhakootLift`, `"ANY_ONE"` or `"GARGA"` (C263); and `nadiDosha`,
-    `"ANY"` or `"MIDDLE_ONLY"` (C264).
+    `bhakootLift`, `"ANY_ONE"` or `"GARGA"` (C263); `nadiDosha`,
+    `"ANY"` or `"MIDDLE_ONLY"` (C264); `gana`, `"DAIVAJNA_MANOHARA"` or
+    `"MUHURTA_MARTANDA"` (C761); and `vashya`, `"VERSE"` or
+    `"PRINTED_IN_NEPAL"` (C762).
 
     >>> middle: KootaRules = {"nadiDosha": "MIDDLE_ONLY"}
+    >>> nepal: KootaRules = {"gana": "MUHURTA_MARTANDA", "vashya": "PRINTED_IN_NEPAL"}
     """
 
     equalVarna: Literal["WHOLE", "HALF"]
     devaBride: Literal["FOUR", "THREE"]
     bhakootLift: Literal["ANY_ONE", "GARGA"]
     nadiDosha: Literal["ANY", "MIDDLE_ONLY"]
+    gana: Literal["DAIVAJNA_MANOHARA", "MUHURTA_MARTANDA"]
+    vashya: Literal["VERSE", "PRINTED_IN_NEPAL"]
 
 
 class PoruthamRules(TypedDict, total=False):

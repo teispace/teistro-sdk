@@ -2678,8 +2678,9 @@ public final class Native {
          * profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
          * on the other side; and `rules`, every field optional: `equalVarna`
          * (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
-         * `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
-         * `MIDDLE_ONLY`); `porutham`, the ten considerations of
+         * `bhakootLift` (`ANY_ONE` or `GARGA`), `nadiDosha` (`ANY` or
+         * `MIDDLE_ONLY`), `gana` (`DAIVAJNA_MANOHARA` or `MUHURTA_MARTANDA`)
+         * and `vashya` (`VERSE` or `PRINTED_IN_NEPAL`); `porutham`, the ten considerations of
          * *Kalaprakasika* XIII, every field optional: `twoSignStar`
          * (`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`
          * (`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or

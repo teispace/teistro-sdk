@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A Nepal Ashta Koota preset, fitted to a printed grid (C761–C763).**
+**Numbers:** none by default; `KootaRules` gains two knobs whose defaults
+are the scoring already shipped.
+- `gana`: `DAIVAJNA_MANOHARA` (the default) or `MUHURTA_MARTANDA`,
+  *Muhurta Martanda*'s vivaha v. 11 (C761).
+- `vashya`: `VERSE` (the default) or `PRINTED_IN_NEPAL`, the human,
+  Scorpio and other classes a guna grid printed in Nepal scores with
+  *Muhurta Martanda*'s grades (C762).
+- `KootaRules::PRINTED_IN_NEPAL` takes both; every binding spells it
+  `{"gana": "MUHURTA_MARTANDA", "vashya": "PRINTED_IN_NEPAL"}`. Against
+  Himal Panchanga VS 2082's 1,444-cell grid it agrees exactly on 786
+  cells and within two points on 1,430, where the verse's rules agree
+  on 257; the print's yoni grading has no text and is not built (C261,
+  C763).
+
 **The parana's default, decided (Q41).**
 **Numbers:** none; the shipped defaults were already these.
 - An Ekadashi fast's parana keeps *Dharmasindhu*'s two readings in its

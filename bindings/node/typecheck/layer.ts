@@ -2019,7 +2019,7 @@ function theMatching(ctx: Context): string {
   const asked: MatchingRequest = {
     partner: { instant: 2447892.5, place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 } },
     partnerRole: 'BRIDE',
-    rules: { nadiDosha: 'MIDDLE_ONLY' },
+    rules: { nadiDosha: 'MIDDLE_ONLY', gana: 'MUHURTA_MARTANDA', vashya: 'PRINTED_IN_NEPAL' },
     porutham: { deerghaBeyond: 'SEVENTH' },
     kuja: { houses: 'WITH_SECOND', from: 'LAGNA_MOON_VENUS', lifts: { benefic: true, mutual: true } },
   };
@@ -2033,6 +2033,8 @@ function theMatching(ctx: Context): string {
   const unsided: MatchingRequest = { partner: asked.partner };
   // @ts-expect-error a rule takes only its own members
   const misruled: MatchingRequest = { ...asked, rules: { nadiDosha: 'MIDDLE' } };
+  // @ts-expect-error the vashya knob takes only its own members
+  const misvashya: MatchingRequest = { ...asked, rules: { vashya: 'NEPAL' } };
   const read: AshtaKoota | null = chart.matching;
   const reading: KootaReading | undefined = read?.kootas[6]?.reading;
   const bhakoot = reading?.koota === 'koota.BHAKOOT' ? `${reading.apart} ${reading.dosha ?? 'NONE'} ${reading.exceptions.taraPure}` : '';

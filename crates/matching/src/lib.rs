@@ -32,9 +32,9 @@ mod role;
 
 pub use ashta::{
     ASHTA_KOOTA, ASHTA_KOOTA_POINTS, AshtaKoota, BhakootDosha, BhakootExceptions, BhakootLift,
-    DevaBride, EqualVarna, KootaReading, KootaRow, KootaRules, MaitriRelation, NadiDosha,
-    VashyaRelation, YoniRelation, ashta_koota, is_vashya, maitri_relation, sign_varna,
-    vashya_relation, yoni_relation,
+    DevaBride, EqualVarna, GanaPoints, KootaReading, KootaRow, KootaRules, MaitriRelation,
+    NadiDosha, VashyaPoints, VashyaRelation, YoniRelation, ashta_koota, is_vashya, maitri_relation,
+    sign_varna, vashya_relation, yoni_relation,
 };
 pub use avakahada::{Avakahada, avakahada};
 pub use doshas::{DoshaSystem, MarriageDosha, marriage_doshas};

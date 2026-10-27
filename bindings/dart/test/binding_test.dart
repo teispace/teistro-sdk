@@ -5285,6 +5285,26 @@ void _engineTests() {
       final theirs = swapped.kootas.first.reading as VarnaKoota;
       expect((theirs.bride, theirs.groom), (ours.groom, ours.bride));
     }
+    // The Nepal knobs reach the koota: Muhurta Martanda's gana (C761),
+    // bride row by groom column.
+    const martanda = [
+      [6.0, 5.0, 1.0],
+      [6.0, 6.0, 0.0],
+      [0.0, 0.0, 6.0],
+    ];
+    final nepal = MatchingRequest(
+      asked.partner,
+      partnerRole: MatchRole.groom,
+      rules: const KootaRules(
+        gana: GanaPoints.muhurtaMartanda,
+        vashya: VashyaPoints.printedInNepal,
+      ),
+    );
+    for (final instant in instants) {
+      final row = found(instant, asked: nepal).matching!.kootas[5];
+      final gana = row.reading as GanaKoota;
+      expect(row.points, martanda[gana.bride.index][gana.groom.index]);
+    }
     ctx.dispose();
 
     final western = teistro.context(

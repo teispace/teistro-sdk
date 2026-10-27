@@ -3170,9 +3170,22 @@ test('a chart carries its match with a partner', () => {
     const varna = (one) => one.kootas[0].reading;
     assert.deepEqual([varna(swapped).bride, varna(swapped).groom], [varna(alone).groom, varna(alone).bride]);
   });
+  // The Nepal knobs reach the koota: Muhurta Martanda's gana (C761), bride
+  // row by groom column.
+  const martanda = {
+    'gana.DEVA': { 'gana.DEVA': 6, 'gana.MANUSHYA': 5, 'gana.RAKSHASA': 1 },
+    'gana.MANUSHYA': { 'gana.DEVA': 6, 'gana.MANUSHYA': 6, 'gana.RAKSHASA': 0 },
+    'gana.RAKSHASA': { 'gana.DEVA': 0, 'gana.MANUSHYA': 0, 'gana.RAKSHASA': 6 },
+  };
+  const nepal = { ...matching, rules: { gana: 'MUHURTA_MARTANDA', vashya: 'PRINTED_IN_NEPAL' } };
+  for (const instant of instants) {
+    const gana = ctx.chart.found({ instant, ...kathmandu, matching: nepal }).matching.kootas[5];
+    assert.equal(gana.points, martanda[gana.reading.bride][gana.reading.groom]);
+  }
   for (const [request, field] of [
     [{ ...matching, partnerRole: 'UNCLE' }, 'matching.partnerRole'],
     [{ ...matching, rules: { nadi: 'ANY' } }, 'matching.rules.nadi'],
+    [{ ...matching, rules: { vashya: 'NEPAL' } }, 'matching.rules.vashya'],
     [{ ...matching, porutham: { deergha: 'SEVENTH' } }, 'matching.porutham.deergha'],
     [{ ...matching, kuja: { house: 'WITH_SECOND' } }, 'matching.kuja.house'],
     [{ partner: matching.partner }, 'matching'],

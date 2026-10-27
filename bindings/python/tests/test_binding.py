@@ -3527,9 +3527,20 @@ class AnEngine(WithLibrary):
                 ours, theirs = alone.kootas[0].reading, swapped.kootas[0].reading
                 assert isinstance(ours, VarnaKoota) and isinstance(theirs, VarnaKoota)
                 self.assertEqual((theirs.bride, theirs.groom), (ours.groom, ours.bride))
+            # The Nepal knobs reach the koota: Muhurta Martanda's gana
+            # (C761), bride row by groom column.
+            martanda = ((6, 5, 1), (6, 6, 0), (0, 0, 6))
+            nepal: MatchingRequest = {**asked, "rules": {"gana": "MUHURTA_MARTANDA", "vashya": "PRINTED_IN_NEPAL"}}
+            for instant in instants:
+                read = ctx.chart.found(instant=instant, matching=nepal, **kathmandu).matching
+                assert read is not None
+                row = read.kootas[5]
+                assert isinstance(row.reading, GanaKoota)
+                self.assertEqual(row.points, martanda[row.reading.bride][row.reading.groom])
             refusals: list[tuple[Any, str]] = [
                 ({**asked, "partnerRole": "UNCLE"}, "matching.partnerRole"),
                 ({**asked, "rules": {"nadi": "ANY"}}, "matching.rules.nadi"),
+                ({**asked, "rules": {"vashya": "NEPAL"}}, "matching.rules.vashya"),
                 ({**asked, "porutham": {"deergha": "SEVENTH"}}, "matching.porutham.deergha"),
                 ({**asked, "kuja": {"house": "WITH_SECOND"}}, "matching.kuja.house"),
                 ({"partner": asked["partner"]}, "matching"),
