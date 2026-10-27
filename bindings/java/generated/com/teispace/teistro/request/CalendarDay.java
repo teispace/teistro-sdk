@@ -9,16 +9,16 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * A day as a publisher prints it, in any calendar the SDK ships: the answer gives it in the range's.
+ * A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
  *
  * @param calendar Its calendar.
  * @param day The day, 1-based.
  * @param era The era, for a calendar that counts several. Null leaves the SDK's default.
  * @param leap A leap month or day, for a calendar that marks one. Null leaves the SDK's default.
  * @param month The month, 1-based.
- * @param year The year.
+ * @param year The astronomical year.
  */
-public record PublishedDay(com.teispace.teistro.Calendar calendar, int day, EraNumber era, com.teispace.teistro.Leap leap, int month, int year) implements RequestJson {
+public record CalendarDay(com.teispace.teistro.Calendar calendar, int day, EraNumber era, com.teispace.teistro.Leap leap, int month, int year) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -26,10 +26,10 @@ public record PublishedDay(com.teispace.teistro.Calendar calendar, int day, EraN
      * @throws IllegalArgumentException naming the field that is out of range
      * @throws NullPointerException naming the required field that is missing
      */
-    public PublishedDay {
-        Objects.requireNonNull(calendar, "`PublishedDay.calendar` is required");
-        Read.range(day, "PublishedDay.day", 0L, 255L);
-        Read.range(month, "PublishedDay.month", 0L, 255L);
+    public CalendarDay {
+        Objects.requireNonNull(calendar, "`CalendarDay.calendar` is required");
+        Read.range(day, "CalendarDay.day", 0L, 255L);
+        Read.range(month, "CalendarDay.month", 0L, 255L);
     }
 
     /**
@@ -39,9 +39,9 @@ public record PublishedDay(com.teispace.teistro.Calendar calendar, int day, EraN
      * @param calendar Its calendar.
      * @param day The day, 1-based.
      * @param month The month, 1-based.
-     * @param year The year.
+     * @param year The astronomical year.
      */
-    public PublishedDay(com.teispace.teistro.Calendar calendar, int day, int month, int year) {
+    public CalendarDay(com.teispace.teistro.Calendar calendar, int day, int month, int year) {
         this(calendar, day, null, null, month, year);
     }
 
@@ -55,7 +55,7 @@ public record PublishedDay(com.teispace.teistro.Calendar calendar, int day, EraN
         return new Builder();
     }
 
-    /** Builds a {@link PublishedDay} a field at a time. */
+    /** Builds a {@link CalendarDay} a field at a time. */
     public static final class Builder {
         private com.teispace.teistro.Calendar calendar;
         private Integer day;
@@ -124,7 +124,7 @@ public record PublishedDay(com.teispace.teistro.Calendar calendar, int day, EraN
         /**
          * Sets {@code year}.
          *
-         * @param year The year.
+         * @param year The astronomical year.
          * @return this builder
          */
         public Builder year(int year) {
@@ -138,27 +138,27 @@ public record PublishedDay(com.teispace.teistro.Calendar calendar, int day, EraN
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
-        public PublishedDay build() {
-            return new PublishedDay(calendar, Objects.requireNonNull(day, "`PublishedDay.day` is required"), era, leap, Objects.requireNonNull(month, "`PublishedDay.month` is required"), Objects.requireNonNull(year, "`PublishedDay.year` is required"));
+        public CalendarDay build() {
+            return new CalendarDay(calendar, Objects.requireNonNull(day, "`CalendarDay.day` is required"), era, leap, Objects.requireNonNull(month, "`CalendarDay.month` is required"), Objects.requireNonNull(year, "`CalendarDay.year` is required"));
         }
     }
 
     /**
-     * A {@code PublishedDay} from its JSON, as {@code Json.read} answers it.
+     * A {@code CalendarDay} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
      * @return the record
      * @throws IllegalArgumentException for JSON that is not one, naming the field
      */
-    public static PublishedDay of(Object raw) {
-        Map<String, Object> json = Read.object(raw, "PublishedDay");
-        return new PublishedDay(
-            Read.member(Read.required(json.get("calendar"), "PublishedDay.calendar"), "PublishedDay.calendar", com.teispace.teistro.Calendar::byKey),
-            Read.int32(Read.required(json.get("day"), "PublishedDay.day"), "PublishedDay.day"),
+    public static CalendarDay of(Object raw) {
+        Map<String, Object> json = Read.object(raw, "CalendarDay");
+        return new CalendarDay(
+            Read.member(Read.required(json.get("calendar"), "CalendarDay.calendar"), "CalendarDay.calendar", com.teispace.teistro.Calendar::byKey),
+            Read.int32(Read.required(json.get("day"), "CalendarDay.day"), "CalendarDay.day"),
             Read.orNull(json.get("era"), present -> EraNumber.of(present)),
-            Read.orNull(json.get("leap"), present -> Read.member(present, "PublishedDay.leap", com.teispace.teistro.Leap::byKey)),
-            Read.int32(Read.required(json.get("month"), "PublishedDay.month"), "PublishedDay.month"),
-            Read.int32(Read.required(json.get("year"), "PublishedDay.year"), "PublishedDay.year"));
+            Read.orNull(json.get("leap"), present -> Read.member(present, "CalendarDay.leap", com.teispace.teistro.Leap::byKey)),
+            Read.int32(Read.required(json.get("month"), "CalendarDay.month"), "CalendarDay.month"),
+            Read.int32(Read.required(json.get("year"), "CalendarDay.year"), "CalendarDay.year"));
     }
 
     @Override

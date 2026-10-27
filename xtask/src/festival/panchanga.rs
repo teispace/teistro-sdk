@@ -15,10 +15,8 @@ use std::fmt::Write as _;
 
 use std::collections::BTreeMap;
 
-use teistro::festival::{
-    Observance, Observances, PUBLISHED_FORMAT, PublishedDay, PublishedEntry, PublishedSet,
-};
-use teistro::{FestivalPack, FestivalRequest, PublishedCause};
+use teistro::festival::{Observance, Observances, PUBLISHED_FORMAT, PublishedEntry, PublishedSet};
+use teistro::{CalendarDay, FestivalPack, FestivalRequest, PublishedCause};
 
 use crate::measure::{Claim, table};
 
@@ -2111,7 +2109,7 @@ pub(super) fn laid(problems: &mut Vec<String>) -> Result<Laid, String> {
             .iter()
             .map(|&&(_, rule, printed, page)| PublishedEntry::Set {
                 rule: rule.to_owned(),
-                day: PublishedDay::from(&gregorian(printed)),
+                day: CalendarDay::from(&gregorian(printed)),
                 month: None,
                 adhika: None,
                 window: None,

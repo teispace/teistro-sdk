@@ -4027,7 +4027,7 @@ final class PublishedEntrySet extends PublishedEntry {
   final bool? adhika;
 
   /// The published day.
-  final PublishedDay day;
+  final CalendarDay day;
 
   /// Which occurrence, when two lie that near: its amanta month.
   final Masa? month;
@@ -4067,7 +4067,7 @@ final class PublishedEntryAdd extends PublishedEntry {
   });
 
   /// The day.
-  final PublishedDay day;
+  final CalendarDay day;
 
   /// Its key, which no rule of the request uses.
   final String key;
@@ -4109,7 +4109,7 @@ final class PublishedEntryWithdraw extends PublishedEntry {
   final bool? adhika;
 
   /// The occurrence's day, as the publisher reckons it.
-  final PublishedDay day;
+  final CalendarDay day;
 
   /// As `SET`'s.
   final Masa? month;
@@ -7680,9 +7680,9 @@ enum Upanayana implements _Keyed {
   final String key;
 }
 
-/// A day as a publisher prints it, in any calendar the SDK ships: the answer gives it in the range's.
-final class PublishedDay extends _Request {
-  const PublishedDay({
+/// A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
+final class CalendarDay extends _Request {
+  const CalendarDay({
     required this.calendar,
     required this.day,
     this.era,
@@ -7706,7 +7706,7 @@ final class PublishedDay extends _Request {
   /// The month, 1-based.
   final int month;
 
-  /// The year.
+  /// The astronomical year.
   final int year;
 
   @override
@@ -9843,13 +9843,13 @@ final class OriginDate extends Origin {
     required this.date,
   });
 
-  /// The date.
-  final Object? date;
+  /// The date, as a request writes it.
+  final CalendarDay date;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     'by': 'DATE',
-    if (date case final dateValue?) 'date': dateValue,
+    'date': date._wire,
   };
 
   @override

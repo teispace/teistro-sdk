@@ -5,7 +5,7 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
-use teistro_calendar::{CalendarDate, CalendarSystem, EraNumber, FixedDay, Leap, shipped};
+use teistro_calendar::{CalendarDate, CalendarDay, CalendarSystem, FixedDay, shipped};
 use teistro_core::catalogue::{Calendar, Masa};
 use teistro_core::envelope::{Hash, content_hash};
 use teistro_core::error::Error;
@@ -57,56 +57,6 @@ pub struct PublishedSet {
     pub entries: Vec<PublishedEntry>,
 }
 
-/// A day as a publisher prints it, in any calendar the SDK ships: the
-/// answer gives it in the range's.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PublishedDay {
-    /// Its calendar.
-    pub calendar: Calendar,
-    /// The year.
-    pub year: i32,
-    /// The month, 1-based.
-    pub month: u8,
-    /// The day, 1-based.
-    pub day: u8,
-    /// The era, for a calendar that counts several.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub era: Option<EraNumber>,
-    /// A leap month or day, for a calendar that marks one.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub leap: Option<Leap>,
-}
-
-impl PublishedDay {
-    /// The day as the calendar defines it.
-    #[must_use]
-    pub fn date(&self) -> CalendarDate {
-        let mut date = CalendarDate::defined(self.calendar, self.year, self.month, self.day);
-        date.era = self.era;
-        date.leap = self.leap;
-        date
-    }
-
-    fn fixed(&self) -> Result<FixedDay, Error> {
-        system(self.calendar)?.fixed_of(&self.date())
-    }
-}
-
-impl From<&CalendarDate> for PublishedDay {
-    fn from(date: &CalendarDate) -> PublishedDay {
-        PublishedDay {
-            calendar: date.calendar,
-            year: date.year,
-            month: date.month,
-            day: date.day,
-            era: date.era,
-            leap: date.leap,
-        }
-    }
-}
-
 /// One published day.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -118,7 +68,7 @@ pub enum PublishedEntry {
         /// The rule's key.
         rule: String,
         /// The published day.
-        day: PublishedDay,
+        day: CalendarDay,
         /// Which occurrence, when two lie that near: its amanta month.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         month: Option<Masa>,
@@ -136,7 +86,7 @@ pub enum PublishedEntry {
         /// Its key, which no rule of the request uses.
         key: String,
         /// The day.
-        day: PublishedDay,
+        day: CalendarDay,
         /// Its name in each locale given (`en-Latn`, `ne-Deva-NP`).
         #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
         names: BTreeMap<String, String>,
@@ -152,7 +102,7 @@ pub enum PublishedEntry {
         /// The rule's key.
         rule: String,
         /// The occurrence's day, as the publisher reckons it.
-        day: PublishedDay,
+        day: CalendarDay,
         /// As `SET`'s.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         month: Option<Masa>,
@@ -167,7 +117,7 @@ pub enum PublishedEntry {
 impl PublishedEntry {
     /// The day it names.
     #[must_use]
-    pub fn day(&self) -> &PublishedDay {
+    pub fn day(&self) -> &CalendarDay {
         match self {
             PublishedEntry::Set { day, .. }
             | PublishedEntry::Add { day, .. }
@@ -378,10 +328,8 @@ impl PublishedSet {
         let mut seen = std::collections::BTreeSet::new();
         for (index, entry) in self.entries.iter().enumerate() {
             let at = format!("entries[{index}]");
-            let fixed = entry
-                .day()
-                .fixed()
-                .map_err(|why| invalid(why).with_field(format!("{at}.day")))?;
+            let fixed =
+                fixed(entry.day()).map_err(|why| invalid(why).with_field(format!("{at}.day")))?;
             let (month, adhika) = entry.month();
             if !seen.insert((entry.key(), fixed, month, adhika)) {
                 return Err(Error::invalid_arg(format!(
@@ -422,6 +370,11 @@ impl PublishedSet {
 /// A date's refusal as the caller's argument: a set's day is input.
 fn invalid(why: Error) -> Error {
     Error::invalid_arg(why.message)
+}
+
+/// The fixed day a published day names, refused as its calendar refuses it.
+fn fixed(day: &CalendarDay) -> Result<FixedDay, Error> {
+    system(day.calendar)?.fixed_of(&day.date())
 }
 
 fn system(calendar: Calendar) -> Result<&'static dyn CalendarSystem, Error> {
@@ -501,10 +454,7 @@ impl Range {
 fn apply_one(answer: &mut Observances, set: &PublishedSet, range: &Range) -> Result<(), Error> {
     for (index, entry) in set.entries.iter().enumerate() {
         let at = format!("entries[{index}]");
-        let day = entry
-            .day()
-            .fixed()
-            .map_err(|why| invalid(why).with_field(format!("{at}.day")))?;
+        let day = fixed(entry.day()).map_err(|why| invalid(why).with_field(format!("{at}.day")))?;
         let date = range.system.date_of(day)?;
         let PublishedEntry::Add {
             key,

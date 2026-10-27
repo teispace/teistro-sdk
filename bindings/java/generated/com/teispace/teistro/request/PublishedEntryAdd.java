@@ -17,7 +17,7 @@ import java.util.Objects;
  * @param source Where the publisher says it.
  * @param window A published time. Null leaves the SDK's default.
  */
-public record PublishedEntryAdd(PublishedDay day, String key, Map<String, String> names, String source, Interval window) implements RequestJson, PublishedEntry {
+public record PublishedEntryAdd(CalendarDay day, String key, Map<String, String> names, String source, Interval window) implements RequestJson, PublishedEntry {
     /** The `action` this variant is written under. */
     public static final String ACTION = "ADD";
 
@@ -43,7 +43,7 @@ public record PublishedEntryAdd(PublishedDay day, String key, Map<String, String
      * @param key Its key, which no rule of the request uses.
      * @param source Where the publisher says it.
      */
-    public PublishedEntryAdd(PublishedDay day, String key, String source) {
+    public PublishedEntryAdd(CalendarDay day, String key, String source) {
         this(day, key, null, source, null);
     }
 
@@ -59,7 +59,7 @@ public record PublishedEntryAdd(PublishedDay day, String key, Map<String, String
 
     /** Builds a {@link PublishedEntryAdd} a field at a time. */
     public static final class Builder {
-        private PublishedDay day;
+        private CalendarDay day;
         private String key;
         private Map<String, String> names;
         private String source;
@@ -73,7 +73,7 @@ public record PublishedEntryAdd(PublishedDay day, String key, Map<String, String
          * @param day The day.
          * @return this builder
          */
-        public Builder day(PublishedDay day) {
+        public Builder day(CalendarDay day) {
             this.day = day;
             return this;
         }
@@ -143,7 +143,7 @@ public record PublishedEntryAdd(PublishedDay day, String key, Map<String, String
     public static PublishedEntryAdd of(Object raw) {
         Map<String, Object> json = Read.object(raw, "PublishedEntryAdd");
         return new PublishedEntryAdd(
-            PublishedDay.of(Read.required(json.get("day"), "PublishedEntryAdd.day")),
+            CalendarDay.of(Read.required(json.get("day"), "PublishedEntryAdd.day")),
             Read.text(Read.required(json.get("key"), "PublishedEntryAdd.key"), "PublishedEntryAdd.key"),
             Read.orNull(json.get("names"), present -> Read.map(present, "PublishedEntryAdd.names", value0 -> Read.text(value0, "PublishedEntryAdd.names"))),
             Read.text(Read.required(json.get("source"), "PublishedEntryAdd.source"), "PublishedEntryAdd.source"),

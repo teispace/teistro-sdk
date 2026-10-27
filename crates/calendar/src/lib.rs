@@ -34,7 +34,9 @@ pub mod solar;
 pub mod tibetan;
 
 pub use bikram_sambat::BikramSambat;
-pub use date::{CalendarCapabilities, CalendarDate, CalendarSystem, EraNumber, Leap, shipped};
+pub use date::{
+    CalendarCapabilities, CalendarDate, CalendarDay, CalendarSystem, EraNumber, Leap, shipped,
+};
 pub use fixed::{FixedDay, Weekday};
 pub use gregorian::Gregorian;
 pub use iso_week::{IsoWeek, IsoWeekDate};

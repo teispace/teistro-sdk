@@ -11,9 +11,9 @@ import java.util.Objects;
 /**
  * Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661).
  *
- * @param date The date.
+ * @param date The date, as a request writes it.
  */
-public record OriginDate(CalendarDate date) implements RequestJson, Origin {
+public record OriginDate(CalendarDay date) implements RequestJson, Origin {
     /** The `by` this variant is written under. */
     public static final String BY = "DATE";
 
@@ -38,7 +38,7 @@ public record OriginDate(CalendarDate date) implements RequestJson, Origin {
     public static OriginDate of(Object raw) {
         Map<String, Object> json = Read.object(raw, "OriginDate");
         return new OriginDate(
-            CalendarDate.of(Read.required(json.get("date"), "OriginDate.date")));
+            CalendarDay.of(Read.required(json.get("date"), "OriginDate.date")));
     }
 
     @Override

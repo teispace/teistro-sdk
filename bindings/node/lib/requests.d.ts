@@ -3130,7 +3130,7 @@ export interface PublishedEntrySet {
   /**
    * The published day.
    */
-  readonly day: PublishedDay;
+  readonly day: CalendarDay;
   /**
    * Which occurrence, when two lie that near: its amanta month.
    */
@@ -3157,7 +3157,7 @@ export interface PublishedEntryAdd {
   /**
    * The day.
    */
-  readonly day: PublishedDay;
+  readonly day: CalendarDay;
   /**
    * Its key, which no rule of the request uses.
    */
@@ -3188,7 +3188,7 @@ export interface PublishedEntryWithdraw {
   /**
    * The occurrence's day, as the publisher reckons it.
    */
-  readonly day: PublishedDay;
+  readonly day: CalendarDay;
   /**
    * As `SET`'s.
    */
@@ -5493,9 +5493,9 @@ export type LatinName = 'REFUSE' | 'IAST';
 export type Upanayana = 'DONE' | 'NOT_DONE' | 'NOT_PERFORMED';
 
 /**
- * A day as a publisher prints it, in any calendar the SDK ships: the answer gives it in the range's.
+ * A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
  */
-export interface PublishedDay {
+export interface CalendarDay {
   /**
    * Its calendar.
    */
@@ -5517,7 +5517,7 @@ export interface PublishedDay {
    */
   readonly month: number;
   /**
-   * The year.
+   * The astronomical year.
    */
   readonly year: number;
 }
@@ -6639,9 +6639,9 @@ export interface OriginInstant {
 export interface OriginDate {
   readonly by: 'DATE';
   /**
-   * The date.
+   * The date, as a request writes it.
    */
-  readonly date: CalendarDate;
+  readonly date: CalendarDay;
 }
 
 /**
@@ -7650,40 +7650,6 @@ export interface EkadashiKinds {
 }
 
 /**
- * A date in a calendar. Years are astronomical (1 BCE is 0); an era is attached for presentation only.
- */
-export interface CalendarDate {
-  /**
-   * The calendar.
-   */
-  readonly calendar: Member<catalogue.Calendar>;
-  /**
-   * The day, 1-based; for the ISO week date, the weekday 1 to 7.
-   */
-  readonly day: number;
-  /**
-   * The era view, when the calendar has one.
-   */
-  readonly era?: EraNumber | null;
-  /**
-   * Whether the month or the day is the first of two bearing the same number, in a calendar that repeats them (the Tibetan); left out of the wire when absent, and refused by every calendar that repeats neither.
-   */
-  readonly leap?: catalogue.Leap | null;
-  /**
-   * The month, 1-based; for the ISO week date, the week.
-   */
-  readonly month: number;
-  /**
-   * How the date was resolved.
-   */
-  readonly resolution: CalendarResolution;
-  /**
-   * The astronomical year.
-   */
-  readonly year: number;
-}
-
-/**
  * Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
  *
  * `FIRST`: The first.
@@ -7872,63 +7838,6 @@ export interface Portion {
 export type FestivalWhich = 'EARLIER' | 'LATER';
 
 /**
- * How a calendar date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
- */
-export type CalendarResolution = CalendarResolutionDefined | CalendarResolutionTabular | CalendarResolutionComputed | CalendarResolutionDivergent;
-
-/**
- * A mathematical definition; exact by construction.
- */
-export interface CalendarResolutionDefined {
-  readonly kind: 'DEFINED';
-}
-
-/**
- * From the authority's published table.
- */
-export interface CalendarResolutionTabular {
-  readonly kind: 'TABULAR';
-  /**
-   * The authority.
-   */
-  readonly authority: string;
-  /**
-   * The table's edition.
-   */
-  readonly edition: string;
-}
-
-/**
- * Computed outside the table's range.
- */
-export interface CalendarResolutionComputed {
-  readonly kind: 'COMPUTED';
-  /**
-   * The rule or model.
-   */
-  readonly model: string;
-}
-
-/**
- * Inside the range and the two disagree; the table was followed.
- */
-export interface CalendarResolutionDivergent {
-  readonly kind: 'DIVERGENT';
-  /**
-   * The computed month and day.
-   */
-  readonly computed: MonthDay;
-  /**
-   * The rule or model that computed the other answer.
-   */
-  readonly model: string;
-  /**
-   * The table's month and day.
-   */
-  readonly tabular: MonthDay;
-}
-
-/**
  * How the tithi held the rite's time on the two days (pp. 6–7).
  *
  * `EARLIER_ONLY`: On the earlier day only, wholly or in part.
@@ -7962,17 +7871,3 @@ export type DayEdge = 'SUNRISE' | 'SUNSET';
  * `PARAMA_MITRA`: 9, very favourable.
  */
 export type Tara = 'JANMA' | 'SAMPAT' | 'VIPAT' | 'KSHEMA' | 'PRATYAK' | 'SADHANA' | 'NAIDHANA' | 'MITRA' | 'PARAMA_MITRA';
-
-/**
- * A month and a day inside a year, for a divergence report.
- */
-export interface MonthDay {
-  /**
-   * The day, 1-based.
-   */
-  readonly day: number;
-  /**
-   * The month, 1-based.
-   */
-  readonly month: number;
-}

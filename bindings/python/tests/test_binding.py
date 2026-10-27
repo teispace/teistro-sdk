@@ -4594,7 +4594,7 @@ class AnEngine(WithLibrary):
         and keeps the rule's day, a `WITHDRAW` marks one, an `ADD` keeps a
         day no rule computes, an entry no occurrence takes is reported,
         and the answer names the set it applied."""
-        from teistro import Published, PublishedAdded, PublishedDay, PublishedSet, date
+        from teistro import Published, PublishedAdded, CalendarDay, PublishedSet, date
         from teistro.catalogue import Calendar
 
         observer = Observer(
@@ -4613,7 +4613,7 @@ class AnEngine(WithLibrary):
             navami = next(o for o in plain.observances if o.rule == "MAHA_NAVAMI")
             visarjana = next(o for o in plain.observances if o.rule == "DEVI_VISARJAN")
 
-            def day(of: Any, by: int = 0) -> PublishedDay:
+            def day(of: Any, by: int = 0) -> CalendarDay:
                 moved = ctx.calendar.convert(of, Calendar.GREGORIAN)
                 return {"calendar": "GREGORIAN", "year": moved.year, "month": moved.month, "day": moved.day + by}
 
