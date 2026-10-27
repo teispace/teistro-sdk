@@ -39,6 +39,9 @@ use crate::model::Api;
 use crate::names::{binding_type_name, pascal};
 use crate::records::{ExternalVariant, RecordField, RecordShape, RecordType, RecordVariant};
 
+mod dart;
+pub use dart::{DART_FACADES, DART_SHADOWED, dart_declarations};
+
 /// What the TypeScript requests file says it is, after the header.
 const TS_ABOUT: &str = "The JSON requests the layers hand through to the SDK, typed. Rendered from the façade's own schema of each request, which schemars reads from serde's description of the Rust types, so a request is typed as serde reads it: a field keeps its wire name and is optional where serde defaults it.";
 
@@ -480,6 +483,7 @@ impl Types<'_> {
                 ty: payload.clone(),
                 nullable: false,
                 null: false,
+                default: None,
             };
             self.py_typed_dict(
                 &mut wrappers,
@@ -701,7 +705,12 @@ mod tests {
                 "how": {"$ref": "#/$defs/How"},
                 "tag": {"$ref": "#/$defs/Tag"},
                 "point": {"$ref": "#/$defs/Point"},
-                "with-dash": {"type": "string"}
+                "with-dash": {"type": "string"},
+                "speed": {"$ref": "#/$defs/Move", "default": "FAST"},
+                "weight": {"type": "number", "default": 2},
+                "first": {"$ref": "#/$defs/Entry", "default": {"end": 1.5}},
+                "gender": {"$ref": "#/$defs/Sex", "default": "MALE"},
+                "after": {"$ref": "#/$defs/Tag", "default": "SAME"}
             }, "required": ["orbs", "how", "with-dash"]},
             "Entry": {"type": "object", "properties": {"end": {"type": "number"}}, "required": ["end"]},
             "Move": {"type": "string", "enum": ["MEAN", "FAST"]},
@@ -828,6 +837,68 @@ mod tests {
         assert_eq!(types.record("Ephemeris"), "catalogue.Ephemeris");
         assert_eq!(types.record("Rules"), "Rules");
         assert!(is_identifier("_a$1") && !is_identifier("1a") && !is_identifier("a-b"));
+    }
+
+    #[test]
+    fn dart_writes_each_field_as_serde_reads_it() {
+        let out = dart_declarations(&fixture());
+        assert!(out.contains("part of '../teistro.dart';"));
+        assert!(
+            out.contains("    required this.orbs,\n"),
+            "a required field"
+        );
+        assert!(
+            out.contains("    this.speed = Move.fast,\n")
+                && out.contains("    this.weight = 2.0,\n")
+                && out.contains("    this.first = const Entry(end: 1.5),\n")
+                && out.contains("    this.gender = Sex.one,\n")
+                && out.contains("    this.after = const TagSame(),\n"),
+            "a default the schema states is the constructor's"
+        );
+        assert!(
+            out.contains("  final Graha? lord;\n")
+                && out.contains("if (lord case final lordValue?) 'lord': lordValue.key"),
+            "an Option is nullable and left off the wire when null"
+        );
+        assert!(
+            out.contains("'lords': [for (final e0 in lords) e0.fullKey]")
+                || out.contains("if (lords case final lordsValue?) 'lords': [for (final e0 in lordsValue) e0.fullKey]"),
+            "a registered key is written in full"
+        );
+        assert!(out.contains("'with-dash': withDash"));
+        assert!(out.contains("final List<(String, int)>? pairs;"));
+        assert!(
+            out.contains("[for (final e0 in pairsValue) [e0.$1, e0.$2]]"),
+            "a pair crosses as a two-item array"
+        );
+        assert!(out.contains("'how': how._wire"));
+        assert!(out.contains("enum Move implements _Keyed {\n"));
+        assert!(!out.contains("enum Sex"), "a reused enum is the boundary's");
+    }
+
+    #[test]
+    fn dart_writes_each_union_as_serde_reads_it() {
+        let out = dart_declarations(&fixture());
+        assert!(out.contains("sealed class How extends _Request {"));
+        assert!(
+            out.contains("final class HowPlanetInHouse extends How {")
+                && out.contains("'kind': 'planet-in-house'"),
+            "a variant writes its tag"
+        );
+        assert!(
+            out.contains("final class TagSame extends Tag {")
+                && out.contains("Object? get _wire => 'SAME';")
+        );
+        assert!(
+            out.contains("Object? get _wire => <String, Object?>{'WITHIN': value};")
+                || out.contains("Object? get _wire => {'WITHIN': value};")
+        );
+        assert!(
+            out.contains("final class PointLagna extends Point {")
+                && out.contains("final class PointMember extends Point {")
+                && out.contains("final class PointValue extends Point {"),
+            "a name, a member and the value are each a variant"
+        );
     }
 
     #[test]

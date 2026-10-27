@@ -48,6 +48,8 @@ export 'src/install.dart'
 // release its installer fetches from.
 export 'src/prebuilt.dart' show prebuiltVersion;
 
+part 'src/requests.dart';
+
 /// The SDK's shared library, opened once and shared by every context.
 ///
 /// [open] finds it; [context] builds a context on it; the static calls of
@@ -1123,14 +1125,14 @@ final class ChartArea extends _Area {
             drawings: _drawingBits(drawings, _context._registeredLayouts),
             themeJson: theme?._json,
             rulesJson: rules?._json,
-            interpretJson: interpret?._json,
+            interpretJson: _encoded(interpret, 'interpret'),
             varshaJson: varsha?._json,
-            gocharJson: gochar?._json,
+            gocharJson: _encoded(gochar, 'gochar'),
             hitsJson: hits?._json,
-            sadeSatiJson: sadeSati?._json,
-            kpJson: kp?._json,
+            sadeSatiJson: _encoded(sadeSati, 'sadeSati'),
+            kpJson: _encoded(kp, 'kp'),
             dignitiesJson: dignities?._json,
-            fortitudesJson: fortitudes?._json,
+            fortitudesJson: _encoded(fortitudes, 'fortitudes'),
             lotsJson: lots?._json,
             considerationsJson: considerations?._json,
             perfectionJson: perfection?._json,
@@ -1138,18 +1140,18 @@ final class ChartArea extends _Area {
             westernAspectsJson: westernAspects?._json,
             westernConfigurationsJson: westernConfigurations?._json,
             synastryJson: synastry?._json,
-            parallelsJson: parallels?._json,
+            parallelsJson: _encoded(parallels, 'parallels'),
             antisciaJson: antiscia?._json,
-            midpointsJson: midpoints?._json,
+            midpointsJson: _encoded(midpoints, 'midpoints'),
             westernHousesJson: westernHouses?._json,
             harmonicJson: harmonic?._json,
             matchingJson: matching?._json,
             prashnaJson: prashna?._json,
-            remediesJson: remedies?._json,
+            remediesJson: _encoded(remedies, 'remedies'),
             rectificationJson: rectification?._json,
             lalkitabJson: lalkitab?._json,
-            sarvatobhadraJson: sarvatobhadra?._json,
-            tithiPraveshaJson: tithiPravesha?._json,
+            sarvatobhadraJson: _encoded(sarvatobhadra, 'sarvatobhadra'),
+            tithiPraveshaJson: _encoded(tithiPravesha, 'tithiPravesha'),
             masaPraveshaJson: masaPravesha?._json,
             dossierJson: dossier?._json,
           ),
@@ -1533,7 +1535,7 @@ final class AlmanacArea extends _Area {
       'utcOffsetSeconds': utcOffsetSeconds,
       if (table != null) 'table': table,
       if (tradition != null) 'tradition': tradition.key,
-      'request': request._record,
+      'request': request._wire,
     });
     return _ashauch(
       _context._guarded(() => _context._inner.almanacAshauch(asked)),
@@ -1711,7 +1713,7 @@ final class MatchingArea extends _Area {
         jsonEncode(<String, Object?>{
           'bride': bride,
           'groom': groom,
-          'rules': rules._record,
+          'rules': rules._wire,
         }),
       ),
     );
@@ -7458,46 +7460,6 @@ List<Map<String, Object?>> _sectionOf(String json) =>
             chart! as Map<String, Object?>,
         ];
 
-/// A set of rules the SDK ships.
-enum ShippedRules {
-  /// The recording engine's doshas the SDK computes.
-  doshas('DOSHAS'),
-
-  /// The recording engine's yogas the SDK computes.
-  yogas('YOGAS'),
-
-  /// The gandantas of BPHS ch. 92.
-  gandantas('GANDANTAS'),
-
-  /// The evils at birth and their cancellations.
-  arishtas('ARISHTAS'),
-
-  /// The generated readings of a graha, a pair and a rising part.
-  readings('READINGS'),
-
-  /// The yogas, doshas and classes of life written from the texts.
-  nabhasas('NABHASAS');
-
-  const ShippedRules(this.key);
-
-  /// The key a rule request names it with.
-  final String key;
-}
-
-/// The readings a request evaluates rules under.
-enum RuleReadings {
-  /// The texts' readings wherever a text settles one.
-  texts('TEXTS'),
-
-  /// The recording engine's.
-  recordingEngine('RECORDING_ENGINE');
-
-  const RuleReadings(this.key);
-
-  /// The key a rule request names it with.
-  final String key;
-}
-
 /// The rules a request asks a chart to answer
 /// (`03-design/rules-at-the-boundary.md`): shipped sets by name and a
 /// consumer's own rules in the SDK's rule format.
@@ -7555,7 +7517,8 @@ final class RuleRequest {
   /// *Jataka Parijata*'s by default. Refused without [longevity].
   final AshtakavargaAyusRules? ashtakavarga;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     'shipped': [for (final set in shipped) set.key],
     'rules': rules,
     'readings': readings.key,
@@ -7564,9 +7527,11 @@ final class RuleRequest {
     if (ayurdaya != null) 'ayurdaya': ayurdaya!._record,
     if (threePairs != null) 'threePairs': threePairs!._record,
     if (rasmi != null) 'rasmi': rasmi!._record,
-    if (chakrayus != null) 'chakrayus': chakrayus!._record,
+    if (chakrayus != null) 'chakrayus': chakrayus!._wire,
     if (ashtakavarga != null) 'ashtakavarga': ashtakavarga!._record,
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 }
 
 /// How several reductions on one graha combine (crux C104).
@@ -7592,48 +7557,6 @@ enum NisargaYears {
   listed('listed');
 
   const NisargaYears(this.key);
-
-  /// The key a request names it with.
-  final String key;
-}
-
-/// Which graha keeps its years in an enemy's sign (crux C302).
-enum EnemyExempt {
-  /// A retrograde graha, as BPHS reads it.
-  retrograde('retrograde'),
-
-  /// Mars, as *Jataka Parijata* ch. 5 v. 8 is translated.
-  mars('mars');
-
-  const EnemyExempt(this.key);
-
-  /// The key a request names it with.
-  final String key;
-}
-
-/// Whose enmity takes a third in an enemy's sign (crux C303).
-enum Enmity {
-  /// Natural enmity.
-  natural('natural'),
-
-  /// The compound of the natural and the temporary friendship.
-  compound('compound');
-
-  const Enmity(this.key);
-
-  /// The key a request names it with.
-  final String key;
-}
-
-/// Whose years a malefic rising in the lagna takes (crux C304).
-enum RisingTakes {
-  /// Each malefic's own.
-  malefic('malefic'),
-
-  /// Every giver's, once, as *Jataka Parijata* ch. 5 vv. 11 to 13 read.
-  every('every');
-
-  const RisingTakes(this.key);
 
   /// The key a request names it with.
   final String key;
@@ -7743,20 +7666,6 @@ final class ThreePairsRules {
   };
 }
 
-/// Which place doubles a graha's rays or takes a share of them (crux C306).
-enum RayPlace {
-  /// The dwadasamsa, as the translator's note reads it.
-  dwadasamsa('dwadasamsa'),
-
-  /// The sign, as v. 24 reads it.
-  sign('sign');
-
-  const RayPlace(this.key);
-
-  /// The key a request names it with.
-  final String key;
-}
-
 /// How the seven grahas' rays and Rasmija years are read (*Jataka
 /// Parijata* ch. 5 vv. 22 to 25, cruxes C305 to C307); a field left null
 /// is the translator's note's reading.
@@ -7775,41 +7684,6 @@ final class RasmiRules {
 
   Map<String, Object?> get _record => <String, Object?>{
     if (place != null) 'place': place!.key,
-  };
-}
-
-/// Which untraversed part a graha's years follow in Chakrayus (crux C310).
-enum ChakraPortion {
-  /// The whole nakshatra's, as the note's figure takes it.
-  star('star'),
-
-  /// The pada's, as the verse names it.
-  pada('pada');
-
-  const ChakraPortion(this.key);
-
-  /// The key a request names it with.
-  final String key;
-}
-
-/// How the wheel of time's span, Chakrayus, is read (*Jataka Parijata*
-/// ch. 5 v. 26, crux C310); a field left null is the note's figure's
-/// reading.
-///
-/// ```dart
-/// // As the verse names it, by the untraversed pada.
-/// const rules = RuleRequest(
-///   longevity: true,
-///   chakrayus: ChakrayusRules(portion: ChakraPortion.pada),
-/// );
-/// ```
-final class ChakrayusRules {
-  const ChakrayusRules({this.portion});
-
-  final ChakraPortion? portion;
-
-  Map<String, Object?> get _record => <String, Object?>{
-    if (portion != null) 'portion': portion!.key,
   };
 }
 
@@ -7836,35 +7710,6 @@ enum AyusDivisor {
   sevenOverTwentySeven('seven-over-twenty-seven');
 
   const AyusDivisor(this.key);
-
-  /// The key a request names it with.
-  final String key;
-}
-
-/// How each graha's ashtakavarga years are reduced (crux C317).
-enum AshtakaReductions {
-  /// v. 46: doubled at exaltation, halved at debilitation, in proportion
-  /// between.
-  verse('verse'),
-
-  /// Balabhadra's: the greatest of a half or a third only.
-  balabhadra('balabhadra');
-
-  const AshtakaReductions(this.key);
-
-  /// The key a request names it with.
-  final String key;
-}
-
-/// Which bindus v. 50's span counts in the seven's signs (crux C318).
-enum OccupiedBindus {
-  /// After the trine and single-lord reductions.
-  reduced('reduced'),
-
-  /// As the ashtakavarga gives them.
-  raw('raw');
-
-  const OccupiedBindus(this.key);
 
   /// The key a request names it with.
   final String key;
@@ -7928,54 +7773,6 @@ enum VarshaReading {
 
   /// The key the boundary reads.
   final String key;
-}
-
-/// Sade Sati and Saturn's smaller spells to find for every chart of a
-/// request (`03-design/sade-sati.md`): the window, and optionally what the
-/// houses are counted from (the natal Moon by default; C139), what they are
-/// reckoned in (whole signs by default; C147) and the smaller spells (the
-/// 4th and the 8th by default; C149). Every period reaching into the window
-/// comes back whole; Saturn is searched once for the whole batch.
-///
-/// ```dart
-/// final chart = ctx.chart.found(
-///   /* … */ sadeSati: const SadeSatiRequest(from: 2460676.5, to: 2464329),
-/// );
-/// final peak = chart.sadeSati?.sadeSati.firstOrNull?.phases[1];
-/// ```
-final class SadeSatiRequest {
-  const SadeSatiRequest({
-    required this.from,
-    this.to,
-    this.countedFrom = GocharFrom.moon,
-    this.reckoning = Reckoning.sign,
-    this.spells,
-  });
-
-  /// The window's start, a UTC Julian day.
-  final double from;
-
-  /// The window's end, not before the start, or the SDK refuses it by
-  /// `sadeSati.to`; [from] when absent, one instant.
-  final double? to;
-
-  /// The natal point the houses are counted from.
-  final GocharFrom countedFrom;
-
-  /// What the houses are reckoned in.
-  final Reckoning reckoning;
-
-  /// The smaller spells, houses 3 to 11 each named once; the 4th and the
-  /// 8th when absent.
-  final List<int>? spells;
-
-  String get _json => jsonEncode(<String, Object?>{
-    'from': from,
-    if (to case final to?) 'to': to,
-    'countedFrom': countedFrom.key,
-    'reckoning': reckoning.key,
-    if (spells case final spells?) 'spells': spells,
-  });
 }
 
 /// One stay of Saturn's in a house, half-open.
@@ -8202,7 +7999,10 @@ final class DignityRequest {
   final Triplicities triplicities;
   final DignityScores scores;
 
-  String get _json => jsonEncode(_record);
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
+
+  String get _json => jsonEncode(_wire);
 
   Map<String, Object?> get _record => <String, Object?>{
     'sectRule': sectRule.key,
@@ -8570,6 +8370,9 @@ final class AccidentalRules extends _Value {
             : siege.key,
     'meanMotionDeg': meanMotionDeg,
   };
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _json;
 }
 
 /// What each of Lilly's accidental lines is worth (p. 115): positive for a
@@ -8680,45 +8483,9 @@ final class AccidentalScores extends _Value {
   List<Object?> get _fields => [houses, ...lines.values];
 
   Map<String, Object?> get _json => {'houses': houses, ...lines};
-}
 
-/// How to read every chart's fortitudes, both halves of Lilly's table
-/// (`03-design/essential-dignities.md` §Accidental fortitudes). Each
-/// chart's come back as its `fortitudes`, and the essential half as its
-/// `dignities` too, so a request asks for one or the other: both are
-/// refused by `dignities`.
-///
-/// ```dart
-/// final chart = ctx.chart.found(
-///   /* … */ fortitudes: const FortitudeRequest(
-///     rules: AccidentalRules(partile: Partile.within, partileOrbDeg: 1),
-///   ),
-/// );
-/// final strongest = chart.fortitudes?.planets
-///     .reduce((a, b) => a.net >= b.net ? a : b);
-/// ```
-final class FortitudeRequest {
-  const FortitudeRequest({
-    this.dignities = const DignityRequest(),
-    this.rules = AccidentalRules.lilly,
-    this.scores = AccidentalScores.lilly,
-    this.almuten = AlmutenRules.lilly,
-  });
-
-  /// How the essential half is read.
-  final DignityRequest dignities;
-  final AccidentalRules rules;
-  final AccidentalScores scores;
-
-  /// How the almutens are read.
-  final AlmutenRules almuten;
-
-  String get _json => jsonEncode(<String, Object?>{
-    'dignities': dignities._record,
-    'rules': rules._json,
-    'scores': scores._json,
-    'almuten': almuten._json,
-  });
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _json;
 }
 
 /// How a chart's almutens are read, Lilly's by default
@@ -8752,6 +8519,9 @@ final class AlmutenRules extends _Value {
 
   @override
   List<Object?> get _fields => [place, fortune];
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _json;
 }
 
 /// One planet's total in an almuten's ranking.
@@ -9011,10 +8781,13 @@ final class LotRequest extends _Value {
   /// How Fortune is taken by night (C221).
   final FortuneRule fortune;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     'sectRule': sectRule.key,
     'fortune': fortune.key,
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 
   @override
   List<Object?> get _fields => [sectRule, fortune];
@@ -9111,10 +8884,13 @@ final class ConsiderationRules extends _Value {
   /// of the two planets' (C230). Seven, none negative.
   final List<double> orbsDeg;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     'moonLateFromDeg': moonLateFromDeg,
     'orbsDeg': orbsDeg,
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 
   @override
   List<Object?> get _fields => [moonLateFromDeg, orbsDeg];
@@ -9226,46 +9002,6 @@ final class ProgressionRate extends _Value {
   List<Object?> get _fields => [sky, life];
 }
 
-/// How long a year of life is, against the calendar (C236).
-enum YearMeasure {
-  /// The mean tropical year, every modern implementation's.
-  tropical('TROPICAL'),
-
-  /// The Julian year of 365.25 days.
-  julian('JULIAN'),
-
-  /// Leo's rule by sidereal time at noon (Appendix V), a day for a year only.
-  noonSiderealTime('NOON_SIDEREAL_TIME');
-
-  const YearMeasure(this.key);
-
-  /// The key a request spells it with.
-  final String key;
-}
-
-/// How the progressed midheaven moves (C237).
-enum AngleMethod {
-  /// The mean Sun in right ascension: Leo's own map.
-  naibodRightAscension('NAIBOD_RIGHT_ASCENSION'),
-
-  /// The mean Sun along the ecliptic.
-  naibodLongitude('NAIBOD_LONGITUDE'),
-
-  /// The true Sun along the ecliptic: the solar arc.
-  solarArcLongitude('SOLAR_ARC_LONGITUDE'),
-
-  /// The true Sun in right ascension.
-  solarArcRightAscension('SOLAR_ARC_RIGHT_ASCENSION'),
-
-  /// The chart at the progressed instant itself.
-  quotidian('QUOTIDIAN');
-
-  const AngleMethod(this.key);
-
-  /// The key a request spells it with.
-  final String key;
-}
-
 /// The arc a direction moves every point by.
 final class DirectionArc extends _Value {
   const DirectionArc._(this._key) : degreesPerYear = null;
@@ -9337,7 +9073,7 @@ final class ProgressionContacts {
     if (grahas case final grahas?) 'grahas': [for (final g in grahas) g.key],
     if (points case final points?) 'points': [for (final p in points) p._json],
     if (aspects case final aspects?) 'aspects': aspects,
-    if (parallels case final parallels?) 'parallels': parallels._record,
+    if (parallels case final parallels?) 'parallels': parallels._wire,
     if (mutual) 'mutual': true,
   };
 }
@@ -9368,14 +9104,17 @@ final class ProgressionsRequest {
   final DirectionArc direction;
   final ProgressionContacts? contacts;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     if (at case final at?) 'at': at,
     'rate': rate._record,
     'year': year.key,
     'angles': angles.key,
     'direction': direction._record,
     if (contacts case final contacts?) 'contacts': contacts._record,
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 }
 
 /// The orbs a Western aspect table is read under
@@ -9444,6 +9183,9 @@ final class OrbModel extends _Value {
     ...?byAspect?.keys,
     ...?byAspect?.values,
   ];
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// Which Western aspects to look for in every chart, and under which
@@ -9610,255 +9352,6 @@ WesternConfiguration _westernConfigurationFrom(Map<String, Object?> raw) =>
       ]),
     );
 
-/// The point an equal varna earns (C259).
-enum EqualVarna {
-  /// One point, the verse's own; the default.
-  whole('WHOLE'),
-
-  /// Half a point.
-  half('HALF');
-
-  const EqualVarna(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// The points a Deva bride and a Manushya groom earn in Gana (C262).
-enum DevaBride {
-  /// Four; the default.
-  four('FOUR'),
-
-  /// Three.
-  three('THREE');
-
-  const DevaBride(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// How a bad Bhakoot is lifted (C263).
-enum BhakootLift {
-  /// Any one of the five exceptions, the nadi pure; the default.
-  anyOne('ANY_ONE'),
-
-  /// Garga's count.
-  garga('GARGA');
-
-  const BhakootLift(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// Which shared nadi is a dosha (C264).
-enum NadiDosha {
-  /// Any of the three; the default.
-  any('ANY'),
-
-  /// The middle nadi only.
-  middleOnly('MIDDLE_ONLY');
-
-  const NadiDosha(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// Which text's gana points (C761).
-enum GanaPoints {
-  /// *Daivajna-manohara*, as the commentary on *Muhurta Chintamani*
-  /// cites it; the default.
-  daivajnaManohara('DAIVAJNA_MANOHARA'),
-
-  /// *Muhurta Martanda*, vivaha v. 11.
-  muhurtaMartanda('MUHURTA_MARTANDA');
-
-  const GanaPoints(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// Which vashya scheme scores the signs (C762).
-enum VashyaPoints {
-  /// The verse's relations; the default.
-  verse('VERSE'),
-
-  /// The classes a guna grid printed in Nepal scores.
-  printedInNepal('PRINTED_IN_NEPAL');
-
-  const VashyaPoints(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// The readings an Ashta Koota is computed under; each default is the
-/// source's own (`03-design/matching.md`).
-///
-/// ```dart
-/// const middle = KootaRules(nadiDosha: NadiDosha.middleOnly);
-/// // As a guna grid printed in Nepal scores (C763).
-/// const nepal = KootaRules(
-///   gana: GanaPoints.muhurtaMartanda,
-///   vashya: VashyaPoints.printedInNepal,
-/// );
-/// ```
-final class KootaRules {
-  const KootaRules({
-    this.equalVarna = EqualVarna.whole,
-    this.devaBride = DevaBride.four,
-    this.bhakootLift = BhakootLift.anyOne,
-    this.nadiDosha = NadiDosha.any,
-    this.gana = GanaPoints.daivajnaManohara,
-    this.vashya = VashyaPoints.verse,
-  });
-
-  final EqualVarna equalVarna;
-  final DevaBride devaBride;
-  final BhakootLift bhakootLift;
-  final NadiDosha nadiDosha;
-  final GanaPoints gana;
-  final VashyaPoints vashya;
-
-  Map<String, Object?> get _record => <String, Object?>{
-    'equalVarna': equalVarna.key,
-    'devaBride': devaBride.key,
-    'bhakootLift': bhakootLift.key,
-    'nadiDosha': nadiDosha.key,
-    'gana': gana.key,
-    'vashya': vashya.key,
-  };
-}
-
-/// Whose quarter comes first when one star, spanning two signs, is both
-/// natives' (C270).
-enum TwoSignStar {
-  /// The groom's quarter is the earlier (p. 71); the default.
-  groomEarlier('GROOM_EARLIER'),
-
-  /// For a star with one quarter in the first sign, that quarter is the
-  /// bride's (pp. 71–72).
-  brideFirstSign('BRIDE_FIRST_SIGN');
-
-  const TwoSignStar(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// How far the groom's star must stand from the bride's for
-/// Sthree-Dheergham (C272).
-enum DeerghaBeyond {
-  /// Beyond the 13th (p. 72); the default.
-  thirteenth('THIRTEENTH'),
-
-  /// Beyond the 7th, as "some writers hold".
-  seventh('SEVENTH');
-
-  const DeerghaBeyond(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// Which friendship of the lords agrees on Rasyadhipathi and lifts by the
-/// p. 76 exception (C273).
-enum LordsFriendship {
-  /// Each lord calls the other a friend; the default.
-  mutual('MUTUAL'),
-
-  /// Either calls the other a friend.
-  oneWay('ONE_WAY');
-
-  const LordsFriendship(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// The readings the ten considerations are computed under; each default
-/// is the chapter's own (`03-design/matching.md`).
-///
-/// ```dart
-/// const seventh = PoruthamRules(deerghaBeyond: DeerghaBeyond.seventh);
-/// ```
-final class PoruthamRules {
-  const PoruthamRules({
-    this.twoSignStar = TwoSignStar.groomEarlier,
-    this.deerghaBeyond = DeerghaBeyond.thirteenth,
-    this.lordsFriendship = LordsFriendship.mutual,
-  });
-
-  final TwoSignStar twoSignStar;
-  final DeerghaBeyond deerghaBeyond;
-  final LordsFriendship lordsFriendship;
-
-  Map<String, Object?> get _record => <String, Object?>{
-    'twoSignStar': twoSignStar.key,
-    'deerghaBeyond': deerghaBeyond.key,
-    'lordsFriendship': lordsFriendship.key,
-  };
-}
-
-/// Which houses of Mars make the Kuja dosha (C285).
-enum KujaHouses {
-  /// The 1st, 4th, 7th, 8th and 12th (*Manasagari*, jāyābhāva v. 4); the
-  /// default.
-  manasagari('MANASAGARI'),
-
-  /// The same with the 2nd, as modern practice has it (rank 3).
-  withSecond('WITH_SECOND');
-
-  const KujaHouses(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// From where Mars's house makes the Kuja dosha (C286).
-enum KujaFrom {
-  /// The lagna alone, as the verse counts; the default.
-  lagna('LAGNA'),
-
-  /// The lagna, the Moon or Venus, as modern practice counts (rank 3).
-  lagnaMoonVenus('LAGNA_MOON_VENUS');
-
-  const KujaFrom(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// The readings the Kuja dosha is computed under; each default is the
-/// verse's own (`03-design/matching.md`).
-///
-/// ```dart
-/// const everywhere = KujaRules(from: KujaFrom.lagnaMoonVenus);
-/// ```
-final class KujaRules {
-  const KujaRules({
-    this.houses = KujaHouses.manasagari,
-    this.from = KujaFrom.lagna,
-    this.lifts = KujaLifts.none,
-  });
-
-  final KujaHouses houses;
-  final KujaFrom from;
-
-  /// The lifts that lift it; none by default, as the verse has none
-  /// (C288, C755).
-  final KujaLifts lifts;
-
-  Map<String, Object?> get _record => <String, Object?>{
-    'houses': houses.key,
-    'from': from.key,
-    'lifts': lifts._record,
-  };
-}
-
 /// The lifts of the Kuja dosha, each a clause (C288, C755): as a rule's
 /// choice, the lifts it counts; as a side's answer, the lifts that hold.
 /// BPHS ch. 80 v. 47's [benefic] aspect or conjunction and vv. 48–49's
@@ -9954,6 +9447,9 @@ final class KujaLifts extends _Value {
 
   @override
   List<Object?> get _fields => clauses;
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// A place Mars's house is counted from.
@@ -10098,9 +9594,9 @@ final class MatchingRequest {
   Map<String, Object?> get _record => <String, Object?>{
     'partner': partner._record,
     'partnerRole': partnerRole.key,
-    'rules': rules._record,
-    'porutham': porutham._record,
-    'kuja': kuja._record,
+    'rules': rules._wire,
+    'porutham': porutham._wire,
+    'kuja': kuja._wire,
   };
 
   String get _json => jsonEncode(_record);
@@ -10608,166 +10104,6 @@ final class Porutham extends _Value {
   ];
 }
 
-/// How a name in Latin letters is read (C293).
-enum LatinName {
-  /// Refused; the default, since English "ch" is IAST "c" and a guess
-  /// would match the wrong star.
-  refuse('REFUSE'),
-
-  /// Read as IAST.
-  iast('IAST');
-
-  const LatinName(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// Where a syllable in Abhijit's row is placed, Abhijit being none of the
-/// 27 (C294).
-enum AbhijitPada {
-  /// Refused; the default.
-  refuse('REFUSE'),
-
-  /// Uttara Ashadha's 4th quarter.
-  uttaraAshadha('UTTARA_ASHADHA'),
-
-  /// Shravana's 1st quarter.
-  shravana('SHRAVANA');
-
-  const AbhijitPada(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// How a name is read for naam milan; each default is the source's own
-/// (`03-design/matching.md`).
-///
-/// ```dart
-/// const iast = NameRules(latin: LatinName.iast);
-/// ```
-final class NameRules {
-  const NameRules({
-    this.latin = LatinName.refuse,
-    this.abhijit = AbhijitPada.refuse,
-  });
-
-  final LatinName latin;
-  final AbhijitPada abhijit;
-
-  Map<String, Object?> get _record => <String, Object?>{
-    'latin': latin.key,
-    'abhijit': abhijit.key,
-  };
-}
-
-/// The readings naam milan is computed under; each default is the
-/// source's own.
-///
-/// ```dart
-/// const placed = NaamRules(name: NameRules(abhijit: AbhijitPada.shravana));
-/// ```
-final class NaamRules {
-  const NaamRules({
-    this.name = const NameRules(),
-    this.koota = const KootaRules(),
-    this.porutham = const PoruthamRules(),
-  });
-
-  /// How the two names are read.
-  final NameRules name;
-
-  /// The readings the Ashta Koota of the name stars is computed under.
-  final KootaRules koota;
-
-  /// The readings the ten considerations of the name stars are computed
-  /// under.
-  final PoruthamRules porutham;
-
-  Map<String, Object?> get _record => <String, Object?>{
-    'name': name._record,
-    'koota': koota._record,
-    'porutham': porutham._record,
-  };
-}
-
-/// Which totals stop a Pythagorean reduction (C320).
-enum Masters {
-  /// None: every number reduced to one digit.
-  none('NONE'),
-
-  /// 11 and 22, Balliett's (pp. 30, 31, 48, 90); the default.
-  elevenTwentyTwo('ELEVEN_TWENTY_TWO'),
-
-  /// 11, 22 and 33, the baseline engine's.
-  elevenTwentyTwoThirtyThree('ELEVEN_TWENTY_TWO_THIRTY_THREE');
-
-  const Masters(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// How a name's words are reduced (C321).
-enum NameReduction {
-  /// Each word reduced, then added (Balliett pp. 18–19, Cheiro); the
-  /// default.
-  byWord('BY_WORD'),
-
-  /// Every letter added at once, the baseline engine's.
-  whole('WHOLE');
-
-  const NameReduction(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// What a Chaldean name's compound number is (C322).
-enum ChaldeanCompound {
-  /// The words' single numbers added (Cheiro p. 72); the default.
-  sumOfSingles('SUM_OF_SINGLES'),
-
-  /// Every letter added, the baseline engine's.
-  letterTotal('LETTER_TOTAL');
-
-  const ChaldeanCompound(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// How the Pythagorean birth number is reduced (C323).
-enum BirthReduction {
-  /// Month, day and year each reduced, then added (Balliett p. 19); the
-  /// default.
-  byPart('BY_PART'),
-
-  /// Every digit of the date added, the baseline engine's.
-  digitSum('DIGIT_SUM');
-
-  const BirthReduction(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
-/// What is done with a character outside A to Z (C326).
-enum NonLatin {
-  /// Refused, named with its place; the default, since neither table says
-  /// what é is worth.
-  refuse('REFUSE'),
-
-  /// Skipped, the baseline engine's.
-  skip('SKIP');
-
-  const NonLatin(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
 /// The two systems a name is read under.
 enum NumerologySystem {
   /// Balliett's 1–9 letter cycle.
@@ -10823,6 +10159,9 @@ final class NumerologyRules {
     'birthReduction': birthReduction.key,
     'nonLatin': nonLatin.key,
   };
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// A Gregorian birth date: a civil date, never an instant, so no zone can
@@ -10840,6 +10179,13 @@ final class BirthDate extends _Value {
 
   @override
   List<Object?> get _fields => [year, month, day];
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
+    'year': year,
+    'month': month,
+    'day': day,
+  };
 }
 
 /// A number reduced: every sum, so "33, so 6" and "38, so 11" read back.
@@ -11400,7 +10746,10 @@ final class HarmonicRequest {
 
   Map<String, Object?> get _record => {'number': number, 'orbDeg': orbDeg};
 
-  String get _json => jsonEncode(_record);
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
+
+  String get _json => jsonEncode(_wire);
 }
 
 /// A point of a harmonic chart: a planet ([HarmonicGraha]), or the
@@ -11557,7 +10906,10 @@ final class AntisciaRequest {
     if (cusps case final cusps?) 'cusps': cusps._record,
   };
 
-  String get _json => jsonEncode(_record);
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
+
+  String get _json => jsonEncode(_wire);
 }
 
 /// A planet's two reflections, tropical degrees
@@ -11764,44 +11116,6 @@ final class WesternAspectRow extends _Value {
   ];
 }
 
-/// How close two distances from the equator must stand to be a parallel
-/// (`03-design/western-declinations.md`): Leo's 1° (*How to Judge a
-/// Nativity*, p. 47) by default, at most 10°.
-///
-/// ```dart
-/// const leo = ParallelRequest();
-/// const wider = ParallelRequest(orbDeg: 1.5);
-/// ```
-final class ParallelRequest {
-  const ParallelRequest({this.orbDeg = 1});
-
-  /// The orb, degrees.
-  final double orbDeg;
-
-  Map<String, Object?> get _record => <String, Object?>{'orbDeg': orbDeg};
-
-  String get _json => jsonEncode(_record);
-}
-
-/// How far from the axis through two planets' midpoint a third may stand
-/// to be equally distant from them (`03-design/western-midpoints.md`):
-/// 0.5° by default (C245), at most 10°.
-///
-/// ```dart
-/// const standard = MidpointRequest();
-/// const wider = MidpointRequest(orbDeg: 1.5);
-/// ```
-final class MidpointRequest {
-  const MidpointRequest({this.orbDeg = 0.5});
-
-  /// The orb from the nearer point of the axis, degrees.
-  final double orbDeg;
-
-  Map<String, Object?> get _record => {'orbDeg': orbDeg};
-
-  String get _json => jsonEncode(_record);
-}
-
 /// A planet equally distant from two others (Leo, *How to Judge a
 /// Nativity*, pp. 47–48), within the orb of the axis through their
 /// midpoint: the pair in catalogue order, and the planet between.
@@ -11996,21 +11310,9 @@ final class Partner {
     },
     'utcOffsetSeconds': utcOffsetSeconds,
   };
-}
 
-/// Which zodiac a synastry compares two charts in (C241).
-enum SynastryZodiac {
-  /// Both charts' tropical longitudes, Leo's frame; the default.
-  tropical('TROPICAL'),
-
-  /// Each chart's longitudes as founded, for a sidereal reader; two charts
-  /// founded in different zodiacs are refused.
-  charts('CHARTS');
-
-  const SynastryZodiac(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// A synastry: every chart of a batch read against one [partner]'s birth
@@ -12094,9 +11396,9 @@ final class SynastryRequest {
     ...table._record,
     'lagna': lagna,
     'zodiac': zodiac.key,
-    if (parallels case final asked?) 'parallels': asked._record,
+    if (parallels case final asked?) 'parallels': asked._wire,
     if (antiscia case final asked?) 'antiscia': asked._record,
-    if (midpoints case final asked?) 'midpoints': asked._record,
+    if (midpoints case final asked?) 'midpoints': asked._wire,
     if (composite) 'composite': true,
     if (davison) 'davison': true,
   });
@@ -12512,12 +11814,15 @@ final class PerfectionRequest extends _Value {
 
   final PerfectionRules rules;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     if (querent case final querent?) 'querent': querent.fullKey,
     if (quesited case final quesited?) 'quesited': quesited.fullKey,
     if (house != null) 'house': house,
     'rules': rules._record,
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 
   @override
   List<Object?> get _fields => [querent, quesited, house, rules];
@@ -13036,37 +12341,6 @@ final class Considerations extends _Value {
   ];
 }
 
-/// A KP reading to make of every chart of a request (`03-design/kp.md`),
-/// every field optional. Each chart's reading comes back as its `kp`, under
-/// the settings' `kp` group.
-///
-/// ```dart
-/// final chart = ctx.chart.found(/* … */ kp: const KpRequest(number: 74));
-/// final standing = chart.kp?.ruling.accepted;
-/// ```
-final class KpRequest {
-  const KpRequest({this.number, this.clock, this.anyAyanamsha = false});
-
-  /// The querent's horary number, 1 to 249, or the SDK refuses it by
-  /// `kp.number`: the cusps are cast from it, the ruling planets stay the
-  /// moment's (C156).
-  final int? number;
-
-  /// Seconds east of UT that the civil day lord is the weekday on; the
-  /// request's own `utcOffsetSeconds` when absent (C151).
-  final int? clock;
-
-  /// Whether to read a chart whose zodiac is not Krishnamurti's, which is
-  /// refused by `frame.ayanamsha` otherwise (C157).
-  final bool anyAyanamsha;
-
-  String get _json => jsonEncode(<String, Object?>{
-    if (number != null) 'number': number,
-    if (clock != null) 'clock': clock,
-    'anyAyanamsha': anyAyanamsha,
-  });
-}
-
 /// An arc of the zodiac, half-open, in nanoarcseconds (divide by `3.6e12`
 /// for degrees).
 final class KpSpan extends _Value {
@@ -13442,22 +12716,6 @@ enum AstaCriterion {
   final String key;
 }
 
-/// Whose day a search reads: the birth star and Moon sign, and the birth
-/// lagna when the time is known, whose eighth the search avoids.
-final class MuhurtaNative {
-  const MuhurtaNative({required this.star, required this.moonSign, this.lagna});
-
-  final Nakshatra star;
-  final Rashi moonSign;
-  final Rashi? lagna;
-
-  Map<String, Object?> get _json => {
-    'star': star.fullKey,
-    'moonSign': moonSign.fullKey,
-    if (lagna != null) 'lagna': lagna!.fullKey,
-  };
-}
-
 /// A muhurta search to run over an almanac's days
 /// (`03-design/muhurta-at-the-boundary.md`), answered as [Almanac.muhurta].
 ///
@@ -13506,15 +12764,18 @@ final class MuhurtaRequest {
   /// `shool` holds a window to its release.
   final Direction? direction;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     'rules': _named(rules, 'rules', (MuhurtaActivity a) => a.key),
-    if (native != null) 'native': native!._json,
+    if (native != null) 'native': native!._wire,
     'ranking': ranking.key,
     'daysWithWindows': daysWithWindows,
     'most': most,
     if (asta != null) 'asta': _named(asta!, 'asta', (AstaCriterion a) => a.key),
     if (direction != null) 'direction': direction!.fullKey,
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 
   /// A field that is a name or a record spelt out, written down; anything
   /// else refused by the field's name, as the SDK names its own refusals.
@@ -14846,7 +14107,8 @@ final class FestivalRequest {
   /// ```
   final List<Map<String, Object?>> published;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     'rules': switch (rules) {
       List<Object?> items => [
         for (final (index, item) in items.indexed)
@@ -14856,7 +14118,9 @@ final class FestivalRequest {
     },
     if (published.isNotEmpty)
       'published': [for (final set in published) _written(set)],
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 
   static Object? _item(Object? item, String field) => switch (item) {
     FestivalPack pack => pack.key,
@@ -15190,6 +14454,15 @@ final class ReckonedPlace extends _Value {
 
   @override
   List<Object?> get _fields => [name, place, utcOffsetSeconds];
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
+    'name': name,
+    'latitudeDeg': place.latitudeDeg,
+    'longitudeDeg': place.longitudeDeg,
+    'altitudeM': place.altitudeM,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
 }
 
 /// One change a published day was tried under, or the reason it differs:
@@ -16732,26 +16005,6 @@ LunarYear _lunarYear(Map<String, Object?> raw) {
   );
 }
 
-/// How a sankalpa's ayana turns (`03-design/sankalpa.md`).
-enum AyanaReckoning {
-  /// At Makara and Karka sankranti, the sidereal Sun's entries into
-  /// Capricorn and Cancer: the almanac's own ayana.
-  sidereal('SIDEREAL'),
-
-  /// At the solstices, the tropical Sun's.
-  tropical('TROPICAL');
-
-  const AyanaReckoning(this.key);
-
-  /// The key the boundary spells it with.
-  final String key;
-
-  static AyanaReckoning _byKey(Object? key) => values.firstWhere(
-    (reckoning) => reckoning.key == key,
-    orElse: () => throw StateError('an ayana reckoning $key'),
-  );
-}
-
 /// The time a sankalpa recites (`03-design/sankalpa.md`): the year, ayana,
 /// ritu, month and vara at the sunrise of the day holding the instant, and
 /// the limbs and three signs at the instant itself.
@@ -16891,7 +16144,7 @@ SankalpaAnswer _sankalpa(String json) {
       nextSunrise: jd(raw['nextSunrise']),
       year: _lunarYear(raw['year']! as Map<String, Object?>),
       ayana: _key(raw['ayana'], Ayana.byKey, Ayana.unknown),
-      ayanaReckoning: AyanaReckoning._byKey(raw['ayanaReckoning']),
+      ayanaReckoning: _keyedIn(AyanaReckoning.values, raw['ayanaReckoning']),
       ritu: _key(raw['ritu'], Ritu.byKey, Ritu.unknown),
       rituReckoning: raw['rituReckoning']! as String,
       month: Month(
@@ -16915,183 +16168,6 @@ SankalpaAnswer _sankalpa(String json) {
       envelope['provenance']! as Map<String, Object?>,
     ),
   );
-}
-
-/// A table the SDK ships, by its name (`03-design/ashauch.md` §2.10).
-enum AshauchTradition implements _Keyed {
-  /// The *Dharmasindhu*'s, the default.
-  dharmasindhu('DHARMASINDHU'),
-
-  /// The *Mitākṣarā*'s.
-  mitakshara('MITAKSHARA');
-
-  const AshauchTradition(this.key);
-
-  @override
-  final String key;
-}
-
-/// Whose impurity (`03-design/ashauch.md`): a birth's (*sūtaka*, a loss's
-/// too) or a death's.
-enum AshauchKind implements _Keyed {
-  /// *Janana*, *sūtaka*.
-  birth('BIRTH'),
-
-  /// *Mṛta*, *śāva*.
-  death('DEATH');
-
-  const AshauchKind(this.key);
-
-  @override
-  final String key;
-}
-
-/// Who the observer is to the one born or deceased, as the app resolves
-/// it.
-enum AshauchRelation implements _Keyed {
-  /// The mother of the born or the deceased.
-  mother('MOTHER'),
-
-  /// The father.
-  father('FATHER'),
-
-  /// A son or daughter of the deceased.
-  child('CHILD'),
-
-  /// The deceased's wife or husband.
-  spouse('SPOUSE'),
-
-  /// A co-wife of the deceased.
-  coWife('CO_WIFE'),
-
-  /// A step-child: the deceased was the observer's step-mother.
-  stepChild('STEP_CHILD'),
-
-  /// A *sapiṇḍa* to the 7th generation, not named above.
-  sapinda('SAPINDA'),
-
-  /// A *samānodaka*, the 8th generation to the 14th.
-  samanodaka('SAMANODAKA'),
-
-  /// A *sagotra* beyond.
-  sagotra('SAGOTRA'),
-
-  /// A married daughter, for her parent's death.
-  marriedDaughter('MARRIED_DAUGHTER'),
-
-  /// A married brother or sister.
-  marriedSibling('MARRIED_SIBLING'),
-
-  /// The deceased was the observer's maternal grandfather.
-  maternalGrandfather('MATERNAL_GRANDFATHER'),
-
-  /// The deceased was the observer's maternal grandmother.
-  maternalGrandmother('MATERNAL_GRANDMOTHER'),
-
-  /// The deceased was the observer's maternal uncle.
-  maternalUncle('MATERNAL_UNCLE'),
-
-  /// A son-in-law: the deceased was his father- or mother-in-law.
-  sonInLaw('SON_IN_LAW'),
-
-  /// A parent-in-law: the deceased was the observer's son-in-law.
-  parentInLaw('PARENT_IN_LAW'),
-
-  /// A pupil: the deceased was the observer's *ācārya*.
-  pupil('PUPIL'),
-
-  /// The deceased was the observer's ācārya's wife or son.
-  acharyasFamily('ACHARYAS_FAMILY'),
-
-  /// An adopted son and his natural or adoptive parents, to each other.
-  adoption('ADOPTION'),
-
-  /// One of the three *bandhus*: cousins through a father's or mother's
-  /// sister or a mother's brother.
-  bandhu('BANDHU'),
-
-  /// A subject: the deceased was the ruler of the land.
-  subject('SUBJECT'),
-
-  /// A sapiṇḍa of an ascetic (*yati*).
-  ofAscetic('OF_ASCETIC');
-
-  const AshauchRelation(this.key);
-
-  @override
-  final String key;
-}
-
-/// A son or a daughter, which the texts' bands and the mother's further
-/// bar read.
-enum AshauchSex implements _Keyed {
-  /// Male.
-  male('MALE'),
-
-  /// Female.
-  female('FEMALE');
-
-  const AshauchSex(this.key);
-
-  @override
-  final String key;
-}
-
-/// Whether the deceased had the upanayana.
-enum Upanayana implements _Keyed {
-  /// Done.
-  done('DONE'),
-
-  /// Not yet done.
-  notDone('NOT_DONE'),
-
-  /// Not a rite of the deceased's community: the band before it runs to
-  /// marriage, or to the 16th year unmarried (*Dharmasindhu* pp. 300–301).
-  notPerformed('NOT_PERFORMED');
-
-  const Upanayana(this.key);
-
-  @override
-  final String key;
-}
-
-/// Where the death was, to the observer: the rows that turn on it.
-enum Nearness implements _Keyed {
-  /// In the observer's house.
-  observersHouse('OBSERVERS_HOUSE'),
-
-  /// In the observer's village or town; the default.
-  sameVillage('SAME_VILLAGE'),
-
-  /// In another village.
-  otherVillage('OTHER_VILLAGE');
-
-  const Nearness(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which day an event at night belongs to (the Mitākṣarā on Yājñavalkya
-/// III.20).
-enum NightRule implements _Keyed {
-  /// The night in three: the first two thirds belong to the day before,
-  /// the last to the day after.
-  thirds('THIRDS'),
-
-  /// Before the night's middle, the day before; after it, the day after.
-  halfNight('HALF_NIGHT'),
-
-  /// As [halfNight], at the civil midnight of the place's clock.
-  civilMidnight('CIVIL_MIDNIGHT'),
-
-  /// Any time before sunrise, the day before.
-  sunrise('SUNRISE');
-
-  const NightRule(this.key);
-
-  @override
-  final String key;
 }
 
 /// A span the texts name: a bath, a *sajyotiḥ*, a *pakṣiṇī*, a count of
@@ -17139,65 +16215,9 @@ final class AshauchLength extends _Value {
 
   @override
   List<Object?> get _fields => [key, days];
-}
 
-/// The deceased, by the facts the age bands read. Every fact is optional:
-/// left out with no [born], the deceased is an adult who had every rite;
-/// left out with a [born], a fact a band needs is asked for by a refusal
-/// rather than guessed.
-final class Deceased extends _Value {
-  const Deceased({
-    this.born,
-    this.sex,
-    this.chudakarana,
-    this.upanayana,
-    this.betrothed,
-    this.married,
-    this.buried = false,
-  });
-
-  /// When the deceased was born, a UTC Julian day.
-  final double? born;
-
-  /// The deceased's sex; the bands differ, and a parent's sex picks the
-  /// mother-and-father overlap rule.
-  final AshauchSex? sex;
-
-  /// Whether the *cūḍākaraṇa* was done; read from the age when null.
-  final bool? chudakarana;
-
-  /// The upanayana.
-  final Upanayana? upanayana;
-
-  /// A daughter's betrothal (*vāgdāna*).
-  final bool? betrothed;
-
-  /// Whether the deceased was married.
-  final bool? married;
-
-  /// Buried rather than cremated, as an infant may be.
-  final bool buried;
-
-  Map<String, Object?> get _record => <String, Object?>{
-    if (born case final born?) 'born': born,
-    if (sex case final sex?) 'sex': sex.key,
-    if (chudakarana case final chudakarana?) 'chudakarana': chudakarana,
-    if (upanayana case final upanayana?) 'upanayana': upanayana.key,
-    if (betrothed case final betrothed?) 'betrothed': betrothed,
-    if (married case final married?) 'married': married,
-    if (buried) 'buried': true,
-  };
-
-  @override
-  List<Object?> get _fields => [
-    born,
-    sex,
-    chudakarana,
-    upanayana,
-    betrothed,
-    married,
-    buried,
-  ];
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// What happened: an [AshauchBirth], an [AshauchLoss] or an
@@ -17209,6 +16229,9 @@ sealed class AshauchEvent extends _Value {
   double get at;
 
   Map<String, Object?> get _record;
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// A birth from the 7th month on, live or still.
@@ -17283,140 +16306,11 @@ final class AshauchDeath extends AshauchEvent {
     'at': at,
     if (crematedAt case final crematedAt?) 'crematedAt': crematedAt,
     if (ahitagni) 'ahitagni': true,
-    'deceased': deceased._record,
+    'deceased': deceased._wire,
   };
 
   @override
   List<Object?> get _fields => [at, crematedAt, ahitagni, deceased];
-}
-
-/// A period already running, as the overlap rules read it: the parts of an
-/// earlier [Ashauch] they need, which [Ashauch.running] gives.
-final class AshauchRunning extends _Value {
-  const AshauchRunning({
-    required this.key,
-    required this.kind,
-    required this.relation,
-    this.sex,
-    required this.start,
-    required this.end,
-    required this.length,
-    this.days,
-  });
-
-  /// The earlier answer's key, which an overlap names.
-  final String key;
-
-  /// A birth's or a death's.
-  final AshauchKind kind;
-
-  /// The earlier request's relation.
-  final AshauchRelation relation;
-
-  /// The deceased's sex, or the child's.
-  final AshauchSex? sex;
-
-  /// When it began, a UTC Julian day.
-  final double start;
-
-  /// When it ends, a UTC Julian day.
-  final double end;
-
-  /// Its length.
-  final AshauchLength length;
-
-  /// Its days, when the length is a count.
-  final int? days;
-
-  Map<String, Object?> get _record => <String, Object?>{
-    'key': key,
-    'kind': kind.key,
-    'relation': relation.key,
-    if (sex case final sex?) 'sex': sex.key,
-    'start': start,
-    'end': end,
-    'length': length._record,
-    if (days case final days?) 'days': days,
-  };
-
-  @override
-  List<Object?> get _fields => [
-    key,
-    kind,
-    relation,
-    sex,
-    start,
-    end,
-    length,
-    days,
-  ];
-}
-
-/// One ashauch request (`03-design/ashauch.md`): one event, one observer,
-/// and the periods already running for them.
-final class AshauchRequest extends _Value {
-  const AshauchRequest({
-    required this.key,
-    required this.event,
-    required this.relation,
-    this.heardAt,
-    this.abroad = false,
-    this.nearness,
-    this.fullDays,
-    this.during = const [],
-  });
-
-  /// The consumer's own key, which the answer repeats.
-  final String key;
-
-  /// What happened.
-  final AshauchEvent event;
-
-  /// Who the observer is to it.
-  final AshauchRelation relation;
-
-  /// When the news reached the observer, a UTC Julian day; the event's own
-  /// instant when null.
-  final double? heardAt;
-
-  /// Whether the observer was abroad: a fact the family gives, never
-  /// derived.
-  final bool abroad;
-
-  /// Where the death was, to the observer; [Nearness.sameVillage] when
-  /// null.
-  final Nearness? nearness;
-
-  /// The family's full period in days; ten when null.
-  final int? fullDays;
-
-  /// The periods already running for this observer, each an earlier
-  /// answer's [Ashauch.running]: the overlap rules read them.
-  final List<AshauchRunning> during;
-
-  Map<String, Object?> get _record => <String, Object?>{
-    'key': key,
-    'event': event._record,
-    'relation': relation.key,
-    if (heardAt case final heardAt?) 'heardAt': heardAt,
-    if (abroad) 'abroad': true,
-    if (nearness case final nearness?) 'nearness': nearness.key,
-    if (fullDays case final fullDays?) 'fullDays': fullDays,
-    if (during.isNotEmpty)
-      'during': [for (final running in during) running._record],
-  };
-
-  @override
-  List<Object?> get _fields => [
-    key,
-    event,
-    relation,
-    heardAt,
-    abroad,
-    nearness,
-    fullDays,
-    during,
-  ];
 }
 
 /// Why an ashauch's first day is the day it is.
@@ -17660,79 +16554,6 @@ AshauchDayOneBy _dayOneBy(Map<String, Object?> by) => AshauchDayOneBy(
   rule: by['rule'] == null ? null : _keyedIn(NightRule.values, by['rule']),
 );
 
-/// When the first abdika is kept (*Dharmasindhu* p. 330, two views).
-enum FirstAbdika implements _Keyed {
-  /// At the second year's start, the death's first anniversary; the
-  /// default.
-  secondYear('SECOND_YEAR'),
-
-  /// On the eleventh day with the first monthly, the anniversary being
-  /// the second: the view Dhakal records for Nepal.
-  eleventhDay('ELEVENTH_DAY');
-
-  const FirstAbdika(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which month the first anniversary takes when its month is doubled
-/// (C666).
-enum FirstYearAdhika implements _Keyed {
-  /// The adhika, the thirteenth month: the *Dharmasindhu*, the
-  /// *Nirnayasindhu* and Kane; the default.
-  adhika('ADHIKA'),
-
-  /// The ordinary month: Dhakal's note for Nepal's barkhi, which counts
-  /// the eleventh day's rite as the first abdika.
-  nija('NIJA');
-
-  const FirstYearAdhika(this.key);
-
-  @override
-  final String key;
-}
-
-/// The day the sapindana is kept on (*Dharmasindhu* p. 331).
-enum SapindanaAt implements _Keyed {
-  /// The eleventh day.
-  eleventhDay('ELEVENTH_DAY'),
-
-  /// The twelfth day; the default.
-  twelfthDay('TWELFTH_DAY'),
-
-  /// The traipakshika's day.
-  traipakshika('TRAIPAKSHIKA'),
-
-  /// The year's end, the first anniversary's day.
-  yearEnd('YEAR_END');
-
-  const SapindanaAt(this.key);
-
-  @override
-  final String key;
-}
-
-/// How far short an *ūna* rite is kept (*Dharmasindhu* p. 330).
-enum UnaDay implements _Keyed {
-  /// The day before the day it is short of: Madhava's, the default.
-  dayBefore('DAY_BEFORE'),
-
-  /// The tithi one short, its last occurrence before.
-  oneTithi('ONE_TITHI'),
-
-  /// The tithi two short.
-  twoTithis('TWO_TITHIS'),
-
-  /// The tithi three short.
-  threeTithis('THREE_TITHIS');
-
-  const UnaDay(this.key);
-
-  @override
-  final String key;
-}
-
 /// A death's first year, as a request asks it (`03-design/shraddha.md`
 /// §3.3). Every reading left null is the *Dharmasindhu*'s.
 final class FirstYearRequest extends _Value {
@@ -17797,6 +16618,9 @@ final class FirstYearRequest extends _Value {
     una,
     window,
   ];
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// Which rite of the first year.
@@ -18692,19 +17516,6 @@ enum ChakraVowel implements _Keyed {
   final String key;
 }
 
-/// A graha's motion as v. 15 sorts it: fast looks left, mean ahead,
-/// retrograde right.
-enum VedhaMotion implements _Keyed {
-  fast('FAST'),
-  mean('MEAN'),
-  retrograde('RETROGRADE');
-
-  const VedhaMotion(this.key);
-
-  @override
-  final String key;
-}
-
 /// One of a graha's three lines of sight, as it sees them facing the
 /// chakra's centre.
 enum VedhaLine implements _Keyed {
@@ -18744,21 +17555,6 @@ enum VedhaNature implements _Keyed {
   final String key;
 }
 
-/// What a graha's front strikes (C429).
-enum FrontVedha implements _Keyed {
-  /// The star at its far end alone, as every worked example prints it;
-  /// the default.
-  starOnly('STAR_ONLY'),
-
-  /// Every cell it passes, v. 13 read alone.
-  everyCell('EVERY_CELL');
-
-  const FrontVedha(this.key);
-
-  @override
-  final String key;
-}
-
 /// Which lines a graha looks along (C430).
 enum VedhaSight implements _Keyed {
   /// The five by their motion, the Sun, the Moon and the nodes along all
@@ -18772,20 +17568,6 @@ enum VedhaSight implements _Keyed {
   oneEach('ONE_EACH');
 
   const VedhaSight(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which vowels a graha at a corner's juncture strikes (v. 26, C431).
-enum CornerVedha implements _Keyed {
-  /// The four on the corner's diagonal; the default.
-  fourVowels('FOUR_VOWELS'),
-
-  /// The outermost alone.
-  outerVowel('OUTER_VOWEL');
-
-  const CornerVedha(this.key);
 
   @override
   final String key;
@@ -18806,6 +17588,9 @@ final class NameSounds extends _Value {
   List<Object?> get _fields => [letter, vowel];
 
   Map<String, Object?> get _record => {'letter': letter, 'vowel': vowel.key};
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// The readings the texts leave open (C429 to C431), each defaulting to
@@ -18829,6 +17614,9 @@ final class SarvatobhadraRules extends _Value {
     'sight': sight.key,
     'corner': corner.key,
   };
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// Where the five from Mars take the motion their sight follows (C430).
@@ -18864,45 +17652,9 @@ final class SarvatobhadraMotion extends _Value {
           : {
             'GIVEN': [for (final one in given!) one.key],
           };
-}
 
-/// The Sarvatobhadra chakra to read against every chart
-/// (`03-design/gochar.md` §8): at each instant, the native's star and
-/// sign the natal Moon's, the tithi and weekday the birth's.
-///
-/// ```dart
-/// final chart = ctx.chart.found(
-///   /* … */ sarvatobhadra: SarvatobhadraRequest(instants: [2460676.5]),
-/// );
-/// final struck = chart.sarvatobhadra!.first.maleficPoints;
-/// ```
-final class SarvatobhadraRequest {
-  const SarvatobhadraRequest({
-    required this.instants,
-    this.name,
-    this.motion = SarvatobhadraMotion.sky,
-    this.rules = const SarvatobhadraRules(),
-  });
-
-  /// The instants, UTC Julian days: at least one, or the SDK refuses the
-  /// request by `sarvatobhadra.instants`.
-  final List<double> instants;
-
-  /// The name whose first letter and vowel are points too.
-  final NameSounds? name;
-
-  /// Where the five's motion comes from.
-  final SarvatobhadraMotion motion;
-
-  /// The readings of the texts.
-  final SarvatobhadraRules rules;
-
-  String get _json => jsonEncode(<String, Object?>{
-    'instants': instants,
-    if (name != null) 'name': name!._record,
-    'motion': motion._record,
-    'rules': rules._record,
-  });
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// A star of the chakra's 28: one of the 27, or Abhijit.
@@ -19123,52 +17875,6 @@ final class Sarvatobhadra extends _Value {
   List<Object?> get _fields => [rules, native, grahas, points, maleficPoints];
 }
 
-/// Which phase return of a year is its tithi pravesha
-/// (`03-design/tithi-pravesha.md`).
-enum TithiRule implements _Keyed {
-  /// The practice's own: the return while the Sun is in its natal sign,
-  /// the nearer of two, the nearest when the sign holds none (C444 to
-  /// C446).
-  natalSign('NATAL_SIGN'),
-
-  /// The return nearest the year's solar return, whatever the sign.
-  nearestReturn('NEAREST_RETURN');
-
-  const TithiRule(this.key);
-
-  @override
-  final String key;
-}
-
-/// The tithi praveshas to find for every chart's years
-/// (`03-design/tithi-pravesha.md`).
-///
-/// ```dart
-/// final chart = ctx.chart.found(
-///   /* … */ tithiPravesha: const TithiPraveshaRequest(through: 40),
-/// );
-/// for (final year in chart.tithiPravesha!) {
-///   // The year's chart, founded where the native is.
-///   final annual = ctx.chart.found(instant: year.at, /* … */);
-/// }
-/// ```
-final class TithiPraveshaRequest {
-  const TithiPraveshaRequest({
-    required this.through,
-    this.rule = TithiRule.natalSign,
-  });
-
-  /// The last year, 1 to 200, counted as [Pravesha.year] counts it; the
-  /// SDK refuses another by `tithiPravesha.through`.
-  final int through;
-
-  /// Which phase return of each year is taken.
-  final TithiRule rule;
-
-  String get _json =>
-      jsonEncode(<String, Object?>{'through': through, 'rule': rule.key});
-}
-
 /// One year's tithi pravesha: the instant the Moon's elongation from the
 /// Sun returns to the birth's, the solar return it was chosen around and
 /// which rule chose it.
@@ -19279,147 +17985,18 @@ final class MasaPraveshaRequest {
   /// default.
   final MasaDashaRules dasha;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     'year': year,
     if (month != null) 'month': month,
     'reading': reading.key,
     if (place case final place?) 'place': place._json,
-    'masesha': masesha._json,
-    'results': results._json,
-    'dasha': dasha._json,
-  });
-}
-
-/// Which sign of the stronger lord a month's dasha is read in (C477).
-enum MasaDashaSign implements _Keyed {
-  /// The sign it stands in on the month chart; the default.
-  occupied('OCCUPIED'),
-
-  /// The sign it rules here: the Muntha's own, or the month lagna.
-  owned('OWNED');
-
-  const MasaDashaSign(this.key);
-
-  @override
-  final String key;
-}
-
-/// What a Hudda's degree is in time (C477).
-enum MonthClock implements _Keyed {
-  /// The Sun's motion through it from the month's opening; the default.
-  sunDegrees('SUN_DEGREES'),
-
-  /// An equal share of the time from the month's opening to the next.
-  even('EVEN'),
-
-  /// A civil day from the month's opening.
-  days('DAYS');
-
-  const MonthClock(this.key);
-
-  @override
-  final String key;
-}
-
-/// The readings a month's dasha is computed under
-/// (`03-design/varshesha.md`, "The month's dasha").
-///
-/// ```dart
-/// const civil = MasaDashaRules(clock: MonthClock.days);
-/// ```
-final class MasaDashaRules extends _Value {
-  const MasaDashaRules({
-    this.sign = MasaDashaSign.occupied,
-    this.clock = MonthClock.sunDegrees,
-    this.table = HuddaTable.nilakanthi,
-  });
-
-  /// Which sign of the stronger lord its Huddas are read in.
-  final MasaDashaSign sign;
-
-  /// What a degree is in time.
-  final MonthClock clock;
-
-  /// Which printing of the Hudda table.
-  final HuddaTable table;
-
-  Map<String, Object?> get _json => <String, Object?>{
-    'sign': sign.key,
-    'clock': clock.key,
-    'table': table.key,
+    'masesha': masesha._wire,
+    'results': results._wire,
+    'dasha': dasha._wire,
   };
 
-  @override
-  List<Object?> get _fields => [sign, clock, table];
-}
-
-/// The floors the month's results judge strong and weak by
-/// (`03-design/varshesha.md`, "The month's results"), in **sub-sub units**,
-/// 3600 to a unit; the year yogas' own when null.
-///
-/// ```dart
-/// const floors = MasaPhalaRules(strongFrom: 9 * 3600);
-/// ```
-final class MasaPhalaRules {
-  const MasaPhalaRules({this.weakBelow, this.strongFrom, this.kshina});
-
-  /// The strength below which a planet with no dignity is weak; `5 * 3600`
-  /// when null.
-  final int? weakBelow;
-
-  /// The strength from which a planet is strong; `10 * 3600` when null,
-  /// and the SDK refuses one below [weakBelow] by
-  /// `masaPravesha.results.strongFrom`.
-  final int? strongFrom;
-
-  /// When the Moon wanes and so counts a malefic; the gloss's
-  /// [KshinaRule.darkEighthToBrightEighth] when null.
-  final KshinaRule? kshina;
-
-  Map<String, Object?> get _json => <String, Object?>{
-    if (weakBelow case final weakBelow?) 'weakBelow': weakBelow,
-    if (strongFrom case final strongFrom?) 'strongFrom': strongFrom,
-    if (kshina case final kshina?) 'kshina': kshina.key,
-  };
-}
-
-/// Which reading makes a planet the month's lord.
-enum MaseshaReading implements _Keyed {
-  /// The year lord's chain over the six: the verse's own, the default.
-  chain('CHAIN'),
-
-  /// The month lagna's lord outright, which v. 5 gives to "others".
-  lagnaLord('LAGNA_LORD');
-
-  const MaseshaReading(this.key);
-
-  @override
-  final String key;
-}
-
-/// The readings the month's lord parts on (`03-design/varshesha.md`, "The
-/// month's lord").
-final class MaseshaRules {
-  const MaseshaRules({
-    this.reading = MaseshaReading.chain,
-    this.muntha,
-    this.chain = const VarsheshaRules(),
-  });
-
-  final MaseshaReading reading;
-
-  /// Where the Muntha stands inside its sign; the year's own default when
-  /// null.
-  final MunthaDegree? muntha;
-
-  /// The year lord's readings, which the chain takes "as for the year".
-  final VarsheshaRules chain;
-
-  Map<String, Object?> get _json => <String, Object?>{
-    'reading': reading.key,
-    if (muntha case final muntha?) 'muntha': muntha.key,
-    'chain': chain._json,
-  };
+  String get _json => jsonEncode(_wire);
 }
 
 /// The six office-bearers of one month.
@@ -20342,21 +18919,6 @@ enum DossierSection implements _Keyed {
   gochar('GOCHAR');
 
   const DossierSection(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which sections a dossier writes when none are named.
-enum DossierPreset implements _Keyed {
-  /// Every section the chart carries.
-  full('FULL'),
-
-  /// Chart, grahas, dashas and panchanga, for a prompt holding several
-  /// people's charts.
-  family('FAMILY');
-
-  const DossierPreset(this.key);
 
   @override
   final String key;
@@ -21481,7 +20043,8 @@ final class HitRequest {
   /// more than 0 and at most 15; 3 by default (C422).
   final double? eclipseOrbDeg;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     'from': from,
     'to': to,
     if (grahas case final grahas?) 'grahas': [for (final g in grahas) g.key],
@@ -21491,7 +20054,9 @@ final class HitRequest {
     if (orbDeg case final orbDeg?) 'orbDeg': orbDeg,
     if (vargas case final vargas?) 'vargas': [for (final v in vargas) v.key],
     if (eclipseOrbDeg case final eclipseOrbDeg?) 'eclipseOrbDeg': eclipseOrbDeg,
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 }
 
 /// A natal point a transit aspects: a natal graha ([NatalGraha]), the
@@ -21504,6 +20069,9 @@ sealed class NatalPoint {
   String get point;
 
   Map<String, Object?> get _json;
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _json;
 }
 
 /// A natal graha, as a point a transit aspects.
@@ -21721,43 +20289,6 @@ final class Hit {
   final HitEvent event;
 }
 
-/// The transits to read against every chart of a request
-/// (`03-design/gochar.md`): at least one instant, and what to count the
-/// houses from — the natal Moon by default (Phaladeepika ch. 26 v. 1).
-///
-/// ```dart
-/// final chart = ctx.chart.found(
-///   /* … */ gochar: const GocharRequest(instants: [2460676.5]),
-/// );
-/// final good = chart.gochar.first.grahas
-///     .where((g) => g.verdict == GocharVerdict.good)
-///     .map((g) => g.graha);
-/// ```
-final class GocharRequest {
-  const GocharRequest({
-    required this.instants,
-    this.from = GocharFrom.moon,
-    this.ashtakavarga = false,
-  });
-
-  /// The instants, UTC Julian days: at least one, or the SDK refuses the
-  /// request by `gochar.instants`.
-  final List<double> instants;
-
-  /// What to count the houses from.
-  final GocharFrom from;
-
-  /// Whether to judge the seven by the natal Ashtakavarga too
-  /// (`03-design/gochar-ashtakavarga.md`).
-  final bool ashtakavarga;
-
-  String get _json => jsonEncode(<String, Object?>{
-    'instants': instants,
-    'from': from.key,
-    'ashtakavarga': ashtakavarga,
-  });
-}
-
 /// The annual charts a request asks for: how many years, and which
 /// longitude the Sun returns to.
 ///
@@ -21854,7 +20385,8 @@ final class VarshaRequest {
   /// The readings the annual dashas part on, where the sources differ.
   final AnnualDashaRules dashaRules;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     'reading': reading.key,
     'through': through,
     'muntha': muntha.key,
@@ -21863,12 +20395,14 @@ final class VarshaRequest {
     if (matters case final matters?) 'matters': matters._json,
     'yogas': yogas._json,
     if (sahams case final sahams?) 'sahams': sahams._json,
-    'sahamRules': sahamRules._json,
-    'sahamStrength': sahamStrength._json,
-    'harshaRules': harshaRules._json,
+    'sahamRules': sahamRules._wire,
+    'sahamStrength': sahamStrength._wire,
+    'harshaRules': harshaRules._wire,
     if (dashas case final dashas?) 'dashas': dashas._json,
-    'dashaRules': dashaRules._json,
-  });
+    'dashaRules': dashaRules._wire,
+  };
+
+  String get _json => jsonEncode(_wire);
 }
 
 /// The annual dashas a request asks for: the three, or these in the order
@@ -21921,6 +20455,9 @@ sealed class YearClock {
   const factory YearClock.days(double days) = _DaysClock;
 
   Object get _json;
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _json;
 }
 
 final class _NamedClock extends YearClock {
@@ -21939,161 +20476,6 @@ final class _DaysClock extends YearClock {
 
   @override
   Object get _json => {'DAYS': days};
-}
-
-/// Where the balance a nakshatra year opens with comes from (crux C123).
-enum MuddaBalance {
-  /// What remained of the birth Moon's nakshatra: the source's own.
-  natalMoon('NATAL_MOON'),
-
-  /// How far the Moon at the return is through its own nakshatra.
-  entryMoon('ENTRY_MOON'),
-
-  /// None: the first lord runs its whole share from the return.
-  whole('WHOLE');
-
-  const MuddaBalance(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// How a dasha's birth period — an annual dasha's first lord's two pieces —
-/// is divided among its sub-periods.
-enum BirthPeriod {
-  /// Each sub-period its share of the balance: the default.
-  compressed('COMPRESSED'),
-
-  /// Each its share of the whole period, those already over dropped.
-  elapsed('ELAPSED');
-
-  const BirthPeriod(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Where the sources differ on an annual dasha
-/// (`03-design/annual-dashas.md`). A reading left null is the SDK's own
-/// default.
-final class AnnualDashaRules {
-  const AnnualDashaRules({
-    this.clock,
-    this.balance,
-    this.measure,
-    this.birthPeriod,
-    this.depth,
-  });
-
-  /// What a unit of the year is; [YearClock.sunDegrees] by default.
-  final YearClock? clock;
-
-  /// Where a nakshatra year's balance comes from; [MuddaBalance.natalMoon]
-  /// by default.
-  final MuddaBalance? balance;
-
-  /// How the balance is measured; null, each balance's source's own: by arc
-  /// for the birth Moon, by time for the Moon at the return.
-  final Balance? measure;
-
-  /// How the first lord's two pieces are divided among sub-lords.
-  final BirthPeriod? birthPeriod;
-
-  /// How many levels the periods go down: 2, mahadashas and antardashas,
-  /// by default.
-  final int? depth;
-
-  Map<String, Object?> get _json => <String, Object?>{
-    if (clock case final clock?) 'clock': clock._json,
-    if (balance case final balance?) 'balance': balance.key,
-    // The measure is a settings knob, which the boundary reads by its own
-    // key; an exhaustive switch, so a new member stops this compiling.
-    if (measure case final measure?)
-      'measure': switch (measure) {
-        Balance.spatial => 'SPATIAL',
-        Balance.temporal => 'TEMPORAL',
-      },
-    if (birthPeriod case final birthPeriod?) 'birthPeriod': birthPeriod.key,
-    if (depth case final depth?) 'depth': depth,
-  };
-}
-
-/// Which planets a saham's strength calls benefic and malefic.
-enum SahamNatures {
-  /// The chapter's own: the Sun a malefic among them.
-  chapter('CHAPTER'),
-
-  /// The catalogue's Parashari natures.
-  parashari('PARASHARI');
-
-  const SahamNatures(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Whose friendship a saham's "friend" and "inimical" clauses read.
-enum SahamFriendship {
-  /// Tajika's positional friendship, the only one the source defines.
-  positional('POSITIONAL'),
-
-  /// The catalogue's natural friendships.
-  natural('NATURAL');
-
-  const SahamFriendship(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Where the sources differ on a saham's strength
-/// (`03-design/tajika-saham-strength.md`). A reading left null is the
-/// SDK's own default.
-final class SahamStrengthReadings {
-  const SahamStrengthReadings({this.natures, this.friendship, this.weakBelow});
-
-  /// Which planets are benefic and malefic.
-  final SahamNatures? natures;
-
-  /// Whose friendship is read.
-  final SahamFriendship? friendship;
-
-  /// The Vishwa bala below which a saham's lord is weak, in **sub-sub
-  /// units**: `5 * 3600` by default.
-  final int? weakBelow;
-
-  Map<String, Object?> get _json => <String, Object?>{
-    if (natures case final natures?) 'natures': natures.key,
-    if (friendship case final friendship?) 'friendship': friendship.key,
-    if (weakBelow case final weakBelow?) 'weakBelow': weakBelow,
-  };
-}
-
-/// Venus's house of joy, which the Harsha bala's first part reads.
-enum VenusPlace {
-  /// The fifth: the verse's, and the default.
-  fifth('FIFTH'),
-
-  /// The twelfth, as a widely used program reads it.
-  twelfth('TWELFTH');
-
-  const VenusPlace(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Where the sources differ on the Harsha bala
-/// (`03-design/tajika-harsha.md`).
-final class HarshaRules {
-  const HarshaRules({this.venus});
-
-  /// Venus's house of joy.
-  final VenusPlace? venus;
-
-  Map<String, Object?> get _json => <String, Object?>{
-    if (venus case final venus?) 'venus': venus.key,
-  };
 }
 
 /// The sahams a request asks for: all forty-one, or these in the order you
@@ -22127,75 +20509,6 @@ final class _TheseSahams extends Sahams {
   Object get _json => [for (final one in sahams) one.key];
 }
 
-/// When a saham is carried a sign further (`03-design/tajika-sahams.md`).
-enum AddSign {
-  /// When c does not fall between b and a by degrees: the source's own.
-  degrees('DEGREES'),
-
-  /// By whole signs, as a widely used program reads it.
-  signs('SIGNS'),
-
-  /// Never: a − b + c alone.
-  never('NEVER');
-
-  const AddSign(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Where a house's point stands, for the sahams that read one.
-enum HousePoints {
-  /// Sripati's mid-point, built from the angles: the source's own.
-  sripati('SRIPATI'),
-
-  /// The chart's own chalit middles, under whatever its profile names.
-  chalit('CHALIT'),
-
-  /// Equal houses from the lagna's degree.
-  equal('EQUAL');
-
-  const HousePoints(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Roga's formula: the source gives two.
-enum RogaReading {
-  /// Lagna − Moon + lagna: the saham as given.
-  lagna('LAGNA'),
-
-  /// Saturn − Moon + lagna: the other authority's.
-  saturn('SATURN');
-
-  const RogaReading(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Where the sources differ on a saham. A reading left null is the SDK's
-/// own default, which lives in one place and is not repeated here.
-final class SahamRules {
-  const SahamRules({this.addSign, this.houses, this.roga});
-
-  /// When a saham is carried a sign further.
-  final AddSign? addSign;
-
-  /// Where a house's point stands.
-  final HousePoints? houses;
-
-  /// Roga's formula.
-  final RogaReading? roga;
-
-  Map<String, Object?> get _json => <String, Object?>{
-    if (addSign case final addSign?) 'addSign': addSign.key,
-    if (houses case final houses?) 'houses': houses.key,
-    if (roga case final roga?) 'roga': roga.key,
-  };
-}
-
 /// The matters a request asks the sixteen Tajika yogas about: all twelve,
 /// or houses by number in the order you want them answered.
 sealed class Matters {
@@ -22224,48 +20537,6 @@ final class _Houses extends Matters {
 
   @override
   Object get _json => houses;
-}
-
-/// How the Tajika aspects read a pair less than a degree past (crux C112).
-enum SubDegree {
-  /// Poorna, the default: an Ithasala fulfilled.
-  poorna('POORNA'),
-
-  /// Ishrafa: already drawing apart.
-  ishrafa('ISHRAFA');
-
-  const SubDegree(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Which lord a Tambira lets reach the next sign.
-enum TambiraMover {
-  /// The karyesha: the definition's, and the default.
-  karyesha('KARYESHA'),
-
-  /// Either lord: the source's "some authorities".
-  eitherLord('EITHER_LORD');
-
-  const TambiraMover(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// When the Moon counts among Kuttha's benefics (crux C117).
-enum MoonBenefic {
-  /// Always: Charak's list, and the default.
-  always('ALWAYS'),
-
-  /// Waxing only: the commentary's "full Moon", read as the bright half.
-  waxing('WAXING');
-
-  const MoonBenefic(this.key);
-
-  /// The key the boundary reads.
-  final String key;
 }
 
 /// Where the source leaves the sixteen Tajika yogas a choice
@@ -22373,23 +20644,6 @@ final class OfficeBearers {
   final Graha dinaRatri;
 }
 
-/// Who takes the year when no office-bearer aspects the lagna.
-enum NoneAspects {
-  /// The Muntha's lord: Charak's rule, and the default.
-  munthaLord('MUNTHA_LORD'),
-
-  /// The annual lagna's lord, which "some authorities" give.
-  annualLagnaLord('ANNUAL_LAGNA_LORD'),
-
-  /// The strongest of the five: the Nilakanthi's Varshatantra v. 11.
-  strongest('STRONGEST');
-
-  const NoneAspects(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
 /// Who takes the year when the office-bearers tie outright.
 enum VarsheshaTied {
   /// The Muntha's lord: the source's rule, and the default.
@@ -22399,38 +20653,6 @@ enum VarsheshaTied {
   dinaRatriPati('DINA_RATRI_PATI');
 
   const VarsheshaTied(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Whether the Moon may hold the year, and who takes it when it may not.
-enum MoonMayRule {
-  /// Passed over for the next claimant that aspects, and else for its
-  /// Ithasala successor: Charak's two steps, and the default.
-  passedOver('PASSED_OVER'),
-
-  /// Its Ithasala successor at once: the Nilakanthi's own view.
-  ithasala('ITHASALA'),
-
-  /// It holds the year like any other office-bearer.
-  likeAnyOther('LIKE_ANY_OTHER');
-
-  const MoonMayRule(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// Which planets may succeed the Moon through an Ithasala.
-enum MoonPartner {
-  /// Any of the seven: the default.
-  anyPlanet('ANY_PLANET'),
-
-  /// Only an office-bearer, as one commentary reads the verse.
-  officeBearer('OFFICE_BEARER');
-
-  const MoonPartner(this.key);
 
   /// The key the boundary reads.
   final String key;
@@ -22472,6 +20694,9 @@ final class VarsheshaRules {
     if (subDegree case final subDegree?)
       'drishti': {'subDegree': subDegree.key},
   };
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _json;
 }
 
 /// A Tajika strength, exact. The boundary carries it as an integer count
@@ -22714,6 +20939,32 @@ final class TajikaMatter {
 }
 
 /// A member of a closed set an answer spells by its key.
+/// A request section as the SDK takes it, its JSON as text; nothing where
+/// it was not given. A number JSON cannot hold is refused here, named by
+/// its path from [section] (`remedies.at`), rather than as an encoder's
+/// failure.
+String? _encoded(_Request? request, String section) {
+  if (request == null) return null;
+  final wire = request._wire;
+  _finite(wire, section);
+  return jsonEncode(wire);
+}
+
+void _finite(Object? value, String at) {
+  switch (value) {
+    case double() when !value.isFinite:
+      throw ArgumentError.value(value, at, 'a finite number');
+    case Map():
+      for (final MapEntry(:key, value: item) in value.entries) {
+        _finite(item, '$at.$key');
+      }
+    case List():
+      for (var i = 0; i < value.length; i += 1) {
+        _finite(value[i], '$at[$i]');
+      }
+  }
+}
+
 abstract interface class _Keyed {
   String get key;
 }
@@ -22724,100 +20975,6 @@ T _keyedIn<T extends _Keyed>(List<T> values, Object? key) => values.firstWhere(
   (member) => member.key == key,
   orElse: () => throw StateError('a spelling this build does not know: $key'),
 );
-
-/// Whether Pisces rising counts both ways (*Shatpanchashika* I.3).
-enum PiscesRising implements _Keyed {
-  /// Both ways, as the verse reads it; the default.
-  bothWays('BOTH_WAYS'),
-
-  /// As a shirshodaya sign alone.
-  shirshodaya('SHIRSHODAYA');
-
-  const PiscesRising(this.key);
-
-  @override
-  final String key;
-}
-
-/// Whose the rising varga is (C336).
-enum RisingVarga implements _Keyed {
-  /// The rising navamsha's lord; the default.
-  navamsha('NAVAMSHA'),
-
-  /// The majority of the lagna's six vargas: four lords of one kind
-  /// decide it, three of each leave it both ways.
-  shadvarga('SHADVARGA');
-
-  const RisingVarga(this.key);
-
-  @override
-  final String key;
-}
-
-/// How a matter is timed (C338).
-enum TimingRule implements _Keyed {
-  /// By the strongest graha; the default.
-  strongestGraha('STRONGEST_GRAHA'),
-
-  /// By the first occupied house from the lagna.
-  firstOccupied('FIRST_OCCUPIED'),
-
-  /// In days, by the grahas between the lagna and the Moon.
-  moonDays('MOON_DAYS'),
-
-  /// The baseline engine's. Unsourced.
-  baseline('BASELINE');
-
-  const TimingRule(this.key);
-
-  @override
-  final String key;
-}
-
-/// How an unspoken question is read (C339).
-enum MookRule implements _Keyed {
-  /// *Shatpanchashika*'s own; the default.
-  shatpanchashika('SHATPANCHASHIKA'),
-
-  /// By the Moon's house.
-  moonHouse('MOON_HOUSE'),
-
-  /// The baseline engine's. Unsourced.
-  baseline('BASELINE');
-
-  const MookRule(this.key);
-
-  @override
-  final String key;
-}
-
-/// When the Moon is kshina, waning to weakness (Samjna Tantra v. 73, C352).
-enum KshinaRule implements _Keyed {
-  /// From the dark eighth to the bright eighth, the gloss's; the default.
-  darkEighthToBrightEighth('DARK_EIGHTH_TO_BRIGHT_EIGHTH'),
-
-  /// From the dark eleventh to the new Moon, its "some say".
-  darkEleventhToNewMoon('DARK_ELEVENTH_TO_NEW_MOON');
-
-  const KshinaRule(this.key);
-
-  @override
-  final String key;
-}
-
-/// Whether a prashna carries the baseline engine's points.
-enum ScoreRule implements _Keyed {
-  /// No points: the verdict's clauses are the answer (C337); the default.
-  off('OFF'),
-
-  /// The baseline engine's points beside the clauses. Unsourced.
-  baseline('BASELINE');
-
-  const ScoreRule(this.key);
-
-  @override
-  final String key;
-}
 
 /// How the Moon's weaknesses are read.
 final class PrashnaMoonRules extends _Value {
@@ -22830,152 +20987,6 @@ final class PrashnaMoonRules extends _Value {
 
   @override
   List<Object?> get _fields => [kshina];
-}
-
-/// Which office counts when a graha holds several (C371).
-enum OfficeOrder implements _Keyed {
-  /// The worked examples' order: debilitation, a division, own sign or
-  /// exaltation, an enemy's sign; the default.
-  gloss('GLOSS'),
-
-  /// The best office held.
-  highest('HIGHEST'),
-
-  /// The worst office held.
-  lowest('LOWEST');
-
-  const OfficeOrder(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which drekkana is a graha's own.
-enum DrekkanaReading implements _Keyed {
-  /// The Tajika one, the weekday cycle from Mars; the default.
-  tajika('TAJIKA'),
-
-  /// The Parashari one: the sign, its fifth, its ninth.
-  parashari('PARASHARI');
-
-  const DrekkanaReading(this.key);
-
-  @override
-  final String key;
-}
-
-/// Whether an enemy's sign makes a graha adhama.
-enum EnemySign implements _Keyed {
-  /// Read, the enemy as Tajika reads one; the default.
-  tajika('TAJIKA'),
-
-  /// Not read.
-  ignored('IGNORED');
-
-  const EnemySign(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which printing of the Hudda table (C109).
-enum HuddaTable implements _Keyed {
-  /// The Tajika Nilakanthi's own (1893); the default.
-  nilakanthi('NILAKANTHI'),
-
-  /// K. S. Charak's, whose Aquarius puts Venus first.
-  charak('CHARAK');
-
-  const HuddaTable(this.key);
-
-  @override
-  final String key;
-}
-
-/// How a Kamboola's offices are read (Samjna Tantra vv. 36–46), the
-/// gloss's own by default.
-final class OfficeRules extends _Value {
-  const OfficeRules({
-    this.order = OfficeOrder.gloss,
-    this.drekkana = DrekkanaReading.tajika,
-    this.enemy = EnemySign.tajika,
-    this.hudda = HuddaTable.nilakanthi,
-  });
-
-  final OfficeOrder order;
-  final DrekkanaReading drekkana;
-  final EnemySign enemy;
-  final HuddaTable hudda;
-
-  Map<String, Object?> get _record => {
-    'order': order.key,
-    'drekkana': drekkana.key,
-    'enemy': enemy.key,
-    'hudda': hudda.key,
-  };
-
-  @override
-  List<Object?> get _fields => [order, drekkana, enemy, hudda];
-}
-
-/// What the Sun's setting part is (Samjna Tantra v. 72, C377).
-enum SettingPart implements _Keyed {
-  /// Any navamsha whose sign is the seventh from the Sun's navamsha's;
-  /// the default.
-  navamshaSign('NAVAMSHA_SIGN'),
-
-  /// The one navamsha-arc seven on from the Sun's.
-  navamshaArc('NAVAMSHA_ARC');
-
-  const SettingPart(this.key);
-
-  @override
-  final String key;
-}
-
-/// How v. 72's weaknesses are read.
-final class WeaknessRules extends _Value {
-  const WeaknessRules({this.setting = SettingPart.navamshaSign});
-
-  final SettingPart setting;
-
-  Map<String, Object?> get _record => {'setting': setting.key};
-
-  @override
-  List<Object?> get _fields => [setting];
-}
-
-/// Which questions v. 96's "all yogas are fruitless without the Moon"
-/// governs (C376).
-enum MoonScope implements _Keyed {
-  /// Every question; the default.
-  every('EVERY'),
-
-  /// Questions of gain, the 11th house, where the verse stands.
-  gain('GAIN');
-
-  const MoonScope(this.key);
-
-  @override
-  final String key;
-}
-
-/// Whether the Bhuvanapradipa's graded yogas are read, and by which
-/// aspect (C373, open: off by default).
-enum GradedRule implements _Keyed {
-  /// Not read; the default.
-  off('OFF'),
-
-  /// By Parashara's full aspects; a graha does not see its own sign.
-  parashari('PARASHARI'),
-
-  /// By Tajika's sign aspects, the conjunction included.
-  tajika('TAJIKA');
-
-  const GradedRule(this.key);
-
-  @override
-  final String key;
 }
 
 /// How the lagnesha and the karyesha look at the two houses.
@@ -23126,8 +21137,8 @@ final class PrashnaRules extends _Value {
     'timing': timing.key,
     'mook': mook.key,
     'moon': moon._record,
-    'offices': offices._record,
-    'weakness': weakness._record,
+    'offices': offices._wire,
+    'weakness': weakness._wire,
     'moonScope': moonScope.key,
     'graded': graded.key,
     'score': score.key,
@@ -23146,24 +21157,6 @@ final class PrashnaRules extends _Value {
     graded,
     score,
   ];
-}
-
-/// When the matter asked about falls, which decides whether a separation
-/// fails it or finds it past (C370).
-enum PrashnaTense implements _Keyed {
-  /// Not said: a separation reads both ways; the default.
-  unspecified('UNSPECIFIED'),
-
-  /// A matter still to come.
-  future('FUTURE'),
-
-  /// A matter that may already have happened.
-  past('PAST');
-
-  const PrashnaTense(this.key);
-
-  @override
-  final String key;
 }
 
 /// A question to read every chart of a request as the chart of its moment
@@ -23198,14 +21191,17 @@ final class PrashnaRequest {
   /// The readings.
   final PrashnaRules rules;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     'question': {
       if (house != null) 'house': house,
       if (number != null) 'number': number,
       'tense': tense.key,
     },
     'rules': rules._record,
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 }
 
 /// The verse a clause of the verdict reads.
@@ -23840,27 +21836,6 @@ final class Prashna {
   final Rashi? numberSign;
 }
 
-/// How a graha's summary nature is derived from its lordships.
-enum FunctionalScheme implements _Keyed {
-  /// *Laghu Parashari* vv. 6 to 20 and BPHS ch. 13 vv. 1 to 13: the
-  /// lords of 3, 6 and 11 are evil, the 8th lord is not good unless it
-  /// is the lagna lord or a luminary, a kendra lord loses its natural
-  /// nature, the 2nd and 12th act by association, and a trikona lord is
-  /// good whatever else it owns (C329, C330); the default.
-  laghuParashari('LAGHU_PARASHARI'),
-
-  /// The baseline engine's: the lords of 1, 5 and 9 good, the lords of
-  /// 6, 8 and 12 bad unless they also own a trikona, and a yogakaraka
-  /// any other kendra lord that owns a trikona. No text read gives the
-  /// 12th lord as evil or exempts no one from the 8th (C331).
-  baseline('BASELINE');
-
-  const FunctionalScheme(this.key);
-
-  @override
-  final String key;
-}
-
 /// A graha's functional nature for a lagna, summarised.
 enum FunctionalNature implements _Keyed {
   /// One graha owning a kendra and a trikona (LP v. 20).
@@ -23928,21 +21903,6 @@ enum FunctionalClauseKind implements _Keyed {
   badhakesha('BADHAKESHA');
 
   const FunctionalClauseKind(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which text's ṛk is given for Rahu. The two texts agree for the other
-/// eight grahas (C343).
-enum RikSource implements _Keyed {
-  /// BPHS 84.18: *kayā naś citra*; the default.
-  bphs('BPHS'),
-
-  /// Yājñavalkya I.301: *kāṇḍāt*.
-  yajnavalkya('YAJNAVALKYA');
-
-  const RikSource(this.key);
 
   @override
   final String key;
@@ -24187,23 +22147,6 @@ enum MandalaPlace implements _Keyed {
   northeast('NORTHEAST');
 
   const MandalaPlace(this.key);
-
-  @override
-  final String key;
-}
-
-/// Whose devotee the Sun with Ketu makes (C354). The 1899 and 1923
-/// prints give vv. 70–71 with their fruits exchanged and read
-/// *ravi-bhakti*; the recension and Jaimini's *Upadeśa Sūtras* read
-/// Śiva for the Sun and Gaurī for the Moon.
-enum SunWithKetu implements _Keyed {
-  /// Śiva, the recension's *śiva-bhakti*; the default; the default.
-  shiva('SHIVA'),
-
-  /// Sūrya, the prints' *ravi-bhakti*.
-  surya('SURYA');
-
-  const SunWithKetu(this.key);
 
   @override
   final String key;
@@ -24521,98 +22464,6 @@ enum DashaRemedy implements _Keyed {
 
   @override
   final String key;
-}
-
-/// Which scheme judges the grahas' functional natures.
-final class FunctionalRules extends _Value {
-  const FunctionalRules({this.scheme = FunctionalScheme.laghuParashari});
-
-  final FunctionalScheme scheme;
-
-  Map<String, Object?> get _record => {'scheme': scheme.key};
-
-  @override
-  List<Object?> get _fields => [scheme];
-}
-
-/// Which text's ṛk Rahu's śānti gives.
-final class ShantiRules extends _Value {
-  const ShantiRules({this.rik = RikSource.bphs});
-
-  final RikSource rik;
-
-  Map<String, Object?> get _record => {'rik': rik.key};
-
-  @override
-  List<Object?> get _fields => [rik];
-}
-
-/// Whom the Sun with Ketu is devoted to (C354).
-final class DevataRules extends _Value {
-  const DevataRules({this.sunWithKetu = SunWithKetu.shiva});
-
-  final SunWithKetu sunWithKetu;
-
-  Map<String, Object?> get _record => {'sunWithKetu': sunWithKetu.key};
-
-  @override
-  List<Object?> get _fields => [sunWithKetu];
-}
-
-/// The readings remedies are given under, one knob per crux, the texts'
-/// own by default (`03-design/remedies.md`).
-final class RemedyRules extends _Value {
-  const RemedyRules({
-    this.functional = const FunctionalRules(),
-    this.shanti = const ShantiRules(),
-    this.devata = const DevataRules(),
-  });
-
-  final FunctionalRules functional;
-  final ShantiRules shanti;
-  final DevataRules devata;
-
-  Map<String, Object?> get _record => {
-    'functional': functional._record,
-    'shanti': shanti._record,
-    'devata': devata._record,
-  };
-
-  @override
-  List<Object?> get _fields => [functional, shanti, devata];
-}
-
-/// The remedies to read in every chart of a request
-/// (`03-design/remedies.md`). An [at] reads the Vimśottarī periods running
-/// then, so it asks for that daśā too.
-///
-/// ```dart
-/// final chart = ctx.chart.found(/* … */
-///     remedies: const RemedyRequest(at: 2460676.5,
-///         rules: RemedyRules(shanti: ShantiRules(rik: RikSource.yajnavalkya))));
-/// final whom = chart.remedies?.subjects.subjects;
-/// ```
-final class RemedyRequest {
-  const RemedyRequest({this.at, this.rules = const RemedyRules()});
-
-  /// The instant, a Julian day in UT, whose running mahādaśā and
-  /// antardaśā are read; none when null, and refused by `remedies.at`
-  /// when not finite.
-  final double? at;
-
-  /// The readings.
-  final RemedyRules rules;
-
-  String get _json {
-    final instant = at;
-    if (instant != null && !instant.isFinite) {
-      throw ArgumentError.value(instant, 'remedies.at', 'a finite Julian day');
-    }
-    return jsonEncode(<String, Object?>{
-      if (instant != null) 'at': instant,
-      'rules': rules._record,
-    });
-  }
 }
 
 /// A Laghu Parashari clause that made a graha's nature, and the house it
@@ -25004,11 +22855,14 @@ final class LalKitabRequest {
   /// to; the SDK does not ship the book's, and checks each row.
   final List<List<int>>? varshphal;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     if (cycle case final cycle?) 'cycle': cycle._record,
     if (year case final year?) 'year': year,
     if (varshphal case final rows?) 'varshphal': {'rows': rows},
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 }
 
 /// What makes a planet strong in its house (1952 pp. 29–31).
@@ -25565,6 +23419,9 @@ final class PakshiRules extends _Value {
 
   @override
   List<Object?> get _fields => [clock, subs, relations];
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// A span of time, Julian days (UTC).
@@ -26453,57 +24310,6 @@ enum PurifierNative implements _Keyed {
   final String key;
 }
 
-/// When v. 76's extension of Gulika (its 7th, its navamsha and that
-/// navamsha's 7th) counts toward a verdict (X7).
-enum GulikaExtension implements _Keyed {
-  /// Counted when neither the pranapada nor the Moon holds; the default.
-  whenTwoFail('WHEN_TWO_FAIL'),
-
-  /// Counted at every instant, without precedence.
-  always('ALWAYS'),
-
-  /// Not judged: Gulika purifies by its own sign alone.
-  never('NEVER');
-
-  const GulikaExtension(this.key);
-
-  @override
-  final String key;
-}
-
-/// Whether a lagna no purifier holds is removed or only weighed (X8).
-enum PurifyAs implements _Keyed {
-  /// Removed: v. 75 calls it "the birth of a plant"; the default.
-  bar('BAR'),
-
-  /// Kept, its verdict saying it is impure.
-  weight('WEIGHT');
-
-  const PurifyAs(this.key);
-
-  @override
-  final String key;
-}
-
-/// How the pranapada is reckoned (X2, X3).
-enum PranapadaRule implements _Keyed {
-  /// The verse: the Sun's longitude shifted by v. 74, then a sign every
-  /// fifteen palas since sunrise.
-  verse('VERSE'),
-
-  /// The reading that reproduces the gloss's printed answer (p. 13).
-  printedExample('PRINTED_EXAMPLE'),
-
-  /// The SDK's own pranapada point, settled against the conformance
-  /// corpus.
-  sdkPoint('SDK_POINT');
-
-  const PranapadaRule(this.key);
-
-  @override
-  final String key;
-}
-
 /// Which end of Saturn's eighth of the day or night is Gulika for the
 /// purifier (X5), or Mandi for the nisheka.
 enum SaturnEighthEnd implements _Keyed {
@@ -26514,117 +24320,6 @@ enum SaturnEighthEnd implements _Keyed {
   start('START');
 
   const SaturnEighthEnd(this.key);
-
-  @override
-  final String key;
-}
-
-/// How a house is counted from the lagna to a point.
-enum HouseCount implements _Keyed {
-  /// By sign from the lagna's sign, as Jha's worked example forces.
-  sign('SIGN'),
-
-  /// By Sripati's bhava, the sandhis halfway between the mid-points.
-  sripatiBhava('SRIPATI_BHAVA');
-
-  const HouseCount(this.key);
-
-  @override
-  final String key;
-}
-
-/// How long the "month" BPHS ch. 3 v. 28 reads a sign as.
-enum NishekaMonth implements _Keyed {
-  /// Thirty days, so a degree is a day: Jha's units.
-  thirtyDays('THIRTY_DAYS'),
-
-  /// A twelfth of the sidereal year.
-  solar('SOLAR'),
-
-  /// A synodic month.
-  synodic('SYNODIC');
-
-  const NishekaMonth(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which point v. 27's "the lagna to the 9th bhava" measures to.
-enum NinthBhava implements _Keyed {
-  /// Sripati's mid-point of the 9th, as Jha's worked example uses.
-  sripati('SRIPATI'),
-
-  /// The start of the 9th sign from the lagna's.
-  wholeSign('WHOLE_SIGN'),
-
-  /// Eight signs past the lagna's degree.
-  equal('EQUAL');
-
-  const NinthBhava(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which point of Saturn v. 27's "where Saturn stands" measures from.
-enum SaturnTerm implements _Keyed {
-  /// Saturn's longitude, as Jha's example takes it.
-  longitude('LONGITUDE'),
-
-  /// The Sripati mid-point of the bhava Saturn stands in.
-  bhavaMadhya('BHAVA_MADHYA');
-
-  const SaturnTerm(this.key);
-
-  @override
-  final String key;
-}
-
-/// How v. 28's "the invisible half" is read.
-enum InvisibleHalf implements _Keyed {
-  /// The half-circle ahead of the lagna's degree.
-  byLongitude('BY_LONGITUDE'),
-
-  /// The 1st to the 6th signs from the lagna's.
-  bySign('BY_SIGN');
-
-  const InvisibleHalf(this.key);
-
-  @override
-  final String key;
-}
-
-/// How *Brihat Jataka* IV.21's count runs from the Moon's dvadashamsha
-/// at conception to the sign she holds at birth (X11).
-enum ConceptionCount implements _Keyed {
-  /// From the sign after the dvadashamsha's: Bhattotpala after Garga,
-  /// and Iyer.
-  nextAfterDvadashamsha('NEXT_AFTER_DVADASHAMSHA'),
-
-  /// The dvadashamsha's own sign, counted from the Moon's: the 1912 main
-  /// text.
-  fromMoonSign('FROM_MOON_SIGN'),
-
-  /// As many signs from Aries: the view Bhattotpala gives to "some".
-  fromAries('FROM_ARIES');
-
-  const ConceptionCount(this.key);
-
-  @override
-  final String key;
-}
-
-/// What of the conception's rising point *Brihat Jataka* IV.21 classes
-/// as a day or a night sign.
-enum ConceptionRising implements _Keyed {
-  /// The rising sign: the verse and the 1912 main text.
-  sign('SIGN'),
-
-  /// The rising navamsha: Iyer and the 1912 notes.
-  navamsha('NAVAMSHA');
-
-  const ConceptionRising(this.key);
 
   @override
   final String key;
@@ -26673,95 +24368,6 @@ enum BirthPresentation implements _Keyed {
   hands('HANDS');
 
   const BirthPresentation(this.key);
-
-  @override
-  final String key;
-}
-
-/// How much of the lamp's oil or wick was left, at the three points
-/// V.18's gloss names: a sign's start, its middle and its end.
-enum LampLevel implements _Keyed {
-  /// Full oil, an unburnt wick.
-  full('FULL'),
-
-  /// Half.
-  half('HALF'),
-
-  /// No oil, a wick burnt down.
-  spent('SPENT');
-
-  const LampLevel(this.key);
-
-  @override
-  final String key;
-}
-
-/// What "the Moon not seeing the lagna" asks of her aspect (X16).
-enum MoonSees implements _Keyed {
-  /// Any aspect at all, a quarter or more.
-  anyAspect('ANY_ASPECT'),
-
-  /// Only the full aspect, from the 7th.
-  full('FULL');
-
-  const MoonSees(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which houses are "fallen from the 10th" for the Sun in V.1 (X17).
-enum SunFallen implements _Keyed {
-  /// The 9th or the 8th: Iyer's 1885 translation, after Bhattotpala.
-  ninthOrEighth('NINTH_OR_EIGHTH'),
-
-  /// The 8th, 9th, 11th or 12th: fallen from the 10th either way.
-  eitherSide('EITHER_SIDE');
-
-  const SunFallen(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which reading of V.17's presentation is asked (X18).
-enum PresentationBy implements _Keyed {
-  /// As the rising sign rises (BJ I.10).
-  risingSign('RISING_SIGN'),
-
-  /// By the lagna lord's motion: direct a natural birth, retrograde an
-  /// irregular one.
-  lagnaLordMotion('LAGNA_LORD_MOTION');
-
-  const PresentationBy(this.key);
-
-  @override
-  final String key;
-}
-
-/// How "the grahas between the lagna and the Moon" are counted (X19).
-enum BetweenBy implements _Keyed {
-  /// By degree, in the zodiac's order.
-  degree('DEGREE'),
-
-  /// By sign: a graha in a sign after the lagna's and before the Moon's.
-  sign('SIGN');
-
-  const BetweenBy(this.key);
-
-  @override
-  final String key;
-}
-
-/// Which half of the attendants V.22 puts outside the room.
-enum OutsideHalf implements _Keyed {
-  /// The visible half outside, the invisible inside: Varahamihira's own.
-  visible('VISIBLE'),
-
-  /// The reverse, which V.22 gives as some others'.
-  invisible('INVISIBLE');
-
-  const OutsideHalf(this.key);
 
   @override
   final String key;
@@ -26944,24 +24550,6 @@ enum LifeEventKind implements _Keyed {
   final String key;
 }
 
-/// How finely an event's date is known, which sets the window it is
-/// fitted over.
-enum DatePrecision implements _Keyed {
-  /// The day: a window of one day; the default.
-  day('DAY'),
-
-  /// The month: 31 days.
-  month('MONTH'),
-
-  /// The year: 366 days.
-  year('YEAR');
-
-  const DatePrecision(this.key);
-
-  @override
-  final String key;
-}
-
 /// How sure the family is of an event, which weighs it.
 enum EventConfidence implements _Keyed {
   /// Certain; the default.
@@ -27000,48 +24588,6 @@ enum DashaYearLength implements _Keyed {
   nakshatra324('NAKSHATRA_324');
 
   const DashaYearLength(this.key);
-
-  @override
-  final String key;
-}
-
-/// What a dasha answers past the end of its cycle.
-enum AfterCycle implements _Keyed {
-  /// Nothing: the periods end.
-  end('END'),
-
-  /// The cycle again.
-  repeat('REPEAT');
-
-  const AfterCycle(this.key);
-
-  @override
-  final String key;
-}
-
-/// What a seed outside a conditional dasha's cycle does.
-enum SeedOverflow implements _Keyed {
-  /// It wraps to the cycle's start.
-  wrapToStart('WRAP_TO_START'),
-
-  /// It is refused.
-  reject('REJECT');
-
-  const SeedOverflow(this.key);
-
-  @override
-  final String key;
-}
-
-/// How Ashtottari's lords share the nakshatras, which chooses its row.
-enum AshtottariGrouping implements _Keyed {
-  /// Three nakshatras each.
-  threeEach('THREE_EACH'),
-
-  /// Four and three in turn.
-  fourAndThree('FOUR_AND_THREE');
-
-  const AshtottariGrouping(this.key);
 
   @override
   final String key;
@@ -27139,28 +24685,6 @@ final class PurifyRequest {
   };
 }
 
-/// How the pranapada's house is judged (Jha's print ch. 3 vv. 71–74). A
-/// reading left null is the texts' own.
-final class PranapadaHouseRules {
-  const PranapadaHouseRules({this.pranapada, this.count, this.firstAuspicious});
-
-  /// How the pranapada is reckoned; the verse's by default.
-  final PranapadaRule? pranapada;
-
-  /// How its house is counted from the lagna; by sign by default.
-  final HouseCount? count;
-
-  /// Whether the 1st is auspicious; not by default, as the gloss lists 2,
-  /// 5, 9, 4, 10 and 11.
-  final bool? firstAuspicious;
-
-  Map<String, Object?> get _record => {
-    if (pranapada case final pranapada?) 'pranapada': pranapada.key,
-    if (count case final count?) 'count': count.key,
-    if (firstAuspicious case final first?) 'firstAuspicious': first,
-  };
-}
-
 /// How the nisheka counts back (BPHS ch. 3 vv. 25–29). A reading left
 /// null is the texts' own.
 final class NishekaRules {
@@ -27236,7 +24760,7 @@ final class ConceptionRules {
 
   Map<String, Object?> get _record => {
     'purifier': purifier._record,
-    'pranapadaHouse': pranapadaHouse._record,
+    'pranapadaHouse': pranapadaHouse._wire,
     'nisheka': nisheka._record,
     'moon': moon._record,
   };
@@ -27297,41 +24821,6 @@ final class BirthFacts {
   };
 }
 
-/// The knobs *Brihat Jataka* ch. V's circumstances take, one per crux. A
-/// reading left null is the texts' own.
-final class CircumstanceRules {
-  const CircumstanceRules({
-    this.moonSees,
-    this.sunFallen,
-    this.presentationBy,
-    this.betweenBy,
-    this.outside,
-  });
-
-  /// What the Moon's not seeing the lagna asks (X16).
-  final MoonSees? moonSees;
-
-  /// Which houses the Sun has fallen to (X17).
-  final SunFallen? sunFallen;
-
-  /// Which reading of the presentation (X18).
-  final PresentationBy? presentationBy;
-
-  /// How the grahas between the lagna and the Moon are counted (X19).
-  final BetweenBy? betweenBy;
-
-  /// Which half of them is outside the room (V.22).
-  final OutsideHalf? outside;
-
-  Map<String, Object?> get _record => {
-    if (moonSees case final moonSees?) 'moonSees': moonSees.key,
-    if (sunFallen case final sunFallen?) 'sunFallen': sunFallen.key,
-    if (presentationBy case final by?) 'presentationBy': by.key,
-    if (betweenBy case final betweenBy?) 'betweenBy': betweenBy.key,
-    if (outside case final outside?) 'outside': outside.key,
-  };
-}
-
 /// What the family remembers of the birth, and the readings it is weighed
 /// under.
 final class CircumstanceRequest {
@@ -27348,7 +24837,7 @@ final class CircumstanceRequest {
 
   Map<String, Object?> get _record => {
     'facts': facts._record,
-    'rules': rules._record,
+    'rules': rules._wire,
   };
 }
 
@@ -27395,6 +24884,9 @@ final class LifeEvent {
     if (confidence case final confidence?) 'confidence': confidence.key,
     'heldOut': heldOut,
   };
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => _record;
 }
 
 /// The Vimshottari the baseline's event fit reads. A reading left null is
@@ -27570,14 +25062,17 @@ final class RectificationRequest {
   /// every run of a window around it.
   final SvarodayaRequest? svarodaya;
 
-  String get _json => jsonEncode(<String, Object?>{
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{
     if (purify case final purify?) 'purify': purify._record,
     if (conception case final conception?) 'conception': conception._record,
     if (circumstance case final circumstance?)
       'circumstance': circumstance._record,
     if (baseline case final baseline?) 'baseline': baseline._record,
     if (svarodaya case final svarodaya?) 'svarodaya': svarodaya._record,
-  });
+  };
+
+  String get _json => jsonEncode(_wire);
 }
 
 /// One test of the lagna against one point of one purifier.
@@ -28880,25 +26375,6 @@ final List<Graha> _theNine = List<Graha>.generate(9, Graha.byId);
 /// The nine a Jaimini bit set names, in graha id order.
 List<Graha> _nine(int bits) => _members(bits, _theNine, (g) => g.id);
 
-/// Where the Muntha stands inside the sign it has reached (crux C107).
-///
-/// Both readings give the same sign at the return and part over the
-/// course of the year, so they differ for a Tajika aspect taken to the
-/// Muntha and for nothing else.
-enum MunthaDegree {
-  /// It enters each year at its sign's first degree and crosses the whole
-  /// sign during the year: the source's own reading.
-  signStart('SIGN_START'),
-
-  /// It carries the natal lagna's degree into each new sign.
-  natalDegree('NATAL_DEGREE');
-
-  const MunthaDegree(this.key);
-
-  /// The key the boundary takes.
-  final String key;
-}
-
 /// The Muntha at one return: the birth lagna's sign advanced one sign for
 /// each completed year, and that sign's lord.
 final class Muntha {
@@ -28943,139 +26419,6 @@ final class Pravesha {
 
   /// The instant, a Julian day (UTC), to pass to `found`.
   final double instant;
-}
-
-/// The narrative plans a request asks a chart for
-/// (`03-design/plans-at-the-boundary.md`). Each composer is off by default.
-/// [readings] needs a [RuleRequest] beside it, since it says what the rules
-/// a chart held answered; [sadeSati] needs a Sade Sati window, and [gochar]
-/// a gochar request, since each says what that request found.
-final class PlanRequest {
-  /// A request for the composers named.
-  const PlanRequest({
-    this.placements = false,
-    this.readings = false,
-    this.strength = false,
-    this.houses = false,
-    this.positions = false,
-    this.aspects = false,
-    this.conditions = false,
-    this.karakas = false,
-    this.chalit = false,
-    this.phala = false,
-    this.bhavaBala = false,
-    this.vimshopaka = false,
-    this.panchanga = false,
-    this.states = false,
-    this.dashaPhala = false,
-    this.ashtakavarga = false,
-    this.sadeSati = false,
-    this.gochar = false,
-  });
-
-  /// Where each of the nine grahas stands and who shares a sign.
-  final bool placements;
-
-  /// What each rule the chart held says.
-  final bool readings;
-
-  /// Each graha's Shadbala in rupas, the strongest first.
-  final bool strength;
-
-  /// The lord of each of the twelve bhavas, first house first.
-  final bool houses;
-
-  /// Where each graha stands to the degree, which `placements` rounds away.
-  final bool positions;
-
-  /// Which graha looks at which, and how strongly.
-  final bool aspects;
-
-  /// What each graha is where it stands: its dignity, its navamsha and the
-  /// vargottama it may make, its retrogression and its combustion.
-  final bool conditions;
-
-  /// Which chara karaka each graha holds, under both schemes.
-  final bool karakas;
-
-  /// Where the placement system and the chalit put a graha in different
-  /// bhavas. It says nothing of a chart whose readings agree.
-  final bool chalit;
-
-  /// What a loaded corpus of state readings says of this chart's subjects:
-  /// a graha in a bhava, the lagna's sign, each limb of the panchanga, and
-  /// what the birth nakshatra is. It says nothing until a pack carrying
-  /// those readings is loaded.
-  final bool phala;
-
-  /// Each bhava's strength in virupas, the first house first. It says the
-  /// weight and never a verdict: a bhava carries no requirement.
-  final bool bhavaBala;
-
-  /// Each graha's Vimshopaka under all four schemes, each item naming the
-  /// scheme it belongs to.
-  final bool vimshopaka;
-
-  /// The almanac of the chart's day: the tithi with its paksha, the vara,
-  /// the nakshatra and the Moon's pada in it, the yoga and the karana, and
-  /// whether the birth fell by day where the chart says.
-  final bool panchanga;
-
-  /// The other half of a graha's state: how it stands to its dispositor
-  /// under all three friendships, and the four avasthas — the fifth of its
-  /// sign, its wakefulness, its brightness where the chart decides one,
-  /// and the lajjitadi that hold beside the ones nothing decides.
-  final bool states;
-
-  /// What each graha's placement says of its dasha: when in the dasha its
-  /// effects come, whether its place is auspicious, the points its dignity
-  /// earns and whether the placement makes the dasha favourable — with the
-  /// reading a loaded corpus carries of that graha as a dasha lord. It
-  /// reads the dasha phala section, computed for you when asked.
-  final bool dashaPhala;
-
-  /// What the Ashtakavarga says: each graha's bindus in the sign it
-  /// stands in, and each sign's sarvashtakavarga. The two numbers a text
-  /// quotes and no verdict, because the reading carries no threshold. It
-  /// reads the Ashtakavarga section and the chart's own placements, both
-  /// computed for you when asked.
-  final bool ashtakavarga;
-
-  /// What a loaded corpus says of Saturn's periods from the natal Moon: the
-  /// reading of each Sade Sati phase and smaller spell the chart's report
-  /// holds, each house once, in the order Saturn first reaches it. It says
-  /// the report the request's `sadeSati` window finds, so it needs that
-  /// window beside it, and like `phala` it says nothing until a pack of
-  /// state readings is loaded.
-  final bool sadeSati;
-
-  /// What the transits come to at each instant the request's `gochar`
-  /// names: the sign they are counted from, each graha's house and verdict,
-  /// who obstructs it, where in its sign it bears fruit, and its bindus when
-  /// that request asks for the Ashtakavarga. One plan an instant, as a list
-  /// of plans under `gochar`; it needs `gochar` beside it, and no corpus.
-  final bool gochar;
-
-  String get _json => jsonEncode(<String, Object?>{
-    'placements': placements,
-    'readings': readings,
-    'strength': strength,
-    'houses': houses,
-    'positions': positions,
-    'aspects': aspects,
-    'conditions': conditions,
-    'karakas': karakas,
-    'chalit': chalit,
-    'phala': phala,
-    'bhavaBala': bhavaBala,
-    'vimshopaka': vimshopaka,
-    'panchanga': panchanga,
-    'states': states,
-    'dashaPhala': dashaPhala,
-    'ashtakavarga': ashtakavarga,
-    'sadeSati': sadeSati,
-    'gochar': gochar,
-  });
 }
 
 /// Each batch's drawings, parsed once however many charts read them.
@@ -30594,6 +27937,9 @@ final class Interval {
 
   /// When it ends.
   final double to;
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire => <String, Object?>{'from': from, 'to': to};
 }
 
 /// One member of a limb, with its own bounds and the clipped ones.

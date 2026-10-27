@@ -677,8 +677,8 @@ fn gate_runners(root: &Path, outcome: &mut Outcome) {
 const PLAN_SURFACES: [(&str, &[&str]); 3] = [
     ("bindings/node/lib/index.d.ts", &["interface Plans {"]),
     (
-        "bindings/dart/lib/teistro.dart",
-        &["final class PlanRequest {"],
+        "bindings/dart/lib/src/requests.dart",
+        &["final class PlanRequest extends _Request {"],
     ),
     (
         "bindings/python/teistro/__init__.py",
@@ -1185,6 +1185,47 @@ fn layers_do_not_twin_a_request(root: &Path, outcome: &mut Outcome) {
                 text: format!(
                     "does not declare `{name}`, which the layer's façades list; \
                      drop it from the list"
+                ),
+                rule: RULE,
+            });
+        }
+    }
+}
+
+/// Dart's request records are generated into a part of its layer
+/// (`teistro_idl::emit::requests::DART_FACADES`), so a hand copy beside a
+/// generated one is a duplicate the analyser refuses. What is left to hold
+/// is the list: every façade it names, with its reason, is still declared
+/// by hand, so a façade the layer dropped is not left out of the file too.
+fn dart_facades_are_declared(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "layer-does-not-twin-a-request";
+    const LAYER: &str = "bindings/dart/lib/teistro.dart";
+    let Ok(text) = std::fs::read_to_string(root.join(LAYER)) else {
+        outcome.failures.push(Finding {
+            file: LAYER.to_owned(),
+            line: 1,
+            text: String::from("could not be read"),
+            rule: RULE,
+        });
+        return;
+    };
+    let Ok(declaration) =
+        regex::Regex::new(r"^(?:(?:abstract|final|sealed|base) )*(?:class|enum) (\w+)\b")
+    else {
+        return;
+    };
+    let declared: std::collections::BTreeSet<&str> = text
+        .lines()
+        .filter_map(|line| Some(declaration.captures(line)?.get(1)?.as_str()))
+        .collect();
+    for (name, reason) in teistro_idl::emit::requests::DART_FACADES {
+        if !declared.contains(name) || reason.is_empty() {
+            outcome.failures.push(Finding {
+                file: LAYER.to_owned(),
+                line: 1,
+                text: format!(
+                    "does not declare `{name}`, which the Dart façades list; \
+                     drop it from the list so the record is generated"
                 ),
                 rule: RULE,
             });
@@ -3371,6 +3412,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     activities_reach_every_binding(root, &mut outcome);
     layers_do_not_shadow_a_kind(root, &mut outcome);
     layers_do_not_twin_a_request(root, &mut outcome);
+    dart_facades_are_declared(root, &mut outcome);
     crates_are_listed(root, &mut outcome);
     open_questions_are_named(root, &mut outcome);
     generated_pages_are_gated(root, &mut outcome);
