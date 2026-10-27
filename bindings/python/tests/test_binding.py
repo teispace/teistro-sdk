@@ -263,6 +263,12 @@ class TheCalendars(WithLibrary):
         assert ekushey.era is not None
         self.assertEqual(ekushey.era.key, "BENGALI")
 
+    def test_17_august_2025_is_1_chingam_1201_in_the_malayalam_solar_calendar(self) -> None:
+        chingam = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2025, 8, 17), Calendar.MALAYALAM_SOLAR)
+        self.assertEqual((chingam.year, chingam.month, chingam.day), (1201, 1, 1))
+        assert chingam.era is not None
+        self.assertEqual(chingam.era.key, "KOLLAM")
+
     def test_the_first_of_ramadan_1446_is_1_march_2025_in_the_tabular_hijri_calendar(self) -> None:
         ramadan = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2025, 3, 1), Calendar.HIJRI_TABULAR)
         self.assertEqual((ramadan.year, ramadan.month, ramadan.day), (1446, 9, 1))

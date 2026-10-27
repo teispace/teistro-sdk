@@ -312,6 +312,12 @@ public final class BindingTest {
                 same(1431, ekushey.year(), "8 Falgun 1431 (Bangabda)");
                 same(11, ekushey.month(), "Falgun");
                 same(8, ekushey.day(), "the 8th");
+                CalendarDate chingamDay = new CalendarDate(Calendar.GREGORIAN, null, 2025, 0, 8, 17,
+                        Resolution.DEFINED, 0, 0, null);
+                CalendarDate chingam = calendar.convert(chingamDay, Calendar.MALAYALAM_SOLAR);
+                same(1201, chingam.year(), "1 Chingam 1201 (Kollam)");
+                same(1, chingam.month(), "Chingam");
+                same(1, chingam.day(), "the 1st");
                 CalendarDate march = new CalendarDate(Calendar.GREGORIAN, null, 2025, 0, 3, 1,
                         Resolution.DEFINED, 0, 0, null);
                 CalendarDate ramadan = calendar.convert(march, Calendar.HIJRI_TABULAR);

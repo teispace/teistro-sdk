@@ -1,7 +1,9 @@
-//! The engine: a Bikram Sambat year from a solar model, a clock, a place
-//! and a month-start rule. Year Y begins at the Mesha sankranti falling
-//! in the Gregorian year Y − 57; each month begins at the next sankranti
-//! placed on a civil day by the rule.
+//! The engine: a solar year from a solar model, a clock, a place and a
+//! month-start rule. A Bikram Sambat year Y begins at the Mesha sankranti
+//! falling in the Gregorian year Y − 57; each month begins at the next
+//! sankranti placed on a civil day by the rule. The regional solar
+//! calendars run the same engine from their own first sign and era
+//! ([`YearStart`], `crate::regional_solar`).
 
 use core::fmt;
 
@@ -28,8 +30,12 @@ pub const KATHMANDU: Place = Place::new(
 /// never skips a sign.
 const NEXT_SEARCH_FROM_DAYS: f64 = 25.0;
 
-/// The twelve sankrantis of a Bikram Sambat year and the civil day each
-/// begins a month on.
+/// The days a year's first search moves on per sign past Mesha: a month
+/// less a little, so the search still starts before the sankranti.
+const SEARCH_DAYS_PER_SIGN: i64 = 30;
+
+/// The twelve sankrantis of a solar year and the civil day each begins a
+/// month on.
 ///
 /// ```
 /// # use teistro_calendar::MonthStartRule;
@@ -49,13 +55,16 @@ const NEXT_SEARCH_FROM_DAYS: f64 = 25.0;
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct YearRow {
-    /// The Bikram Sambat year.
+    /// The year, as its era counts it (Bikram Sambat for the engine's
+    /// default [`YearStart`]).
     pub year: i32,
-    /// The first day, 1 Baisakh.
+    /// The first day of the year (1 Baisakh for Bikram Sambat).
     pub start: FixedDay,
-    /// The month lengths, Baisakh to Chaitra.
+    /// The month lengths, from the year's first month (Baisakh to Chaitra
+    /// for Bikram Sambat).
     pub months: [u8; 12],
-    /// The sankranti instants, Mesha to Meena.
+    /// The sankranti instants, from the year's first sign (Mesha to Meena
+    /// for Bikram Sambat).
     pub sankrantis: [JulianDay<Utc>; 12],
 }
 
@@ -78,6 +87,60 @@ impl YearRow {
     #[must_use]
     pub fn days(&self) -> u32 {
         self.months.iter().map(|m| u32::from(*m)).sum()
+    }
+}
+
+/// Where a solar year begins and how it is numbered: the sign whose
+/// sankranti opens it, and how far the Gregorian year that sankranti
+/// falls in is ahead of the year's own number.
+///
+/// ```
+/// use teistro_calendar::bikram_sambat::engine::YearStart;
+///
+/// // Bikram Sambat 2081 began at the Mesha sankranti of 2024.
+/// assert_eq!(YearStart::BIKRAM_SAMBAT.gregorian_year(2081), 2024);
+/// // A year opening at Simha counts its months from Simha.
+/// let simha = YearStart { sign: 4, gregorian_offset: 824 };
+/// assert_eq!((simha.sign_of(0), simha.sign_of(8), simha.sign_of(12)), (4, 0, 4));
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct YearStart {
+    /// The sign whose sankranti begins the year, 0 for Mesha.
+    pub sign: u8,
+    /// The Gregorian year the opening sankranti falls in, less the year's
+    /// number.
+    pub gregorian_offset: i32,
+}
+
+impl YearStart {
+    /// Bikram Sambat's: Mesha, in the Gregorian year Y − 57.
+    pub const BIKRAM_SAMBAT: YearStart = YearStart {
+        sign: 0,
+        gregorian_offset: -YEAR_OFFSET,
+    };
+
+    /// The Gregorian year a year's opening sankranti falls in.
+    ///
+    /// ```
+    /// use teistro_calendar::bikram_sambat::engine::YearStart;
+    ///
+    /// assert_eq!(YearStart { sign: 0, gregorian_offset: 78 }.gregorian_year(1946), 2024);
+    /// ```
+    #[must_use]
+    pub const fn gregorian_year(self, year: i32) -> i32 {
+        year + self.gregorian_offset
+    }
+
+    /// The sign of a year's month counted from 0, wrapping past Meena.
+    ///
+    /// ```
+    /// use teistro_calendar::bikram_sambat::engine::YearStart;
+    ///
+    /// assert_eq!(YearStart::BIKRAM_SAMBAT.sign_of(11), 11);
+    /// ```
+    #[must_use]
+    pub fn sign_of(self, index: usize) -> u8 {
+        u8::try_from((usize::from(self.sign) + index % 12) % 12).unwrap_or(0)
     }
 }
 
@@ -105,6 +168,7 @@ pub struct Engine<'a> {
     clock: &'a dyn LocalClock,
     place: Place,
     rule: MonthStartRule,
+    start: YearStart,
 }
 
 impl fmt::Debug for Engine<'_> {
@@ -140,7 +204,51 @@ impl<'a> Engine<'a> {
             clock,
             place,
             rule,
+            start: YearStart::BIKRAM_SAMBAT,
         }
+    }
+
+    /// The engine with another year start: a regional solar calendar's
+    /// first sign and era in place of Bikram Sambat's.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU, YearStart};
+    /// # use teistro_calendar::gregorian::gregorian_from_fixed;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 30, 0));
+    /// // A year opening at the Simha sankranti, numbered 824 behind the
+    /// // Gregorian year it begins in.
+    /// let simha = YearStart { sign: 4, gregorian_offset: 824 };
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::SankrantiDay).with_year_start(simha);
+    /// assert_eq!(engine.year_start(), simha);
+    /// let row = engine.year(1200)?;
+    /// assert_eq!(gregorian_from_fixed(row.start).0, 2024);
+    /// assert_eq!(gregorian_from_fixed(row.start).1, 8);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn with_year_start(mut self, start: YearStart) -> Engine<'a> {
+        self.start = start;
+        self
+    }
+
+    /// The year start.
+    ///
+    /// ```
+    /// # use teistro_calendar::MonthStartRule;
+    /// # use teistro_calendar::bikram_sambat::engine::{Engine, KATHMANDU, YearStart};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// let engine = Engine::new(&text, &clock, KATHMANDU, MonthStartRule::Punyakala);
+    ///
+    /// assert_eq!(engine.year_start(), YearStart::BIKRAM_SAMBAT);
+    /// ```
+    #[must_use]
+    pub const fn year_start(&self) -> YearStart {
+        self.start
     }
 
     /// The rule.
@@ -191,10 +299,11 @@ impl<'a> Engine<'a> {
         )
     }
 
-    /// The thirteen sankrantis of a year: from its Mesha, in the Gregorian
-    /// year `year - 57`, to the Mesha of the next year. The rules need no
-    /// more, so a measurement finds these once and places them under every
-    /// rule.
+    /// The thirteen sankrantis of a year: from its first sign's, in the
+    /// Gregorian year [`YearStart::gregorian_year`] names (Mesha in
+    /// `year - 57` for Bikram Sambat), to the next year's. The rules need
+    /// no more, so a measurement finds these once and places them under
+    /// every rule.
     ///
     /// ```
     /// # use teistro_calendar::MonthStartRule;
@@ -218,9 +327,14 @@ impl<'a> Engine<'a> {
     /// The model's refusal or a search that does not converge.
     pub fn sankrantis(&self, year: i32) -> Result<[JulianDay<Utc>; 13], Error> {
         let mut instants = [JulianDay::<Utc>::J2000; 13];
-        let mut from = fixed_from_gregorian(year - YEAR_OFFSET, 3, 1).jd_at_midnight()?;
+        // From 1 March for Mesha, a month on for each later first sign:
+        // inside the month before the sankranti in every century the
+        // calendars cover, so the search finds this year's.
+        let from_day = fixed_from_gregorian(self.start.gregorian_year(year), 3, 1)
+            .plus_days(i64::from(self.start.sign) * SEARCH_DAYS_PER_SIGN);
+        let mut from = from_day.jd_at_midnight()?;
         for (index, slot) in instants.iter_mut().enumerate() {
-            let sign = u8::try_from(index % 12).unwrap_or(0);
+            let sign = self.start.sign_of(index);
             let found = find_sankranti(self.model, sign, from)?;
             *slot = found.instant;
             from = found.instant.plus_days(NEXT_SEARCH_FROM_DAYS)?;
@@ -309,7 +423,7 @@ impl<'a> Engine<'a> {
     ) -> Result<YearRow, Error> {
         let mut starts = [FixedDay::default(); 13];
         for (index, (slot, instant)) in starts.iter_mut().zip(instants.iter()).enumerate() {
-            let sign = u8::try_from(index % 12).unwrap_or(0);
+            let sign = self.start.sign_of(index);
             *slot =
                 rule_for(sign).month_start(sign, *instant, self.clock, self.model, &self.place)?;
         }
@@ -320,7 +434,7 @@ impl<'a> Engine<'a> {
             };
             *length = u8::try_from(this.days_until(*next)).map_err(|_| {
                 Error::internal(format!(
-                    "a month of {} days in {year} BS",
+                    "a month of {} days in year {year}",
                     this.days_until(*next)
                 ))
             })?;

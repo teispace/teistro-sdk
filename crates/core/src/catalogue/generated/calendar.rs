@@ -43,10 +43,19 @@ pub enum Calendar {
     TibetanPhugpa = 8,
     /// Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019
     Bangladeshi = 9,
+    /// Tamil solar: months from the sidereal sankranti by the sunset rule at Chennai, Saka years from Mesha
+    TamilSolar = 10,
+    /// Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha
+    BengalSolar = 11,
+    /// Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha
+    OdiaSolar = 12,
+    /// Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha
+    MalayalamSolar = 13,
 }
 
-const BY_KEY: [(&str, Calendar); 10] = [
+const BY_KEY: [(&str, Calendar); 14] = [
     ("BANGLADESHI", Calendar::Bangladeshi),
+    ("BENGAL_SOLAR", Calendar::BengalSolar),
     ("BIKRAM_SAMBAT", Calendar::BikramSambat),
     ("GREGORIAN", Calendar::Gregorian),
     ("HIJRI_TABULAR", Calendar::HijriTabular),
@@ -54,7 +63,10 @@ const BY_KEY: [(&str, Calendar); 10] = [
     ("INDIAN_NATIONAL", Calendar::IndianNational),
     ("ISO_WEEK", Calendar::IsoWeek),
     ("JULIAN", Calendar::Julian),
+    ("MALAYALAM_SOLAR", Calendar::MalayalamSolar),
     ("MIXED", Calendar::Mixed),
+    ("ODIA_SOLAR", Calendar::OdiaSolar),
+    ("TAMIL_SOLAR", Calendar::TamilSolar),
     ("TIBETAN_PHUGPA", Calendar::TibetanPhugpa),
 ];
 
@@ -66,7 +78,7 @@ impl Calendar {
     pub const KIND: Kind = Kind::Calendar;
 
     /// Every member, in id order.
-    pub const ALL: [Calendar; 10] = [
+    pub const ALL: [Calendar; 14] = [
         Calendar::Gregorian,
         Calendar::Julian,
         Calendar::Mixed,
@@ -77,6 +89,10 @@ impl Calendar {
         Calendar::HijriTabular,
         Calendar::TibetanPhugpa,
         Calendar::Bangladeshi,
+        Calendar::TamilSolar,
+        Calendar::BengalSolar,
+        Calendar::OdiaSolar,
+        Calendar::MalayalamSolar,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -99,6 +115,10 @@ impl Calendar {
             Calendar::HijriTabular => "HIJRI_TABULAR",
             Calendar::TibetanPhugpa => "TIBETAN_PHUGPA",
             Calendar::Bangladeshi => "BANGLADESHI",
+            Calendar::TamilSolar => "TAMIL_SOLAR",
+            Calendar::BengalSolar => "BENGAL_SOLAR",
+            Calendar::OdiaSolar => "ODIA_SOLAR",
+            Calendar::MalayalamSolar => "MALAYALAM_SOLAR",
         }
     }
 
@@ -122,6 +142,10 @@ impl Calendar {
             Calendar::HijriTabular => "calendar.HIJRI_TABULAR",
             Calendar::TibetanPhugpa => "calendar.TIBETAN_PHUGPA",
             Calendar::Bangladeshi => "calendar.BANGLADESHI",
+            Calendar::TamilSolar => "calendar.TAMIL_SOLAR",
+            Calendar::BengalSolar => "calendar.BENGAL_SOLAR",
+            Calendar::OdiaSolar => "calendar.ODIA_SOLAR",
+            Calendar::MalayalamSolar => "calendar.MALAYALAM_SOLAR",
         }
     }
 
@@ -145,6 +169,10 @@ impl Calendar {
             Calendar::HijriTabular => "Hijri Tabular: the arithmetic Islamic calendar of the civil epoch",
             Calendar::TibetanPhugpa => "Tibetan, Phugpa: the arithmetic Tibetan calendar of the Phugpa school, epoch E806",
             Calendar::Bangladeshi => "Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019",
+            Calendar::TamilSolar => "Tamil solar: months from the sidereal sankranti by the sunset rule at Chennai, Saka years from Mesha",
+            Calendar::BengalSolar => "Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha",
+            Calendar::OdiaSolar => "Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha",
+            Calendar::MalayalamSolar => "Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha",
         }
     }
 
@@ -168,6 +196,10 @@ impl Calendar {
             Calendar::HijriTabular => None,
             Calendar::TibetanPhugpa => None,
             Calendar::Bangladeshi => None,
+            Calendar::TamilSolar => None,
+            Calendar::BengalSolar => None,
+            Calendar::OdiaSolar => None,
+            Calendar::MalayalamSolar => None,
         }
     }
 
@@ -191,6 +223,10 @@ impl Calendar {
             Calendar::HijriTabular => Mark::Verified,
             Calendar::TibetanPhugpa => Mark::Verified,
             Calendar::Bangladeshi => Mark::Verified,
+            Calendar::TamilSolar => Mark::Verified,
+            Calendar::BengalSolar => Mark::Verified,
+            Calendar::OdiaSolar => Mark::Verified,
+            Calendar::MalayalamSolar => Mark::Verified,
         }
     }
 
@@ -214,6 +250,10 @@ impl Calendar {
             Calendar::HijriTabular => false,
             Calendar::TibetanPhugpa => false,
             Calendar::Bangladeshi => false,
+            Calendar::TamilSolar => false,
+            Calendar::BengalSolar => false,
+            Calendar::OdiaSolar => false,
+            Calendar::MalayalamSolar => false,
         }
     }
 
@@ -238,6 +278,10 @@ impl Calendar {
             Calendar::HijriTabular => &[Source { text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7", reference: "docs/calendars/hijri.md" }],
             Calendar::TibetanPhugpa => &[Source { text: "Svante Janson, Tibetan Calendar Mathematics, 2007, revised 2014", reference: "docs/calendars/tibetan.md" }],
             Calendar::Bangladeshi => &[Source { text: "Bangla Academy's 2019 revision, as reported by the Dhaka Tribune and Prothom Alo", reference: "docs/calendars/bangladeshi.md" }],
+            Calendar::TamilSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, art. 28; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
+            Calendar::BengalSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, arts. 28 and 71; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
+            Calendar::OdiaSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, art. 28; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
+            Calendar::MalayalamSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, arts. 28 and 71; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
         }
     }
 
@@ -261,6 +305,10 @@ impl Calendar {
             Calendar::HijriTabular => &[],
             Calendar::TibetanPhugpa => &[],
             Calendar::Bangladeshi => &[],
+            Calendar::TamilSolar => &[],
+            Calendar::BengalSolar => &[],
+            Calendar::OdiaSolar => &[],
+            Calendar::MalayalamSolar => &[],
         }
     }
 
@@ -309,7 +357,7 @@ impl Calendar {
     /// use teistro_core::catalogue::Calendar;
     ///
     /// assert_eq!(Calendar::from_id(0), Some(Calendar::Gregorian));
-    /// assert_eq!(Calendar::from_id(10), None);
+    /// assert_eq!(Calendar::from_id(14), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Calendar> {
@@ -324,6 +372,10 @@ impl Calendar {
             7 => Some(Calendar::HijriTabular),
             8 => Some(Calendar::TibetanPhugpa),
             9 => Some(Calendar::Bangladeshi),
+            10 => Some(Calendar::TamilSolar),
+            11 => Some(Calendar::BengalSolar),
+            12 => Some(Calendar::OdiaSolar),
+            13 => Some(Calendar::MalayalamSolar),
             _ => None,
         }
     }

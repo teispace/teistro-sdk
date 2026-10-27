@@ -583,6 +583,11 @@ pub fn shipped(id: Calendar) -> Option<&'static dyn CalendarSystem> {
         Calendar::HijriTabular => Some(&crate::hijri::HijriTabular),
         Calendar::TibetanPhugpa => Some(&crate::tibetan::TibetanPhugpa),
         Calendar::Bangladeshi => Some(&crate::bangladeshi::Bangladeshi),
+        Calendar::TamilSolar
+        | Calendar::BengalSolar
+        | Calendar::OdiaSolar
+        | Calendar::MalayalamSolar => crate::regional_solar::RegionalSolar::shipped(id)
+            .map(|calendar| calendar as &dyn CalendarSystem),
         _ => None,
     }
 }

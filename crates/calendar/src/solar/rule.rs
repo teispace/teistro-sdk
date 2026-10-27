@@ -37,8 +37,13 @@ use crate::solar::{DayArc, SolarModel};
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MonthStartRule {
     /// The civil day, midnight to midnight, in which the sankranti falls
-    /// (the Orissa rule: Sewell and Dikshit, *The Indian Calendar*, 1896,
-    /// §28; the Calendar Reform Committee's report, 1955, part C).
+    /// (the Calendar Reform Committee's report, 1955, part C). Not Odisha's
+    /// month start, though Sewell and Dikshit (*The Indian Calendar*, 1896,
+    /// §28) call their Orissa rule "the same day as the sankranti": their
+    /// week-day runs from sunrise to sunrise, so that rule is
+    /// [`MonthStartRule::SunriseToSunrise`], and the *Rashtriya Panchang*'s
+    /// Odisha column fits it in 117 of 120 months against this row's 96
+    /// (`docs/calendars/regional-solar.md`).
     SankrantiDay,
     /// The civil day after the one in which the sankranti falls (the
     /// Bengal rule, same sources: from sunrise to midnight the following
@@ -55,7 +60,8 @@ pub enum MonthStartRule {
     },
     /// The day whose span from its sunrise to the next sunrise holds the
     /// sankranti: the almanac day, so a sankranti before dawn belongs to
-    /// the day before.
+    /// the day before (the Orissa rule, Sewell and Dikshit §28, whose day
+    /// is counted from sunrise to sunrise).
     SunriseToSunrise,
     /// The sankranti's day when it falls before sunset, the next day after
     /// sunset (the Tamil rule, same sources).

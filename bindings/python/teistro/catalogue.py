@@ -2296,6 +2296,18 @@ class Calendar(Catalogued):
     BANGLADESHI = 9
     """Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019"""
 
+    TAMIL_SOLAR = 10
+    """Tamil solar: months from the sidereal sankranti by the sunset rule at Chennai, Saka years from Mesha"""
+
+    BENGAL_SOLAR = 11
+    """Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha"""
+
+    ODIA_SOLAR = 12
+    """Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha"""
+
+    MALAYALAM_SOLAR = 13
+    """Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -6392,6 +6404,10 @@ _KEYS: dict[str, dict[int, str]] = {
         7: "HIJRI_TABULAR",
         8: "TIBETAN_PHUGPA",
         9: "BANGLADESHI",
+        10: "TAMIL_SOLAR",
+        11: "BENGAL_SOLAR",
+        12: "ODIA_SOLAR",
+        13: "MALAYALAM_SOLAR",
         -1: "UNKNOWN",
     },
     "Era": {

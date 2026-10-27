@@ -29,6 +29,7 @@ pub mod iso_week;
 pub mod julian;
 pub mod lunisolar;
 pub mod mixed;
+pub mod regional_solar;
 pub mod samvatsara;
 pub mod solar;
 pub mod tibetan;

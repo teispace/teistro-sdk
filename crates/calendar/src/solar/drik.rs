@@ -14,7 +14,7 @@ use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_core::settings::{OverridePolicy, SunriseConvention};
+use teistro_core::settings::{AyanamshaBasis, OverridePolicy, SunriseConvention};
 use teistro_port_ephemeris::{
     Body, EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Overrides,
     PositionRequest, ProviderError, TimeScale, Zodiac,
@@ -93,6 +93,34 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
             delta_t,
             refused: AtomicBool::new(false),
         }
+    }
+
+    /// The model with the ayanamsha on another basis: [`AyanamshaBasis::True`]
+    /// carries the nutation in longitude, so the sidereal Sun is the
+    /// apparent one less the nutated ayanamsha, the reckoning an almanac
+    /// that prints sidereal positions without nutation uses. The basis is
+    /// the mean one until this says otherwise.
+    ///
+    /// ```
+    /// use teistro_astro::DeltaTModel;
+    /// use teistro_calendar::solar::{DrikSun, SolarModel};
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::{AyanamshaBasis, OverridePolicy, Sunrise};
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let new = || DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// let nutated = new().with_ayanamsha_basis(AyanamshaBasis::True);
+    /// assert_eq!(nutated.completion().ayanamsha_basis(), AyanamshaBasis::True);
+    /// assert!(nutated.describe().contains("LAHIRI (true basis)"));
+    /// // The two bases part by the nutation in longitude, under 20″.
+    /// let gap = nutated.sidereal_sun_deg(2_451_545.0).unwrap() - new().sidereal_sun_deg(2_451_545.0).unwrap();
+    /// assert!(gap.abs() > 1e-4 && gap.abs() < 20.0 / 3600.0, "{gap}");
+    /// ```
+    #[must_use]
+    pub fn with_ayanamsha_basis(mut self, basis: AyanamshaBasis) -> DrikSun<'p, P> {
+        self.completion = self.completion.with_ayanamsha_basis(basis);
+        self
     }
 
     /// The frame completion the model reads positions through.
@@ -272,10 +300,15 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
 
     fn describe(&self) -> String {
         format!(
-            "drik: {} through the port ({} overrides), ayanamsha {}, sunrise {}{}",
+            "drik: {} through the port ({} overrides), ayanamsha {}{}, sunrise {}{}",
             self.completion.capabilities().identity,
             self.completion.policy().key(),
             self.ayanamsha.key(),
+            if self.completion.ayanamsha_basis() == AyanamshaBasis::True {
+                " (true basis)"
+            } else {
+                ""
+            },
             self.horizon,
             if SolarModel::defines_sunrise(self) {
                 " by the provider"

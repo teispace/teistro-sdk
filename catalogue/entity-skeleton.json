@@ -700,7 +700,11 @@
     "INDIAN_NATIONAL": {},
     "HIJRI_TABULAR": {},
     "TIBETAN_PHUGPA": {},
-    "BANGLADESHI": {}
+    "BANGLADESHI": {},
+    "TAMIL_SOLAR": {},
+    "BENGAL_SOLAR": {},
+    "ODIA_SOLAR": {},
+    "MALAYALAM_SOLAR": {}
   },
   "era": {
     "VIKRAMA": {},

@@ -59,6 +59,26 @@ public enum Calendar implements Catalogued {
      */
     BANGLADESHI(9, "BANGLADESHI"),
 
+    /**
+     * Tamil solar: months from the sidereal sankranti by the sunset rule at Chennai, Saka years from Mesha
+     */
+    TAMIL_SOLAR(10, "TAMIL_SOLAR"),
+
+    /**
+     * Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha
+     */
+    BENGAL_SOLAR(11, "BENGAL_SOLAR"),
+
+    /**
+     * Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha
+     */
+    ODIA_SOLAR(12, "ODIA_SOLAR"),
+
+    /**
+     * Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha
+     */
+    MALAYALAM_SOLAR(13, "MALAYALAM_SOLAR"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

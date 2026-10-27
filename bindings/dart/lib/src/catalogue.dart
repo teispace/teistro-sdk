@@ -2807,6 +2807,14 @@ enum Calendar implements KeyOf<Calendar> {
   tibetanPhugpa(8, 'TIBETAN_PHUGPA'),
   /// Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019
   bangladeshi(9, 'BANGLADESHI'),
+  /// Tamil solar: months from the sidereal sankranti by the sunset rule at Chennai, Saka years from Mesha
+  tamilSolar(10, 'TAMIL_SOLAR'),
+  /// Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha
+  bengalSolar(11, 'BENGAL_SOLAR'),
+  /// Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha
+  odiaSolar(12, 'ODIA_SOLAR'),
+  /// Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha
+  malayalamSolar(13, 'MALAYALAM_SOLAR'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

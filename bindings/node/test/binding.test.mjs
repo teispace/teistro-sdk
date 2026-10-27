@@ -739,8 +739,9 @@ test('every catalogue enum has a complete id table', () => {
   // since `TsDashaFamily` gained `GRAHA`, the Karaka dasha's kernel; 1405
   // since `TsCalendar` gained the Bangladeshi calendar; 1409 since the
   // agni vasa's `TsAgniVasa`, three, with its member of `TsKind`; 1414
-  // since the inauspicious yogas' `TsAshubhaYoga`, four, with its member.
-  assert.equal(entries, 1414, 'every member of every enum is in a table');
+  // since the inauspicious yogas' `TsAshubhaYoga`, four, with its member;
+  // 1418 since `TsCalendar` gained the four regional solar calendars.
+  assert.equal(entries, 1418, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4824,6 +4825,9 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   // Ekushey in the Bangladeshi calendar: 21 February 2025 is 8 Falgun 1431.
   const ekushey = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 2, day: 21 }, Calendar.Bangladeshi);
   assert.deepEqual([ekushey.era, ekushey.year, ekushey.month, ekushey.day], ['era.BENGALI', 1431, 11, 8]);
+  // 1 Chingam, Kollam 1201, in the Malayalam solar calendar: 17 August 2025.
+  const chingam = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 8, day: 17 }, Calendar.MalayalamSolar);
+  assert.deepEqual([chingam.era, chingam.year, chingam.month, chingam.day], ['era.KOLLAM', 1201, 1, 1]);
   // And the tabular Hijri calendar's: 1 Ramadan 1446 is 1 March 2025.
   const ramadan = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 3, day: 1 }, Calendar.HijriTabular);
   assert.deepEqual([ramadan.era, ramadan.year, ramadan.month, ramadan.day], ['era.HIJRI', 1446, 9, 1]);

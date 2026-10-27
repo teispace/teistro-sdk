@@ -121,7 +121,9 @@ class TheCatalogue(unittest.TestCase):
             + 4 + 1
             # `AshubhaYoga`'s four yogas and its UNKNOWN, and its member of
             # `Kind`.
-            + 5 + 1,
+            + 5 + 1
+            # `Calendar`'s four regional solar calendars.
+            + 4,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

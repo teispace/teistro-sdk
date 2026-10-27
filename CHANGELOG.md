@@ -163,6 +163,28 @@ profile's settings hash moves too.
 - Bhrigu bindu is still not computed. No text that defines it has been
   read, and the two midpoints in circulation are 180° apart for half of
   all charts (C769).
+**The Tamil, Bengal, Odia and Malayalam solar calendars.**
+**Numbers:** none: four new calendars (`calendar.TAMIL_SOLAR`,
+`BENGAL_SOLAR`, `ODIA_SOLAR`, `MALAYALAM_SOLAR`); no existing answer moves.
+- Each begins its months at the Lahiri sankranti by its region's rule
+  (Sewell and Dikshit, *The Indian Calendar*, art. 28): Tamil before
+  sunset at Chennai, Bengal on the civil day after, Odia on the
+  sunrise-to-sunrise day at Bhubaneswar, Malayalam before three fifths of
+  the daylight at Thiruvananthapuram, all on IST. Measured against the
+  *Rashtriya Panchang*'s regional tables, 120 month beginnings each: 120,
+  119, 117 and 109 of 110 outside Mesha (`calendars/regional-solar.md`).
+- Years count the solar Saka (Tamil, Odia), the Bengali San and the Kollam
+  era (from Chingam, CE − 824). Every year opening from 1800 to 2398 is
+  tabulated by `cargo xtask gen calendars` over the built-in ephemeris, so
+  a date needs no ephemeris and says `Computed` with the frame.
+- The sankrantis are Lahiri's on the true basis (`DrikSun::with_ayanamsha_basis`,
+  new): the *Rashtriya Panchang*'s 109 printed transits fall within 32
+  seconds of it, where the mean basis runs 4.6 minutes early to 7.7 late.
+- `MonthStartRule::SankrantiDay` was documented as Sewell's Orissa rule;
+  that rule is the sunrise-to-sunrise day, and the documentation says so.
+- The solar engine takes a year start (`YearStart`: the first sign and the
+  era's offset), so one engine computes Bikram Sambat and the regional
+  calendars.
 
 **A custom visibility table is typed in every binding.**
 **Numbers:** none.
