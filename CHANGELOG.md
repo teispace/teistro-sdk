@@ -30,6 +30,10 @@ the previous release, not by nobody having looked.
   `ProgressionContacts` alias is the generated type itself.
 - Node's `DossierRequest` takes any section key, as the SDK does: an app
   registers its own sections, which the hand copy refused.
+- Python's `LifeEventRequest` is gone: it was the generated `LifeEvent`
+  under another name. `ThemeRecord` stays, since it types a theme's
+  `style` and `content` where the generated `ThemePatch` hands them
+  through as JSON.
 
 **Request key sets carry one name in every binding.**
 **Numbers:** none.
