@@ -506,9 +506,11 @@ jobs:
   # and the vtable's own tests, at native speed. The target is named so
   # build scripts and proc macros are left uninstrumented. Then the state
   # threads share under ThreadSanitizer, the standard library rebuilt
-  # instrumented: the ephemeris memo four threads ask at once, and the
+  # instrumented: the ephemeris memo four threads ask at once; the
   # surface tests, whose workers each build a context over the SDK's
-  # lazily built tables. Last, the Node and Python suites against the addon
+  # lazily built tables; the C ABI's contexts founded at once and one
+  # moved between threads; and the agent server's tasks, watches and HTTP
+  # connections, each on threads of its own. Last, the Node and Python suites against the addon
   # and the C library built with ASan, clang's runtime loaded ahead of an
   # unchanged interpreter, so each binding's own crossing is checked too.
   sanitizers:
@@ -532,12 +534,14 @@ jobs:
           RUSTFLAGS: -Zsanitizer=address -Clink-arg=-Wl,--export-dynamic
           ASAN_OPTIONS: detect_leaks=1
         run: cargo +nightly test -p teistro-ffi -p teistro-port-ephemeris --features teistro-port-ephemeris/load --lib --tests --target x86_64-unknown-linux-gnu
-      - name: The shared memo and the surface's workers under TSan
+      - name: The state threads share under TSan
         env:
           RUSTFLAGS: -Zsanitizer=thread
         run: |
           cargo +nightly test -Zbuild-std --target x86_64-unknown-linux-gnu -p teistro-port-ephemeris --lib
           cargo +nightly test -Zbuild-std --target x86_64-unknown-linux-gnu -p teistro --test surface
+          cargo +nightly test -Zbuild-std --target x86_64-unknown-linux-gnu -p teistro-ffi --features full --test threads
+          cargo +nightly test -Zbuild-std --target x86_64-unknown-linux-gnu -p teistro-mcp --test tasks --test watch --test http
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
