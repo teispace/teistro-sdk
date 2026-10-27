@@ -195,7 +195,43 @@
         "asta": {
           "kind": "TIME_DEGREES",
           "thresholds": {
-            "kind": "SURYA_SIDDHANTA"
+            "kind": "CUSTOM",
+            "jupiter": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "mars": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "mercury": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "moon": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "neptune": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "pluto": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "saturn": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "uranus": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "venus": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            }
           }
         },
         "daysWithWindows": 1,

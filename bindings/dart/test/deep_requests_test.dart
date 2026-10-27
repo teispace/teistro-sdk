@@ -134,7 +134,19 @@ void main() {
       path: ['muhurta', 'asta'],
       dropping: [],
       members: 0,
-      written: MuhurtaRequestAstaValue(CriterionTimeDegrees(thresholds: ThresholdsSuryaSiddhanta())).toJson(),
+      written: MuhurtaRequestAstaValue(CriterionTimeDegrees(
+        thresholds: ThresholdsCustom(
+          jupiter: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          mars: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          mercury: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          moon: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          neptune: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          pluto: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          saturn: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          uranus: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          venus: MotionThresholds(direct: 1.5, retrograde: 1.5),
+        ),
+      )).toJson(),
     );
   });
 
