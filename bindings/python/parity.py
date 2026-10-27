@@ -21,6 +21,7 @@ from typing import Any, Iterable, Optional, Sequence, cast
 import json
 
 from teistro import (
+    AshauchRequest,
     AshtaKoota,
     Parana,
     ResearchBirth,
@@ -67,6 +68,7 @@ from teistro import (
     LocalDay,
     FestivalAnswer,
     FestivalRequest,
+    FirstYearRequest,
     PublishedDayAsked,
     PublishedSetAsked,
     MuhurtaAnswer,
@@ -97,6 +99,7 @@ from teistro import (
     Perfection,
     PlanItem,
     PurifierVerdict,
+    ReckonedPlace,
     Rectification,
     RectificationRequest,
     ReportedTimeNote,
@@ -945,6 +948,109 @@ def put_research(geo: Context) -> None:
             design={"groups": groups, "strata": [i // 4 for i in range(8)]},
             test={"seed": 6, "permutations": 199, "contrast": {"kind": "CASE_VS_REST", "case": 1}},
         ),
+    )
+
+
+def civil(day: CalendarDate) -> str:
+    """A day as the rites print it."""
+    return f"{day.year}-{day.month}-{day.day}"
+
+
+def put_rites(geo: Context) -> None:
+    """The almanac's rites and the Tibetan year, as every runner asks them:
+    a sankalpa, a period of impurity and the first year after a death at
+    Kathmandu, the reasons a published day differs at Pokhara with
+    Kathmandu beside it, and a signed pack under the vector the bindings'
+    tests pin (`crates/sdk/tests/signed_pack.rs`). Each answer's content
+    hash proves the same request reached the same answer, and a line of its
+    fields proves this binding read it."""
+    kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+    # The rites' own altitude, as the requests every runner sends spell it.
+    mourners = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1337))
+    died = 2461051.677083
+
+    sankalpa = geo.almanac.sankalpa(at=2461055.59375, place=kathmandu, utc_offset_seconds=20700, ayana="TROPICAL")
+    put("rites-sankalpa-hash", sankalpa.provenance.content_hash)
+    said = sankalpa.value
+    put(
+        "rites-sankalpa",
+        f"{civil(said.date)} {said.vara.full_key} {said.paksha.full_key} {said.tithi.full_key} {said.nakshatra.full_key}",
+    )
+
+    asked_ashauch: AshauchRequest = {
+        "key": "grandfather",
+        "relation": "SAPINDA",
+        "event": {"event": "DEATH", "at": died},
+    }
+    ashauch = geo.almanac.ashauch(place=mourners, utc_offset_seconds=20700, request=asked_ashauch)
+    put("rites-ashauch-hash", ashauch.provenance.content_hash)
+    period = ashauch.value
+    days = "none" if period.days is None else str(period.days)
+    put("rites-ashauch", f"{number(period.start)} {number(period.end)} {days}")
+
+    asked_year: FirstYearRequest = {
+        "key": "grandfather",
+        "at": died,
+        "firstAbdika": "ELEVENTH_DAY",
+        "firstYearAdhika": "NIJA",
+    }
+    year = geo.almanac.first_year(place=mourners, utc_offset_seconds=20700, request=asked_year)
+    put("rites-first-year-hash", year.provenance.content_hash)
+    schedule = year.value
+    put(
+        "rites-first-year",
+        f"{civil(schedule.day_one)} {civil(schedule.eleventh_day)} {civil(schedule.sapindana)} {len(schedule.rites)}",
+    )
+
+    # One SET of Navaratra's start, asked at Pokhara with Kathmandu as the
+    # place the publisher may have reckoned at; no second sky.
+    navaratra: PublishedSetAsked = {
+        "format": "teistro.published/1",
+        "publisher": "a patro printed in Nepal",
+        "id": "np-2083",
+        "version": 3,
+        "entries": [
+            {
+                "action": "SET",
+                "rule": "NAVARATRA_ARAMBHA",
+                "day": {"calendar": "GREGORIAN", "year": 2026, "month": 10, "day": 11},
+                "source": "p. 41",
+            }
+        ],
+    }
+    pokhara = Observer(latitude_deg=Latitude(28.2096), longitude_deg=Longitude(83.9856), altitude_m=Altitude(827))
+    reasons = geo.almanac.published_reasons(
+        from_date=date(Calendar.GREGORIAN, 2026, 10, 10),
+        to_date=date(Calendar.GREGORIAN, 2026, 10, 12),
+        place=pokhara,
+        utc_offset_seconds=20700,
+        festivals={"rules": "NEPAL", "published": [navaratra]},
+        places=[ReckonedPlace(name="Kathmandu", place=kathmandu, utc_offset_seconds=20700)],
+    )
+    put("rites-published-reasons-hash", reasons.provenance.content_hash)
+    put("rites-published-reasons", len(reasons.reasons))
+
+    pack = (
+        b'{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,'
+        b'"entries":[{"action":"SET","rule":"GHATASTHAPANA","day":{"calendar":"GREGORIAN","year":2026,'
+        b'"month":10,"day":11},"source":"p. 41"}]}'
+    )
+    signature = bytes.fromhex(
+        "cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e213"
+        "32fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e"
+    )
+    key = bytes.fromhex("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c")
+    signed = geo.almanac.published_from_signed(pack, signature, key, at_least=3)
+    put(
+        "rites-published-signed",
+        f"{signed['id']} {signed['version']} {len(signed['entries'])} {signed['publisher']}",
+    )
+
+    tibetan = geo.calendar.tibetan_year(2026)
+    put(
+        "calendar-tibetan-year",
+        f"{tibetan.year} {tibetan.rabjung} {tibetan.year_in_rabjung} {tibetan.samvatsara.full_key} "
+        f"{tibetan.element.full_key} {tibetan.gender.full_key} {tibetan.animal.full_key}",
     )
 
 
@@ -2811,6 +2917,7 @@ def main() -> None:
         put_rashifal(geo, place)
         put_pakshi(geo)
         put_research(geo)
+        put_rites(geo)
 
     # ── The Black Moon Lilith ─────────────────────────────────────────
     # The osculating apogee of two charts over the built-in sky, which the
@@ -2950,6 +3057,7 @@ def main() -> None:
         ("calendar.weekday_of", ctx.calendar.weekday_of),
         ("calendar.month_length", ctx.calendar.month_length),
         ("calendar.is_leap", ctx.calendar.is_leap),
+        ("calendar.tibetan_year", ctx.calendar.tibetan_year),
         ("time.resolve", ctx.time.resolve),
         ("time.civil_of", ctx.time.civil_of),
         ("time.convert", ctx.time.convert),
@@ -2979,6 +3087,11 @@ def main() -> None:
         ("almanac.festival_calendar", ctx.almanac.festival_calendar),
         ("almanac.day", ctx.almanac.day),
         ("almanac.pakshi", ctx.almanac.pakshi),
+        ("almanac.sankalpa", ctx.almanac.sankalpa),
+        ("almanac.ashauch", ctx.almanac.ashauch),
+        ("almanac.first_year", ctx.almanac.first_year),
+        ("almanac.published_reasons", ctx.almanac.published_reasons),
+        ("almanac.published_from_signed", ctx.almanac.published_from_signed),
         ("research.counts", ctx.research.counts),
         ("research.compare", ctx.research.compare),
         ("research.expected", ctx.research.expected),

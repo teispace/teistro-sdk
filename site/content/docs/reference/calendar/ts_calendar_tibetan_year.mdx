@@ -5,7 +5,42 @@ description: "A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON
 
 A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON: `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`, the rabjung cycle (the first began in 1027) and the year's place in it, 1 to 60, with the Indian cycle's name for that place, and the element, gender and animal it is called by, every member a full key: 2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse. `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027 to 9998 is `OUT_OF_RANGE`, naming `year`.
 
-<Tabs items={['C']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.calendar.tibetanYear
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.calendar.tibetan_year
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.calendar.tibetanYear
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.calendar().tibetanYear
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.calendar().tibetan_year
+```
+
+</Tab>
 <Tab value="C">
 
 ```c

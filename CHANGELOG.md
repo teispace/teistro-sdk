@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Rust: `almanac().published_from_signed`, and the parity gate holds six more operations.**
+**Numbers:** none.
+- A signed published pack is read under the almanac, as Node, Python,
+  Dart and Java already read it, beside the festivals it corrects; it is
+  `PublishedSet::from_signed` by another door.
+- The sankalpa, ashauch, first-year, published-reasons and signed-pack
+  answers and the Tibetan year are printed by every parity runner, each
+  answer's content hash and a line of its fields, and the six bindings
+  agree on all of them. Before, no runner listed them, so the gate could
+  not see a binding drift on any.
+
 **Python: threads sharing a context no longer abort the process.**
 **Numbers:** none.
 - A native context serves one thread at a time, and ctypes releases the

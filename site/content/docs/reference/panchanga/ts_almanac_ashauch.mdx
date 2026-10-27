@@ -9,7 +9,42 @@ The period of impurity after a birth or a death at a place (`03-design/ashauch.m
 
 `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "table", "tradition", "request"}`: `table` the *Dharmasindhu*'s when left out, every row data, or `tradition` a shipped table by name (`DHARMASINDHU`, `MITAKSHARA`), never both; `request` `{key, event, relation, heardAt, abroad, at, fullDays, during}`, its instants UTC Julian days and `fullDays` ten when left out. A key it does not read, or a table or request that cannot be counted, is `INVALID_ARG` named under `ashauch`, as is a fact of the deceased a band needs and the request leaves out; a relation the table names no row for is `UNSUPPORTED`; a context without an ephemeris is `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
 
-<Tabs items={['C']}>
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.ashauch
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.ashauch
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.ashauch
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().ashauch
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().ashauch
+```
+
+</Tab>
 <Tab value="C">
 
 ```c
