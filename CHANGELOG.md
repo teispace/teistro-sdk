@@ -12,6 +12,25 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A pack's checksum covers its whole file; a frame's bits read back as written.**
+**Numbers:** none.
+- `.tpack` and `.tbundle` are format version 3. Version 2's CRC covered
+  a pack's body alone, so a pack with one bit changed in its locale tag,
+  namespace, counts or metadata loaded under the changed name. The CRC
+  now covers every other byte of the file, and a flag this reader does
+  not know is refused. A version-2 file is refused by its version:
+  rebuild it with `teistro-intl build`. A pack's content hash, the one a
+  provenance envelope carries, is the body's as before; a bundle's
+  changes, since the packs inside it carry the new checksums.
+- `ts_frame_unpack` (and a provider's packed frame) refuses an
+  ayanamsha id without the sidereal bit. It read such bits as tropical,
+  and they packed back to other bits.
+- At the C ABI, every prefix of a pack and every one-bit change to it is
+  refused and leaves the context as it was; every frame bit pattern
+  either packs back to itself or is refused; and the rites, comparisons,
+  published verification, naam milan, chart layouts, an ephemeris's own
+  calls and loaded packs give back every byte they take.
+
 **Rust: `almanac().published_from_signed`, and the parity gate holds six more operations.**
 **Numbers:** none.
 - A signed published pack is read under the almanac, as Node, Python,
