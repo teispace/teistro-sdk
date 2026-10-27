@@ -21,6 +21,9 @@ from typing import Any, Iterable, Optional, Sequence, cast
 import json
 
 from teistro import (
+    DatedRule,
+    FestivalRule,
+    FollowingRule,
     AshauchRequest,
     AshtaKoota,
     Parana,
@@ -2806,7 +2809,7 @@ def main() -> None:
         # sunrise), and the Nepal pack with a following rule of the
         # consumer's own (two days after Lakshmi puja), over
         # 2024-10-10..11-03.
-        own_rule = {
+        own_rule: FestivalRule = {
             "key": "LAKSHMI_PUJA",
             "source": "the tithi at sunrise",
             "month": "masa.ASHWINA",
@@ -2816,7 +2819,7 @@ def main() -> None:
             "otherwise": "LATER",
         }
         # Two dated rules: the first of Kartik, and October's last Sunday.
-        own_dated = (
+        own_dated: tuple[DatedRule, ...] = (
             {
                 "key": "KARTIK_FIRST",
                 "source": "the first of Kartik",
@@ -2828,7 +2831,7 @@ def main() -> None:
                 "civilWeekday": {"calendar": "calendar.GREGORIAN", "month": 10, "weekday": "vara.RAVIVARA", "nth": -1},
             },
         )
-        own_following = {
+        own_following: FollowingRule = {
             "key": "TWO_AFTER",
             "source": "two days after Lakshmi puja",
             "after": "LAKSHMI_PUJA",

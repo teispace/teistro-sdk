@@ -71,7 +71,7 @@ public final class AlmanacArea {
      * @param muhurta the muhurta search to run, such as
      *     {@code MuhurtaRequest.builder().rules("RAMAN_MARRIAGE").build()}; may be null for none
      * @param festivals the festival rules to reckon, such as
-     *     {@code new FestivalRequest("DHARMASINDHU")}; may be null for none
+     *     {@code new FestivalRequest(FestivalRules.DHARMASINDHU)}; may be null for none
      * @param years whether to answer the lunar years the days fall in, as {@link Almanac#years()}
      * @param eclipses whether to answer the eclipses whose greatest moment
      *     falls in the days, with how the place sees each, as {@link Almanac#eclipses()}
@@ -160,7 +160,7 @@ public final class AlmanacArea {
      * @param place where
      * @param utcOffsetSeconds the local clock's offset from UTC, east positive
      * @param festivals the festival rules to reckon, such as
-     *     {@code new FestivalRequest("NEPAL")}
+     *     {@code new FestivalRequest(FestivalRules.NEPAL)}
      * @return the observances
      */
     public FestivalAnswer festivals(CalendarDate fromDate, CalendarDate toDate, Observer place,
@@ -467,7 +467,7 @@ public final class AlmanacArea {
      *
      * <pre>{@code
      * Disagreements found = official.almanac().disagreements(modern, first, last, kathmandu, 20_700,
-     *         true, new FestivalRequest("NEPAL"));
+     *         true, new FestivalRequest(FestivalRules.NEPAL));
      * }</pre>
      *
      * @param other the reckoning compared with this one
@@ -476,7 +476,7 @@ public final class AlmanacArea {
      * @param place where both are reckoned
      * @param utcOffsetSeconds the local clock's offset from UTC, east positive
      * @param days whether the days are compared
-     * @param festivals the festival rules compared, such as {@code new FestivalRequest("NEPAL")}, or null for
+     * @param festivals the festival rules compared, such as {@code new FestivalRequest(FestivalRules.NEPAL)}, or null for
      *     none
      * @return each comparison asked, sealed by this context's provenance
      */
@@ -518,7 +518,7 @@ public final class AlmanacArea {
      *
      * <pre>{@code
      * PublishedReasons found = modern.almanac().publishedReasons(first, last, kathmandu, 20_700,
-     *         new FestivalRequest(List.of(set), "NEPAL"), List.of(), committee);
+     *         new FestivalRequest(List.of(set), FestivalRules.NEPAL), List.of(), committee);
      * }</pre>
      *
      * @param from the first day
@@ -571,7 +571,7 @@ public final class AlmanacArea {
      *
      * <pre>{@code
      * String ics = sdk.almanac().festivalCalendar(first, last, kathmandu, 20_700,
-     *         new FestivalRequest("NEPAL_PANCHANGA"), FeedOptions.defaults().withName("Nepal 2026"));
+     *         new FestivalRequest(FestivalRules.NEPAL_PANCHANGA), FeedOptions.defaults().withName("Nepal 2026"));
      * Files.writeString(Path.of("nepal-2026.ics"), ics);
      * }</pre>
      *
@@ -579,7 +579,7 @@ public final class AlmanacArea {
      * @param to the last day, both ends included
      * @param place where the days are reckoned
      * @param utcOffsetSeconds the local clock's offset from UTC, east positive
-     * @param festivals the festival rules, such as {@code new FestivalRequest("NEPAL")}
+     * @param festivals the festival rules, such as {@code new FestivalRequest(FestivalRules.NEPAL)}
      * @param feed what the feed says of itself
      * @return the feed, CRLF lines
      */

@@ -11,7 +11,7 @@ import java.util.List;
  * Map<String, Object> barkhi = Map.of("key", "GRANDFATHER",
  *         "origin", Map.of("by", "LUNAR", "month", "KARTIKA", "tithi", "SHUKLA_DASHAMI"));
  * AnniversaryDay day = sky.almanac().festivals(first, last, place, offset,
- *         new FestivalRequest(List.of(barkhi))).anniversaries().get(0);
+ *         new FestivalRequest(FestivalRules.of(List.of(barkhi)))).anniversaries().get(0);
  * }</pre>
  *
  * @param key the request's key

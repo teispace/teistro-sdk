@@ -107,10 +107,9 @@ const UNTYPED_REQUESTS: [&str; 2] = ["engine.call", "engine.manifest"];
 /// rule language's untagged references (a subject, a sign, a body), a
 /// record read in a second step by its own reader (a rule set, research's
 /// test and control), and a theme's open style and content.
-const RAW_REQUEST_PARTS: [&str; 11] = [
+const RAW_REQUEST_PARTS: [&str; 10] = [
     "BodyRef",
     "BodySubject",
-    "FestivalRequest.rules",
     "MuhurtaRequest.rules",
     "ResearchRequest.control",
     "ResearchRequest.rules",
@@ -187,12 +186,13 @@ fn requests() -> teistro_idl::records::Requests {
 /// name. Each is checked to have the enum's keys, and a request key set
 /// named like a boundary enum and not listed is refused, so the two never
 /// drift apart unseen.
-const REUSED_ENUMS: [&str; 14] = [
+const REUSED_ENUMS: [&str; 15] = [
     "Balance",
     "FortuneRule",
     "GocharFrom",
     "HitKind",
     "Leap",
+    "LunarMonth",
     "MatchRole",
     "PlaceReading",
     "Reckoning",
@@ -209,15 +209,17 @@ const REUSED_ENUMS: [&str; 14] = [
 /// almuten's rules as asked, a natal point as named). Java keeps them
 /// apart by package; any other shared name is refused, so a request type
 /// never silently reads like an unrelated answer type.
-const SHARED_NAMES: [&str; 16] = [
+const SHARED_NAMES: [&str; 18] = [
     "AccidentalRules",
     "AccidentalScores",
     "AlmutenRules",
+    "CalendarDate",
     "CivilTime",
     "ConsiderationRules",
     "DignityScores",
     "Interval",
     "KujaLifts",
+    "NakshatraBar",
     "NatalPoint",
     "Partile",
     "PerfectionRules",
@@ -270,42 +272,48 @@ fn reused_enums(api: &teistro_idl::model::Api) -> std::collections::BTreeMap<Str
             .find(|e| teistro_idl::names::binding_type_name(&e.name) == name)
     };
     let mut reused = std::collections::BTreeMap::new();
+    // Every finding, so one run lists them all.
+    let mut wrong = Vec::new();
     for record in &api.requests.records {
         let RecordShape::Keys { values } = &record.shape else {
             continue;
         };
         let listed = REUSED_ENUMS.contains(&record.name.as_str());
         let Some(enumeration) = boundary(&record.name) else {
-            assert!(
-                !listed,
-                "{} is listed as a reused enum and no boundary enum has its name",
-                record.name
-            );
+            if listed {
+                wrong.push(format!(
+                    "{} is listed as a reused enum and no boundary enum has its name",
+                    record.name
+                ));
+            }
             continue;
         };
-        assert!(
-            listed,
-            "the request keys {} are named like a boundary enum; list them in REUSED_ENUMS \
-             if they are its keys, or rename one",
-            record.name
-        );
         let mut asked: Vec<&str> = values.iter().map(|v| v.key.as_str()).collect();
         let mut known: Vec<&str> = enumeration.values.iter().map(|v| v.key.as_str()).collect();
         asked.sort_unstable();
         known.sort_unstable();
-        assert_eq!(
-            asked, known,
-            "the request keys {} differ from the boundary enum's",
-            record.name
-        );
+        if asked != known {
+            wrong.push(format!(
+                "the request keys {} differ from the boundary enum's: {asked:?} against {known:?}",
+                record.name
+            ));
+        } else if !listed {
+            wrong.push(format!(
+                "the request keys {} are the boundary enum's of its name; list them in \
+                 REUSED_ENUMS",
+                record.name
+            ));
+        }
         reused.insert(record.name.clone(), enumeration.name.clone());
     }
     for name in REUSED_ENUMS {
-        assert!(
-            reused.contains_key(name),
-            "{name} is listed as a reused enum and is no request key set"
-        );
+        if !reused.contains_key(name) {
+            wrong.push(format!(
+                "{name} is listed as a reused enum and is no request key set"
+            ));
+        }
     }
+    assert!(wrong.is_empty(), "request key sets:\n{}", wrong.join("\n"));
     reused
 }
 

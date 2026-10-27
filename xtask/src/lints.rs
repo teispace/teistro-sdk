@@ -999,8 +999,16 @@ const NODE_FACADES: &[(&str, &str)] = &[
         "the layer takes a `place` and calendar dates and writes the wire's coordinates and day numbers",
     ),
     (
+        "DatedRule",
+        "a union of its four dates, each excluding the others, where the generated record has each optional and says so only in its documentation",
+    ),
+    (
         "FestivalRequest",
-        "its `rules` are a raw part the schema leaves untyped; the layer types the packs",
+        "its rules list takes the layer's `FestivalRule` and `DatedRule`, which say which fields go together",
+    ),
+    (
+        "FestivalRule",
+        "a union of what the rite is kept on (a tithi, a nakshatra with its paksha, or a day of either paksha), where the generated record has each optional and says so only in its documentation",
     ),
     (
         "FirstYearQuery",
@@ -1017,6 +1025,10 @@ const NODE_FACADES: &[(&str, &str)] = &[
     (
         "MuhurtaRequest",
         "its `rules` are a raw part the schema leaves untyped; the layer types the activities",
+    ),
+    (
+        "NakshatraBar",
+        "its tithi is one of the two eleventh tithis, the fast a bar follows, where the generated record takes any tithi",
     ),
     (
         "PakshiRequest",
@@ -1044,10 +1056,6 @@ const PYTHON_FACADES: &[(&str, &str)] = &[
     (
         "DrishtiRules",
         "written in snake case; the layer camel-cases it (`_camel_keys`)",
-    ),
-    (
-        "FestivalRequest",
-        "its `rules` are a raw part the schema leaves untyped; the layer types the packs",
     ),
     (
         "MasaPhalaRules",

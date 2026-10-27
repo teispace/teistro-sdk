@@ -2145,6 +2145,80 @@ final class PublishedSet extends _Request {
   List<Object?> get _fields => [entries, format, id, publisher, version];
 }
 
+/// The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
+sealed class FestivalRules extends _Request {
+  const FestivalRules();
+}
+
+/// `DHARMASINDHU`.
+final class FestivalRulesDharmasindhu extends FestivalRules {
+  const FestivalRulesDharmasindhu();
+
+  @override
+  Object? get _wire => 'DHARMASINDHU';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `NEPAL`.
+final class FestivalRulesNepal extends FestivalRules {
+  const FestivalRulesNepal();
+
+  @override
+  Object? get _wire => 'NEPAL';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `NEPAL_PANCHANGA`.
+final class FestivalRulesNepalPanchanga extends FestivalRules {
+  const FestivalRulesNepalPanchanga();
+
+  @override
+  Object? get _wire => 'NEPAL_PANCHANGA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `PITRI_PAKSHA`.
+final class FestivalRulesPitriPaksha extends FestivalRules {
+  const FestivalRulesPitriPaksha();
+
+  @override
+  Object? get _wire => 'PITRI_PAKSHA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `GAUDIYA`.
+final class FestivalRulesGaudiya extends FestivalRules {
+  const FestivalRulesGaudiya();
+
+  @override
+  Object? get _wire => 'GAUDIYA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// The value itself.
+final class FestivalRulesValue extends FestivalRules {
+  const FestivalRulesValue(this.value);
+
+  /// The value.
+  final List<FestivalRuleItem> value;
+
+  @override
+  Object? get _wire => [for (final e0 in value) e0._wire];
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
 /// How asta is seen: a criterion the SDK names, or one spelt out.
 sealed class MuhurtaRequestAsta extends _Request {
   const MuhurtaRequestAsta();
@@ -3885,6 +3959,150 @@ final class PublishedEntryWithdraw extends PublishedEntry {
 
   @override
   List<Object?> get _fields => [adhika, day, month, rule, source];
+}
+
+/// A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
+sealed class FestivalRuleItem extends _Request {
+  const FestivalRuleItem();
+}
+
+/// `DHARMASINDHU`.
+final class FestivalRuleItemDharmasindhu extends FestivalRuleItem {
+  const FestivalRuleItemDharmasindhu();
+
+  @override
+  Object? get _wire => 'DHARMASINDHU';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `NEPAL`.
+final class FestivalRuleItemNepal extends FestivalRuleItem {
+  const FestivalRuleItemNepal();
+
+  @override
+  Object? get _wire => 'NEPAL';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `NEPAL_PANCHANGA`.
+final class FestivalRuleItemNepalPanchanga extends FestivalRuleItem {
+  const FestivalRuleItemNepalPanchanga();
+
+  @override
+  Object? get _wire => 'NEPAL_PANCHANGA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `PITRI_PAKSHA`.
+final class FestivalRuleItemPitriPaksha extends FestivalRuleItem {
+  const FestivalRuleItemPitriPaksha();
+
+  @override
+  Object? get _wire => 'PITRI_PAKSHA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `GAUDIYA`.
+final class FestivalRuleItemGaudiya extends FestivalRuleItem {
+  const FestivalRuleItemGaudiya();
+
+  @override
+  Object? get _wire => 'GAUDIYA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// The value, picked by `windows`.
+final class FestivalRuleItemSaitRule extends FestivalRuleItem {
+  const FestivalRuleItemSaitRule(this.value);
+
+  /// The value.
+  final SaitRule value;
+
+  @override
+  Object? get _wire => value._wire;
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
+/// The value, picked by `vedha`.
+final class FestivalRuleItemEkadashiRule extends FestivalRuleItem {
+  const FestivalRuleItemEkadashiRule(this.value);
+
+  /// The value.
+  final EkadashiRule value;
+
+  @override
+  Object? get _wire => value._wire;
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
+/// The value, picked by `origin`.
+final class FestivalRuleItemAnniversary extends FestivalRuleItem {
+  const FestivalRuleItemAnniversary(this.value);
+
+  /// The value.
+  final Anniversary value;
+
+  @override
+  Object? get _wire => value._wire;
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
+/// The value, picked by `after`.
+final class FestivalRuleItemFollowingRule extends FestivalRuleItem {
+  const FestivalRuleItemFollowingRule(this.value);
+
+  /// The value.
+  final FollowingRule value;
+
+  @override
+  Object? get _wire => value._wire;
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
+/// The value, picked by `civilDate` or `civilWeekday` or `easter` or `sunEnters`.
+final class FestivalRuleItemDatedRule extends FestivalRuleItem {
+  const FestivalRuleItemDatedRule(this.value);
+
+  /// The value.
+  final DatedRule value;
+
+  @override
+  Object? get _wire => value._wire;
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
+/// The value, when it carries none of the others' keys.
+final class FestivalRuleItemFestivalRule extends FestivalRuleItem {
+  const FestivalRuleItemFestivalRule(this.value);
+
+  /// The value.
+  final FestivalRule value;
+
+  @override
+  Object? get _wire => value._wire;
+
+  @override
+  List<Object?> get _fields => [value];
 }
 
 /// How visibility is decided.
@@ -7264,6 +7482,289 @@ final class PublishedDay extends _Request {
   List<Object?> get _fields => [calendar, day, era, leap, month, year];
 }
 
+/// How a rule elects its sait (§3).
+final class SaitRule extends _Request {
+  const SaitRule({
+    this.choose = SaitChoice.latest,
+    this.rising,
+    required this.rule,
+    required this.source,
+    required this.windows,
+  });
+
+  /// Which candidate is the sait.
+  final SaitChoice choose;
+
+  /// The rising sign preferred inside the window; the window's free stretches themselves are the candidates when left out.
+  final SaitRising? rising;
+
+  /// The key of the karmakala rule whose day it is on.
+  final String rule;
+
+  /// Where the rule is stated.
+  final String source;
+
+  /// The windows, in the order the text falls back through them: the first holding a candidate gives the sait.
+  final List<SaitWindowRule> windows;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'choose': choose.key,
+    if (rising case final risingValue?) 'rising': risingValue._wire,
+    'rule': rule,
+    'source': source,
+    'windows': [for (final e0 in windows) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [choose, rising, rule, source, windows];
+}
+
+/// Whose fast, and by what: a vedha and the table of eight answers.
+final class EkadashiRule extends _Request {
+  const EkadashiRule({
+    required this.key,
+    this.mahadvadashi,
+    this.parana,
+    required this.source,
+    required this.table,
+    required this.vedha,
+  });
+
+  /// The rule's key in its pack, `"EKADASHI_SMARTA"`.
+  final String key;
+
+  /// The mahadvadashis that name its fast or move it onto the 12th's day (§8.9); a rule without one keeps its table's day.
+  final MahadvadashiRule? mahadvadashi;
+
+  /// When the fast is broken (§8.5); a rule without one answers no parana.
+  final ParanaRule? parana;
+
+  /// Where the rule is stated.
+  final String source;
+
+  /// The day each kind takes.
+  final EkadashiTable table;
+
+  /// Where the 10th pierces.
+  final EkadashiVedha vedha;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'key': key,
+    if (mahadvadashi case final mahadvadashiValue?) 'mahadvadashi': mahadvadashiValue._wire,
+    if (parana case final paranaValue?) 'parana': paranaValue._wire,
+    'source': source,
+    'table': table._wire,
+    'vedha': vedha.key,
+  };
+
+  @override
+  List<Object?> get _fields => [key, mahadvadashi, parana, source, table, vedha];
+}
+
+/// An anniversary a request asks the days of.
+final class Anniversary extends _Request {
+  const Anniversary({
+    this.firstYearAdhika = FirstYearAdhika.adhika,
+    this.inSamsarpa = InSamsarpa.also,
+    this.janma,
+    required this.key,
+    this.kind = AnniversaryKind.shraddha,
+    required this.origin,
+    this.window,
+  });
+
+  /// The first anniversary's month when it is doubled.
+  final FirstYearAdhika firstYearAdhika;
+
+  /// Whether a shraddha of an ordinary month is kept in the samsarpa of its name too; a janma tithi never is.
+  final InSamsarpa inSamsarpa;
+
+  /// A janma tithi's options.
+  final JanmaOptions? janma;
+
+  /// The consumer's own key, `"GRANDFATHER"`.
+  final String key;
+
+  /// What it is.
+  final AnniversaryKind kind;
+
+  /// Where it is counted from.
+  final Origin origin;
+
+  /// The rite's time, in place of the kind's ([`AnniversaryKind::window`]): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662).
+  final Window? window;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'firstYearAdhika': firstYearAdhika.key,
+    'inSamsarpa': inSamsarpa.key,
+    if (janma case final janmaValue?) 'janma': janmaValue._wire,
+    'key': key,
+    'kind': kind.key,
+    'origin': origin._wire,
+    if (window case final windowValue?) 'window': windowValue._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [firstYearAdhika, inSamsarpa, janma, key, kind, origin, window];
+}
+
+/// An observance on the day a number of civil days after another rule's.
+final class FollowingRule extends _Request {
+  const FollowingRule({
+    required this.after,
+    required this.days,
+    required this.key,
+    required this.source,
+  });
+
+  /// The key of the karmakala rule whose day it counts from.
+  final String after;
+
+  /// How many civil days after that day, 0 for the same day, at most [`FollowingRule::MOST_DAYS`].
+  final int days;
+
+  /// The rule's key in its pack, `"HOLI_TERAI"`.
+  final String key;
+
+  /// Where the rule is stated.
+  final String source;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'after': after,
+    'days': days,
+    'key': key,
+    'source': source,
+  };
+
+  @override
+  List<Object?> get _fields => [after, days, key, source];
+}
+
+/// An observance on a date of a calendar.
+final class DatedRule extends _Request {
+  const DatedRule({
+    this.civilDate,
+    this.civilWeekday,
+    this.easter,
+    required this.key,
+    required this.source,
+    this.sunEnters,
+  });
+
+  /// A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+  final DatedRuleCivilDate? civilDate;
+
+  /// The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+  final DatedRuleCivilWeekday? civilWeekday;
+
+  /// The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+  final DatedRuleEaster? easter;
+
+  /// The rule's key in its pack, `"MAKARA_SANKRANTI"`.
+  final String key;
+
+  /// Where the rule is stated.
+  final String source;
+
+  /// The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+  final DatedRuleSunEnters? sunEnters;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (civilDate case final civilDateValue?) 'civilDate': civilDateValue._wire,
+    if (civilWeekday case final civilWeekdayValue?) 'civilWeekday': civilWeekdayValue._wire,
+    if (easter case final easterValue?) 'easter': easterValue._wire,
+    'key': key,
+    'source': source,
+    if (sunEnters case final sunEntersValue?) 'sunEnters': sunEntersValue._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [civilDate, civilWeekday, easter, key, source, sunEnters];
+}
+
+/// A rule: when an observance falls, and how its day is decided.
+final class FestivalRule extends _Request {
+  const FestivalRule({
+    required this.at,
+    this.convention = LunarMonth.amanta,
+    this.dayOfPaksha,
+    required this.decide,
+    this.inAdhika,
+    required this.key,
+    this.month,
+    this.nakshatra,
+    required this.otherwise,
+    this.paksha,
+    this.parana,
+    required this.source,
+    this.tithi,
+  });
+
+  /// The time of the rite.
+  final Window at;
+
+  /// The convention the month is named in; amanta by default.
+  final LunarMonth convention;
+
+  /// The day, 1 to 14. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given.
+  final int? dayOfPaksha;
+
+  /// The guards, in order; the first that holds decides.
+  final List<Guard> decide;
+
+  /// Which of a doubled month's two holds it (C171): the nija month by default.
+  final InAdhika? inAdhika;
+
+  /// The rule's key in its pack, `"JANMASHTAMI"`.
+  final String key;
+
+  /// The month, under `convention`; every month when `None`, for a rite kept on the same tithi of each, as the monthly full-moon fast is.
+  final Masa? month;
+
+  /// The nakshatra. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given.
+  final Nakshatra? nakshatra;
+
+  /// What decides when no guard holds.
+  final FestivalChoice otherwise;
+
+  /// The half of the month it must fall in. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given.
+  final Paksha? paksha;
+
+  /// When the fast kept on the day is broken, each reading answered in order (§8.7); none when left out.
+  final List<VrataParana>? parana;
+
+  /// Where the rule is stated.
+  final String source;
+
+  /// The tithi. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given.
+  final Tithi? tithi;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'at': at._wire,
+    'convention': convention.key,
+    if (dayOfPaksha case final dayOfPakshaValue?) 'dayOfPaksha': dayOfPakshaValue,
+    'decide': [for (final e0 in decide) e0._wire],
+    if (inAdhika case final inAdhikaValue?) 'inAdhika': inAdhikaValue._wire,
+    'key': key,
+    if (month case final monthValue?) 'month': monthValue.key,
+    if (nakshatra case final nakshatraValue?) 'nakshatra': nakshatraValue.key,
+    'otherwise': otherwise.key,
+    if (paksha case final pakshaValue?) 'paksha': pakshaValue.key,
+    if (parana case final paranaValue?) 'parana': [for (final e0 in paranaValue) e0._wire],
+    'source': source,
+    if (tithi case final tithiValue?) 'tithi': tithiValue.key,
+  };
+
+  @override
+  List<Object?> get _fields => [at, convention, dayOfPaksha, decide, inAdhika, key, month, nakshatra, otherwise, paksha, parana, source, tithi];
+}
+
 /// The threshold table a criterion compares its measure against.
 sealed class Thresholds extends _Request {
   const Thresholds();
@@ -8180,6 +8681,644 @@ final class EraNumber extends _Request {
   List<Object?> get _fields => [era, year];
 }
 
+/// Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
+enum SaitChoice implements _Keyed {
+  /// The first.
+  earliest('EARLIEST'),
+  /// The last.
+  latest('LATEST');
+
+  const SaitChoice(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The rising sign a tradition prefers for the rite: the navamsa's sign, the lagna's, or either, of the modalities named, in a lagna none of the grahas `free_of` names stands in (the lagna's purity, which a muhurta asks of a malefic there).
+final class SaitRising extends _Request {
+  const SaitRising({
+    this.freeOf,
+    required this.modalities,
+    required this.of,
+  });
+
+  /// The grahas the lagna must not hold, read by sign; none when absent.
+  final List<Graha>? freeOf;
+
+  /// The modalities it may be of.
+  final List<Modality> modalities;
+
+  /// Which sign is read.
+  final RisingOf of;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (freeOf case final freeOfValue?) 'freeOf': [for (final e0 in freeOfValue) e0.key],
+    'modalities': [for (final e0 in modalities) e0.key],
+    'of': of.key,
+  };
+
+  @override
+  List<Object?> get _fields => [freeOf, modalities, of];
+}
+
+/// One window a sait may fall in, with what it avoids there: a text keeps its exclusions only where they fit (Dharmasindhu p. 65), so a fallback window lists its own.
+final class SaitWindowRule extends _Request {
+  const SaitWindowRule({
+    this.avoid,
+    required this.within,
+  });
+
+  /// What it avoids; nothing when left out.
+  final List<SaitAvoid>? avoid;
+
+  /// The window.
+  final SaitWindow within;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (avoid case final avoidValue?) 'avoid': [for (final e0 in avoidValue) e0._wire],
+    'within': within._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [avoid, within];
+}
+
+/// Which mahadvadashis a Gaudiya Ekadashi keeps, and how each is read. Every field defaults to [`MahadvadashiRule::hari_bhakti_vilasa`]'s, so `{}` is the text's rule.
+final class MahadvadashiRule extends _Request {
+  const MahadvadashiRule({
+    this.joining = NakshatraJoining.twoSunrises,
+    this.kinds = const [MahadvadashiKind.vijaya, MahadvadashiKind.jaya, MahadvadashiKind.jayanti, MahadvadashiKind.papanashini, MahadvadashiKind.vyanjuli, MahadvadashiKind.pakshavardhini, MahadvadashiKind.unmilani, MahadvadashiKind.trisprisha],
+    this.sampurna = true,
+    this.trisprisha = TrisprishaAt.sunrise,
+    this.vyanjuli = VyanjuliPast.any,
+  });
+
+  /// What a nakshatra kind's joining is measured against.
+  final NakshatraJoining joining;
+
+  /// The kinds kept, the first that holds setting the fast (C711); a kind left out is not kept.
+  final List<MahadvadashiKind> kinds;
+
+  /// Whether Unmilani and Vyanjuli need the 11th pure at arunodaya, *sampūrṇā* (13.356, C710).
+  final bool sampurna;
+
+  /// Where the 11th stands on a Trisprisha's day.
+  final TrisprishaAt trisprisha;
+
+  /// How much of the 12th a Vyanjuli needs past the second sunrise.
+  final VyanjuliPast vyanjuli;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'joining': joining.key,
+    'kinds': [for (final e0 in kinds) e0.key],
+    'sampurna': sampurna,
+    'trisprisha': trisprisha.key,
+    'vyanjuli': vyanjuli.key,
+  };
+
+  @override
+  List<Object?> get _fields => [joining, kinds, sampurna, trisprisha, vyanjuli];
+}
+
+/// When an Ekadashi fast is broken (*parana*, §8.5): on the day after the fast, inside the 12th, in the first of these daylight windows that leaves time once the 12th's first quarter, the *hari vasara*, is past.
+final class ParanaRule extends _Request {
+  const ParanaRule({
+    required this.at,
+    this.bars,
+    required this.hariVasara,
+  });
+
+  /// The daylight windows the meal is kept in, in order of preference: each a span of the daylight (`PART` or `DAY_MUHURTA`).
+  final List<Window> at;
+
+  /// The nakshatras the meal is not taken in after one 11th's fast (C700): none in the default, as the published reference keeps none; [`NakshatraBar::dharmasindhu`] for the *Dharmasindhu*'s.
+  final List<Object?>? bars;
+
+  /// Whether the 12th's first quarter is passed over before eating.
+  final bool hariVasara;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'at': [for (final e0 in at) e0._wire],
+    if (bars case final barsValue?) 'bars': barsValue,
+    'hariVasara': hariVasara,
+  };
+
+  @override
+  List<Object?> get _fields => [at, bars, hariVasara];
+}
+
+/// An observer's answers, for the 11th pure and pierced.
+final class EkadashiTable extends _Request {
+  const EkadashiTable({
+    required this.pierced,
+    required this.pure,
+  });
+
+  /// When it does.
+  final EkadashiKinds pierced;
+
+  /// When the 10th does not pierce the 11th's day.
+  final EkadashiKinds pure;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'pierced': pierced._wire,
+    'pure': pure._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [pierced, pure];
+}
+
+/// Where the 10th pierces the 11th's day (p. 11).
+enum EkadashiVedha implements _Keyed {
+  /// At arunodaya, four ghatis of the night before sunrise: the 10th "entering even a pala past 56 ghatis". The Vaishnavas' vedha.
+  arunodaya('ARUNODAYA'),
+  /// At sunrise: the 10th standing "a pala past the sixty-ghati sunrise". The Smartas'. Pierced at sunrise is pierced at arunodaya too.
+  sunrise('SUNRISE');
+
+  const EkadashiVedha(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Whether an ordinary month's anniversary is kept in the *samsarpa* too, the adhika month of its name before a kshaya month (C669).
+enum InSamsarpa implements _Keyed {
+  /// In the samsarpa and the nija month both: *Dharmasindhu*'s own inference in its kshaya example ("iti bhāti"), and Dhakal's instruction for Nepal (NS, the introduction's malamasa section).
+  also('ALSO'),
+  /// In the nija month alone, as in any other year with an adhika month.
+  nija('NIJA');
+
+  const InSamsarpa(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// *Dharmasindhu*'s two options for a janma tithi, both off by default (C670).
+final class JanmaOptions extends _Request {
+  const JanmaOptions({
+    this.nakshatraTie = false,
+    this.twoMuhurtaFloor = false,
+  });
+
+  /// When both days' sunrises hold the tithi, the day whose sunrise holds the birth nakshatra.
+  final bool nakshatraTie;
+
+  /// The sunrise tithi only when it lasts two muhurtas past sunrise, else the day before.
+  final bool twoMuhurtaFloor;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'nakshatraTie': nakshatraTie,
+    'twoMuhurtaFloor': twoMuhurtaFloor,
+  };
+
+  @override
+  List<Object?> get _fields => [nakshatraTie, twoMuhurtaFloor];
+}
+
+/// What an anniversary is, which sets the rite's time and how the day is chosen.
+enum AnniversaryKind implements _Keyed {
+  /// A death's yearly shraddha, an ekoddishta or a parvana by its origin ([`OriginFound::is_parvana`], C665). An answer names which.
+  shraddha('SHRADDHA'),
+  /// The ekoddishta, for one person: kutapa to rauhina, the daylight's 8th and 9th muhurtas (NS p. 987, DS p. 265, C662).
+  ekoddishta('EKODDISHTA'),
+  /// The parvana, for the ancestors together: the aparahna (DS p. 266).
+  parvana('PARVANA'),
+  /// A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
+  janmaTithi('JANMA_TITHI');
+
+  const AnniversaryKind(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Where an anniversary is counted from.
+sealed class Origin extends _Request {
+  const Origin();
+}
+
+/// The moment of the death or the birth: the tithi running then, as the Naradiya has it for a death and a parana (NS p. 982, C661). A death before sunrise takes the tithi of that hour, not the civil day's sunrise tithi.
+final class OriginInstant extends Origin {
+  const OriginInstant({
+    required this.at,
+  });
+
+  /// The moment.
+  final double at;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'by': 'INSTANT',
+    'at': at,
+  };
+
+  @override
+  List<Object?> get _fields => [at];
+}
+
+/// Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661).
+final class OriginDate extends Origin {
+  const OriginDate({
+    required this.date,
+  });
+
+  /// The date.
+  final Object? date;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'by': 'DATE',
+    if (date case final dateValue?) 'date': dateValue,
+  };
+
+  @override
+  List<Object?> get _fields => [date];
+}
+
+/// The lunar date itself, as a family keeps it.
+final class OriginLunar extends Origin {
+  const OriginLunar({
+    this.adhika = false,
+    this.at,
+    this.half = TithiHalf.first,
+    required this.month,
+    required this.tithi,
+  });
+
+  /// Whether the month was adhika.
+  final bool adhika;
+
+  /// The moment, if known, which only counts the years: without it no anniversary has a number, and the first one's adhika policy (C666) cannot apply.
+  final double? at;
+
+  /// The half of the tithi, which names the month in a kshaya lunation (C668); the month given is taken as named already.
+  final TithiHalf half;
+
+  /// The month, amanta.
+  final Masa month;
+
+  /// The tithi.
+  final Tithi tithi;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'by': 'LUNAR',
+    'adhika': adhika,
+    if (at case final atValue?) 'at': atValue,
+    'half': half.key,
+    'month': month.key,
+    'tithi': tithi.key,
+  };
+
+  @override
+  List<Object?> get _fields => [adhika, at, half, month, tithi];
+}
+
+/// A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+final class DatedRuleCivilDate extends _Request {
+  const DatedRuleCivilDate({
+    required this.calendar,
+    required this.day,
+    required this.month,
+    this.skipped,
+  });
+
+  /// The calendar the date is in.
+  final Calendar calendar;
+
+  /// The day; never 0.
+  final int day;
+
+  /// The month, 1 for the first.
+  final int month;
+
+  /// Which neighbour keeps the date when its number is skipped, in the calendar that skips numbers, the Tibetan; left out, the day before ([`SkippedDay`]). Refused for any other calendar.
+  final SkippedDay? skipped;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'calendar': calendar.key,
+    'day': day,
+    'month': month,
+    if (skipped case final skippedValue?) 'skipped': skippedValue.key,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, day, month, skipped];
+}
+
+/// The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+final class DatedRuleCivilWeekday extends _Request {
+  const DatedRuleCivilWeekday({
+    required this.calendar,
+    required this.month,
+    required this.nth,
+    required this.weekday,
+  });
+
+  /// The calendar the month is in.
+  final Calendar calendar;
+
+  /// The month, 1 for the first.
+  final int month;
+
+  /// Which of them; never 0, at most 5 either way.
+  final int nth;
+
+  /// The weekday.
+  final Vara weekday;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'calendar': calendar.key,
+    'month': month,
+    'nth': nth,
+    'weekday': weekday.key,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, month, nth, weekday];
+}
+
+/// The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+final class DatedRuleEaster extends _Request {
+  const DatedRuleEaster({
+    required this.computus,
+    this.days = 0,
+  });
+
+  /// Which churches' reckoning of Easter.
+  final Computus computus;
+
+  /// The days from Easter Sunday, 0 for that day, at most [`Dated::EASTER_DAYS`] either way.
+  final int days;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'computus': computus.key,
+    'days': days,
+  };
+
+  @override
+  List<Object?> get _fields => [computus, days];
+}
+
+/// The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+final class DatedRuleSunEnters extends _Request {
+  const DatedRuleSunEnters({
+    this.days = 0,
+    required this.nakshatra,
+  });
+
+  /// How many civil days after the entry's, 0 for that day, at most [`Dated::MOST_DAYS`].
+  final int days;
+
+  /// The nakshatra entered.
+  final Nakshatra nakshatra;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'days': days,
+    'nakshatra': nakshatra.key,
+  };
+
+  @override
+  List<Object?> get _fields => [days, nakshatra];
+}
+
+/// A choice when every predicate holds.
+final class Guard extends _Request {
+  const Guard({
+    required this.choose,
+    required this.when,
+  });
+
+  /// What it decides.
+  final FestivalChoice choose;
+
+  /// What must all hold.
+  final List<Predicate> when;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'choose': choose.key,
+    'when': [for (final e0 in when) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [choose, when];
+}
+
+/// Which of a doubled month's two a rule is kept in.
+sealed class InAdhika extends _Request {
+  const InAdhika();
+}
+
+/// `NIJA`.
+final class InAdhikaNija extends InAdhika {
+  const InAdhikaNija();
+
+  @override
+  Object? get _wire => 'NIJA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `ALSO`.
+final class InAdhikaAlso extends InAdhika {
+  const InAdhikaAlso();
+
+  @override
+  Object? get _wire => 'ALSO';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `ONLY`.
+final class InAdhikaOnly extends InAdhika {
+  const InAdhikaOnly();
+
+  @override
+  Object? get _wire => 'ONLY';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `FIRST`.
+final class InAdhikaFirst extends InAdhika {
+  const InAdhikaFirst();
+
+  @override
+  Object? get _wire => 'FIRST';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// The value itself.
+final class InAdhikaValue extends InAdhika {
+  const InAdhikaValue(this.value);
+
+  /// The value.
+  final bool value;
+
+  @override
+  Object? get _wire => value;
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
+/// What a guard, or a rule's `otherwise`, decides.
+enum FestivalChoice implements _Keyed {
+  /// The earlier day.
+  earlier('EARLIER'),
+  /// The later day.
+  later('LATER'),
+  /// By the yugma verse (p. 6): the first of a pair on the day it runs into its partner, the second on the day its partner runs into it.
+  byYugma('BY_YUGMA'),
+  /// Neither day: the rule is not kept this time. A rite kept only on a weekday answers this when its tithi's day is another (C618).
+  none('NONE');
+
+  const FestivalChoice(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// One reading of when a fast kept on a rule's day is broken (§8.7).
+sealed class VrataParana extends _Request {
+  const VrataParana();
+}
+
+/// After the tithi ends, and `nakshatra` too when it joins the tithi within the fast day, sunrise to sunrise (*Dharmasindhu* p. 52; for the tithi alone, p. 7). The meal follows the last end when every one falls by day (before sunset, or already before sunrise), else the last of those that do, else the first; never before sunrise. With `yamas`, an end past that many yamas of the daylight keeps the meal from sunrise to their end instead (p. 7, after Madhava).
+final class VrataParanaTithiEnd extends VrataParana {
+  const VrataParanaTithiEnd({
+    this.nakshatra,
+    this.yamas,
+  });
+
+  /// The nakshatra whose end also counts when it joins the tithi.
+  final Nakshatra? nakshatra;
+
+  /// Yamas of the daylight, 1 to 4, past which the meal is kept in the morning instead.
+  final int? yamas;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kind': 'TITHI_END',
+    if (nakshatra case final nakshatraValue?) 'nakshatra': nakshatraValue.key,
+    if (yamas case final yamasValue?) 'yamas': yamasValue,
+  };
+
+  @override
+  List<Object?> get _fields => [nakshatra, yamas];
+}
+
+/// Inside the tithi, from sunrise to its end or to `yamas` yamas of the daylight, whichever is first: the *Nirnayasindhu*'s Shivaratri, capped by Madhava's three yamas (*Dharmasindhu* pp. 90–91). A tithi ended by sunrise leaves the meal open from sunrise.
+final class VrataParanaWithin extends VrataParana {
+  const VrataParanaWithin({
+    required this.yamas,
+  });
+
+  /// Yamas of the daylight, 1 to 4.
+  final int yamas;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kind': 'WITHIN',
+    'yamas': yamas,
+  };
+
+  @override
+  List<Object?> get _fields => [yamas];
+}
+
+/// From the day's sunrise: the morning after the festival's puja and visarjana, for one who cannot wait (*Dharmasindhu* p. 52).
+final class VrataParanaSunrise extends VrataParana {
+  const VrataParanaSunrise();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kind': 'SUNRISE',
+  };
+
+  @override
+  List<Object?> get _fields => [];
+}
+
+/// From the end of a window on the fast day, as after the nishitha muhurta. No rank-1 text in hand states it; no shipped rule carries it.
+final class VrataParanaAfterWindow extends VrataParana {
+  const VrataParanaAfterWindow({
+    required this.at,
+  });
+
+  /// The window, on the fast day.
+  final Window at;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kind': 'AFTER_WINDOW',
+    'at': at._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [at];
+}
+
+/// In the tithi after the fast's, from its first daylight: the fast tithi's end when it falls by day, on the fast day or the next, else the sunrise after it (*Nirnayasindhu* p. 139, "सा च दशम्यां कार्या", the Navaratri's parana on the 10th).
+final class VrataParanaNextTithi extends VrataParana {
+  const VrataParanaNextTithi();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kind': 'NEXT_TITHI',
+  };
+
+  @override
+  List<Object?> get _fields => [];
+}
+
+/// After a closing rite another rule keeps, on that rule's next day from the fast's, from the rite's first instant: its day's sunrise, its tithi's start, and the start of the share of a nakshatra that chose its day, whichever is last (*Dharmasindhu* pp. 70–71: the vow is given up on the visarjana's day, after it). With `remnant`, when the rite falls later than the day after the fast and the fast's tithi still stands at that day's sunrise for at least that many ghatis, the meal is kept inside the tithi on that day instead, sunrise to its end (DS p. 71, the remaining 9th).
+final class VrataParanaAfterRite extends VrataParana {
+  const VrataParanaAfterRite({
+    this.remnant,
+    required this.rite,
+  });
+
+  /// Ghatis of the fast's tithi, 0 to 60, past the next sunrise that keep the meal inside it; none to wait for the rite always.
+  final int? remnant;
+
+  /// The closing rite's rule key, which the same request must ask for, as `"DURGA_VISARJANA"`.
+  final String rite;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kind': 'AFTER_RITE',
+    if (remnant case final remnantValue?) 'remnant': remnantValue,
+    'rite': rite,
+  };
+
+  @override
+  List<Object?> get _fields => [remnant, rite];
+}
+
 /// A threshold for each motion of one body, degrees.
 final class MotionThresholds extends _Request {
   const MotionThresholds({
@@ -8201,4 +9340,619 @@ final class MotionThresholds extends _Request {
 
   @override
   List<Object?> get _fields => [direct, retrograde];
+}
+
+/// Which rising sign a [`SaitRising`] reads.
+enum RisingOf implements _Keyed {
+  /// The navamsa's sign.
+  navamsa('NAVAMSA'),
+  /// The lagna's sign.
+  lagna('LAGNA'),
+  /// Either: a navamsa counts when its own sign is of a modality named or its lagna's is.
+  navamsaOrLagna('NAVAMSA_OR_LAGNA');
+
+  const RisingOf(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// What a window avoids.
+sealed class SaitAvoid extends _Request {
+  const SaitAvoid();
+}
+
+/// The occurrence's first nadis (Ghatasthapana's sixteen, NS p. 120).
+final class SaitAvoidTithiStart extends SaitAvoid {
+  const SaitAvoidTithiStart({
+    required this.nadis,
+  });
+
+  /// How many, 1 to 60.
+  final int nadis;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'avoid': 'TITHI_START',
+    'nadis': nadis,
+  };
+
+  @override
+  List<Object?> get _fields => [nadis];
+}
+
+/// The Moon in a nakshatra: its first `quarters` quarters, 4 for the whole of it.
+final class SaitAvoidNakshatra extends SaitAvoid {
+  const SaitAvoidNakshatra({
+    required this.nakshatra,
+    this.quarters = 4,
+  });
+
+  /// Which.
+  final Nakshatra nakshatra;
+
+  /// How many of its quarters from its start, 1 to 4.
+  final int quarters;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'avoid': 'NAKSHATRA',
+    'nakshatra': nakshatra.key,
+    'quarters': quarters,
+  };
+
+  @override
+  List<Object?> get _fields => [nakshatra, quarters];
+}
+
+/// A nitya yoga: its first `quarters` quarters, 4 for the whole.
+final class SaitAvoidYoga extends SaitAvoid {
+  const SaitAvoidYoga({
+    this.quarters = 4,
+    required this.yoga,
+  });
+
+  /// How many of its quarters from its start, 1 to 4.
+  final int quarters;
+
+  /// Which.
+  final Yoga yoga;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'avoid': 'YOGA',
+    'quarters': quarters,
+    'yoga': yoga.key,
+  };
+
+  @override
+  List<Object?> get _fields => [quarters, yoga];
+}
+
+/// An eighth of the daylight: Rahu kaala, Yamaghanda or Gulika.
+final class SaitAvoidKaala extends SaitAvoid {
+  const SaitAvoidKaala({
+    required this.kaala,
+  });
+
+  /// Which.
+  final Kaala kaala;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'avoid': 'KAALA',
+    'kaala': kaala.key,
+  };
+
+  @override
+  List<Object?> get _fields => [kaala];
+}
+
+/// Bhadra, the vishti karana.
+final class SaitAvoidVishti extends SaitAvoid {
+  const SaitAvoidVishti();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'avoid': 'VISHTI',
+  };
+
+  @override
+  List<Object?> get _fields => [];
+}
+
+/// A stretch of the festival day a sait may fall in.
+sealed class SaitWindow extends _Request {
+  const SaitWindow();
+}
+
+/// The first ghatis after sunrise, a ghati a sixtieth of the civil day (24 minutes): Ghatasthapana's ten (DS p. 65).
+final class SaitWindowGhatis extends SaitWindow {
+  const SaitWindowGhatis({
+    required this.ghatis,
+  });
+
+  /// How many, 1 to 60.
+  final int ghatis;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'GHATIS',
+    'ghatis': ghatis,
+  };
+
+  @override
+  List<Object?> get _fields => [ghatis];
+}
+
+/// Muhurtas of the daylight, a fifteenth of it from sunrise, `from` to `to` inclusive, 1 to 15: Abhijit is the 8th, the forenoon the first six.
+final class SaitWindowDayMuhurta extends SaitWindow {
+  const SaitWindowDayMuhurta({
+    required this.from,
+    required this.to,
+  });
+
+  /// The first, 1 for the muhurta after sunrise.
+  final int from;
+
+  /// The last, at least `from`.
+  final int to;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'DAY_MUHURTA',
+    'from': from,
+    'to': to,
+  };
+
+  @override
+  List<Object?> get _fields => [from, to];
+}
+
+/// A fifth of the daylight.
+final class SaitWindowPart extends SaitWindow {
+  const SaitWindowPart({
+    required this.part,
+  });
+
+  /// Which fifth.
+  final DayFifth part;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'PART',
+    'part': part.key,
+  };
+
+  @override
+  List<Object?> get _fields => [part];
+}
+
+/// Three muhurtas after sunset, a muhurta a fifteenth of the night.
+final class SaitWindowPradosha extends SaitWindow {
+  const SaitWindowPradosha();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'PRADOSHA',
+  };
+
+  @override
+  List<Object?> get _fields => [];
+}
+
+/// A muhurta of the night, 1 to 15 from sunset.
+final class SaitWindowNightMuhurta extends SaitWindow {
+  const SaitWindowNightMuhurta({
+    required this.muhurta,
+  });
+
+  /// Which muhurta.
+  final int muhurta;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'NIGHT_MUHURTA',
+    'muhurta': muhurta,
+  };
+
+  @override
+  List<Object?> get _fields => [muhurta];
+}
+
+/// What 13.286–287's nakshatra "longer, equal or shorter" is measured against (C708). Every reading keeps 13.288–289: a nakshatra other than Shravana needs the 12th to last to sunset.
+enum NakshatraJoining implements _Keyed {
+  /// The day: it holds the 12th's sunrise and the next.
+  twoSunrises('TWO_SUNRISES'),
+  /// The tithi: it holds the 12th's sunrise and lasts to the 12th's end or past it (the Hindi gloss).
+  outlastsTwelfth('OUTLASTS_TWELFTH'),
+  /// As `OUTLASTS_TWELFTH`, or it begins after the 12th's sunrise while the 12th stands, of any length: 13.286's "from sunrise".
+  begunInDaylight('BEGUN_IN_DAYLIGHT');
+
+  const NakshatraJoining(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The eight great twelfths (HBV 13.265: "उन्मीलनी वञ्जुली च त्रिस्पृशा पक्षवर्धिनी । जया च विजया चैव जयन्ती पापनाशिनी").
+enum MahadvadashiKind implements _Keyed {
+  /// 13.267: a *sampūrṇā* 11th grows into the next day and the 12th does not; the fast is that next day.
+  unmilani('UNMILANI'),
+  /// 13.268: the 12th alone grows past the sunrise after its own.
+  vyanjuli('VYANJULI'),
+  /// 13.269: the 11th at the day's start, the 12th the whole day, the 13th at its end.
+  trisprisha('TRISPRISHA'),
+  /// 13.270: the fortnight's new or full moon holds two sunrises; the 11th is left and the 12th fasted.
+  pakshavardhini('PAKSHAVARDHINI'),
+  /// 13.485: a bright 12th joined with Punarvasu.
+  jaya('JAYA'),
+  /// 13.489–490: with Shravana.
+  vijaya('VIJAYA'),
+  /// 13.506, 13.508: with Rohini, *prājāpatya*.
+  jayanti('JAYANTI'),
+  /// 13.534: with Pushya.
+  papanashini('PAPANASHINI');
+
+  const MahadvadashiKind(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Where the 11th must stand on a Trisprisha's day (C707).
+enum TrisprishaAt implements _Keyed {
+  /// At arunodaya and at sunrise: the Hindi gloss of 13.269, and every published Trisprisha row.
+  sunrise('SUNRISE'),
+  /// At arunodaya, even when it ends before sunrise: 13.269's letter, "अरुणोदय आद्या".
+  arunodaya('ARUNODAYA');
+
+  const TrisprishaAt(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// How much of the 12th must stand past the sunrise after its own for a Vyanjuli (C709).
+enum VyanjuliPast implements _Keyed {
+  /// Any: "a kala or even a vikala" (12.374, कला च विकलापि वा).
+  any('ANY'),
+  /// Half a muhurta, a ghati of that day's daylight: 13.356's "त्रयोदश्यां मुहूर्तार्धं".
+  halfMuhurta('HALF_MUHURTA');
+
+  const VyanjuliPast(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The day each of the four kinds takes: the 11th's own (`EARLIER`) or the day after (`LATER`).
+final class EkadashiKinds extends _Request {
+  const EkadashiKinds({
+    required this.both,
+    required this.eleventh,
+    required this.neither,
+    required this.twelfth,
+  });
+
+  /// Both in excess.
+  final FestivalWhich both;
+
+  /// The 11th alone in excess.
+  final FestivalWhich eleventh;
+
+  /// Neither in excess.
+  final FestivalWhich neither;
+
+  /// The 12th alone in excess.
+  final FestivalWhich twelfth;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'both': both.key,
+    'eleventh': eleventh.key,
+    'neither': neither.key,
+    'twelfth': twelfth.key,
+  };
+
+  @override
+  List<Object?> get _fields => [both, eleventh, neither, twelfth];
+}
+
+/// Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
+enum TithiHalf implements _Keyed {
+  /// The first.
+  first('FIRST'),
+  /// The second.
+  second('SECOND');
+
+  const TithiHalf(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Which neighbour keeps an observance whose date's number is skipped.
+enum SkippedDay implements _Keyed {
+  /// The day before, the one the skipped lunar day ends in.
+  before('BEFORE'),
+  /// The day after, the next number's.
+  after('AFTER');
+
+  const SkippedDay(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Which reckoning of Easter.
+enum Computus implements _Keyed {
+  /// The Gregorian computus, the Western churches': from 1583, the first whole year of the reform.
+  gregorian('GREGORIAN'),
+  /// The Julian computus, the Eastern churches': the Alexandrian cycle in the Julian calendar, from 326, the year after Nicaea.
+  julian('JULIAN');
+
+  const Computus(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Something a guard asks of the two days.
+sealed class Predicate extends _Request {
+  const Predicate();
+}
+
+/// The case is this one.
+final class PredicateCase extends Predicate {
+  const PredicateCase({
+    required this.caseValue,
+  });
+
+  /// The case.
+  final FestivalCase caseValue;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'is': 'CASE',
+    'case': caseValue.key,
+  };
+
+  @override
+  List<Object?> get _fields => [caseValue];
+}
+
+/// The tithi and a nakshatra stand together on a day: within a window when one is named, anywhere in the sunrise day otherwise; and only a share of the nakshatra when `portion` names one.
+final class PredicateJoined extends Predicate {
+  const PredicateJoined({
+    this.at,
+    required this.day,
+    required this.nakshatra,
+    this.portion,
+  });
+
+  /// Where they must meet; the whole day when absent.
+  final Window? at;
+
+  /// Which day.
+  final FestivalWhich day;
+
+  /// The nakshatra.
+  final Nakshatra nakshatra;
+
+  /// The share of the nakshatra's arc that must meet the tithi, as Shravana's last quarter (*Dharmasindhu* p. 70); the whole when absent. A share is the Moon's stay in its arc, searched at the arc's own bounds ([`FestivalDay::moon_arcs`]).
+  final Portion? portion;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'is': 'JOINED',
+    if (at case final atValue?) 'at': atValue._wire,
+    'day': day.key,
+    'nakshatra': nakshatra.key,
+    if (portion case final portionValue?) 'portion': portionValue._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [at, day, nakshatra, portion];
+}
+
+/// The nakshatra stands in a window of a day, whatever the tithi: the Nirnaya-sindhu's condition that *Dharmasindhu* p. 71 endorses, Shravana in the later day's aparahna after the dashami has ended.
+final class PredicateStands extends Predicate {
+  const PredicateStands({
+    required this.at,
+    required this.day,
+    required this.nakshatra,
+  });
+
+  /// The window it must stand in, for some time or at its instant.
+  final Window at;
+
+  /// Which day.
+  final FestivalWhich day;
+
+  /// The nakshatra.
+  final Nakshatra nakshatra;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'is': 'STANDS',
+    'at': at._wire,
+    'day': day.key,
+    'nakshatra': nakshatra.key,
+  };
+
+  @override
+  List<Object?> get _fields => [at, day, nakshatra];
+}
+
+/// The tithi stands at an edge of the day and lasts at least this many ghatis past it, a ghati being a thirtieth of the daylight after sunrise or of the night after sunset: three muhurtas after sunrise are six ghatis (p. 71), and the new moon a ghati into the night settles Lakshmi puja (p. 77).
+final class PredicateLasts extends Predicate {
+  const PredicateLasts({
+    required this.day,
+    required this.from,
+    required this.ghatis,
+  });
+
+  /// Which day.
+  final FestivalWhich day;
+
+  /// The edge counted from.
+  final DayEdge from;
+
+  /// How many ghatis, 1 to 30.
+  final int ghatis;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'is': 'LASTS',
+    'day': day.key,
+    'from': from.key,
+    'ghatis': ghatis,
+  };
+
+  @override
+  List<Object?> get _fields => [day, from, ghatis];
+}
+
+/// The tithi holds the whole of a day's window, or its instant: p. 90 gives Shivaratri to the day holding niśītha wholly when the other holds it in part.
+final class PredicateWholly extends Predicate {
+  const PredicateWholly({
+    required this.day,
+  });
+
+  /// Which day.
+  final FestivalWhich day;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'is': 'WHOLLY',
+    'day': day.key,
+  };
+
+  @override
+  List<Object?> get _fields => [day];
+}
+
+/// This day's window holds more of the tithi, in time, than the other day's does; at an instant, this day's holds it and the other's does not. Equal times are a tie and hold for neither day. Time and not the share of each window: the two differ only when both days hold part of a window whose length moves a minute or two from one day to the next (C601, C604).
+final class PredicateGreater extends Predicate {
+  const PredicateGreater({
+    required this.day,
+  });
+
+  /// Which day.
+  final FestivalWhich day;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'is': 'GREATER',
+    'day': day.key,
+  };
+
+  @override
+  List<Object?> get _fields => [day];
+}
+
+/// The day is this vara, sunrise to sunrise: *Dharmasindhu* p. 20 names the new moon on a Monday (Somavati), the 4th on a Tuesday and the 7th on a Sunday, and the committee prints the 13th's fast on a Saturday or a Monday by those names (C618).
+final class PredicateOnVara extends Predicate {
+  const PredicateOnVara({
+    required this.day,
+    required this.vara,
+  });
+
+  /// Which day.
+  final FestivalWhich day;
+
+  /// The vara.
+  final Vara vara;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'is': 'ON_VARA',
+    'day': day.key,
+    'vara': vara.key,
+  };
+
+  @override
+  List<Object?> get _fields => [day, vara];
+}
+
+/// A share of a nakshatra's arc: the `which`th of `parts` equal parts, `{1, 1}` the whole, `{4, 1}` its first quarter (pada).
+final class Portion extends _Request {
+  const Portion({
+    required this.parts,
+    required this.which,
+  });
+
+  /// The equal parts the arc is cut in, 1 to 12.
+  final int parts;
+
+  /// Which of them, 1 to `parts`.
+  final int which;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'parts': parts,
+    'which': which,
+  };
+
+  @override
+  List<Object?> get _fields => [parts, which];
+}
+
+/// One of the two days a tithi is judged between.
+enum FestivalWhich implements _Keyed {
+  /// The earlier.
+  earlier('EARLIER'),
+  /// The later.
+  later('LATER');
+
+  const FestivalWhich(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// How the tithi held the rite's time on the two days (pp. 6–7).
+enum FestivalCase implements _Keyed {
+  /// On the earlier day only, wholly or in part.
+  earlierOnly('EARLIER_ONLY'),
+  /// On the later day only.
+  laterOnly('LATER_ONLY'),
+  /// Wholly, on both.
+  both('BOTH'),
+  /// On neither.
+  neither('NEITHER'),
+  /// On both, in part at least on one, the two equal (C170).
+  equalParts('EQUAL_PARTS'),
+  /// On both, in part at least on one, unequally.
+  unequalParts('UNEQUAL_PARTS');
+
+  const FestivalCase(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The edge of a day a [`Predicate::Lasts`] counts from.
+enum DayEdge implements _Keyed {
+  /// Sunrise, counting in thirtieths of the daylight.
+  sunrise('SUNRISE'),
+  /// Sunset, counting in thirtieths of the night.
+  sunset('SUNSET');
+
+  const DayEdge(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }

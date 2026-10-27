@@ -1543,7 +1543,7 @@ public final class BindingTest {
                 // and all.
                 CalendarDate autumn = Civil.date(Calendar.GREGORIAN, 2026, 10, 15);
                 CalendarDate winter = Civil.date(Calendar.GREGORIAN, 2026, 11, 10);
-                var pack = new com.teispace.teistro.request.FestivalRequest("DHARMASINDHU");
+                var pack = new com.teispace.teistro.request.FestivalRequest(com.teispace.teistro.request.FestivalRules.DHARMASINDHU);
                 FestivalAnswer withDays = sky.almanac().of(autumn, winter, kathmandu, 20_700, null, pack,
                         false, false, false).festivals().orElseThrow();
                 FestivalAnswer lean = sky.almanac().festivals(autumn, winter, kathmandu, 20_700, pack);
@@ -1588,7 +1588,7 @@ public final class BindingTest {
                 {
                     CalendarDate on = Civil.date(Calendar.GREGORIAN, 2025, 9, 22);
                     FestivalAnswer nepal = sky.almanac().festivals(on, on, kathmandu, 20_700,
-                            new com.teispace.teistro.request.FestivalRequest("NEPAL"));
+                            new com.teispace.teistro.request.FestivalRequest(com.teispace.teistro.request.FestivalRules.NEPAL));
                     FestivalSait sait = nepal.observances().stream()
                             .filter(o -> o.rule().equals("NAVARATRA_ARAMBHA")).findFirst().orElseThrow().sait();
                     FestivalSait.Candidate chosen = sait.candidates().get(sait.chosen());
@@ -1629,7 +1629,7 @@ public final class BindingTest {
                     var set = new com.teispace.teistro.request.PublishedSet(entries, "teistro.published/1", "np-2082",
                             "a patro printed in Nepal", 2);
                     FestivalAnswer answer = sky.almanac().festivals(navamiFrom, navamiTo, kathmandu, 20_700,
-                            new com.teispace.teistro.request.FestivalRequest(List.of(set), "DHARMASINDHU"));
+                            new com.teispace.teistro.request.FestivalRequest(List.of(set), com.teispace.teistro.request.FestivalRules.DHARMASINDHU));
                     FestivalObservance moved = answer.observances().stream()
                             .filter(o -> o.rule().equals("MAHA_NAVAMI")).findFirst().orElseThrow();
                     same(new Published("PUBLISHED", "a patro printed in Nepal", "np-2082", 2, "p. 1", navami.day(), null),
@@ -1654,7 +1654,7 @@ public final class BindingTest {
                                     "NO_SUCH_RULE", "p. 1")),
                             "teistro.published/1", "np-2082", "a patro printed in Nepal", 2);
                     TeistroException strayed = refusal(() -> sky.almanac().festivals(navamiFrom, navamiTo, kathmandu,
-                            20_700, new com.teispace.teistro.request.FestivalRequest(List.of(stray), "DHARMASINDHU")));
+                            20_700, new com.teispace.teistro.request.FestivalRequest(List.of(stray), com.teispace.teistro.request.FestivalRules.DHARMASINDHU)));
                     same("festivals.published[0].entries[0].rule", strayed.field(), "a SET naming no carried rule");
                 }
                 // Why a published day differs (published-overrides.md §4): the
@@ -1664,7 +1664,7 @@ public final class BindingTest {
                         .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
                     CalendarDate reasonsFrom = Civil.date(Calendar.GREGORIAN, 2027, 9, 1);
                     CalendarDate reasonsTo = Civil.date(Calendar.GREGORIAN, 2027, 11, 30);
-                    var nepal = new com.teispace.teistro.request.FestivalRequest("NEPAL");
+                    var nepal = new com.teispace.teistro.request.FestivalRequest(com.teispace.teistro.request.FestivalRules.NEPAL);
                     List<FestivalObservance> theirs = committee.almanac()
                             .festivals(reasonsFrom, reasonsTo, kathmandu, 20_700, nepal).observances();
                     java.util.function.ToLongFunction<CalendarDate> fixed = d -> sky.calendar().fixedOf(d);
@@ -1683,7 +1683,7 @@ public final class BindingTest {
                                                             d.day(), d.month(), d.year()),
                                                     parted[0].rule(), "p. 1")),
                                             "teistro.published/1", "np", "a patro printed in Nepal", 1)),
-                                    "NEPAL");
+                                    com.teispace.teistro.request.FestivalRules.NEPAL);
                     PublishedReasons found = sky.almanac().publishedReasons(reasonsFrom, reasonsTo, kathmandu, 20_700,
                             published.apply(parted[1].day()), List.of(), committee);
                     same(1, found.reasons().size(), "one published day");
@@ -1763,7 +1763,7 @@ public final class BindingTest {
                 Parana shayani = sky.almanac().festivals(
                         Civil.date(Calendar.GREGORIAN, 2025, 7, 1), Civil.date(Calendar.GREGORIAN, 2025, 7, 10),
                         kathmandu, 20_700,
-                        new com.teispace.teistro.request.FestivalRequest(java.util.List.of(smarta)))
+                        new com.teispace.teistro.request.FestivalRequest(com.teispace.teistro.request.FestivalRules.of(java.util.List.of(smarta))))
                         .ekadashis().get(0).parana();
                 ParanaBarred barred = shayani.barred();
                 same(new NakshatraBar(Tithi.SHUKLA_EKADASHI, Masa.ASHADHA, Nakshatra.ANURADHA, 4, 1), barred.bar(),
@@ -1777,11 +1777,11 @@ public final class BindingTest {
                 FestivalAnswer sora = sky.almanac().festivals(
                         Civil.date(Calendar.GREGORIAN, 2020, 8, 25), Civil.date(Calendar.GREGORIAN, 2020, 9, 20),
                         kathmandu, 20_700,
-                        new com.teispace.teistro.request.FestivalRequest(java.util.List.of(java.util.Map.of(
+                        new com.teispace.teistro.request.FestivalRequest(com.teispace.teistro.request.FestivalRules.of(java.util.List.of(java.util.Map.of(
                                 "key", "PRATIPADA",
                                 "origin", java.util.Map.of("by", "LUNAR", "month", "BHADRAPADA",
                                         "tithi", "KRISHNA_PRATIPADA"),
-                                "kind", "PARVANA"))));
+                                "kind", "PARVANA")))));
                 same(1, sora.anniversaries().size(), "one anniversary");
                 AnniversaryDay pratipada = sora.anniversaries().get(0);
                 same(java.util.List.of("PRATIPADA", "PARVANA", "NIJA"),
@@ -2134,7 +2134,7 @@ public final class BindingTest {
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
             CalendarDate first = Civil.date(Calendar.GREGORIAN, 2025, 11, 1);
             CalendarDate last = Civil.date(Calendar.GREGORIAN, 2025, 11, 30);
-            var nepal = new com.teispace.teistro.request.FestivalRequest("NEPAL");
+            var nepal = new com.teispace.teistro.request.FestivalRequest(com.teispace.teistro.request.FestivalRules.NEPAL);
             try (Context official = teistro.context(ContextOptions.builder().nepalOfficial().build());
                     Context modern = teistro.context(ContextOptions.builder().profile("nepali-default")
                             .ephemeris(Ephemeris.BUILTIN).build())) {
@@ -2319,7 +2319,7 @@ public final class BindingTest {
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
             CalendarDate first = Civil.date(Calendar.GREGORIAN, 2025, 9, 20);
             CalendarDate last = Civil.date(Calendar.GREGORIAN, 2025, 11, 10);
-            var panchanga = new com.teispace.teistro.request.FestivalRequest("NEPAL_PANCHANGA");
+            var panchanga = new com.teispace.teistro.request.FestivalRequest(com.teispace.teistro.request.FestivalRules.NEPAL_PANCHANGA);
             try (Context sky = teistro.context(ContextOptions.builder().nepalOfficial().build())) {
                 FeedOptions options = FeedOptions.defaults().withName("Dashain").withStampUnixSeconds(1_767_225_600L);
                 String ics = sky.almanac().festivalCalendar(first, last, kathmandu, 20_700, panchanga, options);

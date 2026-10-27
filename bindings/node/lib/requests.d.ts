@@ -449,14 +449,17 @@ export interface AshauchTable {
 export type AshauchTradition = 'DHARMASINDHU' | 'MITAKSHARA';
 
 /**
- * [`FestivalRequest`] as the bindings write it. `rules` is read in a second step, because each item is a name or a rule and the refusal should say which item was wrong rather than that no shape matched.
+ * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  */
 export interface FestivalRequest {
   /**
-   * The published sets, each read in a second step as `rules` is.
+   * The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence.
    */
   readonly published?: readonly PublishedSet[];
-  readonly rules: unknown;
+  /**
+   * The rules: a pack's name, or a list of names and rules spelt out.
+   */
+  readonly rules: FestivalRules;
 }
 
 /**
@@ -1698,6 +1701,11 @@ export interface PublishedSet {
    */
   readonly version: number;
 }
+
+/**
+ * The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
+ */
+export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | readonly FestivalRuleItem[];
 
 /**
  * How asta is seen: a criterion the SDK names, or one spelt out.
@@ -3186,6 +3194,11 @@ export interface PublishedEntryWithdraw {
    */
   readonly source: string;
 }
+
+/**
+ * A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
+ */
+export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
 
 /**
  * How visibility is decided.
@@ -5466,6 +5479,206 @@ export interface Interval {
 }
 
 /**
+ * How a rule elects its sait (§3).
+ */
+export interface SaitRule {
+  /**
+   * Which candidate is the sait.
+   */
+  readonly choose?: SaitChoice;
+  /**
+   * The rising sign preferred inside the window; the window's free stretches themselves are the candidates when left out.
+   */
+  readonly rising?: SaitRising | null;
+  /**
+   * The key of the karmakala rule whose day it is on.
+   */
+  readonly rule: string;
+  /**
+   * Where the rule is stated.
+   */
+  readonly source: string;
+  /**
+   * The windows, in the order the text falls back through them: the first holding a candidate gives the sait.
+   */
+  readonly windows: readonly SaitWindowRule[];
+}
+
+/**
+ * Whose fast, and by what: a vedha and the table of eight answers.
+ */
+export interface EkadashiRule {
+  /**
+   * The rule's key in its pack, `"EKADASHI_SMARTA"`.
+   */
+  readonly key: string;
+  /**
+   * The mahadvadashis that name its fast or move it onto the 12th's day (§8.9); a rule without one keeps its table's day.
+   */
+  readonly mahadvadashi?: MahadvadashiRule | null;
+  /**
+   * When the fast is broken (§8.5); a rule without one answers no parana.
+   */
+  readonly parana?: ParanaRule | null;
+  /**
+   * Where the rule is stated.
+   */
+  readonly source: string;
+  /**
+   * The day each kind takes.
+   */
+  readonly table: EkadashiTable;
+  /**
+   * Where the 10th pierces.
+   */
+  readonly vedha: EkadashiVedha;
+}
+
+/**
+ * An anniversary a request asks the days of.
+ */
+export interface Anniversary {
+  /**
+   * The first anniversary's month when it is doubled.
+   */
+  readonly firstYearAdhika?: FirstYearAdhika;
+  /**
+   * Whether a shraddha of an ordinary month is kept in the samsarpa of its name too; a janma tithi never is.
+   */
+  readonly inSamsarpa?: InSamsarpa;
+  /**
+   * A janma tithi's options.
+   */
+  readonly janma?: JanmaOptions;
+  /**
+   * The consumer's own key, `"GRANDFATHER"`.
+   */
+  readonly key: string;
+  /**
+   * What it is.
+   */
+  readonly kind?: AnniversaryKind;
+  /**
+   * Where it is counted from.
+   */
+  readonly origin: Origin;
+  /**
+   * The rite's time, in place of the kind's ([`AnniversaryKind::window`]): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662).
+   */
+  readonly window?: Window | null;
+}
+
+/**
+ * An observance on the day a number of civil days after another rule's.
+ */
+export interface FollowingRule {
+  /**
+   * The key of the karmakala rule whose day it counts from.
+   */
+  readonly after: string;
+  /**
+   * How many civil days after that day, 0 for the same day, at most [`FollowingRule::MOST_DAYS`].
+   */
+  readonly days: number;
+  /**
+   * The rule's key in its pack, `"HOLI_TERAI"`.
+   */
+  readonly key: string;
+  /**
+   * Where the rule is stated.
+   */
+  readonly source: string;
+}
+
+/**
+ * An observance on a date of a calendar.
+ */
+export interface DatedRule {
+  /**
+   * A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+   */
+  readonly civilDate?: DatedRuleCivilDate;
+  /**
+   * The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+   */
+  readonly civilWeekday?: DatedRuleCivilWeekday;
+  /**
+   * The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+   */
+  readonly easter?: DatedRuleEaster;
+  /**
+   * The rule's key in its pack, `"MAKARA_SANKRANTI"`.
+   */
+  readonly key: string;
+  /**
+   * Where the rule is stated.
+   */
+  readonly source: string;
+  /**
+   * The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+   */
+  readonly sunEnters?: DatedRuleSunEnters;
+}
+
+/**
+ * A rule: when an observance falls, and how its day is decided.
+ */
+export interface FestivalRule {
+  /**
+   * The time of the rite.
+   */
+  readonly at: Window;
+  /**
+   * The convention the month is named in; amanta by default.
+   */
+  readonly convention?: catalogue.LunarMonth;
+  /**
+   * The day, 1 to 14. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given.
+   */
+  readonly dayOfPaksha?: number;
+  /**
+   * The guards, in order; the first that holds decides.
+   */
+  readonly decide: readonly Guard[];
+  /**
+   * Which of a doubled month's two holds it (C171): the nija month by default.
+   */
+  readonly inAdhika?: InAdhika;
+  /**
+   * The rule's key in its pack, `"JANMASHTAMI"`.
+   */
+  readonly key: string;
+  /**
+   * The month, under `convention`; every month when `None`, for a rite kept on the same tithi of each, as the monthly full-moon fast is.
+   */
+  readonly month?: Member<catalogue.Masa> | null;
+  /**
+   * The nakshatra. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given.
+   */
+  readonly nakshatra?: Member<catalogue.Nakshatra>;
+  /**
+   * What decides when no guard holds.
+   */
+  readonly otherwise: FestivalChoice;
+  /**
+   * The half of the month it must fall in. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given.
+   */
+  readonly paksha?: Member<catalogue.Paksha>;
+  /**
+   * When the fast kept on the day is broken, each reading answered in order (§8.7); none when left out.
+   */
+  readonly parana?: readonly VrataParana[];
+  /**
+   * Where the rule is stated.
+   */
+  readonly source: string;
+  /**
+   * The tithi. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given.
+   */
+  readonly tithi?: Member<catalogue.Tithi>;
+}
+
+/**
  * The threshold table a criterion compares its measure against.
  */
 export type Thresholds = ThresholdsSuryaSiddhanta | ThresholdsPtolemy | ThresholdsCustom;
@@ -6011,6 +6224,370 @@ export interface EraNumber {
 }
 
 /**
+ * Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
+ *
+ * `EARLIEST`: The first.
+ * `LATEST`: The last.
+ */
+export type SaitChoice = 'EARLIEST' | 'LATEST';
+
+/**
+ * The rising sign a tradition prefers for the rite: the navamsa's sign, the lagna's, or either, of the modalities named, in a lagna none of the grahas `free_of` names stands in (the lagna's purity, which a muhurta asks of a malefic there).
+ */
+export interface SaitRising {
+  /**
+   * The grahas the lagna must not hold, read by sign; none when absent.
+   */
+  readonly freeOf?: readonly Member<catalogue.Graha>[];
+  /**
+   * The modalities it may be of.
+   */
+  readonly modalities: readonly Member<catalogue.Modality>[];
+  /**
+   * Which sign is read.
+   */
+  readonly of: RisingOf;
+}
+
+/**
+ * One window a sait may fall in, with what it avoids there: a text keeps its exclusions only where they fit (Dharmasindhu p. 65), so a fallback window lists its own.
+ */
+export interface SaitWindowRule {
+  /**
+   * What it avoids; nothing when left out.
+   */
+  readonly avoid?: readonly SaitAvoid[];
+  /**
+   * The window.
+   */
+  readonly within: SaitWindow;
+}
+
+/**
+ * Which mahadvadashis a Gaudiya Ekadashi keeps, and how each is read. Every field defaults to [`MahadvadashiRule::hari_bhakti_vilasa`]'s, so `{}` is the text's rule.
+ */
+export interface MahadvadashiRule {
+  /**
+   * What a nakshatra kind's joining is measured against.
+   */
+  readonly joining?: NakshatraJoining;
+  /**
+   * The kinds kept, the first that holds setting the fast (C711); a kind left out is not kept.
+   */
+  readonly kinds?: readonly MahadvadashiKind[];
+  /**
+   * Whether Unmilani and Vyanjuli need the 11th pure at arunodaya, *sampūrṇā* (13.356, C710).
+   */
+  readonly sampurna?: boolean;
+  /**
+   * Where the 11th stands on a Trisprisha's day.
+   */
+  readonly trisprisha?: TrisprishaAt;
+  /**
+   * How much of the 12th a Vyanjuli needs past the second sunrise.
+   */
+  readonly vyanjuli?: VyanjuliPast;
+}
+
+/**
+ * When an Ekadashi fast is broken (*parana*, §8.5): on the day after the fast, inside the 12th, in the first of these daylight windows that leaves time once the 12th's first quarter, the *hari vasara*, is past.
+ */
+export interface ParanaRule {
+  /**
+   * The daylight windows the meal is kept in, in order of preference: each a span of the daylight (`PART` or `DAY_MUHURTA`).
+   */
+  readonly at: readonly Window[];
+  /**
+   * The nakshatras the meal is not taken in after one 11th's fast (C700): none in the default, as the published reference keeps none; [`NakshatraBar::dharmasindhu`] for the *Dharmasindhu*'s.
+   */
+  readonly bars?: readonly NakshatraBar[];
+  /**
+   * Whether the 12th's first quarter is passed over before eating.
+   */
+  readonly hariVasara: boolean;
+}
+
+/**
+ * An observer's answers, for the 11th pure and pierced.
+ */
+export interface EkadashiTable {
+  /**
+   * When it does.
+   */
+  readonly pierced: EkadashiKinds;
+  /**
+   * When the 10th does not pierce the 11th's day.
+   */
+  readonly pure: EkadashiKinds;
+}
+
+/**
+ * Where the 10th pierces the 11th's day (p. 11).
+ *
+ * `ARUNODAYA`: At arunodaya, four ghatis of the night before sunrise: the 10th "entering even a pala past 56 ghatis". The Vaishnavas' vedha.
+ * `SUNRISE`: At sunrise: the 10th standing "a pala past the sixty-ghati sunrise". The Smartas'. Pierced at sunrise is pierced at arunodaya too.
+ */
+export type EkadashiVedha = 'ARUNODAYA' | 'SUNRISE';
+
+/**
+ * Whether an ordinary month's anniversary is kept in the *samsarpa* too, the adhika month of its name before a kshaya month (C669).
+ *
+ * `ALSO`: In the samsarpa and the nija month both: *Dharmasindhu*'s own inference in its kshaya example ("iti bhāti"), and Dhakal's instruction for Nepal (NS, the introduction's malamasa section).
+ * `NIJA`: In the nija month alone, as in any other year with an adhika month.
+ */
+export type InSamsarpa = 'ALSO' | 'NIJA';
+
+/**
+ * *Dharmasindhu*'s two options for a janma tithi, both off by default (C670).
+ */
+export interface JanmaOptions {
+  /**
+   * When both days' sunrises hold the tithi, the day whose sunrise holds the birth nakshatra.
+   */
+  readonly nakshatraTie?: boolean;
+  /**
+   * The sunrise tithi only when it lasts two muhurtas past sunrise, else the day before.
+   */
+  readonly twoMuhurtaFloor?: boolean;
+}
+
+/**
+ * What an anniversary is, which sets the rite's time and how the day is chosen.
+ *
+ * `SHRADDHA`: A death's yearly shraddha, an ekoddishta or a parvana by its origin ([`OriginFound::is_parvana`], C665). An answer names which.
+ * `EKODDISHTA`: The ekoddishta, for one person: kutapa to rauhina, the daylight's 8th and 9th muhurtas (NS p. 987, DS p. 265, C662).
+ * `PARVANA`: The parvana, for the ancestors together: the aparahna (DS p. 266).
+ * `JANMA_TITHI`: A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
+ */
+export type AnniversaryKind = 'SHRADDHA' | 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI';
+
+/**
+ * Where an anniversary is counted from.
+ */
+export type Origin = OriginInstant | OriginDate | OriginLunar;
+
+/**
+ * The moment of the death or the birth: the tithi running then, as the Naradiya has it for a death and a parana (NS p. 982, C661). A death before sunrise takes the tithi of that hour, not the civil day's sunrise tithi.
+ */
+export interface OriginInstant {
+  readonly by: 'INSTANT';
+  /**
+   * The moment.
+   */
+  readonly at: number;
+}
+
+/**
+ * Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661).
+ */
+export interface OriginDate {
+  readonly by: 'DATE';
+  /**
+   * The date.
+   */
+  readonly date: CalendarDate;
+}
+
+/**
+ * The lunar date itself, as a family keeps it.
+ */
+export interface OriginLunar {
+  readonly by: 'LUNAR';
+  /**
+   * Whether the month was adhika.
+   */
+  readonly adhika?: boolean;
+  /**
+   * The moment, if known, which only counts the years: without it no anniversary has a number, and the first one's adhika policy (C666) cannot apply.
+   */
+  readonly at?: number | null;
+  /**
+   * The half of the tithi, which names the month in a kshaya lunation (C668); the month given is taken as named already.
+   */
+  readonly half?: TithiHalf;
+  /**
+   * The month, amanta.
+   */
+  readonly month: Member<catalogue.Masa>;
+  /**
+   * The tithi.
+   */
+  readonly tithi: Member<catalogue.Tithi>;
+}
+
+/**
+ * A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ */
+export interface DatedRuleCivilDate {
+  /**
+   * The calendar the date is in.
+   */
+  readonly calendar: Member<catalogue.Calendar>;
+  /**
+   * The day; never 0.
+   */
+  readonly day: number;
+  /**
+   * The month, 1 for the first.
+   */
+  readonly month: number;
+  /**
+   * Which neighbour keeps the date when its number is skipped, in the calendar that skips numbers, the Tibetan; left out, the day before ([`SkippedDay`]). Refused for any other calendar.
+   */
+  readonly skipped?: SkippedDay | null;
+}
+
+/**
+ * The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ */
+export interface DatedRuleCivilWeekday {
+  /**
+   * The calendar the month is in.
+   */
+  readonly calendar: Member<catalogue.Calendar>;
+  /**
+   * The month, 1 for the first.
+   */
+  readonly month: number;
+  /**
+   * Which of them; never 0, at most 5 either way.
+   */
+  readonly nth: number;
+  /**
+   * The weekday.
+   */
+  readonly weekday: Member<catalogue.Vara>;
+}
+
+/**
+ * The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ */
+export interface DatedRuleEaster {
+  /**
+   * Which churches' reckoning of Easter.
+   */
+  readonly computus: Computus;
+  /**
+   * The days from Easter Sunday, 0 for that day, at most [`Dated::EASTER_DAYS`] either way.
+   */
+  readonly days?: number;
+}
+
+/**
+ * The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ */
+export interface DatedRuleSunEnters {
+  /**
+   * How many civil days after the entry's, 0 for that day, at most [`Dated::MOST_DAYS`].
+   */
+  readonly days?: number;
+  /**
+   * The nakshatra entered.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+}
+
+/**
+ * A choice when every predicate holds.
+ */
+export interface Guard {
+  /**
+   * What it decides.
+   */
+  readonly choose: FestivalChoice;
+  /**
+   * What must all hold.
+   */
+  readonly when: readonly Predicate[];
+}
+
+/**
+ * Which of a doubled month's two a rule is kept in.
+ */
+export type InAdhika = 'NIJA' | 'ALSO' | 'ONLY' | 'FIRST' | boolean;
+
+/**
+ * What a guard, or a rule's `otherwise`, decides.
+ *
+ * `EARLIER`: The earlier day.
+ * `LATER`: The later day.
+ * `BY_YUGMA`: By the yugma verse (p. 6): the first of a pair on the day it runs into its partner, the second on the day its partner runs into it.
+ * `NONE`: Neither day: the rule is not kept this time. A rite kept only on a weekday answers this when its tithi's day is another (C618).
+ */
+export type FestivalChoice = 'EARLIER' | 'LATER' | 'BY_YUGMA' | 'NONE';
+
+/**
+ * One reading of when a fast kept on a rule's day is broken (§8.7).
+ */
+export type VrataParana = VrataParanaTithiEnd | VrataParanaWithin | VrataParanaSunrise | VrataParanaAfterWindow | VrataParanaNextTithi | VrataParanaAfterRite;
+
+/**
+ * After the tithi ends, and `nakshatra` too when it joins the tithi within the fast day, sunrise to sunrise (*Dharmasindhu* p. 52; for the tithi alone, p. 7). The meal follows the last end when every one falls by day (before sunset, or already before sunrise), else the last of those that do, else the first; never before sunrise. With `yamas`, an end past that many yamas of the daylight keeps the meal from sunrise to their end instead (p. 7, after Madhava).
+ */
+export interface VrataParanaTithiEnd {
+  readonly kind: 'TITHI_END';
+  /**
+   * The nakshatra whose end also counts when it joins the tithi.
+   */
+  readonly nakshatra?: Member<catalogue.Nakshatra> | null;
+  /**
+   * Yamas of the daylight, 1 to 4, past which the meal is kept in the morning instead.
+   */
+  readonly yamas?: number | null;
+}
+
+/**
+ * Inside the tithi, from sunrise to its end or to `yamas` yamas of the daylight, whichever is first: the *Nirnayasindhu*'s Shivaratri, capped by Madhava's three yamas (*Dharmasindhu* pp. 90–91). A tithi ended by sunrise leaves the meal open from sunrise.
+ */
+export interface VrataParanaWithin {
+  readonly kind: 'WITHIN';
+  /**
+   * Yamas of the daylight, 1 to 4.
+   */
+  readonly yamas: number;
+}
+
+/**
+ * From the day's sunrise: the morning after the festival's puja and visarjana, for one who cannot wait (*Dharmasindhu* p. 52).
+ */
+export interface VrataParanaSunrise {
+  readonly kind: 'SUNRISE';
+}
+
+/**
+ * From the end of a window on the fast day, as after the nishitha muhurta. No rank-1 text in hand states it; no shipped rule carries it.
+ */
+export interface VrataParanaAfterWindow {
+  readonly kind: 'AFTER_WINDOW';
+  /**
+   * The window, on the fast day.
+   */
+  readonly at: Window;
+}
+
+/**
+ * In the tithi after the fast's, from its first daylight: the fast tithi's end when it falls by day, on the fast day or the next, else the sunrise after it (*Nirnayasindhu* p. 139, "सा च दशम्यां कार्या", the Navaratri's parana on the 10th).
+ */
+export interface VrataParanaNextTithi {
+  readonly kind: 'NEXT_TITHI';
+}
+
+/**
+ * After a closing rite another rule keeps, on that rule's next day from the fast's, from the rite's first instant: its day's sunrise, its tithi's start, and the start of the share of a nakshatra that chose its day, whichever is last (*Dharmasindhu* pp. 70–71: the vow is given up on the visarjana's day, after it). With `remnant`, when the rite falls later than the day after the fast and the fast's tithi still stands at that day's sunrise for at least that many ghatis, the meal is kept inside the tithi on that day instead, sunrise to its end (DS p. 71, the remaining 9th).
+ */
+export interface VrataParanaAfterRite {
+  readonly kind: 'AFTER_RITE';
+  /**
+   * Ghatis of the fast's tithi, 0 to 60, past the next sunrise that keep the meal inside it; none to wait for the rite always.
+   */
+  readonly remnant?: number | null;
+  /**
+   * The closing rite's rule key, which the same request must ask for, as `"DURGA_VISARJANA"`.
+   */
+  readonly rite: string;
+}
+
+/**
  * A threshold for each motion of one body, degrees.
  */
 export interface MotionThresholds {
@@ -6022,4 +6599,505 @@ export interface MotionThresholds {
    * The threshold while it retrogrades.
    */
   readonly retrograde: number;
+}
+
+/**
+ * Which rising sign a [`SaitRising`] reads.
+ *
+ * `NAVAMSA`: The navamsa's sign.
+ * `LAGNA`: The lagna's sign.
+ * `NAVAMSA_OR_LAGNA`: Either: a navamsa counts when its own sign is of a modality named or its lagna's is.
+ */
+export type RisingOf = 'NAVAMSA' | 'LAGNA' | 'NAVAMSA_OR_LAGNA';
+
+/**
+ * What a window avoids.
+ */
+export type SaitAvoid = SaitAvoidTithiStart | SaitAvoidNakshatra | SaitAvoidYoga | SaitAvoidKaala | SaitAvoidVishti;
+
+/**
+ * The occurrence's first nadis (Ghatasthapana's sixteen, NS p. 120).
+ */
+export interface SaitAvoidTithiStart {
+  readonly avoid: 'TITHI_START';
+  /**
+   * How many, 1 to 60.
+   */
+  readonly nadis: number;
+}
+
+/**
+ * The Moon in a nakshatra: its first `quarters` quarters, 4 for the whole of it.
+ */
+export interface SaitAvoidNakshatra {
+  readonly avoid: 'NAKSHATRA';
+  /**
+   * Which.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+  /**
+   * How many of its quarters from its start, 1 to 4.
+   */
+  readonly quarters?: number;
+}
+
+/**
+ * A nitya yoga: its first `quarters` quarters, 4 for the whole.
+ */
+export interface SaitAvoidYoga {
+  readonly avoid: 'YOGA';
+  /**
+   * How many of its quarters from its start, 1 to 4.
+   */
+  readonly quarters?: number;
+  /**
+   * Which.
+   */
+  readonly yoga: Member<catalogue.Yoga>;
+}
+
+/**
+ * An eighth of the daylight: Rahu kaala, Yamaghanda or Gulika.
+ */
+export interface SaitAvoidKaala {
+  readonly avoid: 'KAALA';
+  /**
+   * Which.
+   */
+  readonly kaala: Member<catalogue.Kaala>;
+}
+
+/**
+ * Bhadra, the vishti karana.
+ */
+export interface SaitAvoidVishti {
+  readonly avoid: 'VISHTI';
+}
+
+/**
+ * A stretch of the festival day a sait may fall in.
+ */
+export type SaitWindow = SaitWindowGhatis | SaitWindowDayMuhurta | SaitWindowPart | SaitWindowPradosha | SaitWindowNightMuhurta;
+
+/**
+ * The first ghatis after sunrise, a ghati a sixtieth of the civil day (24 minutes): Ghatasthapana's ten (DS p. 65).
+ */
+export interface SaitWindowGhatis {
+  readonly window: 'GHATIS';
+  /**
+   * How many, 1 to 60.
+   */
+  readonly ghatis: number;
+}
+
+/**
+ * Muhurtas of the daylight, a fifteenth of it from sunrise, `from` to `to` inclusive, 1 to 15: Abhijit is the 8th, the forenoon the first six.
+ */
+export interface SaitWindowDayMuhurta {
+  readonly window: 'DAY_MUHURTA';
+  /**
+   * The first, 1 for the muhurta after sunrise.
+   */
+  readonly from: number;
+  /**
+   * The last, at least `from`.
+   */
+  readonly to: number;
+}
+
+/**
+ * A fifth of the daylight.
+ */
+export interface SaitWindowPart {
+  readonly window: 'PART';
+  /**
+   * Which fifth.
+   */
+  readonly part: DayFifth;
+}
+
+/**
+ * Three muhurtas after sunset, a muhurta a fifteenth of the night.
+ */
+export interface SaitWindowPradosha {
+  readonly window: 'PRADOSHA';
+}
+
+/**
+ * A muhurta of the night, 1 to 15 from sunset.
+ */
+export interface SaitWindowNightMuhurta {
+  readonly window: 'NIGHT_MUHURTA';
+  /**
+   * Which muhurta.
+   */
+  readonly muhurta: number;
+}
+
+/**
+ * What 13.286–287's nakshatra "longer, equal or shorter" is measured against (C708). Every reading keeps 13.288–289: a nakshatra other than Shravana needs the 12th to last to sunset.
+ *
+ * `TWO_SUNRISES`: The day: it holds the 12th's sunrise and the next.
+ * `OUTLASTS_TWELFTH`: The tithi: it holds the 12th's sunrise and lasts to the 12th's end or past it (the Hindi gloss).
+ * `BEGUN_IN_DAYLIGHT`: As `OUTLASTS_TWELFTH`, or it begins after the 12th's sunrise while the 12th stands, of any length: 13.286's "from sunrise".
+ */
+export type NakshatraJoining = 'TWO_SUNRISES' | 'OUTLASTS_TWELFTH' | 'BEGUN_IN_DAYLIGHT';
+
+/**
+ * The eight great twelfths (HBV 13.265: "उन्मीलनी वञ्जुली च त्रिस्पृशा पक्षवर्धिनी । जया च विजया चैव जयन्ती पापनाशिनी").
+ *
+ * `UNMILANI`: 13.267: a *sampūrṇā* 11th grows into the next day and the 12th does not; the fast is that next day.
+ * `VYANJULI`: 13.268: the 12th alone grows past the sunrise after its own.
+ * `TRISPRISHA`: 13.269: the 11th at the day's start, the 12th the whole day, the 13th at its end.
+ * `PAKSHAVARDHINI`: 13.270: the fortnight's new or full moon holds two sunrises; the 11th is left and the 12th fasted.
+ * `JAYA`: 13.485: a bright 12th joined with Punarvasu.
+ * `VIJAYA`: 13.489–490: with Shravana.
+ * `JAYANTI`: 13.506, 13.508: with Rohini, *prājāpatya*.
+ * `PAPANASHINI`: 13.534: with Pushya.
+ */
+export type MahadvadashiKind = 'UNMILANI' | 'VYANJULI' | 'TRISPRISHA' | 'PAKSHAVARDHINI' | 'JAYA' | 'VIJAYA' | 'JAYANTI' | 'PAPANASHINI';
+
+/**
+ * Where the 11th must stand on a Trisprisha's day (C707).
+ *
+ * `SUNRISE`: At arunodaya and at sunrise: the Hindi gloss of 13.269, and every published Trisprisha row.
+ * `ARUNODAYA`: At arunodaya, even when it ends before sunrise: 13.269's letter, "अरुणोदय आद्या".
+ */
+export type TrisprishaAt = 'SUNRISE' | 'ARUNODAYA';
+
+/**
+ * How much of the 12th must stand past the sunrise after its own for a Vyanjuli (C709).
+ *
+ * `ANY`: Any: "a kala or even a vikala" (12.374, कला च विकलापि वा).
+ * `HALF_MUHURTA`: Half a muhurta, a ghati of that day's daylight: 13.356's "त्रयोदश्यां मुहूर्तार्धं".
+ */
+export type VyanjuliPast = 'ANY' | 'HALF_MUHURTA';
+
+/**
+ * A nakshatra the meal is not taken in, on the parana after the fast of one 11th in one month (C700).
+ */
+export interface NakshatraBar {
+  /**
+   * That 11th's amanta month. A bar holds in the nija month only: the rites it guards are not kept in an adhika one (*Dharmasindhu* p. 41).
+   */
+  readonly month: Member<catalogue.Masa>;
+  /**
+   * The nakshatra.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+  /**
+   * The share of its arc that bars; the whole when left out.
+   */
+  readonly portion?: Portion;
+  /**
+   * The 11th whose fast's parana it bars.
+   */
+  readonly tithi: Member<catalogue.Tithi>;
+}
+
+/**
+ * The day each of the four kinds takes: the 11th's own (`EARLIER`) or the day after (`LATER`).
+ */
+export interface EkadashiKinds {
+  /**
+   * Both in excess.
+   */
+  readonly both: FestivalWhich;
+  /**
+   * The 11th alone in excess.
+   */
+  readonly eleventh: FestivalWhich;
+  /**
+   * Neither in excess.
+   */
+  readonly neither: FestivalWhich;
+  /**
+   * The 12th alone in excess.
+   */
+  readonly twelfth: FestivalWhich;
+}
+
+/**
+ * A date in a calendar. Years are astronomical (1 BCE is 0); an era is attached for presentation only.
+ */
+export interface CalendarDate {
+  /**
+   * The calendar.
+   */
+  readonly calendar: Member<catalogue.Calendar>;
+  /**
+   * The day, 1-based; for the ISO week date, the weekday 1 to 7.
+   */
+  readonly day: number;
+  /**
+   * The era view, when the calendar has one.
+   */
+  readonly era?: EraNumber | null;
+  /**
+   * Whether the month or the day is the first of two bearing the same number, in a calendar that repeats them (the Tibetan); left out of the wire when absent, and refused by every calendar that repeats neither.
+   */
+  readonly leap?: catalogue.Leap | null;
+  /**
+   * The month, 1-based; for the ISO week date, the week.
+   */
+  readonly month: number;
+  /**
+   * How the date was resolved.
+   */
+  readonly resolution: CalendarResolution;
+  /**
+   * The astronomical year.
+   */
+  readonly year: number;
+}
+
+/**
+ * Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
+ *
+ * `FIRST`: The first.
+ * `SECOND`: The second.
+ */
+export type TithiHalf = 'FIRST' | 'SECOND';
+
+/**
+ * Which neighbour keeps an observance whose date's number is skipped.
+ *
+ * `BEFORE`: The day before, the one the skipped lunar day ends in.
+ * `AFTER`: The day after, the next number's.
+ */
+export type SkippedDay = 'BEFORE' | 'AFTER';
+
+/**
+ * Which reckoning of Easter.
+ *
+ * `GREGORIAN`: The Gregorian computus, the Western churches': from 1583, the first whole year of the reform.
+ * `JULIAN`: The Julian computus, the Eastern churches': the Alexandrian cycle in the Julian calendar, from 326, the year after Nicaea.
+ */
+export type Computus = 'GREGORIAN' | 'JULIAN';
+
+/**
+ * Something a guard asks of the two days.
+ */
+export type Predicate = PredicateCase | PredicateJoined | PredicateStands | PredicateLasts | PredicateWholly | PredicateGreater | PredicateOnVara;
+
+/**
+ * The case is this one.
+ */
+export interface PredicateCase {
+  readonly is: 'CASE';
+  /**
+   * The case.
+   */
+  readonly case: FestivalCase;
+}
+
+/**
+ * The tithi and a nakshatra stand together on a day: within a window when one is named, anywhere in the sunrise day otherwise; and only a share of the nakshatra when `portion` names one.
+ */
+export interface PredicateJoined {
+  readonly is: 'JOINED';
+  /**
+   * Where they must meet; the whole day when absent.
+   */
+  readonly at?: Window | null;
+  /**
+   * Which day.
+   */
+  readonly day: FestivalWhich;
+  /**
+   * The nakshatra.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+  /**
+   * The share of the nakshatra's arc that must meet the tithi, as Shravana's last quarter (*Dharmasindhu* p. 70); the whole when absent. A share is the Moon's stay in its arc, searched at the arc's own bounds ([`FestivalDay::moon_arcs`]).
+   */
+  readonly portion?: Portion | null;
+}
+
+/**
+ * The nakshatra stands in a window of a day, whatever the tithi: the Nirnaya-sindhu's condition that *Dharmasindhu* p. 71 endorses, Shravana in the later day's aparahna after the dashami has ended.
+ */
+export interface PredicateStands {
+  readonly is: 'STANDS';
+  /**
+   * The window it must stand in, for some time or at its instant.
+   */
+  readonly at: Window;
+  /**
+   * Which day.
+   */
+  readonly day: FestivalWhich;
+  /**
+   * The nakshatra.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+}
+
+/**
+ * The tithi stands at an edge of the day and lasts at least this many ghatis past it, a ghati being a thirtieth of the daylight after sunrise or of the night after sunset: three muhurtas after sunrise are six ghatis (p. 71), and the new moon a ghati into the night settles Lakshmi puja (p. 77).
+ */
+export interface PredicateLasts {
+  readonly is: 'LASTS';
+  /**
+   * Which day.
+   */
+  readonly day: FestivalWhich;
+  /**
+   * The edge counted from.
+   */
+  readonly from: DayEdge;
+  /**
+   * How many ghatis, 1 to 30.
+   */
+  readonly ghatis: number;
+}
+
+/**
+ * The tithi holds the whole of a day's window, or its instant: p. 90 gives Shivaratri to the day holding niśītha wholly when the other holds it in part.
+ */
+export interface PredicateWholly {
+  readonly is: 'WHOLLY';
+  /**
+   * Which day.
+   */
+  readonly day: FestivalWhich;
+}
+
+/**
+ * This day's window holds more of the tithi, in time, than the other day's does; at an instant, this day's holds it and the other's does not. Equal times are a tie and hold for neither day. Time and not the share of each window: the two differ only when both days hold part of a window whose length moves a minute or two from one day to the next (C601, C604).
+ */
+export interface PredicateGreater {
+  readonly is: 'GREATER';
+  /**
+   * Which day.
+   */
+  readonly day: FestivalWhich;
+}
+
+/**
+ * The day is this vara, sunrise to sunrise: *Dharmasindhu* p. 20 names the new moon on a Monday (Somavati), the 4th on a Tuesday and the 7th on a Sunday, and the committee prints the 13th's fast on a Saturday or a Monday by those names (C618).
+ */
+export interface PredicateOnVara {
+  readonly is: 'ON_VARA';
+  /**
+   * Which day.
+   */
+  readonly day: FestivalWhich;
+  /**
+   * The vara.
+   */
+  readonly vara: Member<catalogue.Vara>;
+}
+
+/**
+ * A share of a nakshatra's arc: the `which`th of `parts` equal parts, `{1, 1}` the whole, `{4, 1}` its first quarter (pada).
+ */
+export interface Portion {
+  /**
+   * The equal parts the arc is cut in, 1 to 12.
+   */
+  readonly parts: number;
+  /**
+   * Which of them, 1 to `parts`.
+   */
+  readonly which: number;
+}
+
+/**
+ * One of the two days a tithi is judged between.
+ *
+ * `EARLIER`: The earlier.
+ * `LATER`: The later.
+ */
+export type FestivalWhich = 'EARLIER' | 'LATER';
+
+/**
+ * How a calendar date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
+ */
+export type CalendarResolution = CalendarResolutionDefined | CalendarResolutionTabular | CalendarResolutionComputed | CalendarResolutionDivergent;
+
+/**
+ * A mathematical definition; exact by construction.
+ */
+export interface CalendarResolutionDefined {
+  readonly kind: 'DEFINED';
+}
+
+/**
+ * From the authority's published table.
+ */
+export interface CalendarResolutionTabular {
+  readonly kind: 'TABULAR';
+  /**
+   * The authority.
+   */
+  readonly authority: string;
+  /**
+   * The table's edition.
+   */
+  readonly edition: string;
+}
+
+/**
+ * Computed outside the table's range.
+ */
+export interface CalendarResolutionComputed {
+  readonly kind: 'COMPUTED';
+  /**
+   * The rule or model.
+   */
+  readonly model: string;
+}
+
+/**
+ * Inside the range and the two disagree; the table was followed.
+ */
+export interface CalendarResolutionDivergent {
+  readonly kind: 'DIVERGENT';
+  /**
+   * The computed month and day.
+   */
+  readonly computed: MonthDay;
+  /**
+   * The rule or model that computed the other answer.
+   */
+  readonly model: string;
+  /**
+   * The table's month and day.
+   */
+  readonly tabular: MonthDay;
+}
+
+/**
+ * How the tithi held the rite's time on the two days (pp. 6–7).
+ *
+ * `EARLIER_ONLY`: On the earlier day only, wholly or in part.
+ * `LATER_ONLY`: On the later day only.
+ * `BOTH`: Wholly, on both.
+ * `NEITHER`: On neither.
+ * `EQUAL_PARTS`: On both, in part at least on one, the two equal (C170).
+ * `UNEQUAL_PARTS`: On both, in part at least on one, unequally.
+ */
+export type FestivalCase = 'EARLIER_ONLY' | 'LATER_ONLY' | 'BOTH' | 'NEITHER' | 'EQUAL_PARTS' | 'UNEQUAL_PARTS';
+
+/**
+ * The edge of a day a [`Predicate::Lasts`] counts from.
+ *
+ * `SUNRISE`: Sunrise, counting in thirtieths of the daylight.
+ * `SUNSET`: Sunset, counting in thirtieths of the night.
+ */
+export type DayEdge = 'SUNRISE' | 'SUNSET';
+
+/**
+ * A month and a day inside a year, for a divergence report.
+ */
+export interface MonthDay {
+  /**
+   * The day, 1-based.
+   */
+  readonly day: number;
+  /**
+   * The month, 1-based.
+   */
+  readonly month: number;
 }

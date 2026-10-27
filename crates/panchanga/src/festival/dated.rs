@@ -357,13 +357,14 @@ const GREGORIAN_DAYS: [(&str, u8, i8, &str); 20] = [
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(transform = super::variants_as_fields))]
 #[serde(rename_all = "camelCase")]
 pub struct DatedRule {
     /// The rule's key in its pack, `"MAKARA_SANKRANTI"`.
     pub key: String,
     /// Where the rule is stated.
     pub source: String,
-    /// The date, written as `civilDate` or `civilWeekday`.
+    /// The date, written as one of [`Dated::KEYS`] beside the key.
     #[serde(flatten)]
     pub on: Dated,
 }
@@ -426,6 +427,10 @@ pub enum Dated {
 }
 
 impl Dated {
+    /// The key each kind of date is written under, in the order of the
+    /// variants: a [`DatedRule`] gives exactly one.
+    pub const KEYS: [&'static str; 4] = ["civilDate", "civilWeekday", "sunEnters", "easter"];
+
     /// The most days a rule counts from the Sun's entry: a fortnight,
     /// which is about the Sun's stay in a nakshatra, past which the next
     /// entry names the day better than a count.
@@ -915,6 +920,50 @@ mod tests {
 
     fn date(month: u8, day: u8) -> CalendarDate {
         CalendarDate::defined(Calendar::BikramSambat, 2082, month, day)
+    }
+
+    #[test]
+    fn each_kind_of_date_is_written_under_its_key_in_order() {
+        let dates = [
+            r#"{"calendar": "BIKRAM_SAMBAT", "month": 10, "day": 1}"#,
+            r#"{"calendar": "GREGORIAN", "month": 11, "weekday": "GURUVARA", "nth": 4}"#,
+            r#"{"nakshatra": "ARDRA"}"#,
+            r#"{"computus": "JULIAN"}"#,
+        ];
+        for (key, date) in Dated::KEYS.iter().zip(dates) {
+            let text = format!(r#"{{"key": "X", "source": "a test", "{key}": {date}}}"#);
+            let rule: DatedRule = serde_json::from_str(&text).unwrap();
+            let written = serde_json::to_value(rule.on).unwrap();
+            let keys: Vec<&String> = written.as_object().unwrap().keys().collect();
+            assert_eq!(keys, [key], "{text}");
+        }
+    }
+
+    #[cfg(feature = "schema")]
+    #[test]
+    fn the_schema_writes_each_date_as_a_field_of_the_rule() {
+        let schema = schemars::SchemaGenerator::default().into_root_schema_for::<DatedRule>();
+        assert_eq!(schema.get("oneOf"), None);
+        let properties = schema.get("properties").unwrap().as_object().unwrap();
+        let mut keys: Vec<&str> = properties.keys().map(String::as_str).collect();
+        keys.sort_unstable();
+        let mut expected = vec!["key", "source"];
+        expected.extend(Dated::KEYS);
+        expected.sort_unstable();
+        assert_eq!(keys, expected);
+        let required = schema.get("required").unwrap().as_array().unwrap();
+        assert_eq!(required.len(), 2, "no date is required alone");
+        let easter = properties
+            .get("easter")
+            .and_then(|f| f.get("description"))
+            .and_then(serde_json::Value::as_str)
+            .unwrap();
+        assert!(
+            easter.ends_with(
+                "Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."
+            ),
+            "{easter}"
+        );
     }
 
     fn civil(month: u8, day: i8) -> Dated {

@@ -110,6 +110,7 @@ __all__ = [
     "PakshiniNight",
     "AshauchRelationRow",
     "PublishedSet",
+    "FestivalRules",
     "MuhurtaRequestAsta",
     "MuhurtaNative",
     "MuhurtaRanking",
@@ -220,6 +221,7 @@ __all__ = [
     "PublishedEntrySet",
     "PublishedEntryAdd",
     "PublishedEntryWithdraw",
+    "FestivalRuleItem",
     "Criterion",
     "CriterionTimeDegrees",
     "CriterionLongitude",
@@ -401,6 +403,12 @@ __all__ = [
     "Upanayana",
     "PublishedDay",
     "Interval",
+    "SaitRule",
+    "EkadashiRule",
+    "Anniversary",
+    "FollowingRule",
+    "DatedRule",
+    "FestivalRule",
     "Thresholds",
     "ThresholdsSuryaSiddhanta",
     "ThresholdsPtolemy",
@@ -456,7 +464,76 @@ __all__ = [
     "LifeClass",
     "SubDegree",
     "EraNumber",
+    "SaitChoice",
+    "SaitRising",
+    "SaitWindowRule",
+    "MahadvadashiRule",
+    "ParanaRule",
+    "EkadashiTable",
+    "EkadashiVedha",
+    "InSamsarpa",
+    "JanmaOptions",
+    "AnniversaryKind",
+    "Origin",
+    "OriginInstant",
+    "OriginDate",
+    "OriginLunar",
+    "DatedRuleCivilDate",
+    "DatedRuleCivilWeekday",
+    "DatedRuleEaster",
+    "DatedRuleSunEnters",
+    "Guard",
+    "InAdhika",
+    "FestivalChoice",
+    "VrataParana",
+    "VrataParanaTithiEnd",
+    "VrataParanaWithin",
+    "VrataParanaSunrise",
+    "VrataParanaAfterWindow",
+    "VrataParanaNextTithi",
+    "VrataParanaAfterRite",
     "MotionThresholds",
+    "RisingOf",
+    "SaitAvoid",
+    "SaitAvoidTithiStart",
+    "SaitAvoidNakshatra",
+    "SaitAvoidYoga",
+    "SaitAvoidKaala",
+    "SaitAvoidVishti",
+    "SaitWindow",
+    "SaitWindowGhatis",
+    "SaitWindowDayMuhurta",
+    "SaitWindowPart",
+    "SaitWindowPradosha",
+    "SaitWindowNightMuhurta",
+    "NakshatraJoining",
+    "MahadvadashiKind",
+    "TrisprishaAt",
+    "VyanjuliPast",
+    "NakshatraBar",
+    "EkadashiKinds",
+    "CalendarDate",
+    "TithiHalf",
+    "SkippedDay",
+    "Computus",
+    "Predicate",
+    "PredicateCase",
+    "PredicateJoined",
+    "PredicateStands",
+    "PredicateLasts",
+    "PredicateWholly",
+    "PredicateGreater",
+    "PredicateOnVara",
+    "Portion",
+    "FestivalWhich",
+    "CalendarResolution",
+    "CalendarResolutionDefined",
+    "CalendarResolutionTabular",
+    "CalendarResolutionComputed",
+    "CalendarResolutionDivergent",
+    "FestivalCase",
+    "DayEdge",
+    "MonthDay",
 ]
 
 
@@ -931,12 +1008,13 @@ AshauchTradition: TypeAlias = Literal['DHARMASINDHU', 'MITAKSHARA']
 
 
 class FestivalRequest(TypedDict, total=False):
-    """`FestivalRequest` as the bindings write it. `rules` is read in a second step, because each item is a name or a rule and the refusal should say which item was wrong rather than that no shape matched."""
+    """Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer."""
 
     published: Sequence[PublishedSet]
-    """The published sets, each read in a second step as `rules` is."""
+    """The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence."""
 
-    rules: Required[Any]
+    rules: Required[FestivalRules]
+    """The rules: a pack's name, or a list of names and rules spelt out."""
 
 
 class DayAsked(TypedDict, total=False):
@@ -1984,6 +2062,10 @@ class PublishedSet(TypedDict, total=False):
 
     version: Required[int]
     """Its version; a correction is a higher one."""
+
+
+FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA'], Sequence[FestivalRuleItem]]"
+"""The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key."""
 
 
 MuhurtaRequestAsta: TypeAlias = "Union[Literal['SURYA_SIDDHANTA', 'COMBUSTION_ORB', 'PTOLEMY'], Criterion]"
@@ -3227,6 +3309,10 @@ class PublishedEntryWithdraw(TypedDict, total=False):
 
     source: Required[str]
     """Where the publisher says it."""
+
+
+FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
+"""A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule."""
 
 
 Criterion: TypeAlias = "Union[CriterionTimeDegrees, CriterionLongitude, CriterionArcusVisionis]"
@@ -5180,6 +5266,153 @@ Interval = TypedDict(
 )
 
 
+class SaitRule(TypedDict, total=False):
+    """How a rule elects its sait (§3)."""
+
+    choose: SaitChoice
+    """Which candidate is the sait."""
+
+    rising: Optional[SaitRising]
+    """The rising sign preferred inside the window; the window's free stretches themselves are the candidates when left out."""
+
+    rule: Required[str]
+    """The key of the karmakala rule whose day it is on."""
+
+    source: Required[str]
+    """Where the rule is stated."""
+
+    windows: Required[Sequence[SaitWindowRule]]
+    """The windows, in the order the text falls back through them: the first holding a candidate gives the sait."""
+
+
+class EkadashiRule(TypedDict, total=False):
+    """Whose fast, and by what: a vedha and the table of eight answers."""
+
+    key: Required[str]
+    """The rule's key in its pack, `"EKADASHI_SMARTA"`."""
+
+    mahadvadashi: Optional[MahadvadashiRule]
+    """The mahadvadashis that name its fast or move it onto the 12th's day (§8.9); a rule without one keeps its table's day."""
+
+    parana: Optional[ParanaRule]
+    """When the fast is broken (§8.5); a rule without one answers no parana."""
+
+    source: Required[str]
+    """Where the rule is stated."""
+
+    table: Required[EkadashiTable]
+    """The day each kind takes."""
+
+    vedha: Required[EkadashiVedha]
+    """Where the 10th pierces."""
+
+
+class Anniversary(TypedDict, total=False):
+    """An anniversary a request asks the days of."""
+
+    firstYearAdhika: FirstYearAdhika
+    """The first anniversary's month when it is doubled."""
+
+    inSamsarpa: InSamsarpa
+    """Whether a shraddha of an ordinary month is kept in the samsarpa of its name too; a janma tithi never is."""
+
+    janma: JanmaOptions
+    """A janma tithi's options."""
+
+    key: Required[str]
+    """The consumer's own key, `"GRANDFATHER"`."""
+
+    kind: AnniversaryKind
+    """What it is."""
+
+    origin: Required[Origin]
+    """Where it is counted from."""
+
+    window: Optional[Window]
+    """The rite's time, in place of the kind's (`AnniversaryKind::window`): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662)."""
+
+
+class FollowingRule(TypedDict, total=False):
+    """An observance on the day a number of civil days after another rule's."""
+
+    after: Required[str]
+    """The key of the karmakala rule whose day it counts from."""
+
+    days: Required[int]
+    """How many civil days after that day, 0 for the same day, at most `FollowingRule::MOST_DAYS`."""
+
+    key: Required[str]
+    """The rule's key in its pack, `"HOLI_TERAI"`."""
+
+    source: Required[str]
+    """Where the rule is stated."""
+
+
+class DatedRule(TypedDict, total=False):
+    """An observance on a date of a calendar."""
+
+    civilDate: DatedRuleCivilDate
+    """A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+
+    civilWeekday: DatedRuleCivilWeekday
+    """The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+
+    easter: DatedRuleEaster
+    """The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+
+    key: Required[str]
+    """The rule's key in its pack, `"MAKARA_SANKRANTI"`."""
+
+    source: Required[str]
+    """Where the rule is stated."""
+
+    sunEnters: DatedRuleSunEnters
+    """The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+
+
+class FestivalRule(TypedDict, total=False):
+    """A rule: when an observance falls, and how its day is decided."""
+
+    at: Required[Window]
+    """The time of the rite."""
+
+    convention: Union[_catalogue.LunarMonth, Literal['AMANTA', 'PURNIMANTA']]
+    """The convention the month is named in; amanta by default."""
+
+    dayOfPaksha: int
+    """The day, 1 to 14. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given."""
+
+    decide: Required[Sequence[Guard]]
+    """The guards, in order; the first that holds decides."""
+
+    inAdhika: InAdhika
+    """Which of a doubled month's two holds it (C171): the nija month by default."""
+
+    key: Required[str]
+    """The rule's key in its pack, `"JANMASHTAMI"`."""
+
+    month: Optional[Union[_catalogue.Masa, str]]
+    """The month, under `convention`; every month when `None`, for a rite kept on the same tithi of each, as the monthly full-moon fast is."""
+
+    nakshatra: Union[_catalogue.Nakshatra, str]
+    """The nakshatra. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given."""
+
+    otherwise: Required[FestivalChoice]
+    """What decides when no guard holds."""
+
+    paksha: Union[_catalogue.Paksha, str]
+    """The half of the month it must fall in. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given."""
+
+    parana: Sequence[VrataParana]
+    """When the fast kept on the day is broken, each reading answered in order (§8.7); none when left out."""
+
+    source: Required[str]
+    """Where the rule is stated."""
+
+    tithi: Union[_catalogue.Tithi, str]
+    """The tithi. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given."""
+
+
 Thresholds: TypeAlias = "Union[ThresholdsSuryaSiddhanta, ThresholdsPtolemy, ThresholdsCustom]"
 """The threshold table a criterion compares its measure against."""
 
@@ -5695,6 +5928,292 @@ class EraNumber(TypedDict, total=False):
     """The year in it, 1-based."""
 
 
+SaitChoice: TypeAlias = Literal['EARLIEST', 'LATEST']
+"""Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
+
+`EARLIEST`: The first.
+`LATEST`: The last.
+"""
+
+
+class SaitRising(TypedDict, total=False):
+    """The rising sign a tradition prefers for the rite: the navamsa's sign, the lagna's, or either, of the modalities named, in a lagna none of the grahas `free_of` names stands in (the lagna's purity, which a muhurta asks of a malefic there)."""
+
+    freeOf: Sequence[Union[_catalogue.Graha, str]]
+    """The grahas the lagna must not hold, read by sign; none when absent."""
+
+    modalities: Required[Sequence[Union[_catalogue.Modality, str]]]
+    """The modalities it may be of."""
+
+    of: Required[RisingOf]
+    """Which sign is read."""
+
+
+class SaitWindowRule(TypedDict, total=False):
+    """One window a sait may fall in, with what it avoids there: a text keeps its exclusions only where they fit (Dharmasindhu p. 65), so a fallback window lists its own."""
+
+    avoid: Sequence[SaitAvoid]
+    """What it avoids; nothing when left out."""
+
+    within: Required[SaitWindow]
+    """The window."""
+
+
+class MahadvadashiRule(TypedDict, total=False):
+    """Which mahadvadashis a Gaudiya Ekadashi keeps, and how each is read. Every field defaults to `MahadvadashiRule::hari_bhakti_vilasa`'s, so `{}` is the text's rule."""
+
+    joining: NakshatraJoining
+    """What a nakshatra kind's joining is measured against."""
+
+    kinds: Sequence[MahadvadashiKind]
+    """The kinds kept, the first that holds setting the fast (C711); a kind left out is not kept."""
+
+    sampurna: bool
+    """Whether Unmilani and Vyanjuli need the 11th pure at arunodaya, *sampūrṇā* (13.356, C710)."""
+
+    trisprisha: TrisprishaAt
+    """Where the 11th stands on a Trisprisha's day."""
+
+    vyanjuli: VyanjuliPast
+    """How much of the 12th a Vyanjuli needs past the second sunrise."""
+
+
+class ParanaRule(TypedDict, total=False):
+    """When an Ekadashi fast is broken (*parana*, §8.5): on the day after the fast, inside the 12th, in the first of these daylight windows that leaves time once the 12th's first quarter, the *hari vasara*, is past."""
+
+    at: Required[Sequence[Window]]
+    """The daylight windows the meal is kept in, in order of preference: each a span of the daylight (`PART` or `DAY_MUHURTA`)."""
+
+    bars: Sequence[NakshatraBar]
+    """The nakshatras the meal is not taken in after one 11th's fast (C700): none in the default, as the published reference keeps none; `NakshatraBar::dharmasindhu` for the *Dharmasindhu*'s."""
+
+    hariVasara: Required[bool]
+    """Whether the 12th's first quarter is passed over before eating."""
+
+
+class EkadashiTable(TypedDict, total=False):
+    """An observer's answers, for the 11th pure and pierced."""
+
+    pierced: Required[EkadashiKinds]
+    """When it does."""
+
+    pure: Required[EkadashiKinds]
+    """When the 10th does not pierce the 11th's day."""
+
+
+EkadashiVedha: TypeAlias = Literal['ARUNODAYA', 'SUNRISE']
+"""Where the 10th pierces the 11th's day (p. 11).
+
+`ARUNODAYA`: At arunodaya, four ghatis of the night before sunrise: the 10th "entering even a pala past 56 ghatis". The Vaishnavas' vedha.
+`SUNRISE`: At sunrise: the 10th standing "a pala past the sixty-ghati sunrise". The Smartas'. Pierced at sunrise is pierced at arunodaya too.
+"""
+
+
+InSamsarpa: TypeAlias = Literal['ALSO', 'NIJA']
+"""Whether an ordinary month's anniversary is kept in the *samsarpa* too, the adhika month of its name before a kshaya month (C669).
+
+`ALSO`: In the samsarpa and the nija month both: *Dharmasindhu*'s own inference in its kshaya example ("iti bhāti"), and Dhakal's instruction for Nepal (NS, the introduction's malamasa section).
+`NIJA`: In the nija month alone, as in any other year with an adhika month.
+"""
+
+
+class JanmaOptions(TypedDict, total=False):
+    """*Dharmasindhu*'s two options for a janma tithi, both off by default (C670)."""
+
+    nakshatraTie: bool
+    """When both days' sunrises hold the tithi, the day whose sunrise holds the birth nakshatra."""
+
+    twoMuhurtaFloor: bool
+    """The sunrise tithi only when it lasts two muhurtas past sunrise, else the day before."""
+
+
+AnniversaryKind: TypeAlias = Literal['SHRADDHA', 'EKODDISHTA', 'PARVANA', 'JANMA_TITHI']
+"""What an anniversary is, which sets the rite's time and how the day is chosen.
+
+`SHRADDHA`: A death's yearly shraddha, an ekoddishta or a parvana by its origin (`OriginFound::is_parvana`, C665). An answer names which.
+`EKODDISHTA`: The ekoddishta, for one person: kutapa to rauhina, the daylight's 8th and 9th muhurtas (NS p. 987, DS p. 265, C662).
+`PARVANA`: The parvana, for the ancestors together: the aparahna (DS p. 266).
+`JANMA_TITHI`: A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
+"""
+
+
+Origin: TypeAlias = "Union[OriginInstant, OriginDate, OriginLunar]"
+"""Where an anniversary is counted from."""
+
+
+class OriginInstant(TypedDict, total=False):
+    """The moment of the death or the birth: the tithi running then, as the Naradiya has it for a death and a parana (NS p. 982, C661). A death before sunrise takes the tithi of that hour, not the civil day's sunrise tithi."""
+
+    by: Required[Literal['INSTANT']]
+
+    at: Required[float]
+    """The moment."""
+
+
+class OriginDate(TypedDict, total=False):
+    """Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661)."""
+
+    by: Required[Literal['DATE']]
+
+    date: Required[CalendarDate]
+    """The date."""
+
+
+class OriginLunar(TypedDict, total=False):
+    """The lunar date itself, as a family keeps it."""
+
+    by: Required[Literal['LUNAR']]
+
+    adhika: bool
+    """Whether the month was adhika."""
+
+    at: Optional[float]
+    """The moment, if known, which only counts the years: without it no anniversary has a number, and the first one's adhika policy (C666) cannot apply."""
+
+    half: TithiHalf
+    """The half of the tithi, which names the month in a kshaya lunation (C668); the month given is taken as named already."""
+
+    month: Required[Union[_catalogue.Masa, str]]
+    """The month, amanta."""
+
+    tithi: Required[Union[_catalogue.Tithi, str]]
+    """The tithi."""
+
+
+class DatedRuleCivilDate(TypedDict, total=False):
+    """A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+
+    calendar: Required[Union[_catalogue.Calendar, str]]
+    """The calendar the date is in."""
+
+    day: Required[int]
+    """The day; never 0."""
+
+    month: Required[int]
+    """The month, 1 for the first."""
+
+    skipped: Optional[SkippedDay]
+    """Which neighbour keeps the date when its number is skipped, in the calendar that skips numbers, the Tibetan; left out, the day before (`SkippedDay`). Refused for any other calendar."""
+
+
+class DatedRuleCivilWeekday(TypedDict, total=False):
+    """The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+
+    calendar: Required[Union[_catalogue.Calendar, str]]
+    """The calendar the month is in."""
+
+    month: Required[int]
+    """The month, 1 for the first."""
+
+    nth: Required[int]
+    """Which of them; never 0, at most 5 either way."""
+
+    weekday: Required[Union[_catalogue.Vara, str]]
+    """The weekday."""
+
+
+class DatedRuleEaster(TypedDict, total=False):
+    """The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+
+    computus: Required[Computus]
+    """Which churches' reckoning of Easter."""
+
+    days: int
+    """The days from Easter Sunday, 0 for that day, at most `Dated::EASTER_DAYS` either way."""
+
+
+class DatedRuleSunEnters(TypedDict, total=False):
+    """The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+
+    days: int
+    """How many civil days after the entry's, 0 for that day, at most `Dated::MOST_DAYS`."""
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """The nakshatra entered."""
+
+
+class Guard(TypedDict, total=False):
+    """A choice when every predicate holds."""
+
+    choose: Required[FestivalChoice]
+    """What it decides."""
+
+    when: Required[Sequence[Predicate]]
+    """What must all hold."""
+
+
+InAdhika: TypeAlias = "Union[Literal['NIJA', 'ALSO', 'ONLY', 'FIRST'], bool]"
+"""Which of a doubled month's two a rule is kept in."""
+
+
+FestivalChoice: TypeAlias = Literal['EARLIER', 'LATER', 'BY_YUGMA', 'NONE']
+"""What a guard, or a rule's `otherwise`, decides.
+
+`EARLIER`: The earlier day.
+`LATER`: The later day.
+`BY_YUGMA`: By the yugma verse (p. 6): the first of a pair on the day it runs into its partner, the second on the day its partner runs into it.
+`NONE`: Neither day: the rule is not kept this time. A rite kept only on a weekday answers this when its tithi's day is another (C618).
+"""
+
+
+VrataParana: TypeAlias = "Union[VrataParanaTithiEnd, VrataParanaWithin, VrataParanaSunrise, VrataParanaAfterWindow, VrataParanaNextTithi, VrataParanaAfterRite]"
+"""One reading of when a fast kept on a rule's day is broken (§8.7)."""
+
+
+class VrataParanaTithiEnd(TypedDict, total=False):
+    """After the tithi ends, and `nakshatra` too when it joins the tithi within the fast day, sunrise to sunrise (*Dharmasindhu* p. 52; for the tithi alone, p. 7). The meal follows the last end when every one falls by day (before sunset, or already before sunrise), else the last of those that do, else the first; never before sunrise. With `yamas`, an end past that many yamas of the daylight keeps the meal from sunrise to their end instead (p. 7, after Madhava)."""
+
+    kind: Required[Literal['TITHI_END']]
+
+    nakshatra: Optional[Union[_catalogue.Nakshatra, str]]
+    """The nakshatra whose end also counts when it joins the tithi."""
+
+    yamas: Optional[int]
+    """Yamas of the daylight, 1 to 4, past which the meal is kept in the morning instead."""
+
+
+class VrataParanaWithin(TypedDict, total=False):
+    """Inside the tithi, from sunrise to its end or to `yamas` yamas of the daylight, whichever is first: the *Nirnayasindhu*'s Shivaratri, capped by Madhava's three yamas (*Dharmasindhu* pp. 90–91). A tithi ended by sunrise leaves the meal open from sunrise."""
+
+    kind: Required[Literal['WITHIN']]
+
+    yamas: Required[int]
+    """Yamas of the daylight, 1 to 4."""
+
+
+class VrataParanaSunrise(TypedDict, total=False):
+    """From the day's sunrise: the morning after the festival's puja and visarjana, for one who cannot wait (*Dharmasindhu* p. 52)."""
+
+    kind: Required[Literal['SUNRISE']]
+
+
+class VrataParanaAfterWindow(TypedDict, total=False):
+    """From the end of a window on the fast day, as after the nishitha muhurta. No rank-1 text in hand states it; no shipped rule carries it."""
+
+    kind: Required[Literal['AFTER_WINDOW']]
+
+    at: Required[Window]
+    """The window, on the fast day."""
+
+
+class VrataParanaNextTithi(TypedDict, total=False):
+    """In the tithi after the fast's, from its first daylight: the fast tithi's end when it falls by day, on the fast day or the next, else the sunrise after it (*Nirnayasindhu* p. 139, "सा च दशम्यां कार्या", the Navaratri's parana on the 10th)."""
+
+    kind: Required[Literal['NEXT_TITHI']]
+
+
+class VrataParanaAfterRite(TypedDict, total=False):
+    """After a closing rite another rule keeps, on that rule's next day from the fast's, from the rite's first instant: its day's sunrise, its tithi's start, and the start of the share of a nakshatra that chose its day, whichever is last (*Dharmasindhu* pp. 70–71: the vow is given up on the visarjana's day, after it). With `remnant`, when the rite falls later than the day after the fast and the fast's tithi still stands at that day's sunrise for at least that many ghatis, the meal is kept inside the tithi on that day instead, sunrise to its end (DS p. 71, the remaining 9th)."""
+
+    kind: Required[Literal['AFTER_RITE']]
+
+    remnant: Optional[int]
+    """Ghatis of the fast's tithi, 0 to 60, past the next sunrise that keep the meal inside it; none to wait for the rite always."""
+
+    rite: Required[str]
+    """The closing rite's rule key, which the same request must ask for, as `"DURGA_VISARJANA"`."""
+
+
 class MotionThresholds(TypedDict, total=False):
     """A threshold for each motion of one body, degrees."""
 
@@ -5703,3 +6222,433 @@ class MotionThresholds(TypedDict, total=False):
 
     retrograde: Required[float]
     """The threshold while it retrogrades."""
+
+
+RisingOf: TypeAlias = Literal['NAVAMSA', 'LAGNA', 'NAVAMSA_OR_LAGNA']
+"""Which rising sign a `SaitRising` reads.
+
+`NAVAMSA`: The navamsa's sign.
+`LAGNA`: The lagna's sign.
+`NAVAMSA_OR_LAGNA`: Either: a navamsa counts when its own sign is of a modality named or its lagna's is.
+"""
+
+
+SaitAvoid: TypeAlias = "Union[SaitAvoidTithiStart, SaitAvoidNakshatra, SaitAvoidYoga, SaitAvoidKaala, SaitAvoidVishti]"
+"""What a window avoids."""
+
+
+class SaitAvoidTithiStart(TypedDict, total=False):
+    """The occurrence's first nadis (Ghatasthapana's sixteen, NS p. 120)."""
+
+    avoid: Required[Literal['TITHI_START']]
+
+    nadis: Required[int]
+    """How many, 1 to 60."""
+
+
+class SaitAvoidNakshatra(TypedDict, total=False):
+    """The Moon in a nakshatra: its first `quarters` quarters, 4 for the whole of it."""
+
+    avoid: Required[Literal['NAKSHATRA']]
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """Which."""
+
+    quarters: int
+    """How many of its quarters from its start, 1 to 4."""
+
+
+class SaitAvoidYoga(TypedDict, total=False):
+    """A nitya yoga: its first `quarters` quarters, 4 for the whole."""
+
+    avoid: Required[Literal['YOGA']]
+
+    quarters: int
+    """How many of its quarters from its start, 1 to 4."""
+
+    yoga: Required[Union[_catalogue.Yoga, str]]
+    """Which."""
+
+
+class SaitAvoidKaala(TypedDict, total=False):
+    """An eighth of the daylight: Rahu kaala, Yamaghanda or Gulika."""
+
+    avoid: Required[Literal['KAALA']]
+
+    kaala: Required[Union[_catalogue.Kaala, str]]
+    """Which."""
+
+
+class SaitAvoidVishti(TypedDict, total=False):
+    """Bhadra, the vishti karana."""
+
+    avoid: Required[Literal['VISHTI']]
+
+
+SaitWindow: TypeAlias = "Union[SaitWindowGhatis, SaitWindowDayMuhurta, SaitWindowPart, SaitWindowPradosha, SaitWindowNightMuhurta]"
+"""A stretch of the festival day a sait may fall in."""
+
+
+class SaitWindowGhatis(TypedDict, total=False):
+    """The first ghatis after sunrise, a ghati a sixtieth of the civil day (24 minutes): Ghatasthapana's ten (DS p. 65)."""
+
+    window: Required[Literal['GHATIS']]
+
+    ghatis: Required[int]
+    """How many, 1 to 60."""
+
+
+# Muhurtas of the daylight, a fifteenth of it from sunrise, `from` to `to` inclusive, 1 to 15: Abhijit is the 8th, the forenoon the first six.
+SaitWindowDayMuhurta = TypedDict(
+    "SaitWindowDayMuhurta",
+    {
+        "window": "Required[Literal['DAY_MUHURTA']]",
+        # The first, 1 for the muhurta after sunrise.
+        "from": "Required[int]",
+        # The last, at least `from`.
+        "to": "Required[int]",
+    },
+    total=False,
+)
+
+
+class SaitWindowPart(TypedDict, total=False):
+    """A fifth of the daylight."""
+
+    window: Required[Literal['PART']]
+
+    part: Required[DayFifth]
+    """Which fifth."""
+
+
+class SaitWindowPradosha(TypedDict, total=False):
+    """Three muhurtas after sunset, a muhurta a fifteenth of the night."""
+
+    window: Required[Literal['PRADOSHA']]
+
+
+class SaitWindowNightMuhurta(TypedDict, total=False):
+    """A muhurta of the night, 1 to 15 from sunset."""
+
+    window: Required[Literal['NIGHT_MUHURTA']]
+
+    muhurta: Required[int]
+    """Which muhurta."""
+
+
+NakshatraJoining: TypeAlias = Literal['TWO_SUNRISES', 'OUTLASTS_TWELFTH', 'BEGUN_IN_DAYLIGHT']
+"""What 13.286–287's nakshatra "longer, equal or shorter" is measured against (C708). Every reading keeps 13.288–289: a nakshatra other than Shravana needs the 12th to last to sunset.
+
+`TWO_SUNRISES`: The day: it holds the 12th's sunrise and the next.
+`OUTLASTS_TWELFTH`: The tithi: it holds the 12th's sunrise and lasts to the 12th's end or past it (the Hindi gloss).
+`BEGUN_IN_DAYLIGHT`: As `OUTLASTS_TWELFTH`, or it begins after the 12th's sunrise while the 12th stands, of any length: 13.286's "from sunrise".
+"""
+
+
+MahadvadashiKind: TypeAlias = Literal['UNMILANI', 'VYANJULI', 'TRISPRISHA', 'PAKSHAVARDHINI', 'JAYA', 'VIJAYA', 'JAYANTI', 'PAPANASHINI']
+"""The eight great twelfths (HBV 13.265: "उन्मीलनी वञ्जुली च त्रिस्पृशा पक्षवर्धिनी । जया च विजया चैव जयन्ती पापनाशिनी").
+
+`UNMILANI`: 13.267: a *sampūrṇā* 11th grows into the next day and the 12th does not; the fast is that next day.
+`VYANJULI`: 13.268: the 12th alone grows past the sunrise after its own.
+`TRISPRISHA`: 13.269: the 11th at the day's start, the 12th the whole day, the 13th at its end.
+`PAKSHAVARDHINI`: 13.270: the fortnight's new or full moon holds two sunrises; the 11th is left and the 12th fasted.
+`JAYA`: 13.485: a bright 12th joined with Punarvasu.
+`VIJAYA`: 13.489–490: with Shravana.
+`JAYANTI`: 13.506, 13.508: with Rohini, *prājāpatya*.
+`PAPANASHINI`: 13.534: with Pushya.
+"""
+
+
+TrisprishaAt: TypeAlias = Literal['SUNRISE', 'ARUNODAYA']
+"""Where the 11th must stand on a Trisprisha's day (C707).
+
+`SUNRISE`: At arunodaya and at sunrise: the Hindi gloss of 13.269, and every published Trisprisha row.
+`ARUNODAYA`: At arunodaya, even when it ends before sunrise: 13.269's letter, "अरुणोदय आद्या".
+"""
+
+
+VyanjuliPast: TypeAlias = Literal['ANY', 'HALF_MUHURTA']
+"""How much of the 12th must stand past the sunrise after its own for a Vyanjuli (C709).
+
+`ANY`: Any: "a kala or even a vikala" (12.374, कला च विकलापि वा).
+`HALF_MUHURTA`: Half a muhurta, a ghati of that day's daylight: 13.356's "त्रयोदश्यां मुहूर्तार्धं".
+"""
+
+
+class NakshatraBar(TypedDict, total=False):
+    """A nakshatra the meal is not taken in, on the parana after the fast of one 11th in one month (C700)."""
+
+    month: Required[Union[_catalogue.Masa, str]]
+    """That 11th's amanta month. A bar holds in the nija month only: the rites it guards are not kept in an adhika one (*Dharmasindhu* p. 41)."""
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """The nakshatra."""
+
+    portion: Portion
+    """The share of its arc that bars; the whole when left out."""
+
+    tithi: Required[Union[_catalogue.Tithi, str]]
+    """The 11th whose fast's parana it bars."""
+
+
+class EkadashiKinds(TypedDict, total=False):
+    """The day each of the four kinds takes: the 11th's own (`EARLIER`) or the day after (`LATER`)."""
+
+    both: Required[FestivalWhich]
+    """Both in excess."""
+
+    eleventh: Required[FestivalWhich]
+    """The 11th alone in excess."""
+
+    neither: Required[FestivalWhich]
+    """Neither in excess."""
+
+    twelfth: Required[FestivalWhich]
+    """The 12th alone in excess."""
+
+
+class CalendarDate(TypedDict, total=False):
+    """A date in a calendar. Years are astronomical (1 BCE is 0); an era is attached for presentation only."""
+
+    calendar: Required[Union[_catalogue.Calendar, str]]
+    """The calendar."""
+
+    day: Required[int]
+    """The day, 1-based; for the ISO week date, the weekday 1 to 7."""
+
+    era: Optional[EraNumber]
+    """The era view, when the calendar has one."""
+
+    leap: Optional[Union[_catalogue.Leap, Literal['MONTH', 'DAY', 'MONTH_AND_DAY']]]
+    """Whether the month or the day is the first of two bearing the same number, in a calendar that repeats them (the Tibetan); left out of the wire when absent, and refused by every calendar that repeats neither."""
+
+    month: Required[int]
+    """The month, 1-based; for the ISO week date, the week."""
+
+    resolution: Required[CalendarResolution]
+    """How the date was resolved."""
+
+    year: Required[int]
+    """The astronomical year."""
+
+
+TithiHalf: TypeAlias = Literal['FIRST', 'SECOND']
+"""Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
+
+`FIRST`: The first.
+`SECOND`: The second.
+"""
+
+
+SkippedDay: TypeAlias = Literal['BEFORE', 'AFTER']
+"""Which neighbour keeps an observance whose date's number is skipped.
+
+`BEFORE`: The day before, the one the skipped lunar day ends in.
+`AFTER`: The day after, the next number's.
+"""
+
+
+Computus: TypeAlias = Literal['GREGORIAN', 'JULIAN']
+"""Which reckoning of Easter.
+
+`GREGORIAN`: The Gregorian computus, the Western churches': from 1583, the first whole year of the reform.
+`JULIAN`: The Julian computus, the Eastern churches': the Alexandrian cycle in the Julian calendar, from 326, the year after Nicaea.
+"""
+
+
+Predicate: TypeAlias = "Union[PredicateCase, PredicateJoined, PredicateStands, PredicateLasts, PredicateWholly, PredicateGreater, PredicateOnVara]"
+"""Something a guard asks of the two days."""
+
+
+# The case is this one.
+PredicateCase = TypedDict(
+    "PredicateCase",
+    {
+        "is": "Required[Literal['CASE']]",
+        # The case.
+        "case": "Required[FestivalCase]",
+    },
+    total=False,
+)
+
+
+# The tithi and a nakshatra stand together on a day: within a window when one is named, anywhere in the sunrise day otherwise; and only a share of the nakshatra when `portion` names one.
+PredicateJoined = TypedDict(
+    "PredicateJoined",
+    {
+        "is": "Required[Literal['JOINED']]",
+        # Where they must meet; the whole day when absent.
+        "at": "Optional[Window]",
+        # Which day.
+        "day": "Required[FestivalWhich]",
+        # The nakshatra.
+        "nakshatra": "Required[Union[_catalogue.Nakshatra, str]]",
+        # The share of the nakshatra's arc that must meet the tithi, as Shravana's last quarter (*Dharmasindhu* p. 70); the whole when absent. A share is the Moon's stay in its arc, searched at the arc's own bounds (`FestivalDay::moon_arcs`).
+        "portion": "Optional[Portion]",
+    },
+    total=False,
+)
+
+
+# The nakshatra stands in a window of a day, whatever the tithi: the Nirnaya-sindhu's condition that *Dharmasindhu* p. 71 endorses, Shravana in the later day's aparahna after the dashami has ended.
+PredicateStands = TypedDict(
+    "PredicateStands",
+    {
+        "is": "Required[Literal['STANDS']]",
+        # The window it must stand in, for some time or at its instant.
+        "at": "Required[Window]",
+        # Which day.
+        "day": "Required[FestivalWhich]",
+        # The nakshatra.
+        "nakshatra": "Required[Union[_catalogue.Nakshatra, str]]",
+    },
+    total=False,
+)
+
+
+# The tithi stands at an edge of the day and lasts at least this many ghatis past it, a ghati being a thirtieth of the daylight after sunrise or of the night after sunset: three muhurtas after sunrise are six ghatis (p. 71), and the new moon a ghati into the night settles Lakshmi puja (p. 77).
+PredicateLasts = TypedDict(
+    "PredicateLasts",
+    {
+        "is": "Required[Literal['LASTS']]",
+        # Which day.
+        "day": "Required[FestivalWhich]",
+        # The edge counted from.
+        "from": "Required[DayEdge]",
+        # How many ghatis, 1 to 30.
+        "ghatis": "Required[int]",
+    },
+    total=False,
+)
+
+
+# The tithi holds the whole of a day's window, or its instant: p. 90 gives Shivaratri to the day holding niśītha wholly when the other holds it in part.
+PredicateWholly = TypedDict(
+    "PredicateWholly",
+    {
+        "is": "Required[Literal['WHOLLY']]",
+        # Which day.
+        "day": "Required[FestivalWhich]",
+    },
+    total=False,
+)
+
+
+# This day's window holds more of the tithi, in time, than the other day's does; at an instant, this day's holds it and the other's does not. Equal times are a tie and hold for neither day. Time and not the share of each window: the two differ only when both days hold part of a window whose length moves a minute or two from one day to the next (C601, C604).
+PredicateGreater = TypedDict(
+    "PredicateGreater",
+    {
+        "is": "Required[Literal['GREATER']]",
+        # Which day.
+        "day": "Required[FestivalWhich]",
+    },
+    total=False,
+)
+
+
+# The day is this vara, sunrise to sunrise: *Dharmasindhu* p. 20 names the new moon on a Monday (Somavati), the 4th on a Tuesday and the 7th on a Sunday, and the committee prints the 13th's fast on a Saturday or a Monday by those names (C618).
+PredicateOnVara = TypedDict(
+    "PredicateOnVara",
+    {
+        "is": "Required[Literal['ON_VARA']]",
+        # Which day.
+        "day": "Required[FestivalWhich]",
+        # The vara.
+        "vara": "Required[Union[_catalogue.Vara, str]]",
+    },
+    total=False,
+)
+
+
+class Portion(TypedDict, total=False):
+    """A share of a nakshatra's arc: the `which`th of `parts` equal parts, `{1, 1}` the whole, `{4, 1}` its first quarter (pada)."""
+
+    parts: Required[int]
+    """The equal parts the arc is cut in, 1 to 12."""
+
+    which: Required[int]
+    """Which of them, 1 to `parts`."""
+
+
+FestivalWhich: TypeAlias = Literal['EARLIER', 'LATER']
+"""One of the two days a tithi is judged between.
+
+`EARLIER`: The earlier.
+`LATER`: The later.
+"""
+
+
+CalendarResolution: TypeAlias = "Union[CalendarResolutionDefined, CalendarResolutionTabular, CalendarResolutionComputed, CalendarResolutionDivergent]"
+"""How a calendar date was resolved (`docs/03-design/calendar-bikram-sambat.md`)."""
+
+
+class CalendarResolutionDefined(TypedDict, total=False):
+    """A mathematical definition; exact by construction."""
+
+    kind: Required[Literal['DEFINED']]
+
+
+class CalendarResolutionTabular(TypedDict, total=False):
+    """From the authority's published table."""
+
+    kind: Required[Literal['TABULAR']]
+
+    authority: Required[str]
+    """The authority."""
+
+    edition: Required[str]
+    """The table's edition."""
+
+
+class CalendarResolutionComputed(TypedDict, total=False):
+    """Computed outside the table's range."""
+
+    kind: Required[Literal['COMPUTED']]
+
+    model: Required[str]
+    """The rule or model."""
+
+
+class CalendarResolutionDivergent(TypedDict, total=False):
+    """Inside the range and the two disagree; the table was followed."""
+
+    kind: Required[Literal['DIVERGENT']]
+
+    computed: Required[MonthDay]
+    """The computed month and day."""
+
+    model: Required[str]
+    """The rule or model that computed the other answer."""
+
+    tabular: Required[MonthDay]
+    """The table's month and day."""
+
+
+FestivalCase: TypeAlias = Literal['EARLIER_ONLY', 'LATER_ONLY', 'BOTH', 'NEITHER', 'EQUAL_PARTS', 'UNEQUAL_PARTS']
+"""How the tithi held the rite's time on the two days (pp. 6–7).
+
+`EARLIER_ONLY`: On the earlier day only, wholly or in part.
+`LATER_ONLY`: On the later day only.
+`BOTH`: Wholly, on both.
+`NEITHER`: On neither.
+`EQUAL_PARTS`: On both, in part at least on one, the two equal (C170).
+`UNEQUAL_PARTS`: On both, in part at least on one, unequally.
+"""
+
+
+DayEdge: TypeAlias = Literal['SUNRISE', 'SUNSET']
+"""The edge of a day a `Predicate::Lasts` counts from.
+
+`SUNRISE`: Sunrise, counting in thirtieths of the daylight.
+`SUNSET`: Sunset, counting in thirtieths of the night.
+"""
+
+
+class MonthDay(TypedDict, total=False):
+    """A month and a day inside a year, for a divergence report."""
+
+    day: Required[int]
+    """The day, 1-based."""
+
+    month: Required[int]
+    """The month, 1-based."""

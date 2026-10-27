@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param altitudeM The {@code altitudeM} field. Null leaves the SDK's default.
  * @param calendar The {@code calendar} field. Null leaves the SDK's default.
  * @param eclipses The {@code eclipses} field. Null leaves the SDK's default.
- * @param festivals `FestivalRequest` as the bindings write it. `rules` is read in a second step, because each item is a name or a rule and the refusal should say which item was wrong rather than that no shape matched. Null leaves the SDK's default.
+ * @param festivals Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer. Null leaves the SDK's default.
  * @param first A civil day as a request names it.
  * @param homaAhuti The {@code homaAhuti} field. Null leaves the SDK's default.
  * @param lagnas The {@code lagnas} field. Null leaves the SDK's default.
@@ -116,7 +116,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         /**
          * Sets {@code festivals}.
          *
-         * @param festivals `FestivalRequest` as the bindings write it. `rules` is read in a second step, because each item is a name or a rule and the refusal should say which item was wrong rather than that no shape matched. Null leaves the SDK's default.
+         * @param festivals Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder festivals(FestivalRequest festivals) {
