@@ -293,6 +293,7 @@ impl DatePrecision {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "EventConfidence"))]
 pub enum Confidence {
     /// Certain.
     #[default]

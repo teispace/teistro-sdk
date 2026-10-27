@@ -19,7 +19,7 @@ import java.util.Objects;
  * @param precision How finely `on` is known, where `until` is not given. Null leaves the SDK's default.
  * @param until When it ended, where it ran over days. Null leaves the SDK's default.
  */
-public record LifeEvent(Confidence confidence, Boolean heldOut, String id, LifeEventKind kind, double on, DatePrecision precision, Double until) implements RequestJson {
+public record LifeEvent(EventConfidence confidence, Boolean heldOut, String id, LifeEventKind kind, double on, DatePrecision precision, Double until) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -54,7 +54,7 @@ public record LifeEvent(Confidence confidence, Boolean heldOut, String id, LifeE
 
     /** Builds a {@link LifeEvent} a field at a time. */
     public static final class Builder {
-        private Confidence confidence;
+        private EventConfidence confidence;
         private Boolean heldOut;
         private String id;
         private LifeEventKind kind;
@@ -70,7 +70,7 @@ public record LifeEvent(Confidence confidence, Boolean heldOut, String id, LifeE
          * @param confidence How sure the family is. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder confidence(Confidence confidence) {
+        public Builder confidence(EventConfidence confidence) {
             this.confidence = confidence;
             return this;
         }
@@ -162,7 +162,7 @@ public record LifeEvent(Confidence confidence, Boolean heldOut, String id, LifeE
     public static LifeEvent of(Object raw) {
         Map<String, Object> json = Read.object(raw, "LifeEvent");
         return new LifeEvent(
-            Read.orNull(json.get("confidence"), present -> Read.member(present, "LifeEvent.confidence", Confidence::byKey)),
+            Read.orNull(json.get("confidence"), present -> Read.member(present, "LifeEvent.confidence", EventConfidence::byKey)),
             Read.orNull(json.get("heldOut"), present -> Read.bool(present, "LifeEvent.heldOut")),
             Read.orNull(json.get("id"), present -> Read.text(present, "LifeEvent.id")),
             Read.member(Read.required(json.get("kind"), "LifeEvent.kind"), "LifeEvent.kind", LifeEventKind::byKey),

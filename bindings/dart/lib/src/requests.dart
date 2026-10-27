@@ -649,7 +649,7 @@ final class BatchAsked extends _Request {
     required this.periods,
   });
 
-  final Period? baseline;
+  final BaselinePeriod? baseline;
 
   final List<PeriodAsked> periods;
 
@@ -727,7 +727,7 @@ final class ResearchRequest extends _Request {
     this.dasha,
     this.depth,
     this.design,
-    this.holds = Holds.standing,
+    this.holds = ResearchHolds.standing,
     this.referents,
     required this.rules,
     this.shuffle,
@@ -748,13 +748,13 @@ final class ResearchRequest extends _Request {
 
   final Design? design;
 
-  final Holds holds;
+  final ResearchHolds holds;
 
   final Referents? referents;
 
   final Object? rules;
 
-  final EventShuffle? shuffle;
+  final ResearchEventShuffle? shuffle;
 
   final List<int>? strata;
 
@@ -1669,7 +1669,7 @@ final class HouseRequest extends _Request {
 }
 
 /// The period a score is weighed for, which sets the Moon's weight.
-enum Period implements _Keyed {
+enum BaselinePeriod implements _Keyed {
   /// A day: the Moon weighs 5.
   daily('DAILY'),
   /// A week: the Moon weighs 2.
@@ -1679,7 +1679,7 @@ enum Period implements _Keyed {
   /// A year: the Moon weighs nothing and is left out.
   yearly('YEARLY');
 
-  const Period(this.key);
+  const BaselinePeriod(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -1828,13 +1828,13 @@ final class Design extends _Request {
 }
 
 /// When a rule counts as holding on a chart.
-enum Holds implements _Keyed {
+enum ResearchHolds implements _Keyed {
   /// It is formed and its cancellations do not undo it: present, and not fully cancelled. A rule is its conditions *and* its cancellations, so this is the default.
   standing('STANDING'),
   /// It is formed, whatever its cancellations say.
   formed('FORMED');
 
-  const Holds(this.key);
+  const ResearchHolds(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -1865,7 +1865,7 @@ final class Referents extends _Request {
 }
 
 /// What the shuffled-event null keeps (`research.md` §1.4).
-enum EventShuffle implements _Keyed {
+enum ResearchEventShuffle implements _Keyed {
   /// Event dates move among people: the calendar of events is kept, each person's age at the event is not. A pairing that puts an event before a birth is what `afterBirth` decides.
   eventDates('EVENT_DATES'),
   /// Ages at the event move among people: person `i` is read at its birth plus person `j`'s age. The ages are kept; the calendar is not.
@@ -1873,7 +1873,7 @@ enum EventShuffle implements _Keyed {
   /// Each person is their own control (the case-crossover design, C367): the event is as likely at any of the person's referent instants ([`Referents`]), so nothing fixed about the person, the chart included, can make a rule look delivered. Nobody's event moves to anybody else.
   selfMatched('SELF_MATCHED');
 
-  const EventShuffle(this.key);
+  const ResearchEventShuffle(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -2392,13 +2392,13 @@ final class MuhurtaNative extends _Request {
 }
 
 /// How windows are ordered (crux C162); the texts' order by default.
-enum Ranking implements _Keyed {
+enum MuhurtaRanking implements _Keyed {
   /// Raman's rule, an excess of good and a deficiency of evil: open windows first, then the fewest clauses against, then the most for, then the earliest. No clause cancels another here — the neutralisations are reported as clauses for the time and weigh as that — because which neutralisation lifts which dosha the texts give case by case, and a table of it is not yet sourced.
   texts('TEXTS'),
   /// The baseline engine's weights (`muhurta.md` §4.5), which the roadmap's regression is stated in: open windows first, then those the engine would have offered by their score, highest first, then the earliest. Needs the rules' [`BaselineEvent`](crate::baseline::BaselineEvent).
   baseline('BASELINE');
 
-  const Ranking(this.key);
+  const MuhurtaRanking(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -7645,13 +7645,13 @@ enum NoneAspects implements _Keyed {
 }
 
 /// Who takes the year when the office-bearers tie outright (crux C106).
-enum Tied implements _Keyed {
+enum VarsheshaTied implements _Keyed {
   /// The Muntha's lord: the source's own rule.
   munthaLord('MUNTHA_LORD'),
   /// The Dina-Ratri Pati, which "still others" give.
   dinaRatriPati('DINA_RATRI_PATI');
 
-  const Tied(this.key);
+  const VarsheshaTied(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -7992,6 +7992,22 @@ enum YearLength implements _Keyed {
   nakshatra324('NAKSHATRA_324');
 
   const YearLength(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// How sure the family is of an event, which weighs it.
+enum EventConfidence implements _Keyed {
+  /// Certain.
+  certain('CERTAIN'),
+  /// Probable.
+  probable('PROBABLE'),
+  /// Uncertain.
+  uncertain('UNCERTAIN');
+
+  const EventConfidence(this.key);
 
   /// The key the wire spells it with.
   @override

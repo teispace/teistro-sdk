@@ -28,6 +28,7 @@ use crate::RashiReading;
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "BaselinePeriod"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Period {
     /// A day: the Moon weighs 5.

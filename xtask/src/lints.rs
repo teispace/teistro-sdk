@@ -1233,6 +1233,140 @@ fn dart_facades_are_declared(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// A closed key set the layers keep by hand with the keys, in order, of a
+/// generated one, each with why it stays.
+const KEY_SET_TWINS: &[(&str, &str)] = &[
+    (
+        "NativeSex",
+        "the generated request spells the baseline's sex inline (`BaselineAsked.sex`), so there is no name to share; its two keys are the ashauch's by coincidence",
+    ),
+    (
+        "DashaYearLength",
+        "the settings knob `YearLength` names it, read by the context's settings as well as by requests; it is named with the settings",
+    ),
+];
+
+/// Where each binding declares a closed key set: the file, and a pattern
+/// whose `name` group is its name and whose `keys` group holds its keys,
+/// each quoted.
+const KEY_SETS: [(&str, &str, &str); 3] = [
+    (
+        "bindings/dart/lib/teistro.dart",
+        "bindings/dart/lib/src/requests.dart",
+        r"(?ms)^enum (?<name>\w+)(?: implements _Keyed)? \{(?<keys>.*?)^\}",
+    ),
+    (
+        "bindings/node/lib/index.d.ts",
+        "bindings/node/lib/requests.d.ts",
+        r"(?ms)^export type (?<name>\w+) =(?<keys>(?:\s*\|?\s*'[A-Z0-9_]+')+);",
+    ),
+    (
+        "bindings/python/teistro/__init__.py",
+        "bindings/python/teistro/_requests.py",
+        r"(?ms)^(?<name>\w+)(?:: TypeAlias)? = Literal\[(?<keys>[^\]]*)\]",
+    ),
+];
+
+/// Each closed key set `pattern` finds in `text`: its name, the line it
+/// starts on and its keys in order.
+fn key_sets<'a>(text: &'a str, pattern: &regex::Regex) -> Vec<(&'a str, usize, Vec<&'a str>)> {
+    let Ok(key) = regex::Regex::new(r#"['"]([A-Z0-9_]+)['"]"#) else {
+        return Vec::new();
+    };
+    pattern
+        .captures_iter(text)
+        .filter_map(|found| {
+            let name = found.name("name")?;
+            // An enum whose members carry no key is not a key set.
+            let keys = found.name("keys")?.as_str();
+            let keys: Vec<&str> = keys
+                .lines()
+                .filter(|line| !line.trim_start().starts_with(['/', '*', '#']))
+                .flat_map(|line| key.captures_iter(line))
+                .filter_map(|k| Some(k.get(1)?.as_str()))
+                .collect();
+            let line = text.get(..name.start())?.matches('\n').count() + 1;
+            (!keys.is_empty()).then_some((name.as_str(), line, keys))
+        })
+        .collect()
+}
+
+/// That no hand-written layer keeps a generated request key set's keys
+/// under a name of its own.
+///
+/// A twin named like the record it copies is caught above, or by Dart's
+/// analyser. One named otherwise is not: the schema called eleven key sets
+/// by a bare word (`Clock`, `Bird`, `Sight`) and the layers had each
+/// written the same keys again as `PakshiClock`, `PakshiBird`,
+/// `VedhaSight`, twenty copies in all, which matching the keys found
+/// (2026-10-27). The schema now carries the clearer name; this keeps it
+/// one.
+fn layers_do_not_rekey_a_request(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "layer-does-not-twin-a-request";
+    let mut allowed_seen = Vec::new();
+    for (layer, generated, pattern) in KEY_SETS {
+        let Ok(pattern) = regex::Regex::new(pattern) else {
+            continue;
+        };
+        let (Ok(text), Ok(requests)) = (
+            std::fs::read_to_string(root.join(layer)),
+            std::fs::read_to_string(root.join(generated)),
+        ) else {
+            outcome.failures.push(Finding {
+                file: layer.to_owned(),
+                line: 1,
+                text: String::from("could not be read, nor its generated requests"),
+                rule: RULE,
+            });
+            continue;
+        };
+        let made = key_sets(&requests, &pattern);
+        let kept = key_sets(&text, &pattern);
+        if made.is_empty() || kept.is_empty() {
+            outcome.failures.push(Finding {
+                file: layer.to_owned(),
+                line: 1,
+                text: String::from("no closed key set was read here or in its generated requests; the pattern no longer matches"),
+                rule: RULE,
+            });
+            continue;
+        }
+        for (name, line, keys) in kept {
+            let Some((twin, ..)) = made
+                .iter()
+                .find(|(other, _, its)| *its == keys && *other != name)
+            else {
+                continue;
+            };
+            let finding = Finding {
+                file: layer.to_owned(),
+                line,
+                text: format!(
+                    "declares `{name}` with the keys of the generated `{twin}`; name the schema's type \
+                     `{name}` (`schemars(rename)`) and use the generated one"
+                ),
+                rule: RULE,
+            };
+            if let Some((listed, _)) = KEY_SET_TWINS.iter().find(|(listed, _)| *listed == name) {
+                allowed_seen.push(*listed);
+                outcome.allowed.push(finding);
+            } else {
+                outcome.failures.push(finding);
+            }
+        }
+    }
+    for (name, _) in KEY_SET_TWINS {
+        if !allowed_seen.contains(name) {
+            outcome.failures.push(Finding {
+                file: String::from("xtask/src/lints.rs"),
+                line: 1,
+                text: format!("`{name}` is listed as a kept key set and no layer keeps it; drop it from the list"),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 /// Where the measured pages live, and the suffix that marks one.
 const MEASURED: (&str, &str) = ("docs/03-design", "-measured.md");
 
@@ -3413,6 +3547,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     layers_do_not_shadow_a_kind(root, &mut outcome);
     layers_do_not_twin_a_request(root, &mut outcome);
     dart_facades_are_declared(root, &mut outcome);
+    layers_do_not_rekey_a_request(root, &mut outcome);
     crates_are_listed(root, &mut outcome);
     open_questions_are_named(root, &mut outcome);
     generated_pages_are_gated(root, &mut outcome);
@@ -3448,9 +3583,35 @@ pub(crate) fn check(root: &Path) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::{
-        NEXT, Outcome, REGISTER, RESUME, declaration_of, gate_declared_by, gate_run_by,
-        names_question, open_questions_are_named, section_of,
+        KEY_SETS, NEXT, Outcome, REGISTER, RESUME, declaration_of, gate_declared_by, gate_run_by,
+        key_sets, names_question, open_questions_are_named, section_of,
     };
+
+    #[test]
+    #[allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+    fn each_bindings_key_set_is_read_with_its_keys_in_order_and_a_comment_is_not_one() {
+        let samples = [
+            "/// How it holds, as 'NOT_A_KEY' says.\nenum PakshiClock implements _Keyed {\n  /// A 'DOC'.\n  stretched('STRETCHED'),\n  nazhigai('NAZHIGAI');\n\n  const PakshiClock(this.key);\n}\n",
+            "/** A clock. */\nexport type PakshiClock =\n  | 'STRETCHED'\n  | 'NAZHIGAI';\n",
+            "PakshiClock = Literal[\n    \"STRETCHED\",\n    \"NAZHIGAI\",\n]\n\"\"\"A clock.\"\"\"\n",
+        ];
+        for ((layer, _, pattern), (sample, line)) in
+            KEY_SETS.iter().zip(samples.into_iter().zip([2, 2, 1]))
+        {
+            let pattern = regex::Regex::new(pattern).unwrap();
+            assert_eq!(
+                key_sets(sample, &pattern),
+                vec![("PakshiClock", line, vec!["STRETCHED", "NAZHIGAI"])],
+                "{layer}"
+            );
+        }
+        // An enum whose members carry no key is not a key set.
+        let dart = regex::Regex::new(KEY_SETS[0].2).unwrap();
+        assert_eq!(
+            key_sets("enum Divisor {\n  one,\n  two;\n}\n", &dart),
+            vec![]
+        );
+    }
 
     /// The shape of a `group!` body, which is what the rule reads.
     const SOURCE: &str = "group!(

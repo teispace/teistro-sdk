@@ -2682,7 +2682,7 @@ void main() {
         .map((s) => '${s.drishti.key}/${s.relation.key}/${s.company ? 1 : 0}')
         .join(' '),
   ].join(' | ');
-  for (final reading in VarshaReading.values) {
+  for (final reading in ReturnLongitude.values) {
     final years = geo.chart.foundMany(
       instants: <double>[2460482.5, 2460600.25],
       place: place,
@@ -2691,16 +2691,16 @@ void main() {
         through: 12,
         reading: reading,
         place: AnnualPlace.birth,
-        matters: reading == VarshaReading.mean ? null : Matters.all,
+        matters: reading == ReturnLongitude.mean ? null : Matters.all,
         yogas:
-            reading == VarshaReading.tropical
+            reading == ReturnLongitude.tropical
                 ? const YogaRules(tambira: TambiraMover.eitherLord)
                 : const YogaRules(),
         // The sahams likewise: every one under the source's rules, every
         // one under each rival rule, and none.
-        sahams: reading == VarshaReading.mean ? null : Sahams.all,
+        sahams: reading == ReturnLongitude.mean ? null : Sahams.all,
         sahamRules:
-            reading == VarshaReading.tropical
+            reading == ReturnLongitude.tropical
                 ? const SahamRules(
                   addSign: AddSign.signs,
                   houses: HousePoints.equal,
@@ -2710,9 +2710,9 @@ void main() {
         // And the annual dashas: every one under the sources' readings,
         // every one under a rival clock, balance and birth period three
         // levels deep, and none.
-        dashas: reading == VarshaReading.mean ? null : AnnualDashas.all,
+        dashas: reading == ReturnLongitude.mean ? null : AnnualDashas.all,
         dashaRules:
-            reading == VarshaReading.tropical
+            reading == ReturnLongitude.tropical
                 ? const AnnualDashaRules(
                   clock: YearClock.even,
                   balance: MuddaBalance.entryMoon,

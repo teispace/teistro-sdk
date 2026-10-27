@@ -4,21 +4,21 @@
 package com.teispace.teistro.request;
 
 /**
- * When a rule counts as holding on a chart.
+ * Who takes the year when the office-bearers tie outright (crux C106).
  */
-public enum Holds implements RequestJson {
+public enum VarsheshaTied implements RequestJson {
     /**
-     * It is formed and its cancellations do not undo it: present, and not fully cancelled. A rule is its conditions *and* its cancellations, so this is the default.
+     * The Muntha's lord: the source's own rule.
      */
-    STANDING("STANDING"),
+    MUNTHA_LORD("MUNTHA_LORD"),
     /**
-     * It is formed, whatever its cancellations say.
+     * The Dina-Ratri Pati, which "still others" give.
      */
-    FORMED("FORMED");
+    DINA_RATRI_PATI("DINA_RATRI_PATI");
 
     private final String key;
 
-    Holds(String key) {
+    VarsheshaTied(String key) {
         this.key = key;
     }
 
@@ -37,8 +37,8 @@ public enum Holds implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Holds> byKey(String key) {
-        for (Holds member : values()) {
+    public static java.util.Optional<VarsheshaTied> byKey(String key) {
+        for (VarsheshaTied member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -53,8 +53,8 @@ public enum Holds implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Holds of(Object raw) {
-        return Read.member(raw, "Holds", Holds::byKey);
+    public static VarsheshaTied of(Object raw) {
+        return Read.member(raw, "VarsheshaTied", VarsheshaTied::byKey);
     }
 
     @Override

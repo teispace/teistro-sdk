@@ -17,7 +17,7 @@ import java.util.Objects;
  * @param noneAspects Who takes the year when nobody aspects the lagna. Null leaves the SDK's default.
  * @param tied Who takes it when the office-bearers tie outright. Null leaves the SDK's default.
  */
-public record VarsheshaRules(DrishtiRules drishti, MoonMayRule moon, MoonPartner moonPartner, NoneAspects noneAspects, Tied tied) implements RequestJson {
+public record VarsheshaRules(DrishtiRules drishti, MoonMayRule moon, MoonPartner moonPartner, NoneAspects noneAspects, VarsheshaTied tied) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -43,7 +43,7 @@ public record VarsheshaRules(DrishtiRules drishti, MoonMayRule moon, MoonPartner
         private MoonMayRule moon;
         private MoonPartner moonPartner;
         private NoneAspects noneAspects;
-        private Tied tied;
+        private VarsheshaTied tied;
 
         private Builder() {}
 
@@ -97,7 +97,7 @@ public record VarsheshaRules(DrishtiRules drishti, MoonMayRule moon, MoonPartner
          * @param tied Who takes it when the office-bearers tie outright. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder tied(Tied tied) {
+        public Builder tied(VarsheshaTied tied) {
             this.tied = tied;
             return this;
         }
@@ -127,7 +127,7 @@ public record VarsheshaRules(DrishtiRules drishti, MoonMayRule moon, MoonPartner
             Read.orNull(json.get("moon"), present -> Read.member(present, "VarsheshaRules.moon", MoonMayRule::byKey)),
             Read.orNull(json.get("moonPartner"), present -> Read.member(present, "VarsheshaRules.moonPartner", MoonPartner::byKey)),
             Read.orNull(json.get("noneAspects"), present -> Read.member(present, "VarsheshaRules.noneAspects", NoneAspects::byKey)),
-            Read.orNull(json.get("tied"), present -> Read.member(present, "VarsheshaRules.tied", Tied::byKey)));
+            Read.orNull(json.get("tied"), present -> Read.member(present, "VarsheshaRules.tied", VarsheshaTied::byKey)));
     }
 
     @Override

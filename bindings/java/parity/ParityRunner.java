@@ -836,7 +836,7 @@ public final class ParityRunner {
         RuleRequest yogas = RuleRequest.builder().shipped(List.of(ShippedRules.YOGAS)).build();
         Design design = Design.of(map("groups", groups));
         ResearchCounts table = geo.research().counts(births, yogas, design,
-                ResearchOptions.builder().holds(Holds.FORMED).build());
+                ResearchOptions.builder().holds(ResearchHolds.FORMED).build());
         put("research-counts-hash", table.provenance().inputHash());
         for (int k = 0; k < table.rows().size(); k += 1) {
             ResearchCounts.Row row = table.rows().get(k);

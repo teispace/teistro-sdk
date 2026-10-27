@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param baseline The period a score is weighed for, which sets the Moon's weight. Null leaves the SDK's default.
  * @param periods One period as a binding writes it, camel-cased as every request record is: the days, the place and the offset, and optionally the snapshot, the grahas whose events are reported and Saturn's spells.
  */
-public record BatchAsked(Period baseline, List<PeriodAsked> periods) implements RequestJson {
+public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -49,7 +49,7 @@ public record BatchAsked(Period baseline, List<PeriodAsked> periods) implements 
 
     /** Builds a {@link BatchAsked} a field at a time. */
     public static final class Builder {
-        private Period baseline;
+        private BaselinePeriod baseline;
         private List<PeriodAsked> periods;
 
         private Builder() {}
@@ -60,7 +60,7 @@ public record BatchAsked(Period baseline, List<PeriodAsked> periods) implements 
          * @param baseline The period a score is weighed for, which sets the Moon's weight. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder baseline(Period baseline) {
+        public Builder baseline(BaselinePeriod baseline) {
             this.baseline = baseline;
             return this;
         }
@@ -97,7 +97,7 @@ public record BatchAsked(Period baseline, List<PeriodAsked> periods) implements 
     public static BatchAsked of(Object raw) {
         Map<String, Object> json = Read.object(raw, "BatchAsked");
         return new BatchAsked(
-            Read.orNull(json.get("baseline"), present -> Read.member(present, "BatchAsked.baseline", Period::byKey)),
+            Read.orNull(json.get("baseline"), present -> Read.member(present, "BatchAsked.baseline", BaselinePeriod::byKey)),
             Read.list(Read.required(json.get("periods"), "BatchAsked.periods"), "BatchAsked.periods", item0 -> PeriodAsked.of(item0)));
     }
 

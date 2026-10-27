@@ -174,8 +174,10 @@ import type {
   AshauchSex,
   AshauchTable,
   AshauchTradition,
+  BaselinePeriod,
   BirthDate,
   ChakraVowel,
+  DayFifth,
   DignityRequest,
   FirstYearRequest,
   FortitudeRequest,
@@ -195,6 +197,7 @@ import type {
   MaseshaRules,
   MidpointRequest,
   MuhurtaNative,
+  MuhurtaRanking,
   MunthaDegree,
   NaamRules,
   NameSounds,
@@ -214,6 +217,7 @@ import type {
   RectificationRequest,
   RemedyRequest,
   RemedyRules,
+  ReturnLongitude,
   RuleRequest,
   SadeSatiRequest,
   SahamRules,
@@ -1145,9 +1149,6 @@ export interface RashifalRequest {
   /** The houses counted as Saturn's smaller spells; the 4th and 8th by default (C149). */
   readonly spells?: readonly number[];
 }
-
-/** The period the baseline engine's score is weighed for. */
-export type BaselinePeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
 /** Where Saturn stands in Sade Sati: the 12th, the 1st or the 2nd. */
 export type SadeSatiPhase = 'RISING' | 'PEAK' | 'SETTING';
@@ -2965,7 +2966,7 @@ export interface MasaPraveshaRequest {
   /** The month whose thirty days are wanted, 1 to 12; the year's twelve months when left out. */
   readonly month?: number;
   /** The zodiac the year divides in; `SIDEREAL` by default. The mean year places no Sun. */
-  readonly reading?: Exclude<VarshaReading, 'MEAN'>;
+  readonly reading?: Exclude<ReturnLongitude, 'MEAN'>;
   /**
    * Where each month's chart is founded, as `varsha.place` is written; given,
    * each month carries its `masesha`, its `results` and its `dasha`, and
@@ -4077,19 +4078,10 @@ export interface Vimshopaka {
 /** A registered layout's full key, as the context that registered it resolves it. */
 export type LayoutKey = `chart_layout.${string}`;
 
-/** Which longitude an annual chart's Sun returns to (`03-design/annual-chart.md`). */
-export type VarshaReading =
-  /** The natal sidereal longitude, read on the chart's own ayanamsha basis: the tradition's. */
-  | 'SIDEREAL'
-  /** The natal tropical longitude: the Western solar return. Forty years on it is most of a circle of lagna from the sidereal one, so it is a choice and never a fallback. */
-  | 'TROPICAL'
-  /** A whole sidereal year for each year of life, from birth: the older arithmetic, and the only reading that needs no ephemeris. */
-  | 'MEAN';
-
 /** The annual charts a request asks for. */
 export interface VarshaRequest {
   /** Which longitude the Sun returns to; `SIDEREAL` by default. */
-  readonly reading?: VarshaReading;
+  readonly reading?: ReturnLongitude;
   /** The last year of life wanted, 1 to 200. */
   readonly through: number;
   /** Where the Muntha stands inside its sign; `SIGN_START` by default. */
@@ -5890,15 +5882,12 @@ export interface DatedObservance {
   readonly published?: Published;
 }
 
-/** A fifth of the daylight (*Dharmasindhu*, p. 6). */
-export type FestivalDayPart = 'PRATAH' | 'SANGAVA' | 'MADHYAHNA' | 'APARAHNA' | 'SAYAHNA';
-
 /** The time of a rite. */
 export type FestivalWindow =
   | { readonly window: 'SUNRISE' }
   /** The instant of sunset, which begins the evening; Nepal's monthly full-moon fast is judged there (C200). */
   | { readonly window: 'SUNSET' }
-  | { readonly window: 'PART'; readonly part: FestivalDayPart }
+  | { readonly window: 'PART'; readonly part: DayFifth }
   | { readonly window: 'PRADOSHA' }
   | { readonly window: 'NISHITHA' }
   /** A fifteenth of the night counted from sunset, 1 to 15; Shivaratri's niśītha is the 8th. */
@@ -6246,7 +6235,7 @@ export interface SaitWindowRule {
   readonly within:
     | { readonly window: 'GHATIS'; readonly ghatis: number }
     | { readonly window: 'DAY_MUHURTA'; readonly from: number; readonly to: number }
-    | { readonly window: 'PART'; readonly part: FestivalDayPart }
+    | { readonly window: 'PART'; readonly part: DayFifth }
     | { readonly window: 'PRADOSHA' }
     | { readonly window: 'NIGHT_MUHURTA'; readonly muhurta: number };
   readonly avoid?: readonly (
@@ -6590,9 +6579,6 @@ export interface AstaCriterion {
         } | null;
       });
 }
-
-/** How a search orders its windows: by the texts' clauses, or by the baseline engine's weights. */
-export type MuhurtaRanking = 'TEXTS' | 'BASELINE';
 
 /** How a member is graded. */
 export type MuhurtaGrade = 'BEST' | 'MIDDLING' | 'REJECTED';

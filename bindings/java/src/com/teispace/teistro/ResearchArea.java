@@ -1,6 +1,7 @@
 package com.teispace.teistro;
 
 import com.teispace.teistro.request.Design;
+import com.teispace.teistro.request.ResearchEventShuffle;
 import com.teispace.teistro.request.RuleRequest;
 import java.util.LinkedHashMap;
 import java.util.List;

@@ -213,7 +213,7 @@ void main() {
   }
 
   // ── The readings are named, and they are not each other ───────────
-  for (final reading in VarshaReading.values) {
+  for (final reading in ReturnLongitude.values) {
     final one =
         ctx.chart
             .found(

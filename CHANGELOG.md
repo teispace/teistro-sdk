@@ -22,10 +22,22 @@ the previous release, not by nobody having looked.
   `Relations`, `SubLengths`, `Sight`, `Vowel`, `Accuracy`, `EventKind`,
   `Presentation` and `PiscesIs` take these names, and so do Node's and
   Python's generated types. The Rust types keep theirs.
-- The hand copies of the same keys are gone: eleven enums in Dart, six
-  literal types in Python, three in Node. Dart's `SaturnEighthEnd` is
-  `GulikaAt` and Dart's and Python's `PurifierNative` is
-  `RectificationSpecies`, the names the schema already gave them.
+- Five more are named as the layers named them: `MuhurtaRanking`,
+  `BaselinePeriod`, `VarsheshaTied`, `ResearchHolds`,
+  `ResearchEventShuffle` and `EventConfidence` (Java's `Ranking`,
+  `Period`, `Tied`, `Holds`, `EventShuffle` and `Confidence`).
+- The hand copies of the same keys are gone: eighteen enums in Dart,
+  seven literal types in Python, seven in Node and Java's
+  `ResearchEventShuffle`, whose users now take the generated one. Dart's
+  `SaturnEighthEnd` is `GulikaAt`, Dart's and Python's `PurifierNative` is
+  `RectificationSpecies`, Dart's and Node's `VarshaReading` is
+  `ReturnLongitude` and Node's `FestivalDayPart` is `DayFifth`, the names
+  the schema already gave them.
+- `check-lints` now refuses a hand-written key set with the keys, in
+  order, of a generated one under another name, which no check saw.
+  Planting one in Python fails it. Two stay, each with its reason:
+  `DashaYearLength` (the settings knob's own name) and Python's
+  `NativeSex` (the generated request spells it inline).
 - Dart's `PakshiRules`, `NameSounds`, `SarvatobhadraRules`,
   `NishekaRules`, `ConceptionRules` and `ConceptionMoonRules` are
   generated; the last four now compare by value, and a reading left out
