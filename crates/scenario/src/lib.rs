@@ -12,9 +12,11 @@
 //! Everything is deterministic and takes no input: the same fixed days,
 //! the same instants, the same latitudes and meridians, in the same
 //! order, and no knob to turn. The first nine sections are about forty
-//! milliseconds of work in release; the three over a range on the
-//! built-in ephemeris below are about eight hundred more, which is still a
-//! nightly digest's rounding error and a minute or so under callgrind, so
+//! milliseconds of work in release; the four over a range on the
+//! built-in ephemeris below are about a second and a half more (the
+//! transit hits and Sade Sati, through the façade, about half a second of
+//! it), which is still a nightly digest's rounding error and a minute or
+//! two under callgrind, so
 //! both gates can afford all of it and neither has to measure a subset of
 //! what the other checked.
 //!
@@ -177,7 +179,7 @@ pub fn write_values(sections: &[Section], out: &mut impl std::io::Write) -> std:
 /// // Every name listed is a section.
 /// assert!(SECTIONS.iter().all(|name| section(name).is_some()));
 /// ```
-pub const SECTIONS: [&str; 12] = [
+pub const SECTIONS: [&str; 13] = [
     "calendar",
     "astro",
     "houses",
@@ -190,6 +192,7 @@ pub const SECTIONS: [&str; 12] = [
     "festivals",
     "muhurta",
     "panchanga-year",
+    "hits",
 ];
 
 /// One section by name, or `None` when nothing is called that.
@@ -216,6 +219,7 @@ pub fn section(name: &str) -> Option<Section> {
         "festivals" => Some(festivals()),
         "muhurta" => Some(muhurta()),
         "panchanga-year" => Some(panchanga_year()),
+        "hits" => Some(hits()),
         _ => None,
     }
 }
@@ -928,4 +932,58 @@ fn panchanga_year() -> Section {
         }
     }
     section
+}
+
+/// **hits**: a chart at Kathmandu asked, through the façade's own record,
+/// for a year of transit hits (the Sun, Mercury and Saturn ingressing and
+/// aspecting its points) and ten years of Sade Sati, on the built-in
+/// ephemeris: the two searches over time a chart request can ask for,
+/// which the fuzzer's timeouts found the most expensive. Every number the
+/// answer carries is pushed, in the order serde writes them.
+fn hits() -> Section {
+    let mut section = Section::new("hits");
+    let Some(record) = teistro::records::record("chart.found") else {
+        return section;
+    };
+    let Ok(sdk) = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+    else {
+        return section;
+    };
+    let request = r#"{"instant": 2451545.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+        "altitudeM": 1400, "utcOffsetSeconds": 20700,
+        "hits": {"from": 2460676.5, "to": 2461041.5, "grahas": ["SUN", "MERCURY", "SATURN"],
+            "aspects": [0, 90, 180], "orbDeg": 2},
+        "sadeSati": {"from": 2460676.5, "to": 2464329.0, "reckoning": "DEGREE", "spells": [4, 7, 8]}}"#;
+    if let Ok(answered) = record.answer(&sdk, request) {
+        for part in ["hits", "sadeSati"] {
+            push_numbers(&mut section, answered.value.get(part));
+        }
+    }
+    section
+}
+
+/// Every number in `value`, depth first in serde's order.
+fn push_numbers(section: &mut Section, value: Option<&serde_json::Value>) {
+    match value {
+        Some(serde_json::Value::Number(number)) => {
+            if let Some(int) = number.as_i64() {
+                section.push_int(int);
+            } else if let Some(float) = number.as_f64() {
+                section.push(float);
+            }
+        }
+        Some(serde_json::Value::Array(items)) => {
+            for item in items {
+                push_numbers(section, Some(item));
+            }
+        }
+        Some(serde_json::Value::Object(fields)) => {
+            for field in fields.values() {
+                push_numbers(section, Some(field));
+            }
+        }
+        _ => {}
+    }
 }
