@@ -20,6 +20,14 @@ side:
 - `c051-kathmandu-2020-04-13` (system7): the recording ranks SUN at 359.999995° and the SDK MARS with SUN at 0.000009°, 0.02″ and 0.03″ from a sign's edge
 - `c051-kathmandu-2020-04-13` (system8): the recording ranks SUN at 359.999995° and the SDK RAHU with SUN at 0.000009°, 0.02″ and 0.03″ from a sign's edge
 
+The whole order below it, rank by rank, from the Atmakaraka to the last
+karaka: 54 of 55 agree under seven and 54 of 55 under eight; the ones
+that part are `c051-kathmandu-2020-04-13` (system7) and
+`c051-kathmandu-2020-04-13` (system8).
+`crates/sdk/tests/baseline_chara_karakas.rs` holds each one that parts
+to its reason: a graha on a sign's edge, set aside, leaves the rest in
+the recording's order.
+
 ## 2. The karakamsha's houses, in two charts (C130)
 
 A graha's house counted from the karakamsha in the rasi chart and
@@ -47,12 +55,14 @@ Over the 55 births, each rule under each reading of the dual lords:
 |---|---|---|
 | the SDK ranks the recording's Atmakaraka under seven karakas | falsified | 1 of 55 disagree |
 | the SDK ranks the recording's Atmakaraka under eight karakas | falsified | 1 of 55 disagree |
+| the SDK ranks the recording's whole order under seven karakas | falsified | 1 of 55 disagree |
+| the SDK ranks the recording's whole order under eight karakas | falsified | 1 of 55 disagree |
 | every Atmakaraka the SDK and the recording part on stands within an arc-second of a sign's edge | **holds** | 0 of 2 disagree |
 | the karakamsha's houses are the same in the rasi chart and the navamsha | falsified | 446 of 495 disagree |
 | the verses find a Brahma for every birth (C128) | falsified | 32 of 55 disagree |
 | the translator's note finds a Brahma for every birth | falsified | 7 of 55 disagree |
 
-Five of the six claims are falsified. A chart the verses find no Brahma
-for has no Sthira dasa under them, and says so by name; the note's rule
-is the knob that supplies one (`jaimini.brahma`).
+Seven of the eight claims are falsified. A chart the verses find no
+Brahma for has no Sthira dasa under them, and says so by name; the
+note's rule is the knob that supplies one (`jaimini.brahma`).
 

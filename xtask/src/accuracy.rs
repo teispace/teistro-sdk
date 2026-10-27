@@ -21,8 +21,9 @@ const DOCUMENT: &str = "docs/05-testing/ACCURACY.md";
 const MEASUREMENTS: &str = "measurements.jsonl";
 const DIR_ENV: &str = "TEISTRO_ACCURACY_DIR";
 
-/// The tests that record a measurement: the astronomy layer's, and the
-/// built-in ephemeris's against DE440 (the tier a default build compiles).
+/// The tests that record a measurement: the astronomy layer's, the
+/// built-in ephemeris's against DE440 (the tier a default build compiles),
+/// and the SDK's daily panchanga against the baseline corpus's limb changes.
 const TESTS: &[(&[&str], &str)] = &[
     (
         &["-p", "teistro-astro", "--tests"],
@@ -31,6 +32,10 @@ const TESTS: &[(&[&str], &str)] = &[
     (
         &["-p", "teistro-ephemeris-builtin", "--test", "conformance"],
         "the built-in ephemeris's conformance tests",
+    ),
+    (
+        &["-p", "teistro", "--test", "baseline_panchanga_day"],
+        "the SDK's daily panchanga against the baseline corpus",
     ),
 ];
 

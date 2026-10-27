@@ -280,6 +280,14 @@ name = "jaimini"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "baseline_chara_karakas"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "baseline_panchanga_day"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "gochar"
 required-features = ["builtin-ephemeris"]
 
