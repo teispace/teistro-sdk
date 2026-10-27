@@ -1023,10 +1023,6 @@ const NODE_FACADES: &[(&str, &str)] = &[
         "its place is the layer's `AnnualPlace`",
     ),
     (
-        "MuhurtaRequest",
-        "its `rules` are a raw part the schema leaves untyped; the layer types the activities",
-    ),
-    (
         "NakshatraBar",
         "its tithi is one of the two eleventh tithis, the fast a bar follows, where the generated record takes any tithi",
     ),
@@ -1068,10 +1064,6 @@ const PYTHON_FACADES: &[(&str, &str)] = &[
     (
         "MatchingRequest",
         "its partner is the layer's `SynastryPartner`, an `Observer` and a snake-case offset, which it writes as the wire's `Partner`",
-    ),
-    (
-        "MuhurtaRequest",
-        "its `rules` are a raw part the schema leaves untyped; the layer types the activities",
     ),
     (
         "SahamRules",
@@ -1252,6 +1244,10 @@ fn dart_facades_are_declared(root: &Path, outcome: &mut Outcome) {
 /// A shape the layers keep by hand with the members of a generated one,
 /// each with why it stays.
 const KEPT_TWINS: &[(&str, &str)] = &[
+    (
+        "Graded",
+        "generic over the member it grades; the generated `GradedRashi`, `GradedTithi` and the rest are its instances, which TypeScript writes `Graded<Rashi>`",
+    ),
     (
         "NativeSex",
         "the generated request spells the baseline's sex inline (`BaselineAsked.sex`), so there is no name to share; its two keys are the ashauch's by coincidence",

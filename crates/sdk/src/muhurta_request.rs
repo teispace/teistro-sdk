@@ -397,15 +397,20 @@ fn named<T: Copy>(name: &str, names: &[(&str, T)], field: &str) -> Result<T, Err
         })
 }
 
-/// [`MuhurtaRequest`] as the bindings write it, camel-cased as every
-/// request record is. `rules` and `asta` are read in a second step,
-/// because each is a name or a value and the refusal should say which
-/// field was wrong rather than that no shape matched.
+// [`MuhurtaRequest`] as the bindings write it, camel-cased as every
+// request record is. `rules` and `asta` are read in a second step,
+// because each is a name or a value and the refusal should say which
+// field was wrong rather than that no shape matched.
+/// A muhurta search to run over an almanac's days
+/// (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's
+/// name or spelt out, and how the windows are ranked, how many are kept,
+/// how asta is seen and where a journey goes.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "MuhurtaRequest"))]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Asked {
+    #[cfg_attr(feature = "schema", schemars(schema_with = "rules_schema"))]
     rules: Value,
     #[serde(default)]
     native: Option<Native>,
@@ -420,6 +425,23 @@ pub(crate) struct Asked {
     asta: Option<Value>,
     #[serde(default)]
     direction: Option<Direction>,
+}
+
+/// How the rules may be asked: by an [`Activity`]'s name, or spelt out
+/// as [`ActivityRules`], as [`MuhurtaRequest::from_json`] takes them.
+#[cfg(feature = "schema")]
+fn rules_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    let names: Vec<&str> = Activity::ALL
+        .iter()
+        .map(|activity| activity.key())
+        .collect();
+    schemars::json_schema!({
+        "description": "The rules: an activity the SDK ships the rules of, by name, or rules spelt out.",
+        "anyOf": [
+            { "type": "string", "enum": names },
+            generator.subschema_for::<ActivityRules>(),
+        ],
+    })
 }
 
 /// How asta may be asked: by a criterion [`ASTA`] names, or spelt out, as

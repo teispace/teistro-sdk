@@ -421,7 +421,167 @@
           "star": "nakshatra.BHARANI"
         },
         "ranking": "BASELINE",
-        "rules": "RAMAN_MARRIAGE"
+        "rules": {
+          "bars": [
+            {
+              "clause": "TITHI",
+              "grade": "MIDDLING",
+              "tithi": "tithi.SHUKLA_DVITIYA"
+            }
+          ],
+          "baseline": {
+            "abhijitForbidden": true,
+            "avoidedVaras": [
+              "vara.SOMAVARA"
+            ],
+            "favouredTithis": [
+              "tithi.SHUKLA_DVITIYA"
+            ],
+            "favouredVaras": [
+              "vara.SOMAVARA"
+            ],
+            "karakas": [
+              "graha.MOON"
+            ],
+            "seventhEmpty": true,
+            "stars": [
+              "nakshatra.BHARANI"
+            ]
+          },
+          "day": {
+            "chandrabala": {
+              "avoid": [
+                1
+              ]
+            },
+            "karanas": {
+              "best": [
+                "karana.BALAVA"
+              ],
+              "middling": [
+                "karana.BALAVA"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "karana.BALAVA"
+              ]
+            },
+            "nakshatras": {
+              "best": [
+                "nakshatra.BHARANI"
+              ],
+              "middling": [
+                "nakshatra.BHARANI"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "nakshatra.BHARANI"
+              ]
+            },
+            "tithis": {
+              "best": [
+                "tithi.SHUKLA_DVITIYA"
+              ],
+              "middling": [
+                "tithi.SHUKLA_DVITIYA"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "tithi.SHUKLA_DVITIYA"
+              ]
+            },
+            "varas": {
+              "best": [
+                "vara.SOMAVARA"
+              ],
+              "middling": [
+                "vara.SOMAVARA"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "vara.SOMAVARA"
+              ]
+            },
+            "yogas": {
+              "best": [
+                "yoga.PRITI"
+              ],
+              "middling": [
+                "yoga.PRITI"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "yoga.PRITI"
+              ]
+            }
+          },
+          "heeds": [
+            "blackout_kind.ADHIKA_MASA"
+          ],
+          "hours": "DAYLIGHT",
+          "lagnas": {
+            "best": [
+              "rashi.TAURUS"
+            ],
+            "middling": [
+              "rashi.TAURUS"
+            ],
+            "otherwise": "MIDDLING",
+            "rejected": [
+              "rashi.TAURUS"
+            ]
+          },
+          "months": {
+            "reckoning": "LUNAR",
+            "months": {
+              "best": [
+                "masa.VAISHAKHA"
+              ],
+              "middling": [
+                "masa.VAISHAKHA"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "masa.VAISHAKHA"
+              ]
+            },
+            "withSun": [
+              {
+                "masa": "masa.VAISHAKHA",
+                "sun": "rashi.TAURUS"
+              }
+            ]
+          },
+          "padas": [
+            {
+              "nakshatra": "nakshatra.BHARANI",
+              "pada": 1
+            }
+          ],
+          "shool": [
+            {
+              "afterGhatis": 1,
+              "vara": "vara.SOMAVARA"
+            }
+          ],
+          "unjudged": [
+            {
+              "what": "x",
+              "why": "x"
+            }
+          ],
+          "unwanted": [
+            {
+              "bars": true,
+              "grahas": [
+                "graha.MOON"
+              ],
+              "houses": [
+                1
+              ]
+            }
+          ]
+        }
       },
       "nepalSambat": true,
       "utcOffsetSeconds": 1,

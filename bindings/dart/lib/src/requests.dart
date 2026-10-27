@@ -2313,6 +2313,179 @@ enum MuhurtaRanking implements _Keyed {
   final String key;
 }
 
+/// The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
+sealed class MuhurtaRequestRules extends _Request {
+  const MuhurtaRequestRules();
+}
+
+/// `RAMAN_MARRIAGE`.
+final class MuhurtaRequestRulesRamanMarriage extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanMarriage();
+
+  @override
+  Object? get _wire => 'RAMAN_MARRIAGE';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `BASELINE_MARRIAGE`.
+final class MuhurtaRequestRulesBaselineMarriage extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesBaselineMarriage();
+
+  @override
+  Object? get _wire => 'BASELINE_MARRIAGE';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_NAMAKARANA`.
+final class MuhurtaRequestRulesRamanNamakarana extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanNamakarana();
+
+  @override
+  Object? get _wire => 'RAMAN_NAMAKARANA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_ANNAPRASANA`.
+final class MuhurtaRequestRulesRamanAnnaprasana extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanAnnaprasana();
+
+  @override
+  Object? get _wire => 'RAMAN_ANNAPRASANA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_UPANAYANA`.
+final class MuhurtaRequestRulesRamanUpanayana extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanUpanayana();
+
+  @override
+  Object? get _wire => 'RAMAN_UPANAYANA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_GRIHA_PRAVESHA`.
+final class MuhurtaRequestRulesRamanGrihaPravesha extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanGrihaPravesha();
+
+  @override
+  Object? get _wire => 'RAMAN_GRIHA_PRAVESHA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_KARNAVEDHA`.
+final class MuhurtaRequestRulesRamanKarnavedha extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanKarnavedha();
+
+  @override
+  Object? get _wire => 'RAMAN_KARNAVEDHA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_CHUDAKARANA`.
+final class MuhurtaRequestRulesRamanChudakarana extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanChudakarana();
+
+  @override
+  Object? get _wire => 'RAMAN_CHUDAKARANA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_VIDYARAMBHA`.
+final class MuhurtaRequestRulesRamanVidyarambha extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanVidyarambha();
+
+  @override
+  Object? get _wire => 'RAMAN_VIDYARAMBHA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_YATRA`.
+final class MuhurtaRequestRulesRamanYatra extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanYatra();
+
+  @override
+  Object? get _wire => 'RAMAN_YATRA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_TRADE_PURCHASE`.
+final class MuhurtaRequestRulesRamanTradePurchase extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanTradePurchase();
+
+  @override
+  Object? get _wire => 'RAMAN_TRADE_PURCHASE';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_SELLING`.
+final class MuhurtaRequestRulesRamanSelling extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanSelling();
+
+  @override
+  Object? get _wire => 'RAMAN_SELLING';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_NEW_CLOTHES`.
+final class MuhurtaRequestRulesRamanNewClothes extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanNewClothes();
+
+  @override
+  Object? get _wire => 'RAMAN_NEW_CLOTHES';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `RAMAN_VEHICLE`.
+final class MuhurtaRequestRulesRamanVehicle extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesRamanVehicle();
+
+  @override
+  Object? get _wire => 'RAMAN_VEHICLE';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// The value itself.
+final class MuhurtaRequestRulesValue extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesValue(this.value);
+
+  /// The value.
+  final ActivityRules value;
+
+  @override
+  Object? get _wire => value._wire;
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
 /// When the first abdika is kept (DS p. 330, two views).
 enum FirstAbdika implements _Keyed {
   /// At the second year's start, the death's first anniversary: "आब्दिकं वत्सरे गते".
@@ -4165,6 +4338,74 @@ final class CriterionArcusVisionis extends Criterion {
 
   @override
   List<Object?> get _fields => [thresholds];
+}
+
+/// What one activity asks of the time.
+final class ActivityRules extends _Request {
+  const ActivityRules({
+    required this.bars,
+    this.baseline,
+    required this.day,
+    required this.heeds,
+    this.hours = Hours.any,
+    required this.lagnas,
+    required this.months,
+    required this.padas,
+    this.shool = const [],
+    required this.unjudged,
+    this.unwanted = const [],
+  });
+
+  /// The clauses that bar the rite outright rather than weigh against it.
+  final List<Bar> bars;
+
+  /// The inputs the baseline engine's weights take for the rite, which [`crate::Ranking::Baseline`] needs and no other ranking reads.
+  final MuhurtaBaselineEvent? baseline;
+
+  /// The day's limbs and vara, the rite's grades over the general ones.
+  final DayRules day;
+
+  /// The season's blackouts the rite is not held in.
+  final List<BlackoutKind> heeds;
+
+  /// The part of the day the rite is held in.
+  final Hours hours;
+
+  /// The lagnas.
+  final GradedRashi lagnas;
+
+  /// The months.
+  final MonthRule months;
+
+  /// The quarters of a star rejected though the star is good.
+  final List<Pada> padas;
+
+  /// For a journey asked a direction, the ghati each weekday's disha shool is lifted at. Empty, the direction is not judged; a weekday missing from a list that is not shuts its days to the direction.
+  final List<Shool> shool;
+
+  /// What the source asks that is not judged, said rather than dropped.
+  final List<Object?> unjudged;
+
+  /// The grahas the rite wants out of houses. Empty where the rules spelt out leave it out.
+  final List<MuhurtaUnwanted> unwanted;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'bars': [for (final e0 in bars) e0._wire],
+    if (baseline case final baselineValue?) 'baseline': baselineValue._wire,
+    'day': day._wire,
+    'heeds': [for (final e0 in heeds) e0.key],
+    'hours': hours.key,
+    'lagnas': lagnas._wire,
+    'months': months._wire,
+    'padas': [for (final e0 in padas) e0._wire],
+    'shool': [for (final e0 in shool) e0._wire],
+    'unjudged': unjudged,
+    'unwanted': [for (final e0 in unwanted) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [bars, baseline, day, heeds, hours, lagnas, months, padas, shool, unjudged, unwanted];
 }
 
 /// A fifth of the daylight (*Dharmasindhu*, p. 6). Its schema name is `DayFifth`, the chart's daylight or night being the boundary's `DayPart`.
@@ -7855,6 +8096,674 @@ final class ThresholdsCustom extends Thresholds {
   List<Object?> get _fields => [jupiter, mars, mercury, moon, neptune, pluto, saturn, uranus, venus];
 }
 
+/// A clause that bars a rite outright: every clause of a kind, or one clause exactly.
+sealed class Bar extends _Request {
+  const Bar();
+}
+
+/// `TITHI`.
+final class BarTithi extends Bar {
+  const BarTithi();
+
+  @override
+  Object? get _wire => 'TITHI';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `NAKSHATRA`.
+final class BarNakshatra extends Bar {
+  const BarNakshatra();
+
+  @override
+  Object? get _wire => 'NAKSHATRA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `YOGA`.
+final class BarYoga extends Bar {
+  const BarYoga();
+
+  @override
+  Object? get _wire => 'YOGA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `KARANA`.
+final class BarKarana extends Bar {
+  const BarKarana();
+
+  @override
+  Object? get _wire => 'KARANA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `VARA`.
+final class BarVara extends Bar {
+  const BarVara();
+
+  @override
+  Object? get _wire => 'VARA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `MONTH`.
+final class BarMonth extends Bar {
+  const BarMonth();
+
+  @override
+  Object? get _wire => 'MONTH';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `SOLAR_MONTH`.
+final class BarSolarMonth extends Bar {
+  const BarSolarMonth();
+
+  @override
+  Object? get _wire => 'SOLAR_MONTH';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `LAGNA`.
+final class BarLagna extends Bar {
+  const BarLagna();
+
+  @override
+  Object? get _wire => 'LAGNA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `PADA`.
+final class BarPada extends Bar {
+  const BarPada();
+
+  @override
+  Object? get _wire => 'PADA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `KAALA`.
+final class BarKaala extends Bar {
+  const BarKaala();
+
+  @override
+  Object? get _wire => 'KAALA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `CHOGHADIYA`.
+final class BarChoghadiya extends Bar {
+  const BarChoghadiya();
+
+  @override
+  Object? get _wire => 'CHOGHADIYA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `ABHIJIT`.
+final class BarAbhijit extends Bar {
+  const BarAbhijit();
+
+  @override
+  Object? get _wire => 'ABHIJIT';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `MUHURTA_YOGA`.
+final class BarMuhurtaYoga extends Bar {
+  const BarMuhurtaYoga();
+
+  @override
+  Object? get _wire => 'MUHURTA_YOGA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `TARABALA`.
+final class BarTarabala extends Bar {
+  const BarTarabala();
+
+  @override
+  Object? get _wire => 'TARABALA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `CHANDRABALA`.
+final class BarChandrabala extends Bar {
+  const BarChandrabala();
+
+  @override
+  Object? get _wire => 'CHANDRABALA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `KARTARI`.
+final class BarKartari extends Bar {
+  const BarKartari();
+
+  @override
+  Object? get _wire => 'KARTARI';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `MOON_IN_DUSTHANA`.
+final class BarMoonInDusthana extends Bar {
+  const BarMoonInDusthana();
+
+  @override
+  Object? get _wire => 'MOON_IN_DUSTHANA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `MOON_JOINED`.
+final class BarMoonJoined extends Bar {
+  const BarMoonJoined();
+
+  @override
+  Object? get _wire => 'MOON_JOINED';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `VENUS_IN_SIXTH`.
+final class BarVenusInSixth extends Bar {
+  const BarVenusInSixth();
+
+  @override
+  Object? get _wire => 'VENUS_IN_SIXTH';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `MARS_IN_EIGHTH`.
+final class BarMarsInEighth extends Bar {
+  const BarMarsInEighth();
+
+  @override
+  Object? get _wire => 'MARS_IN_EIGHTH';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `ASHTAMA_LAGNA`.
+final class BarAshtamaLagna extends Bar {
+  const BarAshtamaLagna();
+
+  @override
+  Object? get _wire => 'ASHTAMA_LAGNA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `KUNAVAMSA`.
+final class BarKunavamsa extends Bar {
+  const BarKunavamsa();
+
+  @override
+  Object? get _wire => 'KUNAVAMSA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `PANCHAKA_REMAINDER`.
+final class BarPanchakaRemainder extends Bar {
+  const BarPanchakaRemainder();
+
+  @override
+  Object? get _wire => 'PANCHAKA_REMAINDER';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `LAGNA_TYAJYA`.
+final class BarLagnaTyajya extends Bar {
+  const BarLagnaTyajya();
+
+  @override
+  Object? get _wire => 'LAGNA_TYAJYA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `SEVENTH_OCCUPIED`.
+final class BarSeventhOccupied extends Bar {
+  const BarSeventhOccupied();
+
+  @override
+  Object? get _wire => 'SEVENTH_OCCUPIED';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `MALEFIC_IN_LAGNA`.
+final class BarMaleficInLagna extends Bar {
+  const BarMaleficInLagna();
+
+  @override
+  Object? get _wire => 'MALEFIC_IN_LAGNA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `BENEFIC_IN_LAGNA`.
+final class BarBeneficInLagna extends Bar {
+  const BarBeneficInLagna();
+
+  @override
+  Object? get _wire => 'BENEFIC_IN_LAGNA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `EXALTED_IN_LAGNA`.
+final class BarExaltedInLagna extends Bar {
+  const BarExaltedInLagna();
+
+  @override
+  Object? get _wire => 'EXALTED_IN_LAGNA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `LUMINARY_IN_ELEVENTH`.
+final class BarLuminaryInEleventh extends Bar {
+  const BarLuminaryInEleventh();
+
+  @override
+  Object? get _wire => 'LUMINARY_IN_ELEVENTH';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `KENDRA_BENEFICS`.
+final class BarKendraBenefics extends Bar {
+  const BarKendraBenefics();
+
+  @override
+  Object? get _wire => 'KENDRA_BENEFICS';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `UNWANTED_PLACEMENT`.
+final class BarUnwantedPlacement extends Bar {
+  const BarUnwantedPlacement();
+
+  @override
+  Object? get _wire => 'UNWANTED_PLACEMENT';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `VARJYAM`.
+final class BarVarjyam extends Bar {
+  const BarVarjyam();
+
+  @override
+  Object? get _wire => 'VARJYAM';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `GHATA`.
+final class BarGhata extends Bar {
+  const BarGhata();
+
+  @override
+  Object? get _wire => 'GHATA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `ASHUBHA_YOGA`.
+final class BarAshubhaYoga extends Bar {
+  const BarAshubhaYoga();
+
+  @override
+  Object? get _wire => 'ASHUBHA_YOGA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// The value itself.
+final class BarValue extends Bar {
+  const BarValue(this.value);
+
+  /// The value.
+  final Object? value;
+
+  @override
+  Object? get _wire => value;
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
+/// What the engine's weights take for one activity.
+final class MuhurtaBaselineEvent extends _Request {
+  const MuhurtaBaselineEvent({
+    required this.abhijitForbidden,
+    required this.avoidedVaras,
+    required this.favouredTithis,
+    required this.favouredVaras,
+    required this.karakas,
+    required this.seventhEmpty,
+    required this.stars,
+  });
+
+  /// Whether Abhijit's own candidate is dropped. Its minutes are still offered through the choghadiya they fall in.
+  final bool abhijitForbidden;
+
+  /// The weekdays it avoids (−12).
+  final List<Vara> avoidedVaras;
+
+  /// The tithis it favours (+6), both pakshas' named.
+  final List<Tithi> favouredTithis;
+
+  /// The weekdays the event favours (+8).
+  final List<Vara> favouredVaras;
+
+  /// The grahas that signify the event, judged at each window.
+  final List<Graha> karakas;
+
+  /// Whether the 7th house must be empty (+4, or −12).
+  final bool seventhEmpty;
+
+  /// The stars the activity is matched to (+25 when the Moon stands in one at sunrise).
+  final List<Nakshatra> stars;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'abhijitForbidden': abhijitForbidden,
+    'avoidedVaras': [for (final e0 in avoidedVaras) e0.key],
+    'favouredTithis': [for (final e0 in favouredTithis) e0.key],
+    'favouredVaras': [for (final e0 in favouredVaras) e0.key],
+    'karakas': [for (final e0 in karakas) e0.key],
+    'seventhEmpty': seventhEmpty,
+    'stars': [for (final e0 in stars) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [abhijitForbidden, avoidedVaras, favouredTithis, favouredVaras, karakas, seventhEmpty, stars];
+}
+
+/// How a day's rules grade its limbs and vara, and whose Chandrabala table they read.
+final class DayRules extends _Request {
+  const DayRules({
+    required this.chandrabala,
+    required this.karanas,
+    required this.nakshatras,
+    required this.tithis,
+    required this.varas,
+    required this.yogas,
+  });
+
+  /// The Chandrabala table.
+  final ChandraBala chandrabala;
+
+  /// The karanas.
+  final GradedKarana karanas;
+
+  /// The nakshatras.
+  final GradedNakshatra nakshatras;
+
+  /// The tithis.
+  final GradedTithi tithis;
+
+  /// The varas.
+  final GradedVara varas;
+
+  /// The yogas.
+  final GradedYoga yogas;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'chandrabala': chandrabala._wire,
+    'karanas': karanas._wire,
+    'nakshatras': nakshatras._wire,
+    'tithis': tithis._wire,
+    'varas': varas._wire,
+    'yogas': yogas._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [chandrabala, karanas, nakshatras, tithis, varas, yogas];
+}
+
+/// The part of the day a rite is held in: Raman's "never during night" for the ear boring, "always in the forenoon" for the tonsure.
+enum Hours implements _Keyed {
+  /// Day and night alike.
+  any('ANY'),
+  /// Sunrise to sunset.
+  daylight('DAYLIGHT'),
+  /// Sunrise to noon.
+  forenoon('FORENOON');
+
+  const Hours(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Three lists and what the rest are.
+final class GradedRashi extends _Request {
+  const GradedRashi({
+    required this.best,
+    required this.middling,
+    required this.otherwise,
+    required this.rejected,
+  });
+
+  /// The members named good.
+  final List<Rashi> best;
+
+  /// The members named ordinary.
+  final List<Rashi> middling;
+
+  /// What a member in none of the lists is.
+  final MuhurtaGrade otherwise;
+
+  /// The members named bad.
+  final List<Rashi> rejected;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'best': [for (final e0 in best) e0.key],
+    'middling': [for (final e0 in middling) e0.key],
+    'otherwise': otherwise.key,
+    'rejected': [for (final e0 in rejected) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [best, middling, otherwise, rejected];
+}
+
+/// Which month a rite is keyed on (crux C161).
+sealed class MonthRule extends _Request {
+  const MonthRule();
+}
+
+/// No month is graded.
+final class MonthRuleAny extends MonthRule {
+  const MonthRuleAny();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'reckoning': 'ANY',
+  };
+
+  @override
+  List<Object?> get _fields => [];
+}
+
+/// The amanta lunar month, graded; an adhika month is left to the season, which blacks it out.
+final class MonthRuleLunar extends MonthRule {
+  const MonthRuleLunar({
+    required this.months,
+    required this.withSun,
+  });
+
+  /// The months.
+  final GradedMasa months;
+
+  /// Months allowed as middling while the Sun is in a sign, which the rule would otherwise reject: "some sages" allow Pausha with the Sun in Capricorn and Chaitra with it in Aries for a marriage (Raman, ch. IX).
+  final List<MonthWithSun> withSun;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'reckoning': 'LUNAR',
+    'months': months._wire,
+    'withSun': [for (final e0 in withSun) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [months, withSun];
+}
+
+/// The Sun's sign, graded: the solar month.
+final class MonthRuleSolar extends MonthRule {
+  const MonthRuleSolar({
+    required this.signs,
+  });
+
+  /// The signs.
+  final GradedRashi signs;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'reckoning': 'SOLAR',
+    'signs': signs._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [signs];
+}
+
+/// A nakshatra's quarter.
+final class Pada extends _Request {
+  const Pada({
+    required this.nakshatra,
+    required this.pada,
+  });
+
+  /// The star.
+  final Nakshatra nakshatra;
+
+  /// The quarter, 1 to 4.
+  final int pada;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'nakshatra': nakshatra.key,
+    'pada': pada,
+  };
+
+  @override
+  List<Object?> get _fields => [nakshatra, pada];
+}
+
+/// The ghati of a weekday past which a journey towards its disha shool may begin: Raman's "provided the journey is timed to begin beyond 22 ghaties on Thursday" (*Muhurtha*, ch. XIV, p. 157), counted from sunrise under the day's own ghati reckoning.
+final class Shool extends _Request {
+  const Shool({
+    required this.afterGhatis,
+    required this.vara,
+  });
+
+  /// The ghatis from sunrise, 0 to 59, before which the journey does not begin.
+  final int afterGhatis;
+
+  /// The weekday.
+  final Vara vara;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'afterGhatis': afterGhatis,
+    'vara': vara.key,
+  };
+
+  @override
+  List<Object?> get _fields => [afterGhatis, vara];
+}
+
+/// Grahas a rite wants out of houses: "the 8th house should be unoccupied" is every graha out of the 8th, "Mars and Saturn should be avoided in the 5th" is two grahas out of one house.
+final class MuhurtaUnwanted extends _Request {
+  const MuhurtaUnwanted({
+    this.bars = false,
+    required this.grahas,
+    required this.houses,
+  });
+
+  /// Whether a graha standing there bars the rite rather than weighs against it. Unbarring where the rules spelt out leave it out.
+  final bool bars;
+
+  /// The grahas.
+  final List<Graha> grahas;
+
+  /// The houses they are wanted out of, 1 to 12.
+  final List<int> houses;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'bars': bars,
+    'grahas': [for (final e0 in grahas) e0.key],
+    'houses': houses,
+  };
+
+  @override
+  List<Object?> get _fields => [bars, grahas, houses];
+}
+
 /// One term: its lord, and the degree within the sign it ends at.
 final class TermEntry extends _Request {
   const TermEntry({
@@ -9342,6 +10251,261 @@ final class MotionThresholds extends _Request {
   List<Object?> get _fields => [direct, retrograde];
 }
 
+/// Which houses from the birth Moon sign spoil a day (crux C160).
+final class ChandraBala extends _Request {
+  const ChandraBala({
+    required this.avoid,
+  });
+
+  /// The houses, 1 to 12, in which the day's Moon gives no Chandrabala.
+  final List<int> avoid;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'avoid': avoid,
+  };
+
+  @override
+  List<Object?> get _fields => [avoid];
+}
+
+/// Three lists and what the rest are.
+final class GradedKarana extends _Request {
+  const GradedKarana({
+    required this.best,
+    required this.middling,
+    required this.otherwise,
+    required this.rejected,
+  });
+
+  /// The members named good.
+  final List<Karana> best;
+
+  /// The members named ordinary.
+  final List<Karana> middling;
+
+  /// What a member in none of the lists is.
+  final MuhurtaGrade otherwise;
+
+  /// The members named bad.
+  final List<Karana> rejected;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'best': [for (final e0 in best) e0.key],
+    'middling': [for (final e0 in middling) e0.key],
+    'otherwise': otherwise.key,
+    'rejected': [for (final e0 in rejected) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [best, middling, otherwise, rejected];
+}
+
+/// Three lists and what the rest are.
+final class GradedNakshatra extends _Request {
+  const GradedNakshatra({
+    required this.best,
+    required this.middling,
+    required this.otherwise,
+    required this.rejected,
+  });
+
+  /// The members named good.
+  final List<Nakshatra> best;
+
+  /// The members named ordinary.
+  final List<Nakshatra> middling;
+
+  /// What a member in none of the lists is.
+  final MuhurtaGrade otherwise;
+
+  /// The members named bad.
+  final List<Nakshatra> rejected;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'best': [for (final e0 in best) e0.key],
+    'middling': [for (final e0 in middling) e0.key],
+    'otherwise': otherwise.key,
+    'rejected': [for (final e0 in rejected) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [best, middling, otherwise, rejected];
+}
+
+/// Three lists and what the rest are.
+final class GradedTithi extends _Request {
+  const GradedTithi({
+    required this.best,
+    required this.middling,
+    required this.otherwise,
+    required this.rejected,
+  });
+
+  /// The members named good.
+  final List<Tithi> best;
+
+  /// The members named ordinary.
+  final List<Tithi> middling;
+
+  /// What a member in none of the lists is.
+  final MuhurtaGrade otherwise;
+
+  /// The members named bad.
+  final List<Tithi> rejected;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'best': [for (final e0 in best) e0.key],
+    'middling': [for (final e0 in middling) e0.key],
+    'otherwise': otherwise.key,
+    'rejected': [for (final e0 in rejected) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [best, middling, otherwise, rejected];
+}
+
+/// Three lists and what the rest are.
+final class GradedVara extends _Request {
+  const GradedVara({
+    required this.best,
+    required this.middling,
+    required this.otherwise,
+    required this.rejected,
+  });
+
+  /// The members named good.
+  final List<Vara> best;
+
+  /// The members named ordinary.
+  final List<Vara> middling;
+
+  /// What a member in none of the lists is.
+  final MuhurtaGrade otherwise;
+
+  /// The members named bad.
+  final List<Vara> rejected;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'best': [for (final e0 in best) e0.key],
+    'middling': [for (final e0 in middling) e0.key],
+    'otherwise': otherwise.key,
+    'rejected': [for (final e0 in rejected) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [best, middling, otherwise, rejected];
+}
+
+/// Three lists and what the rest are.
+final class GradedYoga extends _Request {
+  const GradedYoga({
+    required this.best,
+    required this.middling,
+    required this.otherwise,
+    required this.rejected,
+  });
+
+  /// The members named good.
+  final List<Yoga> best;
+
+  /// The members named ordinary.
+  final List<Yoga> middling;
+
+  /// What a member in none of the lists is.
+  final MuhurtaGrade otherwise;
+
+  /// The members named bad.
+  final List<Yoga> rejected;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'best': [for (final e0 in best) e0.key],
+    'middling': [for (final e0 in middling) e0.key],
+    'otherwise': otherwise.key,
+    'rejected': [for (final e0 in rejected) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [best, middling, otherwise, rejected];
+}
+
+/// A member's grade under a rule.
+enum MuhurtaGrade implements _Keyed {
+  /// Named good: a clause for the time.
+  best('BEST'),
+  /// Named ordinary, or unlisted where the rule leaves it so: no clause.
+  middling('MIDDLING'),
+  /// Named bad, or unlisted where the rule says the rest are: a clause against the time.
+  rejected('REJECTED');
+
+  const MuhurtaGrade(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Three lists and what the rest are.
+final class GradedMasa extends _Request {
+  const GradedMasa({
+    required this.best,
+    required this.middling,
+    required this.otherwise,
+    required this.rejected,
+  });
+
+  /// The members named good.
+  final List<Masa> best;
+
+  /// The members named ordinary.
+  final List<Masa> middling;
+
+  /// What a member in none of the lists is.
+  final MuhurtaGrade otherwise;
+
+  /// The members named bad.
+  final List<Masa> rejected;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'best': [for (final e0 in best) e0.key],
+    'middling': [for (final e0 in middling) e0.key],
+    'otherwise': otherwise.key,
+    'rejected': [for (final e0 in rejected) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [best, middling, otherwise, rejected];
+}
+
+/// A month allowed while the Sun stands in a sign.
+final class MonthWithSun extends _Request {
+  const MonthWithSun({
+    required this.masa,
+    required this.sun,
+  });
+
+  /// The month.
+  final Masa masa;
+
+  /// The Sun's sign.
+  final Rashi sun;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'masa': masa.key,
+    'sun': sun.key,
+  };
+
+  @override
+  List<Object?> get _fields => [masa, sun];
+}
+
 /// Which rising sign a [`SaitRising`] reads.
 enum RisingOf implements _Keyed {
   /// The navamsa's sign.
@@ -9884,6 +11048,24 @@ final class PredicateOnVara extends Predicate {
   List<Object?> get _fields => [day, vara];
 }
 
+/// Which row of the ghata chakra struck (C758).
+enum GhataRow implements _Keyed {
+  /// The Moon in the sign that strikes (v. 27).
+  chandra('CHANDRA'),
+  /// A tithi of the class that strikes (v. 28).
+  tithi('TITHI'),
+  /// The weekday that strikes (v. 29).
+  vara('VARA'),
+  /// The nakshatra that strikes (v. 30).
+  nakshatra('NAKSHATRA');
+
+  const GhataRow(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// A share of a nakshatra's arc: the `which`th of `parts` equal parts, `{1, 1}` the whole, `{4, 1}` its first quarter (pada).
 final class Portion extends _Request {
   const Portion({
@@ -9951,6 +11133,34 @@ enum DayEdge implements _Keyed {
   sunset('SUNSET');
 
   const DayEdge(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The nine taras, in the order a count from the birth star reaches them.
+enum Tara implements _Keyed {
+  /// 1, the birth star itself: "danger to body".
+  janma('JANMA'),
+  /// 2, wealth and prosperity.
+  sampat('SAMPAT'),
+  /// 3, dangers, losses and accidents.
+  vipat('VIPAT'),
+  /// 4, prosperity.
+  kshema('KSHEMA'),
+  /// 5, obstacles.
+  pratyak('PRATYAK'),
+  /// 6, the realisation of ambitions.
+  sadhana('SADHANA'),
+  /// 7, dangers.
+  naidhana('NAIDHANA'),
+  /// 8, good.
+  mitra('MITRA'),
+  /// 9, very favourable.
+  paramaMitra('PARAMA_MITRA');
+
+  const Tara(this.key);
 
   /// The key the wire spells it with.
   @override

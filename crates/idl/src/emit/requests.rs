@@ -57,11 +57,12 @@ const PY_ABOUT: &str = "The JSON requests the layer hands through to the SDK, ty
 /// the layer writes each as its JSON (`_written`). Each must be a request
 /// record (`cargo xtask gen ffi`'s tests hold it), and `check-python`'s
 /// strict mypy reads each as the layer's.
-pub const PY_TAKEN_BACK: [&str; 6] = [
+pub const PY_TAKEN_BACK: [&str; 7] = [
     "AccidentalRules",
     "AccidentalScores",
     "AlmutenRules",
     "ConsiderationRules",
+    "MuhurtaClauseKind",
     "NatalPoint",
     "PerfectionRules",
 ];
@@ -722,8 +723,16 @@ mod tests {
                 "weight": {"type": "number", "default": 2},
                 "first": {"$ref": "#/$defs/Entry", "default": {"end": 1.5}},
                 "gender": {"$ref": "#/$defs/Sex", "default": "MALE"},
-                "after": {"$ref": "#/$defs/Tag", "default": "SAME"}
+                "after": {"$ref": "#/$defs/Tag", "default": "SAME"},
+                "rule": {"$ref": "#/$defs/Rule"},
+                "rules": {"type": "array", "items": {"$ref": "#/$defs/Rule"}},
+                "gate": {"$ref": "#/$defs/Gate"}
             }, "required": ["orbs", "how", "with-dash"]},
+            "Rule": {"anyOf": [{"type": "string", "enum": ["PACK"]},
+                {"$ref": "#/$defs/Spelt", "x-teistro-when": ["windows"]}, {"$ref": "#/$defs/Entry"}]},
+            "Spelt": {"type": "object", "properties": {"windows": {"type": "integer"}}, "required": ["windows"]},
+            "Gate": {"anyOf": [{"$ref": "#/$defs/Level"}, {"type": "boolean"}]},
+            "Level": {"oneOf": [{"const": "LOW", "description": "Low."}, {"const": "HIGH"}]},
             "Entry": {"type": "object", "properties": {"end": {"type": "number"}}, "required": ["end"]},
             "Move": {"type": "string", "enum": ["MEAN", "FAST"]},
             "Graha": {"type": "string", "x-teistro-kind": "graha"},
@@ -960,6 +969,93 @@ mod tests {
             !out.contains("    \"_TagWithin\",\n"),
             "a wrapper is private"
         );
+    }
+
+    #[test]
+    fn a_union_of_names_and_several_records_is_written_and_picked_by_its_keys() {
+        let mut api = fixture();
+        api.requests.roots.push(crate::records::RequestRoot {
+            record: "ask".into(),
+            name: "Ask".into(),
+        });
+        let ts = typescript_declarations(&api);
+        assert!(
+            ts.contains("export type Rule = 'PACK' | Spelt | Entry;"),
+            "{ts}"
+        );
+        assert!(
+            ts.contains("export type Gate = 'LOW' | 'HIGH' | boolean;"),
+            "{ts}"
+        );
+        let py = python_declarations(&api);
+        assert!(
+            py.contains(r#"Rule: TypeAlias = "Union[Literal['PACK'], Spelt, Entry]""#),
+            "{py}"
+        );
+        assert!(
+            py.contains(r#"Gate: TypeAlias = "Union[Literal['LOW', 'HIGH'], bool]""#),
+            "{py}"
+        );
+        let dart = dart_declarations(&api);
+        for class in [
+            "final class RulePack extends Rule",
+            "final class RuleSpelt extends Rule",
+            "final class RuleEntry extends Rule",
+            "final class GateValue extends Gate",
+        ] {
+            assert!(dart.contains(class), "{class} in {dart}");
+        }
+        assert!(
+            dart.contains("/// The value, picked by `windows`."),
+            "{dart}"
+        );
+        assert!(
+            dart.contains("/// The value, when it carries none of the others' keys."),
+            "{dart}"
+        );
+        let deep = deep_examples(&api, &json!([]));
+        assert_eq!(
+            deep.pointer("/0/request/rules"),
+            Some(&json!([{"windows": 1}, {"end": 1.5}]))
+        );
+        assert_eq!(deep.pointer("/0/request/gate"), Some(&json!(true)));
+        let test = dart_deep_test(&api, &deep);
+        assert!(
+            test.contains("rules: [RuleSpelt(Spelt(windows: 1)), RuleEntry(Entry(end: 1.5))],"),
+            "{test}"
+        );
+        assert!(test.contains("gate: GateValue(true),"), "{test}");
+        let java = crate::emit::java::render(&api);
+        let file = |name: &str| {
+            java.iter()
+                .find(|f| f.path.ends_with(&format!("/request/{name}.java")))
+                .map(|f| f.text.clone())
+                .unwrap_or_default()
+        };
+        let rule = file("Rule");
+        assert!(
+            rule.contains("permits Rule.Key, RuleSpelt, RuleEntry"),
+            "{rule}"
+        );
+        assert!(
+            rule.contains("static Rule value(Spelt value)")
+                && rule.contains("static Rule value(Entry value)"),
+            "{rule}"
+        );
+        assert!(
+            rule.contains(
+                "if (object.containsKey(\"windows\")) {\n                return RuleSpelt.of(raw);"
+            ),
+            "{rule}"
+        );
+        assert!(rule.contains("return RuleEntry.of(raw);\n    }"), "{rule}");
+        let gate = file("Gate");
+        assert!(
+            gate.contains("if (raw instanceof String) {\n            return Key.of(raw);"),
+            "{gate}"
+        );
+        assert!(gate.contains("static Gate value(boolean value)"), "{gate}");
+        assert!(file("GateValue").contains("Read.bool(raw, \"Gate.value\")"));
     }
 
     #[test]

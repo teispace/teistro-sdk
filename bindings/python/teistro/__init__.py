@@ -146,6 +146,7 @@ from ._requests import (
     AfterCycle as AfterCycle,
     AlmanacDaysRequest as AlmanacDaysRequest,
     MahadvadashiKind as MahadvadashiKind,
+    MuhurtaRequest as MuhurtaRequest,
     AngleMethod as AngleMethod,
     AnnualPlace as AnnualPlace,
     AntisciaRequest as AntisciaRequest,
@@ -620,6 +621,65 @@ from ._requests import (
     FestivalWhich as FestivalWhich,
     FestivalCase as FestivalCase,
     DayEdge as DayEdge,
+    MuhurtaRequestRules as MuhurtaRequestRules,
+    ActivityRules as ActivityRules,
+    Bar as Bar,
+    MuhurtaBaselineEvent as MuhurtaBaselineEvent,
+    DayRules as DayRules,
+    Hours as Hours,
+    GradedRashi as GradedRashi,
+    MonthRule as MonthRule,
+    MonthRuleAny as MonthRuleAny,
+    MonthRuleLunar as MonthRuleLunar,
+    MonthRuleSolar as MonthRuleSolar,
+    Pada as Pada,
+    Shool as Shool,
+    MuhurtaUnwanted as MuhurtaUnwanted,
+    MuhurtaClauseKindTithi as MuhurtaClauseKindTithi,
+    MuhurtaClauseKindNakshatra as MuhurtaClauseKindNakshatra,
+    MuhurtaClauseKindYoga as MuhurtaClauseKindYoga,
+    MuhurtaClauseKindKarana as MuhurtaClauseKindKarana,
+    MuhurtaClauseKindVara as MuhurtaClauseKindVara,
+    MuhurtaClauseKindMonth as MuhurtaClauseKindMonth,
+    MuhurtaClauseKindSolarMonth as MuhurtaClauseKindSolarMonth,
+    MuhurtaClauseKindLagna as MuhurtaClauseKindLagna,
+    MuhurtaClauseKindPada as MuhurtaClauseKindPada,
+    MuhurtaClauseKindKaala as MuhurtaClauseKindKaala,
+    MuhurtaClauseKindChoghadiya as MuhurtaClauseKindChoghadiya,
+    MuhurtaClauseKindAbhijit as MuhurtaClauseKindAbhijit,
+    MuhurtaClauseKindMuhurtaYoga as MuhurtaClauseKindMuhurtaYoga,
+    MuhurtaClauseKindTarabala as MuhurtaClauseKindTarabala,
+    MuhurtaClauseKindGhata as MuhurtaClauseKindGhata,
+    MuhurtaClauseKindAshubhaYoga as MuhurtaClauseKindAshubhaYoga,
+    MuhurtaClauseKindChandrabala as MuhurtaClauseKindChandrabala,
+    MuhurtaClauseKindKartari as MuhurtaClauseKindKartari,
+    MuhurtaClauseKindMoonInDusthana as MuhurtaClauseKindMoonInDusthana,
+    MuhurtaClauseKindMoonJoined as MuhurtaClauseKindMoonJoined,
+    MuhurtaClauseKindVenusInSixth as MuhurtaClauseKindVenusInSixth,
+    MuhurtaClauseKindMarsInEighth as MuhurtaClauseKindMarsInEighth,
+    MuhurtaClauseKindAshtamaLagna as MuhurtaClauseKindAshtamaLagna,
+    MuhurtaClauseKindKunavamsa as MuhurtaClauseKindKunavamsa,
+    MuhurtaClauseKindPanchakaRemainder as MuhurtaClauseKindPanchakaRemainder,
+    MuhurtaClauseKindLagnaTyajya as MuhurtaClauseKindLagnaTyajya,
+    MuhurtaClauseKindSeventhOccupied as MuhurtaClauseKindSeventhOccupied,
+    MuhurtaClauseKindMaleficInLagna as MuhurtaClauseKindMaleficInLagna,
+    MuhurtaClauseKindBeneficInLagna as MuhurtaClauseKindBeneficInLagna,
+    MuhurtaClauseKindExaltedInLagna as MuhurtaClauseKindExaltedInLagna,
+    MuhurtaClauseKindLuminaryInEleventh as MuhurtaClauseKindLuminaryInEleventh,
+    MuhurtaClauseKindKendraBenefics as MuhurtaClauseKindKendraBenefics,
+    MuhurtaClauseKindUnwantedPlacement as MuhurtaClauseKindUnwantedPlacement,
+    MuhurtaClauseKindVarjyam as MuhurtaClauseKindVarjyam,
+    ChandraBala as ChandraBala,
+    GradedKarana as GradedKarana,
+    GradedNakshatra as GradedNakshatra,
+    GradedTithi as GradedTithi,
+    GradedVara as GradedVara,
+    GradedYoga as GradedYoga,
+    MuhurtaGrade as MuhurtaGrade,
+    GradedMasa as GradedMasa,
+    MonthWithSun as MonthWithSun,
+    GhataRow as GhataRow,
+    Tara as Tara,
 )
 from .catalogue import (
     Catalogued,
@@ -7359,30 +7419,6 @@ MuhurtaActivity = Literal[
     "RAMAN_VEHICLE",
 ]
 """A set of rules the SDK ships, which a muhurta request names as `rules`."""
-
-
-class MuhurtaRequest(TypedDict, total=False):
-    """A muhurta search to run over an almanac's days
-    (`03-design/muhurta-at-the-boundary.md`), only `rules` required:
-    a set the SDK ships by name (`"RAMAN_MARRIAGE"`, `"BASELINE_MARRIAGE"`,
-    `"RAMAN_NAMAKARANA"`, `"RAMAN_ANNAPRASANA"`, `"RAMAN_UPANAYANA"`,
-    `"RAMAN_GRIHA_PRAVESHA"` and the others `MuhurtaActivity` lists), or rules spelt out as a mapping; `native`; `ranking`, `"TEXTS"` (the default,
-    C162) or `"BASELINE"`; `daysWithWindows` (7) and `most` (50); `asta`,
-    `"SURYA_SIDDHANTA"` (the default), `"COMBUSTION_ORB"`, `"PTOLEMY"` or a
-    criterion spelt out; and `direction`, where a journey goes, which the
-    rules' `shool` reads. A catalogue member may be a member, a full key or a
-    bare one, and a clause an answer gave may be handed back as a bar.
-
-    >>> asked: MuhurtaRequest = {"rules": "RAMAN_MARRIAGE", "daysWithWindows": 3}
-    """
-
-    rules: Required[Union[MuhurtaActivity, Mapping[str, Any]]]
-    native: MuhurtaNative
-    ranking: Literal["TEXTS", "BASELINE"]
-    daysWithWindows: int
-    most: int
-    asta: Union[Literal["SURYA_SIDDHANTA", "COMBUSTION_ORB", "PTOLEMY"], Mapping[str, Any]]
-    direction: Union[Direction, str]
 
 
 @dataclass(frozen=True)

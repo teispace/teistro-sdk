@@ -39,6 +39,9 @@ public sealed interface VarshaRequestDashas extends RequestJson permits VarshaRe
                 return key;
             }
         }
+        if (raw instanceof String) {
+            return Key.of(raw);
+        }
         return VarshaRequestDashasValue.of(raw);
     }
 

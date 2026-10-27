@@ -115,9 +115,12 @@ pub const DART_SHADOWED: &[&str] = &[
     "CalendarResolutionTabular",
     "CivilTime",
     "MonthDay",
+    "MuhurtaClauseKind",
+    "MuhurtaUnjudged",
     "NakshatraBar",
     "Partile",
     "Siege",
+    "TaraReading",
     "Terms",
     "ZoneSpec",
 ];

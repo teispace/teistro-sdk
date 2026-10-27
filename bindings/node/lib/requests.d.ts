@@ -472,7 +472,7 @@ export interface DayAsked {
 }
 
 /**
- * [`MuhurtaRequest`] as the bindings write it, camel-cased as every request record is. `rules` and `asta` are read in a second step, because each is a name or a value and the refusal should say which field was wrong rather than that no shape matched.
+ * A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes.
  */
 export interface MuhurtaRequest {
   /**
@@ -484,7 +484,10 @@ export interface MuhurtaRequest {
   readonly most?: number;
   readonly native?: MuhurtaNative | null;
   readonly ranking?: MuhurtaRanking;
-  readonly rules: unknown;
+  /**
+   * The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
+   */
+  readonly rules: MuhurtaRequestRules;
 }
 
 /**
@@ -1737,6 +1740,11 @@ export interface MuhurtaNative {
  * `BASELINE`: The baseline engine's weights (`muhurta.md` §4.5), which the roadmap's regression is stated in: open windows first, then those the engine would have offered by their score, highest first, then the earliest. Needs the rules' [`BaselineEvent`](crate::baseline::BaselineEvent).
  */
 export type MuhurtaRanking = 'TEXTS' | 'BASELINE';
+
+/**
+ * The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
+ */
+export type MuhurtaRequestRules = 'RAMAN_MARRIAGE' | 'BASELINE_MARRIAGE' | 'RAMAN_NAMAKARANA' | 'RAMAN_ANNAPRASANA' | 'RAMAN_UPANAYANA' | 'RAMAN_GRIHA_PRAVESHA' | 'RAMAN_KARNAVEDHA' | 'RAMAN_CHUDAKARANA' | 'RAMAN_VIDYARAMBHA' | 'RAMAN_YATRA' | 'RAMAN_TRADE_PURCHASE' | 'RAMAN_SELLING' | 'RAMAN_NEW_CLOTHES' | 'RAMAN_VEHICLE' | ActivityRules;
 
 /**
  * When the first abdika is kept (DS p. 330, two views).
@@ -3236,6 +3244,56 @@ export interface CriterionArcusVisionis {
    * The thresholds.
    */
   readonly thresholds: Thresholds;
+}
+
+/**
+ * What one activity asks of the time.
+ */
+export interface ActivityRules {
+  /**
+   * The clauses that bar the rite outright rather than weigh against it.
+   */
+  readonly bars: readonly Bar[];
+  /**
+   * The inputs the baseline engine's weights take for the rite, which [`crate::Ranking::Baseline`] needs and no other ranking reads.
+   */
+  readonly baseline?: MuhurtaBaselineEvent | null;
+  /**
+   * The day's limbs and vara, the rite's grades over the general ones.
+   */
+  readonly day: DayRules;
+  /**
+   * The season's blackouts the rite is not held in.
+   */
+  readonly heeds: readonly Member<catalogue.BlackoutKind>[];
+  /**
+   * The part of the day the rite is held in.
+   */
+  readonly hours?: Hours;
+  /**
+   * The lagnas.
+   */
+  readonly lagnas: GradedRashi;
+  /**
+   * The months.
+   */
+  readonly months: MonthRule;
+  /**
+   * The quarters of a star rejected though the star is good.
+   */
+  readonly padas: readonly Pada[];
+  /**
+   * For a journey asked a direction, the ghati each weekday's disha shool is lifted at. Empty, the direction is not judged; a weekday missing from a list that is not shuts its days to the direction.
+   */
+  readonly shool?: readonly Shool[];
+  /**
+   * What the source asks that is not judged, said rather than dropped.
+   */
+  readonly unjudged: readonly MuhurtaUnjudged[];
+  /**
+   * The grahas the rite wants out of houses. Empty where the rules spelt out leave it out.
+   */
+  readonly unwanted?: readonly MuhurtaUnwanted[];
 }
 
 /**
@@ -5741,6 +5799,204 @@ export interface ThresholdsCustom {
 }
 
 /**
+ * A clause that bars a rite outright: every clause of a kind, or one clause exactly.
+ */
+export type Bar = 'TITHI' | 'NAKSHATRA' | 'YOGA' | 'KARANA' | 'VARA' | 'MONTH' | 'SOLAR_MONTH' | 'LAGNA' | 'PADA' | 'KAALA' | 'CHOGHADIYA' | 'ABHIJIT' | 'MUHURTA_YOGA' | 'TARABALA' | 'CHANDRABALA' | 'KARTARI' | 'MOON_IN_DUSTHANA' | 'MOON_JOINED' | 'VENUS_IN_SIXTH' | 'MARS_IN_EIGHTH' | 'ASHTAMA_LAGNA' | 'KUNAVAMSA' | 'PANCHAKA_REMAINDER' | 'LAGNA_TYAJYA' | 'SEVENTH_OCCUPIED' | 'MALEFIC_IN_LAGNA' | 'BENEFIC_IN_LAGNA' | 'EXALTED_IN_LAGNA' | 'LUMINARY_IN_ELEVENTH' | 'KENDRA_BENEFICS' | 'UNWANTED_PLACEMENT' | 'VARJYAM' | 'GHATA' | 'ASHUBHA_YOGA' | MuhurtaClauseKind;
+
+/**
+ * What the engine's weights take for one activity.
+ */
+export interface MuhurtaBaselineEvent {
+  /**
+   * Whether Abhijit's own candidate is dropped. Its minutes are still offered through the choghadiya they fall in.
+   */
+  readonly abhijitForbidden: boolean;
+  /**
+   * The weekdays it avoids (−12).
+   */
+  readonly avoidedVaras: readonly Member<catalogue.Vara>[];
+  /**
+   * The tithis it favours (+6), both pakshas' named.
+   */
+  readonly favouredTithis: readonly Member<catalogue.Tithi>[];
+  /**
+   * The weekdays the event favours (+8).
+   */
+  readonly favouredVaras: readonly Member<catalogue.Vara>[];
+  /**
+   * The grahas that signify the event, judged at each window.
+   */
+  readonly karakas: readonly Member<catalogue.Graha>[];
+  /**
+   * Whether the 7th house must be empty (+4, or −12).
+   */
+  readonly seventhEmpty: boolean;
+  /**
+   * The stars the activity is matched to (+25 when the Moon stands in one at sunrise).
+   */
+  readonly stars: readonly Member<catalogue.Nakshatra>[];
+}
+
+/**
+ * How a day's rules grade its limbs and vara, and whose Chandrabala table they read.
+ */
+export interface DayRules {
+  /**
+   * The Chandrabala table.
+   */
+  readonly chandrabala: ChandraBala;
+  /**
+   * The karanas.
+   */
+  readonly karanas: GradedKarana;
+  /**
+   * The nakshatras.
+   */
+  readonly nakshatras: GradedNakshatra;
+  /**
+   * The tithis.
+   */
+  readonly tithis: GradedTithi;
+  /**
+   * The varas.
+   */
+  readonly varas: GradedVara;
+  /**
+   * The yogas.
+   */
+  readonly yogas: GradedYoga;
+}
+
+/**
+ * The part of the day a rite is held in: Raman's "never during night" for the ear boring, "always in the forenoon" for the tonsure.
+ *
+ * `ANY`: Day and night alike.
+ * `DAYLIGHT`: Sunrise to sunset.
+ * `FORENOON`: Sunrise to noon.
+ */
+export type Hours = 'ANY' | 'DAYLIGHT' | 'FORENOON';
+
+/**
+ * Three lists and what the rest are.
+ */
+export interface GradedRashi {
+  /**
+   * The members named good.
+   */
+  readonly best: readonly Member<catalogue.Rashi>[];
+  /**
+   * The members named ordinary.
+   */
+  readonly middling: readonly Member<catalogue.Rashi>[];
+  /**
+   * What a member in none of the lists is.
+   */
+  readonly otherwise: MuhurtaGrade;
+  /**
+   * The members named bad.
+   */
+  readonly rejected: readonly Member<catalogue.Rashi>[];
+}
+
+/**
+ * Which month a rite is keyed on (crux C161).
+ */
+export type MonthRule = MonthRuleAny | MonthRuleLunar | MonthRuleSolar;
+
+/**
+ * No month is graded.
+ */
+export interface MonthRuleAny {
+  readonly reckoning: 'ANY';
+}
+
+/**
+ * The amanta lunar month, graded; an adhika month is left to the season, which blacks it out.
+ */
+export interface MonthRuleLunar {
+  readonly reckoning: 'LUNAR';
+  /**
+   * The months.
+   */
+  readonly months: GradedMasa;
+  /**
+   * Months allowed as middling while the Sun is in a sign, which the rule would otherwise reject: "some sages" allow Pausha with the Sun in Capricorn and Chaitra with it in Aries for a marriage (Raman, ch. IX).
+   */
+  readonly withSun: readonly MonthWithSun[];
+}
+
+/**
+ * The Sun's sign, graded: the solar month.
+ */
+export interface MonthRuleSolar {
+  readonly reckoning: 'SOLAR';
+  /**
+   * The signs.
+   */
+  readonly signs: GradedRashi;
+}
+
+/**
+ * A nakshatra's quarter.
+ */
+export interface Pada {
+  /**
+   * The star.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+  /**
+   * The quarter, 1 to 4.
+   */
+  readonly pada: number;
+}
+
+/**
+ * The ghati of a weekday past which a journey towards its disha shool may begin: Raman's "provided the journey is timed to begin beyond 22 ghaties on Thursday" (*Muhurtha*, ch. XIV, p. 157), counted from sunrise under the day's own ghati reckoning.
+ */
+export interface Shool {
+  /**
+   * The ghatis from sunrise, 0 to 59, before which the journey does not begin.
+   */
+  readonly afterGhatis: number;
+  /**
+   * The weekday.
+   */
+  readonly vara: Member<catalogue.Vara>;
+}
+
+/**
+ * Something the source asks of the time that the SDK does not judge yet.
+ */
+export interface MuhurtaUnjudged {
+  /**
+   * What is asked.
+   */
+  readonly what: string;
+  /**
+   * Why it is not judged, and where it is recorded.
+   */
+  readonly why: string;
+}
+
+/**
+ * Grahas a rite wants out of houses: "the 8th house should be unoccupied" is every graha out of the 8th, "Mars and Saturn should be avoided in the 5th" is two grahas out of one house.
+ */
+export interface MuhurtaUnwanted {
+  /**
+   * Whether a graha standing there bars the rite rather than weighs against it. Unbarring where the rules spelt out leave it out.
+   */
+  readonly bars?: boolean;
+  /**
+   * The grahas.
+   */
+  readonly grahas: readonly Member<catalogue.Graha>[];
+  /**
+   * The houses they are wanted out of, 1 to 12.
+   */
+  readonly houses: readonly number[];
+}
+
+/**
  * One term: its lord, and the degree within the sign it ends at.
  */
 export interface TermEntry {
@@ -6602,6 +6858,582 @@ export interface MotionThresholds {
 }
 
 /**
+ * What a clause says.
+ */
+export type MuhurtaClauseKind = MuhurtaClauseKindTithi | MuhurtaClauseKindNakshatra | MuhurtaClauseKindYoga | MuhurtaClauseKindKarana | MuhurtaClauseKindVara | MuhurtaClauseKindMonth | MuhurtaClauseKindSolarMonth | MuhurtaClauseKindLagna | MuhurtaClauseKindPada | MuhurtaClauseKindKaala | MuhurtaClauseKindChoghadiya | MuhurtaClauseKindAbhijit | MuhurtaClauseKindMuhurtaYoga | MuhurtaClauseKindTarabala | MuhurtaClauseKindGhata | MuhurtaClauseKindAshubhaYoga | MuhurtaClauseKindChandrabala | MuhurtaClauseKindKartari | MuhurtaClauseKindMoonInDusthana | MuhurtaClauseKindMoonJoined | MuhurtaClauseKindVenusInSixth | MuhurtaClauseKindMarsInEighth | MuhurtaClauseKindAshtamaLagna | MuhurtaClauseKindKunavamsa | MuhurtaClauseKindPanchakaRemainder | MuhurtaClauseKindLagnaTyajya | MuhurtaClauseKindSeventhOccupied | MuhurtaClauseKindMaleficInLagna | MuhurtaClauseKindBeneficInLagna | MuhurtaClauseKindExaltedInLagna | MuhurtaClauseKindLuminaryInEleventh | MuhurtaClauseKindKendraBenefics | MuhurtaClauseKindUnwantedPlacement | MuhurtaClauseKindVarjyam;
+
+/**
+ * A tithi the rules grade best or reject (panchanga shuddhi).
+ */
+export interface MuhurtaClauseKindTithi {
+  readonly clause: 'TITHI';
+  /**
+   * Best or rejected; a middling one is not reported.
+   */
+  readonly grade: MuhurtaGrade;
+  /**
+   * Which.
+   */
+  readonly tithi: Member<catalogue.Tithi>;
+}
+
+/**
+ * A nakshatra the rules grade best or reject.
+ */
+export interface MuhurtaClauseKindNakshatra {
+  readonly clause: 'NAKSHATRA';
+  /**
+   * Best or rejected.
+   */
+  readonly grade: MuhurtaGrade;
+  /**
+   * Which.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+}
+
+/**
+ * A yoga the rules grade best or reject.
+ */
+export interface MuhurtaClauseKindYoga {
+  readonly clause: 'YOGA';
+  /**
+   * Best or rejected.
+   */
+  readonly grade: MuhurtaGrade;
+  /**
+   * Which.
+   */
+  readonly yoga: Member<catalogue.Yoga>;
+}
+
+/**
+ * A karana the rules grade best or reject.
+ */
+export interface MuhurtaClauseKindKarana {
+  readonly clause: 'KARANA';
+  /**
+   * Best or rejected.
+   */
+  readonly grade: MuhurtaGrade;
+  /**
+   * Which.
+   */
+  readonly karana: Member<catalogue.Karana>;
+}
+
+/**
+ * A vara the rules grade best or reject (vara dosha).
+ */
+export interface MuhurtaClauseKindVara {
+  readonly clause: 'VARA';
+  /**
+   * Best or rejected.
+   */
+  readonly grade: MuhurtaGrade;
+  /**
+   * Which.
+   */
+  readonly vara: Member<catalogue.Vara>;
+}
+
+/**
+ * The lunar month an activity grades best or rejects (crux C161).
+ */
+export interface MuhurtaClauseKindMonth {
+  readonly clause: 'MONTH';
+  /**
+   * Best or rejected.
+   */
+  readonly grade: MuhurtaGrade;
+  /**
+   * Which.
+   */
+  readonly masa: Member<catalogue.Masa>;
+}
+
+/**
+ * The Sun's sign an activity keyed on the solar month grades best or rejects.
+ */
+export interface MuhurtaClauseKindSolarMonth {
+  readonly clause: 'SOLAR_MONTH';
+  /**
+   * Best or rejected.
+   */
+  readonly grade: MuhurtaGrade;
+  /**
+   * Which.
+   */
+  readonly sign: Member<catalogue.Rashi>;
+}
+
+/**
+ * The lagna an activity grades best or rejects.
+ */
+export interface MuhurtaClauseKindLagna {
+  readonly clause: 'LAGNA';
+  /**
+   * Best or rejected.
+   */
+  readonly grade: MuhurtaGrade;
+  /**
+   * Which.
+   */
+  readonly sign: Member<catalogue.Rashi>;
+}
+
+/**
+ * The Moon in a quarter of its star the activity rejects.
+ */
+export interface MuhurtaClauseKindPada {
+  readonly clause: 'PADA';
+  /**
+   * Which.
+   */
+  readonly pada: Pada;
+}
+
+/**
+ * One of the inauspicious eighths of the daylight: Rahu kaala, Yamaghanda or Gulika.
+ */
+export interface MuhurtaClauseKindKaala {
+  readonly clause: 'KAALA';
+  /**
+   * Which.
+   */
+  readonly kaala: Member<catalogue.Kaala>;
+}
+
+/**
+ * A choghadiya, for the time when the catalogue marks it auspicious and against it otherwise.
+ */
+export interface MuhurtaClauseKindChoghadiya {
+  readonly clause: 'CHOGHADIYA';
+  /**
+   * Which.
+   */
+  readonly choghadiya: Member<catalogue.Choghadiya>;
+}
+
+/**
+ * Abhijit, the eighth muhurta of the daylight, on a day it is effective. For the time; a rite a tradition does not hold in it names it among its bars.
+ */
+export interface MuhurtaClauseKindAbhijit {
+  readonly clause: 'ABHIJIT';
+}
+
+/**
+ * A special yoga of vara, tithi and nakshatra (Raman, ch. VI).
+ */
+export interface MuhurtaClauseKindMuhurtaYoga {
+  readonly clause: 'MUHURTA_YOGA';
+  /**
+   * Which.
+   */
+  readonly yoga: Member<catalogue.MuhurtaYoga>;
+}
+
+/**
+ * The day's star counted from the native's.
+ */
+export interface MuhurtaClauseKindTarabala {
+  readonly clause: 'TARABALA';
+  /**
+   * The count and its tara.
+   */
+  readonly reading: TaraReading;
+}
+
+/**
+ * A ghata of the native's: the day's Moon sign, tithi, weekday or nakshatra that strikes one born under the native's Moon sign (Muhurta Chintamani, *Yatra-prakarana* XI vv. 27–30; C758). Against the time. The text keeps it for journeys, service, disputes and war, not marriage, so a rite that will not have it names it among its bars.
+ */
+export interface MuhurtaClauseKindGhata {
+  readonly clause: 'GHATA';
+  /**
+   * Which row struck.
+   */
+  readonly row: GhataRow;
+}
+
+/**
+ * An inauspicious yoga of the day's vara with a tithi or nakshatra: dagdha, visha, hutashana or yamaghanta (Muhurta Chintamani, Shubhashubha-prakarana vv. 8–9; C760). Against the time. The verse shuns them in auspicious work and without fail on a journey; the shipped rites follow Raman, so none bars them, and a caller who keeps the verse names `ASHUBHA_YOGA` among its bars.
+ */
+export interface MuhurtaClauseKindAshubhaYoga {
+  readonly clause: 'ASHUBHA_YOGA';
+  /**
+   * Which.
+   */
+  readonly yoga: Member<catalogue.AshubhaYoga>;
+}
+
+/**
+ * The day's Moon sign counted from the native's.
+ */
+export interface MuhurtaClauseKindChandrabala {
+  readonly clause: 'CHANDRABALA';
+  /**
+   * Whether the house gives Chandrabala under the rules' table.
+   */
+  readonly holds: boolean;
+  /**
+   * The house, 1 to 12.
+   */
+  readonly house: number;
+}
+
+/**
+ * Kartari: malefics on both sides of the lagna, in the 2nd and the 12th (Mahadosha 3).
+ */
+export interface MuhurtaClauseKindKartari {
+  readonly clause: 'KARTARI';
+  /**
+   * The malefics in the 2nd.
+   */
+  readonly second: readonly Member<catalogue.Graha>[];
+  /**
+   * The malefics in the 12th.
+   */
+  readonly twelfth: readonly Member<catalogue.Graha>[];
+}
+
+/**
+ * The Moon in the 6th, 8th or 12th from the lagna (Mahadosha 4).
+ */
+export interface MuhurtaClauseKindMoonInDusthana {
+  readonly clause: 'MOON_IN_DUSTHANA';
+  /**
+   * Which of the three.
+   */
+  readonly house: number;
+}
+
+/**
+ * The Moon in one sign with other grahas (sagraha Chandra, Mahadosha 5).
+ */
+export interface MuhurtaClauseKindMoonJoined {
+  readonly clause: 'MOON_JOINED';
+  /**
+   * The grahas with it.
+   */
+  readonly with: readonly Member<catalogue.Graha>[];
+}
+
+/**
+ * Venus in the 6th from the lagna (Bhrigu shatka, Mahadosha 10).
+ */
+export interface MuhurtaClauseKindVenusInSixth {
+  readonly clause: 'VENUS_IN_SIXTH';
+}
+
+/**
+ * Mars in the 8th from the lagna (Kujashtama, Mahadosha 11).
+ */
+export interface MuhurtaClauseKindMarsInEighth {
+  readonly clause: 'MARS_IN_EIGHTH';
+}
+
+/**
+ * The lagna 8th from the native's birth lagna (Mahadosha 12).
+ */
+export interface MuhurtaClauseKindAshtamaLagna {
+  readonly clause: 'ASHTAMA_LAGNA';
+}
+
+/**
+ * The lagna in a malefic's navamsa (kunavamsa, Mahadosha 14).
+ */
+export interface MuhurtaClauseKindKunavamsa {
+  readonly clause: 'KUNAVAMSA';
+  /**
+   * Its lord.
+   */
+  readonly lord: Member<catalogue.Graha>;
+  /**
+   * The navamsa sign.
+   */
+  readonly navamsa: Member<catalogue.Rashi>;
+}
+
+/**
+ * The remainder of tithi, vara, nakshatra and lagna by nine leaves a panchaka (Raman, ch. III; crux C159).
+ */
+export interface MuhurtaClauseKindPanchakaRemainder {
+  readonly clause: 'PANCHAKA_REMAINDER';
+  /**
+   * Which.
+   */
+  readonly panchaka: Member<catalogue.Panchaka>;
+}
+
+/**
+ * The part of a sign's rising the lagna tyajya rejects (Raman, ch. II; rasi visha ghatika, Mahadosha 13).
+ */
+export interface MuhurtaClauseKindLagnaTyajya {
+  readonly clause: 'LAGNA_TYAJYA';
+  /**
+   * The sign rising.
+   */
+  readonly sign: Member<catalogue.Rashi>;
+}
+
+/**
+ * A graha in the 7th from the lagna, which a marriage wants empty.
+ */
+export interface MuhurtaClauseKindSeventhOccupied {
+  readonly clause: 'SEVENTH_OCCUPIED';
+  /**
+   * Who.
+   */
+  readonly by: readonly Member<catalogue.Graha>[];
+}
+
+/**
+ * A malefic in the lagna.
+ */
+export interface MuhurtaClauseKindMaleficInLagna {
+  readonly clause: 'MALEFIC_IN_LAGNA';
+  /**
+   * Who.
+   */
+  readonly grahas: readonly Member<catalogue.Graha>[];
+}
+
+/**
+ * Venus, Mercury or Jupiter in the lagna, which "will completely destroy all other adverse influences" (neutralisation 6).
+ */
+export interface MuhurtaClauseKindBeneficInLagna {
+  readonly clause: 'BENEFIC_IN_LAGNA';
+  /**
+   * Who.
+   */
+  readonly grahas: readonly Member<catalogue.Graha>[];
+}
+
+/**
+ * An exalted graha in the lagna (neutralisation 10).
+ */
+export interface MuhurtaClauseKindExaltedInLagna {
+  readonly clause: 'EXALTED_IN_LAGNA';
+  /**
+   * Who.
+   */
+  readonly grahas: readonly Member<catalogue.Graha>[];
+}
+
+/**
+ * The Sun or the Moon in the 11th (neutralisation 8).
+ */
+export interface MuhurtaClauseKindLuminaryInEleventh {
+  readonly clause: 'LUMINARY_IN_ELEVENTH';
+  /**
+   * Who.
+   */
+  readonly grahas: readonly Member<catalogue.Graha>[];
+}
+
+/**
+ * Jupiter or Venus in a kendra with the Sun, Mars and Saturn each in the 3rd, 6th or 11th (neutralisation 11). The nodes are not asked: they always stand opposite, and no two of those houses are (C167).
+ */
+export interface MuhurtaClauseKindKendraBenefics {
+  readonly clause: 'KENDRA_BENEFICS';
+  /**
+   * The benefics in a kendra.
+   */
+  readonly grahas: readonly Member<catalogue.Graha>[];
+}
+
+/**
+ * Grahas standing in a house the rite wants them out of, as its rules' `unwanted` list names them: an 8th that should be unoccupied, Mars and Saturn out of the 5th. One clause a house, whichever entries of the list named it.
+ */
+export interface MuhurtaClauseKindUnwantedPlacement {
+  readonly clause: 'UNWANTED_PLACEMENT';
+  /**
+   * The grahas in it the rules name, in the catalogue's order.
+   */
+  readonly by: readonly Member<catalogue.Graha>[];
+  /**
+   * The house, 1 to 12.
+   */
+  readonly house: number;
+}
+
+/**
+ * A nakshatra's varjyam, its four ghatis of poison, "to be shunned in auspicious works" (Muhurta Chintamani, Vivaha Prakarana v. 51; Raman's *tyajya kala*, ch. II), placed by `panchanga.varjyam` (crux C165). Against the time; a rite that will not have it at all names it among its bars.
+ */
+export interface MuhurtaClauseKindVarjyam {
+  readonly clause: 'VARJYAM';
+  /**
+   * Whose varjyam.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+}
+
+/**
+ * Which houses from the birth Moon sign spoil a day (crux C160).
+ */
+export interface ChandraBala {
+  /**
+   * The houses, 1 to 12, in which the day's Moon gives no Chandrabala.
+   */
+  readonly avoid: readonly number[];
+}
+
+/**
+ * Three lists and what the rest are.
+ */
+export interface GradedKarana {
+  /**
+   * The members named good.
+   */
+  readonly best: readonly Member<catalogue.Karana>[];
+  /**
+   * The members named ordinary.
+   */
+  readonly middling: readonly Member<catalogue.Karana>[];
+  /**
+   * What a member in none of the lists is.
+   */
+  readonly otherwise: MuhurtaGrade;
+  /**
+   * The members named bad.
+   */
+  readonly rejected: readonly Member<catalogue.Karana>[];
+}
+
+/**
+ * Three lists and what the rest are.
+ */
+export interface GradedNakshatra {
+  /**
+   * The members named good.
+   */
+  readonly best: readonly Member<catalogue.Nakshatra>[];
+  /**
+   * The members named ordinary.
+   */
+  readonly middling: readonly Member<catalogue.Nakshatra>[];
+  /**
+   * What a member in none of the lists is.
+   */
+  readonly otherwise: MuhurtaGrade;
+  /**
+   * The members named bad.
+   */
+  readonly rejected: readonly Member<catalogue.Nakshatra>[];
+}
+
+/**
+ * Three lists and what the rest are.
+ */
+export interface GradedTithi {
+  /**
+   * The members named good.
+   */
+  readonly best: readonly Member<catalogue.Tithi>[];
+  /**
+   * The members named ordinary.
+   */
+  readonly middling: readonly Member<catalogue.Tithi>[];
+  /**
+   * What a member in none of the lists is.
+   */
+  readonly otherwise: MuhurtaGrade;
+  /**
+   * The members named bad.
+   */
+  readonly rejected: readonly Member<catalogue.Tithi>[];
+}
+
+/**
+ * Three lists and what the rest are.
+ */
+export interface GradedVara {
+  /**
+   * The members named good.
+   */
+  readonly best: readonly Member<catalogue.Vara>[];
+  /**
+   * The members named ordinary.
+   */
+  readonly middling: readonly Member<catalogue.Vara>[];
+  /**
+   * What a member in none of the lists is.
+   */
+  readonly otherwise: MuhurtaGrade;
+  /**
+   * The members named bad.
+   */
+  readonly rejected: readonly Member<catalogue.Vara>[];
+}
+
+/**
+ * Three lists and what the rest are.
+ */
+export interface GradedYoga {
+  /**
+   * The members named good.
+   */
+  readonly best: readonly Member<catalogue.Yoga>[];
+  /**
+   * The members named ordinary.
+   */
+  readonly middling: readonly Member<catalogue.Yoga>[];
+  /**
+   * What a member in none of the lists is.
+   */
+  readonly otherwise: MuhurtaGrade;
+  /**
+   * The members named bad.
+   */
+  readonly rejected: readonly Member<catalogue.Yoga>[];
+}
+
+/**
+ * A member's grade under a rule.
+ *
+ * `BEST`: Named good: a clause for the time.
+ * `MIDDLING`: Named ordinary, or unlisted where the rule leaves it so: no clause.
+ * `REJECTED`: Named bad, or unlisted where the rule says the rest are: a clause against the time.
+ */
+export type MuhurtaGrade = 'BEST' | 'MIDDLING' | 'REJECTED';
+
+/**
+ * Three lists and what the rest are.
+ */
+export interface GradedMasa {
+  /**
+   * The members named good.
+   */
+  readonly best: readonly Member<catalogue.Masa>[];
+  /**
+   * The members named ordinary.
+   */
+  readonly middling: readonly Member<catalogue.Masa>[];
+  /**
+   * What a member in none of the lists is.
+   */
+  readonly otherwise: MuhurtaGrade;
+  /**
+   * The members named bad.
+   */
+  readonly rejected: readonly Member<catalogue.Masa>[];
+}
+
+/**
+ * A month allowed while the Sun stands in a sign.
+ */
+export interface MonthWithSun {
+  /**
+   * The month.
+   */
+  readonly masa: Member<catalogue.Masa>;
+  /**
+   * The Sun's sign.
+   */
+  readonly sun: Member<catalogue.Rashi>;
+}
+
+/**
  * Which rising sign a [`SaitRising`] reads.
  *
  * `NAVAMSA`: The navamsa's sign.
@@ -6990,6 +7822,34 @@ export interface PredicateOnVara {
 }
 
 /**
+ * A day's star counted from a birth star.
+ */
+export interface TaraReading {
+  /**
+   * The count, 1 (the birth star itself) to 27.
+   */
+  readonly count: number;
+  /**
+   * Which round of nine the count is in, 1 to 3.
+   */
+  readonly cycle: number;
+  /**
+   * The count reduced by nine.
+   */
+  readonly tara: Tara;
+}
+
+/**
+ * Which row of the ghata chakra struck (C758).
+ *
+ * `CHANDRA`: The Moon in the sign that strikes (v. 27).
+ * `TITHI`: A tithi of the class that strikes (v. 28).
+ * `VARA`: The weekday that strikes (v. 29).
+ * `NAKSHATRA`: The nakshatra that strikes (v. 30).
+ */
+export type GhataRow = 'CHANDRA' | 'TITHI' | 'VARA' | 'NAKSHATRA';
+
+/**
  * A share of a nakshatra's arc: the `which`th of `parts` equal parts, `{1, 1}` the whole, `{4, 1}` its first quarter (pada).
  */
 export interface Portion {
@@ -7087,6 +7947,21 @@ export type FestivalCase = 'EARLIER_ONLY' | 'LATER_ONLY' | 'BOTH' | 'NEITHER' | 
  * `SUNSET`: Sunset, counting in thirtieths of the night.
  */
 export type DayEdge = 'SUNRISE' | 'SUNSET';
+
+/**
+ * The nine taras, in the order a count from the birth star reaches them.
+ *
+ * `JANMA`: 1, the birth star itself: "danger to body".
+ * `SAMPAT`: 2, wealth and prosperity.
+ * `VIPAT`: 3, dangers, losses and accidents.
+ * `KSHEMA`: 4, prosperity.
+ * `PRATYAK`: 5, obstacles.
+ * `SADHANA`: 6, the realisation of ambitions.
+ * `NAIDHANA`: 7, dangers.
+ * `MITRA`: 8, good.
+ * `PARAMA_MITRA`: 9, very favourable.
+ */
+export type Tara = 'JANMA' | 'SAMPAT' | 'VIPAT' | 'KSHEMA' | 'PRATYAK' | 'SADHANA' | 'NAIDHANA' | 'MITRA' | 'PARAMA_MITRA';
 
 /**
  * A month and a day inside a year, for a divergence report.

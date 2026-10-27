@@ -51,6 +51,9 @@ public sealed interface FestivalRules extends RequestJson permits FestivalRules.
                 return key;
             }
         }
+        if (raw instanceof String) {
+            return Key.of(raw);
+        }
         return FestivalRulesValue.of(raw);
     }
 

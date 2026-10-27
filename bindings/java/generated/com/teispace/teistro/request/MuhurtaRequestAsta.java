@@ -45,6 +45,9 @@ public sealed interface MuhurtaRequestAsta extends RequestJson permits MuhurtaRe
                 return key;
             }
         }
+        if (raw instanceof String) {
+            return Key.of(raw);
+        }
         return MuhurtaRequestAstaValue.of(raw);
     }
 

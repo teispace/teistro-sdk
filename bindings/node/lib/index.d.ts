@@ -163,6 +163,7 @@ import type { Provenance, Step } from './records.js';
 import type {
   AccidentalRules,
   AccidentalScores,
+  ActivityRules,
   AlmutenRules,
   Anniversary,
   AnnualDashaRules,
@@ -212,8 +213,14 @@ import type {
   MaseshaRules,
   MatchingRequest,
   MidpointRequest,
+  MuhurtaBaselineEvent,
+  MuhurtaClauseKind,
+  MuhurtaGrade,
   MuhurtaNative,
   MuhurtaRanking,
+  MuhurtaRequest,
+  MuhurtaUnjudged,
+  MuhurtaUnwanted,
   MunthaDegree,
   NaamRules,
   NameSounds,
@@ -245,6 +252,7 @@ import type {
   SaitRule,
   SarvatobhadraRequest,
   SarvatobhadraRules,
+  Tara,
   TithiPraveshaRequest,
   TithiRule,
   VarsheshaRules,
@@ -6140,30 +6148,6 @@ export interface FestivalAnswer {
   readonly provenance: Provenance;
 }
 
-/**
- * A muhurta search to run over an almanac's days
- * (`03-design/muhurta-at-the-boundary.md`); only `rules` is required. A
- * catalogue member may be written bare (`'ROHINI'`) or in full
- * (`'nakshatra.ROHINI'`), so a clause read back from an answer can be
- * handed straight into rules.
- */
-export interface MuhurtaRequest {
-  /** The activity's rules: a set the SDK ships, by name, or rules spelt out. */
-  readonly rules: MuhurtaActivity | ActivityRules;
-  /** The native whose tarabala, chandrabala and ashtama lagna are read. */
-  readonly native?: MuhurtaNative;
-  /** How the windows are ordered; `'TEXTS'` by default (C162). */
-  readonly ranking?: MuhurtaRanking;
-  /** How many of the best days are cut into windows; 7 by default. */
-  readonly daysWithWindows?: number;
-  /** How many windows are answered at most; 50 by default. */
-  readonly most?: number;
-  /** How Venus's and Jupiter's combustion is seen: named, or spelt out; the Surya Siddhanta's by default (C164). */
-  readonly asta?: AstaName | Criterion;
-  /** Where a journey goes: on a day whose disha shool it is, the rules' `shool` holds a window to its release. */
-  readonly direction?: Direction;
-}
-
 /** A set of rules the SDK ships. */
 export type MuhurtaActivity =
   | 'RAMAN_MARRIAGE'
@@ -6184,9 +6168,6 @@ export type MuhurtaActivity =
 /** A visibility criterion the SDK names. */
 export type AstaName = 'SURYA_SIDDHANTA' | 'COMBUSTION_ORB' | 'PTOLEMY';
 
-/** How a member is graded. */
-export type MuhurtaGrade = 'BEST' | 'MIDDLING' | 'REJECTED';
-
 /** A list's members by grade, and the grade of any it does not name. */
 export interface Graded<T> {
   readonly best: readonly T[];
@@ -6195,128 +6176,11 @@ export interface Graded<T> {
   readonly otherwise: MuhurtaGrade;
 }
 
-/** An activity's rules: what a search judges a time by (`03-design/muhurta.md`). */
-export interface ActivityRules {
-  /** How the day's limbs and vara are graded, and the houses Chandrabala avoids. */
-  readonly day: {
-    readonly tithis: Graded<Tithi>;
-    readonly nakshatras: Graded<Nakshatra>;
-    readonly yogas: Graded<Yoga>;
-    readonly karanas: Graded<Karana>;
-    readonly varas: Graded<Vara>;
-    readonly chandrabala: { readonly avoid: readonly number[] };
-  };
-  /** Which months the rite is permitted in, by the lunar month or the Sun's sign (C161). */
-  readonly months:
-    | { readonly reckoning: 'ANY' }
-    | {
-        readonly reckoning: 'LUNAR';
-        readonly months: Graded<Masa>;
-        readonly withSun: readonly { readonly masa: Masa; readonly sun: Rashi }[];
-      }
-    | { readonly reckoning: 'SOLAR'; readonly signs: Graded<Rashi> };
-  /** The lagnas, graded. */
-  readonly lagnas: Graded<Rashi>;
-  /** The part of the day the rite is held in, noon the daylight's middle; `'ANY'` when left out. */
-  readonly hours?: 'ANY' | 'DAYLIGHT' | 'FORENOON';
-  /** For a journey asked a direction, the ghati from sunrise each weekday's disha shool is lifted at; none judges no direction. */
-  readonly shool?: readonly { readonly vara: Vara; readonly afterGhatis: number }[];
-  /** The nakshatra quarters to reject. */
-  readonly padas: readonly { readonly nakshatra: Nakshatra; readonly pada: number }[];
-  /** The seasons that close a day. */
-  readonly heeds: readonly BlackoutKind[];
-  /** The grahas the rite wants out of houses; none when left out. */
-  readonly unwanted?: readonly MuhurtaUnwanted[];
-  /** What bars a time outright: every clause of a kind, or one clause. */
-  readonly bars: readonly MuhurtaBar[];
-  /** What the source asks that the SDK does not judge. */
-  readonly unjudged: readonly MuhurtaUnjudged[];
-  /** The baseline engine's event, which the `'BASELINE'` ranking reads. */
-  readonly baseline: MuhurtaBaselineEvent | null;
-}
-
-/** The baseline engine's marriage event: what its weights read. */
-export interface MuhurtaBaselineEvent {
-  readonly stars: readonly Nakshatra[];
-  readonly favouredVaras: readonly Vara[];
-  readonly avoidedVaras: readonly Vara[];
-  readonly favouredTithis: readonly Tithi[];
-  readonly karakas: readonly Graha[];
-  readonly seventhEmpty: boolean;
-  readonly abhijitForbidden: boolean;
-}
-
-/** Grahas a rite wants out of houses, counted 1 to 12 by sign from the lagna; every graha for a house that should be unoccupied. */
-export interface MuhurtaUnwanted {
-  readonly grahas: readonly Graha[];
-  readonly houses: readonly number[];
-  /** Whether a graha there bars the rite (the texts' "must") rather than weighs against it ("should"); `false` when left out (C205). */
-  readonly bars?: boolean;
-}
-
 /** What bars a time: every clause of a kind, by its key, or one clause exactly. */
 export type MuhurtaBar = MuhurtaClauseKey | MuhurtaClauseKind;
 
-/** Something the source asks that the SDK does not judge yet. */
-export interface MuhurtaUnjudged {
-  readonly what: string;
-  readonly why: string;
-}
-
-/** A tara: the birth star's count to the day's, by nine. */
-export type Tara =
-  | 'JANMA'
-  | 'SAMPAT'
-  | 'VIPAT'
-  | 'KSHEMA'
-  | 'PRATYAK'
-  | 'SADHANA'
-  | 'NAIDHANA'
-  | 'MITRA'
-  | 'PARAMA_MITRA';
-
 /** A kind of clause: the `clause` tag of each. */
 export type MuhurtaClauseKey = MuhurtaClauseKind['clause'];
-
-/** One named condition from a source, without when it held: a discriminated union over `clause`. */
-export type MuhurtaClauseKind =
-  | { readonly clause: 'TITHI'; readonly tithi: Tithi; readonly grade: MuhurtaGrade }
-  | { readonly clause: 'NAKSHATRA'; readonly nakshatra: Nakshatra; readonly grade: MuhurtaGrade }
-  | { readonly clause: 'YOGA'; readonly yoga: Yoga; readonly grade: MuhurtaGrade }
-  | { readonly clause: 'KARANA'; readonly karana: Karana; readonly grade: MuhurtaGrade }
-  | { readonly clause: 'VARA'; readonly vara: Vara; readonly grade: MuhurtaGrade }
-  | { readonly clause: 'MONTH'; readonly masa: Masa; readonly grade: MuhurtaGrade }
-  | { readonly clause: 'SOLAR_MONTH'; readonly sign: Rashi; readonly grade: MuhurtaGrade }
-  | { readonly clause: 'LAGNA'; readonly sign: Rashi; readonly grade: MuhurtaGrade }
-  | { readonly clause: 'PADA'; readonly pada: { readonly nakshatra: Nakshatra; readonly pada: number } }
-  | { readonly clause: 'KAALA'; readonly kaala: Kaala }
-  | { readonly clause: 'CHOGHADIYA'; readonly choghadiya: Choghadiya }
-  | { readonly clause: 'ABHIJIT' }
-  | { readonly clause: 'MUHURTA_YOGA'; readonly yoga: MuhurtaYoga }
-  | {
-      readonly clause: 'TARABALA';
-      readonly reading: { readonly count: number; readonly tara: Tara; readonly cycle: number };
-    }
-  | { readonly clause: 'CHANDRABALA'; readonly house: number; readonly holds: boolean }
-  | { readonly clause: 'KARTARI'; readonly second: readonly Graha[]; readonly twelfth: readonly Graha[] }
-  | { readonly clause: 'MOON_IN_DUSTHANA'; readonly house: number }
-  | { readonly clause: 'MOON_JOINED'; readonly with: readonly Graha[] }
-  | { readonly clause: 'VENUS_IN_SIXTH' }
-  | { readonly clause: 'MARS_IN_EIGHTH' }
-  | { readonly clause: 'ASHTAMA_LAGNA' }
-  | { readonly clause: 'KUNAVAMSA'; readonly navamsa: Rashi; readonly lord: Graha }
-  | { readonly clause: 'PANCHAKA_REMAINDER'; readonly panchaka: Panchaka }
-  | { readonly clause: 'LAGNA_TYAJYA'; readonly sign: Rashi }
-  | { readonly clause: 'SEVENTH_OCCUPIED'; readonly by: readonly Graha[] }
-  | { readonly clause: 'MALEFIC_IN_LAGNA'; readonly grahas: readonly Graha[] }
-  | { readonly clause: 'BENEFIC_IN_LAGNA'; readonly grahas: readonly Graha[] }
-  | { readonly clause: 'EXALTED_IN_LAGNA'; readonly grahas: readonly Graha[] }
-  | { readonly clause: 'LUMINARY_IN_ELEVENTH'; readonly grahas: readonly Graha[] }
-  | { readonly clause: 'KENDRA_BENEFICS'; readonly grahas: readonly Graha[] }
-  | { readonly clause: 'UNWANTED_PLACEMENT'; readonly house: number; readonly by: readonly Graha[] }
-  | { readonly clause: 'VARJYAM'; readonly nakshatra: Nakshatra }
-  | { readonly clause: 'GHATA'; readonly row: 'CHANDRA' | 'TITHI' | 'VARA' | 'NAKSHATRA' }
-  | { readonly clause: 'ASHUBHA_YOGA'; readonly yoga: AshubhaYoga };
 
 /** A clause and the interval it held over. */
 export type MuhurtaClause = MuhurtaClauseKind & { readonly at: Interval };

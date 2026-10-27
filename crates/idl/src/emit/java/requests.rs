@@ -921,6 +921,28 @@ impl<'a> Types<'a> {
     /// A few names or one value, or a catalogue member beside them: a
     /// sealed interface of an enum of the names, the value made by
     /// `value`, and the member by `member`.
+    /// Whether a value of `ty` may be a JSON string: text, a member, a
+    /// key set, or a union holding names.
+    fn takes_text(&self, ty: &RecordType) -> bool {
+        match ty {
+            RecordType::Text
+            | RecordType::Json
+            | RecordType::Member { .. }
+            | RecordType::Keyed { .. } => true,
+            RecordType::Record { name } => {
+                self.keys.contains(name.as_str())
+                    || self.api.requests.records.iter().any(|record| {
+                        record.name == *name
+                            && !matches!(
+                                record.shape,
+                                RecordShape::Object { .. } | RecordShape::Tagged { .. }
+                            )
+                    })
+            }
+            _ => false,
+        }
+    }
+
     fn or_named(
         &self,
         name: &str,
@@ -951,8 +973,16 @@ impl<'a> Types<'a> {
         }
         // The member reads from a string the names have not taken, before
         // the value, which the reader holds is a record.
+        // Without a member, a string no value can be is a name or nothing,
+        // so it is refused as a key, listing what the field reads.
+        let names_only = if values.iter().any(|value| self.takes_text(&value.ty)) {
+            String::new()
+        } else {
+            "        if (raw instanceof String) {\n            return Key.of(raw);\n        }\n"
+                .to_owned()
+        };
         let (member_permit, member_make, member_read) = match member {
-            None => (String::new(), String::new(), String::new()),
+            None => (String::new(), String::new(), names_only),
             Some(kind) => {
                 let wrapper = format!("{name}Member");
                 let ty = RecordType::Member {
