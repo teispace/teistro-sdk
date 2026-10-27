@@ -44,6 +44,19 @@ export const ROUNDS = 15;
  */
 export const SAME_SKY_DEG = 1 / 60;
 
+/**
+ * An answer that holds nothing the request asked for, such as a varsha
+ * with no pravesha: an answer, not a refusal, and not the request's work
+ * either, so {@link agreeing} keeps the input out of that request's timing
+ * and reports it with its reason, apart from the refusals.
+ */
+export class Empty {
+  /** @param {string} reason what the answer lacked */
+  constructor(reason) {
+    this.reason = reason;
+  }
+}
+
 /** Takes values only so that reading them, which decodes them, is done. */
 function decoded(...values) {
   return values.length;
@@ -297,7 +310,9 @@ export function sdkSide(ctx, kp, version, transit = () => ctx) {
         ...at(input),
         varsha: { through: input.year ?? 1, place: 'birth', matters: 'all', sahams: 'all', dashas: [DashaSystem.Mudda] },
       });
-      decoded(chart.grahas, chart.praveshas.at(-1).annual);
+      const year = chart.praveshas.at(-1);
+      if (year === undefined) return new Empty('answered no pravesha (an empty `praveshas`)');
+      decoded(chart.grahas, year.annual);
       return chart;
     },
     kp: (input) => {
@@ -409,28 +424,37 @@ export function openSdk(ephemeris, version, convention = 'timed', patch = {}) {
  * and, for every request, computed the same sky for. An input a side
  * refuses (the corpus's range edges, where an ephemeris's data ends, or a
  * polar day without a sunrise) is kept out of that request, with the side
- * and the reason; an input whose
+ * and the reason; so is one a side answers {@link Empty}, reported apart
+ * as `empty` since it was answered; an input whose
  * two Suns stand apart is kept out of every request, since its instant
  * or place was not the same on both sides. `requests` must hold `chart`,
  * whose Suns are compared.
  *
  * @returns {{kept: Record<string, import('./ab-inputs.mjs').Input[]>, differ: {id: string, a: number, b: number}[],
- *   refused: {id: string, side: number, request: string, reason: string}[]}}
+ *   refused: {id: string, side: number, request: string, reason: string}[],
+ *   empty: {id: string, side: number, request: string, reason: string}[]}}
  */
 export function agreeing(a, b, all, requests = REQUESTS) {
   const kept = Object.fromEntries(requests.map((request) => [request, []]));
   const differ = [];
   const refused = [];
+  const empty = [];
   for (const input of all) {
     const answers = {};
     for (const request of requests) {
       answers[request] = [a, b].map((side, at) => {
+        let answer;
         try {
-          return side[request](input);
+          answer = side[request](input);
         } catch (error) {
           refused.push({ id: input.id, side: at, request, reason: error.message });
           return undefined;
         }
+        if (answer instanceof Empty) {
+          empty.push({ id: input.id, side: at, request, reason: answer.reason });
+          return undefined;
+        }
+        return answer;
       });
     }
     const [ca, cb] = answers.chart;
@@ -446,7 +470,7 @@ export function agreeing(a, b, all, requests = REQUESTS) {
       if (answers[request].every((answer) => answer !== undefined)) kept[request].push(input);
     }
   }
-  return { kept, differ, refused };
+  return { kept, differ, refused, empty };
 }
 
 /**
@@ -571,6 +595,9 @@ async function main() {
     }
     for (const r of agreed.refused) {
       console.log(JSON.stringify({ refused: r.id, side: SIDES[r.side], request: r.request, reason: r.reason }));
+    }
+    for (const e of agreed.empty) {
+      console.log(JSON.stringify({ empty: e.id, side: SIDES[e.side], request: e.request, reason: e.reason }));
     }
     // A request at a time, so that each request's figures are printed as
     // they are taken.

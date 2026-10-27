@@ -300,6 +300,13 @@ struct Record {
     differ: Vec<String>,
     /// The requests a side refused, by birth.
     refused: Vec<Refused>,
+    /// The requests a side answered with nothing the request asked for
+    /// (a varsha with no pravesha), by birth: answered, so not refused,
+    /// and kept out of the timing all the same, since that side did not
+    /// do the request's work. Absent from a record taken before the runner
+    /// told the two apart.
+    #[serde(default)]
+    empty: Vec<Refused>,
     figures: Vec<Timed>,
     /// The threads the machine offered, which names the load's counts; 0
     /// in a record taken before the load was measured.
@@ -358,11 +365,13 @@ impl Record {
             .find(|m| m.side == side && m.measure == measure)
     }
 
-    /// The births a request was refused for, on either side, each once.
-    fn refused_for(&self, request: &str) -> Vec<&str> {
+    /// The births a request was refused for, or answered with nothing,
+    /// on either side, each once: the births kept out of its timing.
+    fn left_out_for(&self, request: &str) -> Vec<&str> {
         let mut ids: Vec<&str> = self
             .refused
             .iter()
+            .chain(&self.empty)
             .filter(|r| r.request == request)
             .map(|r| r.id.as_str())
             .collect();
@@ -441,6 +450,19 @@ fn request_faults(
             r.side, r.request, r.id, r.reason
         ));
     }
+    // An empty answer is an answer, so its words are not held; but it
+    // keeps a birth out of a timing, which only an excused birth may be.
+    for e in record
+        .empty
+        .iter()
+        .filter(|e| !excused.iter().any(|(id, _)| *id == e.id))
+    {
+        found.push(format!(
+            "{name}: the {} answered `{}` with nothing for {}, which the corpus does not excuse \
+             there: {}",
+            e.side, e.request, e.id, e.reason
+        ));
+    }
     if !record.differ.is_empty() {
         found.push(format!(
             "{name}: the two sides computed different skies for {}; a timing over the rest is not \
@@ -452,10 +474,11 @@ fn request_faults(
         let what = format!("`{}` from the {}", t.request, t.side);
         found.extend(schema(name, &what, &t.figure(), "µs"));
         found.extend(too_few(name, &what, t.rounds, ROUNDS, "rounds"));
-        let refused = record.refused_for(&t.request).len();
-        if t.inputs + refused < record.corpus {
+        let left_out = record.left_out_for(&t.request).len();
+        if t.inputs + left_out < record.corpus {
             found.push(format!(
-                "{name}: {what} is over {} of the corpus's {} births, and {refused} were refused",
+                "{name}: {what} is over {} of the corpus's {} births, and {left_out} were refused \
+                 or answered with nothing",
                 t.inputs, record.corpus
             ));
         }
@@ -720,6 +743,19 @@ fn requests_table(out: &mut String, record: &Record) {
             );
         }
     }
+    if !record.empty.is_empty() {
+        let _ = writeln!(
+            out,
+            "\nAnswered with nothing, and kept out of that request's timing:\n"
+        );
+        for e in &record.empty {
+            let _ = writeln!(
+                out,
+                "- {}, `{}`, by the {}: {}",
+                e.id, e.request, e.side, e.reason
+            );
+        }
+    }
 }
 
 /// The throughput on threads and processes (§4), and what went unmeasured.
@@ -849,7 +885,8 @@ fn page_under(records: &[(String, Record)], excused: &[Excused], slower: Slower)
          claim. A request a side refuses is kept out of that request alone, and only at the \
          corpus's range-edge births, where the data's years end and a day's spans run past them, \
          or at its polar births for a rule that needs a sunrise on a day without one. \
-         A round times every birth on one side and then the other, the next round the other way \
+         So is a request a side answers with nothing it asked for, listed apart, since it \
+         was answered. A round times every birth on one side and then the other, the next round the other way \
          round, and a figure is the median of at least {ROUNDS} rounds, per birth in \
          microseconds.\n"
     );
@@ -986,6 +1023,7 @@ struct Lines {
     figures: Vec<Timed>,
     differ: Vec<String>,
     refused: Vec<Refused>,
+    empty: Vec<Refused>,
     corpus: usize,
     parallelism: usize,
     load: Vec<Load>,
@@ -1039,6 +1077,11 @@ fn read_lines(stdout: &str) -> Result<Lines, String> {
                     if let Some(id) = object.remove("refused") {
                         object.insert(String::from("id"), id);
                         lines.refused.push(parsed(line, value)?);
+                        continue;
+                    }
+                    if let Some(id) = object.remove("empty") {
+                        object.insert(String::from("id"), id);
+                        lines.empty.push(parsed(line, value)?);
                         continue;
                     }
                 }
@@ -1102,6 +1145,7 @@ pub(crate) fn measure(root: &Path) -> i32 {
         corpus: lines.corpus,
         differ: lines.differ,
         refused: lines.refused,
+        empty: lines.empty,
         figures: lines.figures,
         parallelism: lines.parallelism,
         load: lines.load,
@@ -1189,6 +1233,7 @@ mod tests {
             corpus: 55,
             differ: Vec::new(),
             refused: Vec::new(),
+            empty: Vec::new(),
             figures,
             parallelism: 2,
             load: Vec::new(),
@@ -1341,7 +1386,7 @@ mod tests {
         let found = faults(&[("m".into(), partial)], &[]);
         for needle in [
             "c007",
-            "54 of the corpus's 55 births, and 0 were refused",
+            "54 of the corpus's 55 births, and 0 were refused or answered with nothing",
             "3 rounds",
             "`day` lacks a side",
         ] {
@@ -1350,6 +1395,43 @@ mod tests {
                 "{needle}: {found:?}"
             );
         }
+    }
+
+    #[test]
+    fn an_empty_answer_is_listed_apart_and_kept_out_only_at_an_excused_birth() {
+        let edges = vec![(String::from("c048"), "")];
+        let empty = |id: &str| Refused {
+            reason: "answered no pravesha (an empty `praveshas`)".into(),
+            ..refused(id, "varsha")
+        };
+        let varsha = |record: &mut Record| {
+            for t in record.figures.iter_mut().filter(|t| t.request == "varsha") {
+                t.inputs = 54;
+            }
+        };
+        let mut at_edge = record(whole());
+        at_edge.empty = vec![empty("c048")];
+        varsha(&mut at_edge);
+        assert_eq!(
+            faults(&[("m".into(), at_edge)], &edges),
+            Vec::<String>::new()
+        );
+        let mut at_edge = record(whole());
+        at_edge.empty = vec![empty("c048")];
+        varsha(&mut at_edge);
+        let page = page(&[("m".into(), at_edge)], &edges);
+        assert!(
+            page.contains("Answered with nothing, and kept out of that request's timing:\n\n- c048, `varsha`, by the sdk: answered no pravesha"),
+            "{page}"
+        );
+        assert!(!page.contains("Refused, and kept out"), "{page}");
+
+        let mut inside = record(whole());
+        inside.empty = vec![empty("c010")];
+        varsha(&mut inside);
+        let found = faults(&[("m".into(), inside)], &edges);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert!(found[0].contains("with nothing for c010"), "{found:?}");
     }
 
     #[test]
