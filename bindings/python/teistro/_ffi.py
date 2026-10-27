@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import ctypes
+import threading
 import weakref
 from dataclasses import dataclass
 from types import TracebackType
@@ -4280,6 +4281,11 @@ class TeistroContext:
     ) -> None:
         self._lib = lib
         self._handle: Optional["ctypes._Pointer[_Context]"] = handle
+        # The native handle is one thread's at a time and ctypes lets go of
+        # the GIL for every call, so each call holds this, and with it the
+        # strings it lends until the next (re-entrant for a host provider
+        # calling back on the same thread).
+        self._lock = threading.RLock()
         self._finalise = weakref.finalize(self, _free_context, lib, handle)
 
     @classmethod
@@ -4352,9 +4358,10 @@ class TeistroContext:
 
     def close(self) -> None:
         """Frees the context's native memory. Closing twice is allowed."""
-        if self._handle is not None:
-            self._handle = None
-            self._finalise()
+        with self._lock:
+            if self._handle is not None:
+                self._handle = None
+                self._finalise()
 
     def __enter__(self) -> TeistroContext:
         return self
@@ -4382,59 +4389,63 @@ class TeistroContext:
         next call other than this one. After a successful call the record is
         `OK` with a null message.
         """
-        _out_error = _ErrorStruct()
-        _out_error.struct_size = ctypes.sizeof(_ErrorStruct)
-        status = Status(self._lib.ts_context_last_error(
-            self._raw,
-            ctypes.byref(_out_error),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        error = Error._of(_out_error)
-        return error
+        with self._lock:
+            _out_error = _ErrorStruct()
+            _out_error.struct_size = ctypes.sizeof(_ErrorStruct)
+            status = Status(self._lib.ts_context_last_error(
+                self._raw,
+                ctypes.byref(_out_error),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            error = Error._of(_out_error)
+            return error
 
     def profile(self) -> str:
         """The id of the profile the context's settings came from, lent until the
         next call on the context.
         """
-        _out_profile = _StrStruct()
-        status = Status(self._lib.ts_context_profile(
-            self._raw,
-            ctypes.byref(_out_profile),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        profile = _lent_string(_out_profile)
-        return profile
+        with self._lock:
+            _out_profile = _StrStruct()
+            status = Status(self._lib.ts_context_profile(
+                self._raw,
+                ctypes.byref(_out_profile),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            profile = _lent_string(_out_profile)
+            return profile
 
     def settings_json(self) -> str:
         """The resolved settings as their canonical JSON document, allocated for
         the caller; free it with `ts_string_free`. Two contexts with the same
         document compute the same numbers.
         """
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_context_settings_json(
-            self._raw,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_context_settings_json(
+                self._raw,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def settings_hash(self) -> Hash:
         """The SHA-256 of the canonical settings document: the `settings_hash`
         every result's provenance carries.
         """
-        _out_hash = _HashStruct()
-        status = Status(self._lib.ts_context_settings_hash(
-            self._raw,
-            ctypes.byref(_out_hash),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        hash = Hash._of(_out_hash)
-        return hash
+        with self._lock:
+            _out_hash = _HashStruct()
+            status = Status(self._lib.ts_context_settings_hash(
+                self._raw,
+                ctypes.byref(_out_hash),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            hash = Hash._of(_out_hash)
+            return hash
 
     def key_parse(self, key: str) -> int:
         """Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
@@ -4442,131 +4453,139 @@ class TeistroContext:
         unknown key is `UNSUPPORTED` with the nearest known key as the hint in
         the context's last error.
         """
-        owned: list[Any] = []
-        _key = key.encode("utf-8")
-        owned.append(_key)
-        _out_id = ctypes.c_uint32()
-        status = Status(self._lib.ts_key_parse(
-            self._raw,
-            _key,
-            ctypes.byref(_out_id),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        id = _out_id.value
-        return id
+        with self._lock:
+            owned: list[Any] = []
+            _key = key.encode("utf-8")
+            owned.append(_key)
+            _out_id = ctypes.c_uint32()
+            status = Status(self._lib.ts_key_parse(
+                self._raw,
+                _key,
+                ctypes.byref(_out_id),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            id = _out_id.value
+            return id
 
     def key_name(self, id: int) -> str:
         """The full key of a packed id (`graha.SUN`), lent until the next call on
         the context. An id no catalogued member has is `UNSUPPORTED`.
         """
-        _out_key = _StrStruct()
-        status = Status(self._lib.ts_key_name(
-            self._raw,
-            _c_value(id),
-            ctypes.byref(_out_key),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        key = _lent_string(_out_key)
-        return key
+        with self._lock:
+            _out_key = _StrStruct()
+            status = Status(self._lib.ts_key_name(
+                self._raw,
+                _c_value(id),
+                ctypes.byref(_out_key),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            key = _lent_string(_out_key)
+            return key
 
     def calendar_from_fixed(self, calendar: Calendar, fixed: int) -> CalendarDate:
         """The date a fixed day falls on in a calendar."""
-        _out_date = _CalendarDateStruct()
-        _out_date.struct_size = ctypes.sizeof(_CalendarDateStruct)
-        status = Status(self._lib.ts_calendar_from_fixed(
-            self._raw,
-            _c_value(calendar),
-            _c_value(fixed),
-            ctypes.byref(_out_date),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        date = CalendarDate._of(_out_date)
-        return date
+        with self._lock:
+            _out_date = _CalendarDateStruct()
+            _out_date.struct_size = ctypes.sizeof(_CalendarDateStruct)
+            status = Status(self._lib.ts_calendar_from_fixed(
+                self._raw,
+                _c_value(calendar),
+                _c_value(fixed),
+                ctypes.byref(_out_date),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            date = CalendarDate._of(_out_date)
+            return date
 
     def calendar_to_fixed(self, date: CalendarDate) -> int:
         """The fixed day of a date, validated: a date the calendar does not have
         is `INVALID_ARG` with the `NONEXISTENT_DATE` detail.
         """
-        owned: list[Any] = []
-        _date = date._to_c(owned)
-        _out_fixed = ctypes.c_int64()
-        status = Status(self._lib.ts_calendar_to_fixed(
-            self._raw,
-            ctypes.byref(_date),
-            ctypes.byref(_out_fixed),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        fixed = _out_fixed.value
-        return fixed
+        with self._lock:
+            owned: list[Any] = []
+            _date = date._to_c(owned)
+            _out_fixed = ctypes.c_int64()
+            status = Status(self._lib.ts_calendar_to_fixed(
+                self._raw,
+                ctypes.byref(_date),
+                ctypes.byref(_out_fixed),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            fixed = _out_fixed.value
+            return fixed
 
     def calendar_convert(self, date: CalendarDate, into: Calendar) -> CalendarDate:
         """Converts a date into another calendar."""
-        owned: list[Any] = []
-        _date = date._to_c(owned)
-        _out_date = _CalendarDateStruct()
-        _out_date.struct_size = ctypes.sizeof(_CalendarDateStruct)
-        status = Status(self._lib.ts_calendar_convert(
-            self._raw,
-            ctypes.byref(_date),
-            _c_value(into),
-            ctypes.byref(_out_date),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        date = CalendarDate._of(_out_date)
-        return date
+        with self._lock:
+            owned: list[Any] = []
+            _date = date._to_c(owned)
+            _out_date = _CalendarDateStruct()
+            _out_date.struct_size = ctypes.sizeof(_CalendarDateStruct)
+            status = Status(self._lib.ts_calendar_convert(
+                self._raw,
+                ctypes.byref(_date),
+                _c_value(into),
+                ctypes.byref(_out_date),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            date = CalendarDate._of(_out_date)
+            return date
 
     def calendar_month_length(self, calendar: Calendar, year: int, month: int) -> int:
         """The length of a month in a calendar."""
-        _out_length = ctypes.c_uint8()
-        status = Status(self._lib.ts_calendar_month_length(
-            self._raw,
-            _c_value(calendar),
-            _c_value(year),
-            _c_value(month),
-            ctypes.byref(_out_length),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        length = _out_length.value
-        return length
+        with self._lock:
+            _out_length = ctypes.c_uint8()
+            status = Status(self._lib.ts_calendar_month_length(
+                self._raw,
+                _c_value(calendar),
+                _c_value(year),
+                _c_value(month),
+                ctypes.byref(_out_length),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            length = _out_length.value
+            return length
 
     def calendar_is_leap(self, calendar: Calendar, year: int) -> int:
         """Whether a year is a leap year in a calendar: `1` or `0`."""
-        _out_leap = ctypes.c_uint8()
-        status = Status(self._lib.ts_calendar_is_leap(
-            self._raw,
-            _c_value(calendar),
-            _c_value(year),
-            ctypes.byref(_out_leap),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        leap = _out_leap.value
-        return leap
+        with self._lock:
+            _out_leap = ctypes.c_uint8()
+            status = Status(self._lib.ts_calendar_is_leap(
+                self._raw,
+                _c_value(calendar),
+                _c_value(year),
+                ctypes.byref(_out_leap),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            leap = _out_leap.value
+            return leap
 
     def calendar_weekday(self, date: CalendarDate) -> int:
         """The weekday of a date as its ISO number: Monday is `1`, Sunday `7`."""
-        owned: list[Any] = []
-        _date = date._to_c(owned)
-        _out_weekday = ctypes.c_uint8()
-        status = Status(self._lib.ts_calendar_weekday(
-            self._raw,
-            ctypes.byref(_date),
-            ctypes.byref(_out_weekday),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        weekday = _out_weekday.value
-        return weekday
+        with self._lock:
+            owned: list[Any] = []
+            _date = date._to_c(owned)
+            _out_weekday = ctypes.c_uint8()
+            status = Status(self._lib.ts_calendar_weekday(
+                self._raw,
+                ctypes.byref(_date),
+                ctypes.byref(_out_weekday),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            weekday = _out_weekday.value
+            return weekday
 
     def calendar_tibetan_year(self, year: int) -> str:
         """A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
@@ -4578,16 +4597,17 @@ class TeistroContext:
         `year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027
         to 9998 is `OUT_OF_RANGE`, naming `year`.
         """
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_calendar_tibetan_year(
-            self._raw,
-            _c_value(year),
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_calendar_tibetan_year(
+                self._raw,
+                _c_value(year),
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def chart_layout_row(self, key: str) -> str:
         """A chart layout this context can draw in, shipped or registered, as its
@@ -4597,20 +4617,21 @@ class TeistroContext:
         (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
         `INVALID_ARG` with the keys the context knows as the hint.
         """
-        owned: list[Any] = []
-        _key = key.encode("utf-8")
-        owned.append(_key)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_chart_layout_row(
-            self._raw,
-            _key,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _key = key.encode("utf-8")
+            owned.append(_key)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_chart_layout_row(
+                self._raw,
+                _key,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def chart_found(self, request: ChartRequest) -> bytes:
         """Founds a chart at an instant and a place and answers with its blob:
@@ -4625,19 +4646,20 @@ class TeistroContext:
         A context without an ephemeris is `CAPABILITY`; a provider failure is
         `PROVIDER` with the provider's own code in the last error.
         """
-        owned: list[Any] = []
-        _request = request._to_c(owned)
-        _out_blob = _BlobStruct()
-        status = Status(self._lib.ts_chart_found(
-            self._raw,
-            ctypes.byref(_request),
-            ctypes.byref(_out_blob),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        blob = _take_blob(self._lib, _out_blob)
-        return blob
+        with self._lock:
+            owned: list[Any] = []
+            _request = request._to_c(owned)
+            _out_blob = _BlobStruct()
+            status = Status(self._lib.ts_chart_found(
+                self._raw,
+                ctypes.byref(_request),
+                ctypes.byref(_out_blob),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            blob = _take_blob(self._lib, _out_blob)
+            return blob
 
     def time_resolve(self, civil: CivilDateTime, zone: ZoneSpec) -> ZoneResolution:
         """Resolves a civil date-time in a zone to a UTC instant under the
@@ -4646,82 +4668,86 @@ class TeistroContext:
         names as the hint; a civil time inside a gap under the `error` policy
         is `INVALID_ARG` with the `DST_GAP` detail.
         """
-        owned: list[Any] = []
-        _civil = civil._to_c(owned)
-        _zone = zone._to_c(owned)
-        _out_resolution = _ZoneResolutionStruct()
-        _out_resolution.struct_size = ctypes.sizeof(_ZoneResolutionStruct)
-        status = Status(self._lib.ts_time_resolve(
-            self._raw,
-            ctypes.byref(_civil),
-            ctypes.byref(_zone),
-            ctypes.byref(_out_resolution),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        resolution = ZoneResolution._of(_out_resolution)
-        return resolution
+        with self._lock:
+            owned: list[Any] = []
+            _civil = civil._to_c(owned)
+            _zone = zone._to_c(owned)
+            _out_resolution = _ZoneResolutionStruct()
+            _out_resolution.struct_size = ctypes.sizeof(_ZoneResolutionStruct)
+            status = Status(self._lib.ts_time_resolve(
+                self._raw,
+                ctypes.byref(_civil),
+                ctypes.byref(_zone),
+                ctypes.byref(_out_resolution),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            resolution = ZoneResolution._of(_out_resolution)
+            return resolution
 
     def time_civil(self, jd_utc: float, zone: ZoneSpec, calendar: Calendar) -> TimeCivilResult:
         """The civil date-time of a UTC instant in a zone, in a calendar, with
         the resolution that applied.
         """
-        owned: list[Any] = []
-        _zone = zone._to_c(owned)
-        _out_civil = _CivilDateTimeStruct()
-        _out_civil.struct_size = ctypes.sizeof(_CivilDateTimeStruct)
-        _out_resolution = _ZoneResolutionStruct()
-        _out_resolution.struct_size = ctypes.sizeof(_ZoneResolutionStruct)
-        status = Status(self._lib.ts_time_civil(
-            self._raw,
-            _c_value(jd_utc),
-            ctypes.byref(_zone),
-            _c_value(calendar),
-            ctypes.byref(_out_civil),
-            ctypes.byref(_out_resolution),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        civil = CivilDateTime._of(_out_civil)
-        resolution = ZoneResolution._of(_out_resolution)
-        return TimeCivilResult(civil=civil, resolution=resolution)
+        with self._lock:
+            owned: list[Any] = []
+            _zone = zone._to_c(owned)
+            _out_civil = _CivilDateTimeStruct()
+            _out_civil.struct_size = ctypes.sizeof(_CivilDateTimeStruct)
+            _out_resolution = _ZoneResolutionStruct()
+            _out_resolution.struct_size = ctypes.sizeof(_ZoneResolutionStruct)
+            status = Status(self._lib.ts_time_civil(
+                self._raw,
+                _c_value(jd_utc),
+                ctypes.byref(_zone),
+                _c_value(calendar),
+                ctypes.byref(_out_civil),
+                ctypes.byref(_out_resolution),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            civil = CivilDateTime._of(_out_civil)
+            resolution = ZoneResolution._of(_out_resolution)
+            return TimeCivilResult(civil=civil, resolution=resolution)
 
     def time_convert(self, jd: float, from_: Scale, to: Scale) -> TimeConversion:
         """Converts an instant between UT1, TT and UTC under the context's Delta T
         model, reporting what was applied. A model that cannot answer for the
         instant is `OUT_OF_RANGE`.
         """
-        _out_conversion = _TimeConversionStruct()
-        _out_conversion.struct_size = ctypes.sizeof(_TimeConversionStruct)
-        status = Status(self._lib.ts_time_convert(
-            self._raw,
-            _c_value(jd),
-            _c_value(from_),
-            _c_value(to),
-            ctypes.byref(_out_conversion),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        conversion = TimeConversion._of(_out_conversion)
-        return conversion
+        with self._lock:
+            _out_conversion = _TimeConversionStruct()
+            _out_conversion.struct_size = ctypes.sizeof(_TimeConversionStruct)
+            status = Status(self._lib.ts_time_convert(
+                self._raw,
+                _c_value(jd),
+                _c_value(from_),
+                _c_value(to),
+                ctypes.byref(_out_conversion),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            conversion = TimeConversion._of(_out_conversion)
+            return conversion
 
     def time_delta_t(self, jd_ut1: float) -> DeltaT:
         """Delta T (TT less UT1) at a UT1 instant under the context's model, with
         what produced it and its uncertainty where the source has one.
         """
-        _out_delta_t = _DeltaTStruct()
-        _out_delta_t.struct_size = ctypes.sizeof(_DeltaTStruct)
-        status = Status(self._lib.ts_time_delta_t(
-            self._raw,
-            _c_value(jd_ut1),
-            ctypes.byref(_out_delta_t),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        delta_t = DeltaT._of(_out_delta_t)
-        return delta_t
+        with self._lock:
+            _out_delta_t = _DeltaTStruct()
+            _out_delta_t.struct_size = ctypes.sizeof(_DeltaTStruct)
+            status = Status(self._lib.ts_time_delta_t(
+                self._raw,
+                _c_value(jd_ut1),
+                ctypes.byref(_out_delta_t),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            delta_t = DeltaT._of(_out_delta_t)
+            return delta_t
 
     def intl_load_pack(self, bytes: bytes) -> IntlLoaded:
         """Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
@@ -4730,66 +4756,70 @@ class TeistroContext:
         giving every nakshatra a `phala` leaves its `name` standing. A file that
         does not verify is `PACK`.
         """
-        owned: list[Any] = []
-        _bytes = (ctypes.c_uint8 * len(bytes)).from_buffer_copy(bytes)
-        owned.append(_bytes)
-        _out_loaded = _IntlLoadedStruct()
-        _out_loaded.struct_size = ctypes.sizeof(_IntlLoadedStruct)
-        status = Status(self._lib.ts_intl_load_pack(
-            self._raw,
-            _bytes,
-            len(bytes),
-            ctypes.byref(_out_loaded),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        loaded = IntlLoaded._of(_out_loaded)
-        return loaded
+        with self._lock:
+            owned: list[Any] = []
+            _bytes = (ctypes.c_uint8 * len(bytes)).from_buffer_copy(bytes)
+            owned.append(_bytes)
+            _out_loaded = _IntlLoadedStruct()
+            _out_loaded.struct_size = ctypes.sizeof(_IntlLoadedStruct)
+            status = Status(self._lib.ts_intl_load_pack(
+                self._raw,
+                _bytes,
+                len(bytes),
+                ctypes.byref(_out_loaded),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            loaded = IntlLoaded._of(_out_loaded)
+            return loaded
 
     def intl_set_locale(self, locale: str) -> None:
         """Selects the locale every render resolves from; an unknown one is
         `UNSUPPORTED` naming the loaded locales.
         """
-        owned: list[Any] = []
-        _locale = locale.encode("utf-8")
-        owned.append(_locale)
-        status = Status(self._lib.ts_intl_set_locale(self._raw, _locale))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        return None
+        with self._lock:
+            owned: list[Any] = []
+            _locale = locale.encode("utf-8")
+            owned.append(_locale)
+            status = Status(self._lib.ts_intl_set_locale(self._raw, _locale))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            return None
 
     def intl_locale(self) -> str:
         """The locale every render resolves from, lent until the next call on the
         context.
         """
-        _out_locale = _StrStruct()
-        status = Status(self._lib.ts_intl_locale(
-            self._raw,
-            ctypes.byref(_out_locale),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        locale = _lent_string(_out_locale)
-        return locale
+        with self._lock:
+            _out_locale = _StrStruct()
+            status = Status(self._lib.ts_intl_locale(
+                self._raw,
+                ctypes.byref(_out_locale),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            locale = _lent_string(_out_locale)
+            return locale
 
     def intl_has(self, key: str) -> int:
         """Whether the current locale or its fallbacks have a message: `1` or `0`."""
-        owned: list[Any] = []
-        _key = key.encode("utf-8")
-        owned.append(_key)
-        _out_has = ctypes.c_uint8()
-        status = Status(self._lib.ts_intl_has(
-            self._raw,
-            _key,
-            ctypes.byref(_out_has),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        has = _out_has.value
-        return has
+        with self._lock:
+            owned: list[Any] = []
+            _key = key.encode("utf-8")
+            owned.append(_key)
+            _out_has = ctypes.c_uint8()
+            status = Status(self._lib.ts_intl_has(
+                self._raw,
+                _key,
+                ctypes.byref(_out_has),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            has = _out_has.value
+            return has
 
     def intl_transliterate(self, text: str, from_: str, to: str) -> str:
         """Text from one script into another (`deva`, `iast`), as a string lent
@@ -4798,26 +4828,27 @@ class TeistroContext:
         passes through, so a name written in two scripts is transliterated in
         the half that needs it.
         """
-        owned: list[Any] = []
-        _text = text.encode("utf-8")
-        owned.append(_text)
-        _from_ = from_.encode("utf-8")
-        owned.append(_from_)
-        _to = to.encode("utf-8")
-        owned.append(_to)
-        _out_text = _StrStruct()
-        status = Status(self._lib.ts_intl_transliterate(
-            self._raw,
-            _text,
-            _from_,
-            _to,
-            ctypes.byref(_out_text),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        text = _lent_string(_out_text)
-        return text
+        with self._lock:
+            owned: list[Any] = []
+            _text = text.encode("utf-8")
+            owned.append(_text)
+            _from_ = from_.encode("utf-8")
+            owned.append(_from_)
+            _to = to.encode("utf-8")
+            owned.append(_to)
+            _out_text = _StrStruct()
+            status = Status(self._lib.ts_intl_transliterate(
+                self._raw,
+                _text,
+                _from_,
+                _to,
+                ctypes.byref(_out_text),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            text = _lent_string(_out_text)
+            return text
 
     def intl_entity(self, key: str) -> str:
         """An entity's forms in the current locale or its fallbacks, as a JSON
@@ -4830,20 +4861,21 @@ class TeistroContext:
         The typed accessors each binding generates read entities through this,
         so an application spells `graha.SUN` once and never a name.
         """
-        owned: list[Any] = []
-        _key = key.encode("utf-8")
-        owned.append(_key)
-        _out_json = _StrStruct()
-        status = Status(self._lib.ts_intl_entity(
-            self._raw,
-            _key,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _lent_string(_out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _key = key.encode("utf-8")
+            owned.append(_key)
+            _out_json = _StrStruct()
+            status = Status(self._lib.ts_intl_entity(
+                self._raw,
+                _key,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _lent_string(_out_json)
+            return json
 
     def intl_render(self, key: str, params_json: str) -> bytes:
         """Renders a message with parameters given as a JSON object: a string, an
@@ -4857,23 +4889,24 @@ class TeistroContext:
         and the warnings; a missing message renders as its key with a
         warning, never an error.
         """
-        owned: list[Any] = []
-        _key = key.encode("utf-8")
-        owned.append(_key)
-        _params_json = params_json.encode("utf-8")
-        owned.append(_params_json)
-        _out_blob = _BlobStruct()
-        status = Status(self._lib.ts_intl_render(
-            self._raw,
-            _key,
-            _params_json,
-            ctypes.byref(_out_blob),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        blob = _take_blob(self._lib, _out_blob)
-        return blob
+        with self._lock:
+            owned: list[Any] = []
+            _key = key.encode("utf-8")
+            owned.append(_key)
+            _params_json = params_json.encode("utf-8")
+            owned.append(_params_json)
+            _out_blob = _BlobStruct()
+            status = Status(self._lib.ts_intl_render(
+                self._raw,
+                _key,
+                _params_json,
+                ctypes.byref(_out_blob),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            blob = _take_blob(self._lib, _out_blob)
+            return blob
 
     def positions(self, request: PositionRequest) -> bytes:
         """Positions over a grid of instants and bodies in the requested frame:
@@ -4882,19 +4915,20 @@ class TeistroContext:
         context without an ephemeris is `CAPABILITY`; a provider failure is
         `PROVIDER` with the provider's own code in the last error.
         """
-        owned: list[Any] = []
-        _request = request._to_c(owned)
-        _out_blob = _BlobStruct()
-        status = Status(self._lib.ts_positions(
-            self._raw,
-            ctypes.byref(_request),
-            ctypes.byref(_out_blob),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        blob = _take_blob(self._lib, _out_blob)
-        return blob
+        with self._lock:
+            owned: list[Any] = []
+            _request = request._to_c(owned)
+            _out_blob = _BlobStruct()
+            status = Status(self._lib.ts_positions(
+                self._raw,
+                ctypes.byref(_request),
+                ctypes.byref(_out_blob),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            blob = _take_blob(self._lib, _out_blob)
+            return blob
 
     def panchanga_days(self, request: PanchangaRequest) -> bytes:
         """Founds the almanac of every day in a range at one place and answers
@@ -4915,19 +4949,20 @@ class TeistroContext:
         under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the
         policies that would synthesise one.
         """
-        owned: list[Any] = []
-        _request = request._to_c(owned)
-        _out_blob = _BlobStruct()
-        status = Status(self._lib.ts_panchanga_days(
-            self._raw,
-            ctypes.byref(_request),
-            ctypes.byref(_out_blob),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        blob = _take_blob(self._lib, _out_blob)
-        return blob
+        with self._lock:
+            owned: list[Any] = []
+            _request = request._to_c(owned)
+            _out_blob = _BlobStruct()
+            status = Status(self._lib.ts_panchanga_days(
+                self._raw,
+                ctypes.byref(_request),
+                ctypes.byref(_out_blob),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            blob = _take_blob(self._lib, _out_blob)
+            return blob
 
     def almanac_disagreements(self, other: TeistroContext, request_json: str) -> str:
         """Compares this context's reckoning of a range with another's at one
@@ -4962,21 +4997,22 @@ class TeistroContext:
         context without an ephemeris `CAPABILITY`. A failure of either
         context's reckoning is recorded on this one.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_almanac_disagreements(
-            self._raw,
-            other._raw,
-            _request_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_disagreements(
+                self._raw,
+                other._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def almanac_published_reasons(self, other: TeistroContext, request_json: str) -> str:
         """Says why each published day of a festival answer differs from the
@@ -5006,21 +5042,22 @@ class TeistroContext:
         not read, a place or offset out of range or a festival request its
         reader refuses is `INVALID_ARG`, named under `publishedReasons`.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_almanac_published_reasons(
-            self._raw,
-            other._raw,
-            _request_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_published_reasons(
+                self._raw,
+                other._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def almanac_sankalpa(self, request_json: str) -> str:
         """The time a sankalpa recites at an instant and a place
@@ -5045,20 +5082,21 @@ class TeistroContext:
         instant in no day's window (a polar day the policy leaves undefined)
         `OUT_OF_RANGE`.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_almanac_sankalpa(
-            self._raw,
-            _request_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_sankalpa(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def almanac_ashauch(self, request_json: str) -> str:
         """The period of impurity after a birth or a death at a place
@@ -5089,20 +5127,21 @@ class TeistroContext:
         row for is `UNSUPPORTED`; a context without an ephemeris is
         `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_almanac_ashauch(
-            self._raw,
-            _request_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_ashauch(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def almanac_first_year(self, request_json: str) -> str:
         """A death's first year at a place (`03-design/shraddha.md` §3.3),
@@ -5127,20 +5166,21 @@ class TeistroContext:
         under `firstYear`; a context without an ephemeris is `CAPABILITY`, and
         a polar day `OUT_OF_RANGE`.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_almanac_first_year(
-            self._raw,
-            _request_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_first_year(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def almanac_festival_calendar(self, request_json: str) -> str:
         """A range's observances and Ekadashi fasts at one place as an iCalendar
@@ -5162,20 +5202,21 @@ class TeistroContext:
         outside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without
         an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_text = _StringStruct()
-        status = Status(self._lib.ts_almanac_festival_calendar(
-            self._raw,
-            _request_json,
-            ctypes.byref(_out_text),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        text = _take_string(self._lib, _out_text)
-        return text
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_text = _StringStruct()
+            status = Status(self._lib.ts_almanac_festival_calendar(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_text),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            text = _take_string(self._lib, _out_text)
+            return text
 
     def naam_milan(self, request_json: str) -> bytes:
         """Matches two names star to star (naam milan) and answers with the
@@ -5190,20 +5231,21 @@ class TeistroContext:
         `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or
         `naam.groom`.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_blob = _BlobStruct()
-        status = Status(self._lib.ts_naam_milan(
-            self._raw,
-            _request_json,
-            ctypes.byref(_out_blob),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        blob = _take_blob(self._lib, _out_blob)
-        return blob
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_blob = _BlobStruct()
+            status = Status(self._lib.ts_naam_milan(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_blob),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            blob = _take_blob(self._lib, _out_blob)
+            return blob
 
     def numerology_profile(self, request_json: str) -> str:
         """Reads a name and a birth date under numerology's two systems and
@@ -5219,20 +5261,21 @@ class TeistroContext:
         no letter, or a date the calendar does not have is `INVALID_ARG`,
         named under `numerology`.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_numerology_profile(
-            self._raw,
-            _request_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_numerology_profile(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def pakshi(self, request_json: str) -> str:
         """Reads a native's bird over each civil day of a range at a place and
@@ -5254,20 +5297,21 @@ class TeistroContext:
         without an ephemeris is `CAPABILITY`, as is a build that leaves the
         `pakshi` family out.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_pakshi(
-            self._raw,
-            _request_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_pakshi(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def rashifal(self, request_json: str) -> str:
         """Reads periods of civil days at a place for each of the twelve signs and
@@ -5289,20 +5333,21 @@ class TeistroContext:
         under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
         a build that leaves the `rashifal` family out.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_rashifal(
-            self._raw,
-            _request_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_rashifal(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def research(self, request_json: str) -> str:
         """Runs a study over a batch of births and answers with `{value,
@@ -5330,20 +5375,21 @@ class TeistroContext:
         without an ephemeris is `CAPABILITY`, as is a build that leaves the
         `research` family out.
         """
-        owned: list[Any] = []
-        _request_json = request_json.encode("utf-8")
-        owned.append(_request_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_research(
-            self._raw,
-            _request_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_research(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def ephemeris_manifest(self) -> str:
         """What the context's engine says it offers beyond this library's own
@@ -5357,15 +5403,16 @@ class TeistroContext:
         `CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the
         engine describes nothing of its own.
         """
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_ephemeris_manifest(
-            self._raw,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_ephemeris_manifest(
+                self._raw,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def ephemeris_call(self, function: str, arguments_json: str) -> str:
         """Calls one of the engine's own operations by the name its manifest
@@ -5379,23 +5426,24 @@ class TeistroContext:
         engine describes nothing of its own or names no such operation, and
         `PROVIDER` when the engine itself refuses.
         """
-        owned: list[Any] = []
-        _function = function.encode("utf-8")
-        owned.append(_function)
-        _arguments_json = arguments_json.encode("utf-8")
-        owned.append(_arguments_json)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_ephemeris_call(
-            self._raw,
-            _function,
-            _arguments_json,
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _function = function.encode("utf-8")
+            owned.append(_function)
+            _arguments_json = arguments_json.encode("utf-8")
+            owned.append(_arguments_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_ephemeris_call(
+                self._raw,
+                _function,
+                _arguments_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def published_verify(self, pack: bytes, signature: bytes, key: bytes, at_least: int) -> str:
         """Verifies a signed pack and answers with its published set as canonical
@@ -5412,30 +5460,31 @@ class TeistroContext:
         older version, `INVALID_ARG` on `version`. A build without
         `signed-packs` answers `CAPABILITY`.
         """
-        owned: list[Any] = []
-        _pack = (ctypes.c_uint8 * len(pack)).from_buffer_copy(pack)
-        owned.append(_pack)
-        _signature = (ctypes.c_uint8 * len(signature)).from_buffer_copy(signature)
-        owned.append(_signature)
-        _key = (ctypes.c_uint8 * len(key)).from_buffer_copy(key)
-        owned.append(_key)
-        _out_json = _StringStruct()
-        status = Status(self._lib.ts_published_verify(
-            self._raw,
-            _pack,
-            len(pack),
-            _signature,
-            len(signature),
-            _key,
-            len(key),
-            _c_value(at_least),
-            ctypes.byref(_out_json),
-        ))
-        if status != Status.OK:
-            self._raise(status)
-        owned.clear()
-        json = _take_string(self._lib, _out_json)
-        return json
+        with self._lock:
+            owned: list[Any] = []
+            _pack = (ctypes.c_uint8 * len(pack)).from_buffer_copy(pack)
+            owned.append(_pack)
+            _signature = (ctypes.c_uint8 * len(signature)).from_buffer_copy(signature)
+            owned.append(_signature)
+            _key = (ctypes.c_uint8 * len(key)).from_buffer_copy(key)
+            owned.append(_key)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_published_verify(
+                self._raw,
+                _pack,
+                len(pack),
+                _signature,
+                len(signature),
+                _key,
+                len(key),
+                _c_value(at_least),
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
 
 def _free_context(lib: TeistroLibrary, handle: Any) -> None:
@@ -5458,6 +5507,11 @@ class TeistroProvider:
     ) -> None:
         self._lib = lib
         self._handle: Optional["ctypes._Pointer[_Provider]"] = handle
+        # The native handle is one thread's at a time and ctypes lets go of
+        # the GIL for every call, so each call holds this, and with it the
+        # strings it lends until the next (re-entrant for a host provider
+        # calling back on the same thread).
+        self._lock = threading.RLock()
         self._finalise = weakref.finalize(self, _free_provider, lib, handle)
 
     @classmethod
@@ -5504,9 +5558,10 @@ class TeistroProvider:
 
     def close(self) -> None:
         """Frees the context's native memory. Closing twice is allowed."""
-        if self._handle is not None:
-            self._handle = None
-            self._finalise()
+        with self._lock:
+            if self._handle is not None:
+                self._handle = None
+                self._finalise()
 
     def __enter__(self) -> TeistroProvider:
         return self

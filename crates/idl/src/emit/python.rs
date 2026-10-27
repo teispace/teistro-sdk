@@ -387,7 +387,7 @@ pub fn declarations(api: &Api) -> String {
         api,
         "The `ctypes` layer: the declarations that match the C header name for\nname, a frozen value class per boundary struct with its own marshalling,\nthe exception every refusal is raised as, and the context handle.",
     );
-    out.push_str("import ctypes\nimport weakref\nfrom dataclasses import dataclass\nfrom types import TracebackType\nfrom typing import Any, Final, NamedTuple, Optional, Sequence\n\n");
+    out.push_str("import ctypes\nimport threading\nimport weakref\nfrom dataclasses import dataclass\nfrom types import TracebackType\nfrom typing import Any, Final, NamedTuple, Optional, Sequence\n\n");
     render_catalogue_import(&mut out, api);
     render_constants(&mut out, api);
     render_sizes(&mut out, api);
@@ -1374,7 +1374,7 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     let free = format!("_free_{}", snake(&name));
     let _ = writeln!(
         out,
-        "class Teistro{name}:\n    \"\"\"A live context, and every call that takes one.\n\n    The handle is freed by `close`, by leaving a `with` block, or by the\n    finaliser when neither happened; a result that waits for the\n    collector can exhaust memory (ADR-0007, finding 4), so the explicit\n    forms are the ones to use.\n    \"\"\"\n\n    def __init__(\n        self, lib: TeistroLibrary, handle: \"ctypes._Pointer[{handle}]\"\n    ) -> None:\n        self._lib = lib\n        self._handle: Optional[\"ctypes._Pointer[{handle}]\"] = handle\n        self._finalise = weakref.finalize(self, {free}, lib, handle)\n"
+        "class Teistro{name}:\n    \"\"\"A live context, and every call that takes one.\n\n    The handle is freed by `close`, by leaving a `with` block, or by the\n    finaliser when neither happened; a result that waits for the\n    collector can exhaust memory (ADR-0007, finding 4), so the explicit\n    forms are the ones to use.\n    \"\"\"\n\n    def __init__(\n        self, lib: TeistroLibrary, handle: \"ctypes._Pointer[{handle}]\"\n    ) -> None:\n        self._lib = lib\n        self._handle: Optional[\"ctypes._Pointer[{handle}]\"] = handle\n        # The native handle is one thread's at a time and ctypes lets go of\n        # the GIL for every call, so each call holds this, and with it the\n        # strings it lends until the next (re-entrant for a host provider\n        # calling back on the same thread).\n        self._lock = threading.RLock()\n        self._finalise = weakref.finalize(self, {free}, lib, handle)\n"
     );
     if let Some(ctor) = constructor(api, opaque) {
         render_constructor(out, api, ctor, &name, &handle);
@@ -1384,7 +1384,7 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     }
     let _ = writeln!(
         out,
-        "    @property\n    def _raw(self) -> \"ctypes._Pointer[{handle}]\":\n        \"\"\"The live handle, or a refusal saying it was closed.\"\"\"\n        if self._handle is None:\n            raise TeistroError(\n                Status.INVALID_ARG,\n                \"this context has been closed\",\n                hint=\"open another one\",\n            )\n        return self._handle\n\n    def close(self) -> None:\n        \"\"\"Frees the context's native memory. Closing twice is allowed.\"\"\"\n        if self._handle is not None:\n            self._handle = None\n            self._finalise()\n\n    def __enter__(self) -> Teistro{name}:\n        return self\n\n    def __exit__(\n        self,\n        kind: Optional[type[BaseException]],\n        value: Optional[BaseException],\n        traceback: Optional[TracebackType],\n    ) -> None:\n        self.close()"
+        "    @property\n    def _raw(self) -> \"ctypes._Pointer[{handle}]\":\n        \"\"\"The live handle, or a refusal saying it was closed.\"\"\"\n        if self._handle is None:\n            raise TeistroError(\n                Status.INVALID_ARG,\n                \"this context has been closed\",\n                hint=\"open another one\",\n            )\n        return self._handle\n\n    def close(self) -> None:\n        \"\"\"Frees the context's native memory. Closing twice is allowed.\"\"\"\n        with self._lock:\n            if self._handle is not None:\n                self._handle = None\n                self._finalise()\n\n    def __enter__(self) -> Teistro{name}:\n        return self\n\n    def __exit__(\n        self,\n        kind: Optional[type[BaseException]],\n        value: Optional[BaseException],\n        traceback: Optional[TracebackType],\n    ) -> None:\n        self.close()"
     );
     render_error_reader(out, api);
     for m in methods(api, opaque) {
@@ -1507,13 +1507,14 @@ fn render_method(out: &mut String, api: &Api, opaque: &OpaqueDef, f: &FunctionDe
         m.signature, m.returns
     );
     out.push_str(&docstring(&f.doc, "        "));
+    out.push_str("        with self._lock:\n");
     render_body(
         out,
         api,
         f,
         &m,
         "self._lib",
-        "        ",
+        "            ",
         "self._raise(status)",
     );
 }
