@@ -106,12 +106,12 @@ pub const DART_SHADOWED: &[&str] = &[
 ];
 
 /// Whether the layer keeps `name` by hand.
-fn is_facade(name: &str) -> bool {
+pub(super) fn is_facade(name: &str) -> bool {
     DART_FACADES.iter().any(|(facade, _)| *facade == name)
 }
 
 /// A Dart string literal.
-fn quoted(text: &str) -> String {
+pub(super) fn quoted(text: &str) -> String {
     let escaped = text
         .replace('\\', "\\\\")
         .replace('\'', "\\'")
@@ -121,14 +121,14 @@ fn quoted(text: &str) -> String {
 }
 
 /// A key as a Dart enum member (`DAY_AND_NIGHT` is `dayAndNight`).
-fn member(key: &str) -> String {
+pub(super) fn member(key: &str) -> String {
     identifier(&key.replace('-', "_"))
 }
 
 impl Types<'_> {
     /// Whether a record is written as a key: a key set, or the boundary
     /// enum it reuses.
-    fn is_key(&self, name: &str) -> bool {
+    pub(super) fn is_key(&self, name: &str) -> bool {
         self.api.requests.enums.contains_key(name)
             || self.api.requests.records.iter().any(|record| {
                 record.name == name && matches!(record.shape, RecordShape::Keys { .. })
@@ -212,7 +212,7 @@ impl Types<'_> {
 
     /// A schema's default as a Dart constant of `ty`, where Dart can write
     /// one; `None` leaves the field nullable for serde to default.
-    fn constant(&self, ty: &RecordType, value: &Value) -> Option<String> {
+    pub(super) fn constant(&self, ty: &RecordType, value: &Value) -> Option<String> {
         // A façade's constructor is the layer's, and a shadowed record is
         // JSON here: neither is built from the schema.
         if let RecordType::Record { name } = ty
@@ -311,7 +311,12 @@ impl Types<'_> {
 
     /// A boundary enum's member by its key: the catalogue kind's, or the
     /// enum named.
-    fn enum_member(&self, kind: Option<&str>, name: Option<&str>, key: &str) -> Option<String> {
+    pub(super) fn enum_member(
+        &self,
+        kind: Option<&str>,
+        name: Option<&str>,
+        key: &str,
+    ) -> Option<String> {
         let e = self.api.enums.iter().find(|e| {
             kind.is_some_and(|kind| e.kind.as_deref() == Some(kind))
                 || name.is_some_and(|name| e.name == name)
@@ -505,7 +510,7 @@ pub fn dart_declarations(api: &Api) -> String {
         "A request record: a value compared field by field, written as its JSON.",
         "",
     ));
-    out.push_str("abstract base class _Request extends _Value {\n  const _Request();\n\n  /// Its JSON, as the SDK reads it.\n  Object? get _wire;\n}\n");
+    out.push_str("abstract base class _Request extends _Value {\n  const _Request();\n\n  /// Its JSON, as the SDK reads it.\n  Object? get _wire;\n\n  /// Its JSON as the SDK reads it: maps, lists, strings, numbers and\n  /// booleans, a catalogue member as its key. `jsonEncode` calls it, so a\n  /// request can be stored or logged as the text that crosses.\n  Object? toJson() => _wire;\n}\n");
     for record in &api.requests.records {
         let name = record.name.as_str();
         if api.requests.enums.contains_key(name) || is_facade(name) || DART_SHADOWED.contains(&name)

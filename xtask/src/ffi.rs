@@ -40,6 +40,10 @@ const DART_REQUESTS: &str = "bindings/dart/lib/src/requests.dart";
 /// catalogue member wherever one stands, which each binding reads into its
 /// own request type and writes back.
 const DEEP_REQUESTS: &str = "crates/sdk/tests/deep-requests.json";
+/// Each deep example built with the generated Dart request classes and
+/// held to the example, since Dart has no reader of a request to start
+/// from.
+const DART_DEEP_TEST: &str = "bindings/dart/test/deep_requests_test.dart";
 const JS_RECORDS: &str = "bindings/node/lib/records.js";
 const PYTHON_RECORDS: &str = "bindings/python/teistro/_records.py";
 const DART_RECORDS: &str = "bindings/dart/lib/src/records.dart";
@@ -508,6 +512,10 @@ fn outputs(root: &Path) -> Vec<Output> {
         api.blobs.len()
     );
     let json = serde_json::to_string_pretty(&api).expect("the description serialises");
+    let hand: serde_json::Value =
+        serde_json::from_str(include_str!("../../crates/sdk/tests/requests.json"))
+            .unwrap_or_else(|e| panic!("the hand-written examples do not read: {e}"));
+    let deep = requests::deep_examples(&api, &hand);
     let mut outputs = vec![
         Output::new(API_JSON, format!("{json}\n")),
         Output::new(
@@ -532,14 +540,12 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output::new(PYTHON_REQUESTS, requests::python_declarations(&api)),
         Output::new(DART_REQUESTS, requests::dart_declarations(&api)),
         Output::new(DEEP_REQUESTS, {
-            let hand: serde_json::Value =
-                serde_json::from_str(include_str!("../../crates/sdk/tests/requests.json"))
-                    .unwrap_or_else(|e| panic!("the hand-written examples do not read: {e}"));
-            let mut text = serde_json::to_string_pretty(&requests::deep_examples(&api, &hand))
+            let mut text = serde_json::to_string_pretty(&deep)
                 .unwrap_or_else(|e| panic!("the deep examples do not write: {e}"));
             text.push('\n');
             text
         }),
+        Output::new(DART_DEEP_TEST, requests::dart_deep_test(&api, &deep)),
         Output::new(JS_RECORDS, records::javascript_decoders(&api)),
         Output::new(PYTHON_RECORDS, records::python_records(&api)),
         Output::new(DART_RECORDS, records::dart_records(&api)),

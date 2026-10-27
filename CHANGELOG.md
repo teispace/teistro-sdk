@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Dart: a generated request gives its JSON as `toJson()`.**
+**Numbers:** none.
+- Every generated request class gives the JSON it crosses as through
+  `toJson()`, so `jsonEncode(request)` writes it and a caller can store
+  or log a request as the SDK reads it. The layer's hand-kept request
+  classes are unchanged.
+- A generated test (`bindings/dart/test/deep_requests_test.dart`) builds
+  every deep request example with the generated classes, each member as
+  its enum's member, and holds what each writes to the example: 158 of
+  the 167 members, every one but those on a request the layer keeps by
+  hand. Writing a member as its index fails 21 of its 76 cases.
+
 **A pack's checksum covers its whole file; a frame's bits read back as written.**
 **Numbers:** none.
 - `.tpack` and `.tbundle` are format version 3. Version 2's CRC covered
