@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * `FestivalRequest` as the bindings write it. `rules` is read in a second step, because each item is a name or a rule and the refusal should say which item was wrong rather than that no shape matched.
+ * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  *
- * @param published The published sets, each read in a second step as `rules` is. Null leaves the SDK's default.
- * @param rules The {@code rules} field.
+ * @param published The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence. Null leaves the SDK's default.
+ * @param rules The rules: a pack's name, or a list of names and rules spelt out.
  */
-public record FestivalRequest(List<PublishedSet> published, Object rules) implements RequestJson {
+public record FestivalRequest(List<PublishedSet> published, FestivalRules rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -31,9 +31,9 @@ public record FestivalRequest(List<PublishedSet> published, Object rules) implem
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
-     * @param rules The {@code rules} field.
+     * @param rules The rules: a pack's name, or a list of names and rules spelt out.
      */
-    public FestivalRequest(Object rules) {
+    public FestivalRequest(FestivalRules rules) {
         this(null, rules);
     }
 
@@ -50,14 +50,14 @@ public record FestivalRequest(List<PublishedSet> published, Object rules) implem
     /** Builds a {@link FestivalRequest} a field at a time. */
     public static final class Builder {
         private List<PublishedSet> published;
-        private Object rules;
+        private FestivalRules rules;
 
         private Builder() {}
 
         /**
          * Sets {@code published}.
          *
-         * @param published The published sets, each read in a second step as `rules` is. Null leaves the SDK's default.
+         * @param published The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder published(List<PublishedSet> published) {
@@ -68,10 +68,10 @@ public record FestivalRequest(List<PublishedSet> published, Object rules) implem
         /**
          * Sets {@code rules}.
          *
-         * @param rules The {@code rules} field.
+         * @param rules The rules: a pack's name, or a list of names and rules spelt out.
          * @return this builder
          */
-        public Builder rules(Object rules) {
+        public Builder rules(FestivalRules rules) {
             this.rules = rules;
             return this;
         }
@@ -98,7 +98,7 @@ public record FestivalRequest(List<PublishedSet> published, Object rules) implem
         Map<String, Object> json = Read.object(raw, "FestivalRequest");
         return new FestivalRequest(
             Read.orNull(json.get("published"), present -> Read.list(present, "FestivalRequest.published", item0 -> PublishedSet.of(item0))),
-            Read.required(json.get("rules"), "FestivalRequest.rules"));
+            FestivalRules.of(Read.required(json.get("rules"), "FestivalRequest.rules")));
     }
 
     @Override
@@ -107,7 +107,7 @@ public record FestivalRequest(List<PublishedSet> published, Object rules) implem
         if (published != null) {
             json.put("published", published.stream().map(item0 -> item0.toJson()).toList());
         }
-        json.put("rules", rules);
+        json.put("rules", rules.toJson());
         return json;
     }
 }

@@ -35,6 +35,7 @@ pub use mahadvadashi::{
 /// Where the 10th pierces the 11th's day (p. 11).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "EkadashiVedha"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Vedha {
     /// At arunodaya, four ghatis of the night before sunrise: the 10th

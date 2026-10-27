@@ -10,7 +10,7 @@ use serde::Serialize;
 use serde_json::Value;
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
-    Anniversary, DatedRule, EkadashiRule, FestivalRule, FollowingRule, PublishedEntry,
+    Anniversary, Dated, DatedRule, EkadashiRule, FestivalRule, FollowingRule, PublishedEntry,
     PublishedSet, SaitRule,
 };
 
@@ -582,13 +582,12 @@ impl FestivalRequest {
     /// The request a binding writes as `festivals`, read and checked.
     ///
     /// `rules` names a [`FestivalPack`] (`"DHARMASINDHU"`), or is a list
-    /// whose items each name a pack or spell a rule out, in order: an
-    /// [`EkadashiRule`] when it has a `vedha`, a [`FollowingRule`] when it
-    /// has an `after`, a [`DatedRule`] when it has a `civilDate`, a
-    /// `civilWeekday`, a `sunEnters` or an `easter`, an [`Anniversary`] when it has an
-    /// `origin`, a [`SaitRule`] when it has `windows`, else a
-    /// [`FestivalRule`]. A
-    /// later rule replaces an earlier one with its key. A
+    /// whose items each name a pack or spell a rule out, tried in order: a
+    /// [`SaitRule`] when it has `windows`, an [`EkadashiRule`] when it has
+    /// a `vedha`, an [`Anniversary`] when it has an `origin`, a
+    /// [`FollowingRule`] when it has an `after`, a [`DatedRule`] when it
+    /// has one of [`Dated::KEYS`], else a [`FestivalRule`]. A later rule
+    /// replaces an earlier one with its key. A
     /// catalogue member anywhere in it may be written bare or in full
     /// (`masa.ASHWINA`), as every binding reads one back.
     ///
@@ -614,41 +613,43 @@ impl FestivalRequest {
                 Value::String(name) => {
                     request = request.with_pack(pack(name, &field)?);
                 }
-                Value::Object(spelt) if listed && spelt.contains_key("windows") => {
-                    let sait: SaitRule = teistro_core::strict::read_value(item, &field)?;
-                    sait.check().map_err(|why| why.under(&field))?;
-                    request = request.with_sait(sait);
-                }
-                Value::Object(spelt) if listed && spelt.contains_key("vedha") => {
-                    let rule: EkadashiRule = teistro_core::strict::read_value(item, &field)?;
-                    rule.check().map_err(|why| why.under(&field))?;
-                    request = request.with_ekadashi(rule);
-                }
-                Value::Object(spelt) if listed && spelt.contains_key("origin") => {
-                    let asked: Anniversary = teistro_core::strict::read_value(item, &field)?;
-                    asked.check().map_err(|why| why.under(&field))?;
-                    request = request.with_anniversary(asked);
-                }
-                Value::Object(spelt) if listed && spelt.contains_key("after") => {
-                    let rule: FollowingRule = teistro_core::strict::read_value(item, &field)?;
-                    rule.check().map_err(|why| why.under(&field))?;
-                    request = request.with_following(rule);
-                }
-                Value::Object(spelt)
-                    if listed
-                        && (spelt.contains_key("civilDate")
-                            || spelt.contains_key("civilWeekday")
-                            || spelt.contains_key("sunEnters")
-                            || spelt.contains_key("easter")) =>
-                {
-                    let rule: DatedRule = teistro_core::strict::read_value(item, &field)?;
-                    rule.check().map_err(|why| why.under(&field))?;
-                    request = request.with_dated(rule);
-                }
-                other if listed => {
-                    let rule: FestivalRule = teistro_core::strict::read_value(other, &field)?;
-                    rule.check().map_err(|why| why.under(&field))?;
-                    request = request.with_rule(rule);
+                Value::Object(spelt) if listed => {
+                    request = match told(spelt, &field)? {
+                        Some(Spelt::Sait) => {
+                            let sait: SaitRule = teistro_core::strict::read_value(item, &field)?;
+                            sait.check().map_err(|why| why.under(&field))?;
+                            request.with_sait(sait)
+                        }
+                        Some(Spelt::Ekadashi) => {
+                            let rule: EkadashiRule =
+                                teistro_core::strict::read_value(item, &field)?;
+                            rule.check().map_err(|why| why.under(&field))?;
+                            request.with_ekadashi(rule)
+                        }
+                        Some(Spelt::Anniversary) => {
+                            let asked: Anniversary =
+                                teistro_core::strict::read_value(item, &field)?;
+                            asked.check().map_err(|why| why.under(&field))?;
+                            request.with_anniversary(asked)
+                        }
+                        Some(Spelt::Following) => {
+                            let rule: FollowingRule =
+                                teistro_core::strict::read_value(item, &field)?;
+                            rule.check().map_err(|why| why.under(&field))?;
+                            request.with_following(rule)
+                        }
+                        Some(Spelt::Dated) => {
+                            let rule: DatedRule = teistro_core::strict::read_value(item, &field)?;
+                            rule.check().map_err(|why| why.under(&field))?;
+                            request.with_dated(rule)
+                        }
+                        None => {
+                            let rule: FestivalRule =
+                                teistro_core::strict::read_value(item, &field)?;
+                            rule.check().map_err(|why| why.under(&field))?;
+                            request.with_rule(rule)
+                        }
+                    };
                 }
                 _ => {
                     return Err(Error::invalid_arg(
@@ -671,6 +672,57 @@ impl FestivalRequest {
 /// The record every binding writes the request as.
 const FESTIVALS: &str = "festivals";
 
+/// A rule spelt out in a list of rules, other than a [`FestivalRule`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Spelt {
+    Sait,
+    Ekadashi,
+    Anniversary,
+    Following,
+    Dated,
+}
+
+/// How a rule spelt out is told apart, in the order the reader tries:
+/// the first kind whose keys the item carries any one of, and a
+/// [`FestivalRule`] when it carries none. The reader and the schema
+/// (`x-teistro-when`) both read this table.
+const SPELT: [(Spelt, &[&str]); 5] = [
+    (Spelt::Sait, &["windows"]),
+    (Spelt::Ekadashi, &["vedha"]),
+    (Spelt::Anniversary, &["origin"]),
+    (Spelt::Following, &["after"]),
+    (Spelt::Dated, &Dated::KEYS),
+];
+
+/// The kind of rule `item` spells out, `None` for a [`FestivalRule`].
+///
+/// # Errors
+///
+/// `INVALID_ARG` for an item giving two of one kind's keys, two dates,
+/// which serde would read as whichever it met first.
+fn told(item: &serde_json::Map<String, Value>, field: &str) -> Result<Option<Spelt>, Error> {
+    let Some((kind, keys)) = SPELT
+        .iter()
+        .find(|(_, keys)| keys.iter().any(|key| item.contains_key(*key)))
+    else {
+        return Ok(None);
+    };
+    let given: Vec<&str> = keys
+        .iter()
+        .copied()
+        .filter(|key| item.contains_key(*key))
+        .collect();
+    if let [_, _, ..] = given.as_slice() {
+        return Err(Error::invalid_arg(format!(
+            "a rule gives one of `{}`, and this gives `{}`",
+            keys.join("`, `"),
+            given.join("` and `")
+        ))
+        .with_field(field));
+    }
+    Ok(Some(*kind))
+}
+
 /// The pack a name names, or the refusal listing them.
 fn pack(name: &str, field: &str) -> Result<FestivalPack, Error> {
     FestivalPack::ALL
@@ -686,18 +738,87 @@ fn pack(name: &str, field: &str) -> Result<FestivalPack, Error> {
         })
 }
 
-/// [`FestivalRequest`] as the bindings write it. `rules` is read in a
-/// second step, because each item is a name or a rule and the refusal
-/// should say which item was wrong rather than that no shape matched.
+// [`FestivalRequest`] as the bindings write it. `rules` is read in a
+// second step, because each item is a name or a rule and the refusal
+// should say which item was wrong rather than that no shape matched.
+/// Festival rules to reckon over an almanac's days
+/// (`03-design/festival-rules.md` §7), and the published days laid over
+/// their answer.
 #[derive(Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "FestivalRequest"))]
 pub(crate) struct Asked {
+    /// The rules: a pack's name, or a list of names and rules spelt out.
+    #[cfg_attr(feature = "schema", schemars(with = "FestivalRules"))]
     rules: Value,
-    /// The published sets, each read in a second step as `rules` is.
+    /// The published sets laid over the answer, a later one's entry
+    /// replacing an earlier one's for the same occurrence.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[cfg_attr(feature = "schema", schemars(with = "Vec<PublishedSet>"))]
     published: Vec<Value>,
+}
+
+/// The schema of [`Asked::rules`]: a pack's name, or a list of
+/// [`FestivalRuleItem`]s. The reader takes it in a second step, so the
+/// type stands only in the schema.
+#[cfg(feature = "schema")]
+struct FestivalRules;
+
+/// The schema of one item of a list of rules: a pack's name, or a rule
+/// spelt out, picked by [`SPELT`].
+#[cfg(feature = "schema")]
+struct FestivalRuleItem;
+
+#[cfg(feature = "schema")]
+fn pack_names() -> Value {
+    serde_json::json!({
+        "type": "string",
+        "enum": FestivalPack::ALL.iter().map(|pack| pack.key()).collect::<Vec<_>>(),
+    })
+}
+
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for FestivalRules {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FestivalRules".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": "The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.",
+            "anyOf": [
+                pack_names(),
+                { "type": "array", "items": generator.subschema_for::<FestivalRuleItem>() },
+            ],
+        })
+    }
+}
+
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for FestivalRuleItem {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FestivalRuleItem".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let mut options = vec![pack_names()];
+        for (kind, keys) in SPELT {
+            let mut option = match kind {
+                Spelt::Sait => generator.subschema_for::<SaitRule>(),
+                Spelt::Ekadashi => generator.subschema_for::<EkadashiRule>(),
+                Spelt::Anniversary => generator.subschema_for::<Anniversary>(),
+                Spelt::Following => generator.subschema_for::<FollowingRule>(),
+                Spelt::Dated => generator.subschema_for::<DatedRule>(),
+            };
+            option.insert("x-teistro-when".into(), keys.to_vec().into());
+            options.push(option.into());
+        }
+        options.push(generator.subschema_for::<FestivalRule>().into());
+        schemars::json_schema!({
+            "description": "A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.",
+            "anyOf": options,
+        })
+    }
 }
 
 #[cfg(test)]
@@ -717,6 +838,70 @@ mod tests {
             .unwrap_err()
             .field()
             .map(str::to_owned)
+    }
+
+    #[test]
+    fn each_kind_of_rule_is_told_by_the_keys_serde_writes_it_with() {
+        let anniversary = Anniversary {
+            key: "GRANDFATHER".to_owned(),
+            origin: teistro_panchanga::festival::Origin::Lunar {
+                month: teistro_core::catalogue::Masa::Kartika,
+                tithi: teistro_core::catalogue::Tithi::ShuklaDashami,
+                adhika: false,
+                half: teistro_panchanga::festival::Half::default(),
+                at: None,
+            },
+            kind: teistro_panchanga::festival::AnniversaryKind::Shraddha,
+            window: None,
+            first_year_adhika: teistro_panchanga::festival::FirstYearAdhika::Adhika,
+            in_samsarpa: teistro_panchanga::festival::InSamsarpa::Also,
+            janma: teistro_panchanga::festival::JanmaOptions::default(),
+        };
+        let written = |rule: Value| told(rule.as_object().unwrap(), "f").unwrap();
+        assert_eq!(
+            written(serde_json::to_value(&SaitRule::nepal()[0]).unwrap()),
+            Some(Spelt::Sait)
+        );
+        assert_eq!(
+            written(serde_json::to_value(&EkadashiRule::dharmasindhu()[0]).unwrap()),
+            Some(Spelt::Ekadashi)
+        );
+        assert_eq!(
+            written(serde_json::to_value(&anniversary).unwrap()),
+            Some(Spelt::Anniversary)
+        );
+        assert_eq!(
+            written(serde_json::to_value(&FollowingRule::nepal()[0]).unwrap()),
+            Some(Spelt::Following)
+        );
+        for rule in DatedRule::nepal_panchanga() {
+            assert_eq!(
+                written(serde_json::to_value(&rule).unwrap()),
+                Some(Spelt::Dated)
+            );
+        }
+        for rule in FestivalRule::nepal_panchanga() {
+            assert_eq!(
+                written(serde_json::to_value(&rule).unwrap()),
+                None,
+                "{}",
+                rule.key
+            );
+        }
+    }
+
+    #[test]
+    fn a_rule_giving_two_dates_is_refused_not_read_as_the_first() {
+        let text = r#"{"rules": [{"key": "X", "source": "a test",
+            "civilDate": {"calendar": "BIKRAM_SAMBAT", "month": 1, "day": 1},
+            "sunEnters": {"nakshatra": "ARDRA"}}]}"#;
+        let refused = FestivalRequest::from_json(text).unwrap_err();
+        assert_eq!(refused.field(), Some("festivals.rules[0]"));
+        assert!(
+            refused.message.contains("`civilDate` and `sunEnters`"),
+            "{}",
+            refused.message
+        );
     }
 
     #[test]

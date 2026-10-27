@@ -164,6 +164,7 @@ import type {
   AccidentalRules,
   AccidentalScores,
   AlmutenRules,
+  Anniversary,
   AnnualDashaRules,
   AntisciaRequest,
   AshauchKind,
@@ -185,7 +186,13 @@ import type {
   DignityRequest,
   DignityScores,
   DossierRequest,
+  EkadashiRule,
+  EkadashiVedha,
+  FestivalCase,
+  FestivalChoice,
+  FestivalWhich,
   FirstYearRequest,
+  FollowingRule,
   FortitudeRequest,
   GeoPlace,
   HarmonicRequest,
@@ -199,6 +206,7 @@ import type {
   LalKitabRequest,
   LifeEventKind,
   LotRequest,
+  MahadvadashiKind,
   MasaDashaRules,
   MasaPhalaRules,
   MaseshaRules,
@@ -234,12 +242,14 @@ import type {
   SadeSatiRequest,
   SahamRules,
   SahamStrengthReadings,
+  SaitRule,
   SarvatobhadraRequest,
   SarvatobhadraRules,
   TithiPraveshaRequest,
   TithiRule,
   VarsheshaRules,
   VedhaMotion,
+  VrataParana,
   WesternAspectRequest,
   YogaRules,
 } from './requests.js';
@@ -253,8 +263,16 @@ export type * from './requests.js';
 // boundary type is exported under that name as the other: the request's
 // own is reached through the field that takes it.
 export { Partile, Siege, Terms } from './catalogue.js';
-export type { Confidence } from './records.js';
-export type { CivilTime, ZoneSpec } from './types.js';
+export type {
+  CalendarResolution,
+  CalendarResolutionComputed,
+  CalendarResolutionDefined,
+  CalendarResolutionDivergent,
+  CalendarResolutionTabular,
+  Confidence,
+  MonthDay,
+} from './records.js';
+export type { CalendarDate, CivilTime, ZoneSpec } from './types.js';
 /** One subject of an event study: a birth and the event of its life. */
 export interface ResearchSubject {
   readonly birth: ResearchBirth;
@@ -5524,49 +5542,6 @@ export interface Published {
   readonly window?: Interval;
 }
 
-/**
- * Where an anniversary is counted from (`03-design/shraddha.md` §2.1): the
- * moment of the death or birth (the tithi running then, C661), only its
- * civil date (that day's sunrise tithi, marked as assumed), or the lunar
- * date a family keeps, with the moment if known so the years are counted.
- */
-export type AnniversaryOrigin =
-  | { readonly by: 'INSTANT'; readonly at: number }
-  | { readonly by: 'DATE'; readonly date: CalendarDate }
-  | {
-      readonly by: 'LUNAR';
-      readonly month: Masa;
-      readonly tithi: Tithi;
-      readonly adhika?: boolean;
-      /** The tithi's half, which names the month in a kshaya lunation (C668). */
-      readonly half?: 'FIRST' | 'SECOND';
-      readonly at?: number;
-    };
-
-/**
- * A yearly shraddha, a barkhi or a janma tithi, kept every year by the
- * tithi (`03-design/shraddha.md`). `SHRADDHA`, the default, is an
- * ekoddishta at kutapa to rauhina, or a parvana at aparahna for a death on
- * a new moon or in Bhadrapada's dark half (C665).
- *
- * @example
- * const barkhi: Anniversary = { key: 'GRANDFATHER', origin: { by: 'LUNAR', month: 'masa.KARTIKA', tithi: 'tithi.SHUKLA_DASHAMI' } };
- */
-export interface Anniversary {
-  /** The consumer's own key, which names the answer and the feed's event. */
-  readonly key: string;
-  readonly origin: AnniversaryOrigin;
-  readonly kind?: 'SHRADDHA' | 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI';
-  /** The rite's time in place of the kind's: `{ window: 'PART', part: 'MADHYAHNA' }` is DS's madhyahna (C662). Not for a janma tithi. */
-  readonly window?: FestivalWindow;
-  /** The first anniversary's month when it is doubled (C666): the adhika by the texts, the ordinary by Dhakal's note for Nepal. */
-  readonly firstYearAdhika?: 'ADHIKA' | 'NIJA';
-  /** Whether a shraddha of an ordinary month is kept in the samsarpa of its name too, the adhika month before a kshaya month (C669): `ALSO` by default, `NIJA` for the ordinary month alone. */
-  readonly inSamsarpa?: 'ALSO' | 'NIJA';
-  /** A janma tithi's *Dharmasindhu* options (C670), both off by default. */
-  readonly janma?: { readonly nakshatraTie?: boolean; readonly twoMuhurtaFloor?: boolean };
-}
-
 /** An anniversary's day, as the festival evaluator judged it. */
 export interface AnniversaryDay {
   readonly key: string;
@@ -5601,22 +5576,6 @@ export interface AnniversaryDay {
  * citing its page (§10).
  */
 export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA';
-
-/**
- * An observance on the day a number of civil days after another rule's
- * (`03-design/festival-rules.md` §9.4): the Terai's Holi, the day after
- * the Holika fire.
- */
-export interface FollowingRule {
-  /** Its key in its pack, `'HOLI_TERAI'`; an observance is named by it. */
-  readonly key: string;
-  /** Where the rule is stated. */
-  readonly source: string;
-  /** The key of the festival rule whose day it counts from; never another following rule. */
-  readonly after: string;
-  /** How many civil days after that day, 0 for the same day; at most 15. */
-  readonly days: number;
-}
 
 /**
  * An observance kept on a date of a calendar
@@ -5709,18 +5668,6 @@ export type FestivalWindow =
   /** The first moonrise after the day's sunrise; the Sankashta chaturthi's (*Dharmasindhu* p. 9). A day the Moon does not rise on leaves the occurrence unjudged. */
   | { readonly window: 'MOONRISE' };
 
-/** One of the tithi's two days. */
-export type FestivalWhich = 'EARLIER' | 'LATER';
-
-/** How a tithi held the rite's time on its two days. */
-export type FestivalCase =
-  | 'EARLIER_ONLY'
-  | 'LATER_ONLY'
-  | 'BOTH'
-  | 'NEITHER'
-  | 'EQUAL_PARTS'
-  | 'UNEQUAL_PARTS';
-
 /** Something a guard asks of the two days. */
 export type FestivalPredicate =
   | { readonly is: 'CASE'; readonly case: FestivalCase }
@@ -5733,9 +5680,6 @@ export type FestivalPredicate =
   | { readonly is: 'GREATER'; readonly day: FestivalWhich }
   /** That day is this vara, sunrise to sunrise (C618). */
   | { readonly is: 'ON_VARA'; readonly day: FestivalWhich; readonly vara: Vara };
-
-/** What a guard, or a rule's `otherwise`, decides. */
-export type FestivalChoice = 'EARLIER' | 'LATER' | 'BY_YUGMA' | 'NONE';
 
 /** What a rule is kept on: a tithi, or a nakshatra in a paksha of the month (the Samavedis' upakarma is Hasta in Bhadrapada's bright half). */
 export type FestivalOccurs =
@@ -5792,60 +5736,8 @@ export interface FestivalRuleFields {
   readonly parana?: readonly VrataParana[];
 }
 
-/** Where the 10th pierces the 11th's day: four ghatis before sunrise (the Vaishnavas'), or at sunrise (the Smartas'). */
-export type EkadashiVedha = 'ARUNODAYA' | 'SUNRISE';
-
 /** Which of the 11th and the 12th hold the sunrise after their own day. */
 export type EkadashiExcess = 'ELEVENTH' | 'TWELFTH' | 'BOTH' | 'NEITHER';
-
-/** The day each of the four kinds takes: the 11th's own, or the day after. */
-export interface EkadashiKinds {
-  readonly eleventh: FestivalWhich;
-  readonly twelfth: FestivalWhich;
-  readonly both: FestivalWhich;
-  readonly neither: FestivalWhich;
-}
-
-/** Whose Ekadashi fast, and by what (`03-design/festival-rules.md` §8.3). */
-export interface EkadashiRule {
-  /** Its key in its pack, `'EKADASHI_SMARTA'`; a fast is named by it. */
-  readonly key: string;
-  /** Where the rule is stated. */
-  readonly source: string;
-  /** Where the 10th pierces. */
-  readonly vedha: EkadashiVedha;
-  /** The day each kind takes, the 11th pure and pierced. */
-  readonly table: { readonly pure: EkadashiKinds; readonly pierced: EkadashiKinds };
-  /** When the fast is broken (§8.5); a rule without one answers no parana. */
-  readonly parana?: ParanaRule;
-  /** The mahadvadashis that name its fast or move it onto the 12th's day (§8.9); `{}` keeps all eight as the text reads them. */
-  readonly mahadvadashi?: MahadvadashiRule;
-}
-
-/** One of the eight mahadvadashis of *Hari Bhakti Vilasa* 13.265 (`03-design/festival-rules.md` §8.9). */
-export type MahadvadashiKind =
-  | 'UNMILANI'
-  | 'VYANJULI'
-  | 'TRISPRISHA'
-  | 'PAKSHAVARDHINI'
-  | 'JAYA'
-  | 'VIJAYA'
-  | 'JAYANTI'
-  | 'PAPANASHINI';
-
-/** Which mahadvadashis an Ekadashi keeps and how each is read; each field left out takes the text's reading. */
-export interface MahadvadashiRule {
-  /** The kinds kept, the first that holds setting the fast; the default is all eight, the 12th's day before Unmilani's. */
-  readonly kinds?: readonly MahadvadashiKind[];
-  /** Where the 11th stands on a Trisprisha's day: at sunrise (the default) or at arunodaya alone, 13.269's letter. */
-  readonly trisprisha?: 'SUNRISE' | 'ARUNODAYA';
-  /** What a nakshatra kind's joining (13.286–287) is measured against: two sunrises (the default), the 12th, or from sunrise. */
-  readonly joining?: 'TWO_SUNRISES' | 'OUTLASTS_TWELFTH' | 'BEGUN_IN_DAYLIGHT';
-  /** How much of the 12th a Vyanjuli needs past the second sunrise: any (the default) or half a muhurta (13.356). */
-  readonly vyanjuli?: 'ANY' | 'HALF_MUHURTA';
-  /** Whether Unmilani and Vyanjuli need the 11th pure at arunodaya, *sampurna* (the default). */
-  readonly sampurna?: boolean;
-}
 
 /** A mahadvadashi that held, and the fast it set. */
 export interface Mahadvadashi {
@@ -5861,25 +5753,6 @@ export interface Mahadvadashi {
 
 /** A daylight window a parana is kept in: a fifth of the daylight, or a run of its muhurtas. */
 export type ParanaWindow = Extract<FestivalWindow, { readonly window: 'PART' | 'DAY_MUHURTA' }>;
-
-/**
- * When an Ekadashi fast is broken (`03-design/festival-rules.md` §8.5): on the day after the
- * fast, inside the 12th, in the first of `at` that leaves time once the 12th's first quarter,
- * the hari vasara, is past (when `hariVasara`). The shipped rules carry *Dharmasindhu*'s:
- * `[{ window: 'PART', part: 'PRATAH' }, { window: 'PART', part: 'APARAHNA' }]`, past the
- * hari vasara.
- */
-export interface ParanaRule {
-  /** The daylight windows the meal is kept in, in order of preference. */
-  readonly at: readonly ParanaWindow[];
-  /** Whether the 12th's first quarter is passed over before eating. */
-  readonly hariVasara: boolean;
-  /**
-   * The nakshatras the meal is not taken in (C700); none in the shipped rules, as the published
-   * reference keeps none.
-   */
-  readonly bars?: readonly NakshatraBar[];
-}
 
 /**
  * A nakshatra a parana is not kept in (C700): after the fast of the 11th `tithi` in its nija
@@ -6008,57 +5881,6 @@ export interface FestivalObservance {
   readonly sait?: FestivalSait;
 }
 
-/**
- * How a rule elects its sait, the rite's time on its day
- * (`03-design/festival-sait.md`): the text's windows in order, what each
- * avoids, the rising sign preferred, and which candidate is taken.
- *
- * @example
- * const ghatasthapana: SaitRule = {
- *   rule: 'NAVARATRA_ARAMBHA', source: 'Dharmasindhu p. 65',
- *   windows: [
- *     { within: { window: 'GHATIS', ghatis: 10 }, avoid: [{ avoid: 'TITHI_START', nadis: 16 }] },
- *     { within: { window: 'DAY_MUHURTA', from: 8, to: 8 } },
- *   ],
- *   rising: { of: 'NAVAMSA', modalities: ['modality.DWISWABHAVA'], freeOf: ['graha.SUN'] },
- *   choose: 'LATEST',
- * };
- */
-export interface SaitRule {
-  /** The festival rule's key, a rule of the request. */
-  readonly rule: string;
-  /** Where the text says it. */
-  readonly source: string;
-  /** The windows in order: the first holding a candidate gives the sait. */
-  readonly windows: readonly SaitWindowRule[];
-  /** The rising sign preferred; none takes each free stretch whole. */
-  readonly rising?: {
-    readonly of: 'NAVAMSA' | 'LAGNA' | 'NAVAMSA_OR_LAGNA';
-    readonly modalities: readonly Modality[];
-    /** The grahas the lagna must not hold, read by sign. */
-    readonly freeOf?: readonly Graha[];
-  };
-  /** Which whole candidate: `LATEST` when left out. */
-  readonly choose?: 'EARLIEST' | 'LATEST';
-}
-
-/** One window a sait may fall in, with what it avoids there. */
-export interface SaitWindowRule {
-  readonly within:
-    | { readonly window: 'GHATIS'; readonly ghatis: number }
-    | { readonly window: 'DAY_MUHURTA'; readonly from: number; readonly to: number }
-    | { readonly window: 'PART'; readonly part: DayFifth }
-    | { readonly window: 'PRADOSHA' }
-    | { readonly window: 'NIGHT_MUHURTA'; readonly muhurta: number };
-  readonly avoid?: readonly (
-    | { readonly avoid: 'TITHI_START'; readonly nadis: number }
-    | { readonly avoid: 'NAKSHATRA'; readonly nakshatra: Nakshatra; readonly quarters?: number }
-    | { readonly avoid: 'YOGA'; readonly yoga: Yoga; readonly quarters?: number }
-    | { readonly avoid: 'KAALA'; readonly kaala: Kaala }
-    | { readonly avoid: 'VISHTI' }
-  )[];
-}
-
 /** A festival day's sait: the window it was found in, every candidate there, and the one chosen. */
 export interface FestivalSait {
   /** Which of the rule's windows gave it, from 0; the last when none did. */
@@ -6084,23 +5906,6 @@ export interface FestivalSaitCandidate {
   /** The navamsa's sign, when the rule reads a rising sign. */
   readonly navamsa?: Rashi;
 }
-
-/**
- * One reading of when a vrata's fast is broken (`03-design/festival-rules.md` §8.7).
- */
-export type VrataParana =
-  /** After the tithi's end, and `nakshatra`'s when it joins the tithi within the fast day; with `yamas` (1 to 4), an end past them keeps the meal in the morning instead (*Dharmasindhu* pp. 7, 52). */
-  | { readonly kind: 'TITHI_END'; readonly nakshatra?: Nakshatra; readonly yamas?: number }
-  /** Inside the tithi, from sunrise to its end or to `yamas` (1 to 4) of the daylight, whichever is first (pp. 90–91). */
-  | { readonly kind: 'WITHIN'; readonly yamas: number }
-  /** From the parana day's sunrise, for one who cannot wait (p. 52). */
-  | { readonly kind: 'SUNRISE' }
-  /** From the end of `at` on the fast day, as after the nishitha muhurta; no shipped rule carries it. */
-  | { readonly kind: 'AFTER_WINDOW'; readonly at: FestivalWindow }
-  /** In the tithi after the fast's, from its first daylight: the fast tithi's end by day, else the sunrise after it (*Nirnayasindhu* p. 139). */
-  | { readonly kind: 'NEXT_TITHI' }
-  /** After the closing rite the rule `rite` keeps, on its next day, from its first instant; with `remnant` (0 to 60 ghatis), inside the fast's tithi left at the next sunrise when the rite falls a day later (*Dharmasindhu* pp. 70–71). */
-  | { readonly kind: 'AFTER_RITE'; readonly rite: string; readonly remnant?: number };
 
 /** What set an edge of a vrata's parana. */
 export type VrataEdge = 'SUNRISE' | 'TITHI_END' | 'NAKSHATRA_END' | 'YAMAS' | 'WINDOW_END' | 'RITE';

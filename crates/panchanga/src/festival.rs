@@ -351,6 +351,7 @@ impl Window {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FestivalWhich"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Which {
     /// The earlier.
@@ -437,6 +438,7 @@ pub enum Which {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FestivalCase"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Case {
     /// On the earlier day only, wholly or in part.
@@ -706,6 +708,7 @@ pub enum Predicate {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "DayEdge"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Edge {
     /// Sunrise, counting in thirtieths of the daylight.
@@ -793,6 +796,7 @@ pub enum Edge {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FestivalChoice"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Choice {
     /// The earlier day.
@@ -871,6 +875,7 @@ impl Guard {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(transform = variants_as_fields))]
 #[serde(rename_all = "camelCase")]
 pub struct FestivalRule {
     /// The rule's key in its pack, `"JANMASHTAMI"`.
@@ -1132,6 +1137,70 @@ enum InAdhikaKey {
     Also,
     Only,
     First,
+}
+
+/// Writes the record's flattened enum, which schemars writes as a `oneOf`
+/// or `anyOf` beside its fields, as optional fields of the record, with a
+/// sentence on each saying which go together: no binding's generator
+/// reads a union beside fields, and each such enum here is read from
+/// flat fields its reader checks ([`OccursFields`], [`dated::Dated`]).
+/// A field two variants share is written once.
+#[cfg(feature = "schema")]
+pub(crate) fn variants_as_fields(schema: &mut schemars::Schema) {
+    let options: Vec<serde_json::Value> = ["oneOf", "anyOf"]
+        .into_iter()
+        .filter_map(|keyword| schema.remove(keyword))
+        .filter_map(|options| options.as_array().cloned())
+        .flatten()
+        .collect();
+    let givens: Vec<String> = options
+        .iter()
+        .map(|option| {
+            let required = option.get("required").and_then(serde_json::Value::as_array);
+            let keys: Vec<String> = required
+                .into_iter()
+                .flatten()
+                .filter_map(serde_json::Value::as_str)
+                .map(|key| format!("`{key}`"))
+                .collect();
+            keys.join(" with ")
+        })
+        .collect();
+    let sentence = match givens.split_last() {
+        Some((last, rest @ [_, ..])) => {
+            format!(" Exactly one of {} or {last} is given.", rest.join(", "))
+        }
+        _ => String::new(),
+    };
+    let Some(properties) = schema
+        .get_mut("properties")
+        .and_then(serde_json::Value::as_object_mut)
+    else {
+        return;
+    };
+    for option in &options {
+        let variant = option
+            .get("description")
+            .and_then(serde_json::Value::as_str);
+        let fields = option
+            .get("properties")
+            .and_then(serde_json::Value::as_object);
+        for (key, field) in fields.into_iter().flatten() {
+            if properties.contains_key(key) {
+                continue;
+            }
+            let mut field = field.clone();
+            if let Some(object) = field.as_object_mut() {
+                let own = object
+                    .get("description")
+                    .and_then(serde_json::Value::as_str)
+                    .or(variant)
+                    .unwrap_or_default();
+                object.insert("description".into(), format!("{own}{sentence}").into());
+            }
+            properties.insert(key.clone(), field);
+        }
+    }
 }
 
 /// The shape [`Occurs`] is read in, for its schema: the reader refuses

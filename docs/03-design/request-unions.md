@@ -1,6 +1,7 @@
 # A request field that is a name or one of several records
 
-Status: `design`, 2026-10-27. Extends `generated-requests.md`.
+Status: festival rules `built`, muhurta rules `design`, 2026-10-27.
+Extends `generated-requests.md`.
 
 Two request fields still cross every binding as a raw JSON value
 (`RAW_REQUEST_PARTS` in `xtask/src/ffi.rs`), though the SDK reads each into
@@ -102,3 +103,21 @@ carry.
    the deep examples; the bindings' façades last.
 2. Muhurta's rules: the activity rename, the generic names, the shared
    answer names, then the façades.
+
+## As built: festival rules
+
+- The table is `SPELT` in `crates/sdk/src/festival_request.rs`; the
+  schema types `FestivalRules` and `FestivalRuleItem` stand only in the
+  schema and read it, and a Rust test holds each row to the keys serde
+  writes the rule with.
+- Two rules flatten an enum beside their fields (`DatedRule`'s date,
+  `FestivalRule`'s `Occurs`). schemars writes those as a union beside the
+  fields; `variants_as_fields` (`crates/panchanga/src/festival.rs`)
+  writes them as optional fields with a sentence on which go together,
+  and the IDL reader refuses a union beside fields that nothing rewrote.
+- Node keeps `FestivalRule`, `DatedRule` and `NakshatraBar` by hand: with
+  the generated ones in their place, five of the type-check's negative
+  cases compiled (a rule on a tithi and a nakshatra, two dates, a bar on
+  a 12th). The other eleven hand copies went, among them an
+  `Anniversary` whose dated origin the SDK refused. A generator of
+  exclusive unions for the flattened fields would retire the three.

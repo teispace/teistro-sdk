@@ -145,6 +145,7 @@ from ._requests import (
     AddSign as AddSign,
     AfterCycle as AfterCycle,
     AlmanacDaysRequest as AlmanacDaysRequest,
+    MahadvadashiKind as MahadvadashiKind,
     AngleMethod as AngleMethod,
     AnnualPlace as AnnualPlace,
     AntisciaRequest as AntisciaRequest,
@@ -550,6 +551,75 @@ from ._requests import (
     ZoneSpecFixed as ZoneSpecFixed,
     ZoneSpecIana as ZoneSpecIana,
     ZoneSpecLocalMean as ZoneSpecLocalMean,
+    FestivalRequest as FestivalRequest,
+    FestivalRules as FestivalRules,
+    FestivalRuleItem as FestivalRuleItem,
+    SaitRule as SaitRule,
+    EkadashiRule as EkadashiRule,
+    Anniversary as Anniversary,
+    FollowingRule as FollowingRule,
+    DatedRule as DatedRule,
+    FestivalRule as FestivalRule,
+    SaitChoice as SaitChoice,
+    SaitRising as SaitRising,
+    SaitWindowRule as SaitWindowRule,
+    MahadvadashiRule as MahadvadashiRule,
+    ParanaRule as ParanaRule,
+    EkadashiTable as EkadashiTable,
+    EkadashiVedha as EkadashiVedha,
+    InSamsarpa as InSamsarpa,
+    JanmaOptions as JanmaOptions,
+    AnniversaryKind as AnniversaryKind,
+    Origin as Origin,
+    OriginInstant as OriginInstant,
+    OriginDate as OriginDate,
+    OriginLunar as OriginLunar,
+    DatedRuleCivilDate as DatedRuleCivilDate,
+    DatedRuleCivilWeekday as DatedRuleCivilWeekday,
+    DatedRuleEaster as DatedRuleEaster,
+    DatedRuleSunEnters as DatedRuleSunEnters,
+    Guard as Guard,
+    InAdhika as InAdhika,
+    FestivalChoice as FestivalChoice,
+    VrataParana as VrataParana,
+    VrataParanaTithiEnd as VrataParanaTithiEnd,
+    VrataParanaWithin as VrataParanaWithin,
+    VrataParanaSunrise as VrataParanaSunrise,
+    VrataParanaAfterWindow as VrataParanaAfterWindow,
+    VrataParanaNextTithi as VrataParanaNextTithi,
+    VrataParanaAfterRite as VrataParanaAfterRite,
+    RisingOf as RisingOf,
+    SaitAvoid as SaitAvoid,
+    SaitAvoidTithiStart as SaitAvoidTithiStart,
+    SaitAvoidNakshatra as SaitAvoidNakshatra,
+    SaitAvoidYoga as SaitAvoidYoga,
+    SaitAvoidKaala as SaitAvoidKaala,
+    SaitAvoidVishti as SaitAvoidVishti,
+    SaitWindow as SaitWindow,
+    SaitWindowGhatis as SaitWindowGhatis,
+    SaitWindowDayMuhurta as SaitWindowDayMuhurta,
+    SaitWindowPart as SaitWindowPart,
+    SaitWindowPradosha as SaitWindowPradosha,
+    SaitWindowNightMuhurta as SaitWindowNightMuhurta,
+    NakshatraJoining as NakshatraJoining,
+    TrisprishaAt as TrisprishaAt,
+    VyanjuliPast as VyanjuliPast,
+    EkadashiKinds as EkadashiKinds,
+    TithiHalf as TithiHalf,
+    SkippedDay as SkippedDay,
+    Computus as Computus,
+    Predicate as Predicate,
+    PredicateCase as PredicateCase,
+    PredicateJoined as PredicateJoined,
+    PredicateStands as PredicateStands,
+    PredicateLasts as PredicateLasts,
+    PredicateWholly as PredicateWholly,
+    PredicateGreater as PredicateGreater,
+    PredicateOnVara as PredicateOnVara,
+    Portion as Portion,
+    FestivalWhich as FestivalWhich,
+    FestivalCase as FestivalCase,
+    DayEdge as DayEdge,
 )
 from .catalogue import (
     Catalogued,
@@ -7739,38 +7809,6 @@ the panchanga prints, each rule fitted to the committee's editions and
 citing its page (§10)."""
 
 
-class FestivalRequest(TypedDict, total=False):
-    """Festival rules to reckon over an almanac's days
-    (`03-design/festival-rules.md` §7): `rules`, a :data:`FestivalPack` the
-    SDK ships, or a list whose items each name a pack or spell a rule out as
-    a mapping in its record's spelling (an Ekadashi rule when it has a
-    `vedha`, with its `parana` `{at, hariVasara, bars}` if it says when the fast
-    is broken, a sait rule when it has `windows`, which elects the rite's
-    time on its rule's day (`03-design/festival-sait.md`), a following rule
-    when it has an `after`, which counts `days`
-    civil days from that festival rule's day, a dated rule when it has a
-    `civilDate` or a `civilWeekday`, kept on a date of a calendar, or a
-    `sunEnters`, kept on the civil day the Sun enters a `nakshatra`, or an
-    `easter`, kept `days` from Easter Sunday by a `GREGORIAN` or `JULIAN`
-    `computus`, an
-    anniversary when it has an `origin` (`{"by": "INSTANT", "at": jd}`,
-    `{"by": "DATE", "date": ...}` or `{"by": "LUNAR", "month", "tithi"}`),
-    kept every year as a `SHRADDHA`, `EKODDISHTA`, `PARVANA` or
-    `JANMA_TITHI` `kind` (`03-design/shraddha.md`); a
-    festival rule is kept on a `tithi`, or on a `nakshatra` in a `paksha`),
-    a later rule replacing an
-    earlier one with its key. A catalogue member may be a member, a full key
-    or a bare one.
-
-    >>> asked: FestivalRequest = {"rules": ["NEPAL", {"key": "TWO_AFTER", "source": "mine", "after": "LAKSHMI_PUJA", "days": 2}]}
-    """
-
-    rules: Required[Union[FestivalPack, Sequence[Union[FestivalPack, Mapping[str, Any]]]]]
-    published: Sequence[PublishedSet]
-    """Published sets laid over the answer, a later one's entry replacing an
-    earlier one's for the same occurrence."""
-
-
 @dataclass(frozen=True)
 class FestivalExtent:
     """One of an observance's two days: its window for the rite, and the
@@ -7961,15 +7999,6 @@ class EkadashiFast:
     published: Optional["Published"] = None
     """What a published entry did to the fast; None when none touched it.
     A fast a `SET` moved has no `parana` unless the entry gave a window."""
-
-
-MahadvadashiKind = Literal[
-    "UNMILANI", "VYANJULI", "TRISPRISHA", "PAKSHAVARDHINI", "JAYA", "VIJAYA", "JAYANTI", "PAPANASHINI"
-]
-"""One of the eight mahadvadashis of *Hari Bhakti Vilasa* 13.265
-(`03-design/festival-rules.md` §8.9). An Ekadashi rule keeps them as
-`mahadvadashi: {kinds, trisprisha, joining, vyanjuli, sampurna}`, each
-field defaulting to the text's reading, so `{}` keeps all eight."""
 
 
 @dataclass(frozen=True)

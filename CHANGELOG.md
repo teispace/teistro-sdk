@@ -12,6 +12,38 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Festival rules are typed in every binding.**
+**Numbers:** none.
+- `FestivalRequest.rules` crossed every binding as raw JSON: Java took
+  `Object`, Python `Any`, and a rule spelt out as a map was checked by
+  nobody until the SDK refused it. It is now `FestivalRules`, a pack's
+  name or a list of `FestivalRuleItem`, each a pack's name or one of the
+  six rules (`SaitRule`, `EkadashiRule`, `Anniversary`, `FollowingRule`,
+  `DatedRule`, `FestivalRule`), with every record they reach generated.
+  Java's `FestivalRequest` takes `FestivalRules.NEPAL`,
+  `FestivalRules.value(...)` or `FestivalRules.of(json)`, whose `of`
+  picks each item by its keys as the SDK's reader does
+  (`03-design/request-unions.md`).
+- The keys that tell a rule apart are one table beside the SDK's reader
+  (`SPELT`), which the schema carries as `x-teistro-when`; the IDL's
+  or-named union holds several records, each with the keys that pick it.
+- The SDK refuses a rule giving two dates (`civilDate` and `sunEnters`),
+  which serde read as whichever it met first.
+- A flattened enum (a dated rule's date, a festival rule's tithi or
+  nakshatra) is described as optional fields of its record, with a
+  sentence saying which go together; the IDL reader refuses any other
+  union beside fields. Generic schema names are made specific:
+  `DayEdge`, `FestivalCase`, `FestivalChoice`, `FestivalWhich` and
+  `EkadashiVedha`, so the rules language's `Edge` keeps its name.
+- Node: an anniversary's `DATE` origin was typed as the layer's
+  `CalendarDate`, which the SDK refuses (`resolution` is a record on the
+  wire); the generated `Anniversary` replaces it, with ten other hand
+  copies. `FestivalRule`, `DatedRule` and `NakshatraBar` stay by hand,
+  since they type which fields go together. Python's hand
+  `FestivalRequest` and `MahadvadashiKind` are gone.
+- Dart: a field named for one of ten reserved words the emitter's list
+  missed (`case`, `while` ...) is renamed as the others are (`caseValue`).
+
 **A custom visibility table is typed in every binding.**
 **Numbers:** none.
 - A tagged variant that wraps a record (serde's internally tagged

@@ -10,7 +10,7 @@ import com.teispace.teistro.record.Provenance;
  *
  * <pre>{@code
  * Disagreements found = official.almanac().disagreements(modern, first, last, kathmandu, 20_700,
- *         true, new FestivalRequest("NEPAL"));
+ *         true, new FestivalRequest(FestivalRules.NEPAL));
  * double moved = found.days().days().get(0).tithi().official().change().minutesFromSunrise();
  * }</pre>
  *

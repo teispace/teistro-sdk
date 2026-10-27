@@ -15,6 +15,9 @@ import unittest
 from typing import Any, Dict, Optional, Union
 
 from teistro import (
+    EkadashiRule,
+    FestivalRule,
+    FollowingRule,
     refuse_build,
     RuleDefinition,
     TermEntry,
@@ -4412,8 +4415,7 @@ class AnEngine(WithLibrary):
             self.assertEqual((after_rite.day, after_rite.from_by), (visarjana.day, "RITE"))
             # The parana's nakshatra bar (C700): Kathmandu, 7 July 2025, the
             # meal held past Anuradha's first quarter, which ends at 05:36.
-            bar = {"tithi": "SHUKLA_EKADASHI", "month": "ASHADHA", "nakshatra": "ANURADHA", "portion": {"parts": 4, "which": 1}}
-            smarta = {
+            smarta: EkadashiRule = {
                 "key": "EKADASHI_SMARTA",
                 "source": "",
                 "vedha": "SUNRISE",
@@ -4421,7 +4423,11 @@ class AnEngine(WithLibrary):
                     "pure": {"eleventh": "EARLIER", "twelfth": "EARLIER", "both": "LATER", "neither": "EARLIER"},
                     "pierced": {"eleventh": "EARLIER", "twelfth": "LATER", "both": "LATER", "neither": "EARLIER"},
                 },
-                "parana": {"at": [{"window": "PART", "part": "PRATAH"}], "hariVasara": True, "bars": [bar]},
+                "parana": {"at": [{"window": "PART", "part": "PRATAH"}], "hariVasara": True,
+                    "bars": [
+                        {"tithi": "SHUKLA_EKADASHI", "month": "ASHADHA", "nakshatra": "ANURADHA", "portion": {"parts": 4, "which": 1}}
+                    ],
+                },
             }
             july = ctx.almanac.festivals(
                 **{
@@ -4463,7 +4469,7 @@ class AnEngine(WithLibrary):
             self.assertEqual(pratipada.observance.month, Masa.BHADRAPADA)
             self.assertEqual((pratipada.observance.day.month, pratipada.observance.day.day), (9, 2))
 
-            sunrise = {
+            sunrise: FestivalRule = {
                 "key": "LAKSHMI_PUJA",
                 "source": "the tithi at sunrise",
                 "month": Masa.ASHWINA,
@@ -4481,7 +4487,7 @@ class AnEngine(WithLibrary):
 
             # Nepal's pack, and a day of the consumer's own counted two days
             # from Lakshmi puja's: it names the rule it counts from and the count.
-            following = {"key": "TWO_AFTER", "source": "mine", "after": "LAKSHMI_PUJA", "days": 2}
+            following: FollowingRule = {"key": "TWO_AFTER", "source": "mine", "after": "LAKSHMI_PUJA", "days": 2}
             counted = ctx.almanac.of(**days, festivals={"rules": ["NEPAL", following]}).festivals
             assert counted is not None
             by_rule = {o.rule: o for o in counted.observances}
@@ -4497,7 +4503,7 @@ class AnEngine(WithLibrary):
             vrata = by_rule["PURNIMA_VRATA"]
             self.assertEqual(vrata.month, Masa.ASHWINA)
             self.assertEqual(vrata.extents[0].window.from_jd, vrata.extents[0].window.to_jd)
-            every_month = {
+            every_month: FestivalRule = {
                 "key": "EVERY_FULL_MOON",
                 "source": "mine",
                 "tithi": "tithi.PURNIMA",
@@ -4509,8 +4515,16 @@ class AnEngine(WithLibrary):
             mine = ctx.almanac.of(**days, festivals={"rules": [every_month]}).festivals
             assert mine is not None
             self.assertEqual([(o.rule, o.month) for o in mine.observances], [("EVERY_FULL_MOON", Masa.ASHWINA)])
-            hasta = {k: v for k, v in every_month.items() if k != "tithi"}
-            hasta.update(key="DARK_HASTA", nakshatra="nakshatra.HASTA", paksha="paksha.KRISHNA")
+            hasta: FestivalRule = {
+                "key": "DARK_HASTA",
+                "source": "mine",
+                "nakshatra": "nakshatra.HASTA",
+                "paksha": "paksha.KRISHNA",
+                "inAdhika": True,
+                "at": {"window": "SUNSET"},
+                "decide": [],
+                "otherwise": "LATER",
+            }
             kept = ctx.almanac.of(**days, festivals={"rules": [hasta]}).festivals
             assert kept is not None
             self.assertEqual([(o.rule, o.month) for o in kept.observances], [("DARK_HASTA", Masa.ASHWINA)])
@@ -4518,7 +4532,7 @@ class AnEngine(WithLibrary):
             refusals: list[tuple[FestivalRequest, str]] = [
                 ({"rules": "DHARMA"}, "festivals.rules"),  # type: ignore[typeddict-item]
                 ({"rules": ["DHARMASINDHU", {**sunrise, "key": ""}]}, "festivals.rules[1].key"),
-                ({"rules": [{**sunrise, "at": {"window": "DUSK"}}]}, "festivals.rules[0].at.window"),
+                ({"rules": [{**sunrise, "at": {"window": "DUSK"}}]}, "festivals.rules[0].at.window"),  # type: ignore[list-item]
                 ({"rules": [{**sunrise, "nakshatra": "HASTA", "paksha": "SHUKLA"}]}, "festivals.rules[0]"),
                 (
                     {"rules": [{**sunrise, "at": {"window": "NIGHT_MUHURTA", "muhurta": 16}}]},
@@ -4529,7 +4543,7 @@ class AnEngine(WithLibrary):
                     "festivals.rules[0].at.to",
                 ),
                 (
-                    {"rules": ["DHARMASINDHU", {"key": "MINE", "source": "", "vedha": "DUSK", "table": {}}]},
+                    {"rules": ["DHARMASINDHU", {"key": "MINE", "source": "", "vedha": "DUSK", "table": {}}]},  # type: ignore[list-item]
                     "festivals.rules[1].vedha",
                 ),
                 (

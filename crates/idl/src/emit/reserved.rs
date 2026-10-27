@@ -19,18 +19,23 @@
 //! assert_eq!(renamed("returnValue", DART, "Value"), "returnValue");
 //! ```
 
-/// Dart's reserved words, which no identifier may be.
+/// Dart's reserved words, which no identifier may be: every reserved word
+/// of the language specification (§21.1.1), and `as`, a built-in
+/// identifier kept from before. The other built-in identifiers
+/// (`abstract`, `required` …) are legal as a field's name.
 ///
 /// ```
 /// use teistro_idl::emit::reserved::{DART, renamed};
 ///
 /// // Dart appends `Value` to a name it reserves.
 /// assert_eq!(renamed("true", DART, "Value"), "trueValue");
+/// assert_eq!(renamed("case", DART, "Value"), "caseValue");
 /// ```
 pub const DART: &[&str] = &[
-    "true", "false", "null", "default", "new", "in", "is", "as", "do", "if", "for", "switch",
-    "this", "super", "var", "final", "const", "class", "enum", "void", "return", "with", "extends",
-    "assert",
+    "as", "assert", "break", "case", "catch", "class", "const", "continue", "default", "do",
+    "else", "enum", "extends", "false", "final", "finally", "for", "if", "in", "is", "new", "null",
+    "rethrow", "return", "super", "switch", "this", "throw", "true", "try", "var", "void", "while",
+    "with",
 ];
 
 /// Java's reserved keywords and literals, which no identifier may be

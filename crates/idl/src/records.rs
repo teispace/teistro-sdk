@@ -788,7 +788,7 @@ impl<'s> Reader<'s> {
         let mut members = Vec::new();
         let mut others = Vec::new();
         for option in options {
-            if let Some(fixed) = fixed_strings(option) {
+            if let Some(fixed) = fixed_strings(option).or_else(|| self.named_strings(option)) {
                 names.extend(fixed);
             } else if let Some(kind) = self.kind_of(option) {
                 members.push(kind);
@@ -855,6 +855,18 @@ impl<'s> Reader<'s> {
             values,
             member,
         })
+    }
+
+    /// The fixed strings a `$ref` names, where it names a def of nothing
+    /// else that is no catalogue kind: schemars writes a unit enum used
+    /// as one option of a union by reference.
+    fn named_strings(&self, option: &Value) -> Option<Vec<String>> {
+        let name = option.get("$ref")?.as_str()?.strip_prefix("#/$defs/")?;
+        let def = self.defs.get(name)?;
+        if def.get("x-teistro-kind").is_some() {
+            return None;
+        }
+        fixed_strings(def)
     }
 
     /// The catalogue kind a `$ref` names, if it names one.
