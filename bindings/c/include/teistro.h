@@ -2990,6 +2990,22 @@ typedef enum ts_calendar {
      * Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019
      */
     TS_CALENDAR_BANGLADESHI = 9,
+    /**
+     * Tamil solar: months from the sidereal sankranti by the sunset rule at Chennai, Saka years from Mesha
+     */
+    TS_CALENDAR_TAMIL_SOLAR = 10,
+    /**
+     * Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha
+     */
+    TS_CALENDAR_BENGAL_SOLAR = 11,
+    /**
+     * Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha
+     */
+    TS_CALENDAR_ODIA_SOLAR = 12,
+    /**
+     * Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha
+     */
+    TS_CALENDAR_MALAYALAM_SOLAR = 13,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CALENDAR_UNKNOWN = -1,
 } ts_calendar;

@@ -3837,6 +3837,10 @@ export type Calendar =
   | 'calendar.HIJRI_TABULAR'
   | 'calendar.TIBETAN_PHUGPA'
   | 'calendar.BANGLADESHI'
+  | 'calendar.TAMIL_SOLAR'
+  | 'calendar.BENGAL_SOLAR'
+  | 'calendar.ODIA_SOLAR'
+  | 'calendar.MALAYALAM_SOLAR'
   | 'unknown';
 
 /** Every Calendar by name; the values are the strings the union accepts. */
@@ -3881,6 +3885,22 @@ export declare const Calendar: {
    * Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019
    */
   readonly Bangladeshi: 'calendar.BANGLADESHI';
+  /**
+   * Tamil solar: months from the sidereal sankranti by the sunset rule at Chennai, Saka years from Mesha
+   */
+  readonly TamilSolar: 'calendar.TAMIL_SOLAR';
+  /**
+   * Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha
+   */
+  readonly BengalSolar: 'calendar.BENGAL_SOLAR';
+  /**
+   * Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha
+   */
+  readonly OdiaSolar: 'calendar.ODIA_SOLAR';
+  /**
+   * Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha
+   */
+  readonly MalayalamSolar: 'calendar.MALAYALAM_SOLAR';
 };
 
 /**

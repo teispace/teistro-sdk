@@ -4318,6 +4318,30 @@
           "value": 9,
           "doc": "Bangladeshi: the revised Bengali calendar of Bangla Academy, in force from 17 October 2019",
           "key": "BANGLADESHI"
+        },
+        {
+          "name": "TamilSolar",
+          "value": 10,
+          "doc": "Tamil solar: months from the sidereal sankranti by the sunset rule at Chennai, Saka years from Mesha",
+          "key": "TAMIL_SOLAR"
+        },
+        {
+          "name": "BengalSolar",
+          "value": 11,
+          "doc": "Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha",
+          "key": "BENGAL_SOLAR"
+        },
+        {
+          "name": "OdiaSolar",
+          "value": 12,
+          "doc": "Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha",
+          "key": "ODIA_SOLAR"
+        },
+        {
+          "name": "MalayalamSolar",
+          "value": 13,
+          "doc": "Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha",
+          "key": "MALAYALAM_SOLAR"
         }
       ],
       "source": "catalogue/catalogue.json"

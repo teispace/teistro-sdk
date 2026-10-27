@@ -1853,6 +1853,10 @@ export const Calendar = /* @__PURE__ */ Object.freeze({
   HijriTabular: 'calendar.HIJRI_TABULAR',
   TibetanPhugpa: 'calendar.TIBETAN_PHUGPA',
   Bangladeshi: 'calendar.BANGLADESHI',
+  TamilSolar: 'calendar.TAMIL_SOLAR',
+  BengalSolar: 'calendar.BENGAL_SOLAR',
+  OdiaSolar: 'calendar.ODIA_SOLAR',
+  MalayalamSolar: 'calendar.MALAYALAM_SOLAR',
 });
 
 /**
@@ -1870,6 +1874,10 @@ export const CalendarById = /* @__PURE__ */ new Map([
   [7, 'calendar.HIJRI_TABULAR'],
   [8, 'calendar.TIBETAN_PHUGPA'],
   [9, 'calendar.BANGLADESHI'],
+  [10, 'calendar.TAMIL_SOLAR'],
+  [11, 'calendar.BENGAL_SOLAR'],
+  [12, 'calendar.ODIA_SOLAR'],
+  [13, 'calendar.MALAYALAM_SOLAR'],
 ]);
 
 /** Every Era by name. */

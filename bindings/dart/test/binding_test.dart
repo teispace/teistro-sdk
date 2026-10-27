@@ -257,6 +257,15 @@ void main() {
       [ekushey.era, ekushey.year, ekushey.month, ekushey.day],
       [Era.bengali, 1431, 11, 8],
     );
+    // 1 Chingam, Kollam 1201, in the Malayalam solar calendar.
+    final chingam = ctx.calendar.convert(
+      gregorian(2025, 8, 17),
+      Calendar.malayalamSolar,
+    );
+    expect(
+      [chingam.era, chingam.year, chingam.month, chingam.day],
+      [Era.kollam, 1201, 1, 1],
+    );
     // And 1 Ramadan 1446 in the tabular Hijri calendar.
     final ramadan = ctx.calendar.convert(
       gregorian(2025, 3, 1),

@@ -438,9 +438,9 @@ knob!(
     /// Dharmasindhu's punya-kala, and its daily panchanga changes season on
     /// that calendar's months (`03-design/ritu-measured.md`).
     SolarMonthStart { /// The civil day, except that a Karka sankranti before dawn belongs to the day before and a Makara sankranti after sunset to the day after (the Dharmasindhu's; Nepal's).
-        Punyakala = "PUNYAKALA", /// The civil day the sankranti falls in (Orissa's).
+        Punyakala = "PUNYAKALA", /// The civil day the sankranti falls in.
         SankrantiDay = "SANKRANTI_DAY", /// The civil day after it (Bengal's).
-        FollowingDay = "FOLLOWING_DAY", /// The day from whose sunrise to the next the sankranti falls, the almanac day.
+        FollowingDay = "FOLLOWING_DAY", /// The day from whose sunrise to the next the sankranti falls, the almanac day (Odisha's).
         SunriseToSunrise = "SUNRISE_TO_SUNRISE", /// The sankranti's day when it falls before sunset, the next day after (Tamil Nadu's).
         BeforeSunset = "BEFORE_SUNSET", /// The sankranti's day when it falls before three fifths of the daylight, the next day after (Malabar's).
         BeforeAparahna = "BEFORE_APARAHNA", /// The month the shipped Bikram Sambat calendar gives the day: the official table where it is published, the Surya Siddhanta under punya-kala beyond it (Nepal's).

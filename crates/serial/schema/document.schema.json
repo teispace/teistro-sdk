@@ -1287,7 +1287,11 @@
             "INDIAN_NATIONAL",
             "HIJRI_TABULAR",
             "TIBETAN_PHUGPA",
-            "BANGLADESHI"
+            "BANGLADESHI",
+            "TAMIL_SOLAR",
+            "BENGAL_SOLAR",
+            "ODIA_SOLAR",
+            "MALAYALAM_SOLAR"
           ],
           "type": "string"
         },
@@ -1303,7 +1307,11 @@
             "calendar.INDIAN_NATIONAL",
             "calendar.HIJRI_TABULAR",
             "calendar.TIBETAN_PHUGPA",
-            "calendar.BANGLADESHI"
+            "calendar.BANGLADESHI",
+            "calendar.TAMIL_SOLAR",
+            "calendar.BENGAL_SOLAR",
+            "calendar.ODIA_SOLAR",
+            "calendar.MALAYALAM_SOLAR"
           ],
           "type": "string",
           "writeOnly": true

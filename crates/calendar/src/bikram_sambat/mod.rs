@@ -37,7 +37,7 @@ pub mod fit;
 #[rustfmt::skip]
 mod generated;
 
-pub use engine::{Engine, KATHMANDU, YEAR_OFFSET, YearRow};
+pub use engine::{Engine, KATHMANDU, YEAR_OFFSET, YearRow, YearStart};
 pub use fit::{Divergence, FitReport, fit};
 pub use generated::{FIRST_YEAR, LAST_YEAR, OFFICIAL_FIRST_YEAR, OFFICIAL_LAST_YEAR};
 
@@ -134,6 +134,37 @@ pub struct BikramSambat {
 
 static SHIPPED: OnceLock<BikramSambat> = OnceLock::new();
 
+/// The first day of every year of a table of month lengths, and the day
+/// after the last year as the final entry, from one year whose first day
+/// is known: the rows run forward and back from it. Shared by every solar
+/// calendar over a table.
+pub(crate) fn year_starts(
+    rows: &[[u8; 12]],
+    anchor_index: usize,
+    anchor_day: FixedDay,
+) -> Vec<FixedDay> {
+    let year_days = |months: &[u8; 12]| months.iter().map(|d| i64::from(*d)).sum::<i64>();
+    let mut year_starts = vec![FixedDay::default(); rows.len() + 1];
+    let mut start = anchor_day;
+    for index in anchor_index..rows.len() {
+        if let (Some(slot), Some(months)) = (year_starts.get_mut(index), rows.get(index)) {
+            *slot = start;
+            start = start.plus_days(year_days(months));
+        }
+    }
+    if let Some(last) = year_starts.last_mut() {
+        *last = start;
+    }
+    let mut start = anchor_day;
+    for index in (0..anchor_index).rev() {
+        if let (Some(months), Some(slot)) = (rows.get(index), year_starts.get_mut(index)) {
+            start = start.plus_days(-year_days(months));
+            *slot = start;
+        }
+    }
+    year_starts
+}
+
 impl BikramSambat {
     /// The shipped calendar over the checked-in table.
     ///
@@ -159,29 +190,13 @@ impl BikramSambat {
     /// ```
     #[must_use]
     pub fn over(table: &'static Table) -> BikramSambat {
-        let year_days = |months: &[u8; 12]| months.iter().map(|d| i64::from(*d)).sum::<i64>();
         let (anchor_year, (y, m, d)) = table.anchor;
-        let anchor_day = fixed_from_gregorian(y, m, d);
         let anchor_index = usize::try_from(anchor_year - table.first_year).unwrap_or(0);
-        let rows = table.month_lengths;
-        let mut year_starts = vec![FixedDay::default(); rows.len() + 1];
-        let mut start = anchor_day;
-        for index in anchor_index..rows.len() {
-            if let (Some(slot), Some(months)) = (year_starts.get_mut(index), rows.get(index)) {
-                *slot = start;
-                start = start.plus_days(year_days(months));
-            }
-        }
-        if let Some(last) = year_starts.last_mut() {
-            *last = start;
-        }
-        let mut start = anchor_day;
-        for index in (0..anchor_index).rev() {
-            if let (Some(months), Some(slot)) = (rows.get(index), year_starts.get_mut(index)) {
-                start = start.plus_days(-year_days(months));
-                *slot = start;
-            }
-        }
+        let year_starts = year_starts(
+            table.month_lengths,
+            anchor_index,
+            fixed_from_gregorian(y, m, d),
+        );
         BikramSambat { table, year_starts }
     }
 
@@ -340,7 +355,7 @@ impl BikramSambat {
     }
 
     /// The month and day of a day offset into a year's rows, if inside.
-    fn label(months: &[u8; 12], mut remaining: i64) -> Option<MonthDay> {
+    pub(crate) fn label(months: &[u8; 12], mut remaining: i64) -> Option<MonthDay> {
         if remaining < 0 {
             return None;
         }

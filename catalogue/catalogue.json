@@ -12985,6 +12985,74 @@
           ],
           "mark": "V",
           "unverified": []
+        },
+        {
+          "key": "TAMIL_SOLAR",
+          "id": 10,
+          "doc": "Tamil solar: months from the sidereal sankranti by the sunset rule at Chennai, Saka years from Mesha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Sewell and Dikshit, The Indian Calendar, 1896, art. 28; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27",
+              "ref": "docs/calendars/regional-solar.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "BENGAL_SOLAR",
+          "id": 11,
+          "doc": "Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Sewell and Dikshit, The Indian Calendar, 1896, arts. 28 and 71; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27",
+              "ref": "docs/calendars/regional-solar.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ODIA_SOLAR",
+          "id": 12,
+          "doc": "Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Sewell and Dikshit, The Indian Calendar, 1896, art. 28; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27",
+              "ref": "docs/calendars/regional-solar.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MALAYALAM_SOLAR",
+          "id": 13,
+          "doc": "Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Sewell and Dikshit, The Indian Calendar, 1896, arts. 28 and 71; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27",
+              "ref": "docs/calendars/regional-solar.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
         }
       ]
     },
