@@ -213,3 +213,35 @@ fn the_task_methods_refuse_as_the_extension_says() {
     assert_eq!(updated["result"]["resultType"], "complete", "{updated}");
     ended(&mut server, &id);
 }
+
+/// **A long session keeps a bounded table** (P7): a server making a task
+/// of every call, three hundred of them ended one after another, keeps
+/// the newest 256 readable and has let the oldest go, so a client that
+/// never stops calling does not grow the server without bound.
+#[test]
+fn a_long_session_keeps_the_newest_ended_tasks_and_lets_the_oldest_go() {
+    const CALLS: usize = 300;
+    let mut server = Server::new(Engine::Builtin).with_task_patience(Some(Duration::ZERO));
+    let convert = json!({ "_meta": meta(true), "name": "time.convert", "arguments": { "request": {
+        "jd": 2_451_545.0, "from": "UT1", "to": "TT" } } });
+    let mut ids = Vec::with_capacity(CALLS);
+    for _ in 0..CALLS {
+        let created = ask(&mut server, "tools/call", convert.clone());
+        let id = created["result"]["taskId"].as_str().unwrap().to_owned();
+        assert_eq!(ended(&mut server, &id)["status"], "completed");
+        ids.push(id);
+    }
+    let oldest = task(&mut server, "tasks/get", &ids[0], true);
+    assert!(
+        oldest.get("error").is_some(),
+        "the oldest was let go: {oldest}"
+    );
+    let newest = ids.len() - 256;
+    for id in &ids[newest..] {
+        assert_eq!(
+            ended(&mut server, id)["status"],
+            "completed",
+            "{id} is kept"
+        );
+    }
+}
