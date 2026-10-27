@@ -747,6 +747,9 @@ for (const chart of charts) {
       `${key}-sayanadi`,
       state.sayanadi ? `${state.sayanadi.avastha} ${state.sayanadi.cheshtas.join(',')}` : 'none',
     );
+    put(`${key}-pushkara-navamsha`, state.pushkaraNavamsha ?? 'none');
+    put(`${key}-pushkara-bhaga`, state.pushkaraBhaga ?? 'none');
+    put(`${key}-marana-karaka-sthana`, state.maranaKarakaSthana ?? 'none');
     put(`${key}-sign-edge`, state.boundaries.signDeg);
   });
   chart.bhavas.forEach((bhava) => {

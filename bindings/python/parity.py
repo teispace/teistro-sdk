@@ -1597,6 +1597,12 @@ def main() -> None:
                     if state.war
                     else "none",
                 )
+                for name, verse_answer in (
+                    ("pushkara-navamsha", state.pushkara_navamsha),
+                    ("pushkara-bhaga", state.pushkara_bhaga),
+                    ("marana-karaka-sthana", state.marana_karaka_sthana),
+                ):
+                    put(f"{key}-{name}", "none" if verse_answer is None else str(verse_answer).lower())
                 put(f"{key}-sign-edge", state.boundaries.sign_deg)
             for read in chart.bhavas:
                 put(f"chart-{i}-bhava-{read.number}-sign", read.sign.full_key)

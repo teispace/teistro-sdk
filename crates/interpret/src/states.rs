@@ -29,6 +29,7 @@
 //! that printed only what held would turn "we cannot tell" into "no",
 //! which is the silent default this project refuses.
 
+use teistro_core::catalogue::State;
 use teistro_intl::Value;
 use teistro_intl::messages::sdk::condition;
 use teistro_intl::messages::sdk::phala as phala_messages;
@@ -145,6 +146,18 @@ fn say_what_a_corpus_carries(plan: &mut Plan, state: &GrahaState, vocabulary: &d
             plan.say(&phala_messages::AvasthaLajjitadi { avastha: *holding });
         }
     }
+    // The three catalogued states the section carries as answers: a
+    // corpus reading of each is said where it holds, and only there — an
+    // unanswered one is not a "no".
+    for (held, condition) in [
+        (state.pushkara_navamsha, State::PushkaraNavamsa),
+        (state.pushkara_bhaga, State::PushkaraBhaga),
+        (state.marana_karaka_sthana, State::MaranaKarakaSthana),
+    ] {
+        if held == Some(true) && vocabulary.has_form(condition.full_key(), PHALA_FORM) {
+            plan.say(&phala_messages::State { state: condition });
+        }
+    }
 }
 
 #[cfg(test)]
@@ -161,7 +174,7 @@ mod tests {
     use teistro_core::boundary::Boundaries;
     use teistro_core::catalogue::{
         AvasthaBaladi, AvasthaDeeptadi, AvasthaJagradadi, AvasthaLajjitadi, Dignity, Graha, Rashi,
-        Relationship,
+        Relationship, State,
     };
     use teistro_core::quantity::Degrees;
     use teistro_state::avastha::Lajjitadi;
@@ -212,6 +225,9 @@ mod tests {
             },
             war: None,
             sayanadi: None,
+            pushkara_navamsha: Some(true),
+            pushkara_bhaga: None,
+            marana_karaka_sthana: Some(false),
             boundaries: Boundaries::of(Nas::from_degrees(Degrees::try_new(15.0).unwrap())),
         }
     }
@@ -326,6 +342,29 @@ mod tests {
                 .items
                 .iter()
                 .all(|item| !item.key.starts_with("sdk.phala."))
+        );
+    }
+
+    /// A catalogued state's reading is said where the state holds, and
+    /// neither where it does not nor where the chart has no answer.
+    #[test]
+    fn a_states_reading_is_said_only_where_it_holds() {
+        let vocabulary = Carries(&[
+            ("state.PUSHKARA_NAVAMSA", "phala"),
+            ("state.PUSHKARA_BHAGA", "phala"),
+            ("state.MARANA_KARAKA_STHANA", "phala"),
+        ]);
+        // Navamsha yes, bhaga unanswered, marana karaka sthana no.
+        let plan = states(&[state(Graha::Sun)], &vocabulary);
+        let said: Vec<&teistro_intl::Value> = plan
+            .items
+            .iter()
+            .filter(|item| item.key == "sdk.phala.state")
+            .filter_map(|item| item.params.get("state"))
+            .collect();
+        assert_eq!(
+            said,
+            [&teistro_intl::Value::catalogued(State::PushkaraNavamsa)]
         );
     }
 

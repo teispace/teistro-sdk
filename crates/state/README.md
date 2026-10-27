@@ -15,6 +15,8 @@ friendships, combustion, the ages, the planetary war and the avasthas.
 | [`burn`](src/burn.rs) | combustion: the two shipped orb tables and what they make of a distance from the Sun |
 | [`avastha`](src/avastha.rs) | the five ages, wakefulness, the deeptadi, the lajjitadi, the war and who wins it |
 | [`sayanadi`](src/sayanadi.rs) | the twelve Sayanadi states from BPHS ch. 45 and each state's sub-state under every anka of a name |
+| [`pushkara`](src/pushkara.rs) | the pushkara navamshas and bhagas, *Vidyamadhaviyam* ch. 1 v. 18, with Jataka Parijata ch. 1 v. 58's Moon row beside it (C767) |
+| [`marana`](src/marana.rs) | the marana karaka sthana, *Jataka Parijata* ch. 17 vv. 34 and 35 (C768) |
 | [`boundary`](src/boundary.rs) | how near a body stands to a sign, nakshatra or pada edge |
 | [`chart`](src/chart.rs) | the assembly: every graha of a founded chart, with what it is |
 
@@ -66,6 +68,28 @@ The default profile names the first (ADR-0024, "the texts as read"), so
 change in the conservative direction: the same bodies burn, and those
 the recording engine calls deeply combust come back merely combust. `Combustion::orbs` reports the orbs a reading was judged
 against, and whether there was a deeper one at all.
+
+## Three states on their verses alone
+
+The corpus records no pushkara navamsha, pushkara bhaga or marana karaka
+sthana, so these three rest on the texts and on tests counted by hand.
+
+- **Pushkara navamsha and bhaga.** *Vidyamadhaviyam* ch. 1 v. 18 is a
+  number-word verse, and its commentary decodes it sign by sign. The
+  navamshas are the 7th and 9th of the fiery signs, the 3rd and 5th of
+  the earthy, the 6th and 8th of the airy and the 1st and 3rd of the
+  watery. The bhagas are the 21st, 14th, 24th and 7th degrees of the same
+  four groups. `state.pushkara_bhaga` swaps in the Moon's own row from
+  *Jataka Parijata* ch. 1 v. 58, which agrees with Vidyamadhaviyam in
+  four signs of twelve. Under it, every other body has no answer. The
+  outer planets have neither state.
+- **Marana karaka sthana.** The places are Jupiter 3rd, Mars 7th, Saturn
+  1st, Rahu 9th, the Moon 8th, the Sun 12th, Mercury 7th and Venus 6th,
+  counted by sign from the lagna's sign. Saturn's and Venus's words each
+  have a second reading: the natal star, and an enemy's sign. Two knobs,
+  `state.marana_saturn` and `state.marana_venus`, choose between them.
+  The verses do not name Ketu, so Ketu has no answer and does not get a
+  modern fourth house.
 
 ## What it will not answer
 

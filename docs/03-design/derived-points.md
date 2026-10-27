@@ -283,7 +283,9 @@ who knows its provider's accuracy.
   do. The corpus records none, so what holds it is the arithmetic the
   verses imply — on every chart the SDK reads, it stands half as far round
   from the Sun as the hora lagna (`crates/sdk/tests/rules.rs`).
-- **The rest of the catalogue's 49 points.** Bhrigu bindu, Sahayogi and
+- **The rest of the catalogue's 49 points.** Bhrigu bindu (C769: only
+  modern secondary statements, which leave open which half of the circle
+  its midpoint takes), Sahayogi and
   the eight sphutas have catalogue rows and no formula here, and so does
   the Vighati lagna, which no text read defines (C407). The corpus records
   none of them, so each waits on a citation — which is exactly the

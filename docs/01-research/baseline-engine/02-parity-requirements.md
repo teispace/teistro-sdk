@@ -26,7 +26,12 @@ golden vectors exported from the baseline engine before migration.
       vargottama.
 - [ ] Aspects: graha drishti values, sphuta drishti, rashi drishti.
 - [ ] Upagrahas, special lagnas, Bhrigu bindu, yogi points, mrityu and
-      pushkara bhagas, marana karaka sthana.
+      pushkara bhagas, marana karaka sthana. Pushkara navamshas and
+      bhagas (*Vidyamadhaviyam* ch. 1 v. 18, C767) and marana karaka
+      sthana (*Jataka Parijata* ch. 17 vv. 34–35, C768) are computed in
+      every graha's state since 2026-10-27, on their verses: the corpus
+      records none of them. Bhrigu bindu is catalogued and not computed,
+      because no text defining it has been read (C769).
 - [x] Yogas (562) and doshas (62): presence, strength, participants, houses,
       cancellations. Mechanical export of the rule corpus.
 - [x] Shadbala with every sub-bala, Bhava Bala, Ashtakavarga (BAV, SAV,

@@ -755,6 +755,30 @@ export interface ChartsStates {
    * The values are `AvasthaCheshta` ids.
    */
   readonly cheshta5: Uint16Array;
+  /**
+   * 1 for the nine grahas, which Vidyamadhaviyam ch. 1 v. 18 reads; 0 for the outer planets.
+   */
+  readonly hasPushkaraNavamsha: Uint8Array;
+  /**
+   * 1 when it stands in one of its sign's two pushkara navamshas; read only when `has_pushkara_navamsha`.
+   */
+  readonly pushkaraNavamsha: Uint8Array;
+  /**
+   * 1 when the table `state.pushkara_bhaga` names gives this body a row: every graha under Vidyamadhaviyam's, the Moon alone under Jataka Parijata's; 0 for the outer planets.
+   */
+  readonly hasPushkaraBhaga: Uint8Array;
+  /**
+   * 1 when it stands on its sign's pushkara bhaga; read only when `has_pushkara_bhaga`.
+   */
+  readonly pushkaraBhaga: Uint8Array;
+  /**
+   * 1 for the eight grahas Jataka Parijata ch. 17 vv. 34 and 35 name; 0 for Ketu, the outer planets, and Saturn read by the natal star in a chart with no Moon.
+   */
+  readonly hasMaranaKarakaSthana: Uint8Array;
+  /**
+   * 1 when it stands in its marana karaka sthana; read only when `has_marana_karaka_sthana`.
+   */
+  readonly maranaKarakaSthana: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }

@@ -14,11 +14,14 @@ use teistro_core::catalogue::{
 use teistro_core::error::Error;
 use teistro_core::quantity::Degrees;
 use teistro_core::settings::Settings;
+use teistro_core::settings::knobs::MaranaSaturn;
 
 use crate::avastha::{self, AtWar, Lajjitadi, Placement, War};
 use crate::boundary::Boundaries;
 use crate::burn::{self, Combustion};
 use crate::dignity::{self, Friendship};
+use crate::marana::{self, Standing};
+use crate::pushkara;
 use crate::sayanadi::{self, Sayanadi, SayanadiChart};
 
 /// Which way a body is going, and how fast.
@@ -87,6 +90,22 @@ pub struct GrahaState {
     /// The Sayanadi state and its sub-states, for the nine grahas.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub sayanadi: Option<Sayanadi>,
+    /// Whether it stands in one of its sign's two pushkara navamshas
+    /// (*Vidyamadhaviyam* ch. 1 v. 18); absent for the outer planets,
+    /// which the verse's grahas are not.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub pushkara_navamsha: Option<bool>,
+    /// Whether it stands on its sign's pushkara bhaga in the table
+    /// `state.pushkara_bhaga` names; absent for a body that table gives no
+    /// row, which under Jataka Parijata's is every body but the Moon.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub pushkara_bhaga: Option<bool>,
+    /// Whether it stands in its marana karaka sthana (*Jataka Parijata*
+    /// ch. 17 vv. 34 and 35); absent for Ketu and the outer planets, which
+    /// the verses do not name, and for Saturn read by the natal star in a
+    /// chart with no Moon.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub marana_karaka_sthana: Option<bool>,
     /// How near it stands to a classification boundary.
     pub boundaries: Boundaries,
 }
@@ -234,18 +253,7 @@ pub fn state(foundation: &ChartFoundation, settings: &Settings) -> Result<Vec<Gr
         friendships.push(friendship);
     }
 
-    // What every graha's Sayanadi shares: with no Moon there is none.
-    let sayanadi_chart = foundation
-        .grahas
-        .iter()
-        .find(|position| position.graha == Graha::Moon)
-        .map(|moon| canonical(moon.longitude_deg))
-        .transpose()?
-        .map(|moon| SayanadiChart {
-            moon: moon.nakshatra(),
-            ishtakaal: foundation.timing.ishtakaal,
-            lagna: Rashi::from_id(u16::from(foundation.lagna_sign_index())).unwrap_or(Rashi::Aries),
-        });
+    let sayanadi_chart = sayanadi_chart(foundation)?;
 
     let mut states = Vec::with_capacity(foundation.grahas.len());
     for ((position, placement), friendship) in
@@ -282,10 +290,73 @@ pub fn state(foundation: &ChartFoundation, settings: &Settings) -> Result<Vec<Gr
                     settings.state.sayanadi_nodes,
                 )
             }),
+            pushkara_navamsha: is_classical(position.graha)
+                .then(|| pushkara::in_navamsha(longitude)),
+            pushkara_bhaga: is_classical(position.graha).then_some(()).and_then(|()| {
+                pushkara::in_bhaga(position.graha, longitude, settings.state.pushkara_bhaga)
+            }),
+            marana_karaka_sthana: marana_karaka_sthana(
+                position.graha,
+                (placement.sign, friendship.natural),
+                foundation.lagna_sign_index(),
+                sayanadi_chart
+                    .as_ref()
+                    .map(|chart| chart.moon == longitude.nakshatra()),
+                settings,
+            ),
             boundaries: Boundaries::of(longitude),
         });
     }
     Ok(states)
+}
+
+/// What every graha's Sayanadi shares: with no Moon there is none. The
+/// marana karaka sthana reads its Moon's nakshatra too, for Saturn read by
+/// the natal star.
+fn sayanadi_chart(foundation: &ChartFoundation) -> Result<Option<SayanadiChart>, Error> {
+    Ok(foundation
+        .grahas
+        .iter()
+        .find(|position| position.graha == Graha::Moon)
+        .map(|moon| canonical(moon.longitude_deg))
+        .transpose()?
+        .map(|moon| SayanadiChart {
+            moon: moon.nakshatra(),
+            ishtakaal: foundation.timing.ishtakaal,
+            lagna: Rashi::from_id(u16::from(foundation.lagna_sign_index())).unwrap_or(Rashi::Aries),
+        }))
+}
+
+/// Whether a graha is one of the nine the classical verses read.
+const fn is_classical(graha: Graha) -> bool {
+    !matches!(graha, Graha::Uranus | Graha::Neptune | Graha::Pluto)
+}
+
+/// A graha's marana karaka sthana, counted by sign from the lagna's;
+/// `None` for a graha the verses do not name and for Saturn read by the
+/// natal star when the chart has no Moon (`in_birth_star` is `None`).
+fn marana_karaka_sthana(
+    graha: Graha,
+    (sign, natural): (Rashi, teistro_core::catalogue::Relationship),
+    lagna_sign: u8,
+    in_birth_star: Option<bool>,
+    settings: &Settings,
+) -> Option<bool> {
+    let (saturn, venus) = (settings.state.marana_saturn, settings.state.marana_venus);
+    if graha == Graha::Saturn && saturn == MaranaSaturn::BirthStar && in_birth_star.is_none() {
+        return None;
+    }
+    let house = u8::try_from((sign.id() + 12 - u16::from(lagna_sign) % 12) % 12 + 1).ok()?;
+    marana::holds(
+        graha,
+        Standing {
+            house,
+            natural,
+            in_birth_star: in_birth_star.unwrap_or(false),
+        },
+        saturn,
+        venus,
+    )
 }
 
 /// How far a body stands from the Sun, degrees, or `None` when the chart

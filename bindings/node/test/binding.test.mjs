@@ -4736,6 +4736,26 @@ test('a graha\'s state carries its Sayanadi and a sub-state for every anka', () 
 });
 
 /**
+ * The three states the verses define cross as booleans, and as `null`
+ * where the verses give the body no answer: Ketu and the outer planets
+ * have no marana karaka sthana, the outer planets no pushkara.
+ */
+test('a graha\'s state carries its pushkara and marana karaka sthana answers', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const { states } = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, state: true });
+  const named = ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN', 'RAHU'].map((g) => `graha.${g}`);
+  for (const state of states) {
+    const classical = named.includes(state.graha) || state.graha === 'graha.KETU';
+    assert.equal(state.pushkaraNavamsha === null, !classical, state.graha);
+    assert.equal(state.pushkaraBhaga === null, !classical, state.graha);
+    assert.equal(state.maranaKarakaSthana === null, !named.includes(state.graha), state.graha);
+  }
+  assert.equal(states.filter((s) => s.maranaKarakaSthana !== null).length, 8);
+  ctx.dispose();
+});
+
+/**
  * A chart's Vaiseshikamsa crosses whole: each scheme's count within its
  * vargas, a name for every count from two; `null` unless asked.
  */

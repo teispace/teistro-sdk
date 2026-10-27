@@ -2471,6 +2471,15 @@ fn state_values(state: &teistro_state::GrahaState) -> Vec<FixedValue> {
         teistro_state::Anka::ALL
             .map(|anka| u64::from(state.sayanadi.map_or(0, |s| s.cheshta(anka).id())).into()),
     )
+    .chain(
+        [
+            state.pushkara_navamsha,
+            state.pushkara_bhaga,
+            state.marana_karaka_sthana,
+        ]
+        .into_iter()
+        .flat_map(|answer| [flag(answer.is_some()), flag(answer == Some(true))]),
+    )
     .collect()
 }
 

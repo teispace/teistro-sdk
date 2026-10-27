@@ -477,6 +477,12 @@ export function decodeCharts(bytes) {
       cheshta3: column(blob, at, 34, 'u16', at.count),
       cheshta4: column(blob, at, 35, 'u16', at.count),
       cheshta5: column(blob, at, 36, 'u16', at.count),
+      hasPushkaraNavamsha: column(blob, at, 37, 'u8', at.count),
+      pushkaraNavamsha: column(blob, at, 38, 'u8', at.count),
+      hasPushkaraBhaga: column(blob, at, 39, 'u8', at.count),
+      pushkaraBhaga: column(blob, at, 40, 'u8', at.count),
+      hasMaranaKarakaSthana: column(blob, at, 41, 'u8', at.count),
+      maranaKarakaSthana: column(blob, at, 42, 'u8', at.count),
       length: at.count,
     };
   }

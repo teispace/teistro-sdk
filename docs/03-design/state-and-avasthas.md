@@ -332,10 +332,45 @@ is at war with A, and exactly one of them wins.
   because the lagna is a point and has no dispositor relationship to
   compute. If a module above turns out to want one, it wants a different
   thing and should say so.
-- **Gandanta and marana karaka sthana**, which the module catalogue
-  lists here. Neither appears anywhere in the corpus, so there is
-  nothing to falsify a rule against and this module builds neither. Both
-  are cheap once a source is read: gandanta is a span either side of the
-  three water-to-fire junctions and `boundary` already reports the
-  distance it needs, and marana karaka sthana is a table of one house
-  per graha. They wait on a rank-1 source, not on a computation.
+- **Gandanta**, which the module catalogue lists here. It appears nowhere
+  in the corpus, so there is nothing to test a rule against, and this
+  module does not build it. It is cheap once a source is read: it is a
+  span either side of the three water-to-fire junctions, and `boundary`
+  already reports the distance it needs. It waits on a rank-1 source, not
+  on a computation. Marana karaka sthana, which was here too, found its
+  source (§13).
+
+## 13. Three states on their verses (2026-10-27)
+
+The corpus records none of these three, so each one rests on its verse and
+on tests counted by hand.
+
+- **Pushkara navamsha.** *Vidyamadhaviyam* ch. 1 v. 18, read in the
+  Sanskrit with Vishnusharma's commentary, which decodes the verse's
+  number-words. It gives the 7th and 9th navamshas of the fiery signs, the
+  3rd and 5th of the earthy, the 6th and 8th of the airy and the 1st and
+  3rd of the watery. A test checks the table against itself: every
+  pushkara navamsha's sign has a benefic lord. `pushkara_navamsha` is
+  answered for the nine grahas.
+- **Pushkara bhaga.** The same verse gives one degree a triplicity: the
+  21st, 14th, 24th and 7th. *Jataka Parijata* ch. 1 v. 58 gives the Moon
+  her own row, which agrees in four signs. The knob
+  `state.pushkara_bhaga` chooses between them (C767). Under Jataka
+  Parijata's row, every body but the Moon has no answer, not a "no". A
+  degree is the one running to it, C82's reading. Read the other way,
+  every Vidyamadhaviyam bhaga would fall wholly inside a pushkara
+  navamsha, which the crux records.
+- **Marana karaka sthana.** *Jataka Parijata* ch. 17 vv. 34–35: Jupiter
+  3rd, Mars 7th, Saturn 1st, Rahu 9th, the Moon 8th, the Sun 12th,
+  Mercury 7th and Venus 6th. Houses are counted by sign from the lagna's
+  sign, because the verse calls two of them signs. The translator reads
+  Saturn's word as the natal star and Venus's as an enemy's sign; the
+  knobs `state.marana_saturn` and `state.marana_venus` choose (C768). The
+  verse names neither Ketu nor the outer planets, so they have no answer.
+  v. 36's aggravations (a malefic joined or aspecting, an enemy's or
+  debilitation sign, weakness) are states the chart already carries, and
+  they are not folded into this one.
+
+Each state is one optional field on `GrahaState` and two columns in the
+boundary's `states` section (`has_…` and the answer). Every binding reads
+`null` / `None` where the chart has no answer.
