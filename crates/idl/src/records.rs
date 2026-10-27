@@ -764,6 +764,7 @@ impl<'s> Reader<'s> {
         object: &Value,
         tag: Option<&str>,
     ) -> Result<Vec<RecordField>, String> {
+        read_whole(at, object)?;
         let mut properties = object
             .get("properties")
             .and_then(Value::as_object)
@@ -823,6 +824,7 @@ impl<'s> Reader<'s> {
         if self.is_raw(at) {
             return Ok((RecordType::Json, false));
         }
+        read_whole(at, schema)?;
         if let Some(reference) = schema.get("$ref").and_then(Value::as_str) {
             return Ok((self.referred(at, reference)?, false));
         }
@@ -980,6 +982,7 @@ impl<'s> Reader<'s> {
                 "{at}: wraps {name}, which has no fields to stand beside the tag"
             ));
         }
+        read_whole(at, def)?;
         Ok(def)
     }
 
@@ -1103,6 +1106,34 @@ fn tag_of(at: &str, options: &[Value]) -> Result<String, String> {
         })
         .cloned()
         .ok_or_else(|| format!("{at}: a union with no field that tags every option"))
+}
+
+/// The keywords that would change what a value may be and that the reader
+/// does not model: a schema carrying one would be read as less than it
+/// says, as a `$ref` beside a variant's tag once was (every binding's
+/// `ThresholdsCustom` lost its table), so it is refused instead.
+const UNREAD: [&str; 8] = [
+    "allOf",
+    "not",
+    "if",
+    "patternProperties",
+    "dependentRequired",
+    "dependentSchemas",
+    "unevaluatedProperties",
+    "contains",
+];
+
+/// Refuses a schema with a keyword [`UNREAD`] names.
+fn read_whole(at: &str, schema: &Value) -> Result<(), String> {
+    match UNREAD
+        .iter()
+        .find(|keyword| schema.get(**keyword).is_some())
+    {
+        Some(keyword) => Err(format!(
+            "{at}: `{keyword}`, which the reader does not model; describe it without, or teach the reader"
+        )),
+        None => Ok(()),
+    }
 }
 
 /// The names a schema's `required` lists.
@@ -1288,6 +1319,14 @@ mod tests {
             Reading { raw: &[] },
         );
         assert!(refused.is_err_and(|e| e.contains("no fields to stand beside the tag")));
+    }
+
+    #[test]
+    fn a_keyword_the_reader_does_not_model_is_refused() {
+        let table = json!({"type": "object", "properties": {"mars": {"$ref": "#/$defs/Pair"}},
+            "allOf": [{"required": ["mars"]}]});
+        let refused = read(&wrapping(&table), &["Thresholds"], Reading { raw: &[] });
+        assert!(refused.is_err_and(|e| e.contains("`allOf`, which the reader does not model")));
     }
 
     #[test]
