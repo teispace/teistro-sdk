@@ -29,6 +29,9 @@ the previous release, not by nobody having looked.
   The transit-hits section read Sade Sati by its request's name, which the
   answer does not use, and so counted none of it; a test now holds every
   part a façade section reads to be answered.
+- Dart's suite founds a context on each of four isolates at once, each
+  answering the main isolate's week of days and chart, as Node's does on
+  worker threads.
 
 **Dart: a generated request gives its JSON as `toJson()`.**
 **Numbers:** none.
