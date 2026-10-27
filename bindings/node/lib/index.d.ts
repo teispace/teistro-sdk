@@ -158,11 +158,83 @@ import type {
 // neither, which the areas made visible.
 import type { EntityForms, Messages } from './messages.js';
 import type { Provenance, Step } from './records.js';
+// The request records, generated from the façade's own schemas of them
+// (`03-design/generated-requests.md`).
+import type {
+  AccidentalRules,
+  AccidentalScores,
+  AlmutenRules,
+  AnnualDashaRules,
+  AntisciaRequest,
+  AshauchKind,
+  AshauchLength,
+  AshauchRelation,
+  AshauchRequest,
+  AshauchRunning,
+  AshauchSex,
+  AshauchTable,
+  AshauchTradition,
+  BirthDate,
+  DignityRequest,
+  FirstYearRequest,
+  FortitudeRequest,
+  HarmonicRequest,
+  HarshaRules,
+  HitRequest,
+  Interval,
+  KootaRules,
+  KpRequest,
+  KujaLifts,
+  KujaRules,
+  LalKitabRequest,
+  LotRequest,
+  MasaDashaRules,
+  MasaPhalaRules,
+  MaseshaRules,
+  MidpointRequest,
+  MuhurtaNative,
+  MunthaDegree,
+  NaamRules,
+  NameSounds,
+  NatalPoint,
+  NightRule,
+  NumerologyRules,
+  OfficeRules,
+  ParallelRequest,
+  PerfectionRequest,
+  PlanRequest,
+  PoruthamRules,
+  PrashnaRequest,
+  PrashnaRules,
+  ProgressionsRequest,
+  PublishedSet,
+  RectificationRequest,
+  RemedyRequest,
+  RemedyRules,
+  RuleRequest,
+  SadeSatiRequest,
+  SahamRules,
+  SahamStrengthReadings,
+  SarvatobhadraRequest,
+  SarvatobhadraRules,
+  TithiPraveshaRequest,
+  TithiRule,
+  VarsheshaRules,
+  VedhaMotion,
+  YogaRules,
+} from './requests.js';
 
 export * from './catalogue.js';
 export * from './records.js';
 export type * from './types.js';
 export type * from './blob.js';
+export type * from './requests.js';
+// A request record named like a catalogue enum, an answer record or a
+// boundary type is exported under that name as the other: the request's
+// own is reached through the field that takes it.
+export { Partile, Siege, Terms } from './catalogue.js';
+export type { Confidence } from './records.js';
+export type { CivilTime, ZoneSpec } from './types.js';
 /**
  * A date in a calendar, without naming the fields a call fills in: the era
  * and the era year are what the call resolves them to, and the resolution
@@ -972,16 +1044,6 @@ export type GrahaName = Exclude<Graha, 'unknown'> | BareKey<Graha>;
 /** A catalogue key without its kind: `'graha.SUN'` is `'SUN'`. */
 type BareKey<Full> = Full extends `${string}.${infer Bare}` ? Bare : never;
 
-/**
- * A natal point a transit aspects: a natal graha, the lagna or the
- * midheaven. The same spelling goes into `HitRequest.points` and comes back
- * as an aspect's `to`.
- */
-export type NatalPoint =
-  | { readonly point: 'GRAHA'; readonly graha: Graha | 'unknown' }
-  | { readonly point: 'LAGNA' }
-  | { readonly point: 'MIDHEAVEN' };
-
 /** What a hit was, tagged by `kind`; each kind carries its own fields. */
 export type HitEvent =
   | {
@@ -1162,55 +1224,6 @@ export interface RashifalAnswers {
   readonly provenance: Provenance;
 }
 
-/**
- * The transit hit list to search against every chart of a request; every
- * field but the window is optional, and an absent one is the default.
- */
-export interface HitRequest {
-  /** The window's start, a UTC Julian day. */
-  readonly from: number;
-  /** The window's end, after the start. */
-  readonly to: number;
-  /** The grahas to search, bare (`'SUN'`) or full (`'graha.SUN'`); the nine by default. */
-  readonly grahas?: readonly GrahaName[];
-  /** The kinds of event to report; the four ingress, station and aspect kinds by default. */
-  readonly kinds?: readonly HitKind[];
-  /** The natal points aspected: a graha's key, `'LAGNA'`, `'MIDHEAVEN'`, or an aspect's `to`; the nine and the lagna by default. */
-  readonly points?: readonly (
-    | NatalPoint
-    | { readonly point: 'GRAHA'; readonly graha: GrahaName }
-    | 'LAGNA'
-    | 'MIDHEAVEN'
-    | GrahaName
-  )[];
-  /** The aspects' angles, whole degrees from 0 to 180; the conjunction and opposition by default (C145). */
-  readonly aspects?: readonly number[];
-  /** An orb in degrees, more than 0, under 15 and under half the step between the aspects' lines, for each window's opening and closing; exact only by default (C146). */
-  readonly orbDeg?: number;
-  /** The divisional charts a `'VARGA_INGRESS'` is searched in, bare (`'D9'`) or full (`'varga.D9'`); the navamsha by default, and never the rashi chart (C418). */
-  readonly vargas?: readonly (Exclude<Varga, 'unknown'> | BareKey<Varga>)[];
-  /** How near a natal point an eclipsed luminary must fall, in degrees, more than 0 and at most 15; 3 by default (C422). */
-  readonly eclipseOrbDeg?: number;
-}
-
-/**
- * Sade Sati and Saturn's smaller spells to find for every chart of a request
- * (`03-design/sade-sati.md`); every field but `from` is optional, and an
- * absent one is the default.
- */
-export interface SadeSatiRequest {
-  /** The window's start, a UTC Julian day. */
-  readonly from: number;
-  /** The window's end, not before the start; `from` by default, one instant. */
-  readonly to?: number;
-  /** The natal point the houses are counted from: the Moon by default, or the lagna (C139). */
-  readonly countedFrom?: GocharFrom;
-  /** Whole signs from the reference's sign by default, or 30° houses centred on its degree (C147). */
-  readonly reckoning?: Reckoning;
-  /** The smaller spells, houses 3 to 11 each named once; the 4th and the 8th by default (C149). */
-  readonly spells?: readonly number[];
-}
-
 /** One stay of Saturn's in a house, half-open. */
 export interface SadeSatiVisit {
   /** When Saturn entered, a UTC Julian day; `null` before the ephemeris's coverage. */
@@ -1255,18 +1268,6 @@ export interface Term {
   readonly end: number;
 }
 
-/**
- * The terms and triplicities a reading of the dignities uses: a system of
- * terms by name or a table of the caller's own, twelve signs of five terms
- * from Aries (`03-design/essential-dignities.md`, C208).
- */
-export interface DignityRules {
-  /** Lilly's printing of Ptolemy's terms by default. */
-  readonly terms?: Exclude<Terms, 'TABLE' | 'unknown'> | { readonly TABLE: readonly (readonly Term[])[] };
-  /** Lilly's by default, Mars ruling water alone. */
-  readonly triplicities?: Exclude<Triplicities, 'unknown'>;
-}
-
 /** What each dignity and debility is worth; Lilly's (p. 115) for any left out. */
 export interface DignityScores {
   readonly house: number;
@@ -1277,18 +1278,6 @@ export interface DignityScores {
   readonly detriment: number;
   readonly fall: number;
   readonly peregrine: number;
-}
-
-/**
- * How to read every chart's essential dignities
- * (`03-design/essential-dignities.md`); every field is optional, and an
- * absent one is the default.
- */
-export interface DignityRequest {
-  /** The Sun's centre above the true horizon by default, Valens's hemisphere (C209). */
-  readonly sectRule?: Exclude<SectRule, 'unknown'>;
-  readonly rules?: DignityRules;
-  readonly scores?: Partial<DignityScores>;
 }
 
 /** The dignities and debilities a planet holds where it stands. */
@@ -1406,92 +1395,6 @@ export interface DispositorEnd {
   readonly planets: readonly (Graha | 'unknown')[];
 }
 
-/**
- * The orbs and limits Lilly's accidental fortitudes are judged by
- * (`03-design/essential-dignities.md` §Accidental fortitudes); Lilly's for
- * any left out.
- */
-export interface AccidentalRules {
-  /** Combust within this many degrees of the Sun; 8°30′ by default. */
-  readonly combustionDeg: number;
-  /** Whether combustion also asks for the Sun's sign (C211); true by default. */
-  readonly combustionInSign: boolean;
-  /** Under the beams within this many degrees (C212); 17 by default. */
-  readonly beamsDeg: number;
-  /** Cazimi within this many degrees; 17′ by default. */
-  readonly cazimiDeg: number;
-  /** A planet this near the next cusp is in its house (p. 33, C214); 5 by default. */
-  readonly cuspOrbDeg: number;
-  /** With a star within this many degrees; 5 by default. */
-  readonly starOrbDeg: number;
-  /** Partile by the same degree, Lilly's, or within an orb of the exact aspect (C216). */
-  readonly partile: Exclude<Partile, 'WITHIN'> | { readonly WITHIN: { readonly orbDeg: number } };
-  /** Besieged within one sign, Lilly's example, or on an arc no wider than a span (C215). */
-  readonly siege: Exclude<Siege, 'WITHIN'> | { readonly WITHIN: { readonly spanDeg: number } };
-  /** The mean daily motions swift and slow are judged against, the seven in the Chaldean order. */
-  readonly meanMotionDeg: readonly number[];
-}
-
-/** What each of Lilly's accidental lines is worth (p. 115); his for any left out. */
-export interface AccidentalScores {
-  /** The first house to the twelfth. */
-  readonly houses: readonly number[];
-  readonly direct: number;
-  readonly retrograde: number;
-  readonly swift: number;
-  readonly slow: number;
-  /** Saturn, Jupiter or Mars oriental. */
-  readonly superiorOriental: number;
-  /** Saturn, Jupiter or Mars occidental. */
-  readonly superiorOccidental: number;
-  /** Venus or Mercury oriental. */
-  readonly inferiorOriental: number;
-  /** Venus or Mercury occidental. */
-  readonly inferiorOccidental: number;
-  readonly increasing: number;
-  readonly decreasing: number;
-  readonly freeFromCombustion: number;
-  readonly cazimi: number;
-  readonly combust: number;
-  readonly underBeams: number;
-  readonly conjunctBenefic: number;
-  readonly conjunctNorthNode: number;
-  readonly trineBenefic: number;
-  readonly sextileBenefic: number;
-  readonly conjunctMalefic: number;
-  readonly conjunctSouthNode: number;
-  readonly opposedMalefic: number;
-  readonly squareMalefic: number;
-  readonly besieged: number;
-  readonly regulus: number;
-  readonly spica: number;
-  readonly algol: number;
-}
-
-/**
- * How to read every chart's fortitudes, both halves of Lilly's table
- * (`03-design/essential-dignities.md` §Accidental fortitudes); every field
- * is optional, and an absent one is Lilly's. An answer's `rules` and
- * `scores` are requests as they stand.
- *
- * @example
- * const asked: FortitudeRequest = { rules: { partile: { WITHIN: { orbDeg: 1 } } }, scores: { regulus: 5 } };
- */
-export interface FortitudeRequest {
-  readonly dignities?: DignityRequest;
-  readonly rules?: Partial<AccidentalRules>;
-  readonly scores?: Partial<AccidentalScores>;
-  readonly almuten?: Partial<AlmutenRules>;
-}
-
-/** How the almutens are read; Lilly's by default (`03-design/essential-dignities.md` §The almuten). */
-export interface AlmutenRules {
-  /** What of a place its dignities are counted from: `DEGREE` (all five) or `SIGN` (house, exaltation, triplicity), C218. */
-  readonly place: PlaceReading;
-  /** How Fortune is taken by night: `DAY_AND_NIGHT`, Lilly's, `REVERSED_BY_NIGHT` or `REVERSED_WHILE_MOON_UP`, C220 and C221. */
-  readonly fortune: FortuneRule;
-}
-
 /** What a chart's accidental fortitudes were read from, in the chart's zodiac. */
 export interface AccidentalSky {
   /** Regiomontanus, Lilly's, unless a profile names another division for the `hellenistic` module. */
@@ -1588,20 +1491,6 @@ export interface Almutens {
   readonly places: Almuten;
   /** Each house's, of its cusp, the first to the twelfth. */
   readonly houses: readonly Almuten[];
-}
-
-/**
- * How to read every chart's lots (`03-design/hellenistic-lots.md`); every
- * field is optional, and an absent one is Valens's.
- *
- * @example
- * const asked: LotRequest = { fortune: 'REVERSED_WHILE_MOON_UP' };
- */
-export interface LotRequest {
-  /** The Sun's centre above the true horizon by default, Valens's hemisphere (C209). */
-  readonly sectRule?: Exclude<SectRule, 'unknown'>;
-  /** How Fortune is taken by night; `REVERSED_BY_NIGHT`, Valens's II.22, by default (C221). */
-  readonly fortune?: Exclude<FortuneRule, 'unknown'>;
 }
 
 /** Where a lot fell, in the chart's zodiac. */
@@ -1739,52 +1628,6 @@ export interface Considerations {
 /** A span of time a progression's rate is stated in. */
 export type ProgressionSpan = 'DAY' | 'SYNODIC_MONTH' | 'SIDEREAL_MONTH' | 'YEAR' | { readonly DAYS: number };
 
-/** How the progressed midheaven moves (C237). */
-export type AngleMethod =
-  | 'NAIBOD_RIGHT_ASCENSION'
-  | 'NAIBOD_LONGITUDE'
-  | 'SOLAR_ARC_LONGITUDE'
-  | 'SOLAR_ARC_RIGHT_ASCENSION'
-  | 'QUOTIDIAN';
-
-/**
- * What to read every chart's birth through: the progressed chart and the
- * direction at an instant of life (`at`), the contacts over a window
- * (`contacts`), or both (`03-design/western-progressions.md`). Every other
- * field is Leo's default when absent.
- *
- * @example
- * const leo: ProgressionsRequest = { at: 2460676.5, year: 'NOON_SIDEREAL_TIME' };
- * const moon: ProgressionsRequest = { contacts: { from: 2460676.5, to: 2461041.5, grahas: ['MOON'] } };
- */
-export interface ProgressionsRequest {
-  /** The instant of life, a UTC Julian day. */
-  readonly at?: number;
-  /** How much sky measures how much life; a day for a year by default. */
-  readonly rate?: { readonly sky: ProgressionSpan; readonly life: ProgressionSpan };
-  /** How long a year of life is (C236); the tropical year by default. */
-  readonly year?: 'TROPICAL' | 'JULIAN' | 'NOON_SIDEREAL_TIME';
-  /** How the progressed midheaven moves; Leo's mean Sun in right ascension by default. */
-  readonly angles?: AngleMethod;
-  /** The direction's arc: the Sun's under the rate by default, or a measure's. */
-  readonly direction?: 'SOLAR' | 'NAIBOD' | 'PTOLEMY' | { readonly PER_YEAR: number };
-  /** A window of life to find the contacts in, spelled as a hit list spells them. */
-  readonly contacts?: {
-    readonly from: number;
-    readonly to: number;
-    /** The progressed planets; the seven by default. */
-    readonly grahas?: HitRequest['grahas'];
-    /** The radical points; the seven, the lagna and the midheaven by default. */
-    readonly points?: HitRequest['points'];
-    /** The aspects' angles, whole degrees to 180; Leo's table (p. 48) by default. */
-    readonly aspects?: HitRequest['aspects'];
-    /** Asks the parallels of declination over the window too, under this orb; `{}` for Leo's 1°. */
-    readonly parallels?: ParallelRequest;
-    /** Asks the progressed planets' contacts among themselves too (Leo's "P. to P.", p. 41). */
-    readonly mutual?: boolean;
-  };
-}
-
 /**
  * Which Western aspects to look for, and under which orbs
  * (`03-design/western-aspects.md`). Leo's nine under his orbs (*How to
@@ -1865,25 +1708,6 @@ export type WesternOrbModel =
     };
 
 /**
- * What the antiscia are asked (`03-design/western-antiscia.md`): the orbs
- * a pair is read under, at the conjunction; Lilly's moieties when absent
- * (C244), which give the outer three none.
- *
- * @example
- * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, antiscia: {} });
- * for (const row of chart.antiscia?.pairs ?? []) console.log(row.first, row.contrary ? 'contrantiscion' : 'antiscion', row.second);
- */
-export interface AntisciaRequest {
-  readonly orbs?: WesternOrbModel;
-  /**
-   * Reads each reflection on the cusps too, in the division named, Lilly's
-   * Regiomontanus when `{}` (`03-design/western-houses.md`, C251). None by
-   * default.
-   */
-  readonly cusps?: WesternHouseRequest;
-}
-
-/**
  * What a chart's Western houses are asked (`03-design/western-houses.md`):
  * the division, else the profile's `houses.module_overrides.western`, else
  * Placidus, the division Leo's figures are cast in (C249).
@@ -1906,21 +1730,6 @@ export interface WesternHousePlacement {
    * above the ascendant no further than `reachDeg`. The house is never moved.
    */
   readonly withAscendant: boolean;
-}
-
-/**
- * What a chart's harmonic is asked (`03-design/western-harmonics.md`):
- * `number`, a whole number from 1 to 360 every longitude is multiplied by
- * (Addey), and `orbDeg`, how close two points meet in the harmonic chart,
- * 12° when absent (C252), at most 30°.
- *
- * @example
- * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, harmonic: { number: 9 } });
- * for (const row of chart.harmonic?.rows ?? []) console.log(row.first, row.second, row.apartDeg);
- */
-export interface HarmonicRequest {
-  readonly number: number;
-  readonly orbDeg?: number;
 }
 
 /** A point of a harmonic chart: a planet, the ascendant or the midheaven. */
@@ -1989,64 +1798,6 @@ export interface MatchingRequest {
   readonly porutham?: PoruthamRules;
   /** The readings the Kuja dosha is computed under. */
   readonly kuja?: KujaRules;
-}
-
-/** The readings the Kuja dosha is computed under; each default is the verse's own. */
-export interface KujaRules {
-  /** Which houses of Mars make the dosha: *Manasagari*'s five, `'MANASAGARI'` (the default), or `'WITH_SECOND'` (C285). */
-  readonly houses?: 'MANASAGARI' | 'WITH_SECOND';
-  /** From where they are counted: `'LAGNA'` (the default) or `'LAGNA_MOON_VENUS'` (C286). */
-  readonly from?: 'LAGNA' | 'LAGNA_MOON_VENUS';
-  /** The lifts that lift it; none by default, as the verse has none (C288, C755). */
-  readonly lifts?: Partial<KujaLifts>;
-}
-
-/**
- * The lifts of the Kuja dosha, each a clause: BPHS ch. 80 v. 47's benefic
- * aspect or conjunction and vv. 48–49's dosha in both charts (rank 1), and
- * the five the almanacs printed in Nepal give from the lagna (rank 4).
- */
-export interface KujaLifts {
-  /** A benefic aspects Mars or stands with it. */
-  readonly benefic: boolean;
-  /** The other chart carries the dosha too. */
-  readonly mutual: boolean;
-  /** Saturn in the 1st, 4th, 7th, 9th or 12th. */
-  readonly saturn: boolean;
-  /** The Moon and Venus both in the 2nd. */
-  readonly moonVenusSecond: boolean;
-  /** Jupiter aspects Mars. */
-  readonly jupiterAspect: boolean;
-  /** Rahu in a kendra. */
-  readonly rahuKendra: boolean;
-  /** Mars with Rahu. */
-  readonly withRahu: boolean;
-}
-
-/** The readings the ten considerations are computed under; each default is the chapter's own. */
-export interface PoruthamRules {
-  /** Whose quarter comes first in one star across two signs: `'GROOM_EARLIER'` (the default) or `'BRIDE_FIRST_SIGN'` (C270). */
-  readonly twoSignStar?: 'GROOM_EARLIER' | 'BRIDE_FIRST_SIGN';
-  /** How far Sthree-Dheergham asks: beyond the `'THIRTEENTH'` (the default) or the `'SEVENTH'` (C272). */
-  readonly deerghaBeyond?: 'THIRTEENTH' | 'SEVENTH';
-  /** Which friendship of the lords agrees: `'MUTUAL'` (the default) or `'ONE_WAY'` (C273). */
-  readonly lordsFriendship?: 'MUTUAL' | 'ONE_WAY';
-}
-
-/** The readings an Ashta Koota is computed under; each default is the source's own. */
-export interface KootaRules {
-  /** The point of an equal varna: `'WHOLE'` (the default) or `'HALF'` (C259). */
-  readonly equalVarna?: 'WHOLE' | 'HALF';
-  /** The points of a Deva bride and a Manushya groom: `'FOUR'` (the default) or `'THREE'` (C262). */
-  readonly devaBride?: 'FOUR' | 'THREE';
-  /** How a bad Bhakoot is lifted: `'ANY_ONE'` exception (the default) or `'GARGA'`'s count (C263). */
-  readonly bhakootLift?: 'ANY_ONE' | 'GARGA';
-  /** Which shared nadi is a dosha: `'ANY'` (the default) or `'MIDDLE_ONLY'` (C264). */
-  readonly nadiDosha?: 'ANY' | 'MIDDLE_ONLY';
-  /** Which text's gana points: `'DAIVAJNA_MANOHARA'` (the default) or `'MUHURTA_MARTANDA'` (C761). */
-  readonly gana?: 'DAIVAJNA_MANOHARA' | 'MUHURTA_MARTANDA';
-  /** Which vashya scheme: the `'VERSE'`'s (the default) or the one `'PRINTED_IN_NEPAL'` (C762). */
-  readonly vashya?: 'VERSE' | 'PRINTED_IN_NEPAL';
 }
 
 /** The five exceptions of VI.32–33 that lift a bad Bhakoot, each a clause that holds or not. */
@@ -2218,23 +1969,6 @@ export interface Porutham {
   readonly exception: PoruthamException;
 }
 
-/** How a name is read for naam milan; each default is the source's own (C291, C293). */
-export interface NameRules {
-  /** A name in Latin letters: `'REFUSE'`d (the default), or read as `'IAST'`; English "ch" is IAST "c", so it is never guessed. */
-  readonly latin?: 'REFUSE' | 'IAST';
-  /** Where a syllable in Abhijit's row is placed: `'REFUSE'` (the default), `'UTTARA_ASHADHA'` (its 4th quarter) or `'SHRAVANA'` (its 1st) (C294). */
-  readonly abhijit?: 'REFUSE' | 'UTTARA_ASHADHA' | 'SHRAVANA';
-}
-
-/** The readings naam milan is computed under; each optional, each the source's own when absent. */
-export interface NaamRules {
-  readonly name?: NameRules;
-  /** The readings the Ashta Koota of the name stars is computed under. */
-  readonly koota?: KootaRules;
-  /** The readings the ten considerations of the name stars are computed under. */
-  readonly porutham?: PoruthamRules;
-}
-
 /** A name's first syllable in the śatapada cakra (*Svarodaya* vv. 3–8). */
 export interface NameSyllable {
   /** Its place among the cakra's 112 cells, 0 for a, Krittika's first. */
@@ -2264,32 +1998,6 @@ export interface NaamMilan {
   readonly ashta: AshtaKoota;
   /** The ten considerations of the two name stars, as a chart's `porutham` reads two Moons. */
   readonly porutham: Porutham;
-}
-
-/**
- * The readings numerology is computed under; each optional, each the
- * source's own when absent (`03-design/numerology.md`, C320 to C328).
- */
-export interface NumerologyRules {
-  /** Which totals stop a Pythagorean reduction: `'ELEVEN_TWENTY_TWO'` (Balliett, the default), `'NONE'`, or `'ELEVEN_TWENTY_TWO_THIRTY_THREE'` (the baseline's). */
-  readonly masters?: 'NONE' | 'ELEVEN_TWENTY_TWO' | 'ELEVEN_TWENTY_TWO_THIRTY_THREE';
-  /** Each word reduced and then added (`'BY_WORD'`, the default), or every letter added at once (`'WHOLE'`, the baseline's). */
-  readonly nameReduction?: 'BY_WORD' | 'WHOLE';
-  /** A Chaldean name's compound: its words' singles added (`'SUM_OF_SINGLES'`, Cheiro p. 72, the default), or its letters' total (`'LETTER_TOTAL'`, the baseline's). */
-  readonly chaldeanCompound?: 'SUM_OF_SINGLES' | 'LETTER_TOTAL';
-  /** The Pythagorean birth number: month, day and year each reduced (`'BY_PART'`, Balliett p. 19, the default), or every digit added (`'DIGIT_SUM'`, the baseline's). */
-  readonly birthReduction?: 'BY_PART' | 'DIGIT_SUM';
-  /** A character outside A to Z: `'REFUSE'`d (the default), or skipped (`'SKIP'`, the baseline's). */
-  readonly nonLatin?: 'REFUSE' | 'SKIP';
-}
-
-/** A Gregorian birth date. */
-export interface BirthDate {
-  readonly year: number;
-  /** 1 to 12. */
-  readonly month: number;
-  /** 1 to the month's length. */
-  readonly day: number;
 }
 
 /** A number reduced: every sum, so "33, so 6" and "38, so 11" read back. */
@@ -2460,19 +2168,6 @@ export interface AntiscionRow {
   readonly orbDeg: number;
 }
 
-/**
- * What the equal distances are asked (`03-design/western-midpoints.md`):
- * how far from the axis through two planets' midpoint a third may stand,
- * 0.5° when absent (C245), at most 10°.
- *
- * @example
- * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, midpoints: {} });
- * for (const row of chart.midpoints ?? []) console.log(row.middle, 'between', row.first, 'and', row.second);
- */
-export interface MidpointRequest {
-  readonly orbDeg?: number;
-}
-
 /** A planet equally distant from two others, within the orb of their axis. */
 export interface MidpointRow {
   /** The earlier planet of the pair, in catalogue order. */
@@ -2639,19 +2334,6 @@ export interface DavisonBirth {
   readonly utcOffsetSeconds: number;
 }
 
-/**
- * How close two distances from the equator must stand to be a parallel
- * (`03-design/western-declinations.md`): Leo's 1° (*How to Judge a
- * Nativity*, p. 47) when absent, at most 10°.
- *
- * @example
- * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, parallels: {} });
- * for (const row of chart.parallels ?? []) console.log(row.first, row.contrary ? 'contra' : 'parallel', row.second);
- */
-export interface ParallelRequest {
-  readonly orbDeg?: number;
-}
-
 /** A chart's distances from the equator, degrees north. */
 export interface Declinations {
   /** The true obliquity at the chart's instant, which turned every one. */
@@ -2802,35 +2484,6 @@ export interface Progressions {
   readonly mutual: readonly MutualContact[] | null;
 }
 
-/**
- * How to read every chart's perfection (`03-design/hellenistic-perfection.md`);
- * name the quesited's significator or the house of the matter, not both.
- *
- * @example
- * const marriage: PerfectionRequest = { house: 7 };
- * const named: PerfectionRequest = { querent: 'VENUS', quesited: 'MARS', rules: { horizonDays: 30 } };
- */
-export interface PerfectionRequest {
-  /** The querent's significator; the Ascendant's lord by default. One of the seven. */
-  readonly querent?: GrahaName;
-  /** The quesited's significator. One of the seven, never the querent's. */
-  readonly quesited?: GrahaName;
-  /** The house of the matter, 1 to 12: its cusp's lord signifies the quesited. */
-  readonly house?: number;
-  readonly rules?: {
-    /** The seven whole orbs in the Chaldean order; Lilly's p. 107 by default. */
-    readonly orbsDeg?: readonly [number, number, number, number, number, number, number];
-    /** How many days ahead to look; by default until the swifter significator leaves its sign (C232). */
-    readonly horizonDays?: number;
-    /**
-     * Whether a third planet's contact counts only before the planet applying
-     * leaves its sign (C234); `true` by default, `false` counts every contact
-     * inside the horizon.
-     */
-    readonly withinSign?: boolean;
-  };
-}
-
 /** The significators coming to an aspect (p. 107). */
 export interface Application {
   readonly aspect: PtolemaicAspect;
@@ -2952,58 +2605,6 @@ export interface Matter {
   };
 }
 
-/**
- * A KP reading to make of every chart of a request (`03-design/kp.md`);
- * every field is optional, and an absent one is the default.
- */
-export interface KpRequest {
-  /** The querent's horary number, 1 to 249: the cusps are cast from it, the ruling planets stay the moment's (C156). */
-  readonly number?: number;
-  /** Seconds east of UT that the civil day lord is the weekday on; the request's own `utcOffsetSeconds` by default (C151). */
-  readonly clock?: number;
-  /** Whether to read a chart whose zodiac is not Krishnamurti's; false by default, which refuses it (C157). */
-  readonly anyAyanamsha?: boolean;
-}
-
-/** A question put to the chart of its moment, every member optional (`03-design/prashna.md`). */
-export interface PrashnaRequest {
-  /** What was asked. */
-  readonly question?: {
-    /** The matter's house, 1 to 12: the verdict's I.3 clauses and the Tajika links read it. */
-    readonly house?: number;
-    /** The querent's number, 1 to 108, read only by the baseline engine's unsourced rule (C340). */
-    readonly number?: number;
-    /** When the matter falls, which decides whether a separation fails it or finds it past (C370): `UNSPECIFIED` by default. */
-    readonly tense?: PrashnaTense;
-  };
-  /** The readings; the texts' own when left out. */
-  readonly rules?: PrashnaRules;
-}
-
-/** The readings a prashna is given under, one knob per crux. */
-export interface PrashnaRules {
-  /** How Pisces rises: both ways (the default) or by the head. */
-  readonly pisces?: 'BOTH_WAYS' | 'SHIRSHODAYA';
-  /** Whose the rising varga is (C336): the navamsha's lord (the default) or the majority of the lagna's six vargas. */
-  readonly risingVarga?: 'NAVAMSHA' | 'SHADVARGA';
-  /** Which rule times the matter; `BASELINE` is unsourced. */
-  readonly timing?: 'STRONGEST_GRAHA' | 'FIRST_OCCUPIED' | 'MOON_DAYS' | 'BASELINE';
-  /** Which rule reads an unspoken question; `BASELINE` is unsourced. */
-  readonly mook?: 'SHATPANCHASHIKA' | 'MOON_HOUSE' | 'BASELINE';
-  /** How the Moon's weaknesses are read (Samjna Tantra vv. 73–74, C352). */
-  readonly moon?: { readonly kshina?: 'DARK_EIGHTH_TO_BRIGHT_EIGHTH' | 'DARK_ELEVENTH_TO_NEW_MOON' };
-  /** How a Kamboola's offices are read (Samjna Tantra vv. 36–46), the gloss's own by default. */
-  readonly offices?: OfficeRules;
-  /** How v. 72's weaknesses are read: the Sun's setting part by navamsha sign (the default) or arc (C377). */
-  readonly weakness?: { readonly setting?: 'NAVAMSHA_SIGN' | 'NAVAMSHA_ARC' };
-  /** Which questions v. 96's "fruitless without the Moon" governs (C376): `EVERY` by default, or `GAIN` (the 11th). */
-  readonly moonScope?: 'EVERY' | 'GAIN';
-  /** Whether the Bhuvanapradipa's graded yogas are read, and by which aspect (C373, open): `OFF` by default. */
-  readonly graded?: 'OFF' | 'PARASHARI' | 'TAJIKA';
-  /** Whether the baseline engine's points come beside the clauses: `OFF` by default. */
-  readonly score?: 'OFF' | 'BASELINE';
-}
-
 /** A chart read as a prashna (`03-design/prashna.md`). */
 export interface Prashna {
   /** The readings it was given under, every member filled. */
@@ -3099,21 +2700,6 @@ export interface PrashnaMook {
 export interface PrashnaLinks extends TajikaMatter {
   /** Which of the seven are retrograde and which combust; `null` when not given. */
   readonly states: { readonly retrograde: readonly Graha[]; readonly combust: readonly Graha[] } | null;
-}
-
-/** When the matter asked about falls (C370). */
-export type PrashnaTense = 'UNSPECIFIED' | 'FUTURE' | 'PAST';
-
-/** How a Kamboola's offices are read, every member optional. */
-export interface OfficeRules {
-  /** Which office counts when a graha holds several (C371): `GLOSS`, the worked examples' order, by default. */
-  readonly order?: 'GLOSS' | 'HIGHEST' | 'LOWEST';
-  /** Which drekkana is a graha's own: `TAJIKA` by default. */
-  readonly drekkana?: 'TAJIKA' | 'PARASHARI';
-  /** Whether an enemy's sign makes a graha adhama: `TAJIKA` (read) by default. */
-  readonly enemy?: 'TAJIKA' | 'IGNORED';
-  /** Which printing of the Hudda table (C109): `NILAKANTHI` by default. */
-  readonly hudda?: 'NILAKANTHI' | 'CHARAK';
 }
 
 /** One of the four offices, best first. */
@@ -3228,58 +2814,15 @@ export interface PrashnaScore {
   readonly applyingTo: Graha | null;
 }
 
-/** A name's sounds as the Sarvatobhadra chakra reads them. */
-export interface NameSounds {
-  /** The first letter in Devanagari: a conjunct's first consonant, or the vowel a name begins with. */
-  readonly letter: string;
-  /** The vowel of its first syllable. */
-  readonly vowel: ChakraVowel;
-}
-
 /** The sixteen vowels in the order the chakra lays them, a to the visarga. */
 export type ChakraVowel =
   | 'A' | 'AA' | 'I' | 'II' | 'U' | 'UU' | 'RI' | 'RII' | 'LI' | 'LII' | 'E' | 'AI' | 'O' | 'AU' | 'AM' | 'AH';
-
-/** A graha's motion as v. 15 sorts it: fast looks left, mean ahead, retrograde right. */
-export type VedhaMotion = 'FAST' | 'MEAN' | 'RETROGRADE';
 
 /** One of a graha's three lines of sight. */
 export type VedhaLine = 'LEFT' | 'FRONT' | 'RIGHT';
 
 /** A native's point a vedha can strike. */
 export type VedhaPoint = 'NAKSHATRA' | 'LETTER' | 'VOWEL' | 'TITHI' | 'RASHI' | 'VARA';
-
-/** The readings the texts leave open (C429 to C431), each defaulting to §8's. */
-export interface SarvatobhadraRules {
-  /** What the front strikes: the star at its far end alone, or every cell it passes. */
-  readonly front?: 'STAR_ONLY' | 'EVERY_CELL';
-  /** Which lines a graha looks along: the texts', all three for every graha, or one each. */
-  readonly sight?: 'TEXT' | 'ALL_THREE' | 'ONE_EACH';
-  /** What a graha at a corner's juncture strikes: the four vowels on the diagonal, or the outermost. */
-  readonly corner?: 'FOUR_VOWELS' | 'OUTER_VOWEL';
-}
-
-/**
- * The Sarvatobhadra chakra to read in every chart (`03-design/gochar.md`
- * §8): at each instant, the native's star and sign the natal Moon's, the
- * tithi and weekday the birth's.
- */
-export interface SarvatobhadraRequest {
-  /** The instants to read the chakra at, UTC Julian days; at least one. */
-  readonly instants: readonly number[];
-  /** The name whose first letter and vowel are points too; none by default. */
-  readonly name?: NameSounds;
-  /**
-   * Where the five from Mars take their motion: `'SKY'` (the default),
-   * each speed against its mean motion; `'SUN'`, vv. 16–18's rule by the
-   * Sun's sign, the sky's where the verses are silent; or
-   * `{ GIVEN: [...] }`, the caller's for Mars, Mercury, Jupiter, Venus
-   * and Saturn (C430).
-   */
-  readonly motion?: 'SKY' | 'SUN' | { readonly GIVEN: readonly [VedhaMotion, VedhaMotion, VedhaMotion, VedhaMotion, VedhaMotion] };
-  /** The readings of the texts; §8's by default. */
-  readonly rules?: SarvatobhadraRules;
-}
 
 /** A star of the chakra's 28: one of the 27, or Abhijit. */
 export type ChakraStar = { readonly star: 'NAKSHATRA'; readonly nakshatra: Nakshatra } | { readonly star: 'ABHIJIT' };
@@ -3386,32 +2929,6 @@ export interface DossierRequest {
   readonly utcOffsetSeconds?: number;
 }
 
-/**
- * Which phase return of a year is its tithi pravesha
- * (`03-design/tithi-pravesha.md`): `NATAL_SIGN`, the practice's own, the
- * return while the Sun is in its natal sign (C444 to C446), or
- * `NEAREST_RETURN`, the return nearest the solar return whatever the sign.
- */
-export type TithiRule = 'NATAL_SIGN' | 'NEAREST_RETURN';
-
-/**
- * The tithi praveshas to find for every chart's years
- * (`03-design/tithi-pravesha.md`).
- *
- * @example
- * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, tithiPravesha: { through: 40 } });
- * for (const year of chart.tithiPravesha ?? []) {
- *   // The year's chart, founded where the native is.
- *   const annual = ctx.chart.found({ instant: year.at, place: residence, utcOffsetSeconds });
- * }
- */
-export interface TithiPraveshaRequest {
-  /** The last year, 1 to 200, counted as `Pravesha.year` counts it. */
-  readonly through: number;
-  /** Which phase return of each year is taken; `NATAL_SIGN` when left out. */
-  readonly rule?: TithiRule;
-}
-
 /** One year's tithi pravesha: the instant, the solar return it was chosen around and which rule chose it. */
 export interface TithiPravesha {
   /** The year, `1` the first return, a year after birth, as `Pravesha.year` counts it. */
@@ -3464,16 +2981,6 @@ export interface MasaPraveshaRequest {
   readonly dasha?: MasaDashaRules;
 }
 
-/** The readings a month's dasha is computed under (`03-design/varshesha.md`, "The month's dasha", C477). */
-export interface MasaDashaRules {
-  /** `OCCUPIED`, the sign the stronger lord stands in (the default), or `OWNED`, the sign it rules here: the Muntha's or the month lagna. */
-  readonly sign?: 'OCCUPIED' | 'OWNED';
-  /** What a Hudda's degree is in time: `SUN_DEGREES`, the Sun's motion through it (the default); `EVEN`, an equal share of the month; or `DAYS`, a civil day. */
-  readonly clock?: 'SUN_DEGREES' | 'EVEN' | 'DAYS';
-  /** Which printing of the Hudda table (C109): `NILAKANTHI` by default. */
-  readonly table?: 'NILAKANTHI' | 'CHARAK';
-}
-
 /** One Hudda lord's run of a month. */
 export interface MasaDashaPeriod {
   readonly lord: Graha;
@@ -3504,26 +3011,6 @@ export interface MasaDasha {
   readonly rules: Required<MasaDashaRules>;
   /** The sign's five Huddas, in order from the month's opening. */
   readonly periods: readonly MasaDashaPeriod[];
-}
-
-/** The floors the month's and the day's results judge strong and weak by (`03-design/varshesha.md`, "The month's results"). */
-export interface MasaPhalaRules {
-  /** The strength below which a planet with no dignity is weak, in **sub-sub units**, 3600 to a unit: `5 * 3600` by default. */
-  readonly weakBelow?: number;
-  /** The strength from which a planet is strong, sub-sub units; `10 * 3600` by default, never below `weakBelow`. */
-  readonly strongFrom?: number;
-  /** When the Moon wanes and so counts a malefic: the gloss's dark 8th to bright 8th tithi by default. */
-  readonly kshina?: 'DARK_EIGHTH_TO_BRIGHT_EIGHTH' | 'DARK_ELEVENTH_TO_NEW_MOON';
-}
-
-/** The readings the month's lord parts on (`03-design/varshesha.md`, "The month's lord"). */
-export interface MaseshaRules {
-  /** `CHAIN`, the year lord's chain over the six (the verse's own), or `LAGNA_LORD`, the month lagna's lord (v. 5's "others"). */
-  readonly reading?: 'CHAIN' | 'LAGNA_LORD';
-  /** Where the Muntha stands inside its sign; the year's own default. */
-  readonly muntha?: MunthaDegree;
-  /** The year lord's readings, which the chain takes "as for the year". */
-  readonly chain?: VarsheshaRules;
 }
 
 /** The six office-bearers of one month. */
@@ -3755,16 +3242,6 @@ export interface DinaPhala {
   readonly clauses: readonly DayClause[];
 }
 
-/** Lal Kitab to read in every chart, every member optional (`03-design/lalkitab.md`). */
-export interface LalKitabRequest {
-  /** Where the 35-year cycle starts; the book's general table (Saturn from the first year) when left out. */
-  readonly cycle?: { readonly planet: Graha; readonly year: number };
-  /** The year of life to read, from 1 (birth to the first birthday); none when left out. */
-  readonly year?: number;
-  /** The 120-year varshphal list the year's annual teva is read from, row `y − 1` for year `y`; the SDK does not ship the book's. */
-  readonly varshphal?: { readonly rows: readonly (readonly number[])[] };
-}
-
 /** How strongly one house looks at another. */
 export type LalKitabStrength = 'QUARTER' | 'HALF' | 'FULL';
 
@@ -3846,24 +3323,6 @@ export interface LalKitab {
   } | null;
 }
 
-/** Remedies to read in every chart, every member optional (`03-design/remedies.md`). */
-export interface RemedyRequest {
-  /** The instant, a Julian day in UT, whose running Vimśottarī periods are read; none when left out. */
-  readonly at?: number;
-  /** The readings; the texts' own when left out. */
-  readonly rules?: RemedyRules;
-}
-
-/** The readings remedies are given under, one knob per crux. */
-export interface RemedyRules {
-  /** Which scheme judges the grahas' functional natures; `BASELINE` is unsourced. */
-  readonly functional?: { readonly scheme?: 'LAGHU_PARASHARI' | 'BASELINE' };
-  /** Which text's ṛk Rahu's śānti gives: BPHS 84.17–18 or Yājñavalkya I.301. */
-  readonly shanti?: { readonly rik?: 'BPHS' | 'YAJNAVALKYA' };
-  /** Whom the Sun with Ketu is devoted to (C354). */
-  readonly devata?: { readonly sunWithKetu?: 'SHIVA' | 'SURYA' };
-}
-
 /** A chart's remedies: whom to propitiate, why, how, and the chosen deity (`03-design/remedies.md`). */
 export interface Remedies {
   /** The readings it was given under, every member filled. */
@@ -3933,34 +3392,6 @@ export interface Remedies {
   };
 }
 
-/**
- * A chart read as a birth time to rectify, every member optional and one
- * left out not read (`03-design/rectification.md`). Each reading is taken
- * around the chart's instant, at its place, on the request's clock.
- */
-export interface RectificationRequest {
-  /** BPHS ch. 2 vv. 67–78's purifier over the minutes either side of the chart's instant. */
-  readonly purify?: {
-    /** How far either side the window runs, minutes: more than none, at most 1080 (a day and a half in all). */
-    readonly minutes: number;
-    /** The purifier's readings; the texts' own when left out. */
-    readonly rules?: PurifierRules;
-  };
-  /** The pranapada's house, the nisheka and the conception Moon at the chart's instant; `{}` reads the texts' own rules. */
-  readonly conception?: ConceptionRules;
-  /** *Brihat Jataka* ch. V's circumstances at the chart's instant, set against what the family remembers. */
-  readonly circumstance?: {
-    /** The facts given; one left out is read and not weighed. */
-    readonly facts?: BirthFacts;
-    /** The readings; the texts' own when left out. */
-    readonly rules?: CircumstanceRules;
-  };
-  /** The baseline engine's cascade around the chart's instant. */
-  readonly baseline?: BaselineRectificationRequest;
-  /** The Shiva Svarodaya's nadis and tattvas over the minutes either side of the chart's instant, at most 1080: a report the text does not make at a birth. */
-  readonly svarodaya?: { readonly minutes: number };
-}
-
 /** One stretch of a day under one nadi and one tattva (Shiva Svarodaya, 1899 vv. 62–63, 71–72, 154, 197). */
 export interface SvarodayaRun extends Interval {
   /** The Moon's (left, female) or the Sun's (right, male), v. 60. */
@@ -3995,42 +3426,6 @@ export interface PurifierRules {
   readonly seedMinutes?: number;
 }
 
-/** The conception reports' readings. */
-export interface ConceptionRules {
-  /** The purifier's rules the conception's lagna is purified under (v. 29: "as before"). */
-  readonly purifier?: PurifierRules;
-  /** The pranapada's house. */
-  readonly pranapadaHouse?: {
-    readonly pranapada?: 'VERSE' | 'PRINTED_EXAMPLE' | 'SDK_POINT';
-    /** How its house is counted from the lagna. */
-    readonly count?: 'SIGN' | 'SRIPATI_BHAVA';
-    /** Whether the 1st is auspicious; not by default. */
-    readonly firstAuspicious?: boolean;
-  };
-  /** The nisheka. */
-  readonly nisheka?: {
-    /** The month a sign is read as. */
-    readonly month?: 'THIRTY_DAYS' | 'SOLAR' | 'SYNODIC';
-    /** Which end of Saturn's eighth Mandi is. */
-    readonly mandiAt?: 'START' | 'END';
-    /** The 9th bhava's point. */
-    readonly ninth?: 'SRIPATI' | 'WHOLE_SIGN' | 'EQUAL';
-    /** Saturn's point. */
-    readonly saturn?: 'LONGITUDE' | 'BHAVA_MADHYA';
-    /** The invisible half. */
-    readonly invisibleHalf?: 'BY_LONGITUDE' | 'BY_SIGN';
-  };
-  /** BJ IV.21's conception Moon. */
-  readonly moon?: {
-    /** The count to the birth Moon's sign. */
-    readonly count?: 'NEXT_AFTER_DVADASHAMSHA' | 'FROM_MOON_SIGN' | 'FROM_ARIES';
-    /** What of the rising point is classed. */
-    readonly rising?: 'SIGN' | 'NAVAMSHA';
-    /** Pisces's class. */
-    readonly pisces?: 'EITHER' | 'DAY';
-  };
-}
-
 /** What the family remembers of the birth (*Brihat Jataka* ch. V). */
 export interface BirthFacts {
   /** Whether the father was there at the birth (V.1–2). */
@@ -4043,20 +3438,6 @@ export interface BirthFacts {
   readonly wick?: 'FULL' | 'HALF' | 'SPENT';
   /** The women who attended (V.22). */
   readonly attendants?: { readonly total?: number; readonly inside?: number; readonly outside?: number };
-}
-
-/** The circumstances' readings, one knob per crux (X16–X19). */
-export interface CircumstanceRules {
-  /** What the Moon's not seeing the lagna asks (X16). */
-  readonly moonSees?: 'ANY_ASPECT' | 'FULL';
-  /** Which houses the Sun has fallen to (X17). */
-  readonly sunFallen?: 'NINTH_OR_EIGHTH' | 'EITHER_SIDE';
-  /** Which reading of the presentation (X18). */
-  readonly presentationBy?: 'RISING_SIGN' | 'LAGNA_LORD_MOTION';
-  /** How the grahas between the lagna and the Moon are counted (X19). */
-  readonly betweenBy?: 'DEGREE' | 'SIGN';
-  /** Which half of them is outside the room (V.22). */
-  readonly outside?: 'VISIBLE' | 'INVISIBLE';
 }
 
 /** What happened in a life, which the baseline's event fit reads. */
@@ -4730,18 +4111,6 @@ export type VarshaReading =
   /** A whole sidereal year for each year of life, from birth: the older arithmetic, and the only reading that needs no ephemeris. */
   | 'MEAN';
 
-/**
- * Where the Muntha stands inside the sign it has reached (crux C107).
- *
- * Both readings give the same sign at the return and part over the year,
- * so they differ for a Tajika aspect taken to the Muntha and nothing else.
- */
-export type MunthaDegree =
-  /** It enters each year at its sign's first degree and crosses the sign during the year: the source's own reading. */
-  | 'SIGN_START'
-  /** It carries the natal lagna's degree into each new sign. */
-  | 'NATAL_DEGREE';
-
 /** The annual charts a request asks for. */
 export interface VarshaRequest {
   /** Which longitude the Sun returns to; `SIDEREAL` by default. */
@@ -4805,34 +4174,6 @@ export interface VarshaRequest {
  */
 export type AnnualDashaSystem = 'dasha_system.PATYAYINI' | 'dasha_system.MUDDA' | 'dasha_system.VARSHA_YOGINI';
 
-/** Where the sources differ on an annual dasha, each a named reading (`03-design/annual-dashas.md`). */
-export interface AnnualDashaRules {
-  /**
-   * What a unit of the year is (crux C122): the Sun's motion through one
-   * degree, `'SUN_DEGREES'`, the source's own, so the year closes on the
-   * next return; an `'EVEN'` share of the time between the returns; or
-   * `{ DAYS: n }`, the whole year as so many civil days from the return,
-   * the printed durations (360, and 365 for the Patyayini).
-   */
-  readonly clock?: 'SUN_DEGREES' | 'EVEN' | { readonly DAYS: number };
-  /**
-   * Where a nakshatra year's balance comes from (crux C123): what remained
-   * of the birth Moon's nakshatra, `'NATAL_MOON'`, the source's own; the
-   * Moon's at the return, `'ENTRY_MOON'`; or `'WHOLE'`, none.
-   */
-  readonly balance?: 'NATAL_MOON' | 'ENTRY_MOON' | 'WHOLE';
-  /**
-   * How the balance is measured, `'SPATIAL'` by arc or `'TEMPORAL'` by
-   * time; absent, each balance's source's own: by arc for the birth Moon,
-   * by time for the Moon at the return.
-   */
-  readonly measure?: 'SPATIAL' | 'TEMPORAL';
-  /** How the first lord's two pieces are divided among sub-lords, as the natal birth period's; `'COMPRESSED'` by default. */
-  readonly birthPeriod?: 'COMPRESSED' | 'ELAPSED';
-  /** How many levels the periods go down: `2`, mahadashas and antardashas, by default. */
-  readonly depth?: number;
-}
-
 /** One lord of the ring a year's dasha runs round. */
 export interface AnnualDashaShare {
   /** Its lord: the graha, or the sign's lord when the share is a sign's. */
@@ -4874,88 +4215,6 @@ export interface AnnualDasha {
   readonly periods: readonly DashaPeriod[];
   /** The periods running at a Julian day (UTC), from the mahadasha down; empty outside the year. */
   at(jd: number): readonly DashaPeriod[];
-}
-
-/** Where the sources differ on a saham's strength (`03-design/tajika-saham-strength.md`). */
-export interface SahamStrengthReadings {
-  /**
-   * Which planets are benefic and malefic: the `'CHAPTER'`'s own, the Sun
-   * a malefic among them, or the catalogue's `'PARASHARI'` natures.
-   */
-  readonly natures?: 'CHAPTER' | 'PARASHARI';
-  /** Tajika's `'POSITIONAL'` friendship, the source's, or the catalogue's `'NATURAL'` one. */
-  readonly friendship?: 'POSITIONAL' | 'NATURAL';
-  /** The Vishwa bala below which a saham's lord is weak, in **sub-sub units**: `5 * 3600` by default. */
-  readonly weakBelow?: number;
-}
-
-/** Where the sources differ on the Harsha bala (`03-design/tajika-harsha.md`). */
-export interface HarshaRules {
-  /** Venus's house of joy: the verse's `'FIFTH'`, or the `'TWELFTH'` a widely used program reads. */
-  readonly venus?: 'FIFTH' | 'TWELFTH';
-}
-
-/** Where the sources differ on a saham, each a named reading (`03-design/tajika-sahams.md`). */
-export interface SahamRules {
-  /**
-   * When a saham is carried a sign further: when c does not fall between b
-   * and a by `'DEGREES'`, the source's own; by whole `'SIGNS'`, as a widely
-   * used program reads it; or `'NEVER'`.
-   */
-  readonly addSign?: 'DEGREES' | 'SIGNS' | 'NEVER';
-  /**
-   * Where a house's point stands: `'SRIPATI'`'s mid-point built from the
-   * angles, the source's own; the chart's `'CHALIT'` under its profile; or
-   * `'EQUAL'` houses from the lagna's degree.
-   */
-  readonly houses?: 'SRIPATI' | 'CHALIT' | 'EQUAL';
-  /** Roga's formula: lagna − Moon + lagna, `'LAGNA'`, or the other authority's `'SATURN'`. */
-  readonly roga?: 'LAGNA' | 'SATURN';
-}
-
-/** Where the source leaves the sixteen Tajika yogas a choice, each a named reading. */
-export interface YogaRules {
-  /** How a pair less than a degree past reads; `'POORNA'` by default (crux C112). */
-  readonly drishti?: { readonly subDegree?: 'POORNA' | 'ISHRAFA' };
-  /**
-   * The strength below which a planet with no dignity is weak, in **sub-sub
-   * units**, 3600 to a unit: `5 * 3600` by default (crux C116).
-   */
-  readonly weakBelow?: number;
-  /** The strength from which a planet is strong, sub-sub units; `10 * 3600` by default. */
-  readonly strongFrom?: number;
-  /**
-   * Which lord a Tambira lets reach the next sign: the definition's
-   * `'KARYESHA'` by default, or `'EITHER_LORD'`, the source's "some
-   * authorities".
-   */
-  readonly tambira?: 'KARYESHA' | 'EITHER_LORD';
-  /**
-   * When the Moon counts among Kuttha's benefics: `'ALWAYS'` by default,
-   * Charak's list, or `'WAXING'`, the commentary's "full Moon" (crux C117).
-   */
-  readonly moonBenefic?: 'ALWAYS' | 'WAXING';
-}
-
-/** Where the sources differ on the lord of the year, each a named reading. */
-export interface VarsheshaRules {
-  /**
-   * Who takes the year when nobody aspects the lagna: the Muntha's lord by
-   * default, the annual lagna's lord, or the Nilakanthi's strongest of the five.
-   */
-  readonly noneAspects?: 'MUNTHA_LORD' | 'ANNUAL_LAGNA_LORD' | 'STRONGEST';
-  /** Who takes it on an outright tie; the Muntha's lord by default. */
-  readonly tied?: 'MUNTHA_LORD' | 'DINA_RATRI_PATI';
-  /**
-   * Whether the Moon may hold it: `'PASSED_OVER'` by default, stepping down
-   * to the next claimant and else to its Ithasala successor; `'ITHASALA'`,
-   * the Nilakanthi's successor at once; or `'LIKE_ANY_OTHER'`.
-   */
-  readonly moon?: 'PASSED_OVER' | 'ITHASALA' | 'LIKE_ANY_OTHER';
-  /** Who may succeed the Moon: any planet by default, or only an office-bearer. */
-  readonly moonPartner?: 'ANY_PLANET' | 'OFFICE_BEARER';
-  /** How the Ithasala the Moon's successor needs is read, as for the yogas. */
-  readonly drishti?: { readonly subDegree?: 'POORNA' | 'ISHRAFA' };
 }
 
 /** A residence to cast each year's chart for, in `found`'s own place shape. */
@@ -5443,128 +4702,6 @@ export interface ThemeContent {
   readonly degrees?: boolean;
 }
 
-/** A set of rules the SDK ships. */
-export type ShippedRules = 'DOSHAS' | 'YOGAS' | 'GANDANTAS' | 'ARISHTAS' | 'READINGS' | 'NABHASAS';
-
-/**
- * The rules a request asks a chart to answer (`03-design/rules-at-the-boundary.md`):
- * shipped sets by name and a consumer's own rules in the SDK's rule format.
- */
-export interface RuleRequest {
-  /** The shipped sets to evaluate. */
-  readonly shipped?: readonly ShippedRules[];
-  /** A consumer's own rules, which may name shipped rules by key. */
-  readonly rules?: readonly Readonly<Record<string, unknown>>[];
-  /** The readings to evaluate under; `'TEXTS'` by default. */
-  readonly readings?: 'TEXTS' | 'RECORDING_ENGINE';
-  /** Whether to add the twelve house readings. */
-  readonly houses?: boolean;
-  /**
-   * Whether to add the three pairs, the three spans, the rays, the dashas',
-   * the wheel of time's and the two ashtakavarga spans, the span the
-   * strongest names and the marakas; asks the chart for the Shadbala and
-   * Bhava bala they weigh, the Vimshottari whose balance the dashas' span
-   * reads and the ashtakavarga.
-   */
-  readonly longevity?: boolean;
-  /** How the three spans are read, when `longevity` asks; BPHS's by default. */
-  readonly ayurdaya?: AyurdayaRules;
-  /** How the three pairs are read, when `longevity` asks; the verses' by default. */
-  readonly threePairs?: ThreePairsRules;
-  /** How the rays are read, when `longevity` asks; the translator's note's by default. */
-  readonly rasmi?: RasmiRules;
-  /** How the wheel of time's span is read, when `longevity` asks; the note's figure's by default. */
-  readonly chakrayus?: ChakrayusRules;
-  /** How the two ashtakavarga spans are read, when `longevity` asks; *Jataka Parijata*'s by default. */
-  readonly ashtakavarga?: AshtakavargaAyusRules;
-}
-
-/**
- * How Pindayu, Nisargayu and Amsayu are read (cruxes C104, C302 to C304);
- * every field optional, BPHS's readings by default.
- *
- * @example
- * // As *Jataka Parijata* ch. 5 reads Varahamihira's reductions.
- * const rules: RuleRequest = {
- *   longevity: true,
- *   ayurdaya: { enemy_exempt: 'mars', enmity: 'compound', rising: 'every' },
- * };
- */
-export interface AyurdayaRules {
-  /** Several reductions on one graha: the largest only, or each in turn. */
-  readonly combine?: 'largest' | 'each';
-  /** Nisargayu's years given as Pindayu gives them, or listed alone (always 120). */
-  readonly nisarga?: 'like-pindayu' | 'listed';
-  /** Whether Amsayu triples and doubles a graha in dignity. */
-  readonly amsayu_multiplied?: boolean;
-  /** Who keeps its years in an enemy's sign: a retrograde graha, or Mars. */
-  readonly enemy_exempt?: 'retrograde' | 'mars';
-  /** Whose enmity takes a third: natural, or compound. */
-  readonly enmity?: 'natural' | 'compound';
-  /** Whose years a rising malefic takes: its own, or every giver's. */
-  readonly rising?: 'malefic' | 'every';
-}
-
-/** How the three pairs are read (crux C103); every field optional, the verses' by default. */
-export interface ThreePairsRules {
-  /** Which degrees rectify the class: those still to run, or those gone. */
-  readonly rectification?: 'remaining' | 'elapsed';
-  /** What the degrees multiply: the class's years once, or once per pair. */
-  readonly basis?: 'class-years' | 'per-pair';
-  /** Whether Saturn among the contributors lowers the class or raises it. */
-  readonly saturn?: 'lowers' | 'raises';
-}
-
-/**
- * How the seven grahas' rays and Rasmija years are read (*Jataka Parijata* ch. 5 vv. 22 to 25,
- * cruxes C305 to C307); every field optional, the translator's note's
- * readings by default, whose figure the SDK reproduces.
- *
- * @example
- * // As v. 24 reads them: the place by the sign.
- * const rules: RuleRequest = { longevity: true, rasmi: { place: 'sign' } };
- */
-export interface RasmiRules {
-  /** Which place doubles them or takes a share: the dwadasamsa, or the sign. */
-  readonly place?: 'dwadasamsa' | 'sign';
-}
-
-/**
- * How the wheel of time's span, Chakrayus, is read (*Jataka Parijata* ch. 5
- * v. 26, crux C310); every field optional, the note's figure's by default.
- *
- * @example
- * // As the verse names it, by the untraversed pada.
- * const rules: RuleRequest = { longevity: true, chakrayus: { portion: 'pada' } };
- */
-export interface ChakrayusRules {
-  /** Which untraversed part a graha's years follow: its whole nakshatra, or its pada. */
-  readonly portion?: 'star' | 'pada';
-}
-
-/**
- * How the two ashtakavarga spans, Bhinnashtakavargaja and Samudaya, are
- * read (*Jataka Parijata* ch. 10 vv. 44 to 48, 70 and 71, cruxes C311 to
- * C314); every field optional, *Jataka Parijata*'s by default.
- *
- * @example
- * // As Balabhadra reads them, by BPHS's measures and 7 over 27.
- * const rules: RuleRequest = {
- *   longevity: true,
- *   ashtakavarga: { measures: 'bphs', divisor: 'seven-over-twenty-seven' },
- * };
- */
-export interface AshtakavargaAyusRules {
-  /** Which table measures the signs: *Jataka Parijata*'s (Virgo 5), or BPHS's translator's (Virgo 6). */
-  readonly measures?: 'parijata' | 'bphs';
-  /** How a pinda becomes years: over 30, twelves cast out, or times 7 over 27, twenty-sevens cast out. */
-  readonly divisor?: 'thirty' | 'seven-over-twenty-seven';
-  /** How each graha's years are reduced: v. 46's, or Balabhadra's greatest share only (C317). */
-  readonly reductions?: 'verse' | 'balabhadra';
-  /** Which bindus v. 50's span counts in the seven's signs: reduced, or raw (C318). */
-  readonly occupied?: 'reduced' | 'raw';
-}
-
 /** What a chart answers by rule, as the SDK writes it. */
 export interface RulesReading {
   /** Every rule that held, in the set's order, each by key with what it answered. */
@@ -5575,96 +4712,6 @@ export interface RulesReading {
   readonly longevity?: Readonly<Record<string, unknown>>;
   /** An input a rule named that the chart could not have, such as `'points'`. */
   readonly unreadable?: readonly string[];
-}
-
-/**
- * The narrative plans a request asks a chart for
- * (`03-design/plans-at-the-boundary.md`). Each composer is off by default,
- * and `readings` needs `rules` beside it, since it says what the rules a
- * chart held answered; the sections the others read are computed for them.
- */
-export interface PlanRequest {
-  /** Where each of the nine grahas stands and who shares a sign. */
-  readonly placements?: boolean;
-  /** What each rule the chart held says. */
-  readonly readings?: boolean;
-  /** Each graha's Shadbala in rupas, the strongest first. */
-  readonly strength?: boolean;
-  /** The lord of each of the twelve bhavas, first house first. */
-  readonly houses?: boolean;
-  /** Where each graha stands to the degree, which `placements` rounds away. */
-  readonly positions?: boolean;
-  /** Which graha looks at which, and how strongly. */
-  readonly aspects?: boolean;
-  /** What each graha is where it stands: dignity, navamsha, motion, combustion. */
-  readonly conditions?: boolean;
-  /** Which chara karaka each graha holds, under both schemes. */
-  readonly karakas?: boolean;
-  /**
-   * Where the placement system and the chalit put a graha in different
-   * bhavas. Says nothing of a chart whose readings agree.
-   */
-  readonly chalit?: boolean;
-  /**
-   * What a loaded corpus of state readings says of this chart's subjects: a
-   * graha in a bhava, the lagna's sign, each limb of the panchanga, and
-   * what the birth nakshatra is. Says nothing until a pack carrying those
-   * readings is loaded.
-   */
-  readonly phala?: boolean;
-  /**
-   * The other half of a graha's state: how it stands to its dispositor
-   * under all three friendships, and the four avasthas — the fifth of its
-   * sign, its wakefulness, its brightness where the chart decides one,
-   * and the lajjitadi that hold beside the ones nothing decides.
-   */
-  /**
-   * The almanac of the chart's day: the tithi with its paksha, the vara,
-   * the nakshatra and the Moon's pada in it, the yoga and the karana, and
-   * whether the birth fell by day where the chart says.
-   */
-  /**
-   * Each bhava's strength in virupas, the first house first. It says the
-   * weight and never a verdict: a bhava carries no requirement.
-   */
-  readonly bhavaBala?: boolean;
-  /** Each graha's Vimshopaka under all four schemes, each naming its own. */
-  readonly vimshopaka?: boolean;
-  readonly panchanga?: boolean;
-  readonly states?: boolean;
-  /**
-   * What each graha's placement says of its dasha: when in the dasha its
-   * effects come, whether its place is auspicious, the points its dignity
-   * earns and whether the placement makes the dasha favourable — with the
-   * reading a loaded corpus carries of that graha as a dasha lord. Reads
-   * the dasha phala section, so it is computed for you when asked.
-   */
-  readonly dashaPhala?: boolean;
-  /**
-   * What the Ashtakavarga says: each graha's bindus in the sign it stands
-   * in, and each sign's sarvashtakavarga. The two numbers a text quotes
-   * and no verdict, because the reading carries no threshold. Reads the
-   * Ashtakavarga section and the chart's own placements, so both are
-   * computed for you when asked.
-   */
-  readonly ashtakavarga?: boolean;
-  /**
-   * What a loaded corpus says of Saturn's periods from the natal Moon: the
-   * reading of each Sade Sati phase and smaller spell the chart's report
-   * holds, each house once, in the order Saturn first reaches it. It says
-   * the report `sadeSati` on the chart request finds, so it needs that
-   * window beside it, and like `phala` it says nothing until a pack of
-   * state readings is loaded.
-   */
-  readonly sadeSati?: boolean;
-  /**
-   * What the transits come to at each instant the chart request's `gochar`
-   * names: the sign they are counted from, each graha's house and verdict,
-   * who obstructs it, where in its sign it bears fruit, and its bindus when
-   * that request asks for the Ashtakavarga. One plan an instant; it needs
-   * `gochar` beside it, and no corpus.
-   */
-  readonly gochar?: boolean;
 }
 
 /**
@@ -6248,14 +5295,6 @@ export declare class Chart {
   readonly provenance: Provenance;
 }
 
-/** A span of time, as every almanac row carries one. */
-export interface Interval {
-  /** When it begins, as a Julian day (UTC). */
-  readonly from: number;
-  /** When it ends. */
-  readonly to: number;
-}
-
 /** One member of a limb, with its own bounds and the clipped ones. */
 export interface Span<T> {
   /** Which member ran. */
@@ -6665,75 +5704,6 @@ export interface FestivalRequest {
    */
   readonly published?: readonly PublishedSet[];
 }
-
-/**
- * Days an authority decides, as data: a national panchanga's choice, a
- * gazette holiday, a correction after printing.
- *
- * @example
- * const set: PublishedSet = {
- *   format: 'teistro.published/1', publisher: 'a patro printed in Nepal', id: 'np-2082', version: 1,
- *   entries: [{ action: 'SET', rule: 'MAHA_NAVAMI', day: { calendar: 'GREGORIAN', year: 2025, month: 10, day: 2 }, source: 'p. 41' }],
- * };
- */
-export interface PublishedSet {
-  /** The format this SDK reads. */
-  readonly format: 'teistro.published/1';
-  /** Who publishes it. */
-  readonly publisher: string;
-  /** Its id, which a stored answer names. */
-  readonly id: string;
-  /** Its version. */
-  readonly version: number;
-  /** Its days. */
-  readonly entries: readonly PublishedEntry[];
-}
-
-/**
- * A published day in any calendar the SDK ships, converted to the range's.
- * The year is astronomical; the era is for presentation.
- */
-export interface PublishedDay {
-  readonly calendar: Calendar;
-  readonly year: number;
-  readonly month: number;
-  readonly day: number;
-  readonly era?: { readonly era: Era; readonly year: number };
-  readonly leap?: Leap;
-}
-
-/** One entry of a published set. */
-export type PublishedEntry =
-  /** A rule's occurrence nearest `day`, within seven days, moved to it; `month` and `adhika` tell apart two that near. */
-  | {
-      readonly action: 'SET';
-      readonly rule: string;
-      readonly day: PublishedDay;
-      readonly month?: Masa;
-      readonly adhika?: boolean;
-      /** A published time (a parana, a sait); a moved fast keeps no computed parana. */
-      readonly window?: Interval;
-      readonly source: string;
-    }
-  /** A day no rule computes, under a key no rule of the request uses. */
-  | {
-      readonly action: 'ADD';
-      readonly key: string;
-      readonly day: PublishedDay;
-      /** Its name by locale; a missing one falls back as every name does. */
-      readonly names?: Readonly<Record<string, string>>;
-      readonly window?: Interval;
-      readonly source: string;
-    }
-  /** A rule's occurrence the publisher does not keep: marked, never dropped. */
-  | {
-      readonly action: 'WITHDRAW';
-      readonly rule: string;
-      readonly day: PublishedDay;
-      readonly month?: Masa;
-      readonly adhika?: boolean;
-      readonly source: string;
-    };
 
 /** One change a published day was tried under, or the reason it differs. */
 export type PublishedCause =
@@ -7644,13 +6614,6 @@ export interface AstaCriterion {
           readonly retrograde: number;
         } | null;
       });
-}
-
-/** Whose day a search reads: the birth star and Moon sign, and the birth lagna when the time is known. */
-export interface MuhurtaNative {
-  readonly star: Nakshatra;
-  readonly moonSign: Rashi;
-  readonly lagna?: Rashi | null;
 }
 
 /** How a search orders its windows: by the texts' clauses, or by the baseline engine's weights. */
@@ -8932,242 +7895,6 @@ export interface AshauchQuery {
   readonly request: AshauchRequest;
 }
 
-/** A table the SDK ships: the *Dharmasindhu*'s (the default) or the *Mitākṣarā*'s. */
-export type AshauchTradition = 'DHARMASINDHU' | 'MITAKSHARA';
-
-/** One request: one event, one observer. */
-export interface AshauchRequest {
-  /** The consumer's own key, which the answer repeats. */
-  readonly key: string;
-  /** What happened. */
-  readonly event: AshauchEvent;
-  /** Who the observer is to it. */
-  readonly relation: AshauchRelation;
-  /** When the news reached the observer, a UTC Julian day; the event's own instant when left out. */
-  readonly heardAt?: number;
-  /** Whether the observer was abroad: a fact the family gives, never derived. */
-  readonly abroad?: boolean;
-  /** Where the death was, to the observer; `'SAME_VILLAGE'` when left out. */
-  readonly nearness?: Nearness;
-  /** The family's full period, 1 to 60 days; 10 when left out. */
-  readonly fullDays?: number;
-  /** The periods already running for this observer, each `ashauchRunning` of an earlier answer. */
-  readonly during?: readonly AshauchRunning[];
-}
-
-/** What happened, by its `event`; every instant a UTC Julian day. */
-export type AshauchEvent =
-  /** A birth from the 7th month on, live or still; `child` sets the mother's further bar. */
-  | { readonly event: 'BIRTH'; readonly at: number; readonly child?: AshauchSex }
-  /** A loss before the 7th month, `month` of the pregnancy 1 to 6. */
-  | { readonly event: 'LOSS'; readonly at: number; readonly month: number }
-  /** A death; an *āhitāgni*'s count starts at the cremation. */
-  | {
-      readonly event: 'DEATH';
-      readonly at: number;
-      readonly crematedAt?: number;
-      readonly ahitagni?: boolean;
-      readonly deceased?: Deceased;
-    };
-
-/**
- * The deceased, by the facts the age bands read. Left out with no `born`,
- * an adult who had every rite; with a `born`, a fact a band needs is asked
- * for by a refusal rather than guessed.
- */
-export interface Deceased {
-  /** When the deceased was born, a UTC Julian day. */
-  readonly born?: number;
-  /** The deceased's sex. */
-  readonly sex?: AshauchSex;
-  /** Whether the *cūḍākaraṇa* was done; read from the age when left out. */
-  readonly chudakarana?: boolean;
-  /** The upanayana. */
-  readonly upanayana?: Upanayana;
-  /** A daughter's betrothal (*vāgdāna*). */
-  readonly betrothed?: boolean;
-  /** Whether the deceased was married. */
-  readonly married?: boolean;
-  /** Buried rather than cremated, as an infant may be. */
-  readonly buried?: boolean;
-}
-
-/** A son or a daughter, which the bands and the mother's further bar read. */
-export type AshauchSex = 'MALE' | 'FEMALE';
-
-/** Whether the deceased had the upanayana, or it is not a rite of their community. */
-export type Upanayana = 'DONE' | 'NOT_DONE' | 'NOT_PERFORMED';
-
-/** A birth's impurity (*sūtaka*, a loss's too) or a death's. */
-export type AshauchKind = 'BIRTH' | 'DEATH';
-
-/** Who the observer is to the one born or deceased, as the app resolves it. */
-export type AshauchRelation =
-  | 'MOTHER'
-  | 'FATHER'
-  | 'CHILD'
-  | 'SPOUSE'
-  | 'CO_WIFE'
-  | 'STEP_CHILD'
-  | 'SAPINDA'
-  | 'SAMANODAKA'
-  | 'SAGOTRA'
-  | 'MARRIED_DAUGHTER'
-  | 'MARRIED_SIBLING'
-  | 'MATERNAL_GRANDFATHER'
-  | 'MATERNAL_GRANDMOTHER'
-  | 'MATERNAL_UNCLE'
-  | 'SON_IN_LAW'
-  | 'PARENT_IN_LAW'
-  | 'PUPIL'
-  | 'ACHARYAS_FAMILY'
-  | 'ADOPTION'
-  | 'BANDHU'
-  | 'SUBJECT'
-  | 'OF_ASCETIC';
-
-/** Where the death was, to the observer. */
-export type Nearness = 'OBSERVERS_HOUSE' | 'SAME_VILLAGE' | 'OTHER_VILLAGE';
-
-/** Which day an event at night belongs to (the Mitākṣarā on Yājñavalkya III.20). */
-export type NightRule = 'THIRDS' | 'HALF_NIGHT' | 'CIVIL_MIDNIGHT' | 'SUNRISE';
-
-/** Where a *pakṣiṇī* begun at night ends. */
-export type PakshiniNight = 'SECOND_SUNRISE' | 'NEXT_NIGHTFALL';
-
-/** A span the texts name, by its `length`. */
-export type AshauchLength =
-  /** Pure by a bath, at once. */
-  | { readonly length: 'BATH' }
-  /** By day, to nightfall; at night, to daybreak. */
-  | { readonly length: 'SAJYOTIH' }
-  /** That day, its night and the next day to nightfall. */
-  | { readonly length: 'PAKSHINI' }
-  /** A count of sunrise days, 1 to 60. */
-  | { readonly length: 'DAYS'; readonly days: number }
-  /** The request's full period. */
-  | { readonly length: 'FULL' };
-
-/** A period already running, as the overlap rules read it: `ashauchRunning` of an earlier answer. */
-export interface AshauchRunning {
-  /** The earlier answer's key, which an overlap names. */
-  readonly key: string;
-  /** A birth's or a death's. */
-  readonly kind: AshauchKind;
-  /** The earlier request's relation. */
-  readonly relation: AshauchRelation;
-  /** The deceased's sex, or the child's. */
-  readonly sex?: AshauchSex;
-  /** When it began, a UTC Julian day. */
-  readonly start: number;
-  /** When it ends, a UTC Julian day. */
-  readonly end: number;
-  /** Its length. */
-  readonly length: AshauchLength;
-  /** Its days, when the length is a count. */
-  readonly days?: number;
-}
-
-/** A tradition, as data: every row with its clause and source. */
-export interface AshauchTable {
-  /** Its name, which every answer repeats. */
-  readonly name: string;
-  /** Which day a night event belongs to. */
-  readonly night: NightRule;
-  /** Where a pakṣiṇī begun at night ends. */
-  readonly pakshiniAtNight: PakshiniNight;
-  /** The lengths by relation, the first row that matches answering. */
-  readonly relations: readonly AshauchRelationRow[];
-  /** The bands of a death before the last rite, in order of age. */
-  readonly bands: readonly AshauchBand[];
-  /** A loss's rows, in order of month. */
-  readonly losses: readonly AshauchLossRow[];
-  /** News of a full period past it, by days since the event, in order; a bath past the last row. */
-  readonly late: readonly AshauchLateRow[];
-  /** The same, for an observer abroad. */
-  readonly lateAbroad: readonly AshauchLateRow[];
-  /** The overlap rules. */
-  readonly overlap: AshauchOverlap;
-  /** The mother's further bar after a birth, to the `son`th or `daughter`th day; none reported when left out. */
-  readonly motherRites?: { readonly son: number; readonly daughter: number };
-}
-
-/** One relation's length, under its conditions. */
-export interface AshauchRelationRow {
-  /** Whose. */
-  readonly relation: AshauchRelation;
-  /** A birth's or a death's. */
-  readonly kind: AshauchKind;
-  /** Only where the death was, to the observer; any when left out. */
-  readonly nearness?: Nearness;
-  /** Only for a married daughter's death (true), or only for any other (false); either when left out. */
-  readonly marriedDaughter?: boolean;
-  /** Its length. */
-  readonly length: AshauchLength;
-  /** What news past the period takes, from the hearing; the late tables' when left out. */
-  readonly heardLate?: AshauchLength;
-  /** The clause, with its source. */
-  readonly clause: string;
-}
-
-/** A mark of the deceased's age a band ends before, by its `mark`. */
-export type AshauchMark =
-  | { readonly mark: 'DAY'; readonly day: number }
-  | { readonly mark: 'MONTH'; readonly month: number }
-  | { readonly mark: 'YEAR'; readonly year: number }
-  | { readonly mark: 'CHUDAKARANA' }
-  | { readonly mark: 'UPANAYANA' }
-  | { readonly mark: 'BETROTHAL' }
-  | { readonly mark: 'MARRIAGE' };
-
-/** What a death before a mark takes. */
-export interface AshauchBand {
-  /** A son's band or a daughter's. */
-  readonly sex: AshauchSex;
-  /** The band holds while this mark is not yet reached. */
-  readonly before: AshauchMark;
-  /** Only for a burial (true), or only for a cremation (false); either when left out. */
-  readonly buried?: boolean;
-  /** Only when the cūḍākaraṇa was done (true), or only when it was not (false); either when left out. */
-  readonly chudakarana?: boolean;
-  /** The parents' length, a step-child's too. */
-  readonly parents: AshauchLength;
-  /** The sapiṇḍas'. */
-  readonly sapindas: AshauchLength;
-  /** The samānodakas', when the band names one; a bath otherwise. */
-  readonly samanodakas?: AshauchLength;
-  /** The clause, with its source. */
-  readonly clause: string;
-}
-
-/** A loss before the 7th month, by the month. */
-export interface AshauchLossRow {
-  /** The row holds to this month of the pregnancy. */
-  readonly toMonth: number;
-  /** The mother's length. */
-  readonly mother: AshauchLength;
-  /** The father's and the sapiṇḍas'; a bath for any other relation. */
-  readonly others: AshauchLength;
-  /** The clause, with its source. */
-  readonly clause: string;
-}
-
-/** Late news, past the period, within some days of the event. */
-export interface AshauchLateRow {
-  /** Heard within this many days of the event. */
-  readonly withinDays: number;
-  /** The length from the hearing. */
-  readonly length: AshauchLength;
-}
-
-/** What a period known during another does (*āśauca-saṃpāta*). */
-export interface AshauchOverlap {
-  /** The days a period known in an equal period's last night adds past its end, and in its last quarter. */
-  readonly lastNight: readonly [number, number];
-  /** Whether a birth known during a shorter death ends with it. */
-  readonly deathAbsorbsLongerBirth: boolean;
-}
-
 /** What `almanac.ashauch` answers, frozen to its leaves. */
 export interface AshauchAnswer {
   /** The span of impurity. */
@@ -9258,39 +7985,6 @@ export interface FirstYearQuery {
   /** The death and the readings. */
   readonly request: FirstYearRequest;
 }
-
-/**
- * A death's first year, as a request asks it: every reading the
- * *Dharmasindhu*'s when left out. Nepal's, as Dhakal records it, is
- * `{ firstAbdika: 'ELEVENTH_DAY', firstYearAdhika: 'NIJA' }`.
- */
-export interface FirstYearRequest {
-  /** The consumer's own key, which the answer repeats. */
-  readonly key: string;
-  /** The death, a UTC Julian day. */
-  readonly at: number;
-  /** Which day a death at night belongs to, as the ashauch counts it; `'THIRDS'` when left out. */
-  readonly night?: NightRule;
-  /** When the first abdika is kept; `'SECOND_YEAR'` when left out. */
-  readonly firstAbdika?: FirstAbdika;
-  /** The anniversary's month when it is doubled (C666); `'ADHIKA'` when left out. */
-  readonly firstYearAdhika?: 'ADHIKA' | 'NIJA';
-  /** The sapindana's day; `'TWELFTH_DAY'` when left out. */
-  readonly sapindana?: SapindanaAt;
-  /** How far short the *ūna* rites are kept; `'DAY_BEFORE'` when left out. */
-  readonly una?: UnaDay;
-  /** The rite's time in place of both forms' (kutapa to rauhina for the ekoddishta, aparahna for the parvana). */
-  readonly window?: FestivalWindow;
-}
-
-/** When the first abdika is kept (DS p. 330): at the second year's start, or on the eleventh day. */
-export type FirstAbdika = 'SECOND_YEAR' | 'ELEVENTH_DAY';
-
-/** The day the sapindana is kept on (DS p. 331). */
-export type SapindanaAt = 'ELEVENTH_DAY' | 'TWELFTH_DAY' | 'TRAIPAKSHIKA' | 'YEAR_END';
-
-/** How far short an *ūna* rite is kept (DS p. 330): the day before, or one to three tithis. */
-export type UnaDay = 'DAY_BEFORE' | 'ONE_TITHI' | 'TWO_TITHIS' | 'THREE_TITHIS';
 
 /** Which rite of the first year. */
 export type Rite =

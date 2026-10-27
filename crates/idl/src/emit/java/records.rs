@@ -80,7 +80,7 @@ fn java_type(ty: &RecordType, boxed: bool) -> String {
         RecordType::Number => String::from(if boxed { "Double" } else { "double" }),
         RecordType::Text => String::from("String"),
         RecordType::Record { name } => name.clone(),
-        RecordType::List { of } => format!("List<{}>", java_type(of, true)),
+        RecordType::List { of, .. } => format!("List<{}>", java_type(of, true)),
         RecordType::Pair { first, second } => {
             format!(
                 "Pair<{}, {}>",
@@ -105,7 +105,7 @@ fn decode(ty: &RecordType, expr: &str, at: &str) -> String {
         RecordType::Number => format!("Read.number({expr}, {at})"),
         RecordType::Text => format!("Read.text({expr}, {at})"),
         RecordType::Record { name } => format!("{name}.of({expr})"),
-        RecordType::List { of } => format!(
+        RecordType::List { of, .. } => format!(
             "Read.list({expr}, {at}, item -> {})",
             decode(of, "item", at)
         ),

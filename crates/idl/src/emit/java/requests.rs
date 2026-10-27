@@ -102,8 +102,10 @@ pub(super) fn files(api: &Api) -> Vec<File> {
                     file(&name, text);
                 }
             }
-            RecordShape::OrNamed { names, of } => {
-                for (name, text) in types.or_named(&record.name, &record.doc, names, of) {
+            RecordShape::OrNamed { names, of, member } => {
+                for (name, text) in
+                    types.or_named(&record.name, &record.doc, names, of, member.as_deref())
+                {
                     file(&name, text);
                 }
             }
@@ -240,7 +242,7 @@ impl<'a> Types<'a> {
             RecordType::Number => String::from(if boxed { "Double" } else { "double" }),
             RecordType::Text => String::from("String"),
             RecordType::Record { name } => self.record_type(name),
-            RecordType::List { of } => format!("List<{}>", self.java_type(of, true)),
+            RecordType::List { of, .. } => format!("List<{}>", self.java_type(of, true)),
             RecordType::Pair { first, second } => format!(
                 "com.teispace.teistro.record.Pair<{}, {}>",
                 self.java_type(first, true),
@@ -275,8 +277,8 @@ impl<'a> Types<'a> {
             }
             RecordType::Record { .. } | RecordType::Keyed { .. } => format!("{expr}.toJson()"),
             RecordType::Member { .. } => format!("{expr}.fullKey()"),
-            RecordType::List { of } if writes_itself(of) => expr.to_owned(),
-            RecordType::List { of } => format!(
+            RecordType::List { of, .. } if writes_itself(of) => expr.to_owned(),
+            RecordType::List { of, .. } => format!(
                 "{expr}.stream().map({item} -> {}).toList()",
                 self.write_at(of, &item, deeper)
             ),
@@ -321,7 +323,7 @@ impl<'a> Types<'a> {
                 format!("Read.member({expr}, {at}, {name}::byKey)")
             }
             RecordType::Record { name } => format!("{name}.of({expr})"),
-            RecordType::List { of } => format!(
+            RecordType::List { of, .. } => format!(
                 "Read.list({expr}, {at}, {item} -> {})",
                 self.read_at(of, &item, at, deeper)
             ),
@@ -421,7 +423,7 @@ impl<'a> Types<'a> {
     /// where it may be one.
     fn field_doc(&self, field: &RecordField) -> String {
         let mut ty = &field.ty;
-        while let RecordType::List { of } | RecordType::Map { of } = ty {
+        while let RecordType::List { of, .. } | RecordType::Map { of } = ty {
             ty = of;
         }
         let borrowed = match ty {
@@ -829,6 +831,7 @@ impl<'a> Types<'a> {
             },
             ty: payload.clone(),
             nullable: false,
+            null: false,
         };
         let mut out = preamble(self.api, REQUEST_PACKAGE);
         out.push_str(
@@ -866,14 +869,52 @@ impl<'a> Types<'a> {
         out
     }
 
-    /// A few names or one value: a sealed interface of an enum of the names
-    /// and the value, the value made by `value`.
+    /// A record of one field, `value`, that is one arm of the union `name`
+    /// and reads and writes as its value alone.
+    fn one_of(&self, name: &str, wrapper: &str, doc: &str, of: &RecordType) -> String {
+        let mut out = preamble(self.api, REQUEST_PACKAGE);
+        out.push_str(
+            "import java.util.List;\nimport java.util.Map;\nimport java.util.Objects;\n\n",
+        );
+        let field = RecordField {
+            name: String::from("value"),
+            doc: String::from("The value."),
+            ty: of.clone(),
+            nullable: false,
+            null: false,
+        };
+        out.push_str(
+            &javadoc(
+                &format!("{}\n\n@param value the value", described(doc, name)),
+                "",
+            )
+            .replace("&#64;param", "@param"),
+        );
+        let _ = writeln!(
+            out,
+            "public record {wrapper}({} value) implements RequestJson, {name} {{",
+            self.java_type(of, false)
+        );
+        Self::checks(&mut out, wrapper, std::slice::from_ref(&field));
+        let _ = writeln!(
+            out,
+            "    /**\n     * A {{@code {wrapper}}} from its JSON.\n     *\n     * @param raw the JSON value\n     * @return the record\n     * @throws IllegalArgumentException for JSON that is not one\n     */\n    public static {wrapper} of(Object raw) {{\n        return new {wrapper}({});\n    }}\n\n    @Override\n    public Object toJson() {{\n        return {};\n    }}\n}}",
+            self.read(of, "raw", &literal(&format!("{name}.value"))),
+            self.write(of, "value")
+        );
+        out
+    }
+
+    /// A few names or one value, or a catalogue member beside them: a
+    /// sealed interface of an enum of the names, the value made by
+    /// `value`, and the member by `member`.
     fn or_named(
         &self,
         name: &str,
         doc: &str,
         names: &[String],
         of: &RecordType,
+        member: Option<&str>,
     ) -> Vec<(String, String)> {
         let mut files = Vec::new();
         let value = match of {
@@ -882,37 +923,30 @@ impl<'a> Types<'a> {
             }
             _ => {
                 let wrapper = format!("{name}Value");
-                let mut out = preamble(self.api, REQUEST_PACKAGE);
-                out.push_str(
-                    "import java.util.List;\nimport java.util.Map;\nimport java.util.Objects;\n\n",
-                );
-                let field = RecordField {
-                    name: String::from("value"),
-                    doc: String::from("The value."),
-                    ty: of.clone(),
-                    nullable: false,
-                };
-                out.push_str(
-                    &javadoc(
-                        &format!("{}\n\n@param value the value", described(doc, name)),
-                        "",
-                    )
-                    .replace("&#64;param", "@param"),
-                );
-                let _ = writeln!(
-                    out,
-                    "public record {wrapper}({} value) implements RequestJson, {name} {{",
-                    self.java_type(of, false)
-                );
-                Self::checks(&mut out, &wrapper, std::slice::from_ref(&field));
-                let _ = writeln!(
-                    out,
-                    "    /**\n     * A {{@code {wrapper}}} from its JSON.\n     *\n     * @param raw the JSON value\n     * @return the record\n     * @throws IllegalArgumentException for JSON that is not one\n     */\n    public static {wrapper} of(Object raw) {{\n        return new {wrapper}({});\n    }}\n\n    @Override\n    public Object toJson() {{\n        return {};\n    }}\n}}",
-                    self.read(of, "raw", &literal(&format!("{name}.value"))),
-                    self.write(of, "value")
-                );
-                files.push((wrapper.clone(), out));
+                files.push((wrapper.clone(), self.one_of(name, &wrapper, doc, of)));
                 wrapper
+            }
+        };
+        // The member reads from a string the names have not taken, before
+        // the value, which the reader holds is a record.
+        let (permits, member_make, member_read) = match member {
+            None => (String::new(), String::new(), String::new()),
+            Some(kind) => {
+                let wrapper = format!("{name}Member");
+                let ty = RecordType::Member {
+                    catalogue: kind.to_owned(),
+                };
+                files.push((wrapper.clone(), self.one_of(name, &wrapper, doc, &ty)));
+                (
+                    format!(", {wrapper}"),
+                    format!(
+                        "    /**\n     * The member, as a {{@code {name}}}.\n     *\n     * @param member the member\n     * @return the union\n     */\n    static {name} member({} member) {{\n        return new {wrapper}(member);\n    }}\n\n",
+                        self.java_type(&ty, false)
+                    ),
+                    format!(
+                        "        if (raw instanceof String) {{\n            return {wrapper}.of(raw);\n        }}\n"
+                    ),
+                )
             }
         };
         let keys: Vec<(String, String)> =
@@ -943,7 +977,7 @@ impl<'a> Types<'a> {
         };
         let _ = writeln!(
             out,
-            "public sealed interface {name} extends RequestJson permits {name}.Key, {value} {{\n{constants}{make}    /**\n     * A {{@code {name}}} from its JSON: one of the names, or the value.\n     *\n     * @param raw the JSON value\n     * @return the union\n     * @throws IllegalArgumentException for JSON that is neither\n     */\n    static {name} of(Object raw) {{\n        if (raw instanceof {name} same) {{\n            return same;\n        }}\n        for (Key key : Key.values()) {{\n            if (key.key().equals(raw)) {{\n                return key;\n            }}\n        }}\n        return {value}.of(raw);\n    }}\n\n    /** The names. */\n    enum Key implements {name} {{\n{};\n\n{}\n    }}\n}}",
+            "public sealed interface {name} extends RequestJson permits {name}.Key, {value}{permits} {{\n{constants}{make}{member_make}    /**\n     * A {{@code {name}}} from its JSON: one of the names, or the value.\n     *\n     * @param raw the JSON value\n     * @return the union\n     * @throws IllegalArgumentException for JSON that is neither\n     */\n    static {name} of(Object raw) {{\n        if (raw instanceof {name} same) {{\n            return same;\n        }}\n        for (Key key : Key.values()) {{\n            if (key.key().equals(raw)) {{\n                return key;\n            }}\n        }}\n{member_read}        return {value}.of(raw);\n    }}\n\n    /** The names. */\n    enum Key implements {name} {{\n{};\n\n{}\n    }}\n}}",
             indent(&Self::constants(&keys), "    "),
             indent(&key_methods("Key", &format!("{name}.Key")), "    ")
         );

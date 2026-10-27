@@ -56,7 +56,7 @@ fn decodes_to_itself(ty: &RecordType) -> bool {
             true
         }
         RecordType::Record { .. } => false,
-        RecordType::List { of } => decodes_to_itself(of),
+        RecordType::List { of, .. } => decodes_to_itself(of),
         RecordType::Pair { first, second } => decodes_to_itself(first) && decodes_to_itself(second),
     }
 }
@@ -87,7 +87,7 @@ fn ts_type(ty: &RecordType) -> String {
         RecordType::Integer { .. } | RecordType::Number => "number".into(),
         RecordType::Text => "string".into(),
         RecordType::Record { name } => name.clone(),
-        RecordType::List { of } => match of.as_ref() {
+        RecordType::List { of, .. } => match of.as_ref() {
             // `readonly` binds to an array or tuple literal, so a list of
             // them puts the item in parentheses.
             RecordType::List { .. } | RecordType::Pair { .. } => {
@@ -198,7 +198,7 @@ fn js_decode(ty: &RecordType, expr: &str) -> String {
     }
     match ty {
         RecordType::Record { name } => format!("decode{name}({expr})"),
-        RecordType::List { of } => format!("{expr}.map((item) => {})", js_decode(of, "item")),
+        RecordType::List { of, .. } => format!("{expr}.map((item) => {})", js_decode(of, "item")),
         RecordType::Pair { first, second } => format!(
             "[{}, {}]",
             js_decode(first, &format!("{expr}[0]")),
@@ -316,7 +316,7 @@ fn py_type(ty: &RecordType) -> String {
         RecordType::Number => "float".into(),
         RecordType::Text => "str".into(),
         RecordType::Record { name } => name.clone(),
-        RecordType::List { of } => format!("tuple[{}, ...]", py_type(of)),
+        RecordType::List { of, .. } => format!("tuple[{}, ...]", py_type(of)),
         RecordType::Pair { first, second } => {
             format!("tuple[{}, {}]", py_type(first), py_type(second))
         }
@@ -335,7 +335,7 @@ fn py_decode(ty: &RecordType, expr: &str) -> String {
         RecordType::Number => format!("float({expr})"),
         RecordType::Bool | RecordType::Integer { .. } | RecordType::Text => expr.to_owned(),
         RecordType::Record { name } => format!("decode_{}({expr})", snake(name)),
-        RecordType::List { of } => {
+        RecordType::List { of, .. } => {
             format!("tuple({} for item in {expr})", py_decode(of, "item"))
         }
         RecordType::Pair { first, second } => format!(
@@ -521,7 +521,7 @@ fn dart_type(ty: &RecordType) -> String {
         RecordType::Number => "double".into(),
         RecordType::Text => "String".into(),
         RecordType::Record { name } => name.clone(),
-        RecordType::List { of } => format!("List<{}>", dart_type(of)),
+        RecordType::List { of, .. } => format!("List<{}>", dart_type(of)),
         RecordType::Pair { first, second } => {
             format!("({}, {})", dart_type(first), dart_type(second))
         }
@@ -548,7 +548,7 @@ fn dart_decode(api: &Api, ty: &RecordType, expr: &str) -> String {
                 format!("{name}.fromJson({expr}! as Map<String, Object?>)")
             }
         }
-        RecordType::List { of } => format!(
+        RecordType::List { of, .. } => format!(
             "[for (final item in {expr}! as List<Object?>) {}]",
             dart_decode(api, of, "item")
         ),

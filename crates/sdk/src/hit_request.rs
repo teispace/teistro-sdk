@@ -534,9 +534,28 @@ pub(crate) struct Asked {
 /// `{"point": "MIDHEAVEN"}`), or bare, a graha's key, `"LAGNA"` or
 /// `"MIDHEAVEN"`.
 #[derive(Serialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
 pub(crate) struct PointAsked(NatalPoint);
+
+/// The reader's three shapes, so a binding types a request as it is read:
+/// a fixed word, a graha's key, or the point spelt out.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for PointAsked {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("PointAsked")
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": "A natal point: `\"LAGNA\"`, `\"MIDHEAVEN\"`, a graha's key, or the point as an answer's `to` spells it.",
+            "anyOf": [
+                { "enum": ["LAGNA", "MIDHEAVEN"] },
+                generator.subschema_for::<Graha>(),
+                generator.subschema_for::<NatalPoint>(),
+            ],
+        })
+    }
+}
 
 impl<'de> Deserialize<'de> for PointAsked {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {

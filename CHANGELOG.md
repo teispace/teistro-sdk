@@ -12,6 +12,27 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Node's request types are generated from the SDK's own schemas.**
+**Numbers:** none; declarations and one schema only.
+- `bindings/node/lib/requests.d.ts` is rendered by `cargo xtask gen ffi`
+  from the façade's schema of each request, and `index.d.ts` re-exports
+  it; 89 hand-written twins are gone, and `check-lints` refuses one coming
+  back (`layer-does-not-twin-a-request`). Eleven requests the layer takes
+  in a shape of its own stay hand-written, each listed with its reason.
+- Typing changes, all looser where serde was: a catalogue field takes a
+  member's bare key as well as its full one; rule fields serde defaults are
+  optional; `SubDegree` names `NONE`. Stricter where serde was: a short
+  fixed-length list is a tuple (`AccidentalRules.meanMotionDeg`, seven
+  numbers), and a rule pack's `rules` are `RuleDefinition` records rather
+  than any object.
+- `PointAsked`'s schema states the bare `"LAGNA"`, `"MIDHEAVEN"` and graha
+  keys its reader always took, so Java's `HitRequest` and
+  `ContactsAsked` take a `PointAsked` (`PointAsked.LAGNA`,
+  `PointAsked.member(Graha.MOON)`, `PointAsked.value(point)`) where they
+  took a `NatalPoint`.
+- The schema reader keeps a Rust array's length and whether a field takes
+  null (`docs/03-design/generated-requests.md`).
+
 **A Nepal Ashta Koota preset, fitted to a printed grid (C761–C763).**
 **Numbers:** none by default; `KootaRules` gains two knobs whose defaults
 are the scoring already shipped.

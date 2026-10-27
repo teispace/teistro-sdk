@@ -17,11 +17,11 @@ import java.util.Objects;
  * @param grahas The {@code grahas} field. Null leaves the SDK's default.
  * @param kinds A kind of event a hit list reports, spelled as the event's own `kind`. Null leaves the SDK's default.
  * @param orbDeg The {@code orbDeg} field. Null leaves the SDK's default.
- * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
+ * @param points A natal point: `"LAGNA"`, `"MIDHEAVEN"`, a graha's key, or the point as an answer's `to` spells it. Null leaves the SDK's default.
  * @param to The {@code to} field.
  * @param vargas The {@code vargas} field. Null leaves the SDK's default.
  */
-public record HitRequest(List<Integer> aspects, Double eclipseOrbDeg, double from, List<com.teispace.teistro.Graha> grahas, List<com.teispace.teistro.HitKind> kinds, Double orbDeg, List<NatalPoint> points, double to, List<com.teispace.teistro.Varga> vargas) implements RequestJson {
+public record HitRequest(List<Integer> aspects, Double eclipseOrbDeg, double from, List<com.teispace.teistro.Graha> grahas, List<com.teispace.teistro.HitKind> kinds, Double orbDeg, List<PointAsked> points, double to, List<com.teispace.teistro.Varga> vargas) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -66,7 +66,7 @@ public record HitRequest(List<Integer> aspects, Double eclipseOrbDeg, double fro
         private List<com.teispace.teistro.Graha> grahas;
         private List<com.teispace.teistro.HitKind> kinds;
         private Double orbDeg;
-        private List<NatalPoint> points;
+        private List<PointAsked> points;
         private Double to;
         private List<com.teispace.teistro.Varga> vargas;
 
@@ -141,10 +141,10 @@ public record HitRequest(List<Integer> aspects, Double eclipseOrbDeg, double fro
         /**
          * Sets {@code points}.
          *
-         * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
+         * @param points A natal point: `"LAGNA"`, `"MIDHEAVEN"`, a graha's key, or the point as an answer's `to` spells it. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder points(List<NatalPoint> points) {
+        public Builder points(List<PointAsked> points) {
             this.points = points;
             return this;
         }
@@ -198,7 +198,7 @@ public record HitRequest(List<Integer> aspects, Double eclipseOrbDeg, double fro
             Read.orNull(json.get("grahas"), present -> Read.list(present, "HitRequest.grahas", item0 -> Read.member(item0, "HitRequest.grahas", com.teispace.teistro.Graha::byKey))),
             Read.orNull(json.get("kinds"), present -> Read.list(present, "HitRequest.kinds", item0 -> Read.member(item0, "HitRequest.kinds", com.teispace.teistro.HitKind::byKey))),
             Read.orNull(json.get("orbDeg"), present -> Read.number(present, "HitRequest.orbDeg")),
-            Read.orNull(json.get("points"), present -> Read.list(present, "HitRequest.points", item0 -> NatalPoint.of(item0))),
+            Read.orNull(json.get("points"), present -> Read.list(present, "HitRequest.points", item0 -> PointAsked.of(item0))),
             Read.number(Read.required(json.get("to"), "HitRequest.to"), "HitRequest.to"),
             Read.orNull(json.get("vargas"), present -> Read.list(present, "HitRequest.vargas", item0 -> Read.member(item0, "HitRequest.vargas", com.teispace.teistro.Varga::byKey))));
     }

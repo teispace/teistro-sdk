@@ -25233,7 +25233,8 @@
               "kind": "RECORD",
               "name": "CalendarResolution"
             },
-            "nullable": true
+            "nullable": true,
+            "null": true
           },
           {
             "name": "catalogue_version",
@@ -25271,7 +25272,8 @@
               "kind": "RECORD",
               "name": "Deviation"
             },
-            "nullable": true
+            "nullable": true,
+            "null": true
           },
           {
             "name": "fallbacks_used",
@@ -25732,7 +25734,8 @@
             "ty": {
               "kind": "TEXT"
             },
-            "nullable": true
+            "nullable": true,
+            "null": true
           },
           {
             "name": "version",
@@ -25781,7 +25784,8 @@
             "ty": {
               "kind": "TEXT"
             },
-            "nullable": true
+            "nullable": true,
+            "null": true
           },
           {
             "name": "tzdb_version",
@@ -25797,7 +25801,8 @@
             "ty": {
               "kind": "NUMBER"
             },
-            "nullable": true
+            "nullable": true,
+            "null": true
           }
         ]
       }
@@ -25822,7 +25827,8 @@
             "ty": {
               "kind": "TEXT"
             },
-            "nullable": true
+            "nullable": true,
+            "null": true
           },
           {
             "name": "slots",
