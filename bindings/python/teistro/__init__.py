@@ -313,7 +313,8 @@ from ._requests import (
     EqualVarna as EqualVarna,
     EraNumber as EraNumber,
     LifeEventKind as LifeEventKind,
-    EventShuffle as EventShuffle,
+    ResearchEventShuffle as ResearchEventShuffle,
+    EventConfidence as EventConfidence,
     Facts as Facts,
     FestivalCalendarRequest as FestivalCalendarRequest,
     FirstAbdika as FirstAbdika,
@@ -333,7 +334,7 @@ from ._requests import (
     HarmonicRequest as HarmonicRequest,
     HarshaRules as HarshaRules,
     HitRequest as HitRequest,
-    Holds as Holds,
+    ResearchHolds as ResearchHolds,
     HouseCount as HouseCount,
     HousePoints as HousePoints,
     HouseRequest as HouseRequest,
@@ -412,7 +413,7 @@ from ._requests import (
     PartnerMatching as PartnerMatching,
     PartnerSynastry as PartnerSynastry,
     PerfectionRequest as PerfectionRequest,
-    Period as Period,
+    BaselinePeriod as BaselinePeriod,
     PeriodAsked as PeriodAsked,
     ConceptionPisces as ConceptionPisces,
     PiscesRising as PiscesRising,
@@ -438,7 +439,7 @@ from ._requests import (
     Purify as Purify,
     PurifyAs as PurifyAs,
     Question as Question,
-    Ranking as Ranking,
+    MuhurtaRanking as MuhurtaRanking,
     RasmiRules as RasmiRules,
     RateSpan as RateSpan,
     RayPlace as RayPlace,
@@ -513,7 +514,7 @@ from ._requests import (
     ThresholdsCustom as ThresholdsCustom,
     ThresholdsPtolemy as ThresholdsPtolemy,
     ThresholdsSuryaSiddhanta as ThresholdsSuryaSiddhanta,
-    Tied as Tied,
+    VarsheshaTied as VarsheshaTied,
     Timing as Timing,
     TimingRule as TimingRule,
     TithiPraveshaRequest as TithiPraveshaRequest,
@@ -11830,11 +11831,6 @@ class CircumstanceRequest(TypedDict, total=False):
 
     facts: BirthFacts
     rules: CircumstanceRules
-
-
-EventConfidence = Literal["CERTAIN", "PROBABLE", "UNCERTAIN"]
-"""How sure the family is of a life event, a `LifeEventRequest`
-`confidence`."""
 
 
 class LifeEventRequest(TypedDict, total=False):

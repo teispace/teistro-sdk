@@ -1113,7 +1113,7 @@ void main() {
       dropping: [],
       members: 2,
       written: BatchAsked(
-        baseline: Period.weekly,
+        baseline: BaselinePeriod.weekly,
         periods: [
           PeriodAsked(
             altitudeM: 1.5,
@@ -1181,10 +1181,10 @@ void main() {
         dasha: 'x',
         depth: 1,
         design: Design(groups: [1], strata: [1]),
-        holds: Holds.formed,
+        holds: ResearchHolds.formed,
         referents: Referents(stepDays: 1.5, windowDays: 1.5),
         rules: <String, Object?>{'shipped': <Object?>['YOGAS']},
-        shuffle: EventShuffle.agesAtEvent,
+        shuffle: ResearchEventShuffle.agesAtEvent,
         strata: [1],
         study: StudyKind.compare,
         subjects: [

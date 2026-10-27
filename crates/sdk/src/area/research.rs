@@ -106,6 +106,7 @@ impl Birth {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "ResearchHolds"))]
 pub enum Holds {
     /// It is formed and its cancellations do not undo it: present, and
     /// not fully cancelled. A rule is its conditions *and* its
@@ -613,6 +614,7 @@ pub struct Subject {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "ResearchEventShuffle"))]
 pub enum EventShuffle {
     /// Event dates move among people: the calendar of events is kept, each
     /// person's age at the event is not. A pairing that puts an event

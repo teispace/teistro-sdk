@@ -6,7 +6,7 @@ package com.teispace.teistro.request;
 /**
  * How windows are ordered (crux C162); the texts' order by default.
  */
-public enum Ranking implements RequestJson {
+public enum MuhurtaRanking implements RequestJson {
     /**
      * Raman's rule, an excess of good and a deficiency of evil: open windows first, then the fewest clauses against, then the most for, then the earliest. No clause cancels another here — the neutralisations are reported as clauses for the time and weigh as that — because which neutralisation lifts which dosha the texts give case by case, and a table of it is not yet sourced.
      */
@@ -18,7 +18,7 @@ public enum Ranking implements RequestJson {
 
     private final String key;
 
-    Ranking(String key) {
+    MuhurtaRanking(String key) {
         this.key = key;
     }
 
@@ -37,8 +37,8 @@ public enum Ranking implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Ranking> byKey(String key) {
-        for (Ranking member : values()) {
+    public static java.util.Optional<MuhurtaRanking> byKey(String key) {
+        for (MuhurtaRanking member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -53,8 +53,8 @@ public enum Ranking implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Ranking of(Object raw) {
-        return Read.member(raw, "Ranking", Ranking::byKey);
+    public static MuhurtaRanking of(Object raw) {
+        return Read.member(raw, "MuhurtaRanking", MuhurtaRanking::byKey);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.teispace.teistro;
 
-import com.teispace.teistro.request.Holds;
+import com.teispace.teistro.request.ResearchHolds;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,7 @@ import java.util.Map;
  * are an event study's, {@code uncertaintyStepMinutes} a study of births'.
  *
  * <pre>{@code
- * ResearchOptions options = ResearchOptions.builder().holds(Holds.FORMED).uncertaintyStepMinutes(5.0).build();
+ * ResearchOptions options = ResearchOptions.builder().holds(ResearchHolds.FORMED).uncertaintyStepMinutes(5.0).build();
  * }</pre>
  *
  * @param holds when a rule counts as holding: standing (the default) or merely formed
@@ -21,7 +21,7 @@ import java.util.Map;
  * @param depth how deep an event study reads its dasha, 1 (the mahadasha) to 6; 2 when unset
  * @param strata each subject's stratum, inside which an event study's shuffle moves
  */
-public record ResearchOptions(Holds holds, Double uncertaintyStepMinutes, Integer depth, List<Long> strata) {
+public record ResearchOptions(ResearchHolds holds, Double uncertaintyStepMinutes, Integer depth, List<Long> strata) {
     /** The value, its list copied. */
     public ResearchOptions {
         strata = strata == null ? null : List.copyOf(strata);
@@ -56,7 +56,7 @@ public record ResearchOptions(Holds holds, Double uncertaintyStepMinutes, Intege
 
     /** Builds {@link ResearchOptions} a field at a time. */
     public static final class Builder {
-        private Holds holds;
+        private ResearchHolds holds;
         private Double uncertaintyStepMinutes;
         private Integer depth;
         private List<Long> strata;
@@ -69,7 +69,7 @@ public record ResearchOptions(Holds holds, Double uncertaintyStepMinutes, Intege
          * @param holds when a rule counts as holding
          * @return this builder
          */
-        public Builder holds(Holds holds) {
+        public Builder holds(ResearchHolds holds) {
             this.holds = holds;
             return this;
         }

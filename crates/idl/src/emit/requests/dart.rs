@@ -90,14 +90,7 @@ pub const DART_FACADES: &[(&str, &str)] = &[
 /// already declares (a catalogue enum, an answer record), which a
 /// declaration here would shadow: a caller reaches the request's own
 /// through the field that takes it, typed as the JSON it is.
-pub const DART_SHADOWED: &[&str] = &[
-    "CivilTime",
-    "Confidence",
-    "Partile",
-    "Siege",
-    "Terms",
-    "ZoneSpec",
-];
+pub const DART_SHADOWED: &[&str] = &["CivilTime", "Partile", "Siege", "Terms", "ZoneSpec"];
 
 /// Whether the layer keeps `name` by hand.
 pub(super) fn is_facade(name: &str) -> bool {

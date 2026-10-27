@@ -19,7 +19,7 @@ import java.util.Objects;
  * @param ranking How windows are ordered (crux C162); the texts' order by default. Null leaves the SDK's default.
  * @param rules The {@code rules} field.
  */
-public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.teispace.teistro.Direction direction, Long most, MuhurtaNative nativeValue, Ranking ranking, Object rules) implements RequestJson {
+public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.teispace.teistro.Direction direction, Long most, MuhurtaNative nativeValue, MuhurtaRanking ranking, Object rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -58,7 +58,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
         private com.teispace.teistro.Direction direction;
         private Long most;
         private MuhurtaNative nativeValue;
-        private Ranking ranking;
+        private MuhurtaRanking ranking;
         private Object rules;
 
         private Builder() {}
@@ -124,7 +124,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
          * @param ranking How windows are ordered (crux C162); the texts' order by default. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder ranking(Ranking ranking) {
+        public Builder ranking(MuhurtaRanking ranking) {
             this.ranking = ranking;
             return this;
         }
@@ -166,7 +166,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
             Read.orNull(json.get("direction"), present -> Read.member(present, "MuhurtaRequest.direction", com.teispace.teistro.Direction::byKey)),
             Read.orNull(json.get("most"), present -> Read.integer(present, "MuhurtaRequest.most")),
             Read.orNull(json.get("native"), present -> MuhurtaNative.of(present)),
-            Read.orNull(json.get("ranking"), present -> Read.member(present, "MuhurtaRequest.ranking", Ranking::byKey)),
+            Read.orNull(json.get("ranking"), present -> Read.member(present, "MuhurtaRequest.ranking", MuhurtaRanking::byKey)),
             Read.required(json.get("rules"), "MuhurtaRequest.rules"));
     }
 

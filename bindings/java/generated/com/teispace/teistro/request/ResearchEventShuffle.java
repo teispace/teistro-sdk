@@ -6,7 +6,7 @@ package com.teispace.teistro.request;
 /**
  * What the shuffled-event null keeps (`research.md` §1.4).
  */
-public enum EventShuffle implements RequestJson {
+public enum ResearchEventShuffle implements RequestJson {
     /**
      * Event dates move among people: the calendar of events is kept, each person's age at the event is not. A pairing that puts an event before a birth is what `afterBirth` decides.
      */
@@ -22,7 +22,7 @@ public enum EventShuffle implements RequestJson {
 
     private final String key;
 
-    EventShuffle(String key) {
+    ResearchEventShuffle(String key) {
         this.key = key;
     }
 
@@ -41,8 +41,8 @@ public enum EventShuffle implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<EventShuffle> byKey(String key) {
-        for (EventShuffle member : values()) {
+    public static java.util.Optional<ResearchEventShuffle> byKey(String key) {
+        for (ResearchEventShuffle member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -57,8 +57,8 @@ public enum EventShuffle implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static EventShuffle of(Object raw) {
-        return Read.member(raw, "EventShuffle", EventShuffle::byKey);
+    public static ResearchEventShuffle of(Object raw) {
+        return Read.member(raw, "ResearchEventShuffle", ResearchEventShuffle::byKey);
     }
 
     @Override

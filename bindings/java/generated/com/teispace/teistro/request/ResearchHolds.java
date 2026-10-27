@@ -4,21 +4,21 @@
 package com.teispace.teistro.request;
 
 /**
- * Who takes the year when the office-bearers tie outright (crux C106).
+ * When a rule counts as holding on a chart.
  */
-public enum Tied implements RequestJson {
+public enum ResearchHolds implements RequestJson {
     /**
-     * The Muntha's lord: the source's own rule.
+     * It is formed and its cancellations do not undo it: present, and not fully cancelled. A rule is its conditions *and* its cancellations, so this is the default.
      */
-    MUNTHA_LORD("MUNTHA_LORD"),
+    STANDING("STANDING"),
     /**
-     * The Dina-Ratri Pati, which "still others" give.
+     * It is formed, whatever its cancellations say.
      */
-    DINA_RATRI_PATI("DINA_RATRI_PATI");
+    FORMED("FORMED");
 
     private final String key;
 
-    Tied(String key) {
+    ResearchHolds(String key) {
         this.key = key;
     }
 
@@ -37,8 +37,8 @@ public enum Tied implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Tied> byKey(String key) {
-        for (Tied member : values()) {
+    public static java.util.Optional<ResearchHolds> byKey(String key) {
+        for (ResearchHolds member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -53,8 +53,8 @@ public enum Tied implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Tied of(Object raw) {
-        return Read.member(raw, "Tied", Tied::byKey);
+    public static ResearchHolds of(Object raw) {
+        return Read.member(raw, "ResearchHolds", ResearchHolds::byKey);
     }
 
     @Override

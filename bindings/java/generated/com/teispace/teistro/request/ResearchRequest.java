@@ -26,7 +26,7 @@ import java.util.Objects;
  * @param test The {@code test} field. Null leaves the SDK's default.
  * @param uncertaintyStepMinutes The {@code uncertaintyStepMinutes} field. Null leaves the SDK's default.
  */
-public record ResearchRequest(List<BirthAsked> births, Object control, String dasha, Integer depth, Design design, Holds holds, Referents referents, Object rules, EventShuffle shuffle, List<Long> strata, StudyKind study, List<SubjectAsked> subjects, Object test, Double uncertaintyStepMinutes) implements RequestJson {
+public record ResearchRequest(List<BirthAsked> births, Object control, String dasha, Integer depth, Design design, ResearchHolds holds, Referents referents, Object rules, ResearchEventShuffle shuffle, List<Long> strata, StudyKind study, List<SubjectAsked> subjects, Object test, Double uncertaintyStepMinutes) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -73,10 +73,10 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
         private String dasha;
         private Integer depth;
         private Design design;
-        private Holds holds;
+        private ResearchHolds holds;
         private Referents referents;
         private Object rules;
-        private EventShuffle shuffle;
+        private ResearchEventShuffle shuffle;
         private List<Long> strata;
         private StudyKind study;
         private List<SubjectAsked> subjects;
@@ -146,7 +146,7 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
          * @param holds When a rule counts as holding on a chart. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder holds(Holds holds) {
+        public Builder holds(ResearchHolds holds) {
             this.holds = holds;
             return this;
         }
@@ -179,7 +179,7 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
          * @param shuffle What the shuffled-event null keeps (`research.md` §1.4). Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder shuffle(EventShuffle shuffle) {
+        public Builder shuffle(ResearchEventShuffle shuffle) {
             this.shuffle = shuffle;
             return this;
         }
@@ -265,10 +265,10 @@ public record ResearchRequest(List<BirthAsked> births, Object control, String da
             Read.orNull(json.get("dasha"), present -> Read.text(present, "ResearchRequest.dasha")),
             Read.orNull(json.get("depth"), present -> Read.int32(present, "ResearchRequest.depth")),
             Read.orNull(json.get("design"), present -> Design.of(present)),
-            Read.orNull(json.get("holds"), present -> Read.member(present, "ResearchRequest.holds", Holds::byKey)),
+            Read.orNull(json.get("holds"), present -> Read.member(present, "ResearchRequest.holds", ResearchHolds::byKey)),
             Read.orNull(json.get("referents"), present -> Referents.of(present)),
             Read.required(json.get("rules"), "ResearchRequest.rules"),
-            Read.orNull(json.get("shuffle"), present -> Read.member(present, "ResearchRequest.shuffle", EventShuffle::byKey)),
+            Read.orNull(json.get("shuffle"), present -> Read.member(present, "ResearchRequest.shuffle", ResearchEventShuffle::byKey)),
             Read.orNull(json.get("strata"), present -> Read.list(present, "ResearchRequest.strata", item0 -> Read.integer(item0, "ResearchRequest.strata"))),
             Read.member(Read.required(json.get("study"), "ResearchRequest.study"), "ResearchRequest.study", StudyKind::byKey),
             Read.orNull(json.get("subjects"), present -> Read.list(present, "ResearchRequest.subjects", item0 -> SubjectAsked.of(item0))),

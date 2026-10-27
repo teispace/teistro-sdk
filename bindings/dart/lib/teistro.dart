@@ -3301,26 +3301,6 @@ Map<String, Object?> _dayParts(CalendarDate date) => <String, Object?>{
   'day': date.day,
 };
 
-/// The period the baseline engine's score is reckoned for.
-enum BaselinePeriod {
-  /// A day.
-  daily('DAILY'),
-
-  /// A week.
-  weekly('WEEKLY'),
-
-  /// A month.
-  monthly('MONTHLY'),
-
-  /// A year.
-  yearly('YEARLY');
-
-  const BaselinePeriod(this.key);
-
-  /// The key `ts_rashifal` reads.
-  final String key;
-}
-
 /// Where Saturn stands in Sade Sati: the 12th, the 1st or the 2nd.
 enum SadeSatiPhase {
   /// The 12th.
@@ -7751,28 +7731,6 @@ final class AshtakavargaAyusRules {
     if (reductions != null) 'reductions': reductions!.key,
     if (occupied != null) 'occupied': occupied!.key,
   };
-}
-
-/// Which longitude an annual chart's Sun returns to
-/// (`03-design/annual-chart.md`).
-enum VarshaReading {
-  /// The natal sidereal longitude, read on the chart's own ayanamsha
-  /// basis: the tradition's, and the default.
-  sidereal('SIDEREAL'),
-
-  /// The natal tropical longitude: the Western solar return. Forty years
-  /// on it is most of a circle of lagna from the sidereal one, so it is a
-  /// choice and never a fallback.
-  tropical('TROPICAL'),
-
-  /// A whole sidereal year for each year of life, from birth: the older
-  /// arithmetic, and the only reading that needs no ephemeris.
-  mean('MEAN');
-
-  const VarshaReading(this.key);
-
-  /// The key the boundary reads.
-  final String key;
 }
 
 /// One stay of Saturn's in a house, half-open.
@@ -12681,20 +12639,6 @@ enum MuhurtaActivity {
   const MuhurtaActivity(this.key);
 
   /// The name a request writes.
-  final String key;
-}
-
-/// How a search orders its windows (C162).
-enum MuhurtaRanking {
-  /// By the texts' clauses: fewest uncancelled doshas, then most favourable.
-  texts('TEXTS'),
-
-  /// By the baseline engine's weights.
-  baseline('BASELINE');
-
-  const MuhurtaRanking(this.key);
-
-  /// The name a request writes and an answer reads back.
   final String key;
 }
 
@@ -17857,7 +17801,7 @@ final class MasaPraveshaRequest {
   const MasaPraveshaRequest({
     required this.year,
     this.month,
-    this.reading = VarshaReading.sidereal,
+    this.reading = ReturnLongitude.sidereal,
     this.place,
     this.masesha = const MaseshaRules(),
     this.results = const MasaPhalaRules(),
@@ -17872,9 +17816,9 @@ final class MasaPraveshaRequest {
   /// months when null.
   final int? month;
 
-  /// The zodiac the year divides in. [VarshaReading.mean] places no Sun,
+  /// The zodiac the year divides in. [ReturnLongitude.mean] places no Sun,
   /// and the SDK refuses it by `masaPravesha.reading`.
-  final VarshaReading reading;
+  final ReturnLongitude reading;
 
   /// Where each month's chart is founded, as [VarshaRequest.place] is;
   /// given, each month carries its [MasaPravesha.masesha], its
@@ -20211,7 +20155,7 @@ final class Hit {
 final class VarshaRequest {
   const VarshaRequest({
     required this.through,
-    this.reading = VarshaReading.sidereal,
+    this.reading = ReturnLongitude.sidereal,
     this.muntha = MunthaDegree.signStart,
     this.place,
     this.varshesha = const VarsheshaRules(),
@@ -20229,7 +20173,7 @@ final class VarshaRequest {
   final int through;
 
   /// Which longitude the Sun returns to.
-  final VarshaReading reading;
+  final ReturnLongitude reading;
 
   /// Where the Muntha stands inside the sign it has reached.
   final MunthaDegree muntha;
@@ -20552,20 +20496,6 @@ final class OfficeBearers {
 
   /// The lord of the Sun's sign by day, of the Moon's by night.
   final Graha dinaRatri;
-}
-
-/// Who takes the year when the office-bearers tie outright.
-enum VarsheshaTied {
-  /// The Muntha's lord: the source's rule, and the default.
-  munthaLord('MUNTHA_LORD'),
-
-  /// The Dina-Ratri Pati, which "still others" give.
-  dinaRatriPati('DINA_RATRI_PATI');
-
-  const VarsheshaTied(this.key);
-
-  /// The key the boundary reads.
-  final String key;
 }
 
 /// Where the sources differ on the lord of the year, each a named reading
@@ -23361,19 +23291,6 @@ final class PakshiDay extends _Value {
   List<Object?> get _fields => [date, reading];
 }
 
-/// One day of `ts_pakshi`'s answer, its keys made members.
-/// When a rule counts as holding on a chart: standing (formed, and its
-/// cancellations do not undo it) or merely formed.
-enum ResearchHolds {
-  standing('STANDING'),
-  formed('FORMED');
-
-  const ResearchHolds(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
 /// The direction a test looks in, declared before the data.
 enum ResearchAlternative {
   greater('GREATER'),
@@ -23381,20 +23298,6 @@ enum ResearchAlternative {
   twoSided('TWO_SIDED');
 
   const ResearchAlternative(this.key);
-
-  /// The key the boundary reads.
-  final String key;
-}
-
-/// What the shuffled-event null keeps: the calendar of events, or each
-/// person's age at the event; or, [selfMatched], each person their own
-/// control, read at [ResearchReferents].
-enum ResearchEventShuffle {
-  eventDates('EVENT_DATES'),
-  agesAtEvent('AGES_AT_EVENT'),
-  selfMatched('SELF_MATCHED');
-
-  const ResearchEventShuffle(this.key);
 
   /// The key the boundary reads.
   final String key;
@@ -24199,23 +24102,6 @@ enum PurifierReference implements _Keyed {
   navamshaSeventh('NAVAMSHA_SEVENTH');
 
   const PurifierReference(this.key);
-
-  @override
-  final String key;
-}
-
-/// How sure the family is of an event, which weighs it.
-enum EventConfidence implements _Keyed {
-  /// Certain; the default.
-  certain('CERTAIN'),
-
-  /// Probable.
-  probable('PROBABLE'),
-
-  /// Uncertain.
-  uncertain('UNCERTAIN');
-
-  const EventConfidence(this.key);
 
   @override
   final String key;

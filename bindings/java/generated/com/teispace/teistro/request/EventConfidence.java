@@ -4,29 +4,25 @@
 package com.teispace.teistro.request;
 
 /**
- * The period a score is weighed for, which sets the Moon's weight.
+ * How sure the family is of an event, which weighs it.
  */
-public enum Period implements RequestJson {
+public enum EventConfidence implements RequestJson {
     /**
-     * A day: the Moon weighs 5.
+     * Certain.
      */
-    DAILY("DAILY"),
+    CERTAIN("CERTAIN"),
     /**
-     * A week: the Moon weighs 2.
+     * Probable.
      */
-    WEEKLY("WEEKLY"),
+    PROBABLE("PROBABLE"),
     /**
-     * A month: the Moon weighs 1.
+     * Uncertain.
      */
-    MONTHLY("MONTHLY"),
-    /**
-     * A year: the Moon weighs nothing and is left out.
-     */
-    YEARLY("YEARLY");
+    UNCERTAIN("UNCERTAIN");
 
     private final String key;
 
-    Period(String key) {
+    EventConfidence(String key) {
         this.key = key;
     }
 
@@ -45,8 +41,8 @@ public enum Period implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Period> byKey(String key) {
-        for (Period member : values()) {
+    public static java.util.Optional<EventConfidence> byKey(String key) {
+        for (EventConfidence member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -61,8 +57,8 @@ public enum Period implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Period of(Object raw) {
-        return Read.member(raw, "Period", Period::byKey);
+    public static EventConfidence of(Object raw) {
+        return Read.member(raw, "EventConfidence", EventConfidence::byKey);
     }
 
     @Override

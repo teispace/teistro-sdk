@@ -6771,7 +6771,7 @@ void _engineTests() {
     expect(
       () => found(
         instant,
-        const MasaPraveshaRequest(year: 3, reading: VarshaReading.mean),
+        const MasaPraveshaRequest(year: 3, reading: ReturnLongitude.mean),
       ),
       throwsA(
         isA<TeistroException>().having(
@@ -8322,7 +8322,7 @@ void _engineTests() {
               utcOffsetSeconds: 20700,
               varsha: const VarshaRequest(
                 through: 12,
-                reading: VarshaReading.tropical,
+                reading: ReturnLongitude.tropical,
               ),
             )
             .praveshas;

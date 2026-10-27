@@ -141,6 +141,7 @@ pub enum NoneAspects {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "schema", schemars(rename = "VarsheshaTied"))]
 pub enum Tied {
     /// The Muntha's lord: the source's own rule.
     #[default]

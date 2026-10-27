@@ -259,7 +259,7 @@ export interface ChartFoundRequest {
  * Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked.
  */
 export interface BatchAsked {
-  readonly baseline?: Period | null;
+  readonly baseline?: BaselinePeriod | null;
   readonly periods: readonly PeriodAsked[];
 }
 
@@ -308,10 +308,10 @@ export interface ResearchRequest {
   readonly dasha?: string | null;
   readonly depth?: number | null;
   readonly design?: Design | null;
-  readonly holds?: Holds;
+  readonly holds?: ResearchHolds;
   readonly referents?: Referents | null;
   readonly rules: unknown;
-  readonly shuffle?: EventShuffle | null;
+  readonly shuffle?: ResearchEventShuffle | null;
   readonly strata?: readonly number[] | null;
   readonly study: StudyKind;
   readonly subjects?: readonly SubjectAsked[] | null;
@@ -480,7 +480,7 @@ export interface MuhurtaRequest {
   readonly direction?: Member<catalogue.Direction> | null;
   readonly most?: number;
   readonly native?: MuhurtaNative | null;
-  readonly ranking?: Ranking;
+  readonly ranking?: MuhurtaRanking;
   readonly rules: unknown;
 }
 
@@ -1189,7 +1189,7 @@ export interface HouseRequest {
  * `MONTHLY`: A month: the Moon weighs 1.
  * `YEARLY`: A year: the Moon weighs nothing and is left out.
  */
-export type Period = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+export type BaselinePeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
 /**
  * One period as a binding writes it, camel-cased as every request record is: the days, the place and the offset, and optionally the snapshot, the grahas whose events are reported and Saturn's spells.
@@ -1292,7 +1292,7 @@ export interface Design {
  * `STANDING`: It is formed and its cancellations do not undo it: present, and not fully cancelled. A rule is its conditions *and* its cancellations, so this is the default.
  * `FORMED`: It is formed, whatever its cancellations say.
  */
-export type Holds = 'STANDING' | 'FORMED';
+export type ResearchHolds = 'STANDING' | 'FORMED';
 
 /**
  * Where a self-matched study reads each person besides their event (`research.md` §1.4, C367): time-stratified referents (Janes, Sheppard and Lumley, *Epidemiology* 16, 2005). The life is cut into windows of `window_days` from birth; the event's window is read at the event and every `step_days` either side of it inside the window. The windows are fixed before the event is known, which is what keeps the referents from biasing the estimate, and none starts before birth.
@@ -1315,7 +1315,7 @@ export interface Referents {
  * `AGES_AT_EVENT`: Ages at the event move among people: person `i` is read at its birth plus person `j`'s age. The ages are kept; the calendar is not.
  * `SELF_MATCHED`: Each person is their own control (the case-crossover design, C367): the event is as likely at any of the person's referent instants ([`Referents`]), so nothing fixed about the person, the chart included, can make a rule look delivered. Nobody's event moves to anybody else.
  */
-export type EventShuffle = 'EVENT_DATES' | 'AGES_AT_EVENT' | 'SELF_MATCHED';
+export type ResearchEventShuffle = 'EVENT_DATES' | 'AGES_AT_EVENT' | 'SELF_MATCHED';
 
 /**
  * The four studies, as a request names them.
@@ -1728,7 +1728,7 @@ export interface MuhurtaNative {
  * `TEXTS`: Raman's rule, an excess of good and a deficiency of evil: open windows first, then the fewest clauses against, then the most for, then the earliest. No clause cancels another here — the neutralisations are reported as clauses for the time and weigh as that — because which neutralisation lifts which dosha the texts give case by case, and a table of it is not yet sourced.
  * `BASELINE`: The baseline engine's weights (`muhurta.md` §4.5), which the roadmap's regression is stated in: open windows first, then those the engine would have offered by their score, highest first, then the earliest. Needs the rules' [`BaselineEvent`](crate::baseline::BaselineEvent).
  */
-export type Ranking = 'TEXTS' | 'BASELINE';
+export type MuhurtaRanking = 'TEXTS' | 'BASELINE';
 
 /**
  * When the first abdika is kept (DS p. 330, two views).
@@ -2826,7 +2826,7 @@ export interface VarsheshaRules {
   /**
    * Who takes it when the office-bearers tie outright.
    */
-  readonly tied?: Tied;
+  readonly tied?: VarsheshaTied;
 }
 
 /**
@@ -3695,7 +3695,7 @@ export interface LifeEvent {
   /**
    * How sure the family is.
    */
-  readonly confidence?: Confidence;
+  readonly confidence?: EventConfidence;
   /**
    * Kept out of the fit and tested against it afterwards instead.
    */
@@ -5377,7 +5377,7 @@ export type NoneAspects = 'MUNTHA_LORD' | 'ANNUAL_LAGNA_LORD' | 'STRONGEST';
  * `MUNTHA_LORD`: The Muntha's lord: the source's own rule.
  * `DINA_RATRI_PATI`: The Dina-Ratri Pati, which "still others" give.
  */
-export type Tied = 'MUNTHA_LORD' | 'DINA_RATRI_PATI';
+export type VarsheshaTied = 'MUNTHA_LORD' | 'DINA_RATRI_PATI';
 
 /**
  * When the Moon is one of the [`BENEFICS`] whose aspect makes a Kuttha.
@@ -5595,7 +5595,7 @@ export type YearLength = 'JULIAN_365_25' | 'SAVANA_360' | 'SIDEREAL' | 'TROPICAL
  * `PROBABLE`: Probable.
  * `UNCERTAIN`: Uncertain.
  */
-export type Confidence = 'CERTAIN' | 'PROBABLE' | 'UNCERTAIN';
+export type EventConfidence = 'CERTAIN' | 'PROBABLE' | 'UNCERTAIN';
 
 /**
  * What happened, which decides the houses and karakas a period's lord is scored against.

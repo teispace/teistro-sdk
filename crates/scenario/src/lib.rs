@@ -937,6 +937,16 @@ fn panchanga_year() -> Section {
 /// A section asked of the façade's own `chart.found` record, as a
 /// consumer asks it, on the built-in ephemeris: every number the answer
 /// carries in `parts` is pushed, in the order serde writes them.
+///
+/// ```
+/// use teistro_scenario::{ASKED, SECTIONS};
+///
+/// // Each is a section of its own, and its request is JSON.
+/// for asked in ASKED {
+///     assert!(SECTIONS.contains(&asked.name));
+///     assert!(serde_json::from_str::<serde_json::Value>(asked.request).is_ok());
+/// }
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Asked {
     /// The section's name.
@@ -971,6 +981,12 @@ macro_rules! natal {
 /// transits read by gochar, an Ashta Koota match and three Tajika annual
 /// charts. None of them is over a range a scan walks, so their cost is the
 /// rules', which nothing else here counts.
+///
+/// ```
+/// use teistro_scenario::ASKED;
+///
+/// assert_eq!(ASKED.map(|a| a.name), ["hits", "judgement"]);
+/// ```
 pub const ASKED: [Asked; 2] = [
     Asked {
         name: "hits",

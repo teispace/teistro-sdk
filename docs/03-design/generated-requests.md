@@ -217,14 +217,20 @@ name, and the schema named several of Pakshi's, the Sarvatobhadra's and
 the rectification's key sets by a bare word (`Clock`, `Bird`, `Sight`,
 `Vowel`, `Accuracy`, `EventKind`, `Presentation`, …). The layers had each
 written the same keys again as `PakshiClock`, `PakshiBird`, `VedhaSight`,
-`ChakraVowel`, `BirthTimeAccuracy`, `LifeEventKind`, `BirthPresentation`:
-eleven in Dart, six in Python and three in Node, found by matching every
-hand enum's keys against every generated one's (2026-10-27). The schema
-now carries the clearer name (`schemars(rename)`, beside the Rust type,
-which keeps its own), the twins are gone, and Java's generated enums take
-the same names. Two Dart names the schema already spelled otherwise follow
-it (`SaturnEighthEnd` is `GulikaAt`, `PurifierNative` is
-`RectificationSpecies`, in Python too). With the names one, six façades
+`ChakraVowel`, `BirthTimeAccuracy`, `LifeEventKind`, `BirthPresentation`,
+and five more (`MuhurtaRanking`, `BaselinePeriod`, `VarsheshaTied`,
+`ResearchHolds`, `ResearchEventShuffle`, `EventConfidence`), found by
+matching every hand key set's keys against every generated one's
+(2026-10-27): eighteen in Dart, seven in Python, seven in Node and one in
+Java. The schema now carries the clearer name (`schemars(rename)`,
+beside the Rust type, which keeps its own), the twins are gone, and
+Java's generated enums take the same names. Where the schema already
+spelled a name otherwise, the layers follow it (`SaturnEighthEnd` is
+`GulikaAt`, `PurifierNative` is `RectificationSpecies`, `VarshaReading`
+is `ReturnLongitude`, Node's `FestivalDayPart` is `DayFifth`).
+`check-lints` holds it: a hand key set with a generated one's keys in
+order under another name fails `layer-does-not-twin-a-request`, unless
+`KEY_SET_TWINS` lists it with its reason. With the names one, six façades
 kept only for their names are generated (`PakshiRules`, `NameSounds`,
 `SarvatobhadraRules`, `NishekaRules`, `ConceptionRules`,
 `ConceptionMoonRules`), and the last four gain value equality. Of the

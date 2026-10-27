@@ -77,16 +77,16 @@ __all__ = [
     "AspectRequest",
     "ConfigurationRequest",
     "HouseRequest",
-    "Period",
+    "BaselinePeriod",
     "PeriodAsked",
     "NaamRules",
     "BirthDate",
     "NumerologyRules",
     "BirthAsked",
     "Design",
-    "Holds",
+    "ResearchHolds",
     "Referents",
-    "EventShuffle",
+    "ResearchEventShuffle",
     "StudyKind",
     "SubjectAsked",
     "ZoneSpec",
@@ -112,7 +112,7 @@ __all__ = [
     "PublishedSet",
     "MuhurtaRequestAsta",
     "MuhurtaNative",
-    "Ranking",
+    "MuhurtaRanking",
     "FirstAbdika",
     "FirstYearAdhika",
     "SapindanaAt",
@@ -393,7 +393,7 @@ __all__ = [
     "MoonMayRule",
     "MoonPartner",
     "NoneAspects",
-    "Tied",
+    "VarsheshaTied",
     "MoonBenefic",
     "TambiraMover",
     "AbhijitPada",
@@ -416,7 +416,7 @@ __all__ = [
     "AshtottariGrouping",
     "SeedOverflow",
     "YearLength",
-    "Confidence",
+    "EventConfidence",
     "LifeEventKind",
     "DatePrecision",
     "Attendants",
@@ -759,7 +759,7 @@ class ChartFoundRequest(TypedDict, total=False):
 class BatchAsked(TypedDict, total=False):
     """Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked."""
 
-    baseline: Optional[Period]
+    baseline: Optional[BaselinePeriod]
 
     periods: Required[Sequence[PeriodAsked]]
 
@@ -803,13 +803,13 @@ class ResearchRequest(TypedDict, total=False):
 
     design: Optional[Design]
 
-    holds: Holds
+    holds: ResearchHolds
 
     referents: Optional[Referents]
 
     rules: Required[Any]
 
-    shuffle: Optional[EventShuffle]
+    shuffle: Optional[ResearchEventShuffle]
 
     strata: Optional[Sequence[int]]
 
@@ -962,7 +962,7 @@ class MuhurtaRequest(TypedDict, total=False):
 
     native: Optional[MuhurtaNative]
 
-    ranking: Ranking
+    ranking: MuhurtaRanking
 
     rules: Required[Any]
 
@@ -1547,7 +1547,7 @@ class HouseRequest(TypedDict, total=False):
     """The division to read, or the module's own when `None`: the profile's `houses.module_overrides.western`, else `LEO_HOUSE_SYSTEM`."""
 
 
-Period: TypeAlias = Literal['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']
+BaselinePeriod: TypeAlias = Literal['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']
 """The period a score is weighed for, which sets the Moon's weight.
 
 `DAILY`: A day: the Moon weighs 5.
@@ -1649,7 +1649,7 @@ class Design(TypedDict, total=False):
     """Each chart's stratum, when the study's exchangeability holds only inside strata (a birth decade, a region, a sex). The labels are shuffled within each stratum, strata in ascending key order."""
 
 
-Holds: TypeAlias = Literal['STANDING', 'FORMED']
+ResearchHolds: TypeAlias = Literal['STANDING', 'FORMED']
 """When a rule counts as holding on a chart.
 
 `STANDING`: It is formed and its cancellations do not undo it: present, and not fully cancelled. A rule is its conditions *and* its cancellations, so this is the default.
@@ -1667,7 +1667,7 @@ class Referents(TypedDict, total=False):
     """Each window's length in days; a person's instants are those of their event's window."""
 
 
-EventShuffle: TypeAlias = Literal['EVENT_DATES', 'AGES_AT_EVENT', 'SELF_MATCHED']
+ResearchEventShuffle: TypeAlias = Literal['EVENT_DATES', 'AGES_AT_EVENT', 'SELF_MATCHED']
 """What the shuffled-event null keeps (`research.md` §1.4).
 
 `EVENT_DATES`: Event dates move among people: the calendar of events is kept, each person's age at the event is not. A pairing that puts an event before a birth is what `afterBirth` decides.
@@ -2002,7 +2002,7 @@ class MuhurtaNative(TypedDict, total=False):
     """The birth nakshatra: the Moon's at birth, or the name's when the birth is not known (Raman, ch. II)."""
 
 
-Ranking: TypeAlias = Literal['TEXTS', 'BASELINE']
+MuhurtaRanking: TypeAlias = Literal['TEXTS', 'BASELINE']
 """How windows are ordered (crux C162); the texts' order by default.
 
 `TEXTS`: Raman's rule, an excess of good and a deficiency of evil: open windows first, then the fewest clauses against, then the most for, then the earliest. No clause cancels another here — the neutralisations are reported as clauses for the time and weigh as that — because which neutralisation lifts which dosha the texts give case by case, and a table of it is not yet sourced.
@@ -2929,7 +2929,7 @@ class VarsheshaRules(TypedDict, total=False):
     noneAspects: NoneAspects
     """Who takes the year when nobody aspects the lagna."""
 
-    tied: Tied
+    tied: VarsheshaTied
     """Who takes it when the office-bearers tie outright."""
 
 
@@ -3689,7 +3689,7 @@ class DashaAsked(TypedDict, total=False):
 class LifeEvent(TypedDict, total=False):
     """A dated life event."""
 
-    confidence: Confidence
+    confidence: EventConfidence
     """How sure the family is."""
 
     heldOut: bool
@@ -5094,7 +5094,7 @@ NoneAspects: TypeAlias = Literal['MUNTHA_LORD', 'ANNUAL_LAGNA_LORD', 'STRONGEST'
 """
 
 
-Tied: TypeAlias = Literal['MUNTHA_LORD', 'DINA_RATRI_PATI']
+VarsheshaTied: TypeAlias = Literal['MUNTHA_LORD', 'DINA_RATRI_PATI']
 """Who takes the year when the office-bearers tie outright (crux C106).
 
 `MUNTHA_LORD`: The Muntha's lord: the source's own rule.
@@ -5290,7 +5290,7 @@ YearLength: TypeAlias = Literal['JULIAN_365_25', 'SAVANA_360', 'SIDEREAL', 'TROP
 """
 
 
-Confidence: TypeAlias = Literal['CERTAIN', 'PROBABLE', 'UNCERTAIN']
+EventConfidence: TypeAlias = Literal['CERTAIN', 'PROBABLE', 'UNCERTAIN']
 """How sure the family is of an event, which weighs it.
 
 `CERTAIN`: Certain.
