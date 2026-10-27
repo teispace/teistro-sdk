@@ -407,14 +407,15 @@ impl Frame {
     /// use teistro_port_ephemeris::Frame;
     ///
     /// assert_eq!(Frame::try_from_bits(0xF0), Ok(Frame::CANONICAL));
-    /// // Bit 9 is reserved.
+    /// // Bit 9 is reserved, and an ayanamsha needs the sidereal bit.
     /// assert!(Frame::try_from_bits(0xF0 | 1 << 9).is_err());
+    /// assert!(Frame::try_from_bits(0xF0 | 1 << 16).is_err());
     /// ```
     ///
     /// # Errors
     ///
-    /// A sidereal bit with an ayanamsha id the catalogue does not have, or
-    /// a reserved bit set.
+    /// A sidereal bit with an ayanamsha id the catalogue does not have, an
+    /// ayanamsha id without the sidereal bit, or a reserved bit set.
     pub fn try_from_bits(bits: u32) -> Result<Frame, ProviderError> {
         const RESERVED: u32 = 0b1111_1110_0000_0000;
         if bits & RESERVED != 0 {
@@ -437,6 +438,12 @@ impl Frame {
                 ))
             })?;
             Zodiac::Sidereal { ayanamsha }
+        } else if bits >> 16 != 0 {
+            // A tropical frame carries no ayanamsha, so its high half is
+            // zero; read as tropical, it would write back other bits.
+            return Err(ProviderError::invalid(format!(
+                "frame bits {bits:#x} name an ayanamsha without the sidereal bit"
+            )));
         } else {
             Zodiac::Tropical
         };
@@ -516,6 +523,7 @@ mod tests {
         }
         assert!(Frame::try_from_bits(1 << 9).is_err());
         assert!(Frame::try_from_bits((1 << 8) | (60_000 << 16)).is_err());
+        assert!(Frame::try_from_bits(1 << 16).is_err());
         assert_eq!(Frame::CANONICAL.corrections.key(), "APPARENT");
         assert_eq!(
             Corrections {
