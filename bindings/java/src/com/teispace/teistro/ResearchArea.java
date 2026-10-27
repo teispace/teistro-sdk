@@ -13,16 +13,16 @@ import java.util.Map;
  * and the predicates are one family for the corrections. A study's provenance seals it: its
  * {@code inputHash} is the pre-registration a study publishes before its data are collected.
  *
- * <p>The rules are a chart request's {@link RuleRequest}, the design the generated {@link Design}, each
+ * <p>The rules are a chart request's {@link RuleRequest}, the design the generated {@link ResearchDesign}, each
  * test a {@link ResearchGroupTest}, {@link ResearchEventTest} or {@link ResearchReplicateTest}, and the
  * options {@link ResearchOptions}. A seed is a {@code long} or, past {@code Long.MAX_VALUE}, a
  * {@code BigInteger}, and the same draws in every binding.
  *
  * <pre>{@code
  * RuleRequest rules = RuleRequest.builder().shipped(List.of(ShippedRules.YOGAS)).build();
- * ResearchTested tested = sky.research().compare(births, rules, new Design(groups, null),
+ * ResearchTested tested = sky.research().compare(births, rules, new ResearchDesign(groups, null),
  *         ResearchGroupTest.builder(7, 9999, ResearchContrast.caseVsRest(1)).build(),
- *         ResearchOptions.builder().holds(Holds.FORMED).build());
+ *         ResearchOptions.builder().holds(ResearchHolds.FORMED).build());
  * }</pre>
  */
 public final class ResearchArea {

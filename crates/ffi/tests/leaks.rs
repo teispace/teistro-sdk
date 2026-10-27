@@ -357,9 +357,18 @@ fn the_remaining_families_give_back_their_answers() {
         unsafe { ts_string_free(&raw mut answer) };
         status
     };
-    holds_nothing("a signed pack", || assert_eq!(verify(3), Status::Ok));
+    // A build without `signed-packs` refuses both as a missing capability.
+    let (signed, replayed) = if cfg!(feature = "signed-packs") {
+        (Status::Ok, Status::InvalidArg)
+    } else {
+        (Status::Capability, Status::Capability)
+    };
+    holds_nothing("a signed pack", || {
+        assert_eq!(verify(3), signed);
+        drop(ctx.last_error());
+    });
     holds_nothing("a replayed signed pack and its record", || {
-        assert_eq!(verify(4), Status::InvalidArg);
+        assert_eq!(verify(4), replayed);
         drop(ctx.last_error());
     });
     let names = CString::new(
