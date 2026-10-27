@@ -420,17 +420,24 @@ not gated. Fourteen mistakes are proven caught by the tests.
 ## 8. Packs
 
 `.tpack`, one locale and one namespace per file: magic `TPK1`, format
-version 2, locale, namespace, entry count, arena length, a CRC32 of the
-body, a SHA-256 of the body for the provenance envelope (ADR-0020), the
+version 3, flags (none yet, so any set is refused), locale, namespace,
+entry count, arena length, a CRC32 of every other byte of the file, a
+SHA-256 of the body for the provenance envelope (ADR-0020), the
 locale's metadata as JSON (or none, when the pack's bundle carries it),
 a key table (16 bytes an entry: key offset and length, kind, value
 offset and length) sorted by key, and a byte arena. Messages are source
 text; entities are length-prefixed forms, gender and glyph. Reads are
 zero-copy and bounds-checked; parsing verifies the checksum and the key
-order and decodes values on access.
+order and decodes values on access. Version 2's CRC covered the body
+alone, so a pack whose locale tag, namespace or metadata had one bit
+changed loaded under the changed name (found 2026-10-27 by flipping
+every bit of a pack at the C ABI, `crates/ffi/tests/pack_refusals.rs`);
+version 3 covers the header, and a version-2 file is refused by its
+version.
 
 `.tbundle`, one locale with every namespace: magic `TPB1`, format
-version, locale, namespace count, a CRC32 and a SHA-256 of the payload;
+version, flags, locale, namespace count, a CRC32 of every other byte and
+a SHA-256 of the payload;
 the payload is the metadata once, an index (namespace name and length),
 and the namespaces' packs without metadata, each verified on its own
 terms. The bundle is smaller than the separate packs by the metadata it
