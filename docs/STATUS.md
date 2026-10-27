@@ -3805,11 +3805,15 @@ kept here: the session log records them.
      longevity periods.
    - **C2**, Narayana's antardasha tables. Jaimini's question, which BPHS
      does not name.
-7. **The other edge runtimes for the wasm package**
-   (`03-design/wasm-binding.md` §7). Cloudflare Workers are built and
-   checked; Vercel's Edge runtime, Next.js's edge routes, Deno Deploy and
-   Netlify's edge functions are unchecked and so not claimed, each a
-   loader condition and a `check-wasm` step when a consumer needs it.
+7. **The edge runtimes no check runs for the wasm package**
+   (`03-design/wasm-binding.md` §6 step 9, §7). Cloudflare Workers, Deno,
+   Bun and Next.js's edge routes are built and checked, each with its
+   own loader condition; the Deno, Bun and Next.js checks were proved
+   on a stand-in module and wait for `check-wasm`'s first run on the
+   real one. Deno Deploy, Netlify's edge functions and Vercel's deployed
+   Edge runtime take a checked loader but are not run themselves, and so
+   are not claimed. A Next.js edge function carries the module twice,
+   which a staged glue without its fallback path would end.
    The module profiles are built (`03-design/wasm-profiles.md`).
 8. **The rest of the second baseline export.** The dasha systems, the
    rashi dashas, Kalachakra, the yogas and doshas, Shadbala, Bhava bala,
@@ -4323,3 +4327,4 @@ kept here: the session log records them.
 | 2026-10-26 | **The homa ahuti** (`panchanga-day.md` §21.4, C751, PR #378). A day asked with `with_homa_ahuti()` says whose mouth its oblation falls in, by Muhurta Chintamani's Nakshatra-prakarana v. 35: the Moon's nakshatra counted in threes from the Sun's, one span for each stretch the two stars both held. The Sun's stars are searched in the sky the day's limbs were read in, and the Moon is the day's own, since a chart's Moon differs from it by parallax. |
 | 2026-10-26 | **The avama birth** (`rules-engine.md`, C759). BPHS names the avama among the inauspicious births and never defines it; the panchanga's avama is a kshaya tithi. The chart's panchanga carries `tithi_kshaya` from the almanac's own sunrises, and `BPHS_BIRTH_IN_AVAMA` reads it. |
 | 2026-10-26 | **The inauspicious weekday yogas** (`panchanga-day.md` §21.6, C760). Dagdha, visha and hutashana by the tithi and yamaghanta by the nakshatra, from Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 read off the 1954 print, each row held to the commentary's witness. A day carries them as the new kind `ashubha_yoga`, kept apart from the auspicious `omens.yogas` a consumer counts in favour, and the two BPHS births ch. 85 names without defining are rules over the same tables. |
+| 2026-10-27 | **The wasm package on Deno, Bun and Next.js's edge routes** (`wasm-binding.md` §6 step 9). Each took another host's loader and failed its own way: Deno refused `node:fs` without `--allow-read`, a `bun build --compile` executable never carried the module, and a Next.js edge route fetched it (Turbopack) or compiled it from bytes, which only the local sandbox allows (webpack). Three loaders by condition (`deno`: `import source`; `bun`: an import `with { type: 'file' }`; `edge-light`: `?module`, given this realm's prototype), and `check-wasm` runs each host from the installed package, held to Node to the bit: Deno with no permission, Bun three ways, and Next.js built by Turbopack and webpack and served with WebAssembly codegen refused. Proved red and green on a stand-in module; the real module's first run is still owed. |

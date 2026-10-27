@@ -60,7 +60,7 @@ It is the one command that has to know the list; nobody else does.
 | `gate` | `check-tag` (the tag is the version the repository carries), `check-versions`, the documentation, FFI and determinism gates, and the changelog's entry for this version |
 | `verify` | the whole verify matrix (`verify.yml`, called), every binding's gates on every platform, the wasm package and the ephemeris tiers; `publish` waits for it |
 | `build` | a runner a platform, each `cargo xtask package <platform>` then `cargo xtask check-package`, each uploading its own artefacts and manifest |
-| `wasm` | one runner, `cargo xtask package wasm` then `cargo xtask check-wasm` (the Node suite through the package's own loader, headless Chrome and Cloudflare's workerd each held to Node bit for bit, the package installed and run), uploading `@teistro/sdk-wasm` |
+| `wasm` | one runner, `cargo xtask package wasm` then `cargo xtask check-wasm` (the Node suite through the package's own loader, headless Chrome, Cloudflare's workerd, Deno, Bun and Next.js's edge runtime each held to Node bit for bit, the package installed and run), uploading `@teistro/sdk-wasm` |
 | `stage` | downloads all six, `cargo xtask package stage` (which refuses a release missing the wasm package as it refuses one missing a platform), and publishes the checksum list into the run's summary |
 | `publish` | after `verify` and `stage`: the GitHub release with every archive and `checksums.txt`; then every platform package and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages, then the agent server's platform packages and `@teistro/mcp`; then the Dart package; last, the agent server's MCP Registry entry, by the runner's OIDC token |
 

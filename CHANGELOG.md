@@ -12,6 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**`@teistro/sdk-wasm` runs in Deno, Bun and Next.js's edge routes.**
+**Numbers:** none.
+- Three loaders, each picked by its host's import condition before
+  `node`: `deno` imports the module in its source phase, so Deno needs
+  no `--allow-read`; `bun` imports it as a file Bun's bundler follows,
+  so `bun build` and `bun build --compile` carry it; `edge-light`
+  imports it as `?module`, since an edge route compiles no WebAssembly
+  from bytes, with Turbopack and webpack alike.
+- `cargo xtask check-wasm` runs each from the installed package, held to
+  Node's answer to the bit: Deno with no permission granted; Bun as the
+  program stands, bundled and compiled; Next.js built by both bundlers
+  and served with WebAssembly compiled from bytes refused, as the
+  deployed Edge runtime refuses it.
+- Deno Deploy, Netlify's edge functions and Vercel's deployed Edge
+  runtime take one of these loaders but are not run by the check, so the
+  package does not claim them.
+
 **Dart's request records are generated.**
 **Numbers:** none.
 - `bindings/dart/lib/src/requests.dart`, a part of `teistro.dart`, is

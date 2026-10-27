@@ -35,8 +35,18 @@ synchronously everywhere else), so nothing you import is ever half-ready.
 - **Unbundled in a browser**, serve the package and map `#native` to
   `lib/native.web.js` in an import map. The package's own browser check
   loads it exactly that way.
-- **In Node, Deno or Bun**, the `node` condition picks a loader that reads
-  the module from the package and compiles it synchronously.
+- **In Node**, the `node` condition picks a loader that reads the module
+  from the package and compiles it synchronously.
+- **In Deno**, install it and import it by name; the `deno` condition
+  picks a loader that imports the module in its source phase
+  (`import source`), so Deno compiles it with the rest of the program
+  and asks no permission to read it: `deno run main.js` needs no
+  `--allow-read`. Deno Deploy runs the same runtime and loader, but the
+  check runs only the Deno CLI.
+- **In Bun**, install and import it; the `bun` condition picks a loader
+  whose module is an import Bun's bundler follows, so `bun build` copies
+  it beside the bundle and `bun build --compile` embeds it in the
+  executable.
 - **In Cloudflare Workers**, install and import it; Wrangler resolves the
   `workerd` condition to a loader that imports the module precompiled, as
   a Worker must. The bundle is about 1.4 MB gzipped, within the free
@@ -57,6 +67,16 @@ synchronously everywhere else), so nothing you import is ever half-ready.
     },
   };
   ```
+
+- **In a Next.js edge route** (`export const runtime = 'edge'`), install
+  and import it; Next.js resolves the `edge-light` condition to a loader
+  that imports the module as `?module`, a module Next.js compiles outside
+  the route, since the Edge runtime compiles no WebAssembly from bytes.
+  Turbopack and webpack builds both work. Next.js 16 marks the edge
+  runtime deprecated. Vercel limits an edge function's size by plan, and
+  the build carries the module twice (`docs/03-design/wasm-binding.md`),
+  so measure the function before deploying the full module there; the
+  `panchanga` profile is about half its size.
 
 It needs no cross-origin isolation (no COOP or COEP headers) and no
 `SharedArrayBuffer`. That is why it is built with wasm-bindgen and not
@@ -109,15 +129,24 @@ artefact last measured. For the arcsecond tiers, bring a provider.
 
 ## Checked
 
-`cargo xtask check-wasm` stages this package and checks it five ways:
+`cargo xtask check-wasm` stages this package and checks it these ways:
 
 - the Node binding's whole test suite, unchanged, through this package's
   own loader;
 - in headless Chrome, unbundled;
 - the same probe under Node;
 - packed, installed into an empty project and run as a consumer;
-- installed, bundled by Wrangler and run in Cloudflare's workerd.
+- installed, bundled by Wrangler and run in Cloudflare's workerd;
+- installed and run by Deno with no permission granted;
+- installed and run by Bun as it stands, bundled by `bun build`, and
+  compiled by `bun build --compile`;
+- installed into a Next.js app as an edge route, built by Turbopack and
+  by webpack, and served by `next start` with WebAssembly compiled from
+  bytes refused, as the deployed Edge runtime refuses it.
 
-The browser's and the Worker's answers must equal Node's bit for bit, and the module must
-stay within its size budget. `cargo xtask check-parity` also compares this
+Every host's answer must equal Node's bit for bit, and the module must
+stay within its size budget. A host none of these runs is not claimed:
+Netlify's edge functions and Deno Deploy run Deno and take the `deno`
+loader, but only the Deno CLI is run, and Vercel's deployed Edge runtime
+is stood in for by Next.js's own. `cargo xtask check-parity` also compares this
 package with the Node, Dart, Python and Rust bindings, value by value.
